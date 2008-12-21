@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbYLUTtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751515AbYLUTxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751771AbYLUTtz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 14:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYLUTtq
+	id S1751515AbYLUTxU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 14:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYLUTxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 14:49:46 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:35842 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYLUTto (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 14:49:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references
-         :user-agent:mime-version:content-type:from;
-        b=ZSRtCDDS8C3TG4mk9LRffjWgCAYh4EtFyZrjKHSbg2QKqM+Np36OJ0lQFkZrTE/G4s
-         TtKW3hzwR6QwUeY58PbXJSWdO9+NPUWO/b6bCWF6804oAL/sb5sn8DeseK5gnIiCCitb
-         y7qy9X7hin25URsicMVAnZDYnR88Lhdg4gkdo=
-Date: Sun, 21 Dec 2008 14:49:19 -0500 (EST)
-X-X-Sender: parag@parag-desktop
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Anssi Hannula <anssi.hannula@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: [PATCH] USBHID: Make Boot Protocol drivers depend on EMBEDDED
-In-Reply-To: <alpine.LRH.1.10.0812211824350.11630@twin.jikos.cz>
-Message-ID: <alpine.DEB.2.00.0812211441300.7101@parag-desktop>
-References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com>  <20081220221253.e09b1b1f.akpm@linux-foundation.org>  <f7848160812202226w1f930c86vfd17a2b0163bfc56@mail.gmail.com>  <494E20F7.7050106@gmail.com> <f7848160812210717w5e5cc7a2uc5571710f755ec99@mail.gmail.com>
- <alpine.LRH.1.10.0812211824350.11630@twin.jikos.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 21 Dec 2008 14:53:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52153 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750813AbYLUTxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 14:53:08 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [Bug #12195] "dd" make kernel panic
+Date: Sun, 21 Dec 2008 20:52:58 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       alexs <alex.shi@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       Michael Anderson <andmike@linux.vnet.ibm.com>,
+       Yanmin Zhang <yanmin_zhang@linux.intel.com>
+References: <vYigq6XkyUN.A.E1H.7ZYTJB@chimera> <vy-yJy0f3YP.A.LAB.YaYTJB@chimera> <1229867542.3444.0.camel@localhost.localdomain>
+In-Reply-To: <1229867542.3444.0.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Parag Warudkar <parag.lkml@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812212052.59336.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday, 21 of December 2008, James Bottomley wrote:
+> On Sat, 2008-12-20 at 23:00 +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.27.  Please verify if it still should be listed and let me know
+> > (either way).
+> 
+> No ... it's fixed and upstream.
 
+Thanks, closed.
 
-The usbmouse and usbkbd modules are not supposed to be used with regular 
-USB mice and keyboards. Make them depend on EMBEDDED to prevent them from 
-being built and loaded on non-EMBEDDED configs.
-
-Signed-off-by: Parag Warudkar <parag.lkml@gmail.com>
-
-diff --git a/drivers/hid/usbhid/Kconfig b/drivers/hid/usbhid/Kconfig
-index 5d9aa95..4edb3be 100644
---- a/drivers/hid/usbhid/Kconfig
-+++ b/drivers/hid/usbhid/Kconfig
-@@ -45,7 +45,7 @@ config USB_HIDDEV
- 	  If unsure, say Y.
- 
- menu "USB HID Boot Protocol drivers"
--	depends on USB!=n && USB_HID!=y
-+	depends on USB!=n && USB_HID!=y && EMBEDDED
- 
- config USB_KBD
- 	tristate "USB HIDBP Keyboard (simple Boot) support"
+Rafael
