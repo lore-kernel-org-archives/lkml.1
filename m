@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752465AbYLUXqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbYLUXtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752465AbYLUXqm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 18:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYLUXqc
+	id S1752951AbYLUXtb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 18:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYLUXtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 18:46:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751435AbYLUXqc (ORCPT
+	Sun, 21 Dec 2008 18:49:23 -0500
+Received: from mail.vialibre.org.ar ([190.210.9.245]:58743 "EHLO
+	mail.vialibre.org.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbYLUXtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 18:46:32 -0500
-Date: Sun, 21 Dec 2008 15:46:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Brownell <david-b@pacbell.net>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       spi-devel-general@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>,
-       Vernon Sauder <vernoninhand@gmail.com>
-Subject: Re: [patch 2.6.28-rc9] spi: spi_write_then_read() regression fix
-In-Reply-To: <200812202332.36281.david-b@pacbell.net>
-Message-ID: <alpine.LFD.2.00.0812211545520.24883@localhost.localdomain>
-References: <200812202332.36281.david-b@pacbell.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 21 Dec 2008 18:49:22 -0500
+X-Greylist: delayed 1411 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Dec 2008 18:49:22 EST
+Date: Sun, 21 Dec 2008 21:25:39 -0200
+From: Federico Heinz <fheinz@vialibre.org.ar>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Andrew Paprocki" <andrew@ishiboo.com>,
+       LKML <linux-kernel@vger.kernel.org>, dz@debian.org,
+       "Andy Spencer" <spenceal@rose-hulman.edu>
+Subject: Re: i8k: fails to detect Dell XPS M1530, fails to get SMM BIOS
+ version with force=1
+Message-ID: <20081221212539.1fa72bd8@lauren>
+In-Reply-To: <20081221144109.2ed26cf2@lxorguk.ukuu.org.uk>
+References: <76366b180812171634k6c5a25d6uad0de0d6c514ebb5@mail.gmail.com>
+	<76366b180812171707j7ad58957xf153d40efb7c7d59@mail.gmail.com>
+	<20081221144109.2ed26cf2@lxorguk.ukuu.org.uk>
+Organization: =?UTF-8?B?RnVuZGFjacOzbiBWw61h?= Libre
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 21/12/2008, Alan Cox wrote:
+> I can find no copies of them with Signed-off-by: lines so they appear to
+> have escaped. If the authors of those changes would care to provided
+> Signed-off-by: lines I'll chase this up further.
 
+This trivial patch adds support for i8k on the new Dell Vostro models.
+I tested it on my Vostro 1400, and it works. It does print a warning
+when loading the module:
 
-On Sat, 20 Dec 2008, David Brownell wrote:
-> 
-> All SPI transfers are full duplex, and are packaged as half duplex
-> by either discarding the data that's read ("write only"), or else
-> by writing zeroes ("read only").  That patch wasn't ensuring that
-> zeroes were getting written out during the "half duplex read" part
-> of the transaction; instead, old RX bits were getting sent.
+	i8k: unable to get SMM BIOS version
 
-Hmm. In addition, isn't this broken (in that same function):
+But I couldn't figure out how to fix that. The module seems to work fine,
+anyway...
 
-        memcpy(local_buf, txbuf, n_tx);
-        x.tx_buf = local_buf;
-        x.rx_buf = local_buf;
+Signed-off-by: Federico Heinz <fheinz@vialibre.org.ar>
 
-        /* do the i/o */
-        status = spi_sync(spi, &message);
-        if (status == 0)
-                memcpy(rxbuf, x.rx_buf + n_tx, n_rx);
-
-shouldn't that 'rx_buf' setup be
-
-	x.rx_buf = local_buf + n_tx;
-
-since the whole point was that we allocated a buffer that can hold _both_ 
-the rx and tx parts? Especially as that final copy into the resulting 
-"rxbuf" thing uses that "+ n_tx" addition?
-
-			Linus
+--- drivers/char/i8k.c.orig     2007-07-08 20:32:17.000000000 -0300
++++ drivers/char/i8k.c  2007-09-27 03:06:08.000000000 -0300
+@@ -439,6 +439,13 @@
+                        DMI_MATCH(DMI_PRODUCT_NAME, "Latitude"),
+                },
+        },
++       {
++               .ident = "Dell Vostro",
++               .matches = {
++                       DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++                       DMI_MATCH(DMI_PRODUCT_NAME, "Vostro"),
++               },
++       },
+        { }
+ };
