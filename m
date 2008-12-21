@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbYLUOoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbYLUOpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754231AbYLUOoy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 09:44:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYLUOon
+	id S1752823AbYLUOpQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 09:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYLUOo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 09:44:43 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:49716 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbYLUOom (ORCPT
+	Sun, 21 Dec 2008 09:44:58 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58839 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752637AbYLUOo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 09:44:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JOuOhFwNXmFH/vXxIEcfPOTEotfsgNoq0IROxpvyjWyrDZWr0mQZdNOpC2bmR5mRdD
-         tP4ZA/HWI7nMko4fOMOHEit0nBwum4snL364mO/9IdJQ9AgjJvYavfFsPs/rtyRFE6TH
-         GyBCcNpNIiqWHU269dkSd1d5d+J0B9zgSOy7A=
-Message-ID: <19f34abd0812210644j6f11717bi84238d172feed8b6@mail.gmail.com>
-Date: Sun, 21 Dec 2008 15:44:40 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] netlink: fix (theoretical) overrun in message iteration
-Cc: "Thomas Graf" <tgraf@suug.ch>, "Eugene Teo" <eugeneteo@kernel.sg>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081221134218.GA7959@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 21 Dec 2008 09:44:57 -0500
+Date: Sun, 21 Dec 2008 14:45:03 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jens Axboe <axboe@kernel.dk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Checking a USB drive's capacity
+Message-ID: <20081221144503.16919dc1@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0812182326100.31272-100000@netrider.rowland.org>
+References: <20081218224418.01fc26a4@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.0812182326100.31272-100000@netrider.rowland.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081221134218.GA7959@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 21, 2008 at 2:42 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> From bb805d89e84ddb11c9bb58afcfd9a6b37bbe5a9b Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Sun, 21 Dec 2008 14:20:49 +0100
-> Subject: [PATCH] netlink: fix (theoretical) overrun in message iteration
->
-> See commit 1045b03e07d85f3545118510a587035536030c1c for a detailed
-> explanation of why this patch is necessary.
->
-> In short, nlmsg_next() can make "remaining" go negative, and the
-> remaining >= sizeof(...) comparison will promote "remaining" to an
-> unsigned type, which means that the expression will evaluate to
-> true for negative numbers, even though it was not intended.
->
-> I put "theoretical" in the title because I have no evidence that
-> this can actually happen, but I suspect that a crafted netlink
-> packet can trigger some badness.
+On Thu, 18 Dec 2008 23:33:09 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-nlmsg
+> On Thu, 18 Dec 2008, Alan Cox wrote:
+> 
+> > > spun up yet.  Not to mention that it seems strange to read the last
+> > > sector before reading the first!
+> > 
+> > The SCSI CD code deals with this by spotting the error is close to the
+> > end and of particular types then interpreting it and adjusting the volume
+> > size. This is done because the size value for a CD-R/RW is imprecise.
+> 
+> Although it may be okay for CDs, I suspect that approach won't work for 
+> disks.
 
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Some of the partition formats do indeed go looking for the end of disk so
+it won't work in that case.
