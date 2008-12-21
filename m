@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbYLUOXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYLUOXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbYLUOXO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 09:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYLUOW6
+	id S1754434AbYLUOXz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 09:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYLUOXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 09:22:58 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:47585 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752106AbYLUOW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 09:22:57 -0500
-Date: Sun, 21 Dec 2008 15:22:49 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] mmc_block: print better data error message after
- timeout
-Message-ID: <20081221152249.2085fe53@mjolnir.drzeus.cx>
-In-Reply-To: <4937DCAF.3010806@nokia.com>
-References: <48F7411F.3020109@nokia.com>
-	<20081026121155.69692474@mjolnir.drzeus.cx>
-	<49083B1C.6060803@nokia.com>
-	<20081130194845.4abd0cb8@mjolnir.drzeus.cx>
-	<4937DCAF.3010806@nokia.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+	Sun, 21 Dec 2008 09:23:48 -0500
+Received: from mail.klingt.org ([86.59.21.178]:51679 "EHLO klingt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752186AbYLUOXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 09:23:47 -0500
+Subject: 2.6.28-rc9: oprofile regression
+From: Tim Blechmann <tim@klingt.org>
+To: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1bjqSJNaRTaXLCfPMrVu"
+Date: Sun, 21 Dec 2008 15:23:36 +0100
+Message-Id: <1229869416.6911.1.camel@thinkpad>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-26118-1229869375-0001-2"
+X-Mailer: Evolution 2.24.2 
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Sun, 21 Dec 2008 15:23:43 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-26118-1229869375-0001-2
-Content-Type: text/plain; charset=US-ASCII
+--=-1bjqSJNaRTaXLCfPMrVu
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 04 Dec 2008 15:35:43 +0200
-Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+hello all,
 
-> Pierre Ossman wrote:
-> > On Wed, 29 Oct 2008 12:29:48 +0200
-> > Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
-> >=20
-> >> Waiting for the card to become ready after an error is also not includ=
-ed,
-> >> as it is not in the standards and is a separate issue anyway.
-> >=20
-> > What do you mean?
->=20
-> You had suggested
->=20
-> 	while (card not ready)
-> 		status |=3D send_status();
->=20
-> and I didn't do it, because of the reasons given above.
->=20
+i am experiencing an issue, similar to the one reported in
+http://lkml.org/lkml/2008/10/30/319.
 
-What confused me was that you sait "it is not in the standards", but
-perhaps you were just referring to the read case? In the write case the
-specs are clear that errors will be done during execution, which can be
-delayed for writes.
+each time, i start the oprofile daemon, one NMI per cpu is executed. the
+cpu is an intel core2 duo t7400, x86_64 architecture.
 
-> From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-> Date: Thu, 16 Oct 2008 12:55:25 +0300
-> Subject: [PATCH] mmc_block: print better error messages
->=20
-> Add command response and card status to error
-> messages.
->=20
-> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
-> ---
+root@thinkpad:~# opcontrol -s
+Using 2.6+ OProfile kernel interface.
+Using log file /var/lib/oprofile/samples/oprofiled.log
+Daemon started.
+Profiler running.
 
-Queued. Thanks for all the work. :)
+tim@thinkpad:~/kernel/linux-2.6$ cat /proc/interrupts |grep NMI
+NMI:          3          3   Non-maskable interrupts
 
-Rgds
---=20
-     -- Pierre Ossman
+root@thinkpad:~# opcontrol -h
+Stopping profiling.
+Killing daemon.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+root@thinkpad:~# opcontrol -s
+Using 2.6+ OProfile kernel interface.
+Using log file /var/lib/oprofile/samples/oprofiled.log
+Daemon started.
+Profiler running.
 
---=_freyr.drzeus.cx-26118-1229869375-0001-2
+tim@thinkpad:~/kernel/linux-2.6$ cat /proc/interrupts |grep NMI
+NMI:          4          4   Non-maskable interrupts
+
+oprofile samples are not collected.
+
+commit 7c64ade53a6f977d73f16243865c42ceae999aea, which solved the issue
+in the 2.6.28-rc2 regression, is already included in the 2.6.28-rc9
+kernel, i am currently running. oprofile works fine with kernel 2.6.27
+on the same machine.
+
+best, tim
+
+--
+tim@klingt.org
+http://tim.klingt.org
+
+Nothing exists until or unless it is observed. An artist is making
+something exist by observing it. And his hope for other people is that
+they will also make it exist by observing it. I call it 'creative
+observation.' Creative viewing.
+  William S. Burroughs
+
+--=-1bjqSJNaRTaXLCfPMrVu
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAklOUT4ACgkQ7b8eESbyJLgI1ACfbl8em+5FiATe2mxDYn3Ayj+j
-ItgAoMo/FA8d9OrW4msITkS1Ri0gezRC
-=3H1W
+iEYEABECAAYFAklOUWIACgkQFz+XezW6HD6q+ACgo/UVaCVJ5BUz/8wnmf4KPqYy
+uw4AoLDguyeGdEYWJLhvrFMF5CZm0EIw
+=Md4G
 -----END PGP SIGNATURE-----
 
---=_freyr.drzeus.cx-26118-1229869375-0001-2--
+--=-1bjqSJNaRTaXLCfPMrVu--
+
