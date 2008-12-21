@@ -1,89 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYLUO3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYLUOgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbYLUO3d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 09:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYLUO3Y
+	id S1754086AbYLUOgy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 09:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYLUOgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 09:29:24 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:51628 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751898AbYLUO3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 09:29:24 -0500
-Date: Sun, 21 Dec 2008 15:29:15 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] mmc_block: ensure all sectors that do not have
- errors are read
-Message-ID: <20081221152915.352d5c05@mjolnir.drzeus.cx>
-In-Reply-To: <49390BD7.3040305@nokia.com>
-References: <48F74121.1020409@nokia.com>
-	<20081026123228.26d2a86a@mjolnir.drzeus.cx>
-	<4908727F.5080003@nokia.com>
-	<20081130200558.21f2561b@mjolnir.drzeus.cx>
-	<49390BD7.3040305@nokia.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-26151-1229869761-0001-2"
+	Sun, 21 Dec 2008 09:36:43 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:44570 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYLUOgm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 09:36:42 -0500
+Date: Sun, 21 Dec 2008 15:36:40 +0100
+To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: linux ext3 partition hosed, is this hardware of software error?
+Message-ID: <20081221143640.GF1509@gamma.logic.tuwien.ac.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi everyone,
 
---=_freyr.drzeus.cx-26151-1229869761-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+(please cc)
 
-On Fri, 05 Dec 2008 13:09:11 +0200
-Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+since a few month I have a new Sony laptop and yesterday shutting down
+didn't work out, but due to a graphics bug (which I reported already
+several times) I couldn't see anything going on (console garbled). After
+some time the laptop still flashed madly (which it usually does for some
+time before turning off) I decided that something has gone mad, no idea
+what. I used Sysrc-s  u  o and went to bed.
 
-> @@ -281,6 +289,16 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, st=
-ruct request *req)
->  		brq.data.sg =3D mq->sg;
->  		brq.data.sg_len =3D mmc_queue_map_sg(mq);
-> =20
-> +		/*
-> +		 * Some drivers expect the sg list to be the same size as the
-> +		 * request, which it won't be if we have fallen back to do
-> +		 * one sector at a time.
-> +		 */
-> +		if (disable_multi) {
-> +			brq.data.sg->length =3D 512;
-> +			brq.data.sg_len =3D 1;
-> +		}
-> +
->  		mmc_queue_bounce_pre(mq);
-> =20
->  		mmc_wait_for_req(card->host, &brq.mrq);
+THis morning grub didn't boot. Booting from an usb stick did give error
+messages, bummer. INterestingly the second partition with ntfs I could
+mount from my rescue stick (riplinux), but the third=linux did not work.
+Here are the error messages from dmesg:
 
-Unfortunately, there is no guarantee that the sg list will be sector
-aligned. Look at the code removed in f3eb0aaa02 for how to handle this
-properly.
+scsi 2:0:0:0: Direct-Access     ATA      TOSHIBA MK3252GS LV01 PQ: 0 ANSI: 5
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sda: sda1 sda2 sda3 sda4
+sd 2:0:0:0: [sda] Attached SCSI disk
+sd 2:0:0:0: Attached scsi generic sg0 type 0
+scsi 3:0:0:0: CD-ROM            MATSHITA DVD-RAM UJ862AS  1.21 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 3:0:0:0: Attached scsi CD-ROM sr0
+sr 3:0:0:0: Attached scsi generic sg1 type 5
+scsi8 : pata_legacy
+ata7: PATA max PIO4 cmd 0x1f0 ctl 0x3f6 irq 14
+scsi9 : pata_legacy
+ata8: PATA max PIO4 cmd 0x170 ctl 0x376 irq 15
+ACPI: PCI Interrupt Link [LNKF] enabled at IRQ 10
+ACPI: PCI Interrupt Link [LNKH] enabled at IRQ 10
+sd 10:0:0:0: [sdb] 15794176 512-byte hardware sectors (8087 MB)
+sd 10:0:0:0: [sdb] Write Protect is off
+sd 10:0:0:0: [sdb] Mode Sense: 00 00 00 00
+sd 10:0:0:0: [sdb] Assuming drive cache: write through
+sd 10:0:0:0: [sdb] 15794176 512-byte hardware sectors (8087 MB)
+sd 10:0:0:0: [sdb] Write Protect is off
+sd 10:0:0:0: [sdb] Mode Sense: 00 00 00 00
+sd 10:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 10:0:0:0: [sdb] Attached SCSI removable disk
+sd 10:0:0:0: Attached scsi generic sg2 type 0
+usb-storage: device scan complete
+ata1.00: exception Emask 0x0 SAct 0x3 SErr 0x0 action 0x0
+ata1.00: irq_stat 0x40000008
+ata1.00: cmd 60/40:08:28:3d:95/00:00:0a:00:00/40 tag 1 ncq 32768 in
+         res 41/40:40:38:3d:95/91:00:0a:00:00/6a Emask 0x409 (media error) <F>
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { UNC }
+ata1.00: configured for UDMA/100
+ata1: EH complete
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ata1.00: exception Emask 0x0 SAct 0x3 SErr 0x0 action 0x0
+ata1.00: irq_stat 0x40000008
+ata1.00: cmd 60/40:00:28:3d:95/00:00:0a:00:00/40 tag 0 ncq 32768 in
+         res 41/40:40:38:3d:95/91:00:0a:00:00/6a Emask 0x409 (media error) <F>
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { UNC }
+ata1.00: configured for UDMA/100
+ata1: EH complete
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ata1.00: exception Emask 0x0 SAct 0x3 SErr 0x0 action 0x0
+ata1.00: irq_stat 0x40000008
+ata1.00: cmd 60/40:08:28:3d:95/00:00:0a:00:00/40 tag 1 ncq 32768 in
+         res 41/40:40:38:3d:95/91:00:0a:00:00/6a Emask 0x409 (media error) <F>
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { UNC }
+ata1.00: configured for UDMA/100
+ata1: EH complete
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ata1.00: exception Emask 0x0 SAct 0x3 SErr 0x0 action 0x0
+ata1.00: irq_stat 0x40000008
+ata1.00: cmd 60/40:00:28:3d:95/00:00:0a:00:00/40 tag 0 ncq 32768 in
+         res 41/40:40:38:3d:95/91:00:0a:00:00/6a Emask 0x409 (media error) <F>
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { UNC }
+ata1.00: configured for UDMA/100
+ata1: EH complete
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ata1.00: exception Emask 0x0 SAct 0x3 SErr 0x0 action 0x0
+ata1.00: irq_stat 0x40000008
+ata1.00: cmd 60/40:08:28:3d:95/00:00:0a:00:00/40 tag 1 ncq 32768 in
+         res 41/40:40:38:3d:95/91:00:0a:00:00/6a Emask 0x409 (media error) <F>
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { UNC }
+ata1.00: configured for UDMA/100
+ata1: EH complete
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ata1.00: exception Emask 0x0 SAct 0x3 SErr 0x0 action 0x0
+ata1.00: irq_stat 0x40000008
+ata1.00: cmd 60/40:00:28:3d:95/00:00:0a:00:00/40 tag 0 ncq 32768 in
+         res 41/40:40:38:3d:95/91:00:0a:00:00/6a Emask 0x409 (media error) <F>
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { UNC }
+ata1.00: configured for UDMA/100
+sd 2:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
+sd 2:0:0:0: [sda] Sense Key : 0x3 [current] [descriptor]
+Descriptor sense data with sense descriptors (in hex):
+        72 03 11 04 00 00 00 0c 00 0a 80 00 00 00 00 00 
+        0a 95 3d 38 
+sd 2:0:0:0: [sda] ASC=0x11 ASCQ=0x4
+end_request: I/O error, dev sda, sector 177552696
+Buffer I/O error on device sda3, logical block 12
+Buffer I/O error on device sda3, logical block 13
+Buffer I/O error on device sda3, logical block 14
+Buffer I/O error on device sda3, logical block 15
+Buffer I/O error on device sda3, logical block 16
+Buffer I/O error on device sda3, logical block 17
+Buffer I/O error on device sda3, logical block 18
+Buffer I/O error on device sda3, logical block 19
+Buffer I/O error on device sda3, logical block 20
+Buffer I/O error on device sda3, logical block 21
+ata1: EH complete
+sd 2:0:0:0: [sda] 625142448 512-byte hardware sectors (320073 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
 
-Other than that, the patch looks ready to go.
 
-Rgds
---=20
-     -- Pierre Ossman
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+I tried fsck, no chance, nothing did work.
 
---=_freyr.drzeus.cx-26151-1229869761-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+Is there any way to get at the stuff on the disk?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Is the disk hosed? Is the controller hosed? Is something else hosed?
 
-iEYEARECAAYFAklOUsAACgkQ7b8eESbyJLhYagCgjRRamSXbwuWKrmMhlocfi/HE
-NfwAoN/WIiP29KRgd7w7Ss2Gj9wTe72l
-=zAjA
------END PGP SIGNATURE-----
+Thanks a lot for any suggestion, I am a bit destroyed...
 
---=_freyr.drzeus.cx-26151-1229869761-0001-2--
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+BRADWORTHY
+One who is skilled in the art of naming loaves.
+			--- Douglas Adams, The Meaning of Liff
