@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbYLUWSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYLUWV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbYLUWSD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 17:18:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYLUWRw
+	id S1752933AbYLUWV6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 17:21:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYLUWVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 17:17:52 -0500
-Received: from mta-out.inet.fi ([195.156.147.13]:35193 "EHLO jenni2.inet.fi"
+	Sun, 21 Dec 2008 17:21:49 -0500
+Received: from ozlabs.org ([203.10.76.45]:55977 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751516AbYLUWRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 17:17:51 -0500
-Message-ID: <494EC082.2010207@gmail.com>
-Date: Mon, 22 Dec 2008 00:17:38 +0200
-From: Anssi Hannula <anssi.hannula@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	id S1751291AbYLUWVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 17:21:48 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] m68k: Kill several external declarations in source files (was: Re: linux-next: boot-params tree build failure)
+Date: Mon, 22 Dec 2008 08:51:44 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       "Linux/m68k" <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+References: <20081217165557.b4898a4b.sfr@canb.auug.org.au> <Pine.LNX.4.64.0812170915400.29433@anakin> <Pine.LNX.4.64.0812211205270.3499@anakin>
+In-Reply-To: <Pine.LNX.4.64.0812211205270.3499@anakin>
 MIME-Version: 1.0
-To: Parag Warudkar <parag.lkml@gmail.com>
-CC: Jiri Kosina <jkosina@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] USBHID: Make Boot Protocol drivers depend on EMBEDDED
-References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com> <20081220221253.e09b1b1f.akpm@linux-foundation.org> <f7848160812202226w1f930c86vfd17a2b0163bfc56@mail.gmail.com> <494E20F7.7050106@gmail.com> <f7848160812210717w5e5cc7a2uc5571710f755ec99@mail.gmail.com> <alpine.LRH.1.10.0812211824350.11630@twin.jikos.cz> <alpine.DEB.2.00.0812211441300.7101@parag-desktop> <alpine.LNX.1.10.0812212247090.26265@jikos.suse.cz> <20081221140200.40c1fec1.akpm@linux-foundation.org> <alpine.LNX.1.10.0812212302400.26265@jikos.suse.cz> <alpine.DEB.2.00.0812211708450.7101@parag-desktop>
-In-Reply-To: <alpine.DEB.2.00.0812211708450.7101@parag-desktop>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812220851.44880.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parag Warudkar wrote:
-> 
-> On Sun, 21 Dec 2008, Jiri Kosina wrote:
-> 
->> On Sun, 21 Dec 2008, Andrew Morton wrote:
->>
->>>> So do I get it right that the only reason of the problem you were 
->>>> seeing was that in the 2.6.27 kernel you have compiled usbhid module, 
->>>> which was then used for driving your mouse,but in 2.6.28-rcX you 
->>>> compiled and used 'usbmouse' instead, and therefore this is not a 
->>>> regression?
->>> Shouldn't usbmouse support two-dimensional mice as well?
->> Yup, but that's a separate issue on my TODO. I first want to know whether 
->> this is a regression or not.
->>
-> 
-> I have always compiled usbmouse as a module - the problem or regression 
-> here was that it was loaded instead of usbhid when both were compiled as 
-> modules - but I don't think this is a kernel regression, here is why -
-> 
-> The problem happened with Fedora 10 - when I booted into Ubuntu 8.10 with 
-> the same kernel compiled with same config, usbhid was correctly loaded and 
-> mouse worked. So I would forget this as a Fedora specific issue.
+On Sunday 21 December 2008 21:42:44 Geert Uytterhoeven wrote:
+> Shall I cherry pick this into my for-next branch (breaking Rusty's changes),
+> or wait until the current linux-next has been merged by Linus (and maybe
+> postpone to .30)?
 
-It may well be that Ubuntu has usbmouse blacklisted or employs udev
-rules that force usbhid to be loaded before usbmouse.
+Good q.  I can take the just setup.c changes and roll them into the
+boot-params tree if you want?
 
-On Mandriva it was handled in a similar way, before usbmouse was
-disabled from the kernel (no reason to have it in a "normal" kernel).
+ie. something like:
 
-> Thanks for the pointers.
+Subject: m68k: Use asm/sections.h in kernel/setup.c
 
--- 
-Anssi Hannula
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+arch/m68k/kernel/setup.c    |   11 +++++------
+
+diff --git a/arch/m68k/kernel/setup.c b/arch/m68k/kernel/setup.c
+index 066faec..594cbd1 100644
+--- a/arch/m68k/kernel/setup.c
++++ b/arch/m68k/kernel/setup.c
+@@ -26,6 +26,7 @@
+ #include <linux/initrd.h>
+ 
+ #include <asm/bootinfo.h>
++#include <asm/sections.h>
+ #include <asm/setup.h>
+ #include <asm/fpu.h>
+ #include <asm/irq.h>
+@@ -63,7 +64,6 @@ EXPORT_SYMBOL(vme_brdtype);
+ int m68k_is040or060;
+ EXPORT_SYMBOL(m68k_is040or060);
+ 
+-extern int end;
+ extern unsigned long availmem;
+ 
+ int m68k_num_memory;
+@@ -216,11 +216,10 @@ static void __init m68k_parse_bootinfo(const struct bi_record *record)
+ 
+ void __init setup_arch(char **cmdline_p)
+ {
+-       extern int _etext, _edata, _end;
+        int i;
+ 
+        /* The bootinfo is located right after the kernel bss */
+-       m68k_parse_bootinfo((const struct bi_record *)&_end);
++       m68k_parse_bootinfo((const struct bi_record *)_end);
+ 
+        if (CPU_IS_040)
+                m68k_is040or060 = 4;
+@@ -253,9 +252,9 @@ void __init setup_arch(char **cmdline_p)
+        }
+ 
+        init_mm.start_code = PAGE_OFFSET;
+-       init_mm.end_code = (unsigned long) &_etext;
+-       init_mm.end_data = (unsigned long) &_edata;
+-       init_mm.brk = (unsigned long) &_end;
++       init_mm.end_code = (unsigned long)_etext;
++       init_mm.end_data = (unsigned long)_edata;
++       init_mm.brk = (unsigned long)_end;
