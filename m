@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYLUPjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYLUPjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbYLUPjR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYLUPi6
+	id S1755486AbYLUPjw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYLUPjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:38:58 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:58955 "EHLO mgw2.diku.dk"
+	Sun, 21 Dec 2008 10:39:41 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:51532 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752425AbYLUPi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:38:56 -0500
-Date: Sun, 21 Dec 2008 16:38:54 +0100 (CET)
+	id S1754297AbYLUPjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:39:39 -0500
+Date: Sun, 21 Dec 2008 16:39:37 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: davem@davemloft.net, jgarzik@pobox.com, netdev@vger.kernel.org,
+To: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/13] drivers/net: Remove redundant test
-Message-ID: <Pine.LNX.4.64.0812211637560.9555@pc-004.diku.dk>
+Subject: [PATCH 8/13] drivers/pci/hotplug: Remove redundant test
+Message-ID: <Pine.LNX.4.64.0812211639170.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In each case, ap is checked not to be NULL a few lines before.
+func is checked not to be NULL a few lines before.
 
 A simplified version of the semantic patch that makes this change is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -76,55 +76,19 @@ statement S1,S2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/ppp_async.c   |    6 ------
- drivers/net/ppp_synctty.c |    6 ------
- 2 files changed, 12 deletions(-)
+ drivers/pci/hotplug/cpqphp_ctrl.c   |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
-index 451bdb5..6567fab 100644
---- a/drivers/net/ppp_async.c
-+++ b/drivers/net/ppp_async.c
-@@ -293,9 +293,6 @@ ppp_asynctty_ioctl(struct tty_struct *tty, struct file *file,
- 	err = -EFAULT;
- 	switch (cmd) {
- 	case PPPIOCGCHAN:
--		err = -ENXIO;
--		if (!ap)
--			break;
- 		err = -EFAULT;
- 		if (put_user(ppp_channel_index(&ap->chan), p))
- 			break;
-@@ -303,9 +300,6 @@ ppp_asynctty_ioctl(struct tty_struct *tty, struct file *file,
- 		break;
+diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
+index d947221..cc227a8 100644
+--- a/drivers/pci/hotplug/cpqphp_ctrl.c
++++ b/drivers/pci/hotplug/cpqphp_ctrl.c
+@@ -1954,7 +1954,7 @@ void cpqhp_pushbutton_thread(unsigned long slot)
+ 			return ;
+ 		}
  
- 	case PPPIOCGUNIT:
--		err = -ENXIO;
--		if (!ap)
--			break;
- 		err = -EFAULT;
- 		if (put_user(ppp_unit_number(&ap->chan), p))
- 			break;
-diff --git a/drivers/net/ppp_synctty.c b/drivers/net/ppp_synctty.c
-index 801d8f9..1e892b7 100644
---- a/drivers/net/ppp_synctty.c
-+++ b/drivers/net/ppp_synctty.c
-@@ -333,9 +333,6 @@ ppp_synctty_ioctl(struct tty_struct *tty, struct file *file,
- 	err = -EFAULT;
- 	switch (cmd) {
- 	case PPPIOCGCHAN:
--		err = -ENXIO;
--		if (!ap)
--			break;
- 		err = -EFAULT;
- 		if (put_user(ppp_channel_index(&ap->chan), p))
- 			break;
-@@ -343,9 +340,6 @@ ppp_synctty_ioctl(struct tty_struct *tty, struct file *file,
- 		break;
- 
- 	case PPPIOCGUNIT:
--		err = -ENXIO;
--		if (!ap)
--			break;
- 		err = -EFAULT;
- 		if (put_user(ppp_unit_number(&ap->chan), p))
- 			break;
+-		if (func != NULL && ctrl != NULL) {
++		if (ctrl != NULL) {
+ 			if (cpqhp_process_SI(ctrl, func) != 0) {
+ 				amber_LED_on(ctrl, hp_slot);
+ 				green_LED_off(ctrl, hp_slot);
