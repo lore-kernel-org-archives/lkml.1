@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYLUQil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYLUQp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079AbYLUQil (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 11:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYLUQic
+	id S1754739AbYLUQp7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 11:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYLUQpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 11:38:32 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:45932 "EHLO mgw2.diku.dk"
+	Sun, 21 Dec 2008 11:45:49 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:41246 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753116AbYLUQib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 11:38:31 -0500
-Date: Sun, 21 Dec 2008 17:38:29 +0100 (CET)
+	id S1753162AbYLUQps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 11:45:48 -0500
+Date: Sun, 21 Dec 2008 17:45:44 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
 To: Eric Sandeen <sandeen@sandeen.net>
 Cc: xfs-masters@oss.sgi.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
 Subject: Re: [PATCH 9/13] fs/xfs: Remove redundant test
-In-Reply-To: <494E6846.8070800@sandeen.net>
-Message-ID: <Pine.LNX.4.64.0812211737180.9555@pc-004.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0812211737180.9555@pc-004.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812211745210.9555@pc-004.diku.dk>
 References: <Pine.LNX.4.64.0812211640360.9555@pc-004.diku.dk>
- <494E6846.8070800@sandeen.net>
+ <494E6846.8070800@sandeen.net> <Pine.LNX.4.64.0812211737180.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -81,13 +81,13 @@ statement S1,S2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- var/julia/linuxcopy/fs/xfs/xfs_trans_buf.c |    4 ++--
+ fs/xfs/xfs_trans_buf.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/var/linuxes/linux-next/fs/xfs/xfs_trans_buf.c b/var/julia/linuxcopy/fs/xfs/xfs_trans_buf.c
+diff --git a/fs/xfs/xfs_trans_buf.c b/fs/xfs/xfs_trans_buf.c
 index 8ee2f8c..218829e 100644
---- a/var/linuxes/linux-next/fs/xfs/xfs_trans_buf.c
-+++ b/var/julia/linuxcopy/fs/xfs/xfs_trans_buf.c
+--- a/fs/xfs/xfs_trans_buf.c
++++ b/fs/xfs/xfs_trans_buf.c
 @@ -307,7 +307,7 @@ xfs_trans_read_buf(
  			return (flags & XFS_BUF_TRYLOCK) ?
  					EAGAIN : XFS_ERROR(ENOMEM);
