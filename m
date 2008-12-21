@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbYLUIyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYLUI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752949AbYLUIyv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 03:54:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYLUIyn
+	id S1753321AbYLUI4S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 03:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYLUI4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 03:54:43 -0500
-Received: from www.tglx.de ([62.245.132.106]:50267 "EHLO www.tglx.de"
+	Sun, 21 Dec 2008 03:56:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53555 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751124AbYLUIyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 03:54:43 -0500
-Date: Sun, 21 Dec 2008 09:53:04 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Eric Sesterhenn <snakebyte@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BUG] Null pointer deref with hrtimer_try_to_cancel()
-In-Reply-To: <20081220210401.GA14447@redhat.com>
-Message-ID: <alpine.LFD.2.00.0812210950040.3376@localhost.localdomain>
-References: <20081219172549.GA25722@alice> <alpine.LFD.2.00.0812202117310.3376@localhost.localdomain> <20081220210401.GA14447@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751243AbYLUI4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 03:56:05 -0500
+Date: Sun, 21 Dec 2008 09:55:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ring_bufer: fix BUF_PAGE_SIZE
+Message-ID: <20081221085552.GE6395@elte.hu>
+References: <4948CADF.6050205@cn.fujitsu.com> <20081218124803.GA31763@elte.hu> <494CBB6D.9070106@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <494CBB6D.9070106@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0009]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Dec 2008, Oleg Nesterov wrote:
-> On 12/20, Thomas Gleixner wrote:
-> >
-> > +static int no_timer_create(struct k_itimer *new_timer)
-> > +{
-> > +	return -EOPNOTSUPP;
-> > +}
-> > +
-> >  /*
-> >   * Return nonzero if we know a priori this clockid_t value is bogus.
-> >   */
-> > @@ -248,6 +253,7 @@ static __init int init_posix_timers(void)
-> >  		.clock_getres = hrtimer_get_res,
-> >  		.clock_get = posix_get_monotonic_raw,
-> >  		.clock_set = do_posix_clock_nosettime,
-> > +		.timer_create = no_timer_create,
-> 
-> Agreed, this patch is better than mine (and thanks for your
-> explanation about CLOCK_MONOTONIC_RAW).
-> 
-> I am not sure about -EOPNOTSUPP. To clarify, I do not claim this
-> is wrong, I just do not know.
-> 
-> But please note that sys_timer_create() does:
-> 
-> 	if (invalid_clockid(which_clock))
-> 		return -EINVAL;
 
-EINVAL is wrong for timer_create(CLOCK_MONOTONIC_RAW) as clockid is
-valid, just the operation of creating a timer is not supported for it.
- 
-> And ltp's timer_create04.c expects timer_create(MAX_CLOCKS == 4)
-> returns -EINVAL.
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-That's because timer_create04.c does not know about
-CLOCK_MONOTONIC_RAW yet.
+> Ingo Molnar wrote:
+> > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> > 
+> >> impact: make BUF_PAGE_SIZE changeable.
+> >>
+> >> Except allocating/freeing page and the code using PAGE_MASK,
+> >> all code expect buffer_page's length is BUF_PAGE_SIZE.
+> >>
+> >> This patch make this behavior more concordant.
+> >>
+> [...]
+> > 
+> > hm, why? Non-order-0 allocations are pretty evil - why would we ever want 
+> > to do them?
+> > 
+> > 	Ingo
+> > 
+> 
+> I think since we introduce BUF_PAGE_SIZE instead of PAGE_SIZE for
+> buffer_page, we should make it changeable. We can use Non-order-0
+> allocations, but it doesn't mean we have to use Non-order-0 allocations.
+> 
+> In the old codes, these lines confuse me:
+> return (addr & ~PAGE_MASK) - (PAGE_SIZE - BUF_PAGE_SIZE);
+> addr &= PAGE_MASK;
+> This patch mostly make the codes concordant.
 
-Thanks,
+ah, okay. Steve, any strong feelings against the patch? And we might just 
+go for removing BUF_PAGE_SIZE itself instead.
 
-	tglx
+	Ingo
