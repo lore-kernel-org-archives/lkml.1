@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYLUPmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYLUPmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbYLUPmV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbYLUPmB
+	id S1756057AbYLUPmj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbYLUPmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:42:01 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:51660 "EHLO mgw1.diku.dk"
+	Sun, 21 Dec 2008 10:42:22 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59116 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755936AbYLUPmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:42:00 -0500
-Date: Sun, 21 Dec 2008 16:41:57 +0100 (CET)
+	id S1755421AbYLUPmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:42:20 -0500
+Date: Sun, 21 Dec 2008 16:42:18 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: sfrench@samba.org, linux-cifs-client@lists.samba.org,
-       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org,
+To: acme@ghostprotocols.net, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 12/13] fs/cifs: Remove redundant test
-Message-ID: <Pine.LNX.4.64.0812211641370.9555@pc-004.diku.dk>
+Subject: [PATCH 13/13] net/appletalk: Remove redundant test
+Message-ID: <Pine.LNX.4.64.0812211641590.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,11 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In fs/cifs/cifssmb.c, pLockData is tested for being NULL at the beginning
-of the function, and not reassigned subsequently.
-
-In fs/xfs/xfs_trans_buf.c, bp is tested for being NULL just a few lines
-above.
+atif is tested for being NULL twice, with the same effect in each case.  I
+have kept the second test, as it seems to fit well with the comment above it.
 
 A simplified version of the semantic patch that makes this change is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -81,21 +77,20 @@ statement S1,S2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- fs/cifs/cifssmb.c                   |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+ net/appletalk/ddp.c                 |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
-index 824df14..552642a 100644
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -1871,10 +1871,6 @@ CIFSSMBPosixLock(const int xid, struct cifsTconInfo *tcon,
- 			rc = -EIO;      /* bad smb */
- 			goto plk_err_exit;
- 		}
--		if (pLockData == NULL) {
--			rc = -EINVAL;
--			goto plk_err_exit;
--		}
- 		data_offset = le16_to_cpu(pSMBr->t2.DataOffset);
- 		data_count  = le16_to_cpu(pSMBr->t2.DataCount);
- 		if (data_count < sizeof(struct cifs_posix_lock)) {
+diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
+index c3f0027..5abce07 100644
+--- a/net/appletalk/ddp.c
++++ b/net/appletalk/ddp.c
+@@ -815,9 +815,6 @@ static int atif_ioctl(int cmd, void __user *arg)
+ 				return -EPERM;
+ 			if (sa->sat_family != AF_APPLETALK)
+ 				return -EINVAL;
+-			if (!atif)
+-				return -EADDRNOTAVAIL;
+-
+ 			/*
+ 			 * for now, we only support proxy AARP on ELAP;
+ 			 * we should be able to do it for LocalTalk, too.
