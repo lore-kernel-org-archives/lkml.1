@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYLUOlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbYLUOoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbYLUOlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 09:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYLUOlL
+	id S1754231AbYLUOoy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 09:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYLUOon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 09:41:11 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58834 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751869AbYLUOlJ (ORCPT
+	Sun, 21 Dec 2008 09:44:43 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:49716 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbYLUOom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 09:41:09 -0500
-Date: Sun, 21 Dec 2008 14:41:09 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Andrew Paprocki" <andrew@ishiboo.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, dz@debian.org,
-       "Federico Heinz" <fheinz@vialibre.org.ar>,
-       "Andy Spencer" <spenceal@rose-hulman.edu>
-Subject: Re: i8k: fails to detect Dell XPS M1530, fails to get SMM BIOS
- version with force=1
-Message-ID: <20081221144109.2ed26cf2@lxorguk.ukuu.org.uk>
-In-Reply-To: <76366b180812171707j7ad58957xf153d40efb7c7d59@mail.gmail.com>
-References: <76366b180812171634k6c5a25d6uad0de0d6c514ebb5@mail.gmail.com>
-	<76366b180812171707j7ad58957xf153d40efb7c7d59@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 21 Dec 2008 09:44:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JOuOhFwNXmFH/vXxIEcfPOTEotfsgNoq0IROxpvyjWyrDZWr0mQZdNOpC2bmR5mRdD
+         tP4ZA/HWI7nMko4fOMOHEit0nBwum4snL364mO/9IdJQ9AgjJvYavfFsPs/rtyRFE6TH
+         GyBCcNpNIiqWHU269dkSd1d5d+J0B9zgSOy7A=
+Message-ID: <19f34abd0812210644j6f11717bi84238d172feed8b6@mail.gmail.com>
+Date: Sun, 21 Dec 2008 15:44:40 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] netlink: fix (theoretical) overrun in message iteration
+Cc: "Thomas Graf" <tgraf@suug.ch>, "Eugene Teo" <eugeneteo@kernel.sg>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081221134218.GA7959@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081221134218.GA7959@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Dec 2008 20:07:02 -0500
-"Andrew Paprocki" <andrew@ishiboo.com> wrote:
+On Sun, Dec 21, 2008 at 2:42 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> From bb805d89e84ddb11c9bb58afcfd9a6b37bbe5a9b Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Sun, 21 Dec 2008 14:20:49 +0100
+> Subject: [PATCH] netlink: fix (theoretical) overrun in message iteration
+>
+> See commit 1045b03e07d85f3545118510a587035536030c1c for a detailed
+> explanation of why this patch is necessary.
+>
+> In short, nlmsg_next() can make "remaining" go negative, and the
+> remaining >= sizeof(...) comparison will promote "remaining" to an
+> unsigned type, which means that the expression will evaluate to
+> true for negative numbers, even though it was not intended.
+>
+> I put "theoretical" in the title because I have no evidence that
+> this can actually happen, but I suspect that a crafted netlink
+> packet can trigger some badness.
 
-> On Wed, Dec 17, 2008 at 7:34 PM, Andrew Paprocki <andrew@ishiboo.com> wrote:
-> > I see two problems with the i8k module and the Dell XPS M1530. First,
-> > the laptop is not detected. Second, even if it is detected, the module
-> > prints that it is unable to get the SMM BIOS version even though the
-> > module appears to be working:
-> 
-> It appears that the Dell Vostro & Precision series have the same issue
-> and the driver was never updated for those as well. Patches were
-> submitted back in 2007-11 and 2008-04 respectively:
-> 
-> http://marc.info/?l=linux-kernel&m=119401935026583&w=2
-> http://marc.info/?l=linux-kernel&m=120822526223412&w=2
+nlmsg
 
-I can find no copies of them with Signed-off-by: lines so they appear to
-have escaped. If the authors of those changes would care to provided
-Signed-off-by: lines I'll chase this up further.
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
