@@ -1,60 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYLUP50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYLUQBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYLUP50 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:57:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYLUP5R
+	id S1754751AbYLUQBU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 11:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbYLUQBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:57:17 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33281 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752239AbYLUP5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:57:16 -0500
-Date: Sun, 21 Dec 2008 15:57:20 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Norbert Preining <preining@logic.at>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: linux ext3 partition hosed, is this hardware of software error?
-Message-ID: <20081221155720.36b700f7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081221150302.GA3457@gamma.logic.tuwien.ac.at>
-References: <20081221143640.GF1509@gamma.logic.tuwien.ac.at>
-	<20081221144913.76ca53d3@lxorguk.ukuu.org.uk>
-	<20081221150302.GA3457@gamma.logic.tuwien.ac.at>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 21 Dec 2008 11:01:12 -0500
+Received: from sandeen.net ([209.173.210.139]:10291 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752722AbYLUQBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 11:01:12 -0500
+Message-ID: <494E6846.8070800@sandeen.net>
+Date: Sun, 21 Dec 2008 10:01:10 -0600
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
+MIME-Version: 1.0
+To: Julia Lawall <julia@diku.dk>
+CC: xfs-masters@oss.sgi.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 9/13] fs/xfs: Remove redundant test
+References: <Pine.LNX.4.64.0812211640360.9555@pc-004.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0812211640360.9555@pc-004.diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Buffer I/O error on device sda3, logical block 12
-> > > Buffer I/O error on device sda3, logical block 13
-> > 
-> > Right near the start of the disk.
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> Ah, that is the reason why grub is gone.
-
-To be accurate - start of partition but the effect is the same yes.
-
-> > Make a copy of the partition with a recovery tool and write it somewhere
+> In fs/cifs/cifssmb.c, pLockData is tested for being NULL at the beginning
+> of the function, and not reassigned subsequently.
 > 
-> ddrescue? partimage? Any other suggestion?
-
-ddrescue should do the trick - anything which will copy all the valid
-sectors and write out the lost ones as zero or similar preserving what is
-left of the file.
-
+> In fs/xfs/xfs_trans_buf.c, bp is tested for being NULL just a few lines
+> above.
 > 
-> > (file on another disk whatever) and keep it safe. Make a copy of that and
-> > fsck the copy. You may need to use the alternate superblock option on
-> > fsck for this.
+> A simplified version of the semantic patch that makes this change is as
+> follows: (http://www.emn.fr/x-info/coccinelle/)
 > 
-> Thanks, good hint, didn't know about that.
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> expression E;
+> position p1,p2;
+> @@
+> 
+> if (x@p1 == NULL || ...) { ... when forall
+>    return ...; }
+> ... when != \(x=E\|x--\|x++\|--x\|++x\|x-=E\|x+=E\|x|=E\|x&=E\|&x\)
+> (
+> x@p2 == NULL
+> |
+> x@p2 != NULL
+> )
+> 
+> // another path to the test that is not through p1?
+> @s exists@
+> local idexpression r.x;
+> position r.p1,r.p2;
+> @@
+> 
+> ... when != x@p1
+> (
+> x@p2 == NULL
+> |
+> x@p2 != NULL
+> )
+> 
+> @fix depends on !s@
+> position r.p1,r.p2;
+> expression x,E;
+> statement S1,S2;
+> @@
+> 
+> (
+> - if ((x@p2 != NULL) || ...)
+>   S1
+> |
+> - if ((x@p2 == NULL) && ...) S1
+> |
+> - BUG_ON(x@p2 == NULL);
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-It's there for exactly this kind of situation.
+Looks fine to me, though a similar test under the #ifdef DEBUG can
+probably also be removed.
 
-Alan
+-Eric
+
+> ---
+>  fs/xfs/xfs_trans_buf.c              |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/xfs/xfs_trans_buf.c b/fs/xfs/xfs_trans_buf.c
+> index 8ee2f8c..22afe29 100644
+> --- a/fs/xfs/xfs_trans_buf.c
+> +++ b/fs/xfs/xfs_trans_buf.c
+> @@ -307,7 +307,7 @@ xfs_trans_read_buf(
+>  			return (flags & XFS_BUF_TRYLOCK) ?
+>  					EAGAIN : XFS_ERROR(ENOMEM);
+>  
+> -		if ((bp != NULL) && (XFS_BUF_GETERROR(bp) != 0)) {
+> +		if (XFS_BUF_GETERROR(bp) != 0) {
+>  			xfs_ioerror_alert("xfs_trans_read_buf", mp,
+>  					  bp, blkno);
+>  			error = XFS_BUF_GETERROR(bp);
+> 
+> _______________________________________________
+> xfs mailing list
+> xfs@oss.sgi.com
+> http://oss.sgi.com/mailman/listinfo/xfs
+> 
+
