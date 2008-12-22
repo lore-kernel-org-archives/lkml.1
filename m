@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYLVU0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYLVUh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbYLVU0p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 15:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbYLVU0d
+	id S1755384AbYLVUh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 15:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbYLVUhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 15:26:33 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55645 "EHLO ogre.sisk.pl"
+	Mon, 22 Dec 2008 15:37:15 -0500
+Received: from www.tglx.de ([62.245.132.106]:42615 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753175AbYLVU0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 15:26:32 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: [Bug #12261] kernel panics with net_rx_action on kernels above 2.6.26
-Date: Mon, 22 Dec 2008 21:26:41 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Huemer <alexander.huemer@sbg.ac.at>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-References: <_EB9bLpq_z.A.hAC.NkYTJB@chimera> <CMMRhk39O-L.A.tMC.TkYTJB@chimera> <20081222072614.GB2631@ff.dom.local>
-In-Reply-To: <20081222072614.GB2631@ff.dom.local>
+	id S1752174AbYLVUhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 15:37:13 -0500
+Date: Mon, 22 Dec 2008 21:36:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Fabio Comolli <fabio.comolli@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, toralf.foerster@gmx.de
+Subject: Re: TSC not updating after resume: Bug or Feature?
+In-Reply-To: <alpine.LFD.2.00.0812221921460.3723@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0812222056190.3723@localhost.localdomain>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu> <200812182319.57235.rjw@sisk.pl> <alpine.LFD.2.00.0812211639210.3376@localhost.localdomain> <alpine.LFD.2.00.0812212031220.4548@localhost.localdomain>
+ <b637ec0b0812211443u1ca9c11du5d61c41e3d82bc16@mail.gmail.com> <alpine.LFD.2.00.0812221543550.3723@localhost.localdomain> <20081222150021.GA13839@elte.hu> <alpine.LFD.2.00.0812221921460.3723@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812222126.41727.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 22 of December 2008, Jarek Poplawski wrote:
-> On Sat, Dec 20, 2008 at 11:16:15PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.26 and 2.6.27.
+On Mon, 22 Dec 2008, Thomas Gleixner wrote:
+> On Mon, 22 Dec 2008, Ingo Molnar wrote:
+> > * Thomas Gleixner <tglx@linutronix.de> wrote:
 > > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> > be listed and let me know (either way).
+> > > > By the way, I don't know if it matters but the problema happened with 
+> > > > in-kernel hibernation and also in out-of-tree TuxOnIce hibernation. 
+> > > > Maybe this can help debugging the issue, I don't know.
+> > > 
+> > > Hmm, does not ring a bell here. Can you please apply the patch below to 
+> > > mainline and retest ?
 > > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12261
-> > Subject		: kernel panics with net_rx_action on kernels above 2.6.26
-> > Submitter	: Alexander Huemer <alexander.huemer@sbg.ac.at>
-> > Date		: 2008-12-13 18:43 (8 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=122919424932016&w=4
-> > Handled-By	: Jarek Poplawski <jarkao2@gmail.com>
-> > Patch		: http://marc.info/?l=linux-net&m=122934825227768&w=4
-> > 
-> > 
+> > ... and he should send a dmesg after a suspend cycle, right?
 > 
-> It's fixed in the mainline:
+> Yes :)
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9a3de25544dadab1971847f28f33b1cd0d1770a6
+> I digged more in the bugzillas. Toralf added some debug to
+> __update_sched_clock():
 > 
-> But stables need this too:
-> - 2.6.27 - always
-> - 2.6.26, 2.6.25 (...?) for CONFIG_ADAPTEC_STARFIRE_NAPI
+> -       max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
+> +       max_clock = scd->tick_gtod + TICK_NSEC;
+> +       if (scd->clock > max_clock)
+> +               printk(KERN_INFO "%d %d\n", scd->clock, max_clock);
+> 
+> The interesting output is:
+> 
+> Dec 14 21:55:55 n22 Back to C!
+> Dec 14 21:55:55 n22 Extended CMOS year: 2000
+> Dec 14 21:55:55 n22 Force enabled HPET at resume
+> Dec 14 21:55:55 n22 212611283 77
+> 
+> The 77 is totaly bogus and it's likely not just a truncation of the
+> 64bit value because (scd->clock > max_clock) evaluates to true. This
+> output is _AFTER_ timekeeping resume because the HPET force enable
+> message comes from timekeeping resume.
 
-Thanks, I've just pushed inclusion request to -stable.
+Seems I'm talking to myself, but I think I finally decoded the
+mystery:
 
-Rafael
+resume()
+  cpufreq_resume()
+    tsc:time_cpufreq_notifier()
+      set_cyc2ns_scale()
+        sched_clock_idle_sleep_event()
+          sched_clock_tick()
+            ktime_get()
+              hpet_read()
+
+This happens _BEFORE_ timekeeping has resumed, so hpet_read() returns
+nonsense and the timekeeping code uses the stale pre suspend
+xtime/clocksource reference values to calculate the time. So the gtod
+reference in sched_clock can result in total crap depending on the
+time when the suspend happened.
+
+Shaggys patch clamps sched_clock to the stale scd->clock value which
+might explain the further wreckage.
+
+The above sequence happens only for CPUs with a CPU frequency coupled
+TSC, so on newer machines with CPU frequency invariant TSC this does
+not happen.
+
+/me stomps off to find a box to confirm that.
+
+Thanks,
+
+	tglx
