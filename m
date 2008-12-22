@@ -1,91 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbYLVKq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbYLVKs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbYLVKq6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 05:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYLVKqt
+	id S1752584AbYLVKs1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 05:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYLVKsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 05:46:49 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:23445 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119AbYLVKqs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 05:46:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KZiGkrW5m7J/8DB6jEGSZl27nrzBvPpVrUTY0NwnxJXtcE33KwGu0JCUdQzCv7f1EB
-         XLxX8cfOyfPozxVx6WiZhVr3odkKhGzERuFnm1YbdV2DB08ltf+/aXZB80cKfO2Z6zyD
-         zmcpod57xVjTzKUFK18KsLTUKZ6fe5u9+4F1Y=
-Message-ID: <c62985530812220246m3801c3f0k8db435f8c9af04e0@mail.gmail.com>
-Date: Mon, 22 Dec 2008 11:46:47 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer interrupt infinite loop
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <c62985530812210421w8e2af3ai2cae7440b2297a2@mail.gmail.com>
+	Mon, 22 Dec 2008 05:48:18 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:45487 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752587AbYLVKsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 05:48:17 -0500
+Date: Mon, 22 Dec 2008 11:50:45 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Balaji Rao <balajirrao@openmoko.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2 0/7] PCF50633 support
+Message-ID: <20081222105044.GC2633@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20081218055618.31696.65002.stgit@cff.thadambail>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4949A2CC.6040209@gmail.com>
-	 <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain>
-	 <20081218112216.GE14332@elte.hu>
-	 <c62985530812181307k4fc35770x3698101b3981879a@mail.gmail.com>
-	 <20081218211637.GF24271@elte.hu>
-	 <c62985530812181336m6ab39c8ah410dff763bd02d24@mail.gmail.com>
-	 <20081218214458.GA30834@elte.hu> <20081221100047.GA31074@elte.hu>
-	 <20081221101226.GA6021@elte.hu>
-	 <c62985530812210421w8e2af3ai2cae7440b2297a2@mail.gmail.com>
+In-Reply-To: <20081218055618.31696.65002.stgit@cff.thadambail>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/21 Frédéric Weisbecker <fweisbec@gmail.com>:
-> 2008/12/21 Ingo Molnar <mingo@elte.hu>:
->>
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> btw., a graph-tracer buglet i noticed:
->>
->> another thing. I turned off all the options that come ahead of the 'meat'
->> of the trace data:
->>
->> # cat /debug/tracing/trace_options
->> print-parent nosym-offset nosym-addr noverbose noraw nohex nobin noblock
->> nostacktrace nosched-tree ftrace_printk noftrace_preempt nobranch annotate
->> nouserstacktrace nosym-userobj printk-msg-only nofuncgraph-overrun
->> nofuncgraph-cpu nofuncgraph-overhead nofuncgraph-proc
->>
->> but i still got the 'duration' field printed:
->>
->> # tracer: function_graph
->> #
->> # DURATION            FUNCTION CALLS
->> #     |               |   |   |   |
->>
->> 0.865 us    |    }
->>            |    alloc_page_vma() {
->> 0.295 us    |      get_vma_policy();
->> 0.268 us    |      policy_zonelist();
->>            |      __alloc_pages_internal() {
->> 0.257 us    |        __might_sleep();
->>            |        get_page_from_freelist() {
->>
->>
->> i'd have expected to only see the flow of execution as it happens.
->>
->>        Ingo
->>
->
->
-> Strange. I will test that.
->
+Hi Balaji,
 
-Did I say it was strange? No it isn't, there is no option to turn off
-the duration :-)
-I will add one.
+On Thu, Dec 18, 2008 at 11:26:18AM +0530, Balaji Rao wrote:
+> Changes from V1:
+> 	- Subdevice specific header files now included in its respective patch.
+> 	- Introduces pcf50633_register_irq and pcf50633_free_irq for irq
+> 	  management
+> 	- Many changes in how subdevices are created and information is passed
+> 	  to them. Thanks to Alessandro Zummo for suggestions.
+> 
+> The following series implements support for NXP PCF50633. It's basically
+> an I2C device with 9 regulators, an ADC, a PMIC, a Battery Charger
+> and a RTC.
+> 
+> This chip is used in Openmoko Neo Freerunner mobile phone.
+> 
+> Driver for a similar chip PCF50606, used in Openmoko Neo 1973 device
+> will follow soon.
+> 
+> The specs are open and are available at 
+> http://people.openmoko.org/tony_tu/GTA02/datasheet/PMU/PCF50633DS_02.pdf
+> 
+> Samuel, are you ok with merging this via linux-mfd tree ?
+Yes, I'm fine with it. Two things though:
+- Could you please resend the non-mfd parts (patch 4,5,6 and 7) to me ?
+- I see from the lkml archives that patches 5 and 6 didnt get Acked yet. I'll
+queue them, but I'd really like to get Anton and Dmitry approval before
+sending them upstream.
+
+Cheers,
+Samuel.
+
+
+> 
+> ---
+> Balaji Rao (7):
+>       mfd: PCF50633 core driver
+>       mfd: PCF50633 adc driver
+>       mfd: PCF50633 gpio support
+>       rtc: PCF50633 rtc driver
+>       power_supply: PCF50633 battery charger driver
+>       input: PCF50633 input driver
+>       regulator: PCF50633 pmic driver
+> 
+>  drivers/input/misc/Kconfig             |    7 
+>  drivers/input/misc/Makefile            |    1 
+>  drivers/input/misc/pcf50633-input.c    |  132 ++++++
+>  drivers/mfd/Kconfig                    |   23 +
+>  drivers/mfd/Makefile                   |    6 
+>  drivers/mfd/pcf50633-adc.c             |  277 +++++++++++++
+>  drivers/mfd/pcf50633-core.c            |  707 ++++++++++++++++++++++++++++++++
+>  drivers/mfd/pcf50633-gpio.c            |  118 +++++
+>  drivers/power/Kconfig                  |    6 
+>  drivers/power/Makefile                 |    2 
+>  drivers/power/pcf50633-charger.c       |  358 ++++++++++++++++
+>  drivers/regulator/Kconfig              |    7 
+>  drivers/regulator/Makefile             |    1 
+>  drivers/regulator/pcf50633-regulator.c |  330 +++++++++++++++
+>  drivers/rtc/Kconfig                    |    6 
+>  drivers/rtc/Makefile                   |    1 
+>  drivers/rtc/rtc-pcf50633.c             |  336 +++++++++++++++
+>  include/linux/mfd/pcf50633/adc.h       |   72 +++
+>  include/linux/mfd/pcf50633/core.h      |  218 ++++++++++
+>  include/linux/mfd/pcf50633/gpio.h      |   52 ++
+>  include/linux/mfd/pcf50633/mbc.h       |  134 ++++++
+>  include/linux/mfd/pcf50633/pmic.h      |   68 +++
+>  22 files changed, 2861 insertions(+), 1 deletions(-)
+>  create mode 100644 drivers/input/misc/pcf50633-input.c
+>  create mode 100644 drivers/mfd/pcf50633-adc.c
+>  create mode 100644 drivers/mfd/pcf50633-core.c
+>  create mode 100644 drivers/mfd/pcf50633-gpio.c
+>  create mode 100644 drivers/power/pcf50633-charger.c
+>  create mode 100644 drivers/regulator/pcf50633-regulator.c
+>  create mode 100644 drivers/rtc/rtc-pcf50633.c
+>  create mode 100644 include/linux/mfd/pcf50633/adc.h
+>  create mode 100644 include/linux/mfd/pcf50633/core.h
+>  create mode 100644 include/linux/mfd/pcf50633/gpio.h
+>  create mode 100644 include/linux/mfd/pcf50633/mbc.h
+>  create mode 100644 include/linux/mfd/pcf50633/pmic.h
+> 
+> 
+> -- 
+> Thanks,
+> Balaji Rao
+> 
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
