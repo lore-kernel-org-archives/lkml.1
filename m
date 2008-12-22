@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYLVNRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYLVNTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbYLVNRU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 08:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbYLVNRL
+	id S1755261AbYLVNTL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 08:19:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYLVNSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 08:17:11 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:10183 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753697AbYLVNRJ (ORCPT
+	Mon, 22 Dec 2008 08:18:54 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:3198 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751453AbYLVNSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 08:17:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=RXKj7vwx6XsiDe3k/OPZpMx2Z2zr1OdaEh90lITQZ9B9XibZTX5id2jgZVtoVsirtp
-         3HF8Uuc1gCGkryhiC+QH6aS8JW+/dHYTgy/m8lv29ivgyQpMJL+mcOpMizZMXqU2u0y1
-         mD9OOR8BlQVl4rdvkVje6V88swnts1jdBYFpE=
-Message-ID: <494F9354.2070701@gmail.com>
-Date: Mon, 22 Dec 2008 14:17:08 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-input@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: frequent hangs
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 08:18:53 -0500
+From: Boaz Harrosh <bharrosh@panasas.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       open-osd ml <osd-dev@open-osd.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 17/18] osd: Kconfig file for in-tree builds
+Date: Mon, 22 Dec 2008 15:18:47 +0200
+Message-Id: <1229951927-16201-1-git-send-email-bharrosh@panasas.com>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <494F88C0.4070507@panasas.com>
+References: <494F88C0.4070507@panasas.com>
+X-OriginalArrivalTime: 22 Dec 2008 13:18:50.0144 (UTC) FILETIME=[D41D5200:01C96437]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am experiencing frequent (twice in 4 boots) hangs on my PC, just after
-entering X. Sometimes there is no problem and the PC starts up fine and keeps
-working normally. It seems to happen during boot only.
+Kconfig file for the drivers/scsi/osd subdirectory.
+Adds the following config items:
+	config SCSI_OSD_INITIATOR
+	config SCSI_OSD_ULD
+	config SCSI_OSD_DPRINT_SENSE
+	config SCSI_OSD_DEBUG
 
-Hangs are: mouse first responds wildly, then stops working altogether as well as
-the keyboard.
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Reviewed-by: Benny Halevy <bhalevy@panasas.com>
+---
+ drivers/scsi/osd/Kconfig |   53 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 53 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/scsi/osd/Kconfig
 
-I compared diffs of /var/log/Xorg.0.log.old and /var/log/Xorg.0.log twice after
-hangs and noted these extra lines (with +) both times when boot was OK:
+diff --git a/drivers/scsi/osd/Kconfig b/drivers/scsi/osd/Kconfig
+new file mode 100644
+index 0000000..861b5ce
+--- /dev/null
++++ b/drivers/scsi/osd/Kconfig
+@@ -0,0 +1,53 @@
++#
++# Kernel configuration file for the OSD scsi protocol
++#
++# Copyright (C) 2008 Panasas Inc.  All rights reserved.
++#
++# Authors:
++#   Boaz Harrosh <bharrosh@panasas.com>
++#   Benny Halevy <bhalevy@panasas.com>
++#
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public version 2 License as
++# published by the Free Software Foundation
++#
++# FIXME: SCSI_OSD_INITIATOR should select CONFIG (HMAC) SHA1 somehow.
++#        How is it done properly?
++#
++
++config SCSI_OSD_INITIATOR
++	tristate "OSD-Initiator library"
++	depends on SCSI
++	help
++		Enable the OSD-Initiator library (libosd.ko).
++		NOTE: You must also select CRYPTO_SHA1 + CRYPTO_HMAC and their
++		dependencies
++
++config SCSI_OSD_ULD
++	tristate "OSD Upper Level driver"
++	depends on SCSI_OSD_INITIATOR
++	help
++		Build a SCSI upper layer driver that exports /dev/osdX devices
++		to user-mode for testing and controlling OSD devices. It is also
++		needed by exofs, for mounting an OSD based file system.
++
++config SCSI_OSD_DPRINT_SENSE
++    int "(0-2) When sense is returned, DEBUG print all sense descriptors"
++    default 1
++    depends on SCSI_OSD_INITIATOR
++    help
++        When a CHECK_CONDITION status is returned from a target, and a
++        sense-buffer is retrieved, turning this on will dump a full
++        sense-decoding message. Setting to 2 will also print recoverable
++        errors that might be regularly returned for some filesystem
++        operations.
++
++config SCSI_OSD_DEBUG
++	bool "Compile All OSD modules with lots of DEBUG prints"
++	default n
++	depends on SCSI_OSD_INITIATOR
++	help
++		OSD Code is populated with lots of OSD_DEBUG(..) printouts to
++		dmesg. Enable this if you found a bug and you want to help us
++		track the problem (see also MAINTAINERS). Setting this will also
++		force SCSI_OSD_DPRINT_SENSE=2.
+-- 
+1.6.0.1
 
- enable montype: 1
-+enable montype: 1
-+(II) 3rd Button detected: disabling emulate3Button
-
-I have a Logitech PS/2 wheel mouse. As normally I found in my dmesg:
-
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /class/input/input0
-input: PS2++ Logitech Wheel Mouse as /class/input/input1
-input: Power Button (FF) as /class/input/input2
-input: Power Button (CM) as /class/input/input3
-
-I compile a Linus git-pulled kernel with a .config that I do not change often
-and normally works. It seems that kernel changes somewhere between May and
-December 2008 caused this, I didn't compile new kernels a lot in this period.
-
-After reboot I noted (suspected to be related):
-Sound signals
-processor Clock settings altered
-
-
-
-A possibly related issue is that sometimes (about once every month) my mouse
-doesn't work when entering X. (I have sent an email previously for this).
-
-cat /dev/input/mice doesn't give strange characters when moving my mouse
-
-I stored dmesg when there was trouble:
-
-twice dmesg contained:
-psmouse.c: Failed to enable mouse on isa0060/serio1
-
-4 other times missing was:
-input: PS2++ Logitech Wheel Mouse as /class/input/input1
-
-and instead:
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /class/input/input0
-input: Power Button (FF) as /class/input/input1
-input: Power Button (CM) as /class/input/input2
-
-(in earlier dmesgs "/class" was "/devices/virtual".
-or /devices/platform/i8042/serio[10]/)
-
-Roel
