@@ -1,27 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYLVDY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbYLVDt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbYLVDY6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 22:24:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYLVDYr
+	id S1753532AbYLVDt1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 22:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYLVDtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 22:24:47 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44066
+	Sun, 21 Dec 2008 22:49:16 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49920
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752012AbYLVDYq (ORCPT
+	by vger.kernel.org with ESMTP id S1752142AbYLVDtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 22:24:46 -0500
-Date: Sun, 21 Dec 2008 19:24:48 -0800 (PST)
-Message-Id: <20081221.192448.267477870.davem@davemloft.net>
-To: divy@chelsio.com
-Cc: kxie@chelsio.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       michaelc@cs.wisc.edu, James.Bottomley@HansenPartnership.com,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH v3 2.6.29] cxgb3 - manage private iSCSI IP address
+	Sun, 21 Dec 2008 22:49:15 -0500
+Date: Sun, 21 Dec 2008 19:49:17 -0800 (PST)
+Message-Id: <20081221.194917.45190672.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: cc@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <8A71B368A89016469F72CD08050AD334040AA4AA@maui.asicdesigners.com>
-References: <200812190243.mBJ2hPZY008757@localhost.localdomain>
-	<20081218.225632.113687804.davem@davemloft.net>
-	<8A71B368A89016469F72CD08050AD334040AA4AA@maui.asicdesigners.com>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,13 +25,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Divy Le Ray" <divy@chelsio.com>
-Date: Sun, 21 Dec 2008 18:32:18 -0800
 
-> > > [PATCH v3 2.6.29] cxgb3 - manage private iSCSI IP address
-> I don't see the patch committed in net-next-2.6. Did it go in another
-> branch?
+Please pull to get these two bug fixes:
 
-Sorry, I didn't push it out before going on vacation.
-I wanted to do some build tests first before pushing
-it out, I'll try to do that right now.
+1) PPP device unregister crash regression.  Fix from
+   James Chapman.
+
+2) kernel_accept() socket module refcounting is bolixed,
+   fix from Wei Yongjun.
+
+Thanks!
+
+The following changes since commit 3298a7388c00227e736d1037328788073c80c7b4:
+  Michael Chan (1):
+        bnx2: Fix bug in bnx2_free_rx_mem().
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+James Chapman (1):
+      ppp: fix segfaults introduced by netdev_priv changes
+
+Wei Yongjun (1):
+      net: Fix module refcount leak in kernel_accept()
+
+ drivers/net/ppp_generic.c   |   28 +++++++++++++---------------
+ net/bluetooth/rfcomm/core.c |    2 --
+ net/socket.c                |    1 +
+ 3 files changed, 14 insertions(+), 17 deletions(-)
