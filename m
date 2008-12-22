@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYLVXPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYLVXUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbYLVXPD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 18:15:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbYLVXOw
+	id S1756209AbYLVXUw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 18:20:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbYLVXUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 18:14:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54502 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755167AbYLVXOv (ORCPT
+	Mon, 22 Dec 2008 18:20:43 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:54088 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754739AbYLVXUm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 18:14:51 -0500
-Date: Mon, 22 Dec 2008 15:13:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: mingo@elte.hu, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       kenchen@google.com, paulus@samba.org, tglx@linutronix.de, hpa@zytor.com,
-       linux-next@vger.kernel.org, davem@davemloft.net
-Subject: Re: [patch] powerpc: change u64/s64 to a long long integer type
-Message-Id: <20081222151338.3b6ef997.akpm@linux-foundation.org>
-In-Reply-To: <20081222230035.GB4074@uranus.ravnborg.org>
-References: <20081222152247.b934ed5b.sfr@canb.auug.org.au>
-	<b040c32a0812212249p45aba306tbb68a960b79cd0ee@mail.gmail.com>
-	<20081222070426.GD29160@elte.hu>
-	<20081222181932.5dd9514e.sfr@canb.auug.org.au>
-	<20081222080341.GA18897@elte.hu>
-	<20081222144319.1bfc0061.akpm@linux-foundation.org>
-	<20081222230035.GB4074@uranus.ravnborg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 18:20:42 -0500
+Date: Mon, 22 Dec 2008 23:20:40 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "C. Scott Ananian" <cscott@laptop.org>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH -v4 00/14] fsnotify, dnotify, and inotify
+Message-ID: <20081222232040.GP28946@ZenIV.linux.org.uk>
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com> <c6d9bea0812181536p2a3aaeacmbd6af0474279b7b@mail.gmail.com> <1229916126.29604.47.camel@localhost.localdomain> <c6d9bea0812221159h30b0501dm8f48d93e0cb53bfa@mail.gmail.com> <20081222210410.GL28946@ZenIV.linux.org.uk> <c6d9bea0812221508n75f03ebdsff5bcbabe56eae56@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c6d9bea0812221508n75f03ebdsff5bcbabe56eae56@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Dec 2008 00:00:35 +0100
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Mon, Dec 22, 2008 at 06:08:08PM -0500, C. Scott Ananian wrote:
 
-> On Mon, Dec 22, 2008 at 02:43:19PM -0800, Andrew Morton wrote:
-> > On Mon, 22 Dec 2008 09:03:41 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > Subject: powerpc: change u64/s64 to a long long integer type
-> > 
-> > <applause>
-> > 
-> > There are lots of other architctures that need doing though.
-> 
-> I have missed the introduction.
-> Can you explain why?
+> That's not correct, as /proc/self/fd/<num> and the getcwd syscall make
+> clear.  struct inode has a i_dentry member, and via its d_parent links
+> you can reconstruct the path, as __d_path in fs/dcache.c does.
 
-People keep on doing
+Think for a minute
 
-	printk("%llu", some_u64);
+a) you might have any number of links to given inode, *including* *zero*
+b) any subset of these links may be in dcache (including empty)
+c) any number of bindings might exist to file in question *or* to its
+ancestors (again, including zero).
+d) none of the relative paths from fs root to file has to be visible
+as a path leading to file in question from anywhere (again, think of
+bindings)
+e) all of that can change before information reaches userland.
 
-testing it only on x86_64 and this generates a warning storm on
-powerpc, sparc64, etc.  Because they use `long', not `long long'.
+> inotify *almost* lets us do that last thing (though the code
+> duplication pains me) but is too racy for reliable use. Give me a
+> kernel interface without races and I'll call it a good start.  If you
+> can save me the trouble of duplicating all of the filesystem's
+> directory information in my userspace database in order to handle
+> directory moves, I'll actually grin a little.
 
-And not just a little bit - this bug gets repeated maybe ten times per
-week - it's insane.
+_WHAT_ interface without races?  Anything along the lines of "somebody had
+done something to <pathname>" is racy by definition.  Simply because the
+next operation might have changed the mapping from pathnames to files.
 
-If we make all architectures use `long long' then the above code
-becomes correct and warning-free on all architectures.
-
-And we then get to remove all the open-coded (unsigned long long) casts
-which we added all over the tree (hundreds of them).
-
-> I have done a bit of sparc hacking lately and was wondering if
-> sparc needs something similar.
-> 
-> cd arch/sparc
-> git grep u64 | grep -v __u64 | wc -l
-> 448
-> 
-> [On the unified tree]
-
-Yes, quite a few 64-bit architectures are using `long' for their
-s64/u64 types.  We should convert them all to `long long'.
-
-That's quite trivial to do, but it causes a lot of warnings due to code
-in arch-speciic files which does
-
-	printk("%lu", some_u64);
-
-which will then generate a warning.  Or an error if the archtiecture
-uses -Werror, which several do.  So we need to simultaneously convert
-all those to %llu.  (Or %Lu, which saves a byte :))
-
-
-	
+What are you actually trying to do?
