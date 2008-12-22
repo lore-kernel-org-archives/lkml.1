@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbYLVTWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbYLVTXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbYLVTWx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYLVTRg
+	id S1756359AbYLVTXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYLVTRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:17:36 -0500
+	Mon, 22 Dec 2008 14:17:44 -0500
 Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755872AbYLVTRe (ORCPT
+	with ESMTP id S1755891AbYLVTRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:17:34 -0500
-Subject: [PATCH 17/27] drivers/net/tokenring: fix sparse warnings: make
-	symbols static
+	Mon, 22 Dec 2008 14:17:42 -0500
+Subject: [PATCH 18/27] drivers/net/tulip: fix sparse warnings: make do-while a
+	compound statement
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:17:27 +0100
-Message-ID: <20081222191727.11807.90548.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:17:37 +0100
+Message-ID: <20081222191737.11807.16256.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -29,71 +29,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix this sparse warnings:
 
-  drivers/net/tokenring/ibmtr.c:1840:6: warning: symbol 'tok_rerun' was not declared. Should it be static?
-  drivers/net/tokenring/madgemc.c:469:16: warning: symbol 'madgemc_setnselout_pins' was not declared. Should it be static?
-  drivers/net/tokenring/proteon.c:286:16: warning: symbol 'proteon_setnselout_pins' was not declared. Should it be static?
-  drivers/net/tokenring/skisa.c:303:16: warning: symbol 'sk_isa_setnselout_pins' was not declared. Should it be static?
+  drivers/net/tulip/de2104x.c:1695:4: warning: do-while statement is not a compound statement
+  drivers/net/tulip/tulip_core.c:1433:5: warning: do-while statement is not a compound statement
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/tokenring/ibmtr.c   |    4 ++--
- drivers/net/tokenring/madgemc.c |    2 +-
- drivers/net/tokenring/proteon.c |    2 +-
- drivers/net/tokenring/skisa.c   |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/tulip/de2104x.c    |    4 ++--
+ drivers/net/tulip/tulip_core.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/tokenring/ibmtr.c b/drivers/net/tokenring/ibmtr.c
-index 9fd0993..fa7bce6 100644
---- a/drivers/net/tokenring/ibmtr.c
-+++ b/drivers/net/tokenring/ibmtr.c
-@@ -1837,8 +1837,8 @@ static void ibmtr_reset_timer(struct timer_list *tmr, struct net_device *dev)
+diff --git a/drivers/net/tulip/de2104x.c b/drivers/net/tulip/de2104x.c
+index 3aa60fa..5166be9 100644
+--- a/drivers/net/tulip/de2104x.c
++++ b/drivers/net/tulip/de2104x.c
+@@ -1691,9 +1691,9 @@ static void __devinit de21040_get_mac_address (struct de_private *de)
  
- /*****************************************************************************/
- 
--void tok_rerun(unsigned long dev_addr){
--
-+static void tok_rerun(unsigned long dev_addr)
-+{
- 	struct net_device *dev = (struct net_device *)dev_addr;
- 	struct tok_info *ti = netdev_priv(dev);
- 
-diff --git a/drivers/net/tokenring/madgemc.c b/drivers/net/tokenring/madgemc.c
-index 0ba6f0b..917b4d2 100644
---- a/drivers/net/tokenring/madgemc.c
-+++ b/drivers/net/tokenring/madgemc.c
-@@ -466,7 +466,7 @@ static irqreturn_t madgemc_interrupt(int irq, void *dev_id)
-  * zero to leave the TMS NSELOUT bits unaffected.
-  *
-  */
--unsigned short madgemc_setnselout_pins(struct net_device *dev)
-+static unsigned short madgemc_setnselout_pins(struct net_device *dev)
- {
- 	unsigned char reg1;
- 	struct net_local *tp = netdev_priv(dev);
-diff --git a/drivers/net/tokenring/proteon.c b/drivers/net/tokenring/proteon.c
-index cd2d62f..b8c955f 100644
---- a/drivers/net/tokenring/proteon.c
-+++ b/drivers/net/tokenring/proteon.c
-@@ -283,7 +283,7 @@ static void proteon_read_eeprom(struct net_device *dev)
- 		dev->dev_addr[i] = proteon_sifreadw(dev, SIFINC) >> 8;
- }
- 
--unsigned short proteon_setnselout_pins(struct net_device *dev)
-+static unsigned short proteon_setnselout_pins(struct net_device *dev)
- {
- 	return 0;
- }
-diff --git a/drivers/net/tokenring/skisa.c b/drivers/net/tokenring/skisa.c
-index b578744..c0f58f0 100644
---- a/drivers/net/tokenring/skisa.c
-+++ b/drivers/net/tokenring/skisa.c
-@@ -300,7 +300,7 @@ static void sk_isa_read_eeprom(struct net_device *dev)
- 		dev->dev_addr[i] = sk_isa_sifreadw(dev, SIFINC) >> 8;
- }
- 
--unsigned short sk_isa_setnselout_pins(struct net_device *dev)
-+static unsigned short sk_isa_setnselout_pins(struct net_device *dev)
- {
- 	return 0;
- }
+ 	for (i = 0; i < 6; i++) {
+ 		int value, boguscnt = 100000;
+-		do
++		do {
+ 			value = dr32(ROMCmd);
+-		while (value < 0 && --boguscnt > 0);
++		} while (value < 0 && --boguscnt > 0);
+ 		de->dev->dev_addr[i] = value;
+ 		udelay(1);
+ 		if (boguscnt <= 0)
+diff --git a/drivers/net/tulip/tulip_core.c b/drivers/net/tulip/tulip_core.c
+index 1c5ef23..ff84bab 100644
+--- a/drivers/net/tulip/tulip_core.c
++++ b/drivers/net/tulip/tulip_core.c
+@@ -1429,9 +1429,9 @@ static int __devinit tulip_init_one (struct pci_dev *pdev,
+ 		for (i = 0; i < 3; i++) {
+ 			int value, boguscnt = 100000;
+ 			iowrite32(0x600 | i, ioaddr + 0x98);
+-			do
++			do {
+ 				value = ioread32(ioaddr + CSR9);
+-			while (value < 0  && --boguscnt > 0);
++			} while (value < 0  && --boguscnt > 0);
+ 			put_unaligned_le16(value, ((__le16 *)dev->dev_addr) + i);
+ 			sum += value & 0xffff;
+ 		}
 
