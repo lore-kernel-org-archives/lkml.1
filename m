@@ -1,77 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYLVXA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYLVXDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYLVXA1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 18:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbYLVXAP
+	id S1756101AbYLVXDE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 18:03:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYLVXCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 18:00:15 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46118 "EHLO mx2.redhat.com"
+	Mon, 22 Dec 2008 18:02:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46151 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754910AbYLVXAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 18:00:14 -0500
-Date: Mon, 22 Dec 2008 23:58:25 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
-Subject: Re: [RFC][PATCH 6/6][v3] Protect cinit from blocked fatal signals
-Message-ID: <20081222225825.GC1536@redhat.com>
-References: <20081221005106.GA4912@us.ibm.com> <20081221005529.GF5025@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081221005529.GF5025@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754428AbYLVXCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 18:02:53 -0500
+Subject: Re: races when reserving an event in the unified trace buffer
+From: Steven Rostedt <srostedt@redhat.com>
+To: Jiaying Zhang <jiayingz@google.com>
+Cc: linux-kernel@vger.kernel.org, Michael Rubin <mrubin@google.com>,
+       Michael Davidson <md@google.com>, Martin Bligh <mbligh@google.com>
+In-Reply-To: <5df78e1d0812121626k367043c6hbb0232dc20b1db78@mail.gmail.com>
+References: <5df78e1d0812121626k367043c6hbb0232dc20b1db78@mail.gmail.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Mon, 22 Dec 2008 18:02:47 -0500
+Message-Id: <1229986967.30177.78.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/20, Sukadev Bhattiprolu wrote:
+Hi Jiaying,
+
+Sorry for taking so long to reply.
+
+On Fri, 2008-12-12 at 16:26 -0800, Jiaying Zhang wrote:
+> Hi Steve,
 > 
-> +static int sig_unkillable(struct signal_struct *signal, int sig)
-> +{
-> +	if (signal->flags & SIGNAL_UNKILLABLE_FROM_NS)
-> +		return !sig_kernel_only(sig);
-> +
-> +	/*
-> +	 * We must have dropped SIGKILL/SIGSTOP in sig_ignored()
-> +	 * TODO: Remove BUG_ON().
-> +	 */
-> +	BUG_ON(signal->flags & SIGNAL_UNKILLABLE && sig_kernel_only(sig));
-> +
-> +	return (signal->flags & SIGNAL_UNKILLABLE);
-> +}
-> +
->  int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka,
->  			  struct pt_regs *regs, void *cookie)
->  {
-> @@ -1907,9 +1943,10 @@ relock:
->
->  		/*
->  		 * Global init gets no signals it doesn't want.
-> +		 * Container-init gets no signals it doesn't want from same
-> +		 * container.
->  		 */
-> -		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-> -		    !signal_group_exit(signal))
-> +		if (sig_unkillable(signal, signr) && !signal_group_exit(signal))
->  			continue;
+> I am doing some load testing with our kernel tracing prototype
+> that uses the unified trace buffer for managing its data. I sometimes
+> saw kernel stack dump caused by the following checking in
+> function  __rb_reserve_next:
+>         if (unlikely(next_page == cpu_buffer->commit_page)) {
+>                  WARN_ON_ONCE(1);
+>                  goto out_unlock;
+>        }
+> The comments above the code say the problem is caused by
+> "an interrupt storm that made it all the way around the buffer".
+> But I think there is race here that a single interrupt can cause
+> the check to fail. Suppose this is what happens:
+> An event is traced and calls __rb_reserve_next. Right after it
+> gets the current tail_page (line tail_page = cpu_buffer->tail_page;),
+> an interrupt happens that is also traced. The interrupt also takes
+> the same tail_page. The interrupt event moves the tail_page
+> forward if the tail_page is full. Note that the interrupt event gets
+> the old 'write' value because the first event has not updated that yet.
 
-Again, I do not understand why do we need SIGNAL_UNKILLABLE_FROM_NS.
+Good catch.
 
-I thought about the change in get_signal_to_deliver() during the
-previous discussion, and I think what we need is:
+> So the interrupt event may also update the commit_page if it is
+> the same as the tail_page. As a result, the above check would
+> fail after the interrupt finishes and the first event resumes its execution.
+> 
+> I have seen the problem happens frequently under heavy loads
+> on a multi-core machine. Interestingly, I also saw the above
+> warning that might actually be caused by an interrupt storm.
+> I was using 64k buffer size and am not sure whether it is possible
+> for so many interrupts to happen in a short time window.
+> 
+> I think we can use the time_stamp to distinguish the two cases.
+> Also, in either case, it seems bad to leave the tail_page->write with
+> an invalid value because it can cause problem when a reader
+> reads the page. Here is my proposed fix for the problem:
+> 
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 7f69cfe..1500f78 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -982,8 +982,11 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+>                  * it all the way around the buffer, bail, and warn
+>                  * about it.
+>                  */
+> -               if (unlikely(next_page == cpu_buffer->commit_page)) {
+> +               if (unlikely(next_page == cpu_buffer->commit_page) &&
+> +                               tail_page->time_stamp > next_page->time_stamp) {
+>                         WARN_ON_ONCE(1);
+> +                       if (tail <= BUF_PAGE_SIZE)
+> +                               local_set(&tail_page->write, tail);
 
-		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-		    !sig_kernel_only(sig))
-			continue;
+Actually what we probably should do instead, is simply record the commit
+page first:
 
-and this was yet another reason for "protect init from unwanted signals more".
++	commit_page = cpu_buffer->commit_page;
++	barrier();
+	tail_page = cpu_buffer->tail_page;
+	write = local_add_return(length, &tail_page->write);
 
-Because, if we see SIGKILL/SIGSTOP here, this means that the signal
-was sent from the parent ns, or it was generated "internally", for
-example by sys_exit_group().
 
-Oleg.
+And then we could test next_page == commit_page instead.
+
+-- Steve
+
 
