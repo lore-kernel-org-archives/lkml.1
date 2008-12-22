@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYLVW7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYLVXA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbYLVW7T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 17:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYLVW7J
+	id S1756218AbYLVXA1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 18:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbYLVXAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 17:59:09 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40882 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754936AbYLVW7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 17:59:07 -0500
-Date: Tue, 23 Dec 2008 00:00:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, kenchen@google.com, paulus@samba.org,
-       tglx@linutronix.de, hpa@zytor.com, linux-next@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch] powerpc: change u64/s64 to a long long integer type
-Message-ID: <20081222230035.GB4074@uranus.ravnborg.org>
-References: <20081222152247.b934ed5b.sfr@canb.auug.org.au> <b040c32a0812212249p45aba306tbb68a960b79cd0ee@mail.gmail.com> <20081222070426.GD29160@elte.hu> <20081222181932.5dd9514e.sfr@canb.auug.org.au> <20081222080341.GA18897@elte.hu> <20081222144319.1bfc0061.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Mon, 22 Dec 2008 18:00:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46118 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754910AbYLVXAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 18:00:14 -0500
+Date: Mon, 22 Dec 2008 23:58:25 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
+       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
+Subject: Re: [RFC][PATCH 6/6][v3] Protect cinit from blocked fatal signals
+Message-ID: <20081222225825.GC1536@redhat.com>
+References: <20081221005106.GA4912@us.ibm.com> <20081221005529.GF5025@us.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081222144319.1bfc0061.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081221005529.GF5025@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 22, 2008 at 02:43:19PM -0800, Andrew Morton wrote:
-> On Mon, 22 Dec 2008 09:03:41 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
+On 12/20, Sukadev Bhattiprolu wrote:
 > 
-> > Subject: powerpc: change u64/s64 to a long long integer type
-> 
-> <applause>
-> 
-> There are lots of other architctures that need doing though.
+> +static int sig_unkillable(struct signal_struct *signal, int sig)
+> +{
+> +	if (signal->flags & SIGNAL_UNKILLABLE_FROM_NS)
+> +		return !sig_kernel_only(sig);
+> +
+> +	/*
+> +	 * We must have dropped SIGKILL/SIGSTOP in sig_ignored()
+> +	 * TODO: Remove BUG_ON().
+> +	 */
+> +	BUG_ON(signal->flags & SIGNAL_UNKILLABLE && sig_kernel_only(sig));
+> +
+> +	return (signal->flags & SIGNAL_UNKILLABLE);
+> +}
+> +
+>  int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka,
+>  			  struct pt_regs *regs, void *cookie)
+>  {
+> @@ -1907,9 +1943,10 @@ relock:
+>
+>  		/*
+>  		 * Global init gets no signals it doesn't want.
+> +		 * Container-init gets no signals it doesn't want from same
+> +		 * container.
+>  		 */
+> -		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+> -		    !signal_group_exit(signal))
+> +		if (sig_unkillable(signal, signr) && !signal_group_exit(signal))
+>  			continue;
 
-I have missed the introduction.
-Can you explain why?
+Again, I do not understand why do we need SIGNAL_UNKILLABLE_FROM_NS.
 
-I have done a bit of sparc hacking lately and was wondering if
-sparc needs something similar.
+I thought about the change in get_signal_to_deliver() during the
+previous discussion, and I think what we need is:
 
-cd arch/sparc
-git grep u64 | grep -v __u64 | wc -l
-448
+		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+		    !sig_kernel_only(sig))
+			continue;
 
-[On the unified tree]
+and this was yet another reason for "protect init from unwanted signals more".
 
-	Sam
+Because, if we see SIGKILL/SIGSTOP here, this means that the signal
+was sent from the parent ns, or it was generated "internally", for
+example by sys_exit_group().
+
+Oleg.
+
