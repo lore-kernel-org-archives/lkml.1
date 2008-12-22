@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYLVWuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbYLVW6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbYLVWuS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 17:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYLVWuF
+	id S1755692AbYLVW6Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 17:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYLVW6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 17:50:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56249 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754570AbYLVWuE (ORCPT
+	Mon, 22 Dec 2008 17:58:15 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:40774 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753593AbYLVW6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 17:50:04 -0500
-Date: Mon, 22 Dec 2008 14:49:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: sfr@canb.auug.org.au, david@fromorbit.com, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: Tree for December 18 (patch: kernel-doc notation)
-Message-Id: <20081222144945.8ef2748e.akpm@linux-foundation.org>
-In-Reply-To: <20081218161437.fe2d2675.randy.dunlap@oracle.com>
-References: <20081218230637.c879a046.sfr@canb.auug.org.au>
-	<20081218161437.fe2d2675.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 17:58:14 -0500
+Date: Mon, 22 Dec 2008 15:57:57 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+In-reply-to: <494FE73E.5000802@redhat.com>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
+       Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Message-id: <20081222225757.GV5000@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <4908C951.2000309@redhat.com>
+ <20081103184426.GA31894@ajones-laptop.nbttech.com>
+ <20081103113318.35b0c266.akpm@linux-foundation.org>
+ <20081103201428.GB30565@ajones-laptop.nbttech.com>
+ <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>
+ <494ADEB3.8010109@redhat.com> <20081219002752.GE8424@duck.suse.cz>
+ <494AFA16.2010004@redhat.com> <494FE73E.5000802@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Dec 2008 16:14:37 -0800
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Dec 22, 2008  14:15 -0500, Ric Wheeler wrote:
+> Without having dived into the patch in detail, one worry I would have is  
+> that we still might care to spin up a drive for empty transactions in  
+> order to invalidate the drive's write cache.
+>
+> For example, if we have the following sequence:
+>
+>    (1) user app performs series of writes to file A
+>    (2) pages dirtied from writes to A are destaged to the disk over time
+>    (3) user app issues fsync(file A) to make sure that the data will  
+> survive a power outage
+>
+> At this point in time, would this change prevent us from spinning up the  
+> drive and invalidating the disk write cache for that fsync() ?
 
-> fs/inode.c and mm/filemap.c need kernel-doc fixes.
-> 
-> What tree were these merged into for linux-next?
+Well, if the writes themselves didn't spin up the drive, it is uncertain
+whether the write of the journal commit block would be any more helpful
+in getting that to happen.
 
-I use git-blame.
-
-> How do I get these doc fixes merged?  (2 patches below)
-> 
-> ---
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix fs/inode.c kernel-doc function parameters:
-> 
-> Warning(linux-next-20081218//fs/inode.c:120): No description found for parameter 'sb'
-> Warning(linux-next-20081218//fs/inode.c:120): No description found for parameter 'inode'
-> Warning(linux-next-20081218//fs/inode.c:588): No description found for parameter 'sb'
-> Warning(linux-next-20081218//fs/inode.c:588): No description found for parameter 'inode'
-> 
-
->From the XFS tree:
-
-commit 2cb1599f9b2ecdd7a9e59feeee647eb258966839
-Author:     David Chinner <david@fromorbit.com>
-AuthorDate: Thu Oct 30 17:32:23 2008 +1100
-Commit:     Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
-CommitDate: Thu Oct 30 17:32:23 2008 +1100
-
-    Inode: Allow external initialisers
-
-
-> ---
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix mm/filemap.c functions' kernel-doc:
-> 
-> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:575): No description found for parameter 'page'
-> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:575): No description found for parameter 'waiter'
-> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:2348): No description found for parameter 'mapping'
-> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:2348): No description found for parameter 'index'
-> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:2348): No description found for parameter 'source'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Dave Chinner <david@fromorbit.com>
-
-That's no longer in linux-next.  I'd guess it was from the fs-cache
-patches.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
