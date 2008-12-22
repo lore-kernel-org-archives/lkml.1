@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbYLVTWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbYLVTWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757108AbYLVTWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbYLVTR3
+	id S1756231AbYLVTWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:22:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYLVTRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:17:29 -0500
+	Mon, 22 Dec 2008 14:17:36 -0500
 Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755853AbYLVTR1 (ORCPT
+	with ESMTP id S1755872AbYLVTRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:17:27 -0500
-Subject: [PATCH 16/27] drivers/net/skfp: fix sparse warnings: make symbols
-	static
+	Mon, 22 Dec 2008 14:17:34 -0500
+Subject: [PATCH 17/27] drivers/net/tokenring: fix sparse warnings: make
+	symbols static
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:17:18 +0100
-Message-ID: <20081222191717.11807.35892.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:17:27 +0100
+Message-ID: <20081222191727.11807.90548.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -29,44 +29,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix this sparse warnings:
 
-  drivers/net/skfp/skfddi.c:620:13: warning: symbol 'skfp_interrupt' was not declared. Should it be static?
-  drivers/net/skfp/skfddi.c:687:25: warning: symbol 'skfp_ctl_get_stats' was not declared. Should it be static?
-  drivers/net/skfp/skfddi.c:1232:6: warning: symbol 'CheckSourceAddress' was not declared. Should it be static?
+  drivers/net/tokenring/ibmtr.c:1840:6: warning: symbol 'tok_rerun' was not declared. Should it be static?
+  drivers/net/tokenring/madgemc.c:469:16: warning: symbol 'madgemc_setnselout_pins' was not declared. Should it be static?
+  drivers/net/tokenring/proteon.c:286:16: warning: symbol 'proteon_setnselout_pins' was not declared. Should it be static?
+  drivers/net/tokenring/skisa.c:303:16: warning: symbol 'sk_isa_setnselout_pins' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/skfp/skfddi.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/tokenring/ibmtr.c   |    4 ++--
+ drivers/net/tokenring/madgemc.c |    2 +-
+ drivers/net/tokenring/proteon.c |    2 +-
+ drivers/net/tokenring/skisa.c   |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/skfp/skfddi.c b/drivers/net/skfp/skfddi.c
-index 7fbd4f8..607efea 100644
---- a/drivers/net/skfp/skfddi.c
-+++ b/drivers/net/skfp/skfddi.c
-@@ -617,7 +617,7 @@ static int skfp_close(struct net_device *dev)
-  *   Interrupts are disabled, then reenabled at the adapter.
-  */
+diff --git a/drivers/net/tokenring/ibmtr.c b/drivers/net/tokenring/ibmtr.c
+index 9fd0993..fa7bce6 100644
+--- a/drivers/net/tokenring/ibmtr.c
++++ b/drivers/net/tokenring/ibmtr.c
+@@ -1837,8 +1837,8 @@ static void ibmtr_reset_timer(struct timer_list *tmr, struct net_device *dev)
  
--irqreturn_t skfp_interrupt(int irq, void *dev_id)
-+static irqreturn_t skfp_interrupt(int irq, void *dev_id)
- {
- 	struct net_device *dev = dev_id;
- 	struct s_smc *smc;	/* private board structure pointer */
-@@ -684,7 +684,7 @@ irqreturn_t skfp_interrupt(int irq, void *dev_id)
-  *   independent.
+ /*****************************************************************************/
+ 
+-void tok_rerun(unsigned long dev_addr){
+-
++static void tok_rerun(unsigned long dev_addr)
++{
+ 	struct net_device *dev = (struct net_device *)dev_addr;
+ 	struct tok_info *ti = netdev_priv(dev);
+ 
+diff --git a/drivers/net/tokenring/madgemc.c b/drivers/net/tokenring/madgemc.c
+index 0ba6f0b..917b4d2 100644
+--- a/drivers/net/tokenring/madgemc.c
++++ b/drivers/net/tokenring/madgemc.c
+@@ -466,7 +466,7 @@ static irqreturn_t madgemc_interrupt(int irq, void *dev_id)
+  * zero to leave the TMS NSELOUT bits unaffected.
   *
   */
--struct net_device_stats *skfp_ctl_get_stats(struct net_device *dev)
-+static struct net_device_stats *skfp_ctl_get_stats(struct net_device *dev)
+-unsigned short madgemc_setnselout_pins(struct net_device *dev)
++static unsigned short madgemc_setnselout_pins(struct net_device *dev)
  {
- 	struct s_smc *bp = netdev_priv(dev);
+ 	unsigned char reg1;
+ 	struct net_local *tp = netdev_priv(dev);
+diff --git a/drivers/net/tokenring/proteon.c b/drivers/net/tokenring/proteon.c
+index cd2d62f..b8c955f 100644
+--- a/drivers/net/tokenring/proteon.c
++++ b/drivers/net/tokenring/proteon.c
+@@ -283,7 +283,7 @@ static void proteon_read_eeprom(struct net_device *dev)
+ 		dev->dev_addr[i] = proteon_sifreadw(dev, SIFINC) >> 8;
+ }
  
-@@ -1229,7 +1229,7 @@ static void send_queued_packets(struct s_smc *smc)
-  * Verify if the source address is set. Insert it if necessary.
-  *
-  ************************/
--void CheckSourceAddress(unsigned char *frame, unsigned char *hw_addr)
-+static void CheckSourceAddress(unsigned char *frame, unsigned char *hw_addr)
+-unsigned short proteon_setnselout_pins(struct net_device *dev)
++static unsigned short proteon_setnselout_pins(struct net_device *dev)
  {
- 	unsigned char SRBit;
+ 	return 0;
+ }
+diff --git a/drivers/net/tokenring/skisa.c b/drivers/net/tokenring/skisa.c
+index b578744..c0f58f0 100644
+--- a/drivers/net/tokenring/skisa.c
++++ b/drivers/net/tokenring/skisa.c
+@@ -300,7 +300,7 @@ static void sk_isa_read_eeprom(struct net_device *dev)
+ 		dev->dev_addr[i] = sk_isa_sifreadw(dev, SIFINC) >> 8;
+ }
  
+-unsigned short sk_isa_setnselout_pins(struct net_device *dev)
++static unsigned short sk_isa_setnselout_pins(struct net_device *dev)
+ {
+ 	return 0;
+ }
 
