@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYLVTTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbYLVTUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbYLVTTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYLVTQE
+	id S1756532AbYLVTUe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbYLVTQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:16:04 -0500
+	Mon, 22 Dec 2008 14:16:30 -0500
 Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754981AbYLVTQA (ORCPT
+	with ESMTP id S1755212AbYLVTQ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:16:00 -0500
-Subject: [PATCH 07/27] drivers/net/bonding: fix sparse warnings: move decls to
-	header file
+	Mon, 22 Dec 2008 14:16:28 -0500
+Subject: [PATCH 10/27] drivers/net/enic: fix sparse warning: make symbol static
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:15:54 +0100
-Message-ID: <20081222191554.11807.66734.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:16:23 +0100
+Message-ID: <20081222191622.11807.9132.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -27,59 +26,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warnings:
+Fix this sparse warning:
 
-  drivers/net/bonding/bond_main.c:104:20: warning: symbol 'bonding_defaults' was not declared. Should it be static?
-  drivers/net/bonding/bond_main.c:204:22: warning: symbol 'ad_select_tbl' was not declared. Should it be static?
-  drivers/net/bonding/bond_sysfs.c:60:21: warning: symbol 'bonding_rwsem' was not declared. Should it be static?
+  drivers/net/enic/vnic_dev.c:288:5: warning: symbol 'vnic_dev_capable' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/bonding/bond_main.c  |    1 -
- drivers/net/bonding/bond_sysfs.c |    3 ---
- drivers/net/bonding/bonding.h    |    5 +++++
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/net/enic/vnic_dev.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index a34c186..460c2ca 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -154,7 +154,6 @@ LIST_HEAD(bond_dev_list);
- static struct proc_dir_entry *bond_proc_dir = NULL;
- #endif
+diff --git a/drivers/net/enic/vnic_dev.c b/drivers/net/enic/vnic_dev.c
+index 08a37b0..1170857 100644
+--- a/drivers/net/enic/vnic_dev.c
++++ b/drivers/net/enic/vnic_dev.c
+@@ -285,7 +285,7 @@ int vnic_dev_cmd(struct vnic_dev *vdev, enum vnic_devcmd_cmd cmd,
+ 	return -ETIMEDOUT;
+ }
  
--extern struct rw_semaphore bonding_rwsem;
- static __be32 arp_target[BOND_MAX_ARP_TARGETS] = { 0, } ;
- static int arp_ip_count	= 0;
- static int bond_mode	= BOND_MODE_ROUNDROBIN;
-diff --git a/drivers/net/bonding/bond_sysfs.c b/drivers/net/bonding/bond_sysfs.c
-index 1860f81..18cf478 100644
---- a/drivers/net/bonding/bond_sysfs.c
-+++ b/drivers/net/bonding/bond_sysfs.c
-@@ -43,9 +43,6 @@
- 
- /*---------------------------- Declarations -------------------------------*/
- 
--extern struct bond_params bonding_defaults;
--extern struct bond_parm_tbl ad_select_tbl[];
--
- static int expected_refcount = -1;
- /*--------------------------- Data Structures -----------------------------*/
- 
-diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
-index 31ae5b5..ca849d2 100644
---- a/drivers/net/bonding/bonding.h
-+++ b/drivers/net/bonding/bonding.h
-@@ -350,6 +350,11 @@ extern const struct bond_parm_tbl bond_mode_tbl[];
- extern const struct bond_parm_tbl xmit_hashtype_tbl[];
- extern const struct bond_parm_tbl arp_validate_tbl[];
- extern const struct bond_parm_tbl fail_over_mac_tbl[];
-+extern struct bond_params bonding_defaults;
-+extern struct bond_parm_tbl ad_select_tbl[];
-+
-+/* exported from bond_sysfs.c */
-+extern struct rw_semaphore bonding_rwsem;
- 
- #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
- void bond_send_unsolicited_na(struct bonding *bond);
+-int vnic_dev_capable(struct vnic_dev *vdev, enum vnic_devcmd_cmd cmd)
++static int vnic_dev_capable(struct vnic_dev *vdev, enum vnic_devcmd_cmd cmd)
+ {
+ 	u64 a0 = (u32)cmd, a1 = 0;
+ 	int wait = 1000;
 
