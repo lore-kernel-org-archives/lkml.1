@@ -1,46 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYLVMZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbYLVMcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYLVMZp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 07:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYLVMZh
+	id S1754723AbYLVMcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 07:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYLVMcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 07:25:37 -0500
-Received: from styx.suse.cz ([82.119.242.94]:57572 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752018AbYLVMZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 07:25:37 -0500
-Date: Mon, 22 Dec 2008 13:25:35 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, mpm@selenic.com, tytso@mit.edu
-Subject: Re: mmotm 2008-12-01-19-41: early exception (page fault -- deref of
- 0x20)
-In-Reply-To: <494F823E.9060607@gmail.com>
-Message-ID: <alpine.LNX.1.10.0812221325000.26265@jikos.suse.cz>
-References: <4935C03A.7030603@gmail.com> <20081202153336.7b765ec7.akpm@linux-foundation.org> <alpine.LRH.1.10.0812031400040.28179@twin.jikos.cz> <494F823E.9060607@gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Mon, 22 Dec 2008 07:32:09 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:6890 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752994AbYLVMcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 07:32:08 -0500
+Message-ID: <494F88C0.4070507@panasas.com>
+Date: Mon, 22 Dec 2008 14:32:00 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       open-osd ml <osd-dev@open-osd.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
+References: <48876009.8010701@panasas.com>
+In-Reply-To: <48876009.8010701@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Dec 2008 12:32:03.0905 (UTC) FILETIME=[4B773B10:01C96431]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Dec 2008, Jiri Slaby wrote:
+OSD (Object-Based Storage Device) is a T10 SCSI command set that is designed
+to provide efficient operation of input/output logical units that manage the
+allocation, placement, and accessing of variable-size data-storage containers,
+called objects. Objects are intended to contain operating system and application
+constructs. Each object has associated attributes attached to it, which are
+integral part of the object and provide metadata about the object. The standard
+defines some common obligatory attributes, but user attributes can be added as
+needed.
 
-> >> Presumably your machine picked a different clocksource from Arjan's, 
-> >> mine and others.  Now, how do we work out what clocksource you're using?
-> >> dmesg -s 1000000 | grep -i clock
-> >> nope
-> >> dmesg -s 1000000 | grep -i using
-> >> nope
-> >> hrm.
-> > cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-> tsc
-> It ran from qemu, but it oopsed even on my desktop (tsc too).
+Whats new from last time:
+- sitting in linux-next exposed some warnings in some ARCHs, (you guessed right
+  printf of u64 types)
+- Removed the user-mode osd_test application, this can be fetched from the
+  out-of-tree git.
+- Added implementation of, scsi-descriptor based, OSD sense buffer decoding.
+  (See [PATCH 15/18])
 
-Could you please send the full oops to Thomas and Ingo?
+The patches are cut over scsi-misc but apply cleanly over linus-2.6.28-rc9
+and are intended for the 2.6.29 merge window.
 
--- 
-Jiri Kosina
-SUSE Labs
+To try out and run the library please visit
+http://open-osd.org and follow the instructions there.
+
+The submitted patchset is also available via git at:
+   git://git.open-osd.org/linux-open-osd.git osd
+   http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=osd
+
+Or a compact out-of-tree repository that includes these patches 
+plus some extras:
+   git://git.open-osd.org/open-osd.git master
+   http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=summary
+
+here is the list of patches:
+
+[PATCH 01/18] major.h: char-major number for OSD device driver
+  Request for a new char-device major number
+
+[PATCH 02/18] scsi: OSD_TYPE
+  The OSD scsi type constant definition.
+
+[PATCH 03/18] libosd: OSDv1 Headers
+[PATCH 04/18] libosd: OSDv1 preliminary implementation
+  Most basic, but usable library module (libosd.ko) including
+  Kbuild file.
+
+[PATCH 05/18] osd_uld: OSD scsi ULD
+[PATCH 06/18] osd_uld: API for retrieving osd devices from Kernel
+[PATCH 07/18] osd_ktests: Add basic OSD tests
+  These patches add a scsi ULD for OSD type devices. Please see
+  commit logs for details.
+
+[PATCH 08/18] libosd: attributes Support
+[PATCH 09/18] osd_ktests: Test Attribute lists
+[PATCH 10/18] libosd: OSD Security processing stubs
+[PATCH 12/18] libosd: Add Flush and List-objects support
+[PATCH 12/18] libosd: Not implemented commands
+[PATCH 13/18] libosd: OSD version 2 Support
+[PATCH 14/18] libosd: OSDv2 auto detection
+[PATCH 15/18] libosd: SCSI/OSD Sense decoding support
+  Up to here this is a fairly complete body of work, to support
+  both OSD1 and OSD2 targets. Main pieces that are still missing
+  from the library at this point are: The OSD2 capabilities structure,
+  do to lack of an OSD target that supports it, so it was never tested.
+  And the absence of any OSD-security methods other then NO_SECURITY.
+  These will come in future versions.
+
+[PATCH 16/18] osd: Documentation for OSD library
+  Some reading about OSD in general and further usability instructions.
+  Please comment on anything missing from this document.
+
+[PATCH 17/18] osd: Kconfig file for in-tree builds
+[PATCH 18/18] scsi: Add osd library to build system
+  The in-tree compilation is only enabled at the end of the patchset.
+  Run your favorite configure-tool to enable the library and osd_uld
+  compilation. Default is off.
+  The patchset is however fully bisectable, and compilable from the beginning,
+  (by applying these 2 patches first).
+
+Boaz Harrosh
