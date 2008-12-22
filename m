@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYLVTT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbYLVTUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYLVTT6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbYLVTQM
+	id S1756618AbYLVTUx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563AbYLVTQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:16:12 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:19066 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755107AbYLVTQJ (ORCPT
+	Mon, 22 Dec 2008 14:16:41 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:29685 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755021AbYLVTQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:16:09 -0500
-Subject: [PATCH 08/27] drivers/net/cxgb3: comment out dead code
+	Mon, 22 Dec 2008 14:16:39 -0500
+Subject: [PATCH 11/27] drivers/net/igb: remove dead code (function
+	'igb_read_pci_cfg')
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:16:03 +0100
-Message-ID: <20081222191603.11807.61006.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:16:32 +0100
+Message-ID: <20081222191632.11807.3776.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -26,38 +27,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function 'vsc8211_set_speed_duplex' is not used, so comment it
-out.  For 'vsc8211_set_automdi' the function 'vsc8211_set_speed_duplex'
-is the only caller, so comment it out as well.
+Fix this warning:
 
-Fix this (sparse) warning:
-
-  drivers/net/cxgb3/vsc8211.c:269: warning: 'vsc8211_set_automdi' defined but not used
-  drivers/net/cxgb3/vsc8211.c:295:5: warning: symbol 'vsc8211_set_speed_duplex' was not declared. Should it be static?
+  drivers/net/igb/e1000_mac.c:54: warning: 'igb_read_pci_cfg' defined but not used
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/cxgb3/vsc8211.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/net/igb/e1000_mac.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/cxgb3/vsc8211.c b/drivers/net/cxgb3/vsc8211.c
-index 33f956b..d071309 100644
---- a/drivers/net/cxgb3/vsc8211.c
-+++ b/drivers/net/cxgb3/vsc8211.c
-@@ -262,6 +262,7 @@ static int vsc8211_get_link_status_fiber(struct cphy *cphy, int *link_ok,
- 	return 0;
+diff --git a/drivers/net/igb/e1000_mac.c b/drivers/net/igb/e1000_mac.c
+index 137269d..97f0049 100644
+--- a/drivers/net/igb/e1000_mac.c
++++ b/drivers/net/igb/e1000_mac.c
+@@ -50,13 +50,6 @@ void igb_remove_device(struct e1000_hw *hw)
+ 	kfree(hw->dev_spec);
  }
  
-+#ifdef UNUSED
- /*
-  * Enable/disable auto MDI/MDI-X in forced link speed mode.
-  */
-@@ -301,6 +302,7 @@ int vsc8211_set_speed_duplex(struct cphy *phy, int speed, int duplex)
- 		err = vsc8211_set_automdi(phy, 1);
- 	return err;
- }
-+#endif /* UNUSED */
- 
- static int vsc8211_power_down(struct cphy *cphy, int enable)
+-static void igb_read_pci_cfg(struct e1000_hw *hw, u32 reg, u16 *value)
+-{
+-	struct igb_adapter *adapter = hw->back;
+-
+-	pci_read_config_word(adapter->pdev, reg, value);
+-}
+-
+ static s32 igb_read_pcie_cap_reg(struct e1000_hw *hw, u32 reg, u16 *value)
  {
+ 	struct igb_adapter *adapter = hw->back;
 
