@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYLVSxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYLVSzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbYLVSxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 13:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYLVSxk
+	id S1755285AbYLVSzA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 13:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYLVSyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 13:53:40 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45767 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbYLVSxj (ORCPT
+	Mon, 22 Dec 2008 13:54:52 -0500
+Received: from ti-out-0910.google.com ([209.85.142.188]:51454 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbYLVSyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 13:53:39 -0500
-To: peterz@infradead.org
-CC: miklos@szeredi.hu, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-reply-to: <1229867858.9487.238.camel@twins> (message from Peter Zijlstra on
-	Sun, 21 Dec 2008 14:57:38 +0100)
-Subject: Re: [regression] uml is very slow on 2.6.28 host
-References: <E1LB4QO-0005fk-7g@pomaz-ex.szeredi.hu> <1229867858.9487.238.camel@twins>
-Message-Id: <E1LEpu5-000627-Dn@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 22 Dec 2008 19:53:21 +0100
+	Mon, 22 Dec 2008 13:54:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MuIU0qUJClJwDYKnGv/RjN2ECMFvYCoyOTcA4jSpMKIZlrLVWOl7UkgLz22hN8jhUT
+         XYHEGoE6YXKhXkRJ1MomNLNHNunBM+t4hazRpWKS2OTakmuC8meA6Cx9tjDQDdUZIw7/
+         65UM6Ncayj4h0npw9EF7Nddp4zYo9mJsNtZt4=
+Message-ID: <37d33d830812221054w78fe49f3l6c2896a27c908656@mail.gmail.com>
+Date: Tue, 23 Dec 2008 00:24:49 +0530
+From: "Sandeep K Sinha" <sandeepksinha@gmail.com>
+To: "Sandeep K Sinha" <sandeepksinha@gmail.com>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: Device mapper support for more than one target ?
+In-Reply-To: <20081222185033.GA17119@agk.fab.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <37d33d830812220922l5a0bc36et5dd1f9853f9cd33@mail.gmail.com>
+	 <20081222185033.GA17119@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Dec 2008, Peter Zijlstra wrote:
-> On Fri, 2008-12-12 at 10:35 +0100, Miklos Szeredi wrote:
-> > When the UML boot gets to the userspace part it gets really really
-> > slow.  It takes about 20 times the normal time to fully boot.  CPU
-> > seems to be idle.
-> > 
-> > Guest version doesn't matter.  Host version 2.6.27 was OK, latest git
-> > is not OK.  I'm running 32bit guest on 64bit host.
-> 
-> Does:
-> 
-> http://lkml.org/lkml/2008/12/16/40
-> 
-> help any?
+Hey,
 
-Nope.
+On Tue, Dec 23, 2008 at 12:20 AM, Alasdair G Kergon <agk@redhat.com> wrote:
+> On Mon, Dec 22, 2008 at 10:52:08PM +0530, Sandeep K Sinha wrote:
+>> After looking at the complete implementation of device mappers, I
+>> figured out that we can have more than one target for a mapped device
+>> then why do we have a check for the number of target to be equal to
+>> one , in dm_blk_ioctl ( ) in drivers/md/dm.c
+>>
+>> http://lxr.linux.no/linux+v2.6.27.10/drivers/md/dm.c#L337
+>
+> Because whether or not it makes sense to send any specific ioctl to more
+> than one target in parallel depends on what that ioctl does.  When we
+> added that code we said that we could add hard-coding for specific
+> ioctls if the need arose, but so far it hasn't.
+>
+No, the philosophy should be that we send the ioctl's to the mapped
+device and not to the targets underlying that mapped-device.
 
-Thanks,
-Miklos
+And doing so, I should be able to access the complete map that belongs
+to that mapped device. If I implement an ioctl of my own and try to
+serve it, the problem would be that it would never allow me to serve
+it if has more than one target.
+
+> Alasdair
+> --
+> agk@redhat.com
+>
+
+
+
+-- 
+Regards,
+Sandeep.
+
+
+
+
+
+ 	
+"To learn is to change. Education is a process that changes the learner."
