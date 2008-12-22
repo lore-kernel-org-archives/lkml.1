@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbYLVVxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYLVVyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbYLVVxw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 16:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbYLVVtL
+	id S1756747AbYLVVyT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 16:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbYLVVtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 16:49:11 -0500
-Received: from mx1.suse.de ([195.135.220.2]:41586 "EHLO mx1.suse.de"
+	Mon, 22 Dec 2008 16:49:12 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38614 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755907AbYLVVtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 16:49:07 -0500
+	id S1754931AbYLVVtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 16:49:09 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Jan Kara <jack@suse.cz>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 13/56] quota: Convert union in mem_dqinfo to a pointer
-Date: Mon, 22 Dec 2008 13:47:54 -0800
-Message-Id: <1229982517-3455-14-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 14/56] quota: Allow negative usage of space and inodes
+Date: Mon, 22 Dec 2008 13:47:55 -0800
+Message-Id: <1229982517-3455-15-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
 References: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
@@ -25,189 +25,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Kara <jack@suse.cz>
 
-Coming quota support for OCFS2 is going to need quite a bit
-of additional per-sb quota information. Moreover having fs.h
-include all the types needed for this structure would be a
-pain in the a**. So remove the union from mem_dqinfo and add
-a private pointer for filesystem's use.
+For clustered filesystems, it can happen that space / inode usage goes
+negative temporarily (because some node is allocating another node
+is freeing and they are not completely in sync). So let quota code
+allow this and change qsize_t so a signed type so that we don't
+underflow the variables.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/quota_v2.c            |   53 +++++++++++++++++++++++++++++----------------
- include/linux/dqblk_v1.h |    4 ---
- include/linux/dqblk_v2.h |    4 ---
- include/linux/quota.h    |    5 +---
- 4 files changed, 35 insertions(+), 31 deletions(-)
+ fs/dquot.c            |    6 ++++--
+ include/linux/quota.h |    3 ++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/fs/quota_v2.c b/fs/quota_v2.c
-index a87f102..b618b56 100644
---- a/fs/quota_v2.c
-+++ b/fs/quota_v2.c
-@@ -71,6 +71,7 @@ static int v2_read_file_info(struct super_block *sb, int type)
+diff --git a/fs/dquot.c b/fs/dquot.c
+index f4d6f7e..cf0dac7 100644
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -847,7 +847,8 @@ static inline void dquot_incr_space(struct dquot *dquot, qsize_t number)
+ 
+ static inline void dquot_decr_inodes(struct dquot *dquot, qsize_t number)
  {
- 	struct v2_disk_dqinfo dinfo;
- 	struct mem_dqinfo *info = sb_dqinfo(sb, type);
-+	struct qtree_mem_dqinfo *qinfo;
- 	ssize_t size;
+-	if (dquot->dq_dqb.dqb_curinodes > number)
++	if (sb_dqopt(dquot->dq_sb)->flags & DQUOT_NEGATIVE_USAGE ||
++	    dquot->dq_dqb.dqb_curinodes >= number)
+ 		dquot->dq_dqb.dqb_curinodes -= number;
+ 	else
+ 		dquot->dq_dqb.dqb_curinodes = 0;
+@@ -858,7 +859,8 @@ static inline void dquot_decr_inodes(struct dquot *dquot, qsize_t number)
  
- 	size = sb->s_op->quota_read(sb, type, (char *)&dinfo,
-@@ -80,22 +81,29 @@ static int v2_read_file_info(struct super_block *sb, int type)
- 			sb->s_id);
- 		return -1;
- 	}
-+	info->dqi_priv = kmalloc(sizeof(struct qtree_mem_dqinfo), GFP_NOFS);
-+	if (!info->dqi_priv) {
-+		printk(KERN_WARNING
-+		       "Not enough memory for quota information structure.\n");
-+		return -1;
-+	}
-+	qinfo = info->dqi_priv;
- 	/* limits are stored as unsigned 32-bit data */
- 	info->dqi_maxblimit = 0xffffffff;
- 	info->dqi_maxilimit = 0xffffffff;
- 	info->dqi_bgrace = le32_to_cpu(dinfo.dqi_bgrace);
- 	info->dqi_igrace = le32_to_cpu(dinfo.dqi_igrace);
- 	info->dqi_flags = le32_to_cpu(dinfo.dqi_flags);
--	info->u.v2_i.i.dqi_sb = sb;
--	info->u.v2_i.i.dqi_type = type;
--	info->u.v2_i.i.dqi_blocks = le32_to_cpu(dinfo.dqi_blocks);
--	info->u.v2_i.i.dqi_free_blk = le32_to_cpu(dinfo.dqi_free_blk);
--	info->u.v2_i.i.dqi_free_entry = le32_to_cpu(dinfo.dqi_free_entry);
--	info->u.v2_i.i.dqi_blocksize_bits = V2_DQBLKSIZE_BITS;
--	info->u.v2_i.i.dqi_usable_bs = 1 << V2_DQBLKSIZE_BITS;
--	info->u.v2_i.i.dqi_qtree_depth = qtree_depth(&info->u.v2_i.i);
--	info->u.v2_i.i.dqi_entry_size = sizeof(struct v2_disk_dqblk);
--	info->u.v2_i.i.dqi_ops = &v2_qtree_ops;
-+	qinfo->dqi_sb = sb;
-+	qinfo->dqi_type = type;
-+	qinfo->dqi_blocks = le32_to_cpu(dinfo.dqi_blocks);
-+	qinfo->dqi_free_blk = le32_to_cpu(dinfo.dqi_free_blk);
-+	qinfo->dqi_free_entry = le32_to_cpu(dinfo.dqi_free_entry);
-+	qinfo->dqi_blocksize_bits = V2_DQBLKSIZE_BITS;
-+	qinfo->dqi_usable_bs = 1 << V2_DQBLKSIZE_BITS;
-+	qinfo->dqi_qtree_depth = qtree_depth(qinfo);
-+	qinfo->dqi_entry_size = sizeof(struct v2_disk_dqblk);
-+	qinfo->dqi_ops = &v2_qtree_ops;
- 	return 0;
- }
- 
-@@ -104,6 +112,7 @@ static int v2_write_file_info(struct super_block *sb, int type)
+ static inline void dquot_decr_space(struct dquot *dquot, qsize_t number)
  {
- 	struct v2_disk_dqinfo dinfo;
- 	struct mem_dqinfo *info = sb_dqinfo(sb, type);
-+	struct qtree_mem_dqinfo *qinfo = info->dqi_priv;
- 	ssize_t size;
- 
- 	spin_lock(&dq_data_lock);
-@@ -112,9 +121,9 @@ static int v2_write_file_info(struct super_block *sb, int type)
- 	dinfo.dqi_igrace = cpu_to_le32(info->dqi_igrace);
- 	dinfo.dqi_flags = cpu_to_le32(info->dqi_flags & DQF_MASK);
- 	spin_unlock(&dq_data_lock);
--	dinfo.dqi_blocks = cpu_to_le32(info->u.v2_i.i.dqi_blocks);
--	dinfo.dqi_free_blk = cpu_to_le32(info->u.v2_i.i.dqi_free_blk);
--	dinfo.dqi_free_entry = cpu_to_le32(info->u.v2_i.i.dqi_free_entry);
-+	dinfo.dqi_blocks = cpu_to_le32(qinfo->dqi_blocks);
-+	dinfo.dqi_free_blk = cpu_to_le32(qinfo->dqi_free_blk);
-+	dinfo.dqi_free_entry = cpu_to_le32(qinfo->dqi_free_entry);
- 	size = sb->s_op->quota_write(sb, type, (char *)&dinfo,
- 	       sizeof(struct v2_disk_dqinfo), V2_DQINFOOFF);
- 	if (size != sizeof(struct v2_disk_dqinfo)) {
-@@ -150,7 +159,7 @@ static void v2_mem2diskdqb(void *dp, struct dquot *dquot)
- 	struct v2_disk_dqblk *d = dp;
- 	struct mem_dqblk *m = &dquot->dq_dqb;
- 	struct qtree_mem_dqinfo *info =
--			&sb_dqinfo(dquot->dq_sb, dquot->dq_type)->u.v2_i.i;
-+			sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv;
- 
- 	d->dqb_ihardlimit = cpu_to_le32(m->dqb_ihardlimit);
- 	d->dqb_isoftlimit = cpu_to_le32(m->dqb_isoftlimit);
-@@ -169,7 +178,7 @@ static int v2_is_id(void *dp, struct dquot *dquot)
- {
- 	struct v2_disk_dqblk *d = dp;
- 	struct qtree_mem_dqinfo *info =
--			&sb_dqinfo(dquot->dq_sb, dquot->dq_type)->u.v2_i.i;
-+			sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv;
- 
- 	if (qtree_entry_unused(info, dp))
- 		return 0;
-@@ -178,24 +187,30 @@ static int v2_is_id(void *dp, struct dquot *dquot)
- 
- static int v2_read_dquot(struct dquot *dquot)
- {
--	return qtree_read_dquot(&sb_dqinfo(dquot->dq_sb, dquot->dq_type)->u.v2_i.i, dquot);
-+	return qtree_read_dquot(sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv, dquot);
- }
- 
- static int v2_write_dquot(struct dquot *dquot)
- {
--	return qtree_write_dquot(&sb_dqinfo(dquot->dq_sb, dquot->dq_type)->u.v2_i.i, dquot);
-+	return qtree_write_dquot(sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv, dquot);
- }
- 
- static int v2_release_dquot(struct dquot *dquot)
- {
--	return qtree_release_dquot(&sb_dqinfo(dquot->dq_sb, dquot->dq_type)->u.v2_i.i, dquot);
-+	return qtree_release_dquot(sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv, dquot);
-+}
-+
-+static int v2_free_file_info(struct super_block *sb, int type)
-+{
-+	kfree(sb_dqinfo(sb, type)->dqi_priv);
-+	return 0;
- }
- 
- static struct quota_format_ops v2_format_ops = {
- 	.check_quota_file	= v2_check_quota_file,
- 	.read_file_info		= v2_read_file_info,
- 	.write_file_info	= v2_write_file_info,
--	.free_file_info		= NULL,
-+	.free_file_info		= v2_free_file_info,
- 	.read_dqblk		= v2_read_dquot,
- 	.commit_dqblk		= v2_write_dquot,
- 	.release_dqblk		= v2_release_dquot,
-diff --git a/include/linux/dqblk_v1.h b/include/linux/dqblk_v1.h
-index 57f1250..9cea901 100644
---- a/include/linux/dqblk_v1.h
-+++ b/include/linux/dqblk_v1.h
-@@ -17,8 +17,4 @@
- #define V1_DEL_ALLOC 0
- #define V1_DEL_REWRITE 2
- 
--/* Special information about quotafile */
--struct v1_mem_dqinfo {
--};
--
- #endif	/* _LINUX_DQBLK_V1_H */
-diff --git a/include/linux/dqblk_v2.h b/include/linux/dqblk_v2.h
-index e5e22a7..ff8af1b 100644
---- a/include/linux/dqblk_v2.h
-+++ b/include/linux/dqblk_v2.h
-@@ -16,8 +16,4 @@
- #define V2_DEL_ALLOC QTREE_DEL_ALLOC
- #define V2_DEL_REWRITE QTREE_DEL_REWRITE
- 
--struct v2_mem_dqinfo {
--	struct qtree_mem_dqinfo i;
--};
--
- #endif /* _LINUX_DQBLK_V2_H */
+-	if (dquot->dq_dqb.dqb_curspace > number)
++	if (sb_dqopt(dquot->dq_sb)->flags & DQUOT_NEGATIVE_USAGE ||
++	    dquot->dq_dqb.dqb_curspace >= number)
+ 		dquot->dq_dqb.dqb_curspace -= number;
+ 	else
+ 		dquot->dq_dqb.dqb_curspace = 0;
 diff --git a/include/linux/quota.h b/include/linux/quota.h
-index 80b8807..e51dfdc 100644
+index e51dfdc..75bf761 100644
 --- a/include/linux/quota.h
 +++ b/include/linux/quota.h
-@@ -208,10 +208,7 @@ struct mem_dqinfo {
- 	unsigned int dqi_igrace;
- 	qsize_t dqi_maxblimit;
- 	qsize_t dqi_maxilimit;
--	union {
--		struct v1_mem_dqinfo v1_i;
--		struct v2_mem_dqinfo v2_i;
--	} u;
-+	void *dqi_priv;
- };
+@@ -168,7 +168,7 @@ enum {
+ #include <asm/atomic.h>
  
- struct super_block;
+ typedef __kernel_uid32_t qid_t; /* Type in which we store ids in memory */
+-typedef __u64 qsize_t;          /* Type in which we store sizes */
++typedef long long qsize_t;	/* Type in which we store sizes */
+ 
+ extern spinlock_t dq_data_lock;
+ 
+@@ -336,6 +336,7 @@ enum {
+ 						 * responsible for setting
+ 						 * S_NOQUOTA, S_NOATIME flags
+ 						 */
++#define DQUOT_NEGATIVE_USAGE	(1 << 7)	/* Allow negative quota usage */
+ 
+ static inline unsigned int dquot_state_flag(unsigned int flags, int type)
+ {
 -- 
 1.5.6
 
