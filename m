@@ -1,74 +1,503 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYLVNF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYLVNHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYLVNF7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 08:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYLVNFv
+	id S1755207AbYLVNHv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 08:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbYLVNHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 08:05:51 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53202 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754029AbYLVNFv (ORCPT
+	Mon, 22 Dec 2008 08:07:41 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:3748 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753830AbYLVNHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 08:05:51 -0500
-Subject: Re: [PATCH 01/14] kmemleak: Add the base support
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, penberg@cs.helsinki.fi,
-       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
-In-Reply-To: <20081219141400.314023db.akpm@linux-foundation.org>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20081219181302.7778.15966.stgit@pc1117.cambridge.arm.com>
-	 <84144f020812191208x66f26bc9tf087b35b6c90662a@mail.gmail.com>
-	 <20081219220255.GJ2351@elte.hu>
-	 <20081219141400.314023db.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 22 Dec 2008 13:05:22 +0000
-Message-Id: <1229951122.7938.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Dec 2008 13:05:23.0246 (UTC) FILETIME=[F32A74E0:01C96435]
+	Mon, 22 Dec 2008 08:07:39 -0500
+From: Boaz Harrosh <bharrosh@panasas.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       open-osd ml <osd-dev@open-osd.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 13/18] libosd: OSD version 2 Support
+Date: Mon, 22 Dec 2008 15:07:34 +0200
+Message-Id: <1229951254-16073-1-git-send-email-bharrosh@panasas.com>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <494F88C0.4070507@panasas.com>
+References: <494F88C0.4070507@panasas.com>
+X-OriginalArrivalTime: 22 Dec 2008 13:07:36.0682 (UTC) FILETIME=[42B32CA0:01C96436]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-19 at 14:14 -0800, Andrew Morton wrote:
-> On Fri, 19 Dec 2008 23:02:55 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > > On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
-> > > <catalin.marinas@arm.com> wrote:
-> > > > This patch adds the base support for the kernel memory leak
-> > > > detector. It traces the memory allocation/freeing in a way similar to
-> > > > the Boehm's conservative garbage collector, the difference being that
-> > > > the unreferenced objects are not freed but only shown in
-> > > > /sys/kernel/debug/kmemleak. Enabling this feature introduces an
-> > > > overhead to memory allocations.
-> > > >
-> > > > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> > > > Cc: Ingo Molnar <mingo@elte.hu>
-> > > > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> > > > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > > > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > 
-> > > Looks good to me. I have only reviewed this lightly but all my major 
-> > > concerns have been addressed so feel free to add my:
-> > > 
-> > > Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > 
-> > Andrew, do you have any principial objections against having this in 
-> 
-> Nope.
-> 
-> > v2.6.29?
-> 
-> That might be a bit harder.  I'll take a look.
+Add support for OSD2 at run time. It is now possible to run with
+both OSDv1 and OSDv2 targets at the same time. The actual detection
+should be preformed by the security manager, as the version is encoded
+in the capability structure.
 
-Thanks. Whenever you have time, the up to date kmemleak version
-(currently based on v2.6.28-rc9) can be pulled from this branch:
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Reviewed-by: Benny Halevy <bhalevy@panasas.com>
+---
+ drivers/scsi/osd/osd_initiator.c |   94 ++++++++++++++++++++++++++++++++------
+ include/scsi/osd_initiator.h     |   39 ++++++++++++++++
+ include/scsi/osd_protocol.h      |   90 ++++++++++++++++++++++++++++++++++--
+ 3 files changed, 205 insertions(+), 18 deletions(-)
 
-	git://linux-arm.org/linux-2.6.git kmemleak
-
+diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
+index d3cc7ed..9d2ec73 100644
+--- a/drivers/scsi/osd/osd_initiator.c
++++ b/drivers/scsi/osd/osd_initiator.c
+@@ -55,36 +55,50 @@ static inline void build_test(void)
+ {
+ 	/* structures were not packed */
+ 	BUILD_BUG_ON(sizeof(struct osd_capability) != OSD_CAP_LEN);
++	BUILD_BUG_ON(sizeof(struct osdv2_cdb) != OSD_TOTAL_CDB_LEN);
+ 	BUILD_BUG_ON(sizeof(struct osdv1_cdb) != OSDv1_TOTAL_CDB_LEN);
+ }
+ 
+ static unsigned _osd_req_cdb_len(struct osd_request *or)
+ {
+-	return OSDv1_TOTAL_CDB_LEN;
++	return osd_req_is_ver1(or) ? OSDv1_TOTAL_CDB_LEN : OSD_TOTAL_CDB_LEN;
+ }
+ 
+ static unsigned _osd_req_alist_elem_size(struct osd_request *or, unsigned len)
+ {
+-	return osdv1_attr_list_elem_size(len);
++	return osd_req_is_ver1(or) ?
++		osdv1_attr_list_elem_size(len) :
++		osdv2_attr_list_elem_size(len);
+ }
+ 
+ static unsigned _osd_req_alist_size(struct osd_request *or, void *list_head)
+ {
+-	return osdv1_list_size(list_head);
++	return osd_req_is_ver1(or) ?
++		osdv1_list_size(list_head) :
++		osdv2_list_size(list_head);
+ }
+ 
+ static unsigned _osd_req_sizeof_alist_header(struct osd_request *or)
+ {
+-	return sizeof(struct osdv1_attributes_list_header);
++	return osd_req_is_ver1(or) ?
++		sizeof(struct osdv1_attributes_list_header) :
++		sizeof(struct osdv2_attributes_list_header);
+ }
+ 
+ static void _osd_req_set_alist_type(struct osd_request *or,
+ 	void *list, int list_type)
+ {
+-	struct osdv1_attributes_list_header *attr_list = list;
++	if (osd_req_is_ver1(or)) {
++		struct osdv1_attributes_list_header *attr_list = list;
++
++		memset(attr_list, 0, sizeof(*attr_list));
++		attr_list->type = list_type;
++	} else {
++		struct osdv2_attributes_list_header *attr_list = list;
+ 
+-	memset(attr_list, 0, sizeof(*attr_list));
+-	attr_list->type = list_type;
++		memset(attr_list, 0, sizeof(*attr_list));
++		attr_list->type = list_type;
++	}
+ }
+ 
+ static bool _osd_req_is_alist_type(struct osd_request *or,
+@@ -93,10 +107,14 @@ static bool _osd_req_is_alist_type(struct osd_request *or,
+ 	if (!list)
+ 		return false;
+ 
+-	if (1) {
++	if (osd_req_is_ver1(or)) {
+ 		struct osdv1_attributes_list_header *attr_list = list;
+ 
+ 		return attr_list->type == list_type;
++	} else {
++		struct osdv2_attributes_list_header *attr_list = list;
++
++		return attr_list->type == list_type;
+ 	}
+ }
+ 
+@@ -106,15 +124,22 @@ static void _osd_req_encode_olist(struct osd_request *or,
+ {
+ 	struct osd_cdb_head *cdbh = osd_cdb_head(&or->cdb);
+ 
+-	cdbh->v1.list_identifier = list->list_identifier;
+-	cdbh->v1.start_address = list->continuation_id;
++	if (osd_req_is_ver1(or)) {
++		cdbh->v1.list_identifier = list->list_identifier;
++		cdbh->v1.start_address = list->continuation_id;
++	} else {
++		cdbh->v2.list_identifier = list->list_identifier;
++		cdbh->v2.start_address = list->continuation_id;
++	}
+ }
+ 
+ static osd_cdb_offset osd_req_encode_offset(struct osd_request *or,
+ 	u64 offset, unsigned *padding)
+ {
+ 	return __osd_encode_offset(offset, padding,
+-				  OSDv1_OFFSET_MIN_SHIFT, OSD_OFFSET_MAX_SHIFT);
++			osd_req_is_ver1(or) ?
++				OSDv1_OFFSET_MIN_SHIFT : OSD_OFFSET_MIN_SHIFT,
++			OSD_OFFSET_MAX_SHIFT);
+ }
+ 
+ static struct osd_security_parameters *
+@@ -122,7 +147,10 @@ _osd_req_sec_params(struct osd_request *or)
+ {
+ 	struct osd_cdb *ocdb = &or->cdb;
+ 
+-	return &ocdb->v1.sec_params;
++	if (osd_req_is_ver1(or))
++		return &ocdb->v1.sec_params;
++	else
++		return &ocdb->v2.sec_params;
+ }
+ 
+ void osd_dev_init(struct osd_dev *osdd, struct scsi_device *scsi_device)
+@@ -130,6 +158,9 @@ void osd_dev_init(struct osd_dev *osdd, struct scsi_device *scsi_device)
+ 	memset(osdd, 0, sizeof(*osdd));
+ 	osdd->scsi_device = scsi_device;
+ 	osdd->def_timeout = BLK_DEFAULT_SG_TIMEOUT;
++#ifdef OSD_VER1_SUPPORT
++	osdd->version = OSD_VER2;
++#endif
+ 	/* TODO: Allocate pools for osd_request attributes ... */
+ }
+ EXPORT_SYMBOL(osd_dev_init);
+@@ -330,10 +361,30 @@ static void _osdv1_req_encode_common(struct osd_request *or,
+ 	ocdb->h.v1.start_address = cpu_to_be64(offset);
+ }
+ 
++static void _osdv2_req_encode_common(struct osd_request *or,
++	 __be16 act, const struct osd_obj_id *obj, u64 offset, u64 len)
++{
++	struct osdv2_cdb *ocdb = &or->cdb.v2;
++
++	OSD_DEBUG("OSDv2 execute opcode 0x%x\n", be16_to_cpu(act));
++
++	ocdb->h.varlen_cdb.opcode = VARIABLE_LENGTH_CMD;
++	ocdb->h.varlen_cdb.additional_cdb_length = OSD_ADDITIONAL_CDB_LENGTH;
++	ocdb->h.varlen_cdb.service_action = act;
++
++	ocdb->h.partition = cpu_to_be64(obj->partition);
++	ocdb->h.object = cpu_to_be64(obj->id);
++	ocdb->h.v2.length = cpu_to_be64(len);
++	ocdb->h.v2.start_address = cpu_to_be64(offset);
++}
++
+ static void _osd_req_encode_common(struct osd_request *or,
+ 	__be16 act, const struct osd_obj_id *obj, u64 offset, u64 len)
+ {
+-	_osdv1_req_encode_common(or, act, obj, offset, len);
++	if (osd_req_is_ver1(or))
++		_osdv1_req_encode_common(or, act, obj, offset, len);
++	else
++		_osdv2_req_encode_common(or, act, obj, offset, len);
+ }
+ 
+ /*
+@@ -542,6 +593,12 @@ void osd_req_flush_object(struct osd_request *or,
+ 	const struct osd_obj_id *obj, enum osd_options_flush_scope_values op,
+ 	/*V2*/ u64 offset, /*V2*/ u64 len)
+ {
++	if (unlikely(osd_req_is_ver1(or) && (offset || len))) {
++		OSD_DEBUG("OSD Ver1 flush on specific range ignored\n");
++		offset = 0;
++		len = 0;
++	}
++
+ 	_osd_req_encode_common(or, OSD_ACT_FLUSH, obj, offset, len);
+ 	_osd_req_encode_flush(or, op);
+ }
+@@ -1164,6 +1221,10 @@ enum { OSD_SEC_CAP_V1_ALL_CAPS =
+ 	OSD_SEC_CAP_GLOBAL | OSD_SEC_CAP_DEV_MGMT
+ };
+ 
++enum { OSD_SEC_CAP_V2_ALL_CAPS =
++	OSD_SEC_CAP_V1_ALL_CAPS | OSD_SEC_CAP_QUERY | OSD_SEC_CAP_M_OBJECT
++};
++
+ void osd_sec_init_nosec_doall_caps(void *caps,
+ 	const struct osd_obj_id *obj, bool is_collection, const bool is_v1)
+ {
+@@ -1205,9 +1266,14 @@ void osd_sec_init_nosec_doall_caps(void *caps,
+ }
+ EXPORT_SYMBOL(osd_sec_init_nosec_doall_caps);
+ 
++/* FIXME: Extract version from caps pointer.
++ *        Also Pete's target only supports caps from OSDv1 for now
++ */
+ void osd_set_caps(struct osd_cdb *cdb, const void *caps)
+ {
+-	memcpy(&cdb->v1.caps, caps, OSDv1_CAP_LEN);
++	bool is_ver1 = true;
++	/* NOTE: They start at same address */
++	memcpy(&cdb->v1.caps, caps, is_ver1 ? OSDv1_CAP_LEN : OSD_CAP_LEN);
+ }
+ 
+ bool osd_is_sec_alldata(struct osd_security_parameters *sec_parms)
+diff --git a/include/scsi/osd_initiator.h b/include/scsi/osd_initiator.h
+index 93fa86b..778a624 100644
+--- a/include/scsi/osd_initiator.h
++++ b/include/scsi/osd_initiator.h
+@@ -21,6 +21,23 @@
+ 
+ /* Note: "NI" in comments below means "Not Implemented yet" */
+ 
++/* Configure of code:
++ * #undef if you *don't* want OSD v1 support in runtime.
++ * If #defined the initiator will dynamically configure to encode OSD v1
++ * CDB's if the target is detected to be OSD v1 only.
++ * OSD v2 only commands, options, and attributes will be ignored if target
++ * is v1 only.
++ * If #defined will result in bigger/slower code (OK Slower maybe not)
++ * Q: Should this be CONFIG_SCSI_OSD_VER1_SUPPORT and set from Kconfig?
++ */
++#define OSD_VER1_SUPPORT y
++
++enum osd_std_version {
++	OSD_VER_NONE = 0,
++	OSD_VER1 = 1,
++	OSD_VER2 = 2,
++};
++
+ /*
+  * Object-based Storage Device.
+  * This object represents an OSD device.
+@@ -31,6 +48,10 @@
+ struct osd_dev {
+ 	struct scsi_device *scsi_device;
+ 	unsigned def_timeout;
++
++#ifdef OSD_VER1_SUPPORT
++	enum osd_std_version version;
++#endif
+ };
+ 
+ /* Retrieve/return osd_dev(s) for use by Kernel clients */
+@@ -41,6 +62,14 @@ void osduld_put_device(struct osd_dev *od);
+ void osd_dev_init(struct osd_dev *od, struct scsi_device *scsi_device);
+ void osd_dev_fini(struct osd_dev *od);
+ 
++/* we might want to use function vector in the future */
++static inline void osd_dev_set_ver(struct osd_dev *od, enum osd_std_version v)
++{
++#ifdef OSD_VER1_SUPPORT
++	od->version = v;
++#endif
++}
++
+ struct osd_request;
+ typedef void (osd_req_done_fn)(struct osd_request *or, void *private);
+ 
+@@ -77,6 +106,16 @@ struct osd_request {
+ 	int async_error;
+ };
+ 
++/* OSD Version control */
++static inline bool osd_req_is_ver1(struct osd_request *or)
++{
++#ifdef OSD_VER1_SUPPORT
++	return or->osd_dev->version == OSD_VER1;
++#else
++	return false;
++#endif
++}
++
+ /*
+  * How to use the osd library:
+  *
+diff --git a/include/scsi/osd_protocol.h b/include/scsi/osd_protocol.h
+index eeb899b..3875613 100644
+--- a/include/scsi/osd_protocol.h
++++ b/include/scsi/osd_protocol.h
+@@ -25,12 +25,16 @@ enum {
+ 	OSDv1_TOTAL_CDB_LEN = OSDv1_ADDITIONAL_CDB_LENGTH + 8,
+ 	OSDv1_CAP_LEN = 80,
+ 	/* Latest supported version */
+-	OSD_ADDITIONAL_CDB_LENGTH = OSDv1_ADDITIONAL_CDB_LENGTH,
+-	OSD_TOTAL_CDB_LEN = OSDv1_TOTAL_CDB_LEN,
+-	OSD_CAP_LEN = OSDv1_CAP_LEN,
++/* 	OSD_ADDITIONAL_CDB_LENGTH = 216,*/
++	OSD_ADDITIONAL_CDB_LENGTH =
++		OSDv1_ADDITIONAL_CDB_LENGTH, /* FIXME: Pete rev-001 sup */
++	OSD_TOTAL_CDB_LEN = OSD_ADDITIONAL_CDB_LENGTH + 8,
++/* 	OSD_CAP_LEN = 104,*/
++	OSD_CAP_LEN = OSDv1_CAP_LEN,/* FIXME: Pete rev-001 sup */
+ 
+ 	OSD_SYSTEMID_LEN = 20,
+ 	OSD_CRYPTO_KEYID_SIZE = 20,
++	/*FIXME: OSDv2_CRYPTO_KEYID_SIZE = 32,*/
+ 	OSD_CRYPTO_SEED_SIZE = 4,
+ 	OSD_CRYPTO_NONCE_SIZE = 12,
+ 	OSD_MAX_SENSE_LEN = 252, /* from SPC-3 */
+@@ -108,6 +112,7 @@ enum {
+ 	OSD_OFFSET_MAX_BITS = 28,
+ 
+ 	OSDv1_OFFSET_MIN_SHIFT = 8,
++	OSD_OFFSET_MIN_SHIFT = 3,
+ 	OSD_OFFSET_MAX_SHIFT = 16,
+ };
+ 
+@@ -129,6 +134,16 @@ static inline osd_cdb_offset osd_encode_offset_v1(u64 offset, unsigned *padding)
+ 				OSDv1_OFFSET_MIN_SHIFT, OSD_OFFSET_MAX_SHIFT);
+ }
+ 
++/* Minimum 8 bytes alignment
++ * Same as v1 but since exponent can be signed than a less than
++ * 256 alignment can be reached with small offsets (<2GB)
++ */
++static inline osd_cdb_offset osd_encode_offset_v2(u64 offset, unsigned *padding)
++{
++	return __osd_encode_offset(offset, padding,
++				   OSD_OFFSET_MIN_SHIFT, OSD_OFFSET_MAX_SHIFT);
++}
++
+ /* osd2r03: 5.2.1 Overview */
+ struct osd_cdb_head {
+ 	struct scsi_varlen_cdb_hdr varlen_cdb;
+@@ -144,6 +159,13 @@ struct osd_cdb_head {
+ /*36*/			__be64		length;
+ /*44*/			__be64		start_address;
+ 		} __packed v1;
++
++		struct __osdv2_cdb_addr_len {
++			/* called allocation_length in some commands */
++/*32*/			__be64	length;
++/*40*/			__be64	start_address;
++/*48*/			__be32 list_identifier;/* Rarely used */
++		} __packed v2;
+ 	};
+ /*52*/	union { /* selected attributes mode Page/List/Single */
+ 		struct osd_attributes_page_mode {
+@@ -182,6 +204,7 @@ struct osd_cdb_head {
+ /*80*/
+ 
+ /*160 v1*/
++/*184 v2*/
+ struct osd_security_parameters {
+ /*160*/u8	integrity_check_value[OSD_CRYPTO_KEYID_SIZE];
+ /*180*/u8	request_nonce[OSD_CRYPTO_NONCE_SIZE];
+@@ -189,6 +212,9 @@ struct osd_security_parameters {
+ /*196*/osd_cdb_offset	data_out_integrity_check_offset;
+ } __packed;
+ /*200 v1*/
++/*224 v2*/
++
++/* FIXME: osdv2_security_parameters */
+ 
+ struct osdv1_cdb {
+ 	struct osd_cdb_head h;
+@@ -196,9 +222,17 @@ struct osdv1_cdb {
+ 	struct osd_security_parameters sec_params;
+ } __packed;
+ 
++struct osdv2_cdb {
++	struct osd_cdb_head h;
++	u8 caps[OSD_CAP_LEN];
++	struct osd_security_parameters sec_params;
++	/* FIXME: osdv2_security_parameters */
++} __packed;
++
+ struct osd_cdb {
+ 	union {
+ 		struct osdv1_cdb v1;
++		struct osdv2_cdb v2;
+ 		u8 buff[OSD_TOTAL_CDB_LEN];
+ 	};
+ } __packed;
+@@ -269,6 +303,7 @@ struct osd_attributes_list_attrid {
+ /*
+  * osd2r03: 7.1.3.3 List entry format for retrieved attributes and
+  *                  for setting attributes
++ * NOTE: v2 is 8-bytes aligned, v1 is not aligned.
+  */
+ struct osd_attributes_list_element {
+ 	__be32 page;
+@@ -279,6 +314,7 @@ struct osd_attributes_list_element {
+ 
+ enum {
+ 	OSDv1_ATTRIBUTES_ELEM_ALIGN = 1,
++	OSD_ATTRIBUTES_ELEM_ALIGN = 8,
+ };
+ 
+ enum {
+@@ -292,6 +328,12 @@ static inline unsigned osdv1_attr_list_elem_size(unsigned len)
+ 		     OSDv1_ATTRIBUTES_ELEM_ALIGN);
+ }
+ 
++static inline unsigned osdv2_attr_list_elem_size(unsigned len)
++{
++	return ALIGN(len + sizeof(struct osd_attributes_list_element),
++		     OSD_ATTRIBUTES_ELEM_ALIGN);
++}
++
+ /*
+  * osd2r03: 7.1.3 OSD attributes lists (Table 184) — List type values
+  */
+@@ -326,6 +368,21 @@ static inline unsigned osdv1_list_size(struct osdv1_attributes_list_header *h)
+ 	return be16_to_cpu(h->list_bytes);
+ }
+ 
++struct osdv2_attributes_list_header {
++	u8 type;	/* lower 4-bits only */
++	u8 pad[3];
++/*4*/	__be32 list_bytes; /* Initiator shall set to zero. Only set by target */
++	/*
++	 * type=9 followed by struct osd_attributes_list_element's
++	 * type=E followed by struct osd_attributes_list_multi_header's
++	 */
++} __packed;
++
++static inline unsigned osdv2_list_size(struct osdv2_attributes_list_header *h)
++{
++	return be32_to_cpu(h->list_bytes);
++}
++
+ /* (osd-r10 6.13)
+  * osd2r03: 6.15 LIST (Table 79) LIST command parameter data.
+  *	for root_lstchg below
+@@ -469,11 +526,36 @@ struct osdv1_cap_object_descriptor {
+ } __packed;
+ /*80 v1*/
+ 
+-struct osd_capability {
++/*56 v2*/
++struct osd_cap_object_descriptor {
++	union {
++		struct {
++/*56*/			__be32 allowed_attributes_access;
++/*60*/			__be32 policy_access_tag;
++/*64*/			__be16 boot_epoch;
++/*66*/			u8 reserved[6];
++/*72*/			__be64 allowed_partition_id;
++/*80*/			__be64 allowed_object_id;
++/*88*/			__be64 allowed_range_length;
++/*96*/			__be64 allowed_range_start;
++		} __packed obj_desc;
++
++/*56*/		u8 object_descriptor[48];
++	};
++} __packed;
++/*104 v2*/
++
++struct osdv1_capability {
+ 	struct osd_capability_head h;
+ 	struct osdv1_cap_object_descriptor od;
+ } __packed;
+ 
++struct osd_capability {
++	struct osd_capability_head h;
++/* 	struct osd_cap_object_descriptor od;*/
++	struct osdv1_cap_object_descriptor od; /* FIXME: Pete rev-001 sup */
++} __packed;
++
+ /**
+  * osd_sec_set_caps - set cap-bits into the capabilities header
+  *
 -- 
-Catalin
+1.6.0.1
 
