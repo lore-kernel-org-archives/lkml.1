@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYLVGci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbYLVG7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbYLVGci (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 01:32:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbYLVGca
+	id S1753306AbYLVG7s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 01:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYLVG7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 01:32:30 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43429 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbYLVGc3 (ORCPT
+	Mon, 22 Dec 2008 01:59:37 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:16057 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751897AbYLVG7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 01:32:29 -0500
-Message-ID: <494F343C.1030602@zytor.com>
-Date: Sun, 21 Dec 2008 22:31:24 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 22 Dec 2008 01:59:36 -0500
+Message-ID: <494F3AD2.3060201@gawab.com>
+Date: Sun, 21 Dec 2008 22:59:30 -0800
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [Bug #12156] v2.6.28-rc2: x86_32 relocation regression?
-References: <vYigq6XkyUN.A.E1H.7ZYTJB@chimera> <vy-yJy0f3YP.A.yhB.qaYTJB@chimera> <20081221081406.GB4773@elte.hu>
-In-Reply-To: <20081221081406.GB4773@elte.hu>
-Content-Type: text/plain; charset=UTF-8
+To: Tejun Heo <tj@kernel.org>
+CC: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [2.6.28-rc] Sata soft reset filling log
+References: <494318F5.4060007@gawab.com> <494EFD79.7020008@kernel.org>
+In-Reply-To: <494EFD79.7020008@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> not really a regression but a long-standing inconvenience/bug of the debug 
-> symbols of relocatable kernels. (ever since relocatable kernels were added 
-> in '06 or so.) Nevertheless we queued up a revert of the defconfig change 
-> for .29, to not expose it in the defconfig:
-> 
->  f269b07: x86: revert CONFIG_RELOCATABLE=y defconfig change
-> 
-> so i think it can be taken off the regressions list.
-> 
+Tejun Heo wrote:
+> Hello,
+>
+> Justin Madru wrote:
+>   
+>> I've been testing .28 (currently -rc8) and I've noticed in the logs a
+>> massive amount of the following.
+>> I can confirm that the messages doesn't appear when booting into a .27
+>> kernel.
+>>
+>> ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+>> ata2.00: ST_FIRST: !(DRQ|ERR|DF)
+>> ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+>>         cdb 1e 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+>>         res 50/00:01:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+>> ata2.00: status: { DRDY }
+>> ata2: soft resetting link
+>> ata2.00: configured for UDMA/33
+>> ata2: EH complete
+>>     
+>
+> That's HSM violation on ALLOW_MEDIUM_REMOVAL on the second ATA port.
+>
+>   
+>> I get this block of messages about every 20 seconds for as long as I'm
+>> booted into a .28 kernel.
+>> It seems that the sata link is being soft reseted about every _20_ secs.
+>> My drive is a sata drive that should be using UDMA/133 (right?),
+>> but the "error" message says configuring for UDMA/33.
+>> Does this mean that my drive is running at a slower speed?
+>> Should I be worried about the .28 kernel corrupting my hardware? Is this
+>> a known issue?
+>> How can I stop it from filling my logs!
+>>
+>> Some information about my computer:
+>>
+>> 00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA
+>> IDE Controller (rev 01)
+>>
+>> $ hdparm -I /dev/sda
+>> /dev/sda:
+>> ATA device, with non-removable media
+>>        Model Number:       ST980811AS
+>>     
+>
+> and I strongly doubt it's the hard drive.  Can you please post full
+> kernel log including the boot messages?
+>
+> Thanks.
+>
+>   
+Well, it's good to hear that you don't think my drive is failing (sure 
+hope it's not failing!)
 
-It's a bug, yes, not a regression.  It should be fixed if possible, but
-it's not a regression nor a hideously critical issue.
+I posted the full dmesg in reply to Alan in 
+http://lkml.org/lkml/2008/12/19/30.
+Also, more information about my computer can be found at: 
+http://jdserver.homelinux.org/bugreports/
+If you need me to run anything else not found in the above links then 
+let me know.
 
-	-hpa
-
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Justin Madru
 
