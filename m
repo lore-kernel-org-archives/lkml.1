@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbYLVCVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYLVCeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbYLVCVn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 21:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYLVCVd
+	id S1753335AbYLVCeS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 21:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYLVCd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 21:21:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56449 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbYLVCVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 21:21:33 -0500
-Message-ID: <494EF9A1.90002@kernel.org>
-Date: Mon, 22 Dec 2008 11:21:21 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Sun, 21 Dec 2008 21:33:59 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:16506 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbYLVCd6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 21:33:58 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Badalian Vyacheslav <slavon@bigtelecom.ru>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Red leds at harddisk bays on SR1530HSH after update to 2.6.27.x
-References: <494A34CA.9030906@bigtelecom.ru> <20081219223246.b0aea84d.akpm@linux-foundation.org>
-In-Reply-To: <20081219223246.b0aea84d.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 22 Dec 2008 02:21:26 +0000 (UTC)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v3 2.6.29] cxgb3 - manage private iSCSI IP address
+Date: Sun, 21 Dec 2008 18:32:18 -0800
+Message-ID: <8A71B368A89016469F72CD08050AD334040AA4AA@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH v3 2.6.29] cxgb3 - manage private iSCSI IP address
+Thread-Index: AclhpvjSGm5quRQHTVia9P20X1zcfgCNjiXQ
+References: <200812190243.mBJ2hPZY008757@localhost.localdomain> <20081218.225632.113687804.davem@davemloft.net>
+From: "Divy Le Ray" <divy@chelsio.com>
+To: "David Miller" <davem@davemloft.net>, "Karen Xie" <kxie@chelsio.com>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <michaelc@cs.wisc.edu>, <James.Bottomley@HansenPartnership.com>,
+       "Steve Wise" <swise@opengridcomputing.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> (cc linux-ide)
+> > [PATCH v3 2.6.29] cxgb3 - manage private iSCSI IP address
+> >
+> > The accelerated iSCSI traffic could use a private IP address unknown
+> to the OS:
+> > - The IP address is required in both drivers to manage ARP requests
+> and connection set up.
+> > - Added an control call to retrieve the ip address.
+> > - Reply to ARP requests dedicated to the private IP address.
+> >
+> > Signed-off-by: Divy Le Ray <divy@chelsio.com>
+> > Signed-off-by: Karen Xie <kxie@chelsio.com>
 > 
-> On Thu, 18 Dec 2008 14:32:26 +0300 Badalian Vyacheslav <slavon@bigtelecom.ru> wrote:
-> 
->> Hello all.
->> After update from 2.6.26 to 2.6.27 all leds at drive bays now red.
->> SATA controller in AHCI mode.
->> Platform is Intel SR1530HSH
->>
->> Config attached.
->>
->> Any patches for test? Any ideas? Any other info needed? Or i must go to
->> bugtracker? ;)
+> Patch applied, thank you.
 
-Does ahci.ahci_em_messages=0 help?
+Hi Dave,
 
--- 
-tejun
+I don't see the patch committed in net-next-2.6. Did it go in another
+branch?
+
+Cheers,
+Divy
