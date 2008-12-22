@@ -1,119 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYLVOuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYLVOzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbYLVOuq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 09:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbYLVOuh
+	id S1755213AbYLVOzr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 09:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYLVOzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 09:50:37 -0500
-Received: from www.tglx.de ([62.245.132.106]:59896 "EHLO www.tglx.de"
+	Mon, 22 Dec 2008 09:55:39 -0500
+Received: from mail.klingt.org ([86.59.21.178]:42486 "EHLO klingt.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754586AbYLVOuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 09:50:37 -0500
-Date: Mon, 22 Dec 2008 15:48:36 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
-       linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: TSC not updating after resume: Bug or Feature?
-In-Reply-To: <b637ec0b0812211443u1ca9c11du5d61c41e3d82bc16@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0812221543550.3723@localhost.localdomain>
-References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net>  <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu>  <200812182319.57235.rjw@sisk.pl>  <alpine.LFD.2.00.0812211639210.3376@localhost.localdomain>  <alpine.LFD.2.00.0812212031220.4548@localhost.localdomain>
- <b637ec0b0812211443u1ca9c11du5d61c41e3d82bc16@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1754588AbYLVOzj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 09:55:39 -0500
+Message-ID: <20081222155520.83816t3ghfflq1ds@mail.klingt.org>
+Date: Mon, 22 Dec 2008 15:55:20 +0100
+From: "Tim Blechmann" <tim@klingt.org>
+To: "Robert Richter" <robert.richter@amd.com>
+Cc: "Tim Blechmann" <tim@klingt.org>, oprofile-list@lists.sf.net,
+       linux-kernel@vger.kernel.org, "Andi Kleen" <ak@linux.intel.com>
+Subject: Re: 2.6.28-rc9: oprofile regression
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.2)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (klingt.org [86.59.21.178]); Mon, 22 Dec 2008 15:55:21 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fabio,
+>>> i am experiencing an issue, similar to the one reported in
+>>> http://lkml.org/lkml/2008/10/30/319.
+>>
+>> bisecting showed, that commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8
+>> (oprofile: Implement Intel architectural perfmon support) caused the
+>> problem.
+>> oddly, the newly introduced api is not used, since the model struct is
+>> set during the ppro_init call ...
+>
+> Tim,
+>
+> I just tested rc9 on a system I have available and I could not
+> reproduce this.
+>
+> cpu family	: 6
+> model		: 15
+> model name	: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
+> stepping	: 2
+>
+> Does fix 7c64ade53a6f977d73f16243865c42ceae999aea work on your system?
 
-On Sun, 21 Dec 2008, Fabio Comolli wrote:
-> Well, I'm the submitter of bug 12155 and I never had hpet=force on my
-> command line. I don't know where you found it.
-> Actually my command line is:
+7c64ade53a6f977d73f16243865c42ceae999aea has been included in rc9, but still
+i experience this issue ...
 
-My bad. I confused it with the HPET force enable. (Your BIOS does not
-advertise HPET).
- 
-> By the way, I don't know if it matters but the problema happened with
-> in-kernel hibernation and also in out-of-tree TuxOnIce hibernation.
-> Maybe this can help debugging the issue, I don't know.
+the only difference to my cpu is the stepping (i have stepping 6) ... also, in
+case it matters, i am running a 64bit kernel ...
 
-Hmm, does not ring a bell here. Can you please apply the patch below
-to mainline and retest ?
+tim
 
-Thanks,
-
-	tglx
------
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index e8ab096..c18a6dd 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -86,6 +86,14 @@ void sched_clock_init(void)
- 	sched_clock_running = 1;
- }
- 
-+void sched_clock_debug(void)
-+{
-+	struct sched_clock_data *scd = this_scd();
-+
-+	printk(KERN_INFO "SCD raw %llu gtod %llu clock %llu now %llu\n",
-+	       scd->tick_raw, scd->tick_gtod, scd->clock, sched_clock());
-+}
-+
- /*
-  * min,max except they take wrapping into account
-  */
-@@ -118,13 +126,13 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
- 
- 	/*
- 	 * scd->clock = clamp(scd->tick_gtod + delta,
--	 * 		      max(scd->tick_gtod, scd->clock),
--	 * 		      scd->tick_gtod + TICK_NSEC);
-+	 *		      max(scd->tick_gtod, scd->clock),
-+	 *		      max(scd->clock, scd->tick_gtod + TICK_NSEC));
- 	 */
- 
- 	clock = scd->tick_gtod + delta;
- 	min_clock = wrap_max(scd->tick_gtod, scd->clock);
--	max_clock = scd->tick_gtod + TICK_NSEC;
-+	max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
- 
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index fa05e88..bafbd2d 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -304,6 +304,8 @@ static int timekeeping_suspended;
- /* time in seconds when suspend began */
- static unsigned long timekeeping_suspend_time;
- 
-+extern void sched_clock_debug(void);
-+
- /**
-  * timekeeping_resume - Resumes the generic timekeeping subsystem.
-  * @dev:	unused
-@@ -336,6 +338,8 @@ static int timekeeping_resume(struct sys_device *dev)
- 	timekeeping_suspended = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
-+	sched_clock_debug();
-+
- 	touch_softlockup_watchdog();
- 
- 	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-@@ -357,6 +361,8 @@ static int timekeeping_suspend(struct sys_device *dev, pm_message_t state)
- 	timekeeping_suspended = 1;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
-+	sched_clock_debug();
-+
- 	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
- 
- 	return 0;
+---------------------------------------------------------------
+diese nachricht wurde ueber klingt.org gesendet
+this message was sent through klingt.org's webmail.
 
