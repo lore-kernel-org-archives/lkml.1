@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYLVV7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbYLVWAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbYLVV7x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 16:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755874AbYLVVtl
+	id S1758330AbYLVWAo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 17:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbYLVVtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 16:49:41 -0500
-Received: from ns.suse.de ([195.135.220.2]:41670 "EHLO mx1.suse.de"
+	Mon, 22 Dec 2008 16:49:46 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41676 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756048AbYLVVtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 16:49:40 -0500
+	id S1755893AbYLVVto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 16:49:44 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Jan Kara <jack@suse.cz>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 30/56] ocfs2: Add missing initialization
-Date: Mon, 22 Dec 2008 13:48:11 -0800
-Message-Id: <1229982517-3455-31-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 32/56] ocfs2: Fix oops when extending quota files
+Date: Mon, 22 Dec 2008 13:48:13 -0800
+Message-Id: <1229982517-3455-33-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
 References: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
@@ -25,27 +25,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Kara <jack@suse.cz>
 
-Add missing variable initialization to ocfs2_dquot_drop_slow().
+We have to mark buffer as uptodate before calling ocfs2_journal_access() and
+ocfs2_set_buffer_uptodate() does not do this for us.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/quota_global.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/ocfs2/quota_global.c |   28 ++++++++++++----------------
+ 1 files changed, 12 insertions(+), 16 deletions(-)
 
 diff --git a/fs/ocfs2/quota_global.c b/fs/ocfs2/quota_global.c
-index d2a5bfa..7f561e4 100644
+index 1401edf..339c98a 100644
 --- a/fs/ocfs2/quota_global.c
 +++ b/fs/ocfs2/quota_global.c
-@@ -873,7 +873,7 @@ out:
+@@ -172,7 +172,7 @@ ssize_t ocfs2_quota_write(struct super_block *sb, int type,
+ 	struct inode *gqinode = oinfo->dqi_gqinode;
+ 	int offset = off & (sb->s_blocksize - 1);
+ 	sector_t blk = off >> sb->s_blocksize_bits;
+-	int err = 0, new = 0;
++	int err = 0, new = 0, ja_type;
+ 	struct buffer_head *bh = NULL;
+ 	handle_t *handle = journal_current_handle();
  
- static int ocfs2_dquot_drop_slow(struct inode *inode)
- {
--	int status;
-+	int status = 0;
- 	int cnt;
- 	int got_lock[MAXQUOTAS] = {0, 0};
- 	handle_t *handle;
+@@ -205,32 +205,28 @@ ssize_t ocfs2_quota_write(struct super_block *sb, int type,
+ 	if ((offset || len < sb->s_blocksize - OCFS2_QBLK_RESERVED_SPACE) &&
+ 	    !new) {
+ 		err = ocfs2_read_quota_block(gqinode, blk, &bh);
+-		if (err) {
+-			mlog_errno(err);
+-			return err;
+-		}
+-		err = ocfs2_journal_access(handle, gqinode, bh,
+-					   OCFS2_JOURNAL_ACCESS_WRITE);
++		ja_type = OCFS2_JOURNAL_ACCESS_WRITE;
+ 	} else {
+ 		bh = ocfs2_get_quota_block(gqinode, blk, &err);
+-		if (!bh) {
+-			mlog_errno(err);
+-			return err;
+-		}
+-		err = ocfs2_journal_access(handle, gqinode, bh,
+-					   OCFS2_JOURNAL_ACCESS_CREATE);
++		ja_type = OCFS2_JOURNAL_ACCESS_CREATE;
+ 	}
+-	if (err < 0) {
+-		brelse(bh);
+-		goto out;
++	if (err) {
++		mlog_errno(err);
++		return err;
+ 	}
+ 	lock_buffer(bh);
+ 	if (new)
+ 		memset(bh->b_data, 0, sb->s_blocksize);
+ 	memcpy(bh->b_data + offset, data, len);
+ 	flush_dcache_page(bh->b_page);
++	set_buffer_uptodate(bh);
+ 	unlock_buffer(bh);
+ 	ocfs2_set_buffer_uptodate(gqinode, bh);
++	err = ocfs2_journal_access(handle, gqinode, bh, ja_type);
++	if (err < 0) {
++		brelse(bh);
++		goto out;
++	}
+ 	err = ocfs2_journal_dirty(handle, bh);
+ 	brelse(bh);
+ 	if (err < 0)
 -- 
 1.5.6
 
