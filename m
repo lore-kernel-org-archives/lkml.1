@@ -1,96 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbYLVAsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYLVBZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752625AbYLVAsh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 19:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYLVAs3
+	id S1752621AbYLVBZG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 20:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbYLVBYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 19:48:29 -0500
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:42888 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751330AbYLVAs3 (ORCPT
+	Sun, 21 Dec 2008 20:24:55 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:3808 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751577AbYLVBYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 19:48:29 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=cOjaQ6CFe4sAewqIUcQtvme3i+CSrCDCSUZMLCIAc/ekR+Tk/fIwEaM6topWG9fVD5WjPZG7g4IYu/XuQNIbJ8RaQbjcG1nH4Atg8CBJOUx8Li7WbmOwHiRNu0hCXZYh8vSgd1ct4eErdYJgGfvj6lVnoCRfo2YxmB5m/jprY/4=  ;
-X-YMail-OSG: .YVDcMoVM1l6AvqW9SheFivjHNcPfEH.okO8MTdDjvWiQcMZ2Wpa7kQQeSfQ38LJB4pfuaWBP7beXZkvoKQVHohcLy8dTxjFDvYembqGRZBX3AyNqF4VqAVvCRpPlPkf1nuvDaVGUyCyadek9lMGrYsjPSBcWjKuOIeiCvoxne_aRmqbBmqJ3MqNLlZO
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 2.6.28-rc9] spi: spi_write_then_read() regression fix
-Date: Sun, 21 Dec 2008 16:48:26 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       spi-devel-general@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>,
-       Vernon Sauder <vernoninhand@gmail.com>
-References: <200812202332.36281.david-b@pacbell.net> <alpine.LFD.2.00.0812211545520.24883@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812211545520.24883@localhost.localdomain>
+	Sun, 21 Dec 2008 20:24:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=EDcLgmeQenczGd2M509WHmZrbwD3IOLKSED3dg4ckClKxEzQMPv1+NbywrZbjOszCX
+         fR5Y3MLnDlpXdfBGVHM4u/2KeuQmiB2Yde+vIpBbjGCMd8Ze5LsexdnX6xKxoKXVsaeT
+         qqiatJGZubbUgUMg6LW+oE9PiQzijyo0MNaJ4=
+Message-ID: <494EEC60.4080708@gmail.com>
+Date: Mon, 22 Dec 2008 02:24:48 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] hrtimer: increase clock min delta threshold while interrupt
+ hanging
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812211648.26699.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 21 December 2008, Linus Torvalds wrote:
-> 
-> On Sat, 20 Dec 2008, David Brownell wrote:
-> > 
-> > All SPI transfers are full duplex, and are packaged as half duplex
-> > by either discarding the data that's read ("write only"), or else
-> > by writing zeroes ("read only").  That patch wasn't ensuring that
-> > zeroes were getting written out during the "half duplex read" part
-> > of the transaction; instead, old RX bits were getting sent.
-> 
-> Hmm. In addition, isn't this broken (in that same function):
+Impact: avoid hanging on slow systems
 
-No -- this is full duplex.  The write_then_read() helper is
-simplifying a common half-duplex idiom for short operations,
-but the harware still does full duplex.  Buffer layout is:
+While using the function graph tracer on a virtualized system, the hrtimer_interrupt
+can hang the system on an infinite loop.
+This can be caused on several situation where something intrusive is slowing the
+system (ie: tracing) and the next clock events to program are always before the current
+time.
+This patch implements a reasonable compromise. If such a situation is detected, we share
+the CPUs time in 1/4 to process the hrtimer interrupts. This is enough to let the system
+running without serious starvation.
 
-  Before:	WWWWW0000000
-  After:	xxxxxRRRRRRR
+It has been successfully tested under VirtualBox with 1000 HZ and 100 HZ with function graph
+tracer launched. On both cases, the clock events were increased until about 25 ms periodic ticks,
+which means 40 HZ.
 
-That is, for every bit shifted out (W, 0) another one gets
-shifted in (x, R).  The I/O primitive essentially swaps
-contents of a one-word shift register between master and
-slave; or, sequences of such words.  Words don't need to
-be byte-size, though that's a common option.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/hrtimer.c |   30 +++++++++++++++++++++++++++++-
+ 1 files changed, 29 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index bda9cb9..02f2477 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1171,6 +1171,29 @@ static void __run_hrtimer(struct hrtimer *timer)
  
->         memcpy(local_buf, txbuf, n_tx);
->         x.tx_buf = local_buf;
->         x.rx_buf = local_buf;
-> 
->         /* do the i/o */
->         status = spi_sync(spi, &message);
->         if (status == 0)
->                 memcpy(rxbuf, x.rx_buf + n_tx, n_rx);
-> 
-> shouldn't that 'rx_buf' setup be
-> 
-> 	x.rx_buf = local_buf + n_tx;
-> 
-> since the whole point was that we allocated a buffer that can hold _both_ 
-> the rx and tx parts? Especially as that final copy into the resulting 
-> "rxbuf" thing uses that "+ n_tx" addition?
-
-See above.  We only want the "R" bits which were shifted in
-right *after* the n_tx "W" bits.  If we offset rx_buf before
-the I/O, we'd start with the "x" don't-care bits and need to
-do something else to discard them.  (Plus, allocate more
-space at the end of the buffer.)
-
-- Dave
-
-
-> 			Linus
-> 
-> 
-
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ 
++static int force_clock_reprogram;
++
++/*
++ * After 5 iteration's attempts, we consider that hrtimer_interrupt()
++ * is hanging, which could happen with something that slows the interrupt
++ * such as the tracing. Then we force the clock reprogramming for each future
++ * hrtimer interrupts to avoid infinite loops and use the min_delta_ns
++ * threshold that we will overwrite.
++ * The next tick event will be scheduled to 3 times we currently spend on
++ * hrtimer_interrupt(). This gives a good compromise, the cpus will spend
++ * 1/4 of their time to process the hrtimer interrupts. This is enough to
++ * let it running without serious starvation.
++ */
++
++static inline void
++hrtimer_interrupt_hanging(struct clock_event_device *dev,
++			ktime_t try_time)
++{
++	force_clock_reprogram = 1;
++	dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
++	printk(KERN_WARNING "hrtimer: interrupt too slow, "
++		"forcing clock min delta to %lu ns\n", dev->min_delta_ns);
++}
+ /*
+  * High resolution timer interrupt
+  * Called with interrupts disabled
+@@ -1180,6 +1203,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+ 	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
+ 	struct hrtimer_clock_base *base;
+ 	ktime_t expires_next, now;
++	int nr_retries = 0;
+ 	int i;
+ 
+ 	BUG_ON(!cpu_base->hres_active);
+@@ -1187,6 +1211,10 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+ 	dev->next_event.tv64 = KTIME_MAX;
+ 
+  retry:
++	/* 5 retries is enough to notice a hang */
++	if (!(++nr_retries % 5))
++		hrtimer_interrupt_hanging(dev, ktime_sub(ktime_get(), now));
++
+ 	now = ktime_get();
+ 
+ 	expires_next.tv64 = KTIME_MAX;
+@@ -1239,7 +1267,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+ 
+ 	/* Reprogramming necessary ? */
+ 	if (expires_next.tv64 != KTIME_MAX) {
+-		if (tick_program_event(expires_next, 0))
++		if (tick_program_event(expires_next, force_clock_reprogram))
+ 			goto retry;
+ 	}
+ }
+-- 
+1.6.0.4
 
