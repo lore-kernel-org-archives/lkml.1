@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYLVMEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYLVMEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbYLVMEV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 07:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYLVMEN
+	id S1754964AbYLVMEh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 07:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbYLVMEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 07:04:13 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:48698 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753658AbYLVMEM (ORCPT
+	Mon, 22 Dec 2008 07:04:21 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:63580 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754568AbYLVMEU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 07:04:12 -0500
-Subject: Re: [PATCH 11/14] kmemleak: Remove some of the kmemleak false
-	positives
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <84144f020812191215i432fd70fq3248d9feb981d4cf@mail.gmail.com>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20081219181357.7778.9552.stgit@pc1117.cambridge.arm.com>
-	 <84144f020812191215i432fd70fq3248d9feb981d4cf@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 22 Dec 2008 12:04:07 +0000
-Message-Id: <1229947447.3182.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 22 Dec 2008 07:04:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=ttin9L4D4tl0rfkiAZA0ug42AHfgfuqadG3REuniPftwbV2LOtL9CX5axWSXlYX+My
+         lAudUfqObM4XLmBhLtziaXfJQ4CfaW8Lf7xmsnBFKdgP7SRI8W/mwR19uu8oQ0M8/dDa
+         ENt9XuQAit6HNPDRdJBxqhs+wthFzTPd0PZgY=
+Message-ID: <494F823E.9060607@gmail.com>
+Date: Mon, 22 Dec 2008 13:04:14 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, mpm@selenic.com, tytso@mit.edu
+Subject: Re: mmotm 2008-12-01-19-41: early exception (page fault -- deref
+ of 0x20)
+References: <4935C03A.7030603@gmail.com> <20081202153336.7b765ec7.akpm@linux-foundation.org> <alpine.LRH.1.10.0812031400040.28179@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.1.10.0812031400040.28179@twin.jikos.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Dec 2008 12:04:08.0208 (UTC) FILETIME=[64AC2900:01C9642D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-19 at 22:15 +0200, Pekka Enberg wrote:
-> On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
-> <catalin.marinas@arm.com> wrote:
-> > There are allocations for which the main pointer cannot be found but
-> > they are not memory leaks. This patch fixes some of them. For more
-> > information on false positives, see Documentation/kmemleak.txt.
-> >
-> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+On 12/03/2008 02:00 PM, Jiri Kosina wrote:
+> On Tue, 2 Dec 2008, Andrew Morton wrote:
 > 
-> > @@ -2882,6 +2883,12 @@ static int __init con_init(void)
-> >         */
-> >        for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
-> >                vc_cons[currcons].d = vc = alloc_bootmem(sizeof(struct vc_data));
-> > +               /*
-> > +                * Kmemleak does not track the memory allocated via
-> > +                * alloc_bootmem() but this block contains pointers to
-> > +                * other blocks allocated via kmalloc.
-> > +                */
-> > +               kmemleak_alloc(vc, sizeof(struct vc_data), 1, GFP_ATOMIC);
-> >                INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
-> >                visual_init(vc, currcons, 1);
-> >                vc->vc_screenbuf = (unsigned short *)alloc_bootmem(vc->vc_screenbuf_size);
+>> Presumably your machine picked a different clocksource from Arjan's, 
+>> mine and others.  Now, how do we work out what clocksource you're using?
+>> dmesg -s 1000000 | grep -i clock
+>> nope
+>> dmesg -s 1000000 | grep -i using
+>> nope
+>> hrm.
 > 
-> I think there was some discussion about adding hooks to the bootmem
-> allocator. Didn't that work out?
+> cat /sys/devices/system/clocksource/clocksource0/current_clocksource
 
-I had a look but the combination of alloc_bootmem, reserve_bootmem and
-free_bootmem doesn't seem feasible for kmemleak since calling these
-functions doesn't always come in alloc/free pairs (unless I
-misunderstand it).
+tsc
 
--- 
-Catalin
-
+It ran from qemu, but it oopsed even on my desktop (tsc too).
