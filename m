@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYLVNTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYLVNUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbYLVNTL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 08:19:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYLVNSy
+	id S1755325AbYLVNUu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 08:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYLVNUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 08:18:54 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:3198 "EHLO
+	Mon, 22 Dec 2008 08:20:41 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:3863 "EHLO
 	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751453AbYLVNSx (ORCPT
+	with ESMTP id S1751290AbYLVNUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 08:18:53 -0500
+	Mon, 22 Dec 2008 08:20:40 -0500
 From: Boaz Harrosh <bharrosh@panasas.com>
 To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Mike Christie <michaelc@cs.wisc.edu>,
@@ -17,90 +17,76 @@ To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
        open-osd ml <osd-dev@open-osd.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 17/18] osd: Kconfig file for in-tree builds
-Date: Mon, 22 Dec 2008 15:18:47 +0200
-Message-Id: <1229951927-16201-1-git-send-email-bharrosh@panasas.com>
+Subject: [PATCH 18/18] scsi: Add osd library to build system
+Date: Mon, 22 Dec 2008 15:20:35 +0200
+Message-Id: <1229952035-16225-1-git-send-email-bharrosh@panasas.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <494F88C0.4070507@panasas.com>
 References: <494F88C0.4070507@panasas.com>
-X-OriginalArrivalTime: 22 Dec 2008 13:18:50.0144 (UTC) FILETIME=[D41D5200:01C96437]
+X-OriginalArrivalTime: 22 Dec 2008 13:20:37.0708 (UTC) FILETIME=[143A48C0:01C96438]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kconfig file for the drivers/scsi/osd subdirectory.
-Adds the following config items:
-	config SCSI_OSD_INITIATOR
-	config SCSI_OSD_ULD
-	config SCSI_OSD_DPRINT_SENSE
-	config SCSI_OSD_DEBUG
+OSD in kernel source code is assumed to be at:
+drivers/scsi/osd/ with its own Makefile and Kconfig
+
+Add includes to them from drivers/scsi Makefile and Kconfig
+Add OSD to MAINTAINERS file
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 Reviewed-by: Benny Halevy <bhalevy@panasas.com>
 ---
- drivers/scsi/osd/Kconfig |   53 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 53 insertions(+), 0 deletions(-)
- create mode 100644 drivers/scsi/osd/Kconfig
+ MAINTAINERS           |   10 ++++++++++
+ drivers/scsi/Kconfig  |    2 ++
+ drivers/scsi/Makefile |    2 ++
+ 3 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/scsi/osd/Kconfig b/drivers/scsi/osd/Kconfig
-new file mode 100644
-index 0000000..861b5ce
---- /dev/null
-+++ b/drivers/scsi/osd/Kconfig
-@@ -0,0 +1,53 @@
-+#
-+# Kernel configuration file for the OSD scsi protocol
-+#
-+# Copyright (C) 2008 Panasas Inc.  All rights reserved.
-+#
-+# Authors:
-+#   Boaz Harrosh <bharrosh@panasas.com>
-+#   Benny Halevy <bhalevy@panasas.com>
-+#
-+# This program is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public version 2 License as
-+# published by the Free Software Foundation
-+#
-+# FIXME: SCSI_OSD_INITIATOR should select CONFIG (HMAC) SHA1 somehow.
-+#        How is it done properly?
-+#
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8f2b67e..79df335 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3234,6 +3234,16 @@ L:	orinoco-devel@lists.sourceforge.net
+ W:	http://www.nongnu.org/orinoco/
+ S:	Maintained
+ 
++OSD LIBRARY
++P:	Boaz Harrosh
++M:	bharrosh@panasas.com
++P:	Benny Halevy
++M:	bhalevy@panasas.com
++L:	osd-dev@open-osd.org
++W:	http://open-osd.org
++T:	git://git.open-osd.org/open-osd.git
++S:	Maintained
 +
-+config SCSI_OSD_INITIATOR
-+	tristate "OSD-Initiator library"
-+	depends on SCSI
-+	help
-+		Enable the OSD-Initiator library (libosd.ko).
-+		NOTE: You must also select CRYPTO_SHA1 + CRYPTO_HMAC and their
-+		dependencies
+ P54 WIRELESS DRIVER
+ P:	Michael Wu
+ M:	flamingice@sourmilk.net
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index 673463e..1170c01 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -1800,4 +1800,6 @@ source "drivers/scsi/pcmcia/Kconfig"
+ 
+ source "drivers/scsi/device_handler/Kconfig"
+ 
++source "drivers/scsi/osd/Kconfig"
 +
-+config SCSI_OSD_ULD
-+	tristate "OSD Upper Level driver"
-+	depends on SCSI_OSD_INITIATOR
-+	help
-+		Build a SCSI upper layer driver that exports /dev/osdX devices
-+		to user-mode for testing and controlling OSD devices. It is also
-+		needed by exofs, for mounting an OSD based file system.
+ endmenu
+diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
+index 07d0f58..e68864b 100644
+--- a/drivers/scsi/Makefile
++++ b/drivers/scsi/Makefile
+@@ -137,6 +137,8 @@ obj-$(CONFIG_CHR_DEV_SG)	+= sg.o
+ obj-$(CONFIG_CHR_DEV_SCH)	+= ch.o
+ obj-$(CONFIG_SCSI_ENCLOSURE)	+= ses.o
+ 
++obj-$(CONFIG_SCSI_OSD_INITIATOR) += osd/
 +
-+config SCSI_OSD_DPRINT_SENSE
-+    int "(0-2) When sense is returned, DEBUG print all sense descriptors"
-+    default 1
-+    depends on SCSI_OSD_INITIATOR
-+    help
-+        When a CHECK_CONDITION status is returned from a target, and a
-+        sense-buffer is retrieved, turning this on will dump a full
-+        sense-decoding message. Setting to 2 will also print recoverable
-+        errors that might be regularly returned for some filesystem
-+        operations.
-+
-+config SCSI_OSD_DEBUG
-+	bool "Compile All OSD modules with lots of DEBUG prints"
-+	default n
-+	depends on SCSI_OSD_INITIATOR
-+	help
-+		OSD Code is populated with lots of OSD_DEBUG(..) printouts to
-+		dmesg. Enable this if you found a bug and you want to help us
-+		track the problem (see also MAINTAINERS). Setting this will also
-+		force SCSI_OSD_DPRINT_SENSE=2.
+ # This goes last, so that "real" scsi devices probe earlier
+ obj-$(CONFIG_SCSI_DEBUG)	+= scsi_debug.o
+ 
 -- 
 1.6.0.1
 
