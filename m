@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYLVTVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYLVTVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYLVTVS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbYLVTQu
+	id S1756804AbYLVTVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYLVTQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:16:50 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:25434 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755635AbYLVTQs (ORCPT
+	Mon, 22 Dec 2008 14:16:58 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755751AbYLVTQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:16:48 -0500
-Subject: [PATCH 12/27] drivers/net/irda: fix sparse warnings: make symbols
+	Mon, 22 Dec 2008 14:16:56 -0500
+Subject: [PATCH 13/27] drivers/net/ixgbe: fix sparse warnings: make symbols
 	static
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:16:41 +0100
-Message-ID: <20081222191641.11807.72534.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:16:50 +0100
+Message-ID: <20081222191650.11807.36848.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -29,126 +29,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix this sparse warnings:
 
-  drivers/net/irda/ma600-sir.c:239:5: warning: symbol 'ma600_reset' was not declared. Should it be static?
-  drivers/net/irda/smsc-ircc2.c:875:5: warning: symbol 'smsc_ircc_hard_xmit_sir' was not declared. Should it be static?
-  drivers/net/irda/smsc-ircc2.c:1131:6: warning: symbol 'smsc_ircc_set_sir_speed' was not declared. Should it be static?
-  drivers/net/irda/smsc-ircc2.c:1897:6: warning: symbol 'smsc_ircc_sir_start' was not declared. Should it be static?
-  drivers/net/irda/w83977af_ir.c:150:5: warning: symbol 'w83977af_open' was not declared. Should it be static?
-  drivers/net/irda/w83977af_ir.c:313:5: warning: symbol 'w83977af_probe' was not declared. Should it be static?
-  drivers/net/irda/w83977af_ir.c:412:6: warning: symbol 'w83977af_change_speed' was not declared. Should it be static?
-  drivers/net/irda/w83977af_ir.c:492:5: warning: symbol 'w83977af_hard_xmit' was not declared. Should it be static?
-  drivers/net/irda/w83977af_ir.c:734:5: warning: symbol 'w83977af_dma_receive' was not declared. Should it be static?
-  drivers/net/irda/w83977af_ir.c:806:5: warning: symbol 'w83977af_dma_receive_complete' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:180:5: warning: symbol 'ixgbe_get_copper_link_capabilities_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:245:5: warning: symbol 'ixgbe_setup_fc_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:729:5: warning: symbol 'ixgbe_set_vmdq_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:773:5: warning: symbol 'ixgbe_set_vfta_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:897:5: warning: symbol 'ixgbe_read_analog_reg8_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:919:5: warning: symbol 'ixgbe_write_analog_reg8_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:940:5: warning: symbol 'ixgbe_read_i2c_eeprom_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_82598.c:1000:5: warning: symbol 'ixgbe_get_supported_physical_layer_82598' was not declared. Should it be static?
+  drivers/net/ixgbe/ixgbe_dcb_82598.c:100:5: warning: symbol 'ixgbe_dcb_config_packet_buffers_82598' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/irda/ma600-sir.c   |    2 +-
- drivers/net/irda/smsc-ircc2.c  |    6 +++---
- drivers/net/irda/w83977af_ir.c |   14 +++++++-------
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/net/ixgbe/ixgbe_82598.c     |   24 ++++++++++++------------
+ drivers/net/ixgbe/ixgbe_dcb_82598.c |    4 ++--
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/irda/ma600-sir.c b/drivers/net/irda/ma600-sir.c
-index 1ceed9c..e912164 100644
---- a/drivers/net/irda/ma600-sir.c
-+++ b/drivers/net/irda/ma600-sir.c
-@@ -236,7 +236,7 @@ static int ma600_change_speed(struct sir_dev *dev, unsigned speed)
-  * avoid the state machine complexity before we get things working
-  */
+diff --git a/drivers/net/ixgbe/ixgbe_82598.c b/drivers/net/ixgbe/ixgbe_82598.c
+index 7e09dab..ad5699d 100644
+--- a/drivers/net/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ixgbe/ixgbe_82598.c
+@@ -177,9 +177,9 @@ static s32 ixgbe_get_link_capabilities_82598(struct ixgbe_hw *hw,
+  *
+  *  Determines the link capabilities by reading the AUTOC register.
+  **/
+-s32 ixgbe_get_copper_link_capabilities_82598(struct ixgbe_hw *hw,
+-                                             ixgbe_link_speed *speed,
+-                                             bool *autoneg)
++static s32 ixgbe_get_copper_link_capabilities_82598(struct ixgbe_hw *hw,
++						    ixgbe_link_speed *speed,
++						    bool *autoneg)
+ {
+ 	s32 status = IXGBE_ERR_LINK_SETUP;
+ 	u16 speed_ability;
+@@ -242,7 +242,7 @@ static enum ixgbe_media_type ixgbe_get_media_type_82598(struct ixgbe_hw *hw)
+  *  Configures the flow control settings based on SW configuration.  This
+  *  function is used for 802.3x flow control configuration only.
+  **/
+-s32 ixgbe_setup_fc_82598(struct ixgbe_hw *hw, s32 packetbuf_num)
++static s32 ixgbe_setup_fc_82598(struct ixgbe_hw *hw, s32 packetbuf_num)
+ {
+ 	u32 frctl_reg;
+ 	u32 rmcs_reg;
+@@ -726,7 +726,7 @@ static s32 ixgbe_reset_hw_82598(struct ixgbe_hw *hw)
+  *  @rar: receive address register index to associate with a VMDq index
+  *  @vmdq: VMDq set index
+  **/
+-s32 ixgbe_set_vmdq_82598(struct ixgbe_hw *hw, u32 rar, u32 vmdq)
++static s32 ixgbe_set_vmdq_82598(struct ixgbe_hw *hw, u32 rar, u32 vmdq)
+ {
+ 	u32 rar_high;
  
--int ma600_reset(struct sir_dev *dev)
-+static int ma600_reset(struct sir_dev *dev)
+@@ -770,8 +770,8 @@ static s32 ixgbe_clear_vmdq_82598(struct ixgbe_hw *hw, u32 rar, u32 vmdq)
+  *
+  *  Turn on/off specified VLAN in the VLAN filter table.
+  **/
+-s32 ixgbe_set_vfta_82598(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+-                         bool vlan_on)
++static s32 ixgbe_set_vfta_82598(struct ixgbe_hw *hw, u32 vlan, u32 vind,
++				bool vlan_on)
  {
- 	IRDA_DEBUG(2, "%s()\n", __func__);
+ 	u32 regindex;
+ 	u32 bitindex;
+@@ -894,7 +894,7 @@ static s32 ixgbe_blink_led_stop_82598(struct ixgbe_hw *hw, u32 index)
+  *
+  *  Performs read operation to Atlas analog register specified.
+  **/
+-s32 ixgbe_read_analog_reg8_82598(struct ixgbe_hw *hw, u32 reg, u8 *val)
++static s32 ixgbe_read_analog_reg8_82598(struct ixgbe_hw *hw, u32 reg, u8 *val)
+ {
+ 	u32  atlas_ctl;
  
-diff --git a/drivers/net/irda/smsc-ircc2.c b/drivers/net/irda/smsc-ircc2.c
-index b5360fe..5d09e15 100644
---- a/drivers/net/irda/smsc-ircc2.c
-+++ b/drivers/net/irda/smsc-ircc2.c
-@@ -872,7 +872,7 @@ static void smsc_ircc_timeout(struct net_device *dev)
-  *    waits until the next transmit interrupt, and continues until the
-  *    frame is transmitted.
-  */
--int smsc_ircc_hard_xmit_sir(struct sk_buff *skb, struct net_device *dev)
-+static int smsc_ircc_hard_xmit_sir(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct smsc_ircc_cb *self;
- 	unsigned long flags;
-@@ -1128,7 +1128,7 @@ static void smsc_ircc_change_speed(struct smsc_ircc_cb *self, u32 speed)
-  *    Set speed of IrDA port to specified baudrate
+@@ -916,7 +916,7 @@ s32 ixgbe_read_analog_reg8_82598(struct ixgbe_hw *hw, u32 reg, u8 *val)
   *
-  */
--void smsc_ircc_set_sir_speed(struct smsc_ircc_cb *self, __u32 speed)
-+static void smsc_ircc_set_sir_speed(struct smsc_ircc_cb *self, __u32 speed)
+  *  Performs write operation to Atlas analog register specified.
+  **/
+-s32 ixgbe_write_analog_reg8_82598(struct ixgbe_hw *hw, u32 reg, u8 val)
++static s32 ixgbe_write_analog_reg8_82598(struct ixgbe_hw *hw, u32 reg, u8 val)
  {
- 	int iobase;
- 	int fcr;    /* FIFO control reg */
-@@ -1894,7 +1894,7 @@ static void __exit smsc_ircc_cleanup(void)
-  * This function *must* be called with spinlock held, because it may
-  * be called from the irq handler (via smsc_ircc_change_speed()). - Jean II
-  */
--void smsc_ircc_sir_start(struct smsc_ircc_cb *self)
-+static void smsc_ircc_sir_start(struct smsc_ircc_cb *self)
- {
- 	struct net_device *dev;
- 	int fir_base, sir_base;
-diff --git a/drivers/net/irda/w83977af_ir.c b/drivers/net/irda/w83977af_ir.c
-index 161d591..30ec913 100644
---- a/drivers/net/irda/w83977af_ir.c
-+++ b/drivers/net/irda/w83977af_ir.c
-@@ -147,8 +147,8 @@ static void __exit w83977af_cleanup(void)
-  *    Open driver instance
-  *
-  */
--int w83977af_open(int i, unsigned int iobase, unsigned int irq, 
--		  unsigned int dma)
-+static int w83977af_open(int i, unsigned int iobase, unsigned int irq,
-+			 unsigned int dma)
- {
- 	struct net_device *dev;
-         struct w83977af_ir *self;
-@@ -310,7 +310,7 @@ static int w83977af_close(struct w83977af_ir *self)
- 	return 0;
- }
+ 	u32  atlas_ctl;
  
--int w83977af_probe( int iobase, int irq, int dma)
-+static int w83977af_probe(int iobase, int irq, int dma)
+@@ -937,8 +937,8 @@ s32 ixgbe_write_analog_reg8_82598(struct ixgbe_hw *hw, u32 reg, u8 val)
+  *
+  *  Performs byte read operation to SFP module's EEPROM over I2C interface.
+  **/
+-s32 ixgbe_read_i2c_eeprom_82598(struct ixgbe_hw *hw, u8 byte_offset,
+-                                u8 *eeprom_data)
++static s32 ixgbe_read_i2c_eeprom_82598(struct ixgbe_hw *hw, u8 byte_offset,
++				       u8 *eeprom_data)
  {
-   	int version;
- 	int i;
-@@ -409,7 +409,7 @@ int w83977af_probe( int iobase, int irq, int dma)
- 	return -1;
- }
+ 	s32 status = 0;
+ 	u16 sfp_addr = 0;
+@@ -997,7 +997,7 @@ out:
+  *
+  *  Determines physical layer capabilities of the current configuration.
+  **/
+-s32 ixgbe_get_supported_physical_layer_82598(struct ixgbe_hw *hw)
++static s32 ixgbe_get_supported_physical_layer_82598(struct ixgbe_hw *hw)
+ {
+ 	s32 physical_layer = IXGBE_PHYSICAL_LAYER_UNKNOWN;
  
--void w83977af_change_speed(struct w83977af_ir *self, __u32 speed)
-+static void w83977af_change_speed(struct w83977af_ir *self, __u32 speed)
- {
- 	int ir_mode = HCR_SIR;
- 	int iobase; 
-@@ -489,7 +489,7 @@ void w83977af_change_speed(struct w83977af_ir *self, __u32 speed)
-  *    Sets up a DMA transfer to send the current frame.
+diff --git a/drivers/net/ixgbe/ixgbe_dcb_82598.c b/drivers/net/ixgbe/ixgbe_dcb_82598.c
+index fce6867..2c046b0 100644
+--- a/drivers/net/ixgbe/ixgbe_dcb_82598.c
++++ b/drivers/net/ixgbe/ixgbe_dcb_82598.c
+@@ -97,8 +97,8 @@ s32 ixgbe_dcb_get_pfc_stats_82598(struct ixgbe_hw *hw,
   *
+  * Configure packet buffers for DCB mode.
   */
--int w83977af_hard_xmit(struct sk_buff *skb, struct net_device *dev)
-+static int w83977af_hard_xmit(struct sk_buff *skb, struct net_device *dev)
+-s32 ixgbe_dcb_config_packet_buffers_82598(struct ixgbe_hw *hw,
+-                                          struct ixgbe_dcb_config *dcb_config)
++static s32 ixgbe_dcb_config_packet_buffers_82598(struct ixgbe_hw *hw,
++						 struct ixgbe_dcb_config *dcb_config)
  {
- 	struct w83977af_ir *self;
- 	__s32 speed;
-@@ -731,7 +731,7 @@ static void w83977af_dma_xmit_complete(struct w83977af_ir *self)
-  *    if it starts to receive a frame.
-  *
-  */
--int w83977af_dma_receive(struct w83977af_ir *self) 
-+static int w83977af_dma_receive(struct w83977af_ir *self)
- {
- 	int iobase;
- 	__u8 set;
-@@ -803,7 +803,7 @@ int w83977af_dma_receive(struct w83977af_ir *self)
-  *    Finished with receiving a frame
-  *
-  */
--int w83977af_dma_receive_complete(struct w83977af_ir *self)
-+static int w83977af_dma_receive_complete(struct w83977af_ir *self)
- {
- 	struct sk_buff *skb;
- 	struct st_fifo *st_fifo;
+ 	s32 ret_val = 0;
+ 	u32 value = IXGBE_RXPBSIZE_64KB;
 
