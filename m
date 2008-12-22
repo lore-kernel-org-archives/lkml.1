@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYLVMCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYLVMEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYLVMCg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 07:02:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYLVMC1
+	id S1754684AbYLVMEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 07:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYLVMEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 07:02:27 -0500
-Received: from mga09.intel.com ([134.134.136.24]:36047 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753496AbYLVMC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 07:02:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,263,1228118400"; 
-   d="scan'208";a="475961409"
-Date: Mon, 22 Dec 2008 13:02:18 +0100
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       akpm@linux-foundation.org, mtk.manpages@gmail.com,
-       eranian@googlemail.com, juan.villacis@intel.com
-Subject: [patch] x86, ptrace: require admin privileges for ptrace BTS extension
-Message-ID: <20081222130218.A31747@sedona.ch.intel.com>
+	Mon, 22 Dec 2008 07:04:13 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:48698 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753658AbYLVMEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 07:04:12 -0500
+Subject: Re: [PATCH 11/14] kmemleak: Remove some of the kmemleak false
+	positives
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <84144f020812191215i432fd70fq3248d9feb981d4cf@mail.gmail.com>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	 <20081219181357.7778.9552.stgit@pc1117.cambridge.arm.com>
+	 <84144f020812191215i432fd70fq3248d9feb981d4cf@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 22 Dec 2008 12:04:07 +0000
+Message-Id: <1229947447.3182.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Dec 2008 12:04:08.0208 (UTC) FILETIME=[64AC2900:01C9642D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Require admin privileges for ptrace BTS extension.
+On Fri, 2008-12-19 at 22:15 +0200, Pekka Enberg wrote:
+> On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
+> <catalin.marinas@arm.com> wrote:
+> > There are allocations for which the main pointer cannot be found but
+> > they are not memory leaks. This patch fixes some of them. For more
+> > information on false positives, see Documentation/kmemleak.txt.
+> >
+> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> 
+> > @@ -2882,6 +2883,12 @@ static int __init con_init(void)
+> >         */
+> >        for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
+> >                vc_cons[currcons].d = vc = alloc_bootmem(sizeof(struct vc_data));
+> > +               /*
+> > +                * Kmemleak does not track the memory allocated via
+> > +                * alloc_bootmem() but this block contains pointers to
+> > +                * other blocks allocated via kmalloc.
+> > +                */
+> > +               kmemleak_alloc(vc, sizeof(struct vc_data), 1, GFP_ATOMIC);
+> >                INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+> >                visual_init(vc, currcons, 1);
+> >                vc->vc_screenbuf = (unsigned short *)alloc_bootmem(vc->vc_screenbuf_size);
+> 
+> I think there was some discussion about adding hooks to the bootmem
+> allocator. Didn't that work out?
 
+I had a look but the combination of alloc_bootmem, reserve_bootmem and
+free_bootmem doesn't seem feasible for kmemleak since calling these
+functions doesn't always come in alloc/free pairs (unless I
+misunderstand it).
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
-
-Index: gits/arch/x86/kernel/ptrace.c
-===================================================================
---- gits.orig/arch/x86/kernel/ptrace.c	2008-12-22 09:09:25.000000000 +0100
-+++ gits/arch/x86/kernel/ptrace.c	2008-12-22 11:03:01.000000000 +0100
-@@ -21,6 +21,7 @@
- #include <linux/audit.h>
- #include <linux/seccomp.h>
- #include <linux/signal.h>
-+#include <linux/capability.h>
- 
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
-@@ -742,6 +743,10 @@
- 	struct ptrace_bts_config cfg;
- 	int error = 0;
- 
-+	error = -EPERM;
-+	if (!capable(CAP_SYS_ADMIN))
-+		goto errout;
-+
- 	error = -EOPNOTSUPP;
- 	if (!bts_cfg.sizeof_bts)
- 		goto errout;
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+-- 
+Catalin
 
