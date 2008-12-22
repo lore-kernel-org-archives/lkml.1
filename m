@@ -1,64 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbYLVB4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbYLVB7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752772AbYLVB4c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 20:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYLVB4Y
+	id S1753171AbYLVB7Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 20:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYLVB7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 20:56:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52057 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751578AbYLVB4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 20:56:23 -0500
-Message-ID: <494EF3AA.9040100@kernel.org>
-Date: Mon, 22 Dec 2008 10:55:54 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Sun, 21 Dec 2008 20:59:14 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:55981 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874AbYLVB7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 20:59:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oXekFyKc/ijmFSqUS9ZHvORJI+ngXiY55VGwT9dI08vkVh8Cp5LpnUU1qDBNkk1qDm
+         PBDLFiFLoh+vibaz7JyWRzfm/DJL/idyNmOtuvXEg5A+vVnqMTaF7ezzj5g4ZlT8ro1Q
+         EpRJK8EVErMGdoqPuPr9MJcJmMgrXzx6s63ks=
+Message-ID: <2c3b11250812211759x2663f2a5v9691966a5b7a71f7@mail.gmail.com>
+Date: Mon, 22 Dec 2008 09:59:11 +0800
+From: "Liu Hui" <onlyflyer@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Notes on support for multiple devices for a single filesystem
+Cc: "Christoph Hellwig" <hch@infradead.org>, adilger@sun.com,
+       chris.mason@oracle.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20081217115325.3312858a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jerome Marchand <jmarchan@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: per-cpu stats in block device: overkill?
-References: <200812221049.43884.rusty@rustcorp.com.au>
-In-Reply-To: <200812221049.43884.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 22 Dec 2008 01:56:00 +0000 (UTC)
+Content-Disposition: inline
+References: <1227183484.6161.17.camel@think.oraclecorp.com>
+	 <1228962896.21376.11.camel@think.oraclecorp.com>
+	 <20081211141436.030c2d65.sfr@canb.auug.org.au>
+	 <20081210200604.8e190b0d.akpm@linux-foundation.org>
+	 <1229006596.22236.46.camel@think.oraclecorp.com>
+	 <20081215210323.GB5000@webber.adilger.int>
+	 <20081217132343.GA14695@infradead.org>
+	 <20081217115325.3312858a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Rusty.
+A very interesting article wrotete by Jeff Bonwick for Andrew --
+"Rampant Layering Violation?"
 
-Rusty Russell wrote:
-> Hi Jens, Tejun, Jerome,
-> 
-> I've been auditing alloc_per_cpu users, and got to genhd.  The code
-> is fairly complex, but I can't help wondering if per-cpu counters
-> are overkill.  After all, we have a single queue lock.
+http://blogs.sun.com/bonwick/entry/rampant_layering_violation
 
-Yeah, maybe.
+2008/12/18 Andrew Morton <akpm@linux-foundation.org>:
+> On Wed, 17 Dec 2008 08:23:44 -0500
+> Christoph Hellwig <hch@infradead.org> wrote:
+>
+>> FYI: here's a little writeup I did this summer on support for
+>> filesystems spanning multiple block devices:
+>>
+>>
+>> --
+>>
+>> === Notes on support for multiple devices for a single filesystem ===
+>>
+>> == Intro ==
+>>
+>> Btrfs (and an experimental XFS version) can support multiple underlying block
+>> devices for a single filesystem instances in a generalized and flexible way.
+>>
+>> Unlike the support for external log devices in ext3, jfs, reiserfs, XFS, and
+>> the special real-time device in XFS all data and metadata may be spread over a
+>> potentially large number of block devices, and not just one (or two)
+>>
+>>
+>> == Requirements ==
+>>
+>> We want a scheme to support these complex filesystem topologies in way
+>> that is
+>>
+>>  a) easy to setup and non-fragile for the users
+>>  b) scalable to a large number of disks in the system
+>>  c) recoverable without requiring user space running first
+>>  d) generic enough to work for multiple filesystems or other consumers
+>>
+>> Requirement a) means that a multiple-device filesystem should be mountable
+>> by a simple fstab entry (UUID/LABEL or some other cookie) which continues
+>> to work when the filesystem topology changes.
+>
+> "device topology"?
+>
+>> Requirement b) implies we must not do a scan over all available block devices
+>> in large systems, but use an event-based callout on detection of new block
+>> devices.
+>>
+>> Requirement c) means there must be some version to add devices to a filesystem
+>> by kernel command lines, even if this is not the default way, and might require
+>> additional knowledge from the user / system administrator.
+>>
+>> Requirement d) means that we should not implement this mechanism inside a
+>> single filesystem.
+>>
+>
+> One thing I've never seen comprehensively addressed is: why do this in
+> the filesystem at all?  Why not let MD take care of all this and
+> present a single block device to the fs layer?
+>
+> Lots of filesystems are violating this, and I'm sure the reasons for
+> this are good, but this document seems like a suitable place in which to
+> briefly decribe those reasons.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-btrfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-> The reason I care is that I'm changing alloc_per_cpu to use the
-> static per-cpu area: at 40/80 bytes (32/64 bit) per stat, we'd be
-> restricted to a few hundred disks unless the percpu area is enlarged
-> (in current patches, a cmdline param).  Or, I can change genhd to
-> use big_percpu_alloc which will use the current inefficient dynamic
-> per-cpu system until we get dynamic per-cpu regions (if ever).
 
-I'm working on local counter (local_t) allocator which is used to
-replace percpu allocation in percpu_counter and used as basis for
-percpu_ref which replaces module ref counting and will be used to
-simplify block/char lifetime rules.
-
-The local counter allocator allocates per-cpu pages and the space
-overhead is minimal.  If per-cpu stats in genhd is necessary, I think
-converting it to percpu local counter allocation should do it.
-
-BTW, why make percpu area static?
-
-Thanks.
 
 -- 
-tejun
+Thanks & Best Regards
+Liu Hui
+--
