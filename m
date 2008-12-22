@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbYLVWZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYLVW2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbYLVWZm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 17:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbYLVWZT
+	id S1755636AbYLVW2f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 17:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYLVW20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 17:25:19 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:1190 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755754AbYLVWZR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 17:25:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jbnwXFuaRUdK98xPu4DwYcHWylltrK5ZzYvIVanIq96nKo0fWMmrZ5JE8RANZye3wX
-         aIJc1997jY6V4cKnTaIDJydsth7yr4ZfiMff4fgJof99l/m+6Rkmb06iMXXpq9BMhfNN
-         IaYGFGmeRjtval/W44u2kkQYKjbhcwSGLuc1M=
-Date: Mon, 22 Dec 2008 23:25:10 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: malc <av1474@comtv.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Lock-up on PPC64
-Message-ID: <20081222222506.GA6014@joi>
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
+	Mon, 22 Dec 2008 17:28:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42055 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753650AbYLVW20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 17:28:26 -0500
+Date: Mon, 22 Dec 2008 23:26:04 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
+       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
+Subject: Re: [RFC][PATCH 4/6][v3] Define siginfo_from_ancestor_ns()
+Message-ID: <20081222222604.GA1536@redhat.com>
+References: <20081221005106.GA4912@us.ibm.com> <20081221005424.GD5025@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081221005424.GD5025@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 21, 2008 at 09:18:07PM +0300, malc wrote:
-> Hello,
+On 12/20, Sukadev Bhattiprolu wrote:
 >
-> Synopsis
->
-> Plain/non-root userspace application which doesn't interface with
-> any weird out-of/in-tree drivers manages to lock-up a PS3 machine
-> running Linux.
->
-> The application in question is Mono VM running mcs.exe (C# compiler)
-> which tries to compile particular file, distribution is Yellow Dog Linux
-> 6.0 with either stock (2.6.23.x) or custom compiled (2.6.27) 64bit kernel.
->
->
-> Symptoms are as follows (interaction is done via ssh from another
-> machine):
->
-> $ make
-> ... lots of stdout/err messages
-> ... eventually an error message
->
-> Eventually the ssh session terminates, PS3 is still pingable but
-> impossible to connect to, attaching keyboard and trying magic SysRq
-> doesn't work, typing keys into login: prompt works (as in - the terminal
-> shows keys that were pressed, but after hittiing enter the carret is
-> advanced and nothing happens, hitting random keys doesn't yield anything
-> either)
+> + * TODO:
+> + * 	  Making SI_ASYNCIO a kernel signal could make this less hacky.
+> + */
+> +#ifdef CONFIG_PID_NS
+> +static inline int siginfo_from_user(siginfo_t *info)
+> +{
+> +	if (!is_si_special(info) && SI_FROMUSER(info) &&
 
-Check your RAM first (memtest). If it won't find anything please post your
-config and dmesg. You can enable some debugging options ("Kernel hacking"
-in menuconfig), setup netconsole and see if it can catch anything.
-(see Documentation/networking/netconsole.txt)
+OK, if we can trust SI_FROMUSER(), then it is better, i agree.
 
-Marcin
+I was worried about in-kernel usage of .si_code <= 0 ...
+
+> +				info->si_code != SI_ASYNCIO)
+
+but this is horrible, imho.
+
+OK, if we can't change the ABI, then perhaps we can change
+kill_pid_info_as_uid() to not send the fatal signals to UNKILLABLE
+task? This helper is strange and ugly anyway,
+
+
+To clarify, I do not blame the patch itself, and I do not suggest
+to do this right now.
+
+Oleg.
+
