@@ -1,90 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYLVVN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYLVVOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbYLVVN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 16:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYLVVNU
+	id S1755325AbYLVVOr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 16:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYLVVOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 16:13:20 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51197 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754023AbYLVVNT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 16:13:19 -0500
-Date: Mon, 22 Dec 2008 21:13:17 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: draschi@ibs.sm, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: BUG smbd crash
-Message-ID: <20081222211316.GM28946@ZenIV.linux.org.uk>
-References: <000701c9643e$9d949480$1b02a8c0@client018> <20081222130545.f318ecb4.akpm@linux-foundation.org>
+	Mon, 22 Dec 2008 16:14:39 -0500
+Received: from www.tglx.de ([62.245.132.106]:58746 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753825AbYLVVOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 16:14:38 -0500
+Date: Mon, 22 Dec 2008 22:13:51 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, toralf.foerster@gmx.de
+Subject: Re: TSC not updating after resume: Bug or Feature?
+In-Reply-To: <b637ec0b0812221239p169967aemf14b2e591779f5cd@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0812222212191.3723@localhost.localdomain>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net>  <20081218123924.GH25715@elte.hu> <200812182319.57235.rjw@sisk.pl>  <alpine.LFD.2.00.0812211639210.3376@localhost.localdomain>  <alpine.LFD.2.00.0812212031220.4548@localhost.localdomain> 
+ <b637ec0b0812211443u1ca9c11du5d61c41e3d82bc16@mail.gmail.com>  <alpine.LFD.2.00.0812221543550.3723@localhost.localdomain>  <20081222150021.GA13839@elte.hu>  <alpine.LFD.2.00.0812221921460.3723@localhost.localdomain>  <alpine.LFD.2.00.0812222056190.3723@localhost.localdomain>
+ <b637ec0b0812221239p169967aemf14b2e591779f5cd@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081222130545.f318ecb4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 22, 2008 at 01:05:45PM -0800, Andrew Morton wrote:
-> On Mon, 22 Dec 2008 15:07:24 +0100
-> "Diego Raschi" <draschi@ibs.sm> wrote:
-> 
-> > 1.smbd crash
-> > 2.The daemon smbd crash and after restart the system is unstable.
-> > 3.daemon
-> > 4.Linux version 2.6.27.8.fc9.x86_64 (root@node1) (gcc version 4.3.0 20080428
-> > (Red Hat 4.3.0-8) (GCC) ) #3 SMP Thu Dec 18 10:40:19 CET 2008
-> > 5.Mon Dec 22 13:49:01 CET 2008
-> > BUG: soft lockup - CPU#5 stuck for 61s! [smbd:16614]
-> > Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
-> > crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
-> > sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
-> > sr_mod cdrom raid0 ata_generic pata_amd cfi_cmdset_0002 pcspkr cfi_util
-> > ppdev sata_nv pata_acpi floppy libata button jedec_probe parport_pc
-> > cfi_probe gen_probe ck804xrom parport mtd qla2xxx chipreg scsi_transport_fc
-> > scsi_tgt map_funcs sg forcedeth i2c_nforce2 i2c_core shpchp 3w_9xxx sd_mod
-> > scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd mbcache
-> > uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
-> > CPU 5:
-> > Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
-> > crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
-> > sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
-> > sr_mod cdrom raid0 ata_generic pata_amd cfi_cmdset_0002 pcspkr cfi_util
-> > ppdev sata_nv pata_acpi floppy libata button jedec_probe parport_pc
-> > cfi_probe gen_probe ck804xrom parport mtd qla2xxx chipreg scsi_transport_fc
-> > scsi_tgt map_funcs sg forcedeth i2c_nforce2 i2c_core shpchp 3w_9xxx sd_mod
-> > scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd mbcache
-> > uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
-> > Pid: 16614, comm: smbd Not tainted 2.6.27.8.fc9.x86_64 #3
-> > RIP: 0010:[<ffffffff812a1871>]  [<ffffffff812a1871>] mutex_lock+0x23/0x2e
-> > RSP: 0000:ffff88032f0c1e38  EFLAGS: 00000246
-> > RAX: 0000000000000246 RBX: ffff88032f0c1e48 RCX: 0000000000000002
-> > RDX: ffff88032e91ebc0 RSI: 0000000000000058 RDI: ffff88010b65d3f0
-> > RBP: 0000000000000000 R08: ffff88032f0c0000 R09: 0000000000000000
-> > R10: 0000150d29bc50cf R11: ffff8802dca56048 R12: 0000150d29bc50cf
-> > R13: ffff8802dca56048 R14: ffff88032f0c1e28 R15: 0000000000000000
-> > FS:  00007f011676a7a0(0000) GS:ffff88022fa13200(0000) knlGS:00000000f7fd86c0
-> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > CR2: 0000000002642fc0 CR3: 000000032e91d000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > 
-> > Call Trace:
-> >  [<ffffffff812a186b>] ? mutex_lock+0x1d/0x2e
-> >  [<ffffffff810dbd0e>] ? inotify_destroy+0x83/0xda
-> >  [<ffffffff810dbefe>] ? inotify_release+0x28/0xd7
-> >  [<ffffffff810b2202>] ? __fput+0xc5/0x184
-> >  [<ffffffff810b22d6>] ? fput+0x15/0x17
-> >  [<ffffffff810af745>] ? filp_close+0x67/0x72
-> >  [<ffffffff810af7fd>] ? sys_close+0xad/0xf0
-> >  [<ffffffff8100c0ea>] ? system_call_fastpath+0x16/0x1b
-> 
-> Is this a regression?  Were any earlier kernels OK?  2.6.27.7?
-> 
-> An inotify fix went into 2.6.27.8 and I seem to recall that there might
-> have been some problems with it.
+Fabio,
 
-It's IDR breakage, actually; introduced in
-6ff2d39b91aec3dcae951afa982059e3dd9b49dc, fixed in
-711a49a07f84f914aac26a52143f6e7526571143.  IIRC, .10 has the fix in place.
+On Mon, 22 Dec 2008, Fabio Comolli wrote:
+> Hi Thomas.
+> 
+> On Mon, Dec 22, 2008 at 9:36 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > On Mon, 22 Dec 2008, Thomas Gleixner wrote:
+> >> On Mon, 22 Dec 2008, Ingo Molnar wrote:
+> >> > * Thomas Gleixner <tglx@linutronix.de> wrote:
+> >> >
+> >> > > > By the way, I don't know if it matters but the problema happened with
+> >> > > > in-kernel hibernation and also in out-of-tree TuxOnIce hibernation.
+> >> > > > Maybe this can help debugging the issue, I don't know.
+> >> > >
+> >> > > Hmm, does not ring a bell here. Can you please apply the patch below to
+> >> > > mainline and retest ?
+> >> >
+> >> > ... and he should send a dmesg after a suspend cycle, right?
+> >>
+> >> Yes :)
+> >>
+> >> I digged more in the bugzillas. Toralf added some debug to
+> >> __update_sched_clock():
+> >>
+> >> -       max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
+> >> +       max_clock = scd->tick_gtod + TICK_NSEC;
+> >> +       if (scd->clock > max_clock)
+> >> +               printk(KERN_INFO "%d %d\n", scd->clock, max_clock);
+> >>
+> >> The interesting output is:
+> >>
+> >> Dec 14 21:55:55 n22 Back to C!
+> >> Dec 14 21:55:55 n22 Extended CMOS year: 2000
+> >> Dec 14 21:55:55 n22 Force enabled HPET at resume
+> >> Dec 14 21:55:55 n22 212611283 77
+> >>
+> >> The 77 is totaly bogus and it's likely not just a truncation of the
+> >> 64bit value because (scd->clock > max_clock) evaluates to true. This
+> >> output is _AFTER_ timekeeping resume because the HPET force enable
+> >> message comes from timekeeping resume.
+> >
+> > Seems I'm talking to myself, but I think I finally decoded the
+> > mystery:
+> >
+> > resume()
+> >  cpufreq_resume()
+> >    tsc:time_cpufreq_notifier()
+> >      set_cyc2ns_scale()
+> >        sched_clock_idle_sleep_event()
+> >          sched_clock_tick()
+> >            ktime_get()
+> >              hpet_read()
+> >
+> > This happens _BEFORE_ timekeeping has resumed, so hpet_read() returns
+> > nonsense and the timekeeping code uses the stale pre suspend
+> > xtime/clocksource reference values to calculate the time. So the gtod
+> > reference in sched_clock can result in total crap depending on the
+> > time when the suspend happened.
+> >
+> > Shaggys patch clamps sched_clock to the stale scd->clock value which
+> > might explain the further wreckage.
+> >
+> > The above sequence happens only for CPUs with a CPU frequency coupled
+> > TSC, so on newer machines with CPU frequency invariant TSC this does
+> > not happen.
+> >
+> > /me stomps off to find a box to confirm that.
+> >
+> 
+> Ok, just for reference here is my
+> 
+> fcomolli@hawking:~> cat /proc/cpuinfo
+> processor	: 0
+> vendor_id	: GenuineIntel
+> cpu family	: 6
+> model		: 13
+> model name	: Intel(R) Pentium(R) M processor 1.73GHz
+> stepping	: 8
+> cpu MHz		: 800.000
+> cache size	: 2048 KB
+> fdiv_bug	: no
+> hlt_bug		: no
+> f00f_bug	: no
+> coma_bug	: no
+> fpu		: yes
+> fpu_exception	: yes
+> cpuid level	: 2
+> wp		: yes
+> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+> pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx up bts est tm2
+> bogomips	: 1596.95
+> clflush size	: 64
+> power management:
+
+Can please you revert the last patch and apply the following ? Does
+the WARN_ON trigger ?
+
+Thanks,
+
+	tglx
+---
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index fa05e88..0d1526d 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -46,6 +46,9 @@ struct timespec xtime __attribute__ ((aligned (16)));
+ struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
+ static unsigned long total_sleep_time;		/* seconds */
+ 
++/* flag for if timekeeping is suspended */
++static int timekeeping_suspended;
++
+ static struct timespec xtime_cache __attribute__ ((aligned (16)));
+ void update_xtime_cache(u64 nsec)
+ {
+@@ -92,6 +95,8 @@ void getnstimeofday(struct timespec *ts)
+ 	unsigned long seq;
+ 	s64 nsecs;
+ 
++	WARN_ON(timekeeping_suspended);
++
+ 	do {
+ 		seq = read_seqbegin(&xtime_lock);
+ 
+@@ -299,8 +304,6 @@ void __init timekeeping_init(void)
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ }
+ 
+-/* flag for if timekeeping is suspended */
+-static int timekeeping_suspended;
+ /* time in seconds when suspend began */
+ static unsigned long timekeeping_suspend_time;
+ 
