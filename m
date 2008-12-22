@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYLVUDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbYLVUGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbYLVUDt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 15:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYLVUDl
+	id S1755302AbYLVUGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 15:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYLVUGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 15:03:41 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:39387 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbYLVUDk (ORCPT
+	Mon, 22 Dec 2008 15:06:11 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:44667 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752515AbYLVUGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 15:03:40 -0500
-Date: Mon, 22 Dec 2008 21:03:37 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ
-	drivers
-Message-ID: <20081222200337.GD9472@pengutronix.de>
-References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange> <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de> <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de>
+	Mon, 22 Dec 2008 15:06:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=VQzaOvedtJoY02827/f7Mh3KwyGCMlD0sLOGE74uTuhYfPAXDHKy1nKEoaP8YZSAVU
+         sSYLvraBL4ZnJzaWbDeWodF7Iyj3qxGNE2iCbaSn/V5sjk8f9ZDG/XHr21KIRn3LeSHx
+         UnA/Qrq0LpuM4TG8GGvf3VssOmwO1nRmXVgMI=
+Message-ID: <c6d9bea0812221206j3edef970t316f104274f961ce@mail.gmail.com>
+Date: Mon, 22 Dec 2008 15:06:08 -0500
+From: "C. Scott Ananian" <cscott@laptop.org>
+To: "Eric Paris" <eparis@redhat.com>
+Subject: Re: [RFC PATCH -v4 12/14] fsnotify: add correlations between events
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       viro@zeniv.linux.org.uk, hch@infradead.org, zbr@ioremap.net,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <1229913601.29604.9.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081222183753.GD1614@pengutronix.de>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 21:00:05 up 9 days, 22 min,  6 users,  load average: 0.00, 0.03,
-	0.03
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:219:66ff:fe5b:d0e3
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+	 <20081212215217.27112.75137.stgit@paris.rdu.redhat.com>
+	 <c6d9bea0812181428s2ae78e30y1e700b2eca07ca96@mail.gmail.com>
+	 <1229913601.29604.9.camel@localhost.localdomain>
+X-Google-Sender-Auth: 18ed46394252e1d7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 22, 2008 at 07:37:53PM +0100, Sascha Hauer wrote:
-> Another thing is the overlay framebuffer. I think it's mainly useful
-> to display video streams.
+On Sun, Dec 21, 2008 at 9:40 PM, Eric Paris <eparis@redhat.com> wrote:
+> A) this isn't a hot path, it's only when a file is renamed.
 
-Right. The idea is that you can push a video stream into /dev/fb1 (for
-example by using the gstreamer fbdev sink) while displaying widgets from
-a GUI toolkit on /dev/fb0.
+Yes, sorry, I misread the description of that patch to indicate that
+you planned to include a newly-generated cookie in all fsevents.
+Re-reading the patch I see that you are still only generating cookies
+for renames.  But yeah, better cookie generation will help scalability
+if you plan to use them more broadly in fanotify.
+ --scott
 
-> Maybe it's better to implement this as a v4l device as unlike the
-> framebuffer API the v4l API is designed to handle different image
-> buffers.
-
-Huh? v4l is image-frames-to-userspace, not vice versa.
-
-rsc
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+                         ( http://cscott.net/ )
