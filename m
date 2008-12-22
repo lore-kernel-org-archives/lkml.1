@@ -1,124 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbYLVXnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbYLVXok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756475AbYLVXnK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 18:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbYLVXm5
+	id S1756595AbYLVXok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 18:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbYLVXo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 18:42:57 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50966 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186AbYLVXm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 18:42:56 -0500
-Subject: Re: races when reserving an event in the unified trace buffer
-From: Steven Rostedt <srostedt@redhat.com>
-To: Jiaying Zhang <jiayingz@google.com>
-Cc: linux-kernel@vger.kernel.org, Michael Rubin <mrubin@google.com>,
-       Michael Davidson <md@google.com>, Martin Bligh <mbligh@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <5df78e1d0812171600g15cb7c53m7fb8cc0893f861f3@mail.gmail.com>
-References: <5df78e1d0812121626k367043c6hbb0232dc20b1db78@mail.gmail.com>
-	 <5df78e1d0812171600g15cb7c53m7fb8cc0893f861f3@mail.gmail.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 22 Dec 2008 18:42:48 -0500
-Message-Id: <1229989368.30177.87.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 18:44:28 -0500
+Received: from mail-gx0-f13.google.com ([209.85.217.13]:65402 "EHLO
+	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754623AbYLVXo1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 18:44:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=AEOn1/xRI4NWvgQWCd1aEBfhkcS4pylBrALaytCRpO5mcWJJj3wfP39FaTZ5ATU8r1
+         XICXYV5+NqycitILO1pcPYxwWwiJCftUkBc7Qh/iSfTo6QNIorgH26q7izaRcoWTm1hG
+         f8T1eHsW96IRLx1zSr2ZRHut6QMRpFZRkLCRY=
+Message-ID: <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
+Date: Tue, 23 Dec 2008 00:44:25 +0100
+From: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
+To: "Krzysztof Halasa" <khc@pm.waw.pl>
+Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a compound statement
+Cc: "Hannes Eder" <hannes@hanneseder.net>, netdev@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <m3hc4voo2a.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+	 <20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
+	 <m3hc4voo2a.fsf@maximus.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBMNiiki024762
 
-Hi Jiaying,
-
-Again, sorry for taking so long to get back to you on this.
-
-On Wed, 2008-12-17 at 16:00 -0800, Jiaying Zhang wrote:
-> Hi Steve,
-> 
-> I mentioned in my last email that I saw the warning about the trace buffer
-> became full because of an interrupt storm even with my posted patch applied.
-> After adding more debugging messages, I found that the problem was actually
-> caused by another race in the code.
-
-Actually, the other email did find a bug.
-
-
->  I saw the events in the buffer were
-> not just interrupts but include other kernel events as well. Looks
-> like the commit
-> page failed to advance because of a race between the update of tail_page in
-> __rb_reserve_next_event and the following lines in the rb_set_commit_to_write:
-
->         while (cpu_buffer->commit_page != cpu_buffer->tail_page) {
->                 cpu_buffer->commit_page->page->commit =
->                         cpu_buffer->commit_page->write;
->                 rb_inc_page(cpu_buffer, &cpu_buffer->commit_page);
->                 ...
->         }
-
-You are saying an interrupt happens here that pushes the tail page one.
-
->         while (rb_commit_index(cpu_buffer) !=
->                rb_page_write(cpu_buffer->commit_page)) {
->                 cpu_buffer->commit_page->page->commit =
->                         cpu_buffer->commit_page->write;
->                 barrier();
->         }
-
-Now here we are left with the tail page moved one forward but the commit
-left back one, and thus we do not increment the commit.
-
-
-
-> 
-> The problem is that an interrupt can happen right after a kernel event finishes
-> the condition check "cpu_buffer->commit_page != cpu_buffer->tail_page" but
-> before it updates the commit value of the commit_page. If we were at the tail
-> of the tail_page and the commit_page was the same as the tail_page when
-> the first kernel event checked that, neither of the events would advance the
-> commit_page pointer because the interrupt event was NOT the commit event
-> before the kernel event updated the commit pointer and the kernel event did
-> NOT see the change of the tail_page made by the interrupt event. Once we
-> got into this situation, the trace buffer would soon become full and reject
-> any further reservation requests.
-> 
-> A possible fix I think is to update the commit pointer of the commit_page
-> both before and after updating the commit_page in rb_set_commit_to_write().
-> Here is the proposed fix. Please let me know if my analysis makes sense
-> to you. Thanks a lot!
-> 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 7f69cfe..b345ba7 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -839,6 +839,12 @@ rb_set_commit_to_write(struct ring_buffer_per_cpu
-> *cpu_buffer)
->          * back to us). This allows us to do a simple loop to
->          * assign the commit to the tail.
->          */
-> +       while (rb_commit_index(cpu_buffer) !=
-> +              rb_page_write(cpu_buffer->commit_page)) {
-> +               cpu_buffer->commit_page->page->commit =
-> +                       cpu_buffer->commit_page->write;
-> +               barrier();
-> +       }
-
-I do not think this solves it for us. Because the interrupt comes in
-after the next check, and this is where we are left with the dangling
-commit.
-
->         while (cpu_buffer->commit_page != cpu_buffer->tail_page) {
->                 cpu_buffer->commit_page->page->commit =
->                         cpu_buffer->commit_page->write;
-
-What we need is to add do while over the entire code with:
-
-do {
-	[...]
-} while (cpu_buffer->commit_page != cpu_buffer->tail_page);
-
-Thanks!
-
--- Steve
-
-
+2008/12/22 Krzysztof Halasa <khc@pm.waw.pl>:>> --- a/drivers/net/starfire.c>> +++ b/drivers/net/starfire.c>> @@ -882,9 +882,9 @@ static int mdio_read(struct net_device *dev, int phy_id, int location)>>       void __iomem *mdio_addr = np->base + MIICtrl + (phy_id<<7) + (location<<2);>>       int result, boguscnt=1000;>>       /* ??? Should we add a busy-wait here? */>> -     do>> +     do {>>               result = readl(mdio_addr);>> -     while ((result & 0xC0000000) != 0x80000000 && --boguscnt > 0);>> +     } while ((result & 0xC0000000) != 0x80000000 && --boguscnt > 0);>>       if (boguscnt == 0)>>               return 0;>>       if ((result & 0xffff) == 0xffff)>>> I don't know how one could think the above is an improvement.
+For this specific issue the important aspect is to improve readability(and not just eventually satisfy some warning from a tool), which Iassume there is no disagrement on. Now what constitutes improvedreadbility on the other hand is another issue, and I guess there arenext to as many oppinions as developers... :)I would most certainly prefer to have code look consistently and alwayshave brackets, even in the case of just one body line.
+Of secondary importance is the benefit that always using bracketsmakes them much more merge friendly. Consider the following scenario:
+Common base:        do                result = readl(mdio_addr);        while ((result & 0xC0000000) != 0x80000000 && --boguscnt > 0);
+Branch 1        do {                result = readl(mdio_addr);                do_something();        } while ((result & 0xC0000000) != 0x80000000 && --boguscnt > 0);
+Branch 2        do                result = readl(mdio_addr);        while (NOT_OK(result) && --boguscnt > 0);
+In this case if both branch 1 and 2 are merged, there will be a merge conflictthat has to be resolved manually. If the brackets had been in place from thestart tools should be able to resolv this automatically.
+BR HÃ¥kon LÃ¸vdalÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
