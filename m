@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbYLVRLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbYLVRWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbYLVRLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 12:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYLVRLk
+	id S1755100AbYLVRWT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 12:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYLVRWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 12:11:40 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:33304 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbYLVRLj (ORCPT
+	Mon, 22 Dec 2008 12:22:11 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:51490 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYLVRWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 12:11:39 -0500
-Subject: Re: [PATCH 1/2] video: mbp_nvidia_bl: Add support for MacBook 5,
-	MacBook Air 2, and MacBook Pro 5
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-Cc: Matthew Garrett <mjg@redhat.com>, Richard Purdie <rpurdie@rpsys.net>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4942CE33.2020403@inf.tu-dresden.de>
-References: <4942CE33.2020403@inf.tu-dresden.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-QC7jssc5RHFSMnCGQFXV"
-Date: Mon, 22 Dec 2008 18:11:23 +0100
-Message-Id: <1229965883.4406.0.camel@johannes>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 22 Dec 2008 12:22:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Lfbb4jh0XP9yO4kiHioiIqvkV0k1VvSfTBHPk7o5eaC/5+f8+aXibDnD0QhdSftj69
+         1YCIpxxJySoOHvnA7PBJXffPhS9/zXKTNz7dSObT7R3kypmIFO5SEu1NDR4OWgFpb5dM
+         lMWSx7G/YR43pp89941Am/Ds+JUIuE8h4Fv+E=
+Message-ID: <37d33d830812220922l5a0bc36et5dd1f9853f9cd33@mail.gmail.com>
+Date: Mon, 22 Dec 2008 22:52:08 +0530
+From: "Sandeep K Sinha" <sandeepksinha@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Device mapper support for more than one target ?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
---=-QC7jssc5RHFSMnCGQFXV
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+After looking at the complete implementation of device mappers, I
+figured out that we can have more than one target for a mapped device
+then why do we have a check for the number of target to be equal to
+one , in dm_blk_ioctl ( ) in drivers/md/dm.c
 
-On Fri, 2008-12-12 at 21:48 +0100, Mario Schwalbe wrote:
-> This patch adds support for the new Apple models incorporating
-> an Nvidia chipset. Apple still uses the same protocol as on older models,
-> but the registers moved to a different address.
+http://lxr.linux.no/#linux+v2.6.27.10/drivers/md/dm.c#L337
 
-Can you tell me which tree this is against? I can't seem to apply it
-against .28-rc9, should I be using something newer?
+I think this is a old piece of code and we need to modify it.
 
-johannes
+Kindly suggest !
 
---=-QC7jssc5RHFSMnCGQFXV
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+-- 
+Regards,
+Sandeep.
 
-iQIcBAABAgAGBQJJT8o5AAoJEKVg1VMiehFYWRcP/07PhkzNDv75Unn/c/OgwacN
-v4XL0aWWZVf/n3s4bQ4fm5WALOIWtXn67mQ2QdROhWWsSBdrWggn3vLcNwLruL1u
-tPXvmhNlCMpNnqS7srK0K1l4kJyaR4bal4YyJopf+R0l/iRcrvA6iS1qxaXwndOs
-ZFUOrVzjQwXFbJQ+VK8V8hhsfXdt9RJs2lh8jtF1hbqM7nfKe8jrBq9ErTyeFRu9
-7zx5yfCd1P42VrKCaE36C9lTvUDi60feev+0JVwRX0tuHt99j6wonf4QC6C0m9id
-CSpVp/aW18J5EyMqqa+QInt/oD/HQQSasbV4wcvDltd7fsOO4owN+HOa7hSdmb2T
-uYZDIhdIiG1tLGXYB1eMKr/MXHCT6flnSHLKSNkUXvB+fv+rHqFv3lDMaeLH0xQG
-hRPzKevuscE0ViXjejnZN4Jg3IAr54P4FMNPNfNtPJ28ecgGAp8Jt87zBuWMUd0p
-4ItJ07GCVnBm4m4JdDhPJZEn364bp33x0zOhk0zUT2h6EPXFI9kTpAXmDmCLV3vI
-rfi4xWcQsC8nOM4Uud0+pu9vJJD2TQsQ6//E8LmkdYcSPf2iGuqHgc7yy/Y1Tro9
-j08YuRnbDv0pS/B4RYY460JzouRCucLbPTRmlkctik0Ze+Ess7s1cW9bZM/JUGd0
-W2ljMXHSYCD9bfk25AMC
-=qH//
------END PGP SIGNATURE-----
 
---=-QC7jssc5RHFSMnCGQFXV--
 
+
+
+ 	
+"To learn is to change. Education is a process that changes the learner."
