@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbYLVTXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYLVTXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756359AbYLVTXU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYLVTRo
+	id S1756399AbYLVTXh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbYLVTRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:17:44 -0500
+	Mon, 22 Dec 2008 14:17:53 -0500
 Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755891AbYLVTRm (ORCPT
+	with ESMTP id S1755504AbYLVTRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:17:42 -0500
-Subject: [PATCH 18/27] drivers/net/tulip: fix sparse warnings: make do-while a
-	compound statement
+	Mon, 22 Dec 2008 14:17:51 -0500
+Subject: [PATCH 19/27] drivers/net/usb: fix sparse warnings: make symbols
+	static
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:17:37 +0100
-Message-ID: <20081222191737.11807.16256.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:17:46 +0100
+Message-ID: <20081222191745.11807.75548.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -29,45 +29,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix this sparse warnings:
 
-  drivers/net/tulip/de2104x.c:1695:4: warning: do-while statement is not a compound statement
-  drivers/net/tulip/tulip_core.c:1433:5: warning: do-while statement is not a compound statement
+  drivers/net/usb/hso.c:1249:6: warning: symbol 'hso_unthrottle_tasklet' was not declared. Should it be static?
+  drivers/net/usb/hso.c:1268:6: warning: symbol 'hso_unthrottle_workfunc' was not declared. Should it be static?
+  drivers/net/usb/hso.c:1466:5: warning: symbol 'tiocmget_submit_urb' was not declared. Should it be static?
+  drivers/net/usb/smsc95xx.c:62:5: warning: symbol 'turbo_mode' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/tulip/de2104x.c    |    4 ++--
- drivers/net/tulip/tulip_core.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/usb/hso.c      |   10 +++++-----
+ drivers/net/usb/smsc95xx.c |    2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/tulip/de2104x.c b/drivers/net/tulip/de2104x.c
-index 3aa60fa..5166be9 100644
---- a/drivers/net/tulip/de2104x.c
-+++ b/drivers/net/tulip/de2104x.c
-@@ -1691,9 +1691,9 @@ static void __devinit de21040_get_mac_address (struct de_private *de)
+diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
+index 2d41a10..1a09288 100644
+--- a/drivers/net/usb/hso.c
++++ b/drivers/net/usb/hso.c
+@@ -1246,7 +1246,7 @@ static void hso_std_serial_read_bulk_callback(struct urb *urb)
+  * This needs to be a tasklet otherwise we will
+  * end up recursively calling this function.
+  */
+-void hso_unthrottle_tasklet(struct hso_serial *serial)
++static void hso_unthrottle_tasklet(struct hso_serial *serial)
+ {
+ 	unsigned long flags;
  
- 	for (i = 0; i < 6; i++) {
- 		int value, boguscnt = 100000;
--		do
-+		do {
- 			value = dr32(ROMCmd);
--		while (value < 0 && --boguscnt > 0);
-+		} while (value < 0 && --boguscnt > 0);
- 		de->dev->dev_addr[i] = value;
- 		udelay(1);
- 		if (boguscnt <= 0)
-diff --git a/drivers/net/tulip/tulip_core.c b/drivers/net/tulip/tulip_core.c
-index 1c5ef23..ff84bab 100644
---- a/drivers/net/tulip/tulip_core.c
-+++ b/drivers/net/tulip/tulip_core.c
-@@ -1429,9 +1429,9 @@ static int __devinit tulip_init_one (struct pci_dev *pdev,
- 		for (i = 0; i < 3; i++) {
- 			int value, boguscnt = 100000;
- 			iowrite32(0x600 | i, ioaddr + 0x98);
--			do
-+			do {
- 				value = ioread32(ioaddr + CSR9);
--			while (value < 0  && --boguscnt > 0);
-+			} while (value < 0  && --boguscnt > 0);
- 			put_unaligned_le16(value, ((__le16 *)dev->dev_addr) + i);
- 			sum += value & 0xffff;
- 		}
+@@ -1265,7 +1265,7 @@ static	void hso_unthrottle(struct tty_struct *tty)
+ 	tasklet_hi_schedule(&serial->unthrottle_tasklet);
+ }
+ 
+-void hso_unthrottle_workfunc(struct work_struct *work)
++static void hso_unthrottle_workfunc(struct work_struct *work)
+ {
+ 	struct hso_serial *serial =
+ 	    container_of(work, struct hso_serial,
+@@ -1463,9 +1463,9 @@ static int hso_serial_chars_in_buffer(struct tty_struct *tty)
+ 
+ 	return chars;
+ }
+-int tiocmget_submit_urb(struct hso_serial *serial,
+-			struct hso_tiocmget  *tiocmget,
+-			struct usb_device *usb)
++static int tiocmget_submit_urb(struct hso_serial *serial,
++			       struct hso_tiocmget *tiocmget,
++			       struct usb_device *usb)
+ {
+ 	int result;
+ 
+diff --git a/drivers/net/usb/smsc95xx.c b/drivers/net/usb/smsc95xx.c
+index fed22ff..111a365 100644
+--- a/drivers/net/usb/smsc95xx.c
++++ b/drivers/net/usb/smsc95xx.c
+@@ -59,7 +59,7 @@ struct usb_context {
+ 	struct usbnet *dev;
+ };
+ 
+-int turbo_mode = true;
++static int turbo_mode = true;
+ module_param(turbo_mode, bool, 0644);
+ MODULE_PARM_DESC(turbo_mode, "Enable multiple frames per Rx transaction");
+ 
 
