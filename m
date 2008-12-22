@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbYLVTQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYLVTQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbYLVTQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbYLVTP0
+	id S1755428AbYLVTQf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbYLVTPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:15:26 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:19066 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755242AbYLVTPY (ORCPT
+	Mon, 22 Dec 2008 14:15:18 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755177AbYLVTPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:15:24 -0500
-Subject: [PATCH 03/27] drivers/net: fix sparse warning: returning void-valued
-	expression
+	Mon, 22 Dec 2008 14:15:14 -0500
+Subject: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a
+	compound statement
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:15:17 +0100
-Message-ID: <20081222191517.11807.20718.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:15:07 +0100
+Message-ID: <20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -27,26 +27,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warning:
+While at it insert some extra curly braces and fix formatting.
 
-  drivers/net/niu.c:8850:2: warning: returning void-valued expression
+Fix this sparse warnings:
+
+  drivers/net/atp.c:811:8: warning: do-while statement is not a compound statement
+  drivers/net/atp.c:813:8: warning: do-while statement is not a compound statement
+  drivers/net/atp.c:815:11: warning: do-while statement is not a compound statement
+  drivers/net/atp.c:817:11: warning: do-while statement is not a compound statement
+  drivers/net/plip.c:642:4: warning: do-while statement is not a compound statement
+  drivers/net/plip.c:647:4: warning: do-while statement is not a compound statement
+  drivers/net/plip.c:820:4: warning: do-while statement is not a compound statement
+  drivers/net/plip.c:825:4: warning: do-while statement is not a compound statement
+  drivers/net/starfire.c:886:3: warning: do-while statement is not a compound statement
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/niu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/atp.c      |   19 ++++++++++---------
+ drivers/net/plip.c     |   16 ++++++++--------
+ drivers/net/starfire.c |    4 ++--
+ 3 files changed, 20 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/niu.c b/drivers/net/niu.c
-index 022866d..a4b6913 100644
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -8847,7 +8847,7 @@ static u64 niu_pci_map_page(struct device *dev, struct page *page,
- static void niu_pci_unmap_page(struct device *dev, u64 dma_address,
- 			       size_t size, enum dma_data_direction direction)
+diff --git a/drivers/net/atp.c b/drivers/net/atp.c
+index 1d6b74c..ea493ce 100644
+--- a/drivers/net/atp.c
++++ b/drivers/net/atp.c
+@@ -802,21 +802,22 @@ static void net_rx(struct net_device *dev)
+ 
+ static void read_block(long ioaddr, int length, unsigned char *p, int data_mode)
  {
--	return dma_unmap_page(dev, dma_address, size, direction);
-+	dma_unmap_page(dev, dma_address, size, direction);
+-
+ 	if (data_mode <= 3) { /* Mode 0 or 1 */
+ 		outb(Ctrl_LNibRead, ioaddr + PAR_CONTROL);
+ 		outb(length == 8  ?  RdAddr | HNib | MAR  :  RdAddr | MAR,
+ 			 ioaddr + PAR_DATA);
+ 		if (data_mode <= 1) { /* Mode 0 or 1 */
+-			do  *p++ = read_byte_mode0(ioaddr);  while (--length > 0);
+-		} else	/* Mode 2 or 3 */
+-			do  *p++ = read_byte_mode2(ioaddr);  while (--length > 0);
+-	} else if (data_mode <= 5)
+-		do      *p++ = read_byte_mode4(ioaddr);  while (--length > 0);
+-	else
+-		do      *p++ = read_byte_mode6(ioaddr);  while (--length > 0);
++			do { *p++ = read_byte_mode0(ioaddr); } while (--length > 0);
++		} else { /* Mode 2 or 3 */
++			do { *p++ = read_byte_mode2(ioaddr); } while (--length > 0);
++		}
++	} else if (data_mode <= 5) {
++		do { *p++ = read_byte_mode4(ioaddr); } while (--length > 0);
++	} else {
++		do { *p++ = read_byte_mode6(ioaddr); } while (--length > 0);
++	}
+ 
+-    outb(EOC+HNib+MAR, ioaddr + PAR_DATA);
++	outb(EOC+HNib+MAR, ioaddr + PAR_DATA);
+ 	outb(Ctrl_SelData, ioaddr + PAR_CONTROL);
  }
  
- static u64 niu_pci_map_single(struct device *dev, void *cpu_addr,
+diff --git a/drivers/net/plip.c b/drivers/net/plip.c
+index 5d904f7..ed8582e 100644
+--- a/drivers/net/plip.c
++++ b/drivers/net/plip.c
+@@ -638,14 +638,14 @@ plip_receive_packet(struct net_device *dev, struct net_local *nl,
+ 
+ 	case PLIP_PK_DATA:
+ 		lbuf = rcv->skb->data;
+-		do
++		do {
+ 			if (plip_receive(nibble_timeout, dev,
+ 					 &rcv->nibble, &lbuf[rcv->byte]))
+ 				return TIMEOUT;
+-		while (++rcv->byte < rcv->length.h);
+-		do
++		} while (++rcv->byte < rcv->length.h);
++		do {
+ 			rcv->checksum += lbuf[--rcv->byte];
+-		while (rcv->byte);
++		} while (rcv->byte);
+ 		rcv->state = PLIP_PK_CHECKSUM;
+ 
+ 	case PLIP_PK_CHECKSUM:
+@@ -816,14 +816,14 @@ plip_send_packet(struct net_device *dev, struct net_local *nl,
+ 		snd->checksum = 0;
+ 
+ 	case PLIP_PK_DATA:
+-		do
++		do {
+ 			if (plip_send(nibble_timeout, dev,
+ 				      &snd->nibble, lbuf[snd->byte]))
+ 				return TIMEOUT;
+-		while (++snd->byte < snd->length.h);
+-		do
++		} while (++snd->byte < snd->length.h);
++		do {
+ 			snd->checksum += lbuf[--snd->byte];
+-		while (snd->byte);
++		} while (snd->byte);
+ 		snd->state = PLIP_PK_CHECKSUM;
+ 
+ 	case PLIP_PK_CHECKSUM:
+diff --git a/drivers/net/starfire.c b/drivers/net/starfire.c
+index 01493a4..8bfc15b 100644
+--- a/drivers/net/starfire.c
++++ b/drivers/net/starfire.c
+@@ -882,9 +882,9 @@ static int mdio_read(struct net_device *dev, int phy_id, int location)
+ 	void __iomem *mdio_addr = np->base + MIICtrl + (phy_id<<7) + (location<<2);
+ 	int result, boguscnt=1000;
+ 	/* ??? Should we add a busy-wait here? */
+-	do
++	do {
+ 		result = readl(mdio_addr);
+-	while ((result & 0xC0000000) != 0x80000000 && --boguscnt > 0);
++	} while ((result & 0xC0000000) != 0x80000000 && --boguscnt > 0);
+ 	if (boguscnt == 0)
+ 		return 0;
+ 	if ((result & 0xffff) == 0xffff)
 
