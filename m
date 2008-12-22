@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbYLVL2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYLVLpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbYLVL2E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 06:28:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYLVL1x
+	id S1754480AbYLVLpl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 06:45:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYLVLpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 06:27:53 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:39453 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbYLVL1w (ORCPT
+	Mon, 22 Dec 2008 06:45:32 -0500
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:33870 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbYLVLpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 06:27:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OEasESsufz0vRlrf18b7SF5tLowYwhLw8zYCvzRp3v5kV06gxLKc2IXngewd1hAqJW
-         9fCE63rFFDDEjsa4Q21cAnwualrZjYJIAr4UfKvHT26ry0Czl0zxQaiqbe4M6bWwBmbF
-         ZRTjM3qSryRdrqF9mKiC/MosPWygMsikefEAg=
-Message-ID: <3f9a31f40812220327w1a9f3f0eqb8254de66967fdf0@mail.gmail.com>
-Date: Mon, 22 Dec 2008 16:57:51 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: "Dave Airlie" <airlied@linux.ie>
-Subject: Re: [PATCH] radeon_cp: use request_firmware
-Cc: dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>
-In-Reply-To: <alpine.DEB.2.00.0812212056060.8861@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218095497.4016.3.camel@jaswinder.satnam>
-	 <3f9a31f40812191223g72b8a1eey2780f8e1a0ebf7aa@mail.gmail.com>
-	 <alpine.DEB.2.00.0812212056060.8861@skynet.skynet.ie>
+	Mon, 22 Dec 2008 06:45:31 -0500
+Message-Id: <20081222113629.080104676@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 22 Dec 2008 12:36:29 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 0/2] stop_machine: create kstop threads only when needed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dave,
+Introduce stop_machine_create/destroy. With this interface subsystems
+that need a non-failing stop_machine environment can create the
+stop_machine threads before actually calling stop_machine.
+When the threads aren't needed anymore they can be killed with
+stop_machine_destroy again.
 
-On Mon, Dec 22, 2008 at 2:28 AM, Dave Airlie <airlied@linux.ie> wrote:
->
->>
->> Is available at
->> http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=commit;h=3a911a216742e4ab998f3281409d46a62f252716
->>
->>
->> Please let me know, should I need to resend this patch for :
->> 1. git kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
->> OR
->> 2. git kernel.org:/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->
-> How much testing has this seen on what range of cards and on what
-> architectures? I'd like some success stories from people using this patch.
-> Is Debian shipping it?
->
+When stop_machine gets called and the threads aren't present they
+will be created and destroyed automatically.
 
-I have tested this patch with ATI Radeon 9200SE on Intel machine. It
-uses R200 microcode and works great on my machine.
+This restores the old behaviour of stop_machine from 2.6.27 and thus
+we get rid of the normally not needed kstop threads.
 
-For further testing can I update this patch for git
-kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git or some other
-testing git.
+The second patch converts the module loader/unloder code to the new
+interface, since it needs a non-failing stop_machine infrastructure.
 
-Thank you,
-
-Jaswinder Singh.
+Looks like there are more users that need a non-failing version.
+I'll take care of them when I'm back from vacation.
