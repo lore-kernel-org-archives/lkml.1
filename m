@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYLVUyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYLVUzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYLVUyF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 15:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYLVUxx
+	id S1755553AbYLVUzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 15:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYLVUzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 15:53:53 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:12988 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbYLVUxw (ORCPT
+	Mon, 22 Dec 2008 15:55:20 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:17825 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754050AbYLVUzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 15:53:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Rv8N16n265pbPCFc54KnKKyglTpaH6/q/p23twGvjNVW5Egd8xPPVh469uCsIVWM7k
-         K9mbIeEFkeVHlZ9g2kreaPcqwJg1gT3dWCwPlrRphxgD+zeuEZrRQgZZPBk/3iRJLhOi
-         zDXIBqdi6DYd+KyhWTeRQEKkpNVap1wv0i+OQ=
-Message-ID: <b6c5339f0812221253w5100d101uc1f9ffdf293e6916@mail.gmail.com>
-Date: Mon, 22 Dec 2008 15:53:51 -0500
-From: "Bob Copeland" <bcopeland@gmail.com>
-To: "Soeren Sonnenburg" <kernel@nn7.de>
-Subject: Re: ath5k_pci: gain calibration timeout / unable to reset hardware -11
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       ath5k-devel@venema.h4ckr.net
-In-Reply-To: <1229923913.3886.7.camel@localhost>
+	Mon, 22 Dec 2008 15:55:19 -0500
+From: Divy Le Ray <divy@chelsio.com>
+Subject: [PATCH 2.6.29] cxgb3 - add control to access embedded images
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Mon, 22 Dec 2008 12:55:01 -0800
+Message-ID: <20081222205500.12971.4243.stgit@speedy5>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1229923913.3886.7.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 22, 2008 at 12:31 AM, Soeren Sonnenburg <kernel@nn7.de> wrote:
-> Hi,
->
-> I was using the ath5k_pci driver on a macbook pro 1,1 and it is working
-> for some time but then suddenly messages like the ones below appear and
-> I have to *turn off* the machine to get it back working (even booting to
-> osx is not sufficient - osx won't have network when things go wrong as
-> they do after a couple of hours). Note that this happens with both
-> 2.6.27 and .28.
+From: Divy Le Ray <divy@chelsio.com>
 
-Hi Soeren,
+Update contol path between cxgb3 and ULP modules (iWARP, iSCSI)
+to provide access to firware and protocol engine info.
 
-Thanks for the report.  It is a known problem, with a bugzilla entry already:
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12080
+ drivers/net/cxgb3/cxgb3_ctl_defs.h |   10 ++++++++++
+ drivers/net/cxgb3/cxgb3_offload.c  |    9 +++++++++
+ 2 files changed, 19 insertions(+), 0 deletions(-)
 
--- 
-Bob Copeland %% www.bobcopeland.com
+diff --git a/drivers/net/cxgb3/cxgb3_ctl_defs.h b/drivers/net/cxgb3/cxgb3_ctl_defs.h
+index 55099eb..369fe71 100644
+--- a/drivers/net/cxgb3/cxgb3_ctl_defs.h
++++ b/drivers/net/cxgb3/cxgb3_ctl_defs.h
+@@ -58,6 +58,8 @@ enum {
+ 
+ 	GET_RX_PAGE_INFO	= 50,
+ 	GET_ISCSI_IPV4ADDR	= 51,
++
++	GET_EMBEDDED_INFO	= 70,
+ };
+ 
+ /*
+@@ -176,4 +178,12 @@ struct ofld_page_info {
+ 	unsigned int page_size;  /* Page size, should be a power of 2 */
+ 	unsigned int num;        /* Number of pages */
+ };
++
++/*
++ * Structure used to get firmware and protocol engine versions.
++ */
++struct ch_embedded_info {
++	u32 fw_vers;
++	u32 tp_vers;
++};
+ #endif				/* _CXGB3_OFFLOAD_CTL_DEFS_H */
+diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
+index 1ce69b7..2d7f69a 100644
+--- a/drivers/net/cxgb3/cxgb3_offload.c
++++ b/drivers/net/cxgb3/cxgb3_offload.c
+@@ -438,6 +438,15 @@ static int cxgb_offload_ctl(struct t3cdev *tdev, unsigned int req, void *data)
+ 		p->ipv4addr = pi->iscsi_ipv4addr;
+ 		break;
+ 	}
++	case GET_EMBEDDED_INFO: {
++		struct ch_embedded_info *e = data;
++
++		spin_lock(&adapter->stats_lock);
++		t3_get_fw_version(adapter, &e->fw_vers);
++		t3_get_tp_version(adapter, &e->tp_vers);
++		spin_unlock(&adapter->stats_lock);
++		break;
++	}
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+
