@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYLVTSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751AbYLVTSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbYLVTSm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYLVTPx
+	id S1755751AbYLVTSK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755397AbYLVTPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:15:53 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55430 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755435AbYLVTPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:15:50 -0500
-Message-ID: <494FE73E.5000802@redhat.com>
-Date: Mon, 22 Dec 2008 14:15:10 -0500
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Mon, 22 Dec 2008 14:15:43 -0500
+Received: from mu-out-0910.google.com ([209.85.134.188]:19066 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755014AbYLVTPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 14:15:41 -0500
+Subject: [PATCH 05/27] drivers/net/arcnet: fix sparse warnings: make symbols
+	static
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 22 Dec 2008 20:15:36 +0100
+Message-ID: <20081222191535.11807.72965.stgit@vmbox.hanneseder.net>
+In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+User-Agent: StGit/0.14.3.292.gb975
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: Jan Kara <jack@suse.cz>, Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com> <20081219002752.GE8424@duck.suse.cz> <494AFA16.2010004@redhat.com>
-In-Reply-To: <494AFA16.2010004@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+From: Hannes Eder <hannes@hanneseder.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Jan Kara wrote:
->
->   
->>> In looking at what we have today, I wonder if we can make things smarter
->>> so that we don't commit empty transactions in any case?
->>>       
->>   Probably it does not make sence to commit such transactions and we might
->> save some time in sync paths if we do so. So yes, I think skipping empty
->> transaction commit might be worthwhile and it shouldn't be hard to do
->> either. But I'd give it serious testing just in case some unexpectedly
->> relies on this behaviour - wouldn't this interfere e.g. with sync
->> transaction batching autotuning code? Untested patch below...
->> 								Honza
->>     
->
->
-> Cool, thanks!  This's stop:
->
-> # sync
->
-> from spinning up disks under idle filesystems too, I think.
->
-> I was looking at something similar but was still working out how many
-> things to check before deciding if the transaction was in fact empty.  :)
->
-> -Eric
->   
+Fix this sparse warnings:
 
-Without having dived into the patch in detail, one worry I would have is 
-that we still might care to spin up a drive for empty transactions in 
-order to invalidate the drive's write cache.
+  drivers/net/arcnet/capmode.c:64:6: warning: symbol 'arcnet_cap_init' was not declared. Should it be static?
+  drivers/net/arcnet/com90xx.c:586:5: warning: symbol 'com90xx_reset' was not declared. Should it be static?
 
-For example, if we have the following sequence:
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+ drivers/net/arcnet/capmode.c |    2 +-
+ drivers/net/arcnet/com90xx.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-    (1) user app performs series of writes to file A
-    (2) pages dirtied from writes to A are destaged to the disk over time
-    (3) user app issues fsync(file A) to make sure that the data will 
-survive a power outage
-
-At this point in time, would this change prevent us from spinning up the 
-drive and invalidating the disk write cache for that fsync() ?
-
-Regards,
-
-Ric
+diff --git a/drivers/net/arcnet/capmode.c b/drivers/net/arcnet/capmode.c
+index e544953..30580bb 100644
+--- a/drivers/net/arcnet/capmode.c
++++ b/drivers/net/arcnet/capmode.c
+@@ -61,7 +61,7 @@ static struct ArcProto capmode_proto =
+ };
+ 
+ 
+-void arcnet_cap_init(void)
++static void arcnet_cap_init(void)
+ {
+ 	int count;
+ 
+diff --git a/drivers/net/arcnet/com90xx.c b/drivers/net/arcnet/com90xx.c
+index f4113d2..d762fe4 100644
+--- a/drivers/net/arcnet/com90xx.c
++++ b/drivers/net/arcnet/com90xx.c
+@@ -583,7 +583,7 @@ static void com90xx_setmask(struct net_device *dev, int mask)
+  *
+  * However, it does make sure the card is in a defined state.
+  */
+-int com90xx_reset(struct net_device *dev, int really_reset)
++static int com90xx_reset(struct net_device *dev, int really_reset)
+ {
+ 	struct arcnet_local *lp = netdev_priv(dev);
+ 	short ioaddr = dev->base_addr;
 
