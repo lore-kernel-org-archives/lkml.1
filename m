@@ -1,294 +1,843 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYLVHyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYLVIEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYLVHyl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 02:54:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbYLVHyb
+	id S1754014AbYLVIEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 03:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYLVIEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 02:54:31 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:44618 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752585AbYLVHy3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 02:54:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:cc:message-id:date:from;
-        b=DFZ8l7Bl1xoJiD10kmv9/+vJdX9U7dfaQxPMUOD9UXuw2pfdUjoMe/A4P38YsszV8o
-         2EOSHEBvsg4D/jMzn+Edzhk256JrTRdDGaxYIbaQLQ46TfrBJ6BCuSu/Sw0SgFKR2gTD
-         ajyc2iE4/6AkzSOzj6s6gNGqpNW1+737NRvoE=
-To: alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       sshtylyov@ru.mvista.com
-Subject: [PATCH v3] Resurrect IT8172 IDE controller driver
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LEfcO-0007lL-Mq@localhost>
-Date: Mon, 22 Dec 2008 01:54:24 -0600
-From: Shane McDonald <mcdonald.shane@gmail.com>
+	Mon, 22 Dec 2008 03:04:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58097 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752863AbYLVIEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 03:04:06 -0500
+Date: Mon, 22 Dec 2008 09:03:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org
+Cc: Ken Chen <kenchen@google.com>, Paul Mackerras <paulus@samba.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-next@vger.kernel.org
+Subject: [patch] powerpc: change u64/s64 to a long long integer type
+Message-ID: <20081222080341.GA18897@elte.hu>
+References: <20081222152247.b934ed5b.sfr@canb.auug.org.au> <b040c32a0812212249p45aba306tbb68a960b79cd0ee@mail.gmail.com> <20081222070426.GD29160@elte.hu> <20081222181932.5dd9514e.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081222181932.5dd9514e.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support for the IT8172 IDE controller was removed from the kernel
-sometime after 2.6.18.  Support for the only boards that used the IT8172
-was removed from the kernel after 2.6.18, as they had never compiled
-since 2.6.0.  However, there are a couple of platforms that use this
-chip: the PMC-Sierra Xiao Hu thin-client computer, which is no longer
-in production, and the Linksys NSS4000 Network Attached Storage box,
-which is based on the Xiao Hu board.  I am attempting to add support
-for the Xiao Hu to the kernel, and this IT8172 IDE controller is the
-first bit of code in this effort.
 
-This patch resurrects the IT8172 IDE controller code.  I began with
-the 2.6.18 version of the it8172.c file, and have moved it forward so
-that it works with the latest version of the kernel.  I have run this
-driver on a PMC-Sierra Xiao Hu board with the 2.6.28-rc9 kernel, and
-I have had no problems with it in my configuration.  The attached patch
-applies cleanly against 2.6.28-rc9.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Signed-off-by: Shane McDonald <mcdonald.shane@gmail.com>
+> Hi Ingo,
+> 
+> On Mon, 22 Dec 2008 08:04:26 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > the real solution is something like the patch below. That generates new 
+> > (but harmless) warnings within the powerpc code but those are a one-off 
+> > effort to fix and are not reoccuring.
+> > 
+> > Cc:-ed Paul Mackerras - Paul, am i missing anything?
+> 
+> You mean besides the patches that fix all those warnings? :-)
+
+i thought you as a PowerPC person would be more suited to fix them than 
+me.
+
+but it took me 30 minutes - much less than the total time just i had to 
+spend on similar issues in the past. So this patch will be a real 
+time-saver and it should have been done years ago.
+
+Tested on ppc64-defconfig - i guess there's more to it but similarly 
+trivial.
+
+	Ingo
+
+----------------------->
+Subject: powerpc: change u64/s64 to a long long integer type
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon Dec 22 08:32:41 CET 2008
+
+Convert arch/powerpc/ over to long long based u64:
+
+ -#ifdef __powerpc64__
+ -# include <asm-generic/int-l64.h>
+ -#else
+ -# include <asm-generic/int-ll64.h>
+ -#endif
+ +#include <asm-generic/int-ll64.h>
+
+This will avoid reoccuring spurious warnings in core kernel code that 
+comes when people test on their own hardware. (i.e. x86 in ~98% of the 
+cases) This is what x86 uses and it generally helps keep 64-bit code 
+32-bit clean too.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/ide/Kconfig     |    7 +
- drivers/ide/Makefile    |    1 
- drivers/ide/it8172.c    |  188 ++++++++++++++++++++++++++++++++++++++
- include/linux/pci_ids.h |    1 
- 4 files changed, 197 insertions(+)
+ arch/powerpc/include/asm/rtas.h               |    2 -
+ arch/powerpc/include/asm/types.h              |    6 ----
+ arch/powerpc/kernel/dma-iommu.c               |    4 +-
+ arch/powerpc/kernel/iommu.c                   |   12 ++++----
+ arch/powerpc/kernel/lparcfg.c                 |   10 +++----
+ arch/powerpc/kernel/prom.c                    |    4 +-
+ arch/powerpc/kernel/prom_init.c               |    2 -
+ arch/powerpc/kernel/setup_64.c                |    6 ++--
+ arch/powerpc/mm/stab.c                        |    4 +-
+ arch/powerpc/oprofile/cell/vma_map.c          |    2 -
+ arch/powerpc/oprofile/op_model_pa6t.c         |    6 ++--
+ arch/powerpc/platforms/cell/beat_htab.c       |   21 ++++++++-------
+ arch/powerpc/platforms/cell/beat_interrupt.c  |    2 -
+ arch/powerpc/platforms/cell/beat_udbg.c       |    4 +-
+ arch/powerpc/platforms/cell/celleb_scc_epci.c |    4 +-
+ arch/powerpc/platforms/cell/interrupt.c       |    2 -
+ arch/powerpc/platforms/cell/io-workarounds.c  |    2 -
+ arch/powerpc/platforms/cell/iommu.c           |    6 ++--
+ arch/powerpc/platforms/cell/ras.c             |    8 ++---
+ arch/powerpc/platforms/cell/spu_base.c        |    8 ++---
+ arch/powerpc/platforms/cell/spu_callbacks.c   |    2 -
+ arch/powerpc/platforms/iseries/iommu.c        |    4 +-
+ arch/powerpc/platforms/pasemi/cpufreq.c       |    2 -
+ arch/powerpc/platforms/pseries/iommu.c        |   35 ++++++++++++--------------
+ arch/powerpc/sysdev/mpic.c                    |    2 -
+ drivers/char/hvc_beat.c                       |    4 +-
+ drivers/net/pasemi_mac.c                      |    6 ++--
+ drivers/pcmcia/electra_cf.c                   |    2 -
+ drivers/scsi/ibmvscsi/ibmvscsi.c              |   12 ++++----
+ 29 files changed, 90 insertions(+), 94 deletions(-)
 
-Changes since version 2 of the patch:
-- removed the temporary "is_slave" variable, as it was only used once
-  and was set inefficiently
-- implemented the PIO modes, rather than configuring to slowest mode
-  supported by the chip
-- remove SWDMA flags
-- change module author to Steve Longerbeam (originally was Steve's
-  obsolete email address.
-
-diff -uprN a/drivers/ide/Kconfig b/drivers/ide/Kconfig
---- a/drivers/ide/Kconfig	2008-12-22 01:22:07.000000000 -0600
-+++ b/drivers/ide/Kconfig	2008-12-22 01:22:58.000000000 -0600
-@@ -524,6 +524,13 @@ config BLK_DEV_PIIX
- 	  This allows the kernel to change PIO, DMA and UDMA speeds and to
- 	  configure the chip to optimum performance.
+Index: linux/arch/powerpc/include/asm/rtas.h
+===================================================================
+--- linux.orig/arch/powerpc/include/asm/rtas.h
++++ linux/arch/powerpc/include/asm/rtas.h
+@@ -18,7 +18,7 @@
+  */
  
-+config BLK_DEV_IT8172
-+	tristate "IT8172 IDE support"
-+	select BLK_DEV_IDEDMA_PCI
-+	help
-+	  This driver adds support for the IDE controller on the
-+	  IT8172 System Controller.
-+
- config BLK_DEV_IT8213
- 	tristate "IT8213 IDE support"
- 	select BLK_DEV_IDEDMA_PCI
-diff -uprN a/drivers/ide/Makefile b/drivers/ide/Makefile
---- a/drivers/ide/Makefile	2008-12-22 01:22:20.000000000 -0600
-+++ b/drivers/ide/Makefile	2008-12-22 01:23:05.000000000 -0600
-@@ -46,6 +46,7 @@ obj-$(CONFIG_BLK_DEV_SC1200)		+= sc1200.
- obj-$(CONFIG_BLK_DEV_CY82C693)		+= cy82c693.o
- obj-$(CONFIG_BLK_DEV_DELKIN)		+= delkin_cb.o
- obj-$(CONFIG_BLK_DEV_HPT366)		+= hpt366.o
-+obj-$(CONFIG_BLK_DEV_IT8172)		+= it8172.o
- obj-$(CONFIG_BLK_DEV_IT8213)		+= it8213.o
- obj-$(CONFIG_BLK_DEV_IT821X)		+= it821x.o
- obj-$(CONFIG_BLK_DEV_JMICRON)		+= jmicron.o
-diff -uprN a/drivers/ide/it8172.c b/drivers/ide/it8172.c
---- a/drivers/ide/it8172.c	1969-12-31 18:00:00.000000000 -0600
-+++ b/drivers/ide/it8172.c	2008-12-22 01:23:15.000000000 -0600
-@@ -0,0 +1,188 @@
-+/*
-+ *
-+ * BRIEF MODULE DESCRIPTION
-+ *      IT8172 IDE controller support
-+ *
-+ * Copyright (C) 2000 MontaVista Software Inc.
-+ * Copyright (C) 2008 Shane McDonald
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
-+ *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
-+ *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
-+ *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
-+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
-+ *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-+ *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
-+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-+ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ *  You should have received a copy of the  GNU General Public License along
-+ *  with this program; if not, write  to the Free Software Foundation, Inc.,
-+ *  675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/ioport.h>
-+#include <linux/pci.h>
-+#include <linux/ide.h>
-+#include <linux/init.h>
-+
-+#define DRV_NAME "IT8172"
-+
-+static void it8172_set_pio_mode(ide_drive_t *drive, const u8 pio)
-+{
-+	ide_hwif_t *hwif	= HWIF(drive);
-+	struct pci_dev *dev	= to_pci_dev(hwif->dev);
-+	u16 drive_enables;
-+	u32 drive_timing;
-+
-+				     /* RTx  PWx */
-+	static const u8 timings[][2] = {
-+					{ 7, 7 },
-+					{ 3, 4 },
-+					{ 3, 3 },
-+					{ 2, 2 },
-+					{ 1, 2 }, };
-+	/*
-+	 * The highest value of DIOR/DIOW pulse width and recovery time
-+	 * that can be set in the IT8172 is 8 PCI clock cycles.  As a result,
-+	 * it cannot be configured for PIO mode 0.  This table sets these
-+	 * parameters to the maximum supported by the IT8172.
-+	 */
-+
-+	pci_read_config_word(dev, 0x40, &drive_enables);
-+	pci_read_config_dword(dev, 0x44, &drive_timing);
-+
-+	/*
-+	 * Enable port 0x44. The IT8172 spec is confused; it calls
-+	 * this register the "Slave IDE Timing Register", but in fact,
-+	 * it controls timing for both master and slave drives.
-+	 */
-+	drive_enables |= 0x4000;
-+
-+	if (drive->dn) {
-+		drive_enables &= 0xc006;
-+		if (drive->media == ide_disk)
-+			/* enable prefetch */
-+			drive_enables |= 0x0040;
-+		if (pio > 2 || ata_id_has_iordy(drive->id))
-+			/* enable IORDY sample-point */
-+			drive_enables |= 0x0020;
-+		drive_timing &= 0x00003f00;
-+		drive_timing |= (timings[pio][0] << 17) |
-+				(timings[pio][1] << 14);
-+	} else {
-+		drive_enables &= 0xc060;
-+		if (drive->media == ide_disk)
-+			/* enable prefetch */
-+			drive_enables |= 0x0004;
-+		if (pio > 2 || ata_id_has_iordy(drive->id))
-+			/* enable IORDY sample-point */
-+			drive_enables |= 0x0002;
-+		drive_timing &= 0x000fc000;
-+		drive_timing |= (timings[pio][0] << 11) |
-+				(timings[pio][1] << 8);
-+	}
-+
-+	pci_write_config_word(dev, 0x40, drive_enables);
-+	pci_write_config_dword(dev, 0x44, drive_timing);
-+}
-+
-+static void it8172_set_dma_mode(ide_drive_t *drive, const u8 speed)
-+{
-+	ide_hwif_t *hwif	= HWIF(drive);
-+	struct pci_dev *dev	= to_pci_dev(hwif->dev);
-+	int a_speed		= 3 << (drive->dn * 4);
-+	int u_flag		= 1 << drive->dn;
-+	int u_speed		= 0;
-+	u8 reg48, reg4a;
-+
-+	pci_read_config_byte(dev, 0x48, &reg48);
-+	pci_read_config_byte(dev, 0x4a, &reg4a);
-+
-+	if (speed >= XFER_UDMA_0) {
-+		u8 udma = speed - XFER_UDMA_0;
-+		u_speed = min_t(u8, 2 - (udma & 1), udma) << (drive->dn * 4);
-+
-+		pci_write_config_byte(dev, 0x48, reg48 | u_flag);
-+		reg4a &= ~a_speed;
-+		pci_write_config_byte(dev, 0x4a, reg4a | u_speed);
-+	} else {
-+		const u8 mwdma_to_pio[] = { 0, 3, 4 };
-+		u8 pio;
-+
-+		pci_write_config_byte(dev, 0x48, reg48 & ~u_flag);
-+		pci_write_config_byte(dev, 0x4a, reg4a & ~a_speed);
-+
-+		if (speed >= XFER_MW_DMA_0)
-+			pio = mwdma_to_pio[speed - XFER_MW_DMA_0];
-+		else
-+			pio = 2;
-+
-+		it8172_set_pio_mode(drive, pio);
-+	}
-+}
-+
-+
-+static const struct ide_port_ops it8172_port_ops = {
-+	.set_pio_mode	= it8172_set_pio_mode,
-+	.set_dma_mode	= it8172_set_dma_mode,
-+};
-+
-+static const struct ide_port_info it8172_port_info __devinitdata = {
-+	.name		= DRV_NAME,
-+	.port_ops	= &it8172_port_ops,
-+	.enablebits	= {{0x41, 0x80, 0x80}, {0x00, 0x00, 0x00} },
-+	.host_flags	= IDE_HFLAG_SINGLE,
-+	.pio_mask	= ATA_PIO4 & ~ATA_PIO0,
-+	.mwdma_mask	= ATA_MWDMA2,
-+	.udma_mask	= ATA_UDMA2,
-+};
-+
-+static int __devinit it8172_init_one(struct pci_dev *dev,
-+					const struct pci_device_id *id)
-+{
-+	if ((dev->class >> 8) != PCI_CLASS_STORAGE_IDE)
-+		return -ENODEV; /* IT8172 is more than an IDE controller */
-+	return ide_pci_init_one(dev, &it8172_port_info, NULL);
-+}
-+
-+static struct pci_device_id it8172_pci_tbl[] = {
-+	{ PCI_VDEVICE(ITE, PCI_DEVICE_ID_ITE_8172), 0 },
-+	{ 0, },
-+};
-+MODULE_DEVICE_TABLE(pci, it8172_pci_tbl);
-+
-+static struct pci_driver it8172_pci_driver = {
-+	.name		= "IT8172_IDE",
-+	.id_table	= it8172_pci_tbl,
-+	.probe		= it8172_init_one,
-+	.remove		= ide_pci_remove,
-+	.suspend	= ide_pci_suspend,
-+	.resume		= ide_pci_resume,
-+};
-+
-+static int __init it8172_ide_init(void)
-+{
-+	return ide_pci_register_driver(&it8172_pci_driver);
-+}
-+
-+static void __exit it8172_ide_exit(void)
-+{
-+	pci_unregister_driver(&it8172_pci_driver);
-+}
-+
-+module_init(it8172_ide_init);
-+module_exit(it8172_ide_exit);
-+
-+MODULE_AUTHOR("Steve Longerbeam");
-+MODULE_DESCRIPTION("PCI driver module for ITE 8172 IDE");
-+MODULE_LICENSE("GPL");
-diff -uprN a/include/linux/pci_ids.h b/include/linux/pci_ids.h
---- a/include/linux/pci_ids.h	2008-12-22 01:22:38.000000000 -0600
-+++ b/include/linux/pci_ids.h	2008-12-22 01:24:14.000000000 -0600
-@@ -1658,6 +1658,7 @@
- #define PCI_VENDOR_ID_ROCKWELL		0x127A
+ #define RTAS_UNKNOWN_SERVICE (-1)
+-#define RTAS_INSTANTIATE_MAX (1UL<<30) /* Don't instantiate rtas at/above this value */
++#define RTAS_INSTANTIATE_MAX (1ULL<<30) /* Don't instantiate rtas at/above this value */
  
- #define PCI_VENDOR_ID_ITE		0x1283
-+#define PCI_DEVICE_ID_ITE_8172		0x8172
- #define PCI_DEVICE_ID_ITE_8211		0x8211
- #define PCI_DEVICE_ID_ITE_8212		0x8212
- #define PCI_DEVICE_ID_ITE_8213		0x8213
+ /* Buffer size for ppc_rtas system call. */
+ #define RTAS_RMOBUF_MAX (64 * 1024)
+Index: linux/arch/powerpc/include/asm/types.h
+===================================================================
+--- linux.orig/arch/powerpc/include/asm/types.h
++++ linux/arch/powerpc/include/asm/types.h
+@@ -1,11 +1,7 @@
+ #ifndef _ASM_POWERPC_TYPES_H
+ #define _ASM_POWERPC_TYPES_H
+ 
+-#ifdef __powerpc64__
+-# include <asm-generic/int-l64.h>
+-#else
+-# include <asm-generic/int-ll64.h>
+-#endif
++#include <asm-generic/int-ll64.h>
+ 
+ #ifndef __ASSEMBLY__
+ 
+Index: linux/arch/powerpc/kernel/dma-iommu.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/dma-iommu.c
++++ linux/arch/powerpc/kernel/dma-iommu.c
+@@ -79,10 +79,10 @@ static int dma_iommu_dma_supported(struc
+ 		       "Warning: IOMMU offset too big for device mask\n");
+ 		if (tbl)
+ 			printk(KERN_INFO
+-			       "mask: 0x%08lx, table offset: 0x%08lx\n",
++			       "mask: 0x%08llx, table offset: 0x%08lx\n",
+ 				mask, tbl->it_offset);
+ 		else
+-			printk(KERN_INFO "mask: 0x%08lx, table unavailable\n",
++			printk(KERN_INFO "mask: 0x%08llx, table unavailable\n",
+ 				mask);
+ 		return 0;
+ 	} else
+Index: linux/arch/powerpc/kernel/iommu.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/iommu.c
++++ linux/arch/powerpc/kernel/iommu.c
+@@ -239,12 +239,12 @@ static void __iommu_free(struct iommu_ta
+ 		if (printk_ratelimit()) {
+ 			printk(KERN_INFO "iommu_free: invalid entry\n");
+ 			printk(KERN_INFO "\tentry     = 0x%lx\n", entry); 
+-			printk(KERN_INFO "\tdma_addr  = 0x%lx\n", (u64)dma_addr);
+-			printk(KERN_INFO "\tTable     = 0x%lx\n", (u64)tbl);
+-			printk(KERN_INFO "\tbus#      = 0x%lx\n", (u64)tbl->it_busno);
+-			printk(KERN_INFO "\tsize      = 0x%lx\n", (u64)tbl->it_size);
+-			printk(KERN_INFO "\tstartOff  = 0x%lx\n", (u64)tbl->it_offset);
+-			printk(KERN_INFO "\tindex     = 0x%lx\n", (u64)tbl->it_index);
++			printk(KERN_INFO "\tdma_addr  = 0x%llx\n", (u64)dma_addr);
++			printk(KERN_INFO "\tTable     = 0x%llx\n", (u64)tbl);
++			printk(KERN_INFO "\tbus#      = 0x%llx\n", (u64)tbl->it_busno);
++			printk(KERN_INFO "\tsize      = 0x%llx\n", (u64)tbl->it_size);
++			printk(KERN_INFO "\tstartOff  = 0x%llx\n", (u64)tbl->it_offset);
++			printk(KERN_INFO "\tindex     = 0x%llx\n", (u64)tbl->it_index);
+ 			WARN_ON(1);
+ 		}
+ 		return;
+Index: linux/arch/powerpc/kernel/lparcfg.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/lparcfg.c
++++ linux/arch/powerpc/kernel/lparcfg.c
+@@ -240,7 +240,7 @@ static void parse_ppp_data(struct seq_fi
+ 	if (rc)
+ 		return;
+ 
+-	seq_printf(m, "partition_entitled_capacity=%ld\n",
++	seq_printf(m, "partition_entitled_capacity=%lld\n",
+ 	           ppp_data.entitlement);
+ 	seq_printf(m, "group=%d\n", ppp_data.group_num);
+ 	seq_printf(m, "system_active_processors=%d\n",
+@@ -265,7 +265,7 @@ static void parse_ppp_data(struct seq_fi
+ 		   ppp_data.unallocated_weight);
+ 	seq_printf(m, "capacity_weight=%d\n", ppp_data.weight);
+ 	seq_printf(m, "capped=%d\n", ppp_data.capped);
+-	seq_printf(m, "unallocated_capacity=%ld\n",
++	seq_printf(m, "unallocated_capacity=%lld\n",
+ 		   ppp_data.unallocated_entitlement);
+ }
+ 
+@@ -509,10 +509,10 @@ static ssize_t update_ppp(u64 *entitleme
+ 	} else
+ 		return -EINVAL;
+ 
+-	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
++	pr_debug("%s: current_entitled = %llu, current_weight = %u\n",
+ 		 __func__, ppp_data.entitlement, ppp_data.weight);
+ 
+-	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
++	pr_debug("%s: new_entitled = %llu, new_weight = %u\n",
+ 		 __func__, new_entitled, new_weight);
+ 
+ 	retval = plpar_hcall_norets(H_SET_PPP, new_entitled, new_weight);
+@@ -558,7 +558,7 @@ static ssize_t update_mpp(u64 *entitleme
+ 	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
+ 	         __func__, mpp_data.entitled_mem, mpp_data.mem_weight);
+ 
+-	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
++	pr_debug("%s: new_entitled = %llu, new_weight = %u\n",
+ 		 __func__, new_entitled, new_weight);
+ 
+ 	rc = plpar_hcall_norets(H_SET_MPP, new_entitled, new_weight);
+Index: linux/arch/powerpc/kernel/prom.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/prom.c
++++ linux/arch/powerpc/kernel/prom.c
+@@ -824,11 +824,11 @@ static int __init early_init_dt_scan_cho
+ #endif
+ 
+ #ifdef CONFIG_KEXEC
+-	lprop = (u64*)of_get_flat_dt_prop(node, "linux,crashkernel-base", NULL);
++	lprop = (unsigned long *)of_get_flat_dt_prop(node, "linux,crashkernel-base", NULL);
+ 	if (lprop)
+ 		crashk_res.start = *lprop;
+ 
+-	lprop = (u64*)of_get_flat_dt_prop(node, "linux,crashkernel-size", NULL);
++	lprop = (unsigned long *)of_get_flat_dt_prop(node, "linux,crashkernel-size", NULL);
+ 	if (lprop)
+ 		crashk_res.end = crashk_res.start + *lprop - 1;
+ #endif
+Index: linux/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/prom_init.c
++++ linux/arch/powerpc/kernel/prom_init.c
+@@ -1210,7 +1210,7 @@ static void __init prom_initialize_tce_t
+ 		/* Initialize the table to have a one-to-one mapping
+ 		 * over the allocated size.
+ 		 */
+-		tce_entryp = (unsigned long *)base;
++		tce_entryp = (u64 *)base;
+ 		for (i = 0; i < (minsize >> 3) ;tce_entryp++, i++) {
+ 			tce_entry = (i << PAGE_SHIFT);
+ 			tce_entry |= 0x3;
+Index: linux/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/setup_64.c
++++ linux/arch/powerpc/kernel/setup_64.c
+@@ -433,8 +433,8 @@ void __init setup_system(void)
+ 	printk("Starting Linux PPC64 %s\n", init_utsname()->version);
+ 
+ 	printk("-----------------------------------------------------\n");
+-	printk("ppc64_pft_size                = 0x%lx\n", ppc64_pft_size);
+-	printk("physicalMemorySize            = 0x%lx\n", lmb_phys_mem_size());
++	printk("ppc64_pft_size                = 0x%llx\n", ppc64_pft_size);
++	printk("physicalMemorySize            = 0x%llx\n", lmb_phys_mem_size());
+ 	if (ppc64_caches.dline_size != 0x80)
+ 		printk("ppc64_caches.dcache_line_size = 0x%x\n",
+ 		       ppc64_caches.dline_size);
+@@ -492,7 +492,7 @@ static void __init emergency_stack_init(
+ 	 * bringup, we need to get at them in real mode. This means they
+ 	 * must also be within the RMO region.
+ 	 */
+-	limit = min(0x10000000UL, lmb.rmo_size);
++	limit = min(0x10000000ULL, lmb.rmo_size);
+ 
+ 	for_each_possible_cpu(i) {
+ 		unsigned long sp;
+Index: linux/arch/powerpc/mm/stab.c
+===================================================================
+--- linux.orig/arch/powerpc/mm/stab.c
++++ linux/arch/powerpc/mm/stab.c
+@@ -251,8 +251,8 @@ void __init stabs_alloc(void)
+ 
+ 		paca[cpu].stab_addr = newstab;
+ 		paca[cpu].stab_real = virt_to_abs(newstab);
+-		printk(KERN_INFO "Segment table for CPU %d at 0x%lx "
+-		       "virtual, 0x%lx absolute\n",
++		printk(KERN_INFO "Segment table for CPU %d at 0x%llx "
++		       "virtual, 0x%llx absolute\n",
+ 		       cpu, paca[cpu].stab_addr, paca[cpu].stab_real);
+ 	}
+ }
+Index: linux/arch/powerpc/oprofile/cell/vma_map.c
+===================================================================
+--- linux.orig/arch/powerpc/oprofile/cell/vma_map.c
++++ linux/arch/powerpc/oprofile/cell/vma_map.c
+@@ -92,7 +92,7 @@ vma_map_add(struct vma_to_fileoffset_map
+  * A pointer to the first vma_map in the generated list
+  * of vma_maps is returned.  */
+ struct vma_to_fileoffset_map *create_vma_map(const struct spu *aSpu,
+-					     unsigned long __spu_elf_start)
++					     u64 __spu_elf_start)
+ {
+ 	static const unsigned char expected[EI_PAD] = {
+ 		[EI_MAG0] = ELFMAG0,
+Index: linux/arch/powerpc/oprofile/op_model_pa6t.c
+===================================================================
+--- linux.orig/arch/powerpc/oprofile/op_model_pa6t.c
++++ linux/arch/powerpc/oprofile/op_model_pa6t.c
+@@ -132,7 +132,7 @@ static int pa6t_reg_setup(struct op_coun
+ 	for (pmc = 0; pmc < cur_cpu_spec->num_pmcs; pmc++) {
+ 		/* counters are 40 bit. Move to cputable at some point? */
+ 		reset_value[pmc] = (0x1UL << 39) - ctr[pmc].count;
+-		pr_debug("reset_value for pmc%u inited to 0x%lx\n",
++		pr_debug("reset_value for pmc%u inited to 0x%llx\n",
+ 				 pmc, reset_value[pmc]);
+ 	}
+ 
+@@ -177,7 +177,7 @@ static int pa6t_start(struct op_counter_
+ 
+ 	oprofile_running = 1;
+ 
+-	pr_debug("start on cpu %d, mmcr0 %lx\n", smp_processor_id(), mmcr0);
++	pr_debug("start on cpu %d, mmcr0 %llx\n", smp_processor_id(), mmcr0);
+ 
+ 	return 0;
+ }
+@@ -193,7 +193,7 @@ static void pa6t_stop(void)
+ 
+ 	oprofile_running = 0;
+ 
+-	pr_debug("stop on cpu %d, mmcr0 %lx\n", smp_processor_id(), mmcr0);
++	pr_debug("stop on cpu %d, mmcr0 %llx\n", smp_processor_id(), mmcr0);
+ }
+ 
+ /* handle the perfmon overflow vector */
+Index: linux/arch/powerpc/platforms/cell/beat_htab.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/beat_htab.c
++++ linux/arch/powerpc/platforms/cell/beat_htab.c
+@@ -44,8 +44,8 @@ static DEFINE_SPINLOCK(beat_htab_lock);
+ 
+ static inline unsigned int beat_read_mask(unsigned hpte_group)
+ {
+-	unsigned long hpte_v[5];
+ 	unsigned long rmask = 0;
++	u64 hpte_v[5];
+ 
+ 	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
+ 	if (!(hpte_v[0] & HPTE_V_BOLTED))
+@@ -93,8 +93,7 @@ static long beat_lpar_hpte_insert(unsign
+ 				  int psize, int ssize)
+ {
+ 	unsigned long lpar_rc;
+-	unsigned long slot;
+-	unsigned long hpte_v, hpte_r;
++	u64 hpte_v, hpte_r, slot;
+ 
+ 	/* same as iseries */
+ 	if (vflags & HPTE_V_SECONDARY)
+@@ -153,8 +152,9 @@ static long beat_lpar_hpte_remove(unsign
+ 
+ static unsigned long beat_lpar_hpte_getword0(unsigned long slot)
+ {
+-	unsigned long dword0, dword[5];
++	unsigned long dword0;
+ 	unsigned long lpar_rc;
++	u64 dword[5];
+ 
+ 	lpar_rc = beat_read_htab_entries(0, slot & ~3UL, dword);
+ 
+@@ -170,7 +170,7 @@ static void beat_lpar_hptab_clear(void)
+ 	unsigned long size_bytes = 1UL << ppc64_pft_size;
+ 	unsigned long hpte_count = size_bytes >> 4;
+ 	int i;
+-	unsigned long dummy0, dummy1;
++	u64 dummy0, dummy1;
+ 
+ 	/* TODO: Use bulk call */
+ 	for (i = 0; i < hpte_count; i++)
+@@ -189,7 +189,8 @@ static long beat_lpar_hpte_updatepp(unsi
+ 				    int psize, int ssize, int local)
+ {
+ 	unsigned long lpar_rc;
+-	unsigned long dummy0, dummy1, want_v;
++	u64 dummy0, dummy1;
++	unsigned long want_v;
+ 
+ 	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
+ 
+@@ -255,7 +256,8 @@ static void beat_lpar_hpte_updateboltedp
+ 					  unsigned long ea,
+ 					  int psize, int ssize)
+ {
+-	unsigned long lpar_rc, slot, vsid, va, dummy0, dummy1;
++	unsigned long lpar_rc, slot, vsid, va;
++	u64 dummy0, dummy1;
+ 
+ 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
+ 	va = (vsid << 28) | (ea & 0x0fffffff);
+@@ -276,7 +278,7 @@ static void beat_lpar_hpte_invalidate(un
+ {
+ 	unsigned long want_v;
+ 	unsigned long lpar_rc;
+-	unsigned long dummy1, dummy2;
++	u64 dummy1, dummy2;
+ 	unsigned long flags;
+ 
+ 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
+@@ -315,8 +317,7 @@ static long beat_lpar_hpte_insert_v3(uns
+ 				  int psize, int ssize)
+ {
+ 	unsigned long lpar_rc;
+-	unsigned long slot;
+-	unsigned long hpte_v, hpte_r;
++	u64 hpte_v, hpte_r, slot;
+ 
+ 	/* same as iseries */
+ 	if (vflags & HPTE_V_SECONDARY)
+Index: linux/arch/powerpc/platforms/cell/beat_interrupt.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/beat_interrupt.c
++++ linux/arch/powerpc/platforms/cell/beat_interrupt.c
+@@ -99,7 +99,7 @@ static void beatic_end_irq(unsigned int 
+ 	err = beat_downcount_of_interrupt(irq_plug);
+ 	if (err != 0) {
+ 		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) /* -11: wrong state */
+-			panic("Failed to downcount IRQ! Error = %16lx", err);
++			panic("Failed to downcount IRQ! Error = %16llx", err);
+ 
+ 		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", irq_plug);
+ 	}
+Index: linux/arch/powerpc/platforms/cell/beat_udbg.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/beat_udbg.c
++++ linux/arch/powerpc/platforms/cell/beat_udbg.c
+@@ -40,8 +40,8 @@ static void udbg_putc_beat(char c)
+ }
+ 
+ /* Buffered chars getc */
+-static long inbuflen;
+-static long inbuf[2];	/* must be 2 longs */
++static u64 inbuflen;
++static u64 inbuf[2];	/* must be 2 longs */
+ 
+ static int udbg_getc_poll_beat(void)
+ {
+Index: linux/arch/powerpc/platforms/cell/celleb_scc_epci.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/celleb_scc_epci.c
++++ linux/arch/powerpc/platforms/cell/celleb_scc_epci.c
+@@ -405,7 +405,7 @@ static int __init celleb_setup_epci(stru
+ 	hose->cfg_addr = ioremap(r.start, (r.end - r.start + 1));
+ 	if (!hose->cfg_addr)
+ 		goto error;
+-	pr_debug("EPCI: cfg_addr map 0x%016lx->0x%016lx + 0x%016lx\n",
++	pr_debug("EPCI: cfg_addr map 0x%016llx->0x%016lx + 0x%016llx\n",
+ 		 r.start, (unsigned long)hose->cfg_addr, (r.end - r.start + 1));
+ 
+ 	if (of_address_to_resource(node, 2, &r))
+@@ -413,7 +413,7 @@ static int __init celleb_setup_epci(stru
+ 	hose->cfg_data = ioremap(r.start, (r.end - r.start + 1));
+ 	if (!hose->cfg_data)
+ 		goto error;
+-	pr_debug("EPCI: cfg_data map 0x%016lx->0x%016lx + 0x%016lx\n",
++	pr_debug("EPCI: cfg_data map 0x%016llx->0x%016lx + 0x%016llx\n",
+ 		 r.start, (unsigned long)hose->cfg_data, (r.end - r.start + 1));
+ 
+ 	hose->ops = &celleb_epci_ops;
+Index: linux/arch/powerpc/platforms/cell/interrupt.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/interrupt.c
++++ linux/arch/powerpc/platforms/cell/interrupt.c
+@@ -148,7 +148,7 @@ static unsigned int iic_get_irq(void)
+ 
+ 	iic = &__get_cpu_var(iic);
+ 	*(unsigned long *) &pending =
+-		in_be64((unsigned long __iomem *) &iic->regs->pending_destr);
++		in_be64((unsigned long long __iomem *) &iic->regs->pending_destr);
+ 	if (!(pending.flags & CBE_IIC_IRQ_VALID))
+ 		return NO_IRQ;
+ 	virq = irq_linear_revmap(iic_host, iic_pending_to_hwnum(pending));
+Index: linux/arch/powerpc/platforms/cell/io-workarounds.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/io-workarounds.c
++++ linux/arch/powerpc/platforms/cell/io-workarounds.c
+@@ -130,7 +130,7 @@ static const struct ppc_pci_io __devinit
+ 
+ };
+ 
+-static void __iomem *iowa_ioremap(unsigned long addr, unsigned long size,
++static void __iomem *iowa_ioremap(phys_addr_t addr, unsigned long size,
+ 						unsigned long flags)
+ {
+ 	struct iowa_bus *bus;
+Index: linux/arch/powerpc/platforms/cell/iommu.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/iommu.c
++++ linux/arch/powerpc/platforms/cell/iommu.c
+@@ -150,7 +150,7 @@ static int cbe_nr_iommus;
+ static void invalidate_tce_cache(struct cbe_iommu *iommu, unsigned long *pte,
+ 		long n_ptes)
+ {
+-	unsigned long __iomem *reg;
++	u64 __iomem *reg;
+ 	unsigned long val;
+ 	long n;
+ 
+@@ -855,7 +855,7 @@ static int __init cell_iommu_init_disabl
+ 	 */
+ 	if (np && size < lmb_end_of_DRAM()) {
+ 		printk(KERN_WARNING "iommu: force-enabled, dma window"
+-		       " (%ldMB) smaller than total memory (%ldMB)\n",
++		       " (%ldMB) smaller than total memory (%lldMB)\n",
+ 		       size >> 20, lmb_end_of_DRAM() >> 20);
+ 		return -ENODEV;
+ 	}
+@@ -985,7 +985,7 @@ static void cell_dma_dev_setup_fixed(str
+ 	addr = cell_iommu_get_fixed_address(dev) + dma_iommu_fixed_base;
+ 	archdata->dma_data = (void *)addr;
+ 
+-	dev_dbg(dev, "iommu: fixed addr = %lx\n", addr);
++	dev_dbg(dev, "iommu: fixed addr = %llx\n", addr);
+ }
+ 
+ static void insert_16M_pte(unsigned long addr, unsigned long *ptab,
+Index: linux/arch/powerpc/platforms/cell/ras.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/ras.c
++++ linux/arch/powerpc/platforms/cell/ras.c
+@@ -38,16 +38,16 @@ static void dump_fir(int cpu)
+ 	/* Todo: do some nicer parsing of bits and based on them go down
+ 	 * to other sub-units FIRs and not only IIC
+ 	 */
+-	printk(KERN_ERR "Global Checkstop FIR    : 0x%016lx\n",
++	printk(KERN_ERR "Global Checkstop FIR    : 0x%016llx\n",
+ 	       in_be64(&pregs->checkstop_fir));
+-	printk(KERN_ERR "Global Recoverable FIR  : 0x%016lx\n",
++	printk(KERN_ERR "Global Recoverable FIR  : 0x%016llx\n",
+ 	       in_be64(&pregs->checkstop_fir));
+-	printk(KERN_ERR "Global MachineCheck FIR : 0x%016lx\n",
++	printk(KERN_ERR "Global MachineCheck FIR : 0x%016llx\n",
+ 	       in_be64(&pregs->spec_att_mchk_fir));
+ 
+ 	if (iregs == NULL)
+ 		return;
+-	printk(KERN_ERR "IOC FIR                 : 0x%016lx\n",
++	printk(KERN_ERR "IOC FIR                 : 0x%016llx\n",
+ 	       in_be64(&iregs->ioc_fir));
+ 
+ }
+Index: linux/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linux/arch/powerpc/platforms/cell/spu_base.c
+@@ -139,10 +139,10 @@ static void spu_restart_dma(struct spu *
+ {
+ 	struct spu_priv2 __iomem *priv2 = spu->priv2;
+ 
+-	if (!test_bit(SPU_CONTEXT_SWITCH_PENDING, &spu->flags))
++	if (!test_bit(SPU_CONTEXT_SWITCH_PENDING, (unsigned long *)&spu->flags))
+ 		out_be64(&priv2->mfc_control_RW, MFC_CNTL_RESTART_DMA_COMMAND);
+ 	else {
+-		set_bit(SPU_CONTEXT_FAULT_PENDING, &spu->flags);
++		set_bit(SPU_CONTEXT_FAULT_PENDING, (unsigned long *)&spu->flags);
+ 		mb();
+ 	}
+ }
+@@ -151,7 +151,7 @@ static inline void spu_load_slb(struct s
+ {
+ 	struct spu_priv2 __iomem *priv2 = spu->priv2;
+ 
+-	pr_debug("%s: adding SLB[%d] 0x%016lx 0x%016lx\n",
++	pr_debug("%s: adding SLB[%d] 0x%016llx 0x%016llx\n",
+ 			__func__, slbe, slb->vsid, slb->esid);
+ 
+ 	out_be64(&priv2->slb_index_W, slbe);
+@@ -221,7 +221,7 @@ static int __spu_trap_data_map(struct sp
+ {
+ 	int ret;
+ 
+-	pr_debug("%s, %lx, %lx\n", __func__, dsisr, ea);
++	pr_debug("%s, %llx, %lx\n", __func__, dsisr, ea);
+ 
+ 	/*
+ 	 * Handle kernel space hash faults immediately. User hash
+Index: linux/arch/powerpc/platforms/cell/spu_callbacks.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/spu_callbacks.c
++++ linux/arch/powerpc/platforms/cell/spu_callbacks.c
+@@ -54,7 +54,7 @@ long spu_sys_callback(struct spu_syscall
+ 	long (*syscall)(u64 a1, u64 a2, u64 a3, u64 a4, u64 a5, u64 a6);
+ 
+ 	if (s->nr_ret >= ARRAY_SIZE(spu_syscall_table)) {
+-		pr_debug("%s: invalid syscall #%ld", __func__, s->nr_ret);
++		pr_debug("%s: invalid syscall #%lld", __func__, s->nr_ret);
+ 		return -ENOSYS;
+ 	}
+ 
+Index: linux/arch/powerpc/platforms/iseries/iommu.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/iseries/iommu.c
++++ linux/arch/powerpc/platforms/iseries/iommu.c
+@@ -66,7 +66,7 @@ static int tce_build_iSeries(struct iomm
+ 
+ 		rc = HvCallXm_setTce((u64)tbl->it_index, (u64)index, tce);
+ 		if (rc)
+-			panic("PCI_DMA: HvCallXm_setTce failed, Rc: 0x%lx\n",
++			panic("PCI_DMA: HvCallXm_setTce failed, Rc: 0x%llx\n",
+ 					rc);
+ 		index++;
+ 		uaddr += TCE_PAGE_SIZE;
+@@ -81,7 +81,7 @@ static void tce_free_iSeries(struct iomm
+ 	while (npages--) {
+ 		rc = HvCallXm_setTce((u64)tbl->it_index, (u64)index, 0);
+ 		if (rc)
+-			panic("PCI_DMA: HvCallXm_setTce failed, Rc: 0x%lx\n",
++			panic("PCI_DMA: HvCallXm_setTce failed, Rc: 0x%llx\n",
+ 					rc);
+ 		index++;
+ 	}
+Index: linux/arch/powerpc/platforms/pasemi/cpufreq.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/pasemi/cpufreq.c
++++ linux/arch/powerpc/platforms/pasemi/cpufreq.c
+@@ -112,7 +112,7 @@ static int get_gizmo_latency(void)
+ 
+ static void set_astate(int cpu, unsigned int astate)
+ {
+-	u64 flags;
++	unsigned long flags;
+ 
+ 	/* Return if called before init has run */
+ 	if (unlikely(!sdcasr_mapbase))
+Index: linux/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/pseries/iommu.c
++++ linux/arch/powerpc/platforms/pseries/iommu.c
+@@ -127,10 +127,10 @@ static int tce_build_pSeriesLP(struct io
+ 		}
+ 
+ 		if (rc && printk_ratelimit()) {
+-			printk("tce_build_pSeriesLP: plpar_tce_put failed. rc=%ld\n", rc);
+-			printk("\tindex   = 0x%lx\n", (u64)tbl->it_index);
+-			printk("\ttcenum  = 0x%lx\n", (u64)tcenum);
+-			printk("\ttce val = 0x%lx\n", tce );
++			printk("tce_build_pSeriesLP: plpar_tce_put failed. rc=%lld\n", rc);
++			printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
++			printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
++			printk("\ttce val = 0x%llx\n", tce );
+ 			show_stack(current, (unsigned long *)__get_SP());
+ 		}
+ 
+@@ -210,10 +210,10 @@ static int tce_buildmulti_pSeriesLP(stru
+ 	}
+ 
+ 	if (rc && printk_ratelimit()) {
+-		printk("tce_buildmulti_pSeriesLP: plpar_tce_put failed. rc=%ld\n", rc);
+-		printk("\tindex   = 0x%lx\n", (u64)tbl->it_index);
+-		printk("\tnpages  = 0x%lx\n", (u64)npages);
+-		printk("\ttce[0] val = 0x%lx\n", tcep[0]);
++		printk("tce_buildmulti_pSeriesLP: plpar_tce_put failed. rc=%lld\n", rc);
++		printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
++		printk("\tnpages  = 0x%llx\n", (u64)npages);
++		printk("\ttce[0] val = 0x%llx\n", tcep[0]);
+ 		show_stack(current, (unsigned long *)__get_SP());
+ 	}
+ 	return ret;
+@@ -227,9 +227,9 @@ static void tce_free_pSeriesLP(struct io
+ 		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, 0);
+ 
+ 		if (rc && printk_ratelimit()) {
+-			printk("tce_free_pSeriesLP: plpar_tce_put failed. rc=%ld\n", rc);
+-			printk("\tindex   = 0x%lx\n", (u64)tbl->it_index);
+-			printk("\ttcenum  = 0x%lx\n", (u64)tcenum);
++			printk("tce_free_pSeriesLP: plpar_tce_put failed. rc=%lld\n", rc);
++			printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
++			printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
+ 			show_stack(current, (unsigned long *)__get_SP());
+ 		}
+ 
+@@ -246,9 +246,9 @@ static void tce_freemulti_pSeriesLP(stru
+ 
+ 	if (rc && printk_ratelimit()) {
+ 		printk("tce_freemulti_pSeriesLP: plpar_tce_stuff failed\n");
+-		printk("\trc      = %ld\n", rc);
+-		printk("\tindex   = 0x%lx\n", (u64)tbl->it_index);
+-		printk("\tnpages  = 0x%lx\n", (u64)npages);
++		printk("\trc      = %lld\n", rc);
++		printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
++		printk("\tnpages  = 0x%llx\n", (u64)npages);
+ 		show_stack(current, (unsigned long *)__get_SP());
+ 	}
+ }
+@@ -261,10 +261,9 @@ static unsigned long tce_get_pSeriesLP(s
+ 	rc = plpar_tce_get((u64)tbl->it_index, (u64)tcenum << 12, &tce_ret);
+ 
+ 	if (rc && printk_ratelimit()) {
+-		printk("tce_get_pSeriesLP: plpar_tce_get failed. rc=%ld\n",
+-			rc);
+-		printk("\tindex   = 0x%lx\n", (u64)tbl->it_index);
+-		printk("\ttcenum  = 0x%lx\n", (u64)tcenum);
++		printk("tce_get_pSeriesLP: plpar_tce_get failed. rc=%lld\n", rc);
++		printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
++		printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
+ 		show_stack(current, (unsigned long *)__get_SP());
+ 	}
+ 
+Index: linux/arch/powerpc/sysdev/mpic.c
+===================================================================
+--- linux.orig/arch/powerpc/sysdev/mpic.c
++++ linux/arch/powerpc/sysdev/mpic.c
+@@ -435,7 +435,7 @@ static void __init mpic_scan_ht_msi(stru
+ 		addr = addr | ((u64)readl(base + HT_MSI_ADDR_HI) << 32);
+ 	}
+ 
+-	printk(KERN_DEBUG "mpic:   - HT:%02x.%x %s MSI mapping found @ 0x%lx\n",
++	printk(KERN_DEBUG "mpic:   - HT:%02x.%x %s MSI mapping found @ 0x%llx\n",
+ 		PCI_SLOT(devfn), PCI_FUNC(devfn),
+ 		flags & HT_MSI_FLAGS_ENABLE ? "enabled" : "disabled", addr);
+ 
+Index: linux/drivers/char/hvc_beat.c
+===================================================================
+--- linux.orig/drivers/char/hvc_beat.c
++++ linux/drivers/char/hvc_beat.c
+@@ -44,7 +44,7 @@ static int hvc_beat_get_chars(uint32_t v
+ 	static unsigned char q[sizeof(unsigned long) * 2]
+ 		__attribute__((aligned(sizeof(unsigned long))));
+ 	static int qlen = 0;
+-	unsigned long got;
++	u64 got;
+ 
+ again:
+ 	if (qlen) {
+@@ -63,7 +63,7 @@ again:
+ 		}
+ 	}
+ 	if (beat_get_term_char(vtermno, &got,
+-		((unsigned long *)q), ((unsigned long *)q) + 1) == 0) {
++		((u64 *)q), ((u64 *)q) + 1) == 0) {
+ 		qlen = got;
+ 		goto again;
+ 	}
+Index: linux/drivers/net/pasemi_mac.c
+===================================================================
+--- linux.orig/drivers/net/pasemi_mac.c
++++ linux/drivers/net/pasemi_mac.c
+@@ -712,7 +712,7 @@ static inline void pasemi_mac_rx_error(c
+ 	rcmdsta = read_dma_reg(PAS_DMA_RXINT_RCMDSTA(mac->dma_if));
+ 	ccmdsta = read_dma_reg(PAS_DMA_RXCHAN_CCMDSTA(chan->chno));
+ 
+-	printk(KERN_ERR "pasemi_mac: rx error. macrx %016lx, rx status %lx\n",
++	printk(KERN_ERR "pasemi_mac: rx error. macrx %016llx, rx status %llx\n",
+ 		macrx, *chan->status);
+ 
+ 	printk(KERN_ERR "pasemi_mac: rcmdsta %08x ccmdsta %08x\n",
+@@ -730,8 +730,8 @@ static inline void pasemi_mac_tx_error(c
+ 
+ 	cmdsta = read_dma_reg(PAS_DMA_TXCHAN_TCMDSTA(chan->chno));
+ 
+-	printk(KERN_ERR "pasemi_mac: tx error. mactx 0x%016lx, "\
+-		"tx status 0x%016lx\n", mactx, *chan->status);
++	printk(KERN_ERR "pasemi_mac: tx error. mactx 0x%016llx, "\
++		"tx status 0x%016llx\n", mactx, *chan->status);
+ 
+ 	printk(KERN_ERR "pasemi_mac: tcmdsta 0x%08x\n", cmdsta);
+ }
+Index: linux/drivers/pcmcia/electra_cf.c
+===================================================================
+--- linux.orig/drivers/pcmcia/electra_cf.c
++++ linux/drivers/pcmcia/electra_cf.c
+@@ -297,7 +297,7 @@ static int __devinit electra_cf_probe(st
+ 		goto fail3;
+ 	}
+ 
+-	dev_info(device, "at mem 0x%lx io 0x%lx irq %d\n",
++	dev_info(device, "at mem 0x%lx io 0x%llx irq %d\n",
+ 		 cf->mem_phys, io.start, cf->irq);
+ 
+ 	cf->active = 1;
+Index: linux/drivers/scsi/ibmvscsi/ibmvscsi.c
+===================================================================
+--- linux.orig/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ linux/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -1060,7 +1060,7 @@ static int ibmvscsi_eh_abort_handler(str
+ 	}
+ 
+ 	sdev_printk(KERN_INFO, cmd->device,
+-                    "aborting command. lun 0x%lx, tag 0x%lx\n",
++                    "aborting command. lun 0x%llx, tag 0x%llx\n",
+ 		    (((u64) lun) << 48), (u64) found_evt);
+ 
+ 	wait_for_completion(&evt->comp);
+@@ -1081,7 +1081,7 @@ static int ibmvscsi_eh_abort_handler(str
+ 	if (rsp_rc) {
+ 		if (printk_ratelimit())
+ 			sdev_printk(KERN_WARNING, cmd->device,
+-				    "abort code %d for task tag 0x%lx\n",
++				    "abort code %d for task tag 0x%llx\n",
+ 				    rsp_rc, tsk_mgmt->task_tag);
+ 		return FAILED;
+ 	}
+@@ -1101,12 +1101,12 @@ static int ibmvscsi_eh_abort_handler(str
+ 
+ 	if (found_evt == NULL) {
+ 		spin_unlock_irqrestore(hostdata->host->host_lock, flags);
+-		sdev_printk(KERN_INFO, cmd->device, "aborted task tag 0x%lx completed\n",
++		sdev_printk(KERN_INFO, cmd->device, "aborted task tag 0x%llx completed\n",
+ 			    tsk_mgmt->task_tag);
+ 		return SUCCESS;
+ 	}
+ 
+-	sdev_printk(KERN_INFO, cmd->device, "successfully aborted task tag 0x%lx\n",
++	sdev_printk(KERN_INFO, cmd->device, "successfully aborted task tag 0x%llx\n",
+ 		    tsk_mgmt->task_tag);
+ 
+ 	cmd->result = (DID_ABORT << 16);
+@@ -1181,7 +1181,7 @@ static int ibmvscsi_eh_device_reset_hand
+ 		return FAILED;
+ 	}
+ 
+-	sdev_printk(KERN_INFO, cmd->device, "resetting device. lun 0x%lx\n",
++	sdev_printk(KERN_INFO, cmd->device, "resetting device. lun 0x%llx\n",
+ 		    (((u64) lun) << 48));
+ 
+ 	wait_for_completion(&evt->comp);
+@@ -1202,7 +1202,7 @@ static int ibmvscsi_eh_device_reset_hand
+ 	if (rsp_rc) {
+ 		if (printk_ratelimit())
+ 			sdev_printk(KERN_WARNING, cmd->device,
+-				    "reset code %d for task tag 0x%lx\n",
++				    "reset code %d for task tag 0x%llx\n",
+ 				    rsp_rc, tsk_mgmt->task_tag);
+ 		return FAILED;
+ 	}
