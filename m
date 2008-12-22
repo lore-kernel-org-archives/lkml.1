@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYLVWsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYLVWuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbYLVWsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 17:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYLVWsH
+	id S1756113AbYLVWuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 17:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYLVWuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 17:48:07 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50814 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753768AbYLVWsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 17:48:05 -0500
-Date: Mon, 22 Dec 2008 23:46:18 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
-Subject: Re: [RFC][PATCH 5/6][v3] Protect cinit from unblocked SIG_DFL
-	signals
-Message-ID: <20081222224618.GB1536@redhat.com>
-References: <20081221005106.GA4912@us.ibm.com> <20081221005454.GE5025@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081221005454.GE5025@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Dec 2008 17:50:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56249 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754570AbYLVWuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 17:50:04 -0500
+Date: Mon, 22 Dec 2008 14:49:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: sfr@canb.auug.org.au, david@fromorbit.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: Tree for December 18 (patch: kernel-doc notation)
+Message-Id: <20081222144945.8ef2748e.akpm@linux-foundation.org>
+In-Reply-To: <20081218161437.fe2d2675.randy.dunlap@oracle.com>
+References: <20081218230637.c879a046.sfr@canb.auug.org.au>
+	<20081218161437.fe2d2675.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/20, Sukadev Bhattiprolu wrote:
->
-> +static int sig_task_unkillable(struct task_struct *t, int same_ns)
-> +{
-> +	int flags = t->signal->flags;
-> +
-> +	if (unlikely(flags & SIGNAL_UNKILLABLE) ||
-> +			(same_ns && (flags & SIGNAL_UNKILLABLE_FROM_NS)))
-> +		return 1;
+On Thu, 18 Dec 2008 16:14:37 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Hmm. I do not understand the point of the new flag,
-SIGNAL_UNKILLABLE_FROM_NS (patch 3/6).
+> fs/inode.c and mm/filemap.c need kernel-doc fixes.
+> 
+> What tree were these merged into for linux-next?
 
-Actually, "same_ns" is a bad name, imho. It actually means "not from
-parent ns", and this is not the same as "from the same ns".
+I use git-blame.
 
-Let's suppose we rename it, then the code becomes
+> How do I get these doc fixes merged?  (2 patches below)
+> 
+> ---
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix fs/inode.c kernel-doc function parameters:
+> 
+> Warning(linux-next-20081218//fs/inode.c:120): No description found for parameter 'sb'
+> Warning(linux-next-20081218//fs/inode.c:120): No description found for parameter 'inode'
+> Warning(linux-next-20081218//fs/inode.c:588): No description found for parameter 'sb'
+> Warning(linux-next-20081218//fs/inode.c:588): No description found for parameter 'inode'
+> 
 
-	if (unlikely(flags & SIGNAL_UNKILLABLE) ||
-		(!parent_ns && (flags & SIGNAL_UNKILLABLE_FROM_NS)))
+>From the XFS tree:
 
-But, parent_ns == T is not possible for the global init, so why
-do we need the extra flag? we can just do
+commit 2cb1599f9b2ecdd7a9e59feeee647eb258966839
+Author:     David Chinner <david@fromorbit.com>
+AuthorDate: Thu Oct 30 17:32:23 2008 +1100
+Commit:     Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
+CommitDate: Thu Oct 30 17:32:23 2008 +1100
 
-	if (unlikely(flags & SIGNAL_UNKILLABLE) && !parent_ns)
-		return 1;
+    Inode: Allow external initialisers
 
-No?
 
-> @@ -867,11 +886,17 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
->  {
->  	struct sigpending *pending;
->  	struct sigqueue *q;
-> +	int same_ns;
->  
->  	trace_sched_signal_send(sig, t);
->  
->  	assert_spin_locked(&t->sighand->siglock);
-> -	if (!prepare_signal(sig, t))
-> +
-> +	same_ns = 1;
-> +	if (siginfo_from_ancestor_ns(t, info))
-> +		same_ns = 0;
+> ---
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix mm/filemap.c functions' kernel-doc:
+> 
+> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:575): No description found for parameter 'page'
+> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:575): No description found for parameter 'waiter'
+> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:2348): No description found for parameter 'mapping'
+> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:2348): No description found for parameter 'index'
+> Warning(/local/linsrc/linux-next-20081218//mm/filemap.c:2348): No description found for parameter 'source'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc: Dave Chinner <david@fromorbit.com>
 
-This looks a bit strang, why not
-
-	same_ns = siginfo_from_ancestor_ns(t, info);
-
-?
-
-Oleg.
+That's no longer in linux-next.  I'd guess it was from the fs-cache
+patches.
 
