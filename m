@@ -1,138 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYLVPtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYLVQHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYLVPtG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 10:49:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYLVPsz
+	id S1755321AbYLVQHg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 11:07:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYLVQH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 10:48:55 -0500
-Received: from rtr.ca ([76.10.145.34]:34309 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754711AbYLVPsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 10:48:54 -0500
-Message-ID: <494FB6E3.1040409@rtr.ca>
-Date: Mon, 22 Dec 2008 10:48:51 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Mon, 22 Dec 2008 11:07:28 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2275 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754822AbYLVQH1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 11:07:27 -0500
+Date: Mon, 22 Dec 2008 11:07:26 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Christoph Hellwig <hch@lst.de>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, RFC] add a vfs_fsync helper
+In-Reply-To: <200812220143.29375.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0812221102190.18968-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       akpm@linux-foundation.org, rjw@sisk.pl, tglx@linutronix.de,
-       lenb@kernel.org, linux-pm@lists.linux-foundation.org, davej@redhat.com
-Subject: Re: SMP poweroff hangs:  it's baaaack!  But on x86_64 this time.
-References: <20071213053020.E28AB1454450@imap.suse.de> <4761601B.3030408@rtr.ca> <20071213164545.GA10593@suse.de> <47616C15.7030604@rtr.ca> <47616F8C.9030803@rtr.ca> <49491F32.1040400@rtr.ca> <20081219115917.GA1599@ucw.cz> <494C5619.7020209@rtr.ca>
-In-Reply-To: <494C5619.7020209@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Pavel Machek wrote:
->> On Wed 2008-12-17 10:48:02, Mark Lord wrote:
->>>> Subject: Fix SMP poweroff hangs
->>>> From: Mark Lord <lkml@rtr.ca>
->>>>
->>>> We need to disable all CPUs other than the boot CPU (usually 0) before
->>>> attempting to power-off modern SMP machines.  This fixes the
->>>> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas 
->>>> Gleixner's
->>>> new toybox.
->>>>
->>>> Signed-off-by: Mark Lord <mlord@pobox.com>
->>>> Acked-by: Thomas Gleixner <tglx@linutronix.de>
->>>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->>>> ---
->>>>
->>>>  kernel/sys.c |    2 ++
->>>>  1 file changed, 2 insertions(+)
->>>>
->>>> diff -puN kernel/sys.c~fix-smp-poweroff-hangs kernel/sys.c
->>>> --- a/kernel/sys.c~fix-smp-poweroff-hangs
->>>> +++ a/kernel/sys.c
->>>> @@ -32,6 +32,7 @@
->>>>  #include <linux/getcpu.h>
->>>>  #include <linux/task_io_accounting_ops.h>
->>>>  #include <linux/seccomp.h>
->>>> +#include <linux/cpu.h>
->>>>   #include <linux/compat.h>
->>>>  #include <linux/syscalls.h>
->>>> @@ -878,6 +879,7 @@ void kernel_power_off(void)
->>>>      kernel_shutdown_prepare(SYSTEM_POWER_OFF);
->>>>      if (pm_power_off_prepare)
->>>>          pm_power_off_prepare();
->>>> +    disable_nonboot_cpus();
->>>>      sysdev_shutdown();
->>>>      printk(KERN_EMERG "Power down.\n");
->>>>      machine_power_off();
->>> ..
->>>
->>> This bug has returned here now, but on x86_86 this time around.
->>> Same machine as before, just upgraded toa 64-bit kernel/user (2.6.27.9)
->>> from the original 32-bit kernel/user that was originally fixed (above).
->>>
->>> One hang at poweroff over the past 10 days.  Not much, but enough
->>> to destroy confidence in "unattended" operation.
->>>
->>> I lack opportunity to dig further into the code for now,
->>> but just wanted to flag the problem, in case similar reports
->>> from others might already be out there.
->>>
->>> In the meanwhile, I'm experimenting with this simple patch,
->>> garnered from the 32-bit investigations last time around.
->>> We should know in a few weeks whether it has any effect or not.
->>>
->>> --- old/kernel/sys.c    2008-10-18 13:57:22.000000000 -0400
->>> +++ linux-2.6.27.9/kernel/sys.c    2008-12-17 09:42:17.000000000 -0500
->>> @@ -303,6 +303,8 @@
->>>
->>> static void kernel_shutdown_prepare(enum system_states state)
->>> {
->>> +    set_cpus_allowed(current, 
->>> cpumask_of_cpu(first_cpu(cpu_online_map)));
->>
->> Is this line neccessary?
-> ..
-> 
-> One or the other is probably redundant, but it's not 100% clear 
-> *which*.  :)
-> The line above was suggested by others back when the original problem
-> was being worked on for 32-bit.
-> 
->>> +    disable_nonboot_cpus();
->>>     blocking_notifier_call_chain(&reboot_notifier_list,
->>>         (state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
->>>     system_state = state;
->>> @@ -333,7 +335,6 @@
->>>     kernel_shutdown_prepare(SYSTEM_POWER_OFF);
->>>     if (pm_power_off_prepare)
->>>         pm_power_off_prepare();
->>> -    disable_nonboot_cpus();
->>>     sysdev_shutdown();
->>>     printk(KERN_EMERG "Power down.\n");
->>>     machine_power_off();
->>
->> Do you have any idea why it helps? BIOS will see us shutting down on
->> cpu0 anyway, so if this helps there's a linux bug somewhere...
-> ..
-> 
-> I don't know if it helps, yet.  Needs a lot more soak first.
-> The theory here is, that all BIOS interactions from the kernel
-> probably should happen only on the "boot CPU" or on "cpu 0",
-> not just the "halt" sequence.
-> 
-> By setting the CPU restriction earlier in the shutdown sequence,
-> we should be on the correct CPU for all of the various device-driver
-> BIOS ineractions that might happen before actually halting.
-> 
-> Could be a bad theory, but I'm open to other possible suggestions.
-..
+On Mon, 22 Dec 2008, Christoph Hellwig wrote:
 
-Well, it has hung on poweroff again now, so that patch apparently doesn't
-cure the problem.  Darn.  The machine is at remote site, and I won't have
-access to it for another week or so to do any further diagnostics.
-Perhaps we'll just leave it running for the whole week.
+> Fsync currently has a fdatawrite/fdatawait pair around the method call,
+> and a mutex_lock/unlock of the inode mutex.  All callers of fsync have
+> to duplicate this, but we have a few and most of them don't quite get
+> it right.  This patch adds a new vfs_fsync that takes care of this.
+> It's a little more complicated as usual as ->fsync might get a NULL file
+> pointer and just a dentry from nfsd, but otherwise gets afile and we
+> want to take the mapping and file operations from it when it is there.
 
-Cheers
+> Index: xfs/fs/sync.c
+> ===================================================================
+> --- xfs.orig/fs/sync.c	2008-12-19 15:02:53.942907780 +0100
+> +++ xfs/fs/sync.c	2008-12-21 12:22:17.180896085 +0100
+> @@ -75,14 +75,39 @@
+>  	return ret;
+>  }
+>  
+> -long do_fsync(struct file *file, int datasync)
+> +/**
+> + * vfs_fsync - perform a fsync or fdatasync on a file
+> + * @file:		file to sync
+> + * @dentry:		dentry of @file
+> + * @data:		only perform a fdatasync operation
+> + *
+> + * Write back data and metadata for @file to disk.  If @datasync is
+> + * set only metadata needed to access modified file data is written.
+> + *
+> + * In case this function is called from nfsd @file may be %NULL and
+> + * only @dentry is set.  This can only happen when the filesystem
+> + * implements the export_operations API.
+> + */
+> +int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
+>  {
+> -	int ret;
+> -	int err;
+> -	struct address_space *mapping = file->f_mapping;
+> +	struct file_operations *fop;
+> +	struct address_space *mapping;
+> +	int err, ret;
+> +
+> +	/*
+> +	 * Get mapping and operations from the file in case we have
+> +	 * as file, or get the default values for them in case we
+> +	 * don't have a struct file available.  Damn nfsd..
+> +	 */
+> +	if (file) {
+> +		mapping = file->f_mapping;
+> +		fop = file->f_op;
+> +	} else {
+> +		mapping = dentry->d_inode->i_mapping;
+> +		fop = dentry->d_inode->i_fop;
+> +	}
+>  
+> -	if (!file->f_op || !file->f_op->fsync) {
+> -		/* Why?  We can still call filemap_fdatawrite */
+> +	if (!fop || !fop->fsync) {
+>  		ret = -EINVAL;
+>  		goto out;
+>  	}
+> @@ -94,7 +119,7 @@
+>  	 * livelocks in fsync_buffers_list().
+>  	 */
+>  	mutex_lock(&mapping->host->i_mutex);
+> -	err = file->f_op->fsync(file, file->f_path.dentry, datasync);
+> +	err = fop->fsync(file, dentry, datasync);
+>  	if (!ret)
+>  		ret = err;
+>  	mutex_unlock(&mapping->host->i_mutex);
+> @@ -105,14 +130,14 @@
+>  	return ret;
+>  }
+>  
+> -static long __do_fsync(unsigned int fd, int datasync)
+> +static int do_fsync(unsigned int fd, int datasync)
+>  {
+>  	struct file *file;
+>  	int ret = -EBADF;
+>  
+>  	file = fget(fd);
+>  	if (file) {
+> -		ret = do_fsync(file, datasync);
+> +		ret = vfs_fsync(file, file->f_path.dentry, datasync);
+>  		fput(file);
+>  	}
+>  	return ret;
+> @@ -120,12 +145,12 @@
+>  
+>  asmlinkage long sys_fsync(unsigned int fd)
+>  {
+> -	return __do_fsync(fd, 0);
+> +	return do_fsync(fd, 0);
+>  }
+>  
+>  asmlinkage long sys_fdatasync(unsigned int fd)
+>  {
+> -	return __do_fsync(fd, 1);
+> +	return do_fsync(fd, 1);
+>  }
+>  
+>  /*
+
+> Index: xfs/drivers/usb/gadget/file_storage.c
+> ===================================================================
+> --- xfs.orig/drivers/usb/gadget/file_storage.c	2008-12-21 12:26:53.254894542 +0100
+> +++ xfs/drivers/usb/gadget/file_storage.c	2008-12-21 12:28:08.914896191 +0100
+> @@ -1863,26 +1863,10 @@
+>  static int fsync_sub(struct lun *curlun)
+>  {
+>  	struct file	*filp = curlun->filp;
+> -	struct inode	*inode;
+> -	int		rc, err;
+>  
+>  	if (curlun->ro || !filp)
+>  		return 0;
+> -	if (!filp->f_op->fsync)
+> -		return -EINVAL;
+> -
+> -	inode = filp->f_path.dentry->d_inode;
+> -	mutex_lock(&inode->i_mutex);
+> -	rc = filemap_fdatawrite(inode->i_mapping);
+> -	err = filp->f_op->fsync(filp, filp->f_path.dentry, 1);
+> -	if (!rc)
+> -		rc = err;
+> -	err = filemap_fdatawait(inode->i_mapping);
+> -	if (!rc)
+> -		rc = err;
+> -	mutex_unlock(&inode->i_mutex);
+> -	VLDBG(curlun, "fdatasync -> %d\n", rc);
+> -	return rc;
+> +	return vfs_fsync(filp, filp->f_path.dentry->d_inode, 1);
+>  }
+
+This won't work unless vfs_fsync() is EXPORTed.
+
+Alan Stern
+
