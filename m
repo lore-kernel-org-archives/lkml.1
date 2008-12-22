@@ -1,142 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYLVP2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYLVP2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbYLVP2k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 10:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbYLVP22
+	id S1755463AbYLVP2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 10:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYLVP2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 10:28:28 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:24655 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754645AbYLVP21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 10:28:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DWpLV6lAJLtZAhWmKh2fIsFdqA9zzYJ2FDkiOREth5x7EVi1mkiqmul18wK7WmxEU3
-         yi8nsxQjNZ+JZ959Dlvw4eh++XbS7FzR2Lz0q79c4rdSGzj2Sof1JdHizC0jIm/APrTd
-         xrVbOzADI1orBFKJWpWKur4j1yRywDXuBp9OQ=
-Message-ID: <c62985530812220728v49a6da6hc2057032bc4bcb19@mail.gmail.com>
-Date: Mon, 22 Dec 2008 16:28:26 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH] hrtimer: increase clock min delta threshold while interrupt hanging
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081222151723.GA7927@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <494EEC60.4080708@gmail.com> <20081222151723.GA7927@localhost>
+	Mon, 22 Dec 2008 10:28:33 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36410 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754758AbYLVP2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 10:28:31 -0500
+Date: Tue, 23 Dec 2008 02:28:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Jaswinder Singh <jaswinderlinux@gmail.com>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Firmware patches for SCSI
+Message-Id: <20081223022822.0dd8aa66.sfr@canb.auug.org.au>
+In-Reply-To: <1229958063.3345.3.camel@localhost.localdomain>
+References: <3f9a31f40812191153n636888f4i549409453266d58c@mail.gmail.com>
+	<1229718543.18778.4.camel@localhost.localdomain>
+	<3f9a31f40812191241q40dafdb0lfd2f4487f2870e2@mail.gmail.com>
+	<1229720031.18778.8.camel@localhost.localdomain>
+	<20081222171904.b588da94.sfr@canb.auug.org.au>
+	<494F4656.6010109@panasas.com>
+	<1229958063.3345.3.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__23_Dec_2008_02_28_22_+1100_SUCfyRkGPaXS.Auq"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/22 Cyrill Gorcunov <gorcunov@gmail.com>:
-> [Frederic Weisbecker - Mon, Dec 22, 2008 at 02:24:48AM +0100]
-> | Impact: avoid hanging on slow systems
-> |
-> | While using the function graph tracer on a virtualized system, the hrtimer_interrupt
-> | can hang the system on an infinite loop.
-> | This can be caused on several situation where something intrusive is slowing the
-> | system (ie: tracing) and the next clock events to program are always before the current
-> | time.
-> | This patch implements a reasonable compromise. If such a situation is detected, we share
-> | the CPUs time in 1/4 to process the hrtimer interrupts. This is enough to let the system
-> | running without serious starvation.
-> |
-> | It has been successfully tested under VirtualBox with 1000 HZ and 100 HZ with function graph
-> | tracer launched. On both cases, the clock events were increased until about 25 ms periodic ticks,
-> | which means 40 HZ.
-> |
-> | Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> | Cc: Thomas Gleixner <tglx@linutronix.de>
-> | ---
-> |  kernel/hrtimer.c |   30 +++++++++++++++++++++++++++++-
-> |  1 files changed, 29 insertions(+), 1 deletions(-)
-> |
-> | diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-> | index bda9cb9..02f2477 100644
-> | --- a/kernel/hrtimer.c
-> | +++ b/kernel/hrtimer.c
-> | @@ -1171,6 +1171,29 @@ static void __run_hrtimer(struct hrtimer *timer)
-> |
-> |  #ifdef CONFIG_HIGH_RES_TIMERS
-> |
-> | +static int force_clock_reprogram;
-> | +
-> | +/*
-> | + * After 5 iteration's attempts, we consider that hrtimer_interrupt()
-> | + * is hanging, which could happen with something that slows the interrupt
-> | + * such as the tracing. Then we force the clock reprogramming for each future
-> | + * hrtimer interrupts to avoid infinite loops and use the min_delta_ns
-> | + * threshold that we will overwrite.
-> | + * The next tick event will be scheduled to 3 times we currently spend on
-> | + * hrtimer_interrupt(). This gives a good compromise, the cpus will spend
-> | + * 1/4 of their time to process the hrtimer interrupts. This is enough to
-> | + * let it running without serious starvation.
-> | + */
-> | +
-> | +static inline void
-> | +hrtimer_interrupt_hanging(struct clock_event_device *dev,
-> | +                     ktime_t try_time)
-> | +{
-> | +     force_clock_reprogram = 1;
-> | +     dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
-> | +     printk(KERN_WARNING "hrtimer: interrupt too slow, "
-> | +             "forcing clock min delta to %lu ns\n", dev->min_delta_ns);
-> | +}
-> |  /*
-> |   * High resolution timer interrupt
-> |   * Called with interrupts disabled
-> | @@ -1180,6 +1203,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
-> |       struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
-> |       struct hrtimer_clock_base *base;
-> |       ktime_t expires_next, now;
-> | +     int nr_retries = 0;
-> |       int i;
-> |
-> |       BUG_ON(!cpu_base->hres_active);
-> | @@ -1187,6 +1211,10 @@ void hrtimer_interrupt(struct clock_event_device *dev)
-> |       dev->next_event.tv64 = KTIME_MAX;
-> |
-> |   retry:
-> | +     /* 5 retries is enough to notice a hang */
-> | +     if (!(++nr_retries % 5))
-> | +             hrtimer_interrupt_hanging(dev, ktime_sub(ktime_get(), now));
-> | +
-> |       now = ktime_get();
+--Signature=_Tue__23_Dec_2008_02_28_22_+1100_SUCfyRkGPaXS.Auq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 22 Dec 2008 09:01:03 -0600 James Bottomley <James.Bottomley@HansenP=
+artnership.com> wrote:
 >
-> Hi Frederic,
->
-> is it really needed to use mod operation here?
+> On Mon, 2008-12-22 at 09:48 +0200, Boaz Harrosh wrote:
+> >=20
+> > I think what James meant is to rebase over linux-next when cutting the
+> > patches in order to send them to the different maintainers over email.
+> > In that case linux-next is perfect because you are sure none of the
+> > patches will conflict with any maintainer and you do that all in one
+> > place. Since you are not merging then linux-next volatility does not
+> > matter.
 
+Unless there are conflict resolutions in the linux-next tree (and there
+are a few) that involve the files in the generated patch.  In that case
+the patch may not apply cleanly to any of the individual trees.
 
-This is a kind of paranoid check.
-But actually you are right, it is not necessary.
-If we force the clock reprogramming, we will not retry again...
+> The point is that it's hard to work out where all the maintainer trees
 
+Hopefully you can glean that information from the MAINTAINERS file or the
+Trees file in any linux-next tree (available via git-web if not from the
+tree itself).
 
+Just pointing out the possible problems ...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Why cant we test for plain 5 and flush it to zero then?
-> I mean something like
->
->        if (++nr_retries > 5) {
->                nr_retries = 0;
->                ...
->        }
->
-> Did I miss anything?
->
->                - Cyrill -
->
+--Signature=_Tue__23_Dec_2008_02_28_22_+1100_SUCfyRkGPaXS.Auq
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Since the clock reprogramming can't fail anymore after that, we can
-just check ++nr_retries == 5 or why not
-++nr_retries >= 5 if we want to stay paranoid......
+iEYEARECAAYFAklPshYACgkQjjKRsyhoI8z39wCeNBNhgeK3yjr5ZqRdzwOXUUpB
+PzYAn23j+Hn2gVj1lJ5ETk9facpBlsRQ
+=HUDa
+-----END PGP SIGNATURE-----
 
-I will fix it if the patched is accepted...
+--Signature=_Tue__23_Dec_2008_02_28_22_+1100_SUCfyRkGPaXS.Auq--
