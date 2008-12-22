@@ -1,118 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYLVVC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYLVVEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbYLVVC6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 16:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbYLVVCu
+	id S1755712AbYLVVEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 16:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYLVVEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 16:02:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51998 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754378AbYLVVCt (ORCPT
+	Mon, 22 Dec 2008 16:04:13 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48924 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754432AbYLVVEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 16:02:49 -0500
-Date: Mon, 22 Dec 2008 13:01:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Clifford Wolf <clifford@clifford.at>
-Cc: linux-kernel@vger.kernel.org, adrian@humboldt.co.uk, i2c@lm-sensors.org
-Subject: Re: [PATCH] Fixed i2c-mpc driver for multi-master i2c busses.
-Message-Id: <20081222130124.a6eb9e1e.akpm@linux-foundation.org>
-In-Reply-To: <20081222135542.GA7317@clifford.at>
-References: <20081222135542.GA7317@clifford.at>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 16:04:13 -0500
+Date: Mon, 22 Dec 2008 21:04:10 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "C. Scott Ananian" <cscott@laptop.org>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH -v4 00/14] fsnotify, dnotify, and inotify
+Message-ID: <20081222210410.GL28946@ZenIV.linux.org.uk>
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com> <c6d9bea0812181536p2a3aaeacmbd6af0474279b7b@mail.gmail.com> <1229916126.29604.47.camel@localhost.localdomain> <c6d9bea0812221159h30b0501dm8f48d93e0cb53bfa@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c6d9bea0812221159h30b0501dm8f48d93e0cb53bfa@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc i2c@lm-sensors.org)
-
-On Mon, 22 Dec 2008 14:55:42 +0100
-Clifford Wolf <clifford@clifford.at> wrote:
-
-> Fixed i2c-mpc driver for multi-master i2c busses.
+On Mon, Dec 22, 2008 at 02:59:37PM -0500, C. Scott Ananian wrote:
+> > 2) major vfs and every FS redesign me thinks.
 > 
-> Simply retry on arbitration lost until xfer is successfull,
-> a non-arbitration-lost error is triggered or the 1s timeout
-> is hit.
-> 
-> Tested with a freescale MPC8349E host cpu.
-> 
-> Signed-off-by: Clifford Wolf <clifford@clifford.at>
+> I'm not convinced of that.  I'm pretty certain one could export
+> symlinks /proc/<pid>/mountinfo/<dev>/<inode> -> <absolute path in
+> processes' namespace> with very little trouble, and no violence done
+> to the VFS, which already has an iget() function which does the heavy
+> lifting.
 
-From: Clifford Wolf <clifford@clifford.at>
+There is no such thing as absolute path of inode *anywhere*, process
+namespace or not.  Not on any UNIX.  Period.  End of story.
 
-Simply retry on arbitration lost until xfer is successfull, a
-non-arbitration-lost error is triggered or the 1s timeout is hit.
-
-Tested with a freescale MPC8349E host cpu.
-
-Signed-off-by: Clifford Wolf <clifford@clifford.at>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/i2c/busses/i2c-mpc.c |   22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
-
-diff -puN drivers/i2c/busses/i2c-mpc.c~fixed-i2c-mpc-driver-for-multi-master-i2c-busses drivers/i2c/busses/i2c-mpc.c
---- a/drivers/i2c/busses/i2c-mpc.c~fixed-i2c-mpc-driver-for-multi-master-i2c-busses
-+++ a/drivers/i2c/busses/i2c-mpc.c
-@@ -134,13 +134,13 @@ static int i2c_wait(struct mpc_i2c *i2c,
- 	if (result < 0)
- 		return result;
- 
--	if (!(x & CSR_MCF)) {
--		pr_debug("I2C: unfinished\n");
--		return -EIO;
--	}
--
- 	if (x & CSR_MAL) {
- 		pr_debug("I2C: MAL\n");
-+		return -EAGAIN;
-+	}
-+
-+	if (!(x & CSR_MCF)) {
-+		pr_debug("I2C: unfinished\n");
- 		return -EIO;
- 	}
- 
-@@ -257,11 +257,11 @@ static int mpc_read(struct mpc_i2c *i2c,
- static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- {
- 	struct i2c_msg *pmsg;
--	int i;
--	int ret = 0;
-+	int i, ret;
- 	unsigned long orig_jiffies = jiffies;
- 	struct mpc_i2c *i2c = i2c_get_adapdata(adap);
- 
-+restart:
- 	mpc_i2c_start(i2c);
- 
- 	/* Allow bus up to 1s to become not busy */
-@@ -281,7 +281,7 @@ static int mpc_xfer(struct i2c_adapter *
- 		schedule();
- 	}
- 
--	for (i = 0; ret >= 0 && i < num; i++) {
-+	for (i = 0, ret = 0; ret >= 0 && i < num; i++) {
- 		pmsg = &msgs[i];
- 		pr_debug("Doing %s %d bytes to 0x%02x - %d of %d messages\n",
- 			 pmsg->flags & I2C_M_RD ? "read" : "write",
-@@ -292,7 +292,13 @@ static int mpc_xfer(struct i2c_adapter *
- 		else
- 			ret =
- 			    mpc_write(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
-+		if (ret == -EAGAIN) {
-+			pr_debug("Lost i2c arbitration -> retry.\n");
-+			mpc_i2c_stop(i2c);
-+			goto restart;
-+		}
- 	}
-+
- 	mpc_i2c_stop(i2c);
- 	return (ret < 0) ? ret : num;
- }
-_
-
+Al, once again astonished by the ability of desktop developers to
+post from the alternative realities they apparently inhabit...
