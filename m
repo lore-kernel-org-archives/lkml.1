@@ -1,76 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYLVCiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbYLVCkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbYLVCiA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 21:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYLVChv
+	id S1753593AbYLVCkf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 21:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYLVCkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 21:37:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34128 "EHLO hera.kernel.org"
+	Sun, 21 Dec 2008 21:40:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43707 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751995AbYLVChv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 21:37:51 -0500
-Message-ID: <494EFD79.7020008@kernel.org>
-Date: Mon, 22 Dec 2008 11:37:45 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Justin Madru <bevicm@dslextreme.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.28-rc] Sata soft reset filling log
-References: <494318F5.4060007@gawab.com>
-In-Reply-To: <494318F5.4060007@gawab.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751980AbYLVCkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 21:40:25 -0500
+Subject: Re: [RFC PATCH -v4 12/14] fsnotify: add correlations between events
+From: Eric Paris <eparis@redhat.com>
+To: "C. Scott Ananian" <cscott@laptop.org>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       viro@zeniv.linux.org.uk, hch@infradead.org, zbr@ioremap.net,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <c6d9bea0812181428s2ae78e30y1e700b2eca07ca96@mail.gmail.com>
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+	 <20081212215217.27112.75137.stgit@paris.rdu.redhat.com>
+	 <c6d9bea0812181428s2ae78e30y1e700b2eca07ca96@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 21 Dec 2008 21:40:01 -0500
+Message-Id: <1229913601.29604.9.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 22 Dec 2008 02:37:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Justin Madru wrote:
-> I've been testing .28 (currently -rc8) and I've noticed in the logs a
-> massive amount of the following.
-> I can confirm that the messages doesn't appear when booting into a .27
-> kernel.
+On Thu, 2008-12-18 at 17:28 -0500, C. Scott Ananian wrote:
+> On Fri, Dec 12, 2008 at 4:52 PM, Eric Paris <eparis@redhat.com> wrote:
+> > inotify sends userspace a correlation between events when they are related
+> > (aka when dentries are moved).  This adds that same support for all
+> > fsnotify events.
+> > diff --git a/fs/notify/notification.c b/fs/notify/notification.c
+> > index 8ed9d32..7243b20 100644
+> > --- a/fs/notify/notification.c
+> > +++ b/fs/notify/notification.c
+> > @@ -34,6 +35,13 @@
+> >
+> >  static struct kmem_cache *event_kmem_cache;
+> >  static struct kmem_cache *event_holder_kmem_cache;
+> > +static atomic_t fsnotify_sync_cookie = ATOMIC_INIT(0);
+> > +
+> > +u32 fsnotify_get_cookie(void)
+> > +{
+> > +        return atomic_inc_return(&fsnotify_sync_cookie);
+> > +}
+> > +EXPORT_SYMBOL_GPL(fsnotify_get_cookie);
+> >
+> >  int fsnotify_check_notif_queue(struct fsnotify_group *group)
+> >  {
 > 
-> ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-> ata2.00: ST_FIRST: !(DRQ|ERR|DF)
-> ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->         cdb 1e 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
->         res 50/00:01:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
-> ata2.00: status: { DRDY }
-> ata2: soft resetting link
-> ata2.00: configured for UDMA/33
-> ata2: EH complete
+> atomic_inc_return seems rather expensive to put on a hot path in
+> almost every fs operation.  On a multiprocessor system, the cache line
+> for fsnotify_sync_cookie would be ping-ponging constantly between
+> processors.  The canonical solution is to form the cookie by
+> concatenating the processor number with a per-processor cookie, so
+> that generating a new cookie would not require synchronization between
+> processors.  Surely this code already exists to be used somewhere in
+> Linux.
 
-That's HSM violation on ALLOW_MEDIUM_REMOVAL on the second ATA port.
+A) this isn't a hot path, it's only when a file is renamed.
 
-> I get this block of messages about every 20 seconds for as long as I'm
-> booted into a .28 kernel.
-> It seems that the sata link is being soft reseted about every _20_ secs.
-> My drive is a sata drive that should be using UDMA/133 (right?),
-> but the "error" message says configuring for UDMA/33.
-> Does this mean that my drive is running at a slower speed?
-> Should I be worried about the .28 kernel corrupting my hardware? Is this
-> a known issue?
-> How can I stop it from filling my logs!
-> 
-> Some information about my computer:
-> 
-> 00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA
-> IDE Controller (rev 01)
-> 
-> $ hdparm -I /dev/sda
-> /dev/sda:
-> ATA device, with non-removable media
->        Model Number:       ST980811AS
+B) It's still a great idea (even if not here at least where I plan to
+use an atomic_inc_return in my later fanotify patches).  Does anyone
+know of an example of something like this in kernel?
 
-and I strongly doubt it's the hard drive.  Can you please post full
-kernel log including the boot messages?
+Here I'm slightly concerned wasting enough bits of the 32 (we can't grow
+it, because inotify has a fixed abi) for processors, but I'd be
+surprised to find we'd ever have enough renames on a single processor
+(my 2 second math would be we'd need about 13-14 bits for processors
+which still leaves 262k renames per processor before anything wrapped)
+to be a problem.
 
-Thanks.
+anyone who uses inotify think there would be a problem with cookie reuse
+coming this soon?
 
--- 
-tejun
+Since I'm using a 64bit cookie and the lifetime of use in my later code
+is measured in seconds I think this would be a great improvement.
+Thanks
+
+-Eric
+
