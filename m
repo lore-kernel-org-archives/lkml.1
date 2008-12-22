@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYLVVud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYLVVuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbYLVVud (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 16:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbYLVVsu
+	id S1756413AbYLVVuv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 16:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbYLVVsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 22 Dec 2008 16:48:50 -0500
-Received: from rv-out-0506.google.com ([209.85.198.225]:24569 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755175AbYLVVss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 16:48:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i9p++14ShWlUuQKzerCv4MG5mP1k08XUYY14S1xDiz1zrujKlqebjkc+4OVejiGWIj
-         dUeVfrtIXPinoCA+Z2/tw+Gs4IvKHsN1g3zTIeLVgeffKp7NwhvMh0CG8/T0Qb3vYrHd
-         GLj8K/d7KEHbxaVtQX/zGPAl/99jDZec7ZXx4=
-Message-ID: <b6c5339f0812221348o411c4fabse2d0138acfb4f87f@mail.gmail.com>
-Date: Mon, 22 Dec 2008 16:48:47 -0500
-From: "Bob Copeland" <bcopeland@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [ath5k-devel] ath5k_pci: gain calibration timeout / unable to reset hardware -11
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Soeren Sonnenburg" <kernel@nn7.de>, ath5k-devel@venema.h4ckr.net,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com
-In-Reply-To: <49500906.70309@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1229923913.3886.7.camel@localhost>
-	 <20081222125819.7353d172.akpm@linux-foundation.org>
-	 <4950087E.3080505@gmail.com> <49500906.70309@gmail.com>
+Received: from cantor.suse.de ([195.135.220.2]:41550 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755275AbYLVVst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 16:48:49 -0500
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Jan Kara <jack@suse.cz>, Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 04/56] quota: Make _SUSPENDED just a flag
+Date: Mon, 22 Dec 2008 13:47:45 -0800
+Message-Id: <1229982517-3455-5-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
+References: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 22, 2008 at 4:39 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
->>
->> Does the _HW lockup_ happen even with 2.6.28? The lockup should be gone there
->> (with the messages still present).
->
-> I see Bob already replied, ignore me, he knows better.
+From: Jan Kara <jack@suse.cz>
 
-I thought Felix's patch had gone into .28, but in fact it hasn't.
-We should probably get it in or queue it for .28.1 -- it's a two
-liner that will fix a lot of people's setups.
+Upto now, DQUOT_USR_SUSPENDED behaved like a state - i.e., either quota
+was enabled or suspended or none. Now allowed states are 0, ENABLED,
+ENABLED | SUSPENDED. This will be useful later when we implement separate
+enabling of quota usage tracking and limits enforcement because we need to
+keep track of a state which has been suspended.
 
-John, if you're reading, that's 23c401574b16cb2b6d2231ba405ebf85b8c87de5
-in wireless-testing.
+Signed-off-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/dquot.c               |   10 ++++++----
+ include/linux/quotaops.h |    6 ++++--
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
-The lockup can still occur, but it's a lot less frequent with his patch.
-
+diff --git a/fs/dquot.c b/fs/dquot.c
+index 735e2c3..1f9f1f1 100644
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -1570,18 +1570,20 @@ static inline void reset_enable_flags(struct quota_info *dqopt, int type,
+ {
+ 	switch (type) {
+ 		case USRQUOTA:
+-			dqopt->flags &= ~DQUOT_USR_ENABLED;
+ 			if (remount)
+ 				dqopt->flags |= DQUOT_USR_SUSPENDED;
+-			else
++			else {
++				dqopt->flags &= ~DQUOT_USR_ENABLED;
+ 				dqopt->flags &= ~DQUOT_USR_SUSPENDED;
++			}
+ 			break;
+ 		case GRPQUOTA:
+-			dqopt->flags &= ~DQUOT_GRP_ENABLED;
+ 			if (remount)
+ 				dqopt->flags |= DQUOT_GRP_SUSPENDED;
+-			else
++			else {
++				dqopt->flags &= ~DQUOT_GRP_ENABLED;
+ 				dqopt->flags &= ~DQUOT_GRP_SUSPENDED;
++			}
+ 			break;
+ 	}
+ }
+diff --git a/include/linux/quotaops.h b/include/linux/quotaops.h
+index adcc7ba..ffd9707 100644
+--- a/include/linux/quotaops.h
++++ b/include/linux/quotaops.h
+@@ -67,8 +67,10 @@ static inline struct mem_dqinfo *sb_dqinfo(struct super_block *sb, int type)
+ static inline int sb_has_quota_enabled(struct super_block *sb, int type)
+ {
+ 	if (type == USRQUOTA)
+-		return sb_dqopt(sb)->flags & DQUOT_USR_ENABLED;
+-	return sb_dqopt(sb)->flags & DQUOT_GRP_ENABLED;
++		return (sb_dqopt(sb)->flags & DQUOT_USR_ENABLED)
++			&& !(sb_dqopt(sb)->flags & DQUOT_USR_SUSPENDED);
++	return (sb_dqopt(sb)->flags & DQUOT_GRP_ENABLED)
++		&& !(sb_dqopt(sb)->flags & DQUOT_GROUP_SUSPENDED);
+ }
+ 
+ static inline int sb_any_quota_enabled(struct super_block *sb)
 -- 
-Bob Copeland %% www.bobcopeland.com
+1.5.6
+
