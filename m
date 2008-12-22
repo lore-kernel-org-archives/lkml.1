@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbYLVXD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbYLVXEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbYLVXD3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 18:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbYLVXDU
+	id S1756481AbYLVXEe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 18:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbYLVXEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 18:03:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33446 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755021AbYLVXDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 18:03:20 -0500
-Date: Tue, 23 Dec 2008 00:01:33 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
-Subject: Re: [RFC][PATCH 4/6][v3] Define siginfo_from_ancestor_ns()
-Message-ID: <20081222230133.GD1536@redhat.com>
-References: <20081221005106.GA4912@us.ibm.com> <20081221005424.GD5025@us.ibm.com> <20081222222604.GA1536@redhat.com>
+	Mon, 22 Dec 2008 18:04:22 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40675 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754883AbYLVXEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 18:04:22 -0500
+Message-ID: <49501CC9.5040507@zytor.com>
+Date: Mon, 22 Dec 2008 15:03:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081222222604.GA1536@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kenchen@google.com,
+       paulus@samba.org, tglx@linutronix.de, linux-next@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch] powerpc: change u64/s64 to a long long integer type
+References: <20081222152247.b934ed5b.sfr@canb.auug.org.au> <b040c32a0812212249p45aba306tbb68a960b79cd0ee@mail.gmail.com> <20081222070426.GD29160@elte.hu> <20081222181932.5dd9514e.sfr@canb.auug.org.au> <20081222080341.GA18897@elte.hu> <20081222144319.1bfc0061.akpm@linux-foundation.org> <20081222230035.GB4074@uranus.ravnborg.org>
+In-Reply-To: <20081222230035.GB4074@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22, Oleg Nesterov wrote:
->
-> On 12/20, Sukadev Bhattiprolu wrote:
-> >
-> > + * TODO:
-> > + * 	  Making SI_ASYNCIO a kernel signal could make this less hacky.
-> > + */
-> > +#ifdef CONFIG_PID_NS
-> > +static inline int siginfo_from_user(siginfo_t *info)
-> > +{
-> > +	if (!is_si_special(info) && SI_FROMUSER(info) &&
->
-> OK, if we can trust SI_FROMUSER(), then it is better, i agree.
+Sam Ravnborg wrote:
+> On Mon, Dec 22, 2008 at 02:43:19PM -0800, Andrew Morton wrote:
+>> On Mon, 22 Dec 2008 09:03:41 +0100
+>> Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>> Subject: powerpc: change u64/s64 to a long long integer type
+>> <applause>
+>>
+>> There are lots of other architctures that need doing though.
+> 
+> I have missed the introduction.
+> Can you explain why?
+> 
+> I have done a bit of sparc hacking lately and was wondering if
+> sparc needs something similar.
+> 
+> cd arch/sparc
+> git grep u64 | grep -v __u64 | wc -l
+> 448
+> 
 
-Aaah, forgot to mention...
+This should only affect 64-bit architectures.
 
-But could you explain how are you going to fix another problem,
-.si_pid mangling? This was another reason for (yes, ugly, agreed)
-SIG_FROM_USER in .si_signo.
+	-hpa
 
-Oleg.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
