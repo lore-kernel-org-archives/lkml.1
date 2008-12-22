@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYLVKRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbYLVKUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbYLVKRo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 05:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYLVKRg
+	id S1753557AbYLVKUH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 05:20:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYLVKTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 05:17:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35866 "EHLO mx2.redhat.com"
+	Mon, 22 Dec 2008 05:19:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49167 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbYLVKRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 05:17:35 -0500
-Subject: Re: [PATCH 2/3] virtio: indirect ring entries
- (VIRTIO_RING_F_INDIRECT_DESC)
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@redhat.com>
-In-Reply-To: <200812201238.07510.ioe-lkml@rameria.de>
-References: <1229620222-22216-1-git-send-email-markmc@redhat.com>
-	 <1229620222-22216-2-git-send-email-markmc@redhat.com>
-	 <1229620222-22216-3-git-send-email-markmc@redhat.com>
-	 <200812201238.07510.ioe-lkml@rameria.de>
-Content-Type: text/plain
-Date: Mon, 22 Dec 2008 10:17:21 +0000
-Message-Id: <1229941041.19474.2.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S1751483AbYLVKTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 05:19:54 -0500
+Message-ID: <494F69C4.2060708@kernel.org>
+Date: Mon, 22 Dec 2008 19:19:48 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: ide <linux-ide@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sata_sil: add Large Block Transfer support
+References: <4945BDED.7050205@shaw.ca>
+In-Reply-To: <4945BDED.7050205@shaw.ca>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 22 Dec 2008 10:19:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Hello,
 
-On Sat, 2008-12-20 at 12:38 +0100, Ingo Oeser wrote:
-> Hi Mark,
-> 
-> On Thursday 18 December 2008, Mark McLoughlin wrote:
-> > diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> > index 5777196..2330c4b 100644
-> > --- a/drivers/virtio/virtio_ring.c
-> > +++ b/drivers/virtio/virtio_ring.c
-> > @@ -70,6 +73,55 @@ struct vring_virtqueue
-> >  
-> >  #define to_vvq(_vq) container_of(_vq, struct vring_virtqueue, vq)
-> >  
-> > +/* Set up an indirect table of descriptors and add it to the queue. */
-> > +static int vring_add_indirect(struct vring_virtqueue *vq,
-> > +			      struct scatterlist sg[],
-> > +			      unsigned int out,
-> > +			      unsigned int in)
-> > +{
-> > +	struct vring_desc *desc;
-> > +	unsigned head;
-> > +	int i;
-> > +
-> > +	desc = kmalloc((out + in) * sizeof(struct vring_desc), GFP_ATOMIC);
-> 
-> kmalloc() returns ZERO_SIZE_PTR, if (out + in) == 0
+Robert Hancock wrote:
+> Obviously not 2.6.28 material, but could potentially head into .29.
+> I've done some testing with a DVD drive connected to this controller
+> and verified that reading off an entire DVD returns correct data
+> (and that the controller is actually getting requests that cross
+> 64K boundaries). More testing would certainly be useful..
 
-vring_add_buf() has:
+Ah... nice.  It would be great to have this in -next for some time.
 
-  BUG_ON(out + in == 0)
+> +static void sil_bmdma_stop(struct ata_queued_cmd *qc)
+> +{
+> +    struct ata_port *ap = qc->ap;
+> +    void __iomem *mmio_base = ap->host->iomap[SIL_MMIO_BAR];
+> +    void __iomem *bmdma2 = mmio_base + sil_port[ap->port_no].bmdma2;
+> +
+> +    /* clear start/stop bit - can safely always write 0 */
+> +    writeb(0, bmdma2);
 
-I should just add that here too before the kmalloc() call.
+ioread/iowrite?
 
-Thanks,
-Mark.
+> +    /* one-PIO-cycle guaranteed wait, per spec, for HDMA1:0 transition */
+> +    ata_sff_dma_pause(ap);
+> +}
+> +
+> +static void sil_bmdma_setup(struct ata_queued_cmd *qc)
+> +{
+> +    struct ata_port *ap = qc->ap;
+> +    void __iomem *bmdma = ap->ioaddr.bmdma_addr;
+> +
+> +    /* load PRD table addr. */
+> +    mb();    /* make sure PRD table writes are visible to controller */
 
+I know it's not specific to this change but does mb() really make
+sense here?  I don't think we need any barrier here.
+
+> +    writel(ap->prd_dma, bmdma + ATA_DMA_TABLE_OFS);
+> +
+> +    /* issue r/w command */
+> +    ap->ops->sff_exec_command(ap, &qc->tf);
+> +}
+
+Thanks.
+
+-- 
+tejun
