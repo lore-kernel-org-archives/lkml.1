@@ -1,139 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYLVSsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbYLVSt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbYLVSsa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 13:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbYLVSsV
+	id S1754862AbYLVSt5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 13:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYLVStt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 13:48:21 -0500
-Received: from www.tglx.de ([62.245.132.106]:58647 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751639AbYLVSsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 13:48:20 -0500
-Date: Mon, 22 Dec 2008 19:47:13 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Fabio Comolli <fabio.comolli@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, toralf.foerster@gmx.de
-Subject: Re: TSC not updating after resume: Bug or Feature?
-In-Reply-To: <20081222150021.GA13839@elte.hu>
-Message-ID: <alpine.LFD.2.00.0812221921460.3723@localhost.localdomain>
-References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu> <200812182319.57235.rjw@sisk.pl> <alpine.LFD.2.00.0812211639210.3376@localhost.localdomain> <alpine.LFD.2.00.0812212031220.4548@localhost.localdomain>
- <b637ec0b0812211443u1ca9c11du5d61c41e3d82bc16@mail.gmail.com> <alpine.LFD.2.00.0812221543550.3723@localhost.localdomain> <20081222150021.GA13839@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Dec 2008 13:49:49 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:24888 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752130AbYLVStr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 13:49:47 -0500
+Date: Mon, 22 Dec 2008 10:49:12 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH 04/26] kbuild: introduce $(kecho) convenience echo
+Message-Id: <20081222104912.fca1d371.randy.dunlap@oracle.com>
+In-Reply-To: <1229783497-19550-4-git-send-email-sam@ravnborg.org>
+References: <20081220142518.GA19390@uranus.ravnborg.org>
+	<1229783497-19550-4-git-send-email-sam@ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.494FE12B.00BE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Dec 2008, Ingo Molnar wrote:
-> * Thomas Gleixner <tglx@linutronix.de> wrote:
+On Sat, 20 Dec 2008 15:31:15 +0100 Sam Ravnborg wrote:
+
+> From: Mike Frysinger <vapier@gentoo.org>
 > 
-> > > By the way, I don't know if it matters but the problema happened with 
-> > > in-kernel hibernation and also in out-of-tree TuxOnIce hibernation. 
-> > > Maybe this can help debugging the issue, I don't know.
-> > 
-> > Hmm, does not ring a bell here. Can you please apply the patch below to 
-> > mainline and retest ?
+> There is a bunch of places in the build system where we do 'echo' to show
+> some nice status lines.  This means we still get output when running in
+> silent mode.  So declare a new KECHO variable that only does 'echo' when we
+> are in a suitable verbose build mode.
 > 
-> ... and he should send a dmesg after a suspend cycle, right?
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> [sam: added Documentation]
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-Yes :)
-
-I digged more in the bugzillas. Toralf added some debug to
-__update_sched_clock():
-
--       max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
-+       max_clock = scd->tick_gtod + TICK_NSEC;
-+       if (scd->clock > max_clock)
-+               printk(KERN_INFO "%d %d\n", scd->clock, max_clock);
-
-The interesting output is:
-
-Dec 14 21:55:55 n22 Back to C!
-Dec 14 21:55:55 n22 Extended CMOS year: 2000
-Dec 14 21:55:55 n22 Force enabled HPET at resume
-Dec 14 21:55:55 n22 212611283 77
-
-The 77 is totaly bogus and it's likely not just a truncation of the
-64bit value because (scd->clock > max_clock) evaluates to true. This
-output is _AFTER_ timekeeping resume because the HPET force enable
-message comes from timekeeping resume.
-
-Toralf, can you please try the patch below on top of mainline ? Make
-sure that CONFIG_PRINTK_TIME is off, otherwise the kernel
-deadlocks. Please send the dmesg output from a suspend/resume cycle.
-
-Thanks,
-
-	tglx
-----
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index e8ab096..9c307a2 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -86,6 +86,14 @@ void sched_clock_init(void)
- 	sched_clock_running = 1;
- }
- 
-+void sched_clock_debug(void)
-+{
-+	struct sched_clock_data *scd = this_scd();
-+
-+	printk(KERN_INFO "SCD raw %llu gtod %llu clock %llu now %llu\n",
-+	       scd->tick_raw, scd->tick_gtod, scd->clock, sched_clock());
-+}
-+
- /*
-  * min,max except they take wrapping into account
-  */
-@@ -125,6 +133,11 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
- 	clock = scd->tick_gtod + delta;
- 	min_clock = wrap_max(scd->tick_gtod, scd->clock);
- 	max_clock = scd->tick_gtod + TICK_NSEC;
-+	if (scd->clock > max_clock) {
-+		printk(KERN_INFO "SC: %llu %llu %llu %llu %llu %llu\n",
-+		       scd->clock, scd->tick_raw, scd->tick_gtod, now,
-+		       max_clock, clock);
-+	}
- 
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index fa05e88..bafbd2d 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -304,6 +304,8 @@ static int timekeeping_suspended;
- /* time in seconds when suspend began */
- static unsigned long timekeeping_suspend_time;
- 
-+extern void sched_clock_debug(void);
-+
- /**
-  * timekeeping_resume - Resumes the generic timekeeping subsystem.
-  * @dev:	unused
-@@ -336,6 +338,8 @@ static int timekeeping_resume(struct sys_device *dev)
- 	timekeeping_suspended = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
-+	sched_clock_debug();
-+
- 	touch_softlockup_watchdog();
- 
- 	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
-@@ -357,6 +361,8 @@ static int timekeeping_suspend(struct sys_device *dev, pm_message_t state)
- 	timekeeping_suspended = 1;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
-+	sched_clock_debug();
-+
- 	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
- 
- 	return 0;
+Hi,
+Just nits/clarifications (below).
 
 
+> ---
+>  Documentation/kbuild/makefiles.txt |   14 ++++++++++++++
+>  scripts/Kbuild.include             |    7 +++++++
+>  2 files changed, 21 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+> index 7a77533..51104f9 100644
+> --- a/Documentation/kbuild/makefiles.txt
+> +++ b/Documentation/kbuild/makefiles.txt
+> @@ -383,6 +383,20 @@ more details, with real examples.
+>  	to prerequisites are referenced with $(src) (because they are not
+>  	generated files).
+>  
+> +    $(kecho)
+> +	echoing information to user in a rule is often a good practice
+
+	                    to users
+
+> +	but when execution "make -s" one does not expect to see any output
+
+	         executing
+
+> +	except for warnings/errors.
+> +	To support this kbuild define $(kecho) which will echo out the
+
+	                       defines
+
+> +	text following $(kecho) to stdout except if "make -s" is used.
+
+s/except if/unless/
+
+> +
+> +	Example:
+> +		#arch/blackfin/boot/Makefile
+> +		$(obj)/vmImage: $(obj)/vmlinux.gz
+> +			$(call if_changed,uimage)
+> +			@$(kecho) 'Kernel: $@ is ready'
+> +
+> +
+>  --- 3.11 $(CC) support functions
+>  
+>  	The kernel may be built with several different versions of
 
 
+---
+~Randy
