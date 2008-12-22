@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYLVR5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYLVSQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYLVR5k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 12:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYLVR5b
+	id S1754911AbYLVSQV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 13:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYLVSQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 12:57:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47990 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbYLVR5b (ORCPT
+	Mon, 22 Dec 2008 13:16:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:12163 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbYLVSQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 12:57:31 -0500
-Date: Mon, 22 Dec 2008 12:57:28 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_bufer: fix BUF_PAGE_SIZE
-In-Reply-To: <494CBB6D.9070106@cn.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0812221254520.19046@gandalf.stny.rr.com>
-References: <4948CADF.6050205@cn.fujitsu.com> <20081218124803.GA31763@elte.hu> <494CBB6D.9070106@cn.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 22 Dec 2008 13:16:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=D/W9Ar7ZVeUwjv0jWZY8He0WwekQ4k65b/dNDvOdUde6Wc/mh/E3Pr5Xjhtll6c42D
+         sFUQ7CUXjIo9ExzF2pOPDtBMS+XQcDmKcyaoAKiLwcGM5ioth0uhmMfsUyAKwgBb82KF
+         oy1MtJwcDpHkRJEdh8Jd8d3RR3ivNY9uSw7ZE=
+Message-ID: <494FD967.2000002@gmail.com>
+Date: Mon, 22 Dec 2008 19:16:07 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing/function-graph-tracer: strip ending newlines on comments
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: trivial output improvement
 
-On Sat, 20 Dec 2008, Lai Jiangshan wrote:
+Ending newlines are appended automatically on comments by the function graph tracer
+because the newlines needs to be placed after the "*/" characters.
+So if the user puts an ending whitespace, we want to strip it.
 
-> Ingo Molnar wrote:
-> > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> > 
-> >> impact: make BUF_PAGE_SIZE changeable.
-> >>
-> >> Except allocating/freeing page and the code using PAGE_MASK,
-> >> all code expect buffer_page's length is BUF_PAGE_SIZE.
-> >>
-> >> This patch make this behavior more concordant.
-> >>
-> [...]
-> > 
-> > hm, why? Non-order-0 allocations are pretty evil - why would we ever want 
-> > to do them?
-> > 
-> > 	Ingo
-> > 
-> 
-> I think since we introduce BUF_PAGE_SIZE instead of PAGE_SIZE for
-> buffer_page, we should make it changeable. We can use Non-order-0
-> allocations, but it doesn't mean we have to use Non-order-0 allocations.
-> 
-> In the old codes, these lines confuse me:
-> return (addr & ~PAGE_MASK) - (PAGE_SIZE - BUF_PAGE_SIZE);
-> addr &= PAGE_MASK;
-> This patch mostly make the codes concordant.
-
-I need to rename the BUF_PAGE_SIZE to BUF_SIZE, since it is not really a 
-page. I'm moving to keep a header on each page so that I can use splice 
-and still be able to process the pages elsewhere. The BUF_SIZE is the size 
-of the PAGE - that header.
-
-I think it is too early to move the ringbuffer to bigger than a page sub 
-buffers.
-
--- Steve
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index 4bf39fc..20c0b0d 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -540,6 +540,7 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
+ 		   struct trace_entry *ent, struct trace_iterator *iter)
+ {
+ 	int i;
++	int len;
+ 	int ret;
+ 
+ 	/* Pid */
+@@ -584,6 +585,11 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
+ 				return TRACE_TYPE_PARTIAL_LINE;
+ 		}
+ 
++	/* Strip ending newline on the comment */
++	len = strlen(trace->buf);
++	if (trace->buf[len - 1] == '\n')
++		trace->buf[len - 1] = '\0';
++
+ 	/* The comment */
+ 	ret = trace_seq_printf(s, "/* %s", trace->buf);
+ 	if (!ret)
+-- 
+1.6.0.4
 
