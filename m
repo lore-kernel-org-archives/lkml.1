@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYLVTXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbYLVTXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbYLVTXh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbYLVTRx
+	id S1757439AbYLVTXw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYLVTSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:17:53 -0500
+	Mon, 22 Dec 2008 14:18:11 -0500
 Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755504AbYLVTRv (ORCPT
+	with ESMTP id S1755981AbYLVTSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:17:51 -0500
-Subject: [PATCH 19/27] drivers/net/usb: fix sparse warnings: make symbols
-	static
+	Mon, 22 Dec 2008 14:18:10 -0500
+Subject: [PATCH 21/27] drivers/net/wan: fix sparse warning: make symbol static
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:17:46 +0100
-Message-ID: <20081222191745.11807.75548.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:18:04 +0100
+Message-ID: <20081222191804.11807.55143.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -27,65 +26,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warnings:
+Fix this sparse warning:
 
-  drivers/net/usb/hso.c:1249:6: warning: symbol 'hso_unthrottle_tasklet' was not declared. Should it be static?
-  drivers/net/usb/hso.c:1268:6: warning: symbol 'hso_unthrottle_workfunc' was not declared. Should it be static?
-  drivers/net/usb/hso.c:1466:5: warning: symbol 'tiocmget_submit_urb' was not declared. Should it be static?
-  drivers/net/usb/smsc95xx.c:62:5: warning: symbol 'turbo_mode' was not declared. Should it be static?
+  drivers/net/wan/x25_asy.c:623:5: warning: symbol 'x25_asy_esc' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/usb/hso.c      |   10 +++++-----
- drivers/net/usb/smsc95xx.c |    2 +-
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/wan/x25_asy.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
-index 2d41a10..1a09288 100644
---- a/drivers/net/usb/hso.c
-+++ b/drivers/net/usb/hso.c
-@@ -1246,7 +1246,7 @@ static void hso_std_serial_read_bulk_callback(struct urb *urb)
-  * This needs to be a tasklet otherwise we will
-  * end up recursively calling this function.
-  */
--void hso_unthrottle_tasklet(struct hso_serial *serial)
-+static void hso_unthrottle_tasklet(struct hso_serial *serial)
+diff --git a/drivers/net/wan/x25_asy.c b/drivers/net/wan/x25_asy.c
+index 472bd0e..e6e2ce3 100644
+--- a/drivers/net/wan/x25_asy.c
++++ b/drivers/net/wan/x25_asy.c
+@@ -620,7 +620,7 @@ static struct net_device_stats *x25_asy_get_stats(struct net_device *dev)
+   *			STANDARD X.25 ENCAPSULATION		  	 *
+   ************************************************************************/
+ 
+-int x25_asy_esc(unsigned char *s, unsigned char *d, int len)
++static int x25_asy_esc(unsigned char *s, unsigned char *d, int len)
  {
- 	unsigned long flags;
- 
-@@ -1265,7 +1265,7 @@ static	void hso_unthrottle(struct tty_struct *tty)
- 	tasklet_hi_schedule(&serial->unthrottle_tasklet);
- }
- 
--void hso_unthrottle_workfunc(struct work_struct *work)
-+static void hso_unthrottle_workfunc(struct work_struct *work)
- {
- 	struct hso_serial *serial =
- 	    container_of(work, struct hso_serial,
-@@ -1463,9 +1463,9 @@ static int hso_serial_chars_in_buffer(struct tty_struct *tty)
- 
- 	return chars;
- }
--int tiocmget_submit_urb(struct hso_serial *serial,
--			struct hso_tiocmget  *tiocmget,
--			struct usb_device *usb)
-+static int tiocmget_submit_urb(struct hso_serial *serial,
-+			       struct hso_tiocmget *tiocmget,
-+			       struct usb_device *usb)
- {
- 	int result;
- 
-diff --git a/drivers/net/usb/smsc95xx.c b/drivers/net/usb/smsc95xx.c
-index fed22ff..111a365 100644
---- a/drivers/net/usb/smsc95xx.c
-+++ b/drivers/net/usb/smsc95xx.c
-@@ -59,7 +59,7 @@ struct usb_context {
- 	struct usbnet *dev;
- };
- 
--int turbo_mode = true;
-+static int turbo_mode = true;
- module_param(turbo_mode, bool, 0644);
- MODULE_PARM_DESC(turbo_mode, "Enable multiple frames per Rx transaction");
- 
+ 	unsigned char *ptr = d;
+ 	unsigned char c;
 
