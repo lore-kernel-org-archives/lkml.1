@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYLVGEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbYLVGT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933AbYLVGEm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 01:04:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYLVGEd
+	id S1753077AbYLVGT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 01:19:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYLVGTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 01:04:33 -0500
-Received: from flock1.newmail.ru ([82.204.219.207]:50570 "HELO
-	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750758AbYLVGEc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 01:04:32 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: 2.6.28-rc9 regression: system fails to suspend
-Date: Mon, 22 Dec 2008 09:04:25 +0300
-User-Agent: KMail/1.10.92 (Linux/2.6.28-rc7-1avb; KDE/4.1.85; i686; ; )
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3049585.7jj1lR5UgK";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812220904.28780.arvidjaar@mail.ru>
+	Mon, 22 Dec 2008 01:19:16 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41548 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751590AbYLVGTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 01:19:14 -0500
+Date: Mon, 22 Dec 2008 17:19:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jaswinder Singh <jaswinderlinux@gmail.com>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Firmware patches for SCSI
+Message-Id: <20081222171904.b588da94.sfr@canb.auug.org.au>
+In-Reply-To: <1229720031.18778.8.camel@localhost.localdomain>
+References: <3f9a31f40812191153n636888f4i549409453266d58c@mail.gmail.com>
+	<1229718543.18778.4.camel@localhost.localdomain>
+	<3f9a31f40812191241q40dafdb0lfd2f4487f2870e2@mail.gmail.com>
+	<1229720031.18778.8.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3049585.7jj1lR5UgK
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+--Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I will bisect as time permits, but may be it rings the bell for someone.=20
-2.6.28-rc7 is OK; rc9 switches console off and never goes in suspend.=20
-Power remains on, keyboard is non-functional and the only way out is=20
-power button. I have not tried rc8.
+Hi James,
 
-If somebody has soggestions what to (try to) revert, it would be great=20
-and save quite a bit of time for bisecting.
+On Fri, 19 Dec 2008 15:53:51 -0500 James Bottomley <James.Bottomley@HansenP=
+artnership.com> wrote:
+>
+> OK, then whatever tree contains them needs to eject them or be dropped
+> from linux-next.
 
---nextPart3049585.7jj1lR5UgK
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+That is a problem for me and David.  Do not let it concern you ... :-)
+
+> > So I am curious that should I resend these patches based on which git t=
+ree.
+>=20
+> Yes please.  For me it would be against scsi-misc ... for the other
+> drivers it would be their development tree.  The simplest thing to do is
+> probably to rebase them all on top of linux-next (which contains all of
+> our trees) and then send them to the individual subsystem maintainer
+> lists.
+
+Please don't do that, please base each one on either Linus' tree or the
+appropriate maintainer's subsystem tree as linux-next is a moving
+target (for instance, if you had based the scsi ones on next-20081219,
+then the scsi tree was not included ...).  Basing on Linus' tree should
+work in most cases as there are not to many conflicts caused by these
+patches (the tg3 one is the worst so basing that off the net tree is
+probably worth while).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAklPLewACgkQR6LMutpd94wEjgCgzL3Bp3CP7DVf1ZdDmqcKqqzE
-/1sAni0Lgy45AHAobPdxGlVF+Mtieddk
-=whw5
+iEYEARECAAYFAklPMVgACgkQjjKRsyhoI8x+XACghEIJur0rkOpT0QK4gPiU9gfX
+s80AoLFsPbSqWqZhJwvmoSwO9plv7df2
+=4hCL
 -----END PGP SIGNATURE-----
 
---nextPart3049585.7jj1lR5UgK--
+--Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE--
