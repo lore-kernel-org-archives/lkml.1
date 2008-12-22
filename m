@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYLVH0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbYLVHau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbYLVH0d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 02:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYLVH0X
+	id S1753881AbYLVHau (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 02:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYLVHal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 02:26:23 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:48304 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbYLVH0W (ORCPT
+	Mon, 22 Dec 2008 02:30:41 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:57847 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbYLVHak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 02:26:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cGg/DewywjLLwKhQpDkTr8a9iUSgBpXEKYu/0ss6U8dtAUX45Sthr3GQFUIq6HNlt0
-         oRgT69xlsSj96dj7nDGmYtn+yvZHQvso5hAlI77HWZTrdlsXVLkAfe2wn+T5jm4KvfGm
-         sOn6AY/WZfsfOIrRknH85uXckPR/2AtI8SO3U=
-Date: Mon, 22 Dec 2008 07:26:14 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Huemer <alexander.huemer@sbg.ac.at>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: [Bug #12261] kernel panics with net_rx_action on kernels above
-	2.6.26
-Message-ID: <20081222072614.GB2631@ff.dom.local>
-References: <_EB9bLpq_z.A.hAC.NkYTJB@chimera> <CMMRhk39O-L.A.tMC.TkYTJB@chimera>
+	Mon, 22 Dec 2008 02:30:40 -0500
+Date: Mon, 22 Dec 2008 08:30:34 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] m68k: Kill several external declarations in source files
+ (was: Re: linux-next: boot-params tree build failure)
+In-Reply-To: <200812220851.44880.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0812220830170.3499@anakin>
+References: <20081217165557.b4898a4b.sfr@canb.auug.org.au>
+ <Pine.LNX.4.64.0812170915400.29433@anakin> <Pine.LNX.4.64.0812211205270.3499@anakin>
+ <200812220851.44880.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CMMRhk39O-L.A.tMC.TkYTJB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 20, 2008 at 11:16:15PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.26 and 2.6.27.
+On Mon, 22 Dec 2008, Rusty Russell wrote:
+> On Sunday 21 December 2008 21:42:44 Geert Uytterhoeven wrote:
+> > Shall I cherry pick this into my for-next branch (breaking Rusty's changes),
+> > or wait until the current linux-next has been merged by Linus (and maybe
+> > postpone to .30)?
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12261
-> Subject		: kernel panics with net_rx_action on kernels above 2.6.26
-> Submitter	: Alexander Huemer <alexander.huemer@sbg.ac.at>
-> Date		: 2008-12-13 18:43 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122919424932016&w=4
-> Handled-By	: Jarek Poplawski <jarkao2@gmail.com>
-> Patch		: http://marc.info/?l=linux-net&m=122934825227768&w=4
-> 
-> 
+> Good q.  I can take the just setup.c changes and roll them into the
+> boot-params tree if you want?
 
-It's fixed in the mainline:
+Fine for me! Thx!
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9a3de25544dadab1971847f28f33b1cd0d1770a6
+> ie. something like:
+> 
+> Subject: m68k: Use asm/sections.h in kernel/setup.c
 
-But stables need this too:
-- 2.6.27 - always
-- 2.6.26, 2.6.25 (...?) for CONFIG_ADAPTEC_STARFIRE_NAPI
+Gr{oetje,eeting}s,
 
-Jarek P.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
