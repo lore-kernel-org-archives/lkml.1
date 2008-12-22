@@ -1,121 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbYLVB7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbYLVCH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbYLVB7Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 20:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYLVB7O
+	id S1752994AbYLVCH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 21:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYLVCHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 20:59:14 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:55981 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbYLVB7M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 20:59:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oXekFyKc/ijmFSqUS9ZHvORJI+ngXiY55VGwT9dI08vkVh8Cp5LpnUU1qDBNkk1qDm
-         PBDLFiFLoh+vibaz7JyWRzfm/DJL/idyNmOtuvXEg5A+vVnqMTaF7ezzj5g4ZlT8ro1Q
-         EpRJK8EVErMGdoqPuPr9MJcJmMgrXzx6s63ks=
-Message-ID: <2c3b11250812211759x2663f2a5v9691966a5b7a71f7@mail.gmail.com>
-Date: Mon, 22 Dec 2008 09:59:11 +0800
-From: "Liu Hui" <onlyflyer@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Notes on support for multiple devices for a single filesystem
-Cc: "Christoph Hellwig" <hch@infradead.org>, adilger@sun.com,
-       chris.mason@oracle.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20081217115325.3312858a.akpm@linux-foundation.org>
+	Sun, 21 Dec 2008 21:07:20 -0500
+Received: from hpsmtp-eml15.KPNXCHANGE.COM ([213.75.38.115]:27265 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751868AbYLVCHT convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 21:07:19 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] hrtimer: increase clock min delta threshold while interrupt hanging
+Date: Mon, 22 Dec 2008 03:07:15 +0100
+User-Agent: KMail/1.9.9
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+References: <494EEC60.4080708@gmail.com>
+In-reply-To: <494EEC60.4080708@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1227183484.6161.17.camel@think.oraclecorp.com>
-	 <1228962896.21376.11.camel@think.oraclecorp.com>
-	 <20081211141436.030c2d65.sfr@canb.auug.org.au>
-	 <20081210200604.8e190b0d.akpm@linux-foundation.org>
-	 <1229006596.22236.46.camel@think.oraclecorp.com>
-	 <20081215210323.GB5000@webber.adilger.int>
-	 <20081217132343.GA14695@infradead.org>
-	 <20081217115325.3312858a.akpm@linux-foundation.org>
+Message-Id: <200812220307.16808.elendil@planet.nl>
+X-OriginalArrivalTime: 22 Dec 2008 02:07:17.0420 (UTC) FILETIME=[03C78EC0:01C963DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A very interesting article wrotete by Jeff Bonwick for Andrew --
-"Rampant Layering Violation?"
+> Impact: avoid hanging on slow systems
+>
+> While using the function graph tracer on a virtualized system, the
+> hrtimer_interrupt can hang the system on an infinite loop.
+> This can be caused on several situation where something intrusive is
+> slowing the system (ie: tracing) and the next clock events to program
+> are always before the current time.
+> This patch implements a reasonable compromise. If such a situation is
+> detected, we share the CPUs time in 1/4 to process the hrtimer
+> interrupts. This is enough to let the system running without serious
+> starvation.
 
-http://blogs.sun.com/bonwick/entry/rampant_layering_violation
+Should there maybe also be a mechanism to allow the system to automatically
+"recover" to higher (the original?) clockfrequencies, for example if the
+danger of loops has passed after tracing has been disabled?
 
-2008/12/18 Andrew Morton <akpm@linux-foundation.org>:
-> On Wed, 17 Dec 2008 08:23:44 -0500
-> Christoph Hellwig <hch@infradead.org> wrote:
+> It has been successfully tested under VirtualBox with 1000 HZ and 100
+> HZ with function graph tracer launched. On both cases, the clock events
+> were increased until about 25 ms periodic ticks, which means 40 HZ.
 >
->> FYI: here's a little writeup I did this summer on support for
->> filesystems spanning multiple block devices:
->>
->>
->> --
->>
->> === Notes on support for multiple devices for a single filesystem ===
->>
->> == Intro ==
->>
->> Btrfs (and an experimental XFS version) can support multiple underlying block
->> devices for a single filesystem instances in a generalized and flexible way.
->>
->> Unlike the support for external log devices in ext3, jfs, reiserfs, XFS, and
->> the special real-time device in XFS all data and metadata may be spread over a
->> potentially large number of block devices, and not just one (or two)
->>
->>
->> == Requirements ==
->>
->> We want a scheme to support these complex filesystem topologies in way
->> that is
->>
->>  a) easy to setup and non-fragile for the users
->>  b) scalable to a large number of disks in the system
->>  c) recoverable without requiring user space running first
->>  d) generic enough to work for multiple filesystems or other consumers
->>
->> Requirement a) means that a multiple-device filesystem should be mountable
->> by a simple fstab entry (UUID/LABEL or some other cookie) which continues
->> to work when the filesystem topology changes.
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  kernel/hrtimer.c |   30 +++++++++++++++++++++++++++++-
+>  1 files changed, 29 insertions(+), 1 deletions(-)
 >
-> "device topology"?
->
->> Requirement b) implies we must not do a scan over all available block devices
->> in large systems, but use an event-based callout on detection of new block
->> devices.
->>
->> Requirement c) means there must be some version to add devices to a filesystem
->> by kernel command lines, even if this is not the default way, and might require
->> additional knowledge from the user / system administrator.
->>
->> Requirement d) means that we should not implement this mechanism inside a
->> single filesystem.
->>
->
-> One thing I've never seen comprehensively addressed is: why do this in
-> the filesystem at all?  Why not let MD take care of all this and
-> present a single block device to the fs layer?
->
-> Lots of filesystems are violating this, and I'm sure the reasons for
-> this are good, but this document seems like a suitable place in which to
-> briefly decribe those reasons.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-btrfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index bda9cb9..02f2477 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -1171,6 +1171,29 @@ static void __run_hrtimer(struct hrtimer *timer)
+>  
+>  #ifdef CONFIG_HIGH_RES_TIMERS
+>  
+> +static int force_clock_reprogram;
 
+Shouldn't this be initialized to 0?
 
+> +
+> +/*
+> + * After 5 iteration's attempts, we consider that hrtimer_interrupt()
+> + * is hanging, which could happen with something that slows the interrupt
+> + * such as the tracing. Then we force the clock reprogramming for each future
+> + * hrtimer interrupts to avoid infinite loops and use the min_delta_ns 
+> + * threshold that we will overwrite. 
+> + * The next tick event will be scheduled to 3 times we currently spend on
+> + * hrtimer_interrupt(). This gives a good compromise, the cpus will spend
+> + * 1/4 of their time to process the hrtimer interrupts. This is enough to
+> + * let it running without serious starvation. 
+> + */
+> +
+> +static inline void
+> +hrtimer_interrupt_hanging(struct clock_event_device *dev,
+> +                       ktime_t try_time)
+> +{
+> +       force_clock_reprogram = 1;
+> +       dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
+> +       printk(KERN_WARNING "hrtimer: interrupt too slow, "
+> +               "forcing clock min delta to %lu ns\n", dev->min_delta_ns);
+> +} 
+>  /*
+>   * High resolution timer interrupt
+>   * Called with interrupts disabled
+> @@ -1180,6 +1203,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+>         struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
+>         struct hrtimer_clock_base *base; 
+>         ktime_t expires_next, now;
+> +       int nr_retries = 0;
+>         int i;
+>  
+>         BUG_ON(!cpu_base->hres_active);
+> @@ -1187,6 +1211,10 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+>         dev->next_event.tv64 = KTIME_MAX; 
+>  
+>   retry:
+> +       /* 5 retries is enough to notice a hang */
+> +       if (!(++nr_retries % 5))
+> +               hrtimer_interrupt_hanging(dev, ktime_sub(ktime_get(), now)); +
+>         now = ktime_get();
+>  
+>         expires_next.tv64 = KTIME_MAX;
+> @@ -1239,7 +1267,7 @@ void hrtimer_interrupt(struct clock_event_device *dev) 
+>         /* Reprogramming necessary ? */
+>         if (expires_next.tv64 != KTIME_MAX) {
+> -               if (tick_program_event(expires_next, 0))
+> +               if (tick_program_event(expires_next, force_clock_reprogram))
+> 			goto retry; 
+>         }
+>  }
 
--- 
-Thanks & Best Regards
-Liu Hui
---
+Shouldn't force_clock_reprogram be reset to 0 after it has fired and been
+handled?
