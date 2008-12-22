@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbYLVWBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757698AbYLVWBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758510AbYLVWBa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 17:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbYLVVtt
+	id S1757698AbYLVWBu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 17:01:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYLVVtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 16:49:49 -0500
-Received: from mail.suse.de ([195.135.220.2]:41691 "EHLO mx1.suse.de"
+	Mon, 22 Dec 2008 16:49:51 -0500
+Received: from ns2.suse.de ([195.135.220.15]:38678 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756095AbYLVVts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 16:49:48 -0500
+	id S1755892AbYLVVtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 16:49:50 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Jan Kara <jack@suse.cz>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 34/56] ocfs2: Fix build warnings (64-bit types vs long long)
-Date: Mon, 22 Dec 2008 13:48:15 -0800
-Message-Id: <1229982517-3455-35-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 35/56] quota: Unexport dqblk_v1.h and dqblk_v2.h
+Date: Mon, 22 Dec 2008 13:48:16 -0800
+Message-Id: <1229982517-3455-36-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
 References: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
@@ -25,59 +25,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Kara <jack@suse.cz>
 
-fs/ocfs2/quota_local.c: In function 'olq_set_dquot':
-fs/ocfs2/quota_local.c:844: warning: format '%lld' expects type 'long long int', but argument 7 has type '__le64'
-fs/ocfs2/quota_local.c:844: warning: format '%lld' expects type 'long long int', but argument 8 has type '__le64'
-fs/ocfs2/quota_local.c:844: warning: format '%lld' expects type 'long long int', but argument 7 has type '__le64'
-fs/ocfs2/quota_local.c:844: warning: format '%lld' expects type 'long long int', but argument 8 has type '__le64'
-fs/ocfs2/quota_local.c:844: warning: format '%lld' expects type 'long long int', but argument 7 has type '__le64'
-fs/ocfs2/quota_local.c:844: warning: format '%lld' expects type 'long long int', but argument 8 has type '__le64'
-fs/ocfs2/quota_global.c: In function '__ocfs2_sync_dquot':
-fs/ocfs2/quota_global.c:457: warning: format '%lld' expects type 'long long int', but argument 8 has type 's64'
-fs/ocfs2/quota_global.c:457: warning: format '%lld' expects type 'long long int', but argument 10 has type 's64'
-fs/ocfs2/quota_global.c:457: warning: format '%lld' expects type 'long long int', but argument 8 has type 's64'
-fs/ocfs2/quota_global.c:457: warning: format '%lld' expects type 'long long int', but argument 10 has type 's64'
-fs/ocfs2/quota_global.c:457: warning: format '%lld' expects type 'long long int', but argument 8 has type 's64'
-fs/ocfs2/quota_global.c:457: warning: format '%lld' expects type 'long long int', but argument 10 has type 's64'
+Unexport header files dqblk_v[12].h since except for quota format ID they
+don't contain information userspace should be interested in. Move ID
+definitions to quota.h.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/quota_global.c |    6 +++---
- fs/ocfs2/quota_local.c  |    3 ++-
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ include/linux/Kbuild     |    2 --
+ include/linux/dqblk_v1.h |    3 ---
+ include/linux/dqblk_v2.h |    3 ---
+ include/linux/quota.h    |    4 ++++
+ 4 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/fs/ocfs2/quota_global.c b/fs/ocfs2/quota_global.c
-index 27a8123..b0eae79 100644
---- a/fs/ocfs2/quota_global.c
-+++ b/fs/ocfs2/quota_global.c
-@@ -455,9 +455,9 @@ int __ocfs2_sync_dquot(struct dquot *dquot, int freeing)
- 	olditime = dquot->dq_dqb.dqb_itime;
- 	oldbtime = dquot->dq_dqb.dqb_btime;
- 	ocfs2_global_disk2memdqb(dquot, &dqblk);
--	mlog(0, "Syncing global dquot %d space %lld+%lld, inodes %lld+%lld\n",
--	     dquot->dq_id, dquot->dq_dqb.dqb_curspace, spacechange,
--	     dquot->dq_dqb.dqb_curinodes, inodechange);
-+	mlog(0, "Syncing global dquot %u space %lld+%lld, inodes %lld+%lld\n",
-+	     dquot->dq_id, dquot->dq_dqb.dqb_curspace, (long long)spacechange,
-+	     dquot->dq_dqb.dqb_curinodes, (long long)inodechange);
- 	if (!test_bit(DQ_LASTSET_B + QIF_SPACE_B, &dquot->dq_flags))
- 		dquot->dq_dqb.dqb_curspace += spacechange;
- 	if (!test_bit(DQ_LASTSET_B + QIF_INODES_B, &dquot->dq_flags))
-diff --git a/fs/ocfs2/quota_local.c b/fs/ocfs2/quota_local.c
-index c008dd9..9b22643 100644
---- a/fs/ocfs2/quota_local.c
-+++ b/fs/ocfs2/quota_local.c
-@@ -848,7 +848,8 @@ static void olq_set_dquot(struct buffer_head *bh, void *private)
- 					  od->dq_originodes);
- 	spin_unlock(&dq_data_lock);
- 	mlog(0, "Writing local dquot %u space %lld inodes %lld\n",
--	     od->dq_dquot.dq_id, dqblk->dqb_spacemod, dqblk->dqb_inodemod);
-+	     od->dq_dquot.dq_id, (long long)le64_to_cpu(dqblk->dqb_spacemod),
-+	     (long long)le64_to_cpu(dqblk->dqb_inodemod));
- }
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 0fd2da3..4c32642 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -56,8 +56,6 @@ header-y += dlm_device.h
+ header-y += dlm_netlink.h
+ header-y += dm-ioctl.h
+ header-y += dn.h
+-header-y += dqblk_v1.h
+-header-y += dqblk_v2.h
+ header-y += dqblk_xfs.h
+ header-y += efs_fs_sb.h
+ header-y += elf-fdpic.h
+diff --git a/include/linux/dqblk_v1.h b/include/linux/dqblk_v1.h
+index 9cea901..3713a72 100644
+--- a/include/linux/dqblk_v1.h
++++ b/include/linux/dqblk_v1.h
+@@ -5,9 +5,6 @@
+ #ifndef _LINUX_DQBLK_V1_H
+ #define _LINUX_DQBLK_V1_H
  
- /* Write dquot to local quota file */
+-/* Id of quota format */
+-#define QFMT_VFS_OLD 1
+-
+ /* Root squash turned on */
+ #define V1_DQF_RSQUASH 1
+ 
+diff --git a/include/linux/dqblk_v2.h b/include/linux/dqblk_v2.h
+index ff8af1b..18000a5 100644
+--- a/include/linux/dqblk_v2.h
++++ b/include/linux/dqblk_v2.h
+@@ -7,9 +7,6 @@
+ 
+ #include <linux/dqblk_qtree.h>
+ 
+-/* Id number of quota format */
+-#define QFMT_VFS_V0 2
+-
+ /* Numbers of blocks needed for updates */
+ #define V2_INIT_ALLOC QTREE_INIT_ALLOC
+ #define V2_INIT_REWRITE QTREE_INIT_REWRITE
+diff --git a/include/linux/quota.h b/include/linux/quota.h
+index ec82beb..d72d5d8 100644
+--- a/include/linux/quota.h
++++ b/include/linux/quota.h
+@@ -70,6 +70,10 @@
+ #define Q_GETQUOTA 0x800007	/* get user quota structure */
+ #define Q_SETQUOTA 0x800008	/* set user quota structure */
+ 
++/* Quota format type IDs */
++#define	QFMT_VFS_OLD 1
++#define	QFMT_VFS_V0 2
++
+ /* Size of block in which space limits are passed through the quota
+  * interface */
+ #define QIF_DQBLKSIZE_BITS 10
 -- 
 1.5.6
 
