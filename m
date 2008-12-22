@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYLVFfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYLVGEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753794AbYLVFfw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 00:35:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYLVFf3
+	id S1752933AbYLVGEm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 01:04:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYLVGEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 00:35:29 -0500
-Received: from sh.osrg.net ([192.16.179.4]:48772 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbYLVFf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 00:35:28 -0500
-Date: Mon, 22 Dec 2008 14:34:57 +0900
-To: jeremy@goop.org
-Cc: beckyb@kernel.crashing.org, mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, ian.campbell@citrix.com,
-       jbeulich@novell.com, joerg.roedel@amd.com, benh@kernel.crashing.org
-Subject: Re: [PATCH 06/11] swiotlb: Store phys address in io_tlb_orig_addr
- array
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <494BDC6E.8050509@goop.org>
-References: <20081218210231.GB24271@elte.hu>
-	<1229663480-10757-7-git-send-email-beckyb@kernel.crashing.org>
-	<494BDC6E.8050509@goop.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 22 Dec 2008 01:04:33 -0500
+Received: from flock1.newmail.ru ([82.204.219.207]:50570 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750758AbYLVGEc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 01:04:32 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: 2.6.28-rc9 regression: system fails to suspend
+Date: Mon, 22 Dec 2008 09:04:25 +0300
+User-Agent: KMail/1.10.92 (Linux/2.6.28-rc7-1avb; KDE/4.1.85; i686; ; )
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3049585.7jj1lR5UgK";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081222143507R.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <200812220904.28780.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008 09:39:58 -0800
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+--nextPart3049585.7jj1lR5UgK
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Becky Bruce wrote:
-> > When we enable swiotlb for platforms that support HIGHMEM, we
-> > can no longer store the virtual address of the original dma
-> > buffer, because that buffer might not have a permament mapping.
-> > Change the iotlb code to instead store the physical address of
-> > the original buffer.
-> >   
-> 
-> Hm, yes, I think using a phys_addr_t may end up being cleaner than using 
-> struct page *+offset.
+I will bisect as time permits, but may be it rings the bell for someone.=20
+2.6.28-rc7 is OK; rc9 switches console off and never goes in suspend.=20
+Power remains on, keyboard is non-functional and the only way out is=20
+power button. I have not tried rc8.
 
-Surely, cleaner and simpler. Can you please rework [PATCH 07/11] in
-that way?
+If somebody has soggestions what to (try to) revert, it would be great=20
+and save quite a bit of time for bisecting.
+
+--nextPart3049585.7jj1lR5UgK
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklPLewACgkQR6LMutpd94wEjgCgzL3Bp3CP7DVf1ZdDmqcKqqzE
+/1sAni0Lgy45AHAobPdxGlVF+Mtieddk
+=whw5
+-----END PGP SIGNATURE-----
+
+--nextPart3049585.7jj1lR5UgK--
