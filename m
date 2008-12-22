@@ -1,137 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYLVNE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYLVNF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYLVNE6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 08:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYLVNEs
+	id S1755267AbYLVNF7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 08:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYLVNFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 08:04:48 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:1502 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753697AbYLVNEr (ORCPT
+	Mon, 22 Dec 2008 08:05:51 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53202 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754029AbYLVNFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 08:04:47 -0500
-From: Boaz Harrosh <bharrosh@panasas.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       open-osd ml <osd-dev@open-osd.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 12/18] libosd: Not implemented commands
-Date: Mon, 22 Dec 2008 15:04:42 +0200
-Message-Id: <1229951082-16042-1-git-send-email-bharrosh@panasas.com>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <494F88C0.4070507@panasas.com>
-References: <494F88C0.4070507@panasas.com>
-X-OriginalArrivalTime: 22 Dec 2008 13:04:44.0727 (UTC) FILETIME=[DC34EC70:01C96435]
+	Mon, 22 Dec 2008 08:05:51 -0500
+Subject: Re: [PATCH 01/14] kmemleak: Add the base support
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, penberg@cs.helsinki.fi,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
+In-Reply-To: <20081219141400.314023db.akpm@linux-foundation.org>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	 <20081219181302.7778.15966.stgit@pc1117.cambridge.arm.com>
+	 <84144f020812191208x66f26bc9tf087b35b6c90662a@mail.gmail.com>
+	 <20081219220255.GJ2351@elte.hu>
+	 <20081219141400.314023db.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 22 Dec 2008 13:05:22 +0000
+Message-Id: <1229951122.7938.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Dec 2008 13:05:23.0246 (UTC) FILETIME=[F32A74E0:01C96435]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some commands declared in header are not yet implemented. Put them
-as stubs in .c file, just so they take their place in the file
+On Fri, 2008-12-19 at 14:14 -0800, Andrew Morton wrote:
+> On Fri, 19 Dec 2008 23:02:55 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > > On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
+> > > <catalin.marinas@arm.com> wrote:
+> > > > This patch adds the base support for the kernel memory leak
+> > > > detector. It traces the memory allocation/freeing in a way similar to
+> > > > the Boehm's conservative garbage collector, the difference being that
+> > > > the unreferenced objects are not freed but only shown in
+> > > > /sys/kernel/debug/kmemleak. Enabling this feature introduces an
+> > > > overhead to memory allocations.
+> > > >
+> > > > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> > > > Cc: Ingo Molnar <mingo@elte.hu>
+> > > > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> > > > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > > > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > 
+> > > Looks good to me. I have only reviewed this lightly but all my major 
+> > > concerns have been addressed so feel free to add my:
+> > > 
+> > > Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > 
+> > Andrew, do you have any principial objections against having this in 
+> 
+> Nope.
+> 
+> > v2.6.29?
+> 
+> That might be a bit harder.  I'll take a look.
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-Reviewed-by: Benny Halevy <bhalevy@panasas.com>
----
- drivers/scsi/osd/osd_initiator.c |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
+Thanks. Whenever you have time, the up to date kmemleak version
+(currently based on v2.6.28-rc9) can be pulled from this branch:
 
-diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
-index 91f58fd..d3cc7ed 100644
---- a/drivers/scsi/osd/osd_initiator.c
-+++ b/drivers/scsi/osd/osd_initiator.c
-@@ -339,6 +339,9 @@ static void _osd_req_encode_common(struct osd_request *or,
- /*
-  * Device commands
-  */
-+/*TODO: void osd_req_set_master_seed_xchg(struct osd_request *, ...); */
-+/*TODO: void osd_req_set_master_key(struct osd_request *, ...); */
-+
- void osd_req_format(struct osd_request *or, u64 tot_capacity)
- {
- 	_osd_req_encode_common(or, OSD_ACT_FORMAT_OSD, &osd_root_object, 0,
-@@ -369,6 +372,10 @@ void osd_req_flush_obsd(struct osd_request *or,
- }
- EXPORT_SYMBOL(osd_req_flush_obsd);
- 
-+/*TODO: void osd_req_perform_scsi_command(struct osd_request *,
-+	const u8 *cdb, ...); */
-+/*TODO: void osd_req_task_management(struct osd_request *, ...); */
-+
- /*
-  * Partition commands
-  */
-@@ -395,6 +402,10 @@ void osd_req_remove_partition(struct osd_request *or, osd_id partition)
- }
- EXPORT_SYMBOL(osd_req_remove_partition);
- 
-+/*TODO: void osd_req_set_partition_key(struct osd_request *,
-+	osd_id partition, u8 new_key_id[OSD_CRYPTO_KEYID_SIZE],
-+	u8 seed[OSD_CRYPTO_SEED_SIZE]); */
-+
- static int _osd_req_list_objects(struct osd_request *or,
- 	__be16 action, const struct osd_obj_id *obj, osd_id initial_id,
- 	struct osd_obj_id_list *list, unsigned nelem)
-@@ -460,6 +471,11 @@ EXPORT_SYMBOL(osd_req_flush_partition);
- /*
-  * Collection commands
-  */
-+/*TODO: void osd_req_create_collection(struct osd_request *,
-+	const struct osd_obj_id *); */
-+/*TODO: void osd_req_remove_collection(struct osd_request *,
-+	const struct osd_obj_id *); */
-+
- int osd_req_list_collection_objects(struct osd_request *or,
- 	const struct osd_obj_id *obj, osd_id initial_id,
- 	struct osd_obj_id_list *list, unsigned nelem)
-@@ -469,6 +485,8 @@ int osd_req_list_collection_objects(struct osd_request *or,
- }
- EXPORT_SYMBOL(osd_req_list_collection_objects);
- 
-+/*TODO: void query(struct osd_request *, ...); V2 */
-+
- void osd_req_flush_collection(struct osd_request *or,
- 	const struct osd_obj_id *obj, enum osd_options_flush_scope_values op)
- {
-@@ -477,6 +495,9 @@ void osd_req_flush_collection(struct osd_request *or,
- }
- EXPORT_SYMBOL(osd_req_flush_collection);
- 
-+/*TODO: void get_member_attrs(struct osd_request *, ...); V2 */
-+/*TODO: void set_member_attrs(struct osd_request *, ...); V2 */
-+
- /*
-  * Object commands
-  */
-@@ -492,6 +513,11 @@ void osd_req_remove_object(struct osd_request *or, struct osd_obj_id *obj)
- }
- EXPORT_SYMBOL(osd_req_remove_object);
- 
-+
-+/*TODO: void osd_req_create_multi(struct osd_request *or,
-+	struct osd_obj_id *first, struct osd_obj_id_list *list, unsigned nelem);
-+*/
-+
- void osd_req_write(struct osd_request *or,
- 	const struct osd_obj_id *obj, struct bio *bio, u64 offset)
- {
-@@ -503,6 +529,15 @@ void osd_req_write(struct osd_request *or,
- }
- EXPORT_SYMBOL(osd_req_write);
- 
-+/*TODO: void osd_req_append(struct osd_request *,
-+	const struct osd_obj_id *, struct bio *data_out); */
-+/*TODO: void osd_req_create_write(struct osd_request *,
-+	const struct osd_obj_id *, struct bio *data_out, u64 offset); */
-+/*TODO: void osd_req_clear(struct osd_request *,
-+	const struct osd_obj_id *, u64 offset, u64 len); */
-+/*TODO: void osd_req_punch(struct osd_request *,
-+	const struct osd_obj_id *, u64 offset, u64 len); V2 */
-+
- void osd_req_flush_object(struct osd_request *or,
- 	const struct osd_obj_id *obj, enum osd_options_flush_scope_values op,
- 	/*V2*/ u64 offset, /*V2*/ u64 len)
+	git://linux-arm.org/linux-2.6.git kmemleak
+
 -- 
-1.6.0.1
+Catalin
 
