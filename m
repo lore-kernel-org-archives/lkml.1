@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbYLVW6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYLVW7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755692AbYLVW6Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 17:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYLVW6P
+	id S1756195AbYLVW7T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 17:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYLVW7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 17:58:15 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:40774 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753593AbYLVW6O (ORCPT
+	Mon, 22 Dec 2008 17:59:09 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:40882 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754936AbYLVW7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 17:58:14 -0500
-Date: Mon, 22 Dec 2008 15:57:57 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-In-reply-to: <494FE73E.5000802@redhat.com>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
-       Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Message-id: <20081222225757.GV5000@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <4908C951.2000309@redhat.com>
- <20081103184426.GA31894@ajones-laptop.nbttech.com>
- <20081103113318.35b0c266.akpm@linux-foundation.org>
- <20081103201428.GB30565@ajones-laptop.nbttech.com>
- <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>
- <494ADEB3.8010109@redhat.com> <20081219002752.GE8424@duck.suse.cz>
- <494AFA16.2010004@redhat.com> <494FE73E.5000802@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Dec 2008 17:59:07 -0500
+Date: Tue, 23 Dec 2008 00:00:35 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, kenchen@google.com, paulus@samba.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-next@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch] powerpc: change u64/s64 to a long long integer type
+Message-ID: <20081222230035.GB4074@uranus.ravnborg.org>
+References: <20081222152247.b934ed5b.sfr@canb.auug.org.au> <b040c32a0812212249p45aba306tbb68a960b79cd0ee@mail.gmail.com> <20081222070426.GD29160@elte.hu> <20081222181932.5dd9514e.sfr@canb.auug.org.au> <20081222080341.GA18897@elte.hu> <20081222144319.1bfc0061.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081222144319.1bfc0061.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 22, 2008  14:15 -0500, Ric Wheeler wrote:
-> Without having dived into the patch in detail, one worry I would have is  
-> that we still might care to spin up a drive for empty transactions in  
-> order to invalidate the drive's write cache.
->
-> For example, if we have the following sequence:
->
->    (1) user app performs series of writes to file A
->    (2) pages dirtied from writes to A are destaged to the disk over time
->    (3) user app issues fsync(file A) to make sure that the data will  
-> survive a power outage
->
-> At this point in time, would this change prevent us from spinning up the  
-> drive and invalidating the disk write cache for that fsync() ?
+On Mon, Dec 22, 2008 at 02:43:19PM -0800, Andrew Morton wrote:
+> On Mon, 22 Dec 2008 09:03:41 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Subject: powerpc: change u64/s64 to a long long integer type
+> 
+> <applause>
+> 
+> There are lots of other architctures that need doing though.
 
-Well, if the writes themselves didn't spin up the drive, it is uncertain
-whether the write of the journal commit block would be any more helpful
-in getting that to happen.
+I have missed the introduction.
+Can you explain why?
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+I have done a bit of sparc hacking lately and was wondering if
+sparc needs something similar.
 
+cd arch/sparc
+git grep u64 | grep -v __u64 | wc -l
+448
+
+[On the unified tree]
+
+	Sam
