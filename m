@@ -1,63 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbYLVTOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYLVTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbYLVTOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYLVTOh
+	id S1755242AbYLVTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbYLVTO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:14:37 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:39411 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbYLVTOg (ORCPT
+	Mon, 22 Dec 2008 14:14:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:31874 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbYLVTO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:14:36 -0500
-Date: Mon, 22 Dec 2008 11:14:02 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Edward Estabrook" <edward.estabrook.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       "Greg KH" <gregkh@suse.de>, hjk@linutronix.de,
-       edward_estabrook@agilent.com
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Documentatin for userspace DMA
- support
-Message-Id: <20081222111402.4e6f2b96.randy.dunlap@oracle.com>
-In-Reply-To: <208aa0f00812032053w5efb99dbk94511b0f8c1f0925@mail.gmail.com>
-References: <208aa0f00812032053w5efb99dbk94511b0f8c1f0925@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Dec 2008 14:14:56 -0500
+Subject: [PATCH 00/27] drivers/net: fix sparse warnings
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 22 Dec 2008 20:14:49 +0100
+Message-ID: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+User-Agent: StGit/0.14.3.292.gb975
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.494FE6FE.02EE:SCFSTAT928724,ss=1,fgs=0
+From: Hannes Eder <hannes@hanneseder.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008 20:53:27 -0800 Edward Estabrook wrote:
-
-> --- linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl.orig	2008-12-03
-> 12:03:43.000000000 -0800
-> +++ linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl	2008-12-03
-> 13:11:53.000000000 -0800
-> @@ -572,6 +602,50 @@ to set up sysfs files for this mapping.
->  	</para>
->  </sect1>
-> 
-> +<sect1 id="dma_region_mmap">
-> +<title>Allocating DMA region with mmap()</title>
-
-          Allocating a DMA region with mmap()
-
-> +	<para>
-> +	To allocate and map a DMA memory region you use
-
-duplicate "use use".  Instead of dropping the second one, make it "the".
-
-> +	use <function>mmap()</function>.  You may create as
-> +	many regions as system resources allow by repeated use of
-> +	<function>mmap()</function>.
-> +	</para>
-
+The following series fixes about 100 sparse warnings in drivers/net.
 
 ---
-~Randy
+
+Hannes Eder (27):
+      drivers/net/wireless/prism54: fix sparse warnings: make symbols static
+      drivers/net/wireless/ipw2x00: fix sparse warnings: make symbols static
+      drivers/net/wireless/b43: fix sparse warnings: make symbols static
+      drivers/net/wireless/ath9k: fix sparse warnings: make symbols static
+      drivers/net/wireless: fix sparse warnings: make symbols static
+      drivers/net/wan/z85230.c: fix sparse warnings: un-EXPORT symbols
+      drivers/net/wan: fix sparse warning: make symbol static
+      drivers/net/wan: fix sparse warnings: make do-while a compound statement
+      drivers/net/usb: fix sparse warnings: make symbols static
+      drivers/net/tulip: fix sparse warnings: make do-while a compound statement
+      drivers/net/tokenring: fix sparse warnings: make symbols static
+      drivers/net/skfp: fix sparse warnings: make symbols static
+      drivers/net/qlge: fix sparse warnings: make symbols static
+      drivers/net/netxen: fix sparse warnings: use NULL pointer instead of plain integer
+      drivers/net/ixgbe: fix sparse warnings: make symbols static
+      drivers/net/irda: fix sparse warnings: make symbols static
+      drivers/net/igb: remove dead code (function 'igb_read_pci_cfg')
+      drivers/net/enic: fix sparse warning: make symbol static
+      drivers/net/e1000e: fix sparse warnings: make symbols static
+      drivers/net/cxgb3: comment out dead code
+      drivers/net/bonding: fix sparse warnings: move decls to header file
+      drivers/net/atlx: fix sparse warnings: make symbols static
+      drivers/net/arcnet: fix sparse warnings: make symbols static
+      drivers/net: fix sparse warnings: make symbols static
+      drivers/net: fix sparse warning: returning void-valued expression
+      drivers/net: fix sparse warnings: make do-while a compound statement
+      drivers/net: fix sparse warning: use ANSI-style function declaration
+
+
+ drivers/net/3c523.c                           |    2 -
+ drivers/net/arcnet/capmode.c                  |    2 -
+ drivers/net/arcnet/com90xx.c                  |    2 -
+ drivers/net/atlx/atl1.c                       |    4 +-
+ drivers/net/atp.c                             |   19 ++++----
+ drivers/net/bonding/bond_main.c               |    1 
+ drivers/net/bonding/bond_sysfs.c              |    3 -
+ drivers/net/bonding/bonding.h                 |    5 ++
+ drivers/net/cs89x0.c                          |    2 -
+ drivers/net/cxgb3/vsc8211.c                   |    2 +
+ drivers/net/e1000e/es2lan.c                   |    6 ++
+ drivers/net/eepro.c                           |    2 -
+ drivers/net/enic/vnic_dev.c                   |    2 -
+ drivers/net/igb/e1000_mac.c                   |    7 ---
+ drivers/net/irda/ma600-sir.c                  |    2 -
+ drivers/net/irda/smsc-ircc2.c                 |    6 +-
+ drivers/net/irda/w83977af_ir.c                |   14 +++---
+ drivers/net/ixgbe/ixgbe_82598.c               |   24 +++++-----
+ drivers/net/ixgbe/ixgbe_dcb_82598.c           |    4 +-
+ drivers/net/ne.c                              |    2 -
+ drivers/net/netxen/netxen_nic_hw.c            |    4 +-
+ drivers/net/niu.c                             |    2 -
+ drivers/net/plip.c                            |   20 ++++----
+ drivers/net/qlge/qlge_ethtool.c               |    2 -
+ drivers/net/qlge/qlge_mpi.c                   |    2 -
+ drivers/net/s2io.c                            |    2 -
+ drivers/net/skfp/skfddi.c                     |    6 +-
+ drivers/net/smc9194.c                         |    2 -
+ drivers/net/starfire.c                        |    4 +-
+ drivers/net/tokenring/ibmtr.c                 |    4 +-
+ drivers/net/tokenring/madgemc.c               |    2 -
+ drivers/net/tokenring/proteon.c               |    2 -
+ drivers/net/tokenring/skisa.c                 |    2 -
+ drivers/net/tulip/de2104x.c                   |    4 +-
+ drivers/net/tulip/tulip_core.c                |    4 +-
+ drivers/net/usb/hso.c                         |   10 ++--
+ drivers/net/usb/smsc95xx.c                    |    2 -
+ drivers/net/wan/wanxl.c                       |    8 ++-
+ drivers/net/wan/x25_asy.c                     |    2 -
+ drivers/net/wan/z85230.c                      |   10 +---
+ drivers/net/wireless/airo.c                   |    2 -
+ drivers/net/wireless/ath9k/eeprom.c           |   62 +++++++++++++------------
+ drivers/net/wireless/atmel.c                  |    2 -
+ drivers/net/wireless/b43/phy_a.c              |    4 +-
+ drivers/net/wireless/b43/phy_g.c              |   20 ++++----
+ drivers/net/wireless/ipw2x00/ipw2100.c        |    6 +-
+ drivers/net/wireless/prism54/islpci_hotplug.c |    8 ++-
+ drivers/net/wireless/ray_cs.c                 |    2 -
+ 48 files changed, 153 insertions(+), 158 deletions(-)
