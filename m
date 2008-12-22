@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYLVIqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbYLVIvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYLVIqN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 03:46:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYLVIp5
+	id S1754074AbYLVIvA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 03:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYLVIuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 03:45:57 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:32916 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbYLVIpz (ORCPT
+	Mon, 22 Dec 2008 03:50:52 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48870 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbYLVIuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 03:45:55 -0500
-Subject: Re: [PATCH 1/13] s390: Remove redundant test
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Julia Lawall <julia@diku.dk>
-Cc: heiko.carstens@de.ibm.com, linux390@de.ibm.com, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0812211628030.9555@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0812211628030.9555@pc-004.diku.dk>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 22 Dec 2008 09:44:54 +0100
-Message-Id: <1229935495.1529.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 03:50:51 -0500
+Date: Mon, 22 Dec 2008 03:50:47 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, Alan Piszcz <ap@solarrain.com>
+Subject: Re: Intel X25-E running Linux using XFS
+Message-ID: <20081222085047.GA24795@infradead.org>
+References: <alpine.DEB.1.10.0811271257470.2233@p34.internal.lan> <20081212185803.GE11974@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081212185803.GE11974@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-12-21 at 16:28 +0100, Julia Lawall wrote:
-> The loop above the modified code only terminates when rc is a valid pointer.
-> 
-> A simplified version of the semantic patch that makes this change is as
-> follows: (http://www.emn.fr/x-info/coccinelle/)
+On Fri, Dec 12, 2008 at 07:58:03PM +0100, Pavel Machek wrote:
+> Actually I'd like to know... how does it behave during powerfails
+> while it is being written to?
 
-Purely cosmetic but simplifies the code. So yes, makes sense.
-Added to the s390 patch queue. Thanks Julia.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+I've done various powerfail tests with and X25-M and as expect it
+behaves perfectly fine as long as you either disable the write cache
+or use barriers.  The default ext3 setup without barriers corrupts
+the filesystem left, right and center, but that's the same as other
+recent disk drives with large caches.
 
