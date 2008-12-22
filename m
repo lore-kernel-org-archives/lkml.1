@@ -1,34 +1,37 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbYLVBA3 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 21 Dec 2008 20:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbYLVBAG
+	id S1754156AbYLVEf0 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 21 Dec 2008 23:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYLVEfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 20:00:06 -0500
-Received: from mail-bw0-f29.google.com ([209.85.218.29]:47966 "EHLO
-	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbYLVBAF (ORCPT
+	Sun, 21 Dec 2008 23:35:11 -0500
+Received: from connect-ua-210.dg.net.ua ([213.186.218.210]:49490 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898AbYLVEfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 20:00:05 -0500
-Message-ID: <e80bdab50812211700q2c36d8a1j65c6eaffec0504cb@mail.gmail.com>
-Date: Mon, 22 Dec 2008 09:00:02 +0800
-From: a5ky5b7f74y4z <a5ky5b7f74y4z@gmail.com>
-To: lin-yesheng@umail.hinet.net
-Subject: =?BIG5?B?ob0yMDA4LzEyLzIyIKRz4L6s7KfeuvSttrNdrXA=?=
+	Sun, 21 Dec 2008 23:35:10 -0500
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?0J/QvtC30LTQvtGA0L7QstC70Y/RlNC80L4g0YEg0JTQvdC10Lwg0KHQstGP?=  =?UTF-8?B?0YLQvtCz0L4g0JzQuNC60L7Qu9Cw0Y8h?=
+Date: Mon, 22 Dec 2008 06:35:05 +0200
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <8d05bf322df4bd0c7bccd3b984146114@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753150AbYLVBA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754156AbYLVEf0@vger.kernel.org>
 
-MjAwOC0xMi0yMiAgLSAgODo1OQoKpHN64L5RrOxvp95muvRkrbY5s111rXAKCqfaeK3MS6q6N6l2
-eKauSKFHq8ik4aq6qEOjuKXzpHCoxrGhoUGzo6xPpHPgvqq6pGqoxrGhCgqn2jStzGtxpmI4scCl
-WKX4t36nzrZIuvSvuKVdp3SrZaV4uvSttqz8pHUrq+GleLresnq1e6ahCgqtrWquyXCtrUS2cUyx
-Ta7Xu/kgpXWtbiQyOSw5MDAgICimYrBlo7imfjEwME1CIKSjra2sebZxuvSvuKrFtqEpCgqn2jit
-zG+wtTGqujiko26ldXmsT1S69E6vuKFBptNtrE9CsXpQpfhEt35mqrp3pEpPpGYKCqO4Ya3TRKZu
-daq6WaX4Q7d+ULr0Sa+4d7jqeK7GSqdZNK7JVKfzOLdzcaq6T7N0ZKvXcqxPcqvcUa2rRq1udqq6
-Cgql+E+3fqLtpMZlsKo5q35Fveg0uc43tqShQaW0brN5RrF6R6q6Mrr0Qbj0Tqr5Y62xCgq/72G+
-3DWkc3DgvmemqHi0TnixelqqulO52jU3t1EKCkbFd6rvqNO5cayiuN+2wLFNrfuhRzAtOS04LTAt
-MS0xLTktOC0xLTIKTKHxUKHXoddwodBvodBnobcK
+Владимир, вітаємо!
+
+Команда Коннекту поздоровляє Вас с Днем Святого Миколая! На честь цього свята ми даруємо Вам 5 коннект-грошей.
+На них Ви зможете відправити подарунок улюбленому другу та оцінити в 20 балів фото, що Вам сподобались.
+Зробіть цей день ще більш незабутнім!
+
+Об'єднуємо Україну,
+Connect.ua
+
