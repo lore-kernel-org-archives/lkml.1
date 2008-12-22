@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbYLVGT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYLVG2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077AbYLVGT0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 01:19:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYLVGTQ
+	id S1753245AbYLVG2A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 01:28:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbYLVG1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 01:19:16 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41548 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbYLVGTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 01:19:14 -0500
-Date: Mon, 22 Dec 2008 17:19:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jaswinder Singh <jaswinderlinux@gmail.com>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: Firmware patches for SCSI
-Message-Id: <20081222171904.b588da94.sfr@canb.auug.org.au>
-In-Reply-To: <1229720031.18778.8.camel@localhost.localdomain>
-References: <3f9a31f40812191153n636888f4i549409453266d58c@mail.gmail.com>
-	<1229718543.18778.4.camel@localhost.localdomain>
-	<3f9a31f40812191241q40dafdb0lfd2f4487f2870e2@mail.gmail.com>
-	<1229720031.18778.8.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Mon, 22 Dec 2008 01:27:52 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51767 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751727AbYLVG1w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 01:27:52 -0500
+Date: Mon, 22 Dec 2008 15:26:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH][mmotm] memcg use css_tryget fix
+Message-Id: <20081222152650.207cf149.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm sorry for that I'm still generating new bugs...sigh.
+-Kame
+=
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Hi James,
+root_mem->last_scanned_child can be NULL here.
+This may cause NULL pointer access when hierarchy is used.
+This is a fix for memcg-use-css-tryget-in-memcg.patch
 
-On Fri, 19 Dec 2008 15:53:51 -0500 James Bottomley <James.Bottomley@HansenP=
-artnership.com> wrote:
->
-> OK, then whatever tree contains them needs to eject them or be dropped
-> from linux-next.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-That is a problem for me and David.  Do not let it concern you ... :-)
+Index: mmotm-2.6.28-Dec19/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.28-Dec19.orig/mm/memcontrol.c
++++ mmotm-2.6.28-Dec19/mm/memcontrol.c
+@@ -656,7 +656,7 @@ mem_cgroup_get_first_node(struct mem_cgr
+ 
+ 	if (!root_mem->last_scanned_child || obsolete) {
+ 
+-		if (obsolete)
++		if (obsolete && root_mem->last_scanned_child)
+ 			mem_cgroup_put(root_mem->last_scanned_child);
+ 
+ 		cgroup = list_first_entry(&root_mem->css.cgroup->children,
 
-> > So I am curious that should I resend these patches based on which git t=
-ree.
->=20
-> Yes please.  For me it would be against scsi-misc ... for the other
-> drivers it would be their development tree.  The simplest thing to do is
-> probably to rebase them all on top of linux-next (which contains all of
-> our trees) and then send them to the individual subsystem maintainer
-> lists.
-
-Please don't do that, please base each one on either Linus' tree or the
-appropriate maintainer's subsystem tree as linux-next is a moving
-target (for instance, if you had based the scsi ones on next-20081219,
-then the scsi tree was not included ...).  Basing on Linus' tree should
-work in most cases as there are not to many conflicts caused by these
-patches (the tg3 one is the worst so basing that off the net tree is
-probably worth while).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklPMVgACgkQjjKRsyhoI8x+XACghEIJur0rkOpT0QK4gPiU9gfX
-s80AoLFsPbSqWqZhJwvmoSwO9plv7df2
-=4hCL
------END PGP SIGNATURE-----
-
---Signature=_Mon__22_Dec_2008_17_19_04_+1100_ZEvwn178rzHxmcZE--
