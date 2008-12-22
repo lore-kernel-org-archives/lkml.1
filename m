@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYLVTVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbYLVTWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbYLVTVv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 14:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbYLVTRI
+	id S1756977AbYLVTWQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 14:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbYLVTRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 14:17:08 -0500
+	Mon, 22 Dec 2008 14:17:17 -0500
 Received: from mail-bw0-f21.google.com ([209.85.218.21]:50184 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbYLVTRF (ORCPT
+	with ESMTP id S1755841AbYLVTRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 14:17:05 -0500
-Subject: [PATCH 14/27] drivers/net/netxen: fix sparse warnings: use NULL
-	pointer instead of plain integer
+	Mon, 22 Dec 2008 14:17:14 -0500
+Subject: [PATCH 15/27] drivers/net/qlge: fix sparse warnings: make symbols
+	static
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Dec 2008 20:16:59 +0100
-Message-ID: <20081222191659.11807.9347.stgit@vmbox.hanneseder.net>
+Date: Mon, 22 Dec 2008 20:17:09 +0100
+Message-ID: <20081222191708.11807.35530.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975
@@ -29,34 +29,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix this sparse warnings:
 
-  drivers/net/netxen/netxen_nic_hw.c:1462:18: warning: Using plain integer as NULL pointer
-  drivers/net/netxen/netxen_nic_hw.c:1536:18: warning: Using plain integer as NULL pointer
+  drivers/net/qlge/qlge_ethtool.c:100:6: warning: symbol 'ql_update_stats' was not declared. Should it be static?
+  drivers/net/qlge/qlge_mpi.c:22:5: warning: symbol 'ql_get_mb_sts' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/netxen/netxen_nic_hw.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/qlge/qlge_ethtool.c |    2 +-
+ drivers/net/qlge/qlge_mpi.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/netxen/netxen_nic_hw.c b/drivers/net/netxen/netxen_nic_hw.c
-index 86379fd..aa6e603 100644
---- a/drivers/net/netxen/netxen_nic_hw.c
-+++ b/drivers/net/netxen/netxen_nic_hw.c
-@@ -1459,7 +1459,7 @@ static int netxen_nic_pci_mem_read_direct(struct netxen_adapter *adapter,
- 			mem_ptr = ioremap(mem_base + mem_page, PAGE_SIZE * 2);
- 		else
- 			mem_ptr = ioremap(mem_base + mem_page, PAGE_SIZE);
--		if (mem_ptr == 0UL) {
-+		if (mem_ptr == NULL) {
- 			*(uint8_t  *)data = 0;
- 			return -1;
- 		}
-@@ -1533,7 +1533,7 @@ netxen_nic_pci_mem_write_direct(struct netxen_adapter *adapter, u64 off,
- 			mem_ptr = ioremap(mem_base + mem_page, PAGE_SIZE*2);
- 		else
- 			mem_ptr = ioremap(mem_base + mem_page, PAGE_SIZE);
--		if (mem_ptr == 0UL)
-+		if (mem_ptr == NULL)
- 			return -1;
- 		addr = mem_ptr;
- 		addr += start & (PAGE_SIZE - 1);
+diff --git a/drivers/net/qlge/qlge_ethtool.c b/drivers/net/qlge/qlge_ethtool.c
+index b62fbd4..eefb81b 100644
+--- a/drivers/net/qlge/qlge_ethtool.c
++++ b/drivers/net/qlge/qlge_ethtool.c
+@@ -97,7 +97,7 @@ exit:
+ 	return status;
+ }
+ 
+-void ql_update_stats(struct ql_adapter *qdev)
++static void ql_update_stats(struct ql_adapter *qdev)
+ {
+ 	u32 i;
+ 	u64 data;
+diff --git a/drivers/net/qlge/qlge_mpi.c b/drivers/net/qlge/qlge_mpi.c
+index 24fe344..fa31891 100644
+--- a/drivers/net/qlge/qlge_mpi.c
++++ b/drivers/net/qlge/qlge_mpi.c
+@@ -19,7 +19,7 @@ exit:
+ 	return status;
+ }
+ 
+-int ql_get_mb_sts(struct ql_adapter *qdev, struct mbox_params *mbcp)
++static int ql_get_mb_sts(struct ql_adapter *qdev, struct mbox_params *mbcp)
+ {
+ 	int i, status;
+ 
 
