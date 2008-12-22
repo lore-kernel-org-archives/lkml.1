@@ -1,53 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbYLVOcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbYLVOjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755068AbYLVOcs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 09:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbYLVOck
+	id S1755006AbYLVOjI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 09:39:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYLVOi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 09:32:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57058 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754198AbYLVOcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 09:32:39 -0500
-Date: Tue, 23 Dec 2008 01:32:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: no linux-next for Dec 22
-Message-Id: <20081223013232.4a9e318f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__23_Dec_2008_01_32_32_+1100_+cHRGwPcdmGBNG6g"
+	Mon, 22 Dec 2008 09:38:56 -0500
+Received: from phoenix.clifford.at ([88.198.7.52]:34373 "EHLO
+	phoenix.clifford.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbYLVOiz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 09:38:55 -0500
+X-Greylist: delayed 1470 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Dec 2008 09:38:55 EST
+Date: Mon, 22 Dec 2008 14:55:42 +0100
+From: Clifford Wolf <clifford@clifford.at>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Adrian Cox <adrian@humboldt.co.uk>
+Subject: [PATCH] Fixed i2c-mpc driver for multi-master i2c busses.
+Message-ID: <20081222135542.GA7317@clifford.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__23_Dec_2008_01_32_32_+1100_+cHRGwPcdmGBNG6g
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fixed i2c-mpc driver for multi-master i2c busses.
 
-Hi all,
+Simply retry on arbitration lost until xfer is successfull,
+a non-arbitration-lost error is triggered or the 1s timeout
+is hit.
 
-There will be no release for Dec 22.  Too much has gone badly.  Hopefully
-tomorrow with some of today's reported problems fixed, it will go better.
+Tested with a freescale MPC8349E host cpu.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Clifford Wolf <clifford@clifford.at>
 
---Signature=_Tue__23_Dec_2008_01_32_32_+1100_+cHRGwPcdmGBNG6g
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklPpQAACgkQjjKRsyhoI8yPeQCfcLCFx6JgaIuFP9jZ4ZVMJL+w
-ujYAoI/XsoXN3n76usXsh4U/T9fMnpSj
-=CQ+m
------END PGP SIGNATURE-----
-
---Signature=_Tue__23_Dec_2008_01_32_32_+1100_+cHRGwPcdmGBNG6g--
+--- ./drivers/i2c/busses/i2c-mpc.c	(revision 2186)
++++ ./drivers/i2c/busses/i2c-mpc.c	(revision 2187)
+@@ -133,16 +133,16 @@
+ 	if (result < 0)
+ 		return result;
+ 
++	if (x & CSR_MAL) {
++		pr_debug("I2C: MAL\n");
++		return -EAGAIN;
++	}
++
+ 	if (!(x & CSR_MCF)) {
+ 		pr_debug("I2C: unfinished\n");
+ 		return -EIO;
+ 	}
+ 
+-	if (x & CSR_MAL) {
+-		pr_debug("I2C: MAL\n");
+-		return -EIO;
+-	}
+-
+ 	if (writing && (x & CSR_RXAK)) {
+ 		pr_debug("I2C: No RXAK\n");
+ 		/* generate stop */
+@@ -256,11 +256,11 @@
+ static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ {
+ 	struct i2c_msg *pmsg;
+-	int i;
+-	int ret = 0;
++	int i, ret;
+ 	unsigned long orig_jiffies = jiffies;
+ 	struct mpc_i2c *i2c = i2c_get_adapdata(adap);
+ 
++restart:
+ 	mpc_i2c_start(i2c);
+ 
+ 	/* Allow bus up to 1s to become not busy */
+@@ -280,7 +280,7 @@
+ 		schedule();
+ 	}
+ 
+-	for (i = 0; ret >= 0 && i < num; i++) {
++	for (i = 0, ret = 0; ret >= 0 && i < num; i++) {
+ 		pmsg = &msgs[i];
+ 		pr_debug("Doing %s %d bytes to 0x%02x - %d of %d messages\n",
+ 			 pmsg->flags & I2C_M_RD ? "read" : "write",
+@@ -291,7 +291,13 @@
+ 		else
+ 			ret =
+ 			    mpc_write(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
++		if (ret == -EAGAIN) {
++			pr_debug("Lost i2c arbitration -> retry.\n");
++			mpc_i2c_stop(i2c);
++			goto restart;
++		}
+ 	}
++
+ 	mpc_i2c_stop(i2c);
+ 	return (ret < 0) ? ret : num;
+ }
