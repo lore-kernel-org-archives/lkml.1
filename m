@@ -1,57 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214AbYLWQbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbYLWQdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214AbYLWQbe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 11:31:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYLWQbT
+	id S1752317AbYLWQdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 11:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYLWQdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 11:31:19 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56375 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbYLWQbS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 11:31:18 -0500
-To: =?utf-8?B?SMOla29uIEzDuHZkYWw=?= <hlovdal@gmail.com>
-Cc: "Hannes Eder" <hannes@hanneseder.net>, netdev@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a compound statement
-References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
-	<20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
-	<m3hc4voo2a.fsf@maximus.localdomain>
-	<a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 23 Dec 2008 17:31:15 +0100
-In-Reply-To: <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
- (=?utf-8?Q?=22H=C3=A5kon_L=C3=B8vdal=22's?= message of "Tue\, 23 Dec 2008
- 00\:44\:25 +0100")
-Message-ID: <m3ocz2ua3w.fsf@maximus.localdomain>
+	Tue, 23 Dec 2008 11:33:04 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47099 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751069AbYLWQdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 11:33:02 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19m3M4tFrpmrGUGVaylAaVizREGSVMbA7Ob6R3jtG
+	bybmv3ps0WDW5A
+Date: Tue, 23 Dec 2008 17:33:11 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ drivers
+In-Reply-To: <20081223160942.GJ1614@pengutronix.de>
+Message-ID: <Pine.LNX.4.64.0812231727460.5188@axis700.grange>
+References: <20081218225834.GJ20756@pengutronix.de>
+ <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de>
+ <Pine.LNX.4.64.0812221942480.7796@axis700.grange> <20081223105006.GE1614@pengutronix.de>
+ <Pine.LNX.4.64.0812231157180.5188@axis700.grange> <20081223125015.GG1614@pengutronix.de>
+ <Pine.LNX.4.64.0812231359030.5188@axis700.grange> <20081223140320.GH1614@pengutronix.de>
+ <Pine.LNX.4.64.0812231529080.5188@axis700.grange> <20081223160942.GJ1614@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Håkon Løvdal" <hlovdal@gmail.com> writes:
+On Tue, 23 Dec 2008, Sascha Hauer wrote:
 
-> For this specific issue the important aspect is to improve readability
-> (and not just eventually satisfy some warning from a tool), which I
-> assume there is no disagrement on.
+> You're still not getting it. Consider an implementation of the chained
+> interrupt handler like this:
+> 
+> static struct ipu_irq_bank irq_bank_fn[IPU_IRQ_NR_FN_BANKS] = {
+>         {
+>                 .nr_irqs        = 1,	/* IDMAC EOF and NF irq */
+>         }, {
+>                 .nr_irqs        = 24,	/* misc interrupts the IPU is not
+> 					 * interested in, but clients drivers
+> 					 * may be.
+> 					 */
+>         },
+> };
+> 
+> static struct ipu_irq_bank irq_bank_err[IPU_IRQ_NR_ERR_BANKS] = {
+>         /* 2 groups of error interrupts */
+>         {
+>                 .nr_irqs        = 1,	/* IDMAC channel error irq */
+>         }, {
+>                 .nr_irqs        = 17,	/* misc interrupts the IPU is not
+>                                          * interested in, but clients drivers
+>                                          * may be.
+>                                          */
+>         },
+> };
+> 
+> /* Chained IRQ handler for IPU error interrupt */
+> static void ipu_irq_err(unsigned int irq, struct irq_desc *desc)
+> {
+>         struct ipu *ipu = get_irq_data(irq);
+>         u32 status;
+>         int i, line;
+> 
+> 	/* These interrupts are handled exclusively by the IPU code */
+> 	if (ipu_read_reg(ipu, IPU_INT_STAT_4))
+> 		generic_handle_irq(IPU_IRQ);
+> 
+> 	status = ipu_read_reg(ipu, IPU_INT_STAT_5);
+>         while ((line = ffs(status))) {
+>                 status &= ~(1UL << (line - 1));
+>                 generic_handle_irq(irq_bank_err[i].irq_base + line - 1);
+>         }
+> }
+> 
+> /* Chained IRQ handler for IPU function interrupt */
+> static void ipu_irq_fn(unsigned int irq, struct irq_desc *desc)
+> {
+>         struct ipu *ipu = get_irq_data(irq);
+>         u32 status;
+>         int i, line;
+> 
+>         /* These interrupts are handled exclusively by the IPU code */
+>         if (ipu_read_reg(ipu, IPU_INT_STAT_1) || ipu_read_reg(ipu, IPU_INT_STAT_2))
+>                 generic_handle_irq(IPU_ERR_IRQ);
+> 
+>         status = ipu_read_reg(ipu, IPU_INT_STAT_3);
+>         while ((line = ffs(status))) {
+>                 status &= ~(1UL << (line - 1));
+>                 generic_handle_irq(irq_bank_err[i].irq_base + line - 1);
+>         }
+> }
+> 
+> 
+> and in ipu_idmac.c:
+> 
+> request_irq(IPU_ERR_IRQ, &ipu_err_handler);
+> request_irq(IPU_IRQ, &ipu_irq);
 
-Precisely.
+These all are just slightly different variations - with this one you'd 
+have to scan dma channels in your dma irq handler, which I currently don't 
+have to do.
 
-> Now what constitutes improved
-> readbility on the other hand is another issue, and I guess there are
-> next to as many oppinions as developers... :)
+> That said I'm not sure whether we need a chained interrupt handler at all.
+> Looking at the remaining interrupts it seems that for example the
+> CSI_EOF (IPU_INT_STAT3 bit 5) interrupt is redundant to the corresponding
+> channels interrupt. In the camera driver you already realized that it's
+> the dma end event you're interested in, not the CSI_EOF event. Not sure
+> if that holds for the other interrupts though.
 
-Yes. Thus the brackets (or lack of them) of do-while loops should
-never be forced as a part of coding standard/tools. This is just an
-unimportant detail of personal style and trying to force it is simply
-damaging to all of us.
+I think the version with a lookup table is optimal - it uses standard 
+mechanisms for irq handling and doesn't waste RAM. The disadvantage - 
+every addition will need driver modification...
 
-> Of secondary importance is the benefit that always using brackets
-> makes them much more merge friendly.
+But ok, this is taking way too long. Just tell me which way you'd like to 
+have it and I'll do it.
 
-There are many ways to make the code more merge friendly at a cost of
-readability. Hope we don't go this way.
--- 
-Krzysztof Halasa
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
