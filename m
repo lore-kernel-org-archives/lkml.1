@@ -1,129 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751481AbYLWLV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751310AbYLWLcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751481AbYLWLV6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 06:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYLWLVu
+	id S1751310AbYLWLcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 06:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYLWLcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 06:21:50 -0500
-Received: from mail.gmx.net ([213.165.64.20]:50953 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750758AbYLWLVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 06:21:49 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19yYT8uZuhy2eCR6bNAZqUuXnYNkTHJr74DLTUlD6
-	M7ecLJb5LxwTB5
-Date: Tue, 23 Dec 2008 12:21:54 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+	Tue, 23 Dec 2008 06:32:14 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:10147 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758AbYLWLcN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 06:32:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=e8JCAcJcVCoaxVvCVGx1dax9SOAEWExrPpk3CCsKfgmDGYz5jybFmSYfsg4q9O1HEg
+         RSB9g9Bhm06ZNNS/YGxDno346w8fC/esWIAo3a6OHHcy0Xpg0W7pigAs4EhyY+mXSuw1
+         8ZQ6MvQ3oJjNHVXtEVTt+qtPxMuGT9Jkly7yA=
+Message-ID: <4950CC38.3090200@gmail.com>
+Date: Tue, 23 Dec 2008 14:32:08 +0300
+From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071114)
+MIME-Version: 1.0
+To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
        adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
        Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ drivers
-In-Reply-To: <20081223105006.GE1614@pengutronix.de>
-Message-ID: <Pine.LNX.4.64.0812231157180.5188@axis700.grange>
-References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange>
- <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de>
- <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de>
- <Pine.LNX.4.64.0812221942480.7796@axis700.grange> <20081223105006.GE1614@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ	drivers
+References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange> <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de> <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de> <20081222200337.GD9472@pengutronix.de> <4950B8C6.30309@gmail.com> <20081223105246.GF1614@pengutronix.de>
+In-Reply-To: <20081223105246.GF1614@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sascha
+Sascha Hauer wrote:
+> On Tue, Dec 23, 2008 at 01:09:10PM +0300, Dmitry Krivoschekov wrote:
+>> Robert Schwebel wrote:
+>>> On Mon, Dec 22, 2008 at 07:37:53PM +0100, Sascha Hauer wrote:
+>>>> Another thing is the overlay framebuffer. I think it's mainly useful
+>>>> to display video streams.
+>>> Right. The idea is that you can push a video stream into /dev/fb1 (for
+>>> example by using the gstreamer fbdev sink) while displaying widgets from
+>>> a GUI toolkit on /dev/fb0.
+>>>
+>>>> Maybe it's better to implement this as a v4l device as unlike the
+>>>> framebuffer API the v4l API is designed to handle different image
+>>>> buffers.
+>>> Huh? v4l is image-frames-to-userspace, not vice versa.
+>>>
+>> ...and vice versa too, v4l2 is not about input devices only but it is
+>> also related to output devices, v4l2 spec even has a special chapter
+>> dedicated to overlays [1]. Moreover, you can find such a driver within
+>> Freescale's BSP [2]. Another example is Omap's videoout driver [3].
+>
+> Are you aware of any application making use of this feature?
 
-On Tue, 23 Dec 2008, Sascha Hauer wrote:
+IIRC, mplayer is able to output on a v4l2 device. Also, Freescale's
+i.MX31 ADS BSP contained a bunch of V4L2 unit tests, including v4l2 output.
 
-> On Mon, Dec 22, 2008 at 09:10:03PM +0100, Guennadi Liakhovetski wrote:
-> > 
-> > Ok, so, what would we like to have there? We agree that the proper way to 
-> > serve them is a irq-chip driver, right?
-> 
-> In case of the *_EOF interrupts when they can be used outside the idmac
-> driver then yes. If not then not for the reasons I explained.
+Dmitry
 
-Wait a minute, are you suggesting to handle interrupts that are exported 
-to client drivers and that are "internal" to ipu_idmac differently? Like 
-exported once - properly using the irq chip machinery, and internal once 
-just demux in the driver hiding them from the kernel?... Or have I 
-misunderstood you? If this is indeed what you mean, then that doesn't 
-sound like a good idea to me, sorry. Like you configure a chained handler, 
-then when it is called on an IRQ, you check if the reason is bits 0, 1, or 
-2 you call generic_handle_irq(), for other bits you handle them 
-internally... grrrr... And, in fact, I don't see many internal interrupts 
-there - maybe only those from IPU_INT_STAT_3 related to CM? You see, we 
-could split interrupts further: support for EOF irqs - unconditional, 
-error, NF, and IPU_INT_STAT_3 IRQs - under 3 config variables, maybe even 
-split IPU_INT_STAT_3 further in submodules... But this would clutter the 
-Kconfig. Ok, I could add an own Kconfig under drivers/dma/ipu. But I 
-really do not think we should export some interrupts to the irq_desc array 
-and handle others internally. So, what granularity would you like to see 
-there?
 
-> > > Another thing is the overlay framebuffer. I think it's mainly useful to
-> > > display video streams. Maybe it's better to implement this as a v4l
-> > > device as unlike the framebuffer API the v4l API is designed to handle
-> > > different image buffers.
-> > > These things just popped up in my mind, I don't know if they are
-> > > practical, I still have a quite limited understanding of the whole
-> > > imaging stuff on the MX31.
-> > 
-> > You mean an output v4l device? I think overlays are handled by framebuffer 
-> > drivers... But I'm also not quite sure about it, however, handling overlay 
-> > as another framebuffer seems logical to me.
-> 
-> Well the DMA engine seems to suggest that frames should be passed around
-> whereas the framebuffer API only has a single frame. That would fit
-> better into the v4l API. Also the IPU can do things like colourspace
-> conversion and hw scaling which would fit into the V4L API.
-> OTOH there are not many examples of drivers doing this (ivtv, zoran in
-> kernel and an Omap driver found on lists). And I haven't found any
-> application supporting a V4L output device.
-> BTW is the overlay framebuffer useful in it's current implementation?
-> There seems to be no way to adjust the x/y offset or the blending modes.
+[1]
+http://www.freescale.com/webapp/sps/site/overview.jsp?code=CW_BSP_ARM&fsrch=1
+>
+> Sascha
+>
 
-No - that's what the comment in the commit says:
-
-This is a framebuffer driver for i.MX31 SoCs. It only supports synchronous
-displays, overlay support is included but has never been tested.
-
-[Oops, just noticed - in v5 framebuffer I again have the "panning not 
-tested" clause, which is not true, and the comment has been fixed in v4:-( 
-So, if we decide to take v5, we'd have to take the comment from v4]
-
-So, I could just throw overlay completely out. OTOH, if anyone ever wants 
-to use it, they'll have something to start with.
-
-> > If there are no other problems with v5, could we maybe take it as a basis 
-> > and then I would submit a patch to reduce the number of IRQs?
-> 
-> Please understand my concerns with this driver. It's a quite complex
-> beast and experience shows that once a driver is in the kernel it is far
-> more complicated to change it than to do it right the first way. You
-> know that I'm also interested in having a MX31 framebuffer (and camera)
-> driver in kernel but I want to make sure that it works properly and leaves
-> room for feature enhancements without having to refactor the whole
-> driver.
-
-Well, not quite so. At least with my workflow it takes more work to 
-regenerate a complete patch-series, than to create incremental patches. 
-For me it would be definitely easier to have a version of the driver 
-upstream to then only create incremental patches for it. Also, it would be 
-easier for others to test it. And consider the constantly moving target 
-effect - you know it as well as I do, rebasing your off-tree patches to 
-new kernel versions is a considerable amount of work too.
-
-> It would be good if someone else could throw his 2 cents into this
-> discussion.
-
-Yes, eventually, the drivers will have to go over dma and framebuffer 
-trees...
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
