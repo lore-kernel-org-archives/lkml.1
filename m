@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbYLWKw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751288AbYLWLUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751882AbYLWKw4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 05:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbYLWKws
+	id S1751288AbYLWLUm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 06:20:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbYLWLUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 05:52:48 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33146 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbYLWKwr (ORCPT
+	Tue, 23 Dec 2008 06:20:34 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59192 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbYLWLUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 05:52:47 -0500
-Date: Tue, 23 Dec 2008 11:52:46 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ
-	drivers
-Message-ID: <20081223105246.GF1614@pengutronix.de>
-Mail-Followup-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
-	Robert Schwebel <r.schwebel@pengutronix.de>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	Dan Williams <dan.j.williams@intel.com>
-References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange> <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de> <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de> <20081222200337.GD9472@pengutronix.de> <4950B8C6.30309@gmail.com>
+	Tue, 23 Dec 2008 06:20:33 -0500
+Date: Tue, 23 Dec 2008 11:21:22 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH next] bio: zero inlined bio_vec
+In-Reply-To: <20081223103138.GG32491@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0812231110320.9177@blonde.anvils>
+References: <Pine.LNX.4.64.0812230103480.19807@blonde.anvils>
+ <20081223080747.GE32491@kernel.dk> <Pine.LNX.4.64.0812230951100.3062@blonde.anvils>
+ <20081223102320.GF32491@kernel.dk> <20081223103138.GG32491@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4950B8C6.30309@gmail.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 11:51:18 up 9 days, 15:18,  9 users,  load average: 0.04, 0.01,
-	0.00
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 23, 2008 at 01:09:10PM +0300, Dmitry Krivoschekov wrote:
-> Robert Schwebel wrote:
-> > On Mon, Dec 22, 2008 at 07:37:53PM +0100, Sascha Hauer wrote:
-> >> Another thing is the overlay framebuffer. I think it's mainly useful
-> >> to display video streams.
-> >
-> > Right. The idea is that you can push a video stream into /dev/fb1 (for
-> > example by using the gstreamer fbdev sink) while displaying widgets from
-> > a GUI toolkit on /dev/fb0.
-> >
-> >> Maybe it's better to implement this as a v4l device as unlike the
-> >> framebuffer API the v4l API is designed to handle different image
-> >> buffers.
-> >
-> > Huh? v4l is image-frames-to-userspace, not vice versa.
-> >
-> ...and vice versa too, v4l2 is not about input devices only but it is
-> also related to output devices, v4l2 spec even has a special chapter
-> dedicated to overlays [1]. Moreover, you can find such a driver within
-> Freescale's BSP [2]. Another example is Omap's videoout driver [3].
+On Tue, 23 Dec 2008, Jens Axboe wrote:
+> On Tue, Dec 23 2008, Jens Axboe wrote:
+> > 
+> > That is, it iterates *bio_orig but indexes bio since it knows it has the
+> > same number of segments. So this code is the odd one out, I'd be
+> > surprised if we had more such cases. And since it would be nice to get
+> > rid of the need to memset in general, can you try with the below patch?
+> 
+> Nope, that still wont be enough, since we leave entries 0..i-1
+> uninitialized. Lets just do this instead.
 
-Are you aware of any application making use of this feature?
+Yes, that second version worked for me.  But if __blk_queue_bounce()
+is indeed the odd one out (likely but not certain), then the extension
+below makes more sense - I don't like how your bio.c returns a cleared
+bio_vec in some cases but not in others.  This is running fine for me
+on my test machines, but my test coverage is probably very poor (am I
+ever using more than the inlined bio_vec?), and I've not really tried
+to understand all the ways through bvec_alloc_bs().
 
-Sascha
+Hugh
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -180,7 +180,7 @@ struct bio_vec *bvec_alloc_bs(gfp_t gfp_
+ 	 * kzalloc() for the exact number of vecs right away.
+ 	 */
+ 	if (!bs)
+-		bvl = kzalloc(nr * sizeof(struct bio_vec), gfp_mask);
++		bvl = kmalloc(nr * sizeof(struct bio_vec), gfp_mask);
+ 
+ 	/*
+ 	 * see comment near bvec_array define!
+@@ -237,9 +237,6 @@ fallback:
+ 		}
+ 	}
+ 
+-	if (bvl)
+-		memset(bvl, 0, bvec_nr_vecs(*idx) * sizeof(struct bio_vec));
+-
+ 	return bvl;
+ }
+ 
+--- a/mm/bounce.c
++++ b/mm/bounce.c
+@@ -198,11 +198,14 @@ static void __blk_queue_bounce(struct re
+ 		/*
+ 		 * irk, bounce it
+ 		 */
+-		if (!bio)
+-			bio = bio_alloc(GFP_NOIO, (*bio_orig)->bi_vcnt);
++		if (!bio) {
++			unsigned int vcnt = (*bio_orig)->bi_vcnt;
+ 
+-		to = bio->bi_io_vec + i;
++			bio = bio_alloc(GFP_NOIO, vcnt);
++			memset(bio->bi_io_vec, 0,vcnt * sizeof(struct bio_vec));
++		}
+ 
++		to = bio->bi_io_vec + i;
+ 		to->bv_page = mempool_alloc(pool, q->bounce_gfp);
+ 		to->bv_len = from->bv_len;
+ 		to->bv_offset = from->bv_offset;
