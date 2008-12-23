@@ -1,103 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbYLWXTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbYLWXYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbYLWXTD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 18:19:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbYLWXSt
+	id S1752631AbYLWXYW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 18:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYLWXX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 18:18:49 -0500
-Received: from khc.piap.pl ([195.187.100.11]:57119 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751791AbYLWXSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 18:18:48 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       =?utf-8?B?SMOla29uIEzDuHZkYWw=?= <hlovdal@gmail.com>,
-       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a compound statement
-References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
-	<20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
-	<m3hc4voo2a.fsf@maximus.localdomain>
-	<a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
-	<m3ocz2ua3w.fsf@maximus.localdomain> <1230053186.1447.9.camel@brick>
-	<m3k59qssix.fsf@maximus.localdomain>
-	<alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 24 Dec 2008 00:18:46 +0100
-In-Reply-To: <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain> (Linus Torvalds's message of "Tue\, 23 Dec 2008 10\:08\:50 -0800 \(PST\)")
-Message-ID: <m3hc4usco9.fsf@maximus.localdomain>
+	Tue, 23 Dec 2008 18:23:59 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:26713 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752395AbYLWXX5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 18:23:57 -0500
+Message-ID: <49517305.4000100@ru.mvista.com>
+Date: Wed, 24 Dec 2008 02:23:49 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: David Brownell <david-b@pacbell.net>
+Cc: gregkh@suse.de, felipe.balbi@nokia.com, linux-usb@vger.kernel.org,
+       khilman@deeprootsystems.com,
+       davinci-linux-open-source@linux.davincidsp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] musb: fix DaVinci build again
+References: <200812072341.50012.sshtylyov@ru.mvista.com> <494E2450.9080601@ru.mvista.com> <4950CFAD.7020403@ru.mvista.com> <200812230939.00508.david-b@pacbell.net>
+In-Reply-To: <200812230939.00508.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Hello.
 
-> It's more than that. I added the check after some person who had been 
-> programming the kernel (and thus was supposedly fluent in C) literally 
-> could not parse a macro that had "do x while (y)" in it.
+David Brownell wrote:
 
-A literally that simple macro, or a complicated one?
-
-
-I'm all for using brackets when there is / could be some possibility
-of increasing code readability.
-
-E.g. I always use parentheses in a nested if-if, because
-
-	if (x)
-		if (y)
-			a;
-		else
-			c;
-
-may be confusing, especially if formatted differently.
-
-	if (x)
-		a;
-	else if (y)
-		b;
-	etc.
-
-is simple and unambiguous and I don't put the braces.
-
-So is a case like
-	do
-		x;
-	while (y);
-It can't be made more clear with brackets.
-
-IOW: improving the style is great. Changing it only to silence some
-tool is not.
-
-> Another example of this is "sizeof". The kernel universally (I hope) has 
-> parenthesis around the sizeof argument, even though it's clearly not 
-> required by the C language. 
+>>    For how much longer we'll have to wait for this issue to be resolved? 
+>> 2.6.28 is 2 days away (at most).
+>>     
 >
-> It's a coding standard.
+> Yeah, I sent a DaVinci build fix patch in plenty of time to
+> be merged for *2.6.27* (!!!!) but still the key parts are
+> missing, and have not managed to make it into mainline.
 
-Right, but they (at least for me) make it more readable.
-kmalloc(sizeof i) just doesn't look good, the operator looks like
-a variable name.
+  Try breakinjg the patches into smaller pieces next time, so they may 
+get thru the maintainer's sieve more easily. :-)
 
-But there is this return statement. Some people tend to write
-return (x); I simply write return x;
-It's clear, and so is a simple do-while.
+WBR, Sergei
 
-> And quite frankly, anybody who works on gcc has no place complaining about 
-> sparse coding standard warnings. They are a _hell_ of a lot better than 
-> some of the really crazy warnings gcc spews out with "-W". At least the 
-> sparse warnings you can make go away while making the code more 
-> understandable. Some of the -W warnings are unfixable without breaking the 
-> source code.
 
-:-)
-
-BTW I think I may use sparse differently.
-I can see false gcc warnings every time the project is being built.
-OTOH I run sparse only when I have some (almost) completed project
-(a patch, a driver etc). I make sure the remaining sparse warnings are
-(from my POV) invalid and it won't spew them on next build again.
--- 
-Krzysztof Halasa
