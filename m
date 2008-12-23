@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYLWWWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbYLWWXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYLWWWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 17:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYLWWWf
+	id S1753248AbYLWWXS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 17:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYLWWXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 17:22:35 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:50166 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbYLWWWe (ORCPT
+	Tue, 23 Dec 2008 17:23:04 -0500
+Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:56317 "EHLO
+	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751677AbYLWWXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 17:22:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dO5k4SOpFNnOVdJPtt6nyo8FphYPdAXn3oNuuPGF+PJ9ySXOnfJ1+vw+FuyZ3FWsWl
-         vSUjdKFD0bwaUPEDNP941Zd122rJkpp1Wisd9m74gfPQIZ1qspZZXh4XGEPSHMojbF0i
-         HT00+W7kPD2+X6wYlCuvZdKktPthTjTZ86qIE=
-Message-ID: <961aa3350812231422u39adc12dna71060186f9026e0@mail.gmail.com>
-Date: Wed, 24 Dec 2008 07:22:31 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: "Johannes Weiner" <hannes@cmpxchg.org>
-Subject: Re: [PATCH] fix unmap_vmas() with NULL vma
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20081223150618.GB3215@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Dec 2008 17:23:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=hTrXKUl4dHFUaiLFiwNpiXXJkmXXyV1iReIfEwvqdvKu3NN0yPOrLKA1Vy4YTROe;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Tue, 23 Dec 2008 17:23:00 -0500
+From: Bill Fink <billfink@mindspring.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH 2/2] ieee1934: dv1394 interrupt enabling/disabling
+ broken on big-endian
+Message-Id: <20081223172300.5bd19846.billfink@mindspring.com>
+In-Reply-To: <49446923.5040606@s5r6.in-berlin.de>
+References: <1229210489.11257.16.camel@brick>
+	<4944561D.4010608@s5r6.in-berlin.de>
+	<20081213204137.d150645c.billfink@mindspring.com>
+	<49446923.5040606@s5r6.in-berlin.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081223103820.GB7217@localhost.localdomain>
-	 <20081223150618.GB3215@cmpxchg.org>
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4ddf3f99fd3968251ddd7ed4fa43a0be0d350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.88
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why bail out this late?  We can save the other stuff in exit_mmap() as
-> well if we have no mmaps.
->
-> Granted, the path is dead cold so the extra call overhead doesn't
-> matter but I think the check is logically better placed in
-> exit_mmap().
+On Sun, 14 Dec 2008, Stefan Richter wrote:
 
-Looks good, this patch should go in.
+> Bill Fink wrote:
+> > On Sun, 14 Dec 2008, Stefan Richter wrote:
+> >> Looks like a bug + correct fix indeed.  Apparently dv1394 was never used on big
+> >> endian PCs.
+> ...
+> > I use dv1394 on a big-endian PPC system (2.6.15 kernel) to watch DV video
+> > via xine, and this has always worked fine for me.
+> 
+> Could you try to apply the patch to your kernel to test it?  You can get
+> it in plaintext e.g. from
+> http://user.in-berlin.de/~s5r6/linux1394/submitted/843-ieee1934-dv1394-interrupt-enabling_disabling-broken-on-big-endian.patch
 
->        Hannes
->
-> ---
-> Subject: mm: check for no mmaps in exit_mmap()
->
-> When dup_mmap() ooms we can end up with mm->mmap == NULL.  The error
-> path does mmput() and unmap_vmas() gets a NULL vma which it
-> dereferences.
->
-> In exit_mmap() there is nothing to do at all for this case, we can
-> cancel the callpath right there.
->
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> ---
->
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index d4855a6..b9d1636 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -2091,6 +2091,9 @@ void exit_mmap(struct mm_struct *mm)
->        arch_exit_mmap(mm);
->        mmu_notifier_release(mm);
->
-> +       if (!mm->mmap)
-> +               return;
-> +
->        if (mm->locked_vm) {
->                vma = mm->mmap;
->                while (vma) {
->
+I had hoped to test this by now, but due to not feeling well and the
+holidays, I haven't been able to.  I still hope to test this later,
+but I can't say exactly when.
+
+					-Happy Holidays to all
+
+					-Bill
