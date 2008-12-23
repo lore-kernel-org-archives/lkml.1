@@ -1,64 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbYLWCNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYLWCYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbYLWCNw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 21:13:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYLWCNn
+	id S1755907AbYLWCYI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 21:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYLWCXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 21:13:43 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:39406 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754185AbYLWCNn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 21:13:43 -0500
-Date: Mon, 22 Dec 2008 18:12:17 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: oleg@redhat.com, roland@redhat.com, bastian@waldi.eu.org, daniel@hozac.com,
-       xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
-Subject: Re: [RFC][PATCH 0/6][v3] Container-init signal semantics
-Message-ID: <20081223021217.GA14957@us.ibm.com>
-References: <20081221005106.GA4912@us.ibm.com> <m1wsds5vij.fsf@frodo.ebiederm.org> <20081222194737.GC9085@us.ibm.com> <m1aban68i3.fsf@frodo.ebiederm.org>
+	Mon, 22 Dec 2008 21:23:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48488 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754399AbYLWCXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 21:23:54 -0500
+Message-ID: <49504B8C.8080907@kernel.org>
+Date: Tue, 23 Dec 2008 11:23:08 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1aban68i3.fsf@frodo.ebiederm.org>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Justin Madru <jdm64@gawab.com>
+CC: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [2.6.28-rc] Sata soft reset filling log
+References: <494318F5.4060007@gawab.com> <494EFD79.7020008@kernel.org> <494F3AD2.3060201@gawab.com> <494F3E41.60304@kernel.org> <49500BE2.6050106@gawab.com>
+In-Reply-To: <49500BE2.6050106@gawab.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------000309010502010406070806"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Dec 2008 02:23:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman [ebiederm@xmission.com] wrote:
-| I haven't dug in too deep but right now my concern are user space semantics,
-| I don't want to wind up with something ugly there because we can not change
-| it later.
+This is a multi-part message in MIME format.
+--------------000309010502010406070806
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-The one restriction we are imposing is that SIGINT, SIGTERM etc will not
-currently kill containter-inits. Only SIGKILL will.  But that is good point.
-Maybe we should document that as a limitation we may remove in the future ? 
-i.e. Its not a feature that container-inits should rely on.  Like sysV init,
-container-init should still SIG_IGN all unhandled signals. If they don't,
-they may break in the future.
+Hello,
 
-| 
-| So if we can write a description of what happens to signals to cinit
-| that is right 100% of the time.  Something we can write a test case
-| for that tests all of the corner cases and it always get the same
-| results. I am happy.
+Justin Madru wrote:
+>> Ah.. strange.  The command protocol is ATAPI_PROT_NODATA and the drive
+>> should be setting DRQ to receive CDB but it's not doing that.
+>> Strange.  It could be that the drive is a little bit tardy with DRQ -
+>> ie. setting DRQ after clearing BUSY and ata_piix is now successfully
+>> hitting the small window for some reason.
+>>
+>> Does the attached patch make any difference?
+>>
+>> Thanks.
+>>
+>>   
+> Ok, I applied your patch. Unfortunately, it didn't fix my problem.
+> I now get a different, but similar message; not sure if it happens less
+> frequently - still often though.
 
-Yes, I believe we can say that SIGKILL/SIGSTOP from parent are always
-delivered and no fatal signal from same ns is.
+Aiee...
 
-| 
-| I don't mind dropping signals early as an optimization, but if it
-| is just an optimization we can't count on it in cinit.
+> What changes happened between .27 and .28 could've caused this?
+> Anyways, below is what I get now (with your patch), including the
+> frequency of occurrence.
 
-Yes, you have a point. It started out as an optimization, but unwanted
-signals are either ignored or dropped _always_ (or we have a bug).
+I have no idea and I'm afraid we'll need a bisection here. :-( Can you
+please try the attached patch?
 
-| 
-| So I would rather deliver less and make user space deal with it,
-| then deliver more cause problems for user space.
+Thanks.
 
-The user-semantics appear to be clean now.
+-- 
+tejun
+
+--------------000309010502010406070806
+Content-Type: text/x-patch;
+ name="DRQ-debug-1.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="DRQ-debug-1.patch"
+
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 4b47394..fcd7d08 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -1120,6 +1120,22 @@ fsm_start:
+ 		 */
+ 		poll_next = (qc->tf.flags & ATA_TFLAG_POLLING);
+ 
++		{
++			int cnt = 0;
++
++			while (!(status & (ATA_DRQ | ATA_ERR | ATA_DF)) &&
++			       cnt < 100) {
++				status = ap->ops->sff_check_status(ap);
++				cnt++;
++				udelay(10);
++			}
++
++			if (cnt)
++				ata_port_printk(ap, KERN_INFO,
++						"XXX status=%02x after %d tries\n",
++						status, cnt);
++		}
++
+ 		/* check device status */
+ 		if (unlikely((status & ATA_DRQ) == 0)) {
+ 			/* handle BSY=0, DRQ=0 as error */
+
+--------------000309010502010406070806--
