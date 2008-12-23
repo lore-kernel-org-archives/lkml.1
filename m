@@ -1,96 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbYLWRYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbYLWR0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752051AbYLWRYs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 12:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYLWRYj
+	id S1752441AbYLWR0n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 12:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYLWR0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 12:24:39 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:57216 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYLWRYi (ORCPT
+	Tue, 23 Dec 2008 12:26:33 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:47081 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbYLWR0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 12:24:38 -0500
-Date: Tue, 23 Dec 2008 18:26:10 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ken Chen <kenchen@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       sparclinux <sparclinux@vger.kernel.org>, mingo@elte.hu,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, paulus@samba.org,
-       tglx@linutronix.de, hpa@zytor.com, linux-next@vger.kernel.org
-Subject: Re: [PATCH] sparc64: use unsigned long long for u64
-Message-ID: <20081223172610.GA5957@uranus.ravnborg.org>
-References: <20081222152247.b934ed5b.sfr@canb.auug.org.au> <b040c32a0812212249p45aba306tbb68a960b79cd0ee@mail.gmail.com> <20081222070426.GD29160@elte.hu> <20081222181932.5dd9514e.sfr@canb.auug.org.au> <20081222080341.GA18897@elte.hu> <20081222144319.1bfc0061.akpm@linux-foundation.org> <20081222230035.GB4074@uranus.ravnborg.org> <20081222151338.3b6ef997.akpm@linux-foundation.org> <20081223131746.GA7456@uranus.ravnborg.org> <b040c32a0812230905q3a257163r35373b0cb50df35c@mail.gmail.com>
+	Tue, 23 Dec 2008 12:26:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=l/8xWCtYTknxm3CKQIyr/DxZDM4OoYDGJEC6JMdhFs2lbchrCdzz6CdvMm50d0TI4W
+         KbbOnhjdHCm0dmk/QSaZFENbllGrSvdJ5rrMISrBF4Y2+Em+0wI50o67qgl5ZiO2ZqrG
+         DqdDqkUgJrKXOXhEB6JcQh/W3CWF3sGk3wyvU=
+Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while
+ a compound statement
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: =?ISO-8859-1?Q?H=E5kon_L=F8vdal?= <hlovdal@gmail.com>,
+       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <m3ocz2ua3w.fsf@maximus.localdomain>
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+	 <20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
+	 <m3hc4voo2a.fsf@maximus.localdomain>
+	 <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
+	 <m3ocz2ua3w.fsf@maximus.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Dec 2008 09:26:26 -0800
+Message-Id: <1230053186.1447.9.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0812230905q3a257163r35373b0cb50df35c@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 23, 2008 at 09:05:44AM -0800, Ken Chen wrote:
-> On Tue, Dec 23, 2008 at 5:17 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > Andrew Morton wrote:
-> >
-> >    People keep on doing
-> >
-> >            printk("%llu", some_u64);
-> >
-> >    testing it only on x86_64 and this generates a warning storm on
-> >    powerpc, sparc64, etc.  Because they use `long', not `long long'.
-> >
-> >    Quite a few 64-bit architectures are using `long' for their
-> >    s64/u64 types.  We should convert them all to `long long'.
-> >
-> > Update types.h so we use unsigned long long for u64 and
-> > fix all warnings in sparc64 code.
-> > Tested with an allnoconfig, defconfig and allmodconfig builds.
-> >
-> > This patch introduces additional warnings in several drivers.
-> > These will be dealt with in separate patches.
-> >
-> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> >
-> > It may take a few days before the drivers gets fixed.
-> > Christmas is approaching fast by now.
-> >
-> >        Sam
-> >
-> > diff --git a/arch/sparc/include/asm/timer_64.h b/arch/sparc/include/asm/timer_64.h
-> > index 5b779fd..ef3c368 100644
-> > --- a/arch/sparc/include/asm/timer_64.h
-> > +++ b/arch/sparc/include/asm/timer_64.h
-> > @@ -10,7 +10,7 @@
-> >  #include <linux/init.h>
-> >
-> >  struct sparc64_tick_ops {
-> > -       unsigned long (*get_tick)(void);
-> > +       unsigned long long (*get_tick)(void);
+On Tue, 2008-12-23 at 17:31 +0100, Krzysztof Halasa wrote:
+> "Håkon Løvdal" <hlovdal@gmail.com> writes:
 > 
-> wait, why does this need to be changed?
+> > For this specific issue the important aspect is to improve readability
+> > (and not just eventually satisfy some warning from a tool), which I
+> > assume there is no disagrement on.
+> 
+> Precisely.
+> 
+> > Now what constitutes improved
+> > readbility on the other hand is another issue, and I guess there are
+> > next to as many oppinions as developers... :)
+> 
+> Yes. Thus the brackets (or lack of them) of do-while loops should
+> never be forced as a part of coding standard/tools. This is just an
+> unimportant detail of personal style and trying to force it is simply
+> damaging to all of us.
+> 
+> > Of secondary importance is the benefit that always using brackets
+> > makes them much more merge friendly.
+> 
+> There are many ways to make the code more merge friendly at a cost of
+> readability. Hope we don't go this way.
 
-We have:
-        clocksource_tick.read = tick_ops->get_tick;
+Linus himself added that particular warning to sparse...may want to check
+with him the reason for it.
 
-And clocksource_tick is of type clocksource:
+Harvey
 
-struct clocksource {
-	...
-        cycle_t (*read)(void);
-
-And cycle_t is:
-/* clocksource cycle base type */
-typedef u64 cycle_t;
-
-And u64 is now:
-unsigned long long - thus we need to fix prototype
-of get_tick to fix the warnings.
-
-A cast could do it - but fixing the real problem
-is better here.
-
-	Sam
