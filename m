@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbYLWWDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYLWWDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbYLWWDL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 17:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYLWWC4
+	id S1753175AbYLWWDs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 17:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYLWWDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 17:02:56 -0500
-Received: from rere.qmqm.pl ([89.167.52.164]:57583 "EHLO rere.qmqm.pl"
+	Tue, 23 Dec 2008 17:03:38 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40799 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751459AbYLWWCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 17:02:55 -0500
-Date: Tue, 23 Dec 2008 22:54:07 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: [PATCH] pci-quirks: HP hides SMBus controller in Compaq nx9500 laptops
-Message-ID: <20081223215407.GB32525@rere.qmqm.pl>
+	id S1751481AbYLWWDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 17:03:37 -0500
+Date: Tue, 23 Dec 2008 14:03:45 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@linutronix.de, akpm@linux-foundation.org,
+       ralf@linux-mips.org, kernel@wantstofly.org, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, geert@linux-m68k.org,
+       zippel@linux-m68k.org, jwboyer@linux.vnet.ibm.com,
+       mporter@kernel.crashing.org, grant.likely@secretlab.ca,
+       paulus@samba.org, benh@kernel.crashing.org, dhowells@redhat.com,
+       yasutake.koichi@jp.panasonic.com, lethal@linux-sh.org, hpa@zytor.com
+Subject: [PATCH, -tip] Remove redundant RCU_CPU_STALL_DETECTOR declaration
+Message-ID: <20081223220345.GA16472@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com> <12299911471985-git-send-email-paulmck@linux.vnet.ibm.com> <20081223142542.GC29151@elte.hu> <20081223215948.GA16137@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081223215948.GA16137@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found no references to SMBus in ACPI DSDT disassembly on my laptop
-so this should be safe.
+This patch removes the redundant RCU_CPU_STALL_DETECTOR Kconfig
+parameter.  We got one from the classic RCU detector and the other
+from the hierarchical RCU detector, this patch merges them.
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+This patch is suitable for inclusion.
 
-diff -urN linux-2.6.27.7-brfix1-nvpid/drivers/pci/quirks.c pci-quirks/drivers/pci/quirks.c
---- linux-2.6.27.7-brfix1-nvpid/drivers/pci/quirks.c	2008-10-10 00:13:53.000000000 +0200
-+++ pci-quirks/drivers/pci/quirks.c	2008-12-06 22:18:46.000000000 +0100
-@@ -1040,6 +1040,7 @@
- 			switch (dev->subsystem_device) {
- 			case 0x12bc: /* HP D330L */
- 			case 0x12bd: /* HP D530 */
-+			case 0x006a: /* HP Compaq nx9500 */
- 				asus_hides_smbus = 1;
- 			}
- 		else if (dev->device == PCI_DEVICE_ID_INTEL_82875_HB)
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ lib/Kconfig.debug |   13 -------------
+ 1 files changed, 0 insertions(+), 13 deletions(-)
+
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 465d822..8bae51a 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -608,19 +608,6 @@ config RCU_TORTURE_TEST_RUNNABLE
+ 
+ config RCU_CPU_STALL_DETECTOR
+ 	bool "Check for stalled CPUs delaying RCU grace periods"
+-	depends on CLASSIC_RCU
+-	default n
+-	help
+-	  This option causes RCU to printk information on which
+-	  CPUs are delaying the current grace period, but only when
+-	  the grace period extends for excessive time periods.
+-
+-	  Say Y if you want RCU to perform such checks.
+-
+-	  Say N if you are unsure.
+-
+-config RCU_CPU_STALL_DETECTOR
+-	bool "Check for stalled CPUs delaying RCU grace periods"
+ 	depends on CLASSIC_RCU || TREE_RCU
+ 	default n
+ 	help
+-- 
+1.5.2.5
+
