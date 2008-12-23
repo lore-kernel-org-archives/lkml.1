@@ -1,83 +1,484 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbYLWQPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbYLWQPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751983AbYLWQPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 11:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYLWQNK
+	id S1752916AbYLWQPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 11:15:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbYLWQNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 11:13:10 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48932 "EHLO mx2.redhat.com"
+	Tue, 23 Dec 2008 11:13:12 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48926 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbYLWQNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751115AbYLWQNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Dec 2008 11:13:04 -0500
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [PATCH 02/10] dlm: trivial annotation of be16 value
-Date: Tue, 23 Dec 2008 10:58:35 -0600
-Message-Id: <1230051523-5478-3-git-send-email-teigland@redhat.com>
+Subject: [PATCH 09/10] dlm: add new debugfs entry
+Date: Tue, 23 Dec 2008 10:58:42 -0600
+Message-Id: <1230051523-5478-10-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
+The new debugfs entry dumps all rsb and lkb structures, and includes
+a lot more information than has been available before.  This includes
+the new timestamps added by a previous patch for debugging callback
+issues.
 
-fs/dlm/dir.c:419:14: warning: incorrect type in assignment (different base types)
-fs/dlm/dir.c:419:14:    expected unsigned short [unsigned] [addressable] [assigned] [usertype] be_namelen
-fs/dlm/dir.c:419:14:    got restricted __be16 [usertype] <noident>
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/dir.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+ fs/dlm/debug_fs.c     |  296 ++++++++++++++++++++++++++++++++++++++++--------
+ fs/dlm/dlm_internal.h |    1 +
+ 2 files changed, 247 insertions(+), 50 deletions(-)
 
-diff --git a/fs/dlm/dir.c b/fs/dlm/dir.c
-index 85defeb..92969f8 100644
---- a/fs/dlm/dir.c
-+++ b/fs/dlm/dir.c
-@@ -374,7 +374,7 @@ void dlm_copy_master_names(struct dlm_ls *ls, char *inbuf, int inlen,
- 	struct list_head *list;
- 	struct dlm_rsb *r;
- 	int offset = 0, dir_nodeid;
--	uint16_t be_namelen;
-+	__be16 be_namelen;
+diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
+index 19e4f9e..2f107d1 100644
+--- a/fs/dlm/debug_fs.c
++++ b/fs/dlm/debug_fs.c
+@@ -1,7 +1,7 @@
+ /******************************************************************************
+ *******************************************************************************
+ **
+-**  Copyright (C) 2005 Red Hat, Inc.  All rights reserved.
++**  Copyright (C) 2005-2008 Red Hat, Inc.  All rights reserved.
+ **
+ **  This copyrighted material is made available to anyone wishing to use,
+ **  modify, copy, or redistribute it subject to the terms and conditions
+@@ -27,7 +27,7 @@ static struct dentry *dlm_root;
  
- 	down_read(&ls->ls_root_sem);
+ struct rsb_iter {
+ 	int entry;
+-	int locks;
++	int format;
+ 	int header;
+ 	struct dlm_ls *ls;
+ 	struct list_head *next;
+@@ -60,8 +60,8 @@ static char *print_lockmode(int mode)
+ 	}
+ }
  
-@@ -410,15 +410,15 @@ void dlm_copy_master_names(struct dlm_ls *ls, char *inbuf, int inlen,
+-static void print_resource_lock(struct seq_file *s, struct dlm_lkb *lkb,
+-				struct dlm_rsb *res)
++static void print_format1_lock(struct seq_file *s, struct dlm_lkb *lkb,
++			       struct dlm_rsb *res)
+ {
+ 	seq_printf(s, "%08x %s", lkb->lkb_id, print_lockmode(lkb->lkb_grmode));
  
- 		if (offset + sizeof(uint16_t)*2 + r->res_length > outlen) {
- 			/* Write end-of-block record */
--			be_namelen = 0;
--			memcpy(outbuf + offset, &be_namelen, sizeof(uint16_t));
--			offset += sizeof(uint16_t);
-+			be_namelen = cpu_to_be16(0);
-+			memcpy(outbuf + offset, &be_namelen, sizeof(__be16));
-+			offset += sizeof(__be16);
- 			goto out;
+@@ -83,7 +83,7 @@ static void print_resource_lock(struct seq_file *s, struct dlm_lkb *lkb,
+ 	seq_printf(s, "\n");
+ }
+ 
+-static int print_resource(struct dlm_rsb *res, struct seq_file *s)
++static int print_format1(struct dlm_rsb *res, struct seq_file *s)
+ {
+ 	struct dlm_lkb *lkb;
+ 	int i, lvblen = res->res_ls->ls_lvblen, recover_list, root_list;
+@@ -134,15 +134,15 @@ static int print_resource(struct dlm_rsb *res, struct seq_file *s)
+ 	/* Print the locks attached to this resource */
+ 	seq_printf(s, "Granted Queue\n");
+ 	list_for_each_entry(lkb, &res->res_grantqueue, lkb_statequeue)
+-		print_resource_lock(s, lkb, res);
++		print_format1_lock(s, lkb, res);
+ 
+ 	seq_printf(s, "Conversion Queue\n");
+ 	list_for_each_entry(lkb, &res->res_convertqueue, lkb_statequeue)
+-		print_resource_lock(s, lkb, res);
++		print_format1_lock(s, lkb, res);
+ 
+ 	seq_printf(s, "Waiting Queue\n");
+ 	list_for_each_entry(lkb, &res->res_waitqueue, lkb_statequeue)
+-		print_resource_lock(s, lkb, res);
++		print_format1_lock(s, lkb, res);
+ 
+ 	if (list_empty(&res->res_lookup))
+ 		goto out;
+@@ -160,7 +160,8 @@ static int print_resource(struct dlm_rsb *res, struct seq_file *s)
+ 	return 0;
+ }
+ 
+-static void print_lock(struct seq_file *s, struct dlm_lkb *lkb, struct dlm_rsb *r)
++static void print_format2_lock(struct seq_file *s, struct dlm_lkb *lkb,
++			       struct dlm_rsb *r)
+ {
+ 	u64 xid = 0;
+ 	u64 us;
+@@ -193,20 +194,108 @@ static void print_lock(struct seq_file *s, struct dlm_lkb *lkb, struct dlm_rsb *
+ 		   r->res_name);
+ }
+ 
+-static int print_locks(struct dlm_rsb *r, struct seq_file *s)
++static int print_format2(struct dlm_rsb *r, struct seq_file *s)
+ {
+ 	struct dlm_lkb *lkb;
+ 
+ 	lock_rsb(r);
+ 
+ 	list_for_each_entry(lkb, &r->res_grantqueue, lkb_statequeue)
+-		print_lock(s, lkb, r);
++		print_format2_lock(s, lkb, r);
+ 
+ 	list_for_each_entry(lkb, &r->res_convertqueue, lkb_statequeue)
+-		print_lock(s, lkb, r);
++		print_format2_lock(s, lkb, r);
+ 
+ 	list_for_each_entry(lkb, &r->res_waitqueue, lkb_statequeue)
+-		print_lock(s, lkb, r);
++		print_format2_lock(s, lkb, r);
++
++	unlock_rsb(r);
++	return 0;
++}
++
++static void print_format3_lock(struct seq_file *s, struct dlm_lkb *lkb,
++			       int rsb_lookup)
++{
++	u64 xid = 0;
++
++	if (lkb->lkb_flags & DLM_IFL_USER) {
++		if (lkb->lkb_ua)
++			xid = lkb->lkb_ua->xid;
++	}
++
++	seq_printf(s, "lkb %x %d %x %u %llu %x %x %d %d %d %d %d %d %u %llu %llu\n",
++		   lkb->lkb_id,
++		   lkb->lkb_nodeid,
++		   lkb->lkb_remid,
++		   lkb->lkb_ownpid,
++		   (unsigned long long)xid,
++		   lkb->lkb_exflags,
++		   lkb->lkb_flags,
++		   lkb->lkb_status,
++		   lkb->lkb_grmode,
++		   lkb->lkb_rqmode,
++		   lkb->lkb_highbast,
++		   rsb_lookup,
++		   lkb->lkb_wait_type,
++		   lkb->lkb_lvbseq,
++		   (unsigned long long)ktime_to_ns(lkb->lkb_timestamp),
++		   (unsigned long long)ktime_to_ns(lkb->lkb_time_bast));
++}
++
++static int print_format3(struct dlm_rsb *r, struct seq_file *s)
++{
++	struct dlm_lkb *lkb;
++	int i, lvblen = r->res_ls->ls_lvblen;
++	int print_name = 1;
++
++	lock_rsb(r);
++
++	seq_printf(s, "rsb %p %d %x %lx %d %d %u %d ",
++		   r,
++		   r->res_nodeid,
++		   r->res_first_lkid,
++		   r->res_flags,
++		   !list_empty(&r->res_root_list),
++		   !list_empty(&r->res_recover_list),
++		   r->res_recover_locks_count,
++		   r->res_length);
++
++	for (i = 0; i < r->res_length; i++) {
++		if (!isascii(r->res_name[i]) || !isprint(r->res_name[i]))
++			print_name = 0;
++	}
++
++	seq_printf(s, "%s", print_name ? "str " : "hex");
++
++	for (i = 0; i < r->res_length; i++) {
++		if (print_name)
++			seq_printf(s, "%c", r->res_name[i]);
++		else
++			seq_printf(s, " %02x", (unsigned char)r->res_name[i]);
++	}
++	seq_printf(s, "\n");
++
++	if (!r->res_lvbptr)
++		goto do_locks;
++
++	seq_printf(s, "lvb %u %d", r->res_lvbseq, lvblen);
++
++	for (i = 0; i < lvblen; i++)
++		seq_printf(s, " %02x", (unsigned char)r->res_lvbptr[i]);
++	seq_printf(s, "\n");
++
++ do_locks:
++	list_for_each_entry(lkb, &r->res_grantqueue, lkb_statequeue)
++		print_format3_lock(s, lkb, 0);
++
++	list_for_each_entry(lkb, &r->res_convertqueue, lkb_statequeue)
++		print_format3_lock(s, lkb, 0);
++
++	list_for_each_entry(lkb, &r->res_waitqueue, lkb_statequeue)
++		print_format3_lock(s, lkb, 0);
++
++	list_for_each_entry(lkb, &r->res_lookup, lkb_rsb_lookup)
++		print_format3_lock(s, lkb, 1);
+ 
+ 	unlock_rsb(r);
+ 	return 0;
+@@ -231,7 +320,7 @@ static int rsb_iter_next(struct rsb_iter *ri)
+ 				break;
+ 			}
+ 			read_unlock(&ls->ls_rsbtbl[i].lock);
+-                }
++		}
+ 		ri->entry = i;
+ 
+ 		if (ri->entry >= ls->ls_rsbtbl_size)
+@@ -248,7 +337,7 @@ static int rsb_iter_next(struct rsb_iter *ri)
+ 			read_unlock(&ls->ls_rsbtbl[i].lock);
+ 			dlm_put_rsb(old);
+ 			goto top;
+-                }
++		}
+ 		ri->rsb = list_entry(ri->next, struct dlm_rsb, res_hashchain);
+ 		dlm_hold_rsb(ri->rsb);
+ 		read_unlock(&ls->ls_rsbtbl[i].lock);
+@@ -274,6 +363,7 @@ static struct rsb_iter *rsb_iter_init(struct dlm_ls *ls)
+ 	ri->ls = ls;
+ 	ri->entry = 0;
+ 	ri->next = NULL;
++	ri->format = 1;
+ 
+ 	if (rsb_iter_next(ri)) {
+ 		rsb_iter_free(ri);
+@@ -325,16 +415,26 @@ static int rsb_seq_show(struct seq_file *file, void *iter_ptr)
+ {
+ 	struct rsb_iter *ri = iter_ptr;
+ 
+-	if (ri->locks) {
++	switch (ri->format) {
++	case 1:
++		print_format1(ri->rsb, file);
++		break;
++	case 2:
+ 		if (ri->header) {
+-			seq_printf(file, "id nodeid remid pid xid exflags flags "
+-					 "sts grmode rqmode time_ms r_nodeid "
+-					 "r_len r_name\n");
++			seq_printf(file, "id nodeid remid pid xid exflags "
++					 "flags sts grmode rqmode time_ms "
++					 "r_nodeid r_len r_name\n");
+ 			ri->header = 0;
  		}
- 
- 		be_namelen = cpu_to_be16(r->res_length);
--		memcpy(outbuf + offset, &be_namelen, sizeof(uint16_t));
--		offset += sizeof(uint16_t);
-+		memcpy(outbuf + offset, &be_namelen, sizeof(__be16));
-+		offset += sizeof(__be16);
- 		memcpy(outbuf + offset, r->res_name, r->res_length);
- 		offset += r->res_length;
- 	}
-@@ -430,9 +430,9 @@ void dlm_copy_master_names(struct dlm_ls *ls, char *inbuf, int inlen,
- 
- 	if ((list == &ls->ls_root_list) &&
- 	    (offset + sizeof(uint16_t) <= outlen)) {
--		be_namelen = 0xFFFF;
--		memcpy(outbuf + offset, &be_namelen, sizeof(uint16_t));
--		offset += sizeof(uint16_t);
-+		be_namelen = cpu_to_be16(0xFFFF);
-+		memcpy(outbuf + offset, &be_namelen, sizeof(__be16));
-+		offset += sizeof(__be16);
+-		print_locks(ri->rsb, file);
+-	} else {
+-		print_resource(ri->rsb, file);
++		print_format2(ri->rsb, file);
++		break;
++	case 3:
++		if (ri->header) {
++			seq_printf(file, "version rsb 1.1 lvb 1.1 lkb 1.1\n");
++			ri->header = 0;
++		}
++		print_format3(ri->rsb, file);
++		break;
  	}
  
-  out:
+ 	return 0;
+@@ -385,7 +485,7 @@ static struct rsb_iter *locks_iter_init(struct dlm_ls *ls, loff_t *pos)
+ 	ri->ls = ls;
+ 	ri->entry = 0;
+ 	ri->next = NULL;
+-	ri->locks = 1;
++	ri->format = 2;
+ 
+ 	if (*pos == 0)
+ 		ri->header = 1;
+@@ -448,6 +548,84 @@ static const struct file_operations locks_fops = {
+ };
+ 
+ /*
++ * Dump all rsb/lvb/lkb state in compact listing, more complete than _locks
++ * This can replace both formats 1 and 2 eventually.
++ */
++
++static struct rsb_iter *all_iter_init(struct dlm_ls *ls, loff_t *pos)
++{
++	struct rsb_iter *ri;
++
++	ri = kzalloc(sizeof *ri, GFP_KERNEL);
++	if (!ri)
++		return NULL;
++
++	ri->ls = ls;
++	ri->entry = 0;
++	ri->next = NULL;
++	ri->format = 3;
++
++	if (*pos == 0)
++		ri->header = 1;
++
++	if (rsb_iter_next(ri)) {
++		rsb_iter_free(ri);
++		return NULL;
++	}
++
++	return ri;
++}
++
++static void *all_seq_start(struct seq_file *file, loff_t *pos)
++{
++	struct rsb_iter *ri;
++	loff_t n = *pos;
++
++	ri = all_iter_init(file->private, pos);
++	if (!ri)
++		return NULL;
++
++	while (n--) {
++		if (rsb_iter_next(ri)) {
++			rsb_iter_free(ri);
++			return NULL;
++		}
++	}
++
++	return ri;
++}
++
++static struct seq_operations all_seq_ops = {
++	.start = all_seq_start,
++	.next  = rsb_seq_next,
++	.stop  = rsb_seq_stop,
++	.show  = rsb_seq_show,
++};
++
++static int all_open(struct inode *inode, struct file *file)
++{
++	struct seq_file *seq;
++	int ret;
++
++	ret = seq_open(file, &all_seq_ops);
++	if (ret)
++		return ret;
++
++	seq = file->private_data;
++	seq->private = inode->i_private;
++
++	return 0;
++}
++
++static const struct file_operations all_fops = {
++	.owner   = THIS_MODULE,
++	.open    = all_open,
++	.read    = seq_read,
++	.llseek  = seq_lseek,
++	.release = seq_release
++};
++
++/*
+  * dump lkb's on the ls_waiters list
+  */
+ 
+@@ -489,30 +667,33 @@ static const struct file_operations waiters_fops = {
+ 	.read    = waiters_read
+ };
+ 
++void dlm_delete_debug_file(struct dlm_ls *ls)
++{
++	if (ls->ls_debug_rsb_dentry)
++		debugfs_remove(ls->ls_debug_rsb_dentry);
++	if (ls->ls_debug_waiters_dentry)
++		debugfs_remove(ls->ls_debug_waiters_dentry);
++	if (ls->ls_debug_locks_dentry)
++		debugfs_remove(ls->ls_debug_locks_dentry);
++	if (ls->ls_debug_all_dentry)
++		debugfs_remove(ls->ls_debug_all_dentry);
++}
++
+ int dlm_create_debug_file(struct dlm_ls *ls)
+ {
+ 	char name[DLM_LOCKSPACE_LEN+8];
+ 
++	/* format 1 */
++
+ 	ls->ls_debug_rsb_dentry = debugfs_create_file(ls->ls_name,
+ 						      S_IFREG | S_IRUGO,
+ 						      dlm_root,
+ 						      ls,
+ 						      &rsb_fops);
+ 	if (!ls->ls_debug_rsb_dentry)
+-		return -ENOMEM;
++		goto fail;
+ 
+-	memset(name, 0, sizeof(name));
+-	snprintf(name, DLM_LOCKSPACE_LEN+8, "%s_waiters", ls->ls_name);
+-
+-	ls->ls_debug_waiters_dentry = debugfs_create_file(name,
+-							  S_IFREG | S_IRUGO,
+-							  dlm_root,
+-							  ls,
+-							  &waiters_fops);
+-	if (!ls->ls_debug_waiters_dentry) {
+-		debugfs_remove(ls->ls_debug_rsb_dentry);
+-		return -ENOMEM;
+-	}
++	/* format 2 */
+ 
+ 	memset(name, 0, sizeof(name));
+ 	snprintf(name, DLM_LOCKSPACE_LEN+8, "%s_locks", ls->ls_name);
+@@ -522,23 +703,38 @@ int dlm_create_debug_file(struct dlm_ls *ls)
+ 							dlm_root,
+ 							ls,
+ 							&locks_fops);
+-	if (!ls->ls_debug_locks_dentry) {
+-		debugfs_remove(ls->ls_debug_waiters_dentry);
+-		debugfs_remove(ls->ls_debug_rsb_dentry);
+-		return -ENOMEM;
+-	}
++	if (!ls->ls_debug_locks_dentry)
++		goto fail;
++
++	/* format 3 */
++
++	memset(name, 0, sizeof(name));
++	snprintf(name, DLM_LOCKSPACE_LEN+8, "%s_all", ls->ls_name);
++
++	ls->ls_debug_all_dentry = debugfs_create_file(name,
++						      S_IFREG | S_IRUGO,
++						      dlm_root,
++						      ls,
++						      &all_fops);
++	if (!ls->ls_debug_all_dentry)
++		goto fail;
++
++	memset(name, 0, sizeof(name));
++	snprintf(name, DLM_LOCKSPACE_LEN+8, "%s_waiters", ls->ls_name);
++
++	ls->ls_debug_waiters_dentry = debugfs_create_file(name,
++							  S_IFREG | S_IRUGO,
++							  dlm_root,
++							  ls,
++							  &waiters_fops);
++	if (!ls->ls_debug_waiters_dentry)
++		goto fail;
+ 
+ 	return 0;
+-}
+ 
+-void dlm_delete_debug_file(struct dlm_ls *ls)
+-{
+-	if (ls->ls_debug_rsb_dentry)
+-		debugfs_remove(ls->ls_debug_rsb_dentry);
+-	if (ls->ls_debug_waiters_dentry)
+-		debugfs_remove(ls->ls_debug_waiters_dentry);
+-	if (ls->ls_debug_locks_dentry)
+-		debugfs_remove(ls->ls_debug_locks_dentry);
++ fail:
++	dlm_delete_debug_file(ls);
++	return -ENOMEM;
+ }
+ 
+ int __init dlm_register_debugfs(void)
+diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
+index 0c48829..ef2f1e3 100644
+--- a/fs/dlm/dlm_internal.h
++++ b/fs/dlm/dlm_internal.h
+@@ -482,6 +482,7 @@ struct dlm_ls {
+ 	struct dentry		*ls_debug_rsb_dentry; /* debugfs */
+ 	struct dentry		*ls_debug_waiters_dentry; /* debugfs */
+ 	struct dentry		*ls_debug_locks_dentry; /* debugfs */
++	struct dentry		*ls_debug_all_dentry; /* debugfs */
+ 
+ 	wait_queue_head_t	ls_uevent_wait;	/* user part of join/leave */
+ 	int			ls_uevent_result;
 -- 
 1.5.5.1
 
