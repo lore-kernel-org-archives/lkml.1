@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbYLWXfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYLWXhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbYLWXfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 18:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYLWXfa
+	id S1753342AbYLWXhZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 18:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYLWXhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 18:35:30 -0500
-Received: from main.gmane.org ([80.91.229.2]:49716 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbYLWXf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 18:35:29 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] pci-quirks: Unhide 'Overflow' device on i828{6,7}5P/PE
- chipsets
-Date: Tue, 23 Dec 2008 17:35:14 -0600
-Message-ID: <495175B2.60307@shaw.ca>
-References: <20081223215030.GA32525@rere.qmqm.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: linux-pci@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-In-Reply-To: <20081223215030.GA32525@rere.qmqm.pl>
-Cc: linux-kernel@vger.kernel.org
+	Tue, 23 Dec 2008 18:37:11 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:14924 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbYLWXhJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 18:37:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=PO7/Z4gIoKBGtgHZy71X+9aFOPO2+yfifzuV2pw3VXT+gclSPKv1Q0ybTdSCdFS5pa
+         8EtPuVHZWIsf5Lw2UzEJoa8j3H/dPgZm1BbCqEvMJ00IT6uC5mdedLapcMjhH9sAEJLW
+         jZODK2IvrB8s7GLpa4J94Ak4KPYvOhUCHxN2g=
+Message-ID: <81b0412b0812231537g3a1a0527xf28aa9945c7ca3d9@mail.gmail.com>
+Date: Wed, 24 Dec 2008 00:37:08 +0100
+From: "Alex Riesen" <raa.lkml@gmail.com>
+To: "Zhu Yi" <yi.zhu@intel.com>, "Reinette Chatre" <reinette.chatre@intel.com>,
+       linux-wireless@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net, "Jim Paris" <jim@jtan.com>,
+       linville@tuxdriver.com
+Subject: [Bug 11326] iwl3945: Error: Response NULL in 'REPLY_ADD_STA', followed by fault
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Micha³ Miros³aw wrote:
-> As I found out from EDAC driver sources for i82875P some BIOSes for
-> i82875P/PE hide 'overflow' device 6. The same thing happens for
-> i82865P/PE chipsets.
-> 
-> After testing this patch for couple of days on my laptop (i82856P)
-> it looks like something is resetting device 0 (MCH) config register
-> 0xF4 to zero and effectively disabling the device again. The delay
-> looks random to me. I can easily update the register using
-> 'hexedit /sys/bus/pci/devices/0000\:00\:00.0/config' and see
-> correct values in lspci output afterwards.
+Any chance that at least the patch in the bug's discussion is accepted
+in the next stable?
 
-Could be the BIOS is using the device in SMI code or something (and 
-that's what disables it), therefore it may be unsafe to unhide this device.
+http://bugzilla.kernel.org/show_bug.cgi?id=11326
 
+I tested the patch, and if the error message is still seen sometimes,
+there is no crash
+and the system can be shutdown properly (in its other parts). It maybe even more
+useful to the original reporter of the problem, who experienced it on
+a running system.
