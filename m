@@ -1,92 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbYLWBqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYLWBrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755668AbYLWBqj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 20:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbYLWBqb
+	id S1756027AbYLWBrH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 20:47:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYLWBqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 20:46:31 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:45928 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753837AbYLWBqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 20:46:30 -0500
-Message-ID: <495042F2.5080503@sgi.com>
-Date: Mon, 22 Dec 2008 17:46:26 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 22 Dec 2008 20:46:52 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:57546 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753849AbYLWBqw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 20:46:52 -0500
+Date: Tue, 23 Dec 2008 01:47:46 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Magnus Damm <damm@igel.co.jp>, linux-kernel@vger.kernel.org
+Subject: [PATCH mmotm] clocksource pass clocksource powerpc fix
+Message-ID: <Pine.LNX.4.64.0812230141370.23109@blonde.anvils>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: use logical apicid in x2apic_cluster's x2apic_cpu_mask_to_apicid_and()
-References: <20081223013327.GA29686@linux-os.sc.intel.com>
-In-Reply-To: <20081223013327.GA29686@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: x86: use logical apicid in x2apic_cluster's x2apic_cpu_mask_to_apicid_and()
-> 
-> These commits:
-> 
-> 	commit 95d313cf1c1ecedc8bec5727b09bdacbf67dfc45
-> 	Author: Mike Travis <travis@sgi.com>
-> 	Date:   Tue Dec 16 17:33:54 2008 -0800
-> 
-> 	    x86: Add cpu_mask_to_apicid_and
-> 
-> and
-> 	commit 6eeb7c5a99434596c5953a95baa17d2f085664e3
-> 	Author: Mike Travis <travis@sgi.com>
-> 	Date:   Tue Dec 16 17:33:55 2008 -0800
-> 
-> 	    x86: update add-cpu_mask_to_apicid_and to use struct cpumask*
-> 
-> broke interrupt delivery on x2apic platforms.  As x2apic cluster mode uses
-> logical delivery mode, we need to use logical apicid instead of physical apicid
-> in x2apic_cpu_mask_to_apicid_and()
-> 
-> Impact: fixes the broken interrupt delivery issue on generic x2apic platforms.
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Fix powerpc build of clocksource pass clocksource mods:
 
-Thanks Suresh for catching this!  You can add my
+arch/powerpc/kernel/time.c:88: warning: initialization from incompatible pointer type
+arch/powerpc/kernel/time.c:99: warning: initialization from incompatible pointer type
+arch/powerpc/kernel/time.c:770: error: conflicting types for 'rtc_read'
+arch/powerpc/kernel/time.c:80: error: previous declaration of 'rtc_read' was here
+arch/powerpc/kernel/time.c:775: error: conflicting types for 'timebase_read'
+arch/powerpc/kernel/time.c:91: error: previous declaration of 'timebase_read' was here
+make[1]: *** [arch/powerpc/kernel/time.o] Error 1
+make: *** [arch/powerpc/kernel] Error 2
 
-Acked-by: Mike Travis <travis@sgi.com>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+Follow clocksource-pass-clocksource-to-read-callback-v2.patch
 
-> ---
-> 
-> Index: tip/arch/x86/kernel/genx2apic_cluster.c
-> ===================================================================
-> --- tip.orig/arch/x86/kernel/genx2apic_cluster.c	2008-12-22 17:15:38.000000000 -0800
-> +++ tip/arch/x86/kernel/genx2apic_cluster.c	2008-12-22 17:16:17.000000000 -0800
-> @@ -114,7 +114,7 @@
->  	int cpu;
->  
->  	/*
-> -	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
-> +	 * We're using fixed IRQ delivery, can only return one logical APIC ID.
->  	 * May as well be the first.
->  	 */
->  	cpu = cpumask_first(cpumask);
-> @@ -130,14 +130,14 @@
->  	int cpu;
->  
->  	/*
-> -	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
-> +	 * We're using fixed IRQ delivery, can only return one logical APIC ID.
->  	 * May as well be the first.
->  	 */
->  	for_each_cpu_and(cpu, cpumask, andmask)
->  		if (cpumask_test_cpu(cpu, cpu_online_mask))
->  			break;
->  	if (cpu < nr_cpu_ids)
-> -		return per_cpu(x86_cpu_to_apicid, cpu);
-> +		return per_cpu(x86_cpu_to_logical_apicid, cpu);
->  	return BAD_APICID;
->  }
->  
+ arch/powerpc/kernel/time.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+--- mmotm/arch/powerpc/kernel/time.c	2008-12-16 18:05:13.000000000 +0000
++++ fixed/arch/powerpc/kernel/time.c	2008-12-16 19:19:51.000000000 +0000
+@@ -77,7 +77,7 @@
+ #include <linux/clockchips.h>
+ #include <linux/clocksource.h>
+ 
+-static cycle_t rtc_read(void);
++static cycle_t rtc_read(struct clocksource *);
+ static struct clocksource clocksource_rtc = {
+ 	.name         = "rtc",
+ 	.rating       = 400,
+@@ -88,7 +88,7 @@ static struct clocksource clocksource_rt
+ 	.read         = rtc_read,
+ };
+ 
+-static cycle_t timebase_read(void);
++static cycle_t timebase_read(struct clocksource *);
+ static struct clocksource clocksource_timebase = {
+ 	.name         = "timebase",
+ 	.rating       = 400,
