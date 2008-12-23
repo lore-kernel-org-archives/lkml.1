@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbYLWAFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYLWAKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756457AbYLWAFv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 19:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbYLWAFn
+	id S1756590AbYLWAKW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 19:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYLWAKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 19:05:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46162 "EHLO mx2.redhat.com"
+	Mon, 22 Dec 2008 19:10:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33035 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755211AbYLWAFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 19:05:42 -0500
-Date: Tue, 23 Dec 2008 01:03:56 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
-Subject: Re: [RFC][PATCH 6/6][v3] Protect cinit from blocked fatal signals
-Message-ID: <20081223000356.GB7279@redhat.com>
-References: <20081221005106.GA4912@us.ibm.com> <20081221005529.GF5025@us.ibm.com> <20081222225825.GC1536@redhat.com> <20081222233855.GA13079@us.ibm.com>
+	id S1755366AbYLWAKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 19:10:05 -0500
+Message-ID: <49502C4B.7040308@redhat.com>
+Date: Mon, 22 Dec 2008 19:09:47 -0500
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081222233855.GA13079@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andreas Dilger <adilger@sun.com>
+CC: Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
+       Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com> <20081219002752.GE8424@duck.suse.cz> <494AFA16.2010004@redhat.com> <494FE73E.5000802@redhat.com> <20081222225757.GV5000@webber.adilger.int>
+In-Reply-To: <20081222225757.GV5000@webber.adilger.int>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22, Sukadev Bhattiprolu wrote:
+Andreas Dilger wrote:
+> On Dec 22, 2008  14:15 -0500, Ric Wheeler wrote:
+>   
+>> Without having dived into the patch in detail, one worry I would have is  
+>> that we still might care to spin up a drive for empty transactions in  
+>> order to invalidate the drive's write cache.
+>>
+>> For example, if we have the following sequence:
+>>
+>>    (1) user app performs series of writes to file A
+>>    (2) pages dirtied from writes to A are destaged to the disk over time
+>>    (3) user app issues fsync(file A) to make sure that the data will  
+>> survive a power outage
+>>
+>> At this point in time, would this change prevent us from spinning up the  
+>> drive and invalidating the disk write cache for that fsync() ?
+>>     
 >
-> Oleg Nesterov [oleg@redhat.com] wrote:
-> | > @@ -1907,9 +1943,10 @@ relock:
-> | >
-> | >  		/*
-> | >  		 * Global init gets no signals it doesn't want.
-> | > +		 * Container-init gets no signals it doesn't want from same
-> | > +		 * container.
-> | >  		 */
-> | > -		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-> | > -		    !signal_group_exit(signal))
-> | > +		if (sig_unkillable(signal, signr) && !signal_group_exit(signal))
-> | >  			continue;
-> | 
-> | Again, I do not understand why do we need SIGNAL_UNKILLABLE_FROM_NS.
-> | 
-> | I thought about the change in get_signal_to_deliver() during the
-> | previous discussion, and I think what we need is:
-> | 
-> | 		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-> | 		    !sig_kernel_only(sig))
-> | 			continue;
-> | 
-> | and this was yet another reason for "protect init from unwanted signals more".
-> 
-> I was trying to avoid the clearing of the SIGNAL_UNKILLABLE in
-> send_signal() that we had last time.
-
-Well, my plan was to simplify the first series of patches as much
-as possible, then I thought we can change get_signal_to_deliver().
-
-But now I tend to agree, we should not clear SIGNAL_UNKILLABLE when
-we send the signal, and we should pass same_ns/from_parent_ns to
-prepare_signal() from the start. This way is more "clean".
-
-> But yes, you are right. I even had a BUG_ON() to confirm SIGKILL/SIGSTOP
-> will never happen for global-init :-). If so, SIGKLL/SIGSTOP to an init
-> can come only from parent ns.
+> Well, if the writes themselves didn't spin up the drive, it is uncertain
+> whether the write of the journal commit block would be any more helpful
+> in getting that to happen.
 >
-> So, yes, we can drop this flag.
+> Cheers, Andreas
+> --
+> Andreas Dilger
+> Sr. Staff Engineer, Lustre Group
+> Sun Microsystems of Canada, Inc.
+>
+>   
+To make the example cleared, add a step:
 
-Great!
+    (2.5) between the writes and the fsync(), the drive spins down
 
-Oleg.
+In this case, if the app issues an fsync(), will we still have volatile 
+data in its write cache that has not been flushed?
+
+Ric
 
