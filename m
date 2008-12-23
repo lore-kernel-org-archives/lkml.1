@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbYLWPWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbYLWPd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752630AbYLWPWk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 10:22:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYLWPWa
+	id S1751944AbYLWPd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 10:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYLWPdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 10:22:30 -0500
-Received: from cmpxchg.org ([85.214.51.133]:52179 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbYLWPW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 10:22:29 -0500
-Date: Tue, 23 Dec 2008 16:22:23 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, linux-mm@kvack.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] failslab for SLUB
-Message-ID: <20081223152223.GA3436@cmpxchg.org>
-References: <20081223103616.GA7217@localhost.localdomain> <Pine.LNX.4.64.0812231459580.18017@melkki.cs.Helsinki.FI> <20081223144307.GA3215@cmpxchg.org> <1230043466.11073.0.camel@penberg-laptop>
-Mime-Version: 1.0
+	Tue, 23 Dec 2008 10:33:19 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:26400 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbYLWPdS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 10:33:18 -0500
+X-IronPort-AV: E=Sophos;i="4.36,271,1228089600"; 
+   d="scan'208";a="121992275"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Ron Livne" <ronli.voltaire@gmail.com>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.29
+References: <aday6y7x2yr.fsf@cisco.com>
+	<3b5e77ad0812222354y5d4effe8xc6750d6620e20c75@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 23 Dec 2008 07:33:06 -0800
+In-Reply-To: <3b5e77ad0812222354y5d4effe8xc6750d6620e20c75@mail.gmail.com>
+	(Ron Livne's message of "Tue, 23 Dec 2008 09:54:44 +0200")
+Message-ID: <adaocz2x5xp.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1230043466.11073.0.camel@penberg-laptop>
+X-OriginalArrivalTime: 23 Dec 2008 15:33:06.0476 (UTC) FILETIME=[C079C6C0:01C96513]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 23, 2008 at 04:44:26PM +0200, Pekka Enberg wrote:
-> Hi Hannes,
-> 
-> On Tue, 2008-12-23 at 15:43 +0100, Johannes Weiner wrote:
-> > >  static inline void *____cache_alloc(struct kmem_cache *cachep,
-> > gfp_t flags)
-> > >  {
-> > >  	void *objp;
-> > > @@ -3381,7 +3316,7 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
-> > >  	unsigned long save_flags;
-> > >  	void *ptr;
-> > >  
-> > > -	if (should_failslab(cachep, flags))
-> > > +	if (slab_should_failslab(cachep, flags))
-> > 
-> > should_failslab()?
-> 
-> No, look at what slab_should_failslab() does. We need to exclude
-> cache_cache in SLAB but not in SLUB.
+ > Any chance create_qp_flags will get in?
 
-Ah, crap.  I missed that small '+' and thought it had been dropped. 
-
-Sorry, Pekka.
-
-	Hannes
+ Nope, since that's stuck behind XRC.
