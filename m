@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYLWQYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbYLWQ2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbYLWQYb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 11:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYLWQYV
+	id S1752225AbYLWQ2k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 11:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbYLWQ2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 11:24:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40736 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbYLWQYU (ORCPT
+	Tue, 23 Dec 2008 11:28:32 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60694 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbYLWQ2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 11:24:20 -0500
-Subject: [PATCH] x86: apic.c x2apic_preenabled and disable_x2apic should be
-	static
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 23 Dec 2008 21:52:33 +0530
-Message-Id: <1230049353.14358.6.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Dec 2008 11:28:31 -0500
+Date: Tue, 23 Dec 2008 10:28:26 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cgroups: avoid accessing uninitialized data in failure
+	path
+Message-ID: <20081223162826.GA16914@us.ibm.com>
+References: <4950595C.9070907@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4950595C.9070907@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, reduce kernel size a bit, avoid sparse warning
+Quoting Li Zefan (lizf@cn.fujitsu.com):
+> If cgroup_get_rootdir() failed, free_cg_links() will be called
+> in the failure path, but tmp_cg_links hasn't been initialized
+> at that time.
+> 
+> I should be blamed to introduce this bug in 2.6.26 merge window.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Fixes sparse warning:
-arch/x86/kernel/apic.c:103:5: warning: symbol 'disable_x2apic' was not declared. Should it be static?
+Certainly looks right.
 
-Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
----
- arch/x86/include/asm/apic.h |    2 +-
- arch/x86/kernel/apic.c      |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 25caa07..e644bf6 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -93,7 +93,7 @@ static inline u32 native_apic_msr_read(u32 reg)
- }
- 
- #ifndef CONFIG_X86_32
--extern int x2apic, x2apic_preenabled;
-+extern int x2apic;
- extern void check_x2apic(void);
- extern void enable_x2apic(void);
- extern void enable_IR_x2apic(void);
-diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic.c
-index a477c0f..cf1cc87 100644
---- a/arch/x86/kernel/apic.c
-+++ b/arch/x86/kernel/apic.c
-@@ -99,8 +99,8 @@ __setup("apicpmtimer", setup_apicpmtimer);
- #ifdef HAVE_X2APIC
- int x2apic;
- /* x2apic enabled before OS handover */
--int x2apic_preenabled;
--int disable_x2apic;
-+static int x2apic_preenabled;
-+static int disable_x2apic;
- static __init int setup_nox2apic(char *str)
- {
- 	disable_x2apic = 1;
--- 
-1.5.5.1
-
-
-
+> ---
+>  kernel/cgroup.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 8185a0f..330b7ae 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -1024,7 +1024,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  		if (ret == -EBUSY) {
+>  			mutex_unlock(&cgroup_mutex);
+>  			mutex_unlock(&inode->i_mutex);
+> -			goto drop_new_super;
+> +			goto free_cg_links;
+>  		}
+> 
+>  		/* EBUSY should be the only error here */
+> @@ -1073,10 +1073,11 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+> 
+>  	return simple_set_mnt(mnt, sb);
+> 
+> + free_cg_links:
+> +	free_cg_links(&tmp_cg_links);
+>   drop_new_super:
+>  	up_write(&sb->s_umount);
+>  	deactivate_super(sb);
+> -	free_cg_links(&tmp_cg_links);
+>  	return ret;
+>  }
+> 
+> -- 
+> 1.5.4.rc3
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
