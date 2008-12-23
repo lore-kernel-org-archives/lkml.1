@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbYLWRjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbYLWRrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbYLWRjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 12:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYLWRjF
+	id S1751882AbYLWRrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 12:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYLWRrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 12:39:05 -0500
-Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:35147 "HELO
-	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751079AbYLWRjE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 12:39:04 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tYffPkOXRtb2kaVJikFIUgR6UsAw3lzzwgpWKLtu3dw/5VXiRcO7Jlyc3GMiSrAigrK1/wqRsmdDAFQzpsvxTs9AMNAV1vFwKZWd6dhIdDSXLyuiSOdvJloqNZPRmu408RBMVqaHL/vW3jcsfs6WKtXh5Chqa3tz19hbxmZ0osc=  ;
-X-YMail-OSG: 8KniF1EVM1mDKywH2qzs6jwz5.4PQamn8UMVfisx0rF09Vk2Vfc.3Ev4jZw1G2shFAVdPG7ktU8HJac0zoZ4fJGTRLtgyrbiaUyutriEcpef2CwBQqinbQh5b805pByCxC3ycJEav17gWJje6ohAemX.
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de,
-       felipe.balbi@nokia.com
-Subject: Re: [PATCH] musb: fix DaVinci build again
-Date: Tue, 23 Dec 2008 09:38:59 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-usb@vger.kernel.org, khilman@deeprootsystems.com,
-       davinci-linux-open-source@linux.davincidsp.com,
-       linux-kernel@vger.kernel.org
-References: <200812072341.50012.sshtylyov@ru.mvista.com> <494E2450.9080601@ru.mvista.com> <4950CFAD.7020403@ru.mvista.com>
-In-Reply-To: <4950CFAD.7020403@ru.mvista.com>
+	Tue, 23 Dec 2008 12:47:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43067 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750955AbYLWRrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 12:47:16 -0500
+Date: Tue, 23 Dec 2008 18:46:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] ring-buffer: updates for 2.6.28
+Message-ID: <20081223174653.GA21738@elte.hu>
+References: <20081223163223.625941559@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812230939.00508.david-b@pacbell.net>
+In-Reply-To: <20081223163223.625941559@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 December 2008, Sergei Shtylyov wrote:
->    For how much longer we'll have to wait for this issue to be resolved? 
-> 2.6.28 is 2 days away (at most).
 
-Yeah, I sent a DaVinci build fix patch in plenty of time to
-be merged for *2.6.27* (!!!!) but still the key parts are
-missing, and have not managed to make it into mainline.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
+> Ingo,
+> 
+> These two patches should go to 2.6.28. They are fixes to the ring buffer 
+> for bugs that will make the ring buffer stop reading, and/or produce a 
+> false positive.
+> 
+> If these are too late for 2.6.28, then we probably should get them at 
+> least to the stable branch and queued for 2.6.28.1.
 
+yes, they are too late - the .28 release is tomorrow.
+
+> Steven Rostedt (2):
+>       ring-buffer: fix dangling commit race
+>       ring-buffer: prevent false positive warning
+> 
+> ----
+>  kernel/trace/ring_buffer.c |   19 +++++++++++++++++--
+>  1 files changed, 17 insertions(+), 2 deletions(-)
+
+pulled into tip/tracing/ring-buffer. I also marked them Cc: 
+stable@kernel.org, so they will be picked up for .28.1. (they apply 
+cleanly to both the latest tracing tree and latest mainline as well)
+
+	Ingo
