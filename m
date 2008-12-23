@@ -1,33 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYLWDYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYLWDYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbYLWDYU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 22:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbYLWDYE
+	id S1756015AbYLWDYf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 22:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbYLWDYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 22:24:04 -0500
-Received: from mail.windriver.com ([147.11.1.11]:64912 "EHLO mail.wrs.com"
+	Mon, 22 Dec 2008 22:24:09 -0500
+Received: from mail.windriver.com ([147.11.1.11]:64925 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751392AbYLWDYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 22:24:02 -0500
+	id S1754036AbYLWDYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 22:24:08 -0500
 From: Harry Ciao <qingtao.cao@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: bluesmoke-devel@lists.sourceforge.net
-Subject: [v1 PATCH 1/1] EDAC: fix edac core deadlock when removing a device
-Date: Tue, 23 Dec 2008 11:13:48 +0800
-Message-Id: <1230002028-13362-2-git-send-email-qingtao.cao@windriver.com>
+Subject: [v1 PATCH 0/1] fix EDAC core deadlock when removes an edac device 
+Date: Tue, 23 Dec 2008 11:13:47 +0800
+Message-Id: <1230002028-13362-1-git-send-email-qingtao.cao@windriver.com>
 X-Mailer: git-send-email 1.5.6.2
-In-Reply-To: <1230002028-13362-1-git-send-email-qingtao.cao@windriver.com>
-References: <1230002028-13362-1-git-send-email-qingtao.cao@windriver.com>
-X-OriginalArrivalTime: 23 Dec 2008 03:25:11.0241 (UTC) FILETIME=[1001CB90:01C964AE]
+X-OriginalArrivalTime: 23 Dec 2008 03:25:09.0178 (UTC) FILETIME=[0EC701A0:01C964AE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To remove an edac device, all pending work must be complete. At that point, 
-it is safe to remove the edac_dev structure.
 
-If the pending work is not properly cleared and proper care is not taken 
-when waiting for it's completion, the following stack trace result:
+When deleting an edac device, we have to wait for its edac_dev.work to
+be completed before deleting the whole edac_dev structure. Since
+we have no idea which work in current edac_poller's workqueue is the
+work we are conerned about, we wait for all work in the edac_poller's
+workqueue to be proceseed. This is done via flush_cpu_workqueue() which
+inserts a wq_barrier into the tail of the workqueue and then
+sleeping on the completion of this wq_barrier. The edac_poller will
+wake up sleepers when it is found.
+
+EDAC core creates only one kernel worker thread, edac_poller, to run the
+works of all current edac devices. They share the same callback function of
+edac_device_workq_function(), which would grab the mutex of device_ctls_mutex
+first before it checks the device. This is exactly where edac_poller and rmmod
+would have a great chance to deadlock.
+
+In below call trace of rmmod > ... >
+edac_device_del_device >
+edac_device_workq_teardown > flush_workqueue > flush_cpu_workqueue,
+
+device_ctls_mutex would have already been grabbed by edac_device_del_device().
+So, on one hand rmmod would sleep on the completion of a wq_barrier, holding
+device_ctls_mutex; on the other hand edac_poller would be blocked on the same
+mutex when it's running any one of works of existing edac evices(Note, this
+edac_dev.work is likely to be totally irrelevant to the one that is being
+removed right now)and never would have a chance to run the work of above
+wq_barrier to wake rmmod up.
+
+edac_device_workq_teardown() should not be called within the critical region
+of device_ctls_mutex. Just like is done in edac_pci_del_device() and 
+edac_mc_del_mc(), where edac_pci_workq_teardown() and edac_mc_workq_teardown()
+are called after related mutex are released.
+
+Moreover, an edac_dev.work should check first if it is being removed. 
+If this is the case, then it should bail out immediately.  Since not all of
+existing edac devices are to be removed, this "shutting flag" should be 
+contained to edac device being removed. The current edac_dev.op_state
+can be used to serve this purpose.
+
+The original deadlock problem and the solution have been witnessed and tested
+on actual hardware. Without the solution, rmmod an edac driver would result in
+below deadlock:
+
+root@localhost:/root> rmmod mv64x60_edac
+EDAC DEBUG: mv64x60_dma_err_remove()
+EDAC DEBUG: edac_device_del_device()
+EDAC DEBUG: find_edac_device_by_dev()
+
+(hang for a moment)
 
 INFO: task edac-poller:2030 blocked for more than 120 seconds.
 "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
@@ -40,7 +82,8 @@ Call Trace:
 [df159f40] [e1030434] edac_device_workq_function+0x28/0xd8 [edac_core]
 [df159f60] [c003beb4] run_workqueue+0x114/0x218
 [df159f90] [c003c674] worker_thread+0x5c/0xc8
-...
+[df159fd0] [c004106c] kthread+0x5c/0xa0
+[df159ff0] [c0013538] original_kernel_thread+0x44/0x60
 INFO: task rmmod:2062 blocked for more than 120 seconds.
 "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
 rmmod         D 0ff2c9fc     0  2062   1839
@@ -56,65 +99,17 @@ Call Trace:
 [df119df0] [e102fe68] edac_device_workq_teardown+0x30/0x70 [edac_core]
 [df119e00] [e102ff6c] edac_device_del_device+0xc4/0x14c [edac_core]
 [df119e20] [e1022404] mv64x60_dma_err_remove+0x34/0x74 [mv64x60_edac]
-...
+[df119e30] [c0200730] platform_drv_remove+0x20/0x30
+[df119e40] [c01ff060] __device_release_driver+0xa0/0xe8
+[df119e60] [c01ff1d0] driver_detach+0x128/0x13c
+[df119e80] [c01fe008] bus_remove_driver+0xa8/0xf0
+[df119ea0] [c01ff7ec] driver_unregister+0x50/0x68
+[df119eb0] [c020090c] platform_driver_unregister+0x14/0x24
+[df119ec0] [e1022e80] mv64x60_edac_exit+0x20/0x74 [mv64x60_edac]
+[df119ee0] [c0056568] sys_delete_module+0x1ac/0x268
+[df119f40] [c0013714] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff2c9fc
+    LR = 0x100012c4
 
-To wait for pending work to complete, flush_cpu_workqueue() is used to 
-wait for all works in edac_poller's workqueue to be processed, by inserting
-a wq_barrier into the tail of the workqueue, then sleeping on the completion
-of this wq_barrier, the edac_poller will wake up sleepers when it is found.
-
-There is a potential deadlock between edac_poller and rmmod - on one hand
-rmmod would sleep on the completion of a wq_barrier, holding 
-device_ctls_mutex; on the other hand edac_poller would be blocked on the 
-same mutex when it's running any one of works of existing edac evices
-(Note, this edac_dev.work is likely to be totally irrelevant to the one 
-that is being removed right now)and never would have a chance to run the
-work of above wq_barrier to wake rmmod up.
-
-To avoid this situation edac_device_workq_teardown() should be moved outside
-of the critical region of device_ctls_mutex. Moreover, an edac_dev.work should
-bail out immediately if it is being removed.
-
-Signed-off-by: Harry Ciao<qingtao.cao@windriver.com>
----
- drivers/edac/edac_device.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/edac/edac_device.c b/drivers/edac/edac_device.c
-index 5fcd3d8..4041e91 100644
---- a/drivers/edac/edac_device.c
-+++ b/drivers/edac/edac_device.c
-@@ -394,6 +394,12 @@ static void edac_device_workq_function(struct work_struct *work_req)
- 
- 	mutex_lock(&device_ctls_mutex);
- 
-+	/* If we are being removed, bail out immediately */
-+	if (edac_dev->op_state == OP_OFFLINE) {
-+		mutex_unlock(&device_ctls_mutex);
-+		return;
-+	}
-+
- 	/* Only poll controllers that are running polled and have a check */
- 	if ((edac_dev->op_state == OP_RUNNING_POLL) &&
- 		(edac_dev->edac_check != NULL)) {
-@@ -585,14 +591,14 @@ struct edac_device_ctl_info *edac_device_del_device(struct device *dev)
- 	/* mark this instance as OFFLINE */
- 	edac_dev->op_state = OP_OFFLINE;
- 
--	/* clear workq processing on this instance */
--	edac_device_workq_teardown(edac_dev);
--
- 	/* deregister from global list */
- 	del_edac_device_from_global_list(edac_dev);
- 
- 	mutex_unlock(&device_ctls_mutex);
- 
-+	/* clear workq processing on this instance */
-+	edac_device_workq_teardown(edac_dev);
-+
- 	/* Tear down the sysfs entries for this instance */
- 	edac_device_remove_sysfs(edac_dev);
- 
--- 
-1.5.6.2
-
+This patch removes the deadlock and the edac driver module can be insmod/rmmod
+as many times as you like. 
