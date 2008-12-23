@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbYLWFXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbYLWFYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbYLWFXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 00:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYLWFXf
+	id S1751944AbYLWFYV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 00:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYLWFYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 00:23:35 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:52176 "EHLO
+	Tue, 23 Dec 2008 00:24:08 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:52318 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbYLWFXd (ORCPT
+	with ESMTP id S1751155AbYLWFYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 00:23:33 -0500
-Message-ID: <495075D4.3070405@ct.jp.nec.com>
-Date: Mon, 22 Dec 2008 21:23:32 -0800
+	Tue, 23 Dec 2008 00:24:04 -0500
+Message-ID: <495075F2.7080203@ct.jp.nec.com>
+Date: Mon, 22 Dec 2008 21:24:02 -0800
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC -tip 3/4] x86: signal: use __{get|put}_user exception handling
+Subject: [RFC -tip 4/4] x86: ia32_signal: use __{get|put}_user exception handling
  framework
 References: <49507534.5080401@ct.jp.nec.com>
 In-Reply-To: <49507534.5080401@ct.jp.nec.com>
@@ -36,63 +36,224 @@ Use __{get|put}_user exception handling framework.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- arch/x86/kernel/signal.c |  186 ++++++++++++++++++++++++---------------------
- 1 files changed, 99 insertions(+), 87 deletions(-)
+ arch/x86/ia32/ia32_signal.c |  194 ++++++++++++++++++++++++-------------------
+ 1 files changed, 109 insertions(+), 85 deletions(-)
 
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index 4fa5243..fcaa318 100644
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -51,24 +51,24 @@
- #endif
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index b195f85..a3b6918 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -47,7 +47,9 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
  
- #define COPY(x)			{		\
--	err |= __get_user(regs->x, &sc->x);	\
-+	__get_user_ex(regs->x, &sc->x);		\
+ int copy_siginfo_to_user32(compat_siginfo_t __user *to, siginfo_t *from)
+ {
+-	int err;
++	int err = 0;
++
++	__put_user_ex_try(&err, -EFAULT);
+ 
+ 	if (!access_ok(VERIFY_WRITE, to, sizeof(compat_siginfo_t)))
+ 		return -EFAULT;
+@@ -57,69 +59,74 @@ int copy_siginfo_to_user32(compat_siginfo_t __user *to, siginfo_t *from)
+ 	   It should never copy any pad contained in the structure
+ 	   to avoid security leaks, but must copy the generic
+ 	   3 ints plus the relevant union member.  */
+-	err = __put_user(from->si_signo, &to->si_signo);
+-	err |= __put_user(from->si_errno, &to->si_errno);
+-	err |= __put_user((short)from->si_code, &to->si_code);
++	__put_user_ex(from->si_signo, &to->si_signo);
++	__put_user_ex(from->si_errno, &to->si_errno);
++	__put_user_ex((short)from->si_code, &to->si_code);
+ 
+ 	if (from->si_code < 0) {
+-		err |= __put_user(from->si_pid, &to->si_pid);
+-		err |= __put_user(from->si_uid, &to->si_uid);
+-		err |= __put_user(ptr_to_compat(from->si_ptr), &to->si_ptr);
++		__put_user_ex(from->si_pid, &to->si_pid);
++		__put_user_ex(from->si_uid, &to->si_uid);
++		__put_user_ex(ptr_to_compat(from->si_ptr), &to->si_ptr);
+ 	} else {
+ 		/*
+ 		 * First 32bits of unions are always present:
+ 		 * si_pid === si_band === si_tid === si_addr(LS half)
+ 		 */
+-		err |= __put_user(from->_sifields._pad[0],
++		__put_user_ex(from->_sifields._pad[0],
+ 				  &to->_sifields._pad[0]);
+ 		switch (from->si_code >> 16) {
+ 		case __SI_FAULT >> 16:
+ 			break;
+ 		case __SI_CHLD >> 16:
+-			err |= __put_user(from->si_utime, &to->si_utime);
+-			err |= __put_user(from->si_stime, &to->si_stime);
+-			err |= __put_user(from->si_status, &to->si_status);
++			__put_user_ex(from->si_utime, &to->si_utime);
++			__put_user_ex(from->si_stime, &to->si_stime);
++			__put_user_ex(from->si_status, &to->si_status);
+ 			/* FALL THROUGH */
+ 		default:
+ 		case __SI_KILL >> 16:
+-			err |= __put_user(from->si_uid, &to->si_uid);
++			__put_user_ex(from->si_uid, &to->si_uid);
+ 			break;
+ 		case __SI_POLL >> 16:
+-			err |= __put_user(from->si_fd, &to->si_fd);
++			__put_user_ex(from->si_fd, &to->si_fd);
+ 			break;
+ 		case __SI_TIMER >> 16:
+-			err |= __put_user(from->si_overrun, &to->si_overrun);
+-			err |= __put_user(ptr_to_compat(from->si_ptr),
++			__put_user_ex(from->si_overrun, &to->si_overrun);
++			__put_user_ex(ptr_to_compat(from->si_ptr),
+ 					  &to->si_ptr);
+ 			break;
+ 			 /* This is not generated by the kernel as of now.  */
+ 		case __SI_RT >> 16:
+ 		case __SI_MESGQ >> 16:
+-			err |= __put_user(from->si_uid, &to->si_uid);
+-			err |= __put_user(from->si_int, &to->si_int);
++			__put_user_ex(from->si_uid, &to->si_uid);
++			__put_user_ex(from->si_int, &to->si_int);
+ 			break;
+ 		}
+ 	}
++
++	__put_user_ex_catch();
+ 	return err;
  }
  
- #define COPY_SEG(seg)		{			\
- 		unsigned short tmp;			\
--		err |= __get_user(tmp, &sc->seg);	\
-+		__get_user_ex(tmp, &sc->seg);		\
- 		regs->seg = tmp;			\
+ int copy_siginfo_from_user32(siginfo_t *to, compat_siginfo_t __user *from)
+ {
+-	int err;
++	int err = 0;
+ 	u32 ptr32;
+ 
++	__get_user_ex_try(&err, -EFAULT);
++
+ 	if (!access_ok(VERIFY_READ, from, sizeof(compat_siginfo_t)))
+ 		return -EFAULT;
+ 
+-	err = __get_user(to->si_signo, &from->si_signo);
+-	err |= __get_user(to->si_errno, &from->si_errno);
+-	err |= __get_user(to->si_code, &from->si_code);
++	__get_user_ex(to->si_signo, &from->si_signo);
++	__get_user_ex(to->si_errno, &from->si_errno);
++	__get_user_ex(to->si_code, &from->si_code);
+ 
+-	err |= __get_user(to->si_pid, &from->si_pid);
+-	err |= __get_user(to->si_uid, &from->si_uid);
+-	err |= __get_user(ptr32, &from->si_ptr);
++	__get_user_ex(to->si_pid, &from->si_pid);
++	__get_user_ex(to->si_uid, &from->si_uid);
++	__get_user_ex(ptr32, &from->si_ptr);
+ 	to->si_ptr = compat_ptr(ptr32);
+ 
++	__get_user_ex_catch();
+ 	return err;
+ }
+ 
+@@ -143,18 +150,21 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
+ 				  struct pt_regs *regs)
+ {
+ 	stack_t uss, uoss;
+-	int ret;
++	int ret = 0;
+ 	mm_segment_t seg;
+ 
++	__put_user_ex_try(&ret, -EFAULT);
++	__get_user_ex_try(&ret, -EFAULT);
++
+ 	if (uss_ptr) {
+ 		u32 ptr;
+ 
+ 		memset(&uss, 0, sizeof(stack_t));
+-		if (!access_ok(VERIFY_READ, uss_ptr, sizeof(stack_ia32_t)) ||
+-			    __get_user(ptr, &uss_ptr->ss_sp) ||
+-			    __get_user(uss.ss_flags, &uss_ptr->ss_flags) ||
+-			    __get_user(uss.ss_size, &uss_ptr->ss_size))
++		if (!access_ok(VERIFY_READ, uss_ptr, sizeof(stack_ia32_t)))
+ 			return -EFAULT;
++		__get_user_ex(ptr, &uss_ptr->ss_sp);
++		__get_user_ex(uss.ss_flags, &uss_ptr->ss_flags);
++		__get_user_ex(uss.ss_size, &uss_ptr->ss_size);
+ 		uss.ss_sp = compat_ptr(ptr);
+ 	}
+ 	seg = get_fs();
+@@ -162,12 +172,16 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
+ 	ret = do_sigaltstack(uss_ptr ? &uss : NULL, &uoss, regs->sp);
+ 	set_fs(seg);
+ 	if (ret >= 0 && uoss_ptr)  {
+-		if (!access_ok(VERIFY_WRITE, uoss_ptr, sizeof(stack_ia32_t)) ||
+-		    __put_user(ptr_to_compat(uoss.ss_sp), &uoss_ptr->ss_sp) ||
+-		    __put_user(uoss.ss_flags, &uoss_ptr->ss_flags) ||
+-		    __put_user(uoss.ss_size, &uoss_ptr->ss_size))
++		if (!access_ok(VERIFY_WRITE, uoss_ptr, sizeof(stack_ia32_t)))
+ 			ret = -EFAULT;
++		__put_user_ex(ptr_to_compat(uoss.ss_sp), &uoss_ptr->ss_sp);
++		__put_user_ex(uoss.ss_flags, &uoss_ptr->ss_flags);
++		__put_user_ex(uoss.ss_size, &uoss_ptr->ss_size);
+ 	}
++
++	__get_user_ex_catch();
++	__put_user_ex_catch();
++
+ 	return ret;
+ }
+ 
+@@ -175,18 +189,18 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
+  * Do a signal return; undo the signal stack.
+  */
+ #define COPY(x)			{		\
+-	err |= __get_user(regs->x, &sc->x);	\
++	__get_user_ex(regs->x, &sc->x);	\
  }
  
  #define COPY_SEG_CPL3(seg)	{			\
  		unsigned short tmp;			\
 -		err |= __get_user(tmp, &sc->seg);	\
-+		__get_user_ex(tmp, &sc->seg);		\
++		__get_user_ex(tmp, &sc->seg);	\
  		regs->seg = tmp | 3;			\
  }
  
- #define GET_SEG(seg)		{			\
- 		unsigned short tmp;			\
--		err |= __get_user(tmp, &sc->seg);	\
-+		__get_user_ex(tmp, &sc->seg);		\
- 		loadsegment(seg, tmp);			\
- }
- 
-@@ -83,6 +83,8 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ #define RELOAD_SEG(seg)		{		\
+ 	unsigned int cur, pre;			\
+-	err |= __get_user(pre, &sc->seg);	\
++	__get_user_ex(pre, &sc->seg);	\
+ 	savesegment(seg, cur);			\
+ 	pre |= 3;				\
+ 	if (pre != cur)				\
+@@ -204,6 +218,8 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
  	/* Always make any pending restarted system calls return -EINTR */
  	current_thread_info()->restart_block.fn = do_no_restart_syscall;
  
 +	__get_user_ex_try(&err, -EFAULT);
 +
- #ifdef CONFIG_X86_32
- 	GET_SEG(gs);
- 	COPY_SEG(fs);
-@@ -114,14 +116,16 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ #if DEBUG_SIG
+ 	printk(KERN_DEBUG "SIG restore_sigcontext: "
+ 	       "sc=%p err(%x) eip(%x) cs(%x) flg(%x)\n",
+@@ -216,7 +232,7 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
+ 	 * the handler, but does not clobber them at least in the
+ 	 * normal case.
+ 	 */
+-	err |= __get_user(gs, &sc->gs);
++	__get_user_ex(gs, &sc->gs);
+ 	gs |= 3;
+ 	savesegment(gs, oldgs);
+ 	if (gs != oldgs)
+@@ -233,16 +249,18 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
  	COPY_SEG_CPL3(cs);
- #endif /* CONFIG_X86_32 */
+ 	COPY_SEG_CPL3(ss);
  
 -	err |= __get_user(tmpflags, &sc->flags);
 +	__get_user_ex(tmpflags, &sc->flags);
  	regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
- 	regs->orig_ax = -1;		/* disable syscall checks */
+ 	/* disable syscall checks */
+ 	regs->orig_ax = -1;
  
--	err |= __get_user(buf, &sc->fpstate);
-+	__get_user_ex(buf, &sc->fpstate);
- 	err |= restore_i387_xstate(buf);
+-	err |= __get_user(tmp, &sc->fpstate);
++	__get_user_ex(tmp, &sc->fpstate);
+ 	buf = compat_ptr(tmp);
+ 	err |= restore_i387_xstate_ia32(buf);
  
 -	err |= __get_user(*pax, &sc->ax);
 +	__get_user_ex(*pax, &sc->ax);
@@ -101,28 +262,24 @@ index 4fa5243..fcaa318 100644
  	return err;
  }
  
-@@ -131,57 +135,61 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
+@@ -320,36 +338,40 @@ static int ia32_setup_sigcontext(struct sigcontext_ia32 __user *sc,
  {
- 	int err = 0;
+ 	int tmp, err = 0;
  
 +	__put_user_ex_try(&err, -EFAULT);
 +
- #ifdef CONFIG_X86_32
- 	{
- 		unsigned int tmp;
- 
- 		savesegment(gs, tmp);
--		err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
-+		__put_user_ex(tmp, (unsigned int __user *)&sc->gs);
- 	}
--	err |= __put_user(regs->fs, (unsigned int __user *)&sc->fs);
--	err |= __put_user(regs->es, (unsigned int __user *)&sc->es);
--	err |= __put_user(regs->ds, (unsigned int __user *)&sc->ds);
-+	__put_user_ex(regs->fs, (unsigned int __user *)&sc->fs);
-+	__put_user_ex(regs->es, (unsigned int __user *)&sc->es);
-+	__put_user_ex(regs->ds, (unsigned int __user *)&sc->ds);
- #endif /* CONFIG_X86_32 */
- 
+ 	savesegment(gs, tmp);
+-	err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
++	__put_user_ex(tmp, (unsigned int __user *)&sc->gs);
+ 	savesegment(fs, tmp);
+-	err |= __put_user(tmp, (unsigned int __user *)&sc->fs);
++	__put_user_ex(tmp, (unsigned int __user *)&sc->fs);
+ 	savesegment(ds, tmp);
+-	err |= __put_user(tmp, (unsigned int __user *)&sc->ds);
++	__put_user_ex(tmp, (unsigned int __user *)&sc->ds);
+ 	savesegment(es, tmp);
+-	err |= __put_user(tmp, (unsigned int __user *)&sc->es);
+-
 -	err |= __put_user(regs->di, &sc->di);
 -	err |= __put_user(regs->si, &sc->si);
 -	err |= __put_user(regs->bp, &sc->bp);
@@ -131,6 +288,17 @@ index 4fa5243..fcaa318 100644
 -	err |= __put_user(regs->dx, &sc->dx);
 -	err |= __put_user(regs->cx, &sc->cx);
 -	err |= __put_user(regs->ax, &sc->ax);
+-	err |= __put_user(current->thread.trap_no, &sc->trapno);
+-	err |= __put_user(current->thread.error_code, &sc->err);
+-	err |= __put_user(regs->ip, &sc->ip);
+-	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
+-	err |= __put_user(regs->flags, &sc->flags);
+-	err |= __put_user(regs->sp, &sc->sp_at_signal);
+-	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
+-
+-	err |= __put_user(ptr_to_compat(fpstate), &sc->fpstate);
++	__put_user_ex(tmp, (unsigned int __user *)&sc->es);
++
 +	__put_user_ex(regs->di, &sc->di);
 +	__put_user_ex(regs->si, &sc->si);
 +	__put_user_ex(regs->bp, &sc->bp);
@@ -139,53 +307,15 @@ index 4fa5243..fcaa318 100644
 +	__put_user_ex(regs->dx, &sc->dx);
 +	__put_user_ex(regs->cx, &sc->cx);
 +	__put_user_ex(regs->ax, &sc->ax);
- #ifdef CONFIG_X86_64
--	err |= __put_user(regs->r8, &sc->r8);
--	err |= __put_user(regs->r9, &sc->r9);
--	err |= __put_user(regs->r10, &sc->r10);
--	err |= __put_user(regs->r11, &sc->r11);
--	err |= __put_user(regs->r12, &sc->r12);
--	err |= __put_user(regs->r13, &sc->r13);
--	err |= __put_user(regs->r14, &sc->r14);
--	err |= __put_user(regs->r15, &sc->r15);
-+	__put_user_ex(regs->r8, &sc->r8);
-+	__put_user_ex(regs->r9, &sc->r9);
-+	__put_user_ex(regs->r10, &sc->r10);
-+	__put_user_ex(regs->r11, &sc->r11);
-+	__put_user_ex(regs->r12, &sc->r12);
-+	__put_user_ex(regs->r13, &sc->r13);
-+	__put_user_ex(regs->r14, &sc->r14);
-+	__put_user_ex(regs->r15, &sc->r15);
- #endif /* CONFIG_X86_64 */
- 
--	err |= __put_user(current->thread.trap_no, &sc->trapno);
--	err |= __put_user(current->thread.error_code, &sc->err);
--	err |= __put_user(regs->ip, &sc->ip);
 +	__put_user_ex(current->thread.trap_no, &sc->trapno);
 +	__put_user_ex(current->thread.error_code, &sc->err);
 +	__put_user_ex(regs->ip, &sc->ip);
- #ifdef CONFIG_X86_32
--	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
--	err |= __put_user(regs->flags, &sc->flags);
--	err |= __put_user(regs->sp, &sc->sp_at_signal);
--	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
 +	__put_user_ex(regs->cs, (unsigned int __user *)&sc->cs);
 +	__put_user_ex(regs->flags, &sc->flags);
 +	__put_user_ex(regs->sp, &sc->sp_at_signal);
 +	__put_user_ex(regs->ss, (unsigned int __user *)&sc->ss);
- #else /* !CONFIG_X86_32 */
--	err |= __put_user(regs->flags, &sc->flags);
--	err |= __put_user(regs->cs, &sc->cs);
--	err |= __put_user(0, &sc->gs);
--	err |= __put_user(0, &sc->fs);
-+	__put_user_ex(regs->flags, &sc->flags);
-+	__put_user_ex(regs->cs, &sc->cs);
-+	__put_user_ex(0, &sc->gs);
-+	__put_user_ex(0, &sc->fs);
- #endif /* CONFIG_X86_32 */
- 
--	err |= __put_user(fpstate, &sc->fpstate);
-+	__put_user_ex(fpstate, &sc->fpstate);
++
++	__put_user_ex(ptr_to_compat(fpstate), &sc->fpstate);
  
  	/* non-iBCS2 extensions.. */
 -	err |= __put_user(mask, &sc->oldmask);
@@ -197,9 +327,9 @@ index 4fa5243..fcaa318 100644
  
  	return err;
  }
-@@ -269,13 +277,14 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
- 	int err = 0;
- 	void __user *fpstate = NULL;
+@@ -411,13 +433,14 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 		0x80cd,		/* int $0x80 */
+ 	};
  
 +	__put_user_ex_try(&err, -EFAULT);
 +
@@ -212,32 +342,29 @@ index 4fa5243..fcaa318 100644
 -		return -EFAULT;
 +	__put_user_ex(sig, &frame->sig);
  
- 	if (setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]))
+ 	if (ia32_setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]))
  		return -EFAULT;
-@@ -294,7 +303,7 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
- 		restorer = ka->sa.sa_restorer;
- 
- 	/* Set up to return from userspace.  */
--	err |= __put_user(restorer, &frame->pretcode);
-+	__put_user_ex(restorer, &frame->pretcode);
+@@ -438,15 +461,13 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 		else
+ 			restorer = &frame->retcode;
+ 	}
+-	err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
++	__put_user_ex(ptr_to_compat(restorer), &frame->pretcode);
  
  	/*
- 	 * This is popl %eax ; movl $__NR_sigreturn, %eax ; int $0x80
-@@ -303,10 +312,7 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
- 	 * reasons and because gdb uses it as a signature to notice
- 	 * signal handler stack frames.
+ 	 * These are actually not used anymore, but left because some
+ 	 * gdb versions depend on them as a marker.
  	 */
--	err |= __put_user(*((u64 *)&retcode), (u64 *)frame->retcode);
--
+-	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
 -	if (err)
 -		return -EFAULT;
-+	__put_user_ex(*((u64 *)&retcode), (u64 *)frame->retcode);
++	__put_user_ex(*((u64 *)&code), (u64 *)frame->retcode);
  
  	/* Set up registers for signal handler */
- 	regs->sp = (unsigned long)frame;
-@@ -320,7 +326,9 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
- 	regs->ss = __USER_DS;
- 	regs->cs = __USER_CS;
+ 	regs->sp = (unsigned long) frame;
+@@ -468,7 +489,9 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
+ #endif
  
 -	return 0;
 +	__put_user_ex_catch();
@@ -245,10 +372,10 @@ index 4fa5243..fcaa318 100644
 +	return err;
  }
  
- static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
-@@ -331,28 +339,30 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	int err = 0;
- 	void __user *fpstate = NULL;
+ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+@@ -492,28 +515,30 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 		0,
+ 	};
  
 +	__put_user_ex_try(&err, -EFAULT);
 +
@@ -258,12 +385,12 @@ index 4fa5243..fcaa318 100644
  		return -EFAULT;
  
 -	err |= __put_user(sig, &frame->sig);
--	err |= __put_user(&frame->info, &frame->pinfo);
--	err |= __put_user(&frame->uc, &frame->puc);
+-	err |= __put_user(ptr_to_compat(&frame->info), &frame->pinfo);
+-	err |= __put_user(ptr_to_compat(&frame->uc), &frame->puc);
 +	__put_user_ex(sig, &frame->sig);
-+	__put_user_ex(&frame->info, &frame->pinfo);
-+	__put_user_ex(&frame->uc, &frame->puc);
- 	err |= copy_siginfo_to_user(&frame->info, info);
++	__put_user_ex(ptr_to_compat(&frame->info), &frame->pinfo);
++	__put_user_ex(ptr_to_compat(&frame->uc), &frame->puc);
+ 	err |= copy_siginfo_to_user32(&frame->info, info);
  	if (err)
  		return -EFAULT;
  
@@ -283,145 +410,35 @@ index 4fa5243..fcaa318 100644
  			  &frame->uc.uc_stack.ss_flags);
 -	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
 +	__put_user_ex(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
- 	err |= setup_sigcontext(&frame->uc.uc_mcontext, fpstate,
- 				regs, set->sig[0]);
+ 	err |= ia32_setup_sigcontext(&frame->uc.uc_mcontext, fpstate,
+ 				     regs, set->sig[0]);
  	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
-@@ -363,7 +373,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	restorer = VDSO32_SYMBOL(current->mm->context.vdso, rt_sigreturn);
- 	if (ka->sa.sa_flags & SA_RESTORER)
- 		restorer = ka->sa.sa_restorer;
--	err |= __put_user(restorer, &frame->pretcode);
-+	__put_user_ex(restorer, &frame->pretcode);
+@@ -525,15 +550,13 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	else
+ 		restorer = VDSO32_SYMBOL(current->mm->context.vdso,
+ 					 rt_sigreturn);
+-	err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
++	__put_user_ex(ptr_to_compat(restorer), &frame->pretcode);
  
  	/*
- 	 * This is movl $__NR_rt_sigreturn, %ax ; int $0x80
-@@ -372,10 +382,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	 * reasons and because gdb uses it as a signature to notice
- 	 * signal handler stack frames.
+ 	 * Not actually used anymore, but left because some gdb
+ 	 * versions need it.
  	 */
--	err |= __put_user(*((u64 *)&rt_retcode), (u64 *)frame->retcode);
--
+-	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
 -	if (err)
 -		return -EFAULT;
-+	__put_user_ex(*((u64 *)&rt_retcode), (u64 *)frame->retcode);
++	__put_user_ex(*((u64 *)&code), (u64 *)frame->retcode);
  
  	/* Set up registers for signal handler */
- 	regs->sp = (unsigned long)frame;
-@@ -389,7 +396,9 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	regs->ss = __USER_DS;
- 	regs->cs = __USER_CS;
- 
--	return 0;
-+	__put_user_ex_catch();
-+
-+	return err;
- }
- #else /* !CONFIG_X86_32 */
- /*
-@@ -418,6 +427,8 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	int err = 0;
- 	struct task_struct *me = current;
- 
-+	__put_user_ex_try(&err, -EFAULT);
-+
- 	if (used_math()) {
- 		fp = get_stack(ka, regs->sp, sig_xstate_size);
- 		frame = (void __user *)round_down(
-@@ -438,14 +449,14 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 
- 	/* Create the ucontext.  */
- 	if (cpu_has_xsave)
--		err |= __put_user(UC_FP_XSTATE, &frame->uc.uc_flags);
-+		__put_user_ex(UC_FP_XSTATE, &frame->uc.uc_flags);
- 	else
--		err |= __put_user(0, &frame->uc.uc_flags);
--	err |= __put_user(0, &frame->uc.uc_link);
--	err |= __put_user(me->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
--	err |= __put_user(sas_ss_flags(regs->sp),
-+		__put_user_ex(0, &frame->uc.uc_flags);
-+	__put_user_ex(0, &frame->uc.uc_link);
-+	__put_user_ex(me->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
-+	__put_user_ex(sas_ss_flags(regs->sp),
- 			  &frame->uc.uc_stack.ss_flags);
--	err |= __put_user(me->sas_ss_size, &frame->uc.uc_stack.ss_size);
-+	__put_user_ex(me->sas_ss_size, &frame->uc.uc_stack.ss_size);
- 	err |= setup_sigcontext(&frame->uc.uc_mcontext, fp, regs, set->sig[0]);
- 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
- 
-@@ -453,15 +464,12 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	   already in userspace.  */
- 	/* x86-64 should always use SA_RESTORER. */
- 	if (ka->sa.sa_flags & SA_RESTORER) {
--		err |= __put_user(ka->sa.sa_restorer, &frame->pretcode);
-+		__put_user_ex(ka->sa.sa_restorer, &frame->pretcode);
- 	} else {
- 		/* could use a vstub here */
- 		return -EFAULT;
- 	}
- 
--	if (err)
--		return -EFAULT;
--
- 	/* Set up registers for signal handler */
- 	regs->di = sig;
- 	/* In case the signal handler was declared without prototypes */
-@@ -479,7 +487,8 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	   even if the handler happens to be interrupting 32-bit code. */
- 	regs->cs = __USER_CS;
+ 	regs->sp = (unsigned long) frame;
+@@ -555,5 +578,6 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	       current->comm, current->pid, frame, regs->ip, frame->pretcode);
+ #endif
  
 -	return 0;
 +	__put_user_ex_catch();
 +	return err;
  }
- #endif /* CONFIG_X86_32 */
- 
-@@ -511,31 +520,34 @@ sys_sigaction(int sig, const struct old_sigaction __user *act,
- 	struct k_sigaction new_ka, old_ka;
- 	int ret;
- 
-+	__put_user_ex_try(&ret, -EFAULT);
-+	__get_user_ex_try(&ret, -EFAULT);
-+
- 	if (act) {
- 		old_sigset_t mask;
- 
--		if (!access_ok(VERIFY_READ, act, sizeof(*act)) ||
--		    __get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
--		    __get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
-+		if (!access_ok(VERIFY_READ, act, sizeof(*act)))
- 			return -EFAULT;
--
--		__get_user(new_ka.sa.sa_flags, &act->sa_flags);
--		__get_user(mask, &act->sa_mask);
-+		__get_user_ex(new_ka.sa.sa_handler, &act->sa_handler);
-+		__get_user_ex(new_ka.sa.sa_flags, &act->sa_flags);
-+		__get_user_ex(mask, &act->sa_mask);
-+		__get_user_ex(new_ka.sa.sa_restorer, &act->sa_restorer);
- 		siginitset(&new_ka.sa.sa_mask, mask);
- 	}
- 
- 	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
- 
- 	if (!ret && oact) {
--		if (!access_ok(VERIFY_WRITE, oact, sizeof(*oact)) ||
--		    __put_user(old_ka.sa.sa_handler, &oact->sa_handler) ||
--		    __put_user(old_ka.sa.sa_restorer, &oact->sa_restorer))
-+		if (!access_ok(VERIFY_WRITE, oact, sizeof(*oact)))
- 			return -EFAULT;
--
--		__put_user(old_ka.sa.sa_flags, &oact->sa_flags);
--		__put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
-+		__put_user_ex(old_ka.sa.sa_handler, &oact->sa_handler);
-+		__put_user_ex(old_ka.sa.sa_flags, &oact->sa_flags);
-+		__put_user_ex(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
-+		__put_user_ex(old_ka.sa.sa_restorer, &oact->sa_restorer);
- 	}
- 
-+	__get_user_ex_catch();
-+	__put_user_ex_catch();
- 	return ret;
- }
- #endif /* CONFIG_X86_32 */
 -- 
 1.6.0.4
 
