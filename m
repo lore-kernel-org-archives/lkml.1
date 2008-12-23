@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYLWXzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYLXABd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbYLWXzG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 18:55:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYLWXyy
+	id S1752672AbYLXABd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 19:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYLXABZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 18:54:54 -0500
-Received: from rere.qmqm.pl ([89.167.52.164]:40798 "EHLO rere.qmqm.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbYLWXyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 18:54:53 -0500
-Date: Wed, 24 Dec 2008 00:54:51 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Subject: Re: [PATCH] pci-quirks: Unhide 'Overflow' device on i828{6,7}5P/PE chipsets
-Message-ID: <20081223235451.GA1796@rere.qmqm.pl>
-References: <20081223215030.GA32525@rere.qmqm.pl> <495175B2.60307@shaw.ca>
+	Tue, 23 Dec 2008 19:01:25 -0500
+Received: from queueout02-winn.ispmail.ntl.com ([81.103.221.56]:58307 "EHLO
+	queueout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751241AbYLXABY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 19:01:24 -0500
+X-Greylist: delayed 966 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Dec 2008 19:01:23 EST
+Date: Tue, 23 Dec 2008 23:45:13 +0000
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: malc@pulsesoft.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Lock-up on PPC64
+Message-ID: <20081223234513.GA8730@deepthought>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru> <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <495175B2.60307@shaw.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <877i5rh9rm.fsf@linmac.oyster.ru>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
+X-Cloudmark-Analysis: v=1.0 c=1 a=64GYHyxuAAAA:8 a=o0sd8BUyttqqb02knLAA:9 a=Y-0Z59fk8ek6xkzLShU80B1OKjwA:4 a=LY0hPdMaydYA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 23, 2008 at 05:35:14PM -0600, Robert Hancock wrote:
-> Micha³ Miros³aw wrote:
-> >As I found out from EDAC driver sources for i82875P some BIOSes for
-> >i82875P/PE hide 'overflow' device 6. The same thing happens for
-> >i82865P/PE chipsets.
-> >
-> >After testing this patch for couple of days on my laptop (i82856P)
-> >it looks like something is resetting device 0 (MCH) config register
-> >0xF4 to zero and effectively disabling the device again. The delay
-> >looks random to me. I can easily update the register using
-> >'hexedit /sys/bus/pci/devices/0000\:00\:00.0/config' and see
-> >correct values in lspci output afterwards.
-> Could be the BIOS is using the device in SMI code or something (and 
-> that's what disables it), therefore it may be unsafe to unhide this device.
+On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
+> 
+> I don't know where to get PPC64 capable memtest, even if it exists the
+> probability of two different machines exhibiting almost the same
+> behaviour is rather slim. Netconsole doesn't catch anything. In fact
+> i just had slightly different situation where after ssh connection was
+> killed i was able to reconnect and look at dmesg there - nothing.
+> 
+ If you wanted to, you could get memtester from
+http://pyropus.ca/software/memtester/ - not as convenient as
+memtest86 etc (it's just a userspace task, so it can't test all the
+memory), but it did work on ppc64 last time I tried it (nearly 2
+years ago).
 
-I'm going to dig into this deeper in my spare time. Googling around
-for 'System Management Mode' gave interesting pointers...
-
-Best Regards,
-Micha³ Miros³aw
-
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
