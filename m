@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbYLWV6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbYLWV7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbYLWV6G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 16:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYLWV5y
+	id S1752762AbYLWV7u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 16:59:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYLWV7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 16:57:54 -0500
-Received: from rere.qmqm.pl ([89.167.52.164]:51696 "EHLO rere.qmqm.pl"
+	Tue, 23 Dec 2008 16:59:41 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:54534 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbYLWV5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 16:57:53 -0500
-X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Dec 2008 16:57:53 EST
-Date: Tue, 23 Dec 2008 22:50:31 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       bluesmoke-devel@lists.sourceforge.net
-Subject: [PATCH] pci-quirks: Unhide 'Overflow' device on i828{6,7}5P/PE chipsets
-Message-ID: <20081223215030.GA32525@rere.qmqm.pl>
+	id S1751435AbYLWV7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 16:59:39 -0500
+Date: Tue, 23 Dec 2008 13:59:48 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org, ralf@linux-mips.org, kernel@wantstofly.org,
+       hskinnemoen@atmel.com, cooloney@kernel.org, tony.luck@intel.com,
+       geert@linux-m68k.org, zippel@linux-m68k.org, jwboyer@linux.vnet.ibm.com,
+       mporter@kernel.crashing.org, grant.likely@secretlab.ca,
+       paulus@samba.org, benh@kernel.crashing.org, dhowells@redhat.com,
+       yasutake.koichi@jp.panasonic.com, lethal@linux-sh.org, hpa@zytor.com
+Subject: Re: [PATCH -tip] Switch arm defconfig files from
+	CONFIG_CLASSIC_RCU to CONFIG_TREE_RCU.
+Message-ID: <20081223215948.GA16137@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com> <12299911471985-git-send-email-paulmck@linux.vnet.ibm.com> <20081223142542.GC29151@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081223142542.GC29151@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I found out from EDAC driver sources for i82875P some BIOSes for
-i82875P/PE hide 'overflow' device 6. The same thing happens for
-i82865P/PE chipsets.
+On Tue, Dec 23, 2008 at 03:25:42PM +0100, Ingo Molnar wrote:
+> 
+> * paulmck@linux.vnet.ibm.com <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
+> > Only for testing in -tip and -next, not yet for inclusion into mainline.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> >  arch/arm/configs/afeb9260_defconfig     |    2 +-
+> >  arch/arm/configs/am200epdkit_defconfig  |    2 +-
+> >  arch/arm/configs/cm_x300_defconfig      |    2 +-
+> >  arch/arm/configs/corgi_defconfig        |    2 +-
+> >  arch/arm/configs/csb637_defconfig       |    2 +-
+> >  arch/arm/configs/eseries_pxa_defconfig  |    2 +-
+> >  arch/arm/configs/ezx_defconfig          |    2 +-
+> >  arch/arm/configs/imx27ads_defconfig     |    2 +-
+> >  arch/arm/configs/jornada720_defconfig   |    2 +-
+> >  arch/arm/configs/kirkwood_defconfig     |    2 +-
+> >  arch/arm/configs/loki_defconfig         |    2 +-
+> >  arch/arm/configs/magician_defconfig     |    2 +-
+> >  arch/arm/configs/mv78xx0_defconfig      |    2 +-
+> >  arch/arm/configs/mx31ads_defconfig      |    2 +-
+> >  arch/arm/configs/mx31litekit_defconfig  |    2 +-
+> >  arch/arm/configs/omap3_beagle_defconfig |    2 +-
+> >  arch/arm/configs/omap_h2_1610_defconfig |    2 +-
+> >  arch/arm/configs/omap_ldp_defconfig     |    2 +-
+> >  arch/arm/configs/orion5x_defconfig      |    2 +-
+> >  arch/arm/configs/overo_defconfig        |    2 +-
+> >  arch/arm/configs/palmz72_defconfig      |    2 +-
+> >  arch/arm/configs/pcm037_defconfig       |    2 +-
+> >  arch/arm/configs/pcm038_defconfig       |    2 +-
+> >  arch/arm/configs/s3c2410_defconfig      |    2 +-
+> >  arch/arm/configs/spitz_defconfig        |    2 +-
+> >  arch/arm/configs/tct_hammer_defconfig   |    2 +-
+> >  arch/arm/configs/viper_defconfig        |    2 +-
+> >  arch/arm/configs/xm_x2xx_defconfig      |    2 +-
+> >  28 files changed, 28 insertions(+), 28 deletions(-)
+> 
+> ouch!
+> 
+> There's a much more shrewd method to achieve the same, via 2 lines total 
+> patch:
+> 
+> Change the name of CONFIG_CLASSIC_RCU to something else such as 
+> CONFIG_FLAT_RCU. That does all the magic and more: all configs will 
+> default to tree-rcu - not just defconfigs! Agreed?
 
-After testing this patch for couple of days on my laptop (i82856P)
-it looks like something is resetting device 0 (MCH) config register
-0xF4 to zero and effectively disabling the device again. The delay
-looks random to me. I can easily update the register using
-'hexedit /sys/bus/pci/devices/0000\:00\:00.0/config' and see
-correct values in lspci output afterwards.
+Good point!
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+> [ I think the gene of laziness is probably more developed in my genome
+>   than in yours. It is a very useful trait ;-) ]
 
-diff -urN linux-2.6.27.7-brfix1-nvpid/drivers/pci/quirks.c pci-quirks/drivers/pci/quirks.c
---- linux-2.6.27.7-brfix1-nvpid/drivers/pci/quirks.c	2008-10-10 00:13:53.000000000 +0200
-+++ pci-quirks/drivers/pci/quirks.c	2008-12-06 22:18:46.000000000 +0100
-@@ -2007,3 +2008,25 @@
- 			quirk_msi_intx_disable_bug);
- 
- #endif /* CONFIG_PCI_MSI */
-+
-+/* Originally in EDAC sources for i82875P:
-+ * Intel tells BIOS developers to hide device 6 which
-+ * configures the overflow device access containing
-+ * the DRBs - this is where we expose device 6.
-+ * http://www.x86-secret.com/articles/tweak/pat/patsecrets-2.htm
-+ */
-+static void __devinit quirk_unhide_mch_memory_controller_dev6(struct pci_dev *dev)
-+{
-+	u8 reg;
-+
-+	if (pci_read_config_byte(dev, 0xF4, &reg) == 0 && !(reg & 0x02)) {
-+		dev_info(&dev->dev, "Enabling MCH Memory Controller 'Overflow' Device");
-+		pci_write_config_byte(dev, 0xF4, reg | 0x02);
-+	}
-+}
-+
-+DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82865_HB,
-+			quirk_unhide_mch_memory_controller_dev6);
-+DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82875_HB,
-+			quirk_unhide_mch_memory_controller_dev6);
-+
+Lazy or not, your approach is much better than what I was doing.  ;-)
+
+Two patches in subsequent emails: the first gets rid of a duplicate
+RCU_CPU_STALL_DETECTOR config declaration (noticed in this exercise --
+one each from the CLASSIC_RCU and TREE_RCU stall detectors), and the
+second changes the default to TREE_RCU as you suggest.
+
+							Thanx, Paul
