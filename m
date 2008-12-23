@@ -1,64 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbYLWP45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbYLWQA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751777AbYLWP45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 10:56:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYLWP4r
+	id S1751875AbYLWQA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 11:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYLWQAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 10:56:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34040 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbYLWP4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 10:56:46 -0500
-Message-ID: <49510A34.10102@redhat.com>
-Date: Tue, 23 Dec 2008 09:56:36 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
+	Tue, 23 Dec 2008 11:00:19 -0500
+Received: from web65616.mail.ac4.yahoo.com ([76.13.9.84]:44538 "HELO
+	web65616.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750955AbYLWQAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 11:00:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:To:MIME-Version:Content-Type:Message-ID;
+  b=IkXli9hjDzeHGvh4rDhRs4QPRYsRVwD2hYIG4hrpYz/zwTKAfZKmOUU9foHFXEilvqnQWg7N2/JSdBRDBY3TkzpVdGEGiMeVfHxY7cUT2aJTW/7gp88IiLCXxE4/R08g2HTxDnGysl9JMxwSe9rIfiQCpFvgpwmbCNyKtuyPQhQ=;
+X-YMail-OSG: JrtdH7MVM1lIdAOKe6CE1zjHT_szNSVOFcFrJLXzWhrvWKoXJaGok8U1UvmJeefo5hJLtspkcMmeBKPNg8Aw.CrryPQELCpmfQrQG46EEM8rVM1rqQQvMH0H7JQZrSB0MBMQVBgY3YvVeP5YeqEG.Qt7UF7W1z.MyH9hyV4640DTLk6F9NhE1ptWgbUx
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Tue, 23 Dec 2008 08:00:15 -0800 (PST)
+From: Ryan Mak <tremolo_72@yahoo.com>
+Reply-To: tremolo_72@yahoo.com
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Andreas Dilger <adilger@sun.com>
-CC: Ric Wheeler <rwheeler@redhat.com>, Jan Kara <jack@suse.cz>,
-       Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com> <20081219002752.GE8424@duck.suse.cz> <494AFA16.2010004@redhat.com> <494FE73E.5000802@redhat.com> <20081222225757.GV5000@webber.adilger.int>
-In-Reply-To: <20081222225757.GV5000@webber.adilger.int>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <948802.43947.qm@web65616.mail.ac4.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Dilger wrote:
-> On Dec 22, 2008  14:15 -0500, Ric Wheeler wrote:
->> Without having dived into the patch in detail, one worry I would have is  
->> that we still might care to spin up a drive for empty transactions in  
->> order to invalidate the drive's write cache.
->>
->> For example, if we have the following sequence:
->>
->>    (1) user app performs series of writes to file A
->>    (2) pages dirtied from writes to A are destaged to the disk over time
->>    (3) user app issues fsync(file A) to make sure that the data will  
->> survive a power outage
->>
->> At this point in time, would this change prevent us from spinning up the  
->> drive and invalidating the disk write cache for that fsync() ?
-> 
-> Well, if the writes themselves didn't spin up the drive, it is uncertain
-> whether the write of the journal commit block would be any more helpful
-> in getting that to happen.
+unsubscribe
 
-So, ext4_sync_file() calls blkdev_issue_flush() which would should do
-the right thing even if the drive is spun down, I think (rather than
-hoping that some other journal activity would flush this out...)
 
-I guess I don't know for sure what blkdev_issue_flush does on a
-spun-down drive but I'd hope it does the right thing.
-
-Pretty sure I sent a patch for ext3 to do the same, but it was
-ignored/dropped/forgotten along with the barriers-by-default patch.
-Suppose I could try again.
-
--Eric
+      
