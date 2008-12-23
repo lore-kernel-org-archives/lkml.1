@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbYLWXeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbYLWXfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753251AbYLWXeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 18:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYLWXeQ
+	id S1752936AbYLWXfi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 18:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYLWXfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 18:34:16 -0500
-Received: from 1wt.eu ([62.212.114.60]:1246 "EHLO 1wt.eu"
+	Tue, 23 Dec 2008 18:35:30 -0500
+Received: from main.gmane.org ([80.91.229.2]:49716 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244AbYLWXeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 18:34:16 -0500
-Date: Wed, 24 Dec 2008 00:34:10 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Martin Schlemmer <Martin.Schlemmer@nwu.ac.za>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Initramfs from existing vmlinuz
-Message-ID: <20081223233410.GC6800@1wt.eu>
-References: <49518245.3D93.006F.0@nwu.ac.za>
+	id S1751198AbYLWXf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 18:35:29 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] pci-quirks: Unhide 'Overflow' device on i828{6,7}5P/PE
+ chipsets
+Date: Tue, 23 Dec 2008 17:35:14 -0600
+Message-ID: <495175B2.60307@shaw.ca>
+References: <20081223215030.GA32525@rere.qmqm.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49518245.3D93.006F.0@nwu.ac.za>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-pci@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+In-Reply-To: <20081223215030.GA32525@rere.qmqm.pl>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 24, 2008 at 12:28:53AM +0200, Martin Schlemmer wrote:
-> Hi
+Micha³ Miros³aw wrote:
+> As I found out from EDAC driver sources for i82875P some BIOSes for
+> i82875P/PE hide 'overflow' device 6. The same thing happens for
+> i82865P/PE chipsets.
 > 
-> I had a bit of an accident, and wondered if somebody already had to try to extract the initramfs image from an existing vmlinuz?
-> 
->  I did try google, but either my search terms was not right, or nobody really touched on the subject before, because all the results mostly dealt with an external image.
-> 
-> Any advice will be appreciated.
+> After testing this patch for couple of days on my laptop (i82856P)
+> it looks like something is resetting device 0 (MCH) config register
+> 0xF4 to zero and effectively disabling the device again. The delay
+> looks random to me. I can easily update the register using
+> 'hexedit /sys/bus/pci/devices/0000\:00\:00.0/config' and see
+> correct values in lspci output afterwards.
 
-yes, it happens to me from time to time.
-You first have to extract and uncompress the ELF image from vmlinuz. For
-this, look for the gzip signature 1F 8B 08 in your vmlinuz, and feed all
-data starting from this point to zcat. Either you do the same on the
-resulting file -and you may find several compressed images- or you simply
-pass it through "objdump -h". It will show you a .init.ramfs section. Use
-the fourth field as the file offset, and dump from that position. You'll
-find your initramfs, likely starting with 1F 8B 08 since it's supposed
-to be compressed with gzip.
-
-You need an hex editor, dd, zcat and objdump for this. It's not much
-complicated once you have the tools, but it might require a few attempts
-before finding the right image (I tend to find config.gz before initramfs).
-
-Regards,
-Willy
+Could be the BIOS is using the device in SMI code or something (and 
+that's what disables it), therefore it may be unsafe to unhide this device.
 
