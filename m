@@ -1,41 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYLWXBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbYLWXTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbYLWXBR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 18:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYLWXBD
+	id S1752929AbYLWXTD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 18:19:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbYLWXSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 18:01:03 -0500
-Received: from utl-lnx3.nwu.ac.za ([143.160.36.166]:52168 "EHLO
-	utl-lnx3.nwu.ac.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYLWXBB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 18:01:01 -0500
-X-Greylist: delayed 1915 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Dec 2008 18:01:00 EST
-Message-Id: <49518245.3D93.006F.0@nwu.ac.za>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 24 Dec 2008 00:28:53 +0200
-From: "Martin Schlemmer" <Martin.Schlemmer@nwu.ac.za>
-To: <linux-kernel@vger.kernel.org>
-Subject: Initramfs from existing vmlinuz
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Tue, 23 Dec 2008 18:18:49 -0500
+Received: from khc.piap.pl ([195.187.100.11]:57119 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751791AbYLWXSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 18:18:48 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       =?utf-8?B?SMOla29uIEzDuHZkYWw=?= <hlovdal@gmail.com>,
+       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a compound statement
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+	<20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
+	<m3hc4voo2a.fsf@maximus.localdomain>
+	<a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
+	<m3ocz2ua3w.fsf@maximus.localdomain> <1230053186.1447.9.camel@brick>
+	<m3k59qssix.fsf@maximus.localdomain>
+	<alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 24 Dec 2008 00:18:46 +0100
+In-Reply-To: <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain> (Linus Torvalds's message of "Tue\, 23 Dec 2008 10\:08\:50 -0800 \(PST\)")
+Message-ID: <m3hc4usco9.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-I had a bit of an accident, and wondered if somebody already had to try to extract the initramfs image from an existing vmlinuz?
+> It's more than that. I added the check after some person who had been 
+> programming the kernel (and thus was supposedly fluent in C) literally 
+> could not parse a macro that had "do x while (y)" in it.
 
- I did try google, but either my search terms was not right, or nobody really touched on the subject before, because all the results mostly dealt with an external image.
-
-Any advice will be appreciated.
-
-
-Thanks
-
-MS
+A literally that simple macro, or a complicated one?
 
 
+I'm all for using brackets when there is / could be some possibility
+of increasing code readability.
+
+E.g. I always use parentheses in a nested if-if, because
+
+	if (x)
+		if (y)
+			a;
+		else
+			c;
+
+may be confusing, especially if formatted differently.
+
+	if (x)
+		a;
+	else if (y)
+		b;
+	etc.
+
+is simple and unambiguous and I don't put the braces.
+
+So is a case like
+	do
+		x;
+	while (y);
+It can't be made more clear with brackets.
+
+IOW: improving the style is great. Changing it only to silence some
+tool is not.
+
+> Another example of this is "sizeof". The kernel universally (I hope) has 
+> parenthesis around the sizeof argument, even though it's clearly not 
+> required by the C language. 
+>
+> It's a coding standard.
+
+Right, but they (at least for me) make it more readable.
+kmalloc(sizeof i) just doesn't look good, the operator looks like
+a variable name.
+
+But there is this return statement. Some people tend to write
+return (x); I simply write return x;
+It's clear, and so is a simple do-while.
+
+> And quite frankly, anybody who works on gcc has no place complaining about 
+> sparse coding standard warnings. They are a _hell_ of a lot better than 
+> some of the really crazy warnings gcc spews out with "-W". At least the 
+> sparse warnings you can make go away while making the code more 
+> understandable. Some of the -W warnings are unfixable without breaking the 
+> source code.
+
+:-)
+
+BTW I think I may use sparse differently.
+I can see false gcc warnings every time the project is being built.
+OTOH I run sparse only when I have some (almost) completed project
+(a patch, a driver etc). I make sure the remaining sparse warnings are
+(from my POV) invalid and it won't spew them on next build again.
+-- 
+Krzysztof Halasa
