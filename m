@@ -1,51 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbYLWQqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbYLWQvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294AbYLWQqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 11:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYLWQpv
+	id S1751995AbYLWQvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 11:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYLWQuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 11:45:51 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:61853 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbYLWQpu (ORCPT
+	Tue, 23 Dec 2008 11:50:51 -0500
+Received: from host193-178-static.190-82-b.business.telecomitalia.it ([82.190.178.193]:35237
+	"EHLO ns1.ibs.sm" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750903AbYLWQuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 11:45:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tJ4Ar8ZxsBwC8STIIH5JSLaVqz8wBrTHRYmYvrV2r6sj/nhvD0/LvB8m+F8oev6dZS
-         PzCfYjwll2JaQB0zdtYJZU2uK4VVSWDrzh+Yvo6LHS4iewF+GPu4DFRd1UO1dtLkexlN
-         C4iL9SwOlwBEwhIGdK/UAZe8jW/aJCAQA4H58=
-Message-ID: <3b5e77ad0812230845w3178e803u416ecf1f68a64725@mail.gmail.com>
-Date: Tue, 23 Dec 2008 18:45:48 +0200
-From: "Ron Livne" <ronli.voltaire@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.29
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-In-Reply-To: <adaocz2x5xp.fsf@cisco.com>
+	Tue, 23 Dec 2008 11:50:50 -0500
+Reply-To: <draschi@ibs.sm>
+From: "Diego Raschi" <draschi@ibs.sm>
+To: "'Al Viro'" <viro@ZenIV.linux.org.uk>
+Cc: <linux-kernel@vger.kernel.org>, <stable@kernel.org>
+Subject: R: BUG smbd crash
+Date: Tue, 23 Dec 2008 17:50:28 +0100
+Message-ID: <00a801c9651e$8fb29700$1b02a8c0@client018>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <aday6y7x2yr.fsf@cisco.com>
-	 <3b5e77ad0812222354y5d4effe8xc6750d6620e20c75@mail.gmail.com>
-	 <adaocz2x5xp.fsf@cisco.com>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook CWS, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+Importance: Normal
+In-Reply-To: <20081222211316.GM28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I know it was stuck there,
-that's why I've sent a new version that doesn't rely on it.
-I've implemented the more_ops (in libibvers) in my patches - that's
-the only thing I needed from XRC.
-
-Ron
+My server go on error again...
 
 
-On Tue, Dec 23, 2008 at 5:33 PM, Roland Dreier <rdreier@cisco.com> wrote:
->  > Any chance create_qp_flags will get in?
+
+Tue Dec 23 17:45:01 CET 2008
+BUG: soft lockup - CPU#4 stuck for 61s! [smbd:22913]
+Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+sr_mod cdrom ata_generic pata_amd cfi_cmdset_0002 raid0 cfi_util jedec_probe
+cfi_probe ppdev sata_nv gen_probe qla2xxx pata_acpi ck804xrom mtd libata
+parport_pc floppy forcedeth i2c_nforce2 chipreg pcspkr parport
+scsi_transport_fc sg i2c_core map_funcs scsi_tgt button shpchp 3w_9xxx
+sd_mod scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+CPU 4:
+Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+sr_mod cdrom ata_generic pata_amd cfi_cmdset_0002 raid0 cfi_util jedec_probe
+cfi_probe ppdev sata_nv gen_probe qla2xxx pata_acpi ck804xrom mtd libata
+parport_pc floppy forcedeth i2c_nforce2 chipreg pcspkr parport
+scsi_transport_fc sg i2c_core map_funcs scsi_tgt button shpchp 3w_9xxx
+sd_mod scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+Pid: 22913, comm: smbd Not tainted 2.6.27.8.fc9.x86_64 #3
+RIP: 0010:[<ffffffff81020c97>]  [<ffffffff81020c97>]
+__ticket_spin_lock+0x16/0x1a
+RSP: 0018:ffff8801af267df8  EFLAGS: 00000297
+RAX: 0000000000003e3e RBX: ffff8801af267df8 RCX: 0000000000000002
+RDX: 0000000000000000 RSI: ffff88022c81e518 RDI: ffffffff81e64100
+RBP: ffff8801af267dc8 R08: ffff8801af266000 R09: 0000000000000000
+R10: 00000904237c7430 R11: ffff88020b222048 R12: ffff880280370000
+R13: 0000000000000287 R14: ffff88020b222378 R15: 0000000480370000
+FS:  00007f8dc8cd87a0(0000) GS:ffff88022fa40000(0000) knlGS:00000000f7fbf6c0
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f8dbef843c0 CR3: 00000001af279000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+
+Call Trace:
+ [<ffffffff812a2cca>] ? _spin_lock+0x9/0xc
+ [<ffffffff810db281>] ? pin_to_kill+0x36/0xea
+ [<ffffffff810dbcf4>] ? inotify_destroy+0x69/0xda
+ [<ffffffff810dbefe>] ? inotify_release+0x28/0xd7
+ [<ffffffff810b2202>] ? __fput+0xc5/0x184
+ [<ffffffff810b22d6>] ? fput+0x15/0x17
+ [<ffffffff810af745>] ? filp_close+0x67/0x72
+ [<ffffffff810af7fd>] ? sys_close+0xad/0xf0
+ [<ffffffff8100c0ea>] ? system_call_fastpath+0x16/0x1b
+
+BUG: soft lockup - CPU#26 stuck for 61s! [smbd:11146]
+Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+sr_mod cdrom ata_generic pata_amd cfi_cmdset_0002 raid0 cfi_util jedec_probe
+cfi_probe ppdev sata_nv gen_probe qla2xxx pata_acpi ck804xrom mtd libata
+parport_pc floppy forcedeth i2c_nforce2 chipreg pcspkr parport
+scsi_transport_fc sg i2c_core map_funcs scsi_tgt button shpchp 3w_9xxx
+sd_mod scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+CPU 26:
+Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+sr_mod cdrom ata_generic pata_amd cfi_cmdset_0002 raid0 cfi_util jedec_probe
+cfi_probe ppdev sata_nv gen_probe qla2xxx pata_acpi ck804xrom mtd libata
+parport_pc floppy forcedeth i2c_nforce2 chipreg pcspkr parport
+scsi_transport_fc sg i2c_core map_funcs scsi_tgt button shpchp 3w_9xxx
+sd_mod scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+Pid: 11146, comm: smbd Not tainted 2.6.27.8.fc9.x86_64 #3
+RIP: 0010:[<ffffffff81020c97>]  [<ffffffff81020c97>]
+__ticket_spin_lock+0x16/0x1a
+RSP: 0018:ffff880225cf3df8  EFLAGS: 00000297
+RAX: 0000000000000d0d RBX: ffff880225cf3df8 RCX: 0000000000000002
+RDX: 0000000000000000 RSI: ffff88022c81e998 RDI: ffffffff81e64100
+RBP: ffff880225cf3df8 R08: ffff880225cf2000 R09: 0000000000000000
+R10: 000003a9255c595b R11: ffff88022d9a4048 R12: ffff880225cf3e88
+R13: ffff88042f5a21c0 R14: ffff88022d9a4378 R15: 0000001a25cf3d68
+FS:  00007f8dc8cd87a0(0000) GS:ffff88072fa0c400(0000) knlGS:00000000f7ef76c0
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000003ceefe8 CR3: 000000022c960000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+
+Call Trace:
+ [<ffffffff812a2cca>] _spin_lock+0x9/0xc
+ [<ffffffff810db281>] pin_to_kill+0x36/0xea
+ [<ffffffff810dbcf4>] inotify_destroy+0x69/0xda
+ [<ffffffff810dbefe>] inotify_release+0x28/0xd7
+ [<ffffffff810b2202>] __fput+0xc5/0x184
+ [<ffffffff810b22d6>] fput+0x15/0x17
+ [<ffffffff810af745>] filp_close+0x67/0x72
+ [<ffffffff810af7fd>] sys_close+0xad/0xf0
+ [<ffffffff8100c0ea>] system_call_fastpath+0x16/0x1b
+
+BUG: soft lockup - CPU#8 stuck for 61s! [smbd:10746]
+Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+sr_mod cdrom ata_generic pata_amd cfi_cmdset_0002 raid0 cfi_util jedec_probe
+cfi_probe ppdev sata_nv gen_probe qla2xxx pata_acpi ck804xrom mtd libata
+parport_pc floppy forcedeth i2c_nforce2 chipreg pcspkr parport
+scsi_transport_fc sg i2c_core map_funcs scsi_tgt button shpchp 3w_9xxx
+sd_mod scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+CPU 8:
+Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+sr_mod cdrom ata_generic pata_amd cfi_cmdset_0002 raid0 cfi_util jedec_probe
+cfi_probe ppdev sata_nv gen_probe qla2xxx pata_acpi ck804xrom mtd libata
+parport_pc floppy forcedeth i2c_nforce2 chipreg pcspkr parport
+scsi_transport_fc sg i2c_core map_funcs scsi_tgt button shpchp 3w_9xxx
+sd_mod scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+Pid: 10746, comm: smbd Not tainted 2.6.27.8.fc9.x86_64 #3
+RIP: 0010:[<ffffffff81020c97>]  [<ffffffff81020c97>]
+__ticket_spin_lock+0x16/0x1a
+RSP: 0018:ffff880300127df8  EFLAGS: 00000293
+RAX: 000000000000a7a6 RBX: ffff880300127df8 RCX: 0000000000000002
+RDX: 0000000000000000 RSI: ffff8802c8fce050 RDI: ffffffff81e64100
+RBP: ffff880300127df8 R08: 0000000000000000 R09: 2525252525252525
+R10: 00007f8dc8cd87a0 R11: 0000000000000246 R12: ffff880300127e88
+R13: ffff88042f5a21c0 R14: ffffffff810c3495 R15: ffff880300127d68
+FS:  00007f8dc8cd87a0(0000) GS:ffff88032fa0a000(0000) knlGS:00000000f7ef86c0
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f8dbe821f90 CR3: 000000032e56d000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+
+Call Trace:
+ [<ffffffff812a2cca>] _spin_lock+0x9/0xc
+ [<ffffffff810db281>] pin_to_kill+0x36/0xea
+ [<ffffffff810dbcf4>] inotify_destroy+0x69/0xda
+ [<ffffffff810dbefe>] inotify_release+0x28/0xd7
+ [<ffffffff810b2202>] __fput+0xc5/0x184
+ [<ffffffff810b22d6>] fput+0x15/0x17
+ [<ffffffff810af745>] filp_close+0x67/0x72
+ [<ffffffff810af7fd>] sys_close+0xad/0xf0
+ [<ffffffff8100c0ea>] system_call_fastpath+0x16/0x1b
+
+
+
+I try to compile the kernel source 2.6.27.10 with make dep;make clean;make
+menuconfig;make bzImage;make modules;make modules_install
+But int the dir /lib/modules/2.6.27.10 is only 54Mb of driver. All of make
+don't go on error.
+
+After I try to compile the kernel source 2.6.27.8 and all make generate
+676Mb on dir /lib/modules/2.6.27.8.
+What I wrong?
+
+Hi
+Diego Raschi
+
+
+
+
+
+
+-----Messaggio originale-----
+Da: Al Viro [mailto:viro@ftp.linux.org.uk]Per conto di Al Viro
+Inviato: lunedi 22 dicembre 2008 22.13
+A: Andrew Morton
+Cc: draschi@ibs.sm; linux-kernel@vger.kernel.org; stable@kernel.org
+Oggetto: Re: BUG smbd crash
+
+
+On Mon, Dec 22, 2008 at 01:05:45PM -0800, Andrew Morton wrote:
+> On Mon, 22 Dec 2008 15:07:24 +0100
+> "Diego Raschi" <draschi@ibs.sm> wrote:
 >
->  Nope, since that's stuck behind XRC.
+> > 1.smbd crash
+> > 2.The daemon smbd crash and after restart the system is unstable.
+> > 3.daemon
+> > 4.Linux version 2.6.27.8.fc9.x86_64 (root@node1) (gcc version 4.3.0
+20080428
+> > (Red Hat 4.3.0-8) (GCC) ) #3 SMP Thu Dec 18 10:40:19 CET 2008
+> > 5.Mon Dec 22 13:49:01 CET 2008
+> > BUG: soft lockup - CPU#5 stuck for 61s! [smbd:16614]
+> > Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+> > crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+> > sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+> > sr_mod cdrom raid0 ata_generic pata_amd cfi_cmdset_0002 pcspkr cfi_util
+> > ppdev sata_nv pata_acpi floppy libata button jedec_probe parport_pc
+> > cfi_probe gen_probe ck804xrom parport mtd qla2xxx chipreg
+scsi_transport_fc
+> > scsi_tgt map_funcs sg forcedeth i2c_nforce2 i2c_core shpchp 3w_9xxx
+sd_mod
+> > scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache
+> > uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+> > CPU 5:
+> > Modules linked in: sha256_generic aes_x86_64 aes_generic cbc dm_crypt
+> > crypto_blkcipher nfs lockd nfs_acl ipmi_si ipmi_devintf ipmi_msghandler
+> > sunrpc bonding ipv6 xfs dm_mirror dm_log dm_multipath dm_mod kvm_amd kvm
+> > sr_mod cdrom raid0 ata_generic pata_amd cfi_cmdset_0002 pcspkr cfi_util
+> > ppdev sata_nv pata_acpi floppy libata button jedec_probe parport_pc
+> > cfi_probe gen_probe ck804xrom parport mtd qla2xxx chipreg
+scsi_transport_fc
+> > scsi_tgt map_funcs sg forcedeth i2c_nforce2 i2c_core shpchp 3w_9xxx
+sd_mod
+> > scsi_mod raid456 async_xor async_memcpy async_tx xor raid1 ext3 jbd
+mbcache
+> > uhci_hcd ohci_hcd ehci_hcd [last unloaded: e1000]
+> > Pid: 16614, comm: smbd Not tainted 2.6.27.8.fc9.x86_64 #3
+> > RIP: 0010:[<ffffffff812a1871>]  [<ffffffff812a1871>]
+mutex_lock+0x23/0x2e
+> > RSP: 0000:ffff88032f0c1e38  EFLAGS: 00000246
+> > RAX: 0000000000000246 RBX: ffff88032f0c1e48 RCX: 0000000000000002
+> > RDX: ffff88032e91ebc0 RSI: 0000000000000058 RDI: ffff88010b65d3f0
+> > RBP: 0000000000000000 R08: ffff88032f0c0000 R09: 0000000000000000
+> > R10: 0000150d29bc50cf R11: ffff8802dca56048 R12: 0000150d29bc50cf
+> > R13: ffff8802dca56048 R14: ffff88032f0c1e28 R15: 0000000000000000
+> > FS:  00007f011676a7a0(0000) GS:ffff88022fa13200(0000)
+knlGS:00000000f7fd86c0
+> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > CR2: 0000000002642fc0 CR3: 000000032e91d000 CR4: 00000000000006e0
+> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> >
+> > Call Trace:
+> >  [<ffffffff812a186b>] ? mutex_lock+0x1d/0x2e
+> >  [<ffffffff810dbd0e>] ? inotify_destroy+0x83/0xda
+> >  [<ffffffff810dbefe>] ? inotify_release+0x28/0xd7
+> >  [<ffffffff810b2202>] ? __fput+0xc5/0x184
+> >  [<ffffffff810b22d6>] ? fput+0x15/0x17
+> >  [<ffffffff810af745>] ? filp_close+0x67/0x72
+> >  [<ffffffff810af7fd>] ? sys_close+0xad/0xf0
+> >  [<ffffffff8100c0ea>] ? system_call_fastpath+0x16/0x1b
 >
+> Is this a regression?  Were any earlier kernels OK?  2.6.27.7?
+>
+> An inotify fix went into 2.6.27.8 and I seem to recall that there might
+> have been some problems with it.
+
+It's IDR breakage, actually; introduced in
+6ff2d39b91aec3dcae951afa982059e3dd9b49dc, fixed in
+711a49a07f84f914aac26a52143f6e7526571143.  IIRC, .10 has the fix in place.
+
