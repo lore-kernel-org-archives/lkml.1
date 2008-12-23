@@ -1,104 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYLWCYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYLWDE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbYLWCYI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 21:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYLWCXz
+	id S1755309AbYLWDE5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 22:04:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYLWDEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 21:23:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48488 "EHLO hera.kernel.org"
+	Mon, 22 Dec 2008 22:04:48 -0500
+Received: from main.gmane.org ([80.91.229.2]:39876 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754399AbYLWCXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 21:23:54 -0500
-Message-ID: <49504B8C.8080907@kernel.org>
-Date: Tue, 23 Dec 2008 11:23:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Justin Madru <jdm64@gawab.com>
-CC: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [2.6.28-rc] Sata soft reset filling log
-References: <494318F5.4060007@gawab.com> <494EFD79.7020008@kernel.org> <494F3AD2.3060201@gawab.com> <494F3E41.60304@kernel.org> <49500BE2.6050106@gawab.com>
-In-Reply-To: <49500BE2.6050106@gawab.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------000309010502010406070806"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Dec 2008 02:23:14 +0000 (UTC)
+	id S1752140AbYLWDEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 22:04:48 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: malc@pulsesoft.com
+Subject: Re: Lock-up on PPC64
+Date: Tue, 23 Dec 2008 06:04:45 +0300
+Message-ID: <877i5rh9rm.fsf@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru> <20081222233223.GA6688@joi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 83.167.112.74
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+Cancel-Lock: sha1:R3EWNCJM4sGPJO8VwyJABNhADj8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000309010502010406070806
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Marcin Slusarz <marcin.slusarz@gmail.com> writes:
 
-Hello,
-
-Justin Madru wrote:
->> Ah.. strange.  The command protocol is ATAPI_PROT_NODATA and the drive
->> should be setting DRQ to receive CDB but it's not doing that.
->> Strange.  It could be that the drive is a little bit tardy with DRQ -
->> ie. setting DRQ after clearing BUSY and ata_piix is now successfully
->> hitting the small window for some reason.
+> On Sun, Dec 21, 2008 at 09:18:07PM +0300, malc wrote:
+>> Plain/non-root userspace application which doesn't interface with
+>> any weird out-of/in-tree drivers manages to lock-up a PS3 machine
+>> running Linux.
 >>
->> Does the attached patch make any difference?
+>> The application in question is Mono VM running mcs.exe (C# compiler)
+>> which tries to compile particular file, distribution is Yellow Dog Linux
+>> 6.0 with either stock (2.6.23.x) or custom compiled (2.6.27) 64bit kernel.
 >>
->> Thanks.
 >>
->>   
-> Ok, I applied your patch. Unfortunately, it didn't fix my problem.
-> I now get a different, but similar message; not sure if it happens less
-> frequently - still often though.
+>> Symptoms are as follows (interaction is done via ssh from another
+>> machine):
+>>
+>> $ make
+>> ... lots of stdout/err messages
+>> ... eventually an error message
+>>
+>> Eventually the ssh session terminates, PS3 is still pingable but
+>> impossible to connect to, attaching keyboard and trying magic SysRq
+>> doesn't work, typing keys into login: prompt works (as in - the terminal
+>> shows keys that were pressed, but after hittiing enter the carret is
+>> advanced and nothing happens, hitting random keys doesn't yield anything
+>> either)
+>
+> Check your RAM first (memtest). If it won't find anything please post your
+> config and dmesg. You can enable some debugging options ("Kernel hacking"
+> in menuconfig), setup netconsole and see if it can catch anything.
+> (see Documentation/networking/netconsole.txt)
 
-Aiee...
-
-> What changes happened between .27 and .28 could've caused this?
-> Anyways, below is what I get now (with your patch), including the
-> frequency of occurrence.
-
-I have no idea and I'm afraid we'll need a bisection here. :-( Can you
-please try the attached patch?
-
-Thanks.
+I don't know where to get PPC64 capable memtest, even if it exists the
+probability of two different machines exhibiting almost the same
+behaviour is rather slim. Netconsole doesn't catch anything. In fact
+i just had slightly different situation where after ssh connection was
+killed i was able to reconnect and look at dmesg there - nothing.
 
 -- 
-tejun
+mailto:av1474@comtv.ru
 
---------------000309010502010406070806
-Content-Type: text/x-patch;
- name="DRQ-debug-1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="DRQ-debug-1.patch"
-
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index 4b47394..fcd7d08 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -1120,6 +1120,22 @@ fsm_start:
- 		 */
- 		poll_next = (qc->tf.flags & ATA_TFLAG_POLLING);
- 
-+		{
-+			int cnt = 0;
-+
-+			while (!(status & (ATA_DRQ | ATA_ERR | ATA_DF)) &&
-+			       cnt < 100) {
-+				status = ap->ops->sff_check_status(ap);
-+				cnt++;
-+				udelay(10);
-+			}
-+
-+			if (cnt)
-+				ata_port_printk(ap, KERN_INFO,
-+						"XXX status=%02x after %d tries\n",
-+						status, cnt);
-+		}
-+
- 		/* check device status */
- 		if (unlikely((status & ATA_DRQ) == 0)) {
- 			/* handle BSY=0, DRQ=0 as error */
-
---------------000309010502010406070806--
