@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbYLWEkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYLWEoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbYLWEkp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 23:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbYLWEkf
+	id S1755737AbYLWEoD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 23:44:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYLWEnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 23:40:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54908 "EHLO hera.kernel.org"
+	Mon, 22 Dec 2008 23:43:50 -0500
+Received: from main.gmane.org ([80.91.229.2]:58668 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754514AbYLWEke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 23:40:34 -0500
-Message-ID: <49506BBC.8040600@kernel.org>
-Date: Tue, 23 Dec 2008 13:40:28 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: ide <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sata_sil: add Large Block Transfer support
-References: <4945BDED.7050205@shaw.ca> <494F69C4.2060708@kernel.org> <49506AAF.3040400@shaw.ca>
-In-Reply-To: <49506AAF.3040400@shaw.ca>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	id S1754395AbYLWEnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 23:43:50 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: drivers using the non-PCI dma_set_mask() on PCI devices
+Date: Mon, 22 Dec 2008 22:43:33 -0600
+Message-ID: <49506C75.8010200@shaw.ca>
+References: <200812222132.mBMLWrNU028431@harpo.it.uu.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Dec 2008 04:40:32 +0000 (UTC)
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+In-Reply-To: <200812222132.mBMLWrNU028431@harpo.it.uu.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Robert.
-
-Robert Hancock wrote:
-> Tejun Heo wrote:
->>
->> ioread/iowrite?
+Mikael Pettersson wrote:
+> Several drivers do the following:
 > 
-> We know the register's always MMIO on this controller, so it's slightly
-> more optimal to avoid the conditional in there.
-
-Yeah, by a small margin but I think the consensus was to use
-ioread/write no matter what if it's mapped using iomap.  I don't think
-we guarantee iomapped address == mmio address after all.
-
->> I know it's not specific to this change but does mb() really make
->> sense here?  I don't think we need any barrier here.
+> 	struct pci_dev *pdev = ...;
+> 	...
+> 	if (dma_set_mask(&pdev->dev, mask))
+> 		...
 > 
-> Not sure. Documentation/memory-barriers.txt seems rather unfortunately
-> vague on whether MMIO writes are strongly ordered with respect to memory
-> writes. I seem to recall some debate on this a while ago, did it ever
-> get resolved?
+> But pdev->dev.dma_mask == &pdev->dma_mask, so this is essentially a
+> roundabout way of saying
+> 
+> 	if (pci_set_dma_mask(pdev, mask))
+> 
+> except that it bypasses the PCI-specific operations pci_set_dma_mask()
+> may do on that platform.
+> 
+> Drivers doing this include drivers/scsi/aic7xxx/aic79xx_osm_pci.c,
+> drivers/scsi/aic7xxxx/aic7xxx_osm_pci.c, drivers/scsi/qla2xxx/qla_os.c,
+> drivers/net/wireless/rt2x00/rt2x00pci.c, and drivers/media/video/meye.c.
+> 
+> Is it considered acceptable that drivers bypass the PCI DMA API on
+> PCI devices like this, or are these drivers in error?
+> 
+> I'm doing some work on an embedded platform (ARM IXP4xx) with some
+> PCI DMA restrictions. To handle these the platform provides its own
+> versions of pci_set_dma_mask() and pci_set_consistent_dma_mask(),
+> but its dma_set_mask() currently does not do anything PCI-specific.
+> The question is: should dma_set_mask() have PCI knowledge or not?
 
-I remember that thread too but don't really any definite conclusion.
-Eh... I hate barriers lying around without exact explanation.  :-(
+AFAIK pci_set_dma_mask is somewhat deprecated, and dma_set_mask should 
+be used instead. If the platform fails to do what's needed when 
+dma_set_mask is called on a PCI device then it would seem the platform 
+code is in error.
 
-Thanks.
-
--- 
-tejun
