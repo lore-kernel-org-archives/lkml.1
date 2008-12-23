@@ -1,129 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393AbYLWVMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752365AbYLWV3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752393AbYLWVMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 16:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYLWVMd
+	id S1752365AbYLWV3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 16:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYLWV3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 16:12:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41141 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244AbYLWVMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 16:12:32 -0500
-Message-ID: <495153A4.5060201@kernel.org>
-Date: Tue, 23 Dec 2008 13:09:56 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Tue, 23 Dec 2008 16:29:01 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:3191 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751244AbYLWV3A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 16:29:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=w2Q1SZqpQNsWJF3vzP57s/QG7/yQlK/5AaTx+T4TQ6WnLXew7j9GDtG+lTTHdcHMbz
+         9XkZ6hKcF2mqWxvuhE9iqpM0K0j68cN/GW+hG6I9syO4fbhb+AkVtQsRAgzC1eIPu9C4
+         6dFpZSy3uPRyBeTxGSGstO9CWvITo3JGQR4Xo=
+Message-ID: <86802c440812231328oa5e9682q9ad70a96680463b2@mail.gmail.com>
+Date: Tue, 23 Dec 2008 13:28:58 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: panic with tg_shares_up again?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, mel@csn.ul.ie
-Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333	smp_call_function_mask
-References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au> <20081219105441.GA19750@linux.vnet.ibm.com> <86802c440812190351q3118516aif664dd5869c21b2a@mail.gmail.com> <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com>
-In-Reply-To: <20081223132127.GA5450@linux.vnet.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------030008080904070706010106"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: a6e3685ef087be94
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030008080904070706010106
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+yesterday's tip on one 32 cores sytem
 
-Kamalesh Babulal wrote:
-> * Yinghai Lu <yinghai@kernel.org> [2008-12-19 13:02:40]:
-> 
-> 
-> 	I tried testing with today's tip/master and it can be reproduced with it.
-> 
-> root (hd0,0)
->  Filesystem type is ext2fs, partition type 0x83
-> kernel /vmlinuz-autotest root=/dev/mapper/VolGroup00-LogVol00 ro console=tty0 c
-> onsole=ttyS1,19200 selinux=no debug nmi_watchdog=1 unknown_nmi_panic=1 initcall
-> _debug earlyprintk=serial,ttyS1,19200 IDENT=1230036460
->    [Linux-bzImage, setup=0x3000, size=0x273c10]
-> initrd /initrd-autotest
->    [Linux-initrd @ 0x37e5f000, 0x190980 bytes]
-> 
-> Linux version 2.6.28-rc8-autotest-tip (root@bl6-13.ltc.austin.ibm.com) (gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #1 SMP Tue Dec 23 06:37:41 CST 2008
-> Command line: root=/dev/mapper/VolGroup00-LogVol00 ro console=tty0 console=ttyS1,19200 selinux=no debug nmi_watchdog=1 unknown_nmi_panic=1 initcall_debug earlyprintk=serial,ttyS1,19200 IDENT=1230036460
-> Built 1 zonelists in Node order, mobility grouping on.  Total pages: 256240
-> Policy zone: DMA32
-> Kernel command line: root=/dev/mapper/VolGroup00-LogVol00 ro console=tty0 console=ttyS1,19200 selinux=no debug nmi_watchdog=1 unknown_nmi_panic=1 initcall_debug earlyprintk=serial,ttyS1,19200 IDENT=1230036460
-> Initializing CPU#0
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000048
-> IP: [<ffffffff8070e46a>] init_ISA_irqs+0x18/0x53
-> PGD 0 
-
-please try attached debug patch.
-
-Thanks
-
-YH
-
---------------030008080904070706010106
-Content-Type: text/x-patch;
- name="sparse_irq_fix1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sparse_irq_fix1.patch"
-
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 3e070bb..41b29cf 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -180,6 +180,9 @@ void __init arch_early_irq_init(void)
- 	cfg = irq_cfgx;
- 	count = ARRAY_SIZE(irq_cfgx);
- 
-+	printk(KERN_DEBUG
-+		 "calling arch_early_irq_init with count=%d\n", count);
-+
- 	for (i = 0; i < count; i++) {
- 		desc = irq_to_desc(i);
- 		desc->chip_data = &cfg[i];
-diff --git a/init/main.c b/init/main.c
-index f10a499..dadff40 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -544,10 +544,12 @@ void __init __weak thread_info_cache_init(void)
- 
- void __init __weak arch_early_irq_init(void)
- {
-+	printk(KERN_DEBUG "calling __weak arch_early_irq_init\n");
- }
- 
- void __init __weak early_irq_init(void)
- {
-+	printk(KERN_DEBUG "calling __weak early_irq_init\n");
- 	arch_early_irq_init();
- }
- 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 6492400..c7f4404 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -56,10 +56,6 @@ void handle_bad_irq(unsigned int irq, struct irq_desc *desc)
- int nr_irqs = NR_IRQS;
- EXPORT_SYMBOL_GPL(nr_irqs);
- 
--void __init __attribute__((weak)) arch_early_irq_init(void)
--{
--}
--
- #ifdef CONFIG_SPARSE_IRQ
- static struct irq_desc irq_desc_init = {
- 	.irq	    = -1,
-@@ -143,6 +139,9 @@ void __init early_irq_init(void)
- 	desc = irq_desc_legacy;
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 
-+	printk(KERN_DEBUG
-+		 "calling early_irq_init with legacy_count=%d\n", legacy_count);
-+
- 	for (i = 0; i < legacy_count; i++) {
- 		desc[i].irq = i;
- 		desc[i].kstat_irqs = kstat_irqs_legacy[i];
-
---------------030008080904070706010106--
+[   22.048032] calling  hpet_late_init+0x0/0x19c @ 1
+[   22.052037] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+[   22.057035] hpet0: 3 comparators, 32-bit 25.000000 MHz counter
+[   22.068047] divide error: 0000 [#1] SMP
+[   22.071994] last sysfs file:
+[   22.072030] CPU 8
+[   22.072030] Modules linked in:
+[   22.072030] Pid: 0, comm: swapper Not tainted
+2.6.28-rc8-tip-01347-gab88ef6-dirty #327
+[   22.072030] RIP: 0010:[<ffffffff8025066e>]  [<ffffffff8025066e>]
+tg_shares_up+0x100/0x1d1
+[   22.072030] RSP: 0018:ffff882024a87d48  EFLAGS: 00010246
+[   22.072030] RAX: 0000000000618800 RBX: ffff880028081680 RCX: ffff88084421d680
+[   22.072030] RDX: 0000000000000000 RSI: 0000000000000004 RDI: 0000000000000000
+[   22.072030] RBP: ffff882024a87db8 R08: 0000000000000080 R09: ffff88104441e460
+[   22.072030] R10: 0000000000000000 R11: 0000000000000000 R12: ffffffff81117da0
+[   22.072030] R13: 0000000000000040 R14: 0000000000000004 R15: 0000000000000800
+[   22.072030] FS:  0000000000000000(0000) GS:ffff881824da7980(0000)
+knlGS:0000000000000000
+[   22.072030] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[   22.072030] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+[   22.072030] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   22.072030] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[   22.072030] Process swapper (pid: 0, threadinfo ffff88182467c000,
+task ffff880824af9650)
+[   22.072030] Stack:
+[   22.072030]  0000000000000020 ffffffff810ed680 0000000000001000
+0000000000000000
+[   22.072030]  0000000000000000 ffff88104441e460 0000000000000283
+00000004810ee000
+[   22.072030]  0000000000000000 ffffffff81117da0 ffff88104441e360
+ffffffff8025056e
+[   22.072030] Call Trace:
+[   22.072030]  <IRQ> <0> [<ffffffff8025056e>] ? tg_shares_up+0x0/0x1d1
+[   22.072030]  [<ffffffff8024a9e1>] ? tg_nop+0x0/0x8
+[   22.072030]  [<ffffffff8024cd78>] walk_tg_tree+0x74/0x8d
+[   22.072030]  [<ffffffff80254063>] update_shares+0x48/0x4d
+[   22.072030]  [<ffffffff80254478>] rebalance_domains+0x161/0x53c
+[   22.072030]  [<ffffffff8025489c>] run_rebalance_domains+0x49/0xe4
+[   22.072030]  [<ffffffff8026020a>] __do_softirq+0x83/0x145
+[   22.072030]  [<ffffffff8022a15c>] call_softirq+0x1c/0x28
+[   22.072030]  [<ffffffff8022b0a0>] do_softirq+0x34/0x76
+[   22.072030]  [<ffffffff8025ff1b>] irq_exit+0x3f/0x82
+[   22.072030]  [<ffffffff8023a75d>] smp_apic_timer_interrupt+0x93/0xac
+[   22.072030]  [<ffffffff80229b73>] apic_timer_interrupt+0x13/0x20
+[   22.072030]  <EOI> <0>Code: 44 24 08 4a 8b 0c f0 48 85 c9 0f 84 b6
+00 00 00 49 8b 44 24 10 4a 8b 04 f0 48 8b 80 a8 00 00 00 48 85 c0 74
+10 49 0f af c7 31 d2 <48> f7 75 b0 48 89 45 d0 eb 11 4c 89 f8 31 d2 48
+c7 45 d0 00 00
+[   22.072030] RIP  [<ffffffff8025066e>] tg_shares_up+0x100/0x1d1
+[   22.072030]  RSP <ffff882024a87d48>
