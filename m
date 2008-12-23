@@ -1,57 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbYLWS4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752007AbYLWTLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752060AbYLWS4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 13:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYLWS4I
+	id S1752007AbYLWTLb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 14:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYLWTLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 13:56:08 -0500
-Received: from www.tglx.de ([62.245.132.106]:49980 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYLWS4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 13:56:07 -0500
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       malware-list@lists.printk.net, eparis@redhat.com, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 0/5] VFS: DazukoFS, stackable-fs, file access control
-From: John Ogness <dazukocode@ogness.net>
-References: <86d4flh96z.fsf@johno-ibook.fn.ogness.net>
-	<20081223115428.GB1439@ucw.cz>
-Date: Tue, 23 Dec 2008 19:55:27 +0100
-In-Reply-To: <20081223115428.GB1439@ucw.cz> (Pavel Machek's message of "Tue\, 23 Dec 2008 12\:54\:28 +0100")
-Message-ID: <864p0u202o.fsf@johno-ibook.fn.ogness.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 23 Dec 2008 14:11:17 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:51569 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750916AbYLWTLQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 14:11:16 -0500
+Message-ID: <495137DC.8050204@vlnb.net>
+Date: Tue, 23 Dec 2008 22:11:24 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: "David M. Lloyd" <dmlloyd@flurg.com>, linux-mm@kvack.org,
+       Christoph Hellwig <hch@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org
+Subject: Re: [RFC]: Support for zero-copy TCP transmit of user space data
+References: <4942BAB8.4050007@vlnb.net> <1229110673.3262.94.camel@localhost.localdomain> <49469ADB.6010709@vlnb.net> <20081215231801.GA27168@infradead.org> <4947FA1C.2090509@vlnb.net> <494A97DD.7080503@vlnb.net> <494A99EF.6070400@flurg.com> <494BDBC5.7050701@vlnb.net> <20081219190701.GP32491@kernel.dk> <494BF361.1090003@vlnb.net> <20081219192736.GQ32491@kernel.dk>
+In-Reply-To: <20081219192736.GQ32491@kernel.dk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19S970cDYo66FptmPm144hxhMBH38PRVTBURHd
+ +cM2XRmRLdTjIJYzxyscXLjCIXCsjASah6HuedSWcGizDmfrOK
+ yy0z3/t033JBwmcMNQP5w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-12-23, Pavel Machek <pavel@suse.cz> wrote:
->> MOTIVATION
->> 
->> Since 2001 various anti-virus vendors have been providing
->> out-of-tree solutions for online virus scanning. Although GNU/Linux
->> systems currently are not targets of virus authors, many
->> organizations are interested in online virus scanning on
->> Linux-based servers in order to help protect Microsoft Windows
->> clients. It is often argued that file scanning should be
->> implemented in the various services (such as Samba, Apache, vsftpd,
->> etc.), and indeed many such solutions have been
->> implemented. However, there is a continued demand for a
->> kernel-based solution because it can guard the entire filesystem
->> independent from the types and numbers of services running on a
->> system.
->
-> Somewhere here you should mention that unlike other solutions that
-> work 100% of time, dazuko is be design racy and may still allow
-> viruses to be spread from linux system when mmap is used.
+Jens Axboe, on 12/19/2008 10:27 PM wrote:
+>>>>>> An iSCSI target driver iSCSI-SCST was a part of the patchset 
+>>>>>> (http://lkml.org/lkml/2008/12/10/293). For it a nice optimization to 
+>>>>>> have TCP zero-copy transmit of user space data was implemented. Patch, 
+>>>>>> implementing this optimization was also sent in the patchset, see 
+>>>>>> http://lkml.org/lkml/2008/12/10/296.
+>>>>> I'm probably ignorant of about 90% of the context here, but isn't this 
+>>>>> the sort of problem that was supposed to have been solved by vmsplice(2)?
+>>>> No, vmsplice can't help here. ISCSI-SCST is a kernel space driver. But, 
+>>>> even if it was a user space driver, vmsplice wouldn't change anything 
+>>>> much. It doesn't have a possibility for a user to know, when 
+>>>> transmission of the data finished. So, it is intended to be used as: 
+>>>> vmsplice() buffer -> munmap() the buffer -> mmap() new buffer -> 
+>>>> vmsplice() it. But on the mmap() stage kernel has to zero all the newly 
+>>>> mapped pages and zeroing memory isn't much faster, than copying it. 
+>>>> Hence, there would be no considerable performance increase.
+>>> vmsplice() isn't the right choice, but splice() very well could be. You
+>>> could easily use splice internally as well. The vmsplice() part sort-of
+>>> applies in the sense that you want to fill pages into a pipe, which is
+>>> essentially what vmsplice() does. You'd need some helper to do that.
+>> Sorry, Jens, but splice() works only if there is a file handle on the 
+>> another side, so user space doesn't see data buffers. But SCST needs to 
+>> serve a wider usage cases, like reading data with decompression from a 
+>> virtual tape, where decompression is done in user space. For those only 
+>> complete zero-copy network send, which I implemented, can give the best 
+>> performance.
+> 
+> __splice_from_pipe() takes a pipe, a descriptor and an actor. There's
+> absolutely ZERO reason you could not reuse most of that for this
+> implementation. The big bonus here is that getting the put correct from
+> networking would even make splice() better for everyone. Win for Linux,
+> win for you since it'll make it MUCH easier for you to get this stuff
+> in. Looking at your original patch and I almost think it's a flame bait
+> to induce discussion (nothing wrong with that, that approach works quite
+> well and has been used before). There's no way in HELL that it'd ever be
+> a merge candidate. And I suspect you know that, at least I hope you do
+> or you are farther away from going forward with this than you think.
+> 
+> So don't look at splice() the system call, look at the infrastructure
+> and check if that could be useful for your case. To me it looks
+> absolutely like it could, if you goal is just zero-copy transmit.
 
-This thread is about DazukoFS. I feel there is no need to discuss
-previous incarnations of Dazuko, all of which share _no_ code with
-DazukoFS.
+I looked at the splice code again to make sure I don't miss anything. 
+__splice_from_pipe() leads to pipe_to_sendpage(), which leads to 
+sock_sendpage, then to sock->sendpage(). Sorry, but I don't see any 
+point why to go over all the complicated splice infrastructure instead 
+of directly call sock->sendpage(), as I do.
 
-If you are aware of a race condition in DazukoFS, please report
-it. Thank you.
+> The
+> only missing piece is dropping the reference and signalling page
+> consumption at the right point, which is when the data is safe to be
+> reused. That very bit is missing, but that should be all as far as I can
+> tell.
 
-John Ogness
+This is exactly what I implemented in the patch we are discussing.
+
+>>> And
+>>> the ack-on-xmit-done bits is something that splice-to-socket needs
+>>> anyway, so I think it'd be quite a suitable choice for this.
+>> So, are you writing that splice() could also benefit from the zero-copy 
+>> transmit feature, like I implemented?
+> 
+> I like how you want to reinvent everything, perhaps you should spend a
+> little more time looking into various other approaches? splice() already
+> does zero-copy network transmit, there are no copies going on. Ideally,
+> you'd have zero copies moving data into your pipe, but migrade/move
+> isn't quite there yet. But that doesn't apply to your case at all.
+> 
+> What is missing, as I wrote, is the 'release on ack' and not on pipe
+> buffer release. This is similar to the get_page/put_page stuff you did
+> in your patch, but don't go claiming that zero-copy transmit is a
+> Vladislav original - the ->sendpage() does no copies.
+
+Jens, I have never claimed I reinvented ->sendpage(). Quite opposite, I 
+use it. I only extended it by a missing feature. Although, seems, since 
+you were misleaded, I should apologize for not too good description of 
+the patch.
+
+Thanks,
+Vlad
+
+
+
