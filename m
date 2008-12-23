@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbYLWSJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751952AbYLWSYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752060AbYLWSJm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 13:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYLWSJc
+	id S1751952AbYLWSYX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 13:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYLWSYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 13:09:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48003 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750986AbYLWSJb (ORCPT
+	Tue, 23 Dec 2008 13:24:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57999 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYLWSYN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 13:09:31 -0500
-Date: Tue, 23 Dec 2008 10:08:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       =?ISO-8859-15?Q?H=E5kon_L=F8vdal?= <hlovdal@gmail.com>,
-       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while
- a compound statement
-In-Reply-To: <m3k59qssix.fsf@maximus.localdomain>
-Message-ID: <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
-References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net> <20081222191507.11807.50794.stgit@vmbox.hanneseder.net> <m3hc4voo2a.fsf@maximus.localdomain> <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com> <m3ocz2ua3w.fsf@maximus.localdomain>
- <1230053186.1447.9.camel@brick> <m3k59qssix.fsf@maximus.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 23 Dec 2008 13:24:13 -0500
+Message-ID: <49512BF5.2010705@kernel.org>
+Date: Tue, 23 Dec 2008 10:20:37 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jaswinder Singh <jaswinder@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: traps.c replace #if CONFIG_X86_32 with #ifdef	CONFIG_X86_32
+References: <1230049211.14358.2.camel@jaswinder.satnam>
+In-Reply-To: <1230049211.14358.2.camel@jaswinder.satnam>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 23 Dec 2008, Krzysztof Halasa wrote:
-
-> Harvey Harrison <harvey.harrison@gmail.com> writes:
+Jaswinder Singh wrote:
+> Impact: cleanup, avoid warning in X86_64
 > 
-> >> There are many ways to make the code more merge friendly at a cost of
-> >> readability. Hope we don't go this way.
-> >
-> > Linus himself added that particular warning to sparse...may want to check
-> > with him the reason for it.
+> Fixes this warning in X86_64:
+>   CC      arch/x86/kernel/traps.o
+> arch/x86/kernel/traps.c:695:5: warning: "CONFIG_X86_32" is not defined
 > 
-> Once again, this is a personal thing, and a harmless one.
+> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+> ---
+>  arch/x86/kernel/traps.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+> index d327b53..2c00412 100644
+> --- a/arch/x86/kernel/traps.c
+> +++ b/arch/x86/kernel/traps.c
+> @@ -692,7 +692,7 @@ void math_error(void __user *ip)
+>  
+>  	err = swd & ~cwd & 0x3f;
+>  
+> -#if CONFIG_X86_32
+> +#ifdef CONFIG_X86_32
+>  	if (!err)
+>  		return;
+>  #endif
 
-It's more than that. I added the check after some person who had been 
-programming the kernel (and thus was supposedly fluent in C) literally 
-could not parse a macro that had "do x while (y)" in it.
+Applied to tip:x86/fpu, thanks.
 
-Why? Because it's so uncommon, and because "while (y)" on its own means 
-something totally different.
+Andi: you might have a perspective on this: in math_error() we bail out
+if there is no error on i386, but not on x86-64.  I am rather assuming
+that is because it simply can't happen on x86-64 (no IRQ 13 bullshit) so
+it wasn't necessary?
 
-So the syntactic sugar to _always_ have do-while loops have that brace is 
-a way to avoid one of the rather few places where the C language has 
-syntax that is very context-dependent.
+Thanks,
 
-Another example of this is "sizeof". The kernel universally (I hope) has 
-parenthesis around the sizeof argument, even though it's clearly not 
-required by the C language. 
-
-It's a coding standard. 
-
-And quite frankly, anybody who works on gcc has no place complaining about 
-sparse coding standard warnings. They are a _hell_ of a lot better than 
-some of the really crazy warnings gcc spews out with "-W". At least the 
-sparse warnings you can make go away while making the code more 
-understandable. Some of the -W warnings are unfixable without breaking the 
-source code.
-
-		Linus
+	-hpa
