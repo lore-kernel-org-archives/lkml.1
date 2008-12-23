@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYLWICj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYLWIIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755583AbYLWICj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 03:02:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYLWICa
+	id S1755583AbYLWIIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 03:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYLWII3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 03:02:30 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:60642 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753228AbYLWICa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 03:02:30 -0500
-Date: Tue, 23 Dec 2008 09:02:24 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: schmitz@opal.biophys.uni-duesseldorf.de,
-       linux-fbdev-devel@lists.sourceforge.net, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] fbdev: c2p - Rename c2p to c2p_planar and correct
- indentation
-In-Reply-To: <20081222152359.1e9b2143.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0812230857390.17497@anakin>
-References: <20081221150059.844577615@mail.of.borg> <20081221150123.327017854@mail.of.borg>
- <20081222152359.1e9b2143.akpm@linux-foundation.org>
+	Tue, 23 Dec 2008 03:08:29 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:21701 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752699AbYLWII2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 03:08:28 -0500
+Date: Tue, 23 Dec 2008 09:07:49 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH next] bio: zero inlined bio_vec
+Message-ID: <20081223080747.GE32491@kernel.dk>
+References: <Pine.LNX.4.64.0812230103480.19807@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812230103480.19807@blonde.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Dec 2008, Andrew Morton wrote:
-> On Sun, 21 Dec 2008 16:01:05 +0100
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Tue, Dec 23 2008, Hugh Dickins wrote:
+> bvec_alloc_bs() zeroes its bio_vec, and at least __blk_queue_bounce()
+> relies upon that: therefore bio_alloc_bioset() must zero the inlined
+> bio_vec - without that, lots of nastiness occurs in bounce_end_io and
+> blk_rq_map_sg and other places when booting up my PAE box.
 > 
-> > +    /*
-> > +     *  Store a full block of planar data after c2p conversion
-> > +     */
-> > +
-> > +static inline void store_planar(void *dst, u32 dst_inc, u32 bpp, u32 d[8])
-> > +{
-> > +	int i;
-> > +
-> > +	for (i = 0; i < bpp; i++, dst += dst_inc)
-> > +		*(u32 *)dst = d[perm_c2p_32x8[i]];
-> > +}
-> > +
-> > +
-> > +    /*
-> > +     *  Store a partial block of planar data after c2p conversion
-> > +     */
-> > +
-> > +static inline void store_planar_masked(void *dst, u32 dst_inc, u32 bpp,
-> > +				       u32 d[8], u32 mask)
-> > +{
-> > +	int i;
-> > +
-> > +	for (i = 0; i < bpp; i++, dst += dst_inc)
-> > +		*(u32 *)dst = comp(d[perm_c2p_32x8[i]], *(u32 *)dst, mask);
-> > +}
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
 > 
-> Why not just make the first arg of these (too large to be inlined)
-> functions have type u32*, then do away with the casts?
+>  fs/bio.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- linux-next/fs/bio.c	2008-12-21 20:49:25.000000000 +0000
+> +++ fixed/fs/bio.c	2008-12-22 21:10:06.000000000 +0000
+> @@ -324,6 +324,8 @@ struct bio *bio_alloc_bioset(gfp_t gfp_m
+>  			if (nr_iovecs <= BIO_INLINE_VECS) {
+>  				idx = 0;
+>  				bvl = bio->bi_inline_vecs;
+> +				memset(bvl, 0, BIO_INLINE_VECS *
+> +							sizeof(struct bio_vec));
+>  				nr_iovecs = BIO_INLINE_VECS;
+>  			} else {
+>  				bvl = bvec_alloc_bs(gfp_mask, nr_iovecs, &idx,
 
-If I make dst u32 *, then "dst += dst_inc" needs even more ugly casting
-(dst_inc is not always a multiple of 4).
+Hmm, where does it die? Nobody should look at the bio_vec index beyond
+bio->bi_vcnt, and 0...bio->bi_vcnt-1 should always be initialized due to
+the way we fill the entries.
 
-Anyway, as it may be an unaligned access, I'll switch to {get,put}_unaligned(),
-which has the side effect of hiding the casts.
+-- 
+Jens Axboe
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
