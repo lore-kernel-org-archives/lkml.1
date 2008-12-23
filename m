@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbYLWR0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752493AbYLWR3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752441AbYLWR0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 12:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYLWR0d
+	id S1752493AbYLWR3x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 12:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYLWR3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 12:26:33 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:47081 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbYLWR0b (ORCPT
+	Tue, 23 Dec 2008 12:29:45 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35065 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYLWR3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 12:26:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=l/8xWCtYTknxm3CKQIyr/DxZDM4OoYDGJEC6JMdhFs2lbchrCdzz6CdvMm50d0TI4W
-         KbbOnhjdHCm0dmk/QSaZFENbllGrSvdJ5rrMISrBF4Y2+Em+0wI50o67qgl5ZiO2ZqrG
-         DqdDqkUgJrKXOXhEB6JcQh/W3CWF3sGk3wyvU=
-Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while
- a compound statement
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: =?ISO-8859-1?Q?H=E5kon_L=F8vdal?= <hlovdal@gmail.com>,
-       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <m3ocz2ua3w.fsf@maximus.localdomain>
-References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
-	 <20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
-	 <m3hc4voo2a.fsf@maximus.localdomain>
-	 <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
-	 <m3ocz2ua3w.fsf@maximus.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Dec 2008 09:26:26 -0800
-Message-Id: <1230053186.1447.9.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 23 Dec 2008 12:29:44 -0500
+Date: Tue, 23 Dec 2008 12:29:40 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Markus Metzger <markus.t.metzger@gmail.com>
+Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
+ tracing_reset_online_cpus() helper)
+In-Reply-To: <20081220033822.362bc88a@daedalus.pq.iki.fi>
+Message-ID: <alpine.DEB.1.10.0812231225200.26669@gandalf.stny.rr.com>
+References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI> <c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com> <alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com> <20081220004453.50aec846@daedalus.pq.iki.fi> <20081219225717.GK13409@elte.hu>
+ <alpine.DEB.1.10.0812191810110.26234@gandalf.stny.rr.com> <20081219233443.GC17984@elte.hu> <alpine.DEB.1.10.0812191912280.26234@gandalf.stny.rr.com> <20081220033822.362bc88a@daedalus.pq.iki.fi>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-23 at 17:31 +0100, Krzysztof Halasa wrote:
-> "Håkon Løvdal" <hlovdal@gmail.com> writes:
-> 
-> > For this specific issue the important aspect is to improve readability
-> > (and not just eventually satisfy some warning from a tool), which I
-> > assume there is no disagrement on.
-> 
-> Precisely.
-> 
-> > Now what constitutes improved
-> > readbility on the other hand is another issue, and I guess there are
-> > next to as many oppinions as developers... :)
-> 
-> Yes. Thus the brackets (or lack of them) of do-while loops should
-> never be forced as a part of coding standard/tools. This is just an
-> unimportant detail of personal style and trying to force it is simply
-> damaging to all of us.
-> 
-> > Of secondary importance is the benefit that always using brackets
-> > makes them much more merge friendly.
-> 
-> There are many ways to make the code more merge friendly at a cost of
-> readability. Hope we don't go this way.
 
-Linus himself added that particular warning to sparse...may want to check
-with him the reason for it.
+On Sat, 20 Dec 2008, Pekka Paalanen wrote:
+> 
+> I thought this was just about not having to do
+> 
+> $ echo 0 > tracing_enabled
+> $ echo 28764243 > buffer_size
+> $ echo 1 > tracing_enabled
+> 
+> and instead just do
+> 
+> $ echo 28764243 > buffer_size
+> 
+> which would do exactly the same, except being easier for the user.
+> Personally I've never dreamed of any kind of resize-in-flight.
+> 
 
-Harvey
+I must be losing it :-p
+
+You can on tip simply echo 28764243 > buffer_size without disabling the 
+tracer.  This change is not in mainline, but I expect it will be in 
+2.6.29. 
+
+I just resized the buffer while running the function tracer. I made the 
+change a while ago.
+
+-- Steve
 
