@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYLWB2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbYLWBdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbYLWB2i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 20:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYLWB23
+	id S1755678AbYLWBdi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 20:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYLWBd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 20:28:29 -0500
-Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:24512 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753441AbYLWB23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 20:28:29 -0500
-Date: Tue, 23 Dec 2008 02:28:26 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: linux-kernel@vger.kernel.org
-cc: trivial@kernel.org
-Subject: [PATCH][trivial] Update Jesper Juhl CREDITS entry with new email
-Message-ID: <alpine.LNX.2.00.0812230226510.17075@swampdragon.chaosbits.net>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Dec 2008 20:33:29 -0500
+Received: from mga02.intel.com ([134.134.136.20]:59153 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753532AbYLWBd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 20:33:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,266,1228118400"; 
+   d="scan'208";a="373023719"
+Date: Mon, 22 Dec 2008 17:33:28 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: travis@sgi.com, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+Subject: [patch] x86: use logical apicid in x2apic_cluster's x2apic_cpu_mask_to_apicid_and()
+Message-ID: <20081223013327.GA29686@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x86: use logical apicid in x2apic_cluster's x2apic_cpu_mask_to_apicid_and()
 
-Old email no longer exists, this updates CREDITS with my new one.
+These commits:
 
-Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+	commit 95d313cf1c1ecedc8bec5727b09bdacbf67dfc45
+	Author: Mike Travis <travis@sgi.com>
+	Date:   Tue Dec 16 17:33:54 2008 -0800
+
+	    x86: Add cpu_mask_to_apicid_and
+
+and
+	commit 6eeb7c5a99434596c5953a95baa17d2f085664e3
+	Author: Mike Travis <travis@sgi.com>
+	Date:   Tue Dec 16 17:33:55 2008 -0800
+
+	    x86: update add-cpu_mask_to_apicid_and to use struct cpumask*
+
+broke interrupt delivery on x2apic platforms.  As x2apic cluster mode uses
+logical delivery mode, we need to use logical apicid instead of physical apicid
+in x2apic_cpu_mask_to_apicid_and()
+
+Impact: fixes the broken interrupt delivery issue on generic x2apic platforms.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-diff --git a/CREDITS b/CREDITS
-index b50db17..2c759ba 100644
---- a/CREDITS
-+++ b/CREDITS
-@@ -1681,7 +1681,7 @@ E: ajoshi@shell.unixbox.com
- D: fbdev hacking
+Index: tip/arch/x86/kernel/genx2apic_cluster.c
+===================================================================
+--- tip.orig/arch/x86/kernel/genx2apic_cluster.c	2008-12-22 17:15:38.000000000 -0800
++++ tip/arch/x86/kernel/genx2apic_cluster.c	2008-12-22 17:16:17.000000000 -0800
+@@ -114,7 +114,7 @@
+ 	int cpu;
  
- N: Jesper Juhl
--E: jesper.juhl@gmail.com
-+E: jj@chaosbits.net
- D: Various fixes, cleanups and minor features all over the tree.
- D: Wrote initial version of the hdaps driver (since passed on to others).
- S: Lemnosvej 1, 3.tv
-
-
--- 
-Jesper Juhl <jj@chaosbits.net>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+ 	/*
+-	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
++	 * We're using fixed IRQ delivery, can only return one logical APIC ID.
+ 	 * May as well be the first.
+ 	 */
+ 	cpu = cpumask_first(cpumask);
+@@ -130,14 +130,14 @@
+ 	int cpu;
+ 
+ 	/*
+-	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
++	 * We're using fixed IRQ delivery, can only return one logical APIC ID.
+ 	 * May as well be the first.
+ 	 */
+ 	for_each_cpu_and(cpu, cpumask, andmask)
+ 		if (cpumask_test_cpu(cpu, cpu_online_mask))
+ 			break;
+ 	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_apicid, cpu);
++		return per_cpu(x86_cpu_to_logical_apicid, cpu);
+ 	return BAD_APICID;
+ }
+ 
