@@ -1,189 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbYLWQNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbYLWQNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbYLWQNc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 11:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYLWQNG
+	id S1753028AbYLWQNr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 11:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYLWQNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 11:13:06 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48921 "EHLO mx2.redhat.com"
+	Tue, 23 Dec 2008 11:13:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48923 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751065AbYLWQNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 11:13:02 -0500
+	id S1751079AbYLWQNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 11:13:04 -0500
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 06/10] dlm: improve how bast mode handling
-Date: Tue, 23 Dec 2008 10:58:39 -0600
-Message-Id: <1230051523-5478-7-git-send-email-teigland@redhat.com>
+Subject: [PATCH 08/10] dlm: add time stamp of blocking callback
+Date: Tue, 23 Dec 2008 10:58:41 -0600
+Message-Id: <1230051523-5478-9-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The lkb bastmode value is set in the context of processing the
-lock, and read by the dlm_astd thread.  Because it's accessed
-in these two separate contexts, the writing/reading ought to
-be done under a lock.  This is simple to do by setting it and
-reading it when the lkb is added to and removed from dlm_astd's
-callback list which is properly locked.
+Record the time the latest blocking callback was queued for
+a lock.  This will be used for debugging in combination with
+lock queue timestamp changes in the previous patch.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/ast.c  |   14 ++++++++------
- fs/dlm/ast.h  |    4 ++--
- fs/dlm/lock.c |    8 +++-----
- fs/dlm/user.c |    4 +++-
- fs/dlm/user.h |    2 +-
- 5 files changed, 17 insertions(+), 15 deletions(-)
+ fs/dlm/dlm_internal.h |    1 +
+ fs/dlm/lock.c         |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/fs/dlm/ast.c b/fs/dlm/ast.c
-index 09b167d..fbe840d 100644
---- a/fs/dlm/ast.c
-+++ b/fs/dlm/ast.c
-@@ -2,7 +2,7 @@
- *******************************************************************************
- **
- **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
--**  Copyright (C) 2004-2005 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2004-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -33,10 +33,10 @@ void dlm_del_ast(struct dlm_lkb *lkb)
- 	spin_unlock(&ast_queue_lock);
- }
+diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
+index e69135c..0c48829 100644
+--- a/fs/dlm/dlm_internal.h
++++ b/fs/dlm/dlm_internal.h
+@@ -245,6 +245,7 @@ struct dlm_lkb {
+ 	struct list_head	lkb_astqueue;	/* need ast to be sent */
+ 	struct list_head	lkb_ownqueue;	/* list of locks for a process */
+ 	struct list_head	lkb_time_list;
++	ktime_t			lkb_time_bast;	/* for debugging */
+ 	ktime_t			lkb_timestamp;
+ 	unsigned long		lkb_timeout_cs;
  
--void dlm_add_ast(struct dlm_lkb *lkb, int type)
-+void dlm_add_ast(struct dlm_lkb *lkb, int type, int bastmode)
- {
- 	if (lkb->lkb_flags & DLM_IFL_USER) {
--		dlm_user_add_ast(lkb, type);
-+		dlm_user_add_ast(lkb, type, bastmode);
- 		return;
- 	}
- 
-@@ -46,6 +46,8 @@ void dlm_add_ast(struct dlm_lkb *lkb, int type)
- 		list_add_tail(&lkb->lkb_astqueue, &ast_queue);
- 	}
- 	lkb->lkb_ast_type |= type;
-+	if (bastmode)
-+		lkb->lkb_bastmode = bastmode;
- 	spin_unlock(&ast_queue_lock);
- 
- 	set_bit(WAKE_ASTS, &astd_wakeflags);
-@@ -59,7 +61,7 @@ static void process_asts(void)
- 	struct dlm_lkb *lkb;
- 	void (*cast) (void *astparam);
- 	void (*bast) (void *astparam, int mode);
--	int type = 0, found, bmode;
-+	int type = 0, found, bastmode;
- 
- 	for (;;) {
- 		found = 0;
-@@ -74,6 +76,7 @@ static void process_asts(void)
- 			list_del(&lkb->lkb_astqueue);
- 			type = lkb->lkb_ast_type;
- 			lkb->lkb_ast_type = 0;
-+			bastmode = lkb->lkb_bastmode;
- 			found = 1;
- 			break;
- 		}
-@@ -84,13 +87,12 @@ static void process_asts(void)
- 
- 		cast = lkb->lkb_astfn;
- 		bast = lkb->lkb_bastfn;
--		bmode = lkb->lkb_bastmode;
- 
- 		if ((type & AST_COMP) && cast)
- 			cast(lkb->lkb_astparam);
- 
- 		if ((type & AST_BAST) && bast)
--			bast(lkb->lkb_astparam, bmode);
-+			bast(lkb->lkb_astparam, bastmode);
- 
- 		/* this removes the reference added by dlm_add_ast
- 		   and may result in the lkb being freed */
-diff --git a/fs/dlm/ast.h b/fs/dlm/ast.h
-index 6ee276c..1b5fc5f 100644
---- a/fs/dlm/ast.h
-+++ b/fs/dlm/ast.h
-@@ -1,7 +1,7 @@
- /******************************************************************************
- *******************************************************************************
- **
--**  Copyright (C) 2005 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2005-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -13,7 +13,7 @@
- #ifndef __ASTD_DOT_H__
- #define __ASTD_DOT_H__
- 
--void dlm_add_ast(struct dlm_lkb *lkb, int type);
-+void dlm_add_ast(struct dlm_lkb *lkb, int type, int bastmode);
- void dlm_del_ast(struct dlm_lkb *lkb);
- 
- void dlm_astd_wake(void);
 diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index 724ddac..7b758da 100644
+index dfc57ae..6cfe65b 100644
 --- a/fs/dlm/lock.c
 +++ b/fs/dlm/lock.c
-@@ -307,7 +307,7 @@ static void queue_cast(struct dlm_rsb *r, struct dlm_lkb *lkb, int rv)
- 	lkb->lkb_lksb->sb_status = rv;
- 	lkb->lkb_lksb->sb_flags = lkb->lkb_sbflags;
+@@ -318,6 +318,8 @@ static inline void queue_cast_overlap(struct dlm_rsb *r, struct dlm_lkb *lkb)
  
--	dlm_add_ast(lkb, AST_COMP);
-+	dlm_add_ast(lkb, AST_COMP, 0);
- }
- 
- static inline void queue_cast_overlap(struct dlm_rsb *r, struct dlm_lkb *lkb)
-@@ -320,10 +320,8 @@ static void queue_bast(struct dlm_rsb *r, struct dlm_lkb *lkb, int rqmode)
+ static void queue_bast(struct dlm_rsb *r, struct dlm_lkb *lkb, int rqmode)
  {
++	lkb->lkb_time_bast = ktime_get();
++
  	if (is_master_copy(lkb))
  		send_bast(r, lkb, rqmode);
--	else {
--		lkb->lkb_bastmode = rqmode;
--		dlm_add_ast(lkb, AST_BAST);
--	}
-+	else
-+		dlm_add_ast(lkb, AST_BAST, rqmode);
- }
- 
- /*
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index b3832c6..065149e 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -175,7 +175,7 @@ static int lkb_is_endoflife(struct dlm_lkb *lkb, int sb_status, int type)
- /* we could possibly check if the cancel of an orphan has resulted in the lkb
-    being removed and then remove that lkb from the orphans list and free it */
- 
--void dlm_user_add_ast(struct dlm_lkb *lkb, int type)
-+void dlm_user_add_ast(struct dlm_lkb *lkb, int type, int bastmode)
- {
- 	struct dlm_ls *ls;
- 	struct dlm_user_args *ua;
-@@ -208,6 +208,8 @@ void dlm_user_add_ast(struct dlm_lkb *lkb, int type)
- 
- 	ast_type = lkb->lkb_ast_type;
- 	lkb->lkb_ast_type |= type;
-+	if (bastmode)
-+		lkb->lkb_bastmode = bastmode;
- 
- 	if (!ast_type) {
- 		kref_get(&lkb->lkb_ref);
-diff --git a/fs/dlm/user.h b/fs/dlm/user.h
-index 35eb6a1..1c96864 100644
---- a/fs/dlm/user.h
-+++ b/fs/dlm/user.h
-@@ -9,7 +9,7 @@
- #ifndef __USER_DOT_H__
- #define __USER_DOT_H__
- 
--void dlm_user_add_ast(struct dlm_lkb *lkb, int type);
-+void dlm_user_add_ast(struct dlm_lkb *lkb, int type, int bastmode);
- int dlm_user_init(void);
- void dlm_user_exit(void);
- int dlm_device_deregister(struct dlm_ls *ls);
+ 	else
 -- 
 1.5.5.1
 
