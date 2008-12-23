@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYLWGsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYLWHDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbYLWGsZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 01:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYLWGsR
+	id S1755359AbYLWHDw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 02:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYLWHDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 01:48:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45595 "EHLO mx3.mail.elte.hu"
+	Tue, 23 Dec 2008 02:03:43 -0500
+Received: from www.tglx.de ([62.245.132.106]:32925 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbYLWGsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 01:48:16 -0500
-Date: Tue, 23 Dec 2008 07:48:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-graph-tracer: strip ending newlines
-	on comments
-Message-ID: <20081223064804.GA24956@elte.hu>
-References: <494FD967.2000002@gmail.com>
+	id S1752037AbYLWHDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 02:03:43 -0500
+Date: Tue, 23 Dec 2008 08:03:06 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+       linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: TSC not updating after resume: Bug or Feature?
+In-Reply-To: <200812230147.32340.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812230801440.3723@localhost.localdomain>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <200812182319.57235.rjw@sisk.pl> <alpine.LFD.2.00.0812211639210.3376@localhost.localdomain> <200812230147.32340.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <494FD967.2000002@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Impact: trivial output improvement
+On Tue, 23 Dec 2008, Rafael J. Wysocki wrote:
+> > Care to explain ?
 > 
-> Ending newlines are appended automatically on comments by the function graph tracer
-> because the newlines needs to be placed after the "*/" characters.
-> So if the user puts an ending whitespace, we want to strip it.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Well, the fact that in the resume code path the clocksource is only updated as
+> a result of executing pci_set_power_state() is worrisome.  I would be more
+> reliable to update it directly at one point.
 
-applied to tip/tracing/function-graph-tracer, thanks Frederic!
+Hmm. We reactivate the clock sources from timekeeping resume():
 
-> @@ -584,6 +585,11 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
->  				return TRACE_TYPE_PARTIAL_LINE;
->  		}
->  
-> +	/* Strip ending newline on the comment */
-> +	len = strlen(trace->buf);
-> +	if (trace->buf[len - 1] == '\n')
-> +		trace->buf[len - 1] = '\0';
-> +
+     clocksource_resume();
 
-Hm, dont we know the length of the buffer already, so that we could avoid 
-the strlen() overhead?
+How is this related to pci_set_power_state() ?
 
-	Ingo
+Thanks,
+
+	tglx
