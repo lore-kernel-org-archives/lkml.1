@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYLWWDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbYLWWEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbYLWWDs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 17:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYLWWDi
+	id S1752379AbYLWWEM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 17:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYLWWDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 17:03:38 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40799 "EHLO e3.ny.us.ibm.com"
+	Tue, 23 Dec 2008 17:03:55 -0500
+Received: from plexity.net ([206.123.115.38]:41924 "EHLO plexity.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbYLWWDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 17:03:37 -0500
-Date: Tue, 23 Dec 2008 14:03:45 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, tglx@linutronix.de, akpm@linux-foundation.org,
-       ralf@linux-mips.org, kernel@wantstofly.org, hskinnemoen@atmel.com,
-       cooloney@kernel.org, tony.luck@intel.com, geert@linux-m68k.org,
-       zippel@linux-m68k.org, jwboyer@linux.vnet.ibm.com,
-       mporter@kernel.crashing.org, grant.likely@secretlab.ca,
-       paulus@samba.org, benh@kernel.crashing.org, dhowells@redhat.com,
-       yasutake.koichi@jp.panasonic.com, lethal@linux-sh.org, hpa@zytor.com
-Subject: [PATCH, -tip] Remove redundant RCU_CPU_STALL_DETECTOR declaration
-Message-ID: <20081223220345.GA16472@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com> <12299911471985-git-send-email-paulmck@linux.vnet.ibm.com> <20081223142542.GC29151@elte.hu> <20081223215948.GA16137@linux.vnet.ibm.com>
+	id S1752453AbYLWWDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 17:03:55 -0500
+Date: Tue, 23 Dec 2008 22:03:43 +0000
+From: Deepak Saxena <dsaxena@plexity.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: TSC not updating after resume: Bug or Feature?
+Message-ID: <20081223220343.GA27098@plexity.net>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <alpine.LFD.2.00.0812212217220.3739@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081223215948.GA16137@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.0812212217220.3739@localhost.localdomain>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the redundant RCU_CPU_STALL_DETECTOR Kconfig
-parameter.  We got one from the classic RCU detector and the other
-from the hierarchical RCU detector, this patch merges them.
+On Sun, Dec 21, 2008 at 10:19:12PM +0100, Thomas Gleixner wrote:
+> > of cycles (~2000 ftrace entries). From following the ftrace, what is 
+> > happening is that the clocksource is not updated until we run the cpu_idle() 
+> > thread due to an explicit scheduling operation in the resume path that occurs 
+> > via call to msleep from pci_set_power_state().  As I'm still fully groking the 
+> > timekeeping code, the question(s) I have is whether this is expected behaviour 
+> > and I should not assume valid timestamp data in the initial bits of the suspend path, 
+> > whether this is an OLPC-specific bug, or whether I've uncovered a generic bug in 
+> > the timekeeping implementation.  This is on 2.6.27.7 as I've not gotten 28-rc 
+> > up and running on the XO but can move that up in priority if this behaviour
+> > is different in newer kernels.
+> 
+> Can you please upload the full trace somewhere ? 
+> 
+> Thanks,
 
-This patch is suitable for inclusion.
+Thomas,
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+Sorry for the delayed response...travelling and have very limited
+connectivity. I will read the thread in detail when back online in a
+few days.
 
- lib/Kconfig.debug |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
+http://dev.laptop.org/~dsaxena/suspend-trace-1267
 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 465d822..8bae51a 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -608,19 +608,6 @@ config RCU_TORTURE_TEST_RUNNABLE
- 
- config RCU_CPU_STALL_DETECTOR
- 	bool "Check for stalled CPUs delaying RCU grace periods"
--	depends on CLASSIC_RCU
--	default n
--	help
--	  This option causes RCU to printk information on which
--	  CPUs are delaying the current grace period, but only when
--	  the grace period extends for excessive time periods.
--
--	  Say Y if you want RCU to perform such checks.
--
--	  Say N if you are unsure.
--
--config RCU_CPU_STALL_DETECTOR
--	bool "Check for stalled CPUs delaying RCU grace periods"
- 	depends on CLASSIC_RCU || TREE_RCU
- 	default n
- 	help
--- 
-1.5.2.5
+~Deepak
 
