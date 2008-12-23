@@ -1,124 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYLWAbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbYLWAge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756054AbYLWAbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 19:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYLWAbC
+	id S1755725AbYLWAge (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 19:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYLWAg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 19:31:02 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39905 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752145AbYLWAbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 19:31:00 -0500
-Date: Tue, 23 Dec 2008 01:30:50 +0100
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.14.2-rc1
-Message-ID: <20081223003049.GE2930@nb.net.home>
+	Mon, 22 Dec 2008 19:36:26 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53397 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751588AbYLWAgZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 19:36:25 -0500
+Date: Tue, 23 Dec 2008 00:35:12 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Yuri Tikhonov <yur@emcraft.com>
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org, paulus@samba.org, wd@denx.de, dzu@denx.de,
+       yanok@emcraft.com, miltonm@bga.com, viro@zeniv.linux.org.uk,
+       Geert.Uytterhoeven@sonycom.com
+Subject: Re: [PATCH] mm/shmem.c: fix division by zero
+In-Reply-To: <200812190844.57996.yur@emcraft.com>
+Message-ID: <Pine.LNX.4.64.0812230016510.13610@blonde.anvils>
+References: <200812190844.57996.yur@emcraft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 19 Dec 2008, Yuri Tikhonov wrote:
+> 
+> The following patch fixes division by zero, which we have in
+> shmem_truncate_range() and shmem_unuse_inode(), if use big
+> PAGE_SIZE values (e.g. 256KB on ppc44x).
+> 
+> With 256KB PAGE_SIZE the ENTRIES_PER_PAGEPAGE constant becomes
+> too large (0x1.0000.0000), so this patch just changes the types
+> from 'ulong' to 'ullong' where it's necessary.
+> 
+> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 
-The first util-linux-ng 2.14.2 release candidate is available at
+Sorry for the slow reply, but I'm afraid I don't like spattering
+around an increasing number of unsigned long longs to fix that division
+by zero on an unusual configuration: I doubt that's the right solution.
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+It's ridiculous for shmem.c to be trying to support a wider address
+range than the page cache itself can support, and it's wasteful for
+it to be using 256KB pages for its index blocks (not to mention its
+data blocks! but we'll agree to differ on that).
 
-(Note that 2.14.2 is stable maintenance release.)
+Maybe it should be doing a kmalloc(4096) instead of using alloc_pages();
+though admittedly that's not a straightforward change, since we do make
+use of highmem and page->private.  Maybe I should use this as stimulus
+to switch shmem over to storing its swap entries in the pagecache radix
+tree.  Maybe we should simply disable its use of swap in such an
+extreme configuration.
 
-Feedback and bug reports, as always, are welcomed.
+But I need to understand more about your ppc44x target to make
+the right decision.  What's very strange to me is this: since
+unsigned long long is the same size as unsigned long on 64-bit,
+this change appears to be for a 32-bit machine with 256KB pages.
+I wonder what market segment that is targeted at?
 
-
-	Karel
-
-
-Util-linux-ng 2.14.2 Release Notes
-==================================
-
-ChangeLog between v2.14.1 and v2.14.2
--------------------------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
-
-build-sys:
-   - add -luuid to BLKID_LIBS  [Karel Zak]
-cfdisk:
-   - accept yes/no as fallback  [Matthias Koenig]
-chrt:
-   - support CFS SCHED_IDLE priority and document it  [Martin Steigerwald]
-docs:
-   - update AUTHORS file  [Karel Zak]
-fdisk:
-   - add some missing includes  [Matthias Koenig]
-   - cannot create partition with starting beyond 1 TB  [Karel Zak]
-   - fix man page typo  [Karel Zak]
-   - remove obsolete information from man page  [Karel Zak]
-   - remove unnecessary gettext call  [Karel Zak]
-   - several strings without gettext calls  [Pedro Ribeiro]
-   - support +cylinder notation  [Karel Zak]
-hwclock:
-   - remove "cli" and "sti" from i386 CMOS code  [Karel Zak]
-   - remove x86_64-specific bogon  [David Brownell]
-include:
-   - use __BYTE_ORDER rather than AC specific WORDS_BIGENDIAN  [Karel Zak]
-ldattach:
-   - don't compile for non-linux systems  [Samuel Thibault]
-lib:
-   - add __BYTE_ORDER to md5.c  [Karel Zak]
-logger:
-   - several strings without gettext calls  [Pedro Ribeiro]
-login:
-   - fix compiler warning (int32 time() arg)  [Karel Zak]
-   - fix warning "dereferencing type-punned pointer will break strict-aliasing rules"  [Karel Zak]
-losetup:
-   - add warning about read-only mode  [Karel Zak]
-   - missing EBUSY error hint message  [Karel Zak]
-   - several strings without gettext strings  [Pedro Ribeiro]
-   - try to set up loop readonly if EACCES  [Matthias Koenig]
-mkfs.cramfs:
-   - several strings without gettext calls  [Pedro Ribeiro]
-mkfs.minix:
-   - fix size detection  [Matthias Koenig]
-more:
-   - dont use a.out.h  [Mike Frysinger]
-   - minor fixes to magic()  [James Youngman]
-mount:
-   - add i_version support  [Karel Zak]
-   - add info about /proc/mounts to mount.1  [Karel Zak]
-   - add rootcontext= SELinux mount option  [Karel Zak]
-   - clean up SPEC canonicalization  [Karel Zak]
-   - create separate section for fs-independent options in mount.8  [Karel Zak]
-   - fix mount_static_LDADD  [Karel Zak]
-   - fix typo  [Guan Xin]
-   - fix typo  [Karel Zak]
-   - make file_t SELinux warning optional and shorter  [Karel Zak]
-   - mtab created multiple times with -a option  [Karel Zak]
-   - remove link to namesys.com  [Karel Zak]
-   - remove spurious newline from mount.8  [Mike Frysinger]
-   - reorder list of options in mount.8  [Karel Zak]
-   - retry on ENOMEDIUM  [Matthias Koenig]
-   - sundries.h add klibc support  [maximilian attems]
-   - sync FAT info in mount.8 with Documentation/filesystems/vfat.txt  [Karel Zak]
-   - sync tmpfs info in mount.8 with Documentation/filesystems/tmpfs.txt  [Karel Zak]
-   - use subsections in mount.8 DESCRIPTION  [Karel Zak]
-   - warn on "file_t" selinux context  [Karel Zak]
-po:
-   - merge changes  [Karel Zak]
-   - update cs.po (from translationproject.org)  [Petr Pisar]
-   - update fr.po (from translationproject.org)  [Nicolas Provost]
-   - update pt_BR.po (from translationproject.org)  [Rodrigo Stulzer Lopes]
-   - update sv.po (from translationproject.org)  [Daniel Nylander]
-readprofile:
-   - several strings without gettext calls  [Pedro Ribeiro]
-setterm:
-   - fix -blank man page  [Karel Zak]
-
-- use getpagesize()  [maximilian attems]
-
--- 
- Karel Zak  <kzak@redhat.com>
+Hugh
