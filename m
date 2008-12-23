@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbYLWAQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYLWAQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbYLWAQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 19:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756848AbYLWAMe
+	id S1757953AbYLWAQk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 19:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbYLWAMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 19:12:34 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:43699 "EHLO e8.ny.us.ibm.com"
+	Mon, 22 Dec 2008 19:12:35 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:59388 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756847AbYLWAM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755642AbYLWAM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 22 Dec 2008 19:12:26 -0500
 From: paulmck@linux.vnet.ibm.com
 To: linux-kernel@vger.kernel.org
@@ -19,9 +19,9 @@ Cc: mingo@elte.hu, tglx@linutronix.de, akpm@linux-foundation.org,
        paulus@samba.org, benh@kernel.crashing.org, dhowells@redhat.com,
        yasutake.koichi@jp.panasonic.com, lethal@linux-sh.org, hpa@zytor.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH -tip] Switch powerpc defconfig from CONFIG_CLASSIC_RCU to CONFIG_TREE_RCU.
-Date: Mon, 22 Dec 2008 16:12:25 -0800
-Message-Id: <1229991147599-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH -tip] Switch sh defconfig from CONFIG_CLASSIC_RCU to CONFIG_TREE_RCU.
+Date: Mon, 22 Dec 2008 16:12:26 -0800
+Message-Id: <12299911473328-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com>
 References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com>
@@ -35,58 +35,50 @@ Only for testing in -tip and -next, not yet for inclusion into mainline.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- arch/powerpc/configs/adder875_defconfig     |    2 +-
- arch/powerpc/configs/c2k_defconfig          |    2 +-
- arch/powerpc/configs/cell_defconfig         |    2 +-
- arch/powerpc/configs/celleb_defconfig       |    2 +-
- arch/powerpc/configs/chrp32_defconfig       |    2 +-
- arch/powerpc/configs/ep8248e_defconfig      |    2 +-
- arch/powerpc/configs/ep88xc_defconfig       |    2 +-
- arch/powerpc/configs/g5_defconfig           |    2 +-
- arch/powerpc/configs/iseries_defconfig      |    2 +-
- arch/powerpc/configs/linkstation_defconfig  |    2 +-
- arch/powerpc/configs/maple_defconfig        |    2 +-
- arch/powerpc/configs/mgcoge_defconfig       |    2 +-
- arch/powerpc/configs/mgsuvd_defconfig       |    2 +-
- arch/powerpc/configs/mpc5200_defconfig      |    2 +-
- arch/powerpc/configs/mpc7448_hpc2_defconfig |    2 +-
- arch/powerpc/configs/mpc8272_ads_defconfig  |    2 +-
- arch/powerpc/configs/mpc83xx_defconfig      |    2 +-
- arch/powerpc/configs/mpc85xx_defconfig      |    2 +-
- arch/powerpc/configs/mpc866_ads_defconfig   |    2 +-
- arch/powerpc/configs/mpc86xx_defconfig      |    2 +-
- arch/powerpc/configs/mpc885_ads_defconfig   |    2 +-
- arch/powerpc/configs/pasemi_defconfig       |    2 +-
- arch/powerpc/configs/pmac32_defconfig       |    2 +-
- arch/powerpc/configs/ppc40x_defconfig       |    2 +-
- arch/powerpc/configs/ppc44x_defconfig       |    2 +-
- arch/powerpc/configs/ppc64_defconfig        |    2 +-
- arch/powerpc/configs/ppc6xx_defconfig       |    2 +-
- arch/powerpc/configs/pq2fads_defconfig      |    2 +-
- arch/powerpc/configs/prpmc2800_defconfig    |    2 +-
- arch/powerpc/configs/ps3_defconfig          |    2 +-
- arch/powerpc/configs/pseries_defconfig      |    2 +-
- arch/powerpc/configs/storcenter_defconfig   |    2 +-
- 32 files changed, 32 insertions(+), 32 deletions(-)
+ arch/sh/configs/ap325rxa_defconfig            |    2 +-
+ arch/sh/configs/cayman_defconfig              |    2 +-
+ arch/sh/configs/dreamcast_defconfig           |    2 +-
+ arch/sh/configs/edosk7760_defconfig           |    2 +-
+ arch/sh/configs/hp6xx_defconfig               |    2 +-
+ arch/sh/configs/landisk_defconfig             |    2 +-
+ arch/sh/configs/lboxre2_defconfig             |    2 +-
+ arch/sh/configs/magicpanelr2_defconfig        |    2 +-
+ arch/sh/configs/microdev_defconfig            |    2 +-
+ arch/sh/configs/migor_defconfig               |    2 +-
+ arch/sh/configs/r7780mp_defconfig             |    2 +-
+ arch/sh/configs/r7785rp_defconfig             |    2 +-
+ arch/sh/configs/rsk7203_defconfig             |    2 +-
+ arch/sh/configs/rts7751r2d1_defconfig         |    2 +-
+ arch/sh/configs/rts7751r2dplus_defconfig      |    2 +-
+ arch/sh/configs/rts7751r2dplus_qemu_defconfig |    2 +-
+ arch/sh/configs/sdk7780_defconfig             |    2 +-
+ arch/sh/configs/se7206_defconfig              |    2 +-
+ arch/sh/configs/se7343_defconfig              |    2 +-
+ arch/sh/configs/se7619_defconfig              |    2 +-
+ arch/sh/configs/se7705_defconfig              |    2 +-
+ arch/sh/configs/se7712_defconfig              |    2 +-
+ arch/sh/configs/se7721_defconfig              |    2 +-
+ arch/sh/configs/se7722_defconfig              |    2 +-
+ arch/sh/configs/se7750_defconfig              |    2 +-
+ arch/sh/configs/se7751_defconfig              |    2 +-
+ arch/sh/configs/se7780_defconfig              |    2 +-
+ arch/sh/configs/sh03_defconfig                |    2 +-
+ arch/sh/configs/sh7710voipgw_defconfig        |    2 +-
+ arch/sh/configs/sh7763rdp_defconfig           |    2 +-
+ arch/sh/configs/sh7785lcr_defconfig           |    2 +-
+ arch/sh/configs/shmin_defconfig               |    2 +-
+ arch/sh/configs/shx3_defconfig                |    2 +-
+ arch/sh/configs/snapgear_defconfig            |    2 +-
+ arch/sh/configs/systemh_defconfig             |    2 +-
+ arch/sh/configs/titan_defconfig               |    2 +-
+ arch/sh/configs/ul2_defconfig                 |    2 +-
+ 37 files changed, 37 insertions(+), 37 deletions(-)
 
-diff --git a/arch/powerpc/configs/adder875_defconfig b/arch/powerpc/configs/adder875_defconfig
-index 024f279..44a9c33 100644
---- a/arch/powerpc/configs/adder875_defconfig
-+++ b/arch/powerpc/configs/adder875_defconfig
-@@ -141,7 +141,7 @@ CONFIG_DEFAULT_DEADLINE=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="deadline"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-diff --git a/arch/powerpc/configs/c2k_defconfig b/arch/powerpc/configs/c2k_defconfig
-index 5078594..fdd2796 100644
---- a/arch/powerpc/configs/c2k_defconfig
-+++ b/arch/powerpc/configs/c2k_defconfig
-@@ -163,7 +163,7 @@ CONFIG_IOSCHED_CFQ=y
+diff --git a/arch/sh/configs/ap325rxa_defconfig b/arch/sh/configs/ap325rxa_defconfig
+index 874dd97..06f02cb 100644
+--- a/arch/sh/configs/ap325rxa_defconfig
++++ b/arch/sh/configs/ap325rxa_defconfig
+@@ -118,7 +118,7 @@ CONFIG_IOSCHED_CFQ=y
  CONFIG_DEFAULT_CFQ=y
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="cfq"
@@ -95,37 +87,24 @@ index 5078594..fdd2796 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/cell_defconfig b/arch/powerpc/configs/cell_defconfig
-index c420e47..2a0c357 100644
---- a/arch/powerpc/configs/cell_defconfig
-+++ b/arch/powerpc/configs/cell_defconfig
-@@ -155,7 +155,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
+diff --git a/arch/sh/configs/cayman_defconfig b/arch/sh/configs/cayman_defconfig
+index e21c0e8..77a086a 100644
+--- a/arch/sh/configs/cayman_defconfig
++++ b/arch/sh/configs/cayman_defconfig
+@@ -112,7 +112,7 @@ CONFIG_IOSCHED_CFQ=y
+ CONFIG_DEFAULT_CFQ=y
  # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
+ CONFIG_DEFAULT_IOSCHED="cfq"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
  
  #
- # Platform support
-diff --git a/arch/powerpc/configs/celleb_defconfig b/arch/powerpc/configs/celleb_defconfig
-index 9ba3c6f..b63cd4a 100644
---- a/arch/powerpc/configs/celleb_defconfig
-+++ b/arch/powerpc/configs/celleb_defconfig
-@@ -148,7 +148,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- 
- #
- # Platform support
-diff --git a/arch/powerpc/configs/chrp32_defconfig b/arch/powerpc/configs/chrp32_defconfig
-index 63b3c23..f43c2cb 100644
---- a/arch/powerpc/configs/chrp32_defconfig
-+++ b/arch/powerpc/configs/chrp32_defconfig
-@@ -157,7 +157,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/dreamcast_defconfig b/arch/sh/configs/dreamcast_defconfig
+index be4c2e0..8068c70 100644
+--- a/arch/sh/configs/dreamcast_defconfig
++++ b/arch/sh/configs/dreamcast_defconfig
+@@ -118,7 +118,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -134,115 +113,24 @@ index 63b3c23..f43c2cb 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/ep8248e_defconfig b/arch/powerpc/configs/ep8248e_defconfig
-index a6f1cff..a69daca 100644
---- a/arch/powerpc/configs/ep8248e_defconfig
-+++ b/arch/powerpc/configs/ep8248e_defconfig
-@@ -139,7 +139,7 @@ CONFIG_DEFAULT_DEADLINE=y
- # CONFIG_DEFAULT_CFQ is not set
+diff --git a/arch/sh/configs/edosk7760_defconfig b/arch/sh/configs/edosk7760_defconfig
+index 1580068..f75b8b1 100644
+--- a/arch/sh/configs/edosk7760_defconfig
++++ b/arch/sh/configs/edosk7760_defconfig
+@@ -120,7 +120,7 @@ CONFIG_IOSCHED_CFQ=y
+ CONFIG_DEFAULT_CFQ=y
  # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="deadline"
+ CONFIG_DEFAULT_IOSCHED="cfq"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/ep88xc_defconfig b/arch/powerpc/configs/ep88xc_defconfig
-index 870d289..4d416fd 100644
---- a/arch/powerpc/configs/ep88xc_defconfig
-+++ b/arch/powerpc/configs/ep88xc_defconfig
-@@ -140,7 +140,7 @@ CONFIG_DEFAULT_DEADLINE=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="deadline"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index f85e71c..02e0ec5 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -162,7 +162,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- CONFIG_PPC_MSI_BITMAP=y
- 
-diff --git a/arch/powerpc/configs/iseries_defconfig b/arch/powerpc/configs/iseries_defconfig
-index f925c55..affb125 100644
---- a/arch/powerpc/configs/iseries_defconfig
-+++ b/arch/powerpc/configs/iseries_defconfig
-@@ -160,7 +160,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-diff --git a/arch/powerpc/configs/linkstation_defconfig b/arch/powerpc/configs/linkstation_defconfig
-index 54fa624..4c68773 100644
---- a/arch/powerpc/configs/linkstation_defconfig
-+++ b/arch/powerpc/configs/linkstation_defconfig
-@@ -157,7 +157,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-diff --git a/arch/powerpc/configs/maple_defconfig b/arch/powerpc/configs/maple_defconfig
-index 045f1b0..04a93cb 100644
---- a/arch/powerpc/configs/maple_defconfig
-+++ b/arch/powerpc/configs/maple_defconfig
-@@ -158,7 +158,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- CONFIG_PPC_MSI_BITMAP=y
- 
-diff --git a/arch/powerpc/configs/mgcoge_defconfig b/arch/powerpc/configs/mgcoge_defconfig
-index 8d3c623..c8b2e66 100644
---- a/arch/powerpc/configs/mgcoge_defconfig
-+++ b/arch/powerpc/configs/mgcoge_defconfig
-@@ -143,7 +143,7 @@ CONFIG_DEFAULT_DEADLINE=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="deadline"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-diff --git a/arch/powerpc/configs/mgsuvd_defconfig b/arch/powerpc/configs/mgsuvd_defconfig
-index fbaa67f..c80e2ce 100644
---- a/arch/powerpc/configs/mgsuvd_defconfig
-+++ b/arch/powerpc/configs/mgsuvd_defconfig
-@@ -139,7 +139,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-diff --git a/arch/powerpc/configs/mpc5200_defconfig b/arch/powerpc/configs/mpc5200_defconfig
-index 15c5604..1e92faf 100644
---- a/arch/powerpc/configs/mpc5200_defconfig
-+++ b/arch/powerpc/configs/mpc5200_defconfig
-@@ -147,7 +147,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/hp6xx_defconfig b/arch/sh/configs/hp6xx_defconfig
+index 1032b23..34e8004 100644
+--- a/arch/sh/configs/hp6xx_defconfig
++++ b/arch/sh/configs/hp6xx_defconfig
+@@ -107,7 +107,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -251,11 +139,11 @@ index 15c5604..1e92faf 100644
  CONFIG_FREEZER=y
  
  #
-diff --git a/arch/powerpc/configs/mpc7448_hpc2_defconfig b/arch/powerpc/configs/mpc7448_hpc2_defconfig
-index f80b1ca..7632280 100644
---- a/arch/powerpc/configs/mpc7448_hpc2_defconfig
-+++ b/arch/powerpc/configs/mpc7448_hpc2_defconfig
-@@ -144,7 +144,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/landisk_defconfig b/arch/sh/configs/landisk_defconfig
+index b82dfb4..c4df0ea 100644
+--- a/arch/sh/configs/landisk_defconfig
++++ b/arch/sh/configs/landisk_defconfig
+@@ -115,7 +115,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -264,11 +152,11 @@ index f80b1ca..7632280 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/mpc8272_ads_defconfig b/arch/powerpc/configs/mpc8272_ads_defconfig
-index c8f5dec..49963eb 100644
---- a/arch/powerpc/configs/mpc8272_ads_defconfig
-+++ b/arch/powerpc/configs/mpc8272_ads_defconfig
-@@ -140,7 +140,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/lboxre2_defconfig b/arch/sh/configs/lboxre2_defconfig
+index c3ecedf..a1e1ddc 100644
+--- a/arch/sh/configs/lboxre2_defconfig
++++ b/arch/sh/configs/lboxre2_defconfig
+@@ -115,7 +115,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -277,11 +165,24 @@ index c8f5dec..49963eb 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
-index d582014..557601c 100644
---- a/arch/powerpc/configs/mpc83xx_defconfig
-+++ b/arch/powerpc/configs/mpc83xx_defconfig
-@@ -154,7 +154,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/magicpanelr2_defconfig b/arch/sh/configs/magicpanelr2_defconfig
+index 499ed72..21ecff4 100644
+--- a/arch/sh/configs/magicpanelr2_defconfig
++++ b/arch/sh/configs/magicpanelr2_defconfig
+@@ -118,7 +118,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/microdev_defconfig b/arch/sh/configs/microdev_defconfig
+index b8ada8c..df13cc8 100644
+--- a/arch/sh/configs/microdev_defconfig
++++ b/arch/sh/configs/microdev_defconfig
+@@ -109,7 +109,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -290,24 +191,11 @@ index d582014..557601c 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index c87b53a..506aad1 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -159,7 +159,7 @@ CONFIG_IOSCHED_CFQ=y
- CONFIG_DEFAULT_CFQ=y
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="cfq"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-diff --git a/arch/powerpc/configs/mpc866_ads_defconfig b/arch/powerpc/configs/mpc866_ads_defconfig
-index 8272b1a..09d7670 100644
---- a/arch/powerpc/configs/mpc866_ads_defconfig
-+++ b/arch/powerpc/configs/mpc866_ads_defconfig
-@@ -139,7 +139,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/migor_defconfig b/arch/sh/configs/migor_defconfig
+index 30cac42..bc55c93 100644
+--- a/arch/sh/configs/migor_defconfig
++++ b/arch/sh/configs/migor_defconfig
+@@ -116,7 +116,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -316,24 +204,115 @@ index 8272b1a..09d7670 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/mpc86xx_defconfig b/arch/powerpc/configs/mpc86xx_defconfig
-index 1736bbc..3dc03cc 100644
---- a/arch/powerpc/configs/mpc86xx_defconfig
-+++ b/arch/powerpc/configs/mpc86xx_defconfig
-@@ -159,7 +159,7 @@ CONFIG_IOSCHED_CFQ=y
- CONFIG_DEFAULT_CFQ=y
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="cfq"
+diff --git a/arch/sh/configs/r7780mp_defconfig b/arch/sh/configs/r7780mp_defconfig
+index 2e65149..74fbca9 100644
+--- a/arch/sh/configs/r7780mp_defconfig
++++ b/arch/sh/configs/r7780mp_defconfig
+@@ -124,7 +124,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs/mpc885_ads_defconfig
-index a4283b6..2c43aaf 100644
---- a/arch/powerpc/configs/mpc885_ads_defconfig
-+++ b/arch/powerpc/configs/mpc885_ads_defconfig
-@@ -140,7 +140,7 @@ CONFIG_DEFAULT_DEADLINE=y
+diff --git a/arch/sh/configs/r7785rp_defconfig b/arch/sh/configs/r7785rp_defconfig
+index 043a8a5..c48b46f 100644
+--- a/arch/sh/configs/r7785rp_defconfig
++++ b/arch/sh/configs/r7785rp_defconfig
+@@ -125,7 +125,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-# CONFIG_CLASSIC_RCU is not set
++# CONFIG_TREE_RCU is not set
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/rsk7203_defconfig b/arch/sh/configs/rsk7203_defconfig
+index 85b0ac4..4d7856b 100644
+--- a/arch/sh/configs/rsk7203_defconfig
++++ b/arch/sh/configs/rsk7203_defconfig
+@@ -117,7 +117,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/rts7751r2d1_defconfig b/arch/sh/configs/rts7751r2d1_defconfig
+index 7d2a9e8..b3be632 100644
+--- a/arch/sh/configs/rts7751r2d1_defconfig
++++ b/arch/sh/configs/rts7751r2d1_defconfig
+@@ -116,7 +116,7 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/rts7751r2dplus_defconfig b/arch/sh/configs/rts7751r2dplus_defconfig
+index f680d3e..d0f85f4 100644
+--- a/arch/sh/configs/rts7751r2dplus_defconfig
++++ b/arch/sh/configs/rts7751r2dplus_defconfig
+@@ -116,7 +116,7 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/rts7751r2dplus_qemu_defconfig b/arch/sh/configs/rts7751r2dplus_qemu_defconfig
+index ae8f630..2141acf 100644
+--- a/arch/sh/configs/rts7751r2dplus_qemu_defconfig
++++ b/arch/sh/configs/rts7751r2dplus_qemu_defconfig
+@@ -120,7 +120,7 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/sdk7780_defconfig b/arch/sh/configs/sdk7780_defconfig
+index 543287b..48883e1 100644
+--- a/arch/sh/configs/sdk7780_defconfig
++++ b/arch/sh/configs/sdk7780_defconfig
+@@ -120,7 +120,7 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/se7206_defconfig b/arch/sh/configs/se7206_defconfig
+index 25717ff..c58a94c 100644
+--- a/arch/sh/configs/se7206_defconfig
++++ b/arch/sh/configs/se7206_defconfig
+@@ -127,7 +127,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-# CONFIG_CLASSIC_RCU is not set
++# CONFIG_TREE_RCU is not set
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/se7343_defconfig b/arch/sh/configs/se7343_defconfig
+index 075f42e..a8d6f21 100644
+--- a/arch/sh/configs/se7343_defconfig
++++ b/arch/sh/configs/se7343_defconfig
+@@ -117,7 +117,7 @@ CONFIG_DEFAULT_DEADLINE=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="deadline"
@@ -342,89 +321,193 @@ index a4283b6..2c43aaf 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/pasemi_defconfig b/arch/powerpc/configs/pasemi_defconfig
-index 199e5f5..90d1ae3 100644
---- a/arch/powerpc/configs/pasemi_defconfig
-+++ b/arch/powerpc/configs/pasemi_defconfig
-@@ -150,7 +150,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/se7619_defconfig b/arch/sh/configs/se7619_defconfig
+index db9cacd..7c7aa4c 100644
+--- a/arch/sh/configs/se7619_defconfig
++++ b/arch/sh/configs/se7619_defconfig
+@@ -95,7 +95,7 @@ CONFIG_IOSCHED_NOOP=y
  # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
  
  #
- # Platform support
-diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
-index de9b121..ff1f64b 100644
---- a/arch/powerpc/configs/pmac32_defconfig
-+++ b/arch/powerpc/configs/pmac32_defconfig
-@@ -158,7 +158,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/se7705_defconfig b/arch/sh/configs/se7705_defconfig
+index d88190f..02940ae 100644
+--- a/arch/sh/configs/se7705_defconfig
++++ b/arch/sh/configs/se7705_defconfig
+@@ -109,7 +109,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
- CONFIG_FREEZER=y
+ # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/ppc40x_defconfig b/arch/powerpc/configs/ppc40x_defconfig
-index 4256e2c..d55f2fc 100644
---- a/arch/powerpc/configs/ppc40x_defconfig
-+++ b/arch/powerpc/configs/ppc40x_defconfig
-@@ -151,7 +151,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/se7712_defconfig b/arch/sh/configs/se7712_defconfig
+index 869ab17..1e9eb57 100644
+--- a/arch/sh/configs/se7712_defconfig
++++ b/arch/sh/configs/se7712_defconfig
+@@ -114,7 +114,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/se7721_defconfig b/arch/sh/configs/se7721_defconfig
+index b52be14..ae8094b 100644
+--- a/arch/sh/configs/se7721_defconfig
++++ b/arch/sh/configs/se7721_defconfig
+@@ -118,7 +118,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/se7722_defconfig b/arch/sh/configs/se7722_defconfig
+index e6df51f..04a3bf6 100644
+--- a/arch/sh/configs/se7722_defconfig
++++ b/arch/sh/configs/se7722_defconfig
+@@ -121,7 +121,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/se7750_defconfig b/arch/sh/configs/se7750_defconfig
+index a577099..21ddf9e 100644
+--- a/arch/sh/configs/se7750_defconfig
++++ b/arch/sh/configs/se7750_defconfig
+@@ -115,7 +115,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
  # CONFIG_FREEZER is not set
- CONFIG_PPC4xx_PCI_EXPRESS=y
  
-diff --git a/arch/powerpc/configs/ppc44x_defconfig b/arch/powerpc/configs/ppc44x_defconfig
-index cfc94cf..fec4fe7 100644
---- a/arch/powerpc/configs/ppc44x_defconfig
-+++ b/arch/powerpc/configs/ppc44x_defconfig
-@@ -156,7 +156,7 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
- CONFIG_PREEMPT_NOTIFIERS=y
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- # CONFIG_FREEZER is not set
- CONFIG_PPC4xx_PCI_EXPRESS=y
- 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 069ae1b..9921dda 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -176,7 +176,7 @@ CONFIG_DEFAULT_AS=y
+ #
+diff --git a/arch/sh/configs/se7751_defconfig b/arch/sh/configs/se7751_defconfig
+index d99a6bd..26f1826 100644
+--- a/arch/sh/configs/se7751_defconfig
++++ b/arch/sh/configs/se7751_defconfig
+@@ -115,7 +115,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
  # CONFIG_FREEZER is not set
- CONFIG_PPC_MSI_BITMAP=y
  
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 01f05ec..ce71c65 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -180,7 +180,7 @@ CONFIG_IOSCHED_CFQ=y
+ #
+diff --git a/arch/sh/configs/se7780_defconfig b/arch/sh/configs/se7780_defconfig
+index ad95b80..4638101 100644
+--- a/arch/sh/configs/se7780_defconfig
++++ b/arch/sh/configs/se7780_defconfig
+@@ -110,7 +110,7 @@ CONFIG_DEFAULT_DEADLINE=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="deadline"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/sh03_defconfig b/arch/sh/configs/sh03_defconfig
+index 95f0f5d..40315df 100644
+--- a/arch/sh/configs/sh03_defconfig
++++ b/arch/sh/configs/sh03_defconfig
+@@ -119,7 +119,7 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/sh7710voipgw_defconfig b/arch/sh/configs/sh7710voipgw_defconfig
+index 9a768b2..d7713df 100644
+--- a/arch/sh/configs/sh7710voipgw_defconfig
++++ b/arch/sh/configs/sh7710voipgw_defconfig
+@@ -117,7 +117,7 @@ CONFIG_DEFAULT_DEADLINE=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="deadline"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/sh7763rdp_defconfig b/arch/sh/configs/sh7763rdp_defconfig
+index 6a77f69..59c868a 100644
+--- a/arch/sh/configs/sh7763rdp_defconfig
++++ b/arch/sh/configs/sh7763rdp_defconfig
+@@ -123,7 +123,7 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/sh7785lcr_defconfig b/arch/sh/configs/sh7785lcr_defconfig
+index 07e33c2..4da3419 100644
+--- a/arch/sh/configs/sh7785lcr_defconfig
++++ b/arch/sh/configs/sh7785lcr_defconfig
+@@ -126,7 +126,7 @@ CONFIG_IOSCHED_CFQ=y
  CONFIG_DEFAULT_CFQ=y
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="cfq"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
- CONFIG_FREEZER=y
- CONFIG_PPC_MSI_BITMAP=y
+ # CONFIG_FREEZER is not set
  
-diff --git a/arch/powerpc/configs/pq2fads_defconfig b/arch/powerpc/configs/pq2fads_defconfig
-index 228099d..bcd7ae6 100644
---- a/arch/powerpc/configs/pq2fads_defconfig
-+++ b/arch/powerpc/configs/pq2fads_defconfig
-@@ -141,7 +141,7 @@ CONFIG_DEFAULT_AS=y
+ #
+diff --git a/arch/sh/configs/shmin_defconfig b/arch/sh/configs/shmin_defconfig
+index e2b38a3..d00078f 100644
+--- a/arch/sh/configs/shmin_defconfig
++++ b/arch/sh/configs/shmin_defconfig
+@@ -99,7 +99,7 @@ CONFIG_IOSCHED_NOOP=y
+ # CONFIG_DEFAULT_CFQ is not set
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
+-CONFIG_CLASSIC_RCU=y
++CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
+ 
+ #
+diff --git a/arch/sh/configs/shx3_defconfig b/arch/sh/configs/shx3_defconfig
+index ae5cbe2..d818bc7 100644
+--- a/arch/sh/configs/shx3_defconfig
++++ b/arch/sh/configs/shx3_defconfig
+@@ -142,7 +142,7 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+-# CONFIG_CLASSIC_RCU is not set
++# CONFIG_TREE_RCU is not set
+ CONFIG_FREEZER=y
+ 
+ #
+diff --git a/arch/sh/configs/snapgear_defconfig b/arch/sh/configs/snapgear_defconfig
+index b4ca511..cb3721b 100644
+--- a/arch/sh/configs/snapgear_defconfig
++++ b/arch/sh/configs/snapgear_defconfig
+@@ -108,7 +108,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -433,11 +516,11 @@ index 228099d..bcd7ae6 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/prpmc2800_defconfig b/arch/powerpc/configs/prpmc2800_defconfig
-index 6046dc0..4775379 100644
---- a/arch/powerpc/configs/prpmc2800_defconfig
-+++ b/arch/powerpc/configs/prpmc2800_defconfig
-@@ -150,7 +150,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/systemh_defconfig b/arch/sh/configs/systemh_defconfig
+index 1711f0f..5e379ac 100644
+--- a/arch/sh/configs/systemh_defconfig
++++ b/arch/sh/configs/systemh_defconfig
+@@ -112,7 +112,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
@@ -446,40 +529,27 @@ index 6046dc0..4775379 100644
  # CONFIG_FREEZER is not set
  
  #
-diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
-index b6eee7c..638cae2 100644
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -157,7 +157,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/titan_defconfig b/arch/sh/configs/titan_defconfig
+index ea3c5e8..8b2d940 100644
+--- a/arch/sh/configs/titan_defconfig
++++ b/arch/sh/configs/titan_defconfig
+@@ -118,7 +118,7 @@ CONFIG_DEFAULT_AS=y
  # CONFIG_DEFAULT_CFQ is not set
  # CONFIG_DEFAULT_NOOP is not set
  CONFIG_DEFAULT_IOSCHED="anticipatory"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
+ # CONFIG_FREEZER is not set
  
  #
- # Platform support
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 1e520ab..f4084b4 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -176,7 +176,7 @@ CONFIG_DEFAULT_AS=y
+diff --git a/arch/sh/configs/ul2_defconfig b/arch/sh/configs/ul2_defconfig
+index 9afff67..7da83b1 100644
+--- a/arch/sh/configs/ul2_defconfig
++++ b/arch/sh/configs/ul2_defconfig
+@@ -120,7 +120,7 @@ CONFIG_IOSCHED_NOOP=y
  # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
-+CONFIG_TREE_RCU=y
- CONFIG_FREEZER=y
- CONFIG_PPC_MSI_BITMAP=y
- 
-diff --git a/arch/powerpc/configs/storcenter_defconfig b/arch/powerpc/configs/storcenter_defconfig
-index b3f5671..b7a5a33 100644
---- a/arch/powerpc/configs/storcenter_defconfig
-+++ b/arch/powerpc/configs/storcenter_defconfig
-@@ -148,7 +148,7 @@ CONFIG_IOSCHED_CFQ=y
- CONFIG_DEFAULT_CFQ=y
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="cfq"
+ CONFIG_DEFAULT_NOOP=y
+ CONFIG_DEFAULT_IOSCHED="noop"
 -CONFIG_CLASSIC_RCU=y
 +CONFIG_TREE_RCU=y
  # CONFIG_FREEZER is not set
