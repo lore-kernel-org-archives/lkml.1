@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbYLWRNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYLWRPC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbYLWRNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 12:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYLWRNI
+	id S1752818AbYLWRPC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 12:15:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYLWROv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 12:13:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59318 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbYLWRNF (ORCPT
+	Tue, 23 Dec 2008 12:14:51 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:59001 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751106AbYLWROu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 12:13:05 -0500
-Date: Tue, 23 Dec 2008 12:12:59 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Roman Kononov <kernel@kononov.ftml.net>
-Cc: npiggin@suse.de, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: BUG: soft lockup - is this XFS problem?
-Message-ID: <20081223171259.GA11945@infradead.org>
-References: <gifgp1$8ic$1@ger.gmane.org>
+	Tue, 23 Dec 2008 12:14:50 -0500
+Date: Tue, 23 Dec 2008 18:14:37 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ
+	drivers
+Message-ID: <20081223171437.GK1614@pengutronix.de>
+Mail-Followup-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linux-kernel@vger.kernel.org,
+	linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Dan Williams <dan.j.williams@intel.com>
+References: <20081222183753.GD1614@pengutronix.de> <Pine.LNX.4.64.0812221942480.7796@axis700.grange> <20081223105006.GE1614@pengutronix.de> <Pine.LNX.4.64.0812231157180.5188@axis700.grange> <20081223125015.GG1614@pengutronix.de> <Pine.LNX.4.64.0812231359030.5188@axis700.grange> <20081223140320.GH1614@pengutronix.de> <Pine.LNX.4.64.0812231529080.5188@axis700.grange> <20081223160942.GJ1614@pengutronix.de> <Pine.LNX.4.64.0812231727460.5188@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <gifgp1$8ic$1@ger.gmane.org>
+In-Reply-To: <Pine.LNX.4.64.0812231727460.5188@axis700.grange>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 18:10:03 up 9 days, 21:37, 10 users,  load average: 0.00, 0.00,
+	0.00
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 23, 2008 at 05:33:11PM +0100, Guennadi Liakhovetski wrote:
+> 
+> These all are just slightly different variations - with this one you'd 
+> have to scan dma channels in your dma irq handler, which I currently don't 
+> have to do.
+> 
+> > That said I'm not sure whether we need a chained interrupt handler at all.
+> > Looking at the remaining interrupts it seems that for example the
+> > CSI_EOF (IPU_INT_STAT3 bit 5) interrupt is redundant to the corresponding
+> > channels interrupt. In the camera driver you already realized that it's
+> > the dma end event you're interested in, not the CSI_EOF event. Not sure
+> > if that holds for the other interrupts though.
+> 
+> I think the version with a lookup table is optimal - it uses standard 
+> mechanisms for irq handling and doesn't waste RAM. The disadvantage - 
+> every addition will need driver modification...
+> 
+> But ok, this is taking way too long. Just tell me which way you'd like to 
+> have it and I'll do it.
 
-Nick, I've seen various reports like this by Roman.  It seems to be
-caused by an interaction of the lockless pagecache with the xfs
-I/O code.  Any idea what might be wrong here:
+Preferably a way which does not involve introducing 100+ unused
+interrupts.
 
-BUG: soft lockup - CPU#0 stuck for 61s! [postmaster:23237]
-Modules linked in: xd1000
-CPU 0:
-Modules linked in: xd1000
-Pid: 23237, comm: postmaster Not tainted 2.6.27.9 #1
-RIP: 0010:[<ffffffff8026c872>]  [<ffffffff8026c872>] find_get_pages+0x72/0x120
-RSP: 0018:ffff88012e9f3498  EFLAGS: 00000297
-RAX: ffff8800a4d752a0 RBX: 000000000000000c RCX: 0000000000000003
-RDX: 0000000000000004 RSI: 0000000000000000 RDI: ffffe200004ab780
-RBP: ffff88023f6b5028 R08: ffffe200004ab280 R09: 000000000000000d
-R10: 0000000000000021 R11: 00000000000aef22 R12: ffffffff80273e3c
-R13: ffffe20001208608 R14: 0100000000000286 R15: ffff88023f6b5028
-FS:  00007fd397fb5700(0000) GS:ffffffff806d7540(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00002aaaaba00000 CR3: 000000017911c000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Call Trace:
- kernel:  [<ffffffff8026c842>] ? find_get_pages+0x42/0x120
- [<ffffffff80276107>] ? pagevec_lookup+0x17/0x20
- [<ffffffff803a6701>] ? xfs_cluster_write+0x91/0x160
- [<ffffffff803a6e73>] ? xfs_page_state_convert+0x523/0x6c0
- [<ffffffff803a7301>] ? xfs_vm_writepage+0x71/0x120
- [<ffffffff80278092>] ? shrink_page_list+0x592/0x700
- [<ffffffff802784b7>] ? shrink_zone+0x2b7/0xc70
- [<ffffffff802798c4>] ? try_to_free_pages+0x244/0x3b0
- [<ffffffff80277920>] ? isolate_pages_global+0x0/0x40
- [<ffffffff8027b2d3>] ? congestion_wait+0x83/0xa0
- [<ffffffff8024f5f0>] ? autoremove_wake_function+0x0/0x30
- [<ffffffff80273668>] ? __alloc_pages_internal+0x218/0x4e0
- [<ffffffff8026d08f>] ? __grab_cache_page+0x6f/0xc0
- [<ffffffff802c69ad>] ? block_write_begin+0x7d/0xe0
- [<ffffffff803a71e2>] ? xfs_vm_write_begin+0x22/0x30
- [<ffffffff803a5e10>] ? xfs_get_blocks+0x0/0x10
- [<ffffffff8026df5b>] ? generic_file_buffered_write+0x1cb/0x790
- [<ffffffff8059145f>] ? _spin_lock_irqsave+0x1f/0x50
- [<ffffffff803ae63c>] ? xfs_write+0x65c/0x950
- [<ffffffff80591681>] ? _spin_unlock_irq+0x11/0x40
- [<ffffffff8029c0cb>] ? do_sync_write+0xdb/0x120
- [<ffffffff8025c169>] ? do_futex+0x109/0x9f0
- [<ffffffff8024f5f0>] ? autoremove_wake_function+0x0/0x30
- [<ffffffff802315f0>] ? wake_up_new_task+0xc0/0x100
- [<ffffffff8029caeb>] ? vfs_write+0xcb/0x170
- [<ffffffff8029cc93>] ? sys_write+0x53/0xa0
- [<ffffffff8020c44b>] ? system_call_fastpath+0x16/0x1b
- [<ffffffff8020c44b>] ? system_call_fastpath+0x16/0x1b
+Sascha
 
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
