@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYLWBHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYLWBIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbYLWBHx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 20:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbYLWBHk
+	id S1755983AbYLWBIW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 20:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYLWBIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 20:07:40 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:5073 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbYLWBHj (ORCPT
+	Mon, 22 Dec 2008 20:08:10 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55404 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbYLWBIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 20:07:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZUfgvTl7H8+9SKMpY2pcILqaliM7XRyZ20X1qEM2poJ3UwhrEHvl1AAw8JaHMUeicw
-         Q43TrFYCo4VQMN/kuGHS3Bcm1t0EcchwNiYRX1kqD47n+xKTUu9lyd+OMIlfO6j40HdT
-         mEGnVIIpD0mRMkM0cYdupd2SPHkZeUlIIOAto=
-Subject: Re: [PATCH] sh: maple: add support for Maple controller as a
- joystick
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
-       linux-sh@vger.kernel.org, lethal@linux-sh.org
-In-Reply-To: <20081222150636.8dc20d61.akpm@linux-foundation.org>
-References: <1229728542.1441.6.camel@localhost.localdomain>
-	 <20081222150636.8dc20d61.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 22 Dec 2008 17:07:35 -0800
-Message-Id: <1229994455.22856.61.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 20:08:09 -0500
+Date: Tue, 23 Dec 2008 01:08:27 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH next] bio: zero inlined bio_vec
+Message-ID: <Pine.LNX.4.64.0812230103480.19807@blonde.anvils>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-22 at 15:06 -0800, Andrew Morton wrote:
-> On Fri, 19 Dec 2008 23:15:42 +0000
-> Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
-> 
-> > Not sure what happened with earlier submissions, so here is an up-to-date
-> > patch for the Dreamcast Maple controlled.
-> > 
-> > 
-> > Add support for the SEGA Dreamcast Maple controller as a joystick
-> > 
-> > ...
-> >
-> > +static void dc_pad_callback(struct mapleq *mq)
-> > +{
-> > +	unsigned short buttons;
-> > +	struct maple_device *mapledev = mq->dev;
-> > +	struct dc_pad *pad = maple_get_drvdata(mapledev);
-> > +	struct input_dev *dev = pad->dev;
-> > +	unsigned char *res = mq->recvbuf;
-> > +
-> > +	buttons = ~cpu_to_le16(*(unsigned short *)(res + 8));
-> 
-> hm, could that be simplified?
+bvec_alloc_bs() zeroes its bio_vec, and at least __blk_queue_bounce()
+relies upon that: therefore bio_alloc_bioset() must zero the inlined
+bio_vec - without that, lots of nastiness occurs in bounce_end_io and
+blk_rq_map_sg and other places when booting up my PAE box.
 
-And as a bonus fix the obvious sparse warning:
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-	buttons = ~le16_to_cpup((__le16 *)(res + 8));
+ fs/bio.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Cheers,
-
-Harvey
-
+--- linux-next/fs/bio.c	2008-12-21 20:49:25.000000000 +0000
++++ fixed/fs/bio.c	2008-12-22 21:10:06.000000000 +0000
+@@ -324,6 +324,8 @@ struct bio *bio_alloc_bioset(gfp_t gfp_m
+ 			if (nr_iovecs <= BIO_INLINE_VECS) {
+ 				idx = 0;
+ 				bvl = bio->bi_inline_vecs;
++				memset(bvl, 0, BIO_INLINE_VECS *
++							sizeof(struct bio_vec));
+ 				nr_iovecs = BIO_INLINE_VECS;
+ 			} else {
+ 				bvl = bvec_alloc_bs(gfp_mask, nr_iovecs, &idx,
