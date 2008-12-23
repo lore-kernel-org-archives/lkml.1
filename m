@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbYLWWXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbYLWWiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbYLWWXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 17:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYLWWXE
+	id S1752784AbYLWWiA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 17:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYLWWhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 17:23:04 -0500
-Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:56317 "EHLO
-	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751677AbYLWWXD (ORCPT
+	Tue, 23 Dec 2008 17:37:51 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:36258 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751492AbYLWWhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 17:23:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=hTrXKUl4dHFUaiLFiwNpiXXJkmXXyV1iReIfEwvqdvKu3NN0yPOrLKA1Vy4YTROe;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Tue, 23 Dec 2008 17:23:00 -0500
-From: Bill Fink <billfink@mindspring.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 2/2] ieee1934: dv1394 interrupt enabling/disabling
- broken on big-endian
-Message-Id: <20081223172300.5bd19846.billfink@mindspring.com>
-In-Reply-To: <49446923.5040606@s5r6.in-berlin.de>
-References: <1229210489.11257.16.camel@brick>
-	<4944561D.4010608@s5r6.in-berlin.de>
-	<20081213204137.d150645c.billfink@mindspring.com>
-	<49446923.5040606@s5r6.in-berlin.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Dec 2008 17:37:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fOke2v78RvqEl4P66CPyqP1j48k9u5BsBARuyFc7gJn67JHC7DyumtX/HXMd4H1o33
+         nzumWVyBgHILT3rtgS09O0x4QAcD8/Cmqii/3+vuoAXIpASJh6tKaClebBB4T9lGzPex
+         BE0KrgDhpdk91KNnqVr0VAidBIaacFD9lpGgs=
+Message-ID: <961aa3350812231437x4debaf9byf230a63582561010@mail.gmail.com>
+Date: Wed, 24 Dec 2008 07:37:48 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Josef Bacik" <jbacik@redhat.com>
+Subject: Re: [PATCH] ext4: annotate unhandled kmem_cache_alloc() error
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Theodore Tso" <tytso@mit.edu>, adilger@sun.com,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <20081223142915.GA23303@unused.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4ddf3f99fd3968251ddd7ed4fa43a0be0d350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 96.234.158.88
+Content-Disposition: inline
+References: <20081223104016.GC7217@localhost.localdomain>
+	 <20081223142915.GA23303@unused.rdu.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Dec 2008, Stefan Richter wrote:
+> BUG_ON is good for devel things, but for stable stuff it's better to let
+> somebody know an error occured rather than panic'ing the box.  The proper
+> solution would be to do
+>
+> if (!new_entry)
+>        return -ENOMEM;
+>
+> or if there is some out: label set ret to -ENOMEM and goto out, whatever is
+> appropriate in the context.  Thanks,
 
-> Bill Fink wrote:
-> > On Sun, 14 Dec 2008, Stefan Richter wrote:
-> >> Looks like a bug + correct fix indeed.  Apparently dv1394 was never used on big
-> >> endian PCs.
-> ...
-> > I use dv1394 on a big-endian PPC system (2.6.15 kernel) to watch DV video
-> > via xine, and this has always worked fine for me.
-> 
-> Could you try to apply the patch to your kernel to test it?  You can get
-> it in plaintext e.g. from
-> http://user.in-berlin.de/~s5r6/linux1394/submitted/843-ieee1934-dv1394-interrupt-enabling_disabling-broken-on-big-endian.patch
+I don't understand the code around here well.
+But I think it is not that simple.
 
-I had hoped to test this by now, but due to not feeling well and the
-holidays, I haven't been able to.  I still hope to test this later,
-but I can't say exactly when.
-
-					-Happy Holidays to all
-
-					-Bill
+The "new_entry" is needed to free blocks. If it just returns error,
+it leaks something.
