@@ -1,82 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYLWRPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYLWRPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbYLWRPC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 12:15:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYLWROv
+	id S1753834AbYLWRPg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 12:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYLWRPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 12:14:51 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59001 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751106AbYLWROu (ORCPT
+	Tue, 23 Dec 2008 12:15:06 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:49731 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752761AbYLWRPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 12:14:50 -0500
-Date: Tue, 23 Dec 2008 18:14:37 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ
-	drivers
-Message-ID: <20081223171437.GK1614@pengutronix.de>
-Mail-Followup-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	Dan Williams <dan.j.williams@intel.com>
-References: <20081222183753.GD1614@pengutronix.de> <Pine.LNX.4.64.0812221942480.7796@axis700.grange> <20081223105006.GE1614@pengutronix.de> <Pine.LNX.4.64.0812231157180.5188@axis700.grange> <20081223125015.GG1614@pengutronix.de> <Pine.LNX.4.64.0812231359030.5188@axis700.grange> <20081223140320.GH1614@pengutronix.de> <Pine.LNX.4.64.0812231529080.5188@axis700.grange> <20081223160942.GJ1614@pengutronix.de> <Pine.LNX.4.64.0812231727460.5188@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812231727460.5188@axis700.grange>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 18:10:03 up 9 days, 21:37, 10 users,  load average: 0.00, 0.00,
-	0.00
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Tue, 23 Dec 2008 12:15:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=t5pAWldqgc8m/2Xe/bkWc5rmcyZGXeAVj09ioJrYnsLxwRe/q+jL6ql7DdjbbRCGeq
+         G1u+svrJNXyWWuWTQKiok5R95P1bSllsGDCcHHcPltBWPEVvt/M1RQ+TPTLB/4Isfpy3
+         av9w0Q15GP+9qwJ4u/taFOpU/YIrYMbSOp02s=
+From: Brian Gerst <brgerst@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Brian Gerst <brgerst@gmail.com>
+Subject: [PATCH 2/3] x86-64: Unify x86_*_percpu() functions.
+Date: Tue, 23 Dec 2008 12:15:05 -0500
+Message-Id: <1230052506-5041-2-git-send-email-brgerst@gmail.com>
+X-Mailer: git-send-email 1.6.1.rc1
+In-Reply-To: <1230052506-5041-1-git-send-email-brgerst@gmail.com>
+References: <1230052506-5041-1-git-send-email-brgerst@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 23, 2008 at 05:33:11PM +0100, Guennadi Liakhovetski wrote:
-> 
-> These all are just slightly different variations - with this one you'd 
-> have to scan dma channels in your dma irq handler, which I currently don't 
-> have to do.
-> 
-> > That said I'm not sure whether we need a chained interrupt handler at all.
-> > Looking at the remaining interrupts it seems that for example the
-> > CSI_EOF (IPU_INT_STAT3 bit 5) interrupt is redundant to the corresponding
-> > channels interrupt. In the camera driver you already realized that it's
-> > the dma end event you're interested in, not the CSI_EOF event. Not sure
-> > if that holds for the other interrupts though.
-> 
-> I think the version with a lookup table is optimal - it uses standard 
-> mechanisms for irq handling and doesn't waste RAM. The disadvantage - 
-> every addition will need driver modification...
-> 
-> But ok, this is taking way too long. Just tell me which way you'd like to 
-> have it and I'll do it.
+Merge the 32-bit and 64-bit versions of these functions.  Unlike 32-bit,
+the segment base is the current cpu's PDA instead of the offset from the
+original per-cpu area.  This is because GCC hardcodes the stackprotector
+canary at %gs:40.  Since the assembler is incapable of relocating against
+multiple symbols, the code ends up looking like:
 
-Preferably a way which does not involve introducing 100+ unused
-interrupts.
+	movq $per_cpu__var, reg
+	subq $per_cpu__pda, reg
+	movq %gs:(reg), reg
 
-Sascha
+This is still atomic since the offset is a constant (just calculated at
+runtime) and not dependant on the cpu number.
 
+Signed-off-by: Brian Gerst <brgerst@gmail.com>
+---
+ arch/x86/include/asm/percpu.h |   92 +++++++++++++++++-----------------------
+ 1 files changed, 39 insertions(+), 53 deletions(-)
+
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index 6f866fd..f704243 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -1,54 +1,9 @@
+ #ifndef _ASM_X86_PERCPU_H
+ #define _ASM_X86_PERCPU_H
+ 
+-#ifdef CONFIG_X86_64
+-#include <linux/compiler.h>
+-
+-/* Same as asm-generic/percpu.h, except that we store the per cpu offset
+-   in the PDA. Longer term the PDA and every per cpu variable
+-   should be just put into a single section and referenced directly
+-   from %gs */
+-
+-#ifdef CONFIG_SMP
+-#include <asm/pda.h>
+-
+-#define __my_cpu_offset read_pda(data_offset)
+-
+-#endif
+-#include <asm-generic/percpu.h>
+-
+-DECLARE_PER_CPU(struct x8664_pda, pda);
+-
+-/*
+- * These are supposed to be implemented as a single instruction which
+- * operates on the per-cpu data base segment.  x86-64 doesn't have
+- * that yet, so this is a fairly inefficient workaround for the
+- * meantime.  The single instruction is atomic with respect to
+- * preemption and interrupts, so we need to explicitly disable
+- * interrupts here to achieve the same effect.  However, because it
+- * can be used from within interrupt-disable/enable, we can't actually
+- * disable interrupts; disabling preemption is enough.
+- */
+-#define x86_read_percpu(var)						\
+-	({								\
+-		typeof(per_cpu_var(var)) __tmp;				\
+-		preempt_disable();					\
+-		__tmp = __get_cpu_var(var);				\
+-		preempt_enable();					\
+-		__tmp;							\
+-	})
+-
+-#define x86_write_percpu(var, val)					\
+-	do {								\
+-		preempt_disable();					\
+-		__get_cpu_var(var) = (val);				\
+-		preempt_enable();					\
+-	} while(0)
+-
+-#else /* CONFIG_X86_64 */
+-
+ #ifdef __ASSEMBLY__
+ 
++#ifdef CONFIG_X86_32
+ /*
+  * PER_CPU finds an address of a per-cpu variable.
+  *
+@@ -72,6 +27,8 @@ DECLARE_PER_CPU(struct x8664_pda, pda);
+ #define PER_CPU_VAR(var)	per_cpu__##var
+ #endif	/* SMP */
+ 
++#endif	/* X86_32 */
++
+ #else /* ...!ASSEMBLY */
+ 
+ /*
+@@ -88,19 +45,37 @@ DECLARE_PER_CPU(struct x8664_pda, pda);
+  */
+ #ifdef CONFIG_SMP
+ 
++#ifdef CONFIG_X86_32
++
+ #define __my_cpu_offset x86_read_percpu(this_cpu_off)
+ 
+ /* fs segment starts at (positive) offset == __per_cpu_offset[cpu] */
+ #define __percpu_seg "%%fs:"
++#define __percpu_seg_off(x) (x)
++
++#else
++
++#define __my_cpu_offset read_pda(data_offset)
++
++#define __percpu_seg "%%gs:"
++#define __percpu_seg_off(x) RELOC_HIDE((x), -(unsigned long)&per_cpu__pda)
++
++#endif
+ 
+ #else  /* !SMP */
+ 
+ #define __percpu_seg ""
++#define __percpu_seg_off(x) (x)
+ 
+ #endif	/* SMP */
+ 
+ #include <asm-generic/percpu.h>
+ 
++#ifdef CONFIG_X86_64
++#include <asm/pda.h>
++DECLARE_PER_CPU(struct x8664_pda, pda);
++#endif
++
+ /* We can use this directly for local CPU (faster). */
+ DECLARE_PER_CPU(unsigned long, this_cpu_off);
+ 
+@@ -111,6 +86,7 @@ extern void __bad_percpu_size(void);
+ #define percpu_to_op(op, var, val)			\
+ do {							\
+ 	typedef typeof(var) T__;			\
++	typeof(var) *var__ = __percpu_seg_off(&var);	\
+ 	if (0) {					\
+ 		T__ tmp__;				\
+ 		tmp__ = (val);				\
+@@ -118,17 +94,22 @@ do {							\
+ 	switch (sizeof(var)) {				\
+ 	case 1:						\
+ 		asm(op "b %1,"__percpu_seg"%0"		\
+-		    : "+m" (var)			\
++		    : "+m" (*var__)			\
+ 		    : "ri" ((T__)val));			\
+ 		break;					\
+ 	case 2:						\
+ 		asm(op "w %1,"__percpu_seg"%0"		\
+-		    : "+m" (var)			\
++		    : "+m" (*var__)			\
+ 		    : "ri" ((T__)val));			\
+ 		break;					\
+ 	case 4:						\
+ 		asm(op "l %1,"__percpu_seg"%0"		\
+-		    : "+m" (var)			\
++		    : "+m" (*var__)			\
++		    : "ri" ((T__)val));			\
++		break;					\
++	case 8:						\
++		asm(op "q %1,"__percpu_seg"%0"		\
++		    : "+m" (*var__)			\
+ 		    : "ri" ((T__)val));			\
+ 		break;					\
+ 	default: __bad_percpu_size();			\
+@@ -138,21 +119,27 @@ do {							\
+ #define percpu_from_op(op, var)				\
+ ({							\
+ 	typeof(var) ret__;				\
++	typeof(var) *var__ = __percpu_seg_off(&var);	\
+ 	switch (sizeof(var)) {				\
+ 	case 1:						\
+ 		asm(op "b "__percpu_seg"%1,%0"		\
+ 		    : "=r" (ret__)			\
+-		    : "m" (var));			\
++		    : "m" (*var__));			\
+ 		break;					\
+ 	case 2:						\
+ 		asm(op "w "__percpu_seg"%1,%0"		\
+ 		    : "=r" (ret__)			\
+-		    : "m" (var));			\
++		    : "m" (*var__));			\
+ 		break;					\
+ 	case 4:						\
+ 		asm(op "l "__percpu_seg"%1,%0"		\
+ 		    : "=r" (ret__)			\
+-		    : "m" (var));			\
++		    : "m" (*var__));			\
++		break;					\
++	case 8:						\
++		asm(op "q "__percpu_seg"%1,%0"		\
++		    : "=r" (ret__)			\
++		    : "m" (*var__));			\
+ 		break;					\
+ 	default: __bad_percpu_size();			\
+ 	}						\
+@@ -165,7 +152,6 @@ do {							\
+ #define x86_sub_percpu(var, val) percpu_to_op("sub", per_cpu__##var, val)
+ #define x86_or_percpu(var, val) percpu_to_op("or", per_cpu__##var, val)
+ #endif /* !__ASSEMBLY__ */
+-#endif /* !CONFIG_X86_64 */
+ 
+ #ifdef CONFIG_SMP
+ 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.6.1.rc1
+
