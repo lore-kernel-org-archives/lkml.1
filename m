@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752493AbYLWR3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbYLWRaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752493AbYLWR3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 12:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYLWR3p
+	id S1752949AbYLWRaV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 12:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYLWRaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 12:29:45 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35065 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbYLWR3o (ORCPT
+	Tue, 23 Dec 2008 12:30:01 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:18059 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbYLWR37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 12:29:44 -0500
-Date: Tue, 23 Dec 2008 12:29:40 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Pekka Paalanen <pq@iki.fi>
-cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Markus Metzger <markus.t.metzger@gmail.com>
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
- tracing_reset_online_cpus() helper)
-In-Reply-To: <20081220033822.362bc88a@daedalus.pq.iki.fi>
-Message-ID: <alpine.DEB.1.10.0812231225200.26669@gandalf.stny.rr.com>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI> <c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com> <alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com> <20081220004453.50aec846@daedalus.pq.iki.fi> <20081219225717.GK13409@elte.hu>
- <alpine.DEB.1.10.0812191810110.26234@gandalf.stny.rr.com> <20081219233443.GC17984@elte.hu> <alpine.DEB.1.10.0812191912280.26234@gandalf.stny.rr.com> <20081220033822.362bc88a@daedalus.pq.iki.fi>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 23 Dec 2008 12:29:59 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=dNyR3gSLCFyn+ICX1Nhd+8Ap6r0g9pOYLIVI8aDR+fu/cknoTUHIptpQwjATLPtfP
+	U7KvZDEvLoLK8J3klp+iw==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20081223172610.GA5957@uranus.ravnborg.org>
+References: <20081222152247.b934ed5b.sfr@canb.auug.org.au>
+	 <20081222070426.GD29160@elte.hu>
+	 <20081222181932.5dd9514e.sfr@canb.auug.org.au>
+	 <20081222080341.GA18897@elte.hu>
+	 <20081222144319.1bfc0061.akpm@linux-foundation.org>
+	 <20081222230035.GB4074@uranus.ravnborg.org>
+	 <20081222151338.3b6ef997.akpm@linux-foundation.org>
+	 <20081223131746.GA7456@uranus.ravnborg.org>
+	 <b040c32a0812230905q3a257163r35373b0cb50df35c@mail.gmail.com>
+	 <20081223172610.GA5957@uranus.ravnborg.org>
+Date: Tue, 23 Dec 2008 09:29:52 -0800
+Message-ID: <b040c32a0812230929u282f0f2bn9221bf2e176d82eb@mail.gmail.com>
+Subject: Re: [PATCH] sparc64: use unsigned long long for u64
+From: Ken Chen <kenchen@google.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       sparclinux <sparclinux@vger.kernel.org>, mingo@elte.hu,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, paulus@samba.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-next@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.24.198.81
+X-GMailtapped: kenchen
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 23, 2008 at 9:26 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
+>> wait, why does this need to be changed?
+>
+> We have:
+>        clocksource_tick.read = tick_ops->get_tick;
+>
+> And clocksource_tick is of type clocksource:
+>
+> struct clocksource {
+>        ...
+>        cycle_t (*read)(void);
+>
+> And cycle_t is:
+> /* clocksource cycle base type */
+> typedef u64 cycle_t;
+>
+> And u64 is now:
+> unsigned long long - thus we need to fix prototype
+> of get_tick to fix the warnings.
+>
+> A cast could do it - but fixing the real problem
+> is better here.
 
-On Sat, 20 Dec 2008, Pekka Paalanen wrote:
-> 
-> I thought this was just about not having to do
-> 
-> $ echo 0 > tracing_enabled
-> $ echo 28764243 > buffer_size
-> $ echo 1 > tracing_enabled
-> 
-> and instead just do
-> 
-> $ echo 28764243 > buffer_size
-> 
-> which would do exactly the same, except being easier for the user.
-> Personally I've never dreamed of any kind of resize-in-flight.
-> 
+Sounds good to me.  It was just a question.  Thank you for the explanation.
 
-I must be losing it :-p
-
-You can on tip simply echo 28764243 > buffer_size without disabling the 
-tracer.  This change is not in mainline, but I expect it will be in 
-2.6.29. 
-
-I just resized the buffer while running the function tracer. I made the 
-change a while ago.
-
--- Steve
-
+- Ken
