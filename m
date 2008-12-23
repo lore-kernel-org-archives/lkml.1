@@ -1,39 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbYLWABf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbYLWAFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbYLWABf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 19:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbYLWAB1
+	id S1756457AbYLWAFv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 19:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbYLWAFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 19:01:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33322 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755482AbYLWAB0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 19:01:26 -0500
-Date: Mon, 22 Dec 2008 16:01:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Fasheh <mfasheh@suse.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       joel.becker@oracle.com, jack@suse.cz, mfasheh@suse.com
-Subject: Re: [PATCH 19/56] mm: Export pdflush_operation()
-Message-Id: <20081222160104.6633cd77.akpm@linux-foundation.org>
-In-Reply-To: <1229982517-3455-20-git-send-email-mfasheh@suse.com>
-References: <1229982517-3455-1-git-send-email-mfasheh@suse.com>
-	<1229982517-3455-20-git-send-email-mfasheh@suse.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Dec 2008 19:05:43 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46162 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755211AbYLWAFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 19:05:42 -0500
+Date: Tue, 23 Dec 2008 01:03:56 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
+       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
+Subject: Re: [RFC][PATCH 6/6][v3] Protect cinit from blocked fatal signals
+Message-ID: <20081223000356.GB7279@redhat.com>
+References: <20081221005106.GA4912@us.ibm.com> <20081221005529.GF5025@us.ibm.com> <20081222225825.GC1536@redhat.com> <20081222233855.GA13079@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081222233855.GA13079@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Dec 2008 13:48:00 -0800
-Mark Fasheh <mfasheh@suse.com> wrote:
+On 12/22, Sukadev Bhattiprolu wrote:
+>
+> Oleg Nesterov [oleg@redhat.com] wrote:
+> | > @@ -1907,9 +1943,10 @@ relock:
+> | >
+> | >  		/*
+> | >  		 * Global init gets no signals it doesn't want.
+> | > +		 * Container-init gets no signals it doesn't want from same
+> | > +		 * container.
+> | >  		 */
+> | > -		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+> | > -		    !signal_group_exit(signal))
+> | > +		if (sig_unkillable(signal, signr) && !signal_group_exit(signal))
+> | >  			continue;
+> | 
+> | Again, I do not understand why do we need SIGNAL_UNKILLABLE_FROM_NS.
+> | 
+> | I thought about the change in get_signal_to_deliver() during the
+> | previous discussion, and I think what we need is:
+> | 
+> | 		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+> | 		    !sig_kernel_only(sig))
+> | 			continue;
+> | 
+> | and this was yet another reason for "protect init from unwanted signals more".
+> 
+> I was trying to avoid the clearing of the SIGNAL_UNKILLABLE in
+> send_signal() that we had last time.
 
-> OCSF2 will need to queue up work for periodic syncing of quotas
-> among nodes in the cluster. pdflush() is good thread for this so
-> export it's controlling function so that OCFS2 can use it.
+Well, my plan was to simplify the first series of patches as much
+as possible, then I thought we can change get_signal_to_deliver().
 
-I trust that nothing will explode if pdflush_operation() fails
-to do anything and returns -1?
+But now I tend to agree, we should not clear SIGNAL_UNKILLABLE when
+we send the signal, and we should pass same_ns/from_parent_ns to
+prepare_signal() from the start. This way is more "clean".
+
+> But yes, you are right. I even had a BUG_ON() to confirm SIGKILL/SIGSTOP
+> will never happen for global-init :-). If so, SIGKLL/SIGSTOP to an init
+> can come only from parent ns.
+>
+> So, yes, we can drop this flag.
+
+Great!
+
+Oleg.
+
