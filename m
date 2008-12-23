@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751784AbYLWPtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbYLWP45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751784AbYLWPtk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 10:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYLWPta
+	id S1751777AbYLWP45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 10:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYLWP4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 10:49:30 -0500
-Received: from lucidpixels.com ([75.144.35.66]:52190 "EHLO lucidpixels.com"
+	Tue, 23 Dec 2008 10:56:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34040 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYLWPt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 10:49:29 -0500
-Date: Tue, 23 Dec 2008 10:49:28 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: linux-raid@vger.kernel.org, bug-parted@gnu.org,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.27.10: cannot mount xfs filesystem partition (12TiB) after
- reboot
-In-Reply-To: <20081223145431.GA31057@infradead.org>
-Message-ID: <alpine.DEB.1.10.0812231043540.9812@p34.internal.lan>
-References: <alpine.DEB.1.10.0812230829420.4817@p34.internal.lan> <20081223134247.GA17750@infradead.org> <alpine.DEB.1.10.0812230950120.7572@p34.internal.lan> <20081223145431.GA31057@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1750927AbYLWP4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 10:56:46 -0500
+Message-ID: <49510A34.10102@redhat.com>
+Date: Tue, 23 Dec 2008 09:56:36 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Andreas Dilger <adilger@sun.com>
+CC: Ric Wheeler <rwheeler@redhat.com>, Jan Kara <jack@suse.cz>,
+       Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com> <20081219002752.GE8424@duck.suse.cz> <494AFA16.2010004@redhat.com> <494FE73E.5000802@redhat.com> <20081222225757.GV5000@webber.adilger.int>
+In-Reply-To: <20081222225757.GV5000@webber.adilger.int>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 23 Dec 2008, Christoph Hellwig wrote:
-
-> On Tue, Dec 23, 2008 at 09:50:26AM -0500, Justin Piszcz wrote:
+Andreas Dilger wrote:
+> On Dec 22, 2008  14:15 -0500, Ric Wheeler wrote:
+>> Without having dived into the patch in detail, one worry I would have is  
+>> that we still might care to spin up a drive for empty transactions in  
+>> order to invalidate the drive's write cache.
 >>
+>> For example, if we have the following sequence:
 >>
->> On Tue, 23 Dec 2008, Christoph Hellwig wrote:
+>>    (1) user app performs series of writes to file A
+>>    (2) pages dirtied from writes to A are destaged to the disk over time
+>>    (3) user app issues fsync(file A) to make sure that the data will  
+>> survive a power outage
 >>
->>> On Tue, Dec 23, 2008 at 08:36:17AM -0500, Justin Piszcz wrote:
->>>> Kernel = 2.6.27.10
->>>> Parted = 1.8.8.git.2008.03.24-11.1
->>>>
->>>> Can anyone help explain the problem here?
->>>
->>> Can you post your kernel .config file?
->>>
->>
->> http://home.comcast.net/~jpiszcz/20081223/config-2.6.27.10.txt
->
-> Without CONFIG_EFI_PARTITION the kernel won't find your gpt labels.  See
->
-> 	http://xfs.org/index.php/XFS_FAQ#Q:_Why_does_my_.3E_2TB_XFS_partition_disappear_when_I_reboot_.3F
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+>> At this point in time, would this change prevent us from spinning up the  
+>> drive and invalidating the disk write cache for that fsync() ?
+> 
+> Well, if the writes themselves didn't spin up the drive, it is uncertain
+> whether the write of the journal commit block would be any more helpful
+> in getting that to happen.
 
-Christoph,
+So, ext4_sync_file() calls blkdev_issue_flush() which would should do
+the right thing even if the drive is spun down, I think (rather than
+hoping that some other journal activity would flush this out...)
 
-Thank you-- enabled, rebooted, success.
+I guess I don't know for sure what blkdev_issue_flush does on a
+spun-down drive but I'd hope it does the right thing.
 
-Steps performed/location in menuconfig:
+Pretty sure I sent a patch for ext3 to do the same, but it was
+ignored/dropped/forgotten along with the barriers-by-default patch.
+Suppose I could try again.
 
-$ make menuconfig
-$ File systems
-$ Partition Types
-$ Hit 'Y'
-$ Enable this: [X] EFI GUID Partition support (NEW)
-
-Better question as well, need to find out if KNOPPIX or distro-CDs support 
-this option, if one to boot into recovery and this option was not 
-enabled.. that would not be fun.
-
-Justin.
+-Eric
