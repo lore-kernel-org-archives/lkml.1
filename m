@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816AbYLWLk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbYLWLnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751816AbYLWLk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 06:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLWLkT
+	id S1751713AbYLWLnh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 06:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYLWLnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 06:40:19 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:8317 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbYLWLkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 06:40:18 -0500
-Date: Tue, 23 Dec 2008 12:39:38 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
+	Tue, 23 Dec 2008 06:43:25 -0500
+Received: from viefep19-int.chello.at ([62.179.121.39]:60892 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750912AbYLWLnY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 06:43:24 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH] percpu_counter: use local_t and atomic_long_t if
+ possible
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH next] bio: zero inlined bio_vec
-Message-ID: <20081223113938.GJ32491@kernel.dk>
-References: <Pine.LNX.4.64.0812230103480.19807@blonde.anvils> <20081223080747.GE32491@kernel.dk> <Pine.LNX.4.64.0812230951100.3062@blonde.anvils> <20081223102320.GF32491@kernel.dk> <20081223103138.GG32491@kernel.dk> <Pine.LNX.4.64.0812231110320.9177@blonde.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812231110320.9177@blonde.anvils>
+       Rusty Russell <rusty@rustcorp.com.au>, Theodore Tso <tytso@mit.edu>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
+       linux-ext4@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <49424637.3010107@cosmosbay.com>
+References: <4936D287.6090206@cosmosbay.com>
+	 <20081209214921.b3944687.akpm@linux-foundation.org>
+	 <49404925.7090902@cosmosbay.com> <200812121847.06432.rusty@rustcorp.com.au>
+	 <49424637.3010107@cosmosbay.com>
+Content-Type: text/plain
+Date: Tue, 23 Dec 2008 12:43:21 +0100
+Message-Id: <1230032601.9487.247.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 23 2008, Hugh Dickins wrote:
-> On Tue, 23 Dec 2008, Jens Axboe wrote:
-> > On Tue, Dec 23 2008, Jens Axboe wrote:
-> > > 
-> > > That is, it iterates *bio_orig but indexes bio since it knows it has the
-> > > same number of segments. So this code is the odd one out, I'd be
-> > > surprised if we had more such cases. And since it would be nice to get
-> > > rid of the need to memset in general, can you try with the below patch?
-> > 
-> > Nope, that still wont be enough, since we leave entries 0..i-1
-> > uninitialized. Lets just do this instead.
-> 
-> Yes, that second version worked for me.  But if __blk_queue_bounce()
-> is indeed the odd one out (likely but not certain), then the extension
-> below makes more sense - I don't like how your bio.c returns a cleared
-> bio_vec in some cases but not in others.  This is running fine for me
-> on my test machines, but my test coverage is probably very poor (am I
-> ever using more than the inlined bio_vec?), and I've not really tried
-> to understand all the ways through bvec_alloc_bs().
-> 
-> Hugh
-> 
-> --- a/fs/bio.c
-> +++ b/fs/bio.c
-> @@ -180,7 +180,7 @@ struct bio_vec *bvec_alloc_bs(gfp_t gfp_
->  	 * kzalloc() for the exact number of vecs right away.
->  	 */
->  	if (!bs)
-> -		bvl = kzalloc(nr * sizeof(struct bio_vec), gfp_mask);
-> +		bvl = kmalloc(nr * sizeof(struct bio_vec), gfp_mask);
->  
->  	/*
->  	 * see comment near bvec_array define!
-> @@ -237,9 +237,6 @@ fallback:
->  		}
->  	}
->  
-> -	if (bvl)
-> -		memset(bvl, 0, bvec_nr_vecs(*idx) * sizeof(struct bio_vec));
-> -
->  	return bvl;
->  }
+One think that sprung to mind,..
 
-I agree, those should be killed too. It's why I didn't want to rely on
-memset for fixing your issue :-)
+IFF we're going to implement percpu_counter with local_t and make
+local_t this funny tri-counter thing which has its own error, you need
+to fix up bdi_stat_error() - it expects to be an upper bound for the
+counter error, getting that wrong _will_ cause deadlocks.
 
-I'll merge the bounce.c fix into the original patch.
 
--- 
-Jens Axboe
 
