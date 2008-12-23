@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbYLWLnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751834AbYLWLrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751713AbYLWLnh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 06:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYLWLnZ
+	id S1751834AbYLWLrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 06:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYLWLrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 06:43:25 -0500
-Received: from viefep19-int.chello.at ([62.179.121.39]:60892 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750912AbYLWLnY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 06:43:24 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] percpu_counter: use local_t and atomic_long_t if
- possible
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Theodore Tso <tytso@mit.edu>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
-       linux-ext4@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <49424637.3010107@cosmosbay.com>
-References: <4936D287.6090206@cosmosbay.com>
-	 <20081209214921.b3944687.akpm@linux-foundation.org>
-	 <49404925.7090902@cosmosbay.com> <200812121847.06432.rusty@rustcorp.com.au>
-	 <49424637.3010107@cosmosbay.com>
-Content-Type: text/plain
-Date: Tue, 23 Dec 2008 12:43:21 +0100
-Message-Id: <1230032601.9487.247.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Tue, 23 Dec 2008 06:47:04 -0500
+Received: from h155.mvista.com ([63.81.120.155]:15508 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750914AbYLWLrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 06:47:01 -0500
+Message-ID: <4950CFAD.7020403@ru.mvista.com>
+Date: Tue, 23 Dec 2008 14:46:53 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: gregkh@suse.de
+Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org,
+       khilman@deeprootsystems.com,
+       davinci-linux-open-source@linux.davincidsp.com, david-b@pacbell.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] musb: fix DaVinci build again
+References: <200812072341.50012.sshtylyov@ru.mvista.com> <494A7729.6090102@ru.mvista.com> <494A7809.1040504@ru.mvista.com> <494E2450.9080601@ru.mvista.com>
+In-Reply-To: <494E2450.9080601@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One think that sprung to mind,..
 
-IFF we're going to implement percpu_counter with local_t and make
-local_t this funny tri-counter thing which has its own error, you need
-to fix up bdi_stat_error() - it expects to be an upper bound for the
-counter error, getting that wrong _will_ cause deadlocks.
 
+Sergei Shtylyov wrote:
+> Hello, I wrote:
+>
+>>>> The last Kevin Hilman's patch seems to have been broken on its way 
+>>>> to Greg's
+>>>> tree and also probably clashed with yet another patch. Fix DaVinci 
+>>>> build again.
+>>>> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>>>> ---
+>>>> Felipe, I have to ask you again to be more careful with patches...
+>>
+>>>    11 days have passed since this has benn sent out and I'm still 
+>>> not seeing this 2.6.28 *hot* fix in the MUSB git tree. Greg, could 
+>>> you queue this urgently, bypassing the MUSB tree?
+>>
+>>   I'll be happy if it gets combined with the following patch in your 
+>> tree:
+>>
+>> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/usb/usb-musb-build-fixes-for-davinci.patch 
+>>
+>>
+>> fallout of which I'm fixing. Though it would've been better yet if 
+>> you just dropped that totally broken patch. I could've send a 
+>> replacment then...
+>
+>   The patch I liked to above fixes nothing and only adds more 
+> breakage. Compare it with the original Kevin's patch:
+>
+> http://marc.info/?l=linux-usb&m=122608723815504
+
+   I'm seeing Felipe returning to the list but still ignoring this 
+thread so far.
+   For how much longer we'll have to wait for this issue to be resolved? 
+2.6.28 is 2 days away (at most).
+   Greg, what's the problem with dropping obviously broken patch?
+
+WBR, Sergei
 
 
