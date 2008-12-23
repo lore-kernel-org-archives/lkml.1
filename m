@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbYLWSAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbYLWSJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbYLWSAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 13:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbYLWSA2
+	id S1752060AbYLWSJm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 13:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYLWSJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 13:00:28 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33754 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbYLWSA2 (ORCPT
+	Tue, 23 Dec 2008 13:09:32 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48003 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750986AbYLWSJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 13:00:28 -0500
-Date: Tue, 23 Dec 2008 12:54:28 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: John Ogness <dazukocode@ogness.net>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       malware-list@lists.printk.net, eparis@redhat.com, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 0/5] VFS: DazukoFS, stackable-fs, file access control
-Message-ID: <20081223115428.GB1439@ucw.cz>
-References: <86d4flh96z.fsf@johno-ibook.fn.ogness.net>
+	Tue, 23 Dec 2008 13:09:31 -0500
+Date: Tue, 23 Dec 2008 10:08:50 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       =?ISO-8859-15?Q?H=E5kon_L=F8vdal?= <hlovdal@gmail.com>,
+       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while
+ a compound statement
+In-Reply-To: <m3k59qssix.fsf@maximus.localdomain>
+Message-ID: <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net> <20081222191507.11807.50794.stgit@vmbox.hanneseder.net> <m3hc4voo2a.fsf@maximus.localdomain> <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com> <m3ocz2ua3w.fsf@maximus.localdomain>
+ <1230053186.1447.9.camel@brick> <m3k59qssix.fsf@maximus.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86d4flh96z.fsf@johno-ibook.fn.ogness.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> MOTIVATION
+On Tue, 23 Dec 2008, Krzysztof Halasa wrote:
+
+> Harvey Harrison <harvey.harrison@gmail.com> writes:
 > 
-> Since 2001 various anti-virus vendors have been providing out-of-tree
-> solutions for online virus scanning. Although GNU/Linux systems
-> currently are not targets of virus authors, many organizations are
-> interested in online virus scanning on Linux-based servers in order to
-> help protect Microsoft Windows clients. It is often argued that file
-> scanning should be implemented in the various services (such as Samba,
-> Apache, vsftpd, etc.), and indeed many such solutions have been
-> implemented. However, there is a continued demand for a kernel-based
-> solution because it can guard the entire filesystem independent from
-> the types and numbers of services running on a system.
+> >> There are many ways to make the code more merge friendly at a cost of
+> >> readability. Hope we don't go this way.
+> >
+> > Linus himself added that particular warning to sparse...may want to check
+> > with him the reason for it.
+> 
+> Once again, this is a personal thing, and a harmless one.
 
-Somewhere here you should mention that unlike other solutions that
-work 100% of time, dazuko is be design racy and may still allow
-viruses to be spread from linux system when mmap is used.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+It's more than that. I added the check after some person who had been 
+programming the kernel (and thus was supposedly fluent in C) literally 
+could not parse a macro that had "do x while (y)" in it.
+
+Why? Because it's so uncommon, and because "while (y)" on its own means 
+something totally different.
+
+So the syntactic sugar to _always_ have do-while loops have that brace is 
+a way to avoid one of the rather few places where the C language has 
+syntax that is very context-dependent.
+
+Another example of this is "sizeof". The kernel universally (I hope) has 
+parenthesis around the sizeof argument, even though it's clearly not 
+required by the C language. 
+
+It's a coding standard. 
+
+And quite frankly, anybody who works on gcc has no place complaining about 
+sparse coding standard warnings. They are a _hell_ of a lot better than 
+some of the really crazy warnings gcc spews out with "-W". At least the 
+sparse warnings you can make go away while making the code more 
+understandable. Some of the -W warnings are unfixable without breaking the 
+source code.
+
+		Linus
