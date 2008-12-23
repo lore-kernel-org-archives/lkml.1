@@ -1,46 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYLWXhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYLWXiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753342AbYLWXhZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 18:37:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYLWXhL
+	id S1753511AbYLWXiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 18:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYLWXiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 18:37:11 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:14924 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751281AbYLWXhJ (ORCPT
+	Tue, 23 Dec 2008 18:38:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55313 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751952AbYLWXiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 18:37:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=PO7/Z4gIoKBGtgHZy71X+9aFOPO2+yfifzuV2pw3VXT+gclSPKv1Q0ybTdSCdFS5pa
-         8EtPuVHZWIsf5Lw2UzEJoa8j3H/dPgZm1BbCqEvMJ00IT6uC5mdedLapcMjhH9sAEJLW
-         jZODK2IvrB8s7GLpa4J94Ak4KPYvOhUCHxN2g=
-Message-ID: <81b0412b0812231537g3a1a0527xf28aa9945c7ca3d9@mail.gmail.com>
-Date: Wed, 24 Dec 2008 00:37:08 +0100
-From: "Alex Riesen" <raa.lkml@gmail.com>
-To: "Zhu Yi" <yi.zhu@intel.com>, "Reinette Chatre" <reinette.chatre@intel.com>,
-       linux-wireless@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net, "Jim Paris" <jim@jtan.com>,
-       linville@tuxdriver.com
-Subject: [Bug 11326] iwl3945: Error: Response NULL in 'REPLY_ADD_STA', followed by fault
+	Tue, 23 Dec 2008 18:38:09 -0500
+Date: Tue, 23 Dec 2008 15:38:02 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       =?ISO-8859-15?Q?H=E5kon_L=F8vdal?= <hlovdal@gmail.com>,
+       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while
+ a compound statement
+In-Reply-To: <m3hc4usco9.fsf@maximus.localdomain>
+Message-ID: <alpine.LFD.2.00.0812231529030.3535@localhost.localdomain>
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net> <20081222191507.11807.50794.stgit@vmbox.hanneseder.net> <m3hc4voo2a.fsf@maximus.localdomain> <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com> <m3ocz2ua3w.fsf@maximus.localdomain>
+ <1230053186.1447.9.camel@brick> <m3k59qssix.fsf@maximus.localdomain> <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain> <m3hc4usco9.fsf@maximus.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any chance that at least the patch in the bug's discussion is accepted
-in the next stable?
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11326
 
-I tested the patch, and if the error message is still seen sometimes,
-there is no crash
-and the system can be shutdown properly (in its other parts). It maybe even more
-useful to the original reporter of the problem, who experienced it on
-a running system.
+On Wed, 24 Dec 2008, Krzysztof Halasa wrote:
+> 
+> So is a case like
+> 	do
+> 		x;
+> 	while (y);
+> It can't be made more clear with brackets.
+
+Oh yes it can. People look at that, and it's so uncommon that they 
+literally believe it is a mis-indent.
+
+Your example with nested if-statements are totally pointless, because you 
+didn't even apparently understand my comment about "while()" having two 
+totally different meanings (which is not true of "if()"), nor realize the 
+importance of how common something is.
+
+Common patterns become things that people take for granted and don't have 
+any trouble with. In contrast, do-while without braces is _extremely_ 
+uncommon.
+
+> IOW: improving the style is great. Changing it only to silence some
+> tool is not.
+
+Sorry, you're wrong. It's not changed to silence some tool. THIS IS THE 
+KERNEL CODING STYLE. 
+
+I don't care one whit about your personal coding style. The kernel has 
+brances. End of discussion. sparse complains about lack of them. 
+Comprende?
+
+> Right, but they (at least for me) make it more readable.
+
+I don't care.
+
+> kmalloc(sizeof i) just doesn't look good, the operator looks like
+> a variable name.
+
+And I agree with you. "sizeof i" doesn't look good. It's uncommon, and 
+doesn't match peoples expectations.
+
+> But there is this return statement. Some people tend to write
+> return (x); I simply write return x;
+
+I do to. And it's the common thing to do, and only totally confused people 
+think that 'return' is a somehow remotely like a "function" of its 
+arguments (the way 'sizeof' is - sizeof _is_ a function of its arguments, 
+albeit a very rare one).
+
+> It's clear, and so is a simple do-while.
+
+No. "return x;" is clear because it's the common thing, which means that 
+peopel are good at reading it.
+
+Another example of "common vs non-common" is this:
+
+	if (0 <= x)
+		do something..
+
+is something that crazy people do (sadly, one of the crazy people taught 
+the git maintainer C programming, so now even sane people do it). It's 
+crazy because it's uncommon, which means that most people have to think 
+about it A LOT MORE than about
+
+	if (x >= 0)
+		do something..
+
+even though technically both are obviously EXACTLY THE SAME THING.
+
+Can you see the argument? Doing things the common way is important, 
+because it allows people to see what they mean without having to think 
+about it. They just scan it, and the meaning is clear.
+
+And that's why "do while" without braces is bad. If you scan it quickly on 
+its own, you may well end up just seeing the
+
+	while (x);
+
+part, and get confused ("oh, a delay loop"). But if you see
+
+	} while (x);
+
+you aren't confused, because the latter one is clearly an ending condition 
+of a do-while loop, IN A WAY THAT THE FIRST ONE IS NOT!
+
+See?
+
+do-while is very special, because as mentioned, "while" is a really magic 
+C keyword that has two TOTALLY DIFFERENT meanings. Don't make people look 
+for the "do".
+
+		Linus
