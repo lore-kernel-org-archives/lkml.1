@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYLWEoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYLWEtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbYLWEoD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Dec 2008 23:44:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYLWEnu
+	id S1755553AbYLWEtV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Dec 2008 23:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYLWEtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Dec 2008 23:43:50 -0500
-Received: from main.gmane.org ([80.91.229.2]:58668 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754395AbYLWEnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Dec 2008 23:43:50 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: drivers using the non-PCI dma_set_mask() on PCI devices
-Date: Mon, 22 Dec 2008 22:43:33 -0600
-Message-ID: <49506C75.8010200@shaw.ca>
-References: <200812222132.mBMLWrNU028431@harpo.it.uu.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-In-Reply-To: <200812222132.mBMLWrNU028431@harpo.it.uu.se>
+	Mon, 22 Dec 2008 23:49:12 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:57908 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754498AbYLWEtM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Dec 2008 23:49:12 -0500
+Date: Mon, 22 Dec 2008 20:47:45 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, roland@redhat.com, bastian@waldi.eu.org,
+       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
+Subject: Re: [RFC][PATCH 4/6][v3] Define siginfo_from_ancestor_ns()
+Message-ID: <20081223044745.GA16832@us.ibm.com>
+References: <20081221005106.GA4912@us.ibm.com> <20081221005424.GD5025@us.ibm.com> <20081222222604.GA1536@redhat.com> <20081222230133.GD1536@redhat.com> <20081222235837.GC13079@us.ibm.com> <20081223002215.GA7984@redhat.com> <m13agf68a7.fsf@frodo.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m13agf68a7.fsf@frodo.ebiederm.org>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
-> Several drivers do the following:
-> 
-> 	struct pci_dev *pdev = ...;
-> 	...
-> 	if (dma_set_mask(&pdev->dev, mask))
-> 		...
-> 
-> But pdev->dev.dma_mask == &pdev->dma_mask, so this is essentially a
-> roundabout way of saying
-> 
-> 	if (pci_set_dma_mask(pdev, mask))
-> 
-> except that it bypasses the PCI-specific operations pci_set_dma_mask()
-> may do on that platform.
-> 
-> Drivers doing this include drivers/scsi/aic7xxx/aic79xx_osm_pci.c,
-> drivers/scsi/aic7xxxx/aic7xxx_osm_pci.c, drivers/scsi/qla2xxx/qla_os.c,
-> drivers/net/wireless/rt2x00/rt2x00pci.c, and drivers/media/video/meye.c.
-> 
-> Is it considered acceptable that drivers bypass the PCI DMA API on
-> PCI devices like this, or are these drivers in error?
-> 
-> I'm doing some work on an embedded platform (ARM IXP4xx) with some
-> PCI DMA restrictions. To handle these the platform provides its own
-> versions of pci_set_dma_mask() and pci_set_consistent_dma_mask(),
-> but its dma_set_mask() currently does not do anything PCI-specific.
-> The question is: should dma_set_mask() have PCI knowledge or not?
+Eric W. Biederman [ebiederm@xmission.com] wrote:
+| Oleg Nesterov <oleg@redhat.com> writes:
+| 
+| >> I was going through the ->si_pid assignments to try and fix them at
+| >> source (like the mqueue patch I sent last week).
+| >
+| > OK.
+| 
+| Note.  When a signal goes to a process group (or similar) we can't fix
+| si_pid at the source.  We have to fix it when only a single destination
+| process is known.  It doesn't mean that fixing it at the source
+| is hopeless but...  
 
-AFAIK pci_set_dma_mask is somewhat deprecated, and dma_set_mask should 
-be used instead. If the platform fails to do what's needed when 
-dma_set_mask is called on a PCI device then it would seem the platform 
-code is in error.
+Right. Most calls to kill_pgrp_info() and __kill_pgrp_info() use
+SEND_SIG_PRIV or SEND_SIG_NOINFO, so their ->si_pid is set.
+The only place seems to be the sys_kill()/sys_tkill().
 
+| 
+| >> The two cases that don't fit the model are sys_kill() and sys_tkill().
+| >> For that I was hoping we could use siginfo_from_user() again. i.e
+| >>
+| >> 	if (siginfo_from_user())
+| >> 		masquerade_si_pid()
+| >>
+| >> in the default: case of send_signal(). To be safe, masquerade_si_pid()
+| >> could do it only iff si_code is either SI_USER or SI_TKILL.
+| >>
+| >> IOW, with some tweaks, I am trying to see if we can use siginfo_from_user()
+| >> in place of the SIG_FROM_USER.
+| >
+| > sys_rt_sigqueueinfo().
+| >
+| > But, perhaps we can just ignore the problems with sigqueueinfo() (and
+| > document them). 
+
+Yes, thats one reason I was thinking of checking si_code == SI_USER or
+SI_TKILL, but rt_sigqueueinfo() could still use those values too.
+
+In fact it could use SI_ASYNCIO :-) and mess with sig_from_user() (i.e
+if rt_sigqueueinfo() sets si_code to SI_ASYNCIO and sends SIGKILL/SIGSTOP
+to a descendant cinit, SIGKILL/SIGSTOP will be ignored).
+
+We could/should warn if rt_sigqueueinfo() sets si_code to SI_ASYNCIO.
+
+One more reason to make SI_ASYNCIO a kernel signal I guess.
+
+| 
+| Yes.  I don't think si_pid is valid in that case anyway.  It is the
+| kernel signals where si_pid is a reliable field that are important.
+| 
+| Eric
+
+Sukadev
