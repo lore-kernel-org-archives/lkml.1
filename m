@@ -1,61 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751815AbYLXUUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751718AbYLXUhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751815AbYLXUUs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 15:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYLXUUi
+	id S1751718AbYLXUhg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 15:37:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbYLXUh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 15:20:38 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49172 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750912AbYLXUUh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 15:20:37 -0500
-Date: Wed, 24 Dec 2008 12:18:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: avorontsov@ru.mvista.com
-Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
-       linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/3] USB: FHCI: Driver should be responsible for
- managing endpoint queues
-Message-Id: <20081224121853.b46e9174.akpm@linux-foundation.org>
-In-Reply-To: <20081224200845.GA1064@oksana.dev.rtsoft.ru>
-References: <20081223210322.GA2802@oksana.dev.rtsoft.ru>
-	<20081224191303.GA21815@oksana.dev.rtsoft.ru>
-	<20081224195935.GA11531@kroah.com>
-	<20081224200845.GA1064@oksana.dev.rtsoft.ru>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Dec 2008 15:37:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46705 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbYLXUh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 15:37:26 -0500
+Message-ID: <49529CE1.4040005@kernel.org>
+Date: Wed, 24 Dec 2008 12:34:41 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, mel@csn.ul.ie
+Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333	smp_call_function_mask
+References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au> <20081219105441.GA19750@linux.vnet.ibm.com> <86802c440812190351q3118516aif664dd5869c21b2a@mail.gmail.com> <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com>
+In-Reply-To: <20081224163400.GA11562@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Dec 2008 23:08:45 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> On Wed, Dec 24, 2008 at 11:59:36AM -0800, Greg KH wrote:
-> > On Wed, Dec 24, 2008 at 10:13:03PM +0300, Anton Vorontsov wrote:
-> > > Follow these changes for the FHCI driver:
-> > 
-> > Hm, would it just make more sense to respin the whole driver?  That way
-> > it's never in the tree in a "broken" state?
+Kamalesh Babulal wrote:
+> * Yinghai Lu <yinghai@kernel.org> [2008-12-23 13:09:56]:
 > 
-> It's for -mm tree. If I understand -mm workflow correctly, Andrew
-> will merge all the fixes into the final patch before sending it to
-> you in late -rc0 phase, when various -next git trees (on which this
-> driver depend) will be merged into the Linus tree.
->
-> Andrew, am I correct?
+> 
+> boot log after applying the debug patch
+> 
+> root (hd0,0)
+>  Filesystem type is ext2fs, partition type 0x83
+> kernel /vmlinuz-autotest root=/dev/mapper/VolGroup00-LogVol00 ro console=tty0 c
+> onsole=ttyS1,19200 selinux=no debug IDENT=1230133532
+>    [Linux-bzImage, setup=0x3000, size=0x273cf0]
+> initrd /initrd-autotest
+>    [Linux-initrd @ 0x37e5f000, 0x19097a bytes]
+> 
+> Linux version 2.6.28-rc8-autotest-tip (root@bl6-13.ltc.austin.ibm.com) (gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #1 SMP Wed Dec 24 09:37:30 CST 2008
+> Command line: root=/dev/mapper/VolGroup00-LogVol00 ro console=tty0 console=ttyS1,19200 selinux=no debug IDENT=1230133532
 
-Yes, that's what I do.
+ok, it seems that your compiler is broken... is that RHEL 5.1 stock compiler
 
-I prefer to see the incremental patches once a patch has had review or
-testing, so we can see which bits changed.  But if Greg intends to
-merge this driver then he'd probably prefer a fresh new patch,
-particularly as a) version 1 was only sent yesterday and b) he hasn't
-merged version #1.
+YH
 
 
+[PATCH] sparseirq: add oninline to workaround compiler
+
+Impact: fix panic on null pointer with sparseirq
+
+some compiler seems to inline the weak global function.
+try to workaround it
+
+also remove duplicated arch_early_irq_init()
+already have one weak copy in init/main.c
+
+Signed-off-by: Yinghai <yinghai@kernel.org>
+
+---
+ init/main.c         |    4 ++--
+ kernel/irq/handle.c |    6 +-----
+ 2 files changed, 3 insertions(+), 7 deletions(-)
+
+Index: linux-2.6/init/main.c
+===================================================================
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -542,11 +542,11 @@ void __init __weak thread_info_cache_ini
+ {
+ }
+ 
+-void __init __weak arch_early_irq_init(void)
++void noinline __init __weak arch_early_irq_init(void)
+ {
+ }
+ 
+-void __init __weak early_irq_init(void)
++void noinline __init __weak early_irq_init(void)
+ {
+ 	arch_early_irq_init();
+ }
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -56,10 +56,6 @@ void handle_bad_irq(unsigned int irq, st
+ int nr_irqs = NR_IRQS;
+ EXPORT_SYMBOL_GPL(nr_irqs);
+ 
+-void __init __attribute__((weak)) arch_early_irq_init(void)
+-{
+-}
+-
+ #ifdef CONFIG_SPARSE_IRQ
+ static struct irq_desc irq_desc_init = {
+ 	.irq	    = -1,
+@@ -90,7 +86,7 @@ void init_kstat_irqs(struct irq_desc *de
+ 		desc->kstat_irqs = (unsigned int *)ptr;
+ }
+ 
+-void __attribute__((weak)) arch_init_chip_data(struct irq_desc *desc, int cpu)
++void noinline __weak arch_init_chip_data(struct irq_desc *desc, int cpu)
+ {
+ }
+ 
