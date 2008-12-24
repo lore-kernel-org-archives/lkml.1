@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896AbYLXLw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbYLXLxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752896AbYLXLw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 06:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYLXLwU
+	id S1753085AbYLXLxK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 06:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYLXLw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 06:52:20 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44214 "EHLO e2.ny.us.ibm.com"
+	Wed, 24 Dec 2008 06:52:57 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44303 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbYLXLwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 06:52:19 -0500
-Date: Wed, 24 Dec 2008 03:50:47 -0800
+	id S1751652AbYLXLw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 06:52:56 -0500
+Date: Wed, 24 Dec 2008 03:51:24 -0800
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
        bastian@waldi.eu.org
 Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
        linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 2/7][v4] Protect init from unwanted signals more
-Message-ID: <20081224115047.GB8020@us.ibm.com>
+Subject: [RFC][PATCH 3/7][v4] Define siginfo_from_ancestor_ns()
+Message-ID: <20081224115124.GC8020@us.ibm.com>
 References: <20081224114414.GA7879@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,71 +29,123 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: [RFC][PATCH 2/7][v4] Protect init from unwanted signals more
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: [RFC][PATCH 3/7][v4] Define siginfo_from_ancestor_ns()
 
-(This is a modified version of the patch submitted by Oleg Nesterov
-http://lkml.org/lkml/2008/11/18/249 and tries to address comments
-that came up in that discussion)
+Determine if sender of a signal is from an ancestor namespace. This
+function will be used in a follow-on patch.
 
-init ignores the SIG_DFL signals but we queue them anyway, including
-SIGKILL. This is mostly OK, the signal will be dropped silently when
-dequeued, but the pending SIGKILL has 2 bad implications:
+This is an early/lightly tested RFC patch. Would it be safe to implement
+siginfo_from_user() as below and then use it dereference the pid
+namespace of sender ?
 
-        - it implies fatal_signal_pending(), so we confuse things
-          like wait_for_completion_killable/lock_page_killable.
+This is based on discussions on the patch from Oleg Nesterov and me
+http://lkml.org/lkml/2008/11/25/462.
 
-        - for the sub-namespace inits, the pending SIGKILL can
-          mask (legacy_queue) the subsequent SIGKILL from the
-          parent namespace which must kill cinit reliably.
-          (preparation, cinits don't have SIGNAL_UNKILLABLE yet)
-
-The patch can't help when init is ptraced, but ptracing of init is
-not "safe" anyway.
+Changelog[v2]:
+	- siginfo_from_ancestor_ns() is fairly clean and it does not need
+	  to be under CONFIG_PID_NS. Only siginfo_from_user() needs to be.
+	- Warn if rt_sigqueueinfo() uses SI_ASYNCIO.
+	- Added a check for pid-ns of receiver being NULL (in case it is
+	  exiting).
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Roland McGrath <roland@redhat.com>
 ---
- kernel/signal.c |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
+ kernel/signal.c |   67 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 67 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 7945e71..55f41b6 100644
+index 55f41b6..0011f99 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -53,10 +53,21 @@ static int sig_handler_ignored(void __user *handler, int sig)
- 		(handler == SIG_DFL && sig_kernel_ignore(sig));
+@@ -820,6 +820,56 @@ static inline int legacy_queue(struct sigpending *signals, int sig)
+ {
+ 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
+ }
++/*
++ * Return 1 if this signal originated directly from a user process (i.e via
++ * kill(), tkill(), sigqueue()).  Return 0 otherwise.
++ *
++ * TODO:
++ * 	  To make this less hacky, make SI_ASYNCIO a kernel signal (and
++ * 	  remove the warning in sys_rt_sigqueueinfo()).
++ */
++#ifdef CONFIG_PID_NS
++static inline int siginfo_from_user(siginfo_t *info)
++{
++	if (!is_si_special(info) && SI_FROMUSER(info) &&
++				info->si_code != SI_ASYNCIO)
++		return 1;
++
++	return 0;
++}
++#else
++static inline int siginfo_from_user(siginfo_t *info)
++{
++	return 0;
++}
++#endif
++
++static inline int siginfo_from_ancestor_ns(struct task_struct *t,
++                       siginfo_t *info)
++{
++	struct pid_namespace *ns;
++
++	/*
++	 * Ensure signal is from user-space before checking pid namespace
++	 */
++	if (siginfo_from_user(info)) {
++		/*
++		 * If we do not have a pid in the receiver's namespace,
++		 * we must be an ancestor of the receiver. 
++		 *
++		 * CHECK:
++		 * 	If receiver is exiting, ns == NULL, signal will be
++		 * 	queued but ignored (wants_signal() is FALSES). For
++		 * 	compatibility with current behavior, assume it is
++		 * 	from ancestor and queue the signal anyway ?
++		 */
++		ns = task_active_pid_ns(t);
++		if (!ns || task_pid_nr_ns(current, ns) <= 0)
++			return 1;
++	}
++
++	return 0;
++}
+ 
+ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+ 			int group)
+@@ -2312,6 +2362,20 @@ sys_tkill(pid_t pid, int sig)
+ 	return do_tkill(0, pid, sig);
  }
  
--static int sig_ignored(struct task_struct *t, int sig)
-+static int sig_task_ignored(struct task_struct *t, int sig)
- {
- 	void __user *handler;
- 
-+	handler = sig_handler(t, sig);
-+
-+	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) &&
-+			(handler == SIG_IGN || handler == SIG_DFL))
-+		return 1;
-+	
-+	return sig_handler_ignored(handler, sig);
-+}
-+
-+static int sig_ignored(struct task_struct *t, int sig)
++#ifdef CONFIG_PID_NS
++/*
++ * siginfo_from_user() assumes that si_code SI_ASYNCIO comes only from
++ * within the kernel. If an application is passing in SI_ASYNCIO we 
++ * want to know about it.
++ */
++static void warn_on_asyncio(siginfo_t *info)
 +{
- 	/*
- 	 * Blocked signals are never ignored, since the
- 	 * signal handler may change by the time it is
-@@ -65,8 +76,7 @@ static int sig_ignored(struct task_struct *t, int sig)
- 	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
- 		return 0;
++	WARN_ON_ONCE(info->si_code == SI_ASYNCIO);
++}
++#else
++#define warn_on_asyncio(info)	{}
++#endif
++
+ asmlinkage long
+ sys_rt_sigqueueinfo(pid_t pid, int sig, siginfo_t __user *uinfo)
+ {
+@@ -2324,6 +2388,9 @@ sys_rt_sigqueueinfo(pid_t pid, int sig, siginfo_t __user *uinfo)
+ 	   Nor can they impersonate a kill(), which adds source info.  */
+ 	if (info.si_code >= 0)
+ 		return -EPERM;
++
++	warn_on_asyncio(&info);
++
+ 	info.si_signo = sig;
  
--	handler = sig_handler(t, sig);
--	if (!sig_handler_ignored(handler, sig))
-+	if (!sig_task_ignored(t, sig))
- 		return 0;
- 
- 	/*
+ 	/* POSIX.1b doesn't mention process groups.  */
 -- 
 1.5.2.5
 
