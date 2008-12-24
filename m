@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbYLXOoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbYLXOoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbYLXOoR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 09:44:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYLXOoE
+	id S1752796AbYLXOoi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 09:44:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYLXOoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 09:44:04 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:37670 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbYLXOoD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 09:44:03 -0500
-Date: Wed, 24 Dec 2008 14:44:35 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: parsing mem=700M broken
-In-Reply-To: <200812241808.16195.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0812241437230.15556@blonde.anvils>
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils>
- <86802c440812222152yd000009yf890f5cd303860e4@mail.gmail.com>
- <20081223143327.GF29151@elte.hu> <200812241808.16195.rusty@rustcorp.com.au>
+	Wed, 24 Dec 2008 09:44:25 -0500
+Received: from broadrack.ru ([195.178.208.66]:50814 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751859AbYLXOoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 09:44:24 -0500
+Date: Wed, 24 Dec 2008 17:44:22 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       David Miller <davem@davemloft.net>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user space data
+Message-ID: <20081224144422.GA25089@ioremap.net>
+References: <494C50BB.5030809@goop.org> <20081220020250.GA15064@gondor.apana.org.au> <494C8D57.7040808@goop.org> <20081220065105.GA16936@gondor.apana.org.au> <494CA226.9000200@goop.org> <20081220081045.GA17439@gondor.apana.org.au> <20081220103209.GA23632@ioremap.net> <49513909.1050100@vlnb.net> <20081223213817.GB16883@ioremap.net> <4952493F.10508@vlnb.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4952493F.10508@vlnb.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Dec 2008, Rusty Russell wrote:
-> On Wednesday 24 December 2008 01:03:27 Ingo Molnar wrote:
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > > On Mon, Dec 22, 2008 at 7:06 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> > > >
-> > > > I find that bootparam "mem=700M" isn't working in linux-next or mmotm,
-> > > > and have bisected it down to your patch below; but now I'm off to bed
-> > > > without working out just what goes wrong (I'll bet it's the "=").
-                                                 (I lost that bet)
+On Wed, Dec 24, 2008 at 05:37:51PM +0300, Vladislav Bolkhovitin (vst@vlnb.net) wrote:
+> >Yes, it is simpler and cleaner, but it requires additional allocation.
+> >This is additional (and quite noticeble) overhead.
 > 
-> Thanks for the report and analysis.
-> 
-> > Rusty, will you fix or revert it?
-> 
-> mem= is actually easy, memmap= is harder.  This is tested and pushed.
+> Not necessary requires. For instance, in iscsi-scst sk_transaction_token 
+> can (and should) be part of iSCSI cmd structure, so no additional 
+> allocations would be needed.
 
-Thanks, that gets my "mem=700M" respected on x86_32 and x86_64.
-But (of course: it's a patch to arch/x86) doesn't help at all on
-ppc64; and I presume other architectures also remain broken...
+This is special case, I'm not sure it is always possible to cache that
+token and attach to every skb, but if it can be done, then of course
+this does not end up with additional overhead.
 
-Hugh
+-- 
+	Evgeniy Polyakov
