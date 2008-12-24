@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbYLXSI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbYLXScd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751847AbYLXSI5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 13:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYLXSIp
+	id S1751777AbYLXScd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 13:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYLXScZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 13:08:45 -0500
-Received: from kandzendo.ru ([195.178.208.66]:48645 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbYLXSIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 13:08:44 -0500
-Date: Wed, 24 Dec 2008 21:08:41 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Miller <davem@davemloft.net>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user space data
-Message-ID: <20081224180841.GA615@ioremap.net>
-References: <494C8D57.7040808@goop.org> <20081220065105.GA16936@gondor.apana.org.au> <494CA226.9000200@goop.org> <20081220081045.GA17439@gondor.apana.org.au> <20081220103209.GA23632@ioremap.net> <49513909.1050100@vlnb.net> <20081223213817.GB16883@ioremap.net> <4952493F.10508@vlnb.net> <20081224144422.GA25089@ioremap.net> <49527590.7090909@vlnb.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49527590.7090909@vlnb.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 24 Dec 2008 13:32:25 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49218 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750946AbYLXScY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 13:32:24 -0500
+Date: Wed, 24 Dec 2008 18:32:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Memory vs. MMIO ordering, again
+Message-ID: <20081224183238.3253d7b9@lxorguk.ukuu.org.uk>
+In-Reply-To: <gittnv$2qj$1@ger.gmane.org>
+References: <gittnv$2qj$1@ger.gmane.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 24, 2008 at 08:46:56PM +0300, Vladislav Bolkhovitin (vst@vlnb.net) wrote:
-> I think in most cases there would be possibility to embed 
-> sk_transaction_token to some higher level structure. E.g. Xen apparently 
-> should have something to track packets passed through host/guest 
-> boundary. From other side, kmem cache is too well polished to have much 
-> overhead. I doubt, you would even notice it in this application. In most 
-> cases allocation of such small object in it using SLUB is just about the 
-> same as a list_del() under disabled IRQs.
+> MMIO accesses may, in effect, overtake accesses to cached memory that 
+> were emitted earlier. A memory barrier isn't sufficient in such a case, 
+> but rather the cache must be flushed between the cached memory write and 
+> the MMIO access if the two are in any way dependent."
+> 
+> This seems like BS to me.. Flush the cache? How is a driver supposed to 
+> know how to do that? Furthermore, why should it need to worry about this 
+>   kind of detail? This seems wrong or at least a low-level detail that 
+> normal code should not have to be concerned with.
 
-I definitely would not rely on that, especially at cache reclaim time.
-But it of course depends on the workload and maybe appropriate for the
-cases in question. The best solution I think is to combine tag and
-separate destructur, so that those who do not want to allocate a token
-could still get notification via destructor callback.
+There isn't really much choice in the matter. However if you are using
+the normal pci_map_ and pci_alloc_coherent functions then those have your
+cache management built into them and all you have to watch is compiler
+funnies.
 
--- 
-	Evgeniy Polyakov
+Alan
