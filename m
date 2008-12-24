@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbYLXVgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbYLXWF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbYLXVgn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 16:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYLXVgf
+	id S1751801AbYLXWF4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 17:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYLXWFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 16:36:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37037 "EHLO mx2.redhat.com"
+	Wed, 24 Dec 2008 17:05:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34031 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbYLXVgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 16:36:35 -0500
-Date: Wed, 24 Dec 2008 22:34:41 +0100
+	id S1751254AbYLXWFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 17:05:47 -0500
+Date: Wed, 24 Dec 2008 23:03:58 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
        daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 7/7][v4] SI_TKILL: Masquerade si_pid when crossing
-	pid ns boundary
-Message-ID: <20081224213441.GA2769@redhat.com>
-References: <20081224114414.GA7879@us.ibm.com> <20081224115331.GG8020@us.ibm.com> <20081224155529.GB11593@redhat.com> <20081224210404.GA13502@us.ibm.com>
+Subject: Re: [RFC][PATCH 3/7][v4] Define siginfo_from_ancestor_ns()
+Message-ID: <20081224220358.GA3851@redhat.com>
+References: <20081224114414.GA7879@us.ibm.com> <20081224115124.GC8020@us.ibm.com> <20081224162823.GE11593@redhat.com> <20081224212426.GD13502@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081224210404.GA13502@us.ibm.com>
+In-Reply-To: <20081224212426.GD13502@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,63 +30,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On 12/24, Sukadev Bhattiprolu wrote:
 >
 > Oleg Nesterov [oleg@redhat.com] wrote:
+> | And, SI_ASYNCIO only matters when we send the signal to the subnamespace,
+> | and in that case we will probably mangle .si_pid. So why don't we warn
+> | when .si_code == SI_USER?
 >
-> | >  	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {
-> | > +		ns = task_active_pid_ns(p);
-> | > +		if (ns)
-> | > +			info.si_pid = task_tgid_nr_ns(current, ns);
-> | > +		else
-> | > +			info.si_pid = task_tgid_vnr(current);
-> |
-> | if ns == 0, "p" won't see the signal anyway, so all we need is
->
-> Yes, p won't see the signal, but task_tgid_nr_ns() is not safe if ns == NULL.
+> I was wondering if I should there too :-) But what do you think ?
 
-Yes, I forgot that task_tgid_nr_ns() assumes ns != NULL.
-
-> | like we do in __do_notify().
->
-> Yes, I had a question about ns == 0 in this patch and was wondering if I
-> should add a check in __do_notify() too.
-
-I guess  __do_notify() is fine, ns_of_pid() can't be NULL.
-
-> | But. this of course doesn't work for sys_kill(). Can't we change the helpers
-> | which send SI_FROMUSER() signals so that they do not fill .si_pid at all?
->
-> SI_FROMUSER() basically comes down to SI_USER and SI_TKILL (SI_QUEUE,
-> SI_SIGIO, SI_DETHREAD are unused ?)
-
-Yes, I was going to kill them many times but always forget.
-
-> SI_USER has to be masqueraded in
-> send_signal(). That leaves us with SI_TKILL.
->
-> I was trying to have all si_pid settings done at origin and so the change
-> here for SI_TKILL. But yes, SI_USER (sys_kill() case) can't be done at
-> origin hence the special case for it in send_signal().
->
-> | Then send_signal() can do:
-> |
-> | 	default:
-> | 		copy_siginfo(&q->info, info);
-> | 		info.si_pid = 0;
-> | 		if (!from_ancestot_ns)
-> | 			info.si_pid = task_tgid_nr_ns(current, ...);
-> |
-> | ?
->
-> My preference was to address SI_TKILL also at origin, but am not
-> particular.  Yes, that will work too.
-
-... and the code becomes more clean and simple.
-
-I really dislike the fact that sys_kill() relies on send_signal()
-(this is correct), but do_tkill() and __do_notify() play with pid ns
-themselves. And this complicates send_signal() too.
-
-Unless the kernel has a user which sends the "strange" SI_FROMUSER()
-signal without ->si_pid, of course...
+Well, if you ask me, I'd suggest to document the problems with
+sigqueueinfo() and forget. Whatever we do, we can't be always
+right.
 
 Oleg.
 
