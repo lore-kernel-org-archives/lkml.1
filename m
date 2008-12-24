@@ -1,54 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbYLXOoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbYLXOtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752796AbYLXOoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 09:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYLXOoZ
+	id S1752549AbYLXOtQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 09:49:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYLXOtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 09:44:25 -0500
-Received: from broadrack.ru ([195.178.208.66]:50814 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751859AbYLXOoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 09:44:24 -0500
-Date: Wed, 24 Dec 2008 17:44:22 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Miller <davem@davemloft.net>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user space data
-Message-ID: <20081224144422.GA25089@ioremap.net>
-References: <494C50BB.5030809@goop.org> <20081220020250.GA15064@gondor.apana.org.au> <494C8D57.7040808@goop.org> <20081220065105.GA16936@gondor.apana.org.au> <494CA226.9000200@goop.org> <20081220081045.GA17439@gondor.apana.org.au> <20081220103209.GA23632@ioremap.net> <49513909.1050100@vlnb.net> <20081223213817.GB16883@ioremap.net> <4952493F.10508@vlnb.net>
+	Wed, 24 Dec 2008 09:49:01 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:37371 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbYLXOtA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 09:49:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=XwGpzltuI8BC+Sw8JnW6/WupirzG17MjQxOOvcb9akac0955fDUuXrwZQrNjM02hNj
+         FgICH3jSvXCafIt5g6jkLIDRRjF0qE3kRfRp803WT8cN1w10srTgy5USWhWUpy72Wjo8
+         j4l6vEeu16C8B4BUTV0eof7xQWKKUtnsdwXMc=
+Message-ID: <49524BD5.9010106@gmail.com>
+Date: Wed, 24 Dec 2008 15:48:53 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4952493F.10508@vlnb.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] tracing/ftrace: don't trace on early stage of a secondary
+ cpu boot
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 24, 2008 at 05:37:51PM +0300, Vladislav Bolkhovitin (vst@vlnb.net) wrote:
-> >Yes, it is simpler and cleaner, but it requires additional allocation.
-> >This is additional (and quite noticeble) overhead.
-> 
-> Not necessary requires. For instance, in iscsi-scst sk_transaction_token 
-> can (and should) be part of iSCSI cmd structure, so no additional 
-> allocations would be needed.
+Impact: fix a crash/hard-reboot while enabling cpu on runtime
 
-This is special case, I'm not sure it is always possible to cache that
-token and attach to every skb, but if it can be done, then of course
-this does not end up with additional overhead.
+On some archs, the boot of a secondary cpu can have an early fragile state.
+On x86-64, the pda is not initialized on the first stage of a cpu boot but
+it is needed to get the cpu number and the current task pointer. These datas
+are needed during tracing. As they were dereferenced at this stage, we got a
+crash while turning on a cpu on runtime while tracing.
 
+Some other archs like ia64 can have such kind of issue too.
+
+Changes on v2:
+
+We drop the previous solution of a per-arch called function to guess the current state
+of a cpu. That could make slow the tracing.
+This patch just drop the -pg flag on arch/x86/kernel/cpu/common.c where
+live the low level cpu boot functions, and on start_secondary() and a helper
+function used at this stage.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ arch/x86/include/asm/msr.h   |    3 ++-
+ arch/x86/kernel/cpu/Makefile |    5 +++++
+ arch/x86/kernel/smpboot.c    |    2 +-
+ 3 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 4640ddd..638bf62 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -85,7 +85,8 @@ static inline void native_write_msr(unsigned int msr,
+ 	asm volatile("wrmsr" : : "c" (msr), "a"(low), "d" (high) : "memory");
+ }
+ 
+-static inline int native_write_msr_safe(unsigned int msr,
++/* Can be uninlined because referenced by paravirt */
++notrace static inline int native_write_msr_safe(unsigned int msr,
+ 					unsigned low, unsigned high)
+ {
+ 	int err;
+diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+index fc99173..c381330 100644
+--- a/arch/x86/kernel/cpu/Makefile
++++ b/arch/x86/kernel/cpu/Makefile
+@@ -2,6 +2,11 @@
+ # Makefile for x86-compatible CPU details, features and quirks
+ #
+ 
++# Don't trace early stages of a secondary CPU boot
++ifdef CONFIG_FUNCTION_TRACER
++CFLAGS_REMOVE_common.o = -pg
++endif
++
+ obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
+ obj-y			+= proc.o capflags.o powerflags.o common.o
+ obj-y			+= vmware.o hypervisor.o
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index b1d571b..31869bf 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -282,7 +282,7 @@ static int __cpuinitdata unsafe_smp;
+ /*
+  * Activate a secondary processor.
+  */
+-static void __cpuinit start_secondary(void *unused)
++notrace static void __cpuinit start_secondary(void *unused)
+ {
+ 	/*
+ 	 * Don't put *anything* before cpu_init(), SMP booting is too
 -- 
-	Evgeniy Polyakov
+1.6.0.4
+
