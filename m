@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbYLXNWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbYLXNnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752165AbYLXNWm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 08:22:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYLXNWe
+	id S1752206AbYLXNnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 08:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYLXNnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 08:22:34 -0500
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:54485 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751392AbYLXNWd (ORCPT
+	Wed, 24 Dec 2008 08:43:05 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:53440 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbYLXNnC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 08:22:33 -0500
-Date: Wed, 24 Dec 2008 14:22:30 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Magnus Damm <damm@igel.co.jp>
-Subject: Re: [PATCH] UIO: Add missing documentation of features added
-	recently
-Message-ID: <20081224132230.GA29503@strlen.de>
-References: <20081224030400.GB3081@local>
+	Wed, 24 Dec 2008 08:43:02 -0500
+Date: Wed, 24 Dec 2008 19:12:25 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: asterisk hangs with RT priority
+Message-ID: <20081224134225.GA4666@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <483054DB.4030504@trash.net> <20081224113617.GA29037@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081224030400.GB3081@local>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081224113617.GA29037@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
+On Wed, Dec 24, 2008 at 10:36:17PM +1100, Herbert Xu wrote:
+> On Sun, May 18, 2008 at 06:10:03PM +0200, Patrick McHardy wrote:
+> > I'm seeing hanging asterisk processes on startup when using
+> > RT priority with current -git. Unfortunately I'm not sure about
+> > the last working version, but it was one of the final 2.6.25 rcs.
+> > The hang stops when executing "schedtool -N $(pidof asterisk)".
+> 
+> I'm now hitting exactly the same problem with 2.6.28-rc9 (I had
+> it with 2.6.27 too but thought it might go away on its own :)
+> 
+> I've made a small program to attempt to reproduce this based on
+> the asterisk code.  Unfortunately it doesn't work on its own.
+> However, if you run it under strace then it does hang in the
+> same away as asterisk (which seems to happen after the setuid
+> call, as strace shows it before hanging and the printk after
+> it in asterisk gets executed).
+> 
+> Note that the hang goes away if either setscheduler or setuid
+> is removed.
+> 
 
-On Wed, Dec 24, 2008 at 04:04:03AM +0100, Hans J. Koch wrote:
-> The following features were added to the UIO framework in the near past:
-> 
-> * Generic drivers for platform devices (uio_pdrv, uio_pdrv_genirq)
-> * an "offset" sysfs attribute for memory mappings
-> 
-> Unfortunately, all this went in without documentation (won't happen again...)
-> 
-> This patch updates UIO documentation.
-> 
-> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-Acked-by: Uwe Kleine-König <ukleinek@strlen.de>
+Hmm. Do you have CONFIG_FAIR_USER_SCHED set on?
 
-for the uio_pdrv part.
-
-Thanks
-Uwe
+Thanks,
+-- 
+regards,
+Dhaval
