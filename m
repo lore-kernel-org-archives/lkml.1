@@ -1,175 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbYLXC5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbYLXDDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbYLXC5l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 21:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYLXC5c
+	id S1752783AbYLXDDS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 22:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYLXDDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 21:57:32 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:53393 "EHLO
+	Tue, 23 Dec 2008 22:03:08 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:54908 "EHLO
 	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbYLXC5b (ORCPT
+	with ESMTP id S1751254AbYLXDDF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 21:57:31 -0500
+	Tue, 23 Dec 2008 22:03:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=keYX2Mg9aCex+iraqR7C8EljvE9oGn3R4WYMbMzmzAaB81vlkHV/bSihD/BTfm7b1r
-         8SgUhwFxwSSl1icx19K6CTA627gXITslwlJAEoEgIlOZyjNA6X1WxEGvloc5w5KWDMU5
-         QFnbhE9QU/0V/NTExAC7Wj+fJjaVCBk7FodRc=
-Message-ID: <c62985530812231857l17362f94k271b66abbe7d7099@mail.gmail.com>
-Date: Wed, 24 Dec 2008 03:57:29 +0100
+        b=MJzAGqdqA+aJO5WgQgCyLYLV/DtCjBA94vJ8pFKkucpUrDYyz4qP5IvesOXex3sbm+
+         JOBTgiK6chEqINfeIE141HqAMSVsbW1k6osY1OnOQxq8slvfAgc6D0DzLkx+Fe4l8igt
+         ZI8e+v5gfdQXxO99bt+6p+iZl3bFJJWNUN5Ps=
+Message-ID: <c62985530812231903q59f1e1y4523b3e37b7f9b34@mail.gmail.com>
+Date: Wed, 24 Dec 2008 04:03:04 +0100
 From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
 To: "Steven Rostedt" <rostedt@goodmis.org>
 Subject: Re: [PATCH 1/2] tracing/ftrace: don't trace on early stage of secondary cpu boot
 Cc: "Ingo Molnar" <mingo@elte.hu>,
        "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0812232106080.6972@gandalf.stny.rr.com>
+In-Reply-To: <c62985530812231857l17362f94k271b66abbe7d7099@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
 References: <49518535.8080105@gmail.com>
 	 <alpine.DEB.1.10.0812232106080.6972@gandalf.stny.rr.com>
+	 <c62985530812231857l17362f94k271b66abbe7d7099@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/24 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Wed, 24 Dec 2008, Frederic Weisbecker wrote:
->
->> Impact: fix a crash/hard reboot while enabling cpu on runtime
->>
->> On some archs, the boot of a secondary cpu can have an early fragile state.
->> On x86-64, the pda is not initialized on the first stage of a cpu boot but
->> it is needed to get the cpu number and the current task pointer. These datas
->> are needed during tracing. As they were dereferenced at this stage, we got a
->> crash while turning on a cpu on runtime while tracing.
->>
->> Some other archs like ia64 can have such kind of issue too.
->>
->> This patch implements a function to verify if the cpu has been correctly initialized
->> before tracing it. By default, the check does nothing but archs can override it (as does
->> x86-64 in this patch).
->>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> ---
->>  arch/x86/kernel/ftrace.c |   13 +++++++++++++
->>  include/linux/ftrace.h   |    8 ++++++++
->>  kernel/trace/ftrace.c    |    6 ++++++
->>  kernel/trace/trace.c     |    6 +++---
->>  4 files changed, 30 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
->> index 1b43086..7693c53 100644
->> --- a/arch/x86/kernel/ftrace.c
->> +++ b/arch/x86/kernel/ftrace.c
->> @@ -24,6 +24,19 @@
->>  #include <asm/nmi.h>
->>
->>
->> +#ifdef CONFIG_X86_64
->> +/*
->> + * A cpu doesn't want to be traced if pda hasn't yet been initialized.
->> + * Pda contains the cpu number and current task pointer. A lot
->> + * of functions use them, not only ftrace.
->> + * We use stack_smp_processor_id() here to avoid using the pda.
->> + */
->> +bool ftrace_in_early_cpuinit(void)
->> +{
->> +     return !cpu_isset(stack_smp_processor_id(), cpu_online_map);
->> +}
->> +#endif
->
-> Is there something lighter weight than this? This is called during the
-> function tracer and that is called at ever function. I would also rather
-> this be an inline function defined in asm/ftrace.h if possible.
->
->> +
->>  #ifdef CONFIG_DYNAMIC_FTRACE
->>
->>  union ftrace_code_union {
->> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
->> index 677432b..9a86e3d 100644
->> --- a/include/linux/ftrace.h
->> +++ b/include/linux/ftrace.h
->> @@ -78,6 +78,14 @@ void clear_ftrace_function(void);
->>
->>  extern void ftrace_stub(unsigned long a0, unsigned long a1);
->>
->> +/*
->> + * On some archs, the secondary cpu boot is sometimes fragile.
->> + * Some important datas could be not yet initialized. In such states,
->> + * tracing is too dangerous and we use this function to detect these
->> + * kinds of context. Archs which have this sort of issues can override it.
->> + */
->> +extern bool ftrace_in_early_cpuinit(void);
->> +
->>  #else /* !CONFIG_FUNCTION_TRACER */
->>  # define register_ftrace_function(ops) do { } while (0)
->>  # define unregister_ftrace_function(ops) do { } while (0)
->> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> index 2f32969..463e1eb 100644
->> --- a/kernel/trace/ftrace.c
->> +++ b/kernel/trace/ftrace.c
->> @@ -1962,6 +1962,12 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
->>       return ret;
->>  }
->>
->> +/* Overriden by archs if needed */
->> +bool __attribute__((weak)) ftrace_in_early_cpuinit(void)
->> +{
->> +     return false;
->> +}
->> +
->>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
->>
->>  static atomic_t ftrace_graph_active;
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index b07e34e..1ac9b98 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -1175,7 +1175,7 @@ function_trace_call_preempt_only(unsigned long ip, unsigned long parent_ip)
->>       int cpu, resched;
->>       int pc;
->>
->> -     if (unlikely(!ftrace_function_enabled))
->> +     if (unlikely(!ftrace_function_enabled || ftrace_in_early_cpuinit()))
->>               return;
->>
->>       pc = preempt_count();
->> @@ -1202,7 +1202,7 @@ function_trace_call(unsigned long ip, unsigned long parent_ip)
->>       int cpu;
->>       int pc;
->>
->> -     if (unlikely(!ftrace_function_enabled))
->> +     if (unlikely(!ftrace_function_enabled || ftrace_in_early_cpuinit()))
->>               return;
->>
->>       /*
->> @@ -1233,7 +1233,7 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
->>       int cpu;
->>       int pc;
->>
->> -     if (!ftrace_trace_task(current))
->> +     if (!ftrace_trace_task(current) || ftrace_in_early_cpuinit())
->>               return 0;
->
-> Actually, didn't you say current is not available either? We are testing
-> current first.
->
-> I still wonder if there's a better way to find out if it is safe to run.
-> Perhaps the arch code can test the %gs register to see if it is actually
-> something valid?
+2008/12/24 Frédéric Weisbecker <fweisbec@gmail.com>:
+> One other solution, would be to define raw_smp_processor_id() to
+> stack_smp_processor_id() and current to
+> cpu_pda(stack_smp_processor_id()) if function_tracer is configured.
 
 
-One other solution, would be to define raw_smp_processor_id() to
-stack_smp_processor_id() and current to
-cpu_pda(stack_smp_processor_id()) if function_tracer is configured.
-That would even let one to trace those cpu boot
-functions.
-
-But the other side effect with this is that perhaps "current" would be
-retrieved with one pointer more to dereference....
+Sorry, I meant cpu_pda(stack_smp_processor_id())->pcurrent
