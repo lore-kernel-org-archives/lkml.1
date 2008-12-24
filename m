@@ -1,111 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbYLXVFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbYLXVHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821AbYLXVFr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 16:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYLXVFi
+	id S1751833AbYLXVHz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 16:07:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYLXVHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 16:05:38 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55110 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbYLXVFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 16:05:38 -0500
-Date: Wed, 24 Dec 2008 13:04:04 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+	Wed, 24 Dec 2008 16:07:45 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:51105 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751143AbYLXVHo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 16:07:44 -0500
+Date: Thu, 25 Dec 2008 00:07:43 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
+       linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 7/7][v4] SI_TKILL: Masquerade si_pid when crossing
-	pid ns boundary
-Message-ID: <20081224210404.GA13502@us.ibm.com>
-References: <20081224114414.GA7879@us.ibm.com> <20081224115331.GG8020@us.ibm.com> <20081224155529.GB11593@redhat.com>
+Subject: Re: [PATCH -mm 1/3] USB: FHCI: Driver should be responsible for
+	managing endpoint queues
+Message-ID: <20081224210743.GA16098@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081223210322.GA2802@oksana.dev.rtsoft.ru> <20081224191303.GA21815@oksana.dev.rtsoft.ru> <20081224195935.GA11531@kroah.com> <20081224200845.GA1064@oksana.dev.rtsoft.ru> <20081224121853.b46e9174.akpm@linux-foundation.org> <20081224205835.GA14844@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <20081224155529.GB11593@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20081224205835.GA14844@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| On 12/24, Sukadev Bhattiprolu wrote:
-| >
-| > --- a/kernel/signal.c
-| > +++ b/kernel/signal.c
-| > @@ -2385,17 +2385,22 @@ static int do_tkill(pid_t tgid, pid_t pid, int sig)
-| >  	struct siginfo info;
-| >  	struct task_struct *p;
-| >  	unsigned long flags;
-| > +	struct pid_namespace *ns;
-| >
-| >  	error = -ESRCH;
-| >  	info.si_signo = sig;
-| >  	info.si_errno = 0;
-| >  	info.si_code = SI_TKILL;
-| > -	info.si_pid = task_tgid_vnr(current);
-| >  	info.si_uid = current_uid();
-| >
-| >  	rcu_read_lock();
-| >  	p = find_task_by_vpid(pid);
-| >  	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {
-| > +		ns = task_active_pid_ns(p);
-| > +		if (ns)
-| > +			info.si_pid = task_tgid_nr_ns(current, ns);
-| > +		else
-| > +			info.si_pid = task_tgid_vnr(current);
-| 
-| if ns == 0, "p" won't see the signal anyway, so all we need is
+On Wed, Dec 24, 2008 at 12:58:35PM -0800, Greg KH wrote:
+> On Wed, Dec 24, 2008 at 12:18:53PM -0800, Andrew Morton wrote:
+> > On Wed, 24 Dec 2008 23:08:45 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > 
+> > > On Wed, Dec 24, 2008 at 11:59:36AM -0800, Greg KH wrote:
+> > > > On Wed, Dec 24, 2008 at 10:13:03PM +0300, Anton Vorontsov wrote:
+> > > > > Follow these changes for the FHCI driver:
+> > > > 
+> > > > Hm, would it just make more sense to respin the whole driver?  That way
+> > > > it's never in the tree in a "broken" state?
+> > > 
+> > > It's for -mm tree. If I understand -mm workflow correctly, Andrew
+> > > will merge all the fixes into the final patch before sending it to
+> > > you in late -rc0 phase, when various -next git trees (on which this
+> > > driver depend) will be merged into the Linus tree.
+> > >
+> > > Andrew, am I correct?
+> > 
+> > Yes, that's what I do.
+> > 
+> > I prefer to see the incremental patches once a patch has had review or
+> > testing, so we can see which bits changed.  But if Greg intends to
+> > merge this driver then he'd probably prefer a fresh new patch,
+> > particularly as a) version 1 was only sent yesterday and b) he hasn't
+> > merged version #1.
+> 
+> I do intend to merge it, given that it's in a buildable format :)
 
-Yes, p won't see the signal, but task_tgid_nr_ns() is not safe if ns == NULL.
-We should either check ns or make task_tgid_nr_ns() and friends safe with
-ns == NULL ?
+The point was that it's not buildable without linux-next queue
+(mainly few patches from the powerpc-next git tree). So if you
+apply it onto the pure linux-usb tree it won't build. Though it
+will build in the -mm tree, as -mm bases on the linux-next.
 
-| 
-| 	-	info.si_pid = task_tgid_vnr(current);
-| 	+	info.si_pid = task_tgid_nr_ns(current, task_active_ns(p));
-| 
-| like we do in __do_notify().
-
-Yes, I had a question about ns == 0 in this patch and was wondering if I
-should add a check in __do_notify() too.
-
-| 
-| 
-| But. this of course doesn't work for sys_kill(). Can't we change the helpers
-| which send SI_FROMUSER() signals so that they do not fill .si_pid at all?
-
-SI_FROMUSER() basically comes down to SI_USER and SI_TKILL (SI_QUEUE,
-SI_SIGIO, SI_DETHREAD are unused ?)  SI_USER has to be masqueraded in
-send_signal(). That leaves us with SI_TKILL. 
-
-I was trying to have all si_pid settings done at origin and so the change
-here for SI_TKILL. But yes, SI_USER (sys_kill() case) can't be done at
-origin hence the special case for it in send_signal().
-
-| Then send_signal() can do:
-| 
-| 	default:
-| 		copy_siginfo(&q->info, info);
-| 		info.si_pid = 0;
-| 		if (!from_ancestot_ns)
-| 			info.si_pid = task_tgid_nr_ns(current, ...);
-| 
-| ?
+That's exactly why I asked Andrew to merge it into the -mm tree
+in the first place -- he would resend it to you at appropriate
+time.
 
 
-My preference was to address SI_TKILL also at origin, but am not
-particular.  Yes, that will work too.
+Thanks,
 
-
-| 
-| Yes, we use "current". But we already used it in siginfo_from_ancestor_ns().
-| 
-| Oleg.
-| 
-| --
-| To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-| the body of a message to majordomo@vger.kernel.org
-| More majordomo info at  http://vger.kernel.org/majordomo-info.html
-| Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
