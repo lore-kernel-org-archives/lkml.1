@@ -1,110 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751718AbYLXUhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbYLXUiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751718AbYLXUhg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 15:37:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbYLXUh1
+	id S1751973AbYLXUiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 15:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYLXUiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 15:37:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46705 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbYLXUh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 15:37:26 -0500
-Message-ID: <49529CE1.4040005@kernel.org>
-Date: Wed, 24 Dec 2008 12:34:41 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Wed, 24 Dec 2008 15:38:00 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:43074 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750993AbYLXUh7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 15:37:59 -0500
+Date: Thu, 25 Dec 2008 07:37:47 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: asterisk hangs with RT priority
+Message-ID: <20081224203747.GA32060@gondor.apana.org.au>
+References: <483054DB.4030504@trash.net> <20081224113617.GA29037@gondor.apana.org.au> <20081224134225.GA4666@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, mel@csn.ul.ie
-Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333	smp_call_function_mask
-References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au> <20081219105441.GA19750@linux.vnet.ibm.com> <86802c440812190351q3118516aif664dd5869c21b2a@mail.gmail.com> <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com>
-In-Reply-To: <20081224163400.GA11562@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081224134225.GA4666@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> * Yinghai Lu <yinghai@kernel.org> [2008-12-23 13:09:56]:
+On Wed, Dec 24, 2008 at 07:12:25PM +0530, Dhaval Giani wrote:
 > 
-> 
-> boot log after applying the debug patch
-> 
-> root (hd0,0)
->  Filesystem type is ext2fs, partition type 0x83
-> kernel /vmlinuz-autotest root=/dev/mapper/VolGroup00-LogVol00 ro console=tty0 c
-> onsole=ttyS1,19200 selinux=no debug IDENT=1230133532
->    [Linux-bzImage, setup=0x3000, size=0x273cf0]
-> initrd /initrd-autotest
->    [Linux-initrd @ 0x37e5f000, 0x19097a bytes]
-> 
-> Linux version 2.6.28-rc8-autotest-tip (root@bl6-13.ltc.austin.ibm.com) (gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #1 SMP Wed Dec 24 09:37:30 CST 2008
-> Command line: root=/dev/mapper/VolGroup00-LogVol00 ro console=tty0 console=ttyS1,19200 selinux=no debug IDENT=1230133532
+> Hmm. Do you have CONFIG_FAIR_USER_SCHED set on?
 
-ok, it seems that your compiler is broken... is that RHEL 5.1 stock compiler
+I can't find such a config option, but
 
-YH
+$ grep SCHED .config
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_RT_GROUP_SCHED=y
+CONFIG_USER_SCHED=y
+# CONFIG_CGROUP_SCHED is not set
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=m
+CONFIG_IOSCHED_DEADLINE=m
+CONFIG_IOSCHED_CFQ=m
+CONFIG_DEFAULT_IOSCHED="noop"
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+CONFIG_SCHED_HRTICK=y
+CONFIG_NET_SCHED=y
+# CONFIG_USB_EHCI_TT_NEWSCHED is not set
+$ 
 
-
-[PATCH] sparseirq: add oninline to workaround compiler
-
-Impact: fix panic on null pointer with sparseirq
-
-some compiler seems to inline the weak global function.
-try to workaround it
-
-also remove duplicated arch_early_irq_init()
-already have one weak copy in init/main.c
-
-Signed-off-by: Yinghai <yinghai@kernel.org>
-
----
- init/main.c         |    4 ++--
- kernel/irq/handle.c |    6 +-----
- 2 files changed, 3 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -542,11 +542,11 @@ void __init __weak thread_info_cache_ini
- {
- }
- 
--void __init __weak arch_early_irq_init(void)
-+void noinline __init __weak arch_early_irq_init(void)
- {
- }
- 
--void __init __weak early_irq_init(void)
-+void noinline __init __weak early_irq_init(void)
- {
- 	arch_early_irq_init();
- }
-Index: linux-2.6/kernel/irq/handle.c
-===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -56,10 +56,6 @@ void handle_bad_irq(unsigned int irq, st
- int nr_irqs = NR_IRQS;
- EXPORT_SYMBOL_GPL(nr_irqs);
- 
--void __init __attribute__((weak)) arch_early_irq_init(void)
--{
--}
--
- #ifdef CONFIG_SPARSE_IRQ
- static struct irq_desc irq_desc_init = {
- 	.irq	    = -1,
-@@ -90,7 +86,7 @@ void init_kstat_irqs(struct irq_desc *de
- 		desc->kstat_irqs = (unsigned int *)ptr;
- }
- 
--void __attribute__((weak)) arch_init_chip_data(struct irq_desc *desc, int cpu)
-+void noinline __weak arch_init_chip_data(struct irq_desc *desc, int cpu)
- {
- }
- 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
