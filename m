@@ -1,104 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbYLXSxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751843AbYLXS5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751801AbYLXSxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 13:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYLXSxV
+	id S1751843AbYLXS5R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 13:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYLXS5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 13:53:21 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:36698 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751067AbYLXSxT (ORCPT
+	Wed, 24 Dec 2008 13:57:01 -0500
+Received: from adsl100-93.ath.forthnet.gr ([79.103.127.93]:41692 "EHLO
+	vergina.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbYLXS5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 13:53:19 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtUEAEMSUklMQWfO/2dsb2JhbACBbL1CWJEAhkI
-Date: Wed, 24 Dec 2008 13:53:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       paulus@samba.org, benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
-       linux-s390@vger.kernel.org, Christoph Lameter <christoph@lameter.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: local_add_return
-Message-ID: <20081224185302.GA16467@Krystal>
-References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812201203.51351.rusty@rustcorp.com.au> <20081222184327.GB22001@Krystal> <200812242212.57007.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Dec 2008 13:57:00 -0500
+X-Greylist: delayed 656 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Dec 2008 13:57:00 EST
+Message-ID: <49528352.9000906@asyr.hopto.org>
+Date: Wed, 24 Dec 2008 20:45:38 +0200
+From: Thanasis <thanasis@asyr.hopto.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081222)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Sil 3132 SATA II express card
+Content-Type: text/plain; charset=ISO-8859-7
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200812242212.57007.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:45:15 up 37 days, 19:25,  3 users,  load average: 0.80, 0.76,
-	0.66
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Tuesday 23 December 2008 05:13:28 Mathieu Desnoyers wrote:
-> > > I can be convinced, but I'll need more than speculation.  Assuming
-> > > local_long_atomic_t, can you produce a patch which uses it somewhere else?
-> > 
-> > I had this patch applying over Christoph Lameter's vm tree last
-> > February. It did accelerate the slub fastpath allocator by using
-> > cmpxchg_local rather than disabling interrupts. cmpxchg_local is not
-> > using the local_t type, but behaves similarly to local_cmpxchg.
-> > 
-> > http://lkml.org/lkml/2008/2/28/568
-> 
-> OK, I'll buy that.  So we split local_t into a counter and an atomic type.
-> 
-> > I know that
-> > local_counter_long_t and local_atomic_long_t are painful to write, but
-> > that would follow the current atomic_t vs atomic_long_t semantics. Hm ?
-> 
-> OK, I've looked at how they're used, to try to figure out whether long
-> is the right thing.  Counters generally want to be long, but I was in doubt
-> about atomics; yet grep shows that atomic_long_t is quite popular.  Then
-> I hit struct nfs_iostats which would want a u64 and a long.  I don't think
-> we want local_counter_u64 etc.
-> 
-> Just thinking out loud, perhaps a new *type* is the wrong direction?  How
-> about a set of macros which take a fundamental type, such as:
-> 
-> 	DECLARE_LOCAL_COUNTER(type, name);
-> 	local_counter_inc(type, addr);
-> 	...
-> 	DECLARE_LOCAL_ATOMIC(type, name);
-> 	local_atomic_add_return(type, addr);
-> 
-> This allows pointers, u32, u64, long, etc.  If a 32-bit arch can't do 64-bit
-> local_counter_inc easily, at least the hairy 64-bit code can be eliminated at
-> compile time.
-> 
-> Or maybe that's overdesign?
-> Rusty.
+I have compiled in kernel (2.6.27) support for Sil 3132:
+CONFIG_SATA_SIL24=y
 
-Yeah, I also thought of this, but I am not sure every architecture
-provides primitives to modify u16 or u8 data atomically like x86 does.
-But yes, I remember hearing Christoph Lameter being interested to use
-unsigned char or short atomic counters for the vm allocator in the past.
-The rationale was mostly that he wanted to keep a counter in a very
-small data type, expecting to "poll" the counter periodically (e.g.
-every X counter increment) and sum the total somewhere else.
+When I insert the card in the laptop's slot, dmesg shows nothing new.
+Is this normal?
 
-So I think it would be the right design in the end if we want to allow
-wider use of such atomic primitives for counters w/o interrupts
-disabled. And I would propose we use a BUILD_BUG_ON() when the
-architecture does not support an atomic operation on a specific type.
-We should also document which type sizes are supported portably and
-which are architecture-specific.
-
-Or, as you say, maybe it's overdesign ? If we have to pick something
-simple, just supporting "long" would be a good start.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
