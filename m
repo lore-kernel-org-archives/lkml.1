@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbYLXNnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbYLXON6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbYLXNnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 08:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYLXNnF
+	id S1752265AbYLXON6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 09:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYLXONu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 08:43:05 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:53440 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbYLXNnC (ORCPT
+	Wed, 24 Dec 2008 09:13:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51266 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835AbYLXONu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 08:43:02 -0500
-Date: Wed, 24 Dec 2008 19:12:25 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: asterisk hangs with RT priority
-Message-ID: <20081224134225.GA4666@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <483054DB.4030504@trash.net> <20081224113617.GA29037@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081224113617.GA29037@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 24 Dec 2008 09:13:50 -0500
+Date: Wed, 24 Dec 2008 12:12:52 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES for 2.6.28] V4L/DVB fixes
+Message-ID: <20081224121252.7560391e@caramujo.chehab.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 24, 2008 at 10:36:17PM +1100, Herbert Xu wrote:
-> On Sun, May 18, 2008 at 06:10:03PM +0200, Patrick McHardy wrote:
-> > I'm seeing hanging asterisk processes on startup when using
-> > RT priority with current -git. Unfortunately I'm not sure about
-> > the last working version, but it was one of the final 2.6.25 rcs.
-> > The hang stops when executing "schedtool -N $(pidof asterisk)".
-> 
-> I'm now hitting exactly the same problem with 2.6.28-rc9 (I had
-> it with 2.6.27 too but thought it might go away on its own :)
-> 
-> I've made a small program to attempt to reproduce this based on
-> the asterisk code.  Unfortunately it doesn't work on its own.
-> However, if you run it under strace then it does hang in the
-> same away as asterisk (which seems to happen after the setuid
-> call, as strace shows it before hanging and the printk after
-> it in asterisk gets executed).
-> 
-> Note that the hang goes away if either setscheduler or setuid
-> is removed.
-> 
+Linus,
 
-Hmm. Do you have CONFIG_FAIR_USER_SCHED set on?
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 
-Thanks,
--- 
-regards,
-Dhaval
+For a few last time driver fixes:
+
+   - dib0700: Stop repeating after user stops pushing button
+   - Cablestar 2 I2C retries (fix CableStar2 support)
+   - gspca - main: Fix vidioc_s_jpegcomp locking.
+   - drivers/media Kconfig fix (bugzilla #12204)
+   - v4l2-compat: test for unlocked_ioctl as well.
+   - MAINTAINERS: mark linux-uvc-devel as subscribers only
+   - em28xx: fix NULL pointer dereference in call to VIDIOC_INT_RESET command
+
+Cheers,
+Mauro.
+
+---
+
+ MAINTAINERS                                 |    2 +-
+ drivers/media/dvb/b2c2/Kconfig              |    2 +-
+ drivers/media/dvb/b2c2/flexcop-fe-tuner.c   |    2 +
+ drivers/media/dvb/b2c2/flexcop-i2c.c        |    6 +++-
+ drivers/media/dvb/bt8xx/Kconfig             |    2 +-
+ drivers/media/dvb/dvb-usb/Kconfig           |   46 +++++++++++++-------------
+ drivers/media/dvb/dvb-usb/dib0700_devices.c |    6 ++--
+ drivers/media/dvb/ttpci/Kconfig             |    2 +-
+ drivers/media/video/compat_ioctl32.c        |    2 +-
+ drivers/media/video/cx18/Kconfig            |    2 +-
+ drivers/media/video/cx23885/Kconfig         |    4 +-
+ drivers/media/video/cx88/Kconfig            |    2 +-
+ drivers/media/video/em28xx/em28xx-video.c   |    3 +-
+ drivers/media/video/gspca/gspca.c           |    4 +-
+ drivers/media/video/pvrusb2/Kconfig         |    2 +-
+ drivers/media/video/saa7134/Kconfig         |    4 +-
+ 16 files changed, 49 insertions(+), 42 deletions(-)
+
+
+Antti Seppälä (1):
+      V4L/DVB (9781): [PATCH] Cablestar 2 I2C retries (fix CableStar2 support)
+
+Devin Heitmueller (2):
+      V4L/DVB (9780): dib0700: Stop repeating after user stops pushing button
+      V4L/DVB (9920): em28xx: fix NULL pointer dereference in call to VIDIOC_INT_RESET command
+
+Hans Verkuil (1):
+      V4L/DVB (9906): v4l2-compat: test for unlocked_ioctl as well.
+
+Jim Paris (1):
+      V4L/DVB (9875): gspca - main: Fix vidioc_s_jpegcomp locking.
+
+Jiri Slaby (1):
+      V4L/DVB (9908a): MAINTAINERS: mark linux-uvc-devel as subscribers only
+
+Mauro Carvalho Chehab (1):
+      V4L/DVB (9885): drivers/media Kconfig's: fix bugzilla #12204
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
