@@ -1,59 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751842AbYLXXOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751842AbYLXXU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751842AbYLXXOE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 18:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYLXXNx
+	id S1751842AbYLXXU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 18:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYLXXUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 18:13:53 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:34883 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYLXXNw (ORCPT
+	Wed, 24 Dec 2008 18:20:15 -0500
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:2267 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbYLXXUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 18:13:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=JxgwimNVkkeSLeaFIxkcxTNqkrCYwqCIjqBfI+5NekRi/qyhxTSR8VvmlwPv3APbdS
-         +LXQztBSoXm5N7ZDoy9kJRjP1Ni+YPhOwyAqsSQjeeilElDrLzoUjemDhU0QaNjaaCea
-         /eQ1PMWspMVkKzlGPJN56rBMtxHniA7wuX+Ao=
-Message-ID: <4952C22A.3020803@gmail.com>
-Date: Thu, 25 Dec 2008 00:13:46 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Wed, 24 Dec 2008 18:20:14 -0500
+X-Greylist: delayed 2480 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Dec 2008 18:20:14 EST
+Date: Wed, 24 Dec 2008 20:38:18 -0200
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: linux-kernel@vger.kernel.org
+Cc: dm-devel@redhat.com, linux-ext4@vger.kernel.org
+Subject: Re: jbd2 inside a device mapper module
+Message-ID: <20081224223818.GY4127@blitiri.com.ar>
+References: <20081224211038.GT4127@blitiri.com.ar>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, Pekka Paalanen <pq@iki.fi>
-Subject: Re: [PATCH 0/3] ftrace: updates for tip
-References: <20081224042410.746044949@goodmis.org>
-In-Reply-To: <20081224042410.746044949@goodmis.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081224211038.GT4127@blitiri.com.ar>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> This series restructures the output functions of trace.c.
-> 
-> Events are now registered and maintaining an event output is
-> simplified by keeping the output close together.
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: tip/devel
-> 
-> 
-> Steven Rostedt (3):
->       ftrace: remove obsolete print continue functionality
->       ftrace: set up trace event hash infrastructure
->       ftrace: change trace.c to use registered events
-> 
 
-Which does mean that a tracer will now be able to build as a module?
-That's all good news!
+[Adding lkml on the CC list, somehow I managed to screw the address and
+sent it to the mm-cc list instead]
 
-I'm testing a bit these patches...
+On Wed, Dec 24, 2008 at 07:10:38PM -0200, Alberto Bertogli wrote:
+> 
+> Hi!
+> 
+> I'm writing a small device mapper module, and I'm interested in placing
+> a jbd/jdb2 journal on the backing device.
+> 
+> I started by trying to do a __bread() manually (just for early tests)
+> inside my map function. But it got stucked, as far as I could see,
+> waiting for a buffer head in wait_on_buffer() IIRC (I could track it
+> down again if it's needed). And I couldn't find why it was locked, since
+> it was an unused loopback device, and my code didn't even deal with
+> buffer heads.
+> 
+> Then, since I was planning on using jbd/jdb2 anyway, I decided to use it
+> (and went for jbd2).
+> 
+> 
+> Now, I'm having issues with journal creation.
+> 
+> I tried using "mkfs.ext3 -O journal_dev", but jbd2_journal_load()
+> complains that it can't find the journal superblock.
+> 
+> And if I modify jbd2_journal_create(), removing the 'if
+> (journal->j_inode == NULL)' check (I imagine it's there for a reason,
+> but from a quick look at the code couldn't find it and thought it was
+> worth a try) then when creating it I get a warning (pasted below) and it
+> gets locked up, which I think may be related to what happened when I did
+> __bread(), but obviously I'm not sure at all.
+> 
+> And I got stucked there, so I thought it'd be better to ask. Does anyone
+> have any ideas or suggestions on what I'm doing wrong?
+> 
+> 
+> I've not published my code yet because it's really rough, but if anyone
+> wants to take a look at it, please let me know. I was planning on
+> posting it when it was at least working.
+> 
+> Thanks a lot,
+> 		Alberto
+> 
+> 
+> 
+> [42949814.780000] ------------[ cut here ]------------
+> [42949814.780000] WARNING: at /pub/src/linux/linux-2.6/fs/buffer.c:1186 mark_buffer_dirty+0x77/0xa0()
+> [42949814.780000] Modules linked in:
+> [42949814.780000] Call Trace:
+> [42949814.780000] 678f17d8:  [<6003988b>] warn_on_slowpath+0x5b/0x80
+> [42949814.780000] 678f1818:  [<600bbe9a>] __find_get_block_slow+0x7a/0x110
+> [42949814.780000] 678f1858:  [<600bc219>] __find_get_block+0x79/0x180
+> [42949814.780000] 678f1888:  [<60033b05>] __might_sleep+0x105/0x130
+> [42949814.780000] 678f18c8:  [<600bc353>] __getblk+0x33/0x270
+> [42949814.780000] 678f18f8:  [<600bc7e7>] mark_buffer_dirty+0x77/0xa0
+> [42949814.780000] 678f1918:  [<6012b1a8>] jbd2_journal_create+0x88/0x170
+> [42949814.780000] 678f1958:  [<601aac70>] csum_ctr+0x1b0/0x240
+> [42949814.780000] 678f1968:  [<6019b810>] get_target_type+0x60/0xa0
+> [42949814.780000] 678f19a8:  [<6019b0d4>] dm_table_add_target+0x174/0x3b0
+> [42949814.780000] 678f1a08:  [<6019d057>] table_load+0xb7/0x200
+> [42949814.780000] 678f1a68:  [<6019dd98>] dm_ctl_ioctl+0x288/0x300
+> [42949814.780000] 678f1a98:  [<6019cfa0>] table_load+0x0/0x200
+> [42949814.780000] 678f1c18:  [<600a82fb>] vfs_ioctl+0x1b/0x70
+> [42949814.780000] 678f1c28:  [<600a8770>] do_vfs_ioctl+0x400/0x660
+> [42949814.780000] 678f1ca8:  [<600a8a1a>] sys_ioctl+0x4a/0x80
+> [42949814.780000] 678f1ce8:  [<6001a310>] handle_syscall+0x50/0x80
+> [42949814.780000] 678f1d08:  [<6002bf1f>] userspace+0x3ff/0x530
+> [42949814.780000] 678f1fc8:  [<60017012>] fork_handler+0x62/0x70
+> [42949814.780000]
+> [42949814.780000] ---[ end trace ebc125a00ee8f9d2 ]---
+
+
