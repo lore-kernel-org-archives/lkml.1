@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbYLXDvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbYLXDw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbYLXDvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 22:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbYLXDvH
+	id S1753226AbYLXDw3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 22:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYLXDwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 22:51:07 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:62316 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbYLXDvF (ORCPT
+	Tue, 23 Dec 2008 22:52:19 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:23432 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751392AbYLXDwS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 22:51:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=C4tal9Mswdioyjk0wY5PATtm4KtZUtQEcC5G5lovyrCfIXoqRouDv1X+J4eqmeeLlf
-         xz/tHtxO7URVn5RtQy4ZqfVSJS9NcRTk8oPl317Mwbz1WlvI6kmSj+WkMhgbE/N4ABPP
-         HYmE1hiaU078vLs8a0sFIZHTar5bnlAlC9RLg=
-Message-ID: <c62985530812231951p4a943007j6d4a8632ee241921@mail.gmail.com>
-Date: Wed, 24 Dec 2008 04:51:04 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 1/2] tracing/ftrace: don't trace on early stage of secondary cpu boot
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0812232231140.21172@gandalf.stny.rr.com>
+	Tue, 23 Dec 2008 22:52:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=IFs8GzU/m/laRhNzvb1OUA1+Y233qvQ4zwjDzDksjG3rnEuFVdoeyM68hU+ALrF6qJ1PkHSAFJEXHq1WKXtNkz/xSOeuXx1W4vTSB9zw8/MlJZ96tGqSeN+opmRgLWViXUWtKrvjsJnUNN39n98J2ABjOFKD6/AbVnM/W9HyeN8=  ;
+X-YMail-OSG: IyTuJJsVM1kdSQzseloqwpWlyYXpMEZ9zYBL5m7OV7slWwHDdMt4Gjmz20wxcCL4GbA8lN11XgEBWR_OzzLJrnP3H.fURROOE4V9wUcLWdyA2QJAMOmJ0GJr7d82iy2FrOmqqZKej2h6jZM9quJd1_3legibdxyK2hNIl2tYJoR_r4VsVBsjhi2MjTgS
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: me@felipebalbi.com
+Subject: Re: [PATCH] musb: fix DaVinci build again
+Date: Tue, 23 Dec 2008 19:52:15 -0800
+User-Agent: KMail/1.9.10
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de,
+       felipe.balbi@nokia.com, davinci-linux-open-source@linux.davincidsp.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200812072341.50012.sshtylyov@ru.mvista.com> <200812231707.48195.david-b@pacbell.net> <20081224022757.GA10240@frodo>
+In-Reply-To: <20081224022757.GA10240@frodo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-References: <49518535.8080105@gmail.com>
-	 <alpine.DEB.1.10.0812232106080.6972@gandalf.stny.rr.com>
-	 <c62985530812231844w7bdc493secbbeaf4372afa52@mail.gmail.com>
-	 <alpine.DEB.1.10.0812232231140.21172@gandalf.stny.rr.com>
+Message-Id: <200812231952.16171.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/24 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Wed, 24 Dec 2008, Fr?d?ric Weisbecker wrote:
->>
->>
->> I first thought about annotate those first functions with "notrace".
->> But the code inside
->> cpu_init/pda_init could change later and call external/traced function.
->
-> We could also hit it with the CFLAGS_REMOVE_common.o = -pg hammer.
-> Those functions will not change much, and I doubt they will call other
-> functions for the same reason that we can not call them. A simple
-> preempt_disable here will crash the box.
->
-> -- Steve
+On Tuesday 23 December 2008, Felipe Balbi wrote:
+> >  #include <linux/gpio.h>
+> > +#include <linux/gpio.h>
+> 
+> you're including <linux/gpio.h> twice.
 
-Ok, I will try with this solution.
+Yeah, I suppose I just edited the patch to
+delete segments that *did* get merged.  It
+looks like that change to <linux/gpio.h> got
+included, and "patch" didn't complain ...
+leaving the puzzle of just why the *rest* of
+that pre-2.6.27 build fix still hasn't merged.
 
-Thanks.
+A double inclusion is a minor-but-harmless
+annoyance.  Those <asm/arch/...> ==> <mach/...>
+header changes were mostly merged by 2.6.27-rc2,
+but ones for this particular file got stripped
+out.  More than a small bit puzzling; I can
+understand patches getting dropped or lost,
+but not getting mangled like that.
+
+When I verify that I have a kernel booting
+on the DM6446 EVM in mainline, I'll resend
+both of the patches.  They are IMO overdue
+to merge.
+
