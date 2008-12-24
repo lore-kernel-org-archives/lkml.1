@@ -1,155 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbYLXDF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbYLXDKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970AbYLXDF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Dec 2008 22:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYLXDFO
+	id S1752685AbYLXDKF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Dec 2008 22:10:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYLXDJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 22:05:14 -0500
-Received: from www.tglx.de ([62.245.132.106]:44547 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751233AbYLXDFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 22:05:13 -0500
-Date: Wed, 24 Dec 2008 04:04:03 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@strlen.de>,
-       Magnus Damm <damm@igel.co.jp>
-Subject: [PATCH] UIO: Add missing documentation of features added recently
-Message-ID: <20081224030400.GB3081@local>
+	Tue, 23 Dec 2008 22:09:55 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63627 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbYLXDJy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Dec 2008 22:09:54 -0500
+Date: Tue, 23 Dec 2008 22:09:53 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/ftrace: don't trace on early stage of
+ secondary cpu boot
+In-Reply-To: <c62985530812231844w7bdc493secbbeaf4372afa52@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0812232201110.20511@gandalf.stny.rr.com>
+References: <49518535.8080105@gmail.com>  <alpine.DEB.1.10.0812232106080.6972@gandalf.stny.rr.com> <c62985530812231844w7bdc493secbbeaf4372afa52@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following features were added to the UIO framework in the near past:
 
-* Generic drivers for platform devices (uio_pdrv, uio_pdrv_genirq)
-* an "offset" sysfs attribute for memory mappings
+On Wed, 24 Dec 2008, Fr?d?ric Weisbecker wrote:
+> >>       /*
+> >> @@ -1233,7 +1233,7 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
+> >>       int cpu;
+> >>       int pc;
+> >>
+> >> -     if (!ftrace_trace_task(current))
+> >> +     if (!ftrace_trace_task(current) || ftrace_in_early_cpuinit())
+> >>               return 0;
+> >
+> > Actually, didn't you say current is not available either? We are testing
+> > current first.
+> 
+> Oops. Strange, my tests didn't give me any problem.
+> I will fix it.
 
-Unfortunately, all this went in without documentation (won't happen again...)
+Are you sure 'current' is dangerous? Perhaps we do not need to worry here, 
+since we are testing current against something else, and if the CPU
+is just coming on line, it will not be the task we want.
 
-This patch updates UIO documentation.
+> 
+> 
+> > I still wonder if there's a better way to find out if it is safe to run.
+> > Perhaps the arch code can test the %gs register to see if it is actually
+> > something valid?
+> >
+> > -- Steve
+> 
+> I could test if MSR_GS_BASE references cpu_pda(cpu) but that remains
+> as much heavy...
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Perhaps just reading the %gs register and see if it faults would be good 
+enough?
 
----
- Documentation/DocBook/uio-howto.tmpl |   88 +++++++++++++++++++++++++++++++++++
- 1 file changed, 88 insertions(+)
+	long dummy;
+	int faulted=0;
 
-Index: linux-2.6.28-rc/Documentation/DocBook/uio-howto.tmpl
-===================================================================
---- linux-2.6.28-rc.orig/Documentation/DocBook/uio-howto.tmpl	2008-12-24 01:15:17.000000000 +0100
-+++ linux-2.6.28-rc/Documentation/DocBook/uio-howto.tmpl	2008-12-24 03:29:37.000000000 +0100
-@@ -42,6 +42,12 @@
- 
- <revhistory>
- 	<revision>
-+	<revnumber>0.7</revnumber>
-+	<date>2008-12-23</date>
-+	<authorinitials>hjk</authorinitials>
-+	<revremark>Added generic platform drivers and offset attribute.</revremark>
-+	</revision>
-+	<revision>
- 	<revnumber>0.6</revnumber>
- 	<date>2008-12-05</date>
- 	<authorinitials>hjk</authorinitials>
-@@ -312,6 +318,16 @@
- 	pointed to by addr.
- 	</para>
- </listitem>
-+<listitem>
-+	<para>
-+	<filename>offset</filename>: The offset, in bytes, that has to be
-+	added to the pointer returned by <function>mmap()</function> to get
-+	to the actual device memory. This is important if the device's memory
-+	is not page aligned. Remember that pointers returned by
-+	<function>mmap()</function> are always page aligned, so it is good
-+	style to always add this offset.
-+	</para>
-+</listitem>
- </itemizedlist>
- 
- <para>
-@@ -594,6 +610,78 @@
- 	</para>
- </sect1>
- 
-+<sect1 id="using_uio_pdrv">
-+<title>Using uio_pdrv for platform devices</title>
-+	<para>
-+	In many cases, UIO drivers for platform devices can be handled in a
-+	generic way. In the same place where you define your
-+	<varname>struct platform_device</varname>, you simply also implement
-+	your interrupt handler and fill your
-+	<varname>struct uio_info</varname>. A pointer to this
-+	<varname>struct uio_info</varname> is then used as
-+	<varname>platform_data</varname> for your platform device.
-+	</para>
-+	<para>
-+	You also need to set up an array of <varname>struct resource</varname>
-+	containing addresses and sizes of your memory mappings. This
-+	information is passed to the driver using the
-+	<varname>.resource</varname> and <varname>.num_resources</varname>
-+	elements of <varname>struct platform_device</varname>.
-+	</para>
-+	<para>
-+	You now have to set the <varname>.name</varname> element of
-+	<varname>struct platform_device</varname> to
-+	<varname>"uio_pdrv"</varname> to use the generic UIO platform device
-+	driver. This driver will fill the <varname>mem[]</varname> array
-+	according to the resources given, and register the device.
-+	</para>
-+	<para>
-+	The advantage of this approach is that you only have to edit a file
-+	you need to edit anyway. You do not have to create an extra driver.
-+	</para>
-+</sect1>
-+
-+<sect1 id="using_uio_pdrv_genirq">
-+<title>Using uio_pdrv_genirq for platform devices</title>
-+	<para>
-+	Especially in embedded devices, you frequently find chips where the
-+	irq pin is tied to its own dedicated interrupt line. In such cases,
-+	where you can be really sure the interrupt is not shared, we can take
-+	the concept of <varname>uio_pdrv</varname> one step further and use a
-+	generic interrupt handler. That's what
-+	<varname>uio_pdrv_genirq</varname> does.
-+	</para>
-+	<para>
-+	The setup for this driver is the same as described above for
-+	<varname>uio_pdrv</varname>, except that you do not implement an
-+	interrupt handler. The <varname>.handler</varname> element of
-+	<varname>struct uio_info</varname> must remain
-+	<varname>NULL</varname>. The  <varname>.irq_flags</varname> element
-+	must not contain <varname>IRQF_SHARED</varname>.
-+	</para>
-+	<para>
-+	You will set the <varname>.name</varname> element of
-+	<varname>struct platform_device</varname> to
-+	<varname>"uio_pdrv_genirq"</varname> to use this driver.
-+	</para>
-+	<para>
-+	The generic interrupt handler of <varname>uio_pdrv_genirq</varname>
-+	will simply disable the interrupt line using
-+	<function>disable_irq_nosync()</function>. After doing its work,
-+	userspace can reenable the interrupt by writing 0x00000001 to the UIO
-+	device file. The driver already implements an
-+	<function>irq_control()</function> to make this possible, you must not
-+	implement your own.
-+	</para>
-+	<para>
-+	Using <varname>uio_pdrv_genirq</varname> not only saves a few lines of
-+	interrupt handler code. You also do not need to know anything about
-+	the chip's internal registers to create the kernel part of the driver.
-+	All you need to know is the irq number of the pin the chip is
-+	connected to.
-+	</para>
-+</sect1>
-+
- </chapter>
- 
- <chapter id="userspace_driver" xreflabel="Writing a driver in user space">
+	    asm(
+		"1:	movq %%gs:0, %0\n"
+		"2:
+		".section .fixup \"ax\"\n"
+		"3:	movl $1, %1\n"
+		"	jmp 2b\n"
+		".previous"
+		_ASM_EXTABLE(1b, 3b)
+		: "=r"(dummy), "=r"(faulted)
+		: "1"(faulted));
+
+
+Would this work?  On the good cases, all we do is a read of the %gs 
+section, which is the same as doing a smp_process_id(). On the bad case, 
+we fault, but we also catch that fact. We are more interested in the good 
+case being fast. but I'm not sure how well the start up code could take a 
+fault, even when it is expected.
+
+-- Steve
+
