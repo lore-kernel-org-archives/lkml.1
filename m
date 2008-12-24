@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbYLXMa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbYLXNWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752272AbYLXMa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 07:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYLXMaV
+	id S1752165AbYLXNWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 08:22:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYLXNWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 07:30:21 -0500
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:40292 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbYLXMaU (ORCPT
+	Wed, 24 Dec 2008 08:22:34 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:54485 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751392AbYLXNWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 07:30:20 -0500
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: linux-next: parsing mem=700M broken
-Date: Wed, 24 Dec 2008 13:30:27 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils> <20081223143327.GF29151@elte.hu> <200812241808.16195.rusty@rustcorp.com.au>
-In-Reply-To: <200812241808.16195.rusty@rustcorp.com.au>
+	Wed, 24 Dec 2008 08:22:33 -0500
+Date: Wed, 24 Dec 2008 14:22:30 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       Magnus Damm <damm@igel.co.jp>
+Subject: Re: [PATCH] UIO: Add missing documentation of features added
+	recently
+Message-ID: <20081224132230.GA29503@strlen.de>
+References: <20081224030400.GB3081@local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200812241330.29784.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081224030400.GB3081@local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rusty,
+Hi Hans,
 
-On Wednesday 24 December 2008, Rusty Russell wrote:
->  void __init finish_e820_parsing(void)
->  {
-> +	bool userdef;
+On Wed, Dec 24, 2008 at 04:04:03AM +0100, Hans J. Koch wrote:
+> The following features were added to the UIO framework in the near past:
+> 
+> * Generic drivers for platform devices (uio_pdrv, uio_pdrv_genirq)
+> * an "offset" sysfs attribute for memory mappings
+> 
+> Unfortunately, all this went in without documentation (won't happen again...)
+> 
+> This patch updates UIO documentation.
+> 
+> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Acked-by: Uwe Kleine-König <ukleinek@strlen.de>
 
-maybe init with userdef = false;
+for the uio_pdrv part.
 
-> +	int i;
-> +
-> +	if (memlimit) {
-> +		e820_remove_range(memlimit, ULLONG_MAX - memlimit, E820_RAM, 1);
-> +		userdef = true;
-> +	}
-> +
-> +	if (exactmap) {
-> +#ifdef CONFIG_CRASH_DUMP
-> +		/*
-> +		 * If we are doing a crash dump, we still need to know
-> +		 * the real mem size before original memory map is
-> +		 * reset.
-> +		 */
-> +		saved_max_pfn = e820_end_of_ram_pfn();
-> +#endif
-> +		e820.nr_map = 0;
-> +		userdef = true;
-> +	}
-> +
-> +	for (i = 0; i < user_e820.nr_map; i++) {
-> +		e820_add_region(user_e820.map[i].addr, user_e820.map[i].size,
-> +				user_e820.map[i].type);
-> +		userdef = true;
-> +	}
-> +
->  	if (userdef) {
->  		int nr = e820.nr_map;
-
-Because here it might be used uninitialized.
-
-Best Regards
-
-Ingo Oeser
+Thanks
+Uwe
