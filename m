@@ -1,34 +1,34 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751966AbYLWPRR (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 23 Dec 2008 10:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYLWPQ7
+	id S1752588AbYLXK1V (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 24 Dec 2008 05:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYLXK1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Dec 2008 10:16:59 -0500
-Received: from po-out-1718.google.com ([72.14.252.154]:7991 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbYLWPQ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Dec 2008 10:16:58 -0500
-Message-ID: <3fb005a50812230716y178d0e35u856e388bde9de3bc@mail.gmail.com>
-Date: Tue, 23 Dec 2008 23:16:56 +0800
-From: f6oa5d7i85d7g <f6oa5d7i85d7g@gmail.com>
-To: lina@rsi.com.tw
-Subject: =?BIG5?B?odEyMDA4LzEyLzIzILF6?= =?BIG5?B?wdmoU6azpECt07FNxN2quqX4t3669K+4ttyhSA==?=
+	Wed, 24 Dec 2008 05:27:09 -0500
+Received: from web73010.mail.tp2.yahoo.com ([203.188.200.240]:21142 "HELO
+	web73010.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751578AbYLXK1J convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 05:27:09 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Dec 2008 05:27:08 EST
+X-YMail-OSG: RpSo8M4VM1l4orSl6U.k5QRLFAw5eRIA4UH58WoUPRTD5.sd3lBP2LwCNHD1MQ7_ovSFWwcx3GXeGPviSEF2q1GXcgbousLNJrAXLBBz6SaywwECDui6modAeFjZ2jV.K2ESODUyqEY2XT64apq4_ksfJ8tmO9PR5Z1pIC8plccNmy3acY.8h4e.nRRx77Ps8w0YUEk5GQ--
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Wed, 24 Dec 2008 18:20:25 +0800 (CST)
+From: =?big5?B?pm6qsSCmbqZZ?= <mogunhry35@yahoo.com.tw>
+Reply-To: mogunhry35@yahoo.com.tw
+Subject: =?big5?B?MTg6MjA6MjYtLT6htjk3pn4xMqTrs8y3cy21TKxyobYyMw==?=
+To: linsueder@pchome.com.tw
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Content-Type: text/plain; charset=big5
+Content-Transfer-Encoding: 8BIT
+Message-ID: <965090.80437.qm@web73010.mail.tp2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1751966AbYLWPRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752588AbYLXK1V@vger.kernel.org>
 
-MjAwOC0xMi0yMyAgLSAgMjM6MTYKCqRzOeC+bqzsdKfeb7r0Na22ZrNdZq1wCgqn2kGtzEiqumKp
-dmemrnahR6vIpOGquqhDo7il86RwqMaxoaFBs6OsT6Rz4L6quqRqqMaxoQoKp9pLrcxTZqZidbHA
-pVil+Ld+p862SLr0r7ilXad0q2WleLr0rbas/KR1K6vhpXi63rJ6tXumoQoKra1Urslhra1otnFE
-sU2u17v5IKV1rW4kMjksOTAwICAopmKwZaO4pn4xMDBNQiCko62trHm2cbr0r7iqxbahKQoKp9pV
-rcxHsLU0qrpXpKMypXV0rE83uvRor7ihQabTbKxPN7F6T6X4Ubd+Saq6NKRKMqRmCgqjuEat03Cm
-bjKqunSl+Ea3fni69EWvuFm46lmuxlCnWVGuyUOn80W3c3WqunWzdGqr1zWsTzmr3HKtqzKtbnaq
-ugoKpfhWt36i7aTGWLCqMKt+Qr3oQrnOWrakoUGltEKzeWGxelequjG69EG49DSq+UqtsQoKv+9x
-vtw0pHM44L51pqhvtE5osXpHqrpuudo1M7dRCgpWxXeq76jTuXGsorjftsCxTa37oUcwOTgwfjEx
-OX44MTIKWqPhVKH4WqHXoddDobtkobMK
+97年12月最新-無毒 http://bit.ly/1ufwdu
+
+
+      ___________________________________________________________________________________________________
+容量無上限!即時可聊天!超強變革都在全新Yahoo!奇摩電子信箱2.0。 http://tw.mg0.mail.yahoo.com/dc/landing
