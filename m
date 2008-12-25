@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbYLYNpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbYLYN45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbYLYNpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 08:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYLYNpW
+	id S1752044AbYLYN45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 08:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYLYN4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 08:45:22 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:44643 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbYLYNpV (ORCPT
+	Thu, 25 Dec 2008 08:56:48 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:44302 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbYLYN4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 08:45:21 -0500
+	Thu, 25 Dec 2008 08:56:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=WLnXmkoFacmsH6pE9beCAWkhKuTjsA/LBoiQ5bsP0th5ulLZ5YoWTTzyXCWZ+Q8Z5w
-         IktUjX4293RVTGucZtb/bWrIltdPOb1sKFJGips5DBSXhQKSwCAs10evOsHAnEMBZDw/
-         GG27TERvECDIRF3GTO7H70kWCfV66g51IRuDk=
-Message-ID: <2f11576a0812250545g1967467fy568099affdaa6c35@mail.gmail.com>
-Date: Thu, 25 Dec 2008 22:45:20 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH for -tip] irq: for_each_irq_desc() makes simplify
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Yinghai Lu" <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081225131000.GA7510@localhost>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=gP6nWgaLSGK2rzovVK04dP7UB9XE4C4f5Q5xDIWnsDYPfTHL2ET9/BW/RQBZ/B4DuA
+         vQYr/5Ecqhn9xRYvM7vZPKYOLnI0/kmCtXP5kDHian3fbPgEYsDOBA799mI7rn1mnqBz
+         73NYKuXYsSLSugWxRITZteoZZnychG/Lr0zYs=
+Date: Thu, 25 Dec 2008 21:55:23 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-nfs@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       bfields@fieldses.org
+Subject: [Patch] fs/nfs/nfs4proc.c: make nfs4_map_errors() static
+Message-ID: <20081225215523.GH3130@hack.private>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081225200020.50F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081225213640.50F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081225214057.50F6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081225131000.GA7510@localhost>
-X-Google-Sender-Auth: 23489229758e5a77
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> [KOSAKI Motohiro - Thu, Dec 25, 2008 at 09:41:54PM +0900]
-> ...
-> | Is this good idea?
-> | this patch also tested on above three architecture.
-> |
-> |
-> | ===
-> | Subject: [PATCH] irq: for_each_irq_desc() makes simplify
-> | Impact: cleanup
-> |
-> | all for_each_irq_desc() usage point have !desc check.
-> | then its check can move into for_each_irq_desc() macro.
-> |
-> |
-> | Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> | CC: Yinghai Lu <yinghai@kernel.org>
-> | CC: Ingo Molnar <mingo@elte.hu>
-> | ---
-> |  arch/x86/kernel/io_apic.c |   10 ----------
-> |  drivers/xen/events.c      |    3 ---
-> |  fs/proc/stat.c            |    3 ---
-> |  include/linux/irqnr.h     |    6 ++++--
-> |  kernel/irq/autoprobe.c    |   15 ---------------
-> |  kernel/irq/handle.c       |    3 ---
-> |  kernel/irq/spurious.c     |    5 -----
-> |  7 files changed, 4 insertions(+), 41 deletions(-)
-> ...
->
-> Hi Kosaki,
->
-> the idea is that good indeed but I wonder if it possible
-> to explain that we skip empty 'desk' in for_each_... name
-> itself. Maybe for_each_irq_desc_defined :) Or something
-> more convenient word instead of "defined"?
 
-"if (!desc) " mean this irqno don't have irq description.
-so I think this name imply mean skipping no irq desctiption element.
+nfs4_map_errors() can become static.
 
-Actually, on CONFIG_SPARSEIRQ, desc is filled in dynamically after booting.
-then "defined" is a bit misleading word.
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: J. Bruce Fields <bfields@fieldses.org>
+
+---
+diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
+index ea79064..b8fb6a6 100644
+--- a/fs/nfs/nfs4_fs.h
++++ b/fs/nfs/nfs4_fs.h
+@@ -174,7 +174,6 @@ extern ssize_t nfs4_listxattr(struct dentry *, char *, size_t);
+ 
+ 
+ /* nfs4proc.c */
+-extern int nfs4_map_errors(int err);
+ extern int nfs4_proc_setclientid(struct nfs_client *, u32, unsigned short, struct rpc_cred *);
+ extern int nfs4_proc_setclientid_confirm(struct nfs_client *, struct rpc_cred *);
+ extern int nfs4_proc_async_renew(struct nfs_client *, struct rpc_cred *);
+diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+index 83e700a..91e46ec 100644
+--- a/fs/nfs/nfs4proc.c
++++ b/fs/nfs/nfs4proc.c
+@@ -69,7 +69,7 @@ static int _nfs4_proc_lookup(struct inode *dir, const struct qstr *name, struct
+ static int _nfs4_proc_getattr(struct nfs_server *server, struct nfs_fh *fhandle, struct nfs_fattr *fattr);
+ 
+ /* Prevent leaks of NFSv4 errors into userland */
+-int nfs4_map_errors(int err)
++static int nfs4_map_errors(int err)
+ {
+ 	if (err < -1000) {
+ 		dprintk("%s could not handle NFSv4 error %d\n",
+
