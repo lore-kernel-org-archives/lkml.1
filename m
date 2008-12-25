@@ -1,159 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbYLYUKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbYLYUSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752671AbYLYUKp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 15:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYLYUKf
+	id S1752462AbYLYUSw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 15:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYLYUSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 15:10:35 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55644 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbYLYUKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 15:10:33 -0500
-Date: Thu, 25 Dec 2008 21:10:30 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] drivers/staging/comedi: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0812252109580.31651@ask.diku.dk>
+	Thu, 25 Dec 2008 15:18:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:11252 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbYLYUSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 15:18:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Vx1JMzrh1Pub8ONA2WSF/fzvAm3WdEgGCFyIz0hTju2pAO74WznsuU9GJLtfW/8YDE
+         d8VJpLZM0bYc8X48omtQgPbr53xhIOWSMLZi/5vyH0pYzaWmes4yeK0APWZBE/XsHOSY
+         SWe7Ct0lqMpOujIKjRwfg4WK+U/wQ2CVHmnbU=
+Message-ID: <742b1fb30812251218k66a090f6je8c1e0f9d98dffc5@mail.gmail.com>
+Date: Thu, 25 Dec 2008 21:18:42 +0100
+From: "Patrizio Bassi" <patrizio.bassi@gmail.com>
+To: "Kernel," <linux-kernel@vger.kernel.org>
+Subject: [BUG] Kernel Panic with ath5k and 2.6.28
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Kernel Panic with ath5k and 2.6.28
 
-Error handling code following a kmalloc should free the allocated data.
+Hi all,
 
-The semantic match that finds the problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+Today i migrated to 2.6.28 and ath5k from 2.6.27 and madwifi.
+I have a trust speedshare turbo 108mb/s card
+Connection is ok, even with WPA.
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,l;
-position p1,p2;
-expression *ptr != NULL;
-@@
+The problem i met is when i tried to bridge the wifi and the eth interface.
 
-(
-if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
-|
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-...
-if (x == NULL) S
-)
-<... when != x
-     when != if (...) { <+...x...+> }
-x->f = E
-...>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
+I just rebuild the kernel with the bridge module enabled (builtin) and
+i got the panic
+in the picture (http://www.patriziobassi.it/downloads/ath5k_panic.jpg)
+when i try to put the wifi interface up on startup with old script configuration
 
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-@@
+The strange thing is that i'm not adding it to the bridge, i just have
+it in the kernel and i'm enabling the interface.
+Eth interface goes up flawlessy.
+Workaround is to boot the laptop without the card plugged it (pcmcia)
+or do not compile the bridge into the kernel.
 
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
+Attaching the working config. the broken just has the bridge module enabled.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+I'm ready to test all the patches/suggestions you may provide.
+
+Config is at http://www.patriziobassi.it/downloads/config-2.6.28
+
+I wish u all merry xmas.
+
+CC me i'm not subscribed
+
 ---
- drivers/staging/comedi/drivers/usbdux.c     |    6 +++++-
- drivers/staging/comedi/drivers/usbduxfast.c |    6 +++++-
- 2 files changed, 10 insertions(+), 2 deletions(-)
+Patrizio Bassi
+www.patriziobassi.it
 
-diff -u -p a/drivers/staging/comedi/drivers/usbduxfast.c b/drivers/staging/comedi/drivers/usbduxfast.c
---- a/drivers/staging/comedi/drivers/usbduxfast.c
-+++ b/drivers/staging/comedi/drivers/usbduxfast.c
-@@ -1298,7 +1298,7 @@ static int read_firmware(usbduxfastsub_t
- {
- 	int i = 0;
- 	unsigned char *fp = (char *)firmwarePtr;
--	unsigned char *firmwareBinary = NULL;
-+	unsigned char *firmwareBinary;
- 	int res = 0;
- 	int maxAddr = 0;
- 
-@@ -1322,6 +1322,7 @@ static int read_firmware(usbduxfastsub_t
- 			j++;
- 			if (j >= sizeof(buf)) {
- 				printk("comedi_: usbduxfast: bogus firmware file!\n");
-+				kfree(firmwareBinary);
- 				return -1;
- 			}
- 		}
-@@ -1340,6 +1341,7 @@ static int read_firmware(usbduxfastsub_t
- 
- 		if (buf[0] != ':') {
- 			printk("comedi_: usbduxfast: upload: not an ihex record: %s", buf);
-+			kfree(firmwareBinary);
- 			return -EFAULT;
- 		}
- 
-@@ -1355,6 +1357,7 @@ static int read_firmware(usbduxfastsub_t
- 
- 		if (maxAddr >= FIRMWARE_MAX_LEN) {
- 			printk("comedi_: usbduxfast: firmware upload goes beyond FX2 RAM boundaries.");
-+			kfree(firmwareBinary);
- 			return -EFAULT;
- 		}
- 		//printk("comedi_: usbduxfast: off=%x, len=%x:",off,len);
-@@ -1369,6 +1372,7 @@ static int read_firmware(usbduxfastsub_t
- 
- 		if (type != 0) {
- 			printk("comedi_: usbduxfast: unsupported record type: %u\n", type);
-+			kfree(firmwareBinary);
- 			return -EFAULT;
- 		}
- 
-diff -u -p a/drivers/staging/comedi/drivers/usbdux.c b/drivers/staging/comedi/drivers/usbdux.c
---- a/drivers/staging/comedi/drivers/usbdux.c
-+++ b/drivers/staging/comedi/drivers/usbdux.c
-@@ -2298,7 +2298,7 @@ static int read_firmware(struct usbduxsu
- 	struct device *dev = &usbduxsub->interface->dev;
- 	int i = 0;
- 	unsigned char *fp = (char *)firmwarePtr;
--	unsigned char *firmwareBinary = NULL;
-+	unsigned char *firmwareBinary;
- 	int res = 0;
- 	int maxAddr = 0;
- 
-@@ -2322,6 +2322,7 @@ static int read_firmware(struct usbduxsu
- 			j++;
- 			if (j >= sizeof(buf)) {
- 				dev_err(dev, "comedi_: bogus firmware file!\n");
-+				kfree(firmwareBinary);
- 				return -1;
- 			}
- 		}
-@@ -2344,6 +2345,7 @@ static int read_firmware(struct usbduxsu
- 		if (buf[0] != ':') {
- 			dev_err(dev, "comedi_: upload: not an ihex record: %s",
- 				buf);
-+			kfree(firmwareBinary);
- 			return -EFAULT;
- 		}
- 
-@@ -2360,6 +2362,7 @@ static int read_firmware(struct usbduxsu
- 		if (maxAddr >= FIRMWARE_MAX_LEN) {
- 			dev_err(dev, "comedi_: firmware upload goes "
- 				"beyond FX2 RAM boundaries.\n");
-+			kfree(firmwareBinary);
- 			return -EFAULT;
- 		}
- 		/* dev_dbg(dev, "comedi_: off=%x, len=%x:\n", off, len); */
-@@ -2375,6 +2378,7 @@ static int read_firmware(struct usbduxsu
- 		if (type != 0) {
- 			dev_err(dev, "comedi_: unsupported record type: %u\n",
- 				type);
-+			kfree(firmwareBinary);
- 			return -EFAULT;
- 		}
- 
+
+
+--
+Patrizio Bassi
+www.patriziobassi.it
+http://piazzadelpopolo.patriziobassi.it
