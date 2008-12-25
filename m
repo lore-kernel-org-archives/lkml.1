@@ -1,99 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbYLYKqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbYLYKsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbYLYKqk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 05:46:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYLYKqc
+	id S1752232AbYLYKsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 05:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYLYKsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 05:46:32 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43005 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbYLYKqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 05:46:31 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Thu, 25 Dec 2008 05:48:09 -0500
+Received: from mga14.intel.com ([143.182.124.37]:5394 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751777AbYLYKsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 05:48:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,281,1228118400"; 
+   d="scan'208";a="93816362"
+Date: Thu, 25 Dec 2008 18:47:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH for -tip] proc: remove ifdef CONFIG_SPARSE_IRQ from stat.c
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081225194440.50ED.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Subject: Re: cannot reliably detect USB device
+Message-ID: <20081225104753.GB15733@localhost>
+References: <20081222084249.GA5845@localhost> <20081223043714.GH1928@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 25 Dec 2008 19:46:27 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081223043714.GH1928@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 23, 2008 at 06:37:14AM +0200, Greg KH wrote:
+> On Mon, Dec 22, 2008 at 04:42:49PM +0800, Wu Fengguang wrote:
+> > Hi Greg,
+> > 
+> > I have a pl2303 USB-RS232 converter that cannot be reliably detected.
+> 
+> Faulty hardware?  Flaky cables?  Bad connections?  If this is
+> reproducable for the same device on multiple machines, I'd just go buy a
+> new device :)
 
-I confirmed by alpha cross compiler.
+I decided to give it a last try before planning a replacement - then I
+find that /dev/ttyUSB0 could be created if I enlarge the retry times.
 
-==
-Subject: [PATCH] proc: remove ifdef CONFIG_SPARSE_IRQ from stat.c
-Impact: cleanup
+It could take 10 seconds to get a valid response. It must go crazy.
 
-commit 240d367b4e6c6e3c5075e034db14dba60a6f5fa7 has a bit strange analysis.
-The fact is, irq_desc() can be used old architecuture too. 
-but old code don't include <linux/irq.h>.
-
-right fixing is here.
-
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>
----
- fs/proc/stat.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-Index: b/fs/proc/stat.c
-===================================================================
---- a/fs/proc/stat.c
-+++ b/fs/proc/stat.c
-@@ -9,6 +9,7 @@
- #include <linux/seq_file.h>
- #include <linux/slab.h>
- #include <linux/time.h>
-+#include <linux/irq.h>
- #include <asm/cputime.h>
- 
- #ifndef arch_irq_stat_cpu
-@@ -27,6 +28,7 @@ static int show_stat(struct seq_file *p,
- 	u64 sum = 0;
- 	struct timespec boottime;
- 	unsigned int per_irq_sum;
-+	struct irq_desc *desc;
- 
- 	user = nice = system = idle = iowait =
- 		irq = softirq = steal = cputime64_zero;
-@@ -44,11 +46,10 @@ static int show_stat(struct seq_file *p,
- 		softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
- 		steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
- 		guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
--		for_each_irq_nr(j) {
--#ifdef CONFIG_SPARSE_IRQ
--			if (!irq_to_desc(j))
-+		for_each_irq_desc(j, desc) {
-+			if (!desc)
- 				continue;
--#endif
-+
- 			sum += kstat_irqs_cpu(j, i);
- 		}
- 		sum += arch_irq_stat_cpu(i);
-@@ -95,12 +96,10 @@ static int show_stat(struct seq_file *p,
- 	/* sum again ? it could be updated? */
- 	for_each_irq_nr(j) {
- 		per_irq_sum = 0;
--#ifdef CONFIG_SPARSE_IRQ
- 		if (!irq_to_desc(j)) {
- 			seq_printf(p, " %u", per_irq_sum);
- 			continue;
- 		}
--#endif
- 		for_each_possible_cpu(i)
- 			per_irq_sum += kstat_irqs_cpu(j, i);
- 
-
+Thanks,
+Fengguang
 
