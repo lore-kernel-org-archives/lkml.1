@@ -1,46 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbYLYRDC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160AbYLYRNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752234AbYLYRDC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 12:03:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYLYRCs
+	id S1752160AbYLYRNJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 12:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYLYRM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 12:02:48 -0500
-Received: from khc.piap.pl ([195.187.100.11]:40087 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751595AbYLYRCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 12:02:47 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       =?utf-8?B?SMOla29uIEzDuHZkYWw=?= <hlovdal@gmail.com>,
-       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a compound statement
-References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
-	<20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
-	<m3hc4voo2a.fsf@maximus.localdomain>
-	<a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
-	<m3ocz2ua3w.fsf@maximus.localdomain> <1230053186.1447.9.camel@brick>
-	<m3k59qssix.fsf@maximus.localdomain>
-	<alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
-	<m3hc4usco9.fsf@maximus.localdomain>
-	<alpine.LFD.2.00.0812231529030.3535@localhost.localdomain>
-	<m3myemqqgp.fsf@maximus.localdomain>
-	<alpine.LFD.2.00.0812231808030.3535@localhost.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 25 Dec 2008 18:02:44 +0100
-In-Reply-To: <alpine.LFD.2.00.0812231808030.3535@localhost.localdomain> (Linus Torvalds's message of "Tue\, 23 Dec 2008 18\:10\:27 -0800 \(PST\)")
-Message-ID: <m3iqp89oi3.fsf@maximus.localdomain>
+	Thu, 25 Dec 2008 12:12:56 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:38661 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbYLYRMz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 12:12:55 -0500
+Date: Thu, 25 Dec 2008 17:12:52 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: linux-kernel@vger.kernel.org, radeonhd@opensuse.org
+Subject: Re: v2.6.28-rc9: No video with test_suspend=mem
+Message-ID: <20081225171252.GA7180@srcf.ucam.org>
+References: <1230128020.3455.16.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1230128020.3455.16.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Wait for Radeon modesetting to land, at which point we should restore 
+graphics state in-kernel.
 
-> Anyway,  not worth discussing. The fact is, the kernel does not accept do 
-> while without braces. I told you why. You can ignore it. I'll ignore you.
-
-Oh, I'm not a martyr.
 -- 
-Krzysztof Halasa
+Matthew Garrett | mjg59@srcf.ucam.org
