@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbYLYARm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbYLYAUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbYLYARm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 19:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYLYARc
+	id S1752095AbYLYAUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 19:20:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYLYAU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 19:17:32 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:46374 "EHLO
+	Wed, 24 Dec 2008 19:20:27 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:46379 "EHLO
 	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751425AbYLYARb (ORCPT
+	with ESMTP id S1751462AbYLYAU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 19:17:31 -0500
-Date: Thu, 25 Dec 2008 11:17:24 +1100
+	Wed, 24 Dec 2008 19:20:26 -0500
+Date: Thu, 25 Dec 2008 11:20:20 +1100
 From: Herbert Xu <herbert@gondor.apana.org.au>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        "David S. Miller" <davem@davemloft.net>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Crypto Update for 2.6.29
-Message-ID: <20081225001724.GA2813@gondor.apana.org.au>
+Subject: Re: Crypto Update for 2.6.29
+Message-ID: <20081225002020.GA2912@gondor.apana.org.au>
+References: <20081225001724.GA2813@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081225001724.GA2813@gondor.apana.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -43,6 +45,17 @@ instruction.
 
 Apart from that there is the usual collection of bug fixes and
 updates to algorithms and drivers.
+
+Now with the pull location :)
+
+Please pull from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+or
+
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
 
 Adrian-Ken Rueegsegger (10):
       libcrc32c: Fix "crc32c undefined" compilation error
@@ -176,7 +189,13 @@ Vishnu Suresh (1):
  44 files changed, 3331 insertions(+), 1420 deletions(-)
  create mode 100644 crypto/shash.c
 
-Thanks,
+> Thanks,
+> -- 
+> Visit Openswan at http://www.openswan.org/
+> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
 -- 
 Visit Openswan at http://www.openswan.org/
 Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
