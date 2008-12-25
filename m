@@ -1,162 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbYLYA3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbYLYAdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbYLYA3q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 19:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYLYA30
+	id S1752094AbYLYAdH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 19:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYLYAcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 19:29:26 -0500
-Received: from mx2.suse.de ([195.135.220.15]:53352 "EHLO mx2.suse.de"
+	Wed, 24 Dec 2008 19:32:55 -0500
+Received: from gate.crashing.org ([63.228.1.57]:52162 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbYLYA3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 19:29:25 -0500
-Date: Wed, 24 Dec 2008 16:29:23 -0800
-From: Mark Fasheh <mfasheh@suse.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       joel.becker@oracle.com, jack@suse.cz
-Subject: Re: [PATCH 23/56] ocfs2: Implementation of local and global quota file handling
-Message-ID: <20081225002923.GA17410@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <1229982517-3455-1-git-send-email-mfasheh@suse.com> <1229982517-3455-24-git-send-email-mfasheh@suse.com> <20081222161138.779cbffa.akpm@linux-foundation.org>
+	id S1751439AbYLYAcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 19:32:54 -0500
+Subject: Re: Lock-up on PPC64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: malc@pulsesoft.com
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <871vvy77v4.fsf@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
+	 <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
+	 <20081223234513.GA8730@deepthought>   <871vvy77v4.fsf@linmac.oyster.ru>
+Content-Type: text/plain
+Date: Thu, 25 Dec 2008 11:32:43 +1100
+Message-Id: <1230165163.7292.32.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081222161138.779cbffa.akpm@linux-foundation.org>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 22, 2008 at 04:11:38PM -0800, Andrew Morton wrote:
-> > +	mlog_entry_void();
-> > +
-> > +	lvb = (struct ocfs2_qinfo_lvb *)ocfs2_dlm_lvb(&lockres->l_lksb);
+On Wed, 2008-12-24 at 03:08 +0300, malc@pulsesoft.com wrote:
+> Ken Moffat <zarniwhoop@ntlworld.com> writes:
 > 
-> Unneeded cast.
-
-Yeah, there's quite a few of those in dlmglue.c actually. I'll add a patch
-to fix them up.
-
-
-> > +	if (lvb->lvb_version == OCFS2_QINFO_LVB_VERSION) {
-> > +		info->dqi_bgrace = be32_to_cpu(lvb->lvb_bgrace);
-> > +		info->dqi_igrace = be32_to_cpu(lvb->lvb_igrace);
-> > +		oinfo->dqi_syncms = be32_to_cpu(lvb->lvb_syncms);
-> > +		oinfo->dqi_gi.dqi_blocks = be32_to_cpu(lvb->lvb_blocks);
-> > +		oinfo->dqi_gi.dqi_free_blk = be32_to_cpu(lvb->lvb_free_blk);
-> > +		oinfo->dqi_gi.dqi_free_entry =
-> > +					be32_to_cpu(lvb->lvb_free_entry);
-> > +	} else {
-> > +		bh = ocfs2_read_quota_block(oinfo->dqi_gqinode, 0, &status);
-> > +		if (!bh) {
-> > +			mlog_errno(status);
-> > +			goto bail;
-> > +		}
-> > +		gdinfo = (struct ocfs2_global_disk_dqinfo *)
-> > +					(bh->b_data + OCFS2_GLOBAL_INFO_OFF);
-> > +		info->dqi_bgrace = le32_to_cpu(gdinfo->dqi_bgrace);
-> > +		info->dqi_igrace = le32_to_cpu(gdinfo->dqi_igrace);
-> > +		oinfo->dqi_syncms = le32_to_cpu(gdinfo->dqi_syncms);
-> > +		oinfo->dqi_gi.dqi_blocks = le32_to_cpu(gdinfo->dqi_blocks);
-> > +		oinfo->dqi_gi.dqi_free_blk = le32_to_cpu(gdinfo->dqi_free_blk);
-> > +		oinfo->dqi_gi.dqi_free_entry =
-> > +					le32_to_cpu(gdinfo->dqi_free_entry);
-> > +		brelse(bh);
+> > On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
+> >> 
+> >> I don't know where to get PPC64 capable memtest, even if it exists the
+> >> probability of two different machines exhibiting almost the same
+> >> behaviour is rather slim. Netconsole doesn't catch anything. In fact
+> >> i just had slightly different situation where after ssh connection was
+> >> killed i was able to reconnect and look at dmesg there - nothing.
+> >> 
+> >  If you wanted to, you could get memtester from
+> > http://pyropus.ca/software/memtester/ - not as convenient as
+> > memtest86 etc (it's just a userspace task, so it can't test all the
+> > memory), but it did work on ppc64 last time I tried it (nearly 2
+> > years ago).
+> >
 > 
-> put_bh() is more efficient and modern, in the case where bh is known to
-> not be NULL.
+> Thanks for the reference, but i'm sure, now more than ever, that bad
+> memory has nothing to do with it, all signs are there that kernel is
+> confused by the way signals are (mis)used by Mono.
 
-How about __brelse()? Won't we lose the ref counting check if we go straight
-to put_bh()?
+It shouldn't be but I agree with you, it smells bad. Can you report that
+again on the linuxppc-dev@ozlabs.org mailing list ? Along with
+instructions to d/l, install & run the minimum repro-case ? I'll try to
+give it a go on different ppc64 machines as soon as I'm over my upcoming
+xmas hangover :-) If it appears to be ps3 specific, we can work with
+Geoff Levand (PS3 maintainer for Sony) to try to identify the root cause
+and fix it.
 
-
-> > +/* Lock quota info, this function expects at least shared lock on the quota file
-> > + * so that we can safely refresh quota info from disk. */
-> > +int ocfs2_qinfo_lock(struct ocfs2_mem_dqinfo *oinfo, int ex)
-> > +{
-> > +	struct ocfs2_lock_res *lockres = &oinfo->dqi_gqlock;
-> > +	struct ocfs2_super *osb = OCFS2_SB(oinfo->dqi_gi.dqi_sb);
-> > +	int level = ex ? DLM_LOCK_EX : DLM_LOCK_PR;
-> > +	int status = 0;
-> > +
-> > +	mlog_entry_void();
-> > +
-> > +	/* On RO devices, locking really isn't needed... */
-> > +	if (ocfs2_is_hard_readonly(osb)) {
-> > +		if (ex)
-> > +			status = -EROFS;
-> > +		goto bail;
-> > +	}
-> > +	if (ocfs2_mount_local(osb))
-> > +		goto bail;
-> 
-> This is not an error case?
-
-Nope, that's a short-circuit for the case where the file system is marked as
-'local only' - this no cluster locking is ever needed.
-
-> > +
-> > +	status = ocfs2_cluster_lock(osb, lockres, level, 0, 0);
-> > +	if (status < 0) {
-> > +		mlog_errno(status);
-> > +		goto bail;
-> > +	}
-> > +	if (!ocfs2_should_refresh_lock_res(lockres))
-> > +		goto bail;
-> 
-> ditto?
-
-Another shortcut - the data which some locks protect wants to be
-'refreshed', typically from lvb or disk. The lower level locking logic (heh,
-try saying that 10 times fast ;) knows when this is required, and will mark
-the lock appropriately. This is detected later with the above test and the
-lock-specific data is refreshed.
-
-I think eventually, we'll move some more of this stuff to the lower level,
-probably using callbacks in the case of lock refresh.
+Cheers,
+Ben.
 
 
-> > +ssize_t ocfs2_quota_read(struct super_block *sb, int type, char *data,
-> > +			 size_t len, loff_t off)
-> > +{
-> > +	struct ocfs2_mem_dqinfo *oinfo = sb_dqinfo(sb, type)->dqi_priv;
-> > +	struct inode *gqinode = oinfo->dqi_gqinode;
-> > +	loff_t i_size = i_size_read(gqinode);
-> > +	int offset = off & (sb->s_blocksize - 1);
-> > +	sector_t blk = off >> sb->s_blocksize_bits;
-> > +	int err = 0;
-> > +	struct buffer_head *bh;
-> > +	size_t toread, tocopy;
-> > +
-> > +	if (off > i_size)
-> > +		return 0;
-> > +	if (off + len > i_size)
-> > +		len = i_size - off;
-> > +	toread = len;
-> > +	while (toread > 0) {
-> > +		tocopy = min((size_t)(sb->s_blocksize - offset), toread);
-> 
-> min_t is preferred.
-
-Right, I'll fix that one up too.
-
-
-> > +/* Write to quotafile (we know the transaction is already started and has
-> > + * enough credits) */
-> > +ssize_t ocfs2_quota_write(struct super_block *sb, int type,
-> > +			  const char *data, size_t len, loff_t off)
-> > +{
-> > +	struct mem_dqinfo *info = sb_dqinfo(sb, type);
-> > +	struct ocfs2_mem_dqinfo *oinfo = info->dqi_priv;
-> > +	struct inode *gqinode = oinfo->dqi_gqinode;
-> > +	int offset = off & (sb->s_blocksize - 1);
-> > +	sector_t blk = off >> sb->s_blocksize_bits;
-> 
-> does ocfs2 attempt to support CONFIG_LBD=n?
-
-It should... What's the problem here?
-	--Mark
-
---
-Mark Fasheh
