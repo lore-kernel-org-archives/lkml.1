@@ -1,99 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbYLYIFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbYLYIHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbYLYIFN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 03:05:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYLYIFA
+	id S1752110AbYLYIHB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 03:07:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYLYIGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 03:05:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50180 "EHLO mx3.mail.elte.hu"
+	Thu, 25 Dec 2008 03:06:51 -0500
+Received: from mail.ukfsn.org ([77.75.108.10]:33275 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbYLYIE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 03:04:59 -0500
-Date: Thu, 25 Dec 2008 09:04:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch] Performance Counters for Linux, v5
-Message-ID: <20081225080422.GA9430@elte.hu>
-References: <20081223124058.GA11525@elte.hu> <20081225162242.50E8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081225162242.50E8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751042AbYLYIGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 03:06:50 -0500
+Date: Thu, 25 Dec 2008 08:06:47 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: [PATCH] EXT4: super.c - remove extraneous newline
+Message-ID: <20081225080647.6890d867@sauron.linicks.net>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sorry, I just realised I forgot to finish typing the correct subject
+line in my earlier mail :-)  Please ignore earlier mail with the same
+patch.
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Applies to stable 2.6.28.
 
-> Hi Ingo,
-> 
-> Currently, -tip tree can't build on my ia64 box.
-> because..
-> 
-> >  create mode 100644 Documentation/perf-counters.txt
-> >  delete mode 100644 arch/x86/include/asm/intel_arch_perfmon.h
-> >  create mode 100644 arch/x86/include/asm/perf_counter.h
-> >  create mode 100644 arch/x86/kernel/cpu/perf_counter.c
-> >  rename arch/x86/kernel/{signal_32.c => signal.c} (74%)
-> >  delete mode 100644 arch/x86/kernel/signal_64.c
-> >  create mode 100644 include/linux/perf_counter.h
-> >  create mode 100644 kernel/perf_counter.c
-> 
-> 
-> Only x86 has <asm/perf_counter.h>.
+Remove extraneous newline that creates empty print line
+in boot logs.
 
-thanks - the fix below resolves it, right?
+Signed-off-by: Nick Warne <nick@ukfsn.org>
 
-	Ingo
-
->From 26c6f31fe04454177513b8b8539e8197ff897703 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 25 Dec 2008 09:02:11 +0100
-Subject: [PATCH] perfcounters: include asm/perf_counter.h only if CONFIG_PERF_COUNTERS=y
-
-Impact: build fix on ia64
-
-KOSAKI Motohiro reported that -tip doesnt build on ia64 because
-asm/perf_counter.h only exists on x86 for now. Fix it.
-
-Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/perf_counter.h |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index ec77d16..cc3a75a 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -14,7 +14,10 @@
- #define _LINUX_PERF_COUNTER_H
+--- linux-2.6.28/fs/ext4/super.cORIG	2008-12-25
+01:35:49.156527726 +0000 +++ linux-2.6.28/fs/ext4/super.c
+2008-12-25 01:36:50.914527855 +0000 @@ -1973,7 +1973,7 @@
+ 	else
+ 		ext4_warning(sb, __func__,
+ 			"extents feature not enabled on this
+filesystem, "
+-			"use tune2fs.\n");
++			"use tune2fs.");
  
- #include <asm/atomic.h>
--#include <asm/perf_counter.h>
-+
-+#ifdef CONFIG_PERF_COUNTERS
-+# include <asm/perf_counter.h>
-+#endif
- 
- #include <linux/list.h>
- #include <linux/mutex.h>
+ 	/*
+ 	 * enable delayed allocation by default
+
+
+-- 
+Free Software Foundation Associate Member 5508
+http://linicks.net/
