@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbYLYNHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbYLYNOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752041AbYLYNHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 08:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbYLYNHU
+	id S1752026AbYLYNOT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 08:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbYLYNOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 08:07:20 -0500
-Received: from ozlabs.org ([203.10.76.45]:60452 "EHLO ozlabs.org"
+	Thu, 25 Dec 2008 08:14:07 -0500
+Received: from mta-out.inet.fi ([195.156.147.13]:49336 "EHLO jenni2.inet.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbYLYNHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 08:07:19 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [patch 0/2] stop_machine: create kstop threads only when needed
-Date: Thu, 25 Dec 2008 23:37:11 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20081222113629.080104676@de.ibm.com>
-In-Reply-To: <20081222113629.080104676@de.ibm.com>
+	id S1750799AbYLYNOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 08:14:06 -0500
+Date: Thu, 25 Dec 2008 15:14:02 +0200
+From: Sami Farin <safari-kernel@safari.iki.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Hans Lambrechts <hans.lambrechts@skynet.be>
+Subject: Re: Happy v2.6.28
+Message-ID: <20081225131402.ldo5rtovjvftgada@m.safari.iki.fi>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	Hans Lambrechts <hans.lambrechts@skynet.be>
+References: <bMLNZ-3QM-1@gated-at.bofh.it> <200812250853.mBP8rxrr004080@server.home.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812252337.11562.rusty@rustcorp.com.au>
+In-Reply-To: <200812250853.mBP8rxrr004080@server.home.lan>
+User-Agent: Mutt/1.5.18 (2008-12-16)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 December 2008 22:06:29 Heiko Carstens wrote:
-> Introduce stop_machine_create/destroy. With this interface subsystems
-> that need a non-failing stop_machine environment can create the
-> stop_machine threads before actually calling stop_machine.
-> When the threads aren't needed anymore they can be killed with
-> stop_machine_destroy again.
+On Thu, Dec 25, 2008 at 09:53:59 +0100, Hans Lambrechts wrote:
+> Dec 25 09:30:45 server kernel: Pid: 5918, comm: sendmail Tainted: G      D   
+> (2.6.28 #60)
 
-Thanks, this is straightforward and effective.
+Can you try without proprietary modules?
 
-I've applied both patches,
-Rusty.
+-- 
+Do what you love because life is too short for anything else.
+
