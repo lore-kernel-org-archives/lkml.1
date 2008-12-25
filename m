@@ -1,56 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYLYOfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbYLYOhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbYLYOfu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 09:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbYLYOfb
+	id S1752373AbYLYOhV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 09:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYLYOhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 09:35:31 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:51815 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbYLYOf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 09:35:29 -0500
-Date: Thu, 25 Dec 2008 15:35:27 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: swhiteho@redhat.com, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/7] fs/gfs2: Use DEFINE_SPINLOCK
-Message-ID: <Pine.LNX.4.64.0812251535080.22039@ask.diku.dk>
+	Thu, 25 Dec 2008 09:37:07 -0500
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:4647 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbYLYOhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 09:37:05 -0500
+Date: Thu, 25 Dec 2008 12:35:35 -0200
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: jbd2 inside a device mapper module
+Message-ID: <20081225143535.GA4127@blitiri.com.ar>
+References: <20081224211038.GT4127@blitiri.com.ar> <20081224234915.GA23723@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081224234915.GA23723@mit.edu>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Wed, Dec 24, 2008 at 06:49:15PM -0500, Theodore Tso wrote:
+> On Wed, Dec 24, 2008 at 07:10:38PM -0200, Alberto Bertogli wrote:
+> > 
+> > I'm writing a small device mapper module, and I'm interested in placing
+> > a jbd/jdb2 journal on the backing device.
+> > 
+> > I started by trying to do a __bread() manually (just for early tests)
+> > inside my map function. But it got stucked, as far as I could see,
+> > waiting for a buffer head in wait_on_buffer() IIRC (I could track it
+> > down again if it's needed). And I couldn't find why it was locked, since
+> > it was an unused loopback device, and my code didn't even deal with
+> > buffer heads.
+> 
+> I have no idea why you would need to do manual __breads().  No doubt
+> I'm missing some context here.   
 
-SPIN_LOCK_UNLOCKED is deprecated.  The following makes the change suggested
-in Documentation/spinlocks.txt
+I'm writing (just for fun and learning purposes) a device mapper module
+that stores checksums on writes and verifies them on reads. The
+integrity metadata (currently just the checksum) is interleaved in the
+backing device: one sector holding the integrity metadata for the
+following 64 data sectors.
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+The reason for the __bread() is explained below.
 
-// <smpl>
-@@
-declarer name DEFINE_SPINLOCK;
-identifier xxx_lock;
-@@
 
-- spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
-+ DEFINE_SPINLOCK(xxx_lock);
-// </smpl>
+> > Then, since I was planning on using jbd/jdb2 anyway, I decided to use it
+> > (and went for jbd2).
+> > 
+> > Now, I'm having issues with journal creation.
+> > 
+> > I tried using "mkfs.ext3 -O journal_dev", but jbd2_journal_load()
+> > complains that it can't find the journal superblock.
+> 
+> So I'll tell you how to do this via simple hard drives, and you can
+> figure out how to make it work with dm.  Note that if the journal
+> device isn't on a stand-alone spindle, it's probably not going to help
+> you.  The whole point of using an external journal device is to avoid
+> the seeking on the journal device, or to take advantage of the speed
+> of a battery-backed NVRAM device.  I'm not sure how much sense it
+> makes to use dm-based external journal device.... what exactly do you
+> hope to achieve.
+> 
+> To create an external journal device on the device /dev/sda:
+> 
+>    mke2fs -O journal_dev /dev/sda
+> 
+> To create a new filesystem on /dev/sdb1 that will use the external
+> journal found on /dev/sda:
+> 
+>    mke2fs -j -J device=/dev/sda /dev/sdb1
+> 
+> 						- Ted
+> 
+> P.S.   All of this is in the mke2fs man page....
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Thanks. I've found and tried that (that's what I meant with the
+paragraph you quote), but I couldn't make it work.
 
----
-diff -u -p a/fs/gfs2/glock.c b/fs/gfs2/glock.c
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -65,7 +65,7 @@ static struct dentry *gfs2_root;
- static struct workqueue_struct *glock_workqueue;
- static LIST_HEAD(lru_list);
- static atomic_t lru_count = ATOMIC_INIT(0);
--static spinlock_t lru_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_SPINLOCK(lru_lock);
- 
- #define GFS2_GL_HASH_SHIFT      15
- #define GFS2_GL_HASH_SIZE       (1 << GFS2_GL_HASH_SHIFT)
+I'll try to make my intentions more clear, but please let me know if I'm
+not explaining myself.
+
+
+For each write on the dm device I should not only write the data in the
+backing device, but also upgrade the corresponding integrity metadata.
+
+So, to upgrade the metadata, I should first read that sector from the
+backing device, then update it, and finally write it back. As an early
+experiment I began to do the first part without caring for the atomicity
+of the update. I tried __bread() (just as an experiment, because I've
+been using dm-io to do the reads so far) without success.
+
+
+I then thought of giving jbd2 a try, with the final intention of using
+it to update the metadata and the data in an atomic way. I'd devote some
+space at the beginning of the backing device for the journal, and use it
+internally to that purpose (so it has nothing to do with ext3/4).
+
+The first problem I stumbled upon was that jbd2_journal_create() doesn't
+like journals initialized using jbd2_journal_init_dev() (because it has
+no j_inode). I had two choices: or try to create the journal some other
+way, or remove the j_inode test in jbd2_journal_create().
+
+I suspected the test was there for a reason, but I couldn't find it from
+a quick look, so I tried it anyway, which resulted in the warning from
+the first email.
+
+Then I tried to create the journal using mke2fs as you described, but
+jbd2_journal_load() fails when trying to load it.
+
+
+To summarize, these are my questions:
+
+ - Why does __bread() gets stucked when called from inside a dm map
+   function? It looks like it's waiting on a buffer_head, but why?
+ - What is the reason behind the j_inode check in jbd2_journal_create()?
+ - Does mke2fs -O journal_dev creates a journal that jbd2_journal_load()
+   is supposed to read without any knowledge of ext2/3/4 stuff? If not,
+   how can I create such a journal? I'll be looking at the e2fsprogs
+   code for the answer to this question later today (I haven't looked at
+   it yet).
+
+Obviously, I'm not expected long detailed answers; any tip on where I
+can find them would be greatly appreciated.
+
+Thanks a lot,
+		Alberto
+
