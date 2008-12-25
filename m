@@ -1,126 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbYLZA7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYLZBJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752987AbYLZA7o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 19:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYLZA7g
+	id S1752756AbYLZBJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 20:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYLZBJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 19:59:36 -0500
-Received: from ozlabs.org ([203.10.76.45]:60051 "EHLO ozlabs.org"
+	Thu, 25 Dec 2008 20:09:06 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:39675 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752474AbYLZA7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 19:59:35 -0500
+	id S1752063AbYLZBJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 20:09:03 -0500
+Date: Thu, 25 Dec 2008 11:23:32 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, akpm@linux-foundation.org, ralf@linux-mips.org,
+       kernel@wantstofly.org, hskinnemoen@atmel.com, cooloney@kernel.org,
+       tony.luck@intel.com, geert@linux-m68k.org, zippel@linux-m68k.org,
+       jwboyer@linux.vnet.ibm.com, mporter@kernel.crashing.org,
+       grant.likely@secretlab.ca, paulus@samba.org, benh@kernel.crashing.org,
+       dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
+       lethal@linux-sh.org, hpa@zytor.com
+Subject: Re: [PATCH -tip] Switch arm defconfig files from
+	CONFIG_CLASSIC_RCU to CONFIG_TREE_RCU.
+Message-ID: <20081225192332.GI6912@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com> <12299911471985-git-send-email-paulmck@linux.vnet.ibm.com> <20081223142542.GC29151@elte.hu> <20081225083611.GA14968@elte.hu> <20081225093301.GB27896@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18772.11376.339295.42622@cargo.ozlabs.ibm.com>
-Date: Fri, 26 Dec 2008 11:59:28 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chandru <chandru@in.ibm.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-In-Reply-To: <20081224233536.b067c9da.akpm@linux-foundation.org>
-References: <200812241325.49404.chandru@in.ibm.com>
-	<20081224233536.b067c9da.akpm@linux-foundation.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20081225093301.GB27896@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
+On Thu, Dec 25, 2008 at 10:33:01AM +0100, Sam Ravnborg wrote:
+> On Thu, Dec 25, 2008 at 09:36:11AM +0100, Ingo Molnar wrote:
+> > 
+> > below is the fix for another small buglet that hits architectures that do 
+> > not include kernel/Kconfig.preempt.
+> 
+> What is needed to let all architectures include Kconfig.preempt?
+> We should not advertise preemption if not supported,
+> but we could do this by a simple Kconfig symbol:
+> 
+> config HAVE_PREEMPT
+> 	bool
+> 
+> And let all architectures that supports preemption do:
+> 
+> config "ARCH"
+> 	select HAVE_PREEMPT
+> 
+> But maybe there is a simpler solution
 
-> On Wed, 24 Dec 2008 13:25:49 +0530 Chandru <chandru@in.ibm.com> wrote:
-> 
-> > On a ppc machine booting linux-2.6.28-rc9 with crashkernel=256M@32M boot 
-> > parameter causes the kernel to panic while booting. __Following are the console 
-> > messages...
-> 
-> - Please put [patch] in the Subject: line of patches
-> 
-> - Please choose a suitable title, as per
->   Documentation/SubmittingPatches, section 15.
-> 
-> - Please cc suitable mailing lists and maintainers on bug reports and
->   on patches.
+The idea being to make things like PREEMPT then depend on HAVE_PREEMPT?
 
-Dave Hansen was working on this code recently, and this looks a bit
-similar to some changes he was making.  Dave, what's your opinion on
-this patch?
+Seems reasonable to me, but I cannot claim to understand the
+relationship of Kconfig and the various arches very well.
 
-Paul.
-
-> From: Chandru <chandru@in.ibm.com>
-> 
-> When booted with crashkernel=224M@32M or any memory size less than this,
-> the system boots properly.  The following was the observation..  The
-> system comes up with two nodes (0-256M and 256M-4GB).  _The crashkernel
-> memory reservation spans across these two nodes.  _The
-> mark_reserved_regions_for_nid() in arch/powerpc/mm/numa.c resizes the
-> reserved part of the memory within it as:
-> 
-> _ _ _ _ _ _ if (end_pfn > node_ar.end_pfn)
-> _ _ _ _ _ _ _ _ reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
-> _ _ _ _ _ _ _ _ _ _ - (start_pfn << PAGE_SHIFT);
-> 
-> 
-> but the reserve_bootmem_node() in mm/bootmem.c raises the pfn value of end 
-> 
-> _ _ end = PFN_UP(physaddr + size);
-> 
-> This causes end to get a value past the last page in the 0-256M node. 
-> _Again when reserve_bootmem_node() returns,
-> _mark_reserved_regions_for_nid() loops around to set the rest of the
-> crashkernel memory in the next node as reserved.  _ It references
-> NODE_DATA(node_ar.nid) and this causes another 'Oops: kernel access of bad
-> area' problem.  The following changes made the system to boot with any
-> amount of crashkernel memory size.
-> 
-> Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/powerpc/mm/numa.c |    7 ++++---
->  mm/bootmem.c           |    4 ++++
->  2 files changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff -puN arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting arch/powerpc/mm/numa.c
-> --- a/arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting
-> +++ a/arch/powerpc/mm/numa.c
-> @@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
->  				  start_pfn, end_pfn);
->  
->  		free_bootmem_with_active_regions(nid, end_pfn);
-> +	}
-> +
-> +	for_each_online_node(nid) {
->  		/*
-> -		 * Be very careful about moving this around.  Future
-> -		 * calls to careful_allocation() depend on this getting
-> -		 * done correctly.
-> +		 * Be very careful about moving this around.
->  		 */
->  		mark_reserved_regions_for_nid(nid);
->  		sparse_memory_present_with_active_regions(nid);
-> diff -puN mm/bootmem.c~2628-rc9-panics-with-crashkernel=256m-while-booting mm/bootmem.c
-> --- a/mm/bootmem.c~2628-rc9-panics-with-crashkernel=256m-while-booting
-> +++ a/mm/bootmem.c
-> @@ -375,10 +375,14 @@ int __init reserve_bootmem_node(pg_data_
->  				 unsigned long size, int flags)
->  {
->  	unsigned long start, end;
-> +	bootmem_data_t *bdata = pgdat->bdata;
->  
->  	start = PFN_DOWN(physaddr);
->  	end = PFN_UP(physaddr + size);
->  
-> +	if (end > bdata->node_low_pfn)
-> +		end = bdata->node_low_pfn;
-> +
->  	return mark_bootmem_node(pgdat->bdata, start, end, 1, flags);
->  }
->  
-> _
+							Thanx, Paul
