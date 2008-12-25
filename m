@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752066AbYLYD22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752147AbYLYDs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752066AbYLYD22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 22:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYLYD2T
+	id S1752147AbYLYDs3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 22:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYLYDsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 22:28:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:38428 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbYLYD2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 22:28:19 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: linux-next: parsing mem=700M broken
-Date: Thu, 25 Dec 2008 13:58:12 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils> <200812241808.16195.rusty@rustcorp.com.au> <Pine.LNX.4.64.0812241437230.15556@blonde.anvils>
-In-Reply-To: <Pine.LNX.4.64.0812241437230.15556@blonde.anvils>
+	Wed, 24 Dec 2008 22:48:21 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49385 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751481AbYLYDsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 22:48:21 -0500
+Message-ID: <4953023D.4010401@cn.fujitsu.com>
+Date: Thu, 25 Dec 2008 11:47:09 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] cgroups: fix a race between cgroup_clone and umount
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812251358.13635.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 December 2008 01:14:35 Hugh Dickins wrote:
-> On Wed, 24 Dec 2008, Rusty Russell wrote:
-> > mem= is actually easy, memmap= is harder.  This is tested and pushed.
-> 
-> Thanks, that gets my "mem=700M" respected on x86_32 and x86_64.
-> But (of course: it's a patch to arch/x86) doesn't help at all on
-> ppc64; and I presume other architectures also remain broken...
+The race is calling cgroup_clone() while umounting the ns cgroup subsys,
+and thus cgroup_clone() might access invalid cgroup_fs, or kill_sb() is
+called after cgroup_clone() created a new dir in it.
 
-No, the problem is that early_param() get parsed *earlier* with these
-changes.  x86 relied on the e820 map already being set up.  Most archs
-(like powerpc) just set a "memory_limit" and handle it later; this
-is in fact how the vast majority of early_param() work.
+The BUG I triggered is BUG_ON(root->number_of_cgroups != 1);
 
-This cleanup is getting hairier, however we should see it as a chance
-to clean some of this code too I guess...
+------------[ cut here ]------------
+kernel BUG at kernel/cgroup.c:1093!
+invalid opcode: 0000 [#1] SMP
+...
+Process umount (pid: 5177, ti=e411e000 task=e40c4670 task.ti=e411e000)
+...
+Call Trace:
+ [<c0493df7>] ? deactivate_super+0x3f/0x51
+ [<c04a3600>] ? mntput_no_expire+0xb3/0xdd
+ [<c04a3ab2>] ? sys_umount+0x265/0x2ac
+ [<c04a3b06>] ? sys_oldumount+0xd/0xf
+ [<c0403911>] ? sysenter_do_call+0x12/0x31
+...
+EIP: [<c0456e76>] cgroup_kill_sb+0x23/0xe0 SS:ESP 0068:e411ef2c
+---[ end trace c766c1be3bf944ac ]---
 
-Thanks,
-Rusty.
+CC: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+
+affected kernel: 2.6.24 to 2.6.28
+
+---
+ kernel/cgroup.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 2606d0f..c882385 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2942,7 +2942,11 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
+ 	parent = task_cgroup(tsk, subsys->subsys_id);
+ 
+ 	/* Pin the hierarchy */
+-	atomic_inc(&parent->root->sb->s_active);
++	if (!atomic_inc_not_zero(&parent->root->sb->s_active)) {
++		/* We race with the final deactivate_super() */
++		mutex_unlock(&cgroup_mutex);
++		return 0;
++	}
+ 
+ 	/* Keep the cgroup alive */
+ 	get_css_set(cg);
+-- 
+1.5.4.rc3
