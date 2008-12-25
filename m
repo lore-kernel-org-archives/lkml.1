@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752363AbYLYUKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbYLYUKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752363AbYLYUKR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 15:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYLYUKD
+	id S1752671AbYLYUKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 15:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYLYUKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 15:10:03 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55638 "EHLO mgw2.diku.dk"
+	Thu, 25 Dec 2008 15:10:35 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:55644 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbYLYUKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 15:10:01 -0500
-Date: Thu, 25 Dec 2008 21:09:57 +0100 (CET)
+	id S1751996AbYLYUKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 15:10:33 -0500
+Date: Thu, 25 Dec 2008 21:10:30 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: pete@sensoray.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+To: gregkh@suse.de, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/2] drivers/staging/go7007: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0812252109230.31651@ask.diku.dk>
+Subject: [PATCH 2/2] drivers/staging/comedi: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0812252109580.31651@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -65,18 +65,95 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/staging/go7007/s2250-board.c           |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/staging/comedi/drivers/usbdux.c     |    6 +++++-
+ drivers/staging/comedi/drivers/usbduxfast.c |    6 +++++-
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/go7007/s2250-board.c b/drivers/staging/go7007/s2250-board.c
-index fb6845e..a11ce63 100644
---- a/drivers/staging/go7007/s2250-board.c
-+++ b/drivers/staging/go7007/s2250-board.c
-@@ -166,6 +166,7 @@ static int write_reg(struct i2c_client *client, u8 reg, u8 value)
+diff -u -p a/drivers/staging/comedi/drivers/usbduxfast.c b/drivers/staging/comedi/drivers/usbduxfast.c
+--- a/drivers/staging/comedi/drivers/usbduxfast.c
++++ b/drivers/staging/comedi/drivers/usbduxfast.c
+@@ -1298,7 +1298,7 @@ static int read_firmware(usbduxfastsub_t
+ {
+ 	int i = 0;
+ 	unsigned char *fp = (char *)firmwarePtr;
+-	unsigned char *firmwareBinary = NULL;
++	unsigned char *firmwareBinary;
+ 	int res = 0;
+ 	int maxAddr = 0;
  
- 	if (down_interruptible(&usb->i2c_lock) != 0) {
- 		printk(KERN_INFO "i2c lock failed\n");
-+		kfree(buf);
- 		return -EINTR;
- 	}
- 	rc = go7007_usb_vendor_request(go, 0x55, dev_addr,
+@@ -1322,6 +1322,7 @@ static int read_firmware(usbduxfastsub_t
+ 			j++;
+ 			if (j >= sizeof(buf)) {
+ 				printk("comedi_: usbduxfast: bogus firmware file!\n");
++				kfree(firmwareBinary);
+ 				return -1;
+ 			}
+ 		}
+@@ -1340,6 +1341,7 @@ static int read_firmware(usbduxfastsub_t
+ 
+ 		if (buf[0] != ':') {
+ 			printk("comedi_: usbduxfast: upload: not an ihex record: %s", buf);
++			kfree(firmwareBinary);
+ 			return -EFAULT;
+ 		}
+ 
+@@ -1355,6 +1357,7 @@ static int read_firmware(usbduxfastsub_t
+ 
+ 		if (maxAddr >= FIRMWARE_MAX_LEN) {
+ 			printk("comedi_: usbduxfast: firmware upload goes beyond FX2 RAM boundaries.");
++			kfree(firmwareBinary);
+ 			return -EFAULT;
+ 		}
+ 		//printk("comedi_: usbduxfast: off=%x, len=%x:",off,len);
+@@ -1369,6 +1372,7 @@ static int read_firmware(usbduxfastsub_t
+ 
+ 		if (type != 0) {
+ 			printk("comedi_: usbduxfast: unsupported record type: %u\n", type);
++			kfree(firmwareBinary);
+ 			return -EFAULT;
+ 		}
+ 
+diff -u -p a/drivers/staging/comedi/drivers/usbdux.c b/drivers/staging/comedi/drivers/usbdux.c
+--- a/drivers/staging/comedi/drivers/usbdux.c
++++ b/drivers/staging/comedi/drivers/usbdux.c
+@@ -2298,7 +2298,7 @@ static int read_firmware(struct usbduxsu
+ 	struct device *dev = &usbduxsub->interface->dev;
+ 	int i = 0;
+ 	unsigned char *fp = (char *)firmwarePtr;
+-	unsigned char *firmwareBinary = NULL;
++	unsigned char *firmwareBinary;
+ 	int res = 0;
+ 	int maxAddr = 0;
+ 
+@@ -2322,6 +2322,7 @@ static int read_firmware(struct usbduxsu
+ 			j++;
+ 			if (j >= sizeof(buf)) {
+ 				dev_err(dev, "comedi_: bogus firmware file!\n");
++				kfree(firmwareBinary);
+ 				return -1;
+ 			}
+ 		}
+@@ -2344,6 +2345,7 @@ static int read_firmware(struct usbduxsu
+ 		if (buf[0] != ':') {
+ 			dev_err(dev, "comedi_: upload: not an ihex record: %s",
+ 				buf);
++			kfree(firmwareBinary);
+ 			return -EFAULT;
+ 		}
+ 
+@@ -2360,6 +2362,7 @@ static int read_firmware(struct usbduxsu
+ 		if (maxAddr >= FIRMWARE_MAX_LEN) {
+ 			dev_err(dev, "comedi_: firmware upload goes "
+ 				"beyond FX2 RAM boundaries.\n");
++			kfree(firmwareBinary);
+ 			return -EFAULT;
+ 		}
+ 		/* dev_dbg(dev, "comedi_: off=%x, len=%x:\n", off, len); */
+@@ -2375,6 +2378,7 @@ static int read_firmware(struct usbduxsu
+ 		if (type != 0) {
+ 			dev_err(dev, "comedi_: unsupported record type: %u\n",
+ 				type);
++			kfree(firmwareBinary);
+ 			return -EFAULT;
+ 		}
+ 
