@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275AbYLYPpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbYLYPrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752275AbYLYPpc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 10:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYLYPpY
+	id S1752475AbYLYPrS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 10:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYLYPrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 10:45:24 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:54259 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751938AbYLYPpX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 10:45:23 -0500
-Date: Thu, 25 Dec 2008 18:45:21 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: linux-kernel@vger.kernel.org, Andy Green <andy@openmoko.com>,
-       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
-       Samuel Ortiz <samuel@sortiz.org>
-Subject: Re: [PATCH V2 5/7] power_supply: PCF50633 battery charger driver
-Message-ID: <20081225154521.GA23659@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081218055618.31696.65002.stgit@cff.thadambail> <20081218055744.31696.14523.stgit@cff.thadambail>
+	Thu, 25 Dec 2008 10:47:03 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44580 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751950AbYLYPrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 10:47:01 -0500
+Message-ID: <4953AAE5.4000708@redhat.com>
+Date: Thu, 25 Dec 2008 17:46:45 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20081218055744.31696.14523.stgit@cff.thadambail>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Joerg Roedel <joerg.roedel@amd.com>,
+       Benjamin Serebrin <benjamin.serebrin@amd.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org,
+       Alexander Graf <agraf@suse.de>
+Subject: Re: kvm vmload/vmsave vs tss.ist
+References: <49539FD0.7070103@redhat.com> <20081225151757.GA25117@elte.hu>
+In-Reply-To: <20081225151757.GA25117@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 11:27:45AM +0530, Balaji Rao wrote:
-> Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-> Cc: Andy Green <andy@openmoko.com>
-> Cc: Anton Vorontsov <cbou@mail.ru>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> ---
+Ingo Molnar wrote:
+> i think we should actually do #1 unconditionally.
+>
+> ISTs are bad for the native kernel too. They have various nasty 
+> complications in the stack walker (and hence they _reduce_ reliability in 
+> practice), and they are non-preemptible as well. Plus we have the 
+> maximum-stack-footprint ftrace plugin now, which can remove any perception 
+> about how bad the worst-case stack footprint is in practice.
+>
+> If it ever becomes an issue we could also soft-switch to a larger (per 
+> CPU) exception stack from the exception handlers themselves. The 
+> architectural stack footprint of the various critical exceptions are 
+> calculatable and low - so we could switch away and get almost the kind of 
+> separation that ISTs give. There's no deep reason to actually make use of 
+> hw switched ISTs.
+>
+> So feel free to send a patch that just standardizes the critical 
+> exceptions to use the regular kernel stack. (I havent actually tried this 
+> but it should be relatively simple to implement. Roadblocks are possible.)
+>   
 
-Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
+Certainly.  There is provision for a debug stack that can be larger than 
+the normal exception stack.  This is used for vectors 1 and 3.  If we 
+wish to preserve this, we need to to manual stack switching.
 
-(As the patch depends on MFD parts, I assume Samuel will merge it
-into linux-mfd.)
-
->  drivers/power/Kconfig            |    6 +
->  drivers/power/Makefile           |    2 
->  drivers/power/pcf50633-charger.c |  358 ++++++++++++++++++++++++++++++++++++++
->  include/linux/mfd/pcf50633/mbc.h |  134 ++++++++++++++
->  4 files changed, 500 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/power/pcf50633-charger.c
->  create mode 100644 include/linux/mfd/pcf50633/mbc.h
-[...]
+Currently DEBUG_STKSZ is 8K, the same as the normal stack (compared to 
+4K for the other execption stacks).  Do we need to implement stack 
+switching for debug vectors?
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+error compiling committee.c: too many arguments to function
+
