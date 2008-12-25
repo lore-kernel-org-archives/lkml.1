@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbYLYSJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbYLYSKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753789AbYLYSJc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:09:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYLYSFW
+	id S1752657AbYLYSKN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYLYSFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:05:22 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33729 "EHLO mx2.suse.de"
+	Thu, 25 Dec 2008 13:05:24 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60643 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752685AbYLYSFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:05:15 -0500
+	id S1752653AbYLYSFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 13:05:18 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 12/35] ocfs2: Pull ocfs2_xattr_value_buf up into ocfs2_xattr_value_truncate().
-Date: Thu, 25 Dec 2008 10:04:27 -0800
-Message-Id: <1230228290-22803-13-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 14/35] ocfs2: Pass value buf to ocfs2_xattr_update_entry().
+Date: Thu, 25 Dec 2008 10:04:29 -0800
+Message-Id: <1230228290-22803-15-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
 References: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
@@ -25,140 +25,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-Place an ocfs2_xattr_value_buf in ocfs2_xattr_value_truncate() and pass
-it down to ocfs2_xattr_shrink_size().  We can also pass it into
-ocfs2_xattr_extend_allocation(), replacing its ocfs2_xattr_value_buf.
+ocfs2_xattr_update_entry() updates the entry portion of an xattr buffer.
+This can be part of multiple metadata block types, so pass the buffer in
+via an ocfs2_xattr_value_buf.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   41 +++++++++++++++++------------------------
- 1 files changed, 17 insertions(+), 24 deletions(-)
+ fs/ocfs2/xattr.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 3b059cf..4ce8019 100644
+index 409f9ee..6a05612 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -573,34 +573,28 @@ int ocfs2_calc_xattr_init(struct inode *dir,
- 
- static int ocfs2_xattr_extend_allocation(struct inode *inode,
- 					 u32 clusters_to_add,
--					 struct buffer_head *xattr_bh,
--					 struct ocfs2_xattr_value_root *xv,
-+					 struct ocfs2_xattr_value_buf *vb,
- 					 struct ocfs2_xattr_set_ctxt *ctxt)
+@@ -1282,12 +1282,13 @@ static int ocfs2_xattr_update_entry(struct inode *inode,
+ 				    handle_t *handle,
+ 				    struct ocfs2_xattr_info *xi,
+ 				    struct ocfs2_xattr_search *xs,
++				    struct ocfs2_xattr_value_buf *vb,
+ 				    size_t offs)
  {
- 	int status = 0;
- 	handle_t *handle = ctxt->handle;
- 	enum ocfs2_alloc_restarted why;
- 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
--	struct ocfs2_xattr_value_buf vb = {
--		.vb_bh	= xattr_bh,
--		.vb_xv = xv,
--		.vb_access = ocfs2_journal_access,
--	};
--	u32 prev_clusters, logical_start = le32_to_cpu(vb.vb_xv->xr_clusters);
-+	u32 prev_clusters, logical_start = le32_to_cpu(vb->vb_xv->xr_clusters);
- 	struct ocfs2_extent_tree et;
- 
- 	mlog(0, "(clusters_to_add for xattr= %u)\n", clusters_to_add);
- 
--	ocfs2_init_xattr_value_extent_tree(&et, inode, &vb);
-+	ocfs2_init_xattr_value_extent_tree(&et, inode, vb);
- 
--	status = vb.vb_access(handle, inode, vb.vb_bh,
-+	status = vb->vb_access(handle, inode, vb->vb_bh,
- 			      OCFS2_JOURNAL_ACCESS_WRITE);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto leave;
- 	}
- 
--	prev_clusters = le32_to_cpu(vb.vb_xv->xr_clusters);
-+	prev_clusters = le32_to_cpu(vb->vb_xv->xr_clusters);
- 	status = ocfs2_add_clusters_in_btree(osb,
- 					     inode,
- 					     &logical_start,
-@@ -616,13 +610,13 @@ static int ocfs2_xattr_extend_allocation(struct inode *inode,
- 		goto leave;
- 	}
- 
--	status = ocfs2_journal_dirty(handle, vb.vb_bh);
-+	status = ocfs2_journal_dirty(handle, vb->vb_bh);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto leave;
- 	}
- 
--	clusters_to_add -= le32_to_cpu(vb.vb_xv->xr_clusters) - prev_clusters;
-+	clusters_to_add -= le32_to_cpu(vb->vb_xv->xr_clusters) - prev_clusters;
- 
- 	/*
- 	 * We should have already allocated enough space before the transaction,
-@@ -680,18 +674,12 @@ out:
- static int ocfs2_xattr_shrink_size(struct inode *inode,
- 				   u32 old_clusters,
- 				   u32 new_clusters,
--				   struct buffer_head *root_bh,
--				   struct ocfs2_xattr_value_root *xv,
-+				   struct ocfs2_xattr_value_buf *vb,
- 				   struct ocfs2_xattr_set_ctxt *ctxt)
- {
- 	int ret = 0;
- 	u32 trunc_len, cpos, phys_cpos, alloc_size;
- 	u64 block;
--	struct ocfs2_xattr_value_buf vb = {
--		.vb_bh = root_bh,
--		.vb_xv = xv,
--		.vb_access = ocfs2_journal_access,
--	};
- 
- 	if (old_clusters <= new_clusters)
- 		return 0;
-@@ -701,7 +689,7 @@ static int ocfs2_xattr_shrink_size(struct inode *inode,
- 	while (trunc_len) {
- 		ret = ocfs2_xattr_get_clusters(inode, cpos, &phys_cpos,
- 					       &alloc_size,
--					       &vb.vb_xv->xr_list);
-+					       &vb->vb_xv->xr_list);
- 		if (ret) {
- 			mlog_errno(ret);
- 			goto out;
-@@ -710,7 +698,7 @@ static int ocfs2_xattr_shrink_size(struct inode *inode,
- 		if (alloc_size > trunc_len)
- 			alloc_size = trunc_len;
- 
--		ret = __ocfs2_remove_xattr_range(inode, &vb, cpos,
-+		ret = __ocfs2_remove_xattr_range(inode, vb, cpos,
- 						 phys_cpos, alloc_size,
- 						 ctxt);
- 		if (ret) {
-@@ -738,6 +726,11 @@ static int ocfs2_xattr_value_truncate(struct inode *inode,
  	int ret;
- 	u32 new_clusters = ocfs2_clusters_for_bytes(inode->i_sb, len);
- 	u32 old_clusters = le32_to_cpu(xv->xr_clusters);
-+	struct ocfs2_xattr_value_buf vb = {
-+		.vb_bh = root_bh,
-+		.vb_xv = xv,
-+		.vb_access = ocfs2_journal_access,
-+	};
  
- 	if (new_clusters == old_clusters)
- 		return 0;
-@@ -745,11 +738,11 @@ static int ocfs2_xattr_value_truncate(struct inode *inode,
- 	if (new_clusters > old_clusters)
- 		ret = ocfs2_xattr_extend_allocation(inode,
- 						    new_clusters - old_clusters,
--						    root_bh, xv, ctxt);
-+						    &vb, ctxt);
- 	else
- 		ret = ocfs2_xattr_shrink_size(inode,
- 					      old_clusters, new_clusters,
--					      root_bh, xv, ctxt);
-+					      &vb, ctxt);
+-	ret = ocfs2_journal_access(handle, inode, xs->xattr_bh,
+-				   OCFS2_JOURNAL_ACCESS_WRITE);
++	ret = vb->vb_access(handle, inode, vb->vb_bh,
++			    OCFS2_JOURNAL_ACCESS_WRITE);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+@@ -1301,7 +1302,7 @@ static int ocfs2_xattr_update_entry(struct inode *inode,
+ 		ocfs2_xattr_set_local(xs->here, 0);
+ 	ocfs2_xattr_hash_entry(inode, xs->header, xs->here);
  
- 	return ret;
- }
+-	ret = ocfs2_journal_dirty(handle, xs->xattr_bh);
++	ret = ocfs2_journal_dirty(handle, vb->vb_bh);
+ 	if (ret < 0)
+ 		mlog_errno(ret);
+ out:
+@@ -1345,7 +1346,7 @@ static int ocfs2_xattr_set_value_outside(struct inode *inode,
+ 		mlog_errno(ret);
+ 		return ret;
+ 	}
+-	ret = ocfs2_xattr_update_entry(inode, ctxt->handle, xi, xs, offs);
++	ret = ocfs2_xattr_update_entry(inode, ctxt->handle, xi, xs, &vb, offs);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		return ret;
+@@ -1574,6 +1575,7 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
+ 							       handle,
+ 							       xi,
+ 							       xs,
++							       &vb,
+ 							       offs);
+ 				if (ret < 0) {
+ 					mlog_errno(ret);
 -- 
 1.5.6
 
