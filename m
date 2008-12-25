@@ -1,27 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752353AbYLYIHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbYLYILf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752353AbYLYIHz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 03:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYLYIHr
+	id S1752187AbYLYILf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 03:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYLYIL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 03:07:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35409 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750912AbYLYIHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 03:07:47 -0500
-Date: Thu, 25 Dec 2008 00:07:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chandru <chandru@in.ibm.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Message-Id: <20081225000735.4dd4e802.akpm@linux-foundation.org>
-In-Reply-To: <20081224233536.b067c9da.akpm@linux-foundation.org>
-References: <200812241325.49404.chandru@in.ibm.com>
-	<20081224233536.b067c9da.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 25 Dec 2008 03:11:26 -0500
+Received: from mail.ukfsn.org ([77.75.108.10]:41069 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750948AbYLYILZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 03:11:25 -0500
+Date: Thu, 25 Dec 2008 08:11:20 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] EXT4: super.c - remove extraneous newline
+Message-ID: <20081225081120.3100c23e@sauron.linicks.net>
+In-Reply-To: <20081225080647.6890d867@sauron.linicks.net>
+References: <20081225080647.6890d867@sauron.linicks.net>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,92 +24,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Dec 2008 23:35:36 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 25 Dec 2008 08:06:47 +0000
+Nick Warne <nick@ukfsn.org> wrote:
 
-> - Please put [patch] in the Subject: line of patches
+> Sorry, I just realised I forgot to finish typing the correct subject
+> line in my earlier mail :-)  Please ignore earlier mail with the same
+> patch.
 > 
-> - Please choose a suitable title, as per
->   Documentation/SubmittingPatches, section 15.
+> Applies to stable 2.6.28.
 > 
-> - Please cc suitable mailing lists and maintainers on bug reports and
->   on patches.
+> Remove extraneous newline that creates empty print line
+> in boot logs.
+> 
+> Signed-off-by: Nick Warne <nick@ukfsn.org>
+> 
+> --- linux-2.6.28/fs/ext4/super.cORIG	2008-12-25
+> 01:35:49.156527726 +0000 +++ linux-2.6.28/fs/ext4/super.c
+> 2008-12-25 01:36:50.914527855 +0000 @@ -1973,7 +1973,7 @@
+>  	else
+>  		ext4_warning(sb, __func__,
+>  			"extents feature not enabled on this
+> filesystem, "
+> -			"use tune2fs.\n");
+> +			"use tune2fs.");
+>  
+>  	/*
+>  	 * enable delayed allocation by default
+> 
+Sigh... this is mangled.  Sorry for the noise :-(
 
-Also the patch was wordwrapped and the changelog was filled with weird
-UTF8 characters.
+Applies to stable 2.6.28.
 
-I think I have it all cleaned up now.
+Remove extraneous newline that creates empty print line
+in boot logs.
 
+Signed-off-by: Nick Warne <nick@ukfsn.org>
 
-From: Chandru <chandru@in.ibm.com>
-
-When booted with crashkernel=224M@32M or any memory size less than this,
-the system boots properly.  The following was the observation..  The
-system comes up with two nodes (0-256M and 256M-4GB).  The crashkernel
-memory reservation spans across these two nodes.  The
-mark_reserved_regions_for_nid() in arch/powerpc/mm/numa.c resizes the
-reserved part of the memory within it as:
-
-	if (end_pfn > node_ar.end_pfn)
-		reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
-				- (start_pfn << PAGE_SHIFT);
-
-
-but the reserve_bootmem_node() in mm/bootmem.c raises the pfn value of end 
-
-	end = PFN_UP(physaddr + size);
-
-This causes end to get a value past the last page in the 0-256M node. 
-Again when reserve_bootmem_node() returns, mark_reserved_regions_for_nid()
-loops around to set the rest of the crashkernel memory in the next node as
-reserved.  It references NODE_DATA(node_ar.nid) and this causes another
-'Oops: kernel access of bad area' problem.  The following changes made the
-system to boot with any amount of crashkernel memory size.
-
-Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/powerpc/mm/numa.c |    7 ++++---
- mm/bootmem.c           |    4 ++++
- 2 files changed, 8 insertions(+), 3 deletions(-)
-
-diff -puN arch/powerpc/mm/numa.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes arch/powerpc/mm/numa.c
---- a/arch/powerpc/mm/numa.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes
-+++ a/arch/powerpc/mm/numa.c
-@@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
- 				  start_pfn, end_pfn);
+--- linux-2.6.28/fs/ext4/super.cORIG	2008-12-25 01:35:49.156527726 +0000
++++ linux-2.6.28/fs/ext4/super.c	2008-12-25 01:36:50.914527855 +0000
+@@ -1973,7 +1973,7 @@
+ 	else
+ 		ext4_warning(sb, __func__,
+ 			"extents feature not enabled on this filesystem, "
+-			"use tune2fs.\n");
++			"use tune2fs.");
  
- 		free_bootmem_with_active_regions(nid, end_pfn);
-+	}
-+
-+	for_each_online_node(nid) {
- 		/*
--		 * Be very careful about moving this around.  Future
--		 * calls to careful_allocation() depend on this getting
--		 * done correctly.
-+		 * Be very careful about moving this around.
- 		 */
- 		mark_reserved_regions_for_nid(nid);
- 		sparse_memory_present_with_active_regions(nid);
-diff -puN mm/bootmem.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes mm/bootmem.c
---- a/mm/bootmem.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes
-+++ a/mm/bootmem.c
-@@ -375,10 +375,14 @@ int __init reserve_bootmem_node(pg_data_
- 				 unsigned long size, int flags)
- {
- 	unsigned long start, end;
-+	bootmem_data_t *bdata = pgdat->bdata;
- 
- 	start = PFN_DOWN(physaddr);
- 	end = PFN_UP(physaddr + size);
- 
-+	if (end > bdata->node_low_pfn)
-+		end = bdata->node_low_pfn;
-+
- 	return mark_bootmem_node(pgdat->bdata, start, end, 1, flags);
- }
- 
-_
+ 	/*
+ 	 * enable delayed allocation by default
 
+
+-- 
+Free Software Foundation Associate Member 5508
+http://linicks.net/
