@@ -1,196 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752429AbYLYPxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbYLYQBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752429AbYLYPxg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 10:53:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYLYPx1
+	id S1752448AbYLYQBW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 11:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYLYQBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 10:53:27 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:43881 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751938AbYLYPxZ (ORCPT
+	Thu, 25 Dec 2008 11:01:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:32453 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751938AbYLYQBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 10:53:25 -0500
-Date: Thu, 25 Dec 2008 10:52:48 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Alberto Bertogli <albertito@blitiri.com.ar>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: jbd2 inside a device mapper module
-Message-ID: <20081225155248.GJ9871@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alberto Bertogli <albertito@blitiri.com.ar>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dm-devel@redhat.com
-References: <20081224211038.GT4127@blitiri.com.ar> <20081224234915.GA23723@mit.edu> <20081225143535.GA4127@blitiri.com.ar>
+	Thu, 25 Dec 2008 11:01:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=I0XNimRxmpRqFmUgk+CQ5DEOvATcnz20FUH5H77dqkU0eSVrVWjmip3bVvY0kNViji
+         89kc/5n08FHL8G6pbcPYBZ7b+ky9uqTARS11MARIVE1ugvS31ZC9nJfESZ8voHDcvdZ3
+         8ggT1HfK4bWDpQPwuDetCRc3N86KSixr77I1s=
+Date: Thu, 25 Dec 2008 19:01:09 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH for -tip] irq: for_each_irq_desc() makes simplify
+Message-ID: <20081225160109.GA5636@localhost>
+References: <20081225200020.50F0.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081225213640.50F3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081225214057.50F6.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081225131000.GA7510@localhost> <2f11576a0812250545g1967467fy568099affdaa6c35@mail.gmail.com> <20081225143128.GA13388@localhost> <2f11576a0812250643s25a79de6q205ae3b0a7d63f06@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081225143535.GA4127@blitiri.com.ar>
+In-Reply-To: <2f11576a0812250643s25a79de6q205ae3b0a7d63f06@mail.gmail.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 25, 2008 at 12:35:35PM -0200, Alberto Bertogli wrote:
-> 
-> Thanks. I've found and tried that (that's what I meant with the
-> paragraph you quote), but I couldn't make it work.
+[KOSAKI Motohiro - Thu, Dec 25, 2008 at 11:43:45PM +0900]
+| > | "if (!desc) " mean this irqno don't have irq description.
+| > | so I think this name imply mean skipping no irq desctiption element.
+| > |
+| > | Actually, on CONFIG_SPARSEIRQ, desc is filled in dynamically after booting.
+| > | then "defined" is a bit misleading word.
+| > |
+| >
+| > So if I would need to iterate over all descriptors including empty
+| > I need to type all this long for(;;) form again?
+| 
+| We already have for_each_irq_nr() for this purpose ;-)
 
-See attached transcript.  I did it using lvm/dm just to show it's not
-an devicemapper problem.
+Which is not shorter form of desc iterator in turn :-)
 
-> The first problem I stumbled upon was that jbd2_journal_create() doesn't
-> like journals initialized using jbd2_journal_init_dev() (because it has
-> no j_inode). I had two choices: or try to create the journal some other
-> way, or remove the j_inode test in jbd2_journal_create().
+Since the original for_each_irq_desc didn't check for NULL
+desc's I think the better would to name it like for_each_irq_desc_safe
+or for_each_irq_desc_inuse then.
 
-ext4_journal_create is ancient code dating back to ext3/jbd, and even
-there it's code which has been obsolete for about 6-7 years.  In fact,
-I plan to remove ext4_journal_create, the journal_inum mount option,
-and jbd2_journal_init_dev, because the supported way of creating a
-journal is using mke2fs.  I need to double check and make sure ocfs2
-isn't using jbd2_journal_init_dev before I remove it from the jbd2
-layer, but really, this sort of thing should be done all in userspace.
+Nevermind, Kosaki, since it's only me who is confused I should
+just shut up :-)
 
-> Then I tried to create the journal using mke2fs as you described, but
-> jbd2_journal_load() fails when trying to load it.
-
-See attached.   Works fine for me.
-
->  - Why does __bread() gets stucked when called from inside a dm map
->    function? It looks like it's waiting on a buffer_head, but why?
-
-I'm not a dm guy, so I can't answer this, but I suspect the issue may
-be a lock ordering issue.
-
->  - What is the reason behind the j_inode check in jbd2_journal_create()?
-
-jbd2_journal_create was only designed for creating inode-based
-journals, and it's a deprecated function that will likely be removed
-soon.
-
->  - Does mke2fs -O journal_dev creates a journal that jbd2_journal_load()
->    is supposed to read without any knowledge of ext2/3/4 stuff? If not,
->    how can I create such a journal? I'll be looking at the e2fsprogs
->    code for the answer to this question later today (I haven't looked at
->    it yet).
-
-mke2fs -O journal_dev creates an external journal, but when you create
-a filesystem, you need to specify need to specify location of the
-external journal.    Hence:
-
-	 mke2fs -O journal_dev /dev/extern_journal_dev
-	 mke2fs -t ext4 -J device=/dev/extern_journal_dev /dev/filesystem_dev
-
-As I said in my last message.  I've tested it, and it works Just Fine.
-
-     	     	     	       	    	       - Ted
-
-Script started on Thu 25 Dec 2008 10:22:11 AM EST
-Top-level shell (parent script)
-Using forwarded ssh authentication socket
-# lvs
-  LV          VG    Attr   LSize   Origin Snap%  Move Log Copy% 
-  ext3root    thunk -wi-a-  15.00G                              
-  footest     thunk -wi-a-   1.00G                              
-  foresight   thunk -wi-a-   5.00G                              
-  old-root    thunk -wi-a- 128.00G                              
-  rmake       thunk -wi-a-   2.00G                              
-  root        thunk -wi-ao 128.00G                              
-  sff-torrent thunk -wi-a-   7.00G                              
-  testext4    thunk -wi-a-   1.00G                              
-# mke2fs -O journal_dev /dev/thunk/footest
-mke2fs 1.41.3 (12-Oct-2008)
-Filesystem label=
-OS type: Linux
-Block size=4096 (log=2)
-Fragment size=4096 (log=2)
-0 inodes, 262144 blocks
-0 blocks (0.00%) reserved for the super user
-First data block=0
-0 block group
-32768 blocks per group, 32768 fragments per group
-0 inodes per group
-Superblock backups stored on blocks: 
-
-Zeroing journal device:   done                            
-# mke2fs -t ext4 -J device=/dev/thunk/footest /dev/thunk/testext4
-mke2fs 1.41.3 (12-Oct-2008)
-Using journal device's blocksize: 4096
-Filesystem label=
-OS type: Linux
-Block size=4096 (log=2)
-Fragment size=4096 (log=2)
-65536 inodes, 262144 blocks
-13107 blocks (5.00%) reserved for the super user
-First data block=0
-Maximum filesystem blocks=268435456
-8 block groups
-32768 blocks per group, 32768 fragments per group
-8192 inodes per group
-Superblock backups stored on blocks: 
-	32768, 98304, 163840, 229376
-
-Writing inode tables: done                            
-Adding journal to device /dev/thunk/footest: done
-Writing superblocks and filesystem accounting information: done
-
-This filesystem will be automatically checked every 29 mounts or
-180 days, whichever comes first.  Use tune2fs -c or -i to override.
-# dumpe2fs -h /dev/thunk/testext4
-dumpe2fs 1.41.3 (12-Oct-2008)
-Filesystem volume name:   <none>
-Last mounted on:          <not available>
-Filesystem UUID:          47b3315f-7b0d-40ab-995e-de1ddaaf3528
-Filesystem magic number:  0xEF53
-Filesystem revision #:    1 (dynamic)
-Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent flex_bg sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
-Filesystem flags:         signed_directory_hash 
-Default mount options:    (none)
-Filesystem state:         clean
-Errors behavior:          Continue
-Filesystem OS type:       Linux
-Inode count:              65536
-Block count:              262144
-Reserved block count:     13107
-Free blocks:              257701
-Free inodes:              65525
-First block:              0
-Block size:               4096
-Fragment size:            4096
-Reserved GDT blocks:      63
-Blocks per group:         32768
-Fragments per group:      32768
-Inodes per group:         8192
-Inode blocks per group:   512
-Flex block group size:    16
-Filesystem created:       Thu Dec 25 10:23:12 2008
-Last mount time:          n/a
-Last write time:          Thu Dec 25 10:23:12 2008
-Mount count:              0
-Maximum mount count:      29
-Last checked:             Thu Dec 25 10:23:12 2008
-Check interval:           15552000 (6 months)
-Next check after:         Tue Jun 23 11:23:12 2009
-Reserved blocks uid:      0 (user root)
-Reserved blocks gid:      0 (group root)
-First inode:              11
-Inode size:	          256
-Required extra isize:     28
-Desired extra isize:      28
-Journal UUID:             484902c6-34a5-4cd2-9f66-02a3251bfc9e
-Journal device:	          0xfe06
-Default directory hash:   half_md4
-Directory Hash Seed:      2889d0e3-ca37-443d-b9a3-12e3b0e26d70
-
-# mount /dev/thunk/testext4 /mnt
-# df /mnt
-Filesystem           1K-blocks      Used Available Use% Mounted on
-/dev/mapper/thunk-testext4
-                       1032088      1284    978376   1% /mnt
-# umount /mnt
-# exit
-
-Script done on Thu 25 Dec 2008 10:23:37 AM EST
+| 
+| > For me for_each_irq_desc
+| > implies to iterate over each irq_desc allocated regardles of internal
+| > descriptor data. For example in list_struct we have a special test if
+| > entry is empty or not. So I think hiding details is not that good (and
+| > that is why I was asking for more descriptive macro name). BUT if it
+| > really supposed to behave like that then I don't object :)
+| 
+		- Cyrill -
