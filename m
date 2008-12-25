@@ -1,151 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbYLYMR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbYLYMSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbYLYMR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 07:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYLYMRV
+	id S1752230AbYLYMSE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 07:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbYLYMRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 07:17:21 -0500
-Received: from ozlabs.org ([203.10.76.45]:33403 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751723AbYLYMRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 07:17:20 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [RFC] boot parameter handling cleanup II
-Date: Thu, 25 Dec 2008 22:47:12 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>, Hugh Dickins <hugh@veritas.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Luck, Tony" <tony.luck@intel.com>
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils> <86802c440812222152yd000009yf890f5cd303860e4@mail.gmail.com> <20081223143327.GF29151@elte.hu>
-In-Reply-To: <20081223143327.GF29151@elte.hu>
+	Thu, 25 Dec 2008 07:17:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:49114 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751829AbYLYMRv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 07:17:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=MIB6Ug9eYG2VIKkL15ODCuJmIN1Q592p4IVAchUExkEA+YqLhM8wxEfi6MbpaIeol3
+         qBfU38/1Sj/IjqW48lbJFpZGbp9H9PHkOiifgmIti8nXo9xdmBG3ry4gCPQyQMJhalWi
+         sovCCk4Gv3g+PwTvFydMi+yDfAz0auftXY4Wo=
+Message-ID: <c43b2e150812250417n367d0910gea4b7d3162948cf6@mail.gmail.com>
+Date: Thu, 25 Dec 2008 13:17:49 +0100
+From: wixor <wixorpeek@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: HPET not working with VT8237A
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812252247.12957.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Not much change since last time, just consolidated fixes aired here, esp.
- x86 early_param fixes thanks to Hugh and Yinghai.)
+Hello,
 
-The following changes since commit 4a6908a3a050aacc9c3a2f36b276b46c0629ad91:    
-  Linus Torvalds (1):                                                           
-        Linux 2.6.28                                                            
+I have Fujitsu-Siemens Amilo Pro v3515 laptop. lspci -nn says:
 
-are available in the git repository at:
+00:00.0 Host bridge [0600]: VIA Technologies, Inc. CN896/VN896/P4M900
+Host Bridge [1106:0364]
+00:00.1 Host bridge [0600]: VIA Technologies, Inc. CN896/VN896/P4M900
+Host Bridge [1106:1364]
+00:00.2 Host bridge [0600]: VIA Technologies, Inc. CN896/VN896/P4M900
+Host Bridge [1106:2364]
+00:00.3 Host bridge [0600]: VIA Technologies, Inc. CN896/VN896/P4M900
+Host Bridge [1106:3364]
+00:00.4 Host bridge [0600]: VIA Technologies, Inc. CN896/VN896/P4M900
+Host Bridge [1106:4364]
+00:00.5 PIC [0800]: VIA Technologies, Inc. CN896/VN896/P4M900 I/O APIC
+Interrupt Controller [1106:5364]
+00:00.6 Host bridge [0600]: VIA Technologies, Inc. CN896/VN896/P4M900
+Security Device [1106:6364]
+00:00.7 Host bridge [0600]: VIA Technologies, Inc. CN896/VN896/P4M900
+Host Bridge [1106:7364]
+00:01.0 PCI bridge [0604]: VIA Technologies, Inc. VT8237/VX700 PCI
+Bridge [1106:b198]
+00:02.0 PCI bridge [0604]: VIA Technologies, Inc. CN896/VN896/P4M900
+PCI to PCI Bridge Controller [1106:a364] (rev 80)
+00:03.0 PCI bridge [0604]: VIA Technologies, Inc. CN896/VN896/P4M900
+PCI to PCI Bridge Controller [1106:c364] (rev 80)
+00:0f.0 IDE interface [0101]: VIA Technologies, Inc. VT8237A SATA
+2-Port Controller [1106:0591] (rev 80)
+00:0f.1 IDE interface [0101]: VIA Technologies, Inc.
+VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE [1106:0571]
+(rev 07)
+00:10.0 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI
+USB 1.1 Controller [1106:3038] (rev a0)
+00:10.1 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI
+USB 1.1 Controller [1106:3038] (rev a0)
+00:10.2 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI
+USB 1.1 Controller [1106:3038] (rev a0)
+00:10.3 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI
+USB 1.1 Controller [1106:3038] (rev a0)
+00:10.4 USB Controller [0c03]: VIA Technologies, Inc. USB 2.0
+[1106:3104] (rev 86)
+00:11.0 ISA bridge [0601]: VIA Technologies, Inc. VT8237A PCI to ISA
+Bridge [1106:3337]
+00:11.7 Host bridge [0600]: VIA Technologies, Inc. VT8251 Ultra VLINK
+Controller [1106:287e]
+00:12.0 Ethernet controller [0200]: VIA Technologies, Inc. VT6102
+[Rhine-II] [1106:3065] (rev 7c)
+00:13.0 PCI bridge [0604]: VIA Technologies, Inc. VT8237A Host Bridge
+[1106:337b]
+00:13.1 PCI bridge [0604]: VIA Technologies, Inc. VT8237A PCI to PCI
+Bridge [1106:337a]
+01:00.0 VGA compatible controller [0300]: VIA Technologies, Inc.
+CN896/VN896/P4M900 [Chrome 9 HC] [1106:3371] (rev 01)
+04:01.0 Audio device [0403]: VIA Technologies, Inc. VT1708/A [Azalia
+HDAC] (VIA High Definition Audio Controller) [1106:3288] (rev 10)
+05:01.0 Ethernet controller [0200]: Atheros Communications Inc. AR2413
+802.11bg NIC [168c:001a] (rev 01)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-boot-params.git master                                                                          
+lspci -d 1106:3337 -xxx says:
 
-David Howells (2):
-      param: Adapt MN10300 to the new parameter handling regime
-      param: Adapt FRV to the new parameter handling regime    
+00:11.0 ISA bridge: VIA Technologies, Inc. VT8237A PCI to ISA Bridge
+00: 06 11 37 33 03 00 10 02 00 00 01 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 34 17 cb 10
+30: 00 00 00 00 c0 00 00 00 00 00 00 00 00 00 00 00
+40: 44 80 f0 0b 00 a0 10 00 0c 20 00 00 44 00 08 00
+50: 80 18 09 00 00 00 00 00 62 90 00 03 00 60 00 fe
+60: 68 00 00 00 01 07 07 45 00 00 00 00 00 00 00 00
+70: 34 17 cb 10 00 00 00 00 00 00 00 00 00 00 00 00
+80: 20 86 5a 00 da 40 00 00 01 40 00 00 05 08 00 00
+90: 00 cd 9e 00 20 cd 04 42 00 08 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 01 41 01 00 34 17 00 00 00 00 00 00 00 00 00 00
+e0: 08 00 0e 00 e0 01 ef 82 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 13 00 00 00 00 00 00 00 00 00
 
-Geert Uytterhoeven (1):
-      m68k: Use asm/sections.h in kernel/setup.c
+HPET is not detected neither normally nor with hpet=force option. I looked
+up kernel source and found out, that there are no quirks for this chip.
 
-Rusty Russell (13):
-      USB: Don't use __module_param_call; use core_param.
-      x86: act on mem= and memmap= later in boot         
-      x86: prepare noexec for being called earlier       
-      x86: override_capabilities in early_identify_cpu   
-      param: allow parse_args to work non-destructively. 
-      param: put core_param in separate section          
-      param: make sure charp isn't used as a core_param  
-      param: arch_get_boot_command_line()                
-      param: move core_param() parsing to before setup_arch.
-      param: Call early_param earlier.                      
-      param: combine core_param and early_param parsing.    
-      param: don't use alloc_bootmem for saved_command_line 
-      param: move banner printing to top of start_kernel.   
+HPET is not advertised by HPET acpi table, but I found it in DSDT table as
+device PNP0103. However, looking in /sys/bus/acpi/devices reveals that
+kernel is unaware of it. Anyway, DSDT reports, that HPET should be living
+at 0xFED04000. I am completely unable to google any via spec of this chip.
 
-Yinghai Lu (1):
-      x86: clean up setup_clear/force_cpu_cap handling
+I would be very glad to see it running. Any way to enable it?
+Please CC me, I'm not in the list.
 
- arch/alpha/kernel/setup.c                  |   36 +++++++-----
- arch/arm/kernel/setup.c                    |   43 ++++++++------
- arch/avr32/kernel/setup.c                  |   15 ++---         
- arch/blackfin/kernel/setup.c               |   22 ++++----      
- arch/cris/kernel/setup.c                   |   29 +++++-----    
- arch/frv/kernel/setup.c                    |   50 ++++++----------
- arch/h8300/kernel/setup.c                  |   27 +++++----       
- arch/ia64/dig/setup.c                      |    2 +-              
- arch/ia64/hp/sim/hpsim_setup.c             |    2 +-              
- arch/ia64/include/asm/machvec.h            |    4 +-              
- arch/ia64/include/asm/paravirt.h           |    8 +-              
- arch/ia64/kernel/machvec.c                 |    8 ++-             
- arch/ia64/kernel/setup.c                   |   32 +++++-----      
- arch/ia64/sn/kernel/setup.c                |   13 ++--            
- arch/ia64/uv/kernel/setup.c                |    2 +-              
- arch/ia64/xen/xen_pv_ops.c                 |    2 +-              
- arch/m32r/kernel/setup.c                   |   16 +++---          
- arch/m68k/kernel/setup.c                   |   37 +++++++-----    
- arch/m68knommu/include/asm/machdep.h       |    2 +-              
- arch/m68knommu/kernel/setup.c              |   33 +++++-----      
- arch/m68knommu/platform/5206/config.c      |    2 +-              
- arch/m68knommu/platform/5206e/config.c     |   14 +++--           
- arch/m68knommu/platform/520x/config.c      |    2 +-              
- arch/m68knommu/platform/523x/config.c      |    2 +-              
- arch/m68knommu/platform/5249/config.c      |    2 +-              
- arch/m68knommu/platform/5272/config.c      |   23 ++++----        
- arch/m68knommu/platform/527x/config.c      |    2 +-              
- arch/m68knommu/platform/528x/config.c      |    2 +-              
- arch/m68knommu/platform/5307/config.c      |   13 +++-            
- arch/m68knommu/platform/532x/config.c      |   22 +++----         
- arch/m68knommu/platform/5407/config.c      |    2 +-              
- arch/m68knommu/platform/68328/config.c     |    2 +-              
- arch/m68knommu/platform/68328/head-pilot.S |    2 +-              
- arch/m68knommu/platform/68360/config.c     |    6 +-              
- arch/m68knommu/platform/68EZ328/config.c   |    4 +-              
- arch/m68knommu/platform/68VZ328/config.c   |   12 ++--            
- arch/mips/kernel/setup.c                   |   20 +++---          
- arch/mn10300/kernel/setup.c                |   61 ++++++++------------
- arch/parisc/kernel/setup.c                 |   32 +++++------         
- arch/powerpc/kernel/prom.c                 |    1 -                   
- arch/powerpc/kernel/setup_32.c             |   10 ++-                 
- arch/powerpc/kernel/setup_64.c             |   10 ++-                 
- arch/s390/kernel/setup.c                   |    8 +--                 
- arch/sh/boards/board-magicpanelr2.c        |    2 +-                  
- arch/sh/boards/board-sh7785lcr.c           |    2 +-                  
- arch/sh/boards/mach-dreamcast/setup.c      |    2 +-                  
- arch/sh/boards/mach-highlander/setup.c     |    2 +-                  
- arch/sh/boards/mach-hp6xx/setup.c          |    2 +-                  
- arch/sh/boards/mach-landisk/setup.c        |    2 +-                  
- arch/sh/boards/mach-microdev/setup.c       |    2 +-                  
- arch/sh/boards/mach-migor/setup.c          |    2 +-                  
- arch/sh/boards/mach-r2d/setup.c            |    2 +-
- arch/sh/boards/mach-sdk7780/setup.c        |    2 +-
- arch/sh/boards/mach-se/7343/setup.c        |    2 +-
- arch/sh/boards/mach-se/770x/setup.c        |    2 +-
- arch/sh/boards/mach-se/7721/setup.c        |    2 +-
- arch/sh/boards/mach-se/7722/setup.c        |    2 +-
- arch/sh/boards/mach-se/7780/setup.c        |    2 +-
- arch/sh/boards/mach-sh03/setup.c           |    2 +-
- arch/sh/boards/mach-sh7763rdp/setup.c      |    2 +-
- arch/sh/include/asm/machvec.h              |    2 +-
- arch/sh/kernel/setup.c                     |   28 +++++-----
- arch/sparc/kernel/setup.c                  |   14 ++--
- arch/sparc64/kernel/setup.c                |   12 ++--
- arch/um/kernel/um_arch.c                   |   10 ++-
- arch/x86/include/asm/cpufeature.h          |    4 +-
- arch/x86/include/asm/processor.h           |    3 +-
- arch/x86/kernel/cpu/common.c               |   22 +++++--
- arch/x86/kernel/e820.c                     |   88 +++++++++++++++++----------
- arch/x86/kernel/setup.c                    |   41 ++++++-------
- arch/x86/mm/init_32.c                      |   11 ++-
- arch/xtensa/kernel/setup.c                 |   21 ++++---
- arch/xtensa/platforms/iss/setup.c          |    2 +-
- drivers/usb/core/usb.c                     |    8 ++-
- include/asm-generic/vmlinux.lds.h          |    3 +
- include/asm-xtensa/platform.h              |    5 +-
- include/linux/init.h                       |    5 +-
- include/linux/moduleparam.h                |   43 ++++++++++----
- init/main.c                                |   73 ++++++++++-------------
- kernel/kexec.c                             |    1 +
- kernel/module.c                            |    2 +-
- kernel/params.c                            |   74 ++++++++++++++++++-----
- 82 files changed, 625 insertions(+), 518 deletions(-)
+--
+wixor
