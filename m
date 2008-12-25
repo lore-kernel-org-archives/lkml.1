@@ -1,143 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYLYScP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbYLYStE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbYLYScP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:32:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYLYSb7
+	id S1752304AbYLYStE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:49:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYLYSsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:31:59 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52495 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751935AbYLYSb6 (ORCPT
+	Thu, 25 Dec 2008 13:48:53 -0500
+Received: from trickle.CC.McGill.CA ([132.206.27.51]:52484 "EHLO
+	trickle.cc.mcgill.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbYLYSsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:31:58 -0500
-Date: Wed, 24 Dec 2008 15:09:01 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Fabio Comolli <fabio.comolli@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, toralf.foerster@gmx.de
-Subject: Re: TSC not updating after resume: Bug or Feature?
-Message-ID: <20081224140900.GA1624@ucw.cz>
-References: <alpine.LFD.2.00.0812212031220.4548@localhost.localdomain> <b637ec0b0812211443u1ca9c11du5d61c41e3d82bc16@mail.gmail.com> <alpine.LFD.2.00.0812221543550.3723@localhost.localdomain> <20081222150021.GA13839@elte.hu> <alpine.LFD.2.00.0812221921460.3723@localhost.localdomain> <alpine.LFD.2.00.0812222056190.3723@localhost.localdomain> <b637ec0b0812221239p169967aemf14b2e591779f5cd@mail.gmail.com> <alpine.LFD.2.00.0812222212191.3723@localhost.localdomain> <b637ec0b0812221335w54fe11ecwf05e0302bc27b5a3@mail.gmail.com> <alpine.LFD.2.00.0812222238192.3723@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812222238192.3723@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 25 Dec 2008 13:48:53 -0500
+X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Dec 2008 13:48:52 EST
+Subject: Kernel panic with upgrade to 2.6.28
+From: David Ronis <ronis@ronispc.chem.mcgill.ca>
+Reply-To: ronis@ronispc.chem.mcgill.ca
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Department of Chemistry, McGill University
+Date: Thu, 25 Dec 2008 13:42:17 -0500
+Message-Id: <1230230537.3368.13.camel@montroll.chem.mcgill.ca>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.4 
+X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2008.11.25.160724
+X-McGill-WhereFrom: Internal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> > >
-> > > Can please you revert the last patch and apply the following ? Does
-> > > the WARN_ON trigger ?
-> > >
-> 
-> > Yes, it does:
->  
-> > [  159.768005]  [<c01389a2>] getnstimeofday+0x21/0xcd
-> > [  159.768005]  [<c0135e26>] ktime_get_ts+0x1d/0x3f
-> > [  159.768005]  [<c0135e57>] ktime_get+0xf/0x2b
-> > [  159.768005]  [<c013736b>] sched_clock_tick+0x46/0x83
-> > [  159.768005]  [<c01373ad>] sched_clock_idle_wakeup_event+0x5/0xa
-> > [  159.768005]  [<c0108670>] set_cyc2ns_scale+0x3f/0x5e
-> > [  159.768005]  [<c01088af>] time_cpufreq_notifier+0xf9/0x103
-> > [  159.768005]  [<c0136782>] notifier_call_chain+0x2a/0x52
-> > [  159.768005]  [<c0136866>] __srcu_notifier_call_chain+0x35/0x4a
-> > [  159.768005]  [<c0136884>] srcu_notifier_call_chain+0x9/0xc
-> > [  159.768005]  [<c031cbca>] cpufreq_resume+0xf3/0x112
-> > [  159.768005]  [<c028c3f3>] __sysdev_resume+0x24/0x34
-> > [  159.768005]  [<c028c421>] sysdev_resume+0x1e/0x50
-> 
-> Thanks for testing. It's exaclty the code path I described :)
-> 
-> So my code analysis holds and your test confirms my suspicion that
-> Shaggy's patch just unearthed some other weirdness in the
-> suspend/resume code.
-> 
-> Can you please apply the following hack^Wpatch and retest ? It
-> restores Shaggys patch, but prevents the sched_clock_tick() call when
-> timekeeping is not resumed. The WARN_ON should not longer trigger
-> except there is some other code path which fiddles with that as well.
-> 
-> If I'm not completely nuts then this should solve your suspend/resume
-> problem really instead of papering over the root cause.
+I just upgraded from 2.6.27.8 or .10 to 2.6.28 on several machines.  On
+one, a Dell dimension 3000 with a dual-core pentium R chip,  2 Seagate
+ST340014A (/dev/hda with swap as partion 1 and root ext3 filesystem as
+partion 2 and b containing a windows partition) and running slackware
+12.1, I get a kernel panic when trying to boot (the others boot fine);
+specifically, I get:
 
-Should we move timekeeping resume before cpufreq resume, instead of this?
+        Cannot open root device "302" or unknown block(3,2).  Please
+        append a correct root=; here are the available partitions:
+        
+No partitions are shown.  Manually adding root=/dev/hda2 to the lilo
+boot prompt doesn't help either.
 
-> The patch should work on top of 2.6.27.10 as well, so whatever is
-> easier to verify for you is fine.
-> 
-> Thanks,
-> 
-> 	tglx
-> ---
-> diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-> index e8ab096..dd97801 100644
-> --- a/kernel/sched_clock.c
-> +++ b/kernel/sched_clock.c
-> @@ -124,7 +124,7 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
->  
->  	clock = scd->tick_gtod + delta;
->  	min_clock = wrap_max(scd->tick_gtod, scd->clock);
-> -	max_clock = scd->tick_gtod + TICK_NSEC;
-> +	max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
->  
->  	clock = wrap_max(clock, min_clock);
->  	clock = wrap_min(clock, max_clock);
-> @@ -222,11 +222,16 @@ void sched_clock_idle_sleep_event(void)
->  }
->  EXPORT_SYMBOL_GPL(sched_clock_idle_sleep_event);
->  
-> +extern int timekeeping_suspended;
-> +
->  /*
->   * We just idled delta nanoseconds (called with irqs disabled):
->   */
->  void sched_clock_idle_wakeup_event(u64 delta_ns)
->  {
-> +	if (timekeeping_suspended)
-> +		return;
-> +
->  	sched_clock_tick();
->  	touch_softlockup_watchdog();
->  }
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index fa05e88..50ba3d0 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -46,6 +46,9 @@ struct timespec xtime __attribute__ ((aligned (16)));
->  struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
->  static unsigned long total_sleep_time;		/* seconds */
->  
-> +/* flag for if timekeeping is suspended */
-> +int timekeeping_suspended;
-> +
->  static struct timespec xtime_cache __attribute__ ((aligned (16)));
->  void update_xtime_cache(u64 nsec)
->  {
-> @@ -92,6 +95,8 @@ void getnstimeofday(struct timespec *ts)
->  	unsigned long seq;
->  	s64 nsecs;
->  
-> +	WARN_ON(timekeeping_suspended);
-> +
->  	do {
->  		seq = read_seqbegin(&xtime_lock);
->  
-> @@ -299,8 +304,6 @@ void __init timekeeping_init(void)
->  	write_sequnlock_irqrestore(&xtime_lock, flags);
->  }
->  
-> -/* flag for if timekeeping is suspended */
-> -static int timekeeping_suspended;
->  /* time in seconds when suspend began */
->  static unsigned long timekeeping_suspend_time;
+The 2.6.27.8 kernel boots fine.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Any suggestions?  Please CC me directly.
+
+Thanks and Happy Holidays
+
+David
+
+
