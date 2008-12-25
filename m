@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYLYUrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752626AbYLYU67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbYLYUrz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 15:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYLYUrr
+	id S1752626AbYLYU67 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 15:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYLYU6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 15:47:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44291 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbYLYUrq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 15:47:46 -0500
-Message-ID: <4953F14A.8000801@zytor.com>
-Date: Thu, 25 Dec 2008 12:47:06 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] x86: remove impossible test in mtrr/main.c
-References: <200812251718.44233.rusty@rustcorp.com.au>
-In-Reply-To: <200812251718.44233.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Dec 2008 15:58:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:51742 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752021AbYLYU6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 15:58:46 -0500
+From: Avi Kivity <avi@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] Remove interrupt stack table usage from x86_64 kernel
+Date: Thu, 25 Dec 2008 22:58:43 +0200
+Message-Id: <1230238726-17506-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Impact: cleanup
-> 
-> enable_mtrr_cleanup is static, and is never set to anything but 0 or 1.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+The interrupt stack table (IST) mechanism is the only thing preventing
+kvm from deferring saving and reloading of some significant state.  It
+is also somewhat complicated.
 
-Applied to tip:x86/pat2, thanks!
+Remove it by switching the special exceptions to use the normal irqstack.
 
-	-hpa
+Avi Kivity (3):
+  x86: drop the use of the tss interrupt stack table (IST)
+  x86: Remove pda.irqcount
+  x86: Switch critical exceptions and NMI to irqstack
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+ arch/x86/include/asm/desc.h      |   12 -----
+ arch/x86/include/asm/page_64.h   |    7 ---
+ arch/x86/include/asm/pda.h       |    2 +-
+ arch/x86/include/asm/processor.h |   11 ----
+ arch/x86/kernel/asm-offsets_64.c |    1 -
+ arch/x86/kernel/cpu/common.c     |   35 --------------
+ arch/x86/kernel/dumpstack_64.c   |   96 --------------------------------------
+ arch/x86/kernel/entry_64.S       |   49 ++++++++-----------
+ arch/x86/kernel/traps.c          |   12 ++--
+ 9 files changed, 27 insertions(+), 198 deletions(-)
 
