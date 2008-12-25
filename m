@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbYLYGRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbYLYGSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752044AbYLYGRm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 01:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbYLYGRa
+	id S1752294AbYLYGSU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 01:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbYLYGSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 01:17:30 -0500
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:57499 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbYLYGR3 (ORCPT
+	Thu, 25 Dec 2008 01:18:05 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60068 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbYLYGSD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 01:17:29 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       =?utf-8?B?SMOla29uIEzDuHZkYWw=?= <hlovdal@gmail.com>,
-       Hannes Eder <hannes@hanneseder.net>, netdev@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a
- compound statement
-References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
- <20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
- <m3hc4voo2a.fsf@maximus.localdomain>
- <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
- <m3ocz2ua3w.fsf@maximus.localdomain> <1230053186.1447.9.camel@brick>
- <m3k59qssix.fsf@maximus.localdomain>
- <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
- <m3hc4usco9.fsf@maximus.localdomain>
- <alpine.LFD.2.00.0812231529030.3535@localhost.localdomain>
- <m3myemqqgp.fsf@maximus.localdomain>
-Date: Wed, 24 Dec 2008 22:17:15 -0800
-In-Reply-To: <m3myemqqgp.fsf@maximus.localdomain> (Krzysztof Halasa's message
- of "Wed, 24 Dec 2008 03:03:50 +0100")
-Message-ID: <7vd4fgdbis.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 25 Dec 2008 01:18:03 -0500
+Message-ID: <49532592.9050202@jp.fujitsu.com>
+Date: Thu, 25 Dec 2008 15:17:54 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: B3EF1220-D24B-11DD-82B3-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
+To: Jike Song <albcamus@gmail.com>
+CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] PCI/MSI: bugfix/utilize for msi_capability_init()
+References: <4951F258.6040601@jp.fujitsu.com> <df9815e70812240101q23f6d59fj4121b19563a77d47@mail.gmail.com>
+In-Reply-To: <df9815e70812240101q23f6d59fj4121b19563a77d47@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa <khc@pm.waw.pl> writes:
-
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> ...
->> Another example of "common vs non-common" is this:
+Jike Song wrote:
+> On Wed, Dec 24, 2008 at 4:27 PM, Hidetoshi Seto
+> <seto.hidetoshi@jp.fujitsu.com> wrote:
+>> This patch fix a following bug and does a cleanup.
 >>
->> 	if (0 <= x)
->> 		do something..
+>> bug:
+>>        commit 5993760f7fc75b77e4701f1e56dc84c0d6cf18d5
+>>        had a wrong change (since is_64 is boolean[0|1]):
 >>
->> is something that crazy people do (sadly, one of the crazy people taught 
->> the git maintainer C programming, so now even sane people do it). It's 
->> crazy because it's uncommon, which means that most people have to think 
->> about it A LOT MORE than about
+>> -               pci_write_config_dword(dev,
+>> -                       msi_mask_bits_reg(pos, is_64bit_address(control)),
+>> -                       maskbits);
+>> +               pci_write_config_dword(dev, entry->msi_attrib.is_64, maskbits);
 >>
->> 	if (x >= 0)
->> 		do something..
->
-> No. It's crazy not because it's uncommon, but because this is how we
-> have been taught in school.
->
-> I don't know reasons for "0 >= x" but I know one for
-> 	if (0 == x)
-> 		do something..
->
-> It's because people sometimes write "=" instead of "==" and "0 = x"
-> doesn't make sense to gcc.
+> Yes, really a nasty bug. I'm feeling guilty...
+> Should this fix hit 2.6.28 release?  I CCed Jesse for his point.
 
-It does not have anything to do with the assignment confusion.
+Unfortunately we failed to take this fix into Santa's bag...
 
-It is "textual order should reflect actual order" (aka "have number line
-in your head when you write your comparison conditional"):
+Note that this bug affects mask condition after calling pci_enable_msi()
+for devices with MSI capability with (optional) per-vector masking support.
+Devices with MSI-X or MSI without masking support are safe.
+Once unmask/mask_msi_irq() is called, the condition should be fixed.
 
-    http://thread.gmane.org/gmane.comp.version-control.git/3903/focus=4126
+And the wrong pci_write_config_dword() will have no effects because
+target registers (fields in header, such as Vendor ID) are read-only.
 
-Even if it may make logical sense, I would not suggest using it when other
-people are not familiar with the convention, though.
+Thanks,
+H.Seto
 
