@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752239AbYLYQgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbYLYQm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752239AbYLYQgj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 11:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYLYQga
+	id S1752320AbYLYQm5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 11:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYLYQms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 11:36:30 -0500
-Received: from Powered.by.Root24.eu ([81.169.180.23]:39870 "EHLO Root24.de"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751874AbYLYQg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 11:36:29 -0500
-Message-ID: <4953AC5F.5030102@ionic.de>
-Date: Thu, 25 Dec 2008 16:53:03 +0100
-From: Mihai Moldovan <ionic@ionic.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081005)
+	Thu, 25 Dec 2008 11:42:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32859 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751874AbYLYQmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 11:42:47 -0500
+Date: Thu, 25 Dec 2008 17:42:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Joerg Roedel <joerg.roedel@amd.com>,
+       Benjamin Serebrin <benjamin.serebrin@amd.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org,
+       Alexander Graf <agraf@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: kvm vmload/vmsave vs tss.ist
+Message-ID: <20081225164232.GA25195@elte.hu>
+References: <49539FD0.7070103@redhat.com> <20081225151757.GA25117@elte.hu> <4953AAE5.4000708@redhat.com> <20081225162107.GB14486@elte.hu>
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Happy v2.6.28
-References: <alpine.LFD.2.00.0812241540170.3535@localhost.localdomain> <alpine.LFD.2.00.0812241540170.3535@localhost.localdomain> <20081225054921.GA31466@havoc.gtf.org> <200812251011.31886.elendil@planet.nl>
-In-Reply-To: <200812251011.31886.elendil@planet.nl>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature";
- boundary="------------enig08ABB2EBA5E414397FD990F1"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081225162107.GB14486@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig08ABB2EBA5E414397FD990F1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-* On 25.12.2008 10:11, Frans Pop wrote:
-> Jeff Garzik wrote:
->  =20
->> On Wed, Dec 24, 2008 at 03:52:49PM -0800, Linus Torvalds wrote:
->>    =20
->>> Listen to the cheerful grinding of your harddisk as you reboot into a=
-n
->>>      =20
->> Your hard disk grinds?  That's _so_ 2007...
->>    =20
->
-> Better than cheerful jingling though.
->
-> Merry grinding,
-> FJP
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Got 2.6.28 grinding, up and running stable on my Laptop, the first
-release since half a year. That's indeed the best Christmas present I
-got so far. :-)
+> i'd suggest to reuse the irq-stacks for this. Right now on 64-bit we've 
+> got the following stack layout: 8K process stacks, a 16K IRQ stack on 
+> each CPU, shared by all IRQs. Then we have the IST stacks with weird 
+> sizes: debug:8K, the others: 4K.
 
-Best regards,
+this has to be done carefully though, as there's a subtle detail here: 
+right now the pda_irqcount and the pda_irqstackptr logic in entry_64.S is 
+not re-entry safe and relies on IRQs being off.
 
+If critical exceptions are moved to the IRQ stack then %rsp switching to 
+the IRQ stack has to be done atomically: instead of using the pda_irqcount 
+check the %rsp value itself should be checked against pda_irqstackptr - if 
+it's within that 16K range then we are already on the IRQ stack and do not 
+need to switch to it but can just use the current %rsp.
 
-Mihai Moldovan
-
-
---------------enig08ABB2EBA5E414397FD990F1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iQIcBAEBCgAGBQJJU6xlAAoJEB/WLtluJTqHcjYQAI/phLQdQGkLnVHsr6EbjCIQ
-AfdfSm0igx5BFfaJFt4XPfUazL6Ot2W4+OIK54Z40Yb23x9lojGSF5vIxVoYOvIt
-GK7Qk0YbueN0XswtHsWRUuJinUcF2WMTEN4kFzsbd1QuJKg6KF4lP/wH4ujZO/Po
-AwytvLHZyx1ujJ7WALc/gaVCv1zP295m65d4XThpSlSzBvcMxWrHrDzfQ4ZpZhi8
-uoLMtqXfJychibXZ/zRNAasO9Lch/pZRTEHVPcuK8JVSyPbhtUDi7KJ4LjlLZK+A
-pH9gLAtfoMnaMdzXzBqoDvBF2AC6LhpfbUjkbCP6/tLvyi8/5B7FoJDMSG+nZvBe
-1fNCwfzuWugRvjA9dFcadQ9NZgDlbqusGMUxH+QT5vfk05i92woq1KiY+LUy/SSH
-VmJayriDNvX+ZtcqxdK19rN4HEouKFL3wlZvDIWu8tsp3Ejh4qXXNReREk34+iB4
-oKSuQDC0HdrjFBQKf0tadzRLdpDAQFGV6DGWesjLhtKva8qkPoC81wKkAv3cHwBq
-8jPR9F60g9FjgteyMpOnHZAfxQi1koK4STG9gEMyBqOP8FMYIgOSTSTi/mAIoyda
-uhuhn85kDXOFJvlBM5cSKLaIVG4gxfc/Li5qx6sZf2TSD8xlUNrFhmGjBZUPPey2
-mlh0doKefu47tAwjkT5a
-=2jKo
------END PGP SIGNATURE-----
-
---------------enig08ABB2EBA5E414397FD990F1--
+	Ingo
