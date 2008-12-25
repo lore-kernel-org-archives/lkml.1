@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbYLYBRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbYLYBvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbYLYBRT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 20:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYLYBRJ
+	id S1751973AbYLYBvu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 20:51:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYLYBvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 20:17:09 -0500
-Received: from tundra.namei.org ([65.99.196.166]:2390 "EHLO tundra.namei.org"
+	Wed, 24 Dec 2008 20:51:41 -0500
+Received: from mail.ukfsn.org ([77.75.108.10]:47899 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbYLYBRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 20:17:06 -0500
-Date: Thu, 25 Dec 2008 12:17:01 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Sergio Luis <sergio@larces.uece.br>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       LSM <linux-security-module@vger.kernel.org>,
-       LKLM <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] smackfs: check for allocation failures in
- smk_set_access()
-In-Reply-To: <49507107.4010809@schaufler-ca.com>
-Message-ID: <alpine.LRH.1.10.0812251215450.27964@tundra.namei.org>
-References: <494F148F.8070101@larces.uece.br> <49507107.4010809@schaufler-ca.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751462AbYLYBvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 20:51:41 -0500
+Date: Thu, 25 Dec 2008 01:51:25 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: [PATCH] EXT4: super.c
+Message-ID: <20081225015125.2f6a99ad@sauron.linicks.net>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Dec 2008, Casey Schaufler wrote:
+Applies to stable 2.6.28.
 
-> Sergio Luis wrote:
-> >  smackfs: check for allocation failures in smk_set_access() 
-> >  While adding a new subject/object pair to smack_list, smk_set_access()
-> >  didn't check the return of kzalloc(). 
-> >  This patch changes smk_set_access() to return 0 or -ENOMEM, based on
-> > kzalloc()'s return. It also updates its caller, smk_write_load(), to
-> >  check for smk_set_access()'s return, given it is no longer a void  return
-> > function.
-> > 
-> >  Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-> >  To: Casey Schaufler <casey@schaufler-ca.com>
-> >  Cc: Ahmed S. Darwish <darwish.07@gmail.com>
-> >  Cc: LSM <linux-security-module@vger.kernel.org>
-> >  Cc: LKLM <linux-kernel@vger.kernel.org>
-> >   
-> 
-> Acked-by: Casey Schaufler <casey@schaufler-ca.com>
-> 
+Remove extraneous newline that creates empty print line
+in boot logs.
 
-Applied to:
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+Signed-off-by: Nick Warne <nick@ukfsn.org>
 
-I'll push this to Linus after he pulls the main security update, or with 
-it on re-send.
+--- linux-2.6.28/fs/ext4/super.cORIG	2008-12-25 01:35:49.156527726 +0000
++++ linux-2.6.28/fs/ext4/super.c	2008-12-25 01:36:50.914527855 +0000
+@@ -1973,7 +1973,7 @@
+ 	else
+ 		ext4_warning(sb, __func__,
+ 			"extents feature not enabled on this filesystem, "
+-			"use tune2fs.\n");
++			"use tune2fs.");
+ 
+ 	/*
+ 	 * enable delayed allocation by default
+
 
 -- 
--- 
-James Morris
-<jmorris@namei.org>
-
-
+Free Software Foundation Associate Member 5508
+http://linicks.net/
