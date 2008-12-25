@@ -1,163 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349AbYLYLkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbYLYMFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752349AbYLYLkw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 06:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYLYLko
+	id S1752049AbYLYMFS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 07:05:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbYLYMFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 06:40:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:44912 "EHLO ozlabs.org"
+	Thu, 25 Dec 2008 07:05:06 -0500
+Received: from zakalwe.fi ([80.83.5.154]:41853 "EHLO zakalwe.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751723AbYLYLkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 06:40:43 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: linux-next: parsing mem=700M broken
-Date: Thu, 25 Dec 2008 22:10:35 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils> <200812241808.16195.rusty@rustcorp.com.au> <4951EE20.5080004@kernel.org>
-In-Reply-To: <4951EE20.5080004@kernel.org>
+	id S1751496AbYLYMFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 07:05:05 -0500
+X-Greylist: delayed 1221 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Dec 2008 07:05:05 EST
+Date: Thu, 25 Dec 2008 13:44:43 +0200
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.6.1
+Message-ID: <20081225114443.GD6115@zakalwe.fi>
+References: <7v7i5odams.fsf@gitster.siamese.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200812252210.36367.rusty@rustcorp.com.au>
+In-Reply-To: <7v7i5odams.fsf@gitster.siamese.dyndns.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 December 2008 18:39:04 Yinghai Lu wrote:
-> for cpu caps on boot cpu setup still need
+On Wed, Dec 24, 2008 at 10:36:27PM -0800, Junio C Hamano wrote:
+> * The packfile machinery hopefully is more robust when dealing with
+>   corrupt packs if redundant objects involved in the corruption are
+>   available elsewhere.
 
-OK, how about these?  I cleaned up description a little, and put
-it in own function.
+Has anyone written a summary of how Git's redundancy operates?
 
-Subject: [PATCH] x86: clean up setup_clear/force_cpu_cap handling
-From: Yinghai Lu <yinghai.lu@kernel.org>
+* What would be the probability for a single bit flip to corrupt the 
+repository?
 
-Impact: fix and cleanup
+* And what is the situation where a single bit flip can not corrupt the 
+database?
 
-setup_force_cpu_cap() only has one user (xen) but it should not reuse
-cleared_cpu_cpus.  It will have problems for smp.
+* When (which commands/functions) is error detection done?
 
-Need to have cpu_cpus_set array too, and need to combine it before
-we AND into boot_cpu_data.x86_capability.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/x86/include/asm/cpufeature.h |    4 ++--
- arch/x86/include/asm/processor.h  |    3 ++-
- arch/x86/kernel/cpu/common.c      |   17 ++++++++++++-----
- 3 files changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -188,11 +188,11 @@ extern const char * const x86_power_flag
- #define clear_cpu_cap(c, bit)	clear_bit(bit, (unsigned long *)((c)->x86_capability))
- #define setup_clear_cpu_cap(bit) do { \
- 	clear_cpu_cap(&boot_cpu_data, bit);	\
--	set_bit(bit, (unsigned long *)cleared_cpu_caps); \
-+	set_bit(bit, (unsigned long *)cpu_caps_cleared); \
- } while (0)
- #define setup_force_cpu_cap(bit) do { \
- 	set_cpu_cap(&boot_cpu_data, bit);	\
--	clear_bit(bit, (unsigned long *)cleared_cpu_caps);	\
-+	set_bit(bit, (unsigned long *)cpu_caps_set);	\
- } while (0)
- 
- #define cpu_has_fpu		boot_cpu_has(X86_FEATURE_FPU)
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -130,7 +130,8 @@ extern struct cpuinfo_x86	new_cpu_data;
- extern struct cpuinfo_x86	new_cpu_data;
- 
- extern struct tss_struct	doublefault_tss;
--extern __u32			cleared_cpu_caps[NCAPINTS];
-+extern __u32			cpu_caps_cleared[NCAPINTS];
-+extern __u32			cpu_caps_set[NCAPINTS];
- 
- #ifdef CONFIG_SMP
- DECLARE_PER_CPU(struct cpuinfo_x86, cpu_info);
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -219,7 +219,8 @@ static char __cpuinit *table_lookup_mode
- 	return NULL;		/* Not found */
- }
- 
--__u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
-+__u32 cpu_caps_cleared[NCAPINTS] __cpuinitdata;
-+__u32 cpu_caps_set[NCAPINTS] __cpuinitdata;
- 
- /* Current gdt points %fs at the "master" per-cpu area: after this,
-  * it's on the real one. */
-@@ -512,6 +513,16 @@ static void __cpuinit identify_cpu_witho
- #endif
- }
- 
-+static void __cpuinit override_capabilities(u32 x86_capability[])
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < NCAPINTS; i++) {
-+		x86_capability[i] &= ~cpu_caps_cleared[i];
-+		x86_capability[i] |= cpu_caps_set[i];
-+	}
-+}
-+
- /*
-  * Do minimum CPU detection early.
-  * Fields really needed: vendor, cpuid_level, family, model, mask,
-@@ -703,6 +714,9 @@ static void __cpuinit identify_cpu(struc
- 	detect_ht(c);
- #endif
- 
-+	/* Command-line override before we AND into smp all cpus cap. */
-+	override_capabilities(c->x86_capability);
-+
- 	/*
- 	 * On SMP, boot_cpu_data holds the common feature set between
- 	 * all CPUs; so make sure that we indicate which features are
-@@ -714,10 +728,6 @@ static void __cpuinit identify_cpu(struc
- 		for (i = 0; i < NCAPINTS; i++)
- 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
- 	}
--
--	/* Clear all flags overriden by options */
--	for (i = 0; i < NCAPINTS; i++)
--		c->x86_capability[i] &= ~cleared_cpu_caps[i];
- 
- #ifdef CONFIG_X86_MCE
- 	/* Init Machine Check Exception if available. */
-
-
-Subject: x86: override_capabilities in early_identify_cpu
-From: Rusty Russell <rusty@rustcorp.com.au>
-
-Impact: future-proof
-
-This does nothing at the moment, but once early_param() are parsed before
-setup_arch, it will ensure we respect commandline overrides on the boot
-cpu's capabilities.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Yinghai Lu <yinghai.lu@kernel.org>
-
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -559,6 +559,8 @@ static void __init early_identify_cpu(st
- 
- 	if (this_cpu->c_early_init)
- 		this_cpu->c_early_init(c);
-+
-+	override_capabilities(c->x86_capability);
- 
- 	validate_pat_support(c);
- 
+Heikki
