@@ -1,136 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbYLYSFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbYLYSFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbYLYSFJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:05:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYLYSEy
+	id S1752761AbYLYSFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYLYSE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:04:54 -0500
-Received: from ns2.suse.de ([195.135.220.15]:33654 "EHLO mx2.suse.de"
+	Thu, 25 Dec 2008 13:04:57 -0500
+Received: from ns2.suse.de ([195.135.220.15]:33661 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751595AbYLYSEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:04:54 -0500
+	id S1752011AbYLYSE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 13:04:56 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [git patches] Ocfs2 patches for merge window, batch 3/3
-Date: Thu, 25 Dec 2008 10:04:15 -0800
-Message-Id: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, <linux-ext4@vger.kernel.org>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 01/35] jbd2: Add buffer triggers
+Date: Thu, 25 Dec 2008 10:04:16 -0800
+Message-Id: <1230228290-22803-2-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
+References: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Joel Becker <joel.becker@oracle.com>
 
-This is the 3rd and final batch of Ocfs2 patches intended for the merge
-window. The 2nd batch were sent out previously:
+Filesystems often to do compute intensive operation on some
+metadata.  If this operation is repeated many times, it can be very
+expensive.  It would be much nicer if the operation could be performed
+once before a buffer goes to disk.
 
-http://lkml.org/lkml/2008/12/22/213
+This adds triggers to jbd2 buffer heads.  Just before writing a metadata
+buffer to the journal, jbd2 will optionally call a commit trigger associated
+with the buffer.  If the journal is aborted, an abort trigger will be
+called on any dirty buffers as they are dropped from pending
+transactions.
 
-This batch includes some more xattr fixes, some dlm fixes from Sunil and
-meta data checksumming support from Joel.
+ocfs2 will use this feature.
 
-With all the other prep patches, the checksumming patches become pretty
-straight forward. Mostly it's a matter of finding the right spot in our disk
-structures. For most blocks, we just take an unused field. Directory data
-gets a hidden structure at the end of every block. We'll actually be making
-use of this structure in the future for directory indexing support. The
-checksum code stores an ECC in each 64 bit field, so single bit errors can
-be corrected as those blocks are read.
+Initially I tried to come up with a more generic trigger that could be
+used for non-buffer-related events like transaction completion.  It
+doesn't tie nicely, because the information a buffer trigger needs
+(specific to a journal_head) isn't the same as what a transaction
+trigger needs (specific to a tranaction_t or perhaps journal_t).  So I
+implemented a buffer set, with the understanding that
+journal/transaction wide triggers should be implemented separately.
 
-Checking on read is done with the per-metadata-type callbacks we previously
-added. Write checks are done via a new jbd2 mechanism - 'buffer triggers',
-which is implemented in the 1st patch of this series. The first version of
-the buffer triggers patch got Ted's sign off, but we made some changes and
-sent another version to the ext4 list. The version sent here is the latest
-one. if I got my git send-email command right, Ted and the Ext4 list should
-be CC'd.
-        --Mark
+There is only one trigger set allowed per buffer.  I can't think of any
+reason to attach more than one set.  Contrast this with a journal or
+transaction in which multiple places may want to watch the entire
+transaction separately.
 
-Please pull from 'upstream-round3' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-round3
+The trigger sets are considered static allocation from the jbd2
+perspective.  ocfs2 will just have one trigger set per block type,
+setting the same set on every bh of the same type.
 
-to receive the following updates:
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/jbd2/commit.c             |    9 ++++++++
+ fs/jbd2/journal.c            |   19 +++++++++++++++++
+ fs/jbd2/transaction.c        |   47 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/jbd2.h         |   31 +++++++++++++++++++++++++++
+ include/linux/journal-head.h |    8 +++++++
+ 5 files changed, 114 insertions(+), 0 deletions(-)
 
- fs/jbd2/commit.c             |    9 +
- fs/jbd2/journal.c            |   19 ++
- fs/jbd2/transaction.c        |   47 ++++
- fs/ocfs2/Makefile            |    1 +
- fs/ocfs2/alloc.c             |  315 ++++++++++++++++------------
- fs/ocfs2/alloc.h             |    9 +-
- fs/ocfs2/aops.c              |    8 +-
- fs/ocfs2/blockcheck.c        |  477 ++++++++++++++++++++++++++++++++++++++++++
- fs/ocfs2/blockcheck.h        |   82 +++++++
- fs/ocfs2/dir.c               |  282 ++++++++++++++++++++++---
- fs/ocfs2/dir.h               |    2 +
- fs/ocfs2/dlm/dlmast.c        |   52 +++---
- fs/ocfs2/dlm/dlmcommon.h     |    3 +
- fs/ocfs2/dlm/dlmdebug.c      |   53 ++---
- fs/ocfs2/dlm/dlmdomain.c     |    1 +
- fs/ocfs2/dlm/dlmmaster.c     |   42 ++++-
- fs/ocfs2/dlm/dlmthread.c     |    3 +-
- fs/ocfs2/file.c              |   16 +-
- fs/ocfs2/inode.c             |   33 +++-
- fs/ocfs2/journal.c           |  188 ++++++++++++++++-
- fs/ocfs2/journal.h           |   32 +++-
- fs/ocfs2/localalloc.c        |   18 +-
- fs/ocfs2/namei.c             |   38 ++--
- fs/ocfs2/ocfs2.h             |   15 ++
- fs/ocfs2/ocfs2_fs.h          |   87 +++++++-
- fs/ocfs2/quota_global.c      |   25 ++-
- fs/ocfs2/quota_local.c       |   18 +-
- fs/ocfs2/resize.c            |   16 +-
- fs/ocfs2/suballoc.c          |   87 ++++++---
- fs/ocfs2/super.c             |   11 +
- fs/ocfs2/xattr.c             |  312 ++++++++++++++++++----------
- fs/ocfs2/xattr.h             |   14 ++
- include/linux/jbd2.h         |   31 +++
- include/linux/journal-head.h |    8 +
- 34 files changed, 1910 insertions(+), 444 deletions(-)
- create mode 100644 fs/ocfs2/blockcheck.c
- create mode 100644 fs/ocfs2/blockcheck.h
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index ebc667b..c8a1bac 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -509,6 +509,10 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 		if (is_journal_aborted(journal)) {
+ 			clear_buffer_jbddirty(jh2bh(jh));
+ 			JBUFFER_TRACE(jh, "journal is aborting: refile");
++			jbd2_buffer_abort_trigger(jh,
++						  jh->b_frozen_data ?
++						  jh->b_frozen_triggers :
++						  jh->b_triggers);
+ 			jbd2_journal_refile_buffer(journal, jh);
+ 			/* If that was the last one, we need to clean up
+ 			 * any descriptor buffers which may have been
+@@ -844,6 +848,9 @@ restart_loop:
+ 		 * data.
+ 		 *
+ 		 * Otherwise, we can just throw away the frozen data now.
++		 *
++		 * We also know that the frozen data has already fired
++		 * its triggers if they exist, so we can clear that too.
+ 		 */
+ 		if (jh->b_committed_data) {
+ 			jbd2_free(jh->b_committed_data, bh->b_size);
+@@ -851,10 +858,12 @@ restart_loop:
+ 			if (jh->b_frozen_data) {
+ 				jh->b_committed_data = jh->b_frozen_data;
+ 				jh->b_frozen_data = NULL;
++				jh->b_frozen_triggers = NULL;
+ 			}
+ 		} else if (jh->b_frozen_data) {
+ 			jbd2_free(jh->b_frozen_data, bh->b_size);
+ 			jh->b_frozen_data = NULL;
++			jh->b_frozen_triggers = NULL;
+ 		}
+ 
+ 		spin_lock(&journal->j_list_lock);
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index e70d657..f6bff9d 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -50,6 +50,7 @@ EXPORT_SYMBOL(jbd2_journal_unlock_updates);
+ EXPORT_SYMBOL(jbd2_journal_get_write_access);
+ EXPORT_SYMBOL(jbd2_journal_get_create_access);
+ EXPORT_SYMBOL(jbd2_journal_get_undo_access);
++EXPORT_SYMBOL(jbd2_journal_set_triggers);
+ EXPORT_SYMBOL(jbd2_journal_dirty_metadata);
+ EXPORT_SYMBOL(jbd2_journal_release_buffer);
+ EXPORT_SYMBOL(jbd2_journal_forget);
+@@ -290,6 +291,7 @@ int jbd2_journal_write_metadata_buffer(transaction_t *transaction,
+ 	struct page *new_page;
+ 	unsigned int new_offset;
+ 	struct buffer_head *bh_in = jh2bh(jh_in);
++	struct jbd2_buffer_trigger_type *triggers;
+ 
+ 	/*
+ 	 * The buffer really shouldn't be locked: only the current committing
+@@ -314,13 +316,23 @@ repeat:
+ 		done_copy_out = 1;
+ 		new_page = virt_to_page(jh_in->b_frozen_data);
+ 		new_offset = offset_in_page(jh_in->b_frozen_data);
++		triggers = jh_in->b_frozen_triggers;
+ 	} else {
+ 		new_page = jh2bh(jh_in)->b_page;
+ 		new_offset = offset_in_page(jh2bh(jh_in)->b_data);
++		triggers = jh_in->b_triggers;
+ 	}
+ 
+ 	mapped_data = kmap_atomic(new_page, KM_USER0);
+ 	/*
++	 * Fire any commit trigger.  Do this before checking for escaping,
++	 * as the trigger may modify the magic offset.  If a copy-out
++	 * happens afterwards, it will have the correct data in the buffer.
++	 */
++	jbd2_buffer_commit_trigger(jh_in, mapped_data + new_offset,
++				   triggers);
++
++	/*
+ 	 * Check for escaping
+ 	 */
+ 	if (*((__be32 *)(mapped_data + new_offset)) ==
+@@ -352,6 +364,13 @@ repeat:
+ 		new_page = virt_to_page(tmp);
+ 		new_offset = offset_in_page(tmp);
+ 		done_copy_out = 1;
++
++		/*
++		 * This isn't strictly necessary, as we're using frozen
++		 * data for the escaping, but it keeps consistency with
++		 * b_frozen_data usage.
++		 */
++		jh_in->b_frozen_triggers = jh_in->b_triggers;
+ 	}
+ 
+ 	/*
+diff --git a/fs/jbd2/transaction.c b/fs/jbd2/transaction.c
+index 39b7805..4f925a4 100644
+--- a/fs/jbd2/transaction.c
++++ b/fs/jbd2/transaction.c
+@@ -741,6 +741,12 @@ done:
+ 		source = kmap_atomic(page, KM_USER0);
+ 		memcpy(jh->b_frozen_data, source+offset, jh2bh(jh)->b_size);
+ 		kunmap_atomic(source, KM_USER0);
++
++		/*
++		 * Now that the frozen data is saved off, we need to store
++		 * any matching triggers.
++		 */
++		jh->b_frozen_triggers = jh->b_triggers;
+ 	}
+ 	jbd_unlock_bh_state(bh);
+ 
+@@ -944,6 +950,47 @@ out:
+ }
+ 
+ /**
++ * void jbd2_journal_set_triggers() - Add triggers for commit writeout
++ * @bh: buffer to trigger on
++ * @type: struct jbd2_buffer_trigger_type containing the trigger(s).
++ *
++ * Set any triggers on this journal_head.  This is always safe, because
++ * triggers for a committing buffer will be saved off, and triggers for
++ * a running transaction will match the buffer in that transaction.
++ *
++ * Call with NULL to clear the triggers.
++ */
++void jbd2_journal_set_triggers(struct buffer_head *bh,
++			       struct jbd2_buffer_trigger_type *type)
++{
++	struct journal_head *jh = bh2jh(bh);
++
++	jh->b_triggers = type;
++}
++
++void jbd2_buffer_commit_trigger(struct journal_head *jh, void *mapped_data,
++				struct jbd2_buffer_trigger_type *triggers)
++{
++	struct buffer_head *bh = jh2bh(jh);
++
++	if (!triggers || !triggers->t_commit)
++		return;
++
++	triggers->t_commit(triggers, bh, mapped_data, bh->b_size);
++}
++
++void jbd2_buffer_abort_trigger(struct journal_head *jh,
++			       struct jbd2_buffer_trigger_type *triggers)
++{
++	if (!triggers || !triggers->t_abort)
++		return;
++
++	triggers->t_abort(triggers, jh2bh(jh));
++}
++
++
++
++/**
+  * int jbd2_journal_dirty_metadata() -  mark a buffer as containing dirty metadata
+  * @handle: transaction to add buffer to.
+  * @bh: buffer to mark
+diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
+index f366457..3445647 100644
+--- a/include/linux/jbd2.h
++++ b/include/linux/jbd2.h
+@@ -1008,6 +1008,35 @@ int __jbd2_journal_clean_checkpoint_list(journal_t *journal);
+ int __jbd2_journal_remove_checkpoint(struct journal_head *);
+ void __jbd2_journal_insert_checkpoint(struct journal_head *, transaction_t *);
+ 
++
++/*
++ * Triggers
++ */
++
++struct jbd2_buffer_trigger_type {
++	/*
++	 * Fired just before a buffer is written to the journal.
++	 * mapped_data is a mapped buffer that is the frozen data for
++	 * commit.
++	 */
++	void (*t_commit)(struct jbd2_buffer_trigger_type *type,
++			 struct buffer_head *bh, void *mapped_data,
++			 size_t size);
++
++	/*
++	 * Fired during journal abort for dirty buffers that will not be
++	 * committed.
++	 */
++	void (*t_abort)(struct jbd2_buffer_trigger_type *type,
++			struct buffer_head *bh);
++};
++
++extern void jbd2_buffer_commit_trigger(struct journal_head *jh,
++				       void *mapped_data,
++				       struct jbd2_buffer_trigger_type *triggers);
++extern void jbd2_buffer_abort_trigger(struct journal_head *jh,
++				      struct jbd2_buffer_trigger_type *triggers);
++
+ /* Buffer IO */
+ extern int
+ jbd2_journal_write_metadata_buffer(transaction_t	  *transaction,
+@@ -1046,6 +1075,8 @@ extern int	 jbd2_journal_extend (handle_t *, int nblocks);
+ extern int	 jbd2_journal_get_write_access(handle_t *, struct buffer_head *);
+ extern int	 jbd2_journal_get_create_access (handle_t *, struct buffer_head *);
+ extern int	 jbd2_journal_get_undo_access(handle_t *, struct buffer_head *);
++void		 jbd2_journal_set_triggers(struct buffer_head *,
++					   struct jbd2_buffer_trigger_type *type);
+ extern int	 jbd2_journal_dirty_metadata (handle_t *, struct buffer_head *);
+ extern void	 jbd2_journal_release_buffer (handle_t *, struct buffer_head *);
+ extern int	 jbd2_journal_forget (handle_t *, struct buffer_head *);
+diff --git a/include/linux/journal-head.h b/include/linux/journal-head.h
+index bb70ebb..525aac3 100644
+--- a/include/linux/journal-head.h
++++ b/include/linux/journal-head.h
+@@ -12,6 +12,8 @@
+ 
+ typedef unsigned int		tid_t;		/* Unique transaction ID */
+ typedef struct transaction_s	transaction_t;	/* Compound transaction type */
++
++
+ struct buffer_head;
+ 
+ struct journal_head {
+@@ -87,6 +89,12 @@ struct journal_head {
+ 	 * [j_list_lock]
+ 	 */
+ 	struct journal_head *b_cpnext, *b_cpprev;
++
++	/* Trigger type */
++	struct jbd2_buffer_trigger_type *b_triggers;
++
++	/* Trigger type for the committing transaction's frozen data */
++	struct jbd2_buffer_trigger_type *b_frozen_triggers;
+ };
+ 
+ #endif		/* JOURNAL_HEAD_H_INCLUDED */
+-- 
+1.5.6
 
-Joel Becker (23):
-      jbd2: Add buffer triggers
-      ocfs2: Add the on-disk structures for metadata checksums.
-      ocfs2: Add the underlying blockcheck code.
-      ocfs2: Add a validation hook for quota block reads.
-      ocfs2: block read meta ecc.
-      ocfs2: Add journal_access functions with jbd2 triggers.
-      ocfs2: Wrap up the common use cases of ocfs2_new_path().
-      ocfs2: Use metadata-specific ocfs2_journal_access_*() functions.
-      ocfs2: Add ecc and checksums to ocfs2 xattr buckets.
-      ocfs2: Create ocfs2_xattr_value_buf.
-      ocfs2: Pull ocfs2_xattr_value_buf up from __ocfs2_remove_xattr_range().
-      ocfs2: Pull ocfs2_xattr_value_buf up into ocfs2_xattr_value_truncate().
-      ocfs2: Pass ocfs2_xattr_value_buf into ocfs2_xattr_value_truncate().
-      ocfs2: Pass value buf to ocfs2_xattr_update_entry().
-      ocfs2: Use ocfs2_xattr_value_buf in ocfs2_xattr_set_entry().
-      ocfs2: Pass value buf to ocfs2_remove_value_outside().
-      ocfs2: Use proper journal_access function in xattr.c
-      ocfs2: Checksum and ECC for directory blocks.
-      ocfs2: Validate superblock with checksum and ecc.
-      ocfs2: Enable metadata checksums.
-      ocfs2: Don't hand-code xor in ocfs2_hamming_encode().
-      ocfs2: Another hamming code optimization.
-      ocfs2: One more hamming code optimization.
-
-Mark Fasheh (1):
-      ocfs2: Add directory block trailers.
-
-Sunil Mushran (5):
-      ocfs2/dlm: Fix a race between migrate request and exit domain
-      ocfs2/dlm: Clean up errors in dlm_proxy_ast_handler()
-      ocfs2/dlm: Hold off sending lockres drop ref message while lockres is migrating
-      ocfs2/dlm: Fix race in adding/removing lockres' to/from the tracking list
-      ocfs2/dlm: Fix race during lockres mastery
-
-Tao Ma (3):
-      ocfs2/xattr: Remove extend_trans call and add its credits from the beginning
-      ocfs2/xattr: Always updating ctime during xattr set.
-      ocfs2/xattr: fix credits calculation during index create
-
-Tiger Yang (3):
-      ocfs2: calculate and reserve credits for xattr value in mknod
-      ocfs2: alloc xattr bucket in ocfs2_xattr_set_handle
-      ocfs2: Add xattr support checking in init_security
