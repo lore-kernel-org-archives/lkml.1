@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751807AbYLYJUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbYLYJbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751807AbYLYJUl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 04:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYLYJU2
+	id S1752087AbYLYJbl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 04:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYLYJbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 04:20:28 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58273 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752114AbYLYJU1 (ORCPT
+	Thu, 25 Dec 2008 04:31:33 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36982 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbYLYJbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 04:20:27 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+	Thu, 25 Dec 2008 04:31:32 -0500
+Date: Thu, 25 Dec 2008 10:33:01 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] Performance Counters for Linux, v5
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20081225080422.GA9430@elte.hu>
-References: <20081225162242.50E8.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081225080422.GA9430@elte.hu>
-Message-Id: <20081225175131.50EB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 25 Dec 2008 18:20:17 +0900 (JST)
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, akpm@linux-foundation.org, ralf@linux-mips.org,
+       kernel@wantstofly.org, hskinnemoen@atmel.com, cooloney@kernel.org,
+       tony.luck@intel.com, geert@linux-m68k.org, zippel@linux-m68k.org,
+       jwboyer@linux.vnet.ibm.com, mporter@kernel.crashing.org,
+       grant.likely@secretlab.ca, paulus@samba.org, benh@kernel.crashing.org,
+       dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
+       lethal@linux-sh.org, hpa@zytor.com
+Subject: Re: [PATCH -tip] Switch arm defconfig files from CONFIG_CLASSIC_RCU to CONFIG_TREE_RCU.
+Message-ID: <20081225093301.GB27896@uranus.ravnborg.org>
+References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com> <12299911471985-git-send-email-paulmck@linux.vnet.ibm.com> <20081223142542.GC29151@elte.hu> <20081225083611.GA14968@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081225083611.GA14968@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 25, 2008 at 09:36:11AM +0100, Ingo Molnar wrote:
 > 
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > Hi Ingo,
-> > 
-> > Currently, -tip tree can't build on my ia64 box.
-> > because..
-> > 
-> > >  create mode 100644 Documentation/perf-counters.txt
-> > >  delete mode 100644 arch/x86/include/asm/intel_arch_perfmon.h
-> > >  create mode 100644 arch/x86/include/asm/perf_counter.h
-> > >  create mode 100644 arch/x86/kernel/cpu/perf_counter.c
-> > >  rename arch/x86/kernel/{signal_32.c => signal.c} (74%)
-> > >  delete mode 100644 arch/x86/kernel/signal_64.c
-> > >  create mode 100644 include/linux/perf_counter.h
-> > >  create mode 100644 kernel/perf_counter.c
-> > 
-> > 
-> > Only x86 has <asm/perf_counter.h>.
-> 
-> thanks - the fix below resolves it, right?
-> 
-> 	Ingo
+> below is the fix for another small buglet that hits architectures that do 
+> not include kernel/Kconfig.preempt.
 
-ok.
-Now, my box boot successfully.
+What is needed to let all architectures include Kconfig.preempt?
+We should not advertise preemption if not supported,
+but we could do this by a simple Kconfig symbol:
 
-	Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+config HAVE_PREEMPT
+	bool
 
-thanks.
+And let all architectures that supports preemption do:
 
+config "ARCH"
+	select HAVE_PREEMPT
 
+But maybe there is a simpler solution
+
+	Sam
