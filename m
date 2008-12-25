@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751738AbYLYSJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbYLYSJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751738AbYLYSJJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYLYSFU
+	id S1753127AbYLYSJr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYLYSFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:05:20 -0500
-Received: from ns.suse.de ([195.135.220.2]:60636 "EHLO mx1.suse.de"
+	Thu, 25 Dec 2008 13:05:23 -0500
+Received: from mail.suse.de ([195.135.220.2]:60640 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbYLYSFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:05:13 -0500
+	id S1752698AbYLYSFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 13:05:17 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 11/35] ocfs2: Pull ocfs2_xattr_value_buf up from __ocfs2_remove_xattr_range().
-Date: Thu, 25 Dec 2008 10:04:26 -0800
-Message-Id: <1230228290-22803-12-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 13/35] ocfs2: Pass ocfs2_xattr_value_buf into ocfs2_xattr_value_truncate().
+Date: Thu, 25 Dec 2008 10:04:28 -0800
+Message-Id: <1230228290-22803-14-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
 References: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
@@ -25,92 +25,195 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-Place an ocfs2_xattr_value_buf in __ocfs2_xattr_shrink_size() and pass
-it down to __ocfs2_remove_xattr_range().
+The callers of ocfs2_xattr_value_truncate() now pass in
+ocfs2_xattr_value_bufs.  These callers are the ones that calculated the
+xv location, so they are the right starting point.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
+ fs/ocfs2/xattr.c |   66 +++++++++++++++++++++++++++--------------------------
+ 1 files changed, 34 insertions(+), 32 deletions(-)
 
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 123d378..3b059cf 100644
+index 4ce8019..409f9ee 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -636,8 +636,7 @@ leave:
+@@ -718,19 +718,13 @@ out:
  }
  
- static int __ocfs2_remove_xattr_range(struct inode *inode,
+ static int ocfs2_xattr_value_truncate(struct inode *inode,
 -				      struct buffer_head *root_bh,
 -				      struct ocfs2_xattr_value_root *xv,
 +				      struct ocfs2_xattr_value_buf *vb,
- 				      u32 cpos, u32 phys_cpos, u32 len,
+ 				      int len,
  				      struct ocfs2_xattr_set_ctxt *ctxt)
  {
-@@ -645,16 +644,11 @@ static int __ocfs2_remove_xattr_range(struct inode *inode,
- 	u64 phys_blkno = ocfs2_clusters_to_blocks(inode->i_sb, phys_cpos);
- 	handle_t *handle = ctxt->handle;
- 	struct ocfs2_extent_tree et;
+ 	int ret;
+ 	u32 new_clusters = ocfs2_clusters_for_bytes(inode->i_sb, len);
+-	u32 old_clusters = le32_to_cpu(xv->xr_clusters);
 -	struct ocfs2_xattr_value_buf vb = {
 -		.vb_bh = root_bh,
 -		.vb_xv = xv,
 -		.vb_access = ocfs2_journal_access,
 -	};
++	u32 old_clusters = le32_to_cpu(vb->vb_xv->xr_clusters);
  
--	ocfs2_init_xattr_value_extent_tree(&et, inode, &vb);
-+	ocfs2_init_xattr_value_extent_tree(&et, inode, vb);
+ 	if (new_clusters == old_clusters)
+ 		return 0;
+@@ -738,11 +732,11 @@ static int ocfs2_xattr_value_truncate(struct inode *inode,
+ 	if (new_clusters > old_clusters)
+ 		ret = ocfs2_xattr_extend_allocation(inode,
+ 						    new_clusters - old_clusters,
+-						    &vb, ctxt);
++						    vb, ctxt);
+ 	else
+ 		ret = ocfs2_xattr_shrink_size(inode,
+ 					      old_clusters, new_clusters,
+-					      &vb, ctxt);
++					      vb, ctxt);
  
--	ret = vb.vb_access(handle, inode, vb.vb_bh,
--			   OCFS2_JOURNAL_ACCESS_WRITE);
-+	ret = vb->vb_access(handle, inode, vb->vb_bh,
-+			    OCFS2_JOURNAL_ACCESS_WRITE);
- 	if (ret) {
- 		mlog_errno(ret);
- 		goto out;
-@@ -667,9 +661,9 @@ static int __ocfs2_remove_xattr_range(struct inode *inode,
- 		goto out;
- 	}
- 
--	le32_add_cpu(&vb.vb_xv->xr_clusters, -len);
-+	le32_add_cpu(&vb->vb_xv->xr_clusters, -len);
- 
--	ret = ocfs2_journal_dirty(handle, vb.vb_bh);
-+	ret = ocfs2_journal_dirty(handle, vb->vb_bh);
- 	if (ret) {
- 		mlog_errno(ret);
- 		goto out;
-@@ -693,6 +687,11 @@ static int ocfs2_xattr_shrink_size(struct inode *inode,
+ 	return ret;
+ }
+@@ -1330,6 +1324,10 @@ static int ocfs2_xattr_set_value_outside(struct inode *inode,
+ 	struct ocfs2_xattr_value_root *xv = NULL;
+ 	size_t size = OCFS2_XATTR_SIZE(name_len) + OCFS2_XATTR_ROOT_SIZE;
  	int ret = 0;
- 	u32 trunc_len, cpos, phys_cpos, alloc_size;
- 	u64 block;
 +	struct ocfs2_xattr_value_buf vb = {
-+		.vb_bh = root_bh,
-+		.vb_xv = xv,
++		.vb_bh = xs->xattr_bh,
++		.vb_access = ocfs2_journal_access
++	};
+ 
+ 	memset(val, 0, size);
+ 	memcpy(val, xi->name, name_len);
+@@ -1340,9 +1338,9 @@ static int ocfs2_xattr_set_value_outside(struct inode *inode,
+ 	xv->xr_list.l_tree_depth = 0;
+ 	xv->xr_list.l_count = cpu_to_le16(1);
+ 	xv->xr_list.l_next_free_rec = 0;
++	vb.vb_xv = xv;
+ 
+-	ret = ocfs2_xattr_value_truncate(inode, xs->xattr_bh, xv,
+-					 xi->value_len, ctxt);
++	ret = ocfs2_xattr_value_truncate(inode, &vb, xi->value_len, ctxt);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		return ret;
+@@ -1352,7 +1350,7 @@ static int ocfs2_xattr_set_value_outside(struct inode *inode,
+ 		mlog_errno(ret);
+ 		return ret;
+ 	}
+-	ret = __ocfs2_xattr_set_value_outside(inode, ctxt->handle, xv,
++	ret = __ocfs2_xattr_set_value_outside(inode, ctxt->handle, vb.vb_xv,
+ 					      xi->value, xi->value_len);
+ 	if (ret < 0)
+ 		mlog_errno(ret);
+@@ -1550,9 +1548,12 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
+ 			goto out;
+ 		} else if (!ocfs2_xattr_is_local(xs->here)) {
+ 			/* For existing xattr which has value outside */
+-			struct ocfs2_xattr_value_root *xv = NULL;
+-			xv = (struct ocfs2_xattr_value_root *)(val +
+-				OCFS2_XATTR_SIZE(name_len));
++			struct ocfs2_xattr_value_buf vb = {
++				.vb_bh = xs->xattr_bh,
++				.vb_xv = (struct ocfs2_xattr_value_root *)
++					(val + OCFS2_XATTR_SIZE(name_len)),
++				.vb_access = ocfs2_journal_access,
++			};
+ 
+ 			if (xi->value_len > OCFS2_XATTR_INLINE_SIZE) {
+ 				/*
+@@ -1561,8 +1562,7 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
+ 				 * then set new value with set_value_outside().
+ 				 */
+ 				ret = ocfs2_xattr_value_truncate(inode,
+-								 xs->xattr_bh,
+-								 xv,
++								 &vb,
+ 								 xi->value_len,
+ 								 ctxt);
+ 				if (ret < 0) {
+@@ -1582,7 +1582,7 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
+ 
+ 				ret = __ocfs2_xattr_set_value_outside(inode,
+ 								handle,
+-								xv,
++								vb.vb_xv,
+ 								xi->value,
+ 								xi->value_len);
+ 				if (ret < 0)
+@@ -1594,8 +1594,7 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
+ 				 * just trucate old value to zero.
+ 				 */
+ 				 ret = ocfs2_xattr_value_truncate(inode,
+-								  xs->xattr_bh,
+-								  xv,
++								  &vb,
+ 								  0,
+ 								  ctxt);
+ 				if (ret < 0)
+@@ -1714,15 +1713,17 @@ static int ocfs2_remove_value_outside(struct inode*inode,
+ 		struct ocfs2_xattr_entry *entry = &header->xh_entries[i];
+ 
+ 		if (!ocfs2_xattr_is_local(entry)) {
+-			struct ocfs2_xattr_value_root *xv;
++			struct ocfs2_xattr_value_buf vb = {
++				.vb_bh = bh,
++				.vb_access = ocfs2_journal_access,
++			};
+ 			void *val;
+ 
+ 			val = (void *)header +
+ 				le16_to_cpu(entry->xe_name_offset);
+-			xv = (struct ocfs2_xattr_value_root *)
++			vb.vb_xv = (struct ocfs2_xattr_value_root *)
+ 				(val + OCFS2_XATTR_SIZE(entry->xe_name_len));
+-			ret = ocfs2_xattr_value_truncate(inode, bh, xv,
+-							 0, &ctxt);
++			ret = ocfs2_xattr_value_truncate(inode, &vb, 0, &ctxt);
+ 			if (ret < 0) {
+ 				mlog_errno(ret);
+ 				break;
+@@ -4651,11 +4652,12 @@ static int ocfs2_xattr_bucket_value_truncate(struct inode *inode,
+ {
+ 	int ret, offset;
+ 	u64 value_blk;
+-	struct buffer_head *value_bh = NULL;
+-	struct ocfs2_xattr_value_root *xv;
+ 	struct ocfs2_xattr_entry *xe;
+ 	struct ocfs2_xattr_header *xh = bucket_xh(bucket);
+ 	size_t blocksize = inode->i_sb->s_blocksize;
++	struct ocfs2_xattr_value_buf vb = {
 +		.vb_access = ocfs2_journal_access,
 +	};
  
- 	if (old_clusters <= new_clusters)
- 		return 0;
-@@ -701,7 +700,8 @@ static int ocfs2_xattr_shrink_size(struct inode *inode,
- 	trunc_len = old_clusters - new_clusters;
- 	while (trunc_len) {
- 		ret = ocfs2_xattr_get_clusters(inode, cpos, &phys_cpos,
--					       &alloc_size, &xv->xr_list);
-+					       &alloc_size,
-+					       &vb.vb_xv->xr_list);
- 		if (ret) {
- 			mlog_errno(ret);
- 			goto out;
-@@ -710,7 +710,7 @@ static int ocfs2_xattr_shrink_size(struct inode *inode,
- 		if (alloc_size > trunc_len)
- 			alloc_size = trunc_len;
+ 	xe = &xh->xh_entries[xe_off];
  
--		ret = __ocfs2_remove_xattr_range(inode, root_bh, xv, cpos,
-+		ret = __ocfs2_remove_xattr_range(inode, &vb, cpos,
- 						 phys_cpos, alloc_size,
- 						 ctxt);
- 		if (ret) {
+@@ -4669,11 +4671,11 @@ static int ocfs2_xattr_bucket_value_truncate(struct inode *inode,
+ 	/* We don't allow ocfs2_xattr_value to be stored in different block. */
+ 	BUG_ON(value_blk != (offset + OCFS2_XATTR_ROOT_SIZE - 1) / blocksize);
+ 
+-	value_bh = bucket->bu_bhs[value_blk];
+-	BUG_ON(!value_bh);
++	vb.vb_bh = bucket->bu_bhs[value_blk];
++	BUG_ON(!vb.vb_bh);
+ 
+-	xv = (struct ocfs2_xattr_value_root *)
+-		(value_bh->b_data + offset % blocksize);
++	vb.vb_xv = (struct ocfs2_xattr_value_root *)
++		(vb.vb_bh->b_data + offset % blocksize);
+ 
+ 	ret = ocfs2_xattr_bucket_journal_access(ctxt->handle, bucket,
+ 						OCFS2_JOURNAL_ACCESS_WRITE);
+@@ -4691,7 +4693,7 @@ static int ocfs2_xattr_bucket_value_truncate(struct inode *inode,
+ 	 */
+ 	mlog(0, "truncate %u in xattr bucket %llu to %d bytes.\n",
+ 	     xe_off, (unsigned long long)bucket_blkno(bucket), len);
+-	ret = ocfs2_xattr_value_truncate(inode, value_bh, xv, len, ctxt);
++	ret = ocfs2_xattr_value_truncate(inode, &vb, len, ctxt);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out_dirty;
 -- 
 1.5.6
 
