@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbYLYSPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYLYSQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbYLYSPw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYLYSFr
+	id S1754233AbYLYSQN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:16:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYLYSFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:05:47 -0500
-Received: from ns2.suse.de ([195.135.220.15]:33770 "EHLO mx2.suse.de"
+	Thu, 25 Dec 2008 13:05:49 -0500
+Received: from mx2.suse.de ([195.135.220.15]:33773 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752800AbYLYSFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:05:46 -0500
+	id S1752302AbYLYSFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 13:05:48 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Tao Ma <tao.ma@oracle.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 30/35] ocfs2/xattr: Remove extend_trans call and add its credits from the beginning
-Date: Thu, 25 Dec 2008 10:04:45 -0800
-Message-Id: <1230228290-22803-31-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 31/35] ocfs2/xattr: Always updating ctime during xattr set.
+Date: Thu, 25 Dec 2008 10:04:46 -0800
+Message-Id: <1230228290-22803-32-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
 References: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
@@ -25,66 +25,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tao Ma <tao.ma@oracle.com>
 
-Actually, when setting a new xattr value, we know it from the very
-beginning, and it isn't like the extension of bucket in which case
-we can't figure it out. So remove ocfs2_extend_trans in that function
-and calculate it before the transaction. It also relieve acl operation
-from the worry about the side effect of ocfs2_extend_trans.
+In xattr set, we should always update ctime if the operation goes
+sucessfully. The old one mistakenly put it in ocfs2_xattr_set_entry
+which is only called when we set xattr in inode or xattr block. The
+side benefit is that it resolve the bug 1052 since in that scenario,
+ocfs2_calc_xattr_set_need only calc out the xattr set credits while
+ocfs2_xattr_set_entry update the inode also which isn't concerned with
+the process of xattr set.
 
 Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   23 ++++++++++-------------
- 1 files changed, 10 insertions(+), 13 deletions(-)
+ fs/ocfs2/xattr.c |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
 
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 17028aa..93a1ab4 100644
+index 93a1ab4..3e2e92d 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -1169,7 +1169,7 @@ static int __ocfs2_xattr_set_value_outside(struct inode *inode,
- 					   const void *value,
- 					   int value_len)
- {
--	int ret = 0, i, cp_len, credits;
-+	int ret = 0, i, cp_len;
- 	u16 blocksize = inode->i_sb->s_blocksize;
- 	u32 p_cluster, num_clusters;
- 	u32 cpos = 0, bpc = ocfs2_clusters_to_blocks(inode->i_sb, 1);
-@@ -1179,18 +1179,6 @@ static int __ocfs2_xattr_set_value_outside(struct inode *inode,
+@@ -1651,10 +1651,6 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
+ 	oi->ip_dyn_features |= flag;
+ 	di->i_dyn_features = cpu_to_le16(oi->ip_dyn_features);
+ 	spin_unlock(&oi->ip_lock);
+-	/* Update inode ctime */
+-	inode->i_ctime = CURRENT_TIME;
+-	di->i_ctime = cpu_to_le64(inode->i_ctime.tv_sec);
+-	di->i_ctime_nsec = cpu_to_le32(inode->i_ctime.tv_nsec);
  
- 	BUG_ON(clusters > le32_to_cpu(xv->xr_clusters));
+ 	ret = ocfs2_journal_dirty(handle, xs->inode_bh);
+ 	if (ret < 0)
+@@ -2574,6 +2570,20 @@ static int __ocfs2_xattr_set_handle(struct inode *inode,
+ 		}
+ 	}
  
--	/*
--	 * In __ocfs2_xattr_set_value_outside has already been dirtied,
--	 * so we don't need to worry about whether ocfs2_extend_trans
--	 * will create a new transactio for us or not.
--	 */
--	credits = clusters * bpc;
--	ret = ocfs2_extend_trans(handle, credits);
--	if (ret) {
--		mlog_errno(ret);
--		goto out;
--	}
--
- 	while (cpos < clusters) {
- 		ret = ocfs2_xattr_get_clusters(inode, cpos, &p_cluster,
- 					       &num_clusters, &xv->xr_list);
-@@ -2233,6 +2221,15 @@ static int ocfs2_calc_xattr_set_need(struct inode *inode,
- 						    xi->value_len);
- 	u64 value_size;
- 
-+	/*
-+	 * Calculate the clusters we need to write.
-+	 * No matter whether we replace an old one or add a new one,
-+	 * we need this for writing.
-+	 */
-+	if (xi->value_len > OCFS2_XATTR_INLINE_SIZE)
-+		credits += new_clusters *
-+			   ocfs2_clusters_to_blocks(inode->i_sb, 1);
++	if (!ret) {
++		/* Update inode ctime. */
++		ret = ocfs2_journal_access(ctxt->handle, inode, xis->inode_bh,
++					   OCFS2_JOURNAL_ACCESS_WRITE);
++		if (ret) {
++			mlog_errno(ret);
++			goto out;
++		}
 +
- 	if (xis->not_found && xbs->not_found) {
- 		credits += ocfs2_blocks_per_xattr_bucket(inode->i_sb);
++		inode->i_ctime = CURRENT_TIME;
++		di->i_ctime = cpu_to_le64(inode->i_ctime.tv_sec);
++		di->i_ctime_nsec = cpu_to_le32(inode->i_ctime.tv_nsec);
++		ocfs2_journal_dirty(ctxt->handle, xis->inode_bh);
++	}
+ out:
+ 	return ret;
+ }
+@@ -2750,6 +2760,8 @@ int ocfs2_xattr_set(struct inode *inode,
+ 		goto cleanup;
+ 	}
  
++	/* we need to update inode's ctime field, so add credit for it. */
++	credits += OCFS2_INODE_UPDATE_CREDITS;
+ 	ctxt.handle = ocfs2_start_trans(osb, credits);
+ 	if (IS_ERR(ctxt.handle)) {
+ 		ret = PTR_ERR(ctxt.handle);
 -- 
 1.5.6
 
