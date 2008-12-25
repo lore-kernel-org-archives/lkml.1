@@ -1,43 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752096AbYLYNa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752356AbYLYNbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752096AbYLYNa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 08:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYLYNat
+	id S1752356AbYLYNbb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 08:31:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYLYNbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 08:30:49 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:58822 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbYLYNas (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 08:30:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Lf3epQ4uOCxJhCL90eeIKBAxK1Q6KyWFIP8gbIA7m7ngXpOTOW+6blMiRT/JTc34E8
-         +ljJrT/ZOcEWhHSBiAReu/IHX9UwxS0YzHMvXCiYQv8DI18Tnk6yUaFmu6KBK8IcaYpD
-         fhl+Bc/Cc/6RpSYQ5wW4r4xKRr3NE7peDAwn8=
-Message-ID: <298610bb0812250530r4661cbfaof88ba9d3946e744f@mail.gmail.com>
-Date: Thu, 25 Dec 2008 14:30:46 +0100
-From: "=?UTF-8?Q?Krzysztof_Kosi=C5=84ski?=" <tweenk.pl@gmail.com>
+	Thu, 25 Dec 2008 08:31:21 -0500
+Received: from lucidpixels.com ([75.144.35.66]:55248 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750850AbYLYNbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 08:31:20 -0500
+Date: Thu, 25 Dec 2008 08:31:18 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tc1100-wmi: fix state reporting
-Cc: "Carlos Corbacho" <carlos@strangeworlds.co.uk>, linux-acpi@vger.kernel.org,
-       "Len Brown" <lenb@kernel.org>
-In-Reply-To: <200812250755.39288.carlos@strangeworlds.co.uk>
+cc: linux-raid@vger.kernel.org, bug-parted@gnu.org, ataraid-list@redhat.com,
+       xfs@oss.sgi.com
+Subject: How do I tell if my partition is aligned for a 64k/RAID-6?
+Message-ID: <alpine.DEB.1.10.0812250821360.31386@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <298610bb0812241845h41f5f916p73f85c64367ed8c@mail.gmail.com>
-	 <200812250755.39288.carlos@strangeworlds.co.uk>
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBPDV6ki021163
 
-(Resend)This small patch fixes the state reported when reading the files in/sys/devices/platofrm/tc1100-wmi/*. The first change fixes alwaysreturning 0 from the files in sysfs. The second one fixes jogdialstate reporting to match with the commands used to set it (e.g. nowafter "echo 0 > /sys/devices/platofrm/tc1100-wmi/jogdial", "cat/sys/devices/platofrm/tc1100-wmi/jogdial" will return 0 instead of 1).Fixes bug #12286.
-Signed-off-by: Krzysztof Kosi≈Ñski <tweenk.pl@gmail.com>
---- linux-2.6.27/drivers/misc/tc1100-wmi.c      2008-10-1000:13:53.000000000 +0200+++ linux/drivers/misc/tc1100-wmi.c     2008-12-25 02:58:48.000000000 +0100@@ -95,9 +95,8 @@               return -ENODEV;
-       obj = (union acpi_object *) result.pointer;-       if (obj && obj->type == ACPI_TYPE_BUFFER &&-               obj->buffer.length == sizeof(u32)) {-               tmp = *((u32 *) obj->buffer.pointer);+       if (obj && obj->type == ACPI_TYPE_INTEGER) {+               tmp = obj->integer.value;       } else {               tmp = 0;       }@@ -110,7 +109,7 @@               *out = (tmp == 3) ? 1 : 0;               return 0;       case TC1100_INSTANCE_JOGDIAL:-               *out = (tmp == 1) ? 1 : 0;+               *out = (tmp == 1) ? 0 : 1;               return 0;       default:               return -ENODEV;ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+Output:
+
+===============================================================================
+
+p34:~# parted /dev/sda print unit s print unit chs print
+Model: AMCC 9650SE-16M DISK (scsi)
+Disk /dev/sda: 13.0TB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+
+Number  Start   End     Size    File system  Name  Flags
+  1      17.4kB  13.0TB  13.0TB  xfs
+
+Model: AMCC 9650SE-16M DISK (scsi)
+Disk /dev/sda: 25390350336s
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+
+Number  Start  End           Size          File system  Name  Flags
+  1      34s    25390350302s  25390350269s  xfs
+
+Model: AMCC 9650SE-16M DISK (scsi)
+Disk /dev/sda: 1580476,53,56
+Sector size (logical/physical): 512B/512B
+BIOS cylinder,head,sector geometry: 1580476,255,63.  Each cylinder is 8225kB.
+Partition Table: gpt
+
+Number  Start   End            File system  Name  Flags
+  1      0,0,34  1580476,53,23  xfs
+
+p34:~#
+
+===============================================================================
+
+I created a partition from 0Gb to 13T on the following LUN, but how do I 
+verify this is aligned to the (hardware) 64KiB raid-6 array?
+
+Unit  UnitType  Status         %RCmpl  %V/I/M  Stripe  Size(GB)  Cache  AVrfy
+------------------------------------------------------------------------------
+u0    RAID-6    OK             -       -       64K     12107.1   ON     ON
+
+===============================================================================
+
+p34:~# xfs_info /dev/sda1
+meta-data=/dev/sda1              isize=256    agcount=12, agsize=268435455 
+blks
+          =                       sectsz=512   attr=2
+data     =                       bsize=4096   blocks=3173793783, imaxpct=5
+          =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096
+log      =internal               bsize=4096   blocks=32768, version=2
+          =                       sectsz=512   sunit=0 blks, lazy-count=0
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+===============================================================================
+
+I am not worried about the filesystem as the defaults usually get it right 
+but with parted, this is the first time I had to use it for home use and 
+with RAID-6 I am noticing slower performance with 15 disks (1 is a spare) 
+in RAID-6 (albeit slower 7200 ones, RE3s) than I was getting with 10 
+raptor150s in RAID-6 (but I had used fdisk there).
+
+Justin.
+
