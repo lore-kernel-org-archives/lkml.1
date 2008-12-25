@@ -1,126 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbYLYMU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbYLYM1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752116AbYLYMU7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 07:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYLYMUv
+	id S1752116AbYLYM1A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 07:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbYLYM0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 07:20:51 -0500
-Received: from ozlabs.org ([203.10.76.45]:41428 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751723AbYLYMUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 07:20:50 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [RFC PATCH] param: start_kernel_with_args()
-Date: Thu, 25 Dec 2008 22:50:44 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>, Hugh Dickins <hugh@veritas.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Luck, Tony" <tony.luck@intel.com>
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils> <20081223143327.GF29151@elte.hu> <200812252247.12957.rusty@rustcorp.com.au>
-In-Reply-To: <200812252247.12957.rusty@rustcorp.com.au>
+	Thu, 25 Dec 2008 07:26:49 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:38724 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbYLYM0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 07:26:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=UtVJGm/wA5yKH18CcfeFaP2S0iDSihELpaAkzhcCiMkrE9jEdQrhmZWkdETPAgamwp
+         PuYcmev2oo1I87M84nv95bKJw7irbtIwNvdgTGSZKBswkRYNX1uccnH7FNpbB2mr1Kpm
+         z+9RZiasGrWP1CztZUpqX5BrlOQh/1kHRXTiU=
+Message-ID: <84144f020812250426x255cc00esd33f0075292b486b@mail.gmail.com>
+Date: Thu, 25 Dec 2008 14:26:42 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Hans Lambrechts" <hans.lambrechts@skynet.be>
+Subject: Re: Happy v2.6.28
+Cc: linux-kernel@vger.kernel.org, "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <200812250853.mBP8rxrr004080@server.home.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812252250.45071.rusty@rustcorp.com.au>
+References: <bMLNZ-3QM-1@gated-at.bofh.it>
+	 <200812250853.mBP8rxrr004080@server.home.lan>
+X-Google-Sender-Auth: 7920f7f35e1fe587
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a cute corollary of the cleanup patches.  IA64 could particularly
-benefit I think.
+Hi Hans,
 
-Impact: cleanup, new API
+On Thu, Dec 25, 2008 at 10:53 AM, Hans Lambrechts
+<hans.lambrechts@skynet.be> wrote:
+> this message appears in the log when the sendmail daemon tries to start.
+> This BUG appears in v2.6.28, -rc9 works fine.
+>
+> Dec 25 09:30:45 server kernel: BUG: unable to handle kernel paging request
+> at 00442001
+> Dec 25 09:30:45 server kernel: IP: [<c01706c4>] kmem_cache_alloc+0x51/0x8c
+> Dec 25 09:30:45 server kernel: *pde = 00000000
+> Dec 25 09:30:45 server kernel: Oops: 0000 [#4] PREEMPT SMP
+> Dec 25 09:30:45 server kernel: last sysfs
+> file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:02.0/local_cpus
+> Dec 25 09:30:45 server kernel: Modules linked in: radeon drm snd_pcm_oss
+> snd_mixer_oss snd_seq w83627hf hwmon_vid snd_seq_device iptable_filter
+> ip_tables ip6table_filter ip6_tables x_tables ipv6 microcode tcp_cubic loop
+> snd_intel8x0 ohci1394 snd_ac97_codec 8139cp 8139too ieee1394 ac97_bus
+> snd_pcm snd_timer iTCO_wdt parport_pc rtc_cmos i2c_i801 snd mii
+> iTCO_vendor_support shpchp sr_mod intel_agp rtc_core i2c_core parport
+> soundcore agpgart pci_hotplug button rtc_lib cdrom snd_page_alloc sg
+> dm_mirror dm_region_hash dm_log ehci_hcd uhci_hcd sd_mod crc_t10dif usbcore
+> dm_snapshot dm_mod edd ext3 mbcache jbd fan ata_piix libata scsi_mod
+> thermal processor [last unloaded: speedstep_lib]
+> Dec 25 09:30:45 server kernel:
+> Dec 25 09:30:45 server kernel: Pid: 5918, comm: sendmail Tainted: G      D
+> (2.6.28 #60)
+> Dec 25 09:30:45 server kernel: EIP: 0060:[<c01706c4>] EFLAGS: 00010002 CPU:
+> 0
+> Dec 25 09:30:45 server kernel: EIP is at kmem_cache_alloc+0x51/0x8c
+> Dec 25 09:30:45 server kernel: EAX: 00000000 EBX: 00000282 ECX: 00442001
+> EDX: c1c0a404
+> Dec 25 09:30:45 server kernel: ESI: 00000504 EDI: 00442001 EBP: f6b076c0
+> ESP: f438dec4
+> Dec 25 09:30:45 server kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Dec 25 09:30:45 server kernel: Process sendmail (pid: 5918, ti=f438c000
+> task=f42c8f00 task.ti=f438c000)
+> Dec 25 09:30:45 server kernel: Stack:
+> Dec 25 09:30:45 server kernel:  00442001 c0265f06 000080d0 c015c35f 000080d0
+> f86d38b0 f86d38b0 f6b076c0
+> Dec 25 09:30:45 server kernel:  c0265f06 0000000a f86d38b0 f86d38b0 0000000a
+> 00000600 c026729c f86d38b0
+> Dec 25 09:30:45 server kernel:  f86d39c8 ffffffa2 f869f77d f86d38b0 00000006
+> f3826600 c046ee00 06000000
+> Dec 25 09:30:45 server kernel: Call Trace:
+> Dec 25 09:30:45 server kernel:  [<c0265f06>] sk_prot_alloc+0x1c/0xac
+> Dec 25 09:30:45 server kernel:  [<c015c35f>] __inc_zone_state+0x10/0x61
+> Dec 25 09:30:45 server kernel:  [<c0265f06>] sk_prot_alloc+0x1c/0xac
+> Dec 25 09:30:45 server kernel:  [<c026729c>] sk_alloc+0x19/0x47
+> Dec 25 09:30:45 server kernel:  [<f869f77d>] inet6_create+0x166/0x2f2 [ipv6]
+> Dec 25 09:30:45 server kernel:  [<c02641e4>] __sock_create+0x169/0x245
+> Dec 25 09:30:45 server kernel:  [<c02642fb>] sock_create+0x22/0x27
+> Dec 25 09:30:45 server kernel:  [<c026450b>] sys_socket+0x2b/0x56
+> Dec 25 09:30:45 server kernel:  [<c026507d>] sys_socketcall+0x6c/0x1a1
+> Dec 25 09:30:45 server kernel:  [<c010391d>] sysenter_do_call+0x12/0x21
+> Dec 25 09:30:45 server kernel: Code: 8b 72 10 85 c9 89 0c 24 75 1b 52 89 e8
+> ff 74 24 08 83 c9 ff 8b 54 24 10 e8 37 f9 ff ff 89 44 24 08 5f 5d eb 0b 8b
+> 3c 24 8b 42 0c <8b> 04 87 89 02 53 9d 66 83 7c 24 08 00 79 21 83 3c 24 00
+> 74 1b
+> Dec 25 09:30:45 server kernel: EIP: [<c01706c4>] kmem_cache_alloc+0x51/0x8c
+> SS:ESP 0068:f438dec4
+> Dec 25 09:30:45 server kernel: ---[ end trace 9ece963f58896a61 ]---
 
-This gives a nicer entry point for archs to start_kernel; they don't
-have to use boot_command_line (though they can if they want).
+Looks like slab corruption. Can we have your .config, please? I'm
+cc'ing netdev as the oops happens in kmem_cache_alloc() so the
+networking code is a prime suspect of the corrupting kmem_cache_free()
+call (although the bug might be elsewhere as well).
 
-A nice side effect is that archs which use this entry point don't have
-a COMMAND_LINE_SIZE limit any more (and if you don't define it,
-boot_command_line does not exist).
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/include/linux/start_kernel.h b/include/linux/start_kernel.h
---- a/include/linux/start_kernel.h
-+++ b/include/linux/start_kernel.h
-@@ -7,6 +7,13 @@
- /* Define the prototype for start_kernel here, rather than cluttering
-    up something else. */
- 
-+/*
-+ * Command-line pointer must be writable, must be NUL-terminated, but
-+ * has no length limit and may be __initdata.
-+ */
-+extern asmlinkage void __init start_kernel_with_args(char *cmdline);
-+
-+/* Old entry point: calls arch_get_boot_command_line(). */
- extern asmlinkage void __init start_kernel(void);
- 
- #endif /* _LINUX_START_KERNEL_H */
-diff --git a/init/main.c b/init/main.c
---- a/init/main.c
-+++ b/init/main.c
-@@ -119,8 +119,11 @@ void (*late_time_init)(void);
- void (*late_time_init)(void);
- extern void softirq_init(void);
- 
-+#ifdef COMMAND_LINE_SIZE
- /* Untouched command line saved by arch-specific code. */
- char __initdata boot_command_line[COMMAND_LINE_SIZE];
-+#endif
-+
- /* Untouched saved command line (eg. for /proc) */
- char *saved_command_line;
- 
-@@ -522,15 +525,22 @@ void __init __weak thread_info_cache_ini
- {
- }
- 
-+#ifdef COMMAND_LINE_SIZE
- asmlinkage void __init start_kernel(void)
-+{
-+	arch_get_boot_command_line();
-+	start_kernel_with_args(boot_command_line);
-+}
-+#endif
-+
-+asmlinkage void __init start_kernel_with_args(char *cmdline)
- {
- 	char *static_command_line;
- 
- 	printk(KERN_NOTICE);
- 	printk(linux_banner);
- 
--	arch_get_boot_command_line();
--	parse_args("Core and early params", boot_command_line,
-+	parse_args("Core and early params", cmdline,
- 		   __start___core_param,
- 		   __stop___core_param - __start___core_param,
- 		   do_early_param, true);
-@@ -579,10 +589,10 @@ asmlinkage void __init start_kernel(void
- 	preempt_disable();
- 	build_all_zonelists();
- 	page_alloc_init();
--	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
-+	printk(KERN_NOTICE "Kernel command line: %s\n", cmdline);
- 	/* param parsing can keep pointers to the commandline. */
--	static_command_line = alloc_bootmem(strlen(boot_command_line)+1);
--	strcpy(static_command_line, boot_command_line);
-+	static_command_line = alloc_bootmem(strlen(cmdline)+1);
-+	strcpy(static_command_line, cmdline);
- 	parse_args("Booting kernel", static_command_line, __start___param,
- 		   __stop___param - __start___param,
- 		   &unknown_bootoption, false);
-@@ -684,7 +694,7 @@ asmlinkage void __init start_kernel(void
- 
- 	ftrace_init();
- 
--	saved_command_line = kstrdup(boot_command_line, GFP_KERNEL);
-+	saved_command_line = kstrdup(cmdline, GFP_KERNEL);
- 
- 	/* Do the rest non-__init'ed, we're now alive */
- 	rest_init();
+                        Pekka
