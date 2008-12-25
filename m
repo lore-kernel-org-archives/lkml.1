@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbYLYOQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbYLYOd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719AbYLYOQj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 09:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYLYOPR
+	id S1752118AbYLYOd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 09:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYLYOdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 09:15:17 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:54002 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751969AbYLYOPN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 09:15:13 -0500
-Date: Thu, 25 Dec 2008 17:15:11 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Greg Kroah-Hartman <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
-       linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] USB: fsl_qe_udc: Fix muram corruption by disabled
-	endpoints
-Message-ID: <20081225141511.GE6786@oksana.dev.rtsoft.ru>
-References: <20081225141402.GA30689@oksana.dev.rtsoft.ru>
+	Thu, 25 Dec 2008 09:33:17 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:51756 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751712AbYLYOdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 09:33:16 -0500
+Date: Thu, 25 Dec 2008 15:33:11 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: kyle@mcmartin.ca, matthew@wil.cx, grundler@parisc-linux.org,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/7] arch/parisc: Use DEFINE_SPINLOCK
+Message-ID: <Pine.LNX.4.64.0812251532430.22039@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20081225141402.GA30689@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before freeing an endpoint's muram memory, we should stop all activity
-of the endpoint, otherwise the QE UDC controller might do nasty things
-with the muram memory that isn't belong to that endpoint anymore.
+From: Julia Lawall <julia@diku.dk>
 
-The qe_ep_reset() effectively flushes the hardware fifos, finishes all
-late transaction and thus prevents the corruption.
+SPIN_LOCK_UNLOCKED is deprecated.  The following makes the change suggested
+in Documentation/spinlocks.txt
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+declarer name DEFINE_SPINLOCK;
+identifier xxx_lock;
+@@
+
+- spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
++ DEFINE_SPINLOCK(xxx_lock);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- drivers/usb/gadget/fsl_qe_udc.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index 4726582..ea42088 100644
---- a/drivers/usb/gadget/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -1622,6 +1622,7 @@ static int qe_ep_disable(struct usb_ep *_ep)
- 	nuke(ep, -ESHUTDOWN);
- 	ep->desc = NULL;
- 	ep->stopped = 1;
-+	qe_ep_reset(udc, ep->epnum);
- 	spin_unlock_irqrestore(&udc->lock, flags);
+diff -u -p a/arch/parisc/kernel/pdc_cons.c b/arch/parisc/kernel/pdc_cons.c
+--- a/arch/parisc/kernel/pdc_cons.c
++++ b/arch/parisc/kernel/pdc_cons.c
+@@ -52,7 +52,7 @@
+ #include <linux/tty.h>
+ #include <asm/pdc.h>		/* for iodc_call() proto and friends */
  
- 	cpm_muram_free(cpm_muram_offset(ep->rxbase));
--- 
-1.5.6.5
-
+-static spinlock_t pdc_console_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(pdc_console_lock);
+ 
+ static void pdc_console_write(struct console *co, const char *s, unsigned count)
+ {
