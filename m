@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbYLYSIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYLYSIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752954AbYLYSIa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYLYSFR
+	id S1753543AbYLYSIt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYLYSFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:05:17 -0500
-Received: from mx1.suse.de ([195.135.220.2]:60629 "EHLO mx1.suse.de"
+	Thu, 25 Dec 2008 13:05:19 -0500
+Received: from ns.suse.de ([195.135.220.2]:60634 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752653AbYLYSFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:05:10 -0500
+	id S1752500AbYLYSFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 13:05:12 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 09/35] ocfs2: Add ecc and checksums to ocfs2 xattr buckets.
-Date: Thu, 25 Dec 2008 10:04:24 -0800
-Message-Id: <1230228290-22803-10-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 10/35] ocfs2: Create ocfs2_xattr_value_buf.
+Date: Thu, 25 Dec 2008 10:04:25 -0800
+Message-Id: <1230228290-22803-11-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
 References: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
@@ -25,47 +25,219 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-The xattr bucket can span multiple blocks on disk.  We have wrappers
-for this structure in the code.  We use the new multi-block ecc calls to
-calculate and validate the bucket.
+When an ocfs2 extended attribute is large enough to require its own
+allocation tree, we root it with an ocfs2_xattr_value_root.  However,
+these roots can be a part of inodes, xattr blocks, or xattr buckets.
+Thus, they need a different journal access function for each container.
+
+We wrap the bh, its journal access function, and the value root (xv) in
+a structure called ocfs2_xattr_valu_buf.  This is a package that can
+be passed around.  In this first pass, we simply pass it to the
+extent tree code.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ fs/ocfs2/alloc.c |   25 +++++++++++--------------
+ fs/ocfs2/alloc.h |    4 ++--
+ fs/ocfs2/xattr.c |   34 ++++++++++++++++++++++------------
+ fs/ocfs2/xattr.h |   14 ++++++++++++++
+ 4 files changed, 49 insertions(+), 28 deletions(-)
 
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 6e58fd5..874c0bd 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -48,6 +48,7 @@
+ #include "file.h"
+ #include "super.h"
+ #include "uptodate.h"
++#include "xattr.h"
+ 
+ #include "buffer_head_io.h"
+ 
+@@ -207,36 +208,33 @@ static void ocfs2_dinode_fill_root_el(struct ocfs2_extent_tree *et)
+ 
+ static void ocfs2_xattr_value_fill_root_el(struct ocfs2_extent_tree *et)
+ {
+-	struct ocfs2_xattr_value_root *xv = et->et_object;
++	struct ocfs2_xattr_value_buf *vb = et->et_object;
+ 
+-	et->et_root_el = &xv->xr_list;
++	et->et_root_el = &vb->vb_xv->xr_list;
+ }
+ 
+ static void ocfs2_xattr_value_set_last_eb_blk(struct ocfs2_extent_tree *et,
+ 					      u64 blkno)
+ {
+-	struct ocfs2_xattr_value_root *xv =
+-		(struct ocfs2_xattr_value_root *)et->et_object;
++	struct ocfs2_xattr_value_buf *vb = et->et_object;
+ 
+-	xv->xr_last_eb_blk = cpu_to_le64(blkno);
++	vb->vb_xv->xr_last_eb_blk = cpu_to_le64(blkno);
+ }
+ 
+ static u64 ocfs2_xattr_value_get_last_eb_blk(struct ocfs2_extent_tree *et)
+ {
+-	struct ocfs2_xattr_value_root *xv =
+-		(struct ocfs2_xattr_value_root *) et->et_object;
++	struct ocfs2_xattr_value_buf *vb = et->et_object;
+ 
+-	return le64_to_cpu(xv->xr_last_eb_blk);
++	return le64_to_cpu(vb->vb_xv->xr_last_eb_blk);
+ }
+ 
+ static void ocfs2_xattr_value_update_clusters(struct inode *inode,
+ 					      struct ocfs2_extent_tree *et,
+ 					      u32 clusters)
+ {
+-	struct ocfs2_xattr_value_root *xv =
+-		(struct ocfs2_xattr_value_root *)et->et_object;
++	struct ocfs2_xattr_value_buf *vb = et->et_object;
+ 
+-	le32_add_cpu(&xv->xr_clusters, clusters);
++	le32_add_cpu(&vb->vb_xv->xr_clusters, clusters);
+ }
+ 
+ static struct ocfs2_extent_tree_operations ocfs2_xattr_value_et_ops = {
+@@ -334,10 +332,9 @@ void ocfs2_init_xattr_tree_extent_tree(struct ocfs2_extent_tree *et,
+ 
+ void ocfs2_init_xattr_value_extent_tree(struct ocfs2_extent_tree *et,
+ 					struct inode *inode,
+-					struct buffer_head *bh,
+-					struct ocfs2_xattr_value_root *xv)
++					struct ocfs2_xattr_value_buf *vb)
+ {
+-	__ocfs2_init_extent_tree(et, inode, bh, ocfs2_journal_access, xv,
++	__ocfs2_init_extent_tree(et, inode, vb->vb_bh, vb->vb_access, vb,
+ 				 &ocfs2_xattr_value_et_ops);
+ }
+ 
+diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
+index 4b6fea2..cceff5c 100644
+--- a/fs/ocfs2/alloc.h
++++ b/fs/ocfs2/alloc.h
+@@ -71,10 +71,10 @@ void ocfs2_init_dinode_extent_tree(struct ocfs2_extent_tree *et,
+ void ocfs2_init_xattr_tree_extent_tree(struct ocfs2_extent_tree *et,
+ 				       struct inode *inode,
+ 				       struct buffer_head *bh);
++struct ocfs2_xattr_value_buf;
+ void ocfs2_init_xattr_value_extent_tree(struct ocfs2_extent_tree *et,
+ 					struct inode *inode,
+-					struct buffer_head *bh,
+-					struct ocfs2_xattr_value_root *xv);
++					struct ocfs2_xattr_value_buf *vb);
+ 
+ /*
+  * Read an extent block into *bh.  If *bh is NULL, a bh will be
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index bc822d6..7c2f4c9 100644
+index 7c2f4c9..123d378 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -273,6 +273,15 @@ static int ocfs2_read_xattr_bucket(struct ocfs2_xattr_bucket *bucket,
- 	rc = ocfs2_read_blocks(bucket->bu_inode, xb_blkno,
- 			       bucket->bu_blocks, bucket->bu_bhs, 0,
- 			       NULL);
-+	if (!rc) {
-+		rc = ocfs2_validate_meta_ecc_bhs(bucket->bu_inode->i_sb,
-+						 bucket->bu_bhs,
-+						 bucket->bu_blocks,
-+						 &bucket_xh(bucket)->xh_check);
-+		if (rc)
-+			mlog_errno(rc);
-+	}
-+
- 	if (rc)
- 		ocfs2_xattr_bucket_relse(bucket);
- 	return rc;
-@@ -301,6 +310,10 @@ static void ocfs2_xattr_bucket_journal_dirty(handle_t *handle,
- {
- 	int i;
+@@ -581,21 +581,26 @@ static int ocfs2_xattr_extend_allocation(struct inode *inode,
+ 	handle_t *handle = ctxt->handle;
+ 	enum ocfs2_alloc_restarted why;
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+-	u32 prev_clusters, logical_start = le32_to_cpu(xv->xr_clusters);
++	struct ocfs2_xattr_value_buf vb = {
++		.vb_bh	= xattr_bh,
++		.vb_xv = xv,
++		.vb_access = ocfs2_journal_access,
++	};
++	u32 prev_clusters, logical_start = le32_to_cpu(vb.vb_xv->xr_clusters);
+ 	struct ocfs2_extent_tree et;
  
-+	ocfs2_compute_meta_ecc_bhs(bucket->bu_inode->i_sb,
-+				   bucket->bu_bhs, bucket->bu_blocks,
-+				   &bucket_xh(bucket)->xh_check);
+ 	mlog(0, "(clusters_to_add for xattr= %u)\n", clusters_to_add);
+ 
+-	ocfs2_init_xattr_value_extent_tree(&et, inode, xattr_bh, xv);
++	ocfs2_init_xattr_value_extent_tree(&et, inode, &vb);
+ 
+-	status = ocfs2_journal_access(handle, inode, xattr_bh,
+-				      OCFS2_JOURNAL_ACCESS_WRITE);
++	status = vb.vb_access(handle, inode, vb.vb_bh,
++			      OCFS2_JOURNAL_ACCESS_WRITE);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto leave;
+ 	}
+ 
+-	prev_clusters = le32_to_cpu(xv->xr_clusters);
++	prev_clusters = le32_to_cpu(vb.vb_xv->xr_clusters);
+ 	status = ocfs2_add_clusters_in_btree(osb,
+ 					     inode,
+ 					     &logical_start,
+@@ -611,13 +616,13 @@ static int ocfs2_xattr_extend_allocation(struct inode *inode,
+ 		goto leave;
+ 	}
+ 
+-	status = ocfs2_journal_dirty(handle, xattr_bh);
++	status = ocfs2_journal_dirty(handle, vb.vb_bh);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto leave;
+ 	}
+ 
+-	clusters_to_add -= le32_to_cpu(xv->xr_clusters) - prev_clusters;
++	clusters_to_add -= le32_to_cpu(vb.vb_xv->xr_clusters) - prev_clusters;
+ 
+ 	/*
+ 	 * We should have already allocated enough space before the transaction,
+@@ -640,11 +645,16 @@ static int __ocfs2_remove_xattr_range(struct inode *inode,
+ 	u64 phys_blkno = ocfs2_clusters_to_blocks(inode->i_sb, phys_cpos);
+ 	handle_t *handle = ctxt->handle;
+ 	struct ocfs2_extent_tree et;
++	struct ocfs2_xattr_value_buf vb = {
++		.vb_bh = root_bh,
++		.vb_xv = xv,
++		.vb_access = ocfs2_journal_access,
++	};
+ 
+-	ocfs2_init_xattr_value_extent_tree(&et, inode, root_bh, xv);
++	ocfs2_init_xattr_value_extent_tree(&et, inode, &vb);
+ 
+-	ret = ocfs2_journal_access(handle, inode, root_bh,
+-				   OCFS2_JOURNAL_ACCESS_WRITE);
++	ret = vb.vb_access(handle, inode, vb.vb_bh,
++			   OCFS2_JOURNAL_ACCESS_WRITE);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+@@ -657,9 +667,9 @@ static int __ocfs2_remove_xattr_range(struct inode *inode,
+ 		goto out;
+ 	}
+ 
+-	le32_add_cpu(&xv->xr_clusters, -len);
++	le32_add_cpu(&vb.vb_xv->xr_clusters, -len);
+ 
+-	ret = ocfs2_journal_dirty(handle, root_bh);
++	ret = ocfs2_journal_dirty(handle, vb.vb_bh);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+diff --git a/fs/ocfs2/xattr.h b/fs/ocfs2/xattr.h
+index 9a67e7d..5a1ebc7 100644
+--- a/fs/ocfs2/xattr.h
++++ b/fs/ocfs2/xattr.h
+@@ -70,4 +70,18 @@ int ocfs2_calc_xattr_init(struct inode *, struct buffer_head *,
+ 			  int, struct ocfs2_security_xattr_info *,
+ 			  int *, int *, struct ocfs2_alloc_context **);
+ 
++/*
++ * xattrs can live inside an inode, as part of an external xattr block,
++ * or inside an xattr bucket, which is the leaf of a tree rooted in an
++ * xattr block.  Some of the xattr calls, especially the value setting
++ * functions, want to treat each of these locations as equal.  Let's wrap
++ * them in a structure that we can pass around instead of raw buffer_heads.
++ */
++struct ocfs2_xattr_value_buf {
++	struct buffer_head		*vb_bh;
++	ocfs2_journal_access_func	vb_access;
++	struct ocfs2_xattr_value_root	*vb_xv;
++};
 +
- 	for (i = 0; i < bucket->bu_blocks; i++)
- 		ocfs2_journal_dirty(handle, bucket->bu_bhs[i]);
- }
++
+ #endif /* OCFS2_XATTR_H */
 -- 
 1.5.6
 
