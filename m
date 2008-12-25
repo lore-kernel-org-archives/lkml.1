@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbYLYBvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbYLYC1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbYLYBvu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 20:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYLYBvl
+	id S1752097AbYLYC1r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 21:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYLYC1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 20:51:41 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:47899 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbYLYBvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 20:51:41 -0500
-Date: Thu, 25 Dec 2008 01:51:25 +0000
-From: Nick Warne <nick@ukfsn.org>
-To: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: [PATCH] EXT4: super.c
-Message-ID: <20081225015125.2f6a99ad@sauron.linicks.net>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Dec 2008 21:27:39 -0500
+Received: from rv-out-0506.google.com ([209.85.198.230]:6368 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbYLYC1i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 21:27:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=QZ0PZ6lhDTNDo/WaIAbsoI5bABe2htDX3Bt/fah+XHYzHfbLm+vL013gKl+kGv6PQk
+         aFl8rJFAF1eRHP2YCkUGBrEY9x75y7qxp5ygFmS1yKtXAxGpdV3CmnxrwD02mI+Xvq/k
+         Cu3+co454R7HYTxayrK7T59dW3NcDX6Nx84Xc=
+Message-ID: <f7848160812241827s39063b23t6a9eac12fdec6708@mail.gmail.com>
+Date: Wed, 24 Dec 2008 21:27:37 -0500
+From: "Parag Warudkar" <parag.lkml@gmail.com>
+To: thanasis@asyr.hopto.org
+Subject: Re: Sil 3132 SATA II express card
+Cc: LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applies to stable 2.6.28.
+Thanasis <thanasis <at> asyr.hopto.org> writes:
 
-Remove extraneous newline that creates empty print line
-in boot logs.
+>
+> I have compiled in kernel (2.6.27) support for Sil 3132:
+> CONFIG_SATA_SIL24=y
+>
+> When I insert the card in the laptop's slot, dmesg shows nothing new.
+> Is this normal?
+>
 
-Signed-off-by: Nick Warne <nick@ukfsn.org>
+Last time I tried that I had to modprobe the pcie hotplug module
+(pciehp?) before inserting the card and even then it only worked some
+times.
 
---- linux-2.6.28/fs/ext4/super.cORIG	2008-12-25 01:35:49.156527726 +0000
-+++ linux-2.6.28/fs/ext4/super.c	2008-12-25 01:36:50.914527855 +0000
-@@ -1973,7 +1973,7 @@
- 	else
- 		ext4_warning(sb, __func__,
- 			"extents feature not enabled on this filesystem, "
--			"use tune2fs.\n");
-+			"use tune2fs.");
- 
- 	/*
- 	 * enable delayed allocation by default
+If you boot with the card plugged in that should work - I haven't
+tried lately but pciehp was flaky on my hardware (MacBook  Pro).
 
-
--- 
-Free Software Foundation Associate Member 5508
-http://linicks.net/
+Parag
