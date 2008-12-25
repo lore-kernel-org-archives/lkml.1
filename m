@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbYLYSSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbYLYSSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754282AbYLYSSN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYLYSNG
+	id S1754634AbYLYSSj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbYLYSRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:13:06 -0500
-Received: from smtp.witbe.net ([81.88.96.48]:58378 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753074AbYLYSNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:13:04 -0500
-Date: Thu, 25 Dec 2008 20:12:41 +0100
-From: Paul Rolland <rol@as2917.net>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Paul Rolland <rol@as2917.net>
-Subject: Re: 2.6.27.9 - Resuming from hibernate locks after "CPU1 is down"
-Message-ID: <20081225201241.2f6b6e7c@tux.DEF.witbe.net>
-In-Reply-To: <20081225230934.380c953f@tux.DEF.witbe.net>
-References: <20081225230934.380c953f@tux.DEF.witbe.net>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Dec 2008 13:17:33 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:58666 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754553AbYLYSRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 13:17:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Fy5eqbSZmx6LvORHsHt1/n14dp1WKA8RbNSB1Hvvf5e+iIBK3NhGuW9Lw7buXQqRhH
+         F9UWzrwO5vwxxmtlD6cYcXM7CxqoLZa3YtPStreHVrgA4jCQQeiNRVBF/C0IsZFhu5qp
+         YJyuQxOJkMQdrsISVyljchVl+mTAcWM62srn0=
+Message-ID: <c6d9bea0812251017u6a271fc0j5d26b8bbe3407877@mail.gmail.com>
+Date: Thu, 25 Dec 2008 13:17:28 -0500
+From: "C. Scott Ananian" <cscott@laptop.org>
+To: "Christoph Hellwig" <hch@infradead.org>
+Subject: Re: [RFC PATCH -v4 00/14] fsnotify, dnotify, and inotify
+Cc: "Al Viro" <viro@zeniv.linux.org.uk>, "Eric Paris" <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081222232125.GA25334@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+	 <c6d9bea0812181536p2a3aaeacmbd6af0474279b7b@mail.gmail.com>
+	 <1229916126.29604.47.camel@localhost.localdomain>
+	 <c6d9bea0812221159h30b0501dm8f48d93e0cb53bfa@mail.gmail.com>
+	 <20081222210410.GL28946@ZenIV.linux.org.uk>
+	 <c6d9bea0812221508n75f03ebdsff5bcbabe56eae56@mail.gmail.com>
+	 <20081222232125.GA25334@infradead.org>
+X-Google-Sender-Auth: 274d674ec1eb3b6d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Self replying, just to add that 2.6.28 has the same behavior.
+On Mon, Dec 22, 2008 at 6:21 PM, Christoph Hellwig <hch@infradead.org> wrote:
+> On Mon, Dec 22, 2008 at 06:08:08PM -0500, C. Scott Ananian wrote:
+>> That's not correct, as /proc/self/fd/<num> and the getcwd syscall make
+>> clear.
+>
+> No.  These take a file descriptor into account, which _does_ have a
+> unique path.
 
-Regards,
-Paul
+getcwd doesn't actually hold a file descriptor to the working
+directory.  If you reread my message, you'll find that I was explicit
+about where the information was stored.
 
-On Thu, 25 Dec 2008 23:09:34 +0100
-Paul Rolland <rol@as2917.net> wrote:
+>> struct inode has a i_dentry member, and via its d_parent links
+>> you can reconstruct the path, as __d_path in fs/dcache.c does.
+>
+> reconstruct _a_ path inside the same filesystem, ignoring which link is
+> wanted, and inside which mount.
 
-> Hello,
-> 
-> I'm trying to have suspend to disk and suspend to RAM work on my machine
-> (Dell Inspiron 6400, 2Go RAM, with an Intel Mobile 945GM/GMS, 943/940GM
-> L Express Integrated Graphics Controller.
-> 
-> To suspend, I'm using the "echo mem | disk > /sys/power/state" command.
-> 
-> As of now, using suspend to RAM allow the machine to suspend, and resume
-> is nearly OK except the video is not restored, and the screen stays black
-> (but keyboard is Ok, I can launch any command I want, so I can restart).
-> 
-> When suspending to disk, suspend is Ok with :
-> echo -n 2097152000 > /sys/power/image_size ;
-> echo -n disk > /sys/power/state
-> and resuming detects the image in the swap partition. So, I have on the
-> console, when I add "no_console_suspend" on the boot command line :
-> PM: loading image data pages...
-> PM: read xxxxx kbytes in y.zz seconds
-> ...
-> [stuff about scsi/sda]
-> Disabling non-boot CPUs
-> CPU1 is now offlone
-> SMP alternatives: switching to UP code
-> CPU1 is down
-> 
-> and then, nothing :( machine is dead frozen. CAPS Lock doesn't toggle the
-> keyboard LED anymore, I need to manually power off and power on the
-> machine.
-> 
-> I must add that these are my first attempts. So, this is not to be
-> considered a regression.
-> 
-> Is there anything else I can do to try to debug the resume ?
-> 
-> Regards,
-> Paul
-> 
+Right.  If you go back and reread my message, I made clear that that
+was sufficient.
 
+But Al's question is more relevant, and I'll try to restate the
+problem for him, since it's clear that none of the existing *notify
+interfaces was written with an eye towards making possible races
+easily manageable.
+  --scott
 
 -- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
-
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
-navigateur "Some people dream of success... while others wake up and work
-hard at it" 
-
-"I worry about my child and the Internet all the time, even though she's
-too young to have logged on yet. Here's what I worry about. I worry that 10
-or 15 years from now, she will come to me and say 'Daddy, where were you
-when they took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
+                         ( http://cscott.net/ )
