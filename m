@@ -1,157 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbYLZDYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYLZDZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbYLZDYj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 22:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYLZDYb
+	id S1753289AbYLZDZe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 22:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYLZDZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 22:24:31 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59060 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbYLZDYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 22:24:30 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH for -tip 2/4] irq: for_each_irq_desc() move to irqnr.h
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081226122258.5CA9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 25 Dec 2008 22:25:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59282 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752214AbYLZDZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 22:25:25 -0500
+Date: Thu, 25 Dec 2008 21:24:59 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org,
+       Patrick Boettcher <patrick.boettcher@desy.de>
+Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes
+Message-ID: <20081225212459.4c7e31b4@caramujo.chehab.org>
+In-Reply-To: <20081225081907.GA4628@elte.hu>
+References: <20081224121252.7560391e@caramujo.chehab.org>
+	<20081225081907.GA4628@elte.hu>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri, 26 Dec 2008 12:24:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Dec 2008 09:19:07 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-before CONFIG_SPARSE_IRQ age, for_each_irq_desc() sit in irqnr.h and
-can be called from generic code.
+> FYI, v2.6.28 still fails to build with certain configs:
+> 
+>  drivers/media/dvb/built-in.o: In function `dib7000p_set_gpio':
+>  (.text+0x3f242): multiple definition of `dib7000p_set_gpio'
+>  drivers/media/video/built-in.o:(.text+0xb8c1e): first defined here
+>  drivers/media/dvb/built-in.o: In function `dib7000p_i2c_enumeration':
+>  (.text+0x3f282): multiple definition of `dib7000p_i2c_enumeration'
+>  drivers/media/video/built-in.o:(.text+0xb8c3e): first defined here
+>  drivers/media/dvb/built-in.o: In function `dib7000p_set_wbd_ref':
+>  (.text+0x3f1c1): multiple definition of `dib7000p_set_wbd_ref'
+>  drivers/media/video/built-in.o:(.text+0xb8bfe): first defined here
+>    LD      drivers/net/built-in.o
+>  make[2]: *** [drivers/media/built-in.o] Error 1
+> 
+> Config attached. The patch below works it around in tip/master. Can test 
+> any patch for this bug.
 
-CONFIG_SPARSE_IRQ break this assumption. but SPARSE_IRQ version
-for_each_irq_desc() also can move irqnr.h easily.
+Please test the enclosed patch.
 
-Also, this patch unify CONFIG_SPARSE_IRQ and !CONFIG_SPARSE_IRQ for_each_irq_desc().
+Cheers,
+Mauro
 
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/irq.h   |   24 ++++--------------------
- include/linux/irqnr.h |   19 +++++++++----------
- kernel/irq/handle.c   |   13 +++++++++++--
- 3 files changed, 24 insertions(+), 32 deletions(-)
+Kbuild: fix compilation when dib7000p is not defined
 
-Index: b/include/linux/irq.h
-===================================================================
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -203,33 +203,17 @@ extern void arch_free_chip_data(struct i
- 
- #ifndef CONFIG_SPARSE_IRQ
- extern struct irq_desc irq_desc[NR_IRQS];
--
--static inline struct irq_desc *irq_to_desc(unsigned int irq)
--{
--	return (irq < NR_IRQS) ? irq_desc + irq : NULL;
--}
--static inline struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
--{
--	return irq_to_desc(irq);
--}
--
--#else
--
--extern struct irq_desc *irq_to_desc(unsigned int irq);
--extern struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu);
-+#else /* CONFIG_SPARSE_IRQ */
- extern struct irq_desc *move_irq_desc(struct irq_desc *old_desc, int cpu);
- 
--# define for_each_irq_desc(irq, desc)		\
--	for (irq = 0, desc = irq_to_desc(irq); irq < nr_irqs; irq++, desc = irq_to_desc(irq))
--# define for_each_irq_desc_reverse(irq, desc)                          \
--	for (irq = nr_irqs - 1, desc = irq_to_desc(irq); irq >= 0; irq--, desc = irq_to_desc(irq))
--
- #define kstat_irqs_this_cpu(DESC) \
- 	((DESC)->kstat_irqs[smp_processor_id()])
- #define kstat_incr_irqs_this_cpu(irqno, DESC) \
- 	((DESC)->kstat_irqs[smp_processor_id()]++)
- 
--#endif
-+#endif /* CONFIG_SPARSE_IRQ */
-+
-+extern struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu);
- 
- static inline struct irq_desc *
- irq_remap_to_desc(unsigned int irq, struct irq_desc *desc)
-Index: b/include/linux/irqnr.h
-===================================================================
---- a/include/linux/irqnr.h
-+++ b/include/linux/irqnr.h
-@@ -15,20 +15,19 @@
- 
- # define for_each_irq_desc_reverse(irq, desc)                          \
- 	for (irq = nr_irqs - 1; irq >= 0; irq--)
--#else
-+#else /* CONFIG_GENERIC_HARDIRQS */
- 
- extern int nr_irqs;
-+extern struct irq_desc *irq_to_desc(unsigned int irq);
- 
--#ifndef CONFIG_SPARSE_IRQ
-+# define for_each_irq_desc(irq, desc)					\
-+	for (irq = 0, desc = irq_to_desc(irq); irq < nr_irqs;		\
-+	     irq++, desc = irq_to_desc(irq))
-+# define for_each_irq_desc_reverse(irq, desc)				\
-+	for (irq = nr_irqs - 1, desc = irq_to_desc(irq); irq >= 0;	\
-+	     irq--, desc = irq_to_desc(irq))
- 
--struct irq_desc;
--# define for_each_irq_desc(irq, desc)		\
--	for (irq = 0, desc = irq_desc; irq < nr_irqs; irq++, desc++)
--# define for_each_irq_desc_reverse(irq, desc)                          \
--	for (irq = nr_irqs - 1, desc = irq_desc + (nr_irqs - 1);        \
--	    irq >= 0; irq--, desc--)
--#endif
--#endif
-+#endif /* CONFIG_GENERIC_HARDIRQS */
- 
- #define for_each_irq_nr(irq)                   \
-        for (irq = 0; irq < nr_irqs; irq++)
-Index: b/kernel/irq/handle.c
-===================================================================
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -203,7 +203,7 @@ out_unlock:
- 	return desc;
+dib7000p.h defines a few extern symbols when CONFIG_DVB_DIB7000P is not set. since the
+header is used on more than one driver, this causes symbol duplication, as pointed by
+Ingo Molnar <mingo@elte.hu>:
+
+drivers/media/dvb/built-in.o: In function `dib7000p_set_gpio':
+(.text+0x3f242): multiple definition of `dib7000p_set_gpio'
+drivers/media/video/built-in.o:(.text+0xb8c1e): first defined here
+drivers/media/dvb/built-in.o: In function `dib7000p_i2c_enumeration':
+(.text+0x3f282): multiple definition of `dib7000p_i2c_enumeration'
+drivers/media/video/built-in.o:(.text+0xb8c3e): first defined here
+drivers/media/dvb/built-in.o: In function `dib7000p_set_wbd_ref':
+(.text+0x3f1c1): multiple definition of `dib7000p_set_wbd_ref'
+drivers/media/video/built-in.o:(.text+0xb8bfe): first defined here
+  LD      drivers/net/built-in.o
+make[2]: *** [drivers/media/built-in.o] Error 1
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+
+diff --git a/drivers/media/dvb/frontends/dib7000p.h b/drivers/media/dvb/frontends/dib7000p.h
+index 3e81268..aab8112 100644
+--- a/drivers/media/dvb/frontends/dib7000p.h
++++ b/drivers/media/dvb/frontends/dib7000p.h
+@@ -66,7 +66,8 @@ struct i2c_adapter *dib7000p_get_i2c_master(struct dvb_frontend *fe,
+ 	return NULL;
  }
  
--#else
-+#else /* !CONFIG_SPARSE_IRQ */
+-extern int dib7000p_i2c_enumeration(struct i2c_adapter *i2c,
++static inline
++int dib7000p_i2c_enumeration(struct i2c_adapter *i2c,
+ 				    int no_of_demods, u8 default_addr,
+ 				    struct dib7000p_config cfg[])
+ {
+@@ -74,13 +75,15 @@ extern int dib7000p_i2c_enumeration(struct i2c_adapter *i2c,
+ 	return -ENODEV;
+ }
  
- struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS-1] = {
-@@ -218,7 +218,16 @@ struct irq_desc irq_desc[NR_IRQS] __cach
- 	}
- };
+-extern int dib7000p_set_gpio(struct dvb_frontend *fe, u8 num, u8 dir, u8 val)
++static inline
++int dib7000p_set_gpio(struct dvb_frontend *fe, u8 num, u8 dir, u8 val)
+ {
+ 	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
+ 	return -ENODEV;
+ }
  
--#endif
-+struct irq_desc *irq_to_desc(unsigned int irq)
-+{
-+	return (irq < NR_IRQS) ? irq_desc + irq : NULL;
-+}
-+
-+struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
-+{
-+	return irq_to_desc(irq);
-+}
-+#endif /* !CONFIG_SPARSE_IRQ */
- 
- /*
-  * What should we do if we get a hw irq event on an illegal vector?
-
+-extern int dib7000p_set_wbd_ref(struct dvb_frontend *fe, u16 value)
++static inline
++int dib7000p_set_wbd_ref(struct dvb_frontend *fe, u16 value)
+ {
+ 	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
+ 	return -ENODEV;
 
