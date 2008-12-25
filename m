@@ -1,70 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbYLYDvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbYLYEqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752110AbYLYDvm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 22:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYLYDvf
+	id S1752070AbYLYEqa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 23:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYLYEqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 22:51:35 -0500
-Received: from adsl100-93.ath.forthnet.gr ([79.103.127.93]:43443 "EHLO
-	vergina.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYLYDve (ORCPT
+	Wed, 24 Dec 2008 23:46:22 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56559 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYLYEqW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 22:51:34 -0500
-Message-ID: <4953032D.4040106@asyr.hopto.org>
-Date: Thu, 25 Dec 2008 05:51:09 +0200
-From: Thanasis <thanasis@asyr.hopto.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081222)
+	Wed, 24 Dec 2008 23:46:22 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jiri Pirko <jpirko@redhat.com>
+Subject: Re: [PATCH, RESEND3] getrusage: fill ru_maxrss value
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       <oleg@redhat.com>, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <20081224121738.68c5d1e6@psychotron.englab.brq.redhat.com>
+References: <20081224153229.6800.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081224121738.68c5d1e6@psychotron.englab.brq.redhat.com>
+Message-Id: <20081225113334.5A8A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Sil 3132 SATA II express card
-References: <f7848160812241827s39063b23t6a9eac12fdec6708@mail.gmail.com>
-In-Reply-To: <f7848160812241827s39063b23t6a9eac12fdec6708@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-7
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 25 Dec 2008 13:46:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 12/25/2008 04:27 AM Parag Warudkar wrote the following:
-> Thanasis <thanasis <at> asyr.hopto.org> writes:
+> On Wed, 24 Dec 2008 16:37:55 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
->> I have compiled in kernel (2.6.27) support for Sil 3132:
->> CONFIG_SATA_SIL24=y
->>
->> When I insert the card in the laptop's slot, dmesg shows nothing new.
->> Is this normal?
->>
-> 
-> Last time I tried that I had to modprobe the pcie hotplug module
-> (pciehp?) before inserting the card and even then it only worked some
-> times.
-> 
-> If you boot with the card plugged in that should work - I haven't
-> tried lately but pciehp was flaky on my hardware (MacBook  Pro).
-> 
+> > Hi
+> Hi yourself.
+> > 
+> > > diff --git a/fs/exec.c b/fs/exec.c
+> > > index ec5df9a..8d3d0f9 100644
+> > > --- a/fs/exec.c
+> > > +++ b/fs/exec.c
+> > > @@ -870,6 +870,7 @@ static int de_thread(struct task_struct *tsk)
+> > >  	sig->notify_count = 0;
+> > >  
+> > >  no_thread_group:
+> > > +	sig->maxrss = 0;
+> > >  	exit_itimers(sig);
+> > >  	flush_itimer_signals();
+> > >  	if (leader)
+> > 
+> > I don't know getrusage correct behavior so detail.
+> > Why don't update parent process's sig->cmaxrss ?
+> Because exec affects only this task and we want to forgot maxrss value.
+> That does not implicate that we want to forgot highest maxrss value of
+> our childs because exec does not affect them. I think this is right
+> behavior.
 
-That is exactly what happens to my hw too. :-\
+Hmm, "we want" is a bit ambiguously word.
+We have three reviewing viewpoint.
 
-System Information
-	Manufacturer: Gateway
-	Product Name: T-1625
+1) this code is consistent to other linux kernel code.
+
+this patch fill its requrement perfectly.
+
+2) the behavior is enough surpriseless?
+
+Honestly, I think this patch is a bit supriseful.
+example,
+
+  1. process-A fork process-B
+  2. process-A wait by wait4()
+  3. process-B consume 1GB memory
+  4. process-B exec another program
+  5. process-B consume 100KB memory
+  6. process-B exit
+  7. process-A get maxrss=100KB
+
+oh, 1GB consumption is disappeared.
 
 
- # grep -i hotplug .config
-CONFIG_HOTPLUG=y
-# Memory hotplug is currently incompatible with Software Suspend
-CONFIG_HOTPLUG_CPU=y
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_ACPI_HOTPLUG_CPU=y
-CONFIG_HOTPLUG_PCI_PCIE=m
-CONFIG_HOTPLUG_PCI=y
-# CONFIG_HOTPLUG_PCI_FAKE is not set
-CONFIG_HOTPLUG_PCI_ACPI=y
-# CONFIG_HOTPLUG_PCI_ACPI_IBM is not set
-# CONFIG_HOTPLUG_PCI_CPCI is not set
-CONFIG_HOTPLUG_PCI_SHPC=y
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+However, if we choice process don't forget maxrss at exec,
+another supriseful happend.
+example,
+
+  1. process-A consume 1GB memroy
+  2. process-A fork process-B
+  3. process-A wait by wait4()
+  4. right after, process-B exec another program
+  5. process-B consume 100KB memory
+  6. process-B exit
+  7. process-A get maxrss=1GB
+
+oh, this design cause large process can't get child maxrss.
 
 
-# lsmod |grep pci
-pciehp                 32156  0
+So either choice have both merits and demerits.
+Then, I suggest to take prior other os compatibility than own thinking
+good behavior.
+
+
+3) if the feature is other os compatibility feature, the bahavior is
+   the same other?
+
+I think most important thing.
+Some scripting language (e.g. perl, PHP) already can use getrusage()
+return value. (but linux maxrss is always 0)
+Any scripter don't like incompatibility behavior.
+
+I don't know other os maxrss inheriting rule.
+May I ask you investiate maxrss inheriting of exec of which os behavior?
+
+
+
+> > > @@ -1598,6 +1601,18 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+> > >  out:
+> > >  	cputime_to_timeval(utime, &r->ru_utime);
+> > >  	cputime_to_timeval(stime, &r->ru_stime);
+> > > +
+> > > +	if (who != RUSAGE_CHILDREN) {
+> > > +		task_lock(p);
+> > > +		if (p->mm) {
+> > > +			unsigned long maxrss = get_mm_hiwater_rss(p->mm);
+> > > +
+> > > +			if (r->ru_maxrss < maxrss)
+> > > +				r->ru_maxrss = maxrss;
+> > > +		}
+> > > +		task_unlock(p);
+> > 
+> > get_task_mm() and mmput() instead task_lock() is better?
+> Maybe it's better looking. I wanted to use these too. Oleg suggested to
+> optimize the way it is in the patch. I can change it, no problem.
+
+hm, performance is obiously important.
+if you get much performance improvement, I'll withdraw my claim.
+
+
+> > and, why don't this code move to "case RUSAGE_SELF" processing point?
+> Because we need this to be done for RUSAGE_THREAD too. Or don't we?
+
+Ah, I forgot RUSAGE_THREAD. thanks.
+However I still think current code have unnecessary assumption.
+
+if who==RUSAGE_BOTH,
+
+correct behavior: max(hiwater_rss, mm_rss) + signal->cmaxrss)
+this code:        max(signal->maxrss + signal->cmaxrss, max(hiwater_rss, mm_rss))
+
+  1. if mm_rss == hiwater_rss, above two code is equivalent.
+  2. if signal->maxrss == 0, above two code is equivalent too.
+
+So all current caller keep this two assumption. but I think it is 
+unnecessary assumption. imho we can write generic correct code.
+
+
+
