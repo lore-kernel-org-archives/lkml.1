@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbYLYSxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbYLYTBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752578AbYLYSxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYLYSxj
+	id S1752551AbYLYTBt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 14:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYLYTBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:53:39 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:61964 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbYLYSxj (ORCPT
+	Thu, 25 Dec 2008 14:01:40 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59643 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbYLYTBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:53:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=N8JDI5f6MIr1HP27YRlHwFy0TnpaFd3I3dc5zKkdIJthoq5neNjT+02d1QN5HNeDkd
-         U8LgvM7elJxKq9Rp2r57zdQvXGMrLumcM2bhtVcB5vV6WFYsPmnTLStN3oEbdSn4zZrq
-         YiO/cZ71Xdz5cIXH86CS8g/HCeTAmpt1VJyYQ=
-Message-ID: <ce0170d90812251053w46601ce4yb62765270abf0632@mail.gmail.com>
-Date: Thu, 25 Dec 2008 15:53:36 -0300
-From: "Sergio Luis" <eeeesti@gmail.com>
-To: ronis@ronispc.chem.mcgill.ca
-Subject: Re: Kernel panic with upgrade to 2.6.28
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1230230537.3368.13.camel@montroll.chem.mcgill.ca>
+	Thu, 25 Dec 2008 14:01:39 -0500
+Date: Thu, 25 Dec 2008 20:01:29 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, matthew@wil.cx,
+       shaohua.li@intel.com
+Subject: Re: [PATCH] ASPM: Use msleep instead of cpu_relax during link
+	retraining
+Message-ID: <20081225190129.GA1615@ucw.cz>
+References: <20081222221156.29645.95982.stgit@bluto>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1230230537.3368.13.camel@montroll.chem.mcgill.ca>
+In-Reply-To: <20081222221156.29645.95982.stgit@bluto>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 25, 2008 at 3:42 PM, David Ronis
-<ronis@ronispc.chem.mcgill.ca> wrote:
-> I just upgraded from 2.6.27.8 or .10 to 2.6.28 on several machines.  On
-> one, a Dell dimension 3000 with a dual-core pentium R chip,  2 Seagate
-> ST340014A (/dev/hda with swap as partion 1 and root ext3 filesystem as
-> partion 2 and b containing a windows partition) and running slackware
-> 12.1, I get a kernel panic when trying to boot (the others boot fine);
-> specifically, I get:
->
->        Cannot open root device "302" or unknown block(3,2).  Please
->        append a correct root=; here are the available partitions:
->
-> No partitions are shown.  Manually adding root=/dev/hda2 to the lilo
-> boot prompt doesn't help either.
->
-> The 2.6.27.8 kernel boots fine.
->
-> Any suggestions?  Please CC me directly.
->
-> Thanks and Happy Holidays
->
-> David
->
->
+On Mon 2008-12-22 15:11:57, Andrew Patterson wrote:
+> ASPM: Use msleep instead of cpu_relax during link retraining
+> 
+> The cpu_relax() function can be a noop on certain architectures
+> like IA-64 when CPU threads are disabled, so use msleep instead
+> during link retraining busy/wait loop.
 
-Hello,
+Author clearly wanted to do a busy loop... why do you think 10msec
+delay here is acceptable?
+  
 
-please send your config from both 2.6.27.8 and 2.6.28 kernel. Also the
-dmesg from the working kernel. It might help with finding out what's
-going on.
+> Introduce define LINK_RETRAIN_TIMEOUT instead of hard-coding
+> timeout in pcie_aspm_configure_common_clock.
+> 
+> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+> @@ -70,6 +71,8 @@ static const char *policy_str[] = {
+>  	[POLICY_POWERSAVE] = "powersave"
+>  };
+>  
+> +#define LINK_RETRAIN_TIMEOUT HZ
+> +
+>  static int policy_to_aspm_state(struct pci_dev *pdev)
+>  {
+>  	struct pcie_link_state *link_state = pdev->link_state;
+> @@ -217,16 +220,18 @@ static void pcie_aspm_configure_common_clock(struct pci_dev *pdev)
+>  	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
+>  
+>  	/* Wait for link training end */
+> -	/* break out after waiting for 1 second */
+> +	/* break out after waiting for timeout */
+>  	start_jiffies = jiffies;
+> -	while ((jiffies - start_jiffies) < HZ) {
+> +	for (;;) {
+>  		pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
+>  		if (!(reg16 & PCI_EXP_LNKSTA_LT))
+>  			break;
+> -		cpu_relax();
+> +		if ((jiffies - start_jiffies) >= LINK_RETRAIN_TIMEOUT)
+> +			break;
+> +		msleep(1);
 
-Happy Holidays too.
+Is this safe w.r.t. jiffie wraparounds?
 
-Sergio.
+>  	}
+>  	/* training failed -> recover */
+> -	if ((jiffies - start_jiffies) >= HZ) {
+> +	if ((jiffies - start_jiffies) >= LINK_RETRAIN_TIMEOUT) {
+>  		dev_printk (KERN_ERR, &pdev->dev, "ASPM: Could not configure"
+>  			    " common clock\n");
+>  		i = 0;
+
+AFAICT this can trigger false positives. !reg16 test succeeds and then
+jiffies tick.
+
+...it could happen before but you make it way more probable...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
