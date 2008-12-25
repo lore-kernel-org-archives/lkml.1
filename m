@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbYLYSHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbYLYSHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbYLYSHZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYLYSFH
+	id S1752636AbYLYSHr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYLYSFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:05:07 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33708 "EHLO mx2.suse.de"
+	Thu, 25 Dec 2008 13:05:09 -0500
+Received: from ns2.suse.de ([195.135.220.15]:33721 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752604AbYLYSFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:05:05 -0500
+	id S1752620AbYLYSFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 13:05:06 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 06/35] ocfs2: Add journal_access functions with jbd2 triggers.
-Date: Thu, 25 Dec 2008 10:04:21 -0800
-Message-Id: <1230228290-22803-7-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 07/35] ocfs2: Wrap up the common use cases of ocfs2_new_path().
+Date: Thu, 25 Dec 2008 10:04:22 -0800
+Message-Id: <1230228290-22803-8-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
 References: <1230228290-22803-1-git-send-email-mfasheh@suse.com>
@@ -25,260 +25,178 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-We create wrappers for ocfs2_journal_access() that are specific to the
-type of metadata block.  This allows us to associate jbd2 commit
-triggers with the block.  The triggers will compute metadata ecc in a
-future commit.
+The majority of ocfs2_new_path() calls are:
+
+	ocfs2_new_path(path_root_bh(otherpath),
+		       path_root_el(otherpath));
+
+Let's call that ocfs2_new_path_from_path().  The rest do similar things
+from struct ocfs2_extent_tree.  Let's call those
+ocfs2_new_path_from_et().  This will make the next change easier.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/journal.c |  159 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/ocfs2/journal.h |   31 +++++++++--
- 2 files changed, 181 insertions(+), 9 deletions(-)
+ fs/ocfs2/alloc.c |   48 ++++++++++++++++++++++++------------------------
+ 1 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
-index 302f114..2daa584 100644
---- a/fs/ocfs2/journal.c
-+++ b/fs/ocfs2/journal.c
-@@ -35,6 +35,7 @@
- #include "ocfs2.h"
- 
- #include "alloc.h"
-+#include "blockcheck.h"
- #include "dir.h"
- #include "dlmglue.h"
- #include "extent_map.h"
-@@ -369,10 +370,110 @@ bail:
- 	return status;
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 6b27f74..c22ff49 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -532,6 +532,16 @@ static struct ocfs2_path *ocfs2_new_path(struct buffer_head *root_bh,
+ 	return path;
  }
  
--int ocfs2_journal_access(handle_t *handle,
--			 struct inode *inode,
--			 struct buffer_head *bh,
--			 int type)
-+struct ocfs2_triggers {
-+	struct jbd2_buffer_trigger_type	ot_triggers;
-+	int				ot_offset;
-+};
-+
-+static inline struct ocfs2_triggers *to_ocfs2_trigger(struct jbd2_buffer_trigger_type *triggers)
++static struct ocfs2_path *ocfs2_new_path_from_path(struct ocfs2_path *path)
 +{
-+	return container_of(triggers, struct ocfs2_triggers, ot_triggers);
++	return ocfs2_new_path(path_root_bh(path), path_root_el(path));
 +}
 +
-+static void ocfs2_commit_trigger(struct jbd2_buffer_trigger_type *triggers,
-+				 struct buffer_head *bh,
-+				 void *data, size_t size)
++static struct ocfs2_path *ocfs2_new_path_from_et(struct ocfs2_extent_tree *et)
 +{
-+	struct ocfs2_triggers *ot = to_ocfs2_trigger(triggers);
-+
-+	/*
-+	 * We aren't guaranteed to have the superblock here, so we
-+	 * must unconditionally compute the ecc data.
-+	 * __ocfs2_journal_access() will only set the triggers if
-+	 * metaecc is enabled.
-+	 */
-+	ocfs2_block_check_compute(data, size, data + ot->ot_offset);
++	return ocfs2_new_path(et->et_root_bh, et->et_root_el);
 +}
-+
-+/*
-+ * Quota blocks have their own trigger because the struct ocfs2_block_check
-+ * offset depends on the blocksize.
-+ */
-+static void ocfs2_dq_commit_trigger(struct jbd2_buffer_trigger_type *triggers,
-+				 struct buffer_head *bh,
-+				 void *data, size_t size)
-+{
-+	struct ocfs2_disk_dqtrailer *dqt =
-+		ocfs2_block_dqtrailer(size, data);
-+
-+	/*
-+	 * We aren't guaranteed to have the superblock here, so we
-+	 * must unconditionally compute the ecc data.
-+	 * __ocfs2_journal_access() will only set the triggers if
-+	 * metaecc is enabled.
-+	 */
-+	ocfs2_block_check_compute(data, size, &dqt->dq_check);
-+}
-+
-+static void ocfs2_abort_trigger(struct jbd2_buffer_trigger_type *triggers,
-+				struct buffer_head *bh)
-+{
-+	mlog(ML_ERROR,
-+	     "ocfs2_abort_trigger called by JBD2.  bh = 0x%lx, "
-+	     "bh->b_blocknr = %llu\n",
-+	     (unsigned long)bh,
-+	     (unsigned long long)bh->b_blocknr);
-+
-+	/* We aren't guaranteed to have the superblock here - but if we
-+	 * don't, it'll just crash. */
-+	ocfs2_error(bh->b_assoc_map->host->i_sb,
-+		    "JBD2 has aborted our journal, ocfs2 cannot continue\n");
-+}
-+
-+static struct ocfs2_triggers di_triggers = {
-+	.ot_triggers = {
-+		.t_commit = ocfs2_commit_trigger,
-+		.t_abort = ocfs2_abort_trigger,
-+	},
-+	.ot_offset	= offsetof(struct ocfs2_dinode, i_check),
-+};
-+
-+static struct ocfs2_triggers eb_triggers = {
-+	.ot_triggers = {
-+		.t_commit = ocfs2_commit_trigger,
-+		.t_abort = ocfs2_abort_trigger,
-+	},
-+	.ot_offset	= offsetof(struct ocfs2_extent_block, h_check),
-+};
-+
-+static struct ocfs2_triggers gd_triggers = {
-+	.ot_triggers = {
-+		.t_commit = ocfs2_commit_trigger,
-+		.t_abort = ocfs2_abort_trigger,
-+	},
-+	.ot_offset	= offsetof(struct ocfs2_group_desc, bg_check),
-+};
-+
-+static struct ocfs2_triggers xb_triggers = {
-+	.ot_triggers = {
-+		.t_commit = ocfs2_commit_trigger,
-+		.t_abort = ocfs2_abort_trigger,
-+	},
-+	.ot_offset	= offsetof(struct ocfs2_xattr_block, xb_check),
-+};
-+
-+static struct ocfs2_triggers dq_triggers = {
-+	.ot_triggers = {
-+		.t_commit = ocfs2_dq_commit_trigger,
-+		.t_abort = ocfs2_abort_trigger,
-+	},
-+};
-+
-+static int __ocfs2_journal_access(handle_t *handle,
-+				  struct inode *inode,
-+				  struct buffer_head *bh,
-+				  struct ocfs2_triggers *triggers,
-+				  int type)
- {
- 	int status;
- 
-@@ -418,6 +519,8 @@ int ocfs2_journal_access(handle_t *handle,
- 		status = -EINVAL;
- 		mlog(ML_ERROR, "Uknown access type!\n");
- 	}
-+	if (!status && ocfs2_meta_ecc(OCFS2_SB(inode->i_sb)) && triggers)
-+		jbd2_journal_set_triggers(bh, &triggers->ot_triggers);
- 	mutex_unlock(&OCFS2_I(inode)->ip_io_mutex);
- 
- 	if (status < 0)
-@@ -428,6 +531,54 @@ int ocfs2_journal_access(handle_t *handle,
- 	return status;
- }
- 
-+int ocfs2_journal_access_di(handle_t *handle, struct inode *inode,
-+			       struct buffer_head *bh, int type)
-+{
-+	return __ocfs2_journal_access(handle, inode, bh, &di_triggers,
-+				      type);
-+}
-+
-+int ocfs2_journal_access_eb(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type)
-+{
-+	return __ocfs2_journal_access(handle, inode, bh, &eb_triggers,
-+				      type);
-+}
-+
-+int ocfs2_journal_access_gd(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type)
-+{
-+	return __ocfs2_journal_access(handle, inode, bh, &gd_triggers,
-+				      type);
-+}
-+
-+int ocfs2_journal_access_db(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type)
-+{
-+	/* Right now, nothing for dirblocks */
-+	return __ocfs2_journal_access(handle, inode, bh, NULL, type);
-+}
-+
-+int ocfs2_journal_access_xb(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type)
-+{
-+	return __ocfs2_journal_access(handle, inode, bh, &xb_triggers,
-+				      type);
-+}
-+
-+int ocfs2_journal_access_dq(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type)
-+{
-+	return __ocfs2_journal_access(handle, inode, bh, &dq_triggers,
-+				      type);
-+}
-+
-+int ocfs2_journal_access(handle_t *handle, struct inode *inode,
-+			 struct buffer_head *bh, int type)
-+{
-+	return __ocfs2_journal_access(handle, inode, bh, NULL, type);
-+}
-+
- int ocfs2_journal_dirty(handle_t *handle,
- 			struct buffer_head *bh)
- {
-diff --git a/fs/ocfs2/journal.h b/fs/ocfs2/journal.h
-index 37013bf..bca370d 100644
---- a/fs/ocfs2/journal.h
-+++ b/fs/ocfs2/journal.h
-@@ -212,9 +212,12 @@ static inline void ocfs2_checkpoint_inode(struct inode *inode)
-  *  ocfs2_extend_trans     - Extend a handle by nblocks credits. This may
-  *                          commit the handle to disk in the process, but will
-  *                          not release any locks taken during the transaction.
-- *  ocfs2_journal_access   - Notify the handle that we want to journal this
-+ *  ocfs2_journal_access* - Notify the handle that we want to journal this
-  *                          buffer. Will have to call ocfs2_journal_dirty once
-  *                          we've actually dirtied it. Type is one of . or .
-+ *                          Always call the specific flavor of
-+ *                          ocfs2_journal_access_*() unless you intend to
-+ *                          manage the checksum by hand.
-  *  ocfs2_journal_dirty    - Mark a journalled buffer as having dirty data.
-  *  ocfs2_jbd2_file_inode  - Mark an inode so that its data goes out before
-  *                           the current handle commits.
-@@ -244,10 +247,28 @@ int			     ocfs2_extend_trans(handle_t *handle, int nblocks);
- #define OCFS2_JOURNAL_ACCESS_WRITE  1
- #define OCFS2_JOURNAL_ACCESS_UNDO   2
- 
--int                  ocfs2_journal_access(handle_t *handle,
--					  struct inode *inode,
--					  struct buffer_head *bh,
--					  int type);
-+/* ocfs2_inode */
-+int ocfs2_journal_access_di(handle_t *handle, struct inode *inode,
-+			       struct buffer_head *bh, int type);
-+/* ocfs2_extent_block */
-+int ocfs2_journal_access_eb(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type);
-+/* ocfs2_group_desc */
-+int ocfs2_journal_access_gd(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type);
-+/* ocfs2_xattr_block */
-+int ocfs2_journal_access_xb(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type);
-+/* quota blocks */
-+int ocfs2_journal_access_dq(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type);
-+/* dirblock */
-+int ocfs2_journal_access_db(handle_t *handle, struct inode *inode,
-+			    struct buffer_head *bh, int type);
-+/* Anything that has no ecc */
-+int ocfs2_journal_access(handle_t *handle, struct inode *inode,
-+			 struct buffer_head *bh, int type);
 +
  /*
-  * A word about the journal_access/journal_dirty "dance". It is
-  * entirely legal to journal_access a buffer more than once (as long
+  * Convenience function to journal all components in a path.
+  */
+@@ -2150,8 +2160,7 @@ static int ocfs2_rotate_tree_right(struct inode *inode,
+ 
+ 	*ret_left_path = NULL;
+ 
+-	left_path = ocfs2_new_path(path_root_bh(right_path),
+-				   path_root_el(right_path));
++	left_path = ocfs2_new_path_from_path(right_path);
+ 	if (!left_path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -2692,8 +2701,7 @@ static int __ocfs2_rotate_tree_left(struct inode *inode,
+ 		goto out;
+ 	}
+ 
+-	left_path = ocfs2_new_path(path_root_bh(path),
+-				   path_root_el(path));
++	left_path = ocfs2_new_path_from_path(path);
+ 	if (!left_path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -2702,8 +2710,7 @@ static int __ocfs2_rotate_tree_left(struct inode *inode,
+ 
+ 	ocfs2_cp_path(left_path, path);
+ 
+-	right_path = ocfs2_new_path(path_root_bh(path),
+-				    path_root_el(path));
++	right_path = ocfs2_new_path_from_path(path);
+ 	if (!right_path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -2833,8 +2840,7 @@ static int ocfs2_remove_rightmost_path(struct inode *inode, handle_t *handle,
+ 		 * We have a path to the left of this one - it needs
+ 		 * an update too.
+ 		 */
+-		left_path = ocfs2_new_path(path_root_bh(path),
+-					   path_root_el(path));
++		left_path = ocfs2_new_path_from_path(path);
+ 		if (!left_path) {
+ 			ret = -ENOMEM;
+ 			mlog_errno(ret);
+@@ -3075,8 +3081,7 @@ static int ocfs2_get_right_path(struct inode *inode,
+ 	/* This function shouldn't be called for the rightmost leaf. */
+ 	BUG_ON(right_cpos == 0);
+ 
+-	right_path = ocfs2_new_path(path_root_bh(left_path),
+-				    path_root_el(left_path));
++	right_path = ocfs2_new_path_from_path(left_path);
+ 	if (!right_path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -3247,8 +3252,7 @@ static int ocfs2_get_left_path(struct inode *inode,
+ 	/* This function shouldn't be called for the leftmost leaf. */
+ 	BUG_ON(left_cpos == 0);
+ 
+-	left_path = ocfs2_new_path(path_root_bh(right_path),
+-				   path_root_el(right_path));
++	left_path = ocfs2_new_path_from_path(right_path);
+ 	if (!left_path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -3780,8 +3784,7 @@ static int ocfs2_append_rec_to_path(struct inode *inode, handle_t *handle,
+ 		 * leftmost leaf.
+ 		 */
+ 		if (left_cpos) {
+-			left_path = ocfs2_new_path(path_root_bh(right_path),
+-						   path_root_el(right_path));
++			left_path = ocfs2_new_path_from_path(right_path);
+ 			if (!left_path) {
+ 				ret = -ENOMEM;
+ 				mlog_errno(ret);
+@@ -4018,7 +4021,7 @@ static int ocfs2_do_insert_extent(struct inode *inode,
+ 		goto out_update_clusters;
+ 	}
+ 
+-	right_path = ocfs2_new_path(et->et_root_bh, et->et_root_el);
++	right_path = ocfs2_new_path_from_et(et);
+ 	if (!right_path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -4130,8 +4133,7 @@ ocfs2_figure_merge_contig_type(struct inode *inode, struct ocfs2_path *path,
+ 			goto out;
+ 
+ 		if (left_cpos != 0) {
+-			left_path = ocfs2_new_path(path_root_bh(path),
+-						   path_root_el(path));
++			left_path = ocfs2_new_path_from_path(path);
+ 			if (!left_path)
+ 				goto out;
+ 
+@@ -4187,8 +4189,7 @@ ocfs2_figure_merge_contig_type(struct inode *inode, struct ocfs2_path *path,
+ 		if (right_cpos == 0)
+ 			goto out;
+ 
+-		right_path = ocfs2_new_path(path_root_bh(path),
+-					    path_root_el(path));
++		right_path = ocfs2_new_path_from_path(path);
+ 		if (!right_path)
+ 			goto out;
+ 
+@@ -4381,7 +4382,7 @@ static int ocfs2_figure_insert_type(struct inode *inode,
+ 		return 0;
+ 	}
+ 
+-	path = ocfs2_new_path(et->et_root_bh, et->et_root_el);
++	path = ocfs2_new_path_from_et(et);
+ 	if (!path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -4910,7 +4911,7 @@ int ocfs2_mark_extent_written(struct inode *inode,
+ 	if (et->et_ops == &ocfs2_dinode_et_ops)
+ 		ocfs2_extent_map_trunc(inode, 0);
+ 
+-	left_path = ocfs2_new_path(et->et_root_bh, et->et_root_el);
++	left_path = ocfs2_new_path_from_et(et);
+ 	if (!left_path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
+@@ -5082,8 +5083,7 @@ static int ocfs2_truncate_rec(struct inode *inode, handle_t *handle,
+ 		}
+ 
+ 		if (left_cpos && le16_to_cpu(el->l_next_free_rec) > 1) {
+-			left_path = ocfs2_new_path(path_root_bh(path),
+-						   path_root_el(path));
++			left_path = ocfs2_new_path_from_path(path);
+ 			if (!left_path) {
+ 				ret = -ENOMEM;
+ 				mlog_errno(ret);
+@@ -5192,7 +5192,7 @@ int ocfs2_remove_extent(struct inode *inode,
+ 
+ 	ocfs2_extent_map_trunc(inode, 0);
+ 
+-	path = ocfs2_new_path(et->et_root_bh, et->et_root_el);
++	path = ocfs2_new_path_from_et(et);
+ 	if (!path) {
+ 		ret = -ENOMEM;
+ 		mlog_errno(ret);
 -- 
 1.5.6
 
