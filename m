@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbYLYAHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbYLYALZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbYLYAHg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Dec 2008 19:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYLYAH1
+	id S1751996AbYLYALZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Dec 2008 19:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYLYALR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Dec 2008 19:07:27 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:46048 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbYLYAH1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Dec 2008 19:07:27 -0500
-Date: Wed, 24 Dec 2008 16:06:57 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] sysrq: fix ftrace help msg & doc.
-Message-Id: <20081224160657.fc391d4b.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 24 Dec 2008 19:11:17 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60003 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751188AbYLYALR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Dec 2008 19:11:17 -0500
+Date: Thu, 25 Dec 2008 01:11:03 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH, RESEND3] getrusage: fill ru_maxrss value
+Message-ID: <20081225011103.3a81c19d@psychotron.englab.brq.redhat.com>
+In-Reply-To: <20081224174248.GA15887@redhat.com>
+References: <20081218135945.4f8b87ed@psychotron.englab.brq.redhat.com>
+	<20081224153229.6800.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081224121738.68c5d1e6@psychotron.englab.brq.redhat.com>
+	<20081224174248.GA15887@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4952CEA5.00B4:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 24 Dec 2008 18:42:48 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-We have a conventional method of explicitly stating the
-sysrq action key in a sysrq help message, so change
-dump-ftrace-buffer to use that method and add it to
-Documentation/sysrq.txt.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Steven Rostedt <rostedt@goodmis.org>
-cc: Ingo Molnar <mingo@elte.hu>
----
- Documentation/sysrq.txt |    2 ++
- drivers/char/sysrq.c    |    2 +-
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
---- mmotm-2008-1224-0120.orig/drivers/char/sysrq.c
-+++ mmotm-2008-1224-0120/drivers/char/sysrq.c
-@@ -283,7 +283,7 @@ static void sysrq_ftrace_dump(int key, s
- }
- static struct sysrq_key_op sysrq_ftrace_dump_op = {
- 	.handler	= sysrq_ftrace_dump,
--	.help_msg	= "dumpZ-ftrace-buffer",
-+	.help_msg	= "dump-ftrace-buffer(Z)",
- 	.action_msg	= "Dump ftrace buffer",
- 	.enable_mask	= SYSRQ_ENABLE_DUMP,
- };
---- mmotm-2008-1224-0120.orig/Documentation/sysrq.txt
-+++ mmotm-2008-1224-0120/Documentation/sysrq.txt
-@@ -114,6 +114,8 @@ On all -  write a character to /proc/sys
- 
- 'x'	- Used by xmon interface on ppc/powerpc platforms.
- 
-+'z'	- Dump the ftrace buffer
-+
- '0'-'9' - Sets the console log level, controlling which kernel messages
-           will be printed to your console. ('0', for example would make
-           it so that only emergency messages like PANICs or OOPSes would
+> > > and we need good comment. e.g. /* Convert to KB */
+> > > or good macros (likely linux/fs/proc/meminfo.c::K() macro)
+> 
+> Yes! Please ;) I just can't parse the code above, I am not compiler.
+> Even
+> 
+> 	r->ru_maxrss *= (PAGE_SIZE / 1024); /* convert pages to KBs */
+> 
+> is much better, imho. Or at least just add the comment, so the
+> poor reader can understand what the code does without parsing.
+Fine
+> 
+> > > In addision, you also need change man pages and notice to linux-api mailing list.
+> > I cc'ed this list while I was sending the patch.
+> 
+> Hmm. The biggest mistake with this patch is that you lost the
+> CC list completely ;) Adding Hugh.
+> 
+> > I was not aware I
+> > should change the man page. Will do that too.
+> 
+> Well. I don't think you must change the man page. Of course it
+> would be nice if you do, but in a separate patch please. But
+> you must cc Michael at least ;)
+I cc'ed him with in my patch post - It has disappeared later in RE. 
+> 
+> Oleg.
+> 
