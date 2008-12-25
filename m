@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbYLYStE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbYLYSvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752304AbYLYStE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 13:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYLYSsx
+	id S1752520AbYLYSvB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 13:51:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYLYSuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 13:48:53 -0500
-Received: from trickle.CC.McGill.CA ([132.206.27.51]:52484 "EHLO
-	trickle.cc.mcgill.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbYLYSsx (ORCPT
+	Thu, 25 Dec 2008 13:50:52 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:60564 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbYLYSuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 13:48:53 -0500
-X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Dec 2008 13:48:52 EST
-Subject: Kernel panic with upgrade to 2.6.28
-From: David Ronis <ronis@ronispc.chem.mcgill.ca>
-Reply-To: ronis@ronispc.chem.mcgill.ca
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Department of Chemistry, McGill University
-Date: Thu, 25 Dec 2008 13:42:17 -0500
-Message-Id: <1230230537.3368.13.camel@montroll.chem.mcgill.ca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.4 
-X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2008.11.25.160724
-X-McGill-WhereFrom: Internal
+	Thu, 25 Dec 2008 13:50:52 -0500
+Date: Fri, 26 Dec 2008 00:20:21 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org, Andy Green <andy@openmoko.com>,
+       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       Samuel Ortiz <samuel@sortiz.org>
+Subject: Re: [PATCH V2 5/7] power_supply: PCF50633 battery charger driver
+Message-ID: <20081225185020.GB3041@fedora.yogi>
+References: <20081218055618.31696.65002.stgit@cff.thadambail> <20081218055744.31696.14523.stgit@cff.thadambail> <20081225154521.GA23659@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081225154521.GA23659@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just upgraded from 2.6.27.8 or .10 to 2.6.28 on several machines.  On
-one, a Dell dimension 3000 with a dual-core pentium R chip,  2 Seagate
-ST340014A (/dev/hda with swap as partion 1 and root ext3 filesystem as
-partion 2 and b containing a windows partition) and running slackware
-12.1, I get a kernel panic when trying to boot (the others boot fine);
-specifically, I get:
+On Thu, Dec 25, 2008 at 06:45:21PM +0300, Anton Vorontsov wrote:
+> On Thu, Dec 18, 2008 at 11:27:45AM +0530, Balaji Rao wrote:
+> > Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+> > Cc: Andy Green <andy@openmoko.com>
+> > Cc: Anton Vorontsov <cbou@mail.ru>
+> > Cc: David Woodhouse <dwmw2@infradead.org>
+> > ---
+> 
+> Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
+> 
+> (As the patch depends on MFD parts, I assume Samuel will merge it
+> into linux-mfd.)
+> 
 
-        Cannot open root device "302" or unknown block(3,2).  Please
-        append a correct root=; here are the available partitions:
-        
-No partitions are shown.  Manually adding root=/dev/hda2 to the lilo
-boot prompt doesn't help either.
+Yes. thanks a lot!
 
-The 2.6.27.8 kernel boots fine.
-
-Any suggestions?  Please CC me directly.
-
-Thanks and Happy Holidays
-
-David
-
-
+	- Balaji
