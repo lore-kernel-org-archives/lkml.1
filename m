@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbYLZXXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbYLZX2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753100AbYLZXXg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 18:23:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYLZXX2
+	id S1753202AbYLZX2n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 18:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYLZX2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 18:23:28 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:54910 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbYLZXX1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 18:23:27 -0500
-Date: Sat, 27 Dec 2008 00:23:24 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: david@lang.hm
-cc: Roland <devzero@web.de>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
+	Fri, 26 Dec 2008 18:28:34 -0500
+Received: from main.gmane.org ([80.91.229.2]:49638 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752191AbYLZX2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 18:28:34 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
 Subject: Re: [PATCH] Compress kernel modules on installation
-In-Reply-To: <alpine.DEB.1.10.0812261422010.10983@asgard.lang.hm>
-Message-ID: <alpine.LSU.2.00.0812270014500.12031@fbirervta.pbzchgretzou.qr>
-References: <005401c96797$df055100$6602a8c0@bui.materna.com> <alpine.DEB.1.10.0812261354250.10983@asgard.lang.hm> <alpine.LSU.2.00.0812262210080.12031@fbirervta.pbzchgretzou.qr> <alpine.DEB.1.10.0812261422010.10983@asgard.lang.hm>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 26 Dec 2008 18:28:22 -0500
+Message-ID: <49556896.8070307@tmr.com>
+References: <005401c96797$df055100$6602a8c0@bui.materna.com> <alpine.LSU.2.00.0812262134270.12031@fbirervta.pbzchgretzou.qr> <006201c967af$24c29740$6602a8c0@bui.materna.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: Jan Engelhardt <jengelh@medozas.de>, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
+In-Reply-To: <006201c967af$24c29740$6602a8c0@bui.materna.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Friday 2008-12-26 23:28, david@lang.hm wrote:
->>>> ( see
->>>> http://www.linuxjournal.com/files/linuxjournal.com/linuxjournal/articles/080/8051/8051f1.png
->>>> )
+Roland wrote:
+>> On Friday 2008-12-26 21:23, Roland wrote:
+>>
+>>> what about some "make modules_install_compressed" instead ?
 >>>
->>> this varies a lot on the particulars of the data being compressed.
+>>> as i have run out of diskspace quite often when installing test 
+>>> kernels, i
+>>> think we really need a feature like this.
+>>>
+>>> i`d also favour the makefile approach.
+>>> why another kconfig option?
+>>>
+>>> jan`s patch looks clean and simple, but i think it`s a little bit 
+>>> intrusive...
 >>
->> see my other reply.
->
-> IIRC the default is 5
+>> Why so? module-ini
+> 
+> with "intrusive" i meant, that all modules are now compressed by default 
+> and there is no switch to build them uncompressed.
+> so you change a long established default which may not be welcomed by 
+> everyone and give no option for conservative people.
+> 
+How many people use the option to install an uncompressed kernel?
 
-default is 6 (man gzip).
+> we should take care and not break things.
+> default uncompressed, compressed implented as an option is a better 
+> strategy, imho.
+> discuss changing the default at a later time then.
+> 
 
-> instead of doing the compression when doing the modules_install do it when they
-> are compiled (just like we do for the kernel itself). if you just spent the cpu
-> to build the thing, the cpu to compress it isn't much.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-I'd rather do the compression later on - or do you want
-to spend gzipping all day when doing `make foo.ko`
-as a developer? ;-)
-
->> $ find . -iname "*.gz" | xargs du -cs -B 4096 | grep total
->> 7086    total
->> $ echo $[7086*4096]
->> 29024256
->> $ echo $[29024256-24782942]
->> 4241314
->>
->> So that's like 4M going off for the block stuff. Given that
->> the compression actually saved about 50 MB, I think we
->> can live with the 4M - especially since they have been
->> there already one way or another.
->
-> if I'm reading the numbers correctly that's about 16% of the space taken by the
-> final result
-
-Assuming that the x in (filesize % 4096 == x) is randomly distributed
-over 0..4095 for gzip modules, I proclaim that it is similarly
-randomly distributed for noncompressed modules. As such, the overhead
-is always there and gzipping does not make it worse or better.
-So you always have the overhead.
-
-uncompressed:
-$ du as above
-113360896
-$ byte counted:
-109270606
-
-differnece: 4.09 MB
-
-You always pay that price for having single files.
-So I dismiss it from the discussion ;-)
