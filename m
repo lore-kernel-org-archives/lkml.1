@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYLZVuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbYLZVxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYLZVuY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 16:50:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYLZVuN
+	id S1754087AbYLZVxy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 16:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYLZVxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 16:50:13 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53971 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753136AbYLZVuM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 16:50:12 -0500
-Message-ID: <49555179.6010300@zytor.com>
-Date: Fri, 26 Dec 2008 13:49:45 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 26 Dec 2008 16:53:45 -0500
+Received: from bu3sch.de ([62.75.166.246]:36782 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbYLZVxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 16:53:45 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Bart De Schuymer <bdschuym@pandora.be>,
+       Harald Welte <laforge@netfilter.org>
+Subject: ebt_ulog out of memory.
+Date: Fri, 26 Dec 2008 22:52:45 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Theodore Tso <tytso@mit.edu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: SD/MMC cards: how crappy they are?
-References: <20081202144830.GB1549@ucw.cz> <493562A5.40308@zytor.com> <20081202165608.GD18162@mit.edu> <4935778E.1020405@zytor.com> <20081204103206.GD22396@elf.ucw.cz> <49382973.4000908@zytor.com> <20081226214625.GA25153@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20081226214625.GA25153@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Message-Id: <200812262252.45560.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->> Also had a batch of cards which would silently "correct" the partition
->> table for you to align the partitions to its flash erase blocks.
-> 
-> Can you mention the manufacturer/model? Silendt data corruption is a
-> nasty thing....
+I get the following error message at bootup.
+[    1.839948] ebt_ulog: out of memory trying to call netlink_kernel_create
 
-I would, if I remembered.  It was a few years ago.  All I can remember
-now is that it wasn't one of the well-known brands like SanDisk or PQI.
+The system certainly is not out of memory, because it works fine, otherwise.
 
-	-hpa
+The kernel is a 2.6.28-rc9 on an x86_64 architecture.
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Greetings, Michael.
