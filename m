@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbYLZH3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbYLZH3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753890AbYLZH3V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 02:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYLZH3D
+	id S1753570AbYLZH3j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 02:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYLZH3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 02:29:03 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:33480 "EHLO mgw1.diku.dk"
+	Fri, 26 Dec 2008 02:29:24 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:33498 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752239AbYLZH3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 02:29:00 -0500
-Date: Fri, 26 Dec 2008 08:28:58 +0100 (CET)
+	id S1753899AbYLZH3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 02:29:22 -0500
+Date: Fri, 26 Dec 2008 08:29:19 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org,
+To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/7] drivers/staging/comedi: Move a dereference below a NULL
- test
-Message-ID: <Pine.LNX.4.64.0812260828350.25450@ask.diku.dk>
+Subject: [PATCH 7/7] drivers/usb/serial: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0812260829000.25450@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -57,30 +56,24 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/staging/comedi/drivers/usbduxfast.c    |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/usb/serial/usb-serial.c     |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/comedi/drivers/usbduxfast.c b/drivers/staging/comedi/drivers/usbduxfast.c
-index 3a00ff0..5c8db77 100644
---- a/drivers/staging/comedi/drivers/usbduxfast.c
-+++ b/drivers/staging/comedi/drivers/usbduxfast.c
-@@ -1671,15 +1671,15 @@ static int usbduxfast_detach(comedi_device * dev)
- {
- 	usbduxfastsub_t *usbduxfastsub_tmp;
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index 080ade2..45f8ce8 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -509,11 +509,11 @@ static void usb_serial_port_work(struct work_struct *work)
+ 		container_of(work, struct usb_serial_port, work);
+ 	struct tty_struct *tty;
  
--#ifdef CONFIG_COMEDI_DEBUG
--	printk("comedi%d: usbduxfast: detach usb device\n", dev->minor);
--#endif
+-	dbg("%s - port %d", __func__, port->number);
 -
- 	if (!dev) {
- 		printk("comedi?: usbduxfast: detach without dev variable...\n");
- 		return -EFAULT;
- 	}
+ 	if (!port)
+ 		return;
  
-+#ifdef CONFIG_COMEDI_DEBUG
-+	printk("comedi%d: usbduxfast: detach usb device\n", dev->minor);
-+#endif
++	dbg("%s - port %d", __func__, port->number);
 +
- 	usbduxfastsub_tmp = dev->private;
- 	if (!usbduxfastsub_tmp) {
- 		printk("comedi?: usbduxfast: detach without ptr to usbduxfastsub[]\n");
+ 	tty = tty_port_tty_get(&port->port);
+ 	if (!tty)
+ 		return;
