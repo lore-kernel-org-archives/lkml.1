@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbYLZSsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbYLZTJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbYLZSsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 13:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYLZSs3
+	id S1753132AbYLZTJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 14:09:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYLZTJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 13:48:29 -0500
-Received: from proxy3.bredband.net ([195.54.101.73]:47890 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085AbYLZSs2 (ORCPT
+	Fri, 26 Dec 2008 14:09:26 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:56362 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751156AbYLZTJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 13:48:28 -0500
+	Fri, 26 Dec 2008 14:09:25 -0500
+X-Trace: 123468892/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.219/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.219
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.2 
+X-IP-BHB: Once
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap1IAEK1VEnVQJ+/PGdsb2JhbACBbIceilgBAQEBNQGpN1iPGIZE
-Message-ID: <495526F6.9040704@zappa.cx>
-Date: Fri, 26 Dec 2008 19:48:22 +0100
-From: Andreas Sundstrom <sunkan@zappa.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28 ext4, xen and lvm volume becomes ro after snapshot
-References: <4954BAAB.9090108@zappa.cx> <20081226140721.GN9871@mit.edu> <4954FB62.4090306@zappa.cx> <20081226182145.GP9871@mit.edu>
-In-Reply-To: <20081226182145.GP9871@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+X-IronPort-Anti-Spam-Result: AhkGABm7VElQLLDb/2dsb2JhbACBbIEwujdYjxqGRA
+X-IronPort-AV: E=Sophos;i="4.36,285,1228089600"; 
+   d="scan'208";a="123468892"
+Subject: Re: [PATCH] sh: maple: add support for Maple controller as a
+ joystick
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, lethal@linux-sh.org
+In-Reply-To: <20081223085946.GA14302@anvil.corenet.prv>
+References: <1229728542.1441.6.camel@localhost.localdomain>
+	 <20081222150636.8dc20d61.akpm@linux-foundation.org>
+	 <1229994455.22856.61.camel@brick>
+	 <20081223085946.GA14302@anvil.corenet.prv>
+Content-Type: text/plain
+Date: Fri, 26 Dec 2008 19:08:39 +0000
+Message-Id: <1230318519.12447.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> Hmm... ok, to summarize, you are seeing this problem with 2.6.28 (have
-> you tried earlier kernel versions) when an LVM volume has a read/only
-> snapshot in existence and you try to mount the LVM volume using ext4.
-> If you mount the same LVM volume using ext3, you don't see any
-> problems.   Is that correct?
->   
-Correct, and I have not been using barriers with any earlier kernel.
-I stumbled upon this because barriers are enabled by default in ext4.
-> Can you try mounting ext3 with barriers enabled?  Booting with the
-> command linux option rootflags=barriers should do the trick.  If that
-> fails, then it would indicate that trying to enable barriers in a Xen
-> guest while the host OS has created a snapshot of volume causes an I/O
-> error, thus leading errors which you are seeing.
->
-> 						- Ted
->   
-Yes, I mounted it with ext3 and barrier=1 and could reproduce the problem.
-ext3 did not remount the fs ro though, it seems to only disable barriers:
+On Tue, 2008-12-23 at 03:59 -0500, Dmitry Torokhov wrote:
+> On Mon, Dec 22, 2008 at 05:07:35PM -0800, Harvey Harrison wrote:
+> > On Mon, 2008-12-22 at 15:06 -0800, Andrew Morton wrote:
+> > > On Fri, 19 Dec 2008 23:15:42 +0000
+> > > Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
+> > > 
+> > > > Not sure what happened with earlier submissions, so here is an up-to-date
+> > > > patch for the Dreamcast Maple controlled.
+> > > > 
+> > > > 
+> > > > Add support for the SEGA Dreamcast Maple controller as a joystick
+> > > > 
+> > > > ...
+> > > >
+> > > > +static void dc_pad_callback(struct mapleq *mq)
+> > > > +{
+> > > > +	unsigned short buttons;
+> > > > +	struct maple_device *mapledev = mq->dev;
+> > > > +	struct dc_pad *pad = maple_get_drvdata(mapledev);
+> > > > +	struct input_dev *dev = pad->dev;
+> > > > +	unsigned char *res = mq->recvbuf;
+> > > > +
+> > > > +	buttons = ~cpu_to_le16(*(unsigned short *)(res + 8));
+> > > 
+> > > hm, could that be simplified?
+> > 
+> > And as a bonus fix the obvious sparse warning:
+> > 
+> > 	buttons = ~le16_to_cpup((__le16 *)(res + 8));
+> > 
+> 
+> Below is what I woudl like to apply unless you see more issues with the
+> patch. Andrew, if you could test it on your hardware to make sure it
+> still works that woudl be great.
+> 
+> Thanks!
+> 
 
-[    7.681759] blkfront: xvda1: write barrier op failed
-[    7.681776] blkfront: xvda1: barriers disabled
-[    7.681785] end_request: I/O error, dev xvda1, sector 4584
-[    7.681800] end_request: I/O error, dev xvda1, sector 4584
-[    7.681886] JBD: barrier-based sync failed on xvda1 - disabling barriers
+Just to say I've tested this with jstest now and it seems to be in good
+working order. There is a calibration issue on one axis, but I think
+that's my hardware :-)
 
-And then I tested with ext4 and barrier=0 and that also works.
-
-I don't know if this is expected behaviour or not or if it's worth
-looking into.
-I just wanted to report back what I saw. For me personally it's no issue.
-I'll be using ext4 without barriers for a while and see how it goes.
-
-But I'm here if you want something tested or a patch verified or anything,
-but I guess this might be a Xen issue rather than vanilla kernel stuff.
-
-Thanks for helping out with the narrowing down of the issue
-
-/Andreas
