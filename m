@@ -1,80 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbYLYRP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752167AbYLYR1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbYLYRP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 12:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYLYRPQ
+	id S1752167AbYLYR1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 12:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYLYR1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 12:15:16 -0500
-Received: from smtp.witbe.net ([81.88.96.48]:60047 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751614AbYLYRPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 12:15:14 -0500
-X-Greylist: delayed 323 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Dec 2008 12:15:13 EST
-Date: Thu, 25 Dec 2008 23:09:34 +0100
-From: Paul Rolland <rol@as2917.net>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: rol@as2917.net
-Subject: 2.6.27.9 - Resuming from hibernate locks after "CPU1 is down"
-Message-ID: <20081225230934.380c953f@tux.DEF.witbe.net>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.6.0-rc2 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Dec 2008 12:27:34 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:12727 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbYLYR1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 12:27:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Q6S2Rm/X/BucppL+scAWsw0YiUpfB41OG3Ya7OgcRYVOFIGlyfslAY2h+y5Jg/wpWr
+         6pJWowPC230ZVhVAN+RNcUhXgWyfSnXnsde9CuBoVQVlG3z/f7BXltZSdGlE0SmHiNEn
+         LLJ0K2tHt2LafAZG1N8Jj0r4fv/s8Ql7SRiFo=
+Date: Fri, 26 Dec 2008 01:26:12 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: [Patch] signal: let valid_signal() check more
+Message-ID: <20081226012612.GI3130@hack.private>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I'm trying to have suspend to disk and suspend to RAM work on my machine
-(Dell Inspiron 6400, 2Go RAM, with an Intel Mobile 945GM/GMS, 943/940GM
-L Express Integrated Graphics Controller.
+Teach valid_signal() to check sig > 0 case.
 
-To suspend, I'm using the "echo mem | disk > /sys/power/state" command.
+Tested on UML only.
 
-As of now, using suspend to RAM allow the machine to suspend, and resume is
-nearly OK except the video is not restored, and the screen stays black (but
-keyboard is Ok, I can launch any command I want, so I can restart).
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@redhat.com>
 
-When suspending to disk, suspend is Ok with :
-echo -n 2097152000 > /sys/power/image_size ;
-echo -n disk > /sys/power/state
-and resuming detects the image in the swap partition. So, I have on the
-console, when I add "no_console_suspend" on the boot command line :
-PM: loading image data pages...
-PM: read xxxxx kbytes in y.zz seconds
-...
-[stuff about scsi/sda]
-Disabling non-boot CPUs
-CPU1 is now offlone
-SMP alternatives: switching to UP code
-CPU1 is down
-
-and then, nothing :( machine is dead frozen. CAPS Lock doesn't toggle the
-keyboard LED anymore, I need to manually power off and power on the machine.
-
-I must add that these are my first attempts. So, this is not to be
-considered a regression.
-
-Is there anything else I can do to try to debug the resume ?
-
-Regards,
-Paul
-
--- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
-
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
-navigateur "Some people dream of success... while others wake up and work
-hard at it" 
-
-"I worry about my child and the Internet all the time, even though she's
-too young to have logged on yet. Here's what I worry about. I worry that 10
-or 15 years from now, she will come to me and say 'Daddy, where were you
-when they took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
+---
+diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
+index 8944ce5..e7568ff 100644
+--- a/drivers/char/vt_ioctl.c
++++ b/drivers/char/vt_ioctl.c
+@@ -727,7 +727,7 @@ int vt_ioctl(struct tty_struct *tty, struct file * file,
+ 	{
+ 		if (!perm || !capable(CAP_KILL))
+ 			goto eperm;
+-		if (!valid_signal(arg) || arg < 1 || arg == SIGKILL)
++		if (!valid_signal((int)arg) || arg == SIGKILL)
+ 			ret = -EINVAL;
+ 		else {
+ 			spin_lock_irq(&vt_spawn_con.lock);
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index 549daf8..32c8677 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -313,11 +313,10 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
+ 		break;
+ 	case F_SETSIG:
+ 		/* arg == 0 restores default behaviour. */
+-		if (!valid_signal(arg)) {
+-			break;
++		if (arg == 0 || valid_signal((int)arg)) {
++			err = 0;
++			filp->f_owner.signum = arg;
+ 		}
+-		err = 0;
+-		filp->f_owner.signum = arg;
+ 		break;
+ 	case F_GETLEASE:
+ 		err = fcntl_getlease(filp);
+diff --git a/include/linux/signal.h b/include/linux/signal.h
+index 84f997f..cddf220 100644
+--- a/include/linux/signal.h
++++ b/include/linux/signal.h
+@@ -227,9 +227,9 @@ static inline void init_sigpending(struct sigpending *sig)
+ extern void flush_sigqueue(struct sigpending *queue);
+ 
+ /* Test if 'sig' is valid signal. Use this instead of testing _NSIG directly */
+-static inline int valid_signal(unsigned long sig)
++static inline int valid_signal(int sig)
+ {
+-	return sig <= _NSIG ? 1 : 0;
++	return sig <= _NSIG ? (sig > 0) : 0;
+ }
+ 
+ extern int next_signal(struct sigpending *pending, sigset_t *mask);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 2d8be7e..096beb5 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -376,7 +376,7 @@ static void set_special_pids(struct pid *pid)
+  */
+ int allow_signal(int sig)
+ {
+-	if (!valid_signal(sig) || sig < 1)
++	if (!valid_signal(sig))
+ 		return -EINVAL;
+ 
+ 	spin_lock_irq(&current->sighand->siglock);
+@@ -397,7 +397,7 @@ EXPORT_SYMBOL(allow_signal);
+ 
+ int disallow_signal(int sig)
+ {
+-	if (!valid_signal(sig) || sig < 1)
++	if (!valid_signal(sig))
+ 		return -EINVAL;
+ 
+ 	spin_lock_irq(&current->sighand->siglock);
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 4c8bcd7..e8eb715 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -369,7 +369,7 @@ static int ptrace_setsiginfo(struct task_struct *child, const siginfo_t *info)
+ 
+ static int ptrace_resume(struct task_struct *child, long request, long data)
+ {
+-	if (!valid_signal(data))
++	if (!valid_signal((int)data))
+ 		return -EIO;
+ 
+ 	if (request == PTRACE_SYSCALL)
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 4530fc6..8355426 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1411,7 +1411,7 @@ int do_notify_parent(struct task_struct *tsk, int sig)
+ 		if (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN)
+ 			sig = -1;
+ 	}
+-	if (valid_signal(sig) && sig > 0)
++	if (valid_signal(sig))
+ 		__group_send_sig_info(sig, &info, tsk->parent);
+ 	__wake_up_parent(tsk, tsk->parent);
+ 	spin_unlock_irqrestore(&psig->siglock, flags);
+@@ -2308,7 +2308,7 @@ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
+ 	struct k_sigaction *k;
+ 	sigset_t mask;
+ 
+-	if (!valid_signal(sig) || sig < 1 || (act && sig_kernel_only(sig)))
++	if (!valid_signal(sig) || (act && sig_kernel_only(sig)))
+ 		return -EINVAL;
+ 
+ 	k = &t->sighand->action[sig-1];
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 31deba8..06dc092 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1631,7 +1631,7 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
+ 
+ 	switch (option) {
+ 		case PR_SET_PDEATHSIG:
+-			if (!valid_signal(arg2)) {
++			if (!valid_signal((int)arg2)) {
+ 				error = -EINVAL;
+ 				break;
+ 			}
