@@ -1,61 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYLZPbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYLZPgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbYLZPbV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 10:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYLZPbN
+	id S1753358AbYLZPgO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 10:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYLZPf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 10:31:13 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:58629 "EHLO smtp.mba.ocn.ne.jp"
+	Fri, 26 Dec 2008 10:35:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55103 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbYLZPbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 10:31:12 -0500
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: linux-kernel@vger.kernel.org
-Cc: hskinnemoen@atmel.com, maciej.sosnowski@intel.com,
-       dan.j.williams@intel.com, ralf@linux-mips.org
-Subject: [PATCH] dmatest: flush and invalidate destination buffer before DMA
-Date: Sat, 27 Dec 2008 00:31:08 +0900
-Message-Id: <1230305468-18021-1-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.3
+	id S1752200AbYLZPf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 10:35:57 -0500
+Date: Fri, 26 Dec 2008 16:33:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
+Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333
+	smp_call_function_mask
+Message-ID: <20081226153318.GA4514@elte.hu>
+References: <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com> <49529CE1.4040005@kernel.org> <20081226091217.GA5100@linux.vnet.ibm.com> <4954AC7B.3020603@kernel.org> <20081226102716.GA31450@uranus.ravnborg.org> <20081226152804.GB5100@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081226152804.GB5100@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On non-coherent architectures, such as MIPS, the dmatest reports
-mismatches on just before and after the DMA area.  This is because
-test patterns in the dstbuf discarded from cache without writing to
-main memory.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+> * Sam Ravnborg <sam@ravnborg.org> [2008-12-26 11:27:16]:
+> 
+> > On Fri, Dec 26, 2008 at 02:05:47AM -0800, Yinghai Lu wrote:
+> > > Kamalesh Babulal wrote:
+> > > > * Yinghai Lu <yinghai@kernel.org> [2008-12-24 12:34:41]:
+> > > > 
+> > > >> --
+> > > > 
+> > > > After the applying the patch, the kernel panic's with the same backtrace. The
+> > > > box is running Fedora 5 on it.
+> > > > 
+> > > 
+> > > please try...
+> > > Ingo, do we need to switch to use #idef and inline function instead?
+> > 
+> > I recall David Howells had a similar issue with the bootparamter patch set.
+> > The workaround he used was to add a barrier(); call in the weak function
+> > to avoid the inline.
+> > 
+> > [full context kept as I added David to to: list].
+> > 	Sam
+> > 
+> 
+> Hi Yinghai,
+> 
+> 	Thanks, after applying the patch, the kernel boot's up fine.
+
+how about the patch below, does that work too? (after removing Yinghai's 
+patch)
+
+	Ingo
+
+------------->
+>From 0d41e654c877a0de441448ca2f63a72ed11c5d84 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 26 Dec 2008 14:39:51 +0100
+Subject: [PATCH] kbuild, sparseirq: work around GCC bug with __weak aliases
+
+Impact: fix panic on null pointer with sparseirq
+
+Certain versions of GCC inline the weak global functions.
+Work it around by marking __weak functions as noinline.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/dma/dmatest.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ include/linux/compiler-gcc.h |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index ed9636b..6b747dc 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -202,6 +202,7 @@ static int dmatest_func(void *data)
- 	dma_cookie_t		cookie;
- 	enum dma_status		status;
- 	int			ret;
-+	dma_addr_t		dma_dest;
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index 5c8351b..1ad72e6 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -41,11 +41,17 @@
  
- 	thread_name = current->comm;
+ #define __deprecated			__attribute__((deprecated))
+ #define __packed			__attribute__((packed))
+-#define __weak				__attribute__((weak))
+ #define __naked				__attribute__((naked))
+ #define __noreturn			__attribute__((noreturn))
  
-@@ -226,6 +227,12 @@ static int dmatest_func(void *data)
- 
- 		dmatest_init_srcbuf(thread->srcbuf, src_off, len);
- 		dmatest_init_dstbuf(thread->dstbuf, dst_off, len);
-+		/* flush and invalidate caches for whole dstbuf */
-+		dma_dest = dma_map_single(chan->device->dev,
-+				thread->dstbuf,
-+				test_buf_size, DMA_BIDIRECTIONAL);
-+		dma_unmap_single(chan->device->dev, dma_dest,
-+				test_buf_size, DMA_BIDIRECTIONAL);
- 
- 		cookie = dma_async_memcpy_buf_to_buf(chan,
- 				thread->dstbuf + dst_off,
--- 
-1.5.6.3
-
+ /*
++ * Mark weak aliases also noinline, because some GCC versions
++ * incorrectly inline weak aliases (even when a non-weak variant
++ * is there) and thus cause crashes:
++ */
++#define __weak				__attribute__((weak)) noinline
++
++/*
+  * From the GCC manual:
+  *
+  * Many functions have no effects except the return value and their
