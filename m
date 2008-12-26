@@ -1,66 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbYLZX2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYLZXqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202AbYLZX2n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 18:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYLZX2e
+	id S1753155AbYLZXqe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 18:46:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYLZXq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 18:28:34 -0500
-Received: from main.gmane.org ([80.91.229.2]:49638 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbYLZX2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 18:28:34 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [PATCH] Compress kernel modules on installation
-Date: Fri, 26 Dec 2008 18:28:22 -0500
-Message-ID: <49556896.8070307@tmr.com>
-References: <005401c96797$df055100$6602a8c0@bui.materna.com> <alpine.LSU.2.00.0812262134270.12031@fbirervta.pbzchgretzou.qr> <006201c967af$24c29740$6602a8c0@bui.materna.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 26 Dec 2008 18:46:26 -0500
+Received: from mo-p05-ob.rzone.de ([81.169.146.181]:51342 "EHLO
+	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbYLZXqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 18:46:25 -0500
+X-Greylist: delayed 662 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Dec 2008 18:46:25 EST
+X-RZG-CLASS-ID: mo05
+X-RZG-AUTH: :J20NVUqhafZjXmY+Np2czPoDrWHf+vfHoOjaOgf6V+LBFT09kp4=
+Message-ID: <49556A37.8070202@tragetaschen.dyndns.org>
+Date: Sat, 27 Dec 2008 00:35:19 +0100
+From: Kai Ruhnau <kai@tragetaschen.dyndns.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081204)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Boot hang after io scheduler registration
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Jan Engelhardt <jengelh@medozas.de>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
-In-Reply-To: <006201c967af$24c29740$6602a8c0@bui.materna.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland wrote:
->> On Friday 2008-12-26 21:23, Roland wrote:
->>
->>> what about some "make modules_install_compressed" instead ?
->>>
->>> as i have run out of diskspace quite often when installing test 
->>> kernels, i
->>> think we really need a feature like this.
->>>
->>> i`d also favour the makefile approach.
->>> why another kconfig option?
->>>
->>> jan`s patch looks clean and simple, but i think it`s a little bit 
->>> intrusive...
->>
->> Why so? module-ini
-> 
-> with "intrusive" i meant, that all modules are now compressed by default 
-> and there is no switch to build them uncompressed.
-> so you change a long established default which may not be welcomed by 
-> everyone and give no option for conservative people.
-> 
-How many people use the option to install an uncompressed kernel?
+Hi,
 
-> we should take care and not break things.
-> default uncompressed, compressed implented as an option is a better 
-> strategy, imho.
-> discuss changing the default at a later time then.
-> 
+I have a somewhat weird hang problem when booting all recent kernel
+versions including 2.6.28: When I boot my system and let grub start the
+kernel after a 5 second timeout, the system will hang after registering
+the io schedulers (see below). However, when I choose the default grub
+entry manually by pressing ENTER in the menu, the kernel does not hang
+and continues the normal booting process.
+
+Below, you can find the place of the hang and an excerpt of the messages
+that follow on a normal boot as well as some system information.
+
+Thanks for your time on this problem.
+
+Best regards
+Kai
+
+# dmesg
+...
+[    0.309379] io scheduler noop registered
+[    0.309473] io scheduler anticipatory registered
+[    0.309569] io scheduler deadline registered
+[    0.309679] io scheduler cfq registered (default)
+
+Hang happens here.
+
+Continuation when pressing ENTER in grub:
+
+[    0.414098] pci 0000:01:00.0: Boot video device
+[    0.417068] pcieport-driver 0000:00:02.0: setting latency timer to 64
+[    0.417097] pcieport-driver 0000:00:02.0: found MSI capability
+[    0.417222] pcieport-driver 0000:00:02.0: irq 319 for MSI/MSI-X
+[    0.417231] pci_express 0000:00:02.0:pcie00: allocate port service
+[    0.417294] pci_express 0000:00:02.0:pcie03: allocate port service
+[    0.417376] pcieport-driver 0000:00:06.0: setting latency timer to 64
+[    0.417403] pcieport-driver 0000:00:06.0: found MSI capability
+[    0.417523] pcieport-driver 0000:00:06.0: irq 318 for MSI/MSI-X
+[    0.417532] pci_express 0000:00:06.0:pcie00: allocate port service
+[    0.417580] pci_express 0000:00:06.0:pcie03: allocate port service
+...
+
+# lspci
+00:00.0 Host bridge: ATI Technologies Inc Device 7930
+00:02.0 PCI bridge: ATI Technologies Inc Device 7933
+00:06.0 PCI bridge: ATI Technologies Inc Device 7936
+00:12.0 SATA controller: ATI Technologies Inc SB600 Non-Raid-5 SATA
+00:13.0 USB Controller: ATI Technologies Inc SB600 USB (OHCI0)
+00:13.1 USB Controller: ATI Technologies Inc SB600 USB (OHCI1)
+00:13.2 USB Controller: ATI Technologies Inc SB600 USB (OHCI2)
+00:13.3 USB Controller: ATI Technologies Inc SB600 USB (OHCI3)
+00:13.4 USB Controller: ATI Technologies Inc SB600 USB (OHCI4)
+00:13.5 USB Controller: ATI Technologies Inc SB600 USB Controller (EHCI)
+00:14.0 SMBus: ATI Technologies Inc SB600 SMBus (rev 13)
+00:14.1 IDE interface: ATI Technologies Inc SB600 IDE
+00:14.2 Audio device: ATI Technologies Inc SB600 Azalia
+00:14.3 ISA bridge: ATI Technologies Inc SB600 PCI to LPC Bridge
+00:14.4 PCI bridge: ATI Technologies Inc SB600 PCI to PCI Bridge
+01:00.0 VGA compatible controller: nVidia Corporation G80 [GeForce 8800
+GTS] (rev a2)
+02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E
+Gigabit Ethernet Controller (rev 12)
+03:02.0 FireWire (IEEE 1394): Texas Instruments TSB43AB23
+IEEE-1394a-2000 Controller (PHY/Link)
+# uname -a
+Linux 2.6.28-gentoo #1 SMP PREEMPT Thu Dec 25 23:33:06 CET 2008 x86_64
+Intel(R) Core(TM)2 CPU 6300 @ 1.86GHz GenuineIntel GNU/Linux
+
+I read about some usb related problems when searched with google:
+
+# lsusb
+Bus 001 Device 005: ID 0bda:0111 Realtek Semiconductor Corp.
+Bus 001 Device 001: ID 1d6b:0002
+Bus 006 Device 002: ID 147a:e00d Formosa Industrial Computing, Inc.
+Bus 006 Device 001: ID 1d6b:0001
+Bus 005 Device 001: ID 1d6b:0001
+Bus 004 Device 001: ID 1d6b:0001
+Bus 003 Device 001: ID 1d6b:0001
+Bus 002 Device 003: ID 046d:c51a Logitech, Inc.
+Bus 002 Device 002: ID 045e:00db Microsoft Corp. Natural Ergonomic
+Keyboard 4000 V1.0
+Bus 002 Device 001: ID 1d6b:0001
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+This signature is left as an exercise for the reader.
 
