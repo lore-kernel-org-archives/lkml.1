@@ -1,114 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYLZPgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYLZPmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbYLZPgO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 10:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYLZPf6
+	id S1753358AbYLZPmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 10:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYLZPmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 10:35:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55103 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752200AbYLZPf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 10:35:57 -0500
-Date: Fri, 26 Dec 2008 16:33:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
-Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333
-	smp_call_function_mask
-Message-ID: <20081226153318.GA4514@elte.hu>
-References: <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com> <49529CE1.4040005@kernel.org> <20081226091217.GA5100@linux.vnet.ibm.com> <4954AC7B.3020603@kernel.org> <20081226102716.GA31450@uranus.ravnborg.org> <20081226152804.GB5100@linux.vnet.ibm.com>
+	Fri, 26 Dec 2008 10:42:32 -0500
+Received: from proxy3.bredband.net ([195.54.101.73]:44968 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbYLZPmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 10:42:31 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap1IANuJVEnVQJ+/PGdsb2JhbACBbIceilkBAQEBNQGpZFiPM4ZE
+Message-ID: <4954FB62.4090306@zappa.cx>
+Date: Fri, 26 Dec 2008 16:42:26 +0100
+From: Andreas Sundstrom <sunkan@zappa.cx>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081226152804.GB5100@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28 ext4, xen and lvm volume becomes ro after snapshot
+References: <4954BAAB.9090108@zappa.cx> <20081226140721.GN9871@mit.edu>
+In-Reply-To: <20081226140721.GN9871@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Theodore Tso wrote:
+> On Fri, Dec 26, 2008 at 12:06:19PM +0100, Andreas Sundstrom wrote:
+>   
+>> I use a little script that backup this xen VM from xen dom0.
+>>
+>> Here is the interesting part of my script:
+>> /usr/sbin/xm sysrq xenfw1 s
+>> /usr/sbin/xm pause xenfw1
+>> sync
+>> /sbin/lvm lvcreate --snapshot --permission rw --size 1G --name xenfw1_s
+>> /dev/3w250g/xenfw1 > /dev/null
+>> /usr/sbin/xm unpause xenfw1
+>> /bin/mount -o ro,noatime /dev/3w250g/xenfw1_s /mnt/snapshots/xenfw1 ||
+>> /bin/rmdir /mnt/snapshots/xenfw1
+>> # Here's where the actual backups take place
+>> /bin/umount /mnt/snapshots/xenfw1 2> /dev/null
+>> /sbin/lvm lvremove --force /dev/3w250g/xenfw1_s > /dev/null
+>>     
+>
+> OK, so this is being run on Xen Dom0, which means your doing the
+> snapshot from Host OS, while the guest OS is suspended, correct?
+>   
+Correct
+>   
+>> After the "lvcreate --snapshot" if I check within the xen VM (with cat
+>> /proc/mounts) I can see that / changed from rw to ro:
+>> Before snapshot:
+>> /dev/root / ext4 rw,noatime,barrier=1,noextents,data=ordered 0 0
+>> After snapshot:
+>> /dev/root / ext4 ro,noatime,barrier=1,noextents,data=ordered 0 0
+>>     
+>
+> But this was done from the guest OS --- what is /dev/root in the guest
+> OS?  Am I right in assuming it is the device /dev/3w250g/xenfw1?
+> Stupid question --- if this is the case, why are you taking the
+> snapshot from the Host OS?  It won't be a consistent snapshot, given
+> that it was mounted in the Guest OS, and all you've done in the Guest
+> OS is to ask it to sync the filesystem.  Given that there's no pause
+> between sysrq s and the pause, the write operations probably haven't
+> even been completed before the pause takes place, so the snapshot
+> probably has a chance of in pretty bad shape as it is.
+>   
+You're probably correct, I already have a "sleep 1" that I missed to
+include in my e-mail though.
+Let's not analyze the backup method so much, it's not a very important
+machine and I mostly want config files to be backed up and they are
+pretty consistent at all times anyway.
+>> It was not possible to do "mount -o remount,rw /":
+>> mount -o remount,rw /                                                 
+>>     
+>
+> There are multiple potential reasons for this, but I'm guessing this
+> was caused by an aborted journal, probably caused by an I/O error when
+> trying to write to the journal.  This may very well be related to
+> pausing guest OS in the middle of a write operations that would have
+> been caused by the sysrq s, but that's a guess; we need more
+> information about exactly what is going on.
+>   
+You are correct about the aborted journal but it's not caused by
+anythingelse than the lvm snapshot.
+> If you could reproduce this and send back the messages from dmesg in
+> the guest OS, that would be quite helpful.  You might also try adding
+> a sleep 2 between the sysrq s and the pause xenfw1 commands, and see
+> if the problem goes away.  That's just a stab in the dark, of course,
+> but it's a simple enough thing to try.
+>   
+Ok, I used another Xen VM for testing now.
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+While I was testing now I noticed that I even could take the snapshot
+while the system is not started and the error would still occur.
+No problems with ext3 with the same kernel that I've seen yet.
 
-> * Sam Ravnborg <sam@ravnborg.org> [2008-12-26 11:27:16]:
-> 
-> > On Fri, Dec 26, 2008 at 02:05:47AM -0800, Yinghai Lu wrote:
-> > > Kamalesh Babulal wrote:
-> > > > * Yinghai Lu <yinghai@kernel.org> [2008-12-24 12:34:41]:
-> > > > 
-> > > >> --
-> > > > 
-> > > > After the applying the patch, the kernel panic's with the same backtrace. The
-> > > > box is running Fedora 5 on it.
-> > > > 
-> > > 
-> > > please try...
-> > > Ingo, do we need to switch to use #idef and inline function instead?
-> > 
-> > I recall David Howells had a similar issue with the bootparamter patch set.
-> > The workaround he used was to add a barrier(); call in the weak function
-> > to avoid the inline.
-> > 
-> > [full context kept as I added David to to: list].
-> > 	Sam
-> > 
-> 
-> Hi Yinghai,
-> 
-> 	Thanks, after applying the patch, the kernel boot's up fine.
+Here's one way to reproduce:
+# lvs | grep xenfw2
+  xenfw2          3w250g -wi-a-   1.00G # Notice the last "-" which is
+not "o"
+  xenfw2_swap     3w250g -wi-a- 196.00M
+# lvcreate --snapshot --permission rw --size 1G --name xenfw2_s
+/dev/3w250g/xenfw2
+  Logical volume "xenfw2_s" created
+# lvs | grep xenfw2
+  xenfw2          3w250g owi-a-   1.00G
+  xenfw2_s        3w250g swi-a-   1.00G xenfw2   0.00
+  xenfw2_swap     3w250g -wi-a- 196.00M
+# xm create xenfw2 -c # To start the Xen VM with console attached
 
-how about the patch below, does that work too? (after removing Yinghai's 
-patch)
+Here's what I think is the relevant part of the kernel output
 
-	Ingo
+[    0.317797] EXT4-fs warning (device xvda1): ext4_fill_super: extents
+feature not enabled on this filesystem, use tune2fs.     
+[   
+0.317822]                                                                                                                   
 
-------------->
->From 0d41e654c877a0de441448ca2f63a72ed11c5d84 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 26 Dec 2008 14:39:51 +0100
-Subject: [PATCH] kbuild, sparseirq: work around GCC bug with __weak aliases
+[    0.326805] EXT4-fs: barriers
+enabled                                                                                         
 
-Impact: fix panic on null pointer with sparseirq
+[    0.336488] kjournald2 starting.  Commit interval 5
+seconds                                                                   
+[    0.336514] EXT4-fs: delayed allocation
+enabled                                                                               
 
-Certain versions of GCC inline the weak global functions.
-Work it around by marking __weak functions as noinline.
+[    0.336610] EXT4-fs: mballoc
+enabled                                                                                          
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/compiler-gcc.h |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+[    0.336622] EXT4-fs: mounted filesystem with ordered data
+mode.                                                               
+[    0.336651] VFS: Mounted root (ext4 filesystem)
+readonly.                                                                     
 
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 5c8351b..1ad72e6 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -41,11 +41,17 @@
- 
- #define __deprecated			__attribute__((deprecated))
- #define __packed			__attribute__((packed))
--#define __weak				__attribute__((weak))
- #define __naked				__attribute__((naked))
- #define __noreturn			__attribute__((noreturn))
- 
- /*
-+ * Mark weak aliases also noinline, because some GCC versions
-+ * incorrectly inline weak aliases (even when a non-weak variant
-+ * is there) and thus cause crashes:
-+ */
-+#define __weak				__attribute__((weak)) noinline
-+
-+/*
-  * From the GCC manual:
-  *
-  * Many functions have no effects except the return value and their
+[    0.336880] Freeing unused kernel memory: 280k
+freed                                                                          
+
+[    0.337936] Write protecting the kernel text:
+2624k                                                                           
+
+[    0.338358] Write protecting the kernel read-only data: 1028k
+[snip]
+[    7.636849] blkfront: xvda1: write barrier op failed     
+[    7.636867] blkfront: xvda1: barriers disabled          
+[    7.636877] end_request: I/O error, dev xvda1, sector 4512
+[    7.636892] end_request: I/O error, dev xvda1, sector 4512
+[    7.636933] Aborting journal on device xvda1:8.          
+[    7.637602] ext4_abort called.                           
+[    7.637616] EXT4-fs error (device xvda1): ext4_journal_start_sb:
+Detected aborted journal
+[    7.637633] Remounting filesystem
+read-only                                             
+[    7.652152] EXT4-fs error (device xvda1) in ext4_reserve_inode_write:
+Journal has aborted
+
+Let me know if I can help with more information
+
+/Andreas
