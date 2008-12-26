@@ -1,758 +1,435 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYLZOcC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYLZOc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYLZOcC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 09:32:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYLZO3a
+	id S1754841AbYLZOc3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 09:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbYLZO3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 09:29:30 -0500
+	Fri, 26 Dec 2008 09:29:51 -0500
 Received: from cavolo.yandex.ru ([87.250.244.45]:31844 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753598AbYLZO3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 09:29:22 -0500
+	id S1753094AbYLZO3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 09:29:13 -0500
 X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Dec 2008 09:28:56 EST
 From: Evgeniy Polyakov <zbe@ioremap.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, pohmelfs@ioremap.net, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [8/9] pohmelfs: transaction layer.
-Date: Fri, 26 Dec 2008 17:18:49 +0300
-Message-Id: <1230301130-1325-9-git-send-email-zbe@ioremap.net>
+       linux-fsdevel@vger.kernel.org, Eveniy Polyakov <zbr@ioremap.net>
+Subject: [1/9] pohmelfs: documentation.
+Date: Fri, 26 Dec 2008 17:18:42 +0300
+Message-Id: <1230301130-1325-2-git-send-email-zbe@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1230301130-1325-8-git-send-email-zbe@ioremap.net>
+In-Reply-To: <1230301130-1325-1-git-send-email-zbe@ioremap.net>
 References: <1230301130-1325-1-git-send-email-zbe@ioremap.net>
- <1230301130-1325-2-git-send-email-zbe@ioremap.net>
- <1230301130-1325-3-git-send-email-zbe@ioremap.net>
- <1230301130-1325-4-git-send-email-zbe@ioremap.net>
- <1230301130-1325-5-git-send-email-zbe@ioremap.net>
- <1230301130-1325-6-git-send-email-zbe@ioremap.net>
- <1230301130-1325-7-git-send-email-zbe@ioremap.net>
- <1230301130-1325-8-git-send-email-zbe@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements transaction processing helpers
-used to allocate/free/insert/remove and other
-operations with transctions.
+This patch includes POHMELFS design and implementation description.
+Separate file includes mount options, default parameters and usage examples.
 
-Each transction is an object, which may embed multiple commands
-completed atomically. When server fails the whole transaction
-will be replied against it (or different server) later. This
-approach allows to maintain high data integrity and do not
-desynchronize filesystem state in case of network 
-or server failures.
+Signed-off-by: Eveniy Polyakov <zbr@ioremap.net>
 
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
-
-diff --git a/fs/pohmelfs/trans.c b/fs/pohmelfs/trans.c
+diff --git a/Documentation/filesystems/pohmelfs/design_notes.txt b/Documentation/filesystems/pohmelfs/design_notes.txt
 new file mode 100644
-index 0000000..1eda0a9
+index 0000000..6d6db60
 --- /dev/null
-+++ b/fs/pohmelfs/trans.c
-@@ -0,0 +1,704 @@
-+/*
-+ * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
++++ b/Documentation/filesystems/pohmelfs/design_notes.txt
+@@ -0,0 +1,70 @@
++POHMELFS: Parallel Optimized Host Message Exchange Layered File System.
 +
-+#include <linux/module.h>
-+#include <linux/crypto.h>
-+#include <linux/fs.h>
-+#include <linux/jhash.h>
-+#include <linux/hash.h>
-+#include <linux/ktime.h>
-+#include <linux/mempool.h>
-+#include <linux/mm.h>
-+#include <linux/mount.h>
-+#include <linux/pagemap.h>
-+#include <linux/parser.h>
-+#include <linux/poll.h>
-+#include <linux/swap.h>
-+#include <linux/slab.h>
-+#include <linux/statfs.h>
-+#include <linux/writeback.h>
++		Evgeniy Polyakov <zbr@ioremap.net>
 +
-+#include "netfs.h"
++Homepage: http://www.ioremap.net/projects/pohmelfs
 +
-+static struct kmem_cache *netfs_trans_dst;
-+static mempool_t *netfs_trans_dst_pool;
++POHMELFS first began as a network filesystem with coherent local data and
++metadata caches but is now evolving into a parallel distributed filesystem.
 +
-+static void netfs_trans_init_static(struct netfs_trans *t, int num, int size)
++Main features of this FS include:
++ * Locally coherent cache for data and metadata with (potentially) byte-range locks.
++	Since all Linux filesystems lock the whole inode during writing, algorithm
++	is very simple and does not use byte-ranges, although they are sent in
++	locking messages.
++ * Completely async processing of all events except creation of hard and symbolic
++	links, and rename events.
++	Object creation and data reading and writing are processed asynchronously.
++ * Flexible object architecture optimized for network processing.
++	Ability to create long paths to objects and remove arbitrarily huge
++	directories with a single network command.
++	(like removing the whole kernel tree via a single network command).
++ * Very high performance.
++ * Fast and scalable multithreaded userspace server. Being in userspace it works
++	with any underlying filesystem and still is much faster than async in-kernel NFS one.
++ * Client is able to switch between different servers (if one goes down, client
++	automatically reconnects to second and so on).
++ * Transactions support. Full failover for all operations.
++	Resending transactions to different servers on timeout or error.
++ * Read request (data read, directory listing, lookup requests) balancing between multiple servers.
++ * Write requests are replicated to multiple servers and completed only when all of them are acked.
++ * Ability to add and/or remove servers from the working set at run-time.
++ * Strong authentification and possible data encryption in network channel.
++ * Extended attributes support.
++
++POHMELFS is based on transactions, which are potentially long-standing objects that live
++in the client's memory. Each transaction contains all the information needed to process a given
++command (or set of commands, which is frequently used during data writing: single transactions
++can contain creation and data writing commands). Transactions are committed by all the servers
++to which they are sent and, in case of failures, are eventually resent or dropped with an error.
++For example, reading will return an error if no servers are available.
++
++POHMELFS uses a asynchronous approach to data processing. Courtesy of transactions, it is
++possible to detach replies from requests and, if the command requires data to be received, the
++caller sleeps waiting for it. Thus, it is possible to issue multiple read commands to different
++servers and async threads will pick up replies in parallel, find appropriate transactions in the
++system and put the data where it belongs (like the page or inode cache).
++
++The main feature of POHMELFS is writeback data and the metadata cache.
++Only a few non-performance critical operations use the write-through cache and
++are synchronous: hard and symbolic link creation, and object rename. Creation,
++removal of objects and data writing are asynchronous and are sent to
++the server during system writeback. Only one writer at a time is allowed for any
++given inode, which is guarded by an appropriate locking protocol.
++Because of this feature, POHMELFS is extremely fast at metadata intensive
++workloads and can fully utilize the bandwidth to the servers when doing bulk
++data transfers.
++
++POHMELFS clients operate with a working set of servers and are capable of balancing read-only
++operations (like lookups or directory listings) between them.
++Administrators can add or remove servers from the set at run-time via special commands (described
++in Documentation/pohmelfs/info.txt file). Writes are replicated to all servers.
++
++POHMELFS is capable of full data channel encryption and/or strong crypto hashing.
++One can select any kernel supported cipher, encryption mode, hash type and operation mode
++(hmac or digest). It is also possible to use both or neither (default). Crypto configuration
++is checked during mount time and, if the server does not support it, appropriate capabilities
++will be disabled or mount will fail (if 'crypto_fail_unsupported' mount option is specified).
++Crypto performance heavily depends on the number of crypto threads, which asynchronously perform
++crypto operations and send the resulting data to server or submit it up the stack. This number
++can be controlled via a mount option.
+diff --git a/Documentation/filesystems/pohmelfs/info.txt b/Documentation/filesystems/pohmelfs/info.txt
+new file mode 100644
+index 0000000..4e3d501
+--- /dev/null
++++ b/Documentation/filesystems/pohmelfs/info.txt
+@@ -0,0 +1,86 @@
++POHMELFS usage information.
++
++Mount options:
++idx=%u
++ Each mountpoint is associated with a special index via this option.
++ Administrator can add or remove servers from the given index, so all mounts,
++ which were attached to it, are updated.
++ Default it is 0.
++
++trans_scan_timeout=%u
++ This timeout, expressed in milliseconds, specifies time to scan transaction
++ trees looking for stale requests, which have to be resent, or if number of
++ retries exceed specified limit, dropped with error.
++ Default is 5 seconds.
++
++drop_scan_timeout=%u
++ Internal timeout, expressed in milliseconds, which specifies how frequently
++ inodes marked to be dropped are freed. It also specifies how frequently
++ the system checks that servers have to be added or removed from current working set.
++ Default is 1 second.
++
++wait_on_page_timeout=%u
++ Number of milliseconds to wait for reply from remote server for data reading command.
++ If this timeout is exceeded, reading returns an error.
++ Default is 5 seconds.
++
++trans_retries=%u
++ This is the number of times that a transaction will be resent to a server that did
++ not answer for the last @trans_scan_timeout milliseconds.
++ When the number of resends exceeds this limit, the transaction is completed with error.
++ Default is 5 resends.
++
++crypto_thread_num=%u
++ Number of crypto processing threads. Threads are used both for RX and TX traffic.
++ Default is 2, or no threads if crypto operations are not supported.
++
++trans_max_pages=%u
++ Maximum number of pages in a single transaction. This parameter also controls
++ the number of pages,  allocated for crypto processing (each crypto thread has
++ pool of pages, the number of which is equal to 'trans_max_pages'.
++ Default is 100 pages.
++
++crypto_fail_unsupported
++ If specified, mount will fail if the server does not support requested crypto operations.
++ By default mount will disable non-matching crypto operations.
++
++mcache_timeout=%u
++ Maximum number of milliseconds to wait for the mcache objects to be processed.
++ Mcache includes locks (given lock should be granted by server), attributes (they should be
++ fully received in the given timeframe).
++ Default is 5 seconds.
++
++Usage examples.
++
++Add (or remove if it already exists) server server1.net:1025 into the working set with index $idx
++with appropriate hash algorithm and key file and cipher algorithm, mode and key file:
++$cfg -a server1.net -p 1025 -i $idx -K $hash_key -k $cipher_key
++
++Mount filesystem with given index $idx to /mnt mountpoint.
++Client will connect to all servers specified in the working set via previous command:
++mount -t pohmel -o idx=$idx q /mnt
++
++One can add or remove servers from working set after mounting too.
++
++
++Server installation.
++
++Creating a server, which listens at port 1025 and 0.0.0.0 address.
++Working root directory (note, that server chroots there, so you have to have appropriate permissions)
++is set to /mnt, server will negotiate hash/cipher with client, in case client requested it, there
++are appropriate key files.
++Number of working threads is set to 10.
++
++# ./fserver -a 0.0.0.0 -p 1025 -r /mnt -w 10 -K hash_key -k cipher_key
++
++ -A 6			 - listen on ipv6 address. Default: Disabled.
++ -r root                 - path to root directory. Default: /tmp.
++ -a addr                 - listen address. Default: 0.0.0.0.
++ -p port                 - listen port. Default: 1025.
++ -w workers              - number of workers per connected client. Default: 1.
++ -K file		 - hash key size. Default: none.
++ -k file		 - cipher key size. Default: none.
++ -h                      - this help.
++
++Number of worker threads specifies how many workers will be created for each client.
++Bulk single-client transafers usually are better handled with smaller number (like 1-3).
+diff --git a/Documentation/filesystems/pohmelfs/network_protocol.txt b/Documentation/filesystems/pohmelfs/network_protocol.txt
+new file mode 100644
+index 0000000..40ea6c2
+--- /dev/null
++++ b/Documentation/filesystems/pohmelfs/network_protocol.txt
+@@ -0,0 +1,227 @@
++POHMELFS network protocol.
++
++Basic structure used in network communication is following command:
++
++struct netfs_cmd
 +{
-+	t->page_num = num;
-+	t->total_size = size;
-+	atomic_set(&t->refcnt, 1);
++	__u16			cmd;	/* Command number */
++	__u16			csize;	/* Attached crypto information size */
++	__u16			cpad;	/* Attached padding size */
++	__u16			ext;	/* External flags */
++	__u32			size;	/* Size of the attached data */
++	__u32			trans;	/* Transaction id */
++	__u64			id;	/* Object ID to operate on. Used for feedback.*/
++	__u64			start;	/* Start of the object. */
++	__u64			iv;	/* IV sequence */
++	__u8			data[0];
++};
 +
-+	mutex_init(&t->dst_lock);
-+	INIT_LIST_HEAD(&t->dst_list);
-+}
++Commands can be embedded into transaction command (which in turn has own command),
++so one can extend protocol as needed without breaking backward compatibility as long
++as old commands are supported. All string lengths include tail 0 byte.
 +
-+static int netfs_trans_send_pages(struct netfs_trans *t, struct netfs_state *st)
++All commans are transfered over the network in big-endian. CPU endianess is used at the end peers.
++
++@cmd - command number, which specifies command to be processed. Following
++	commands are used currently:
++
++	NETFS_READDIR	= 1,	/* Read directory for given inode number */
++	NETFS_READ_PAGE,	/* Read data page from the server */
++	NETFS_WRITE_PAGE,	/* Write data page to the server */
++	NETFS_CREATE,		/* Create directory entry */
++	NETFS_REMOVE,		/* Remove directory entry */
++	NETFS_LOOKUP,		/* Lookup single object */
++	NETFS_LINK,		/* Create a link */
++	NETFS_TRANS,		/* Transaction */
++	NETFS_OPEN,		/* Open intent */
++	NETFS_INODE_INFO,	/* Metadata cache coherency synchronization message */
++	NETFS_PAGE_CACHE,	/* Page cache invalidation message */
++	NETFS_READ_PAGES,	/* Read multiple contiguous pages in one go */
++	NETFS_RENAME,		/* Rename object */
++	NETFS_CAPABILITIES,	/* Capabilities of the client, for example supported crypto */
++	NETFS_LOCK,		/* Distributed lock message */
++	NETFS_XATTR_SET,	/* Set extended attribute */
++	NETFS_XATTR_GET,	/* Get extended attribute */
++
++@ext - external flags. Used by different commands to specify some extra arguments
++	like partial size of the embedded objects or creation flags.
++
++@size - size of the attached data. For NETFS_READ_PAGE and NETFS_READ_PAGES no data is attached,
++	but size of the requested data is incorporated here. It does not include size of the command
++	header (struct netfs_cmd) itself.
++
++@id - id of the object this command operates on. Each command can use it for own purpose.
++
++@start - start of the object this command operates on. Each command can use it for own purpose.
++
++@csize, @cpad - size and padding size of the (attached if needed) crypto information.
++
++Command specifications.
++
++@NETFS_READDIR
++This command is used to sync content of the remote dir to the client.
++
++@ext - length of the path to object.
++@size - the same.
++@id - local inode number of the directory to read.
++@start - zero.
++
++
++@NETFS_READ_PAGE
++This command is used to read data from remote server.
++Data size does not exceed local page cache size.
++
++@id - inode number.
++@start - first byte offset.
++@size - number of bytes to read plus length of the path to object.
++@ext - object path length.
++
++
++@NETFS_CREATE
++Used to create object.
++It does not require that all directories on top of the object were
++already created, it will create them automatically. Each object has
++associated @netfs_path_entry data structure, which contains creation
++mode (permissions and type) and length of the name as long as name itself.
++
++@start - 0
++@size - size of the all data structures needed to create a path
++@id - local inode number
++@ext - 0
++
++
++@NETFS_REMOVE
++Used to remove object.
++
++@ext - length of the path to object.
++@size - the same.
++@id - local inode number.
++@start - zero.
++
++
++@NETFS_LOOKUP
++Lookup information about object on server.
++
++@ext - length of the path to object.
++@size - the same.
++@id - local inode number of the directory to look object in.
++@start - local inode number of the object to look at.
++
++
++@NETFS_LINK
++Create hard of symlink.
++Command is sent as "object_path|target_path".
++
++@size - size of the above string.
++@id - parent local inode number.
++@start - 1 for symlink, 0 for hardlink.
++@ext - size of the "object_path" above.
++
++
++@NETFS_TRANS
++Transaction header.
++
++@size - incorporates all embedded command sizes including theirs header sizes.
++@start - transaction generation number - unique id used to find transaction.
++@ext - transaction flags. Unused at the moment.
++@id - 0.
++
++
++@NETFS_OPEN
++Open intent for given transaction.
++
++@id - local inode number.
++@start - 0.
++@size - path length to the object.
++@ext - open flags (O_RDWR and so on).
++
++
++@NETFS_INODE_INFO
++Metadata update command.
++It is sent to servers when attributes of the object are changed and received
++when data or metadata were updated. It operates with the following structure:
++
++struct netfs_inode_info
 +{
-+	int err = 0;
-+	unsigned int i, attached_pages = t->attached_pages, ci;
-+	struct msghdr msg;
-+	struct page **pages = (t->eng)?t->eng->pages:t->pages;
-+	struct page *p;
-+	unsigned int size;
-+
-+	msg.msg_name = NULL;
-+	msg.msg_namelen = 0;
-+	msg.msg_control = NULL;
-+	msg.msg_controllen = 0;
-+	msg.msg_flags = MSG_WAITALL | MSG_MORE;
-+
-+	ci = 0;
-+	for (i=0; i<t->page_num; ++i) {
-+		struct page *page = pages[ci];
-+		struct netfs_cmd cmd;
-+		struct iovec io;
-+
-+		p = t->pages[i];
-+
-+		if (!p)
-+			continue;
-+
-+		size = page_private(p);
-+
-+		io.iov_base = &cmd;
-+		io.iov_len = sizeof(struct netfs_cmd);
-+
-+		cmd.cmd = NETFS_WRITE_PAGE;
-+		cmd.ext = 0;
-+		cmd.id = 0;
-+		cmd.size = size;
-+		cmd.start = p->index;
-+		cmd.start <<= PAGE_CACHE_SHIFT;
-+		cmd.csize = 0;
-+		cmd.cpad = 0;
-+		cmd.iv = pohmelfs_gen_iv(t);
-+
-+		netfs_convert_cmd(&cmd);
-+
-+		msg.msg_iov = &io;
-+		msg.msg_iovlen = 1;
-+		msg.msg_flags = MSG_WAITALL | MSG_MORE;
-+
-+		err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, sizeof(struct netfs_cmd));
-+		if (err <= 0) {
-+			printk("%s: %d/%d failed to send transaction header: t: %p, gen: %u, err: %d.\n",
-+					__func__, i, t->page_num, t, t->gen, err);
-+			if (err == 0)
-+				err = -ECONNRESET;
-+			goto err_out;
-+		}
-+
-+		msg.msg_flags = MSG_WAITALL|(attached_pages == 1)?0:MSG_MORE;
-+
-+		err = kernel_sendpage(st->socket, page, 0, size, msg.msg_flags);
-+		if (err <= 0) {
-+			printk("%s: %d/%d failed to send transaction page: t: %p, gen: %u, size: %u, err: %d.\n",
-+					__func__, i, t->page_num, t, t->gen, size, err);
-+			if (err == 0)
-+				err = -ECONNRESET;
-+			goto err_out;
-+		}
-+
-+		dprintk("%s: %d/%d sent t: %p, gen: %u, page: %p/%p, size: %u.\n",
-+			__func__, i, t->page_num, t, t->gen, page, p, size);
-+
-+		err = 0;
-+		attached_pages--;
-+		if (!attached_pages)
-+			break;
-+		ci++;
-+
-+		continue;
-+
-+err_out:
-+		printk("%s: t: %p, gen: %u, err: %d.\n", __func__, t, t->gen, err);
-+		netfs_state_exit(st);
-+		break;
-+	}
-+
-+	return err;
-+}
-+
-+int netfs_trans_send(struct netfs_trans *t, struct netfs_state *st)
-+{
-+	int err;
-+	struct msghdr msg;
-+
-+	netfs_state_lock(st);
-+	if (!st->socket) {
-+		err = netfs_state_init(st);
-+		if (err)
-+			goto err_out_unlock_return;
-+	}
-+
-+	msg.msg_iov = &t->iovec;
-+	msg.msg_iovlen = 1;
-+	msg.msg_name = NULL;
-+	msg.msg_namelen = 0;
-+	msg.msg_control = NULL;
-+	msg.msg_controllen = 0;
-+	msg.msg_flags = MSG_WAITALL;
-+
-+	if (t->attached_pages)
-+		msg.msg_flags |= MSG_MORE;
-+
-+	err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, t->iovec.iov_len);
-+	if (err <= 0) {
-+		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %u, err: %d.\n",
-+				__func__, t, t->gen, t->iovec.iov_len, err);
-+		if (err == 0)
-+			err = -ECONNRESET;
-+		goto err_out_unlock_return;
-+	}
-+
-+	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %u, page_num: %u.\n",
-+			__func__, (t->page_num)?"partial":"full",
-+			t, t->gen, t->iovec.iov_len, t->page_num);
-+
-+	err = 0;
-+	if (t->attached_pages)
-+		err = netfs_trans_send_pages(t, st);
-+
-+err_out_unlock_return:
-+	netfs_state_unlock(st);
-+	
-+	dprintk("%s: t: %p, gen: %u, err: %d.\n",
-+		__func__, t, t->gen, err);
-+
-+	t->result = err;
-+	return err;
-+}
-+
-+static inline int netfs_trans_cmp(unsigned int gen, unsigned int new)
-+{
-+	if (gen < new)
-+		return 1;
-+	if (gen > new)
-+		return -1;
-+	return 0;
-+}
-+
-+struct netfs_trans_dst *netfs_trans_search(struct netfs_state *st, unsigned int gen)
-+{
-+	struct rb_root *root = &st->trans_root;
-+	struct rb_node *n = root->rb_node;
-+	struct netfs_trans_dst *tmp, *ret = NULL;
-+	struct netfs_trans *t;
-+	int cmp;
-+
-+	while (n) {
-+		tmp = rb_entry(n, struct netfs_trans_dst, state_entry);
-+		t = tmp->trans;
-+
-+		cmp = netfs_trans_cmp(t->gen, gen);
-+		if (cmp < 0)
-+			n = n->rb_left;
-+		else if (cmp > 0)
-+			n = n->rb_right;
-+		else {
-+			ret = tmp;
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+static int netfs_trans_insert(struct netfs_trans_dst *ndst, struct netfs_state *st)
-+{
-+	struct rb_root *root = &st->trans_root;
-+	struct rb_node **n = &root->rb_node, *parent = NULL;
-+	struct netfs_trans_dst *ret = NULL, *tmp;
-+	struct netfs_trans *t = NULL, *new = ndst->trans;
-+	int cmp;
-+
-+	while (*n) {
-+		parent = *n;
-+
-+		tmp = rb_entry(parent, struct netfs_trans_dst, state_entry);
-+		t = tmp->trans;
-+
-+		cmp = netfs_trans_cmp(t->gen, new->gen);
-+		if (cmp < 0)
-+			n = &parent->rb_left;
-+		else if (cmp > 0)
-+			n = &parent->rb_right;
-+		else {
-+			ret = tmp;
-+			break;
-+		}
-+	}
-+
-+	if (ret) {
-+		printk("%s: exist: old: gen: %u, flags: %x, send_time: %lu, "
-+				"new: gen: %u, flags: %x, send_time: %lu.\n",
-+			__func__, t->gen, t->flags, ret->send_time,
-+			new->gen, new->flags, ndst->send_time);
-+		return -EEXIST;
-+	}
-+
-+	rb_link_node(&ndst->state_entry, parent, n);
-+	rb_insert_color(&ndst->state_entry, root);
-+	ndst->send_time = jiffies;
-+
-+	return 0;
-+}
-+
-+int netfs_trans_remove_nolock(struct netfs_trans_dst *dst, struct netfs_state *st)
-+{
-+	if (dst && dst->state_entry.rb_parent_color) {
-+		rb_erase(&dst->state_entry, &st->trans_root);
-+		dst->state_entry.rb_parent_color = 0;
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static int netfs_trans_remove_state(struct netfs_trans_dst *dst)
-+{
-+	int ret;
-+	struct netfs_state *st = dst->state;
-+
-+	mutex_lock(&st->trans_lock);
-+	ret = netfs_trans_remove_nolock(dst, st);
-+	mutex_unlock(&st->trans_lock);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Create new destination for given transaction associated with given network state.
-+ * Transaction's reference counter is bumped and will be dropped when either
-+ * reply is received or when async timeout detection task will fail resending
-+ * and drop transaction.
-+ */
-+static int netfs_trans_push_dst(struct netfs_trans *t, struct netfs_state *st)
-+{
-+	struct netfs_trans_dst *dst;
-+	int err;
-+
-+	dst = mempool_alloc(netfs_trans_dst_pool, GFP_KERNEL);
-+	if (!dst)
-+		return -ENOMEM;
-+
-+	dst->retries = 0;
-+	dst->send_time = 0;
-+	dst->state = st;
-+	dst->trans = t;
-+	netfs_trans_get(t);
-+
-+	mutex_lock(&st->trans_lock);
-+	err = netfs_trans_insert(dst, st);
-+	mutex_unlock(&st->trans_lock);
-+
-+	if (err)
-+		goto err_out_free;
-+
-+	mutex_lock(&t->dst_lock);
-+	list_add_tail(&dst->trans_entry, &t->dst_list);
-+	mutex_unlock(&t->dst_lock);
-+
-+	return 0;
-+
-+err_out_free:
-+	t->result = err;
-+	netfs_trans_put(t);
-+	mempool_free(dst, netfs_trans_dst_pool);
-+	return err;
-+}
-+
-+static void netfs_trans_free_dst(struct netfs_trans_dst *dst)
-+{
-+	netfs_trans_put(dst->trans);
-+	mempool_free(dst, netfs_trans_dst_pool);
-+}
-+
-+static void netfs_trans_remove_dst(struct netfs_trans_dst *dst)
-+{
-+	netfs_trans_remove_state(dst);
-+	netfs_trans_free_dst(dst);
-+}
-+
-+/*
-+ * Drop destination transaction entry when we know it.
-+ */
-+void netfs_trans_drop_dst(struct netfs_trans_dst *dst)
-+{
-+	struct netfs_trans *t = dst->trans;
-+
-+	mutex_lock(&t->dst_lock);
-+	list_del_init(&dst->trans_entry);
-+	mutex_unlock(&t->dst_lock);
-+
-+	netfs_trans_remove_dst(dst);
-+}
-+
-+/*
-+ * Drop destination transaction entry when we know it and when we
-+ * already removed dst from state tree.
-+ */
-+void netfs_trans_drop_dst_nostate(struct netfs_trans_dst *dst)
-+{
-+	struct netfs_trans *t = dst->trans;
-+
-+	mutex_lock(&t->dst_lock);
-+	list_del_init(&dst->trans_entry);
-+	mutex_unlock(&t->dst_lock);
-+	
-+	netfs_trans_free_dst(dst);
-+}
-+
-+/*
-+ * This drops destination transaction entry from appropriate network state
-+ * tree and drops related reference counter. It is possible that transaction
-+ * will be freed here if its reference counter hits zero.
-+ * Destination transaction entry will be freed.
-+ */
-+void netfs_trans_drop_trans(struct netfs_trans *t, struct netfs_state *st)
-+{
-+	struct netfs_trans_dst *dst, *tmp, *ret = NULL;
-+
-+	mutex_lock(&t->dst_lock);
-+	list_for_each_entry_safe(dst, tmp, &t->dst_list, trans_entry) {
-+		if (dst->state == st) {
-+			ret = dst;
-+			list_del(&dst->trans_entry);
-+			break;
-+		}
-+	}
-+	mutex_unlock(&t->dst_lock);
-+
-+	if (ret)
-+		netfs_trans_remove_dst(ret);
-+}
-+
-+/*
-+ * This drops destination transaction entry from appropriate network state
-+ * tree and drops related reference counter. It is possible that transaction
-+ * will be freed here if its reference counter hits zero.
-+ * Destination transaction entry will be freed.
-+ */
-+void netfs_trans_drop_last(struct netfs_trans *t, struct netfs_state *st)
-+{
-+	struct netfs_trans_dst *dst, *tmp, *ret;
-+
-+	mutex_lock(&t->dst_lock);
-+	ret = list_entry(t->dst_list.prev, struct netfs_trans_dst, trans_entry);
-+	if (ret->state != st) {
-+		ret = NULL;
-+		list_for_each_entry_safe(dst, tmp, &t->dst_list, trans_entry) {
-+			if (dst->state == st) {
-+				ret = dst;
-+				list_del_init(&dst->trans_entry);
-+				break;
-+			}
-+		}
-+	} else {
-+		list_del(&ret->trans_entry);
-+	}
-+	mutex_unlock(&t->dst_lock);
-+
-+	if (ret)
-+		netfs_trans_remove_dst(ret);
-+}
-+
-+static int netfs_trans_push(struct netfs_trans *t, struct netfs_state *st)
-+{
-+	int err;
-+
-+	err = netfs_trans_push_dst(t, st);
-+	if (err)
-+		return err;
-+
-+	err = netfs_trans_send(t, st);
-+	if (err)
-+		goto err_out_free;
-+
-+	if (t->flags & NETFS_TRANS_SINGLE_DST)
-+		pohmelfs_switch_active(st->psb);
-+
-+	return 0;
-+
-+err_out_free:
-+	t->result = err;
-+	netfs_trans_drop_last(t, st);
-+
-+	return err;
-+}
-+
-+int netfs_trans_finish_send(struct netfs_trans *t, struct pohmelfs_sb *psb)
-+{
-+	struct pohmelfs_config *c;
-+	int err = -ENODEV;
-+	struct netfs_state *st;
-+#if 0
-+	dprintk("%s: t: %p, gen: %u, size: %u, page_num: %u, active: %p.\n",
-+		__func__, t, t->gen, t->iovec.iov_len, t->page_num, psb->active_state);
-+#endif
-+	mutex_lock(&psb->state_lock);
-+	if ((t->flags & NETFS_TRANS_SINGLE_DST) && psb->active_state) {
-+		st = &psb->active_state->state;
-+
-+		err = -EPIPE;
-+		if (netfs_state_poll(st) & POLLOUT) {
-+			err = netfs_trans_push_dst(t, st);
-+			if (!err) {
-+				err = netfs_trans_send(t, st);
-+				if (err) {
-+					netfs_trans_drop_last(t, st);
-+				} else {
-+					pohmelfs_switch_active(psb);
-+					goto out;
-+				}
-+			}
-+		}
-+		pohmelfs_switch_active(psb);
-+	}
-+
-+	list_for_each_entry(c, &psb->state_list, config_entry) {
-+		st = &c->state;
-+
-+		err = netfs_trans_push(t, st);
-+		if (!err && (t->flags & NETFS_TRANS_SINGLE_DST))
-+			break;
-+	}
-+out:
-+	mutex_unlock(&psb->state_lock);
-+#if 0
-+	dprintk("%s: fully sent t: %p, gen: %u, size: %u, page_num: %u, err: %d.\n",
-+		__func__, t, t->gen, t->iovec.iov_len, t->page_num, err);
-+#endif
-+	if (err)
-+		t->result = err;
-+	return err;
-+}
-+
-+int netfs_trans_finish(struct netfs_trans *t, struct pohmelfs_sb *psb)
-+{
-+	int err;
-+	struct netfs_cmd *cmd = t->iovec.iov_base;
-+
-+	t->gen = atomic_inc_return(&psb->trans_gen);
-+
-+	cmd->size = t->iovec.iov_len - sizeof(struct netfs_cmd) +
-+		t->attached_size + t->attached_pages * sizeof(struct netfs_cmd);
-+	cmd->cmd = NETFS_TRANS;
-+	cmd->start = t->gen;
-+	cmd->id = 0;
-+
-+	if (psb->perform_crypto) {
-+		cmd->ext = psb->crypto_attached_size;
-+		cmd->csize = psb->crypto_attached_size;
-+	}
-+#if 0
-+	dprintk("%s: trans: %llu, crypto_attached_size: %u, attached_size: %u, attached_pages: %d, trans_size: %u.\n",
-+		__func__, cmd->start, psb->crypto_attached_size, t->attached_size, t->attached_pages, cmd->size);
-+#endif
-+	err = pohmelfs_trans_crypt(t, psb);
-+	if (err)
-+		t->result = err;
-+	netfs_trans_put(t);
-+	return err;
-+}
-+
-+/*
-+ * Resend transaction to remote server(s).
-+ * If new servers were added into superblock, we can try to send data
-+ * to them too.
-+ *
-+ * It is called under superblock's state_lock, so we can safely
-+ * dereference psb->state_list. Also, transaction's reference counter is
-+ * bumped, so it can not go away under us, thus we can safely access all
-+ * its members. State is locked.
-+ *
-+ * This function returns 0 if transaction was successfully sent to at
-+ * least one destination target. 
-+ */
-+int netfs_trans_resend(struct netfs_trans *t, struct pohmelfs_sb *psb)
-+{
-+	struct netfs_trans_dst *dst;
-+	struct netfs_state *st;
-+	struct pohmelfs_config *c;
-+	int err, exist, error = -ENODEV;
-+
-+	list_for_each_entry(c, &psb->state_list, config_entry) {
-+		st = &c->state;
-+
-+		exist = 0;
-+		mutex_lock(&t->dst_lock);
-+		list_for_each_entry(dst, &t->dst_list, trans_entry) {
-+			if (st == dst->state) {
-+				exist = 1;
-+				break;
-+			}
-+		}
-+		mutex_unlock(&t->dst_lock);
-+
-+		if (exist) {
-+			if (!(t->flags & NETFS_TRANS_SINGLE_DST) ||
-+					(c->config_entry.next == &psb->state_list)) {
-+				dprintk("%s: resending st: %p, t: %p, gen: %u.\n",
-+						__func__, st, t, t->gen);
-+				err = netfs_trans_send(t, st);
-+				if (!err)
-+					error = 0;
-+			}
-+			continue;
-+		}
-+
-+		dprintk("%s: pushing/resending st: %p, t: %p, gen: %u.\n",
-+				__func__, st, t, t->gen);
-+		err = netfs_trans_push(t, st);
-+		if (err)
-+			continue;
-+		error = 0;
-+		if (t->flags & NETFS_TRANS_SINGLE_DST)
-+			break;
-+	}
-+
-+	t->result = error;
-+	return error;
-+}
-+
-+void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
-+{
-+	struct iovec *io = &t->iovec;
-+	void *ptr;
-+
-+	if (size > t->total_size) {
-+		ptr = ERR_PTR(-EINVAL);
-+		goto out;
-+	}
-+
-+	if (io->iov_len + size > t->total_size) {
-+		dprintk("%s: too big size t: %p, gen: %u, iov_len: %u, size: %u, total: %u.\n",
-+				__func__, t, t->gen, io->iov_len, size, t->total_size);
-+		ptr = ERR_PTR(-E2BIG);
-+		goto out;
-+	}
-+
-+	ptr = io->iov_base + io->iov_len;
-+	io->iov_len += size;
-+
-+out:
-+	dprintk("%s: t: %p, gen: %u, size: %u, total: %u.\n",
-+		__func__, t, t->gen, size, io->iov_len);
-+	return ptr;
-+}
-+
-+void netfs_trans_free(struct netfs_trans *t)
-+{
-+	if (t->eng)
-+		pohmelfs_crypto_thread_make_ready(t->eng->thread);
-+	kfree(t);
-+}
-+
-+struct netfs_trans *netfs_trans_alloc(struct pohmelfs_sb *psb, unsigned int size,
-+		unsigned int flags, unsigned int nr)
-+{
-+	struct netfs_trans *t;
-+	unsigned int num, cont, pad, size_no_trans;
-+	unsigned int crypto_added = 0;
-+	struct netfs_cmd *cmd;
-+
-+	if (psb->perform_crypto)
-+		crypto_added = psb->crypto_attached_size;
-+
-+	/*
-+	 * |sizeof(struct netfs_trans)|
-+	 * |sizeof(struct netfs_cmd)| - transaction header
-+	 * |size| - buffer with requested size
-+	 * |padding| - crypto padding, zero bytes
-+	 * |nr * sizeof(struct page *)| - array of page pointers
-+	 *
-+	 * Overall size should be less than PAGE_SIZE for guaranteed allocation.
-+	 */
-+
-+	cont = size;
-+	size = ALIGN(size, psb->crypto_align_size);
-+	pad = size - cont;
-+
-+	size_no_trans = size + sizeof(struct netfs_cmd) * 2 + crypto_added;
-+
-+	cont = sizeof(struct netfs_trans) + size_no_trans;
-+
-+	num = (PAGE_SIZE - cont)/sizeof(struct page *);
-+
-+	if (nr > num)
-+		nr = num;
-+
-+	t = kzalloc(cont + nr*sizeof(struct page *), GFP_NOIO);
-+	if (!t)
-+		goto err_out_exit;
-+
-+	memset(t, 0, sizeof(struct netfs_trans));
-+
-+	t->iovec.iov_base = (void *)(t + 1);
-+	t->pages = (struct page **)(t->iovec.iov_base + size_no_trans);
-+
-+	/*
-+	 * Reserving space for transaction header.
-+	 */
-+	t->iovec.iov_len = sizeof(struct netfs_cmd) + crypto_added;
-+
-+	netfs_trans_init_static(t, nr, size_no_trans);
-+
-+	t->flags = flags;
-+	t->psb = psb;
-+
-+	cmd = (struct netfs_cmd *)t->iovec.iov_base;
-+
-+	cmd->size = size;
-+	cmd->cpad = pad;
-+	cmd->csize = crypto_added;
-+
-+	dprintk("%s: t: %p, gen: %u, size: %u, padding: %u, align_size: %u, flags: %x, "
-+			"page_num: %u, base: %p, pages: %p.\n",
-+			__func__, t, t->gen, size, pad, psb->crypto_align_size, flags, nr,
-+			t->iovec.iov_base, t->pages);
-+
-+	return t;
-+
-+err_out_exit:
-+	return NULL;
-+}
-+
-+int netfs_trans_init(void)
-+{
-+	int err = -ENOMEM;
-+
-+	netfs_trans_dst = kmem_cache_create("netfs_trans_dst", sizeof(struct netfs_trans_dst),
-+			0, 0, NULL);
-+	if (!netfs_trans_dst)
-+		goto err_out_exit;
-+
-+	netfs_trans_dst_pool = mempool_create_slab_pool(256, netfs_trans_dst);
-+	if (!netfs_trans_dst_pool)
-+		goto err_out_free;
-+
-+	return 0;
-+
-+err_out_free:
-+	kmem_cache_destroy(netfs_trans_dst);
-+err_out_exit:
-+	return err;
-+}
-+
-+void netfs_trans_exit(void)
-+{
-+	mempool_destroy(netfs_trans_dst_pool);
-+	kmem_cache_destroy(netfs_trans_dst);
-+}
++	unsigned int		mode;
++	unsigned int		nlink;
++	unsigned int		uid;
++	unsigned int		gid;
++	unsigned int		blocksize;
++	unsigned int		padding;
++	__u64			ino;
++	__u64			blocks;
++	__u64			rdev;
++	__u64			size;
++	__u64			version;
++};
++
++It effectively mirrors stat(2) returned data.
++
++
++@ext - path length to the object.
++@size - the same plus size of the netfs_inode_info structure.
++@id - local inode number.
++@start - 0.
++
++
++@NETFS_PAGE_CACHE
++Command is only received by clients. It contains information about
++page to be marked as not up-to-date.
++
++@id - client's inode number.
++@start - last byte of the page to be invalidated. If it is not equal to
++	current inode size, it will be vmtruncated().
++@size - 0
++@ext - 0
++
++
++@NETFS_READ_PAGES
++Used to read multiple contiguous pages in one go.
++
++@start - first byte of the contiguous region to read.
++@size - contains of two fields: lower 8 bits are used to represent page cache shift
++	used by client, another 3 bytes are used to get number of pages.
++@id - local inode number.
++@ext - path length to the object.
++
++
++@NETFS_RENAME
++Used to rename object.
++Attached data is formed into following string: "old_path|new_path".
++
++@id - local inode number.
++@start - parent inode number.
++@size - length of the above string.
++@ext - length of the old path part.
++
++
++@NETFS_CAPABILITIES
++Used to exchange crypto capabilities with server.
++If crypto capabilities are not supported by server, then client will disable it
++or fail (if 'crypto_fail_unsupported' mount options was specified).
++
++@id - superblock index. Used to specify crypto information for group of servers.
++@size - size of the attached capabilities structure.
++@start - 0.
++@size - 0.
++@scsize - 0.
++
++@NETFS_LOCK
++Used to send lock request/release messages. Although it sends byte range request
++and is capable of flushing pages based on that, it is not used, since all Linux
++filesystems lock the whole inode.
++
++@id - lock generation number.
++@start - start of the locked range.
++@size - size of the locked range.
++@ext - lock type: read/write. Not used actually. 15'th bit is used to determine,
++	if it is lock request (1) or release (0).
++
++@NETFS_XATTR_SET
++@NETFS_XATTR_GET
++Used to set/get extended attributes for given inode.
++@id - attribute generation number or xattr setting type
++@start - size of the attribute (request or attached)
++@size - name length, path len and data size for given attribute
++@ext - path length for given object
+
