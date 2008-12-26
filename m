@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYLZNqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYLZNqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYLZNqe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 08:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYLZNqS
+	id S1753965AbYLZNqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 08:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbYLZNqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 08:46:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36622 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752725AbYLZNqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 08:46:17 -0500
-Date: Fri, 26 Dec 2008 11:45:55 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org,
-       Patrick Boettcher <patrick.boettcher@desy.de>
-Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes, crash in
- af9005_usb_module_init()
-Message-ID: <20081226114555.17d664ef@caramujo.chehab.org>
-In-Reply-To: <20081226132426.GA26953@elte.hu>
-References: <20081224121252.7560391e@caramujo.chehab.org>
-	<20081225081907.GA4628@elte.hu>
-	<20081225212459.4c7e31b4@caramujo.chehab.org>
-	<20081226090220.GF755@elte.hu>
-	<20081226111324.3fbb804b@caramujo.chehab.org>
-	<20081226132426.GA26953@elte.hu>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Dec 2008 08:46:25 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:47186 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753186AbYLZNqY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 08:46:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=MVtOyJ7Zt+XX/KBhDbz1N+KKPSXfLXHX2cmDeQ8rq7lES2V0QF9XVD6liMZKLpUgam
+         SmETe9OOhtoQUF9doT1rdWAGBa+GPaAH9GUjgcLNZjFOQEa3YAQJTMzZjktz05EwmPOj
+         LN9mN3K8soy7eyQxGxC4pTfN8Z08rHja3d/QQ=
+Date: Fri, 26 Dec 2008 14:46:21 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 0/8] ide-cd: first conversion batch
+Message-ID: <20081226134621.GB23503@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1229586052-3542-1-git-send-email-petkovbb@gmail.com> <200812192115.41068.bzolnier@gmail.com> <20081220062849.GA14770@gollum.tnic> <200812212005.56973.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812212005.56973.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Dec 2008 14:24:26 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+From: Borislav Petkov <petkovbb@gmail.com>
+Date: Thu, 25 Dec 2008 18:46:35 +0100
+Subject: [PATCH 10/11] ide-cd: start DMA before sending the actual packet command
 
-> here's that commit again, standalone, with the crash in 
-> af9005_usb_module_init() embedded. Unfortunately i dont have the .config 
-> anymore and the crash log is half a year old. I have re-enabled the driver 
-> in tip/master so if the crash still triggers i should see it within 1-2 
-> days and i can do a fuller bugreport.
+as it is done for all other IDE ATAPI devices.
 
-Ok. Let's wait for your next round of tests on it. Maybe this happened at the
-time the dvb register interface has changed a while ago. If so, the bug should
-already have been fixed by now.
+There should be no functionality change resulting from this patch.
+
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-cd.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 1c1ba43..2cb301d 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -593,13 +593,13 @@ static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive)
+ 	if (cmd_len < ATAPI_MIN_CDB_BYTES)
+ 		cmd_len = ATAPI_MIN_CDB_BYTES;
+ 
+-	/* send the command to the device */
+-	hwif->tp_ops->output_data(drive, NULL, rq->cmd, cmd_len);
+-
+ 	/* start the DMA if need be */
+ 	if (drive->dma)
+ 		hwif->dma_ops->dma_start(drive);
+ 
++	/* send the command to the device */
++	hwif->tp_ops->output_data(drive, NULL, rq->cmd, cmd_len);
++
+ 	return ide_started;
+ }
+ 
+-- 
+1.6.0.4
 
 -- 
-
-Cheers,
-Mauro
+Regards/Gruss,
+    Boris.
