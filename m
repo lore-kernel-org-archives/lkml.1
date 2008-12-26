@@ -1,123 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYLZNJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbYLZNNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbYLZNJQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 08:09:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYLZNJA
+	id S1753590AbYLZNNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 08:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYLZNNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 08:09:00 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41220 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752632AbYLZNI7 (ORCPT
+	Fri, 26 Dec 2008 08:13:24 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:19052 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbYLZNNX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 08:08:59 -0500
-Date: Fri, 26 Dec 2008 11:08:33 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Luca Olivetti <luca@ventoso.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes
-Message-ID: <20081226110833.7e61bb20@caramujo.chehab.org>
-In-Reply-To: <20081225103050.GA553@elte.hu>
-References: <20081224121252.7560391e@caramujo.chehab.org>
- <20081225081907.GA4628@elte.hu>
- <20081225103050.GA553@elte.hu>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Dec 2008 08:13:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IqwOC5CGiaBEI00QYRcOsWXbo5lnuU3G2In6d3Dr5dghwFzI+yRx+ESJzhJZ3XriRH
+         7W97osAjpc+Y3VTZA4ceZH7B+iHrwILEK3mG8EAAh7z2MULrXGvqODIVrvws7x2RrUEl
+         QSHDCd2gIHzqOH7lsVUhxxUBbTenQoDOearjQ=
+Message-ID: <d36bb30d0812260513t13957a90h181060b8b2032eb9@mail.gmail.com>
+Date: Fri, 26 Dec 2008 21:13:22 +0800
+From: "Yang Xi" <yangxilkm@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 2.6.28-rc4]lock_stat: Add "con-hungry" to show that how many person-time fight for the ticket spinlock
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       chyyuu <chyyuu@gmail.com>
+In-Reply-To: <20081226083431.GA755@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <d36bb30d0811180300r77c3a13ld0a4881a8261a40@mail.gmail.com>
+	 <1227025232.29743.23.camel@lappy.programming.kicks-ass.net>
+	 <d36bb30d0811182118x1e394780n8a257fd4c44f4836@mail.gmail.com>
+	 <1227112785.29743.37.camel@lappy.programming.kicks-ass.net>
+	 <d36bb30d0811200009j742416a6nbc0519ff8d95970b@mail.gmail.com>
+	 <1227404426.7685.19975.camel@twins>
+	 <d36bb30d0812252324n512f4653of62f8b42684217d4@mail.gmail.com>
+	 <20081226083431.GA755@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luca,
+> #ifndef spin_nr_contended
+> # define spin_nr_contended(lock) (spin_is_contended(lock) ? 1 : 0)
+> #endif
+And I change the spin_nr_contended to spin_nr_contender
+> do we need the ->isticketspinlock distinction? Cannot we call
+> spin_nr_contended() for all spinlocks? (it's just that for ticket
+> spinlocks we get a real value out of it - for normal spinlocks we only get
+> 0/1 out of it. But that is not a problem really.)
+Not only the spin lock invokes lock_contended(). So we have to know
+the invoker is spin lock. I have changed the isticketspinlock to
+isspinlock to avoid the confusion.
+>
+> also, please rename 'hungry' to something more descriptive: for example
+> 'nr_contended' fits pretty well?
+I changed hungry to contender. con-hungry to nr-contender, max hungry
+to max-contender.
 
-Could you please verify this issue?
+Here is the patch
 
-Ingo,
-What .config you used to get this error?
+Signed-off-by: Yangxi <hiyangxi@gmail.com>
+---
+arch/x86/include/asm/spinlock.h |    9 +++++++++
+ include/linux/lockdep.h         |    5 ++++-
+ include/linux/spinlock.h        |    4 ++++
+ kernel/lockdep.c                |   21 ++++++++++++++++++++-
+ kernel/lockdep_proc.c           |   10 +++++++---
+ lib/spinlock_debug.c            |    1 +
+ 6 files changed, 45 insertions(+), 5 deletions(-)
 
-Cheers,
-Mauro.
+diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+index d17c919..5c52960 100644
+--- a/arch/x86/include/asm/spinlock.h
++++ b/arch/x86/include/asm/spinlock.h
+@@ -172,6 +172,15 @@ static inline int
+__ticket_spin_is_contended(raw_spinlock_t *lock)
+ 	return (((tmp >> TICKET_SHIFT) - tmp) & ((1 << TICKET_SHIFT) - 1)) > 1;
+ }
 
-On Thu, 25 Dec 2008 11:30:50 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
++static inline int __ticket_spin_nr_contender(raw_spinlock_t *lock)
++{
++	int tmp = ACCESS_ONCE(lock->slock);
++
++	return (((tmp >> TICKET_SHIFT) - tmp) & ((1 << TICKET_SHIFT) - 1)) + 1;
++}
++
++#define spin_nr_contender(lock) __ticket_spin_nr_contender(&(lock)->raw_lock)
++
+ #ifdef CONFIG_PARAVIRT
+ /*
+  * Define virtualization-friendly old-style lock byte lock, for use in
+diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+index 331e5f1..d777102 100644
+--- a/include/linux/lockdep.h
++++ b/include/linux/lockdep.h
+@@ -136,6 +136,8 @@ enum bounce_type {
+ 	bounce_acquired_read,
+ 	bounce_contended_write,
+ 	bounce_contended_read,
++	nr_contender,
++	max_contender,
+ 	nr_bounce_types,
 
-> i also needed the patch below.
-> 
-> 	Ingo
-> --------------->
-> From 62595544017bd8865adba84f7dd0796b5acc9794 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Thu, 25 Dec 2008 11:27:22 +0100
-> Subject: [PATCH] dvb/usb: work around this crash for now:
-> 
-> [    8.585448] calling  opera1_module_init+0x0/0x40
-> [    8.592370] usbcore: registered new interface driver opera1
-> [    8.597879] initcall opera1_module_init+0x0/0x40 returned 0 after 5 msecs
-> [    8.602341] calling  af9005_usb_module_init+0x0/0xb0
-> [    8.609143] usbcore: registered new interface driver dvb_usb_af9005
-> [    8.613625] BUG: unable to handle kernel paging request at ff100000
-> [    8.619858] IP: [<c0c21b02>] af9005_usb_module_init+0x92/0xb0
-> [    8.619858] *pdpt = 0000000000c6b001 *pde = 0000000000000000
-> [    8.623858] Oops: 0000 [#1] SMP
-> [    8.623858]
-> [    8.623858] Pid: 1, comm: swapper Not tainted (2.6.26-rc6-tip-00382-g5bf10cd-dirty #8770)
-> [    8.623858] EIP: 0060:[<c0c21b02>] EFLAGS: 00010286 CPU: 1
-> [    8.623858] EIP is at af9005_usb_module_init+0x92/0xb0
-> [    8.623858] EAX: ff100000 EBX: 00000000 ECX: 00000000 EDX: f6c55ee8
-> [    8.623858] ESI: 00000000 EDI: 00000000 EBP: f6c55f60 ESP: f6c55f54
-> [    8.623858]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [    8.623858] Process swapper (pid: 1, ti=f6c54000 task=f6c538a0 task.ti=f6c54000)
-> [    8.623858] Stack: 00000005 00000000 00000005 f6c55fe0 c0bef7f4 c0a2e531 00000000 00000005
-> [    8.623858]        00000000 f6c54000 00d25d95 00000002 c0c50d8c c0c21a70 00000000 6f727200
-> [    8.623858]        6f632072 2d206564 00203232 f6c53490 f6c55fac c0125568 f6c57fc0 c0103c66
-> [    8.623858] Call Trace:
-> [    8.623858]  [<c0bef7f4>] ? kernel_init+0x1a4/0x2b0
-> [    8.623858]  [<c0c21a70>] ? af9005_usb_module_init+0x0/0xb0
-> [    8.623858]  [<c0125568>] ? schedule_tail+0x18/0x50
-> [    8.623858]  [<c0103c66>] ? ret_from_fork+0x6/0x20
-> [    8.623858]  [<c0bef650>] ? kernel_init+0x0/0x2b0
-> [    8.623858]  [<c0bef650>] ? kernel_init+0x0/0x2b0
-> [    8.623858]  [<c0104fa7>] ? kernel_thread_helper+0x7/0x10
-> [    8.623858]  =======================
-> [    8.623858] Code: c3 89 44 24 04 c7 04 24 60 72 ae c0 e8 28 8e 50 ff 89 d8 83 c4 08 5b 5d c3 b8 00 00 10 ff 85 c0 74 c1 b8 00 00 10 ff 85 c0 74 b8 <a1> 00 00 10 ff c7 05 b4 96 b9 c0 00 00 10 ff a3 b8 96 b9 c0 eb
-> [    8.635859] EIP: [<c0c21b02>] af9005_usb_module_init+0x92/0xb0 SS:ESP 0068:f6c55f54
-> [    8.635859] Kernel panic - not syncing: Fatal exception
-> [    8.635859] Pid: 1, comm: swapper Tainted: G      D   2.6.26-rc6-tip-00382-g5bf10cd-dirty #8770
-> [    8.635859]  [<c0129cfb>] panic+0x4b/0x110
-> [    8.635859]  [<c01059b5>] die+0x115/0x180
-> [    8.635859]  [<c0118cfc>] do_page_fault+0x2ac/0x880
-> [    8.635859]  [<c01d5abb>] ? sysfs_addrm_finish+0x1b/0x1c0
-> [    8.635859]  [<c0118a50>] ? do_page_fault+0x0/0x880
-> [    8.635859]  [<c08d1212>] error_code+0x72/0x80
-> [    8.635859]  [<c0c21b02>] ? af9005_usb_module_init+0x92/0xb0
-> [    8.635859]  [<c0bef7f4>] kernel_init+0x1a4/0x2b0
-> [    8.635859]  [<c0c21a70>] ? af9005_usb_module_init+0x0/0xb0
-> [    8.635859]  [<c0125568>] ? schedule_tail+0x18/0x50
-> [    8.635859]  [<c0103c66>] ? ret_from_fork+0x6/0x20
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/media/dvb/dvb-usb/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/media/dvb/dvb-usb/Kconfig b/drivers/media/dvb/dvb-usb/Kconfig
-> index 1d1b3c2..448d42b 100644
-> --- a/drivers/media/dvb/dvb-usb/Kconfig
-> +++ b/drivers/media/dvb/dvb-usb/Kconfig
-> @@ -236,6 +236,7 @@ config DVB_USB_OPERA1
->  config DVB_USB_AF9005
->  	tristate "Afatech AF9005 DVB-T USB1.1 support"
->  	depends on DVB_USB && EXPERIMENTAL
-> +	depends on BROKEN
->  	select MEDIA_TUNER_MT2060 if !MEDIA_TUNER_CUSTOMIZE
->  	select MEDIA_TUNER_QT1010 if !MEDIA_TUNER_CUSTOMIZE
->  	help
+ 	bounce_acquired = bounce_acquired_write,
+@@ -164,7 +166,8 @@ struct lockdep_map {
+ 	struct lock_class		*class_cache;
+ 	const char			*name;
+ #ifdef CONFIG_LOCK_STAT
+-	int				cpu;
++	unsigned int			cpu:32;
++	unsigned int                    isspinlock:1;
+ #endif
+ };
 
+diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+index e0c0fcc..54b8a88 100644
+--- a/include/linux/spinlock.h
++++ b/include/linux/spinlock.h
+@@ -127,6 +127,10 @@ do {								\
+ #define spin_is_contended(lock)	__raw_spin_is_contended(&(lock)->raw_lock)
+ #endif
 
++#ifndef spin_nr_contender
++#define spin_nr_contender(lock) (spin_is_contended(lock) ? 1 : 0)
++#endif
++
+ /**
+  * spin_unlock_wait - wait until the spinlock gets unlocked
+  * @lock: the spinlock in question.
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 06e1571..9a9e7d7 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -191,8 +191,14 @@ struct lock_class_stats lock_stats(struct
+lock_class *class)
+ 		lock_time_add(&pcs->read_holdtime, &stats.read_holdtime);
+ 		lock_time_add(&pcs->write_holdtime, &stats.write_holdtime);
 
+-		for (i = 0; i < ARRAY_SIZE(stats.bounces); i++)
++		for (i = 0; i < ARRAY_SIZE(stats.bounces); i++) {
++			if (i == max_contender) {
++				if (stats.bounces[i] < pcs->bounces[i])
++					stats.bounces[i] = pcs->bounces[i];
++				continue;
++			}
+ 			stats.bounces[i] += pcs->bounces[i];
++		}
+ 	}
 
-Cheers,
-Mauro
+ 	return stats;
+@@ -2998,9 +3004,16 @@ __lock_contended(struct lockdep_map *lock,
+unsigned long ip)
+ 	struct task_struct *curr = current;
+ 	struct held_lock *hlock, *prev_hlock;
+ 	struct lock_class_stats *stats;
++	unsigned long contender;
++	spinlock_t *lock_ptr;
+ 	unsigned int depth;
+ 	int i, point;
+
++	if (lock->isspinlock) {
++		lock_ptr = container_of(lock, spinlock_t, dep_map);
++		contender = spin_nr_contender(lock_ptr);
++	}
++
+ 	depth = curr->lockdep_depth;
+ 	if (DEBUG_LOCKS_WARN_ON(!depth))
+ 		return;
+@@ -3030,6 +3043,12 @@ found_it:
+ 		stats->contention_point[point]++;
+ 	if (lock->cpu != smp_processor_id())
+ 		stats->bounces[bounce_contended + !!hlock->read]++;
++	stats->bounces[nr_contender] += contender;
++	if (lock->isspinlock) {
++		if (stats->bounces[max_contender] < contender)
++			stats->bounces[max_contender] = contender;
++	}
++
+ 	put_lock_stats(stats);
+ }
+
+diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+index 20dbcbf..c87b42c 100644
+--- a/kernel/lockdep_proc.c
++++ b/kernel/lockdep_proc.c
+@@ -535,6 +535,8 @@ static void seq_stats(struct seq_file *m, struct
+lock_stat_data *data)
+ 			seq_printf(m, "%40s:", name);
+
+ 		seq_printf(m, "%14lu ", stats->bounces[bounce_contended_write]);
++		seq_printf(m, "%14lu ", stats->bounces[nr_contender]);
++		seq_printf(m, "%14lu ", stats->bounces[max_contender]);
+ 		seq_lock_time(m, &stats->write_waittime);
+ 		seq_printf(m, " %14lu ", stats->bounces[bounce_acquired_write]);
+ 		seq_lock_time(m, &stats->write_holdtime);
+@@ -583,11 +585,13 @@ static void seq_stats(struct seq_file *m, struct
+lock_stat_data *data)
+ static void seq_header(struct seq_file *m)
+ {
+ 	seq_printf(m, "lock_stat version 0.2\n");
+-	seq_line(m, '-', 0, 40 + 1 + 10 * (14 + 1));
+-	seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s "
++	seq_line(m, '-', 0, 40 + 1 + 12 * (14 + 1));
++	seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s %14s %14s "
+ 			"%14s %14s\n",
+ 			"class name",
+ 			"con-bounces",
++			"nr-contender",
++			"max-contender",
+ 			"contentions",
+ 			"waittime-min",
+ 			"waittime-max",
+@@ -597,7 +601,7 @@ static void seq_header(struct seq_file *m)
+ 			"holdtime-min",
+ 			"holdtime-max",
+ 			"holdtime-total");
+-	seq_line(m, '-', 0, 40 + 1 + 10 * (14 + 1));
++	seq_line(m, '-', 0, 40 + 1 + 12 * (14 + 1));
+ 	seq_printf(m, "\n");
+ }
+
+diff --git a/lib/spinlock_debug.c b/lib/spinlock_debug.c
+index 9c4b025..5c6e06f 100644
+--- a/lib/spinlock_debug.c
++++ b/lib/spinlock_debug.c
+@@ -27,6 +27,7 @@ void __spin_lock_init(spinlock_t *lock, const char *name,
+ 	lock->magic = SPINLOCK_MAGIC;
+ 	lock->owner = SPINLOCK_OWNER_INIT;
+ 	lock->owner_cpu = -1;
++	lock->dep_map.isspinlock = 1;
+ }
+
+ EXPORT_SYMBOL(__spin_lock_init);
