@@ -1,70 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYLZOYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbYLZO3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbYLZOYW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 09:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbYLZOX5
+	id S1753865AbYLZO3Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 09:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYLZO26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 09:23:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42045 "EHLO mx3.mail.elte.hu"
+	Fri, 26 Dec 2008 09:28:58 -0500
+Received: from cavolo.yandex.ru ([87.250.244.45]:31844 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbYLZOX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 09:23:56 -0500
-Date: Fri, 26 Dec 2008 15:22:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akpm@linux-foundation.org, ralf@linux-mips.org,
-       kernel@wantstofly.org, hskinnemoen@atmel.com, cooloney@kernel.org,
-       tony.luck@intel.com, geert@linux-m68k.org, zippel@linux-m68k.org,
-       jwboyer@linux.vnet.ibm.com, mporter@kernel.crashing.org,
-       grant.likely@secretlab.ca, paulus@samba.org, benh@kernel.crashing.org,
-       dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
-       lethal@linux-sh.org, hpa@zytor.com
-Subject: Re: [PATCH -tip] Switch arm defconfig files from
-	CONFIG_CLASSIC_RCU to CONFIG_TREE_RCU.
-Message-ID: <20081226142236.GA24249@elte.hu>
-References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com> <12299911471985-git-send-email-paulmck@linux.vnet.ibm.com> <20081223142542.GC29151@elte.hu> <20081225083611.GA14968@elte.hu> <20081225093301.GB27896@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081225093301.GB27896@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752251AbYLZO25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 09:28:57 -0500
+X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Dec 2008 09:28:56 EST
+From: Evgeniy Polyakov <zbe@ioremap.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, pohmelfs@ioremap.net, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [9/9] pohmelfs: kconfig/makefile and vfs changes.
+Date: Fri, 26 Dec 2008 17:18:50 +0300
+Message-Id: <1230301130-1325-10-git-send-email-zbe@ioremap.net>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1230301130-1325-9-git-send-email-zbe@ioremap.net>
+References: <1230301130-1325-1-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-2-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-3-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-4-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-5-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-6-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-7-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-8-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-9-git-send-email-zbe@ioremap.net>
+X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
+X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds Kconfig and Makefile entries and exports to
+VFS functions to be used by POHMELFS.
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-> On Thu, Dec 25, 2008 at 09:36:11AM +0100, Ingo Molnar wrote:
-> > 
-> > below is the fix for another small buglet that hits architectures that do 
-> > not include kernel/Kconfig.preempt.
-> 
-> What is needed to let all architectures include Kconfig.preempt?
-> We should not advertise preemption if not supported,
-> but we could do this by a simple Kconfig symbol:
-> 
-> config HAVE_PREEMPT
-> 	bool
-> 
-> And let all architectures that supports preemption do:
-> 
-> config "ARCH"
-> 	select HAVE_PREEMPT
-> 
-> But maybe there is a simpler solution
-
-Since a preemptive kernel is not supported by all architectures, there has 
-to be per arch ways to express this - i.e. i think your solution is the 
-cleanest.
-
-	Ingo
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 522469a..f4bc2b2 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1140,6 +1140,8 @@ menuconfig NETWORK_FILESYSTEMS
+ 
+ if NETWORK_FILESYSTEMS
+ 
++source "fs/pohmelfs/Kconfig"
++
+ config NFS_FS
+ 	tristate "NFS client support"
+ 	depends on INET
+diff --git a/fs/Makefile b/fs/Makefile
+index d9f8afe..4f715c4 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
+ obj-$(CONFIG_DEBUG_FS)		+= debugfs/
+ obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+ obj-$(CONFIG_GFS2_FS)           += gfs2/
++obj-$(CONFIG_POHMELFS)		+= pohmelfs/
+diff --git a/fs/pohmelfs/Kconfig b/fs/pohmelfs/Kconfig
+new file mode 100644
+index 0000000..82d13ad
+--- /dev/null
++++ b/fs/pohmelfs/Kconfig
+@@ -0,0 +1,23 @@
++config POHMELFS
++	tristate "POHMELFS filesystem support"
++	select CONNECTOR
++	help
++	  POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
++	  This is a network filesystem which supports coherent caching of data and metadata
++	  on clients.
++
++config POHMELFS_DEBUG
++	bool "POHMELFS debugging"
++	depends on POHMELFS
++	default n
++	help
++	  Turns on excessive POHMELFS debugging facilities.
++	  You usually do not want to slow things down noticebly and get really lots of kernel
++	  messages in syslog.
++
++config POHMELFS_CRYPTO
++	bool "POHMELFS crypto support"
++	depends on CONFIG_CRYPTO_BLKCIPHER && CONFIG_CRYPTO_HASH
++	help
++	  This option allows to encrypt and/or protect with strong cryptographic hash all dataflow
++	  between server and clients. Each config group can have own keys.
+diff --git a/fs/pohmelfs/Makefile b/fs/pohmelfs/Makefile
+new file mode 100644
+index 0000000..196561c
+--- /dev/null
++++ b/fs/pohmelfs/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_POHMELFS)	+= pohmelfs.o
++
++pohmelfs-y := inode.o config.o dir.o net.o path_entry.o trans.o crypto.o lock.o mcache.o
+diff --git a/mm/filemap.c b/mm/filemap.c
+index f3e5f89..3f77548 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -513,6 +513,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+ 	}
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
+ 
+ #ifdef CONFIG_NUMA
+ struct page *__page_cache_alloc(gfp_t gfp)
+@@ -627,6 +628,7 @@ int __lock_page_killable(struct page *page)
+ 	return __wait_on_bit_lock(page_waitqueue(page), &wait,
+ 					sync_page_killable, TASK_KILLABLE);
+ }
++EXPORT_SYMBOL_GPL(__lock_page_killable);
+ 
+ /**
+  * __lock_page_nosync - get a lock on the page, without calling sync_page()
