@@ -1,109 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYLZDZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbYLZD2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbYLZDZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 22:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYLZDZ0
+	id S1753181AbYLZD2r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 22:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYLZD2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 22:25:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59282 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752214AbYLZDZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 22:25:25 -0500
-Date: Thu, 25 Dec 2008 21:24:59 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org,
-       Patrick Boettcher <patrick.boettcher@desy.de>
-Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes
-Message-ID: <20081225212459.4c7e31b4@caramujo.chehab.org>
-In-Reply-To: <20081225081907.GA4628@elte.hu>
-References: <20081224121252.7560391e@caramujo.chehab.org>
-	<20081225081907.GA4628@elte.hu>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Dec 2008 22:28:36 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54808 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbYLZD2f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Dec 2008 22:28:35 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH for -tip 3/4] proc: remove ifdef CONFIG_SPARSE_IRQ from stat.c
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081226122422.5CAC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri, 26 Dec 2008 12:28:33 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Dec 2008 09:19:07 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Subject: [PATCH] proc: remove ifdef CONFIG_SPARSE_IRQ from stat.c
+Impact: cleanup
 
-> FYI, v2.6.28 still fails to build with certain configs:
-> 
->  drivers/media/dvb/built-in.o: In function `dib7000p_set_gpio':
->  (.text+0x3f242): multiple definition of `dib7000p_set_gpio'
->  drivers/media/video/built-in.o:(.text+0xb8c1e): first defined here
->  drivers/media/dvb/built-in.o: In function `dib7000p_i2c_enumeration':
->  (.text+0x3f282): multiple definition of `dib7000p_i2c_enumeration'
->  drivers/media/video/built-in.o:(.text+0xb8c3e): first defined here
->  drivers/media/dvb/built-in.o: In function `dib7000p_set_wbd_ref':
->  (.text+0x3f1c1): multiple definition of `dib7000p_set_wbd_ref'
->  drivers/media/video/built-in.o:(.text+0xb8bfe): first defined here
->    LD      drivers/net/built-in.o
->  make[2]: *** [drivers/media/built-in.o] Error 1
-> 
-> Config attached. The patch below works it around in tip/master. Can test 
-> any patch for this bug.
+introduce irq_inuse() macro and remove ifdef in stat.c
 
-Please test the enclosed patch.
-
-Cheers,
-Mauro
-
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>
 ---
-Kbuild: fix compilation when dib7000p is not defined
+ fs/proc/stat.c        |    9 +++------
+ include/linux/irqnr.h |    9 +++++++++
+ 2 files changed, 12 insertions(+), 6 deletions(-)
 
-dib7000p.h defines a few extern symbols when CONFIG_DVB_DIB7000P is not set. since the
-header is used on more than one driver, this causes symbol duplication, as pointed by
-Ingo Molnar <mingo@elte.hu>:
-
-drivers/media/dvb/built-in.o: In function `dib7000p_set_gpio':
-(.text+0x3f242): multiple definition of `dib7000p_set_gpio'
-drivers/media/video/built-in.o:(.text+0xb8c1e): first defined here
-drivers/media/dvb/built-in.o: In function `dib7000p_i2c_enumeration':
-(.text+0x3f282): multiple definition of `dib7000p_i2c_enumeration'
-drivers/media/video/built-in.o:(.text+0xb8c3e): first defined here
-drivers/media/dvb/built-in.o: In function `dib7000p_set_wbd_ref':
-(.text+0x3f1c1): multiple definition of `dib7000p_set_wbd_ref'
-drivers/media/video/built-in.o:(.text+0xb8bfe): first defined here
-  LD      drivers/net/built-in.o
-make[2]: *** [drivers/media/built-in.o] Error 1
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-diff --git a/drivers/media/dvb/frontends/dib7000p.h b/drivers/media/dvb/frontends/dib7000p.h
-index 3e81268..aab8112 100644
---- a/drivers/media/dvb/frontends/dib7000p.h
-+++ b/drivers/media/dvb/frontends/dib7000p.h
-@@ -66,7 +66,8 @@ struct i2c_adapter *dib7000p_get_i2c_master(struct dvb_frontend *fe,
- 	return NULL;
- }
+Index: b/fs/proc/stat.c
+===================================================================
+--- a/fs/proc/stat.c
++++ b/fs/proc/stat.c
+@@ -9,6 +9,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/slab.h>
+ #include <linux/time.h>
++#include <linux/irqnr.h>
+ #include <asm/cputime.h>
  
--extern int dib7000p_i2c_enumeration(struct i2c_adapter *i2c,
-+static inline
-+int dib7000p_i2c_enumeration(struct i2c_adapter *i2c,
- 				    int no_of_demods, u8 default_addr,
- 				    struct dib7000p_config cfg[])
- {
-@@ -74,13 +75,15 @@ extern int dib7000p_i2c_enumeration(struct i2c_adapter *i2c,
- 	return -ENODEV;
- }
+ #ifndef arch_irq_stat_cpu
+@@ -45,10 +46,8 @@ static int show_stat(struct seq_file *p,
+ 		steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
+ 		guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
+ 		for_each_irq_nr(j) {
+-#ifdef CONFIG_SPARSE_IRQ
+-			if (!irq_to_desc(j))
++			if (!irq_inuse(j))
+ 				continue;
+-#endif
+ 			sum += kstat_irqs_cpu(j, i);
+ 		}
+ 		sum += arch_irq_stat_cpu(i);
+@@ -95,12 +94,10 @@ static int show_stat(struct seq_file *p,
+ 	/* sum again ? it could be updated? */
+ 	for_each_irq_nr(j) {
+ 		per_irq_sum = 0;
+-#ifdef CONFIG_SPARSE_IRQ
+-		if (!irq_to_desc(j)) {
++		if (!irq_inuse(j)) {
+ 			seq_printf(p, " %u", per_irq_sum);
+ 			continue;
+ 		}
+-#endif
+ 		for_each_possible_cpu(i)
+ 			per_irq_sum += kstat_irqs_cpu(j, i);
  
--extern int dib7000p_set_gpio(struct dvb_frontend *fe, u8 num, u8 dir, u8 val)
-+static inline
-+int dib7000p_set_gpio(struct dvb_frontend *fe, u8 num, u8 dir, u8 val)
- {
- 	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
- 	return -ENODEV;
- }
+Index: b/include/linux/irqnr.h
+===================================================================
+--- a/include/linux/irqnr.h
++++ b/include/linux/irqnr.h
+@@ -15,6 +15,9 @@
  
--extern int dib7000p_set_wbd_ref(struct dvb_frontend *fe, u16 value)
-+static inline
-+int dib7000p_set_wbd_ref(struct dvb_frontend *fe, u16 value)
- {
- 	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
- 	return -ENODEV;
+ # define for_each_irq_desc_reverse(irq, desc)                          \
+ 	for (irq = nr_irqs - 1; irq >= 0; irq--)
++
++#define irq_inuse(irq) 1
++
+ #else /* CONFIG_GENERIC_HARDIRQS */
+ 
+ extern int nr_irqs;
+@@ -27,6 +30,12 @@ extern struct irq_desc *irq_to_desc(unsi
+ 	for (irq = nr_irqs - 1, desc = irq_to_desc(irq); irq >= 0;	\
+ 	     irq--, desc = irq_to_desc(irq))
+ 
++#ifdef CONFIG_SPARSE_IRQ
++#define irq_inuse(irq) (!!irq_to_desc(irq))
++#else
++#define irq_inuse(irq) 1
++#endif
++
+ #endif /* CONFIG_GENERIC_HARDIRQS */
+ 
+ #define for_each_irq_nr(irq)                   \
+
 
