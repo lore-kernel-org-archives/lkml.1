@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbYLZJpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYLZJtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754382AbYLZJpv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 04:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYLZJpm
+	id S1754112AbYLZJtc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 04:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYLZJtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 04:45:42 -0500
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:39064 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753661AbYLZJpl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 04:45:41 -0500
-X-AuditID: 0ac90650-aacfcba000004120-42-4954a7c33444
-Message-ID: <4954A7BE.6080204@hitachi.com>
-Date: Fri, 26 Dec 2008 18:45:34 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Fri, 26 Dec 2008 04:49:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54376 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753585AbYLZJtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 04:49:23 -0500
+Date: Fri, 26 Dec 2008 10:48:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tony Battersby <tonyb@cybernetics.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, arjan@linux.intel.com,
+       venkatesh.pallipadi@intel.com, jeremy@goop.org
+Subject: Re: DEBUG_PAGEALLOC + order-10 alloc/free_pages = lockup
+Message-ID: <20081226094857.GP27747@elte.hu>
+References: <49513E33.5050001@cybernetics.com>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH] coredump_filter: enable to change the default filter
-References: <20081219195311.81C4AFC351@magilla.sf.frob.com> 
-    <49547836.7040907@hitachi.com> 
-    <20081226153931.5CBB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20081226153931.5CBB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49513E33.5050001@cybernetics.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
 
->>>>However, we would need a special care for PID namespace if we use
->>>>init's coredump_filter as default.  For a process with new PID
->>>>namespace and new /proc, writing to /proc/1/coredump_filter doesn't
->>>>mean changing default, although it's not a usual operation.
->>>
->>>I'd figured that private PID namespaces with their own init would want
->>>their own private settings for this default too.
->>
->>Probably it's true, but I'm not sure if having coredump_filter have
->>two means is acceptable.  init in a private PID namespace can die
->>and dump a core file.  So its coredump_filter has two means; default
->>setting for the namespace and setting for itself.  
+* Tony Battersby <tonyb@cybernetics.com> wrote:
+
+> An order-10 alloc_pages followed by free_pages with DEBUG_PAGEALLOC
+> causes a lockup during subsequent memory allocations.  Order-9 and lower
+> do not trigger the problem.  This problem was introduced in 2.6.25-rc1
+> and fixed in 2.6.28-rc1.  Even though the bug is now fixed, I am
+> reporting it because:
 > 
-> FWIW, I think private namespace should have private settings framework.
-> I don't like to make special private settings code in this patch.
-> 
-> Yeah, defenitely we need to private settings for various reason, I agreed.
-> but we also need consistent private settings rule and framework.
-> otherwise, we will make various non consistent crap. maybe..
+> 1) I am not sure that anyone ever realized that the bug existed.
 
-Anyway, as Andrew pointed out, current coredump filter doesn't
-care for user mode helpers.  So we need some sort of changes in
-coredump filter so that users can change user mode helpers'
-settings; use child_reapers setting as default (Roland's
-suggestion) or use a boot parameter.
+Correct.
 
-Thanks,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
+> 2) I want to make sure that the bug is really fixed and not just hidden
+>    from view.
 
+i think it got hidden. Apparently splitting up a large kernel linear page 
+in IRQ context has a bug. I dont see it immediately what it could be - 
+Thomas, Suresh, do you have any ideas?
+
+> 3) To see if anyone thinks that the fix should be included in
+>    2.6.27 -stable.
+
+if 0b8fdcbcd287a1fbe66817491e6149841ae25705 applies cleanly to .27 -stable 
+then i'd agree it should be added. If there's lots of dependencies then 
+maybe not.
+
+	Ingo
