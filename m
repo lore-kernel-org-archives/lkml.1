@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYLZH1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYLZH2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbYLZH1i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 02:27:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYLZH12
+	id S1753583AbYLZH2K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 02:28:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYLZH1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 02:27:28 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:56448 "EHLO mgw2.diku.dk"
+	Fri, 26 Dec 2008 02:27:53 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:55461 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbYLZH10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 02:27:26 -0500
-Date: Fri, 26 Dec 2008 08:27:24 +0100 (CET)
+	id S1752805AbYLZH1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 02:27:51 -0500
+Date: Fri, 26 Dec 2008 08:27:48 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: lethal@linux-sh.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/7] arch/sh/mm: Move a dereference below a NULL test
-Message-ID: <Pine.LNX.4.64.0812260826540.25450@ask.diku.dk>
+To: Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/7] drivers/message/fusion: Move a dereference below a NULL
+ test
+Message-ID: <Pine.LNX.4.64.0812260827250.25450@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -56,21 +58,24 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/sh/mm/ioremap_64.c             |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/message/fusion/mptctl.c     |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sh/mm/ioremap_64.c b/arch/sh/mm/ioremap_64.c
-index 6e0be24..fddcab4 100644
---- a/arch/sh/mm/ioremap_64.c
-+++ b/arch/sh/mm/ioremap_64.c
-@@ -71,9 +71,9 @@ void *__ioremap(unsigned long phys_addr, unsigned long size,
- 	 * Ok, go for it..
- 	 */
- 	area = get_vm_area(size, VM_IOREMAP);
--	pr_debug("Get vm_area returns %p addr %p\n",area,area->addr);
- 	if (!area)
- 		return NULL;
-+	pr_debug("Get vm_area returns %p addr %p\n", area, area->addr);
- 	area->phys_addr = phys_addr;
- 	addr = area->addr;
- 	if (ioremap_page_range((unsigned long)addr, (unsigned long)addr + size,
+diff --git a/drivers/message/fusion/mptctl.c b/drivers/message/fusion/mptctl.c
+index b89f476..c638171 100644
+--- a/drivers/message/fusion/mptctl.c
++++ b/drivers/message/fusion/mptctl.c
+@@ -308,10 +308,11 @@ static void mptctl_timeout_expired (MPT_IOCTL *ioctl)
+ {
+ 	int rc = 1;
+ 
+-	dctlprintk(ioctl->ioc, printk(MYIOC_s_DEBUG_FMT ": Timeout Expired! Host %d\n",
+-				ioctl->ioc->name, ioctl->ioc->id));
+ 	if (ioctl == NULL)
+ 		return;
++	dctlprintk(ioctl->ioc,
++		   printk(MYIOC_s_DEBUG_FMT ": Timeout Expired! Host %d\n",
++		   ioctl->ioc->name, ioctl->ioc->id));
+ 
+ 	ioctl->wait_done = 0;
+ 	if (ioctl->reset & MPTCTL_RESET_OK)
