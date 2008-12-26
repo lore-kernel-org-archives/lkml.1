@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYLZJcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYLZJiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbYLZJcZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 04:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYLZJcQ
+	id S1754016AbYLZJiJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 04:38:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYLZJh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 04:32:16 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:16071 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753465AbYLZJcP (ORCPT
+	Fri, 26 Dec 2008 04:37:56 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:33601 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753534AbYLZJhz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 04:32:15 -0500
+	Fri, 26 Dec 2008 04:37:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=FvVZ4AMXTN4udHiAiiuuuc8mXfZprGyM/dmmtiGAn/26m8T+B0aHQF1og8fOCijuc+
-         84oWxPSwL0tWSBJndMW3J452twaKIyfh0m1zhQU50Y/wd+9StQfGjm1g3Bc1Fv06nbnP
-         pyWE6UorOKIe7YYoEb/0u6qaR/KqSCxQl8MnY=
-Message-ID: <2375c9f90812260132h6b4b5f94g404f628ec4b74afd@mail.gmail.com>
-Date: Fri, 26 Dec 2008 09:32:13 +0000
-From: "=?UTF-8?Q?Am=C3=A9rico_Wang?=" <xiyou.wangcong@gmail.com>
-To: "Johannes Weiner" <hannes@cmpxchg.org>
-Subject: Re: [Patch] uml: drop const qualifier for kernel_execve()
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net
-In-Reply-To: <20081207195537.GA24808@cmpxchg.org>
+        b=hE2j9V57r1az08xidcFaoBoFiVY+p5oj2salphbI2YbeKK/Gpxo3ONl2w+v0adj+6o
+         o5cwPKkdnUm9x3c6difIieq3oS5nt0q3jwhyjfUT6e/tReRjLlwlZOif4yg0F/nMrEhI
+         jl9uq9dA2HRIwedPh6XNRadD7UJAa30RhURNw=
+Message-ID: <aa79d98a0812260137l73de751fuffaac6dff3c3a22a@mail.gmail.com>
+Date: Fri, 26 Dec 2008 12:37:53 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH for -tip] irq: for_each_irq_desc() makes simplify
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Yinghai Lu" <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081226101754.85DB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <2375c9f90812021451hfd77292yf2463ca99d07b88e@mail.gmail.com>
-	 <20081203012051.GA8953@cmpxchg.org>
-	 <2375c9f90812030432m771984edkdd0c599bbae9bb3c@mail.gmail.com>
-	 <20081203134035.GA17560@cmpxchg.org>
-	 <2375c9f90812051702m217ee049i79ce2f9cc8280fb1@mail.gmail.com>
-	 <20081207195537.GA24808@cmpxchg.org>
+References: <2f11576a0812250643s25a79de6q205ae3b0a7d63f06@mail.gmail.com>
+	 <20081225160109.GA5636@localhost>
+	 <20081226101754.85DB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBQ9WSki029530
 
-On Sun, Dec 7, 2008 at 7:55 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:> On Sat, Dec 06, 2008 at 01:02:16AM +0000, AmÃ©rico Wang wrote:>> On Wed, Dec 3, 2008 at 1:40 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:>> > On Wed, Dec 03, 2008 at 12:32:02PM +0000, AmÃ©rico Wang wrote:>> >> On Wed, Dec 3, 2008 at 1:20 AM, Johannes Weiner <hannes@cmpxchg.org> wrote:>> >> > On Tue, Dec 02, 2008 at 10:51:09PM +0000, AmÃ©rico Wang wrote:>> >> >> UML implementation of kernel_execve() should not have const qualifier,>> >> >> because it will finally call do_execve() which doesn't have.>> >> >>> >> > And you made sure that do_execve() is correctly annotated?>> >> >>> >>>> >> Yes, I checked that.>> >>> > Good.  Then please fix up do_execve() or let the warning stand out as>> > a reminder.>>>> ??>> Confused...>>>> do_execve() is OK, we don't need to fix it.>> I don't see where it writes through @filename.  So it seems the right> fix would be to make do_execve()s parameter const (and as it seems, a> lot more adjustments down this call graph) and not remove a correct> const from a callsite.
-Hello, Johannes.
-I apologize for my late reply.
-Well, not only @filename, but also the next two parameters, but if you alsomake them const in do_execve(), you will get more warnings. :)So I think my patch is correct.
-Thanks for your review.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Fri, Dec 26, 2008 at 4:22 AM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> [KOSAKI Motohiro - Thu, Dec 25, 2008 at 11:43:45PM +0900]
+>> | > | "if (!desc) " mean this irqno don't have irq description.
+>> | > | so I think this name imply mean skipping no irq desctiption element.
+>> | > |
+>> | > | Actually, on CONFIG_SPARSEIRQ, desc is filled in dynamically after booting.
+>> | > | then "defined" is a bit misleading word.
+>> | > |
+>> | >
+>> | > So if I would need to iterate over all descriptors including empty
+>> | > I need to type all this long for(;;) form again?
+>> |
+>> | We already have for_each_irq_nr() for this purpose ;-)
+>>
+>> Which is not shorter form of desc iterator in turn :-)
+>>
+>> Since the original for_each_irq_desc didn't check for NULL
+>> desc's I think the better would to name it like for_each_irq_desc_safe
+>> or for_each_irq_desc_inuse then.
+>
+> but before CONFIG_SPARSEIRQ feature age, for_each_irq_desc() guaranteed
+> to return !NULL value.
+> recently CONFIG_SPARSEIRQ break this assumption. I hope to restore it.
+
+indeed
+
+>
+> In addition, if we make both for_each_irq_desc() and for_each_irq_desc().
+> for_each_irq_desc() become unused macro.
+> from cleanup view, unused function/macro is not preferred.
+>
+
+yeah!
