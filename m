@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYLYXYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYLZACT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbYLYXYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 18:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYLYXYo
+	id S1752634AbYLZACT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 19:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYLZACI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 18:24:44 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49248 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbYLYXYo (ORCPT
+	Thu, 25 Dec 2008 19:02:08 -0500
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:4611 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYLZACH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 18:24:44 -0500
-Date: Thu, 25 Dec 2008 16:24:27 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, shaohua.li@intel.com
-Subject: Re: [PATCH] ASPM: Use msleep instead of cpu_relax during link retraining
-Message-ID: <20081225232427.GJ19967@parisc-linux.org>
-References: <20081222221156.29645.95982.stgit@bluto> <20081225190129.GA1615@ucw.cz>
+	Thu, 25 Dec 2008 19:02:07 -0500
+Date: Thu, 25 Dec 2008 22:00:05 -0200
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: jbd2 inside a device mapper module
+Message-ID: <20081226000005.GB4127@blitiri.com.ar>
+References: <20081224211038.GT4127@blitiri.com.ar> <20081224234915.GA23723@mit.edu> <20081225143535.GA4127@blitiri.com.ar> <20081225155248.GJ9871@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081225190129.GA1615@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081225155248.GJ9871@mit.edu>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 25, 2008 at 08:01:29PM +0100, Pavel Machek wrote:
-> On Mon 2008-12-22 15:11:57, Andrew Patterson wrote:
-> > ASPM: Use msleep instead of cpu_relax during link retraining
-> > 
-> > The cpu_relax() function can be a noop on certain architectures
-> > like IA-64 when CPU threads are disabled, so use msleep instead
-> > during link retraining busy/wait loop.
+On Thu, Dec 25, 2008 at 10:52:48AM -0500, Theodore Tso wrote:
+> On Thu, Dec 25, 2008 at 12:35:35PM -0200, Alberto Bertogli wrote:
+> >  - What is the reason behind the j_inode check in jbd2_journal_create()?
 > 
-> Author clearly wanted to do a busy loop... why do you think 10msec
-> delay here is acceptable?
+> jbd2_journal_create was only designed for creating inode-based
+> journals, and it's a deprecated function that will likely be removed
+> soon.
 
-10ms?  I see a 1ms sleep.
+Thanks, I didn't know that!
 
-> > @@ -217,16 +220,18 @@ static void pcie_aspm_configure_common_clock(struct pci_dev *pdev)
-> >  	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
-> >  
-> >  	/* Wait for link training end */
-> > -	/* break out after waiting for 1 second */
-> > +	/* break out after waiting for timeout */
-> >  	start_jiffies = jiffies;
-> > -	while ((jiffies - start_jiffies) < HZ) {
-> > +	for (;;) {
-> >  		pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
-> >  		if (!(reg16 & PCI_EXP_LNKSTA_LT))
-> >  			break;
-> > -		cpu_relax();
-> > +		if ((jiffies - start_jiffies) >= LINK_RETRAIN_TIMEOUT)
-> > +			break;
-> > +		msleep(1);
+
+> >  - Does mke2fs -O journal_dev creates a journal that jbd2_journal_load()
+> >    is supposed to read without any knowledge of ext2/3/4 stuff? If not,
+> >    how can I create such a journal? I'll be looking at the e2fsprogs
+> >    code for the answer to this question later today (I haven't looked at
+> >    it yet).
 > 
-> Is this safe w.r.t. jiffie wraparounds?
-
-Definitely needs to be time_before/time_after.
-
-> >  	}
-> >  	/* training failed -> recover */
-> > -	if ((jiffies - start_jiffies) >= HZ) {
-> > +	if ((jiffies - start_jiffies) >= LINK_RETRAIN_TIMEOUT) {
-> >  		dev_printk (KERN_ERR, &pdev->dev, "ASPM: Could not configure"
-> >  			    " common clock\n");
-> >  		i = 0;
+> mke2fs -O journal_dev creates an external journal, but when you create
+> a filesystem, you need to specify need to specify location of the
+> external journal.    Hence:
 > 
-> AFAICT this can trigger false positives. !reg16 test succeeds and then
-> jiffies tick.
+> 	 mke2fs -O journal_dev /dev/extern_journal_dev
+> 	 mke2fs -t ext4 -J device=/dev/extern_journal_dev /dev/filesystem_dev
 > 
-> ...it could happen before but you make it way more probable...
+> As I said in my last message.  I've tested it, and it works Just Fine.
 
-No, because the test moved.
+I think I'm not explaining myself correctly. My code has _nothing_ to do
+with ext2/3/4 (or any other filesystem) whatsoever. I'm not using the
+journal as an external one for a filesystem. I want to use it to be able
+to do atomic writes in my own, filesystem independant, device-mapper
+code.
 
-I came up with this loop (off the top of my head):
+After what you told me (both this and the deprecation of
+jbd2_journal_create()), I took a look at e2fsprogs' source. From what I
+could see, "mke2fs -O journal_dev" creates the external journal inside
+some ext2/3/4 structures, which caused my journal-loading code to fail
+(because it doesn't know about ext stuff).
 
-<willy>         for (;;) {
-<willy>                 pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
-<willy>                 if (!(reg16 & PCI_EXP_LNKSTA_LT))
-<willy>                         break;
-<willy>                 if ((jiffies - start_jiffies) >= HZ)
-<willy>                         break;
-<willy>                 msleep(1);
-<willy>         }
+So, I wrote a small "mkjournal" utility that creates a journal on the
+block device without any ext2/3/4 stuff. It's based on e2fsprogs'
+mkjournal.c, except it doesn't have any ext2 stuff. And it worked great!
+I'm now able to load the journal just fine.
 
-Andrew has mostly followed that ... improving it to LINK_RETRAIN_TIMEOUT
-instead of HZ.
+Thanks a lot for all the help!
 
-Yes, the subsequent test should be of reg16 instead of jiffies.
+		Alberto
 
-And we should be using time_before/after instead of the explicit
-comparison.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
