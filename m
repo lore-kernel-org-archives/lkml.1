@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYLZObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYLZOcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYLZObT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 09:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbYLZO3R
+	id S1754762AbYLZOcC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 09:32:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYLZO3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 09:29:17 -0500
+	Fri, 26 Dec 2008 09:29:30 -0500
 Received: from cavolo.yandex.ru ([87.250.244.45]:31844 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752729AbYLZO3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 09:29:07 -0500
+	id S1753598AbYLZO3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 09:29:22 -0500
 X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Dec 2008 09:28:56 EST
 From: Evgeniy Polyakov <zbe@ioremap.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, pohmelfs@ioremap.net, netdev@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [2/9] pohmelfs: configuration interface.
-Date: Fri, 26 Dec 2008 17:18:43 +0300
-Message-Id: <1230301130-1325-3-git-send-email-zbe@ioremap.net>
+Subject: [8/9] pohmelfs: transaction layer.
+Date: Fri, 26 Dec 2008 17:18:49 +0300
+Message-Id: <1230301130-1325-9-git-send-email-zbe@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1230301130-1325-2-git-send-email-zbe@ioremap.net>
+In-Reply-To: <1230301130-1325-8-git-send-email-zbe@ioremap.net>
 References: <1230301130-1325-1-git-send-email-zbe@ioremap.net>
  <1230301130-1325-2-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-3-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-4-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-5-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-6-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-7-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-8-git-send-email-zbe@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes POHMELFS configuration interface based
-on netlink kernel connector. This interface allows to create
-configuration groups in the kerenel indexed by mount ID option.
+This patch implements transaction processing helpers
+used to allocate/free/insert/remove and other
+operations with transctions.
 
-Each configuration group can include multiple servers to work
-with and various operation parameters.
+Each transction is an object, which may embed multiple commands
+completed atomically. When server fails the whole transaction
+will be replied against it (or different server) later. This
+approach allows to maintain high data integrity and do not
+desynchronize filesystem state in case of network 
+or server failures.
 
 Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-diff --git a/fs/pohmelfs/config.c b/fs/pohmelfs/config.c
+diff --git a/fs/pohmelfs/trans.c b/fs/pohmelfs/trans.c
 new file mode 100644
-index 0000000..941ab02
+index 0000000..1eda0a9
 --- /dev/null
-+++ b/fs/pohmelfs/config.c
-@@ -0,0 +1,478 @@
++++ b/fs/pohmelfs/trans.c
+@@ -0,0 +1,704 @@
 +/*
 + * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
 + * All rights reserved.
@@ -57,466 +67,692 @@ index 0000000..941ab02
 + * GNU General Public License for more details.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/connector.h>
++#include <linux/module.h>
 +#include <linux/crypto.h>
-+#include <linux/list.h>
-+#include <linux/mutex.h>
-+#include <linux/string.h>
-+#include <linux/in.h>
++#include <linux/fs.h>
++#include <linux/jhash.h>
++#include <linux/hash.h>
++#include <linux/ktime.h>
++#include <linux/mempool.h>
++#include <linux/mm.h>
++#include <linux/mount.h>
++#include <linux/pagemap.h>
++#include <linux/parser.h>
++#include <linux/poll.h>
++#include <linux/swap.h>
++#include <linux/slab.h>
++#include <linux/statfs.h>
++#include <linux/writeback.h>
 +
 +#include "netfs.h"
 +
-+/*
-+ * Global configuration list.
-+ * Each client can be asked to get one of them.
-+ *
-+ * Allows to provide remote server address (ipv4/v6/whatever), port
-+ * and so on via kernel connector.
-+ */
++static struct kmem_cache *netfs_trans_dst;
++static mempool_t *netfs_trans_dst_pool;
 +
-+static struct cb_id pohmelfs_cn_id = {.idx = POHMELFS_CN_IDX, .val = POHMELFS_CN_VAL};
-+static LIST_HEAD(pohmelfs_config_list);
-+static DEFINE_MUTEX(pohmelfs_config_lock);
-+
-+static inline int pohmelfs_config_eql(struct pohmelfs_ctl *sc, struct pohmelfs_ctl *ctl)
++static void netfs_trans_init_static(struct netfs_trans *t, int num, int size)
 +{
-+	if (sc->idx == ctl->idx && sc->type == ctl->type &&
-+			sc->proto == ctl->proto &&
-+			sc->addrlen == ctl->addrlen &&
-+			!memcmp(&sc->addr, &ctl->addr, ctl->addrlen))
-+		return 1;
++	t->page_num = num;
++	t->total_size = size;
++	atomic_set(&t->refcnt, 1);
 +
-+	return 0;
++	mutex_init(&t->dst_lock);
++	INIT_LIST_HEAD(&t->dst_list);
 +}
 +
-+static struct pohmelfs_config_group *pohmelfs_find_config_group(unsigned int idx)
++static int netfs_trans_send_pages(struct netfs_trans *t, struct netfs_state *st)
 +{
-+	struct pohmelfs_config_group *g, *group = NULL;
++	int err = 0;
++	unsigned int i, attached_pages = t->attached_pages, ci;
++	struct msghdr msg;
++	struct page **pages = (t->eng)?t->eng->pages:t->pages;
++	struct page *p;
++	unsigned int size;
 +
-+	list_for_each_entry(g, &pohmelfs_config_list, group_entry) {
-+		if (g->idx == idx) {
-+			group = g;
-+			break;
-+		}
-+	}
++	msg.msg_name = NULL;
++	msg.msg_namelen = 0;
++	msg.msg_control = NULL;
++	msg.msg_controllen = 0;
++	msg.msg_flags = MSG_WAITALL | MSG_MORE;
 +
-+	return group;
-+}
++	ci = 0;
++	for (i=0; i<t->page_num; ++i) {
++		struct page *page = pages[ci];
++		struct netfs_cmd cmd;
++		struct iovec io;
 +
-+static struct pohmelfs_config_group *pohmelfs_find_create_config_group(unsigned int idx)
-+{
-+	struct pohmelfs_config_group *g;
-+	
-+	g = pohmelfs_find_config_group(idx);
-+	if (g)
-+		return g;
++		p = t->pages[i];
 +
-+	g = kzalloc(sizeof(struct pohmelfs_config_group), GFP_KERNEL);
-+	if (!g)
-+		return NULL;
-+
-+	INIT_LIST_HEAD(&g->config_list);
-+	g->idx = idx;
-+	g->num_entry = 0;
-+
-+	list_add_tail(&g->group_entry, &pohmelfs_config_list);
-+
-+	return g;
-+}
-+
-+int pohmelfs_copy_config(struct pohmelfs_sb *psb)
-+{
-+	struct pohmelfs_config_group *g;
-+	struct pohmelfs_config *c, *dst;
-+	int err = -ENODEV;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+
-+	g = pohmelfs_find_config_group(psb->idx);
-+	if (!g)
-+		goto out_unlock;
-+
-+	/*
-+	 * Run over all entries in given config group and try to crate and
-+	 * initialize those, which do not exist in superblock list.
-+	 * Skip all existing entries.
-+	 */
-+
-+	list_for_each_entry(c, &g->config_list, config_entry) {
-+		err = 0;
-+		list_for_each_entry(dst, &psb->state_list, config_entry) {
-+			if (pohmelfs_config_eql(&dst->state.ctl, &c->state.ctl)) {
-+				err = -EEXIST;
-+				break;
-+			}
-+		}
-+
-+		if (err)
++		if (!p)
 +			continue;
 +
-+		dst = kzalloc(sizeof(struct pohmelfs_config), GFP_KERNEL);
-+		if (!dst) {
-+			err = -ENOMEM;
-+			break;
++		size = page_private(p);
++
++		io.iov_base = &cmd;
++		io.iov_len = sizeof(struct netfs_cmd);
++
++		cmd.cmd = NETFS_WRITE_PAGE;
++		cmd.ext = 0;
++		cmd.id = 0;
++		cmd.size = size;
++		cmd.start = p->index;
++		cmd.start <<= PAGE_CACHE_SHIFT;
++		cmd.csize = 0;
++		cmd.cpad = 0;
++		cmd.iv = pohmelfs_gen_iv(t);
++
++		netfs_convert_cmd(&cmd);
++
++		msg.msg_iov = &io;
++		msg.msg_iovlen = 1;
++		msg.msg_flags = MSG_WAITALL | MSG_MORE;
++
++		err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, sizeof(struct netfs_cmd));
++		if (err <= 0) {
++			printk("%s: %d/%d failed to send transaction header: t: %p, gen: %u, err: %d.\n",
++					__func__, i, t->page_num, t, t->gen, err);
++			if (err == 0)
++				err = -ECONNRESET;
++			goto err_out;
 +		}
 +
-+		memcpy(&dst->state.ctl, &c->state.ctl, sizeof(struct pohmelfs_ctl));
++		msg.msg_flags = MSG_WAITALL|(attached_pages == 1)?0:MSG_MORE;
 +
-+		list_add_tail(&dst->config_entry, &psb->state_list);
-+
-+		err = pohmelfs_state_init_one(psb, dst);
-+		if (err) {
-+			list_del(&dst->config_entry);
-+			kfree(dst);
++		err = kernel_sendpage(st->socket, page, 0, size, msg.msg_flags);
++		if (err <= 0) {
++			printk("%s: %d/%d failed to send transaction page: t: %p, gen: %u, size: %u, err: %d.\n",
++					__func__, i, t->page_num, t, t->gen, size, err);
++			if (err == 0)
++				err = -ECONNRESET;
++			goto err_out;
 +		}
++
++		dprintk("%s: %d/%d sent t: %p, gen: %u, page: %p/%p, size: %u.\n",
++			__func__, i, t->page_num, t, t->gen, page, p, size);
 +
 +		err = 0;
-+	}
-+
-+out_unlock:
-+	mutex_unlock(&pohmelfs_config_lock);
-+
-+	return err;
-+}
-+
-+int pohmelfs_copy_crypto(struct pohmelfs_sb *psb)
-+{
-+	struct pohmelfs_config_group *g;
-+	int err = -ENOENT;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+	g = pohmelfs_find_config_group(psb->idx);
-+	if (!g)
-+		goto err_out_exit;
-+
-+	if (g->hash_string) {
-+		err = -ENOMEM;
-+		psb->hash_string = kstrdup(g->hash_string, GFP_KERNEL);
-+		if (!psb->hash_string)
-+			goto err_out_exit;
-+		psb->hash_strlen = g->hash_strlen;
-+	}
-+
-+	if (g->cipher_string) {
-+		psb->cipher_string = kstrdup(g->cipher_string, GFP_KERNEL);
-+		if (!psb->cipher_string)
-+			goto err_out_free_hash_string;
-+		psb->cipher_strlen = g->cipher_strlen;
-+	}
-+
-+	if (g->hash_keysize) {
-+		psb->hash_key = kmalloc(g->hash_keysize, GFP_KERNEL);
-+		if (!psb->hash_key)
-+			goto err_out_free_cipher_string;
-+		memcpy(psb->hash_key, g->hash_key, g->hash_keysize);
-+		psb->hash_keysize = g->hash_keysize;
-+	}
-+
-+	if (g->cipher_keysize) {
-+		psb->cipher_key = kmalloc(g->cipher_keysize, GFP_KERNEL);
-+		if (!psb->cipher_key)
-+			goto err_out_free_hash;
-+		memcpy(psb->cipher_key, g->cipher_key, g->cipher_keysize);
-+		psb->cipher_keysize = g->cipher_keysize;
-+	}
-+
-+	mutex_unlock(&pohmelfs_config_lock);
-+
-+	return 0;
-+
-+err_out_free_hash:
-+	kfree(psb->hash_key);
-+err_out_free_cipher_string:
-+	kfree(psb->cipher_string);
-+err_out_free_hash_string:
-+	kfree(psb->hash_string);
-+err_out_exit:
-+	mutex_unlock(&pohmelfs_config_lock);
-+	return err;
-+}
-+
-+static int pohmelfs_send_reply(int err, int msg_num, int action, struct cn_msg *msg, struct pohmelfs_ctl *ctl)
-+{
-+	struct pohmelfs_cn_ack *ack;
-+
-+	ack = kmalloc(sizeof(struct pohmelfs_cn_ack), GFP_KERNEL);
-+	if (!ack)
-+		return -ENOMEM;
-+
-+	memset(ack, 0, sizeof(struct pohmelfs_cn_ack));
-+	memcpy(&ack->msg, msg, sizeof(struct cn_msg));
-+
-+	if (action == POHMELFS_CTLINFO_ACK)
-+		memcpy(&ack->ctl, ctl, sizeof(struct pohmelfs_ctl));
-+
-+	ack->msg.len = sizeof(struct pohmelfs_cn_ack) - sizeof(struct cn_msg);
-+	ack->msg.ack = msg->ack + 1;
-+	ack->error = err;
-+	ack->msg_num = msg_num;
-+
-+	cn_netlink_send(&ack->msg, 0, GFP_KERNEL);
-+	kfree(ack);
-+	return 0;
-+}
-+
-+static int pohmelfs_cn_disp(struct cn_msg *msg)
-+{
-+	struct pohmelfs_config_group *g;
-+	struct pohmelfs_ctl *ctl = (struct pohmelfs_ctl *)msg->data;
-+	struct pohmelfs_config *c, *tmp;
-+	int err = 0, i = 1;
-+
-+	if (msg->len != sizeof(struct pohmelfs_ctl))
-+		return -EBADMSG;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+
-+	g = pohmelfs_find_config_group(ctl->idx);
-+	if (!g) {
-+		pohmelfs_send_reply(err, 0, POHMELFS_NOINFO_ACK, msg, NULL);
-+		goto out_unlock;
-+	}
-+
-+	list_for_each_entry_safe(c, tmp, &g->config_list, config_entry) {
-+		struct pohmelfs_ctl *sc = &c->state.ctl;
-+		if (pohmelfs_send_reply(err, g->num_entry - i, POHMELFS_CTLINFO_ACK, msg, sc)) {
-+			err = -ENOMEM;
-+			goto out_unlock;
-+		}
-+		i += 1;
-+	}
-+
-+out_unlock:
-+        mutex_unlock(&pohmelfs_config_lock);
-+        return err;
-+}
-+
-+static int pohmelfs_cn_ctl(struct cn_msg *msg, int action)
-+{
-+	struct pohmelfs_config_group *g;
-+	struct pohmelfs_ctl *ctl = (struct pohmelfs_ctl *)msg->data;
-+	struct pohmelfs_config *c, *tmp;
-+	int err = 0;
-+
-+	if (msg->len != sizeof(struct pohmelfs_ctl))
-+		return -EBADMSG;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+
-+	g = pohmelfs_find_create_config_group(ctl->idx);
-+	if (!g) {
-+		err = -ENOMEM;
-+		goto out_unlock;
-+	}
-+
-+	list_for_each_entry_safe(c, tmp, &g->config_list, config_entry) {
-+		struct pohmelfs_ctl *sc = &c->state.ctl;
-+
-+		if (pohmelfs_config_eql(sc, ctl)) {
-+			if (action == POHMELFS_FLAGS_ADD) {
-+				err = -EEXIST;
-+				goto out_unlock;
-+			} else if (action == POHMELFS_FLAGS_DEL) {
-+				list_del(&c->config_entry);
-+				g->num_entry--;
-+				kfree(c);
-+				goto out_unlock;
-+			} else {
-+				err = -EEXIST;
-+				goto out_unlock;
-+			}
-+		}
-+	}
-+	if (action == POHMELFS_FLAGS_DEL) {
-+		err = -EBADMSG;
-+		goto out_unlock;
-+	}
-+
-+	c = kzalloc(sizeof(struct pohmelfs_config), GFP_KERNEL);
-+	if (!c) {
-+		err = -ENOMEM;
-+		goto out_unlock;
-+	}
-+	memcpy(&c->state.ctl, ctl, sizeof(struct pohmelfs_ctl));
-+	g->num_entry++;
-+	list_add_tail(&c->config_entry, &g->config_list);
-+
-+out_unlock:
-+	mutex_unlock(&pohmelfs_config_lock);
-+	if (pohmelfs_send_reply(err, 0, POHMELFS_NOINFO_ACK, msg, NULL))
-+		err = -ENOMEM;
-+
-+	return err;
-+}
-+
-+static int pohmelfs_crypto_hash_init(struct pohmelfs_config_group *g, struct pohmelfs_crypto *c)
-+{
-+	char *algo = (char *)c->data;
-+	u8 *key = (u8 *)(algo + c->strlen);
-+
-+	if (g->hash_string)
-+		return -EEXIST;
-+
-+	g->hash_string = kstrdup(algo, GFP_KERNEL);
-+	if (!g->hash_string)
-+		return -ENOMEM;
-+	g->hash_strlen = c->strlen;
-+	g->hash_keysize = c->keysize;
-+
-+	g->hash_key = kmalloc(c->keysize, GFP_KERNEL);
-+	if (!g->hash_key) {
-+		kfree(g->hash_string);
-+		return -ENOMEM;
-+	}
-+
-+	memcpy(g->hash_key, key, c->keysize);
-+
-+	return 0;
-+}
-+
-+static int pohmelfs_crypto_cipher_init(struct pohmelfs_config_group *g, struct pohmelfs_crypto *c)
-+{
-+	char *algo = (char *)c->data;
-+	u8 *key = (u8 *)(algo + c->strlen);
-+
-+	if (g->cipher_string)
-+		return -EEXIST;
-+
-+	g->cipher_string = kstrdup(algo, GFP_KERNEL);
-+	if (!g->cipher_string)
-+		return -ENOMEM;
-+	g->cipher_strlen = c->strlen;
-+	g->cipher_keysize = c->keysize;
-+
-+	g->cipher_key = kmalloc(c->keysize, GFP_KERNEL);
-+	if (!g->cipher_key) {
-+		kfree(g->cipher_string);
-+		return -ENOMEM;
-+	}
-+
-+	memcpy(g->cipher_key, key, c->keysize);
-+
-+	return 0;
-+}
-+
-+
-+static int pohmelfs_cn_crypto(struct cn_msg *msg)
-+{
-+	struct pohmelfs_crypto *crypto = (struct pohmelfs_crypto *)msg->data;
-+	struct pohmelfs_config_group *g;
-+	int err = 0;
-+
-+	dprintk("%s: idx: %u, strlen: %u, type: %u, keysize: %u, algo: %s.\n",
-+			__func__, crypto->idx, crypto->strlen, crypto->type,
-+			crypto->keysize, (char *)crypto->data);
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+	g = pohmelfs_find_create_config_group(crypto->idx);
-+	if (!g) {
-+		err = -ENOMEM;
-+		goto out_unlock;
-+	}
-+
-+	switch (crypto->type) {
-+		case POHMELFS_CRYPTO_HASH:
-+			err = pohmelfs_crypto_hash_init(g, crypto);
++		attached_pages--;
++		if (!attached_pages)
 +			break;
-+		case POHMELFS_CRYPTO_CIPHER:
-+			err = pohmelfs_crypto_cipher_init(g, crypto);
-+			break;
-+		default:
-+			err = -ENOTSUPP;
-+			break;
-+	}
++		ci++;
 +
-+out_unlock:
-+	mutex_unlock(&pohmelfs_config_lock);
-+	if (pohmelfs_send_reply(err, 0, POHMELFS_NOINFO_ACK, msg, NULL))
-+		err = -ENOMEM;
++		continue;
++
++err_out:
++		printk("%s: t: %p, gen: %u, err: %d.\n", __func__, t, t->gen, err);
++		netfs_state_exit(st);
++		break;
++	}
 +
 +	return err;
 +}
 +
-+static void pohmelfs_cn_callback(void *data)
++int netfs_trans_send(struct netfs_trans *t, struct netfs_state *st)
 +{
-+	struct cn_msg *msg = data;
 +	int err;
-+	
-+	switch (msg->flags) {
-+		case POHMELFS_FLAGS_ADD:
-+			err = pohmelfs_cn_ctl(msg, POHMELFS_FLAGS_ADD);
-+			break;
-+		case POHMELFS_FLAGS_DEL:
-+			err = pohmelfs_cn_ctl(msg, POHMELFS_FLAGS_DEL);
-+			break;
-+		case POHMELFS_FLAGS_SHOW:
-+			err = pohmelfs_cn_disp(msg);
-+			break;
-+		case POHMELFS_FLAGS_CRYPTO:
-+			err = pohmelfs_cn_crypto(msg);
-+			break;
-+		default:
-+			err = -ENOSYS;
-+			break;
++	struct msghdr msg;
++
++	netfs_state_lock(st);
++	if (!st->socket) {
++		err = netfs_state_init(st);
++		if (err)
++			goto err_out_unlock_return;
 +	}
++
++	msg.msg_iov = &t->iovec;
++	msg.msg_iovlen = 1;
++	msg.msg_name = NULL;
++	msg.msg_namelen = 0;
++	msg.msg_control = NULL;
++	msg.msg_controllen = 0;
++	msg.msg_flags = MSG_WAITALL;
++
++	if (t->attached_pages)
++		msg.msg_flags |= MSG_MORE;
++
++	err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, t->iovec.iov_len);
++	if (err <= 0) {
++		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %u, err: %d.\n",
++				__func__, t, t->gen, t->iovec.iov_len, err);
++		if (err == 0)
++			err = -ECONNRESET;
++		goto err_out_unlock_return;
++	}
++
++	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %u, page_num: %u.\n",
++			__func__, (t->page_num)?"partial":"full",
++			t, t->gen, t->iovec.iov_len, t->page_num);
++
++	err = 0;
++	if (t->attached_pages)
++		err = netfs_trans_send_pages(t, st);
++
++err_out_unlock_return:
++	netfs_state_unlock(st);
++	
++	dprintk("%s: t: %p, gen: %u, err: %d.\n",
++		__func__, t, t->gen, err);
++
++	t->result = err;
++	return err;
 +}
 +
-+int pohmelfs_config_check(struct pohmelfs_config *config, int idx)
++static inline int netfs_trans_cmp(unsigned int gen, unsigned int new)
 +{
-+	struct pohmelfs_ctl *ctl = &config->state.ctl;
-+	struct pohmelfs_config *tmp;
-+	int err = -ENOENT;
-+	struct pohmelfs_ctl *sc;
-+	struct pohmelfs_config_group *g;
++	if (gen < new)
++		return 1;
++	if (gen > new)
++		return -1;
++	return 0;
++}
 +
-+	mutex_lock(&pohmelfs_config_lock);
++struct netfs_trans_dst *netfs_trans_search(struct netfs_state *st, unsigned int gen)
++{
++	struct rb_root *root = &st->trans_root;
++	struct rb_node *n = root->rb_node;
++	struct netfs_trans_dst *tmp, *ret = NULL;
++	struct netfs_trans *t;
++	int cmp;
 +
-+	g = pohmelfs_find_config_group(ctl->idx);
-+	if (g) {
-+		list_for_each_entry(tmp, &g->config_list, config_entry) {
-+			sc = &tmp->state.ctl;
++	while (n) {
++		tmp = rb_entry(n, struct netfs_trans_dst, state_entry);
++		t = tmp->trans;
 +
-+			if (pohmelfs_config_eql(sc, ctl)) {
-+				err = 0;
++		cmp = netfs_trans_cmp(t->gen, gen);
++		if (cmp < 0)
++			n = n->rb_left;
++		else if (cmp > 0)
++			n = n->rb_right;
++		else {
++			ret = tmp;
++			break;
++		}
++	}
++
++	return ret;
++}
++
++static int netfs_trans_insert(struct netfs_trans_dst *ndst, struct netfs_state *st)
++{
++	struct rb_root *root = &st->trans_root;
++	struct rb_node **n = &root->rb_node, *parent = NULL;
++	struct netfs_trans_dst *ret = NULL, *tmp;
++	struct netfs_trans *t = NULL, *new = ndst->trans;
++	int cmp;
++
++	while (*n) {
++		parent = *n;
++
++		tmp = rb_entry(parent, struct netfs_trans_dst, state_entry);
++		t = tmp->trans;
++
++		cmp = netfs_trans_cmp(t->gen, new->gen);
++		if (cmp < 0)
++			n = &parent->rb_left;
++		else if (cmp > 0)
++			n = &parent->rb_right;
++		else {
++			ret = tmp;
++			break;
++		}
++	}
++
++	if (ret) {
++		printk("%s: exist: old: gen: %u, flags: %x, send_time: %lu, "
++				"new: gen: %u, flags: %x, send_time: %lu.\n",
++			__func__, t->gen, t->flags, ret->send_time,
++			new->gen, new->flags, ndst->send_time);
++		return -EEXIST;
++	}
++
++	rb_link_node(&ndst->state_entry, parent, n);
++	rb_insert_color(&ndst->state_entry, root);
++	ndst->send_time = jiffies;
++
++	return 0;
++}
++
++int netfs_trans_remove_nolock(struct netfs_trans_dst *dst, struct netfs_state *st)
++{
++	if (dst && dst->state_entry.rb_parent_color) {
++		rb_erase(&dst->state_entry, &st->trans_root);
++		dst->state_entry.rb_parent_color = 0;
++		return 1;
++	}
++	return 0;
++}
++
++static int netfs_trans_remove_state(struct netfs_trans_dst *dst)
++{
++	int ret;
++	struct netfs_state *st = dst->state;
++
++	mutex_lock(&st->trans_lock);
++	ret = netfs_trans_remove_nolock(dst, st);
++	mutex_unlock(&st->trans_lock);
++
++	return ret;
++}
++
++/*
++ * Create new destination for given transaction associated with given network state.
++ * Transaction's reference counter is bumped and will be dropped when either
++ * reply is received or when async timeout detection task will fail resending
++ * and drop transaction.
++ */
++static int netfs_trans_push_dst(struct netfs_trans *t, struct netfs_state *st)
++{
++	struct netfs_trans_dst *dst;
++	int err;
++
++	dst = mempool_alloc(netfs_trans_dst_pool, GFP_KERNEL);
++	if (!dst)
++		return -ENOMEM;
++
++	dst->retries = 0;
++	dst->send_time = 0;
++	dst->state = st;
++	dst->trans = t;
++	netfs_trans_get(t);
++
++	mutex_lock(&st->trans_lock);
++	err = netfs_trans_insert(dst, st);
++	mutex_unlock(&st->trans_lock);
++
++	if (err)
++		goto err_out_free;
++
++	mutex_lock(&t->dst_lock);
++	list_add_tail(&dst->trans_entry, &t->dst_list);
++	mutex_unlock(&t->dst_lock);
++
++	return 0;
++
++err_out_free:
++	t->result = err;
++	netfs_trans_put(t);
++	mempool_free(dst, netfs_trans_dst_pool);
++	return err;
++}
++
++static void netfs_trans_free_dst(struct netfs_trans_dst *dst)
++{
++	netfs_trans_put(dst->trans);
++	mempool_free(dst, netfs_trans_dst_pool);
++}
++
++static void netfs_trans_remove_dst(struct netfs_trans_dst *dst)
++{
++	netfs_trans_remove_state(dst);
++	netfs_trans_free_dst(dst);
++}
++
++/*
++ * Drop destination transaction entry when we know it.
++ */
++void netfs_trans_drop_dst(struct netfs_trans_dst *dst)
++{
++	struct netfs_trans *t = dst->trans;
++
++	mutex_lock(&t->dst_lock);
++	list_del_init(&dst->trans_entry);
++	mutex_unlock(&t->dst_lock);
++
++	netfs_trans_remove_dst(dst);
++}
++
++/*
++ * Drop destination transaction entry when we know it and when we
++ * already removed dst from state tree.
++ */
++void netfs_trans_drop_dst_nostate(struct netfs_trans_dst *dst)
++{
++	struct netfs_trans *t = dst->trans;
++
++	mutex_lock(&t->dst_lock);
++	list_del_init(&dst->trans_entry);
++	mutex_unlock(&t->dst_lock);
++	
++	netfs_trans_free_dst(dst);
++}
++
++/*
++ * This drops destination transaction entry from appropriate network state
++ * tree and drops related reference counter. It is possible that transaction
++ * will be freed here if its reference counter hits zero.
++ * Destination transaction entry will be freed.
++ */
++void netfs_trans_drop_trans(struct netfs_trans *t, struct netfs_state *st)
++{
++	struct netfs_trans_dst *dst, *tmp, *ret = NULL;
++
++	mutex_lock(&t->dst_lock);
++	list_for_each_entry_safe(dst, tmp, &t->dst_list, trans_entry) {
++		if (dst->state == st) {
++			ret = dst;
++			list_del(&dst->trans_entry);
++			break;
++		}
++	}
++	mutex_unlock(&t->dst_lock);
++
++	if (ret)
++		netfs_trans_remove_dst(ret);
++}
++
++/*
++ * This drops destination transaction entry from appropriate network state
++ * tree and drops related reference counter. It is possible that transaction
++ * will be freed here if its reference counter hits zero.
++ * Destination transaction entry will be freed.
++ */
++void netfs_trans_drop_last(struct netfs_trans *t, struct netfs_state *st)
++{
++	struct netfs_trans_dst *dst, *tmp, *ret;
++
++	mutex_lock(&t->dst_lock);
++	ret = list_entry(t->dst_list.prev, struct netfs_trans_dst, trans_entry);
++	if (ret->state != st) {
++		ret = NULL;
++		list_for_each_entry_safe(dst, tmp, &t->dst_list, trans_entry) {
++			if (dst->state == st) {
++				ret = dst;
++				list_del_init(&dst->trans_entry);
 +				break;
 +			}
 +		}
++	} else {
++		list_del(&ret->trans_entry);
 +	}
++	mutex_unlock(&t->dst_lock);
 +
-+	mutex_unlock(&pohmelfs_config_lock);
++	if (ret)
++		netfs_trans_remove_dst(ret);
++}
++
++static int netfs_trans_push(struct netfs_trans *t, struct netfs_state *st)
++{
++	int err;
++
++	err = netfs_trans_push_dst(t, st);
++	if (err)
++		return err;
++
++	err = netfs_trans_send(t, st);
++	if (err)
++		goto err_out_free;
++
++	if (t->flags & NETFS_TRANS_SINGLE_DST)
++		pohmelfs_switch_active(st->psb);
++
++	return 0;
++
++err_out_free:
++	t->result = err;
++	netfs_trans_drop_last(t, st);
 +
 +	return err;
 +}
 +
-+int __init pohmelfs_config_init(void)
++int netfs_trans_finish_send(struct netfs_trans *t, struct pohmelfs_sb *psb)
 +{
-+	return cn_add_callback(&pohmelfs_cn_id, "pohmelfs", pohmelfs_cn_callback);
++	struct pohmelfs_config *c;
++	int err = -ENODEV;
++	struct netfs_state *st;
++#if 0
++	dprintk("%s: t: %p, gen: %u, size: %u, page_num: %u, active: %p.\n",
++		__func__, t, t->gen, t->iovec.iov_len, t->page_num, psb->active_state);
++#endif
++	mutex_lock(&psb->state_lock);
++	if ((t->flags & NETFS_TRANS_SINGLE_DST) && psb->active_state) {
++		st = &psb->active_state->state;
++
++		err = -EPIPE;
++		if (netfs_state_poll(st) & POLLOUT) {
++			err = netfs_trans_push_dst(t, st);
++			if (!err) {
++				err = netfs_trans_send(t, st);
++				if (err) {
++					netfs_trans_drop_last(t, st);
++				} else {
++					pohmelfs_switch_active(psb);
++					goto out;
++				}
++			}
++		}
++		pohmelfs_switch_active(psb);
++	}
++
++	list_for_each_entry(c, &psb->state_list, config_entry) {
++		st = &c->state;
++
++		err = netfs_trans_push(t, st);
++		if (!err && (t->flags & NETFS_TRANS_SINGLE_DST))
++			break;
++	}
++out:
++	mutex_unlock(&psb->state_lock);
++#if 0
++	dprintk("%s: fully sent t: %p, gen: %u, size: %u, page_num: %u, err: %d.\n",
++		__func__, t, t->gen, t->iovec.iov_len, t->page_num, err);
++#endif
++	if (err)
++		t->result = err;
++	return err;
 +}
 +
-+void pohmelfs_config_exit(void)
++int netfs_trans_finish(struct netfs_trans *t, struct pohmelfs_sb *psb)
 +{
-+	struct pohmelfs_config *c, *tmp;
-+	struct pohmelfs_config_group *g, *gtmp;
++	int err;
++	struct netfs_cmd *cmd = t->iovec.iov_base;
 +
-+	cn_del_callback(&pohmelfs_cn_id);
++	t->gen = atomic_inc_return(&psb->trans_gen);
 +
-+	mutex_lock(&pohmelfs_config_lock);
-+	list_for_each_entry_safe(g, gtmp, &pohmelfs_config_list, group_entry) {
-+		list_for_each_entry_safe(c, tmp, &g->config_list, config_entry) {
-+			list_del(&c->config_entry);
-+			kfree(c);
++	cmd->size = t->iovec.iov_len - sizeof(struct netfs_cmd) +
++		t->attached_size + t->attached_pages * sizeof(struct netfs_cmd);
++	cmd->cmd = NETFS_TRANS;
++	cmd->start = t->gen;
++	cmd->id = 0;
++
++	if (psb->perform_crypto) {
++		cmd->ext = psb->crypto_attached_size;
++		cmd->csize = psb->crypto_attached_size;
++	}
++#if 0
++	dprintk("%s: trans: %llu, crypto_attached_size: %u, attached_size: %u, attached_pages: %d, trans_size: %u.\n",
++		__func__, cmd->start, psb->crypto_attached_size, t->attached_size, t->attached_pages, cmd->size);
++#endif
++	err = pohmelfs_trans_crypt(t, psb);
++	if (err)
++		t->result = err;
++	netfs_trans_put(t);
++	return err;
++}
++
++/*
++ * Resend transaction to remote server(s).
++ * If new servers were added into superblock, we can try to send data
++ * to them too.
++ *
++ * It is called under superblock's state_lock, so we can safely
++ * dereference psb->state_list. Also, transaction's reference counter is
++ * bumped, so it can not go away under us, thus we can safely access all
++ * its members. State is locked.
++ *
++ * This function returns 0 if transaction was successfully sent to at
++ * least one destination target. 
++ */
++int netfs_trans_resend(struct netfs_trans *t, struct pohmelfs_sb *psb)
++{
++	struct netfs_trans_dst *dst;
++	struct netfs_state *st;
++	struct pohmelfs_config *c;
++	int err, exist, error = -ENODEV;
++
++	list_for_each_entry(c, &psb->state_list, config_entry) {
++		st = &c->state;
++
++		exist = 0;
++		mutex_lock(&t->dst_lock);
++		list_for_each_entry(dst, &t->dst_list, trans_entry) {
++			if (st == dst->state) {
++				exist = 1;
++				break;
++			}
++		}
++		mutex_unlock(&t->dst_lock);
++
++		if (exist) {
++			if (!(t->flags & NETFS_TRANS_SINGLE_DST) ||
++					(c->config_entry.next == &psb->state_list)) {
++				dprintk("%s: resending st: %p, t: %p, gen: %u.\n",
++						__func__, st, t, t->gen);
++				err = netfs_trans_send(t, st);
++				if (!err)
++					error = 0;
++			}
++			continue;
 +		}
 +
-+		list_del(&g->group_entry);
-+
-+		if (g->hash_string)
-+			kfree(g->hash_string);
-+
-+		if (g->cipher_string)
-+			kfree(g->cipher_string);
-+
-+		kfree(g);
++		dprintk("%s: pushing/resending st: %p, t: %p, gen: %u.\n",
++				__func__, st, t, t->gen);
++		err = netfs_trans_push(t, st);
++		if (err)
++			continue;
++		error = 0;
++		if (t->flags & NETFS_TRANS_SINGLE_DST)
++			break;
 +	}
-+	mutex_unlock(&pohmelfs_config_lock);
++
++	t->result = error;
++	return error;
++}
++
++void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
++{
++	struct iovec *io = &t->iovec;
++	void *ptr;
++
++	if (size > t->total_size) {
++		ptr = ERR_PTR(-EINVAL);
++		goto out;
++	}
++
++	if (io->iov_len + size > t->total_size) {
++		dprintk("%s: too big size t: %p, gen: %u, iov_len: %u, size: %u, total: %u.\n",
++				__func__, t, t->gen, io->iov_len, size, t->total_size);
++		ptr = ERR_PTR(-E2BIG);
++		goto out;
++	}
++
++	ptr = io->iov_base + io->iov_len;
++	io->iov_len += size;
++
++out:
++	dprintk("%s: t: %p, gen: %u, size: %u, total: %u.\n",
++		__func__, t, t->gen, size, io->iov_len);
++	return ptr;
++}
++
++void netfs_trans_free(struct netfs_trans *t)
++{
++	if (t->eng)
++		pohmelfs_crypto_thread_make_ready(t->eng->thread);
++	kfree(t);
++}
++
++struct netfs_trans *netfs_trans_alloc(struct pohmelfs_sb *psb, unsigned int size,
++		unsigned int flags, unsigned int nr)
++{
++	struct netfs_trans *t;
++	unsigned int num, cont, pad, size_no_trans;
++	unsigned int crypto_added = 0;
++	struct netfs_cmd *cmd;
++
++	if (psb->perform_crypto)
++		crypto_added = psb->crypto_attached_size;
++
++	/*
++	 * |sizeof(struct netfs_trans)|
++	 * |sizeof(struct netfs_cmd)| - transaction header
++	 * |size| - buffer with requested size
++	 * |padding| - crypto padding, zero bytes
++	 * |nr * sizeof(struct page *)| - array of page pointers
++	 *
++	 * Overall size should be less than PAGE_SIZE for guaranteed allocation.
++	 */
++
++	cont = size;
++	size = ALIGN(size, psb->crypto_align_size);
++	pad = size - cont;
++
++	size_no_trans = size + sizeof(struct netfs_cmd) * 2 + crypto_added;
++
++	cont = sizeof(struct netfs_trans) + size_no_trans;
++
++	num = (PAGE_SIZE - cont)/sizeof(struct page *);
++
++	if (nr > num)
++		nr = num;
++
++	t = kzalloc(cont + nr*sizeof(struct page *), GFP_NOIO);
++	if (!t)
++		goto err_out_exit;
++
++	memset(t, 0, sizeof(struct netfs_trans));
++
++	t->iovec.iov_base = (void *)(t + 1);
++	t->pages = (struct page **)(t->iovec.iov_base + size_no_trans);
++
++	/*
++	 * Reserving space for transaction header.
++	 */
++	t->iovec.iov_len = sizeof(struct netfs_cmd) + crypto_added;
++
++	netfs_trans_init_static(t, nr, size_no_trans);
++
++	t->flags = flags;
++	t->psb = psb;
++
++	cmd = (struct netfs_cmd *)t->iovec.iov_base;
++
++	cmd->size = size;
++	cmd->cpad = pad;
++	cmd->csize = crypto_added;
++
++	dprintk("%s: t: %p, gen: %u, size: %u, padding: %u, align_size: %u, flags: %x, "
++			"page_num: %u, base: %p, pages: %p.\n",
++			__func__, t, t->gen, size, pad, psb->crypto_align_size, flags, nr,
++			t->iovec.iov_base, t->pages);
++
++	return t;
++
++err_out_exit:
++	return NULL;
++}
++
++int netfs_trans_init(void)
++{
++	int err = -ENOMEM;
++
++	netfs_trans_dst = kmem_cache_create("netfs_trans_dst", sizeof(struct netfs_trans_dst),
++			0, 0, NULL);
++	if (!netfs_trans_dst)
++		goto err_out_exit;
++
++	netfs_trans_dst_pool = mempool_create_slab_pool(256, netfs_trans_dst);
++	if (!netfs_trans_dst_pool)
++		goto err_out_free;
++
++	return 0;
++
++err_out_free:
++	kmem_cache_destroy(netfs_trans_dst);
++err_out_exit:
++	return err;
++}
++
++void netfs_trans_exit(void)
++{
++	mempool_destroy(netfs_trans_dst_pool);
++	kmem_cache_destroy(netfs_trans_dst);
 +}
