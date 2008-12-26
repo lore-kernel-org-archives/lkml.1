@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYLZVpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYLZVqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbYLZVpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 16:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYLZVpB
+	id S1754021AbYLZVqg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 16:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYLZVq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 16:45:01 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:47459 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYLZVpA (ORCPT
+	Fri, 26 Dec 2008 16:46:27 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34414 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075AbYLZVq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 16:45:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=gmBYvRe57LkJtPdmz3frDbOPNrGe2x92ynNkSQ6RalPCkvaskvmu7vymTNSw3kDyzd
-         56Npmo2uGIJhqdZrFNy1J2gjEq/2HkLQEeiG5asOHXO72gncobzGMMXXrUnycMwfjw51
-         nEBOx5piPlDO335H8SY5RefMzKKZKT6jZ5YnU=
-Message-ID: <87f94c370812261344s3f70de25r4d132101d2247e00@mail.gmail.com>
-Date: Fri, 26 Dec 2008 16:44:57 -0500
-From: "Greg Freemyer" <greg.freemyer@gmail.com>
-To: Redeeman <redeeman@metanurb.dk>
-Subject: RFC: detection of silent corruption via ATA long sector reads
-Cc: piergiorgio.sartor@nexgo.de, neilb@suse.de, linux-raid@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, "Mark Lord" <liml@rtr.ca>
+	Fri, 26 Dec 2008 16:46:26 -0500
+Date: Fri, 26 Dec 2008 22:46:25 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Theodore Tso <tytso@mit.edu>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: SD/MMC cards: how crappy they are?
+Message-ID: <20081226214625.GA25153@atrey.karlin.mff.cuni.cz>
+References: <20081202144830.GB1549@ucw.cz> <493562A5.40308@zytor.com> <20081202165608.GD18162@mit.edu> <4935778E.1020405@zytor.com> <20081204103206.GD22396@elf.ucw.cz> <49382973.4000908@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <49382973.4000908@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
+> Pavel Machek wrote:
+> >>>
+> >> I have seen flash cards die permanently from having a partition table it
+> >> didn't like written to it.  Yes, the microcontroller on the flash card
+> >> tried to interpret the partition table, assumed to be MS-DOS style, and
+> >> would crash.
+> > 
+> > Aha... that explains why I killed few flashcards by tar xzvf /dev/sdX files
+> > ... hopefully thats fixed in the better/bigger cards now.
+> > 
+> 
+> Also had a batch of cards which would silently "correct" the partition
+> table for you to align the partitions to its flash erase blocks.
 
-On the mdraid list, there was a recent thread about using raid
-functionality to detect / repair silent corruption.
-
-The issues brought up were that a lot of silent data corruption occurs
-when cables, controllers, power supplies, ram, cache, etc. goes bad.
-
-It made me think about another option for detecting silent corruption
-I have not seen discussed, but maybe I missed it.
-
-Aiui, the ATA spec allows for the reading of a long sector as well as
-the normal 512 byte sector.  When you get a long sector you also get
-the CRC (or whatever checksum data there is on the disk that allows
-the drive itself to detect media errors).
-
-I don't have any idea how easy or hard it would be to do, but I would
-like to see the entire block subsystem enhanced to optionally allow
-long sector reads to be used in a "paranoid" fashion.
-
-Effectively it would be:
-
-1) Read long sector from drive:  verify CRC in kernel.  This tests
-most everything on the i/o path.
-
-2) maintain CRC type information in block subsystem.  Verify no
-corruption just before handing off to userspace.  This would
-potentially identify CPU/cache/RAM failures.
-
-Mark Lord has implemented long sector reads via hdparm.  Mark can you
-comment on the feasibility of this idea?
-
-Thanks
-Greg
+Can you mention the manufacturer/model? Silendt data corruption is a
+nasty thing....
 -- 
-Greg Freemyer
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-First 99 Days Litigation White Paper -
-http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
-
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
