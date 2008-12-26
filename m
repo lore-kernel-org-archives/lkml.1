@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYLZNzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbYLZOES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbYLZNzA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 08:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYLZNyu
+	id S1752748AbYLZOES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 09:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYLZOEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 08:54:50 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:20555 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbYLZNys (ORCPT
+	Fri, 26 Dec 2008 09:04:10 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:40187 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbYLZOEJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 08:54:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=E8H4/WsUIOw+fA2LqPnZyC1RnNlGfCv48X2t5WMO9p4Vi3EdRnSgBNIzFjdEfyxPaW
-         t5vsmR1tLcQ/CsRJix7LF7mSWovkg8LihTzW9W1S/g5Ep6uVDw6Gop5hZa3l9t5f0C4B
-         Jfu+VWRJwSpUafWM0QROel8aX/0QjDFahnDA0=
-Message-ID: <2f11576a0812260554x7096102ct8a39d0316f5afd6f@mail.gmail.com>
-Date: Fri, 26 Dec 2008 22:54:47 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@gmail.com>
-To: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [PATCH] Check return from argv_split() in do_coredump().
-Cc: xiyou.wangcong@gmail.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <200812262220.FAE48915.OSLtOFJFVHOFQM@I-love.SAKURA.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200812240616.mBO6GGEe078727@www262.sakura.ne.jp>
-	 <20081226144548.GB3156@hack.private>
-	 <200812260700.mBQ70uH3009595@www262.sakura.ne.jp>
-	 <20081226150653.GD3156@hack.private>
-	 <200812262220.FAE48915.OSLtOFJFVHOFQM@I-love.SAKURA.ne.jp>
+	Fri, 26 Dec 2008 09:04:09 -0500
+Date: Fri, 26 Dec 2008 09:05:22 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: removable media errors
+To: linux-kernel@vger.kernel.org
+Message-id: <200812260905.22062.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> --------------------
-> Subject: Check return from argv_split() in do_coredump().
->
-> do_coredump() accesses helper_argv[0] without checking helper_argv != NULL.
-> Though, likely helper_argv != NULL.
->
-> Below versions have this problem.
->
->  2.6.24.7
->  2.6.25.20
->  2.6.26.8
->  2.6.27.10
->  2.6.28
->  mmotm 2008-12-24-01-20
+Greetings all;
 
-please remove target version from patch description (it is not useful
-for git log).
-and please cc to linux-stable.
+I thought this was fixed as I hadn't seen it for a couple of rc's, but its 
+back.
 
-otherthings, looks good to me.
-   Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>From the log or logwatch:
+
+ WARNING:  Kernel Errors Present
+    [100771.466400] end_request: I/O error, dev fd0, sector ...:  1 Time(s)
+    [100771.647800] end_request: I/O error, dev sr0, sector ...:  1 Time(s)
+    [100771.647806] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.647809] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.649832] end_request: I/O error, dev sr0, sector ...:  1 Time(s)
+    [100771.649834] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.649836] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.652022] end_request: I/O error, dev sr0, sector ...:  1 Time(s)
+    [100771.652025] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.652027] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.652029] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.652031] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.652033] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.652035] Buffer I/O error on device sr0, l ...:  1 Time(s)
+    [100771.657297] end_request: I/O error, dev sr0, sector ...:  1 Time(s)
+
+There has not been any media in either drive since rebooting to 2.6.28 final.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Old soldiers never die.  Young ones do.
