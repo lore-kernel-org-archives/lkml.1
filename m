@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbYLZTmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYLZTrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753513AbYLZTmT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 14:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbYLZTmJ
+	id S1753516AbYLZTrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 14:47:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYLZTrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 14:42:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48052 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751749AbYLZTmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 14:42:08 -0500
-Message-ID: <4955338B.2010804@redhat.com>
-Date: Fri, 26 Dec 2008 14:42:03 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: BUG or virtualbox issue?
-References: <4954C095.3080300@xs4all.nl>
-In-Reply-To: <4954C095.3080300@xs4all.nl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Dec 2008 14:47:01 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36177 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYLZTrA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 14:47:00 -0500
+Date: Fri, 26 Dec 2008 20:48:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Steve Brokenshire <sbrokenshire@xestia.co.uk>,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] Compress kernel modules on installation.
+Message-ID: <20081226194833.GA8306@uranus.ravnborg.org>
+References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk> <20080226112840.GA29465@uranus.ravnborg.org> <alpine.LSU.2.00.0812262026320.11203@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LSU.2.00.0812262026320.11203@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Udo van den Heuvel wrote:
-> Hello,
+On Fri, Dec 26, 2008 at 08:30:19PM +0100, Jan Engelhardt wrote:
 > 
-> Just started virtualbox for the first time on x86_64 Phenom system; is 
-> this a kernel issue or something for the VirtualBox people?
+> On Tuesday 2008-02-26 12:28, Sam Ravnborg wrote:
+> >> 
+> >> (I've sent this to the linux-kbuild and linux-kernel lists as this
+> >> patch modifies the Makefile.modinst file. I also don't subscribe to the 
+> >> linux-kbuild and linux-kernel mailing lists so can I have any replies
+> >> CC'ed to me please)
+> >> 
+> >> This patch allows kernel modules to be compressed when 'make
+> >> modules_install' is run after being copied to
+> >> the /lib/module/<version>/<...> directory which is useful if you have
+> >> module-init-tools installed with --enable-zlib. This patch adds an
+> >> option (MODULE_COMPRESS) to the kernel configuration file (specifically
+> >> init/Kconfig) so that the kernel modules will compressed if
+> >> MODULE_COMPRESS is set.
 > 
-> Dec 26 12:20:01 surfplank2 kernel: BUG: using smp_processor_id() in 
-> preemptible [00000000] code: VirtualBox/26774
-> Dec 26 12:20:01 surfplank2 kernel: caller is RTMpCpuId+0x9/0x10 [vboxdrv]
-> Dec 26 12:20:01 surfplank2 kernel: Pid: 26774, comm: VirtualBox Not 
-> tainted 2.6.28 #3
+> I recently started compressing my kernel modules and that saved me
+> at least 70 MB of disk space on mostlyallmodconfig.
+> (And no, the argument of disks being cheap is not so true with
+> CF or SSD.)
+> Distro is lazy and wants to wait for upstream to have it,
+> so is there any chance of getting this proposal in?
 
-Looks like the virtualbox code forgot to switch off
-preemption before calling smp_processor_id().
+Steve said he wanted to try to make the solution more
+scalable so I am awaiting a new patch.
 
-This is broken, because the thread could get de-scheduled
-and re-scheduled onto another CPU, which means the code
-could end up using the wrong smp processor ID.
-
--- 
-All rights reversed.
+	Sam
