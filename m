@@ -1,95 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYLZSjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbYLZSsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbYLZSjM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 13:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYLZSi5
+	id S1753238AbYLZSsh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 13:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYLZSs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 13:38:57 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:54583 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751333AbYLZSi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 13:38:57 -0500
-Date: Fri, 26 Dec 2008 19:38:54 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-geode@lists.infradead.org
-Subject: Re: [PATCH] AMD Geode CS553X GPIO driver
-Message-ID: <20081226193854.41cbee89@i1501.lan.towertech.it>
-In-Reply-To: <200812261024.07303.david-b@pacbell.net>
-References: <20081224234321.0890274e@i1501.lan.towertech.it>
-	<200812261024.07303.david-b@pacbell.net>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Dec 2008 13:48:29 -0500
+Received: from proxy3.bredband.net ([195.54.101.73]:47890 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751085AbYLZSs2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 13:48:28 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap1IAEK1VEnVQJ+/PGdsb2JhbACBbIceilgBAQEBNQGpN1iPGIZE
+Message-ID: <495526F6.9040704@zappa.cx>
+Date: Fri, 26 Dec 2008 19:48:22 +0100
+From: Andreas Sundstrom <sunkan@zappa.cx>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28 ext4, xen and lvm volume becomes ro after snapshot
+References: <4954BAAB.9090108@zappa.cx> <20081226140721.GN9871@mit.edu> <4954FB62.4090306@zappa.cx> <20081226182145.GP9871@mit.edu>
+In-Reply-To: <20081226182145.GP9871@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Dec 2008 10:24:07 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Theodore Tso wrote:
+> Hmm... ok, to summarize, you are seeing this problem with 2.6.28 (have
+> you tried earlier kernel versions) when an LVM volume has a read/only
+> snapshot in existence and you try to mount the LVM volume using ext4.
+> If you mount the same LVM volume using ext3, you don't see any
+> problems.   Is that correct?
+>   
+Correct, and I have not been using barriers with any earlier kernel.
+I stumbled upon this because barriers are enabled by default in ext4.
+> Can you try mounting ext3 with barriers enabled?  Booting with the
+> command linux option rootflags=barriers should do the trick.  If that
+> fails, then it would indicate that trying to enable barriers in a Xen
+> guest while the host OS has created a snapshot of volume causes an I/O
+> error, thus leading errors which you are seeing.
+>
+> 						- Ted
+>   
+Yes, I mounted it with ext3 and barrier=1 and could reproduce the problem.
+ext3 did not remount the fs ro though, it seems to only disable barriers:
 
-> >  It uses the gpio framework and the gpio api as defined in
-> >  arch/x86/kernel/geode_32.c
-> 
-> Eventually I'd hope to see those geode_32.c calls just vanish.
-> 
-> In fact, the "normal" way to package these GPIOs would be to
-> always provide them through the standard API, in arch/... code,
-> with no Kconfig option.  Any reason you shouldn't do that in
-> this patch?
+[    7.681759] blkfront: xvda1: write barrier op failed
+[    7.681776] blkfront: xvda1: barriers disabled
+[    7.681785] end_request: I/O error, dev xvda1, sector 4584
+[    7.681800] end_request: I/O error, dev xvda1, sector 4584
+[    7.681886] JBD: barrier-based sync failed on xvda1 - disabling barriers
 
- I didn't want to mess with something I did not wrote. Maybe a two steps
- approach can convince people to move on ;) (you remember what happened
- with people holding their old rtc code tight :) )
+And then I tested with ext4 and barrier=0 and that also works.
 
-> > +comment "Other GPIO expanders:"
-> 
-> This counts as "memory mapped" I'd say.  Doesn't need
-> a new category, even if this does need to live outside
-> the relevant arch/... files.
+I don't know if this is expected behaviour or not or if it's worth
+looking into.
+I just wanted to report back what I saw. For me personally it's no issue.
+I'll be using ext4 without barriers for a while and see how it goes.
 
- ok
- 
-> 
-> > +
-> > +config GPIO_CS553X
-> > +	tristate "AMD CS5535/CS5536 Geode Companion Devices"
-> > +	depends on MGEODE_LX && !CS5535_GPIO
-> 
-> What's this CS5535_GPIO stuff?  And why should it affect
-> whether this can be configured?  (It's not in mainline...)
+But I'm here if you want something tested or a patch verified or anything,
+but I guess this might be a Xen issue rather than vanilla kernel stuff.
 
- drivers/char/cs5535_gpio.c (mainline)
+Thanks for helping out with the narrowing down of the issue
 
-> > +struct cs553x_gpio_platform_data {
-> > +
-> > +	unsigned	gpio_base; /* number of the first GPIO */
-> > +
-> > +	resource_size_t	io_base;
-> 
-> Platform devices should use platform_get_resource() and
-> friends instead of passing resources through platform data.
-
- ack.
- 
-> 
-> ... other than those points, this seems like a simple and
-> straightforward GPIO driver.  Typical of what arch/* holds
-> in such cases.  ;)
-
- :)
-
- will change it a little bit and resubmit
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+/Andreas
