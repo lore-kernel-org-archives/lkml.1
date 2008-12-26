@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYLZDVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbYLZDXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbYLZDVx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 22:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYLZDVo
+	id S1753166AbYLZDXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 22:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYLZDXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 22:21:44 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54610 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752225AbYLZDVo (ORCPT
+	Thu, 25 Dec 2008 22:23:05 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60259 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214AbYLZDXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 22:21:44 -0500
+	Thu, 25 Dec 2008 22:23:04 -0500
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH for -tip 0/4] various irq cleanups
+To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH for -tip 1/4] hrtimer: remove #include <linux/irq.h>
 Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081226122142.5CA6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri, 26 Dec 2008 12:21:39 +0900 (JST)
+Date: Fri, 26 Dec 2008 12:23:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+<linux/irq.h> can be removed and shoud be. because
 
-this patch series is irq related cleanups.
-
-I tested on
-
-x86_64 with SPARSE_IRQ
-ia64   without !SPARSE_IRQ
+  - hrtimer doesn't use any irq feature.
+  - <linux/irq.h> shouldn't be include from generic code.
 
 
-I builded on (by cross compiler)
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/hrtimer.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-alpha
-arm
-m68k
-m68knommu
-s390
-
-
-total 7 architecutre.
-
+Index: b/kernel/hrtimer.c
+===================================================================
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -32,7 +32,6 @@
+  */
+ 
+ #include <linux/cpu.h>
+-#include <linux/irq.h>
+ #include <linux/module.h>
+ #include <linux/percpu.h>
+ #include <linux/hrtimer.h>
 
 
