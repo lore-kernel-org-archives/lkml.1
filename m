@@ -1,68 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYLZJPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYLZJRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbYLZJPm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 04:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYLZJP2
+	id S1754023AbYLZJRA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 04:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYLZJQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 04:15:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42218 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640AbYLZJP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 04:15:27 -0500
-Date: Fri, 26 Dec 2008 10:15:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] Remove interrupt stack table usage from x86_64
-	kernel
-Message-ID: <20081226091521.GD27747@elte.hu>
-References: <1230238726-17506-1-git-send-email-avi@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1230238726-17506-1-git-send-email-avi@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 26 Dec 2008 04:16:49 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38577
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753205AbYLZJQs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 04:16:48 -0500
+Date: Fri, 26 Dec 2008 01:16:50 -0800 (PST)
+Message-Id: <20081226.011650.51322855.davem@davemloft.net>
+To: divy@chelsio.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2.6.29] cxgb3 - add control to access embedded images
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081222205500.12971.4243.stgit@speedy5>
+References: <20081222205500.12971.4243.stgit@speedy5>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Divy Le Ray <divy@chelsio.com>
+Date: Mon, 22 Dec 2008 12:55:01 -0800
 
-* Avi Kivity <avi@redhat.com> wrote:
-
-> The interrupt stack table (IST) mechanism is the only thing preventing
-> kvm from deferring saving and reloading of some significant state.  It
-> is also somewhat complicated.
+> Update contol path between cxgb3 and ULP modules (iWARP, iSCSI)
+> to provide access to firware and protocol engine info.
 > 
-> Remove it by switching the special exceptions to use the normal irqstack.
-> 
-> Avi Kivity (3):
->   x86: drop the use of the tss interrupt stack table (IST)
->   x86: Remove pda.irqcount
->   x86: Switch critical exceptions and NMI to irqstack
-> 
->  arch/x86/include/asm/desc.h      |   12 -----
->  arch/x86/include/asm/page_64.h   |    7 ---
->  arch/x86/include/asm/pda.h       |    2 +-
->  arch/x86/include/asm/processor.h |   11 ----
->  arch/x86/kernel/asm-offsets_64.c |    1 -
->  arch/x86/kernel/cpu/common.c     |   35 --------------
->  arch/x86/kernel/dumpstack_64.c   |   96 --------------------------------------
->  arch/x86/kernel/entry_64.S       |   49 ++++++++-----------
->  arch/x86/kernel/traps.c          |   12 ++--
->  9 files changed, 27 insertions(+), 198 deletions(-)
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
 
-looks good. Please base your work on the tip/master tree, we have a ton of 
-pending (and conflicting) changes in the lowlevel assembly area:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-	Ingo
+Applied.
