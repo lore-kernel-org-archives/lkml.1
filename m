@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbYLZXMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbYLZXXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbYLZXMt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 18:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYLZXMl
+	id S1753100AbYLZXXg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 18:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYLZXX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 18:12:41 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56458 "EHLO
+	Fri, 26 Dec 2008 18:23:28 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54910 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752293AbYLZXMl (ORCPT
+	with ESMTP id S1751845AbYLZXX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 18:12:41 -0500
-Date: Sat, 27 Dec 2008 00:12:36 +0100 (CET)
+	Fri, 26 Dec 2008 18:23:27 -0500
+Date: Sat, 27 Dec 2008 00:23:24 +0100 (CET)
 From: Jan Engelhardt <jengelh@medozas.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Steve Brokenshire <sbrokenshire@xestia.co.uk>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Compress kernel modules on installation.
-In-Reply-To: <20081226225748.GA25143@uranus.ravnborg.org>
-Message-ID: <alpine.LSU.2.00.0812270005200.12031@fbirervta.pbzchgretzou.qr>
-References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk> <20080226112840.GA29465@uranus.ravnborg.org> <alpine.LSU.2.00.0812262026320.11203@fbirervta.pbzchgretzou.qr> <20081226194833.GA8306@uranus.ravnborg.org> <alpine.LSU.2.00.0812262049040.12031@fbirervta.pbzchgretzou.qr>
- <20081226225748.GA25143@uranus.ravnborg.org>
+To: david@lang.hm
+cc: Roland <devzero@web.de>, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] Compress kernel modules on installation
+In-Reply-To: <alpine.DEB.1.10.0812261422010.10983@asgard.lang.hm>
+Message-ID: <alpine.LSU.2.00.0812270014500.12031@fbirervta.pbzchgretzou.qr>
+References: <005401c96797$df055100$6602a8c0@bui.materna.com> <alpine.DEB.1.10.0812261354250.10983@asgard.lang.hm> <alpine.LSU.2.00.0812262210080.12031@fbirervta.pbzchgretzou.qr> <alpine.DEB.1.10.0812261422010.10983@asgard.lang.hm>
 User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -28,40 +27,55 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Friday 2008-12-26 23:57, Sam Ravnborg wrote:
+On Friday 2008-12-26 23:28, david@lang.hm wrote:
+>>>> ( see
+>>>> http://www.linuxjournal.com/files/linuxjournal.com/linuxjournal/articles/080/8051/8051f1.png
+>>>> )
 >>>
->>>Steve said [in Feb 2008] he wanted to try to make the solution
->>>more scalable so I am awaiting a new patch.
->> 
->>Hm, all I needed was this patch. It might fire up some people,
->>but it's got all the scalability I could think of..
+>>> this varies a lot on the particulars of the data being compressed.
+>>
+>> see my other reply.
 >
->Jan - there is obviously no way I could apply this patch
->so late in the cycle. 
+> IIRC the default is 5
 
-2.6.29 just started, did not it. Even if not, just queue it for
-the next.
+default is 6 (man gzip).
 
->The original patch that made this a CONFIG option is
->then much better as we avoid forcing new and untested
->behaviour on the users.
+> instead of doing the compression when doing the modules_install do it when they
+> are compiled (just like we do for the kernel itself). if you just spent the cpu
+> to build the thing, the cpu to compress it isn't much.
+
+I'd rather do the compression later on - or do you want
+to spend gzipping all day when doing `make foo.ko`
+as a developer? ;-)
+
+>> $ find . -iname "*.gz" | xargs du -cs -B 4096 | grep total
+>> 7086    total
+>> $ echo $[7086*4096]
+>> 29024256
+>> $ echo $[29024256-24782942]
+>> 4241314
+>>
+>> So that's like 4M going off for the block stuff. Given that
+>> the compression actually saved about 50 MB, I think we
+>> can live with the 4M - especially since they have been
+>> there already one way or another.
 >
->We all know that compressing the modules are simple.
->And unless someone comes up with *very* good arguments
->then we should just use gzip with default parameters.
+> if I'm reading the numbers correctly that's about 16% of the space taken by the
+> final result
 
-Besides the -9 flag, where would there be nondefault
-parameters?
+Assuming that the x in (filesize % 4096 == x) is randomly distributed
+over 0..4095 for gzip modules, I proclaim that it is similarly
+randomly distributed for noncompressed modules. As such, the overhead
+is always there and gzipping does not make it worse or better.
+So you always have the overhead.
 
->If we go for the "keep the .ko extension but compress"
->then someone needs to answer the obvious questions:
->
->- will this break on a typical distribution
+uncompressed:
+$ du as above
+113360896
+$ byte counted:
+109270606
 
-No; module-init-tools already uses gzopen even on
-uncompressed files.
+differnece: 4.09 MB
 
->- will this break busybox users
-
-I did not see any gzip support in there, so the
-answer is likely "yes, as usual".
+You always pay that price for having single files.
+So I dismiss it from the discussion ;-)
