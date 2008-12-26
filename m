@@ -1,73 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYLZLqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbYLZL4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYLZLqP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 06:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753769AbYLZLqF
+	id S1754232AbYLZL4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 06:56:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYLZL4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 06:46:05 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:8584 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbYLZLqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 06:46:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=NwThhaZCxPVf6CKvjTDYi26pan2L4N19KN++t71mAB2/Mv1SH5MqH2KY/bCs3Am5aE
-         4vGLdWn4hxnJW3ZLIbeCl57iBCDHtsOQNVAydzZdiZplZCetWuvvAMk6HBkRupqOIhQi
-         LbG0pFvY4rn8OYHogZ/DkJyo/0003dZKoZ18A=
-Message-ID: <2f11576a0812260346j2df02362q52c8f813981a7773@mail.gmail.com>
-Date: Fri, 26 Dec 2008 20:46:03 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>
-Subject: Re: [PATCH] coredump_filter: enable to change the default filter
-Cc: "Roland McGrath" <roland@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, yumiko.sugita.yf@hitachi.com,
-       satoshi.oshima.fk@hitachi.com
-In-Reply-To: <4954A7BE.6080204@hitachi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081219195311.81C4AFC351@magilla.sf.frob.com>
-	 <49547836.7040907@hitachi.com>
-	 <20081226153931.5CBB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <4954A7BE.6080204@hitachi.com>
-X-Google-Sender-Auth: 1352dcc7a1878e40
+	Fri, 26 Dec 2008 06:56:00 -0500
+Received: from cavolo.yandex.ru ([87.250.244.45]:19081 "EHLO cavolo.yandex.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753823AbYLZLz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 06:55:59 -0500
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, dst@ioremap.net, netdev@vger.kernel.org,
+       Evgeniy Polaykov <zbr@ioremap.net>
+Subject: [7/7] dst: kconfig and makefile changes.
+Date: Fri, 26 Dec 2008 14:56:16 +0300
+Message-Id: <1230292576-23963-8-git-send-email-zbr@ioremap.net>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1230292576-23963-7-git-send-email-zbr@ioremap.net>
+References: <1230292576-23963-1-git-send-email-zbr@ioremap.net>
+ <1230292576-23963-2-git-send-email-zbr@ioremap.net>
+ <1230292576-23963-3-git-send-email-zbr@ioremap.net>
+ <1230292576-23963-4-git-send-email-zbr@ioremap.net>
+ <1230292576-23963-5-git-send-email-zbr@ioremap.net>
+ <1230292576-23963-6-git-send-email-zbr@ioremap.net>
+ <1230292576-23963-7-git-send-email-zbr@ioremap.net>
+X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
+X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>>However, we would need a special care for PID namespace if we use
->>>>>init's coredump_filter as default.  For a process with new PID
->>>>>namespace and new /proc, writing to /proc/1/coredump_filter doesn't
->>>>>mean changing default, although it's not a usual operation.
->>>>
->>>>I'd figured that private PID namespaces with their own init would want
->>>>their own private settings for this default too.
->>>
->>>Probably it's true, but I'm not sure if having coredump_filter have
->>>two means is acceptable.  init in a private PID namespace can die
->>>and dump a core file.  So its coredump_filter has two means; default
->>>setting for the namespace and setting for itself.
->>
->> FWIW, I think private namespace should have private settings framework.
->> I don't like to make special private settings code in this patch.
->>
->> Yeah, defenitely we need to private settings for various reason, I agreed.
->> but we also need consistent private settings rule and framework.
->> otherwise, we will make various non consistent crap. maybe..
->
-> Anyway, as Andrew pointed out, current coredump filter doesn't
-> care for user mode helpers.  So we need some sort of changes in
-> coredump filter so that users can change user mode helpers'
-> settings; use child_reapers setting as default (Roland's
-> suggestion) or use a boot parameter.
+Signed-off-by: Evgeniy Polaykov <zbr@ioremap.net>
 
-hm, ok.
-I agreed your patch is nice.
-
-      Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index 61ad8d6..2a92cd8 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -445,4 +445,6 @@ config BLK_DEV_HD
+ 
+ 	  If unsure, say N.
+ 
++source "drivers/block/dst/Kconfig"
++
+ endif # BLK_DEV
+diff --git a/drivers/block/Makefile b/drivers/block/Makefile
+index 204332b..6400de0 100644
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -32,3 +32,5 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ obj-$(CONFIG_BLK_DEV_HD)	+= hd.o
+ 
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
++
++obj-$(CONFIG_DST)	+= dst/
+diff --git a/drivers/block/dst/Kconfig b/drivers/block/dst/Kconfig
+new file mode 100644
+index 0000000..12ffa37
+--- /dev/null
++++ b/drivers/block/dst/Kconfig
+@@ -0,0 +1,71 @@
++config DST
++	tristate "Distributed storage"
++	depends on NET && CRYPTO && SYSFS
++	select CONNECTOR
++	select LIBCRC32C
++	---help---
++	DST is a network block device storage, which can be used to organize
++	exported storages on the remote nodes into the local block device.
++
++	DST is a network block device storage, which can be used to organize
++	exported storages on the remote nodes into the local block device.
++
++	DST works on top of any network media and protocol, it is just a matter
++	of configuration utility to understand the correct addresses. The most
++	common example is TCP over IP allows to pass through firewalls and
++	created remote backup storage in the different datacenter. DST requires
++	single port to be enabled on the exporting node and outgoing connections
++	on the local node.
++
++	DST works with in-kernel client and server, which improves the performance
++	eliminating unneded data copies and allows not to depend on the version
++	of the external IO components. It requires userspace configuration utility
++	though.
++
++	DST uses transaction model, when each store has to be explicitly acked
++	from the remote node to be considered as successfully written. There
++	may be lots of in-flight transactions. When remote host does not ack
++	the transaction it will be resent predefined number of times with specified
++	timeouts between them. All those parameters are configurable. Transactions
++	are marked as failed after all resends completed unsuccessfully, having
++	long enough resend timeout and/or large number of resends allows not to
++	return error to the higher (FS usually) layer in case of short network
++	problems or remote node outages. In case of network RAID setup this means
++	that storage will not degrade until transactions are marked as failed, and
++	thus will not force checksum recalculation and data rebuild. In case of
++	connection failure DST will try to reconnect to the remote node automatically.
++	DST sends ping commands at idle time to detect if remote node is alive.
++
++	Because of transactional model it is possible to use zero-copy sending
++	without worry of data corruption (which in turn could be detected by the
++	strong checksums though).
++
++	DST may fully encrypt the data channel in case of untrusted channel and implement
++	strong checksum of the transferred data. It is possible to configure algorithms
++	and crypto keys, they should match on both sides of the network channel.
++	Crypto processing does not introduce noticeble performance overhead, since DST
++	uses configurable pool of threads to perform crypto processing.
++
++	DST utilizes memory pool model of all its transaction allocations (it is the
++	only additional allocation on the client) and server allocations (bio pools,
++	while pages are allocated from the slab).
++
++	At startup DST performs a simple negotiation with the export node to determine
++	access permissions and size of the exported storage. It can be extended if
++	new parameters should be autonegotiated.
++
++	DST carries block IO flags in the protocol, which allows to transparently implement
++	barriers and sync/flush operations. Those flags are used in the export node where
++	IO against the local storage is performed, which means that sync write will be sync
++	on the remote node too, which in turn improves data integrity and improved resistance
++	to errors and data corruption during power outages or storage damages.
++
++	Homepage: http://www.ioremap.net/projects/dst
++	Userspace configuration utility and the latest releases: http://www.ioremap.net/archive/dst/
++
++config DST_DEBUG
++	bool "DST debug"
++	depends on DST
++	---help---
++	This option will turn HEAVY debugging of the DST.
++	Turn it on ONLY if you have to debug some really obscure problem.
+diff --git a/drivers/block/dst/Makefile b/drivers/block/dst/Makefile
+new file mode 100644
+index 0000000..3a8b0cf
+--- /dev/null
++++ b/drivers/block/dst/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_DST) += nst.o
++
++nst-y := dcore.o state.o export.o thread_pool.o crypto.o trans.o
