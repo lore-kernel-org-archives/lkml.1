@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYLZACT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbYLZAH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbYLZACT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Dec 2008 19:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYLZACI
+	id S1752770AbYLZAH3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Dec 2008 19:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYLZAHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Dec 2008 19:02:08 -0500
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:4611 "EHLO
-	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYLZACH (ORCPT
+	Thu, 25 Dec 2008 19:07:21 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45845 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752095AbYLZAHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Dec 2008 19:02:07 -0500
-Date: Thu, 25 Dec 2008 22:00:05 -0200
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: jbd2 inside a device mapper module
-Message-ID: <20081226000005.GB4127@blitiri.com.ar>
-References: <20081224211038.GT4127@blitiri.com.ar> <20081224234915.GA23723@mit.edu> <20081225143535.GA4127@blitiri.com.ar> <20081225155248.GJ9871@mit.edu>
+	Thu, 25 Dec 2008 19:07:20 -0500
+Message-ID: <49542030.4000907@jp.fujitsu.com>
+Date: Fri, 26 Dec 2008 09:07:12 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081225155248.GJ9871@mit.edu>
-User-Agent: Mutt/1.5.17 (2008-03-04)
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] posix-cpu-timers: clock_gettime(CLOCK_THREAD_CPUTIME_ID)
+ goes backward
+References: <4951F7E6.2080805@jp.fujitsu.com> <20081225082456.GA28479@elte.hu>
+In-Reply-To: <20081225082456.GA28479@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 25, 2008 at 10:52:48AM -0500, Theodore Tso wrote:
-> On Thu, Dec 25, 2008 at 12:35:35PM -0200, Alberto Bertogli wrote:
-> >  - What is the reason behind the j_inode check in jbd2_journal_create()?
+Ingo Molnar wrote:
+> ok - the issue is real, but there's a few implementational details. Did 
+> you know about task_delta_exec()? This new function duplicates that 
+> function's behavior - and task_delta_exec() is already used by posix 
+> task/cpu timers.
 > 
-> jbd2_journal_create was only designed for creating inode-based
-> journals, and it's a deprecated function that will likely be removed
-> soon.
+> I find your new task_total_exec() interface better (it's easier to use), 
+> could you have a look at eliminating task_delta_exec() users and migrating 
+> them over to task_total_exec()?
 
-Thanks, I didn't know that!
+Yes.  There are only 2 users (clock_gettime() on thread timer and that on
+process timer), so I'll post new patch with better description soon.
 
-
-> >  - Does mke2fs -O journal_dev creates a journal that jbd2_journal_load()
-> >    is supposed to read without any knowledge of ext2/3/4 stuff? If not,
-> >    how can I create such a journal? I'll be looking at the e2fsprogs
-> >    code for the answer to this question later today (I haven't looked at
-> >    it yet).
-> 
-> mke2fs -O journal_dev creates an external journal, but when you create
-> a filesystem, you need to specify need to specify location of the
-> external journal.    Hence:
-> 
-> 	 mke2fs -O journal_dev /dev/extern_journal_dev
-> 	 mke2fs -t ext4 -J device=/dev/extern_journal_dev /dev/filesystem_dev
-> 
-> As I said in my last message.  I've tested it, and it works Just Fine.
-
-I think I'm not explaining myself correctly. My code has _nothing_ to do
-with ext2/3/4 (or any other filesystem) whatsoever. I'm not using the
-journal as an external one for a filesystem. I want to use it to be able
-to do atomic writes in my own, filesystem independant, device-mapper
-code.
-
-After what you told me (both this and the deprecation of
-jbd2_journal_create()), I took a look at e2fsprogs' source. From what I
-could see, "mke2fs -O journal_dev" creates the external journal inside
-some ext2/3/4 structures, which caused my journal-loading code to fail
-(because it doesn't know about ext stuff).
-
-So, I wrote a small "mkjournal" utility that creates a journal on the
-block device without any ext2/3/4 stuff. It's based on e2fsprogs'
-mkjournal.c, except it doesn't have any ext2 stuff. And it worked great!
-I'm now able to load the journal just fine.
-
-Thanks a lot for all the help!
-
-		Alberto
+Thanks,
+H.Seto
 
