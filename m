@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbYLZIu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYLZIxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753714AbYLZIu2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 03:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYLZIuT
+	id S1753747AbYLZIxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 03:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYLZIxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 03:50:19 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34577 "EHLO mx2.mail.elte.hu"
+	Fri, 26 Dec 2008 03:53:38 -0500
+Received: from mail.ukfsn.org ([77.75.108.10]:56152 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752914AbYLZIuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 03:50:18 -0500
-Date: Fri, 26 Dec 2008 09:49:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH for -tip 3/4] proc: remove ifdef CONFIG_SPARSE_IRQ from
-	stat.c
-Message-ID: <20081226084958.GD755@elte.hu>
-References: <20081226131855.5CB2.KOSAKI.MOTOHIRO@jp.fujitsu.com> <86802c440812252036h37d4886bucab9ff3591f94821@mail.gmail.com> <20081226141743.5CB5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <86802c440812252159v6129a385qb900be42845ac90a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440812252159v6129a385qb900be42845ac90a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752914AbYLZIxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 03:53:38 -0500
+Date: Fri, 26 Dec 2008 08:53:35 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [QUESTION] Rather high /proc/interrupts ERR count
+Message-ID: <20081226085335.2ecd5cfb@sauron.linicks.net>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+Running 2.6.28 stable.
 
-> > hm, instead, How about following patch?
-> >
-> > =======
-> > Subject: [PATCH] proc: remove ifdef CONFIG_SPARSE_IRQ from stat.c
-> > Impact: cleanup
+x86_64 system with AMD Athlon(tm) 64 X2 Dual Core Processor 5200+
 
-> nice. much clean.
+The machine runs perfectly fine, but...
 
-applied all four patches to tip/irq/sparseirq:
+...should I be concerned with the rather high ERR count below (this
+is after 41 minutes uptime).  I also have to boot with noapic to stop
+lockups (nvidia driver, I expect):
 
- 18eefed: irq: simplify for_each_irq_desc() usage
- 26ddd8d: proc: remove ifdef CONFIG_SPARSE_IRQ from stat.c
- f9af0e7: irq: for_each_irq_desc() move to irqnr.h
- 51bc39f: hrtimer: remove #include <linux/irq.h>
+           CPU0       CPU1       
+  0:        125          1    XT-PIC-XT        timer
+  1:       5534         97    XT-PIC-XT        i8042
+  2:          0          0    XT-PIC-XT        cascade
+  3:          1          0    XT-PIC-XT      
+  4:          1          1    XT-PIC-XT      
+  5:      78933      11713    XT-PIC-XT        sata_nv, ohci_hcd:usb2, Intel ICH
+  6:          3          0    XT-PIC-XT        floppy
+  7:      21189     333431    XT-PIC-XT      
+  8:          1          0    XT-PIC-XT        rtc0
+  9:          0          0    XT-PIC-XT        acpi
+ 10:     246562       9267    XT-PIC-XT        eth0
+ 11:       2296         72    XT-PIC-XT        sata_nv, ehci_hcd:usb1, nvidia
+ 14:         98         51    XT-PIC-XT        pata_amd
+ 15:          0          0    XT-PIC-XT        pata_amd
+NMI:          0          0   Non-maskable interrupts
+LOC:     236200     234958   Local timer interrupts
+RES:      33224      73287   Rescheduling interrupts
+CAL:        890        964   Function call interrupts
+TLB:        982       1127   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+THR:          0          0   Threshold APIC interrupts
+SPU:          0          0   Spurious interrupts
+ERR:     354616
+MIS:          0
 
-the whole series is very nice and removes quite a bit of irq_desc usage 
-complexity. Thanks guys,
 
-	Ingo
+-- 
+Free Software Foundation Associate Member 5508
+http://linicks.net/
