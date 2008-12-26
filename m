@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYLZJDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYLZJHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbYLZJDi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 04:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYLZJCw
+	id S1753829AbYLZJHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 04:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYLZJHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 04:02:52 -0500
-Received: from viefep18-int.chello.at ([62.179.121.38]:11477 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753000AbYLZJCu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 04:02:50 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] posix-cpu-timers: clock_gettime(CLOCK_*_CPUTIME_ID)
- goes backward
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20081226084320.GC755@elte.hu>
-References: <49547320.9010302@jp.fujitsu.com> <20081226084320.GC755@elte.hu>
-Content-Type: text/plain
-Date: Fri, 26 Dec 2008 10:02:51 +0100
-Message-Id: <1230282171.9487.278.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Dec 2008 04:07:23 -0500
+Received: from lucidpixels.com ([75.144.35.66]:38898 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752956AbYLZJHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 04:07:21 -0500
+Date: Fri, 26 Dec 2008 04:07:19 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: David Lethe <david@santools.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       smartmontools-support@lists.sourceforge.net,
+       Alan Piszcz <ap@solarrain.com>
+Subject: RE: mismatch_cnt, random bitflips, silent corruption(?), mdadm/sw
+ raid[156]
+In-Reply-To: <A20315AE59B5C34585629E258D76A97C031B2765@34093-C3-EVS3.exchange.rackspace.com>
+Message-ID: <alpine.DEB.1.10.0812260401550.24520@p34.internal.lan>
+References: <alpine.DEB.1.10.0812250435260.12329@p34.internal.lan> <A20315AE59B5C34585629E258D76A97C031B2765@34093-C3-EVS3.exchange.rackspace.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-26 at 09:43 +0100, Ingo Molnar wrote:
-> * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
-> 
-> > @@ -321,7 +287,7 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
-> >  		cpu->cpu = cputime.utime;
-> >  		break;
-> >  	case CPUCLOCK_SCHED:
-> > -		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
-> > +		cpu->sched = cputime.sum_exec_runtime;
-> >  		break;
-> >  	}
-> 
-> hm, doesnt this regress precision?
 
-No, he folds it into:
 
-> +void thread_group_cputime(struct task_struct *p, struct task_cputime *times)
-> +{
-> +       unsigned long flags;
-> +       struct rq *rq;
-> +       u64 delta_exec = 0;
-> +       struct task_cputime *tot;
-> +       struct signal_struct *sig;
-> +       int i;
-> +
-> +       sig = p->signal;
-> +       if (unlikely(!sig) || !sig->cputime.totals) {
-> +               times->utime = p->utime;
-> +               times->stime = p->stime;
-> +               times->sum_exec_runtime = task_total_exec(p);
-> +               return;
-> +       }
-> +
-> +       times->stime = times->utime = cputime_zero;
-> +       times->sum_exec_runtime = 0;
-> +
-> +       rq = task_rq_lock(p, &flags);
-> +
-> +       if (task_current(rq, p)) {
-> +               update_rq_clock(rq);
-> +               delta_exec = rq->clock - p->se.exec_start;
-> +               if ((s64)delta_exec < 0)
-> +                       delta_exec = 0;
-> +       }
-> +
-> +       for_each_possible_cpu(i) {
-> +               tot = per_cpu_ptr(p->signal->cputime.totals, i);
-> +               times->utime = cputime_add(times->utime, tot->utime);
-> +               times->stime = cputime_add(times->stime, tot->stime);
-> +               times->sum_exec_runtime += tot->sum_exec_runtime;
-> +       }
-> +       times->sum_exec_runtime += delta_exec;
-> +
-> +       task_rq_unlock(rq, &flags);
-> +}
+On Thu, 25 Dec 2008, David Lethe wrote:
 
-Which reminds me, why do we still have this crap in the kernel? I
-thought we pretty much showed the per-cpu itimer thing was utter crap?
--- can we pretty please either revert that or apply
-http://lkml.org/lkml/2008/11/24/183 ?
+>> -----Original Message-----
+>> From: linux-raid-owner@vger.kernel.org [mailto:linux-raid-
+>>
+>> Other options?
+>>
+>> How do others maintain data integrity?  Just not worry about it until
+>> you have
+>> to, rely on backups.. or?
+>>
+>> Justin.
+>
+> 4GB files using gpg and tar in the '90s?
+Sorry, to clarify they were ~650-700MiB tars but combined to around a ~4GiB
+file later on (from the late 90s), CD's were cheap and yeah 2GiB limit.  But
+later on to consolidate I moved them to 4GiB DVDs and thus tarred them together
+and then gpg on top of that.
 
-Also, I really don't like the above, we now do the per-cpu loop with the
-RQ lock held...
+> I know gpg had 2GB file-related bugs as late as 2005 that caused corruption, and
+> there was a heck of a lot of 2GB-related bugs in 2.2 and 2.4 kernels which you
+> must have been running back then.  You are also using later versions of these
+> programs on the new systems, and I'd be willing to bet they compound the problem by
+> assuming there was no corruption to begin with.
+Once I restored the data from DVDs, I was able to restore *all* data 
+successfully.
+
+>
+> I use:
+> - gzipped tar archives, but I gzip the individual files, rather than the tarball. That way
+> any compression-related bugs are limited to a single file. I copy them to DVDs.
+That works as well, but are they your regular files gzipped, no encryption?
+
+>
+> - For online/nearline, I now use a ZFS, but on a native Solaris system that functions as my primary
+> NFS/CIFS/iSCSI server with and a ZFS software-RAID based file system.   I am profoundly impressed with
+> it, and when they release the deduplication enhancement for ZFS, I'll adopt it and won't have to buy
+> any more DVDs, except for offsite archiving purposes.
+Wow, I did not know ZFS had plans for de-dupe!! I will have to look into this,
+thanks for the info.
+
+Justin.
 
