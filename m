@@ -1,97 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbYLZNof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbYLZNqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbYLZNof (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 08:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYLZNo0
+	id S1753085AbYLZNqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 08:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYLZNqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 08:44:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37931 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbYLZNoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 08:44:24 -0500
-Date: Fri, 26 Dec 2008 14:42:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, David Howells <dhowells@redhat.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
-Subject: [PATCH] kbuild, sparseirq: work around GCC bug with __weak aliases
-Message-ID: <20081226134218.GA1054@elte.hu>
-References: <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com> <49529CE1.4040005@kernel.org> <20081226091217.GA5100@linux.vnet.ibm.com> <4954AC7B.3020603@kernel.org> <20081226102716.GA31450@uranus.ravnborg.org> <20081226133354.GC29265@elte.hu>
+	Fri, 26 Dec 2008 08:46:05 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:47186 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbYLZNqC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 08:46:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=cAPJL34wl5W17PTZMwpJu//4Qe9fRfVISpunGrdrDs1w+FkB7oG1+ePfxVhAV/Udcw
+         QdnsbsKia8+aRVvEZea/vUk0n4fF8h3QvPwvFl4jYs+Yskwz1RMJeDVNBkYXuz07L5fb
+         4B9SLoznFPkewgLBpxf05iRJTOeo2iDNN2FYw=
+Date: Fri, 26 Dec 2008 14:45:56 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 0/8] ide-cd: first conversion batch
+Message-ID: <20081226134556.GA23503@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1229586052-3542-1-git-send-email-petkovbb@gmail.com> <200812192115.41068.bzolnier@gmail.com> <20081220062849.GA14770@gollum.tnic> <200812212005.56973.bzolnier@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081226133354.GC29265@elte.hu>
+In-Reply-To: <200812212005.56973.bzolnier@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Bart,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+On Sun, Dec 21, 2008 at 08:05:56PM +0100, Bartlomiej Zolnierkiewicz wrote:
 
-> > I recall David Howells had a similar issue with the bootparamter patch 
-> > set. The workaround he used was to add a barrier(); call in the weak 
-> > function to avoid the inline.
+[.. ]
+> > don't do cdrom_decode_status for DRQ_INTERRUPT devices but this is
+> > probably not that relevant anymore since we busy-wait for DRQ to get set
+> > through ide_wait_stat, as we talked about it before - it being a bugfix for
+> > all atapi devices. If there's still interest for that (and I think it
 > 
-> could we add some extra attribute to __weak that would have a similar 
-> effect? Something like __attribute__((noinline)), or something silly 
-> like __attribute__((deprecated)) - just to keep gcc from screwing up 
-> __weak functions? Perhaps adding a section attribute would have a 
-> similar effect? (putting weak definitions into an extra section is 
-> probably helpful anyway)
+> Yes, this change is OK but for bisectability reasons it would be better
+> to do it in pre-patch (which would fix ide-cd.c accordingly).
+> 
+> [ The other changes in functionality are small and acceptable for this
+>   patch (i.e. ide_wait_stat() prints error message now) except the change
+>   of the ordering between ->dma_start and ->output_data calls -- which
+>   also seems to deserve patch on its own. ]
 
-I've applied the patch below to tip/irq/sparseirq - could someone with an 
-affected GCC version please check whether this solves the crash?
+sorry for the delay but you know how it is, Christmas and all. Anyway,
+here are the patches attached as you requested, just in time for the
+merge window.
 
-	Ingo
+--
+From: Borislav Petkov <petkovbb@gmail.com>
+Date: Thu, 25 Dec 2008 18:12:34 +0100
+Subject: [PATCH 09/11] ide-cd: wait for DRQ to get set per default
 
-------------------->
->From 0d41e654c877a0de441448ca2f63a72ed11c5d84 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 26 Dec 2008 14:39:51 +0100
-Subject: [PATCH] kbuild, sparseirq: work around GCC bug with __weak aliases
+... instead of assuming it is set for accelerated DRQ type devices.
 
-Impact: fix panic on null pointer with sparseirq
-
-Certain versions of GCC inline the weak global functions.
-Work it around by marking __weak functions as noinline.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- include/linux/compiler-gcc.h |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ drivers/ide/ide-cd.c |   21 +++++++--------------
+ 1 files changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 5c8351b..1ad72e6 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -41,11 +41,17 @@
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 6c7dd8f..1c1ba43 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -572,24 +572,17 @@ static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive)
  
- #define __deprecated			__attribute__((deprecated))
- #define __packed			__attribute__((packed))
--#define __weak				__attribute__((weak))
- #define __naked				__attribute__((naked))
- #define __noreturn			__attribute__((noreturn))
+ 	ide_debug_log(IDE_DBG_PC, "Call %s\n", __func__);
  
- /*
-+ * Mark weak aliases also noinline, because some GCC versions
-+ * incorrectly inline weak aliases (even when a non-weak variant
-+ * is there) and thus cause crashes:
-+ */
-+#define __weak				__attribute__((weak)) noinline
-+
-+/*
-  * From the GCC manual:
-  *
-  * Many functions have no effects except the return value and their
+-	if (drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT) {
+-		/*
+-		 * Here we should have been called after receiving an interrupt
+-		 * from the device.  DRQ should how be set.
+-		 */
+-
+-		/* check for errors */
+-		if (cdrom_decode_status(drive, ATA_DRQ, NULL))
+-			return ide_stopped;
++	/* we must wait for DRQ to get set */
++	if (ide_wait_stat(&startstop, drive, ATA_DRQ, ATA_BUSY, WAIT_READY)) {
++		printk(KERN_ERR "%s: timeout while waiting for DRQ to assert\n",
++				drive->name);
++		return startstop;
++	}
+ 
++	if (drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT) {
+ 		/* ok, next interrupt will be DMA interrupt */
+ 		if (drive->dma)
+ 			drive->waiting_for_dma = 1;
+-	} else {
+-		/* otherwise, we must wait for DRQ to get set */
+-		if (ide_wait_stat(&startstop, drive, ATA_DRQ,
+-				  ATA_BUSY, WAIT_READY))
+-			return startstop;
+ 	}
+ 
+ 	/* arm the interrupt handler */
+-- 
+1.6.0.4
+
+
+-- 
+Regards/Gruss,
+    Boris.
