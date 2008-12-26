@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYLZGgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbYLZGjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbYLZGgN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 01:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYLZGf5
+	id S1753219AbYLZGjP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 01:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYLZGi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 01:35:57 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:52236 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbYLZGf5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 01:35:57 -0500
-From: Chandru <chandru@in.ibm.com>
-Organization: ibm
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Date: Fri, 26 Dec 2008 12:05:55 +0530
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
-References: <200812241325.49404.chandru@in.ibm.com> <20081224233536.b067c9da.akpm@linux-foundation.org> <20081225000735.4dd4e802.akpm@linux-foundation.org>
-In-Reply-To: <20081225000735.4dd4e802.akpm@linux-foundation.org>
+	Fri, 26 Dec 2008 01:38:59 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64431 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbYLZGi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 01:38:58 -0500
+Message-ID: <49547B93.5090905@cn.fujitsu.com>
+Date: Fri, 26 Dec 2008 14:37:07 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+Subject: [PATCH] cpuset,mm: fix allocating page cache/slab object on the unallowed
+ node when memory spread is set
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812261205.55913.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 December 2008 13:37:35 Andrew Morton wrote:
-> On Wed, 24 Dec 2008 23:35:36 -0800 Andrew Morton <akpm@linux-foundation.org> 
-wrote:
-> > - Please put [patch] in the Subject: line of patches
-> >
-> > - Please choose a suitable title, as per
-> >   Documentation/SubmittingPatches, section 15.
-> >
-> > - Please cc suitable mailing lists and maintainers on bug reports and
-> >   on patches.
->
-> Also the patch was wordwrapped and the changelog was filled with weird
-> UTF8 characters.
->
-> I think I have it all cleaned up now.
->
+The task still allocated the page caches on old node after modifying its
+cpuset's mems when 'memory_spread_page' was set, it is caused by the old
+mem_allowed_list of the task. Slab has the same problem.
 
-Hello Andrew,
+This patch fixes this bug.
 
-Thank you very much for cleaning the patch. It was a result of using two email 
-clients at my end. Thank you again!. 
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+---
+ mm/filemap.c |    3 +++
+ mm/slab.c    |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-Chandru
+diff --git a/mm/filemap.c b/mm/filemap.c
+index f3e5f89..d978983 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -517,6 +517,9 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+ #ifdef CONFIG_NUMA
+ struct page *__page_cache_alloc(gfp_t gfp)
+ {
++	if ((gfp & __GFP_WAIT) && !in_interrupt())
++		cpuset_update_task_memory_state();
++
+ 	if (cpuset_do_page_mem_spread()) {
+ 		int n = cpuset_mem_spread_node();
+ 		return alloc_pages_node(n, gfp, 0);
+diff --git a/mm/slab.c b/mm/slab.c
+index 0918751..3b6e3d7 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -3460,6 +3460,9 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
+ 	if (should_failslab(cachep, flags))
+ 		return NULL;
+ 
++	if ((flags & __GFP_WAIT) && !in_interrupt())
++		cpuset_update_task_memory_state();
++
+ 	cache_alloc_debugcheck_before(cachep, flags);
+ 	local_irq_save(save_flags);
+ 	objp = __do_cache_alloc(cachep, flags);
+-- 
+1.5.4.rc3
+
+
