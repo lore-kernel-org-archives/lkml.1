@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbYLZObm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbYLZOcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbYLZObm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 09:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbYLZO3g
+	id S1754987AbYLZOcq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 09:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbYLZOaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 09:29:36 -0500
+	Fri, 26 Dec 2008 09:30:05 -0500
 Received: from cavolo.yandex.ru ([87.250.244.45]:31844 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753867AbYLZO33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 09:29:29 -0500
+	id S1753094AbYLZO34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 09:29:56 -0500
 X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Dec 2008 09:28:56 EST
 From: Evgeniy Polyakov <zbe@ioremap.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, pohmelfs@ioremap.net, netdev@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [3/9] pohmelfs: crypto processing.
-Date: Fri, 26 Dec 2008 17:18:44 +0300
-Message-Id: <1230301130-1325-4-git-send-email-zbe@ioremap.net>
+Subject: [4/9] pohmelfs: directory operations.
+Date: Fri, 26 Dec 2008 17:18:45 +0300
+Message-Id: <1230301130-1325-5-git-send-email-zbe@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1230301130-1325-3-git-send-email-zbe@ioremap.net>
+In-Reply-To: <1230301130-1325-4-git-send-email-zbe@ioremap.net>
 References: <1230301130-1325-1-git-send-email-zbe@ioremap.net>
  <1230301130-1325-2-git-send-email-zbe@ioremap.net>
  <1230301130-1325-3-git-send-email-zbe@ioremap.net>
+ <1230301130-1325-4-git-send-email-zbe@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-POHMELFS is able to encrypt used network channel or attach
-strong checksum to own packets to catch faulty media.
-
-This patch implements crypto initialization, its autoconfiguration
-and sync with the server.
+This patch implementes all supported directory operations
+like directory reading, object lookup, creation, removal
+and so on.
 
 Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-diff --git a/fs/pohmelfs/crypto.c b/fs/pohmelfs/crypto.c
+diff --git a/fs/pohmelfs/dir.c b/fs/pohmelfs/dir.c
 new file mode 100644
-index 0000000..f8e8bde
+index 0000000..29eda12
 --- /dev/null
-+++ b/fs/pohmelfs/crypto.c
-@@ -0,0 +1,880 @@
++++ b/fs/pohmelfs/dir.c
+@@ -0,0 +1,1139 @@
 +/*
 + * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
 + * All rights reserved.
@@ -57,868 +56,1489 @@ index 0000000..f8e8bde
 + * GNU General Public License for more details.
 + */
 +
-+#include <linux/crypto.h>
-+#include <linux/highmem.h>
-+#include <linux/kthread.h>
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/jhash.h>
++#include <linux/namei.h>
 +#include <linux/pagemap.h>
-+#include <linux/slab.h>
 +
 +#include "netfs.h"
 +
-+static struct crypto_hash *pohmelfs_init_hash(struct pohmelfs_sb *psb)
++static int pohmelfs_cmp_hash(struct pohmelfs_name *n, u32 hash)
 +{
-+	int err;
-+	struct crypto_hash *hash;
++	if (n->hash > hash)
++		return -1;
++	if (n->hash < hash)
++		return 1;
 +
-+	hash = crypto_alloc_hash(psb->hash_string, 0, CRYPTO_ALG_ASYNC);
-+	if (IS_ERR(hash)) {
-+		err = PTR_ERR(hash);
-+		dprintk("%s: idx: %u: failed to allocate hash '%s', err: %d.\n",
-+				__func__, psb->idx, psb->hash_string, err);
-+		goto err_out_exit;
-+	}
-+
-+	psb->crypto_attached_size = crypto_hash_digestsize(hash);
-+
-+	if (!psb->hash_keysize)
-+		return hash;
-+
-+	err = crypto_hash_setkey(hash, psb->hash_key, psb->hash_keysize);
-+	if (err) {
-+		dprintk("%s: idx: %u: failed to set key for hash '%s', err: %d.\n",
-+				__func__, psb->idx, psb->hash_string, err);
-+		goto err_out_free;
-+	}
-+
-+	return hash;
-+
-+err_out_free:
-+	crypto_free_hash(hash);
-+err_out_exit:
-+	return ERR_PTR(err);
++	return 0;
 +}
 +
-+static struct crypto_ablkcipher *pohmelfs_init_cipher(struct pohmelfs_sb *psb)
++static struct pohmelfs_name *pohmelfs_search_hash_unprecise(struct pohmelfs_inode *pi, u32 hash)
 +{
-+	int err = -EINVAL;
-+	struct crypto_ablkcipher *cipher;
++	struct rb_node *n = pi->hash_root.rb_node;
++	struct pohmelfs_name *tmp = NULL;
++	int cmp;
 +
-+	if (!psb->cipher_keysize)
-+		goto err_out_exit;
++	while (n) {
++		tmp = rb_entry(n, struct pohmelfs_name, hash_node);
 +
-+	cipher = crypto_alloc_ablkcipher(psb->cipher_string, 0, 0);
-+	if (IS_ERR(cipher)) {
-+		err = PTR_ERR(cipher);
-+		dprintk("%s: idx: %u: failed to allocate cipher '%s', err: %d.\n",
-+				__func__, psb->idx, psb->cipher_string, err);
-+		goto err_out_exit;
++		cmp = pohmelfs_cmp_hash(tmp, hash);
++		if (cmp < 0)
++			n = n->rb_left;
++		else if (cmp > 0)
++			n = n->rb_right;
++		else
++			break;
++
 +	}
 +
-+	crypto_ablkcipher_clear_flags(cipher, ~0);
-+
-+	err = crypto_ablkcipher_setkey(cipher, psb->cipher_key, psb->cipher_keysize);
-+	if (err) {
-+		dprintk("%s: idx: %u: failed to set key for cipher '%s', err: %d.\n",
-+				__func__, psb->idx, psb->cipher_string, err);
-+		goto err_out_free;
-+	}
-+
-+	return cipher;
-+
-+err_out_free:
-+	crypto_free_ablkcipher(cipher);
-+err_out_exit:
-+	return ERR_PTR(err);
++	return tmp;
 +}
 +
-+int pohmelfs_crypto_engine_init(struct pohmelfs_crypto_engine *e, struct pohmelfs_sb *psb)
++struct pohmelfs_name *pohmelfs_search_hash(struct pohmelfs_inode *pi, u32 hash)
 +{
-+	int err;
++	struct pohmelfs_name *tmp;
 +
-+	e->page_num = 0;
++	tmp = pohmelfs_search_hash_unprecise(pi, hash);
++	if (tmp && (tmp->hash == hash))
++		return tmp;
 +
-+	e->size = PAGE_SIZE;
-+	e->data = kmalloc(e->size, GFP_KERNEL);
-+	if (!e->data) {
-+		err = -ENOMEM;
-+		goto err_out_exit;
++	return NULL;
++}
++
++static void __pohmelfs_name_del(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	rb_erase(&node->hash_node, &parent->hash_root);
++}
++
++/*
++ * Remove name cache entry from its caches and free it.
++ */
++static void pohmelfs_name_free(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	__pohmelfs_name_del(parent, node);
++	list_del(&node->sync_del_entry);
++	list_del(&node->sync_create_entry);
++	kfree(node);
++}
++
++static struct pohmelfs_name *pohmelfs_insert_hash(struct pohmelfs_inode *pi,
++		struct pohmelfs_name *new)
++{
++	struct rb_node **n = &pi->hash_root.rb_node, *parent = NULL;
++	struct pohmelfs_name *ret = NULL, *tmp;
++	int cmp;
++
++	while (*n) {
++		parent = *n;
++
++		tmp = rb_entry(parent, struct pohmelfs_name, hash_node);
++
++		cmp = pohmelfs_cmp_hash(tmp, new->hash);
++		if (cmp < 0)
++			n = &parent->rb_left;
++		else if (cmp > 0)
++			n = &parent->rb_right;
++		else {
++			ret = tmp;
++			break;
++		}
 +	}
 +
-+	if (psb->hash_string) {
-+		e->hash = pohmelfs_init_hash(psb);
-+		if (IS_ERR(e->hash)) {
-+			err = PTR_ERR(e->hash);
-+			e->hash = NULL;
++	if (ret) {
++		printk("%s: exist: parent: %llu, ino: %llu, hash: %x, len: %u, data: '%s', "
++				           "new: ino: %llu, hash: %x, len: %u, data: '%s'.\n",
++				__func__, pi->ino,
++				ret->ino, ret->hash, ret->len, ret->data,
++				new->ino, new->hash, new->len, new->data);
++		ret->ino = new->ino;
++		return ret;
++	}
++
++	rb_link_node(&new->hash_node, parent, n);
++	rb_insert_color(&new->hash_node, &pi->hash_root);
++
++	return NULL;
++}
++
++/*
++ * Free name cache for given inode.
++ */
++void pohmelfs_free_names(struct pohmelfs_inode *parent)
++{
++	struct rb_node *rb_node;
++	struct pohmelfs_name *n;
++
++	for (rb_node = rb_first(&parent->hash_root); rb_node;) {
++		n = rb_entry(rb_node, struct pohmelfs_name, hash_node);
++		rb_node = rb_next(rb_node);
++
++		pohmelfs_name_free(parent, n);
++	}
++}
++
++static void pohmelfs_fix_offset(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	parent->total_len -= node->len;
++}
++
++/*
++ * Free name cache entry helper.
++ */
++void pohmelfs_name_del(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	pohmelfs_fix_offset(parent, node);
++	pohmelfs_name_free(parent, node);
++}
++
++/*
++ * Insert new name cache entry into all hash cache.
++ */
++static int pohmelfs_insert_name(struct pohmelfs_inode *parent, struct pohmelfs_name *n)
++{
++	struct pohmelfs_name *name;
++
++	name = pohmelfs_insert_hash(parent, n);
++	if (name)
++		return -EEXIST;
++
++	parent->total_len += n->len;
++	list_add_tail(&n->sync_create_entry, &parent->sync_create_list);
++
++	return 0;
++}
++
++/*
++ * Allocate new name cache entry.
++ */
++static struct pohmelfs_name *pohmelfs_name_alloc(unsigned int len)
++{
++	struct pohmelfs_name *n;
++
++	n = kzalloc(sizeof(struct pohmelfs_name) + len, GFP_KERNEL);
++	if (!n)
++		return NULL;
++
++	INIT_LIST_HEAD(&n->sync_create_entry);
++	INIT_LIST_HEAD(&n->sync_del_entry);
++
++	n->data = (char *)(n+1);
++
++	return n;
++}
++
++/*
++ * Add new name entry into directory's cache.
++ */
++static int pohmelfs_add_dir(struct pohmelfs_sb *psb, struct pohmelfs_inode *parent,
++		struct pohmelfs_inode *npi, struct qstr *str, unsigned int mode, int link)
++{
++	int err = -ENOMEM;
++	struct pohmelfs_name *n;
++	struct pohmelfs_path_entry *e = NULL;
++
++	n = pohmelfs_name_alloc(str->len + 1);
++	if (!n)
++		goto err_out_exit;
++
++	n->ino = npi->ino;
++	n->mode = mode;
++	n->len = str->len;
++	n->hash = str->hash;
++	sprintf(n->data, "%s", str->name);
++
++	if (!(str->len == 1 && str->name[0] == '.') &&
++			!(str->len == 2 && str->name[0] == '.' && str->name[1] == '.')) {
++		mutex_lock(&psb->path_lock);
++		e = pohmelfs_add_path_entry(psb, parent->ino, npi->ino, str, link, mode);
++		mutex_unlock(&psb->path_lock);
++		if (IS_ERR(e)) {
++			err = PTR_ERR(e);
 +			goto err_out_free;
 +		}
 +	}
-+	
-+	if (psb->cipher_string) {
-+		e->cipher = pohmelfs_init_cipher(psb);
-+		if (IS_ERR(e->cipher)) {
-+			err = PTR_ERR(e->cipher);
-+			e->cipher = NULL;
-+			goto err_out_free_hash;
-+		}
++
++	mutex_lock(&parent->offset_lock);
++	err = pohmelfs_insert_name(parent, n);
++	mutex_unlock(&parent->offset_lock);
++
++	if (err) {
++		if (err != -EEXIST)
++			goto err_out_remove;
++		kfree(n);
 +	}
 +
 +	return 0;
 +
-+err_out_free_hash:
-+	crypto_free_hash(e->hash);
++err_out_remove:
++	if (e) {
++		mutex_lock(&psb->path_lock);
++		pohmelfs_remove_path_entry(psb, e);
++		mutex_unlock(&psb->path_lock);
++	}
 +err_out_free:
-+	kfree(e->data);
++	kfree(n);
 +err_out_exit:
 +	return err;
 +}
 +
-+void pohmelfs_crypto_engine_exit(struct pohmelfs_crypto_engine *e)
++/*
++ * Create new inode for given parameters (name, inode info, parent).
++ * This does not create object on the server, it will be synced there during writeback.
++ */
++struct pohmelfs_inode *pohmelfs_new_inode(struct pohmelfs_sb *psb,
++		struct pohmelfs_inode *parent, struct qstr *str,
++		struct netfs_inode_info *info, int link)
 +{
-+	if (e->hash)
-+		crypto_free_hash(e->hash);
-+	if (e->cipher)
-+		crypto_free_ablkcipher(e->cipher);
-+	kfree(e->data);
-+}
++	struct inode *new = NULL;
++	struct pohmelfs_inode *npi;
++	int err = -EEXIST;
 +
-+static void pohmelfs_crypto_complete(struct crypto_async_request *req, int err)
-+{
-+	struct pohmelfs_crypto_completion *c = req->data;
++	dprintk("%s: creating inode: parent: %llu, ino: %llu, str: %p.\n",
++			__func__, (parent)?parent->ino:0, info->ino, str);
 +
-+	if (err == -EINPROGRESS)
-+		return;
++	err = -ENOMEM;
++	new = iget_locked(psb->sb, info->ino);
++	if (!new)
++		goto err_out_exit;
 +
-+	dprintk("%s: req: %p, err: %d.\n", __func__, req, err);
-+	c->error = err;
-+	complete(&c->complete);
-+}
++	npi = POHMELFS_I(new);
++	npi->ino = info->ino;
++	err = 0;
 +
-+static int pohmelfs_crypto_process(struct ablkcipher_request *req,
-+		struct scatterlist *sg_dst, struct scatterlist *sg_src,
-+		void *iv, int enc, unsigned long timeout)
-+{
-+	struct pohmelfs_crypto_completion complete;
-+	int err;
++	if (new->i_state & I_NEW) {
++		dprintk("%s: filling VFS inode: %lu/%llu.\n",
++				__func__, new->i_ino, info->ino);
++		pohmelfs_fill_inode(new, info);
 +
-+	init_completion(&complete.complete);
-+	complete.error = -EINPROGRESS;
++		if (S_ISDIR(info->mode)) {
++			struct qstr s;
 +
-+	ablkcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
-+					pohmelfs_crypto_complete, &complete);
++			s.name = ".";
++			s.len = 1;
++			s.hash = jhash(s.name, s.len, 0);
 +
-+	ablkcipher_request_set_crypt(req, sg_src, sg_dst, sg_src->length, iv);
++			err = pohmelfs_add_dir(psb, npi, npi, &s, info->mode, 0);
++			if (err)
++				goto err_out_put;
 +
-+	if (enc)
-+		err = crypto_ablkcipher_encrypt(req);
-+	else
-+		err = crypto_ablkcipher_decrypt(req);
++			s.name = "..";
++			s.len = 2;
++			s.hash = jhash(s.name, s.len, 0);
 +
-+	switch (err) {
-+		case -EINPROGRESS:
-+		case -EBUSY:
-+			err = wait_for_completion_interruptible_timeout(&complete.complete,
-+					timeout);
-+			if (!err)
-+				err = -ETIMEDOUT;
-+			else
-+				err = complete.error;
-+			break;
-+		default:
-+			break;
++			err = pohmelfs_add_dir(psb, npi, (parent)?parent:npi, &s,
++					(parent)?parent->vfs_inode.i_mode:npi->vfs_inode.i_mode, 0);
++			if (err)
++				goto err_out_put;
++		}
 +	}
 +
-+	return err;
-+}
++	if (str) {
++		if (parent) {
++			err = pohmelfs_add_dir(psb, parent, npi, str, info->mode, link);
 +
-+int pohmelfs_crypto_process_input_data(struct pohmelfs_crypto_engine *e, u64 cmd_iv,
-+		void *data, struct page *page, unsigned int size)
-+{
-+	int err;
-+	struct scatterlist sg;
-+	
-+	if (!e->cipher && !e->hash)
-+		return 0;
++			dprintk("%s: %s inserted name: '%s', new_offset: %llu, ino: %llu, parent: %llu.\n",
++					__func__, (err)?"unsuccessfully":"successfully",
++					str->name, parent->total_len, info->ino, parent->ino);
 +
-+	dprintk("%s: eng: %p, iv: %llx, data: %p, page: %p/%lu, size: %u.\n",
-+		__func__, e, cmd_iv, data, page, (page)?page->index:0, size);
-+
-+	if (data) {
-+		sg_init_one(&sg, data, size);
-+	} else {
-+		sg_init_table(&sg, 1);
-+		sg_set_page(&sg, page, size, 0);
-+	}
-+
-+	if (e->cipher) {
-+		struct ablkcipher_request *req = e->data + crypto_hash_digestsize(e->hash);
-+		u8 iv[32];
-+
-+		memset(iv, 0, sizeof(iv));
-+		memcpy(iv, &cmd_iv, sizeof(cmd_iv));
-+
-+		ablkcipher_request_set_tfm(req, e->cipher);
-+
-+		err = pohmelfs_crypto_process(req, &sg, &sg, iv, 0, e->timeout);
-+		if (err)
-+			goto err_out_exit;
-+	}
-+
-+	if (e->hash) {
-+		struct hash_desc desc;
-+		void *dst = e->data + e->size/2;
-+
-+		desc.tfm = e->hash;
-+		desc.flags = 0;
-+		
-+		err = crypto_hash_init(&desc);
-+		if (err)
-+			goto err_out_exit;
-+
-+		err = crypto_hash_update(&desc, &sg, size);
-+		if (err)
-+			goto err_out_exit;
-+		
-+		err = crypto_hash_final(&desc, dst);
-+		if (err)
-+			goto err_out_exit;
-+
-+		err = !!memcmp(dst, e->data, crypto_hash_digestsize(e->hash));
-+
-+		if (err) {
-+#ifdef CONFIG_POHMELFS_DEBUG
-+			unsigned int i;
-+			unsigned char *recv = e->data, *calc = dst;
-+
-+			dprintk("%s: eng: %p, hash: %p, cipher: %p: iv : %llx, hash mismatch (recv/calc): ",
-+					__func__, e, e->hash, e->cipher, cmd_iv);
-+			for (i=0; i<crypto_hash_digestsize(e->hash); ++i) {
-+#if 0
-+				dprintka("%02x ", recv[i]);
-+				if (recv[i] != calc[i]) {
-+					dprintka("| calc byte: %02x.\n", calc[i]);
-+					break;
-+				}
-+#else
-+				dprintka("%02x/%02x ", recv[i], calc[i]);
-+#endif
-+			}
-+			dprintk("\n");
-+#endif
-+			goto err_out_exit;
++			if (err && err != -EEXIST)
++				goto err_out_put;
 +		} else {
-+			dprintk("%s: eng: %p, hash: %p, cipher: %p: hashes matched.\n",
-+					__func__, e, e->hash, e->cipher);
++			mutex_lock(&psb->path_lock);
++			pohmelfs_add_path_entry(psb, npi->ino, npi->ino, str, link, info->mode);
++			mutex_unlock(&psb->path_lock);
 +		}
 +	}
-+	
-+	dprintk("%s: eng: %p, size: %u, hash: %p, cipher: %p: completed.\n",
-+			__func__, e, e->size, e->hash, e->cipher);
 +
-+	return 0;
++	if (new->i_state & I_NEW) {
++		if (parent)
++			mark_inode_dirty(&parent->vfs_inode);
++		mark_inode_dirty(new);
++	}
++	unlock_new_inode(new);
 +
++	return npi;
++
++err_out_put:
++	printk("%s: putting inode: %p, npi: %p, error: %d.\n", __func__, new, npi, err);
++	iput(new);
 +err_out_exit:
-+	dprintk("%s: eng: %p, hash: %p, cipher: %p: err: %d.\n",
-+			__func__, e, e->hash, e->cipher, err);
-+	return err;
++	return ERR_PTR(err);
 +}
 +
-+static int pohmelfs_trans_iter(struct netfs_trans *t, struct pohmelfs_crypto_engine *e,
-+		int (* iterator) (struct pohmelfs_crypto_engine *e,
-+				  struct scatterlist *dst,
-+				  struct scatterlist *src))
-+{
-+	void *data = t->iovec.iov_base + sizeof(struct netfs_cmd) + t->psb->crypto_attached_size;
-+	unsigned int size = t->iovec.iov_len - sizeof(struct netfs_cmd) - t->psb->crypto_attached_size;
-+	struct netfs_cmd *cmd = data;
-+	unsigned int sz, pages = t->attached_pages, i, csize, cmd_cmd, dpage_idx;
-+	struct scatterlist sg_src, sg_dst;
-+	int err;
-+
-+	while (size) {
-+		cmd = data;
-+		cmd_cmd = __be16_to_cpu(cmd->cmd);
-+		csize = __be32_to_cpu(cmd->size);
-+		cmd->iv = __cpu_to_be64(e->iv);
-+
-+		if (cmd_cmd == NETFS_READ_PAGES || cmd_cmd == NETFS_READ_PAGE)
-+			csize = __be16_to_cpu(cmd->ext);
-+
-+		sz = csize + __be16_to_cpu(cmd->cpad) + sizeof(struct netfs_cmd);
-+		
-+		dprintk("%s: size: %u, sz: %u, cmd_size: %u, cmd_cpad: %u.\n",
-+				__func__, size, sz, __be32_to_cpu(cmd->size), __be16_to_cpu(cmd->cpad));
-+
-+		data += sz;
-+		size -= sz;
-+		
-+		sg_init_one(&sg_src, cmd->data, sz - sizeof(struct netfs_cmd));
-+		sg_init_one(&sg_dst, cmd->data, sz - sizeof(struct netfs_cmd));
-+
-+		err = iterator(e, &sg_dst, &sg_src);
-+		if (err)
-+			return err;
-+	}
-+	
-+	if (!pages)
-+		return 0;
-+
-+	dpage_idx = 0;
-+	for (i=0; i<t->page_num; ++i) {
-+		struct page *page = t->pages[i];
-+		struct page *dpage = e->pages[dpage_idx];
-+
-+		if (!page)
-+			continue;
-+
-+		sg_init_table(&sg_src, 1);
-+		sg_init_table(&sg_dst, 1);
-+		sg_set_page(&sg_src, page, page_private(page), 0);
-+		sg_set_page(&sg_dst, dpage, page_private(page), 0);
-+
-+		err = iterator(e, &sg_dst, &sg_src);
-+		if (err)
-+			return err;
-+
-+		pages--;
-+		if (!pages)
-+			break;
-+		dpage_idx++;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pohmelfs_encrypt_iterator(struct pohmelfs_crypto_engine *e,
-+		struct scatterlist *sg_dst, struct scatterlist *sg_src)
-+{
-+	struct ablkcipher_request *req = e->data;
-+	u8 iv[32];
-+
-+	memset(iv, 0, sizeof(iv));
-+
-+	memcpy(iv, &e->iv, sizeof(e->iv));
-+
-+	return pohmelfs_crypto_process(req, sg_dst, sg_src, iv, 1, e->timeout);
-+}
-+
-+static int pohmelfs_encrypt(struct pohmelfs_crypto_thread *tc)
-+{
-+	struct netfs_trans *t = tc->trans;
-+	struct pohmelfs_crypto_engine *e = &tc->eng;
-+	struct ablkcipher_request *req = e->data;
-+
-+	memset(req, 0, sizeof(struct ablkcipher_request));
-+	ablkcipher_request_set_tfm(req, e->cipher);
-+
-+	e->iv = pohmelfs_gen_iv(t);
-+
-+	return pohmelfs_trans_iter(t, e, pohmelfs_encrypt_iterator);
-+}
-+
-+static int pohmelfs_hash_iterator(struct pohmelfs_crypto_engine *e,
-+		struct scatterlist *sg_dst, struct scatterlist *sg_src)
-+{
-+	return crypto_hash_update(e->data, sg_src, sg_src->length);
-+}
-+
-+static int pohmelfs_hash(struct pohmelfs_crypto_thread *tc)
-+{
-+	struct pohmelfs_crypto_engine *e = &tc->eng;
-+	struct hash_desc *desc = e->data;
-+	unsigned char *dst = tc->trans->iovec.iov_base + sizeof(struct netfs_cmd);
-+	int err;
-+
-+	desc->tfm = e->hash;
-+	desc->flags = 0;
-+
-+	err = crypto_hash_init(desc);
-+	if (err)
-+		return err;
-+
-+	err = pohmelfs_trans_iter(tc->trans, e, pohmelfs_hash_iterator);
-+	if (err)
-+		return err;
-+
-+	err = crypto_hash_final(desc, dst);
-+	if (err)
-+		return err;
-+
-+	{
-+		unsigned int i;
-+		dprintk("%s: ", __func__);
-+		for (i=0; i<tc->psb->crypto_attached_size; ++i)
-+			dprintka("%02x ", dst[i]);
-+		dprintka("\n");
-+	}
-+
-+	return 0;
-+}
-+
-+static void pohmelfs_crypto_pages_free(struct pohmelfs_crypto_engine *e)
-+{
-+	unsigned int i;
-+
-+	for (i=0; i<e->page_num; ++i)
-+		__free_page(e->pages[i]);
-+	kfree(e->pages);
-+}
-+
-+static int pohmelfs_crypto_pages_alloc(struct pohmelfs_crypto_engine *e, struct pohmelfs_sb *psb)
-+{
-+	unsigned int i;
-+
-+	e->pages = kmalloc(psb->trans_max_pages * sizeof(struct page *), GFP_KERNEL);
-+	if (!e->pages)
-+		return -ENOMEM;
-+
-+	for (i=0; i<psb->trans_max_pages; ++i) {
-+		e->pages[i] = alloc_page(GFP_KERNEL);
-+		if (!e->pages[i])
-+			break;
-+	}
-+
-+	e->page_num = i;
-+	if (!e->page_num)
-+		goto err_out_free;
-+
-+	return 0;
-+
-+err_out_free:
-+	kfree(e->pages);
-+	return -ENOMEM;
-+}
-+
-+static void pohmelfs_sys_crypto_exit_one(struct pohmelfs_crypto_thread *t)
-+{
-+	struct pohmelfs_sb *psb = t->psb;
-+
-+	if (t->thread)
-+		kthread_stop(t->thread);
-+
-+	mutex_lock(&psb->crypto_thread_lock);
-+	list_del(&t->thread_entry);
-+	psb->crypto_thread_num--;
-+	mutex_unlock(&psb->crypto_thread_lock);
-+
-+	pohmelfs_crypto_engine_exit(&t->eng);
-+	pohmelfs_crypto_pages_free(&t->eng);
-+	kfree(t);
-+}
-+
-+static int pohmelfs_crypto_finish(struct netfs_trans *t, struct pohmelfs_sb *psb, int err)
-+{
-+	if (likely(!err)) {
-+		struct netfs_cmd *cmd = t->iovec.iov_base;
-+		netfs_convert_cmd(cmd);
-+
-+		err = netfs_trans_finish_send(t, psb);
-+	}
-+	t->result = err;
-+	netfs_trans_put(t);
-+
-+	return err;
-+}
-+
-+void pohmelfs_crypto_thread_make_ready(struct pohmelfs_crypto_thread *th)
-+{
-+	struct pohmelfs_sb *psb = th->psb;
-+
-+	th->page = NULL;
-+	th->trans = NULL;
-+
-+	mutex_lock(&psb->crypto_thread_lock);
-+	list_move_tail(&th->thread_entry, &psb->crypto_ready_list);
-+	mutex_unlock(&psb->crypto_thread_lock);
-+	wake_up(&psb->wait);
-+}
-+
-+static int pohmelfs_crypto_thread_trans(struct pohmelfs_crypto_thread *t)
-+{
-+	struct netfs_trans *trans;
-+	int err = 0;
-+
-+	trans = t->trans;
-+	trans->eng = NULL;
-+
-+	if (t->eng.hash) {
-+		err = pohmelfs_hash(t);
-+		if (err)
-+			goto out_complete;
-+	}
-+
-+	if (t->eng.cipher) {
-+		err = pohmelfs_encrypt(t);
-+		if (err)
-+			goto out_complete;
-+		trans->eng = &t->eng;
-+	}
-+
-+out_complete:
-+	t->page = NULL;
-+	t->trans = NULL;
-+
-+	if (!trans->eng)
-+		pohmelfs_crypto_thread_make_ready(t);
-+
-+	pohmelfs_crypto_finish(trans, t->psb, err);
-+	return err;
-+}
-+
-+static int pohmelfs_crypto_thread_page(struct pohmelfs_crypto_thread *t)
-+{
-+	struct pohmelfs_crypto_engine *e = &t->eng;
-+	struct page *page = t->page;
-+	int err;
-+
-+	WARN_ON(!PageChecked(page));
-+
-+	err = pohmelfs_crypto_process_input_data(e, e->iv, NULL, page, t->size);
-+	if (!err)
-+		SetPageUptodate(page);
-+	else
-+		SetPageError(page);
-+	unlock_page(page);
-+	page_cache_release(page);
-+
-+	pohmelfs_crypto_thread_make_ready(t);
-+
-+	return err;
-+}
-+
-+static int pohmelfs_crypto_thread_func(void *data)
-+{
-+	struct pohmelfs_crypto_thread *t = data;
-+
-+	while (!kthread_should_stop()) {
-+		wait_event_interruptible(t->wait, kthread_should_stop() ||
-+				t->trans || t->page);
-+
-+		if (kthread_should_stop())
-+			break;
-+
-+		if (!t->trans && !t->page)
-+			continue;
-+
-+		dprintk("%s: thread: %p, trans: %p, page: %p.\n",
-+				__func__, t, t->trans, t->page);
-+
-+		if (t->trans)
-+			pohmelfs_crypto_thread_trans(t);
-+		else if (t->page)
-+			pohmelfs_crypto_thread_page(t);
-+	}
-+
-+	return 0;
-+}
-+
-+static void pohmelfs_crypto_flush(struct pohmelfs_sb *psb, struct list_head *head)
-+{
-+	while (!list_empty(head)) {
-+		struct pohmelfs_crypto_thread *t = NULL;
-+
-+		mutex_lock(&psb->crypto_thread_lock);
-+		if (!list_empty(head)) {
-+			t = list_first_entry(head, struct pohmelfs_crypto_thread, thread_entry);
-+			list_del_init(&t->thread_entry);
-+		}
-+		mutex_unlock(&psb->crypto_thread_lock);
-+
-+		if (t)
-+			pohmelfs_sys_crypto_exit_one(t);
-+	}
-+}
-+
-+static void pohmelfs_sys_crypto_exit(struct pohmelfs_sb *psb)
-+{
-+	while (!list_empty(&psb->crypto_active_list) || !list_empty(&psb->crypto_ready_list)) {
-+		dprintk("%s: crypto_thread_num: %u.\n", __func__, psb->crypto_thread_num);
-+		pohmelfs_crypto_flush(psb, &psb->crypto_active_list);
-+		pohmelfs_crypto_flush(psb, &psb->crypto_ready_list);
-+	}
-+}
-+
-+static int pohmelfs_sys_crypto_init(struct pohmelfs_sb *psb)
-+{
-+	unsigned int i;
-+	struct pohmelfs_crypto_thread *t;
-+	struct pohmelfs_config *c;
-+	struct netfs_state *st;
-+	int err;
-+
-+	list_for_each_entry(c, &psb->state_list, config_entry) {
-+		st = &c->state;
-+
-+		err = pohmelfs_crypto_engine_init(&st->eng, psb);
-+		if (err)
-+			goto err_out_exit;
-+
-+		dprintk("%s: st: %p, eng: %p, hash: %p, cipher: %p.\n",
-+				__func__, st, &st->eng, &st->eng.hash, &st->eng.cipher);
-+	}
-+
-+	for (i=0; i<psb->crypto_thread_num; ++i) {
-+		err = -ENOMEM;
-+		t = kzalloc(sizeof(struct pohmelfs_crypto_thread), GFP_KERNEL);
-+		if (!t)
-+			goto err_out_free_state_engines;
-+
-+		init_waitqueue_head(&t->wait);
-+
-+		t->psb = psb;
-+		t->trans = NULL;
-+		t->eng.thread = t;
-+
-+		err = pohmelfs_crypto_engine_init(&t->eng, psb);
-+		if (err)
-+			goto err_out_free_state_engines;
-+
-+		err = pohmelfs_crypto_pages_alloc(&t->eng, psb);
-+		if (err)
-+			goto err_out_free;
-+
-+		t->thread = kthread_run(pohmelfs_crypto_thread_func, t,
-+				"pohmelfs-crypto-%d-%d", psb->idx, i);
-+		if (IS_ERR(t->thread)) {
-+			err = PTR_ERR(t->thread);
-+			t->thread = NULL;
-+			goto err_out_free;
-+		}
-+
-+		if (t->eng.cipher)
-+			psb->crypto_align_size = crypto_ablkcipher_blocksize(t->eng.cipher);
-+
-+		mutex_lock(&psb->crypto_thread_lock);
-+		list_add_tail(&t->thread_entry, &psb->crypto_ready_list);
-+		mutex_unlock(&psb->crypto_thread_lock);
-+	}
-+	
-+	psb->crypto_thread_num = i;
-+	return 0;
-+
-+err_out_free:
-+	pohmelfs_sys_crypto_exit_one(t);
-+err_out_free_state_engines:
-+	list_for_each_entry(c, &psb->state_list, config_entry) {
-+		st = &c->state;
-+		pohmelfs_crypto_engine_exit(&st->eng);
-+	}
-+err_out_exit:
-+	pohmelfs_sys_crypto_exit(psb);
-+	return err;
-+}
-+
-+void pohmelfs_crypto_exit(struct pohmelfs_sb *psb)
-+{
-+	pohmelfs_sys_crypto_exit(psb);
-+
-+	kfree(psb->hash_string);
-+	kfree(psb->cipher_string);
-+}
-+
-+static int pohmelfs_crypt_init_complete(struct page **pages, unsigned int page_num,
++static int pohmelfs_remote_sync_complete(struct page **pages, unsigned int page_num,
 +		void *private, int err)
 +{
-+	struct pohmelfs_sb *psb = private;
++	struct pohmelfs_inode *pi = private;
++	struct pohmelfs_sb *psb = POHMELFS_SB(pi->vfs_inode.i_sb);
 +
-+	psb->flags = -err;
-+	dprintk("%s: err: %d.\n", __func__, err);
++	dprintk("%s: ino: %llu, err: %d.\n", __func__, pi->ino, err);
 +
++	if (err)
++		pi->error = err;
 +	wake_up(&psb->wait);
++	pohmelfs_put_inode(pi);
 +
 +	return err;
 +}
 +
-+static int pohmelfs_crypto_init_handshake(struct pohmelfs_sb *psb)
++/*
++ * Receive directory content from the server.
++ * This should be only done for objects, which were not created locally,
++ * and which were not synced previously.
++ */
++static int pohmelfs_sync_remote_dir(struct pohmelfs_inode *pi)
 +{
-+	struct netfs_trans *t;
-+	struct netfs_crypto_capabilities *cap;
-+	struct netfs_cmd *cmd;
-+	char *str;
-+	int err = -ENOMEM, size;
++	struct inode *inode = &pi->vfs_inode;
++	struct pohmelfs_sb *psb = POHMELFS_SB(inode->i_sb);
++	long ret = msecs_to_jiffies(25000);
++	int err;
 +
-+	size = sizeof(struct netfs_crypto_capabilities) +
-+		psb->cipher_strlen + psb->hash_strlen + 2; /* 0 bytes */
++	dprintk("%s: dir: %llu, state: %lx: created: %d, remote_synced: %d.\n",
++			__func__, pi->ino, pi->state, test_bit(NETFS_INODE_CREATED, &pi->state),
++			test_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state));
 +
-+	t = netfs_trans_alloc(psb, size, 0, 0);
-+	if (!t)
++	if (!test_bit(NETFS_INODE_CREATED, &pi->state))
++		return 0;
++
++	if (test_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state))
++		return 0;
++
++	if (!igrab(inode)) {
++		err = -ENOENT;
 +		goto err_out_exit;
-+
-+	t->complete = pohmelfs_crypt_init_complete;
-+	t->private = psb;
-+
-+	cmd = netfs_trans_current(t);
-+	cap = (struct netfs_crypto_capabilities *)(cmd + 1);
-+	str = (char *)(cap + 1);
-+
-+	cmd->cmd = NETFS_CAPABILITIES;
-+	cmd->id = POHMELFS_CRYPTO_CAPABILITIES;
-+	cmd->size = size;
-+	cmd->start = 0;
-+	cmd->ext = 0;
-+	cmd->csize = 0;
-+
-+	netfs_convert_cmd(cmd);
-+	netfs_trans_update(cmd, t, size);
-+
-+	cap->hash_strlen = psb->hash_strlen;
-+	if (cap->hash_strlen) {
-+		sprintf(str, "%s", psb->hash_string);
-+		str += cap->hash_strlen;
 +	}
 +
-+	cap->cipher_strlen = psb->cipher_strlen;
-+	cap->cipher_keysize = psb->cipher_keysize;
-+	if (cap->cipher_strlen)
-+		sprintf(str, "%s", psb->cipher_string);
++	err = pohmelfs_meta_command(pi, NETFS_READDIR, NETFS_TRANS_SINGLE_DST,
++			pohmelfs_remote_sync_complete, pi, 0);
++	if (err)
++		goto err_out_exit;
 +
-+	netfs_convert_crypto_capabilities(cap);
++	pi->error = 0;
++	ret = wait_event_interruptible_timeout(psb->wait,
++			test_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state) || pi->error, ret);
++	dprintk("%s: awake dir: %llu, ret: %ld, err: %d.\n", __func__, pi->ino, ret, pi->error);
++	if (ret <= 0) {
++		err = -ETIMEDOUT;
++		goto err_out_exit;
++	}
 +
-+	psb->flags = ~0;
++	if (pi->error)
++		return pi->error;
++
++	return 0;
++
++err_out_exit:
++	clear_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state);
++
++	return err;
++}
++
++static int pohmelfs_dir_open(struct inode *inode, struct file *file)
++{
++	file->private_data = NULL;
++	return 0;
++}
++
++/*
++ * VFS readdir callback. Syncs directory content from server if needed,
++ * and provides direntry info to the userspace.
++ */
++static int pohmelfs_readdir(struct file *file, void *dirent, filldir_t filldir)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	struct pohmelfs_inode *pi = POHMELFS_I(inode);
++	struct pohmelfs_name *n;
++	struct rb_node *rb_node;
++	int err = 0, mode;
++	u64 len;
++
++	dprintk("%s: parent: %llu, fpos: %llu, hash: %08lx.\n",
++			__func__, pi->ino, (u64)file->f_pos,
++			(unsigned long)file->private_data);
++
++	err = pohmelfs_data_lock(pi, 0, ~0, POHMELFS_READ_LOCK);
++	if (err)
++		return err;
++
++	err = pohmelfs_sync_remote_dir(pi);
++	if (err)
++		return err;
++
++	if (file->private_data && (file->private_data == (void *)(unsigned long)file->f_pos))
++		return 0;
++
++	mutex_lock(&pi->offset_lock);
++	n = pohmelfs_search_hash_unprecise(pi, (unsigned long)file->private_data);
++
++	while (n) {
++		mode = (n->mode >> 12) & 15;
++
++		dprintk("%s: offset: %llu, parent ino: %llu, name: '%s', len: %u, ino: %llu, "
++				"mode: %o/%o, fpos: %llu, hash: %08x.\n",
++				__func__, file->f_pos, pi->ino, n->data, n->len,
++				n->ino, n->mode, mode, file->f_pos, n->hash);
++
++		file->private_data = (void *)n->hash;
++
++		len = n->len;
++		err = filldir(dirent, n->data, n->len, file->f_pos, n->ino, mode);
++
++		if (err < 0) {
++			dprintk("%s: err: %d.\n", __func__, err);
++			err = 0;
++			break;
++		}
++
++		file->f_pos += len;
++
++		rb_node = rb_next(&n->hash_node);
++
++		if (!rb_node || (rb_node == &n->hash_node)) {
++			file->private_data = (void *)(unsigned long)file->f_pos;
++			break;
++		}
++
++		n = rb_entry(rb_node, struct pohmelfs_name, hash_node);
++	}
++	mutex_unlock(&pi->offset_lock);
++
++	return err;
++}
++
++static loff_t pohmelfs_dir_lseek(struct file *file, loff_t offset, int origin)
++{
++	file->f_pos = offset;
++	file->private_data = NULL;
++	return offset;
++}
++
++const struct file_operations pohmelfs_dir_fops = {
++	.open = pohmelfs_dir_open,
++	.read = generic_read_dir,
++	.llseek = pohmelfs_dir_lseek,
++	.readdir = pohmelfs_readdir,
++};
++
++/*
++ * Lookup single object on server.
++ */
++static int pohmelfs_lookup_single(struct pohmelfs_inode *parent,
++		struct qstr *str, u64 ino)
++{
++	struct pohmelfs_sb *psb = POHMELFS_SB(parent->vfs_inode.i_sb);
++	long ret = msecs_to_jiffies(5000);
++	int err;
++
++	set_bit(NETFS_COMMAND_PENDING, &parent->state);
++	err = pohmelfs_meta_command_data(parent, parent->ino, NETFS_LOOKUP,
++			(char *)str->name, NETFS_TRANS_SINGLE_DST, NULL, NULL, ino);
++	if (err)
++		goto err_out_exit;
++
++	err = 0;
++	ret = wait_event_interruptible_timeout(psb->wait,
++			!test_bit(NETFS_COMMAND_PENDING, &parent->state), ret);
++	if (ret == 0)
++		err = -ETIMEDOUT;
++	else if (signal_pending(current))
++		err = -EINTR;
++
++	if (err)
++		goto err_out_exit;
++
++	return 0;
++
++err_out_exit:
++	clear_bit(NETFS_COMMAND_PENDING, &parent->state);
++
++	printk("%s: failed: parent: %llu, ino: %llu, name: '%s', err: %d.\n",
++			__func__, parent->ino, ino, str->name, err);
++
++	return err;
++}
++
++/*
++ * VFS lookup callback.
++ * We first try to get inode number from local name cache, if we have one,
++ * then inode can be found in inode cache. If there is no inode or no object in
++ * local cache, try to lookup it on server. This only should be done for directories,
++ * which were not created locally, otherwise remote server does not know about dir at all,
++ * so no need to try to know that.
++ */
++struct dentry *pohmelfs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
++{
++	struct pohmelfs_inode *parent = POHMELFS_I(dir);
++	struct pohmelfs_name *n;
++	struct inode *inode = NULL;
++	unsigned long ino = 0;
++	int err, lock_type = POHMELFS_READ_LOCK;
++	struct qstr str = dentry->d_name;
++
++	if ((nd->intent.open.flags & O_ACCMODE) > 1)
++		lock_type = POHMELFS_WRITE_LOCK;
++
++	err = pohmelfs_data_lock(parent, 0, ~0, lock_type);
++	if (err)
++		goto out;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	mutex_lock(&parent->offset_lock);
++	n = pohmelfs_search_hash(parent, str.hash);
++	if (n)
++		ino = n->ino;
++	mutex_unlock(&parent->offset_lock);
++
++	dprintk("%s: 1 ino: %lu, inode: %p, name: '%s', hash: %x, parent_state: %lx.\n",
++			__func__, ino, inode, str.name, str.hash, parent->state);
++
++	if (ino) {
++		inode = ilookup(dir->i_sb, ino);
++		if (inode)
++			goto out;
++	}
++
++	dprintk("%s: dir: %p, dir_ino: %llu, name: '%s', len: %u, dir_state: %lx, ino: %lu.\n",
++			__func__, dir, parent->ino,
++			str.name, str.len, parent->state, ino);
++
++	if (!ino) {
++		if (!test_bit(NETFS_INODE_CREATED, &parent->state))
++			goto out;
++
++		if (test_bit(NETFS_INODE_REMOTE_SYNCED, &parent->state))
++			goto out;
++	}
++
++	err = pohmelfs_lookup_single(parent, &str, ino);
++	if (err)
++		goto out;
++
++	if (!ino) {
++		mutex_lock(&parent->offset_lock);
++		n = pohmelfs_search_hash(parent, str.hash);
++		if (n)
++			ino = n->ino;
++		mutex_unlock(&parent->offset_lock);
++	}
++
++	if (ino) {
++		inode = ilookup(dir->i_sb, ino);
++		printk("%s: second lookup ino: %lu, inode: %p, name: '%s', hash: %x.\n",
++				__func__, ino, inode, str.name, str.hash);
++		if (!inode) {
++			printk("%s: No inode for ino: %lu, name: '%s', hash: %x.\n",
++				__func__, ino, str.name, str.hash);
++			//return NULL;
++			return ERR_PTR(-EACCES);
++		}
++	} else {
++		printk("%s: No inode number : name: '%s', hash: %x.\n",
++			__func__, str.name, str.hash);
++	}
++out:
++	return d_splice_alias(inode, dentry);
++}
++
++/*
++ * Create new object in local cache. Object will be synced to server
++ * during writeback for given inode.
++ */
++struct pohmelfs_inode *pohmelfs_create_entry_local(struct pohmelfs_sb *psb,
++	struct pohmelfs_inode *parent, struct qstr *str, u64 start, int mode)
++{
++	struct pohmelfs_inode *npi;
++	int err = -ENOMEM;
++	struct netfs_inode_info info;
++
++	dprintk("%s: name: '%s', mode: %o, start: %llu.\n",
++			__func__, str->name, mode, start);
++
++	info.mode = mode;
++	info.ino = start;
++
++	if (!start)
++		info.ino = pohmelfs_new_ino(psb);
++
++	info.nlink = S_ISDIR(mode)?2:1;
++	info.uid = current->uid;
++	info.gid = current->gid;
++	info.size = 0;
++	info.blocksize = 512;
++	info.blocks = 0;
++	info.rdev = 0;
++	info.version = 0;
++
++	npi = pohmelfs_new_inode(psb, parent, str, &info, !!start);
++	if (IS_ERR(npi)) {
++		err = PTR_ERR(npi);
++		goto err_out_unlock;
++	}
++
++	set_bit(NETFS_INODE_REMOTE_SYNCED, &npi->state);
++
++	return npi;
++
++err_out_unlock:
++	dprintk("%s: err: %d.\n", __func__, err);
++	return ERR_PTR(err);
++}
++
++/*
++ * Create local object and bind it to dentry.
++ */
++static int pohmelfs_create_entry(struct inode *dir, struct dentry *dentry, u64 start, int mode)
++{
++	struct pohmelfs_sb *psb = POHMELFS_SB(dir->i_sb);
++	struct pohmelfs_inode *npi, *parent;
++	struct qstr str = dentry->d_name;
++	int err;
++
++	parent = POHMELFS_I(dir);
++
++	err = pohmelfs_data_lock(parent, 0, ~0, POHMELFS_WRITE_LOCK);
++	if (err)
++		return err;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	npi = pohmelfs_create_entry_local(psb, parent, &str, start, mode);
++	if (IS_ERR(npi))
++		return PTR_ERR(npi);
++
++	d_instantiate(dentry, &npi->vfs_inode);
++
++	dprintk("%s: parent: %llu, inode: %llu, name: '%s', parent_nlink: %d, nlink: %d.\n",
++			__func__, parent->ino, npi->ino, dentry->d_name.name,
++			(signed)dir->i_nlink, (signed)npi->vfs_inode.i_nlink);
++
++	return 0;
++}
++
++/*
++ * VFS create and mkdir callbacks.
++ */
++static int pohmelfs_create(struct inode *dir, struct dentry *dentry, int mode,
++		struct nameidata *nd)
++{
++	return pohmelfs_create_entry(dir, dentry, 0, mode);
++}
++
++static int pohmelfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	int err;
++
++	inode_inc_link_count(dir);
++	err = pohmelfs_create_entry(dir, dentry, 0, mode | S_IFDIR);
++	if (err)
++		inode_dec_link_count(dir);
++
++	return err;
++}
++
++/*
++ * Remove entry from local cache.
++ * Object will not be removed from server, instead it will be queued into parent
++ * to-be-removed queue, which will be processed during parent writeback (parent
++ * also marked as dirty). Writeback will send remove request to server.
++ * Such approach allows to remove vey huge directories (like 2.6.24 kernel tree)
++ * with only single network command.
++ */
++static int pohmelfs_remove_entry(struct inode *dir, struct dentry *dentry)
++{
++	struct pohmelfs_sb *psb = POHMELFS_SB(dir->i_sb);
++	struct inode *inode = dentry->d_inode;
++	struct pohmelfs_inode *parent = POHMELFS_I(dir), *pi = POHMELFS_I(inode);
++	struct pohmelfs_name *n;
++	int err = -ENOENT;
++	struct qstr str = dentry->d_name;
++
++	err = pohmelfs_data_lock(parent, 0, ~0, POHMELFS_WRITE_LOCK);
++	if (err)
++		return err;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	dprintk("%s: dir_ino: %llu, inode: %llu, name: '%s', nlink: %d.\n",
++			__func__, parent->ino, pi->ino,
++			str.name, (signed)inode->i_nlink);
++
++	mutex_lock(&parent->offset_lock);
++	n = pohmelfs_search_hash(parent, str.hash);
++	if (n) {
++		pohmelfs_fix_offset(parent, n);
++		if (test_bit(NETFS_INODE_CREATED, &pi->state)) {
++			__pohmelfs_name_del(parent, n);
++			list_add_tail(&n->sync_del_entry, &parent->sync_del_list);
++		} else
++			pohmelfs_name_free(parent, n);
++		err = 0;
++	}
++	mutex_unlock(&parent->offset_lock);
++
++	if (!err) {
++		mutex_lock(&psb->path_lock);
++		psb->avail_size += inode->i_size;
++		pohmelfs_remove_path_entry_by_ino(psb, pi->ino);
++		mutex_unlock(&psb->path_lock);
++
++		pohmelfs_inode_del_inode(psb, pi);
++
++		mark_inode_dirty(dir);
++
++		inode->i_ctime = dir->i_ctime;
++		if (inode->i_nlink)
++			inode_dec_link_count(inode);
++	}
++	dprintk("%s: inode: %p, lock: %ld, unhashed: %d.\n",
++		__func__, pi, inode->i_state & I_LOCK, hlist_unhashed(&inode->i_hash));
++
++	return err;
++}
++
++/*
++ * Unlink and rmdir VFS callbacks.
++ */
++static int pohmelfs_unlink(struct inode *dir, struct dentry *dentry)
++{
++	return pohmelfs_remove_entry(dir, dentry);
++}
++
++static int pohmelfs_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	int err;
++	struct inode *inode = dentry->d_inode;
++
++	dprintk("%s: parent: %llu, inode: %llu, name: '%s', parent_nlink: %d, nlink: %d.\n",
++			__func__, POHMELFS_I(dir)->ino, POHMELFS_I(inode)->ino,
++			dentry->d_name.name, (signed)dir->i_nlink, (signed)inode->i_nlink);
++
++	err = pohmelfs_remove_entry(dir, dentry);
++	if (!err) {
++		inode_dec_link_count(dir);
++		inode_dec_link_count(inode);
++	}
++
++	return err;
++}
++
++/*
++ * Link creation is synchronous.
++ * I'm lazy.
++ * Earth is somewhat round.
++ */
++static int pohmelfs_create_link(struct pohmelfs_inode *parent, struct qstr *obj,
++		struct pohmelfs_inode *target, struct qstr *tstr)
++{
++	struct super_block *sb = parent->vfs_inode.i_sb;
++	struct pohmelfs_sb *psb = POHMELFS_SB(sb);
++	struct netfs_cmd *cmd;
++	struct netfs_trans *t;
++	void *data;
++	int err, parent_len, target_len = 0, cur_len, path_size = 0;
++
++	err = pohmelfs_data_lock(parent, 0, ~0, POHMELFS_WRITE_LOCK);
++	if (err)
++		return err;
++
++	err = sb->s_op->write_inode(&parent->vfs_inode, 0);
++	if (err)
++		goto err_out_exit;
++
++	if (tstr)
++		target_len = tstr->len;
++
++	mutex_lock(&psb->path_lock);
++	parent_len = pohmelfs_path_length(parent);
++	if (target)
++		target_len += pohmelfs_path_length(target);
++	mutex_unlock(&psb->path_lock);
++
++	if (parent_len < 0) {
++		err = parent_len;
++		goto err_out_exit;
++	}
++	
++	if (target_len < 0) {
++		err = target_len;
++		goto err_out_exit;
++	}
++
++	t = netfs_trans_alloc(psb, parent_len + target_len + obj->len + 2, 0, 0);
++	if (!t) {
++		err = -ENOMEM;
++		goto err_out_exit;
++	}
++	cur_len = netfs_trans_cur_len(t);
++
++	cmd = netfs_trans_current(t);
++	if (IS_ERR(cmd)) {
++		err = PTR_ERR(cmd);
++		goto err_out_free;
++	}
++
++	data = (void *)(cmd + 1);
++	cur_len -= sizeof(struct netfs_cmd);
++
++	mutex_lock(&psb->path_lock);
++	err = pohmelfs_construct_path_string(parent, data, parent_len);
++	if (err > 0) {
++		path_size = err;
++		cur_len -= path_size;
++
++		err = snprintf(data + path_size, cur_len, "/%s|", obj->name);
++
++		path_size += err;
++		cur_len -= err;
++
++		cmd->ext = path_size - 1; /* No | symbol */
++
++		if (target) {
++			err = pohmelfs_construct_path_string(target, data + path_size, target_len);
++			if (err > 0) {
++				path_size += err + 1;
++				cur_len -= err + 1;
++			}
++		}
++	}
++	mutex_unlock(&psb->path_lock);
++
++	if (err < 0)
++		goto err_out_free;
++
++	cmd->start = 0;
++
++	if (!target && tstr) {
++		if (tstr->len > cur_len - 1) {
++			err = -ENAMETOOLONG;
++			goto err_out_free;
++		}
++
++		err = snprintf(data + path_size, cur_len, "%s", tstr->name) + 1 /* 0-byte */;
++		path_size += err;
++		cur_len -= err;
++		cmd->start = 1;
++	}
++
++	dprintk("%s: parent: %llu, obj: '%s', target_inode: %llu, target_str: '%s', full: '%s'.\n",
++			__func__, parent->ino, obj->name, (target)?target->ino:0, (tstr)?tstr->name:NULL,
++			(char *)data);
++
++	cmd->cmd = NETFS_LINK;
++	cmd->size = path_size;
++	cmd->id = parent->ino;
++
++	netfs_convert_cmd(cmd);
++	
++	netfs_trans_update(cmd, t, path_size);
++
 +	err = netfs_trans_finish(t, psb);
 +	if (err)
 +		goto err_out_exit;
 +
-+	err = wait_event_interruptible_timeout(psb->wait, (psb->flags != ~0),
-+			psb->wait_on_page_timeout);
-+	if (!err)
-+		err = -ETIMEDOUT;
-+	else
-+		err = -psb->flags;
++	return 0;
 +
-+	if (!err)
-+		psb->perform_crypto = 1;
-+	psb->flags = 0;
++err_out_free:
++	t->result = err;
++	netfs_trans_put(t);
++err_out_exit:
++	return err;
++}
++
++/*
++ *  VFS hard and soft link callbacks.
++ */
++static int pohmelfs_link(struct dentry *old_dentry, struct inode *dir,
++	struct dentry *dentry)
++{
++	struct inode *inode = old_dentry->d_inode;
++	struct pohmelfs_inode *pi = POHMELFS_I(inode);
++	int err;
++	struct qstr str = dentry->d_name;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	err = inode->i_sb->s_op->write_inode(inode, 0);
++	if (err)
++		return err;
++
++	err = pohmelfs_create_link(POHMELFS_I(dir), &str, pi, NULL);
++	if (err)
++		return err;
++
++	return pohmelfs_create_entry(dir, dentry, pi->ino, inode->i_mode);
++}
++
++static int pohmelfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
++{
++	struct qstr sym_str;
++	struct qstr str = dentry->d_name;
++	struct inode *inode;
++	int err;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	sym_str.name = symname;
++	sym_str.len = strlen(symname);
++
++	err = pohmelfs_create_link(POHMELFS_I(dir), &str, NULL, &sym_str);
++	if (err)
++		goto err_out_exit;
++
++	err = pohmelfs_create_entry(dir, dentry, 0, S_IFLNK | S_IRWXU | S_IRWXG | S_IRWXO);
++	if (err)
++		goto err_out_exit;
++
++	inode = dentry->d_inode;
++
++	err = page_symlink(inode, symname, sym_str.len + 1);
++	if (err)
++		goto err_out_put;
++
++	return 0;
++
++err_out_put:
++	iput(inode);
++err_out_exit:
++	return err;
++}
++
++static int pohmelfs_send_rename(struct pohmelfs_inode *pi, struct pohmelfs_inode *parent,
++		struct qstr *str)
++{
++	int path_len, err, total_len = 0, inode_len, parent_len;
++	char *path;
++	struct netfs_trans *t;
++	struct netfs_cmd *cmd;
++	struct pohmelfs_sb *psb = POHMELFS_SB(pi->vfs_inode.i_sb);
++
++	mutex_lock(&psb->path_lock);
++	parent_len = pohmelfs_path_length(parent);
++	inode_len = pohmelfs_path_length(pi);
++	mutex_unlock(&psb->path_lock);
++
++	if (parent_len < 0 || inode_len < 0)
++		return -EINVAL;
++
++	path_len = parent_len + inode_len + str->len + 3;
++
++	t = netfs_trans_alloc(psb, path_len, 0, 0);
++	if (!t)
++		return -ENOMEM;
++
++	cmd = netfs_trans_current(t);
++	path = (char *)(cmd + 1);
++
++	mutex_lock(&psb->path_lock);
++	err = pohmelfs_construct_path_string(pi, path, inode_len + 1);
++	if (err < 0)
++		goto err_out_unlock;
++
++	cmd->ext = err;
++
++	path += err;
++	total_len += err;
++	path_len -= err;
++
++	*path = '|';
++	path++;
++	total_len++;
++	path_len--;
++
++	err = pohmelfs_construct_path_string(parent, path, parent_len + 1);
++	if (err < 0)
++		goto err_out_unlock;
++	mutex_unlock(&psb->path_lock);
++
++	path += err;
++	total_len += err;
++	path_len -= err;
++
++	err = snprintf(path, path_len - 1, "/%s", str->name);
++
++	total_len += err + 1; /* 0 symbol */
++	path_len -= err + 1;
++
++	cmd->cmd = NETFS_RENAME;
++	cmd->id = pi->ino;
++	cmd->start = parent->ino;
++	cmd->size = total_len;
++
++	netfs_convert_cmd(cmd);
++	
++	netfs_trans_update(cmd, t, total_len);
++
++	return netfs_trans_finish(t, psb);
++
++err_out_unlock:
++	mutex_unlock(&psb->path_lock);
++	netfs_trans_free(t);
++	return err;
++}
++
++static int pohmelfs_rename(struct inode *old_dir, struct dentry *old_dentry,
++			struct inode *new_dir, struct dentry *new_dentry)
++{
++	struct pohmelfs_sb *psb = POHMELFS_SB(old_dir->i_sb);
++	struct inode *old_inode = old_dentry->d_inode;
++	struct pohmelfs_inode *old_parent, *old, *new_parent;
++	struct qstr str = new_dentry->d_name;
++	struct pohmelfs_name *n;
++	unsigned int old_hash;
++	int err = -ENOENT;
++	
++	if (new_dir) {
++		err = new_dir->i_sb->s_op->write_inode(new_dir, 0);
++		if (err)
++			return err;
++	}
++
++	err = old_inode->i_sb->s_op->write_inode(old_inode, 0);
++	if (err)
++		return err;
++
++	old_hash = jhash(old_dentry->d_name.name, old_dentry->d_name.len, 0);
++	str.hash = jhash(new_dentry->d_name.name, new_dentry->d_name.len, 0);
++
++	old = POHMELFS_I(old_inode);
++	old_parent = POHMELFS_I(old_dir);
++
++	str.len = new_dentry->d_name.len;
++	str.name = new_dentry->d_name.name;
++	str.hash = jhash(new_dentry->d_name.name, new_dentry->d_name.len, 0);
++
++	if (new_dir) {
++		new_parent = POHMELFS_I(new_dir);
++		err = -ENOTEMPTY;
++
++		if (S_ISDIR(old_inode->i_mode) &&
++				new_parent->total_len <= 3)
++			goto err_out_exit;
++	} else {
++		new_parent = old_parent;
++	}
++
++	dprintk("%s: ino: %llu, parent: %llu, name: '%s' -> parent: %llu, name: '%s'.\n",
++			__func__, old->ino, old_parent->ino, old_dentry->d_name.name,
++			new_parent->ino, new_dentry->d_name.name);
++
++	err = pohmelfs_send_rename(old, new_parent, &str);
++	if (err)
++		goto err_out_exit;
++
++	mutex_lock(&psb->path_lock);
++	err = pohmelfs_rename_path_entry(psb, old->ino, new_parent->ino, &str);
++	mutex_unlock(&psb->path_lock);
++	if (err)
++		goto err_out_exit;
++
++	n = pohmelfs_name_alloc(str.len + 1);
++	if (!n)
++		goto err_out_exit;
++
++	mutex_lock(&new_parent->offset_lock);
++	n->ino = old->ino;
++	n->mode = old_inode->i_mode;
++	n->len = str.len;
++	n->hash = str.hash;
++	sprintf(n->data, "%s", str.name);
++	
++	err = pohmelfs_insert_name(new_parent, n);
++	mutex_unlock(&new_parent->offset_lock);
++
++	if (err)
++		goto err_out_exit;
++
++	mutex_lock(&old_parent->offset_lock);
++	n = pohmelfs_search_hash(old_parent, old_hash);
++	if (n)
++		pohmelfs_name_del(old_parent, n);
++	mutex_unlock(&old_parent->offset_lock);
++
++	mark_inode_dirty(old_inode);
++	mark_inode_dirty(&new_parent->vfs_inode);
++
++	return 0;
++
++err_out_exit:
++	return err;
++}
++
++/*
++ * POHMELFS directory inode operations.
++ */
++const struct inode_operations pohmelfs_dir_inode_ops = {
++	.link		= pohmelfs_link,
++	.symlink	= pohmelfs_symlink,
++	.unlink		= pohmelfs_unlink,
++	.mkdir		= pohmelfs_mkdir,
++	.rmdir		= pohmelfs_rmdir,
++	.create		= pohmelfs_create,
++	.lookup 	= pohmelfs_lookup,
++	.setattr	= pohmelfs_setattr,
++	.rename		= pohmelfs_rename,
++};
+diff --git a/fs/pohmelfs/path_entry.c b/fs/pohmelfs/path_entry.c
+new file mode 100644
+index 0000000..2dcbce7
+--- /dev/null
++++ b/fs/pohmelfs/path_entry.c
+@@ -0,0 +1,356 @@
++/*
++ * 2007+ Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/fs.h>
++#include <linux/ktime.h>
++#include <linux/fs.h>
++#include <linux/pagemap.h>
++#include <linux/writeback.h>
++#include <linux/mm.h>
++
++#include "netfs.h"
++
++/*
++ * Path cache.
++ *
++ * Used to create pathes to root, strings (or structures,
++ * containing name, mode, permissions and so on) used by userspace
++ * server to process data.
++ *
++ * Cache is local for client, and its inode numbers are never synced
++ * with anyone else, server operates on names and pathes, not some obscure ids.
++ */
++
++static void pohmelfs_free_path_entry(struct pohmelfs_path_entry *e)
++{
++	kfree(e);
++}
++
++static struct pohmelfs_path_entry *pohmelfs_alloc_path_entry(unsigned int len)
++{
++	struct pohmelfs_path_entry *e;
++
++	e = kzalloc(len + 1 + sizeof(struct pohmelfs_path_entry), GFP_KERNEL);
++	if (!e)
++		return NULL;
++
++	e->name = (char *)((struct pohmelfs_path_entry *)(e + 1));
++	e->len = len;
++	atomic_set(&e->refcnt, 1);
++
++	return e;
++}
++
++static inline int pohmelfs_cmp_path_entry(u64 path_ino, u64 new_ino)
++{
++	if (path_ino > new_ino)
++		return -1;
++	if (path_ino < new_ino)
++		return 1;
++	return 0;
++}
++
++static struct pohmelfs_path_entry *pohmelfs_search_path_entry(struct rb_root *root, u64 ino)
++{
++	struct rb_node *n = root->rb_node;
++	struct pohmelfs_path_entry *tmp;
++	int cmp;
++
++	while (n) {
++		tmp = rb_entry(n, struct pohmelfs_path_entry, path_entry);
++
++		cmp = pohmelfs_cmp_path_entry(tmp->ino, ino);
++		if (cmp < 0)
++			n = n->rb_left;
++		else if (cmp > 0)
++			n = n->rb_right;
++		else
++			return tmp;
++	}
++
++	dprintk("%s: Failed to find path entry for ino: %llu.\n", __func__, ino);
++	return NULL;
++}
++
++static struct pohmelfs_path_entry *pohmelfs_insert_path_entry(struct rb_root *root,
++		struct pohmelfs_path_entry *new)
++{
++	struct rb_node **n = &root->rb_node, *parent = NULL;
++	struct pohmelfs_path_entry *ret = NULL, *tmp;
++	int cmp;
++
++	while (*n) {
++		parent = *n;
++
++		tmp = rb_entry(parent, struct pohmelfs_path_entry, path_entry);
++
++		cmp = pohmelfs_cmp_path_entry(tmp->ino, new->ino);
++		if (cmp < 0)
++			n = &parent->rb_left;
++		else if (cmp > 0)
++			n = &parent->rb_right;
++		else {
++			ret = tmp;
++			break;
++		}
++	}
++
++	if (ret) {
++		printk("%s: exist: ino: %llu, data: '%s', new: ino: %llu, data: '%s'.\n",
++			__func__, ret->ino, ret->name, new->ino, new->name);
++		return ret;
++	}
++
++	rb_link_node(&new->path_entry, parent, n);
++	rb_insert_color(&new->path_entry, root);
++
++	dprintk("%s: inserted: ino: %llu, data: '%s', parent: ino: %llu, data: '%s'.\n",
++		__func__, new->ino, new->name, new->parent->ino, new->parent->name);
++
++	return new;
++}
++
++void pohmelfs_remove_path_entry(struct pohmelfs_sb *psb, struct pohmelfs_path_entry *e)
++{
++	if (atomic_dec_and_test(&e->refcnt)) {
++		rb_erase(&e->path_entry, &psb->path_root);
++
++		if (e->parent != e)
++			pohmelfs_remove_path_entry(psb, e->parent);
++		pohmelfs_free_path_entry(e);
++	}
++}
++
++void pohmelfs_remove_path_entry_by_ino(struct pohmelfs_sb *psb, u64 ino)
++{
++	struct pohmelfs_path_entry *e;
++
++	e = pohmelfs_search_path_entry(&psb->path_root, ino);
++	if (e)
++		pohmelfs_remove_path_entry(psb, e);
++}
++
++int pohmelfs_change_path_entry(struct pohmelfs_sb *psb, u64 ino, unsigned int mode)
++{
++	struct pohmelfs_path_entry *e;
++
++	e = pohmelfs_search_path_entry(&psb->path_root, ino);
++	if (!e)
++		return -ENOENT;
++
++	e->mode = mode;
++	return 0;
++}
++
++int pohmelfs_rename_path_entry(struct pohmelfs_sb *psb, u64 ino, u64 parent_ino, struct qstr *str)
++{
++	struct pohmelfs_path_entry *e;
++	unsigned int mode, link;
++
++	e = pohmelfs_search_path_entry(&psb->path_root, ino);
++	if (!e)
++		return -ENOENT;
++
++	if ((e->len >= str->len) && (parent_ino == e->parent->ino)) {
++		sprintf(e->name, "%s", str->name);
++		e->len = str->len;
++		e->hash = str->hash;
++
++		return 0;
++	}
++
++	mode = e->mode;
++	link = e->link;
++
++	pohmelfs_remove_path_entry(psb, e);
++
++	e = pohmelfs_add_path_entry(psb, parent_ino, ino, str, link, mode);
++	if (IS_ERR(e))
++		return PTR_ERR(e);
++
++	return 0;
++}
++
++struct pohmelfs_path_entry * pohmelfs_add_path_entry(struct pohmelfs_sb *psb,
++	u64 parent_ino, u64 ino, struct qstr *str, int link, unsigned int mode)
++{
++	struct pohmelfs_path_entry *e, *ret, *parent;
++
++	parent = pohmelfs_search_path_entry(&psb->path_root, parent_ino);
++
++	e = pohmelfs_alloc_path_entry(str->len);
++	if (!e)
++		return ERR_PTR(-ENOMEM);
++
++	e->parent = e;
++	if (parent) {
++		e->parent = parent;
++		atomic_inc(&parent->refcnt);
++	}
++
++	e->ino = ino;
++	e->hash = str->hash;
++	e->link = link;
++	e->mode = mode;
++
++	sprintf(e->name, "%s", str->name);
++
++	ret = pohmelfs_insert_path_entry(&psb->path_root, e);
++	if (ret != e) {
++		pohmelfs_free_path_entry(e);
++		e = ret;
++	}
++
++	dprintk("%s: parent: %llu, ino: %llu, name: '%s', len: %u.\n",
++			__func__, parent_ino, ino, e->name, e->len);
++
++	return e;
++}
++
++static int pohmelfs_prepare_path(struct pohmelfs_inode *pi, struct list_head *list, int len, int create)
++{
++	struct pohmelfs_path_entry *e;
++	struct pohmelfs_sb *psb = POHMELFS_SB(pi->vfs_inode.i_sb);
++
++	e = pohmelfs_search_path_entry(&psb->path_root, pi->ino);
++	if (!e)
++		return -ENOENT;
++
++	while (e && e->parent != e) {
++		if (len < e->len + create)
++			return -ETOOSMALL;
++
++		len -= e->len + create;
++
++		list_add(&e->entry, list);
++		e = e->parent;
++	}
++
++	return 0;
++}
++
++/*
++ * Create path from root for given inode.
++ * Path is formed as set of stuctures, containing name of the object
++ * and its inode data (mode, permissions and so on).
++ */
++int pohmelfs_construct_path(struct pohmelfs_inode *pi, void *data, int len)
++{
++	struct pohmelfs_path_entry *e;
++	struct netfs_path_entry *ne = data;
++	int used = 0, err;
++	LIST_HEAD(list);
++
++	err = pohmelfs_prepare_path(pi, &list, len, sizeof(struct netfs_path_entry));
++	if (err)
++		return err;
++
++	list_for_each_entry(e, &list, entry) {
++		ne = data;
++		ne->mode = e->mode;
++		ne->len = e->len;
++
++		used += sizeof(struct netfs_path_entry);
++		data += sizeof(struct netfs_path_entry);
++
++		if (ne->len <= sizeof(ne->unused)) {
++			memcpy(ne->unused, e->name, ne->len);
++		} else {
++			memcpy(data, e->name, ne->len);
++			data += ne->len;
++			used += ne->len;
++		}
++
++		dprintk("%s: ino: %llu, mode: %o, is_link: %d, name: '%s', used: %d, ne_len: %u.\n",
++				__func__, e->ino, ne->mode, e->link, e->name, used, ne->len);
++
++		netfs_convert_path_entry(ne);
++	}
++
++	return used;
++}
++
++/*
++ * Create path from root for given inode.
++ */
++int pohmelfs_construct_path_string(struct pohmelfs_inode *pi, void *data, int len)
++{
++	struct pohmelfs_path_entry *e;
++	int used = 0, err;
++	char *ptr = data;
++	LIST_HEAD(list);
++
++	err = pohmelfs_prepare_path(pi, &list, len, 0);
++	if (err)
++		return err;
++
++	if (list_empty(&list)) {
++		err = sprintf(ptr, "/");
++		ptr += err;
++		used += err;
++	} else {
++		list_for_each_entry(e, &list, entry) {
++			err = sprintf(ptr, "/%s", e->name);
++
++			BUG_ON(!e->name);
++
++			ptr += err;
++			used += err;
++		}
++	}
++
++	dprintk("%s: inode: %llu, full path: '%s', used: %d.\n",
++			__func__, pi->ino, (char *)data, used);
++
++	return used;
++}
++
++static int pohmelfs_get_path_length(struct pohmelfs_inode *pi, int create)
++{
++	struct pohmelfs_path_entry *e;
++	struct pohmelfs_sb *psb = POHMELFS_SB(pi->vfs_inode.i_sb);
++	int len = 1 + create;
++
++	e = pohmelfs_search_path_entry(&psb->path_root, pi->ino);
 +
 +	/*
-+	 * At this point NETFS_CAPABILITIES response command
-+	 * should setup superblock in a way, which is acceptible
-+	 * for both client and server, so if server refuses connection,
-+	 * it will send error in transaction response.
++	 * This should never happen actually.
 +	 */
++	if (!e)
++		return -ENOENT;
 +
-+	if (err)
-+		goto err_out_exit;
-+
-+	return 0;
-+
-+err_out_exit:
-+	return err;
-+}
-+
-+int pohmelfs_crypto_init(struct pohmelfs_sb *psb)
-+{
-+	int err;
-+
-+	if (!psb->cipher_string && !psb->hash_string)
-+		return 0;
-+
-+	err = pohmelfs_crypto_init_handshake(psb);
-+	if (err)
-+		return err;
-+
-+	err = pohmelfs_sys_crypto_init(psb);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+static int pohmelfs_crypto_thread_get(struct pohmelfs_sb *psb,
-+		int (* action)(struct pohmelfs_crypto_thread *t, void *data), void *data)
-+{
-+	struct pohmelfs_crypto_thread *t = NULL;
-+	int err;
-+
-+	while (!t) {
-+		err = wait_event_interruptible_timeout(psb->wait,
-+				!list_empty(&psb->crypto_ready_list),
-+				psb->wait_on_page_timeout);
-+
-+		t = NULL;
-+		err = 0;
-+		mutex_lock(&psb->crypto_thread_lock);
-+		if (!list_empty(&psb->crypto_ready_list)) {
-+			t = list_entry(psb->crypto_ready_list.prev,
-+					struct pohmelfs_crypto_thread,
-+					thread_entry);
-+
-+			list_move_tail(&t->thread_entry,
-+					&psb->crypto_active_list);
-+
-+			action(t, data);
-+			wake_up(&t->wait);
-+
-+		}
-+		mutex_unlock(&psb->crypto_thread_lock);
++	while (e && e->parent != e) {
++		len += e->len + create + 1;
++		e = e->parent;
 +	}
 +
-+	return err;
++	return len;
 +}
 +
-+static int pohmelfs_trans_crypt_action(struct pohmelfs_crypto_thread *t, void *data)
++int pohmelfs_path_length(struct pohmelfs_inode *pi)
 +{
-+	struct netfs_trans *trans = data;
++	int len = pohmelfs_get_path_length(pi, 0);
 +
-+	netfs_trans_get(trans);
-+	t->trans = trans;
-+
-+	dprintk("%s: t: %p, gen: %u, thread: %p.\n", __func__, trans, trans->gen, t);
-+	return 0;
++	if (len < 0)
++		return len;
++	return len;
 +}
 +
-+int pohmelfs_trans_crypt(struct netfs_trans *trans, struct pohmelfs_sb *psb)
++int pohmelfs_path_length_create(struct pohmelfs_inode *pi)
 +{
-+	if ((!psb->hash_string && !psb->cipher_string) || !psb->perform_crypto) {
-+		netfs_trans_get(trans);
-+		return pohmelfs_crypto_finish(trans, psb, 0);
-+	}
-+
-+	return pohmelfs_crypto_thread_get(psb, pohmelfs_trans_crypt_action, trans);
-+}
-+
-+struct pohmelfs_crypto_input_action_data
-+{
-+	struct page			*page;
-+	struct pohmelfs_crypto_engine	*e;
-+	u64				iv;
-+	unsigned int			size;
-+};
-+
-+static int pohmelfs_crypt_input_page_action(struct pohmelfs_crypto_thread *t, void *data)
-+{
-+	struct pohmelfs_crypto_input_action_data *act = data;
-+
-+	memcpy(t->eng.data, act->e->data, t->psb->crypto_attached_size);
-+
-+	t->size = act->size;
-+	t->eng.iv = act->iv;
-+
-+	t->page = act->page;
-+	return 0;
-+}
-+
-+int pohmelfs_crypto_process_input_page(struct pohmelfs_crypto_engine *e,
-+		struct page *page, unsigned int size, u64 iv)
-+{
-+	struct inode *inode = page->mapping->host;
-+	struct pohmelfs_crypto_input_action_data act;
-+	int err = -ENOENT;
-+
-+	act.page = page;
-+	act.e = e;
-+	act.size = size;
-+	act.iv = iv;
-+
-+	err = pohmelfs_crypto_thread_get(POHMELFS_SB(inode->i_sb),
-+			pohmelfs_crypt_input_page_action, &act);
-+	if (err)
-+		goto err_out_exit;
-+
-+	return 0;
-+
-+err_out_exit:
-+	SetPageUptodate(page);
-+	page_cache_release(page);
-+
-+	return err;
++	return pohmelfs_get_path_length(pi, sizeof(struct netfs_path_entry));
 +}
