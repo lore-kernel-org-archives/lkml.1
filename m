@@ -1,146 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYLZL6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbYLZM4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYLZL6X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 06:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbYLZL4h
+	id S1753936AbYLZM4x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 07:56:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYLZM4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 06:56:37 -0500
-Received: from cavolo.yandex.ru ([87.250.244.45]:19123 "EHLO cavolo.yandex.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754291AbYLZL43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 06:56:29 -0500
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dst@ioremap.net, netdev@vger.kernel.org,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [0/7] Distributed storage release.
-Date: Fri, 26 Dec 2008 14:56:09 +0300
-Message-Id: <1230292576-23963-1-git-send-email-zbr@ioremap.net>
-X-Mailer: git-send-email 1.5.6.3
-X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
-X-Antivirus-Code: 100000
+	Fri, 26 Dec 2008 07:56:44 -0500
+Received: from Powered.by.Root24.eu ([81.169.180.23]:37044 "EHLO Root24.de"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752543AbYLZM4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 07:56:43 -0500
+Message-ID: <4954D478.8090408@ionic.de>
+Date: Fri, 26 Dec 2008 13:56:24 +0100
+From: Mihai Moldovan <ionic@ionic.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081005)
+MIME-Version: 1.0
+To: Zhu Yi <yi.zhu@intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: Firmware errors with ipw2200 when connected to an WPA-enabled
+ AP
+References: <495443E6.404@ionic.de> <1230260706.27521.15.camel@debian>
+In-Reply-To: <1230260706.27521.15.camel@debian>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="------------enig4FA4665B67323521F7AF0672"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4FA4665B67323521F7AF0672
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-This is a maintenance distributed storage release, which includes a
-rebase against the 2.6.28 kernel tree only.
+* On 26.12.2008 04:05, Zhu Yi wrote:
+> On Fri, 2008-12-26 at 10:39 +0800, Mihai Moldovan wrote:
+>  =20
+>> So, I am really curious about this, although not being fatal in
+>> itself,
+>> the errors are pretty annoying.
+>>    =20
+>
+> The fatal error is from the perspective of the driver. It is handled
+> transparent to the users now except the error logs.
+>  =20
 
-DST is a network block device storage, which can be used to organize
-exported storages on the remote nodes into the local block device.
+So is this all actually known and no bug? Whilst the connection drops in
+idle mode are doing no harm, the sporadic problems on full load are some
+sort of a problem because no traffic is transfered for some seconds,
+although the connections per se remain intact.
 
-Its main goal of the project is to allow creation of the block devices
-on top of different network media and connect physically distributed devices
-into single storage using existing network infrastructure and not
-introducing new limitations into the protocol and network usage model.
+Or... well, is this simply not fixable? :)
 
-DST works on top of any network media and protocol, it is just a matter
-of configuration utility to understand the correct addresses. The most
-common example is TCP over IP allows to pass through firewalls and
-created remote backup storage in the different datacenter. DST requires
-single port to be enabled on the exporting node and outgoing connections
-on the local node.
+Best regards,
 
-DST works with in-kernel client and server, which improves the performance
-eliminating unneded data copies and allows not to depend on the version
-of the external IO components. It requires userspace configuration utility
-though.
 
-DST uses transaction model, when each store has to be explicitly acked
-from the remote node to be considered as successfully written. There
-may be lots of in-flight transactions. When remote host does not ack
-the transaction it will be resent predefined number of times with specified
-timeouts between them. All those parameters are configurable. Transactions
-are marked as failed after all resends completed unsuccessfully, having
-long enough resend timeout and/or large number of resends allows not to
-return error to the higher (FS usually) layer in case of short network
-problems or remote node outages. In case of network RAID setup this means
-that storage will not degrade until transactions are marked as failed, and
-thus will not force checksum recalculation and data rebuild. In case of
-connection failure DST will try to reconnect to the remote node automatically.
-DST sends ping commands at idle time to detect if remote node is alive.
+Mihai Moldovan
 
-Because of transactional model it is possible to use zero-copy sending
-without worry of data corruption (which in turn could be detected by the
-strong checksums though).
 
-DST may fully encrypt the data channel in case of untrusted channel and implement
-strong checksum of the transferred data. It is possible to configure algorithms
-and crypto keys, they should match on both sides of the network channel.
-Crypto processing does not introduce noticeble performance overhead, since DST
-uses configurable pool of threads to perform crypto processing.
-Kernel does not yet support pool of threads, so this part is embedded into the DST.
+--------------enig4FA4665B67323521F7AF0672
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-DST utilizes memory pool model of all its transaction allocations (it is the
-only additional allocation on the client) and server allocations (bio pools,
-while pages are allocated from the slab).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-At startup DST performs a simple negotiation with the export node to determine
-access permissions and size of the exported storage. It can be extended if
-new parameters should be autonegotiated.
+iQIcBAEBCgAGBQJJVNSBAAoJEB/WLtluJTqHv88P/1QtiTstCufs79U4Pi3qSnki
+2CDJRjcJ+01EvQK6cR9SlLp8PkjCDgIB6Lqfc5g1xTpjxZFHwgJH5Y8vp4fj/poO
+jdEmyX5D+JLOBRblJWBza/957I+4uWj5BPLggTpkXQ8dsTnFW3J4nUKBtY2GpwAa
+mptR1y0uAjnn3nCQnZBGVCE44SWAVsnLqQkVhHq++3pT1y9PofXZsXaY6Y3LMSwR
+fW+ykAhmlaGJrLmELjAfgOZQNG2YTK9vy9bOjTfkmdToXngcmbww7gWGhrEOeUAa
+WizxRN35+VBf3rpDVPI0Zx+CxFnpo7hTn5yyQ/uEAFbzvISV5If3B9xRUMNrVTHu
+CuA68jo4fuIH+yi1tBZUPDMJyVRs7nN4c5RlH1N2M2RVfEnXyOiRP2SfJM/pHrEB
+yNbEKdIZGAGjSlNuJ6lTL0XyD+nt/SLvVOwu2t1ffmRQ+t3joS7qgJWsaEc7tBUi
+3/awSrO0kRpDipO4RvULrhLfnBqY1TQedpcVyDEO2vwLfV400EGbhDLTD24xW+UN
+MeMg9ewRx4g0m65mFFxy0++Nx8XDSre+Q5/exURTQL9kMsst0YL8p5WKl6QZH1dR
+OvTEQozC125cribKVQUz5zD3jRcV6OO79vJfpDPZT3GQ5l+AkEZKvpOiKzKu6y3n
+pgCc5yvhWENhV0YeGkfm
+=3u4O
+-----END PGP SIGNATURE-----
 
-DST carries block IO flags in the protocol, which allows to transparently implement
-barriers and sync/flush operations. Those flags are used in the export node where
-IO against the local storage is performed, which means that sync write will be sync
-on the remote node too, which in turn improves data integrity and improved resistance
-to errors and data corruption during power outages or storage damages.
-
-Patches were split on per-file basis, so tree in the middle of the series will not
-compile, which should not be a problem, since kconfig/makefile changes are introduced
-in the latest patch.
-
-There is an open maillist for DST development and discussion at dst @ ioremap.net
-
-Short list of supported features:
-    * Kernel-side client and server. No need for any special tools for data processing
-    	(like special userspace applications) except for configuration.
-    * Bullet-proof memory allocations via memory pools for all temporary objects
-    	(transaction and so on). All clients structures are allocated as single transaction
-	from the memory pool and except this there is no allocation overhead. Network adds
-	own though. Server uses memory pools too, but number of allocations is higher
-	(bio, transaction and pages for IO).
-    * Zero-copy sending (except header) if supported by device using sendpage().
-    * Failover recovery in case of broken link (reconnection if remote node is down).
-    * Full transaction support (resending of the failed transactions on timeout of after
-    	reconnect to failed node).
-    * Dynamically resizeable pool of threads used for data receiving and crypto processing.
-    * Initial autoconfiguration. Ability to extend it with additional attributes if needed.
-    * Support for barriers and other block io request flags.
-    * Support for any kind of network media (not limited to tcp or inet protocols) higher
-    	MAC layer (socket layer). Out of the box kernel-side IPv6 support (needs to extend
-	configuration utility, check how it was done in POHMELFS).
-    * Security attributes for local export nodes (list of allowed to connect addresses with
-    	permissions). Read-only connections.
-    * Ability to use any supported cryptographically strong checksums.
-    	Ability to encrypt data channel.
-    * Keepalive messages to early detect failed nodes.
-
-1. DST homepage.
-http://www.ioremap.net/projects/dst
-
-2. DST archive.
-http://www.ioremap.net/archive/dst/
-
-3. GIT trees.
-http://www.ioremap.net/cgi-bin/gitweb.cgi
-
-4. DST mail list.
-dst @ ioremap.net
-
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
-
- drivers/block/Kconfig           |    2 +
- drivers/block/Makefile          |    2 +
- drivers/block/dst/Kconfig       |   71 +++
- drivers/block/dst/Makefile      |    3 +
- drivers/block/dst/crypto.c      |  731 +++++++++++++++++++++++++++++
- drivers/block/dst/dcore.c       |  972 +++++++++++++++++++++++++++++++++++++++
- drivers/block/dst/export.c      |  664 ++++++++++++++++++++++++++
- drivers/block/dst/state.c       |  839 +++++++++++++++++++++++++++++++++
- drivers/block/dst/thread_pool.c |  345 ++++++++++++++
- drivers/block/dst/trans.c       |  335 ++++++++++++++
- include/linux/connector.h       |    4 +-
- include/linux/dst.h             |  587 +++++++++++++++++++++++
- 12 files changed, 4554 insertions(+), 1 deletions(-)
+--------------enig4FA4665B67323521F7AF0672--
