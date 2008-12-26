@@ -1,103 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYLZJDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYLZJDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbYLZJDH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 04:03:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYLZJCt
+	id S1753946AbYLZJDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 04:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYLZJCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 04:02:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55378 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752956AbYLZJCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 04:02:47 -0500
-Date: Fri, 26 Dec 2008 10:02:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org,
-       Patrick Boettcher <patrick.boettcher@desy.de>
-Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes
-Message-ID: <20081226090220.GF755@elte.hu>
-References: <20081224121252.7560391e@caramujo.chehab.org> <20081225081907.GA4628@elte.hu> <20081225212459.4c7e31b4@caramujo.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081225212459.4c7e31b4@caramujo.chehab.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 26 Dec 2008 04:02:52 -0500
+Received: from viefep18-int.chello.at ([62.179.121.38]:11477 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753000AbYLZJCu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 04:02:50 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH] posix-cpu-timers: clock_gettime(CLOCK_*_CPUTIME_ID)
+ goes backward
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20081226084320.GC755@elte.hu>
+References: <49547320.9010302@jp.fujitsu.com> <20081226084320.GC755@elte.hu>
+Content-Type: text/plain
+Date: Fri, 26 Dec 2008 10:02:51 +0100
+Message-Id: <1230282171.9487.278.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
-
-> On Thu, 25 Dec 2008 09:19:07 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 2008-12-26 at 09:43 +0100, Ingo Molnar wrote:
+> * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
 > 
-> > FYI, v2.6.28 still fails to build with certain configs:
-> > 
-> >  drivers/media/dvb/built-in.o: In function `dib7000p_set_gpio':
-> >  (.text+0x3f242): multiple definition of `dib7000p_set_gpio'
-> >  drivers/media/video/built-in.o:(.text+0xb8c1e): first defined here
-> >  drivers/media/dvb/built-in.o: In function `dib7000p_i2c_enumeration':
-> >  (.text+0x3f282): multiple definition of `dib7000p_i2c_enumeration'
-> >  drivers/media/video/built-in.o:(.text+0xb8c3e): first defined here
-> >  drivers/media/dvb/built-in.o: In function `dib7000p_set_wbd_ref':
-> >  (.text+0x3f1c1): multiple definition of `dib7000p_set_wbd_ref'
-> >  drivers/media/video/built-in.o:(.text+0xb8bfe): first defined here
-> >    LD      drivers/net/built-in.o
-> >  make[2]: *** [drivers/media/built-in.o] Error 1
-> > 
-> > Config attached. The patch below works it around in tip/master. Can test 
-> > any patch for this bug.
+> > @@ -321,7 +287,7 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
+> >  		cpu->cpu = cputime.utime;
+> >  		break;
+> >  	case CPUCLOCK_SCHED:
+> > -		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
+> > +		cpu->sched = cputime.sum_exec_runtime;
+> >  		break;
+> >  	}
 > 
-> Please test the enclosed patch.
+> hm, doesnt this regress precision?
 
-thanks Mauro - i've reverted all my local drivers/media/dvb/ hacks (see 
-them below) and applied your fix, and started testing things. Will let you 
-know if i run into any other kind of build or boot trouble.
+No, he folds it into:
 
-	Ingo
+> +void thread_group_cputime(struct task_struct *p, struct task_cputime *times)
+> +{
+> +       unsigned long flags;
+> +       struct rq *rq;
+> +       u64 delta_exec = 0;
+> +       struct task_cputime *tot;
+> +       struct signal_struct *sig;
+> +       int i;
+> +
+> +       sig = p->signal;
+> +       if (unlikely(!sig) || !sig->cputime.totals) {
+> +               times->utime = p->utime;
+> +               times->stime = p->stime;
+> +               times->sum_exec_runtime = task_total_exec(p);
+> +               return;
+> +       }
+> +
+> +       times->stime = times->utime = cputime_zero;
+> +       times->sum_exec_runtime = 0;
+> +
+> +       rq = task_rq_lock(p, &flags);
+> +
+> +       if (task_current(rq, p)) {
+> +               update_rq_clock(rq);
+> +               delta_exec = rq->clock - p->se.exec_start;
+> +               if ((s64)delta_exec < 0)
+> +                       delta_exec = 0;
+> +       }
+> +
+> +       for_each_possible_cpu(i) {
+> +               tot = per_cpu_ptr(p->signal->cputime.totals, i);
+> +               times->utime = cputime_add(times->utime, tot->utime);
+> +               times->stime = cputime_add(times->stime, tot->stime);
+> +               times->sum_exec_runtime += tot->sum_exec_runtime;
+> +       }
+> +       times->sum_exec_runtime += delta_exec;
+> +
+> +       task_rq_unlock(rq, &flags);
+> +}
 
---------------->
+Which reminds me, why do we still have this crap in the kernel? I
+thought we pretty much showed the per-cpu itimer thing was utter crap?
+-- can we pretty please either revert that or apply
+http://lkml.org/lkml/2008/11/24/183 ?
 
-diff --git a/drivers/media/dvb/dm1105/Kconfig b/drivers/media/dvb/dm1105/Kconfig
-index 1332301..d5fc581 100644
---- a/drivers/media/dvb/dm1105/Kconfig
-+++ b/drivers/media/dvb/dm1105/Kconfig
-@@ -7,6 +7,8 @@ config DVB_DM1105
- 	select DVB_STB6000 if !DVB_FE_CUSTOMISE
- 	select DVB_CX24116 if !DVB_FE_CUSTOMISE
- 	select DVB_SI21XX if !DVB_FE_CUSTOMISE
-+	# build failure
-+	depends on 0
- 	help
- 	  Support for cards based on the SDMC DM1105 PCI chip like
- 	  DvbWorld 2002
-diff --git a/drivers/media/dvb/dvb-usb/Kconfig b/drivers/media/dvb/dvb-usb/Kconfig
-index 49f7b20..448d42b 100644
---- a/drivers/media/dvb/dvb-usb/Kconfig
-+++ b/drivers/media/dvb/dvb-usb/Kconfig
-@@ -1,6 +1,7 @@
- config DVB_USB
- 	tristate "Support for various USB DVB devices"
- 	depends on DVB_CORE && USB && I2C && INPUT
-+	depends on BROKEN
- 	help
- 	  By enabling this you will be able to choose the various supported
- 	  USB1.1 and USB2.0 DVB devices.
-@@ -235,6 +236,7 @@ config DVB_USB_OPERA1
- config DVB_USB_AF9005
- 	tristate "Afatech AF9005 DVB-T USB1.1 support"
- 	depends on DVB_USB && EXPERIMENTAL
-+	depends on BROKEN
- 	select MEDIA_TUNER_MT2060 if !MEDIA_TUNER_CUSTOMIZE
- 	select MEDIA_TUNER_QT1010 if !MEDIA_TUNER_CUSTOMIZE
- 	help
+Also, I really don't like the above, we now do the per-cpu loop with the
+RQ lock held...
+
