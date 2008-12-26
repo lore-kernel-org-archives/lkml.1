@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYLZH2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYLZH2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbYLZH2c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 02:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbYLZH2S
+	id S1753827AbYLZH2w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 02:28:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYLZH2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 02:28:18 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:55472 "EHLO mgw1.diku.dk"
+	Fri, 26 Dec 2008 02:28:38 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:56462 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbYLZH2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 02:28:14 -0500
-Date: Fri, 26 Dec 2008 08:28:10 +0100 (CET)
+	id S1752843AbYLZH2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 02:28:36 -0500
+Date: Fri, 26 Dec 2008 08:28:34 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: mike@i-Connect.Net, linux-eata@i-Connect.Net, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/7] drivers/scsi: Move a dereference below a NULL test
-Message-ID: <Pine.LNX.4.64.0812260827490.25450@ask.diku.dk>
+To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 5/7] drivers/serial/jsm: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0812260828110.25450@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -56,24 +56,27 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/scsi/eata_pio.c             |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/serial/jsm/jsm_neo.c        |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/eata_pio.c b/drivers/scsi/eata_pio.c
-index 952505c..7fec87d 100644
---- a/drivers/scsi/eata_pio.c
-+++ b/drivers/scsi/eata_pio.c
-@@ -500,10 +500,11 @@ static int eata_pio_host_reset(struct scsi_cmnd *cmd)
+diff --git a/drivers/serial/jsm/jsm_neo.c b/drivers/serial/jsm/jsm_neo.c
+index b7584ca..0119d9a 100644
+--- a/drivers/serial/jsm/jsm_neo.c
++++ b/drivers/serial/jsm/jsm_neo.c
+@@ -574,12 +574,13 @@ static void neo_parse_modem(struct jsm_channel *ch, u8 signals)
+ {
+ 	u8 msignals = signals;
  
- 		sp = HD(cmd)->ccb[x].cmd;
- 		HD(cmd)->ccb[x].status = RESET;
--		printk(KERN_WARNING "eata_pio_reset: slot %d in reset, pid %ld.\n", x, sp->serial_number);
+-	jsm_printk(MSIGS, INFO, &ch->ch_bd->pci_dev,
+-			"neo_parse_modem: port: %d msignals: %x\n", ch->ch_portnum, msignals);
 -
- 		if (sp == NULL)
- 			panic("eata_pio_reset: slot %d, sp==NULL.\n", x);
-+		printk(KERN_WARNING
-+			"eata_pio_reset: slot %d in reset, pid %ld.\n",
-+			x, sp->serial_number);
- 	}
+ 	if (!ch)
+ 		return;
  
- 	/* hard reset the HBA  */
++	jsm_printk(MSIGS, INFO, &ch->ch_bd->pci_dev,
++			"neo_parse_modem: port: %d msignals: %x\n",
++			ch->ch_portnum, msignals);
++
+ 	/* Scrub off lower bits. They signify delta's, which I don't care about */
+ 	/* Keep DDCD and DDSR though */
+ 	msignals &= 0xf8;
