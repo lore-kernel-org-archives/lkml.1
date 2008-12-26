@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbYLZGe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYLZGgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753142AbYLZGe7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 01:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbYLZGev
+	id S1753276AbYLZGgN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 01:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYLZGf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 01:34:51 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52547 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbYLZGeu (ORCPT
+	Fri, 26 Dec 2008 01:35:57 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:52236 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbYLZGf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 01:34:50 -0500
-Date: Fri, 26 Dec 2008 06:34:41 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
+	Fri, 26 Dec 2008 01:35:57 -0500
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       sfr@canb.auug.org.au, ttb@tentacle.dhs.org, rml@novell.com,
-       kosaki.motohiro@jp.fujitsu.com, zbr@ioremap.net
-Subject: Re: [PATCH] filesystem notification: create fs/notify to contain
-	all fs notification
-Message-ID: <20081226063441.GV28946@ZenIV.linux.org.uk>
-References: <20081217185941.2188.49536.stgit@paris.rdu.redhat.com> <20081217150613.bf787435.akpm@linux-foundation.org>
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+Date: Fri, 26 Dec 2008 12:05:55 +0530
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <200812241325.49404.chandru@in.ibm.com> <20081224233536.b067c9da.akpm@linux-foundation.org> <20081225000735.4dd4e802.akpm@linux-foundation.org>
+In-Reply-To: <20081225000735.4dd4e802.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081217150613.bf787435.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200812261205.55913.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 03:06:13PM -0800, Andrew Morton wrote:
+On Thursday 25 December 2008 13:37:35 Andrew Morton wrote:
+> On Wed, 24 Dec 2008 23:35:36 -0800 Andrew Morton <akpm@linux-foundation.org> 
+wrote:
+> > - Please put [patch] in the Subject: line of patches
+> >
+> > - Please choose a suitable title, as per
+> >   Documentation/SubmittingPatches, section 15.
+> >
+> > - Please cc suitable mailing lists and maintainers on bug reports and
+> >   on patches.
+>
+> Also the patch was wordwrapped and the changelog was filled with weird
+> UTF8 characters.
+>
+> I think I have it all cleaned up now.
+>
 
-> git does a good job of this and perhaps we can persuade Al to carry
-> this patch in the vfs tree.
+Hello Andrew,
 
-In queue, actually...
+Thank you very much for cleaning the patch. It was a result of using two email 
+clients at my end. Thank you again!. 
 
-Al, very much hoping to finish that crap by the weekend.
+Chandru
