@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYL0BCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYL0Blm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbYL0BCy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 20:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYL0BCp
+	id S1753088AbYL0Blm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 20:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYL0Bld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 20:02:45 -0500
-Received: from main.gmane.org ([80.91.229.2]:42515 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752084AbYL0BCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 20:02:44 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Ben Pfaff <blp@cs.stanford.edu>
-Subject: Re: SD/MMC cards: how crappy they are?
-Date: Fri, 26 Dec 2008 17:03:36 -0800
-Message-ID: <87hc4qpgyf.fsf@blp.benpfaff.org>
-References: <20081202144830.GB1549@ucw.cz> <493562A5.40308@zytor.com> <20081202165608.GD18162@mit.edu> <20081226223908.GA2260@atrey.karlin.mff.cuni.cz>
-Reply-To: blp@cs.stanford.edu
+	Fri, 26 Dec 2008 20:41:33 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:51612 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752084AbYL0Blc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 20:41:32 -0500
+Date: Sat, 27 Dec 2008 02:41:29 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Soekris net5501 board support code
+Message-ID: <20081227024129.7ec4fd7e@i1501.lan.towertech.it>
+In-Reply-To: <49557CEA.4030109@zytor.com>
+References: <20081226022602.342db591@i1501.lan.towertech.it>
+	<20081226164156.371a8b14.akpm@linux-foundation.org>
+	<49557CEA.4030109@zytor.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: adsl-75-36-169-231.dsl.pltn13.sbcglobal.net
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-Cancel-Lock: sha1:ZxDZcIPcyR4qZPVnFBKGswvbMHU=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@suse.cz> writes:
+On Fri, 26 Dec 2008 16:55:06 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-> @@ -211,6 +215,10 @@
->  bad blocks. Therefore it is recommended to use it only when one wants
->  to know if there are any bad blocks at all on the device, and not when
->  the list of bad blocks is wanted.
-> +
-> +You can send SIGALARM to make badblocks report its progress. You can
-> +send SIGTERM to make badblocks terminate; it will catch the signal, clean
-> +up and exit.
+> >>  arch/x86/Kconfig          |    9 +++
+> >>  arch/x86/kernel/Makefile  |    1 
+> >>  arch/x86/kernel/soekris.c |  128 ++++++++++++++++++++++++++++++++++++++++++++++
+> > 
+> > You might want to tell the x86 maintainers about this :)
+> 
+> The current consensus (to the extent that one exists) seems to be that
+> platform device drivers belong in drivers[/platform]/x86, instead of in
+> arch/x86.  drivers/platform doesn't exist in the current -linus tree,
+> but Len Brown has patches to do it which should be pushed upstream in
+> this merge window.  In the meantime, use the old name drivers/misc (a
+> misnomer today, but won't be for much longer.)
 
-s/SIGALARM/SIGALRM/
+ Hi Peter,
+
+   I'm awaiting feedback from the geode mailing list to see if they
+ want to move to the GPIO class and thus instantiate the GPIO
+ devices in geode_32.c.
+
+ The remaining pieces (LEDS) could then be moved to drivers/platform, even if
+ it's not a real driver.
+
 -- 
-Ben Pfaff 
-http://benpfaff.org
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
