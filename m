@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbYL0ISc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbYL0IXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbYL0ISc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 03:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYL0ISX
+	id S1753695AbYL0IXZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 03:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYL0IXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 03:18:23 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33182 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Dec 2008 03:23:17 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:39781 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbYL0ISW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 03:18:22 -0500
-Date: Sat, 27 Dec 2008 09:17:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, David Howells <dhowells@redhat.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
-Subject: Re: [PATCH] kgdb: more barrier in blank weak function
-Message-ID: <20081227081737.GA26218@elte.hu>
-References: <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com> <49529CE1.4040005@kernel.org> <20081226091217.GA5100@linux.vnet.ibm.com> <4954AC7B.3020603@kernel.org> <20081226102716.GA31450@uranus.ravnborg.org> <4955B782.3030407@kernel.org> <4955B7EC.7050002@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4955B7EC.7050002@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751543AbYL0IXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 03:23:17 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] headers_install.pl: autoconvert asm/inline/volatile to __xxx__
+Date: Sat, 27 Dec 2008 03:23:15 -0500
+Message-Id: <1230366195-23989-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1230364498-31620-1-git-send-email-vapier@gentoo.org>
+References: <1230364498-31620-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Headers in userspace should be using the __xxx__ form of the asm, inline,
+and volatile keywords.  Since people like to revert these things without
+realizing what's going on, have the headers install step autoconvert these
+keywords.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+v2
+	- get asm/volatile to actually work ... i missed this due to other
+	  local patches.  "asm volatile" should get fixed now.
 
-> Impact: fix panic possible panic etc
-> 
-> some compiler seems to inline the weak global function if no line in it
+ scripts/headers_install.pl |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
->  kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
->  {
-> -	return;
-> +	barrier();
->  }
+diff --git a/scripts/headers_install.pl b/scripts/headers_install.pl
+index 7d2b414..c6ae405 100644
+--- a/scripts/headers_install.pl
++++ b/scripts/headers_install.pl
+@@ -36,6 +36,9 @@ foreach my $file (@files) {
+ 		$line =~ s/\s__attribute_const__\s/ /g;
+ 		$line =~ s/\s__attribute_const__$//g;
+ 		$line =~ s/^#include <linux\/compiler.h>//;
++		$line =~ s/(^|\s)(inline)\b/$1__$2__/g;
++		$line =~ s/(^|\s)(asm)\b(\s|[(]|$)/$1__$2__$3/g;
++		$line =~ s/(^|\s|[(])(volatile)\b(\s|[(]|$)/$1__$2__$3/g;
+ 		printf OUTFILE "%s", $line;
+ 	}
+ 	close OUTFILE;
+-- 
+1.6.0.6
 
->  void __weak kgdb_disable_hw_debug(struct pt_regs *regs)
->  {
-> +	barrier();
->  }
-
-seems like the barrier() is not enough - the only safe sequence seems to 
-be to turn it into a function that returns an integer.
-
-	Ingo
