@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbYL0Dg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbYL0Dko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbYL0Dg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 22:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYL0DgV
+	id S1753378AbYL0Dko (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 22:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYL0Dkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 22:36:21 -0500
-Received: from cmpxchg.org ([85.214.51.133]:33500 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752369AbYL0DgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 22:36:21 -0500
-Date: Sat, 27 Dec 2008 04:36:10 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] 2.6.28, vmalloc.c, vmap_page_range
-Message-ID: <20081227033610.GA1750@cmpxchg.org>
-References: <20081225210235.GC5431@os.inf.tu-dresden.de> <20081226163946.6d38e919.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081226163946.6d38e919.akpm@linux-foundation.org>
+	Fri, 26 Dec 2008 22:40:35 -0500
+Received: from smtp.infotech.no ([82.134.31.41]:33374 "EHLO
+	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752369AbYL0Dke (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 22:40:34 -0500
+X-Greylist: delayed 644 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Dec 2008 22:40:34 EST
+Message-ID: <4955A120.3060703@interlog.com>
+Date: Fri, 26 Dec 2008 22:29:36 -0500
+From: Douglas Gilbert <dgilbert@interlog.com>
+Reply-To: dgilbert@interlog.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: SCSI development list <linux-scsi@vger.kernel.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Matt Taggart <taggart@debian.org>
+Subject: [ANNOUNCE] lsscsi-0.22 released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 26, 2008 at 04:39:46PM -0800, Andrew Morton wrote:
-> On Thu, 25 Dec 2008 22:02:35 +0100 Adam Lackorzynski <adam@os.inf.tu-dresden.de> wrote:
-> 
-> > Hi,
-> > 
-> > in 2.6.28, the flush_cache_vmap in vmap_page_range() is called with the end of
-> > the range twice. The following patch fixes this for me.
-> > 
-> 
-> Did this bug have any observeable runtime effects?  If so, what were
-> they?
-> 
-> > ---
-> >  vmalloc.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > --- linux-2.6.28/mm/vmalloc.c	2008-12-25 00:26:37.000000000 +0100
-> > +++ linux-2.6.28.a/mm/vmalloc.c	2008-12-25 21:45:43.118725744 +0100
-> > @@ -155,7 +155,7 @@
-> >  				pgprot_t prot, struct page **pages)
-> >  {
-> >  	pgd_t *pgd;
-> > -	unsigned long next;
-> > +	unsigned long next, start = addr;
-> >  	int err = 0;
-> >  	int nr = 0;
-> >  
-> > @@ -167,7 +167,7 @@
-> >  		if (err)
-> >  			break;
-> >  	} while (pgd++, addr = next, addr != end);
-> > -	flush_cache_vmap(addr, end);
-> > +	flush_cache_vmap(start, end);
-> >  
-> >  	if (unlikely(err))
-> >  		return err;
-> 
-> Well yeah.  This is what happens when functions modify their incoming
-> arguments.  It's a bad programming practice which leads directly to
-> exactly this sort of bug.
-> 
-> How about we fix that?
-> 
-> 
-> --- a/mm/vmalloc.c~vmallocc-fix-flushing-in-vmap_page_range
-> +++ a/mm/vmalloc.c
-> @@ -151,11 +151,12 @@ static int vmap_pud_range(pgd_t *pgd, un
->   *
->   * Ie. pte at addr+N*PAGE_SIZE shall point to pfn corresponding to pages[N]
->   */
-> -static int vmap_page_range(unsigned long addr, unsigned long end,
-> +static int vmap_page_range(unsigned long start_addr, unsigned long end,
->  				pgprot_t prot, struct page **pages)
->  {
->  	pgd_t *pgd;
->  	unsigned long next;
-> +	unsigned long addr = start_addr;
+lsscsi is a utility that uses sysfs in linux 2.6 series kernels
+to list information about SCSI devices and SCSI hosts. Both a
+compact format which is one line per device and a "classic"
+format (like the output of 'cat /proc/scsi/scsi') are supported.
 
-Ugh, start_addr is an awful name.  How about start?  I know it doesn't
-hold the same amount of information but it's a local API, the
-pgd_offset_k() should make the unit unambiguous, it goes better with
-the end parameter and it's unique enough for this short function.
+Version 0.22 is available at
+http://sg.danny.cz/scsi/lsscsi.html
+More information can be found on that page including examples
+and a Download section for tarballs, rpm and deb packages.
 
-	Hannes
+ChangeLog:
+Version 0.22 2008/12/26 [svn: r71]
+   - add protection information (see CREDITS file)
+   - add USB transport type with USB device name
+   - add ATA and SATA transport types (crude: by driver name)
+Version 0.21 2008/7/10 [svn: r64]
+   ....
+
+Example of some new features:
+$ lsscsi
+[0:0:0:0]    disk    ATA      FUJITSU MHY2160B 0000  /dev/sda
+[3:0:0:0]    cd/dvd  MATSHITA DVD/CDRW UJDA775 CB03  /dev/scd0
+[5:0:0:0]    disk    USB 2.0  SD/MMC Reader          /dev/sdb
+[6:0:0:0]    disk    JetFlash TS2GJFVxx        8.01  /dev/sdc
+
+$ lsscsi -t
+[0:0:0:0]    disk    sata:                           /dev/sda
+[3:0:0:0]    cd/dvd  ata:                            /dev/scd0
+[5:0:0:0]    disk    usb: 7-1:1.0                    /dev/sdb
+[6:0:0:0]    disk    usb: 7-2.4:1.0                  /dev/sdc
+
+
+Doug Gilbert
