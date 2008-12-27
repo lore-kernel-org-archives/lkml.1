@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYL0RjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbYL0SBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYL0RjS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 12:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYL0RjB
+	id S1754250AbYL0SBq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 13:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYL0SBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 12:39:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42339 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYL0RjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 12:39:01 -0500
-Date: Sat, 27 Dec 2008 18:38:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
-Message-ID: <20081227173839.GA9793@elte.hu>
-References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com>
+	Sat, 27 Dec 2008 13:01:38 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:17829 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753186AbYL0SBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 13:01:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=P+qOTTsw+uOVv3MCZAdMFORwL2lpAWuUgm82a+PKHe41gg9ahSXXJ1iikA7zmirNp2
+         C6bYwv882vFuCtgLnbsm5D/qUUcZBXBRvDOvogJZPcfMbWqbjwyrVKXg+yjOhbabneGc
+         nyitZbgQIZVrXVo45gn0nTe2Mw0WVkEkECXi8=
+Date: Sat, 27 Dec 2008 21:01:34 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Mauro Carvalho Chehab <mchehab@redhat.com>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org,
+       Patrick Boettcher <patrick.boettcher@desy.de>
+Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes, crash in
+	af9005_usb_module_init()
+Message-ID: <20081227180134.GA32430@localhost>
+References: <20081224121252.7560391e@caramujo.chehab.org> <20081225081907.GA4628@elte.hu> <20081225212459.4c7e31b4@caramujo.chehab.org> <20081226090220.GF755@elte.hu> <20081226111324.3fbb804b@caramujo.chehab.org> <20081226132426.GA26953@elte.hu> <20081227164020.GA9726@elte.hu> <20081227171122.GA20147@localhost> <20081227171933.GB20147@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081227171933.GB20147@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Cyrill Gorcunov - Sat, Dec 27, 2008 at 08:19:33PM +0300]
+...
+| | | config attached. Can test any fix patch.
+| | | 
+| | | 	Ingo
+| | |
+| | 
+| | Something like that?
+| |  
+| | 		- Cyrill -
+| | 
+| | ---
+| |  drivers/media/dvb/frontends/cx24116.h |    3 ++-
+| |  1 file changed, 2 insertions(+), 1 deletion(-)
+| | 
+| | Index: linux-2.6.git/drivers/media/dvb/frontends/cx24116.h
+| | ===================================================================
+| | --- linux-2.6.git.orig/drivers/media/dvb/frontends/cx24116.h
+| | +++ linux-2.6.git/drivers/media/dvb/frontends/cx24116.h
+| | @@ -37,7 +37,8 @@ struct cx24116_config {
+| |  	u8 mpg_clk_pos_pol:0x02;
+| |  };
+| |  
+| | -#if defined(CONFIG_DVB_CX24116) || defined(CONFIG_DVB_CX24116_MODULE)
+| | +#if defined(CONFIG_DVB_CX24116) || \
+| | +	(defined(CONFIG_DVB_CX24116_MODULE) && defined(MODULE))
+| |  extern struct dvb_frontend *cx24116_attach(
+| |  	const struct cx24116_config *config,
+| |  	struct i2c_adapter *i2c);
+| 
+| hmm... don't think it will help, please ignore the patch.
+| 
+| 		- Cyrill -
 
-* KOSAKI Motohiro <kosaki.motohiro@gmail.com> wrote:
+Heh, actually it should help I believe (i don't know how it possible
+but I forgot about -D gcc option and was searching for MODULE
+definition, need some coffee :)
 
-> > ------------------>
-> > Ingo Molnar (2):
-> >      sparseirq: do not printk when migrating IRQ descriptors
-> >      sparseirq: fix desc->lock init
-> >
-> > KOSAKI Motohiro (4):
-> >      hrtimer: remove #include <linux/irq.h>
-> >      irq: for_each_irq_desc() move to irqnr.h
-> >      proc: remove ifdef CONFIG_SPARSE_IRQ from stat.c
-> >      irq: simplify for_each_irq_desc() usage
-> >
-> > Yinghai Lu (4):
-> >      sparseirq: remove duplicated arch_early_irq_init()
-> >      sparseirq: work around compiler optimizing away __weak functions
-> 
-> Unfortunately, this workaround doesn't workaround.
-> Kamalesh reported kernel still crashes.
-
-well, it's a regression that is being worked on: certain buggy GCC 
-versions (unclear yet what scope but quite rare it appears) optimize out 
-__weak function calls incorrectly.
-
-	Ingo
+		- Cyrill -
