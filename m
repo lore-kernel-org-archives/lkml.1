@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYL0Ire@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYL0IzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYL0Ire (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 03:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbYL0IrZ
+	id S1753870AbYL0IzB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 03:55:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYL0Iyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 03:47:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60497 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751538AbYL0IrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 03:47:25 -0500
-Date: Sat, 27 Dec 2008 09:47:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mike Frysinger <vapier@gentoo.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
-Message-ID: <20081227084708.GA16077@elte.hu>
-References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <20081227071208.GB27736@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081227071208.GB27736@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 27 Dec 2008 03:54:51 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41406
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751295AbYL0Iyu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 03:54:50 -0500
+Date: Sat, 27 Dec 2008 00:54:52 -0800 (PST)
+Message-Id: <20081227.005452.261413194.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org, mingo@elte.hu,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kenchen@google.com,
+       paulus@samba.org, tglx@linutronix.de, hpa@zytor.com,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] sparc64: use unsigned long long for u64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081223131746.GA7456@uranus.ravnborg.org>
+References: <20081222230035.GB4074@uranus.ravnborg.org>
+	<20081222151338.3b6ef997.akpm@linux-foundation.org>
+	<20081223131746.GA7456@uranus.ravnborg.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBR8t5ki007119
 
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Tue, 23 Dec 2008 14:17:46 +0100
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+> It may take a few days before the drivers gets fixed.
+> Christmas is approaching fast by now.
 
-> On Sat, Dec 27, 2008 at 01:50:04AM -0500, Mike Frysinger wrote:
-> > Use __asm__/__inline__ rather than asm/inline for all the functions
-> > exported to userspace.
-> 
-> I will imagine that we will see cleanup patches converting
-> these back to inline/asm.
-> How about doing this conversion as part of the headers_install.pl
-> script so we know it is always correct?
-> 
-> Then we can keep the familiar inline/asm in the kernel headers
-> and always use the correct __asm__, __inline__ version for our
-> exported headers.
+Even with this and your driver patch applied, the tree
+doesn't build successfully:
 
-or name it __asm__exported__ to make sure it isnt cleaned up away.
+cc1: warnings being treated as errors
+arch/sparc/kernel/psycho_common.c: In function â€˜psycho_check_stc_errorâ€™:
+arch/sparc/kernel/psycho_common.c:104: warning: format â€˜%016lxâ€™ expects type â€˜long unsigned intâ€™, but argument 4 has type â€˜long long unsigned intâ€™
 
-	Ingo
+Did you remove sparc's -Werror when doing test builds
+of these changes? :-)
+
+Either way these need some work before they should be
+added to any tree.
+
+Andrew you probably want to toss these from your tree
+since at a minimum they will break the sparc64 build.
+
+Sam will fix them up and resubmit, and I'll apply them,
+don't worry. :)
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
