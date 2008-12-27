@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbYL0Gvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbYL0HKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754402AbYL0Gvk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 01:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYL0Gv3
+	id S1753107AbYL0HKo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 02:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYL0HKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 01:51:29 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:40342 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751455AbYL0Gv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 01:51:28 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: anemo@mba.ocn.ne.jp, dtor@mail.ru, henk.vergonet@gmail.com
-Subject: [PATCH] linux/map_to_7segment.h: convert to __inline__ for userspace
-Date: Sat, 27 Dec 2008 01:51:27 -0500
-Message-Id: <1230360687-6739-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.0.6
+	Sat, 27 Dec 2008 02:10:35 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:56219 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbYL0HKe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 02:10:34 -0500
+Date: Sat, 27 Dec 2008 08:12:08 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
+Message-ID: <20081227071208.GB27736@uranus.ravnborg.org>
+References: <1230360604-6711-1-git-send-email-vapier@gentoo.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1230360604-6711-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use __inline__ rather than inline for map_to_seg7() since it is exported
-to userspace.
+On Sat, Dec 27, 2008 at 01:50:04AM -0500, Mike Frysinger wrote:
+> Use __asm__/__inline__ rather than asm/inline for all the functions
+> exported to userspace.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- include/linux/map_to_7segment.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I will imagine that we will see cleanup patches converting
+these back to inline/asm.
+How about doing this conversion as part of the headers_install.pl
+script so we know it is always correct?
 
-diff --git a/include/linux/map_to_7segment.h b/include/linux/map_to_7segment.h
-index 7df8432..12d62a5 100644
---- a/include/linux/map_to_7segment.h
-+++ b/include/linux/map_to_7segment.h
-@@ -75,7 +75,7 @@ struct seg7_conversion_map {
- 	unsigned char	table[128];
- };
- 
--static inline int map_to_seg7(struct seg7_conversion_map *map, int c)
-+static __inline__ int map_to_seg7(struct seg7_conversion_map *map, int c)
- {
- 	return c >= 0 && c < sizeof(map->table) ? map->table[c] : -EINVAL;
- }
--- 
-1.6.0.6
+Then we can keep the familiar inline/asm in the kernel headers
+and always use the correct __asm__, __inline__ version for our
+exported headers.
 
+	Sam
