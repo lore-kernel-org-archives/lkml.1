@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYL0JvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYL0Jx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbYL0JvS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 04:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYL0JvE
+	id S1754152AbYL0Jx7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 04:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYL0Jxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 04:51:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36986 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752567AbYL0JvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 04:51:03 -0500
-Date: Sat, 27 Dec 2008 10:50:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Howells <dhowells@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	Sat, 27 Dec 2008 04:53:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42875 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867AbYL0Jxt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 04:53:49 -0500
+Subject: [PATCH] x86_64: Eliminate atleast 10684 sparse warnings
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
-Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333
-	smp_call_function_mask
-Message-ID: <20081227095019.GA8248@elte.hu>
-References: <86802c440812190351q3118516aif664dd5869c21b2a@mail.gmail.com> <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com> <49529CE1.4040005@kernel.org> <20081226091217.GA5100@linux.vnet.ibm.com> <4954AC7B.3020603@kernel.org> <3677.1230371218@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3677.1230371218@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Andi Kleen <andi@firstfloor.org>, randy.dunlap@oracle.com,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 27 Dec 2008 15:21:36 +0530
+Message-Id: <1230371496.3276.4.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: cleanup, avoid 10000+ sparse warnings
 
-* David Howells <dhowells@redhat.com> wrote:
+Eliminate 1434 sparse warnings like:
+include/linux/list.h:106:16: warning: constant 0xdead000000000000 is so big it is unsigned long
 
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > I recall David Howells had a similar issue with the bootparamter patch set.
-> > The workaround he used was to add a barrier(); call in the weak function
-> > to avoid the inline.
-> 
-> Yes I did.  Rusty's solution was just to move the default weak functions into
-> different files.
-> 
-> Attempting to use the noinline attribute does not work.
-> 
-> Of course, you could just stick the functions into lib/ in separate .c 
-> files and dispense with the weak attribute altogether.
+Eliminate 1434 sparse warnings like:
+include/linux/list.h:107:16: warning: constant 0xdead000000000000 is so big it is unsigned long
 
-the weak functions should be close to where the code that uses them is - 
-not somewhere separate (where no-one will really be aware of their 
-existence). So either we find a way to avoid such repeat bugs in the 
-future, or we do away with weak functions altogether and go back to 
-stone-age #ifdefs ;-)
+Eliminate 1434 sparse warnings like:
+include/linux/list.h:579:12: warning: constant 0xdead000000000000 is so big it is unsigned long
 
-I think we should get a Sparse check that detects empty void __weak 
-functions?
+Eliminate 1434 sparse warnings like:
+include/linux/list.h:580:13: warning: constant 0xdead000000000000 is so big it is unsigned long
 
-	Ingo
+Eliminate 1237 sparse warnings like:
+include/linux/rculist.h:97:16: warning: constant 0xdead000000000000 is so big it is unsigned long
+
+Eliminate 1237 sparse warnings like:
+include/linux/rculist.h:143:14: warning: constant 0xdead000000000000 is so big it is unsigned long
+
+Eliminate 1237 sparse warnings like:
+include/linux/rculist.h:260:13: warning: constant 0xdead000000000000 is so big it is unsigned long
+
+Eliminate 1237 sparse warnings like:
+include/linux/rculist.h:280:15: warning: constant 0xdead000000000000 is so big it is unsigned long
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/poison.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/poison.h b/include/linux/poison.h
+index 603d3bd..f2de9a9 100644
+--- a/include/linux/poison.h
++++ b/include/linux/poison.h
+@@ -9,7 +9,7 @@
+  * that is also not mappable by user-space exploits:
+  */
+ #ifdef CONFIG_ILLEGAL_POINTER_VALUE
+-# define POISON_POINTER_DELTA CONFIG_ILLEGAL_POINTER_VALUE
++# define POISON_POINTER_DELTA _AC(CONFIG_ILLEGAL_POINTER_VALUE, UL)
+ #else
+ # define POISON_POINTER_DELTA 0
+ #endif
+-- 
+1.5.5.1
+
+
+
