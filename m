@@ -1,97 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYL0JUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYL0JVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbYL0JUL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 04:20:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYL0JT6
+	id S1754123AbYL0JVu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 04:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYL0JVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 04:19:58 -0500
-Received: from proxy1.bredband.net ([195.54.101.71]:53458 "EHLO
-	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbYL0JT5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 04:19:57 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Agg+AEuCVUnVQJ+/PGdsb2JhbACBbJF2AQEBATUBqSdYjxiGRA
-Message-ID: <4955F338.4020509@zappa.cx>
-Date: Sat, 27 Dec 2008 10:19:52 +0100
-From: Andreas Sundstrom <sunkan@zappa.cx>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Sat, 27 Dec 2008 04:21:41 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:45088 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752573AbYL0JVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 04:21:40 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
+Date: Sat, 27 Dec 2008 04:21:35 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
+Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <20081227071208.GB27736@uranus.ravnborg.org> <20081227084708.GA16077@elte.hu>
+In-Reply-To: <20081227084708.GA16077@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28 ext4, xen and lvm volume becomes ro after snapshot
-References: <4954BAAB.9090108@zappa.cx> <20081226140721.GN9871@mit.edu> <4954FB62.4090306@zappa.cx> <20081226182145.GP9871@mit.edu> <495526F6.9040704@zappa.cx> <20081226193307.GA2138@mit.edu> <495553EB.6030604@zappa.cx> <20081227030632.GA3539@mit.edu>
-In-Reply-To: <20081227030632.GA3539@mit.edu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart9328476.1M6iK9Flnp";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200812270421.38774.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Fri, Dec 26, 2008 at 11:00:11PM +0100, Andreas Sundstrom wrote:
->> But I enabled debugfs and did
->> "echo 3 > /sys/kernel/debug/jbd2/jbd2-debug" and reproduced the problem
->> by taking a snapshot while the system was live.
->> I hope this had the same effect as your proposed change.
-> 
-> Thanks, that was helpful.  Can you try applying this patch, and let me
-> know whether the printk triggers?
+--nextPart9328476.1M6iK9Flnp
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-No problem
+On Saturday 27 December 2008 03:47:08 Ingo Molnar wrote:
+> * Sam Ravnborg wrote:
+> > On Sat, Dec 27, 2008 at 01:50:04AM -0500, Mike Frysinger wrote:
+> > > Use __asm__/__inline__ rather than asm/inline for all the functions
+> > > exported to userspace.
+> >
+> > I will imagine that we will see cleanup patches converting
+> > these back to inline/asm.
+> > How about doing this conversion as part of the headers_install.pl
+> > script so we know it is always correct?
+> >
+> > Then we can keep the familiar inline/asm in the kernel headers
+> > and always use the correct __asm__, __inline__ version for our
+> > exported headers.
+>
+> or name it __asm__exported__ to make sure it isnt cleaned up away.
 
-> 
-> What I'm guessing is going on is that on a native kernel, we get the
-> ENOTSUPP error immediately when we call submit_bh().  However, with
-> the Xen kernel, we aren't getting the error right away; we're either
-> getting ENOTSUPP later on, when we call wait_on_buffer().  For ext3,
-> this doesn't matter, since we call sync_dirty_buffer() which calls
-> submit_bh() and wait_on_buffer() synchronously.  But ext4 doesn't use
-> sync_dirty_buffer(), instead calling submit_bh() and wait_on_buffer()
-> separately.
-> 
-> This patch should be able to confirm whether or not this supposition
-> is correct.
-> 
-> 						- Ted
-> 
-> diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-> index bd1fad0..630196d 100644
-> --- a/fs/jbd2/commit.c
-> +++ b/fs/jbd2/commit.c
-> @@ -174,9 +174,16 @@ static int journal_wait_on_commit_record(struct buffer_head *bh)
->  
->  	clear_buffer_dirty(bh);
->  	wait_on_buffer(bh);
-> +	if (buffer_eopnotsupp(bh)) {
-> +		printk("jbd2: journal_wait_on_commit_record: eopnotsupp\n");
-> +		ret = sync_dirty_buffer(bh);
-> +		printk("jbd2: sync_dirty_buffer returned %d\n", ret);
-> +	}
->  
-> -	if (unlikely(!buffer_uptodate(bh)))
-> +	if (unlikely(!buffer_uptodate(bh))) {
-> +		printk("jbd2: journal_wait_on_commit_record: not uptodate\n");
->  		ret = -EIO;
-> +	}
->  	put_bh(bh);            /* One for getblk() */
->  	jbd2_journal_put_journal_head(bh2jh(bh));
->  
+i think we can try the automated approach first as that'll make things easi=
+er=20
+on everyone ... but if it doesnt work out, this sounds like a reasonable=20
+solution to keep things sane.
+=2Dmike
 
-[   44.546636] blkfront: xvda1: write barrier op failed
+--nextPart9328476.1M6iK9Flnp
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-[   44.546666] blkfront: xvda1: barriers disabled
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-[   44.546686] end_request: I/O error, dev xvda1, sector 5256
+iQIcBAABAgAGBQJJVfOiAAoJEEFjO5/oN/WBlvIQAI8mMyPUZSESiQApAXEjqxxd
+BYxZKRYVDplxKm7dT+Rsi/LSODArdGEUH7hdnmHVQQ5rr/T2DKLRzcgJGIAY79/C
+2IdLNkHUpGlThDajuLShN1qFz3IHQr70fYDy8Do1gHNGQVj3k6kkWQjW+Y2oQ9/c
+JbQ3sJXl70FlXvZDHerV7TPlRsHtX+8U0eQZYL+SIEusRegT8GcEeo9e/K4ptXVz
+ylpRjOa/O5/NEvJXmD6tLfF14bH4s3EcYJpLyNuurq/FtTarbOFBvd9vGR6dLZMl
+mY/evHOVbaK2MdoIMoJRu7XwEwsesTcuOWHEnOxisXyBPu3WBRWVtRu5CGwNciHZ
+CZ4tyFWEAx9pztXPNCeHo4f/gXV9fgDb3S5Emvaai78cRC93iTw+LWL+hxRGT/7d
+KRsIQQpl2u1Frybu1MNJD1PvS8xbtFKWcccdbRN7cjo0XQTYqJbyr2W0yWf6k225
+FEleQFZSjL4pOMplxdx3M1cJwKkCfDeczjrPmUy3JeURdn0jLd7JEu+eSnInXUgF
+hQRg5PdzLUJQODesvlfUfvviE5y1FxTBnTcAk5ArLYhSN19MBzltufiUYX/hPcbP
+dHUbxv2CimXMxZeHhTjZY4mQFZBBS+R1Kd9lwhHuC3iiSBcrWH3jd7nabGqF59lx
+eE9PZOtn45b3EM5ZM1N/
+=M1ou
+-----END PGP SIGNATURE-----
 
-[   44.546710] end_request: I/O error, dev xvda1, sector 5256
-
-[   44.548228] jbd2: journal_wait_on_commit_record: eopnotsupp
-
-[   44.548251] jbd2: sync_dirty_buffer returned 0
-
-[   44.548270] jbd2: journal_wait_on_commit_record: not uptodate
-
-[   44.548293] Aborting journal on device xvda1:8.
-
-More output here http://pastebin.com/m3694a25b
+--nextPart9328476.1M6iK9Flnp--
