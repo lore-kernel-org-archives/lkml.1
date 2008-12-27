@@ -1,75 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbYL0Asn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYL0Atz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbYL0Asn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 19:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYL0Ase
+	id S1753490AbYL0Atz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 19:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYL0Atq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 19:48:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51907 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752084AbYL0Asd (ORCPT
+	Fri, 26 Dec 2008 19:49:46 -0500
+Received: from infernal.debian.net ([87.230.26.131]:54658 "EHLO
+	infernal.debian.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbYL0Atq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 19:48:33 -0500
-Date: Fri, 26 Dec 2008 16:48:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kai Ruhnau <kai@tragetaschen.dyndns.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Boot hang after io scheduler registration
-Message-Id: <20081226164827.48527739.akpm@linux-foundation.org>
-In-Reply-To: <49556A37.8070202@tragetaschen.dyndns.org>
-References: <49556A37.8070202@tragetaschen.dyndns.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Dec 2008 19:49:46 -0500
+Date: Sat, 27 Dec 2008 01:49:28 +0100
+From: Andreas Bombe <andreas.bombe@mytum.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Joerg Roedel <joro@8bytes.org>,
+       Edward Estabrook <edward.estabrook.lkml@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, gregkh@suse.de,
+       edward.estabrook@gmail.com, edward_estabrook@agilent.com
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+	(corrected)
+Message-ID: <20081227004928.GA28225@case.infernal>
+References: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com> <20081211003340.GB3078@local> <20081225123004.GA13640@8bytes.org> <20081225152014.GA3079@local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081225152014.GA3079@local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Dec 2008 00:35:19 +0100 Kai Ruhnau <kai@tragetaschen.dyndns.org> wrote:
+On Thu, Dec 25, 2008 at 04:20:15PM +0100, Hans J. Koch wrote:
+> On Thu, Dec 25, 2008 at 01:30:04PM +0100, Joerg Roedel wrote:
+> > I like that idea of a seperate directory in sysfs. How about allocating
+> > DMA memory by creating files in this directory.
+> 
+> Nice idea, but AFAICT sysfs doesn't support creating files from userspace.
 
-> Hi,
-> 
-> I have a somewhat weird hang problem when booting all recent kernel
-> versions including 2.6.28: When I boot my system and let grub start the
-> kernel after a 5 second timeout, the system will hang after registering
-> the io schedulers (see below). However, when I choose the default grub
-> entry manually by pressing ENTER in the menu, the kernel does not hang
-> and continues the normal booting process.
-> 
-> Below, you can find the place of the hang and an excerpt of the messages
-> that follow on a normal boot as well as some system information.
-> 
-> Thanks for your time on this problem.
-> 
-> Best regards
-> Kai
-> 
-> # dmesg
-> ...
-> [    0.309379] io scheduler noop registered
-> [    0.309473] io scheduler anticipatory registered
-> [    0.309569] io scheduler deadline registered
-> [    0.309679] io scheduler cfq registered (default)
-> 
-> Hang happens here.
-> 
-> Continuation when pressing ENTER in grub:
-> 
-> [    0.414098] pci 0000:01:00.0: Boot video device
-> [    0.417068] pcieport-driver 0000:00:02.0: setting latency timer to 64
-> [    0.417097] pcieport-driver 0000:00:02.0: found MSI capability
-> [    0.417222] pcieport-driver 0000:00:02.0: irq 319 for MSI/MSI-X
-> [    0.417231] pci_express 0000:00:02.0:pcie00: allocate port service
-> [    0.417294] pci_express 0000:00:02.0:pcie03: allocate port service
-> [    0.417376] pcieport-driver 0000:00:06.0: setting latency timer to 64
-> [    0.417403] pcieport-driver 0000:00:06.0: found MSI capability
-> [    0.417523] pcieport-driver 0000:00:06.0: irq 318 for MSI/MSI-X
-> [    0.417532] pci_express 0000:00:06.0:pcie00: allocate port service
-> [    0.417580] pci_express 0000:00:06.0:pcie03: allocate port service
-> ...
-> 
-
-Please add `initcall_debug' to the kernel boot command line.  That
-should tell us which initialisation function is getting stuck.
-
+For that there is configfs.
