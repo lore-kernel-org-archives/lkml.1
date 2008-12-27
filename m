@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbYL0TK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYL0TLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbYL0TK7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 14:10:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYL0TKu
+	id S1754694AbYL0TLd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 14:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYL0TLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 14:10:50 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36344 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbYL0TKu (ORCPT
+	Sat, 27 Dec 2008 14:11:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:26647 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbYL0TLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 14:10:50 -0500
-Date: Sat, 27 Dec 2008 20:12:23 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Frysinger <vapier@gentoo.org>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
-Message-ID: <20081227191223.GA10592@uranus.ravnborg.org>
-References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <20081227071208.GB27736@uranus.ravnborg.org> <20081227084708.GA16077@elte.hu> <20081227185727.GB10442@uranus.ravnborg.org> <49567AC3.4030507@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49567AC3.4030507@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 27 Dec 2008 14:11:19 -0500
+Message-ID: <49567dd3.0b38560a.3c6c.0511@mx.google.com>
+Date: Sat, 27 Dec 2008 20:11:11 +0100
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081226115921.bb094c58.rdunlap@xenotime.net> 
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+	    <20081222191517.11807.20718.stgit@vmbox.hanneseder.net>
+	    <20081225.161740.10052019.davem@davemloft.net>
+	    <20081226115921.bb094c58.rdunlap@xenotime.net>
+Subject: Re: [PATCH 03/27] drivers/net: fix sparse warning: returning void-valued expression
+From: Hannes Eder <hannes@hanneseder.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 27, 2008 at 10:58:11AM -0800, H. Peter Anvin wrote:
-> Sam Ravnborg wrote:
-> > 
-> > I wnet with the scripted conversion for now.
-> > If that does not fly we can come back to this proposal.
-> > 
-> > What I like most with the auto conversion is that we avoid
-> > adding yet another special rule about how to do stuff in exported headers.
-> > 
+On 12/26/08, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> On Thu, 25 Dec 2008 16:17:40 -0800 (PST)
+>  
+> David Miller <davem@davemloft.net> wrote:
+>  
+>  
+> > From: Hannes Eder <hannes@hanneseder.net>
+>  > Date: Mon, 22 Dec 2008 20:15:17 +0100
+>  >
+>  > > Fix this sparse warning:
+>  > >
+>  > >   drivers/net/niu.c:8850:2: warning: returning void-valued expression
+>  > >
+>  > > Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+>  >
+>  > Can we just fix sparse not to generate this warning?  It's
+>  > marginal, at best.  C++ even explicitly defines this as valid
+>  > and last time I brought this up Linus even agreed.
+>  
+>  
+> Ack, I discussed it with him also and he thought that
+>  they were just fine as they were...
+>  
 > 
-> Indeed, and being keyword conversion, it's independent of context, at
-> least as long as one doesn't have too many run-ins with weird uses of
-> the # and ## preprocessor operators, which are a *lot* easier to rule
-> out globally.
+>  > The types match, the function returns void and it is returning a void,
+>  > what is the problem?
 
-Speaking of what we want to use in exported headers.
-What is the recommendation with respect to uint32_t and friends?
-To my best knowledge they are banned in exported headers as they
-are not part of the kernel namespace and I see few users too.
-But is this something we should check for?
+In fact there is no need to _fix_ sparse, as there is a command line option
+-Wreturn-void / -Wno-return-void, so we could change the Makefile, see diff
+below.
 
-	Sam
+---
+
+diff --git a/Makefile b/Makefile
+index 64f14aa..cc62984 100644
+--- a/Makefile
++++ b/Makefile
+@@ -321,7 +321,7 @@ KALLSYMS    = scripts/kallsyms
+ PERL           = perl
+ CHECK          = sparse
+ 
+-CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(CF)
++CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise -Wno-return-void $(CF)
+ MODFLAGS       = -DMODULE
+ CFLAGS_MODULE   = $(MODFLAGS)
+ AFLAGS_MODULE   = $(MODFLAGS)
