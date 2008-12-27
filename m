@@ -1,100 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYL0GvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbYL0Gvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241AbYL0GvQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 01:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYL0GuH
+	id S1754402AbYL0Gvk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 01:51:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYL0Gv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 01:50:07 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:36103 "EHLO smtp.gentoo.org"
+	Sat, 27 Dec 2008 01:51:29 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:40342 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbYL0GuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 01:50:05 -0500
+	id S1751455AbYL0Gv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 01:51:28 -0500
 From: Mike Frysinger <vapier@gentoo.org>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
-Date: Sat, 27 Dec 2008 01:50:04 -0500
-Message-Id: <1230360604-6711-1-git-send-email-vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: anemo@mba.ocn.ne.jp, dtor@mail.ru, henk.vergonet@gmail.com
+Subject: [PATCH] linux/map_to_7segment.h: convert to __inline__ for userspace
+Date: Sat, 27 Dec 2008 01:51:27 -0500
+Message-Id: <1230360687-6739-1-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use __asm__/__inline__ rather than asm/inline for all the functions
-exported to userspace.
+Use __inline__ rather than inline for map_to_seg7() since it is exported
+to userspace.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/x86/include/asm/byteorder.h |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ include/linux/map_to_7segment.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/byteorder.h b/arch/x86/include/asm/byteorder.h
-index e02ae2d..16f7c01 100644
---- a/arch/x86/include/asm/byteorder.h
-+++ b/arch/x86/include/asm/byteorder.h
-@@ -8,12 +8,12 @@
+diff --git a/include/linux/map_to_7segment.h b/include/linux/map_to_7segment.h
+index 7df8432..12d62a5 100644
+--- a/include/linux/map_to_7segment.h
++++ b/include/linux/map_to_7segment.h
+@@ -75,7 +75,7 @@ struct seg7_conversion_map {
+ 	unsigned char	table[128];
+ };
  
- #ifdef __i386__
- 
--static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
-+static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
+-static inline int map_to_seg7(struct seg7_conversion_map *map, int c)
++static __inline__ int map_to_seg7(struct seg7_conversion_map *map, int c)
  {
- #ifdef CONFIG_X86_BSWAP
--	asm("bswap %0" : "=r" (x) : "0" (x));
-+	__asm__("bswap %0" : "=r" (x) : "0" (x));
- #else
--	asm("xchgb %b0,%h0\n\t"	/* swap lower bytes	*/
-+	__asm__("xchgb %b0,%h0\n\t"	/* swap lower bytes	*/
- 	    "rorl $16,%0\n\t"	/* swap words		*/
- 	    "xchgb %b0,%h0"	/* swap higher bytes	*/
- 	    : "=q" (x)
-@@ -22,7 +22,7 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
- 	return x;
+ 	return c >= 0 && c < sizeof(map->table) ? map->table[c] : -EINVAL;
  }
- 
--static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
-+static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 val)
- {
- 	union {
- 		struct {
-@@ -33,13 +33,13 @@ static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
- 	} v;
- 	v.u = val;
- #ifdef CONFIG_X86_BSWAP
--	asm("bswapl %0 ; bswapl %1 ; xchgl %0,%1"
-+	__asm__("bswapl %0 ; bswapl %1 ; xchgl %0,%1"
- 	    : "=r" (v.s.a), "=r" (v.s.b)
- 	    : "0" (v.s.a), "1" (v.s.b));
- #else
- 	v.s.a = ___arch__swab32(v.s.a);
- 	v.s.b = ___arch__swab32(v.s.b);
--	asm("xchgl %0,%1"
-+	__asm__("xchgl %0,%1"
- 	    : "=r" (v.s.a), "=r" (v.s.b)
- 	    : "0" (v.s.a), "1" (v.s.b));
- #endif
-@@ -48,17 +48,17 @@ static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
- 
- #else /* __i386__ */
- 
--static inline __attribute_const__ __u64 ___arch__swab64(__u64 x)
-+static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x)
- {
--	asm("bswapq %0"
-+	__asm__("bswapq %0"
- 	    : "=r" (x)
- 	    : "0" (x));
- 	return x;
- }
- 
--static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
-+static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
- {
--	asm("bswapl %0"
-+	__asm__("bswapl %0"
- 	    : "=r" (x)
- 	    : "0" (x));
- 	return x;
 -- 
 1.6.0.6
 
