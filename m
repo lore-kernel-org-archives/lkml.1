@@ -1,245 +1,466 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbYL0QJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYL0QYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbYL0QJV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 11:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYL0QJM
+	id S1754705AbYL0QYa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 11:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYL0QYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 11:09:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53145 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754113AbYL0QJL (ORCPT
+	Sat, 27 Dec 2008 11:24:22 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:41341 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbYL0QYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 11:09:11 -0500
-Subject: [PATCH] x86: introducing asm/sys_ia32.h
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 27 Dec 2008 21:37:10 +0530
-Message-Id: <1230394031.8231.2.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Dec 2008 11:24:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=qFDEKT0hM5vkC2iSrsENHxSYGK+bbE4QLRh9v42TAJ2MEATM1R+E6U90H7mwjP0mhy
+         RnURCQhAYzlRTjvmvoYY8IQkgiLcsyRakQuNa7T2vbpRkTAJqS2MV+U5iGJ7n6XoCRqt
+         P23HRO+B1PmOLfIzC9gIjwl6/OO2s2eZdazYs=
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+To: jayakumar.lkml@gmail.com
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.miao@marvell.com>,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       David Brownell <david-b@pacbell.net>, Sam Ravnborg <sam@ravnborg.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>,
+       Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [RFC 2.6.27 1/1] gpiolib: add batch set/get
+Date: Sun, 28 Dec 2008 00:24:08 +0800
+Message-Id: <1230395048446-git-send-email-jayakumar.lkml@gmail.com>
+X-Mailer: git-send-email 1.5.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, avoid 44 sparse warnings, new file asm/sys_ia32.h
+Hi friends,
 
-Fixes following sparse warnings:
-  CHECK   arch/x86/ia32/sys_ia32.c
-arch/x86/ia32/sys_ia32.c:53:17: warning: symbol 'sys32_truncate64' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:60:17: warning: symbol 'sys32_ftruncate64' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:98:17: warning: symbol 'sys32_stat64' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:109:17: warning: symbol 'sys32_lstat64' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:119:17: warning: symbol 'sys32_fstat64' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:128:17: warning: symbol 'sys32_fstatat' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:164:17: warning: symbol 'sys32_mmap' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:195:17: warning: symbol 'sys32_mprotect' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:201:17: warning: symbol 'sys32_pipe' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:215:17: warning: symbol 'sys32_rt_sigaction' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:291:17: warning: symbol 'sys32_sigaction' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:330:17: warning: symbol 'sys32_rt_sigprocmask' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:370:17: warning: symbol 'sys32_alarm' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:383:17: warning: symbol 'sys32_old_select' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:393:17: warning: symbol 'sys32_waitpid' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:401:17: warning: symbol 'sys32_sysfs' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:406:17: warning: symbol 'sys32_sched_rr_get_interval' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:421:17: warning: symbol 'sys32_rt_sigpending' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:445:17: warning: symbol 'sys32_rt_sigqueueinfo' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:472:17: warning: symbol 'sys32_sysctl' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:517:17: warning: symbol 'sys32_pread' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:524:17: warning: symbol 'sys32_pwrite' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:532:17: warning: symbol 'sys32_personality' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:545:17: warning: symbol 'sys32_sendfile' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:565:17: warning: symbol 'sys32_mmap2' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:589:17: warning: symbol 'sys32_olduname' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:626:6: warning: symbol 'sys32_uname' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:641:6: warning: symbol 'sys32_ustat' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:663:17: warning: symbol 'sys32_execve' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:678:17: warning: symbol 'sys32_clone' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:693:6: warning: symbol 'sys32_lseek' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:698:6: warning: symbol 'sys32_kill' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:703:6: warning: symbol 'sys32_fadvise64_64' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:712:6: warning: symbol 'sys32_vm86_warning' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:726:6: warning: symbol 'sys32_lookup_dcookie' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:732:20: warning: symbol 'sys32_readahead' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:738:17: warning: symbol 'sys32_sync_file_range' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:746:17: warning: symbol 'sys32_fadvise64' was not declared. Should it be static?
-arch/x86/ia32/sys_ia32.c:753:17: warning: symbol 'sys32_fallocate' was not declared. Should it be static?
-  CHECK   arch/x86/ia32/ia32_signal.c
-arch/x86/ia32/ia32_signal.c:126:17: warning: symbol 'sys32_sigsuspend' was not declared. Should it be static?
-arch/x86/ia32/ia32_signal.c:141:17: warning: symbol 'sys32_sigaltstack' was not declared. Should it be static?
-arch/x86/ia32/ia32_signal.c:249:17: warning: symbol 'sys32_sigreturn' was not declared. Should it be static?
-arch/x86/ia32/ia32_signal.c:279:17: warning: symbol 'sys32_rt_sigreturn' was not declared. Should it be static?
-  CHECK   arch/x86/ia32/ipc32.c
-arch/x86/ia32/ipc32.c:12:17: warning: symbol 'sys32_ipc' was not declared. Should it be static?
+This is v2 of my attempt to add batch support to gpiolib. Thanks to
+David Brownell, Eric Miao, Paulius Zaleckas, Geert, and Sam for prior
+feedback. I have tested set_batch using the am300 driver. get_batch
+is not tested.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Please let me know your feedback.
+
+Thanks,
+jaya
+
+am300epd was doing 800*600*16*gpio_set_value for each framebuffer transfer
+(it uses 16-pins of gpio as its data bus). I found this caused a wee
+performance limitation. This patch adds an API for gpio_s/get_batch
+which allows drivers to s/get batches of gpio together in a single call.
+I have done a test implementation on gumstix (pxa255) with am300epd
+and it provides a nice improvement in performance.
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Eric Miao <eric.miao@marvell.com>
+Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Ben Gardner <bgardner@wabtec.com>
+CC: Greg KH <greg@kroah.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
 ---
- arch/x86/ia32/ia32_signal.c     |    3 +-
- arch/x86/ia32/ipc32.c           |    1 +
- arch/x86/ia32/sys_ia32.c        |    2 +-
- arch/x86/include/asm/sys_ia32.h |  101 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 104 insertions(+), 3 deletions(-)
- create mode 100644 arch/x86/include/asm/sys_ia32.h
+ arch/arm/mach-pxa/Kconfig             |    1 +
+ arch/arm/mach-pxa/am300epd.c          |    9 ++-
+ arch/arm/mach-pxa/gpio.c              |   72 +++++++++++++++++++
+ arch/arm/mach-pxa/include/mach/gpio.h |   47 +++++++++++++
+ drivers/gpio/Kconfig                  |    5 ++
+ drivers/gpio/gpiolib.c                |  122 +++++++++++++++++++++++++++++++++
+ include/asm-generic/gpio.h            |   15 ++++-
+ 7 files changed, 269 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index b195f85..9dabd00 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -24,15 +24,14 @@
- #include <asm/ucontext.h>
- #include <asm/uaccess.h>
- #include <asm/i387.h>
--#include <asm/ia32.h>
- #include <asm/ptrace.h>
- #include <asm/ia32_unistd.h>
- #include <asm/user32.h>
- #include <asm/sigcontext32.h>
- #include <asm/proto.h>
- #include <asm/vdso.h>
+diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
+index 768618b..a5a306e 100644
+--- a/arch/arm/mach-pxa/Kconfig
++++ b/arch/arm/mach-pxa/Kconfig
+@@ -41,6 +41,7 @@ config GUMSTIX_AM200EPD
+ 	bool "Enable AM200EPD board support"
+ 
+ config GUMSTIX_AM300EPD
++	select GPIOLIB_BATCH
+ 	bool "Enable AM300EPD board support"
+ 
+ endchoice
+diff --git a/arch/arm/mach-pxa/am300epd.c b/arch/arm/mach-pxa/am300epd.c
+index 4bd10a1..9594cf0 100644
+--- a/arch/arm/mach-pxa/am300epd.c
++++ b/arch/arm/mach-pxa/am300epd.c
+@@ -190,9 +190,12 @@ static u16 am300_get_hdb(struct broadsheetfb_par *par)
+ 	u16 res = 0;
+ 	int i;
+ 
++#ifdef CONFIG_GPIOLIB_BATCH
++	res = gpio_get_batch(DB0_GPIO_PIN, 0xFFFF, 16);
++#else
+ 	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
+ 		res |= (gpio_get_value(DB0_GPIO_PIN + i)) ? (1 << i) : 0;
 -
- #include <asm/sigframe.h>
-+#include <asm/sys_ia32.h>
++#endif
+ 	return res;
+ }
  
- #define DEBUG_SIG 0
+@@ -200,8 +203,12 @@ static void am300_set_hdb(struct broadsheetfb_par *par, u16 data)
+ {
+ 	int i;
  
-diff --git a/arch/x86/ia32/ipc32.c b/arch/x86/ia32/ipc32.c
-index d21991c..29cdcd0 100644
---- a/arch/x86/ia32/ipc32.c
-+++ b/arch/x86/ia32/ipc32.c
-@@ -8,6 +8,7 @@
- #include <linux/shm.h>
- #include <linux/ipc.h>
- #include <linux/compat.h>
-+#include <asm/sys_ia32.h>
++#ifdef CONFIG_GPIOLIB_BATCH
++	gpio_set_batch(DB0_GPIO_PIN, data, 0xFFFF, 16);
++#else
+ 	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
+ 		gpio_set_value(DB0_GPIO_PIN + i, (data >> i) & 0x01);
++#endif
+ }
  
- asmlinkage long sys32_ipc(u32 call, int first, int second, int third,
- 			  compat_uptr_t ptr, u32 fifth)
-diff --git a/arch/x86/ia32/sys_ia32.c b/arch/x86/ia32/sys_ia32.c
-index 2e09dcd..6c0d7f6 100644
---- a/arch/x86/ia32/sys_ia32.c
-+++ b/arch/x86/ia32/sys_ia32.c
-@@ -44,8 +44,8 @@
- #include <asm/types.h>
- #include <asm/uaccess.h>
- #include <asm/atomic.h>
--#include <asm/ia32.h>
- #include <asm/vgtod.h>
-+#include <asm/sys_ia32.h>
  
- #define AA(__x)		((unsigned long)(__x))
+diff --git a/arch/arm/mach-pxa/gpio.c b/arch/arm/mach-pxa/gpio.c
+index 5fec1e4..d85cf2e 100644
+--- a/arch/arm/mach-pxa/gpio.c
++++ b/arch/arm/mach-pxa/gpio.c
+@@ -162,6 +162,76 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+ 		__raw_writel(mask, pxa->regbase + GPCR_OFFSET);
+ }
  
-diff --git a/arch/x86/include/asm/sys_ia32.h b/arch/x86/include/asm/sys_ia32.h
-new file mode 100644
-index 0000000..ffb08be
---- /dev/null
-+++ b/arch/x86/include/asm/sys_ia32.h
-@@ -0,0 +1,101 @@
++#ifdef CONFIG_GPIOLIB_BATCH
 +/*
-+ * sys_ia32.h - Linux ia32 syscall interfaces
-+ *
-+ * Copyright (c) 2008 Jaswinder Singh Rajput
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
++ * Set output GPIO level in batches
 + */
++static void pxa_gpio_set_batch(struct gpio_chip *chip, unsigned offset,
++				u32 values, u32 bitmask)
++{
++	struct pxa_gpio_chip *pxa;
 +
-+#ifndef _ASM_X86_SYS_IA32_H
-+#define _ASM_X86_SYS_IA32_H
++	/* we're guaranteed by the caller that offset + bitmask remains
++	 * in this chip.
++	 */
++	pxa = container_of(chip, struct pxa_gpio_chip, chip);
 +
-+#include <linux/compiler.h>
-+#include <linux/linkage.h>
-+#include <linux/types.h>
-+#include <linux/signal.h>
-+#include <asm/compat.h>
-+#include <asm/ia32.h>
++	/* shift the bits into our register specific position */
++	values <<= offset;
++	bitmask <<= offset;
 +
-+/* ia32/sys_ia32.c */
-+asmlinkage long sys32_truncate64(char __user *, unsigned long, unsigned long);
-+asmlinkage long sys32_ftruncate64(unsigned int, unsigned long, unsigned long);
++	values &= bitmask;
++	if (values)
++		__raw_writel(values, pxa->regbase + GPSR_OFFSET);
 +
-+asmlinkage long sys32_stat64(char __user *, struct stat64 __user *);
-+asmlinkage long sys32_lstat64(char __user *, struct stat64 __user *);
-+asmlinkage long sys32_fstat64(unsigned int, struct stat64 __user *);
-+asmlinkage long sys32_fstatat(unsigned int, char __user *,
-+			      struct stat64 __user *, int);
-+struct mmap_arg_struct;
-+asmlinkage long sys32_mmap(struct mmap_arg_struct __user *);
-+asmlinkage long sys32_mprotect(unsigned long, size_t, unsigned long);
++	values = ~values;
++	values &= bitmask;
++	if (values)
++		__raw_writel(values, pxa->regbase + GPCR_OFFSET);
++}
 +
-+asmlinkage long sys32_pipe(int __user *);
-+struct sigaction32;
-+struct old_sigaction32;
-+asmlinkage long sys32_rt_sigaction(int, struct sigaction32 __user *,
-+				   struct sigaction32 __user *, unsigned int);
-+asmlinkage long sys32_sigaction(int, struct old_sigaction32 __user *,
-+				struct old_sigaction32 __user *);
-+asmlinkage long sys32_rt_sigprocmask(int, compat_sigset_t __user *,
-+				     compat_sigset_t __user *, unsigned int);
-+asmlinkage long sys32_alarm(unsigned int);
++/*
++ * Get output GPIO level in batches
++ */
++static u32 pxa_gpio_get_batch(struct gpio_chip *chip, unsigned offset,
++				u32 bitmask)
++{
++	u32 values;
++	struct pxa_gpio_chip *pxa;
 +
-+struct sel_arg_struct;
-+asmlinkage long sys32_old_select(struct sel_arg_struct __user *);
-+asmlinkage long sys32_waitpid(compat_pid_t, unsigned int *, int);
-+asmlinkage long sys32_sysfs(int, u32, u32);
++	/* we're guaranteed by the caller that offset + bitmask remains
++	 * in this chip.
++	 */
++	pxa = container_of(chip, struct pxa_gpio_chip, chip);
 +
-+asmlinkage long sys32_sched_rr_get_interval(compat_pid_t,
-+					    struct compat_timespec __user *);
-+asmlinkage long sys32_rt_sigpending(compat_sigset_t __user *, compat_size_t);
-+asmlinkage long sys32_rt_sigqueueinfo(int, int, compat_siginfo_t __user *);
++	values = __raw_readl(pxa->regbase + GPLR_OFFSET);
 +
-+#ifdef CONFIG_SYSCTL_SYSCALL
-+struct sysctl_ia32;
-+asmlinkage long sys32_sysctl(struct sysctl_ia32 __user *);
++	/* shift the result back into original position */
++	values >>= offset;
++	/* no need to shift bitmask since we've already shifted values */
++	values &= bitmask;
++
++	return values;
++}
 +#endif
 +
-+asmlinkage long sys32_pread(unsigned int, char __user *, u32, u32, u32);
-+asmlinkage long sys32_pwrite(unsigned int, char __user *, u32, u32, u32);
++#ifdef CONFIG_GPIOLIB_BATCH
++#define GPIO_CHIP(_n)							\
++	[_n] = {							\
++		.regbase = GPIO##_n##_BASE,				\
++		.chip = {						\
++			.label		  = "gpio-" #_n,		\
++			.direction_input  = pxa_gpio_direction_input,	\
++			.direction_output = pxa_gpio_direction_output,	\
++			.get		  = pxa_gpio_get,		\
++			.set		  = pxa_gpio_set,		\
++			.base		  = (_n) * 32,			\
++			.ngpio		  = 32,				\
++			.set_batch 	  = pxa_gpio_set_batch,		\
++			.get_batch	  = pxa_gpio_get_batch,		\
++		},							\
++	}
++#else
+ #define GPIO_CHIP(_n)							\
+ 	[_n] = {							\
+ 		.regbase = GPIO##_n##_BASE,				\
+@@ -175,6 +245,8 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+ 			.ngpio		  = 32,				\
+ 		},							\
+ 	}
++#endif
 +
-+asmlinkage long sys32_personality(unsigned long);
-+asmlinkage long sys32_sendfile(int, int, compat_off_t __user *, s32);
+ 
+ static struct pxa_gpio_chip pxa_gpio_chip[] = {
+ 	GPIO_CHIP(0),
+diff --git a/arch/arm/mach-pxa/include/mach/gpio.h b/arch/arm/mach-pxa/include/mach/gpio.h
+index 2c538d8..e66e752 100644
+--- a/arch/arm/mach-pxa/include/mach/gpio.h
++++ b/arch/arm/mach-pxa/include/mach/gpio.h
+@@ -56,6 +56,53 @@ static inline void gpio_set_value(unsigned gpio, int value)
+ 	}
+ }
+ 
++#ifdef CONFIG_GPIOLIB_BATCH
++static inline void gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
++					int bitwidth)
++{
++	if (__builtin_constant_p(gpio) &&
++		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
++		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
++		int shift;
 +
-+asmlinkage long sys32_mmap2(unsigned long, unsigned long, unsigned long,
-+			    unsigned long, unsigned long, unsigned long);
++		shift = gpio % 32;
++		values <<= shift;
++		bitmask <<= shift;
 +
-+struct oldold_utsname;
-+struct old_utsname;
-+asmlinkage long sys32_olduname(struct oldold_utsname __user *);
-+long sys32_uname(struct old_utsname __user *);
++		values &= bitmask;
++		if (values)
++			GPSR(gpio) = values;
 +
-+long sys32_ustat(unsigned, struct ustat32 __user *);
++		values = ~values;
++		values &= bitmask;
++		if (values)
++			GPCR(gpio) = values;
++	} else {
++		__gpio_set_batch(gpio, values, bitmask, bitwidth);
++	}
++}
 +
-+asmlinkage long sys32_execve(char __user *, compat_uptr_t __user *,
-+			     compat_uptr_t __user *, struct pt_regs *);
-+asmlinkage long sys32_clone(unsigned int, unsigned int, struct pt_regs *);
++static inline u32 gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth)
++{
++	if (__builtin_constant_p(gpio) &&
++		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
++		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
++		int shift;
++		u32 values;
 +
-+long sys32_lseek(unsigned int, int, unsigned int);
-+long sys32_kill(int, int);
-+long sys32_fadvise64_64(int, __u32, __u32, __u32, __u32, int);
-+long sys32_vm86_warning(void);
-+long sys32_lookup_dcookie(u32, u32, char __user *, size_t);
++		shift = gpio % 32;
 +
-+asmlinkage ssize_t sys32_readahead(int, unsigned, unsigned, size_t);
-+asmlinkage long sys32_sync_file_range(int, unsigned, unsigned,
-+				      unsigned, unsigned, int);
-+asmlinkage long sys32_fadvise64(int, unsigned, unsigned, size_t, int);
-+asmlinkage long sys32_fallocate(int, int, unsigned,
-+				unsigned, unsigned, unsigned);
++		values = GPLR(gpio);
++		values >>= shift;
++		values &= bitmask;
 +
-+/* ia32/ia32_signal.c */
-+asmlinkage long sys32_sigsuspend(int, int, old_sigset_t);
-+asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *,
-+				  stack_ia32_t __user *, struct pt_regs *);
-+asmlinkage long sys32_sigreturn(struct pt_regs *);
-+asmlinkage long sys32_rt_sigreturn(struct pt_regs *);
++		return values;
++	} else {
++		return __gpio_get_batch(gpio, bitmask, bitwidth);
++	}
++}
++#endif
 +
-+/* ia32/ipc32.c */
-+asmlinkage long sys32_ipc(u32, int, int, int, compat_uptr_t, u32);
-+#endif /* _ASM_X86_SYS_IA32_H */
+ #define gpio_cansleep __gpio_cansleep
+ 
+ #define gpio_to_irq(gpio)	IRQ_GPIO(gpio)
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 48f49d9..aeeb83c 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -37,6 +37,11 @@ menuconfig GPIOLIB
+ 
+ if GPIOLIB
+ 
++config GPIOLIB_BATCH
++	bool "Batch GPIO support"
++	help
++	  Say Y here to add the capability to batch set/get GPIOs.
++
+ config DEBUG_GPIO
+ 	bool "Debug GPIO calls"
+ 	depends on DEBUG_KERNEL
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 82020ab..7b36573 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1056,6 +1056,128 @@ void __gpio_set_value(unsigned gpio, int value)
+ }
+ EXPORT_SYMBOL_GPL(__gpio_set_value);
+ 
++#ifdef CONFIG_GPIOLIB_BATCH
++/**
++ * __gpio_set_batch() - assign a batch of gpio pins together
++ * @gpio: starting gpio pin
++ * @values: values to assign, sequential and including masked bits
++ * @bitmask: bitmask to be applied to values
++ * @bitwidth: width inclusive of masked-off bits
++ * Context: any
++ *
++ * This is used directly or indirectly to implement gpio_set_value().
++ * It invokes the associated gpio_chip.set_batch() method. If that
++ * method does not exist for any segment that is involved, then it drops
++ * back down to standard gpio_chip.set()
++ */
++void __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bitwidth)
++{
++	struct gpio_chip *chip;
++	int i = 0;
++	int value, width, remwidth;
++	u32 mask;
++
++	do {
++		chip = gpio_to_chip(gpio + i);
++		WARN_ON(extra_checks && chip->can_sleep);
++
++		if (!chip->set_batch) {
++			while (((gpio + i) < (chip->base + chip->ngpio))
++				&& bitwidth) {
++				mask = 1 << i;
++				value = values & mask;
++				if (bitmask & mask)
++					chip->set(chip, gpio + i - chip->base,
++							value);
++				i++;
++				bitwidth--;
++			}
++		} else {
++			value = values >> i; /* shift off the used data bits */
++			remwidth = ((chip->base + (int) chip->ngpio) -
++					((int) gpio + i));
++			width = min(bitwidth, remwidth);
++
++			/* shift off the used mask bits */
++			mask = bitmask >> i;
++			/* now adjust mask by width of set */
++			mask &= ((1 << width) - 1);
++
++			chip->set_batch(chip, gpio + i - chip->base, value,
++						mask);
++			i += width;
++			bitwidth -= width;
++		}
++	} while (bitwidth);
++}
++EXPORT_SYMBOL_GPL(__gpio_set_batch);
++
++/**
++ * __gpio_get_batch() - get a batch of gpio pins together
++ * @gpio: starting gpio pin
++ * @bitmask: bitmask to be applied to values
++ * @bitwidth: width inclusive of masked-off bits
++ * Context: any
++ *
++ * This is used directly or indirectly to implement gpio_get_value().
++ * It invokes the associated gpio_chip.get_batch() method and returns
++ * zero if no such method is provided.
++ */
++u32 __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth)
++{
++	struct gpio_chip *chip;
++	int i = 0;
++	int width, remwidth;
++	u32 mask;
++	u32 values = 0;
++	u32 value;
++
++	do {
++		chip = gpio_to_chip(gpio + i);
++		WARN_ON(extra_checks && chip->can_sleep);
++
++		/*
++		 * check if we have batch capability on this chip.
++		 * if not, then we use the single bit gets
++		 * any masked or inaccessible bits are already 0
++		 */
++		if (!chip->get_batch) {
++			while (((gpio + i) < (chip->base + chip->ngpio))
++				&& bitwidth) {
++				mask = 1 << i;
++				/* skip if no get or masked out */
++				if (chip->get && (bitmask & mask)) {
++					if (chip->get(chip,
++						gpio + i - chip->base))
++						values |= mask;
++				}
++				i++;
++				bitwidth--;
++			}
++		} else {
++			remwidth = ((chip->base + (int) chip->ngpio) -
++					((int) gpio + i));
++			width = min(bitwidth, remwidth);
++
++			/* shift off the used mask bits */
++			mask = bitmask >> i;
++			/* now adjust mask by width of get */
++			mask &= ((1 << width) - 1);
++
++			value = chip->get_batch(chip, gpio + i - chip->base,
++							mask);
++			/* shift result back into caller position */
++			values |= value << i;
++			i += width;
++			bitwidth -= width;
++		}
++	} while (bitwidth);
++
++	return values;
++}
++EXPORT_SYMBOL_GPL(__gpio_get_batch);
++#endif
++
+ /**
+  * __gpio_cansleep() - report whether gpio value access will sleep
+  * @gpio: gpio in question
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 81797ec..fa716a7 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -44,6 +44,8 @@ struct module;
+  *	returns either the value actually sensed, or zero
+  * @direction_output: configures signal "offset" as output, or returns error
+  * @set: assigns output value for signal "offset"
++ * @set_batch: batch assigns output values for consecutive signals starting at
++ *	"offset" with mask in "bitmask" all within this gpio_chip
+  * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
+  *	implementation may not sleep
+  * @dbg_show: optional routine to show contents in debugfs; default code
+@@ -84,7 +86,13 @@ struct gpio_chip {
+ 						unsigned offset, int value);
+ 	void			(*set)(struct gpio_chip *chip,
+ 						unsigned offset, int value);
+-
++#ifdef CONFIG_GPIOLIB_BATCH
++	void			(*set_batch)(struct gpio_chip *chip,
++						unsigned offset, u32 values,
++						u32 bitmask);
++	u32			(*get_batch)(struct gpio_chip *chip,
++						unsigned offset, u32 bitmask);
++#endif
+ 	int			(*to_irq)(struct gpio_chip *chip,
+ 						unsigned offset);
+ 
+@@ -124,6 +132,11 @@ extern void gpio_set_value_cansleep(unsigned gpio, int value);
+  */
+ extern int __gpio_get_value(unsigned gpio);
+ extern void __gpio_set_value(unsigned gpio, int value);
++#ifdef CONFIG_GPIOLIB_BATCH
++extern void __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
++				int bitwidth);
++extern u32 __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth);
++#endif
+ 
+ extern int __gpio_cansleep(unsigned gpio);
+ 
 -- 
-1.5.5.1
-
-
+1.5.2.3
 
