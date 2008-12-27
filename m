@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbYL0Klw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbYL0KtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbYL0Klw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 05:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYL0Klo
+	id S1753865AbYL0KtM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 05:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYL0Ks5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 05:41:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58517 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Dec 2008 05:48:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39570 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbYL0Kln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 05:41:43 -0500
-Date: Sat, 27 Dec 2008 11:41:23 +0100
+	id S1751124AbYL0Ks4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 05:48:56 -0500
+Date: Sat, 27 Dec 2008 11:48:23 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Brian Gerst <brgerst@gmail.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86-64: Convert the PDA to percpu.
-Message-ID: <20081227104123.GH14639@elte.hu>
-References: <1230052506-5041-1-git-send-email-brgerst@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Tony Luck <tony.luck@intel.com>
+Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Becky Bruce <beckyb@kernel.crashing.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 0 of 9] swiotlb: use phys_addr_t for pages
+Message-ID: <20081227104823.GI14639@elte.hu>
+References: <patchbomb.1229970362@abulafia.goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1230052506-5041-1-git-send-email-brgerst@gmail.com>
+In-Reply-To: <patchbomb.1229970362@abulafia.goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,35 +38,50 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(Cc:-ed a few more people who might be interested in this)
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-* Brian Gerst <brgerst@gmail.com> wrote:
-
-> This patch makes the PDA a normal per-cpu variable, allowing the
-> removal of the special allocator code.  %gs still points to the
-> base of the PDA.
+> Hi all,
 > 
-> Tested on a dual-core AMD64 system.
+> Here's a work in progress series whcih does a partial revert of the 
+> previous swiotlb changes, and does a partial replacement with Becky 
+> Bruce's series.
 > 
-> Signed-off-by: Brian Gerst <brgerst@gmail.com>
-> ---
->  arch/x86/include/asm/pda.h     |    3 --
->  arch/x86/include/asm/percpu.h  |    3 --
->  arch/x86/include/asm/setup.h   |    1 -
->  arch/x86/kernel/cpu/common.c   |    6 ++--
->  arch/x86/kernel/dumpstack_64.c |    8 ++--
->  arch/x86/kernel/head64.c       |   23 +------------
->  arch/x86/kernel/irq.c          |    2 +-
->  arch/x86/kernel/nmi.c          |    2 +-
->  arch/x86/kernel/setup_percpu.c |   70 ++++++++--------------------------------
->  arch/x86/kernel/smpboot.c      |   58 +--------------------------------
->  arch/x86/xen/enlighten.c       |    2 +-
->  arch/x86/xen/smp.c             |   12 +------
->  12 files changed, 27 insertions(+), 163 deletions(-)
+> The most important difference is Becky's use of phys_addr_t rather than 
+> page+offset to represent arbitrary pages.  This turns out to be simpler.
+> 
+> I didn't replicate the map_single_page changes, since I'm not exactly 
+> sure of ppc's requirements here, and it seemed like something that could 
+> be easily added.
+> 
+> Quick testing showed no problems, but I haven't had the chance to do 
+> anything extensive.
+> 
+> I've made some small changes to Becky's patches to make them apply, but 
+> I've separated any functional changes into separate patches with 
+> appropriate authorship.
 
-the simplification factor is significant. I'm wondering, have you measured 
-the code size impact of this on say the defconfig x86 kernel? That will 
-generally tell us how much worse optimizations the compiler does under 
-this scheme.
+looks good to me in principle. Fujita-san, do you have any principal 
+objections against these generalizations?
+
+Also, this patch will interact with ia64 materially:
+
+  Subject: [PATCH 9 of 9] ia64/x86/swiotlb: use enum dma_data_direciton in dma_ops
+
+So we'll need a bit more confidence in the testing status of this queue, 
+and we probably want to wait until Tony merged the pending .29 ia64 
+changes, and also get an Ack from Tony for these bits:
+
+ arch/ia64/dig/dig_vtd_iommu.c       |    9 +++--
+ arch/ia64/hp/common/hwsw_iommu.c    |   22 ++++++++------
+ arch/ia64/hp/common/sba_iommu.c     |   12 ++++---
+ arch/ia64/include/asm/dma-mapping.h |   29 +++++++++---------
+ arch/ia64/include/asm/swiotlb.h     |   26 ++++++++++------
+ arch/ia64/kernel/machvec.c          |    6 ++-
+ arch/ia64/sn/kernel/io_common.c     |    3 +-
+ arch/ia64/sn/pci/pci_dma.c          |   21 ++++++++-----
+ arch/ia64/sn/pci/pcibr/pcibr_dma.c  |    3 +-
+ arch/ia64/sn/pci/tioca_provider.c   |    3 +-
+
+(Tony Cc:-ed)
 
 	Ingo
