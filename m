@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbYL0KtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYL0Kxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbYL0KtM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 05:49:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYL0Ks5
+	id S1753982AbYL0Kxz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 05:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYL0Kxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 05:48:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39570 "EHLO mx3.mail.elte.hu"
+	Sat, 27 Dec 2008 05:53:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46717 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751124AbYL0Ks4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 05:48:56 -0500
-Date: Sat, 27 Dec 2008 11:48:23 +0100
+	id S1751560AbYL0Kxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 05:53:46 -0500
+Date: Sat, 27 Dec 2008 11:53:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, Tony Luck <tony.luck@intel.com>
-Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Becky Bruce <beckyb@kernel.crashing.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 0 of 9] swiotlb: use phys_addr_t for pages
-Message-ID: <20081227104823.GI14639@elte.hu>
-References: <patchbomb.1229970362@abulafia.goop.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hrtimer: increase clock min delta threshold while
+	interrupt hanging
+Message-ID: <20081227105334.GJ14639@elte.hu>
+References: <494EEC60.4080708@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <patchbomb.1229970362@abulafia.goop.org>
+In-Reply-To: <494EEC60.4080708@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,50 +36,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Hi all,
+> Impact: avoid hanging on slow systems
 > 
-> Here's a work in progress series whcih does a partial revert of the 
-> previous swiotlb changes, and does a partial replacement with Becky 
-> Bruce's series.
+> While using the function graph tracer on a virtualized system, the 
+> hrtimer_interrupt can hang the system on an infinite loop. This can be 
+> caused on several situation where something intrusive is slowing the 
+> system (ie: tracing) and the next clock events to program are always 
+> before the current time. This patch implements a reasonable compromise. 
+> If such a situation is detected, we share the CPUs time in 1/4 to 
+> process the hrtimer interrupts. This is enough to let the system running 
+> without serious starvation.
 > 
-> The most important difference is Becky's use of phys_addr_t rather than 
-> page+offset to represent arbitrary pages.  This turns out to be simpler.
+> It has been successfully tested under VirtualBox with 1000 HZ and 100 HZ 
+> with function graph tracer launched. On both cases, the clock events 
+> were increased until about 25 ms periodic ticks, which means 40 HZ.
 > 
-> I didn't replicate the map_single_page changes, since I'm not exactly 
-> sure of ppc's requirements here, and it seemed like something that could 
-> be easily added.
-> 
-> Quick testing showed no problems, but I haven't had the chance to do 
-> anything extensive.
-> 
-> I've made some small changes to Becky's patches to make them apply, but 
-> I've separated any functional changes into separate patches with 
-> appropriate authorship.
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  kernel/hrtimer.c |   30 +++++++++++++++++++++++++++++-
+>  1 files changed, 29 insertions(+), 1 deletions(-)
 
-looks good to me in principle. Fujita-san, do you have any principal 
-objections against these generalizations?
+applied to tip/timers/hrtimers, thanks Frederic!
 
-Also, this patch will interact with ia64 materially:
-
-  Subject: [PATCH 9 of 9] ia64/x86/swiotlb: use enum dma_data_direciton in dma_ops
-
-So we'll need a bit more confidence in the testing status of this queue, 
-and we probably want to wait until Tony merged the pending .29 ia64 
-changes, and also get an Ack from Tony for these bits:
-
- arch/ia64/dig/dig_vtd_iommu.c       |    9 +++--
- arch/ia64/hp/common/hwsw_iommu.c    |   22 ++++++++------
- arch/ia64/hp/common/sba_iommu.c     |   12 ++++---
- arch/ia64/include/asm/dma-mapping.h |   29 +++++++++---------
- arch/ia64/include/asm/swiotlb.h     |   26 ++++++++++------
- arch/ia64/kernel/machvec.c          |    6 ++-
- arch/ia64/sn/kernel/io_common.c     |    3 +-
- arch/ia64/sn/pci/pci_dma.c          |   21 ++++++++-----
- arch/ia64/sn/pci/pcibr/pcibr_dma.c  |    3 +-
- arch/ia64/sn/pci/tioca_provider.c   |    3 +-
-
-(Tony Cc:-ed)
+Thomas, any objections/observations?
 
 	Ingo
