@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbYL0Kb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754179AbYL0KgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbYL0Kb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 05:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYL0Kbu
+	id S1754179AbYL0KgQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 05:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYL0Kf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 05:31:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49966 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Dec 2008 05:35:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36446 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752750AbYL0Kbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 05:31:49 -0500
-Date: Sat, 27 Dec 2008 11:31:41 +0100
+	id S1752574AbYL0Kf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 05:35:59 -0500
+Date: Sat, 27 Dec 2008 11:35:01 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: reboot.c declare port_cf9_safe before they get
-	used
-Message-ID: <20081227103141.GF14639@elte.hu>
-References: <1230049288.14358.4.camel@jaswinder.satnam>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org, ralf@linux-mips.org, kernel@wantstofly.org,
+       hskinnemoen@atmel.com, cooloney@kernel.org, tony.luck@intel.com,
+       geert@linux-m68k.org, zippel@linux-m68k.org, jwboyer@linux.vnet.ibm.com,
+       mporter@kernel.crashing.org, grant.likely@secretlab.ca,
+       paulus@samba.org, benh@kernel.crashing.org, dhowells@redhat.com,
+       yasutake.koichi@jp.panasonic.com, lethal@linux-sh.org, hpa@zytor.com
+Subject: Re: [PATCH, -tip] Make hierarchical RCU be the default
+Message-ID: <20081227103501.GG14639@elte.hu>
+References: <1229991147545-git-send-email-paulmck@linux.vnet.ibm.com> <12299911471985-git-send-email-paulmck@linux.vnet.ibm.com> <20081223142542.GC29151@elte.hu> <20081223215948.GA16137@linux.vnet.ibm.com> <20081223220345.GA16472@linux.vnet.ibm.com> <20081223220648.GB16472@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1230049288.14358.4.camel@jaswinder.satnam>
+In-Reply-To: <20081223220648.GB16472@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,33 +40,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh <jaswinder@infradead.org> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> Impact: cleanup, avoid sparse warning
-> 
-> Include "../pci/pci.h" for port_cf9_safe
-> 
-> Fixes this sparse warning:
-> arch/x86/kernel/reboot.c:43:6: warning: symbol 'port_cf9_safe' was not declared. Should it be static?
-> 
-> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
-> ---
->  arch/x86/kernel/reboot.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-
-applied to tip/x86/cleanups, thanks!
-
-btw., this is ugly now:
-
-> --- a/arch/x86/kernel/reboot.c
-> +++ b/arch/x86/kernel/reboot.c
-> @@ -22,6 +22,7 @@
+> --- a/include/linux/hardirq.h
+> +++ b/include/linux/hardirq.h
+> @@ -118,7 +118,7 @@ static inline void account_system_vtime(struct task_struct *tsk)
+>  }
 >  #endif
 >  
->  #include <mach_ipi.h>
-> +#include "../pci/pci.h"
+> -#if defined(CONFIG_NO_HZ) && !defined(CONFIG_CLASSIC_RCU)
+> +#if defined(CONFIG_NO_HZ) && !defined(CONFIG_FLAT_RCU)
 
-could you send another patch that moves arch/x86/pci/pci.h to 
-arch/x86/include/asm/pci_x86.h (and update all the pci.h include sites)?
+this can be done in an even lazier fashion, via a ~5 lines patch.
+
+Just add FLAT_RCU as the new kconfig method, and make CONFIG_CLASSIC_RCU 
+mirror it via something like:
+
+  config CLASSIC_RCU
+  bool
+  default FLAT_RCU
+
+that makes your patch only affect the Kconfig file - and makes it easily 
+revertable, etc.
 
 	Ingo
