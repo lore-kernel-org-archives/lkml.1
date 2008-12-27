@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYL0IzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbYL0JC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYL0IzB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 03:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYL0Iyv
+	id S1753866AbYL0JC2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 04:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbYL0JCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 03:54:51 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41406
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751295AbYL0Iyu (ORCPT
+	Sat, 27 Dec 2008 04:02:07 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:44346 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbYL0JCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 03:54:50 -0500
-Date: Sat, 27 Dec 2008 00:54:52 -0800 (PST)
-Message-Id: <20081227.005452.261413194.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org, mingo@elte.hu,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kenchen@google.com,
-       paulus@samba.org, tglx@linutronix.de, hpa@zytor.com,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH] sparc64: use unsigned long long for u64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081223131746.GA7456@uranus.ravnborg.org>
-References: <20081222230035.GB4074@uranus.ravnborg.org>
-	<20081222151338.3b6ef997.akpm@linux-foundation.org>
-	<20081223131746.GA7456@uranus.ravnborg.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sat, 27 Dec 2008 04:02:05 -0500
+Date: Sat, 27 Dec 2008 10:03:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Improve dependency checks in kconfig
+Message-ID: <20081227090339.GA6279@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBR8t5ki007119
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 23 Dec 2008 14:17:46 +0100
+While working on some unification of Kconfig stuff across
+all architectures I hit a Kconfig bug where it segfaulted
+due to a recursive dependency.
+It's a bug I have introduced myself long time ago :-(
 
-> It may take a few days before the drivers gets fixed.
-> Christmas is approaching fast by now.
+I decided to do the reporting more verbose while fixing
+this bug.
 
-Even with this and your driver patch applied, the tree
-doesn't build successfully:
+When looking into this I added a few comments to expr.h
+so I do not have to fnd out how it works next time.
 
-cc1: warnings being treated as errors
-arch/sparc/kernel/psycho_common.c: In function â€˜psycho_check_stc_errorâ€™:
-arch/sparc/kernel/psycho_common.c:104: warning: format â€˜%016lxâ€™ expects type â€˜long unsigned intâ€™, but argument 4 has type â€˜long long unsigned intâ€™
+The problem was that kconfig do not save where it finds
+a config symbol but only the related properties.
 
-Did you remove sparc's -Werror when doing test builds
-of these changes? :-)
+But a symbol defined like this:
 
-Either way these need some work before they should be
-added to any tree.
+    config FOO
+            bool
 
-Andrew you probably want to toss these from your tree
-since at a minimum they will break the sparc64 build.
+does not have any properties so we do not save any
+filename/line numbers.
 
-Sam will fix them up and resubmit, and I'll apply them,
-don't worry. :)
+The solution I came up with was to add a new property:
+P_SYMBOL used solely to record filename/line number for
+defined symbols.
+I could not add it to struct symbol because a symbol can
+be defined at several places.
 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+With this change kconfig at least report one of the
+places where said symbol is defined. It is not perfect as
+we should report all places where a symbol is reported but
+for the cases I hit what we have here was good enough.
+
+With this I hit a recursive dependency issue in m68k - a patch
+is already sent to the m68k guys.
+
+Patches follows.
+
+Sam Ravnborg (4):
+      kconfig: explain symbol value defaults
+      kconfig: add comments to symbol flags
+      kconfig: struct property commented
+      kconfig: improve readout when we hit recursive dependencies
+
+ scripts/kconfig/expr.h   |   83 ++++++++++++++++++++++++++++++---------------
+ scripts/kconfig/menu.c   |    2 +
+ scripts/kconfig/symbol.c |   11 ++++--
+ 3 files changed, 65 insertions(+), 31 deletions(-)
+
+	Sam
