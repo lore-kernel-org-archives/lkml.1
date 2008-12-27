@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYL0ImP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYL0Ire@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbYL0ImP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 03:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYL0Il7
+	id S1753870AbYL0Ire (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 03:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbYL0IrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 03:41:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40391 "EHLO mx3.mail.elte.hu"
+	Sat, 27 Dec 2008 03:47:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60497 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbYL0Il6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 03:41:58 -0500
-Date: Sat, 27 Dec 2008 09:41:40 +0100
+	id S1751538AbYL0IrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 03:47:25 -0500
+Date: Sat, 27 Dec 2008 09:47:08 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       venkatesh.pallipadi@intel.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sparseirq: fix hang with !SPARSE_IRQ
-Message-ID: <20081227084140.GA10687@elte.hu>
-References: <20081225020853.GI26490@linux-os.sc.intel.com> <4955CD57.8050702@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mike Frysinger <vapier@gentoo.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
+Message-ID: <20081227084708.GA16077@elte.hu>
+References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <20081227071208.GB27736@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4955CD57.8050702@kernel.org>
+In-Reply-To: <20081227071208.GB27736@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,24 +35,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> Impact: fix hang
+> On Sat, Dec 27, 2008 at 01:50:04AM -0500, Mike Frysinger wrote:
+> > Use __asm__/__inline__ rather than asm/inline for all the functions
+> > exported to userspace.
 > 
-> Suresh report his two sockets system only works with SPARSE_IRQ enable
-> it turns out we miss the setting desc->irq
+> I will imagine that we will see cleanup patches converting
+> these back to inline/asm.
+> How about doing this conversion as part of the headers_install.pl
+> script so we know it is always correct?
 > 
-> so provide early_irq_init() even !SPARSE_IRQ to set desc->irq
-> 
-> Reported by: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  init/main.c         |    6 ------
->  kernel/irq/handle.c |   15 +++++++++++++++
->  2 files changed, 15 insertions(+), 6 deletions(-)
+> Then we can keep the familiar inline/asm in the kernel headers
+> and always use the correct __asm__, __inline__ version for our
+> exported headers.
 
-applied to tip/irq/sparseirq - thanks Yinghai. This fixed a testsystem of 
-mine as well that showed weird hangs with !sparseirq.
+or name it __asm__exported__ to make sure it isnt cleaned up away.
 
 	Ingo
