@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbYL0TXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYL0TYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbYL0TXd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 14:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbYL0TXW
+	id S1754566AbYL0TYE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 14:24:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbYL0TXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 14:23:22 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:57090 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753509AbYL0TXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 14:23:22 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] headers_check.pl: disallow extern's
-Date: Sat, 27 Dec 2008 14:23:17 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <1230363816-24097-1-git-send-email-vapier@gentoo.org> <20081227184355.GA9264@uranus.ravnborg.org>
-In-Reply-To: <20081227184355.GA9264@uranus.ravnborg.org>
+	Sat, 27 Dec 2008 14:23:52 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53460 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754015AbYL0TXw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 14:23:52 -0500
+Message-ID: <495680A7.2010900@zytor.com>
+Date: Sat, 27 Dec 2008 11:23:19 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart10896040.TkJR6dZsfH";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Mike Frysinger <vapier@gentoo.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
+References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <20081227191223.GA10592@uranus.ravnborg.org> <49567EB5.5030409@zytor.com> <200812271421.10087.vapier@gentoo.org>
+In-Reply-To: <200812271421.10087.vapier@gentoo.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812271423.19378.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart10896040.TkJR6dZsfH
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Mike Frysinger wrote:
+> 
+> {su}{8,16,32,64} doesnt matter too much to me vs {u,}int_t{8,16,32,64}_t.  as 
+> long as people stop using __{su}{8,16,32,64}.  using the latter though does 
+> mean headers will more likely be "just usable" w/out needing linux/types.h 
+> include.  but then people would be forced to include stdint.h or similar 
+> before a linux header ... and that sucks.
+> 
 
-On Saturday 27 December 2008 13:43:55 Sam Ravnborg wrote:
-> On Sat, Dec 27, 2008 at 02:43:36AM -0500, Mike Frysinger wrote:
-> > Since prototypes with "extern" refer to kernel functions, they make no
-> > sense in userspace, so reject them automatically.
->
-> I do agree with this
+That is a total non-starter.  This would mean that the C library itself
+cannot use these headers without exporting additional symbols into the
+namespace, *WHICH IT IS NOT ALLOWED TO DO*.
 
-so the next question is about using "extern" in general.  unless you have a=
-=20
-nice way of detecting function prototypes (i certainly dont have a magic re=
-gex=20
-for this that is multiline, etc...), i think we should be using "extern" at=
-=20
-least in every header that goes to userspace so that we can catch things.
-=2Dmike
+> unless of course we start adding appropriate C library includes for 
+> !__KERNEL__ ... i'd love that personally
+> 
+>> and bool into the appropriate __{su}{8,16,32,64}
+>> types and _Bool.
+> 
+> i dont get your bool comment.  the "bool" type is already a standard type.  
+> there is no conversion needed.
 
---nextPart10896040.TkJR6dZsfH
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Only if <stdbool.h> is included.  Again, see previous statement.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+	-hpa
 
-iQIcBAABAgAGBQJJVoCnAAoJEEFjO5/oN/WBLKoP/1heTCFRw7UFB7ddA1foNImw
-Yp6YUfoipi+wEa5TzSyV7emSD+sHQXwPyPfNqoRrl4dq4jOGkKhtZL9J6iRVS06r
-9JGkgtbvbZVAxRCx1S2Fkxy8Nm+SmlOAUVVUj+dCS2Xw9sYVOKq7SK93VLIs51s5
-onM02cFUt7Nz81S4PX3kDopU/dBdh7yTk9St3xhKNsPzCHtYMNpDQR2wwsYqTsUx
-0nHvEm6ODtGlA3CshbIlI+dIPH5MlfyxZcnBKaF/HPiuBapDvl3zFMYNccU7rCyc
-VeXk2rQqGNLWRaYc4EWVgnpJCQMsYamL78kaM2gK/LzrbbA9tlKMs8PJq22i/LlI
-HJW8kaZwuAbbcAnSBSzHOrUDK1O0nWQ2VlJtFD2aNXHHwnh2mqZW+/uyy87DX66C
-2LP40sC2mGd6etJfQcQ5vBJttminAVkK1OhyGdbBZC64sxD/JuzhCFgJrCYmNF1q
-OwHO+62y6nhUK6hAqAe0IR++uNF7a9P+1aHXO2O5jK1Era/bdhL8pbIM5phnxuTk
-sOmah186dRX9lRkRzKxUFB8ZQH19zoqgpqQEwfI/+KbOcDUX+50tddMiKdTjW5bp
-wWgdM9tGk0XiHQFIVhqIRzfkPicf2xSvJ1Wgb3EXy1WWVmURPsO/m8Os0+ohSuNU
-4OCPzjHNA2/LlNoRpM0d
-=y+ad
------END PGP SIGNATURE-----
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
---nextPart10896040.TkJR6dZsfH--
