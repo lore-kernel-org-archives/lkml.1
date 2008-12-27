@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYL0UvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYL0Uxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbYL0UvS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 15:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbYL0UvE
+	id S1754818AbYL0Uxs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 15:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYL0Uxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 15:51:04 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36934 "EHLO e4.ny.us.ibm.com"
+	Sat, 27 Dec 2008 15:53:40 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33838 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbYL0UvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 15:51:02 -0500
-Date: Sat, 27 Dec 2008 12:49:15 -0800
+	id S1750905AbYL0Uxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 15:53:39 -0500
+Date: Sat, 27 Dec 2008 12:51:53 -0800
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
        bastian@waldi.eu.org
 Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6][v5] Remove 'handler' parameter to tracehook functions
-Message-ID: <20081227204915.GA27273@us.ibm.com>
+Subject: [PATCH 2/6][v5] Protect init from unwanted signals more
+Message-ID: <20081227205153.GA27337@us.ibm.com>
 References: <20081227204658.GA27197@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,118 +29,76 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 7af2b3b090f84741ed7547ca7220a0525bd4f888 Mon Sep 17 00:00:00 2001
 From: Oleg Nesterov <oleg@redhat.com>
-Date: Wed, 24 Dec 2008 13:35:17 -0800
-Subject: [PATCH 1/6][v5] Remove 'handler' parameter to tracehook functions
+Date: Wed, 24 Dec 2008 13:35:23 -0800
+Subject: [PATCH 2/6][v5] Protect init from unwanted signals more
 
-Based on an earlier patch submitted by Oleg Nesterov and comments
-from Roland McGrath (http://lkml.org/lkml/2008/11/19/258).
+(This is a modified version of the patch submitted by Oleg Nesterov
+http://lkml.org/lkml/2008/11/18/249 and tries to address comments
+that came up in that discussion)
 
-The handler parameter is currently unused in the tracehook functions.
-Besides, the tracehook functions are called with siglock held, so the
-functions can check the handler if they later need to.
+init ignores the SIG_DFL signals but we queue them anyway, including
+SIGKILL. This is mostly OK, the signal will be dropped silently when
+dequeued, but the pending SIGKILL has 2 bad implications:
 
-Removing the parameter simiplifies changes to sig_ignored() in a follow-on
-patch.
+        - it implies fatal_signal_pending(), so we confuse things
+          like wait_for_completion_killable/lock_page_killable.
+
+        - for the sub-namespace inits, the pending SIGKILL can
+          mask (legacy_queue) the subsequent SIGKILL from the
+          parent namespace which must kill cinit reliably.
+          (preparation, cinits don't have SIGNAL_UNKILLABLE yet)
+
+The patch can't help when init is ptraced, but ptracing of init is
+not "safe" anyway.
+
+Changelog[v5]:
+	- (Oleg Nesterov) Remove SIG_IGN check in sig_task_ignored()
+	  and let sig_handler_ignored() check SIG_IGN.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/kernel/ptrace.c  |    2 +-
- include/linux/tracehook.h |   13 ++++---------
- kernel/signal.c           |    6 +++---
- 3 files changed, 8 insertions(+), 13 deletions(-)
+ kernel/signal.c |   16 +++++++++++++---
+ 1 files changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 0a6d8c1..d6ef716 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1585,6 +1585,6 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
- 	 * system call instruction.
- 	 */
- 	if (test_thread_flag(TIF_SINGLESTEP) &&
--	    tracehook_consider_fatal_signal(current, SIGTRAP, SIG_DFL))
-+	    tracehook_consider_fatal_signal(current, SIGTRAP))
- 		send_sigtrap(current, regs, 0, TRAP_BRKPT);
- }
-diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
-index 6186a78..eb4c654 100644
---- a/include/linux/tracehook.h
-+++ b/include/linux/tracehook.h
-@@ -388,17 +388,14 @@ static inline void tracehook_signal_handler(int sig, siginfo_t *info,
-  * tracehook_consider_ignored_signal - suppress short-circuit of ignored signal
-  * @task:		task receiving the signal
-  * @sig:		signal number being sent
-- * @handler:		%SIG_IGN or %SIG_DFL
-  *
-  * Return zero iff tracing doesn't care to examine this ignored signal,
-  * so it can short-circuit normal delivery and never even get queued.
-- * Either @handler is %SIG_DFL and @sig's default is ignore, or it's %SIG_IGN.
-  *
-  * Called with @task->sighand->siglock held.
-  */
- static inline int tracehook_consider_ignored_signal(struct task_struct *task,
--						    int sig,
--						    void __user *handler)
-+						    int sig)
- {
- 	return (task_ptrace(task) & PT_PTRACED) != 0;
- }
-@@ -407,19 +404,17 @@ static inline int tracehook_consider_ignored_signal(struct task_struct *task,
-  * tracehook_consider_fatal_signal - suppress special handling of fatal signal
-  * @task:		task receiving the signal
-  * @sig:		signal number being sent
-- * @handler:		%SIG_DFL or %SIG_IGN
-  *
-  * Return nonzero to prevent special handling of this termination signal.
-- * Normally @handler is %SIG_DFL.  It can be %SIG_IGN if @sig is ignored,
-- * in which case force_sig() is about to reset it to %SIG_DFL.
-+ * Normally handler for signal is %SIG_DFL.  It can be %SIG_IGN if @sig is
-+ * ignored, in which case force_sig() is about to reset it to %SIG_DFL.
-  * When this returns zero, this signal might cause a quick termination
-  * that does not give the debugger a chance to intercept the signal.
-  *
-  * Called with or without @task->sighand->siglock held.
-  */
- static inline int tracehook_consider_fatal_signal(struct task_struct *task,
--						  int sig,
--						  void __user *handler)
-+						  int sig)
- {
- 	return (task_ptrace(task) & PT_PTRACED) != 0;
- }
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 2a64304..7945e71 100644
+index 7945e71..30b9c5c 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -72,7 +72,7 @@ static int sig_ignored(struct task_struct *t, int sig)
+@@ -53,10 +53,21 @@ static int sig_handler_ignored(void __user *handler, int sig)
+ 		(handler == SIG_DFL && sig_kernel_ignore(sig));
+ }
+ 
+-static int sig_ignored(struct task_struct *t, int sig)
++static int sig_task_ignored(struct task_struct *t, int sig)
+ {
+ 	void __user *handler;
+ 
++	handler = sig_handler(t, sig);
++
++	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) &&
++			handler == SIG_DFL)
++		return 1;
++	
++	return sig_handler_ignored(handler, sig);
++}
++
++static int sig_ignored(struct task_struct *t, int sig)
++{
  	/*
- 	 * Tracers may want to know about even ignored signals.
- 	 */
--	return !tracehook_consider_ignored_signal(t, sig, handler);
-+	return !tracehook_consider_ignored_signal(t, sig);
- }
- 
- /*
-@@ -316,7 +316,7 @@ int unhandled_signal(struct task_struct *tsk, int sig)
- 		return 1;
- 	if (handler != SIG_IGN && handler != SIG_DFL)
+ 	 * Blocked signals are never ignored, since the
+ 	 * signal handler may change by the time it is
+@@ -65,8 +76,7 @@ static int sig_ignored(struct task_struct *t, int sig)
+ 	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
  		return 0;
--	return !tracehook_consider_fatal_signal(tsk, sig, handler);
-+	return !tracehook_consider_fatal_signal(tsk, sig);
- }
  
+-	handler = sig_handler(t, sig);
+-	if (!sig_handler_ignored(handler, sig))
++	if (!sig_task_ignored(t, sig))
+ 		return 0;
  
-@@ -775,7 +775,7 @@ static void complete_signal(int sig, struct task_struct *p, int group)
- 	    !(signal->flags & (SIGNAL_UNKILLABLE | SIGNAL_GROUP_EXIT)) &&
- 	    !sigismember(&t->real_blocked, sig) &&
- 	    (sig == SIGKILL ||
--	     !tracehook_consider_fatal_signal(t, sig, SIG_DFL))) {
-+	     !tracehook_consider_fatal_signal(t, sig))) {
- 		/*
- 		 * This signal will be fatal to the whole group.
- 		 */
+ 	/*
 -- 
 1.5.2.5
 
