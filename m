@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYL0UtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbYL0Uty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbYL0UtS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 15:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYL0Usv
+	id S1755017AbYL0Uty (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 15:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbYL0Utn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 15:48:51 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:46262 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754571AbYL0Usu (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 15:48:50 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: jmerkey@wolfmountaingroup.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] ndiswrapper 1.54 for Linux 2.6.28 Released
-In-Reply-To: Your message of "Sat, 27 Dec 2008 12:05:57 MST."
-             <38153.166.70.238.44.1230404757.squirrel@webmail.wolfmountaingroup.com>
-From: Valdis.Kletnieks@vt.edu
-References: <38153.166.70.238.44.1230404757.squirrel@webmail.wolfmountaingroup.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1230410928_4109P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sat, 27 Dec 2008 15:49:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50928 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754179AbYL0Utn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 15:49:43 -0500
+Message-ID: <495694C5.5000600@kernel.org>
+Date: Sat, 27 Dec 2008 12:49:09 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: clean up setup_clear/force_cpu_cap handling
+References: <49509418.6040905@kernel.org> <20081227102234.GD14639@elte.hu>
+In-Reply-To: <20081227102234.GD14639@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sat, 27 Dec 2008 15:48:48 -0500
-Message-ID: <97905.1230410928@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1230410928_4109P
-Content-Type: text/plain; charset=us-ascii
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> Impact: fix and cleanup
+>>
+>> setup_force_cpu_cap() only have one user xen
+>> but it should not reuse cleared_cpu_cpus. it will have problem
+>> for smp.
+>>
+>> need to have cpu_cpus_set array too.
+>> also need to setup handling before all cpus cap AND
+>>
+>> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
+>>
+>> ---
+>>  arch/x86/include/asm/cpufeature.h |    4 ++--
+>>  arch/x86/include/asm/processor.h  |    3 ++-
+>>  arch/x86/kernel/cpu/common.c      |   17 ++++++++++++-----
+>>  3 files changed, 16 insertions(+), 8 deletions(-)
+> 
+> Rusty, you'll carry this patch in your linux-2.6-boot-params.git tree, 
+> right? Merging this in the x86 tree would just needlessly complicate your 
+> logistics, right?
 
-On Sat, 27 Dec 2008 12:05:57 MST, jmerkey@wolfmountaingroup.com said:
+Rusty polished this patch a little bit and put the updated one in his tree.
+so you may need to pick up the updated one.
 
-> The Native Linux wireless drivers and the hacked up pseudo-pirated
-> microcode
-
-"pseudo-pirated"?
-
---==_Exmh_1230410928_4109P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJVpSwcC3lWbTT17ARAmrvAJ47xSYmO07PICxK5roTD50GJtV96gCfbHvw
-8g/iEtI3ild80zYDcOGFet4=
-=rQ0u
------END PGP SIGNATURE-----
-
---==_Exmh_1230410928_4109P--
+YH
