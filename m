@@ -1,68 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYL0UO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYL0UXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbYL0UO4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 15:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYL0UOp
+	id S1754639AbYL0UXS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 15:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbYL0UXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 15:14:45 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:6338 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbYL0UOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 15:14:44 -0500
-Message-ID: <49568CAD.7050509@gawab.com>
-Date: Sat, 27 Dec 2008 12:14:37 -0800
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [2.6.28-rc] Sata soft reset filling log
-References: <494318F5.4060007@gawab.com> <494EFD79.7020008@kernel.org> <494F3AD2.3060201@gawab.com> <494F3E41.60304@kernel.org> <49500BE2.6050106@gawab.com> <49504B8C.8080907@kernel.org>
-In-Reply-To: <49504B8C.8080907@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 27 Dec 2008 15:23:04 -0500
+Received: from mail1.radix.net ([207.192.128.31]:37744 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753053AbYL0UXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 15:23:03 -0500
+Subject: Re: [v4l-dvb-maintainer] [patch] fix warning in
+	drivers/media/dvb/dvb-usb/af9005-fe.c
+From: Andy Walls <awalls@radix.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org,
+       Patrick Boettcher <patrick.boettcher@desy.de>
+In-Reply-To: <20081227120020.GA8660@elte.hu>
+References: <20081224121252.7560391e@caramujo.chehab.org>
+	 <20081225081907.GA4628@elte.hu>
+	 <20081225212459.4c7e31b4@caramujo.chehab.org>
+	 <20081226090220.GF755@elte.hu>
+	 <20081226111324.3fbb804b@caramujo.chehab.org>
+	 <20081226132426.GA26953@elte.hu>  <20081227120020.GA8660@elte.hu>
+Content-Type: text/plain
+Date: Sat, 27 Dec 2008 15:24:34 -0500
+Message-Id: <1230409474.3121.27.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-8.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->> What changes happened between .27 and .28 could've caused this?
->> Anyways, below is what I get now (with your patch), including the
->> frequency of occurrence.
->>     
->
-> I have no idea and I'm afraid we'll need a bisection here. :-( Can you
-> please try the attached patch?
->
-> Thanks.
->
->   
+On Sat, 2008-12-27 at 13:00 +0100, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> Btw., there's a handful of warning fixes i carry in tip/warnings/* topic 
+> branches - you can find them in tip/master via:
+> 
+>   http://people.redhat.com/mingo/tip.git/README
+> 
+> the ones affecting drivers/media/ are:
+> 
+>   f3e67e2: fix warning in drivers/media/video/usbvision/usbvision-i2c.c
+>   491af31: fix warning in drivers/media/video/cx18/cx18-mailbox.c
 
-I applied the patch and get the following:
+Mauro & Ingo,
 
-ata2: XXX status=50 after 100 tries
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-ata2.00: ST_FIRST: !(DRQ|ERR|DF)
-ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-         cdb 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
-         res 50/00:01:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
-ata2.00: status: { DRDY }
-ata2: soft resetting link
-ata2.00: configured for UDMA/33
-ata2: EH complete
+If the cx18 warning message is fixed in the following diff, that I
+culled from a LKML posting by Ingo on 29 Nov, then Ingo's patch for
+cx18-mailbox.c should be overcome by events in the latest v4l-dvb repo.
+"req" is now always assigned a value before it is ever used.  (Sorry, I
+didn't want to pull the > 100 MB git/tip down over my dialup connection
+to verify this was the item in question).
 
-I tried to git bisect the problem. First time I thought the error was 
-between rc2 and rc3,
-but the bisect gave inconclusive results because I couldn't tell for 
-sure a good commit from a bad.
-I tried again with .27 to .28-rc3, but I was unable to bisect because of 
-compile errors (in pre-rc1),
-and doing git bisect skip, again landed on a commit with compile errors.
 
-Unless you can think of anything else, I'm just going to wait and see if 
-a commit in .29 will fix the problem.
+diff --git a/drivers/media/video/cx18/cx18-mailbox.c b/drivers/media/video/cx18/cx18-mailbox.c
+index acff7df..5c847be 100644
+--- a/drivers/media/video/cx18/cx18-mailbox.c
++++ b/drivers/media/video/cx18/cx18-mailbox.c
+@@ -184,7 +184,7 @@ long cx18_mb_ack(struct cx18 *cx, const struct cx18_mailbox *mb)
+ static int cx18_api_call(struct cx18 *cx, u32 cmd, int args, u32 data[])
+ {
+ 	const struct cx18_api_info *info = find_api_info(cmd);
+-	u32 state = 0, irq = 0, req, oldreq, err;
++	u32 state = 0, irq = 0, uninitialized_var(req), oldreq, err;
+ 	struct cx18_mailbox __iomem *mb;
+ 	wait_queue_head_t *waitq;
+ 	int timeout = 100;
 
-Justin Madru
+
+
+>   728342a: fix warnings in drivers/media/dvb/ttusb-dec/ttusb_dec.c
+>   4dda565: fix warning in drivers/media/dvb/frontends/drx397xD.c
+>   a2e4f4a: fix warning in drivers/media/common/tuners/mxl5007t.c
+>   8317adf: fix warning in drivers/media/dvb/dvb-usb/anysee.c
+> 
+> this one appears to be GCC warning about a real bug:
+> 
+>   8317adf: fix warning in drivers/media/dvb/dvb-usb/anysee.c
+> 
+> the others are fixes for false positives - i reviewed the affected code 
+> paths and each commit log includes the analysis about why it is a false 
+> positive.
+
+> Please have a look and git-cherry-pick the above commits if they are still 
+> relevant to your tree and if you agree with them. Thanks,
+> 
+> 	Ingo
+
+Regards,
+Andy
+
