@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYL0KVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYL0KXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbYL0KVe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 05:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYL0KVZ
+	id S1754499AbYL0KXJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 05:23:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYL0KWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 05:21:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60261 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Dec 2008 05:22:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60460 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752655AbYL0KVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 05:21:24 -0500
-Date: Sat, 27 Dec 2008 11:20:38 +0100
+	id S1752720AbYL0KWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 05:22:55 -0500
+Date: Sat, 27 Dec 2008 11:22:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       x86 maintainers <x86@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       randy.dunlap@oracle.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: Eliminate atleast 10684 sparse warnings
-Message-ID: <20081227102038.GC14639@elte.hu>
-References: <1230371496.3276.4.camel@jaswinder.satnam> <20081227020734.3592507e.akpm@linux-foundation.org>
+To: Yinghai Lu <yinghai@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: clean up setup_clear/force_cpu_cap handling
+Message-ID: <20081227102234.GD14639@elte.hu>
+References: <49509418.6040905@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081227020734.3592507e.akpm@linux-foundation.org>
+In-Reply-To: <49509418.6040905@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,38 +37,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> On Sat, 27 Dec 2008 15:21:36 +0530 Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+> Impact: fix and cleanup
 > 
-> >  #ifdef CONFIG_ILLEGAL_POINTER_VALUE
-> > -# define POISON_POINTER_DELTA CONFIG_ILLEGAL_POINTER_VALUE
-> > +# define POISON_POINTER_DELTA _AC(CONFIG_ILLEGAL_POINTER_VALUE, UL)
-> >  #else
-> >  # define POISON_POINTER_DELTA 0
-> >  #endif
+> setup_force_cpu_cap() only have one user xen
+> but it should not reuse cleared_cpu_cpus. it will have problem
+> for smp.
 > 
-> So now
+> need to have cpu_cpus_set array too.
+> also need to setup handling before all cpus cap AND
 > 
-> commit 948f984df52511bb0efa5c026813b0c34de43aa0
-> Author:     Avi Kivity <avi@qumranet.com>
-> AuthorDate: Tue May 20 14:39:25 2008 +0300
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Tue May 20 13:42:31 2008 +0200
+> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
 > 
->     core, x86: make LIST_POISON less deadly
-> 
-> gets splattered across three commits (at least).  Sigh.
+> ---
+>  arch/x86/include/asm/cpufeature.h |    4 ++--
+>  arch/x86/include/asm/processor.h  |    3 ++-
+>  arch/x86/kernel/cpu/common.c      |   17 ++++++++++++-----
+>  3 files changed, 16 insertions(+), 8 deletions(-)
 
-Can rebase, although that would hide the (deserved) credit that 
-Jaswinder's patch deserves. And it does not appear to be a must-rebase 
-example to me - it's not like one does sparse builds during bisection.
-
-> (how come that patch is 7 moonths old and still unmerged, btw?)
-
-Linus had reservations about the first version (which got fixed but which 
-prevented it from going upstream in the first cycle) - and it's not an 
-exactly critical change and other stuff interfered. All our previous merge 
-windows were fully filled ;)
+Rusty, you'll carry this patch in your linux-2.6-boot-params.git tree, 
+right? Merging this in the x86 tree would just needlessly complicate your 
+logistics, right?
 
 	Ingo
