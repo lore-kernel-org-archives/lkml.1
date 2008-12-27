@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYL0Taf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYL0Tvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYL0Taf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 14:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbYL0TaZ
+	id S1754622AbYL0Tvl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 14:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbYL0Tvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 14:30:25 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45562 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753714AbYL0TaY (ORCPT
+	Sat, 27 Dec 2008 14:51:32 -0500
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:55200 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753547AbYL0Tvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 14:30:24 -0500
-Date: Sat, 27 Dec 2008 14:29:50 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Alberto Bertogli <albertito@blitiri.com.ar>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: jbd2 inside a device mapper module
-Message-ID: <20081227192950.GB30198@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alberto Bertogli <albertito@blitiri.com.ar>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dm-devel@redhat.com
-References: <20081224211038.GT4127@blitiri.com.ar> <20081224234915.GA23723@mit.edu> <20081225143535.GA4127@blitiri.com.ar> <20081225155248.GJ9871@mit.edu> <20081226000005.GB4127@blitiri.com.ar> <20081226033736.GK9871@mit.edu> <20081226161708.GC4127@blitiri.com.ar> <20081226180642.GO9871@mit.edu> <20081227030020.GD4127@blitiri.com.ar>
+	Sat, 27 Dec 2008 14:51:31 -0500
+Message-ID: <38153.166.70.238.44.1230404757.squirrel@webmail.wolfmountaingroup.com>
+Date: Sat, 27 Dec 2008 12:05:57 -0700 (MST)
+Subject: [ANNOUNCE] ndiswrapper 1.54 for Linux 2.6.28 Released
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081227030020.GD4127@blitiri.com.ar>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 27, 2008 at 01:00:20AM -0200, Alberto Bertogli wrote:
-> I have a couple of alternatives in mind, the most decent one at the
-> moment is having two metadatas (M1 and M2) for the each block, and
-> update M1 on the first write to the given block, M2 on the second, M1 on
-> the third, and so on.
 
-I don't see how this would help.  You still have to do synchronous
-writes for safety, which is what is going to kill your performance.
 
-What you want to do is to batch as many writes as possible.  Until the
-underlying filesystem requests a flush, you can afford to hold off
-writing the block to disk.  Otherwise, you'll end up turning each 4k
-write into two 8k synchronous writes, which will be a performance
-disaster.  If you hold off, it's much more likely that the you'll be
-able to patch a large number of blocks into a single transaction.
-Also, if a block gets modified multiple times (for example, with an
-inode table block where tar writes one file, and then another), if you
-hold off the write as long as possible, you can only write the inode
-table block once, instead of multiple times.
+ftp://ftp.wolfmountaingroup.org/pub/ndiswrapper/ndiswrapper-1.54-2.6.28.tar.gz
 
-Note that this means that you have to wait until the last minute to
-calculate the checksum, since the buffer could be modified after the
-write request.  OCFS2 does this, by using a commit-time callback to
-calculate the checksums used.
+The breakage during unload and subsequent kernel corruption has been
+tracked down to link_watch.c and the packet scheduler code and is due to
+list corruption in dev_deactivate() being called with an invalid netdev
+context.
 
-The bottom line doing something like this in an efficient way is
-tricky.
+The linkwatch code is not called by ndiswrapper and the problems are due
+to poor error checking and cleanup in Linux proper with network drivers. 
+As such, ndiswrapper for 2.6.28 is posted as released based upon input
+from other folks.  Thanks to those folks who downloaded and tested the
+code and provided feedback for this release.
 
-> > Why not just use the ext3/4 external journal format?
-> 
-> Wouldn't that lead to confusion, because people can think the device
-> holds an ext3/4 external journal, while it actually holds a
-> device-mapper backing device that happens to contain a journal?
+The Native Linux wireless drivers and the hacked up pseudo-pirated
+microcode they rely on still do not work properly on most of my laptop
+wireless drivers or are very flaky for the BCM based drivers and Intel
+3945 series drivers in 2.6.28.  ndiswrapper almost a required component in
+order to use wireless with Linux on a large number of laptops.    I see no
+way around the current vendors offerings which are heavily dependent on
+internal and proprietary microcode without ndiswrapper since the Linux
+drivers are essentially impossible to keep working.
 
-Not really; the external journal has a label and uuid, and the journal
-superblock has a place to store the uuid of the "client" of the
-journal.  So there is plenty of information available to tie an
-external journal to some device-mapper backing device.
+Since most people (me included) are not interested in engaging in piracy
+by using tools which lift microcode and firmware images from ndis drivers,
+ndiswrapper seems a reasonable compromise since any customer who purchases
+a card with ndis based drivers has a legal right to use them as ndis
+drivers.
 
-> What would be the advantages of using the ext3/4 journal format, over a
-> simple initial sector and the journal following?
+Cutting and pasting firmware seems too much like piracy, not to mention
+being a great big hassle.
 
-There already existing tools to find the external journal, using the
-blkid library.  So you only have to store the UUID of the journal in
-the superblock of the device-mapper backing device, and then you can
-easily find the external journal as follows:
+Jeff
 
-       journal_fn = blkid_get_devname(ctx->blkid, "UUID", uuid);
 
-       		    				  	  - Ted
+
+
