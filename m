@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYL0O0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbYL0O1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbYL0O0Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 09:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYL0O0R
+	id S1754678AbYL0O1Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 09:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYL0O1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 09:26:17 -0500
-Received: from cmpxchg.org ([85.214.51.133]:36012 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753951AbYL0O0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 09:26:17 -0500
-Date: Sat, 27 Dec 2008 15:25:54 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] 2.6.28, vmalloc.c, vmap_page_range
-Message-ID: <20081227142554.GA2505@cmpxchg.org>
-References: <20081225210235.GC5431@os.inf.tu-dresden.de> <20081226163946.6d38e919.akpm@linux-foundation.org> <20081227033610.GA1750@cmpxchg.org> <20081227090221.GD16077@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081227090221.GD16077@elte.hu>
+	Sat, 27 Dec 2008 09:27:16 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:50872 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753955AbYL0O1P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 09:27:15 -0500
+Message-ID: <001001c9682f$33186c40$6602a8c0@bui.materna.com>
+From: "Roland" <devzero@web.de>
+To: "\"Alex Bennee\"" <kernel-hacker@bennee.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: Calculating CONFIG's from lsmod info
+Date: Sat, 27 Dec 2008 15:27:08 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+X-Provags-ID: V01U2FsdGVkX1/6hFn5DJtL5i0AXNHYuwods0FsYbKFz6fa/+VP
+	uUWkgD+NhzNMHCzdtGx3YaEZHdXd80n9yhCFh+eE3xlkNEf/Qd
+	53J2jzVcY=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 27, 2008 at 10:02:21AM +0100, Ingo Molnar wrote:
-> > > --- a/mm/vmalloc.c~vmallocc-fix-flushing-in-vmap_page_range
-> > > +++ a/mm/vmalloc.c
-> > > @@ -151,11 +151,12 @@ static int vmap_pud_range(pgd_t *pgd, un
-> > >   *
-> > >   * Ie. pte at addr+N*PAGE_SIZE shall point to pfn corresponding to pages[N]
-> > >   */
-> > > -static int vmap_page_range(unsigned long addr, unsigned long end,
-> > > +static int vmap_page_range(unsigned long start_addr, unsigned long end,
-> > >  				pgprot_t prot, struct page **pages)
-> > >  {
-> > >  	pgd_t *pgd;
-> > >  	unsigned long next;
-> > > +	unsigned long addr = start_addr;
-> > 
-> > Ugh, start_addr is an awful name.  How about start?  I know it doesn't 
-> > hold the same amount of information but it's a local API, the 
-> > pgd_offset_k() should make the unit unambiguous, it goes better with the 
-> > end parameter and it's unique enough for this short function.
-> 
-> i'd like to observe that there's 449 start_addr instances in the kernel 
-> source, 17 of them in mm/*.c alone. So if it's 'ugly' (it isnt to me), 
-> this patch is not the place to start worrying about it. If you feel 
-> strongly about it then prepare a cleanup patch that eradicates them all, 
-> put your justification for why it's bad into the changelog and post it to 
-> lkml.
+Maybe http://cateee.net/autokernconf/ is worth to take a look at.....
 
-It would surely not justify such a big change.
+roland
 
-And at least in mm/* you have them paired with `end_addr' if they
-denote range start and end.
 
-	Hannes
+
+List:       linux-kernel
+Subject:    Calculating CONFIG's from lsmod info
+From:       "Alex Bennee" <kernel-hacker () bennee ! com>
+Date:       2008-12-27 11:31:01
+Message-ID: b2cdc9f30812270331g3435e0b1wb28573c4e6782e9 () mail ! gmail ! 
+com
+[Download message RAW]
+
+Hi,
+
+Following a conversation with my Dad concerning his new netbook we
+discussed one option for speeding up the boot process was a static
+kernel with the correct config for his actual hardware, obviating the
+need for initrd and the rest of the flexible hardware hackery. However he 
+has
+less patience than me for reading through each Kconfig entry so I'm
+wondering if it's possible to come up with a solution that just works
+(tm).
+
+Given we usually know the config of the running kernel
+(/proc/config.gz or some package copy of it) and the modules that have
+been successfully loaded (lsmod) it must be deducible which CONFIG_*
+to turn from m to y for a kernel rebuild.
+
+The info from modinfo brings up a host of information for each module
+but the CONFIG flag that selects it for building is not one of them.
+Is there some sort of macro magic that could add the flag as module
+information or will I be reduced to grokking Makefile to deduce which
+object was invoked by which switch?
+
+Or am I in fact re-inventing a wheel that has already been created
+but isn't living in the scripts directory?
+
+-- 
+Alex, homepage: http://www.bennee.com/~alex/
+CV: http://www.bennee.com/~alex/cv.php
+
+
