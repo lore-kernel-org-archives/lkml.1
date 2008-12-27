@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYL0JWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYL0JXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYL0JWm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 04:22:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYL0JWd
+	id S1754248AbYL0JXb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 04:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYL0JXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 04:22:33 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:50639 "EHLO
+	Sat, 27 Dec 2008 04:23:21 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:50728 "EHLO
 	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752573AbYL0JWc (ORCPT
+	with ESMTP id S1751867AbYL0JXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 04:22:32 -0500
-Date: Sat, 27 Dec 2008 10:24:04 +0100
+	Sat, 27 Dec 2008 04:23:20 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org, mingo@elte.hu,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kenchen@google.com,
-       paulus@samba.org, tglx@linutronix.de, hpa@zytor.com,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH] sparc64: use unsigned long long for u64
-Message-ID: <20081227092404.GA10375@uranus.ravnborg.org>
-References: <20081222230035.GB4074@uranus.ravnborg.org> <20081222151338.3b6ef997.akpm@linux-foundation.org> <20081223131746.GA7456@uranus.ravnborg.org> <20081227.005452.261413194.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081227.005452.261413194.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 2/4] kconfig: add comments to symbol flags
+Date: Sat, 27 Dec 2008 10:24:52 +0100
+Message-Id: <1230369894-10510-2-git-send-email-sam@ravnborg.org>
+X-Mailer: git-send-email 1.6.0.2.GIT
+In-Reply-To: <20081227090339.GA6279@uranus.ravnborg.org>
+References: <20081227090339.GA6279@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 27, 2008 at 12:54:52AM -0800, David Miller wrote:
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Tue, 23 Dec 2008 14:17:46 +0100
-> 
-> > It may take a few days before the drivers gets fixed.
-> > Christmas is approaching fast by now.
-> 
-> Even with this and your driver patch applied, the tree
-> doesn't build successfully:
-> 
-> cc1: warnings being treated as errors
-> arch/sparc/kernel/psycho_common.c: In function ‘psycho_check_stc_error’:
-> arch/sparc/kernel/psycho_common.c:104: warning: format ‘%016lx’ expects type ‘long unsigned int’, but argument 4 has type ‘long long unsigned int’
-> 
-> Did you remove sparc's -Werror when doing test builds
-> of these changes? :-)
-No - it is worse than that.
-My gcc does not complain about the above.
+No functional changes - only comments.
 
-Just to check that I was not fouled by some preprocessor magic
-here is the preprocessed code:
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ scripts/kconfig/expr.h |   34 ++++++++++++++++++----------------
+ 1 files changed, 18 insertions(+), 16 deletions(-)
 
-   printk("<3>" "%s: STC_TAG(%d)[PA(%016lx)VA(%08lx)"
-          "V(%d)W(%d)]\n",
-          pbm->name,
-          i,
-          ((tagval & 0x0fffffff00000000UL) >> 19UL),
-          (tagval & 0x00000000ffffe000UL),
-          ((tagval & 0x0000000000000002UL) ? 1 : 0),
-          ((tagval & 0x0000000000000001UL) ? 1 : 0));
+diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
+index 455f2c8..0bdb58e 100644
+--- a/scripts/kconfig/expr.h
++++ b/scripts/kconfig/expr.h
+@@ -88,22 +88,24 @@ struct symbol {
+ 
+ #define for_all_symbols(i, sym) for (i = 0; i < 257; i++) for (sym = symbol_hash[i]; sym; sym = sym->next) if (sym->type != S_OTHER)
+ 
+-#define SYMBOL_CONST		0x0001
+-#define SYMBOL_CHECK		0x0008
+-#define SYMBOL_CHOICE		0x0010
+-#define SYMBOL_CHOICEVAL	0x0020
+-#define SYMBOL_VALID		0x0080
+-#define SYMBOL_OPTIONAL		0x0100
+-#define SYMBOL_WRITE		0x0200
+-#define SYMBOL_CHANGED		0x0400
+-#define SYMBOL_AUTO		0x1000
+-#define SYMBOL_CHECKED		0x2000
+-#define SYMBOL_WARNED		0x8000
+-#define SYMBOL_DEF		0x10000
+-#define SYMBOL_DEF_USER		0x10000
+-#define SYMBOL_DEF_AUTO		0x20000
+-#define SYMBOL_DEF3		0x40000
+-#define SYMBOL_DEF4		0x80000
++#define SYMBOL_CONST      0x0001  /* symbol is const */
++#define SYMBOL_CHECK      0x0008  /* used during dependency checking */
++#define SYMBOL_CHOICE     0x0010  /* start of a choice block (null name) */
++#define SYMBOL_CHOICEVAL  0x0020  /* used as a value in a choice block */
++#define SYMBOL_VALID      0x0080  /* set when symbol.curr is calculated */
++#define SYMBOL_OPTIONAL   0x0100  /* choice is optional - values can be 'n' */
++#define SYMBOL_WRITE      0x0200  /* ? */
++#define SYMBOL_CHANGED    0x0400  /* ? */
++#define SYMBOL_AUTO       0x1000  /* value from environment variable */
++#define SYMBOL_CHECKED    0x2000  /* used during dependency checking */
++#define SYMBOL_WARNED     0x8000  /* warning has been issued */
++
++/* Set when symbol.def[] is used */
++#define SYMBOL_DEF        0x10000  /* First bit of SYMBOL_DEF */
++#define SYMBOL_DEF_USER   0x10000  /* symbol.def[S_DEF_USER] is valid */
++#define SYMBOL_DEF_AUTO   0x20000  /* symbol.def[S_DEF_AUTO] is valid */
++#define SYMBOL_DEF3       0x40000  /* symbol.def[S_DEF_3] is valid */
++#define SYMBOL_DEF4       0x80000  /* symbol.def[S_DEF_4] is valid */
+ 
+ #define SYMBOL_MAXLENGTH	256
+ #define SYMBOL_HASHSIZE		257
+-- 
+1.6.0.2.GIT
 
-
-tagval is u64.
-
-So it looks like my gcc does not promote:
-((tagval & 0x0fffffff00000000UL) >> 19UL) to unsigned long long int
-but your gcc does?
-
-My gcc (build with Dan Kegel's crosstool):
-$ /opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-gcc -v
-Reading specs from /opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/lib/gcc/sparc64-unknown-linux-gnu/3.4.5/specs
-Configured with: /home/sam/devel/crosstool-0.43/build/sparc64-unknown-linux-gnu/gcc-3.4.5-glibc-2.3.6/gcc-3.4.5/configure --target=sparc64-unknown-linux-gnu --host=i686-host_pc-linux-gnu --prefix=/opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu --disable-multilib --with-cpu=ultrasparc3 --enable-cxx-flags=-mcpu=ultrasparc3 --with-headers=/opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/sparc64-unknown-linux-gnu/include --with-local-prefix=/opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/sparc64-unknown-linux-gnu --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c --enable-shared --enable-c99 --enable-long-long
-Thread model: posix
-gcc version 3.4.5
-
-> 
-> Either way these need some work before they should be
-> added to any tree.
-> 
-> Andrew you probably want to toss these from your tree
-> since at a minimum they will break the sparc64 build.
-> 
-> Sam will fix them up and resubmit, and I'll apply them,
-> don't worry. :)
-Yup - I added Andrew on cc: only as information.
-
-	Sam
