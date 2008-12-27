@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbYL0Dko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYL0EL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbYL0Dko (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Dec 2008 22:40:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYL0Dkf
+	id S1753223AbYL0EL5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Dec 2008 23:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYL0ELs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Dec 2008 22:40:35 -0500
-Received: from smtp.infotech.no ([82.134.31.41]:33374 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbYL0Dke (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Dec 2008 22:40:34 -0500
-X-Greylist: delayed 644 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Dec 2008 22:40:34 EST
-Message-ID: <4955A120.3060703@interlog.com>
-Date: Fri, 26 Dec 2008 22:29:36 -0500
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Fri, 26 Dec 2008 23:11:48 -0500
+Received: from ozlabs.org ([203.10.76.45]:52819 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752369AbYL0ELs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Dec 2008 23:11:48 -0500
 MIME-Version: 1.0
-To: SCSI development list <linux-scsi@vger.kernel.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Matt Taggart <taggart@debian.org>
-Subject: [ANNOUNCE] lsscsi-0.22 released
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18773.43656.189438.155690@cargo.ozlabs.ibm.com>
+Date: Sat, 27 Dec 2008 15:09:44 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
+Subject: Re: [PATCH] kbuild, sparseirq: work around GCC bug with __weak aliases
+In-Reply-To: <20081226134218.GA1054@elte.hu>
+References: <20081219134636.GA11772@linux.vnet.ibm.com>
+	<494C0BF0.3080109@kernel.org>
+	<20081223132127.GA5450@linux.vnet.ibm.com>
+	<495153A4.5060201@kernel.org>
+	<20081224163400.GA11562@linux.vnet.ibm.com>
+	<49529CE1.4040005@kernel.org>
+	<20081226091217.GA5100@linux.vnet.ibm.com>
+	<4954AC7B.3020603@kernel.org>
+	<20081226102716.GA31450@uranus.ravnborg.org>
+	<20081226133354.GC29265@elte.hu>
+	<20081226134218.GA1054@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lsscsi is a utility that uses sysfs in linux 2.6 series kernels
-to list information about SCSI devices and SCSI hosts. Both a
-compact format which is one line per device and a "classic"
-format (like the output of 'cat /proc/scsi/scsi') are supported.
+Ingo Molnar writes:
 
-Version 0.22 is available at
-http://sg.danny.cz/scsi/lsscsi.html
-More information can be found on that page including examples
-and a Download section for tarballs, rpm and deb packages.
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > I recall David Howells had a similar issue with the bootparamter patch 
+> > > set. The workaround he used was to add a barrier(); call in the weak 
+> > > function to avoid the inline.
+> > 
+> > could we add some extra attribute to __weak that would have a similar 
+> > effect? Something like __attribute__((noinline)), or something silly 
+> > like __attribute__((deprecated)) - just to keep gcc from screwing up 
+> > __weak functions? Perhaps adding a section attribute would have a 
+> > similar effect? (putting weak definitions into an extra section is 
+> > probably helpful anyway)
+> 
+> I've applied the patch below to tip/irq/sparseirq - could someone with an 
+> affected GCC version please check whether this solves the crash?
 
-ChangeLog:
-Version 0.22 2008/12/26 [svn: r71]
-   - add protection information (see CREDITS file)
-   - add USB transport type with USB device name
-   - add ATA and SATA transport types (crude: by driver name)
-Version 0.21 2008/7/10 [svn: r64]
-   ....
+I recall from discussions earlier that noinline doesn't fix the
+problem, and I just tested a similar case and verified that adding
+noinline doesn't stop some versions of gcc from inlining them.  The
+empty weak functions in kernel/perf_counter.c were getting inlined by
+the cross-gcc (gcc 4.1.1) I use for compiling powerpc kernels on my
+laptop, and adding noinline doesn't help there.
 
-Example of some new features:
-$ lsscsi
-[0:0:0:0]    disk    ATA      FUJITSU MHY2160B 0000  /dev/sda
-[3:0:0:0]    cd/dvd  MATSHITA DVD/CDRW UJDA775 CB03  /dev/scd0
-[5:0:0:0]    disk    USB 2.0  SD/MMC Reader          /dev/sdb
-[6:0:0:0]    disk    JetFlash TS2GJFVxx        8.01  /dev/sdc
-
-$ lsscsi -t
-[0:0:0:0]    disk    sata:                           /dev/sda
-[3:0:0:0]    cd/dvd  ata:                            /dev/scd0
-[5:0:0:0]    disk    usb: 7-1:1.0                    /dev/sdb
-[6:0:0:0]    disk    usb: 7-2.4:1.0                  /dev/sdc
-
-
-Doug Gilbert
+Paul.
