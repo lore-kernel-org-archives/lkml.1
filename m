@@ -1,131 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbYL0FUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYL0FxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752742AbYL0FUF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 00:20:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYL0FTy
+	id S1752844AbYL0FxX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 00:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYL0FxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 00:19:54 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:42421 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbYL0FTx (ORCPT
+	Sat, 27 Dec 2008 00:53:14 -0500
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33959 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbYL0FxN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 00:19:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Zu7OstTsjYgrl3B0DiEAAnhVKNPZhLvmPMgEQWvgJNJew5CSO0Z9TAC8hmlPwGeLI8
-         wL2UthJMh+rJRWuL0bazmGnr5VdvDvlaiLVfIT9sKXgG/pfqVZQOZV4h+rl2PVX5wm4s
-         R/DkBkzESCmH2gmEYXmdi2VedtX2FyXS5Cpas=
-Date: Sat, 27 Dec 2008 14:19:45 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
+	Sat, 27 Dec 2008 00:53:13 -0500
+Message-ID: <54964.166.70.238.44.1230354462.squirrel@webmail.wolfmountaingroup.com>
+Date: Fri, 26 Dec 2008 22:07:42 -0700 (MST)
+Subject: ndiswrapper-1.54-2.6.28 Posted
+From: jmerkey@wolfmountaingroup.com
 To: linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 4/4] x86: use generic thread_info allocator
-Message-ID: <20081227051943.GE3295@localhost.localdomain>
-References: <20081227051606.GA3295@localhost.localdomain>
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-In-Reply-To: <20081227051606.GA3295@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use generic thread_info allocator for x86.
-Because thread_info allocator for x86 and generic one are same now.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- arch/x86/include/asm/page_32.h     |    6 +++---
- arch/x86/include/asm/page_64.h     |    4 ++--
- arch/x86/include/asm/thread_info.h |   13 -------------
- arch/x86/kernel/process.c          |    5 -----
- 4 files changed, 5 insertions(+), 23 deletions(-)
+Posted at:
 
-Index: 2.6/arch/x86/include/asm/thread_info.h
-===================================================================
---- 2.6.orig/arch/x86/include/asm/thread_info.h
-+++ 2.6/arch/x86/include/asm/thread_info.h
-@@ -147,18 +147,6 @@ struct thread_info {
- 
- #define PREEMPT_ACTIVE		0x10000000
- 
--/* thread information allocation */
--#ifdef CONFIG_DEBUG_STACK_USAGE
--#define THREAD_FLAGS (GFP_KERNEL | __GFP_ZERO)
--#else
--#define THREAD_FLAGS GFP_KERNEL
--#endif
--
--#define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
--
--#define alloc_thread_info(tsk)						\
--	((struct thread_info *)__get_free_pages(THREAD_FLAGS, THREAD_ORDER))
--
- #ifdef CONFIG_X86_32
- 
- #define STACK_WARN	(THREAD_SIZE/8)
-@@ -257,7 +245,6 @@ static inline void set_restore_sigmask(v
- 
- #ifndef __ASSEMBLY__
- extern void arch_task_cache_init(void);
--extern void free_thread_info(struct thread_info *ti);
- extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
- #define arch_task_cache_init arch_task_cache_init
- 
-Index: 2.6/arch/x86/kernel/process.c
-===================================================================
---- 2.6.orig/arch/x86/kernel/process.c
-+++ 2.6/arch/x86/kernel/process.c
-@@ -38,11 +38,6 @@ void free_thread_xstate(struct task_stru
- 	}
- }
- 
--void free_thread_info(struct thread_info *ti)
--{
--	free_pages((unsigned long)ti, get_order(THREAD_SIZE));
--}
--
- static struct kmem_cache *task_struct_cachep;
- 
- struct task_struct *alloc_task_struct(void)
-Index: 2.6/arch/x86/include/asm/page_32.h
-===================================================================
---- 2.6.orig/arch/x86/include/asm/page_32.h
-+++ 2.6/arch/x86/include/asm/page_32.h
-@@ -14,11 +14,11 @@
- #define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET, UL)
- 
- #ifdef CONFIG_4KSTACKS
--#define THREAD_ORDER	0
-+#define THREAD_SIZE_ORDER	0
- #else
--#define THREAD_ORDER	1
-+#define THREAD_SIZE_ORDER	1
- #endif
--#define THREAD_SIZE 	(PAGE_SIZE << THREAD_ORDER)
-+#define THREAD_SIZE 	(PAGE_SIZE << THREAD_SIZE_ORDER)
- 
- #define STACKFAULT_STACK 0
- #define DOUBLEFAULT_STACK 1
-Index: 2.6/arch/x86/include/asm/page_64.h
-===================================================================
---- 2.6.orig/arch/x86/include/asm/page_64.h
-+++ 2.6/arch/x86/include/asm/page_64.h
-@@ -3,8 +3,8 @@
- 
- #define PAGETABLE_LEVELS	4
- 
--#define THREAD_ORDER	1
--#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
-+#define THREAD_SIZE_ORDER	1
-+#define THREAD_SIZE  (PAGE_SIZE << THREAD_SIZE_ORDER)
- #define CURRENT_MASK (~(THREAD_SIZE - 1))
- 
- #define EXCEPTION_STACK_ORDER 0
+ftp://ftp.wolfmountaingroup.org/pub/ndiswrapper/ndiswrapper-1.54-2.6.28.tar.gz
+
+NOTES:
+
+I have been working on kernel breakage in ntoskernel.c function
+KeSynchronizeExecution which involves calls to local_bh_enable()
+and the 2.6.28 kernel scehduler has some stability and robustness
+issues.
+
+There exists several cases where the kernel can become corrupted in
+Linux 2.6.28 and the breakage affects the scheduling queue. After
+extensive debugging of the problem, I have determined it is located
+in the following area and appears timing dependent:
+
+Dec 26 12:24:55 ffs kernel: ndiswrapper: device wlan0 removed
+Dec 26 12:24:55 ffs kernel: ndiswrapper 0000:02:06.0: PCI INT A disabled
+Dec 26 12:24:55 ffs kernel: usbcore: deregistering interface driver
+ndiswrapper
+Dec 26 12:24:55 ffs kernel: BUG: unable to handle kernel paging request at
+30203334
+Dec 26 12:24:55 ffs kernel: IP: [<c05cc109>] __linkwatch_run_queue+0x65/0x136
+Dec 26 12:24:55 ffs kernel: *pde = 00000000
+Dec 26 12:24:55 ffs kernel: Oops: 0000 [#1] PREEMPT SMP
+Dec 26 12:24:55 ffs kernel: last sysfs file:
+/sys/devices/pci0000:00/0000:00:1e.0/0000:02:06.0/irq
+Dec 26 12:24:55 ffs kernel: Modules linked in: autofs4 hidp l2cap
+bluetooth ndiswrapper(-) nf_conntrack_netbios_ns ipt_REJECT
+nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack iptable_filter
+ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6
+dm_mirror dm_region_hash dm_log dm_multipath dm_mod rfkill input_polldev
+sbs sbshc parport_pc lp parport joydev ide_cd_mod cdrom snd_intel8x0
+snd_seq_dummy serio_raw snd_intel8x0m snd_ac97_codec ac97_bus snd_seq_oss
+snd_seq_midi_event snd_seq snd_seq_device battery snd_pcm_oss ac
+snd_mixer_oss button snd_pcm 8139cp 8139too rtc_cmos mii rtc_core rtc_lib
+snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core pcspkr ata_piix
+libata sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd [last unloaded:
+microcode]
+Dec 26 12:24:55 ffs kernel:
+Dec 26 12:24:55 ffs kernel: Pid: 6, comm: events/0 Tainted: P          
+(2.6.28 #2) Presario 2200 (PM043UA#ABA)
+Dec 26 12:24:55 ffs kernel: EIP: 0060:[<c05cc109>] EFLAGS: 00010246 CPU: 0
+Dec 26 12:24:55 ffs kernel: EIP is at __linkwatch_run_queue+0x65/0x136
+Dec 26 12:24:55 ffs kernel: EAX: dd850000 EBX: 30203020 ECX: 00000282 EDX:
+00bb1000
+Dec 26 12:24:55 ffs kernel: ESI: 00000003 EDI: 00000000 EBP: 30203020 ESP:
+dd850f90
+Dec 26 12:24:55 ffs kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Dec 26 12:24:55 ffs kernel: Process events/0 (pid: 6, ti=dd850000
+task=dd87c490 task.ti=dd850000)
+Dec 26 12:24:55 ffs kernel: Stack:
+Dec 26 12:24:55 ffs kernel:  c078bda4 dd851f40 c078bda0 c05cc1da c05cc1f7
+c043284c dd851f40 c0432fa0
+Dec 26 12:24:55 ffs kernel:  dd851f4c 00000000 c0433053 00000000 dd87c490
+c043533c dd850fc8 dd850fc8
+Dec 26 12:24:55 ffs kernel:  dd851f40 00000000 c0435279 c0435241 00000000
+c04046fb dd82df4c 00000000
+Dec 26 12:24:55 ffs kernel: Call Trace:
+Dec 26 12:24:55 ffs kernel:  [<c05cc1da>] linkwatch_event+0x0/0x22
+Dec 26 12:24:55 ffs kernel:  [<c05cc1f7>] linkwatch_event+0x1d/0x22
+Dec 26 12:24:55 ffs kernel:  [<c043284c>] run_workqueue+0x6e/0xf3
+Dec 26 12:24:55 ffs kernel:  [<c0432fa0>] worker_thread+0x0/0xbd
+Dec 26 12:24:55 ffs kernel:  [<c0433053>] worker_thread+0xb3/0xbd
+Dec 26 12:24:55 ffs kernel:  [<c043533c>] autoremove_wake_function+0x0/0x2d
+Dec 26 12:24:55 ffs kernel:  [<c0435279>] kthread+0x38/0x5f
+Dec 26 12:24:55 ffs kernel:  [<c0435241>] kthread+0x0/0x5f
+Dec 26 12:24:55 ffs kernel:  [<c04046fb>] kernel_thread_helper+0x7/0x10
+Dec 26 12:24:55 ffs kernel: Code: b8 78 99 8c c0 e8 6f 5d 06 00 b8 78 99
+8c c0 8b 1d 84 99 8c c0 c7 05 84 99 8c c0 00 00 00 00 e8 95 5f 06 00 e9 b2
+00 00 00 85 ff <8b> ab 14 03 00 00 74 17 89 d8 e8 60 fe ff ff 84 c0 75 0c
+89 d8
+Dec 26 12:24:55 ffs kernel: EIP: [<c05cc109>]
+__linkwatch_run_queue+0x65/0x136 SS:ESP 0068:dd850f90
+Dec 26 12:24:55 ffs kernel: ---[ end trace 322e4a35e9b8ee1c ]---
+
+Due to the fact folks seem to be constantly altering the scheduler and
+posting/pulling git changes, I have spent little time attempting to
+determine the "flavor of the month" kernel breakage introduced in recent
+kernels.  I have reviewed the ndiswrapper code and the defect is not
+in the ndiswrapper code itself and appears to be related to recent (and it
+seems constant) introduction of breakage with all the scheduler changes.
+
+This problem only shows up when the ndiswrapper module is loaded/unloaded
+several times in succession.  Normal operations (i.e. install, boot,
+orderly shutdown) seem to work fine for most of the systems I have tested
+it on.
+
+This version is tested on 2.6.28 and seems to work fine under normal use
+cases.
+
+Jeffrey Vernon Merkey
+
+
+
