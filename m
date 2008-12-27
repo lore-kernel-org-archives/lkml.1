@@ -1,398 +1,442 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYL0WpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYL0WrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbYL0WpX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 17:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYL0WpJ
+	id S1754985AbYL0WrZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 17:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYL0WrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 17:45:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:6422 "EHLO
+	Sat, 27 Dec 2008 17:47:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:2404 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbYL0WpH (ORCPT
+	with ESMTP id S1752575AbYL0WrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 17:45:07 -0500
+	Sat, 27 Dec 2008 17:47:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:from:to:cc:date:subject;
-        b=rhLvWTXH8Xf3nJE4Cvz1DSxlvVoaoGK0dailPobzz9x8foHFUrOaLiAJLOFYAH822Z
-         31XUxgmi8PZqhEgfakASfrWEPNKumqCvYvFQ5Irv+Rv1yvuCbyQMHtDpDtO3OPfhQwd/
-         L42c4f+rH90AvQP2dmpcrry5OGn0ynDxgfXGA=
-Message-ID: <4956aff1.0405560a.0eb9.ffffd126@mx.google.com>
+        b=mQe5/V2bBbL39S0gX2qGM9HPsPak7hGhHuJe5ZEbSmL1U4xolq6STaNoCprTKxRxfP
+         e03P4/KoUJNubpmNuN0SaWJ5lId4Hlp8nCKOKDlHl5K/RfEW/1xLaPGH3VOquW18lSST
+         Rp4mKY/WO3CA3r2OEry8KfEuLyzeLh4BNRf5A=
+Message-ID: <4956b070.0c07560a.2b34.2325@mx.google.com>
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Sat, 27 Dec 2008 22:42:33 +0100
-Subject: [PATCH 1/2] tracing/ftrace: provide the base infrastructure for stat tracing
+Date: Sat, 27 Dec 2008 23:25:38 +0100
+Subject: [PATCH 2/2] tracing/branch-tracer: adapt to the stat tracing API
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: enhance the tracing API to provide statistical tracing
+This patch adapts the branch tracer to the tracing API.
+This is not really for inclusion but more likely a proof of concept because
+the branch tracer implements two "stat tracing" that were split in two files.
 
-The goal of this patch is to normalize and make more easy the implementation
-of statistical (histogram) tracing.
+So I added an option to the branch tracer: stat_all_branch.
+If it is set, then trace_stat will output all of the branches entries stats.
+Otherwise, it will print the annotated branches.
 
-It implements a trace_stat file into the /debugfs/tracing directory where
-one can print a one-shot output of statistics/histogram entries.
+Its is a kind of quick trick, waiting for a better solution.
+By default, the annotated branches stat are sorted by incorrect branch prediction
+percentage.
 
-A tracer has to provide two basic iterator callbacks:
+Ie:
 
-stat_start() => the first entry
-stat_next(prev, idx) => the next one.
+ correct incorrect  %        Function                  File              Line
+ ------- ---------  -        --------                  ----              ----
+       0        1 100 native_smp_prepare_cpus        smpboot.c            1228
+       0        1 100 hpet_rtc_timer_reinit          hpet.c               1057
+       0    18032 100 sched_info_queued              sched_stats.h        223
+       0      684 100 yield_task_fair                sched_fair.c         984
+       0      282 100 pre_schedule_rt                sched_rt.c           1263
+       0    13414 100 sched_info_dequeued            sched_stats.h        178
+       0    21724 100 sched_info_switch              sched_stats.h        270
+       0        1 100 get_signal_to_deliver          signal.c             1820
+       0        8 100 __cancel_work_timer            workqueue.c          560
+       0      212 100 verify_export_symbols          module.c             1509
+       0       17 100 __rmqueue_fallback             page_alloc.c         793
+       0       43 100 clear_page_mlock               internal.h           129
+       0      124 100 try_to_unmap_anon              rmap.c               1021
+       0       53 100 try_to_unmap_anon              rmap.c               1013
+       0        6 100 vma_address                    rmap.c               232
+       0     3301 100 try_to_unmap_file              rmap.c               1082
+       0      466 100 try_to_unmap_file              rmap.c               1077
+       0        1 100 mem_cgroup_create              memcontrol.c         1090
+       0        3 100 inotify_find_update_watch      inotify.c            726
+       2    30163  99 perf_counter_task_sched_out    perf_counter.c       385
+       1     2935  99 percpu_free                    allocpercpu.c        138
+    1544   297672  99 dentry_lru_del_init            dcache.c             153
+       8     1074  99 input_pass_event               input.c              86
+    1390    76781  98 mapping_unevictable            pagemap.h            50
+     280     6665  95 pick_next_task_rt              sched_rt.c           889
+     750     4826  86 next_pidmap                    pid.c                194
+       2        8  80 blocking_notifier_chain_regist notifier.c           220
+      36      130  78 ioremap_pte_range              ioremap.c            22
+    1093     3247  74 IS_ERR                         err.h                34
+    1023     2908  73 sched_slice                    sched_fair.c         445
+      22       60  73 disk_put_part                  genhd.h              206
+[...]
 
-Note that it is adapted for arrays or hash tables or lists.... since
-it provides a pointer to the previous entry and the current index of the
-iterator.
-
-These two callbacks are called to get a snapshot of the statistics at each opening
-of the trace_stat file because.
-The values are so updated between two "cat trace_stat". And the tracer is free to lock its
-datas during the iteration to keep consistent values.
-
-Since it is almost always interesting to sort statisticals values to address the problems by
-priority, this infrastructure provides a "sorting" of the stat entries too if desired.
-A tracer has just to provide a stat_cmp callback to compare two entries and the stat tracing
-infrastructure will build a sorted list of the given entries.
-
-A last callback, called stat_headers, can be implemented by a tracer to output headers on its
-trace.
-
-If one of these callbacks is changed on runtime, it just have to signal it to the stat tracing
-API by calling the init_tracer_stat() helper.
+It enables a developer to quickly address the source of incorrect branch predictions.
+Note that this sorting would be better with a second sort on the number of incorrect
+predictions.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/Makefile     |    1 +
- kernel/trace/trace.c      |    3 +-
- kernel/trace/trace.h      |   17 +++
- kernel/trace/trace_stat.c |  250 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 270 insertions(+), 1 deletions(-)
+ kernel/trace/trace_branch.c |  268 +++++++++++++++++++++++--------------------
+ 1 files changed, 142 insertions(+), 126 deletions(-)
 
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 549f93c..31cd5fb 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index c15222a..4785a3b 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -18,10 +18,13 @@
+ #include "trace.h"
+ #include "trace_output.h"
  
- obj-$(CONFIG_TRACING) += trace.o
- obj-$(CONFIG_TRACING) += trace_output.o
-+obj-$(CONFIG_TRACING) += trace_stat.o
- obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
- obj-$(CONFIG_SYSPROF_TRACER) += trace_sysprof.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace_functions.o
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a087add..bf75d10 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2354,6 +2354,7 @@ static int tracing_set_tracer(char *buf)
- 		if (ret)
- 			goto out;
- 	}
-+	init_tracer_stat(t);
- 
- 	trace_branch_enable(tr);
-  out:
-@@ -3206,7 +3207,7 @@ __init static int tracer_alloc_buffers(void)
- #else
- 	current_trace = &nop_trace;
- #endif
--
-+	init_tracer_stat(current_trace);
- 	/* All seems OK, enable tracing */
- 	tracing_disabled = 0;
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 6bd71fa..05fa804 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -336,6 +336,21 @@ struct tracer {
- 	struct tracer		*next;
- 	int			print_max;
- 	struct tracer_flags 	*flags;
++static struct tracer branch_trace;
 +
-+	/*
-+	 * If you change one of the following on tracing runtime, recall
-+	 * init_tracer_stat()
-+	 */
+ #ifdef CONFIG_BRANCH_TRACER
+ 
+ static int branch_tracing_enabled __read_mostly;
+ static DEFINE_MUTEX(branch_tracing_mutex);
 +
-+	/* Iteration over statistic entries */
-+	void			*(*stat_start)(void);
-+	void			*(*stat_next)(void *prev, int idx);
-+	/* Compare two entries for sorting (optional) for stats */
-+	int			(*stat_cmp)(void *p1, void *p2);
-+	/* Print a stat entry */
-+	int			(*stat_show)(struct seq_file *s, void *p);
-+	/* Print the headers of your stat entries */
-+	int			(*stat_headers)(struct seq_file *s);
+ static struct trace_array *branch_tracer;
+ 
+ static void
+@@ -178,6 +181,7 @@ trace_branch_print(struct trace_seq *s, struct trace_entry *entry, int flags)
+ 	return 0;
+ }
+ 
++
+ static struct trace_event trace_branch_event = {
+ 	.type	 	= TRACE_BRANCH,
+ 	.trace		= trace_branch_print,
+@@ -187,30 +191,6 @@ static struct trace_event trace_branch_event = {
+ 	.binary		= trace_nop_print,
  };
  
- struct trace_seq {
-@@ -421,6 +436,8 @@ void tracing_start_sched_switch_record(void);
- int register_tracer(struct tracer *type);
- void unregister_tracer(struct tracer *type);
+-struct tracer branch_trace __read_mostly =
+-{
+-	.name		= "branch",
+-	.init		= branch_trace_init,
+-	.reset		= branch_trace_reset,
+-#ifdef CONFIG_FTRACE_SELFTEST
+-	.selftest	= trace_selftest_startup_branch,
+-#endif
+-};
+-
+-__init static int init_branch_trace(void)
+-{
+-	int ret;
+-
+-	ret = register_ftrace_event(&trace_branch_event);
+-	if (!ret) {
+-		printk(KERN_WARNING "Warning: could not register branch events\n");
+-		return 1;
+-	}
+-
+-	return register_tracer(&branch_trace);
+-}
+-
+-device_initcall(init_branch_trace);
+ #else
+ static inline
+ void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+@@ -236,66 +216,39 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect)
+ }
+ EXPORT_SYMBOL(ftrace_likely_update);
  
-+void init_tracer_stat(struct tracer *trace);
-+
- extern unsigned long nsecs_to_usecs(unsigned long nsecs);
+-struct ftrace_pointer {
+-	void		*start;
+-	void		*stop;
+-	int		hit;
+-};
++extern unsigned long __start_annotated_branch_profile[];
++extern unsigned long __stop_annotated_branch_profile[];
  
- extern unsigned long tracing_max_latency;
-diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-new file mode 100644
-index 0000000..9022e0b
---- /dev/null
-+++ b/kernel/trace/trace_stat.c
-@@ -0,0 +1,250 @@
-+/*
-+ * Infrastructure for statistic tracing (histogram output).
-+ *
-+ * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
-+ *
-+ * Based on the code from trace_branch.c which is
-+ * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
-+ *
-+ */
+-static void *
+-t_next(struct seq_file *m, void *v, loff_t *pos)
++static int annotated_branch_stat_headers(struct seq_file *m)
+ {
+-	const struct ftrace_pointer *f = m->private;
+-	struct ftrace_branch_data *p = v;
+-
+-	(*pos)++;
+-
+-	if (v == (void *)1)
+-		return f->start;
+-
+-	++p;
+-
+-	if ((void *)p >= (void *)f->stop)
+-		return NULL;
+-
+-	return p;
++	seq_printf(m, " correct incorrect  %% ");
++	seq_printf(m, "       Function                "
++			      "  File              Line\n"
++			      " ------- ---------  - "
++			      "       --------                "
++			      "  ----              ----\n");
++	return 0;
+ }
+ 
+-static void *t_start(struct seq_file *m, loff_t *pos)
++static inline long get_incorrect_percent(struct ftrace_branch_data *p)
+ {
+-	void *t = (void *)1;
+-	loff_t l = 0;
+-
+-	for (; t && l < *pos; t = t_next(m, t, &l))
+-		;
++	long percent;
+ 
+-	return t;
+-}
++	if (p->correct) {
++		percent = p->incorrect * 100;
++		percent /= p->correct + p->incorrect;
++	} else
++		percent = p->incorrect ? 100 : -1;
+ 
+-static void t_stop(struct seq_file *m, void *p)
+-{
++	return percent;
+ }
+ 
+-static int t_show(struct seq_file *m, void *v)
++static int branch_stat_show(struct seq_file *m, void *v)
+ {
+-	const struct ftrace_pointer *fp = m->private;
+ 	struct ftrace_branch_data *p = v;
+ 	const char *f;
+ 	long percent;
+ 
+-	if (v == (void *)1) {
+-		if (fp->hit)
+-			seq_printf(m, "   miss      hit    %% ");
+-		else
+-			seq_printf(m, " correct incorrect  %% ");
+-		seq_printf(m, "       Function                "
+-			      "  File              Line\n"
+-			      " ------- ---------  - "
+-			      "       --------                "
+-			      "  ----              ----\n");
+-		return 0;
+-	}
+-
+ 	/* Only print the file, not the path */
+ 	f = p->file + strlen(p->file);
+ 	while (f >= p->file && *f != '/')
+@@ -305,11 +258,7 @@ static int t_show(struct seq_file *m, void *v)
+ 	/*
+ 	 * The miss is overlayed on correct, and hit on incorrect.
+ 	 */
+-	if (p->correct) {
+-		percent = p->incorrect * 100;
+-		percent /= p->correct + p->incorrect;
+-	} else
+-		percent = p->incorrect ? 100 : -1;
++	percent = get_incorrect_percent(p);
+ 
+ 	seq_printf(m, "%8lu %8lu ",  p->correct, p->incorrect);
+ 	if (percent < 0)
+@@ -320,76 +269,143 @@ static int t_show(struct seq_file *m, void *v)
+ 	return 0;
+ }
+ 
+-static struct seq_operations tracing_likely_seq_ops = {
+-	.start		= t_start,
+-	.next		= t_next,
+-	.stop		= t_stop,
+-	.show		= t_show,
+-};
++static void *annotated_branch_stat_start(void)
++{
++	return __start_annotated_branch_profile;
++}
+ 
+-static int tracing_branch_open(struct inode *inode, struct file *file)
++static void *
++annotated_branch_stat_next(void *v, int idx)
+ {
+-	int ret;
++	struct ftrace_branch_data *p = v;
+ 
+-	ret = seq_open(file, &tracing_likely_seq_ops);
+-	if (!ret) {
+-		struct seq_file *m = file->private_data;
+-		m->private = (void *)inode->i_private;
+-	}
++	++p;
+ 
+-	return ret;
++	if ((void *)p >= (void *)__stop_annotated_branch_profile)
++		return NULL;
 +
++	return p;
+ }
+ 
+-static const struct file_operations tracing_branch_fops = {
+-	.open		= tracing_branch_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-};
++static int annotated_branch_stat_cmp(void *p1, void *p2)
++{
++	struct ftrace_branch_data *a = p1;
++	struct ftrace_branch_data *b = p2;
 +
++	long percent_a, percent_b;
 +
-+#include <linux/list.h>
-+#include <linux/seq_file.h>
-+#include <linux/debugfs.h>
-+#include "trace.h"
++	percent_a = get_incorrect_percent(a);
++	percent_b = get_incorrect_percent(b);
 +
++	if (percent_a < percent_b)
++		return -1;
++	if (percent_a > percent_b)
++		return 1;
++	else
++		return 0;
++}
+ 
+ #ifdef CONFIG_PROFILE_ALL_BRANCHES
+-extern unsigned long __start_branch_profile[];
+-extern unsigned long __stop_branch_profile[];
++enum {
++	TRACE_BRANCH_OPT_ALL = 0x1
++};
+ 
+-static const struct ftrace_pointer ftrace_branch_pos = {
+-	.start			= __start_branch_profile,
+-	.stop			= __stop_branch_profile,
+-	.hit			= 1,
++static struct tracer_opt branch_opts[] = {
++	{ TRACER_OPT(stat_all_branch, TRACE_BRANCH_OPT_ALL) },
++	{ }
+ };
+ 
+-#endif /* CONFIG_PROFILE_ALL_BRANCHES */
++static struct tracer_flags branch_flags = {
++	.val = 0,
++	.opts = branch_opts
++};
+ 
+-extern unsigned long __start_annotated_branch_profile[];
+-extern unsigned long __stop_annotated_branch_profile[];
++extern unsigned long __start_branch_profile[];
++extern unsigned long __stop_branch_profile[];
+ 
+-static const struct ftrace_pointer ftrace_annotated_branch_pos = {
+-	.start			= __start_annotated_branch_profile,
+-	.stop			= __stop_annotated_branch_profile,
+-};
++static int all_branch_stat_headers(struct seq_file *m)
++{
++	seq_printf(m, "   miss      hit    %% ");
++	seq_printf(m, "       Function                "
++			      "  File              Line\n"
++			      " ------- ---------  - "
++			      "       --------                "
++			      "  ----              ----\n");
++	return 0;
++}
+ 
+-static __init int ftrace_branch_init(void)
++static void *all_branch_stat_start(void)
+ {
+-	struct dentry *d_tracer;
+-	struct dentry *entry;
++	return __start_branch_profile;
++}
 +
-+/* List of stat entries from a tracer */
-+struct trace_stat_list {
-+	struct list_head list;
-+	void *stat;
++static void *
++all_branch_stat_next(void *v, int idx)
++{
++	struct ftrace_branch_data *p = v;
+ 
+-	d_tracer = tracing_init_dentry();
++	++p;
+ 
+-	entry = debugfs_create_file("profile_annotated_branch", 0444, d_tracer,
+-				    (void *)&ftrace_annotated_branch_pos,
+-				    &tracing_branch_fops);
+-	if (!entry)
+-		pr_warning("Could not create debugfs "
+-			   "'profile_annotatet_branch' entry\n");
++	if ((void *)p >= (void *)__stop_branch_profile)
++		return NULL;
+ 
+-#ifdef CONFIG_PROFILE_ALL_BRANCHES
+-	entry = debugfs_create_file("profile_branch", 0444, d_tracer,
+-				    (void *)&ftrace_branch_pos,
+-				    &tracing_branch_fops);
+-	if (!entry)
+-		pr_warning("Could not create debugfs"
+-			   " 'profile_branch' entry\n");
+-#endif
++	return p;
++}
+ 
++static int branch_set_flag(u32 old_flags, u32 bit, int set)
++{
++	if (bit == TRACE_BRANCH_OPT_ALL) {
++		if (set) {
++			branch_trace.stat_headers = all_branch_stat_headers;
++			branch_trace.stat_start = all_branch_stat_start;
++			branch_trace.stat_next = all_branch_stat_next;
++			branch_trace.stat_cmp = NULL;
++		} else {
++			branch_trace.stat_headers =
++				annotated_branch_stat_headers;
++			branch_trace.stat_start = annotated_branch_stat_start;
++			branch_trace.stat_next = annotated_branch_stat_next;
++			branch_trace.stat_cmp = annotated_branch_stat_cmp;
++		}
++		init_tracer_stat(&branch_trace);
++	}
+ 	return 0;
+ }
+ 
+-device_initcall(ftrace_branch_init);
++#endif /* CONFIG_PROFILE_ALL_BRANCHES */
++
++static struct tracer branch_trace __read_mostly =
++{
++	.name		= "branch",
++#ifdef CONFIG_BRANCH_TRACER
++	.init		= branch_trace_init,
++	.reset		= branch_trace_reset,
++#ifdef CONFIG_FTRACE_SELFTEST
++	.selftest	= trace_selftest_startup_branch,
++#endif /* CONFIG_FTRACE_SELFTEST */
++#endif /* CONFIG_BRANCH_TRACER */
++	.stat_start	=	annotated_branch_stat_start,
++	.stat_next	= annotated_branch_stat_next,
++	.stat_show	= branch_stat_show,
++	.stat_headers	= annotated_branch_stat_headers,
++	.stat_cmp	= annotated_branch_stat_cmp,
++#ifdef CONFIG_PROFILE_ALL_BRANCHES
++	.flags	= &branch_flags,
++	.set_flag	= branch_set_flag,
++#endif
 +};
 +
-+static struct trace_stat_list stat_list;
-+
-+/*
-+ * This is a copy of the current tracer to avoid racy
-+ * and dangerous output while the current tracer is
-+ * switched.
-+ */
-+static struct tracer current_tracer;
-+
-+/*
-+ * Protect both the current tracer and the global
-+ * stat list.
-+ */
-+static DEFINE_MUTEX(stat_list_mutex);
-+
-+
-+static inline void init_stat_list(void)
++__init static int init_branch_trace(void)
 +{
-+	INIT_LIST_HEAD(&stat_list.list);
-+}
-+
-+static void free_stat_list(void)
-+{
-+	struct trace_stat_list *node;
-+	struct list_head *next;
-+
-+	if (list_empty(&stat_list.list))
-+		return;
-+
-+	node = list_entry(stat_list.list.next, struct trace_stat_list, list);
-+	next = node->list.next;
-+
-+	while (&node->list != next) {
-+		kfree(node);
-+		node = list_entry(next, struct trace_stat_list, list);
-+	}
-+	kfree(node);
-+}
-+
-+void init_tracer_stat(struct tracer *trace)
-+{
-+	mutex_lock(&stat_list_mutex);
-+	current_tracer = *trace;
-+	mutex_unlock(&stat_list_mutex);
-+}
-+
-+/*
-+ * For tracers that don't provide a stat_cmp callback.
-+ * This one will force an immediate insertion on tail of
-+ * the list.
-+ */
-+static int dummy_cmp(void *p1, void *p2)
-+{
-+	return 1;
-+}
-+
-+/*
-+ * Initialize the stat list at each trace_stat file opening.
-+ * All of these copies and sorting are required on all opening
-+ * since the stats could have changed between two file sessions.
-+ */
-+static int stat_seq_init(void)
-+{
-+	struct trace_stat_list *iter_entry, *new_entry;
-+	void *prev_stat;
-+	int ret = 0;
-+	int i;
-+
-+	mutex_lock(&stat_list_mutex);
-+	init_stat_list();
-+
-+	if (!current_tracer.stat_start || !current_tracer.stat_next ||
-+					!current_tracer.stat_show)
-+		goto exit;
-+
-+	if (!current_tracer.stat_cmp)
-+		current_tracer.stat_cmp = dummy_cmp;
-+
-+	/*
-+	 * The first entry. Actually this is the second, but the first
-+	 * one (the stat_list head) is pointless.
-+	 */
-+	new_entry = kmalloc(sizeof(struct trace_stat_list), GFP_KERNEL);
-+	if (!new_entry) {
-+		ret = -ENOMEM;
-+		goto exit;
-+	}
-+
-+	INIT_LIST_HEAD(&new_entry->list);
-+	list_add(&new_entry->list, &stat_list.list);
-+	new_entry->stat = current_tracer.stat_start();
-+
-+	prev_stat = new_entry->stat;
-+
-+	/*
-+	 * Iterate over the tracer stat entries and store them in a sorted
-+	 * list.
-+	 */
-+	for (i = 1; ; i++) {
-+		new_entry = kmalloc(sizeof(struct trace_stat_list), GFP_KERNEL);
-+		if (!new_entry) {
-+			ret = -ENOMEM;
-+			goto exit_free_list;
-+		}
-+
-+		INIT_LIST_HEAD(&new_entry->list);
-+		new_entry->stat = current_tracer.stat_next(prev_stat, i);
-+
-+		/* End of insertion */
-+		if (!new_entry->stat)
-+			break;
-+
-+		list_for_each_entry(iter_entry, &stat_list.list, list) {
-+			/* Insertion with a descendent sorting */
-+			if (current_tracer.stat_cmp(new_entry->stat,
-+						iter_entry->stat) > 0) {
-+
-+				list_add_tail(&new_entry->list,
-+						&iter_entry->list);
-+				break;
-+
-+			/* The current smaller value */
-+			} else if (list_is_last(&iter_entry->list,
-+						&stat_list.list)) {
-+				list_add(&new_entry->list, &iter_entry->list);
-+				break;
-+			}
-+		}
-+
-+		prev_stat = new_entry->stat;
-+	}
-+exit:
-+	mutex_unlock(&stat_list_mutex);
-+	return ret;
-+
-+exit_free_list:
-+	free_stat_list();
-+	mutex_unlock(&stat_list_mutex);
-+	return ret;
-+}
-+
-+
-+static void *stat_seq_start(struct seq_file *s, loff_t *pos)
-+{
-+	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
-+
-+	/* Prevent from tracer switch or stat_list modification */
-+	mutex_lock(&stat_list_mutex);
-+
-+	/* If we are in the beginning of the file, print the headers */
-+	if (!*pos && current_tracer.stat_headers)
-+		current_tracer.stat_headers(s);
-+
-+	return seq_list_start(&l->list, *pos);
-+}
-+
-+static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
-+{
-+	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
-+
-+	return seq_list_next(p, &l->list, pos);
-+}
-+
-+static void stat_seq_stop(struct seq_file *m, void *p)
-+{
-+	mutex_unlock(&stat_list_mutex);
-+}
-+
-+static int stat_seq_show(struct seq_file *s, void *v)
-+{
-+	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
-+	return current_tracer.stat_show(s, l->stat);
-+}
-+
-+static const struct seq_operations trace_stat_seq_ops = {
-+	.start = stat_seq_start,
-+	.next = stat_seq_next,
-+	.stop = stat_seq_stop,
-+	.show = stat_seq_show
-+};
-+
-+static int tracing_stat_open(struct inode *inode, struct file *file)
-+{
++#ifdef CONFIG_BRANCH_TRACER
 +	int ret;
-+
-+	ret = seq_open(file, &trace_stat_seq_ops);
++	ret = register_ftrace_event(&trace_branch_event);
 +	if (!ret) {
-+		struct seq_file *m = file->private_data;
-+		m->private = &stat_list;
-+		ret = stat_seq_init();
++		printk(KERN_WARNING "Warning: could not register branch events\n");
++		return 1;
 +	}
++#endif
 +
-+	return ret;
++	return register_tracer(&branch_trace);
 +}
-+
-+static int tracing_stat_release(struct inode *i, struct file *f)
-+{
-+	mutex_lock(&stat_list_mutex);
-+	free_stat_list();
-+	mutex_unlock(&stat_list_mutex);
-+	return 0;
-+}
-+
-+static const struct file_operations tracing_stat_fops = {
-+	.open		= tracing_stat_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= tracing_stat_release
-+};
-+
-+static int __init tracing_stat_init(void)
-+{
-+	struct dentry *d_tracing;
-+	struct dentry *entry;
-+
-+	d_tracing = tracing_init_dentry();
-+
-+	entry = debugfs_create_file("trace_stat", 0444, d_tracing,
-+					NULL,
-+				    &tracing_stat_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs "
-+			   "'trace_stat' entry\n");
-+	return 0;
-+}
-+fs_initcall(tracing_stat_init);
++device_initcall(init_branch_trace);
 -- 
 1.6.0.4
 
