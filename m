@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYL0VKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYL0VKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbYL0VKj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 16:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbYL0VKY
+	id S1755263AbYL0VKz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 16:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYL0VK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 16:10:24 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57729 "EHLO
+	Sat, 27 Dec 2008 16:10:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57730 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754810AbYL0VKU (ORCPT
+	with ESMTP id S1754871AbYL0VK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 16:10:20 -0500
-Message-ID: <4956995B.9080000@zytor.com>
-Date: Sat, 27 Dec 2008 13:08:43 -0800
+	Sat, 27 Dec 2008 16:10:27 -0500
+Message-ID: <495699A0.10305@zytor.com>
+Date: Sat, 27 Dec 2008 13:09:52 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
@@ -28,20 +28,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Mike Frysinger wrote:
-> 
-> looking at asm-generic/fcntl.h, i'd propose this change as a template:
 > ...
 > #ifdef __KERNEL__
 > # define kernel_flock flock
 > #endif
 > struct kernel_flock {
 > ...
-> -mike
 
-It should be __kernel_flock or something like that.
+FWIW, a long time ago I proposed the __kabi_ prefix for these things; I
+think it is a good thing to make userspace-visible structures stand out
+even in the kernel code itself.
+
+As such, I would suggest *not* adding the #define at all.
 
 	-hpa
-
 
 -- 
 H. Peter Anvin, Intel Open Source Technology Center
