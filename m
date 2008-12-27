@@ -1,70 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYL0UqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYL0Usy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbYL0UqS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 15:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYL0UqH
+	id S1754795AbYL0Usy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 15:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYL0Usq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 15:46:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60292 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754025AbYL0UqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 15:46:06 -0500
-Message-ID: <495693E5.3060604@zytor.com>
-Date: Sat, 27 Dec 2008 12:45:25 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 27 Dec 2008 15:48:46 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60932 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753743AbYL0Usp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 15:48:45 -0500
+Date: Sat, 27 Dec 2008 12:46:58 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       bastian@waldi.eu.org
+Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6][v5]: Container-init signal semantics
+Message-ID: <20081227204658.GA27197@us.ibm.com>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier@gentoo.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
-References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <200812271421.10087.vapier@gentoo.org> <495680A7.2010900@zytor.com> <200812271505.46872.vapier@gentoo.org>
-In-Reply-To: <200812271505.46872.vapier@gentoo.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On Saturday 27 December 2008 14:23:19 H. Peter Anvin wrote:
->> Mike Frysinger wrote:
->>> {su}{8,16,32,64} doesnt matter too much to me vs {u,}int_t{8,16,32,64}_t.
->>>  as long as people stop using __{su}{8,16,32,64}.  using the latter
->>> though does mean headers will more likely be "just usable" w/out needing
->>> linux/types.h include.  but then people would be forced to include
->>> stdint.h or similar before a linux header ... and that sucks.
->> That is a total non-starter.  This would mean that the C library itself
->> cannot use these headers without exporting additional symbols into the
->> namespace, *WHICH IT IS NOT ALLOWED TO DO*.
-> 
-> which is already happening today you mean.  grep the kernel headers and you'll 
-> see a ton of [u]intXX_t hits.
 
-Now, keep in mind this is only true for headers exported to userspace.
-But this is correct - which is the base of this conversation (Sam
-suggesting that they should be warned about, and I suggested
-auto-converting them.)
+Container-init must behave like global-init to processes within the
+container and hence it must be immune to unhandled fatal signals from
+within the container (i.e SIG_DFL signals that terminate the process).
 
-> this logic though means that the kernel should not be defining any structures 
-> that the C library is defining (such as asm-generic/fcntl.h).  such structs 
-> should get renamed the same way as __[us]XX types
+But the same container-init must behave like a normal process to 
+processes in ancestor namespaces and so if it receives the same fatal
+signal from a process in ancestor namespace, the signal must be
+processed.
 
-This is also correct, at least for exported headers.  For
-kernel-internal headers, it doesn't matter.  Unfortunately we do have at
-least several cases of exported interfaces with globally visible names.
+Implementing these semantics requires that send_signal() determine pid
+namespace of the sender but since signals can originate from workqueues/
+interrupt-handlers, determining pid namespace of sender may not always
+be possible or safe.
 
-There is one other exception of note, which is a header file which can
-only be included by the userspace *application*, using a nonportable
-top-level include (either directly <linux/*> or indirectly via <sys/*>).
- In those cases we can be looser about at least structure names.  This
-is common for ioctl structures.
+This patchset implements the design/simplified semantics suggested by
+Oleg Nesterov.  The simplified semantics for container-init are:
 
-	-hpa
+	- container-init must never be terminated by a signal from a
+	  descendant process.
+
+	- container-init must never be immune to SIGKILL from an ancestor
+	  namespace (so a process in parent namespace must always be able
+	  to terminate a descendant container).
+
+	- container-init may be immune to unhandled fatal signals (like
+	  SIGUSR1) even if they are from ancestor namespace (SIGKILL is
+	  the only reliable signal from ancestor namespace).
+
+Patches in this set:
+
+	[PATCH 1/6] Remove 'handler' parameter to tracehook functions
+	[PATCH 2/6] Protect init from unwanted signals more
+	[PATCH 3/6] Define siginfo_from_ancestor_ns()
+	[PATCH 4/6] Protect cinit from unblocked SIG_DFL signals
+	[PATCH 5/6] Protect cinit from blocked fatal signals
+	[PATCH 6/6] SI_USER: Masquerade si_pid when crossing pid ns boundary
+
+Changelog[v5]:
+	- Patch 2/6: Remove SIG_IGN check in sig_task_ignored() and let
+	  sig_handler_ignored() check SIG_IGN.
+        - Patch 3/6. Put siginfo_from_ancestor_ns() back under CONFIG_PID_NS
+	  and remove warning in rt_sigqueueinfo().
+	- (Patch 5/6)Simplify check in get_signal_to_deliver()
+	- (Patch 6/6)Simplify masquerading pid
+	- LTP-20081219-intermediate showed no new errors on 2.6.28-rc5-mm2.
+Changelog[v4]:
+	- [Bugfix] Patch 3/7. Check ns == NULL in siginfo_from_ancestor_ns().
+	  Although http://lkml.org/lkml/2008/12/16/502 makes it less likely
+	  that ns == NULL, looks like an explicit check won't hurt ?
+	- Remove SIGNAL_UNKILLABLE_FROM_NS flag and simplify logic as
+	  suggested by Oleg Nesterov.
+	- Dropped patch that set SIGNAL_UNKILLABLE_FROM_NS and set
+	  SIGNAL_UNKILLABLE in patch 5/7 to be bisect-safe.
+	- Add a warning in rt_sigqueueinfo() if SI_ASYNCIO is used
+	  (patch 3/7)
+	- Added two patches (6/7 and 7/7) to masquerade si_pid for
+	  SI_USER and SI_TKILL
 
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Changelog[v3]:
+	Changes based on discussions of previous version:
+		http://lkml.org/lkml/2008/11/25/458
 
+	Major changes:
+
+	- Define SIGNAL_UNKILLABLE_FROM_NS and use in container-inits to
+	  skip fatal signals from same namespace but process SIGKILL/SIGSTOP
+	  from ancestor namespace.
+	- Use SI_FROMUSER() and si_code != SI_ASYNCIO to determine if
+	  it is safe to dereference pid-namespace of caller. Highly
+	  experimental :-)
+	- Masquerading si_pid when crossing namespace boundary: relevant
+	  patches merged in -mm and dropped from this set.
+
+	Minor changes:
+
+	- Remove 'handler' parameter to tracehook functions
+	- Update sig_ignored() to drop SIG_DFL signals to global init early
+	  (tried to address Roland's  and Oleg's comments)
+	- Use 'same_ns' flag to drop SIGKILL/SIGSTOP to cinit from same
+	  namespace
+
+
+TODO:
+	- Use sig_task_unkillable() in fs/proc/array.c:task_sig()
+	  to correctly report ignored signals for container/global
+	  init.
+
+Limitations/side-effects of current design
+
+	- Container-init is immune to suicide - kill(getpid(), SIGKILL) is
+	  ignored. Use exit() :-)
