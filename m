@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYL0JXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYL0JXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbYL0JXb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 04:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYL0JXV
+	id S1754494AbYL0JXp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 04:23:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYL0JXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 04:23:21 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:50728 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867AbYL0JXU (ORCPT
+	Sat, 27 Dec 2008 04:23:22 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:48067 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752585AbYL0JXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 27 Dec 2008 04:23:20 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 2/4] kconfig: add comments to symbol flags
-Date: Sat, 27 Dec 2008 10:24:52 +0100
-Message-Id: <1230369894-10510-2-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 3/4] kconfig: struct property commented
+Date: Sat, 27 Dec 2008 10:24:53 +0100
+Message-Id: <1230369894-10510-3-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20081227090339.GA6279@uranus.ravnborg.org>
 References: <20081227090339.GA6279@uranus.ravnborg.org>
@@ -24,58 +24,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No functional changes - only comments.
+No functional changes
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/kconfig/expr.h |   34 ++++++++++++++++++----------------
- 1 files changed, 18 insertions(+), 16 deletions(-)
+ scripts/kconfig/expr.h |   40 ++++++++++++++++++++++++++++++----------
+ 1 files changed, 30 insertions(+), 10 deletions(-)
 
 diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
-index 455f2c8..0bdb58e 100644
+index 0bdb58e..6408fef 100644
 --- a/scripts/kconfig/expr.h
 +++ b/scripts/kconfig/expr.h
-@@ -88,22 +88,24 @@ struct symbol {
- 
- #define for_all_symbols(i, sym) for (i = 0; i < 257; i++) for (sym = symbol_hash[i]; sym; sym = sym->next) if (sym->type != S_OTHER)
- 
--#define SYMBOL_CONST		0x0001
--#define SYMBOL_CHECK		0x0008
--#define SYMBOL_CHOICE		0x0010
--#define SYMBOL_CHOICEVAL	0x0020
--#define SYMBOL_VALID		0x0080
--#define SYMBOL_OPTIONAL		0x0100
--#define SYMBOL_WRITE		0x0200
--#define SYMBOL_CHANGED		0x0400
--#define SYMBOL_AUTO		0x1000
--#define SYMBOL_CHECKED		0x2000
--#define SYMBOL_WARNED		0x8000
--#define SYMBOL_DEF		0x10000
--#define SYMBOL_DEF_USER		0x10000
--#define SYMBOL_DEF_AUTO		0x20000
--#define SYMBOL_DEF3		0x40000
--#define SYMBOL_DEF4		0x80000
-+#define SYMBOL_CONST      0x0001  /* symbol is const */
-+#define SYMBOL_CHECK      0x0008  /* used during dependency checking */
-+#define SYMBOL_CHOICE     0x0010  /* start of a choice block (null name) */
-+#define SYMBOL_CHOICEVAL  0x0020  /* used as a value in a choice block */
-+#define SYMBOL_VALID      0x0080  /* set when symbol.curr is calculated */
-+#define SYMBOL_OPTIONAL   0x0100  /* choice is optional - values can be 'n' */
-+#define SYMBOL_WRITE      0x0200  /* ? */
-+#define SYMBOL_CHANGED    0x0400  /* ? */
-+#define SYMBOL_AUTO       0x1000  /* value from environment variable */
-+#define SYMBOL_CHECKED    0x2000  /* used during dependency checking */
-+#define SYMBOL_WARNED     0x8000  /* warning has been issued */
-+
-+/* Set when symbol.def[] is used */
-+#define SYMBOL_DEF        0x10000  /* First bit of SYMBOL_DEF */
-+#define SYMBOL_DEF_USER   0x10000  /* symbol.def[S_DEF_USER] is valid */
-+#define SYMBOL_DEF_AUTO   0x20000  /* symbol.def[S_DEF_AUTO] is valid */
-+#define SYMBOL_DEF3       0x40000  /* symbol.def[S_DEF_3] is valid */
-+#define SYMBOL_DEF4       0x80000  /* symbol.def[S_DEF_4] is valid */
- 
- #define SYMBOL_MAXLENGTH	256
+@@ -111,21 +111,41 @@ struct symbol {
  #define SYMBOL_HASHSIZE		257
+ #define SYMBOL_HASHMASK		0xff
+ 
++/* A property represent the config options that can be associated
++ * with a config "symbol".
++ * Sample:
++ * config FOO
++ *         default y
++ *         prompt "foo prompt"
++ *         select BAR
++ * config BAZ
++ *         int "BAZ Value"
++ *         range 1..255
++ */
+ enum prop_type {
+-	P_UNKNOWN, P_PROMPT, P_COMMENT, P_MENU, P_DEFAULT, P_CHOICE,
+-	P_SELECT, P_RANGE, P_ENV
++	P_UNKNOWN,
++	P_PROMPT,   /* prompt "foo prompt" or "BAZ Value" */
++	P_COMMENT,  /* text associated with a comment */
++	P_MENU,     /* prompt associated with a menuconfig option */
++	P_DEFAULT,  /* default y */
++	P_CHOICE,   /* choice value */
++	P_SELECT,   /* select BAR */
++	P_RANGE,    /* range 7..100 (for a symbol) */
++	P_ENV,      /* value from environment variable */
+ };
+ 
+ struct property {
+-	struct property *next;
+-	struct symbol *sym;
+-	enum prop_type type;
+-	const char *text;
++	struct property *next;     /* next property - null if last */
++	struct symbol *sym;        /* the symbol for which the property is associated */
++	enum prop_type type;       /* type of property */
++	const char *text;          /* the prompt value - P_PROMPT, P_MENU, P_COMMENT */
+ 	struct expr_value visible;
+-	struct expr *expr;
+-	struct menu *menu;
+-	struct file *file;
+-	int lineno;
++	struct expr *expr;         /* the optional conditional part of the property */
++	struct menu *menu;         /* the menu the property are associated with
++	                            * valid for: P_SELECT, P_RANGE, P_CHOICE,
++	                            * P_PROMPT, P_DEFAULT, P_MENU, P_COMMENT */
++	struct file *file;         /* what file was this property defined */
++	int lineno;                /* what lineno was this property defined */
+ };
+ 
+ #define for_all_properties(sym, st, tok) \
 -- 
 1.6.0.2.GIT
 
