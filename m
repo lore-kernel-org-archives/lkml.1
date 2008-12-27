@@ -1,127 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYL0U5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYL0VKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbYL0U5v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 15:57:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbYL0U5K
+	id S1754782AbYL0VKT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 16:10:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbYL0VKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 15:57:10 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:57071 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754945AbYL0U5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 15:57:08 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
-Date: Sat, 27 Dec 2008 15:57:05 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <200812271505.46872.vapier@gentoo.org> <495693E5.3060604@zytor.com>
-In-Reply-To: <495693E5.3060604@zytor.com>
+	Sat, 27 Dec 2008 16:10:04 -0500
+Received: from rv-out-0506.google.com ([209.85.198.232]:12754 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYL0VKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 16:10:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=WoiRbqLKH0mKsL9z4h/ySFmPnXpTanU8C3QCiy4wbRw06VT9qMn9M+5IyWuU/dmo7V
+         YQSvxirkrvHwj/rYWfS7CXm4+A8mx/G6WcrZf3JhCJWl6fO4AbXlDR8QaqaEmCdIdoGq
+         /lvGZd3LZSY1tkrcEconasMMUwJqJ8oANWM+w=
+Message-ID: <86802c440812271310ua3dec61gf3aaec921023d2a4@mail.gmail.com>
+Date: Sat, 27 Dec 2008 13:10:00 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333 smp_call_function_mask
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, "David Howells" <dhowells@redhat.com>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
+In-Reply-To: <20081227152918.GD4530@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5757080.kjsY8z0YAf";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812271557.07003.vapier@gentoo.org>
+Content-Disposition: inline
+References: <20081226170452.GC5100@linux.vnet.ibm.com>
+	 <20081227071138.GA4530@linux.vnet.ibm.com>
+	 <4955DBBC.4070508@kernel.org> <20081227083758.GA12138@elte.hu>
+	 <20081227083936.GA12609@elte.hu>
+	 <20081227112125.GB4530@linux.vnet.ibm.com>
+	 <20081227112450.GA24150@elte.hu>
+	 <20081227115712.GC4530@linux.vnet.ibm.com>
+	 <20081227122632.GA18909@elte.hu>
+	 <20081227152918.GD4530@linux.vnet.ibm.com>
+X-Google-Sender-Auth: 14c68a93f6d3c5c6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5757080.kjsY8z0YAf
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Saturday 27 December 2008 15:45:25 H. Peter Anvin wrote:
-> Mike Frysinger wrote:
-> > On Saturday 27 December 2008 14:23:19 H. Peter Anvin wrote:
-> >> Mike Frysinger wrote:
-> >>> {su}{8,16,32,64} doesnt matter too much to me vs
-> >>> {u,}int_t{8,16,32,64}_t. as long as people stop using
-> >>> __{su}{8,16,32,64}.  using the latter though does mean headers will
-> >>> more likely be "just usable" w/out needing linux/types.h include.  but
-> >>> then people would be forced to include stdint.h or similar before a
-> >>> linux header ... and that sucks.
-> >>
-> >> That is a total non-starter.  This would mean that the C library itself
-> >> cannot use these headers without exporting additional symbols into the
-> >> namespace, *WHICH IT IS NOT ALLOWED TO DO*.
-> >
-> > which is already happening today you mean.  grep the kernel headers and
-> > you'll see a ton of [u]intXX_t hits.
+On Sat, Dec 27, 2008 at 7:29 AM, Kamalesh Babulal
+<kamalesh@linux.vnet.ibm.com> wrote:
+> * Ingo Molnar <mingo@elte.hu> [2008-12-27 13:26:32]:
 >
-> Now, keep in mind this is only true for headers exported to userspace.
-> But this is correct - which is the base of this conversation (Sam
-> suggesting that they should be warned about, and I suggested
-> auto-converting them.)
-
-if the topic is for autoconverting the uintXX_t (and related) types to __uX=
-X=20
-(and related), then that's easy to do i would think.  i can post a patch to=
- do=20
-that.
-
-> > this logic though means that the kernel should not be defining any
-> > structures that the C library is defining (such as asm-generic/fcntl.h)=
-=2E=20
-> > such structs should get renamed the same way as __[us]XX types
+>>
+>> * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>>
+>> > > yes, indeed - updated patch below.
+>> > >
+>> > >   Ingo
+>> > >
+>> >
+>> > Hi Ingo,
+>> >
+>> >     Sorry, for not mentioning that the previous kernel trace, was
+>> > after adding the return statement to the arch_init_chip_data().
+>>
+>> ah, i missed that detail. There was a stupid typo in one of the conflict
+>> resolutions i had to do - could you check the updated patch below?
+>>
+>> Thanks,
+>>
+>>       Ingo
+>>
 >
-> This is also correct, at least for exported headers.  For
-> kernel-internal headers, it doesn't matter.  Unfortunately we do have at
-> least several cases of exported interfaces with globally visible names.
 >
-> There is one other exception of note, which is a header file which can
-> only be included by the userspace *application*, using a nonportable
-> top-level include (either directly <linux/*> or indirectly via <sys/*>).
->  In those cases we can be looser about at least structure names.  This
-> is common for ioctl structures.
+> Hi Ingo,
+>
+>        kernel still crashes, with the updated patch.
+>
+>
+>> ----------->
+>> From 13a0c3c269b223f60abfac8a9811d77111a8b4ba Mon Sep 17 00:00:00 2001
+>> From: Yinghai Lu <yinghai@kernel.org>
+>> Date: Fri, 26 Dec 2008 02:05:47 -0800
+>> Subject: [PATCH] sparseirq: work around compiler optimizing away __weak functions
+>>
+>> Impact: fix panic on null pointer with sparseirq
+>>
+>> Some GCC versions seem to inline the weak global function,
+>> when that function is empty.
+>>
+>> Work it around, by making the functions return a (dummy) integer.
+>>
+>> Signed-off-by: Yinghai <yinghai@kernel.org>
+>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> ---
+>>  arch/x86/kernel/io_apic.c |    8 ++++++--
+>>  include/linux/irq.h       |    6 +++---
+>>  init/main.c               |    7 ++++---
+>>  kernel/irq/handle.c       |    7 ++++---
+>>  4 files changed, 17 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+>> index 2fe543f..9760393 100644
+>> --- a/arch/x86/kernel/io_apic.c
+>> +++ b/arch/x86/kernel/io_apic.c
+>> @@ -170,7 +170,7 @@ static struct irq_cfg irq_cfgx[NR_IRQS] = {
+>>       [15] = { .domain = CPU_MASK_ALL, .vector = IRQ15_VECTOR, },
+>>  };
+>>
+>> -void __init arch_early_irq_init(void)
+>> +int __init arch_early_irq_init(void)
+>>  {
+>>       struct irq_cfg *cfg;
+>>       struct irq_desc *desc;
+>> @@ -184,6 +184,8 @@ void __init arch_early_irq_init(void)
+>>               desc = irq_to_desc(i);
+>>               desc->chip_data = &cfg[i];
+>>       }
+>> +
+>> +     return 0;
 
-the structures that go through ioctls rarely are an issue.  trouble often=20
-brews when dealing with POSIX functions that have a very similar (if not=20
-direct) version in the kernel interface that utilize structures.  i mention=
-=20
-the fcntl structure because ive seen that with a couple of packages where t=
-he=20
-version in the kernel headers conflicts with the version in the C library. =
- or=20
-where the kernel ABI structure is not directly compatible with the POSIX C=
-=20
-library structure ... the stat struct is an example of this where the C=20
-library has to know the layout of both and converts one to the other.
+can you try current tip/master?
 
-looking at asm-generic/fcntl.h, i'd propose this change as a template:
-=2E..
-#ifdef __KERNEL__
-# define kernel_flock flock
-#endif
-struct kernel_flock {
-=2E..
-=2Dmike
+current there are several blank __weak, and __weak + return 0..in the
+whole tree.
 
---nextPart5757080.kjsY8z0YAf
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+it seems there three solution:
+1. use printk?
+2. not use __weak with blank function any more, and use #ifdef and
+inline functions instead
+3. blacklist that gcc 4.1.1 complier..
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iQIcBAABAgAGBQJJVpaiAAoJEEFjO5/oN/WB58sQAIonb1h1L8Kr2ExZ0bNWl8o8
-7C7bWGH7ob+Qnn0rSsIwmAvoyA8yzO9N4EVOOwOOY9eowa8Bv9IOOiurIFgD9zII
-S/SMR0Y0viE6CwJdC+gC/ywe3xOkxeQ2YFifohGexHkt/siM39FJeizX+wgGdRmz
-lcX2hjAA/2eaaxH8xT9Ysi5B0hun4XvH6RZklSwbAwEiflL70mxKHBSW6CoZT+Bd
-m0zYRb79ZawWsPfFD6UvdRPkgIgzWSbeg7gARv/r+qz4ujc+hV1JJU6UYz6ICcqy
-IKwTkfXRatkOq50XRZmPYh9ku1g5WKX4mb7Pz3CshdKIvD7DoIUdsxecS5cALk14
-JAIgU6WC4DMZMT4mSoFgri5/O95js3la9X/ye4uvRre7alQ3t9wjSAZ6LsvqWY1y
-sNBg/AJG5u+XokAU3IU8QyXGemdzi1nCQJllTns8J9TAx3l4vZJClkHsNS5cGw9l
-QamOzDNJy5k93wpiqORxTyy1KeSyWGKBQxNFUihe4WhGz6rhg7UF1zI70x8mwtTC
-gZaLjCJ6mqQBuqmlXJI0hwtd5gpe/zSWTRrtobYkzq7+rje1TFstUEkDP7HRFT/P
-CgnbpZhT+oCqxTNeF4saWlmUZeDM07AZHjvTFtLOb6CsEbFpbmJKiJeu3QRFo+0l
-2oFpOJytmM8Bblx7sQPX
-=XyZF
------END PGP SIGNATURE-----
-
---nextPart5757080.kjsY8z0YAf--
+YH
