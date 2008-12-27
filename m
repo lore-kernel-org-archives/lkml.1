@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbYL0FIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbYL0FQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbYL0FIT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 00:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYL0FIG
+	id S1752821AbYL0FQa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 00:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbYL0FQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 00:08:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44689 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750707AbYL0FIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 00:08:05 -0500
-Message-ID: <4955B7EC.7050002@kernel.org>
-Date: Fri, 26 Dec 2008 21:06:52 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Sat, 27 Dec 2008 00:16:21 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:45041 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYL0FQU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 00:16:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=dpaQMe48yvAj9A3IX6ia8rSM/NrgbrfyvZM4WYdSa9wD5+oDWhY4TC0huku3v7H91h
+         LdsdR85w0+zk30slPJSptNjT5Pr1oHrZi/BXoPZ5UDkvqEnLsSdaQ87GvBeX/Vbp005Z
+         ea8tIudj1A+sBcjFG46KDlTpKNg0qNshLAY/Q=
+Date: Sat, 27 Dec 2008 14:16:08 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 0/4] x86: fix free_thread_info() with uninitalized
+	thread_info
+Message-ID: <20081227051606.GA3295@localhost.localdomain>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>, David Howells <dhowells@redhat.com>,
-       mingo@elte.hu
-CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
-Subject: [PATCH] kgdb: more barrier in blank weak function
-References: <20081219105441.GA19750@linux.vnet.ibm.com> <86802c440812190351q3118516aif664dd5869c21b2a@mail.gmail.com> <20081219134636.GA11772@linux.vnet.ibm.com> <494C0BF0.3080109@kernel.org> <20081223132127.GA5450@linux.vnet.ibm.com> <495153A4.5060201@kernel.org> <20081224163400.GA11562@linux.vnet.ibm.com> <49529CE1.4040005@kernel.org> <20081226091217.GA5100@linux.vnet.ibm.com> <4954AC7B.3020603@kernel.org> <20081226102716.GA31450@uranus.ravnborg.org> <4955B782.3030407@kernel.org>
-In-Reply-To: <4955B782.3030407@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch series fixes a problem described below. The actual fix is only
+made by the patch 3/4. The rest of patches help it make simple and there
+is no actual behavioral change.
 
-Impact: fix panic possible panic etc
+x86 arch specific free_thread_info() accesses thread_info->task to call
+free_thread_xstate(). But the thread_info may not be initialized yet.
+So invalid pointer derefence may happen in free_thread_xstate().
 
-some compiler seems to inline the weak global function if no line in it
+It happens in the following scenario in dup_task_struct()
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+1. call alloc_task_struct() to allocate empty task_struct
+2. call alloc_thread_info() to allocate empty thread_info
+3. call arch_dup_task_struct()
 
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index e4dcfb2..70d2e36 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -223,7 +223,7 @@ int __weak kgdb_skipexception(int exception, struct pt_regs *regs)
- void __weak
- kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
- {
--	return;
-+	barrier();
- }
- 
- /**
-@@ -236,6 +236,7 @@ kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
-  */
- void __weak kgdb_disable_hw_debug(struct pt_regs *regs)
- {
-+	barrier();
- }
- 
- /*
+x86 arch specific arch_dup_task_struct() copies task_struct from source
+task_struct. it also allocates empty xstate and copy from source if
+source task_struct has ->thread.xstate.
+
+If the xstate allocation failed, arch_dup_task_struct() returns error.
+
+4. call free_thread_info() to deallocate thread_info
+
+x86 arch specific free_thread_info() calls free_thread_xstate() with
+thread_info->task. But the thread_info is not initialized yet.
+
