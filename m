@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYL0JVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYL0JWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbYL0JVu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 04:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYL0JVl
+	id S1754184AbYL0JWm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 04:22:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYL0JWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 04:21:41 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:45088 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbYL0JVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 04:21:40 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
-Date: Sat, 27 Dec 2008 04:21:35 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <20081227071208.GB27736@uranus.ravnborg.org> <20081227084708.GA16077@elte.hu>
-In-Reply-To: <20081227084708.GA16077@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart9328476.1M6iK9Flnp";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812270421.38774.vapier@gentoo.org>
+	Sat, 27 Dec 2008 04:22:33 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:50639 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbYL0JWc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 04:22:32 -0500
+Date: Sat, 27 Dec 2008 10:24:04 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org, mingo@elte.hu,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kenchen@google.com,
+       paulus@samba.org, tglx@linutronix.de, hpa@zytor.com,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] sparc64: use unsigned long long for u64
+Message-ID: <20081227092404.GA10375@uranus.ravnborg.org>
+References: <20081222230035.GB4074@uranus.ravnborg.org> <20081222151338.3b6ef997.akpm@linux-foundation.org> <20081223131746.GA7456@uranus.ravnborg.org> <20081227.005452.261413194.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081227.005452.261413194.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart9328476.1M6iK9Flnp
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Dec 27, 2008 at 12:54:52AM -0800, David Miller wrote:
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Tue, 23 Dec 2008 14:17:46 +0100
+> 
+> > It may take a few days before the drivers gets fixed.
+> > Christmas is approaching fast by now.
+> 
+> Even with this and your driver patch applied, the tree
+> doesn't build successfully:
+> 
+> cc1: warnings being treated as errors
+> arch/sparc/kernel/psycho_common.c: In function ‘psycho_check_stc_error’:
+> arch/sparc/kernel/psycho_common.c:104: warning: format ‘%016lx’ expects type ‘long unsigned int’, but argument 4 has type ‘long long unsigned int’
+> 
+> Did you remove sparc's -Werror when doing test builds
+> of these changes? :-)
+No - it is worse than that.
+My gcc does not complain about the above.
 
-On Saturday 27 December 2008 03:47:08 Ingo Molnar wrote:
-> * Sam Ravnborg wrote:
-> > On Sat, Dec 27, 2008 at 01:50:04AM -0500, Mike Frysinger wrote:
-> > > Use __asm__/__inline__ rather than asm/inline for all the functions
-> > > exported to userspace.
-> >
-> > I will imagine that we will see cleanup patches converting
-> > these back to inline/asm.
-> > How about doing this conversion as part of the headers_install.pl
-> > script so we know it is always correct?
-> >
-> > Then we can keep the familiar inline/asm in the kernel headers
-> > and always use the correct __asm__, __inline__ version for our
-> > exported headers.
->
-> or name it __asm__exported__ to make sure it isnt cleaned up away.
+Just to check that I was not fouled by some preprocessor magic
+here is the preprocessed code:
 
-i think we can try the automated approach first as that'll make things easi=
-er=20
-on everyone ... but if it doesnt work out, this sounds like a reasonable=20
-solution to keep things sane.
-=2Dmike
+   printk("<3>" "%s: STC_TAG(%d)[PA(%016lx)VA(%08lx)"
+          "V(%d)W(%d)]\n",
+          pbm->name,
+          i,
+          ((tagval & 0x0fffffff00000000UL) >> 19UL),
+          (tagval & 0x00000000ffffe000UL),
+          ((tagval & 0x0000000000000002UL) ? 1 : 0),
+          ((tagval & 0x0000000000000001UL) ? 1 : 0));
 
---nextPart9328476.1M6iK9Flnp
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+tagval is u64.
 
-iQIcBAABAgAGBQJJVfOiAAoJEEFjO5/oN/WBlvIQAI8mMyPUZSESiQApAXEjqxxd
-BYxZKRYVDplxKm7dT+Rsi/LSODArdGEUH7hdnmHVQQ5rr/T2DKLRzcgJGIAY79/C
-2IdLNkHUpGlThDajuLShN1qFz3IHQr70fYDy8Do1gHNGQVj3k6kkWQjW+Y2oQ9/c
-JbQ3sJXl70FlXvZDHerV7TPlRsHtX+8U0eQZYL+SIEusRegT8GcEeo9e/K4ptXVz
-ylpRjOa/O5/NEvJXmD6tLfF14bH4s3EcYJpLyNuurq/FtTarbOFBvd9vGR6dLZMl
-mY/evHOVbaK2MdoIMoJRu7XwEwsesTcuOWHEnOxisXyBPu3WBRWVtRu5CGwNciHZ
-CZ4tyFWEAx9pztXPNCeHo4f/gXV9fgDb3S5Emvaai78cRC93iTw+LWL+hxRGT/7d
-KRsIQQpl2u1Frybu1MNJD1PvS8xbtFKWcccdbRN7cjo0XQTYqJbyr2W0yWf6k225
-FEleQFZSjL4pOMplxdx3M1cJwKkCfDeczjrPmUy3JeURdn0jLd7JEu+eSnInXUgF
-hQRg5PdzLUJQODesvlfUfvviE5y1FxTBnTcAk5ArLYhSN19MBzltufiUYX/hPcbP
-dHUbxv2CimXMxZeHhTjZY4mQFZBBS+R1Kd9lwhHuC3iiSBcrWH3jd7nabGqF59lx
-eE9PZOtn45b3EM5ZM1N/
-=M1ou
------END PGP SIGNATURE-----
+So it looks like my gcc does not promote:
+((tagval & 0x0fffffff00000000UL) >> 19UL) to unsigned long long int
+but your gcc does?
 
---nextPart9328476.1M6iK9Flnp--
+My gcc (build with Dan Kegel's crosstool):
+$ /opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-gcc -v
+Reading specs from /opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/lib/gcc/sparc64-unknown-linux-gnu/3.4.5/specs
+Configured with: /home/sam/devel/crosstool-0.43/build/sparc64-unknown-linux-gnu/gcc-3.4.5-glibc-2.3.6/gcc-3.4.5/configure --target=sparc64-unknown-linux-gnu --host=i686-host_pc-linux-gnu --prefix=/opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu --disable-multilib --with-cpu=ultrasparc3 --enable-cxx-flags=-mcpu=ultrasparc3 --with-headers=/opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/sparc64-unknown-linux-gnu/include --with-local-prefix=/opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/sparc64-unknown-linux-gnu --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c --enable-shared --enable-c99 --enable-long-long
+Thread model: posix
+gcc version 3.4.5
+
+> 
+> Either way these need some work before they should be
+> added to any tree.
+> 
+> Andrew you probably want to toss these from your tree
+> since at a minimum they will break the sparc64 build.
+> 
+> Sam will fix them up and resubmit, and I'll apply them,
+> don't worry. :)
+Yup - I added Andrew on cc: only as information.
+
+	Sam
