@@ -1,562 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbYL0Gux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYL0GvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147AbYL0Gux (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 01:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYL0Gtq
+	id S1754241AbYL0GvQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 01:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYL0GuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 01:49:46 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:36044 "EHLO smtp.gentoo.org"
+	Sat, 27 Dec 2008 01:50:07 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:36103 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752655AbYL0Gtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 01:49:45 -0500
+	id S1751593AbYL0GuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 01:50:05 -0500
 From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] linux byteorder headers: convert to __inline__ for userspace
-Date: Sat, 27 Dec 2008 01:49:43 -0500
-Message-Id: <1230360583-6683-1-git-send-email-vapier@gentoo.org>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
+Date: Sat, 27 Dec 2008 01:50:04 -0500
+Message-Id: <1230360604-6711-1-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use __inline__ rather than inline for all the functions exported to
-userspace.
+Use __asm__/__inline__ rather than asm/inline for all the functions
+exported to userspace.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- include/linux/byteorder.h               |   48 +++++++++++++++---------------
- include/linux/byteorder/big_endian.h    |   24 ++++++++--------
- include/linux/byteorder/little_endian.h |   24 ++++++++--------
- include/linux/byteorder/swabb.h         |   12 ++++----
- include/linux/swab.h                    |   30 +++++++++---------
- 5 files changed, 69 insertions(+), 69 deletions(-)
+ arch/x86/include/asm/byteorder.h |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
-index 29f002d..f4ea907 100644
---- a/include/linux/byteorder.h
-+++ b/include/linux/byteorder.h
-@@ -85,91 +85,91 @@
- #define __constant_cpu_to_be32(x) __cpu_to_be32(x)
- #define __constant_cpu_to_be64(x) __cpu_to_be64(x)
+diff --git a/arch/x86/include/asm/byteorder.h b/arch/x86/include/asm/byteorder.h
+index e02ae2d..16f7c01 100644
+--- a/arch/x86/include/asm/byteorder.h
++++ b/arch/x86/include/asm/byteorder.h
+@@ -8,12 +8,12 @@
  
--static inline void __le16_to_cpus(__u16 *p)
-+static __inline__ void __le16_to_cpus(__u16 *p)
+ #ifdef __i386__
+ 
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
++static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
  {
- #ifdef __BIG_ENDIAN
- 	__swab16s(p);
+ #ifdef CONFIG_X86_BSWAP
+-	asm("bswap %0" : "=r" (x) : "0" (x));
++	__asm__("bswap %0" : "=r" (x) : "0" (x));
+ #else
+-	asm("xchgb %b0,%h0\n\t"	/* swap lower bytes	*/
++	__asm__("xchgb %b0,%h0\n\t"	/* swap lower bytes	*/
+ 	    "rorl $16,%0\n\t"	/* swap words		*/
+ 	    "xchgb %b0,%h0"	/* swap higher bytes	*/
+ 	    : "=q" (x)
+@@ -22,7 +22,7 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ 	return x;
+ }
+ 
+-static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
++static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 val)
+ {
+ 	union {
+ 		struct {
+@@ -33,13 +33,13 @@ static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
+ 	} v;
+ 	v.u = val;
+ #ifdef CONFIG_X86_BSWAP
+-	asm("bswapl %0 ; bswapl %1 ; xchgl %0,%1"
++	__asm__("bswapl %0 ; bswapl %1 ; xchgl %0,%1"
+ 	    : "=r" (v.s.a), "=r" (v.s.b)
+ 	    : "0" (v.s.a), "1" (v.s.b));
+ #else
+ 	v.s.a = ___arch__swab32(v.s.a);
+ 	v.s.b = ___arch__swab32(v.s.b);
+-	asm("xchgl %0,%1"
++	__asm__("xchgl %0,%1"
+ 	    : "=r" (v.s.a), "=r" (v.s.b)
+ 	    : "0" (v.s.a), "1" (v.s.b));
  #endif
+@@ -48,17 +48,17 @@ static inline __attribute_const__ __u64 ___arch__swab64(__u64 val)
+ 
+ #else /* __i386__ */
+ 
+-static inline __attribute_const__ __u64 ___arch__swab64(__u64 x)
++static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x)
+ {
+-	asm("bswapq %0"
++	__asm__("bswapq %0"
+ 	    : "=r" (x)
+ 	    : "0" (x));
+ 	return x;
  }
  
--static inline void __cpu_to_le16s(__u16 *p)
-+static __inline__ void __cpu_to_le16s(__u16 *p)
- {
- #ifdef __BIG_ENDIAN
- 	__swab16s(p);
- #endif
- }
- 
--static inline void __le32_to_cpus(__u32 *p)
-+static __inline__ void __le32_to_cpus(__u32 *p)
- {
- #ifdef __BIG_ENDIAN
- 	__swab32s(p);
- #endif
- }
- 
--static inline void __cpu_to_le32s(__u32 *p)
-+static __inline__ void __cpu_to_le32s(__u32 *p)
- {
- #ifdef __BIG_ENDIAN
- 	__swab32s(p);
- #endif
- }
- 
--static inline void __le64_to_cpus(__u64 *p)
-+static __inline__ void __le64_to_cpus(__u64 *p)
- {
- #ifdef __BIG_ENDIAN
- 	__swab64s(p);
- #endif
- }
- 
--static inline void __cpu_to_le64s(__u64 *p)
-+static __inline__ void __cpu_to_le64s(__u64 *p)
- {
- #ifdef __BIG_ENDIAN
- 	__swab64s(p);
- #endif
- }
- 
--static inline void __be16_to_cpus(__u16 *p)
-+static __inline__ void __be16_to_cpus(__u16 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	__swab16s(p);
- #endif
- }
- 
--static inline void __cpu_to_be16s(__u16 *p)
-+static __inline__ void __cpu_to_be16s(__u16 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	__swab16s(p);
- #endif
- }
- 
--static inline void __be32_to_cpus(__u32 *p)
-+static __inline__ void __be32_to_cpus(__u32 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	__swab32s(p);
- #endif
- }
- 
--static inline void __cpu_to_be32s(__u32 *p)
-+static __inline__ void __cpu_to_be32s(__u32 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	__swab32s(p);
- #endif
- }
- 
--static inline void __be64_to_cpus(__u64 *p)
-+static __inline__ void __be64_to_cpus(__u64 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	__swab64s(p);
- #endif
- }
- 
--static inline void __cpu_to_be64s(__u64 *p)
-+static __inline__ void __cpu_to_be64s(__u64 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	__swab64s(p);
- #endif
- }
- 
--static inline __u16 __le16_to_cpup(const __le16 *p)
-+static __inline__ __u16 __le16_to_cpup(const __le16 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	return (__force __u16)*p;
-@@ -178,7 +178,7 @@ static inline __u16 __le16_to_cpup(const __le16 *p)
- #endif
- }
- 
--static inline __u32 __le32_to_cpup(const __le32 *p)
-+static __inline__ __u32 __le32_to_cpup(const __le32 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	return (__force __u32)*p;
-@@ -187,7 +187,7 @@ static inline __u32 __le32_to_cpup(const __le32 *p)
- #endif
- }
- 
--static inline __u64 __le64_to_cpup(const __le64 *p)
-+static __inline__ __u64 __le64_to_cpup(const __le64 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	return (__force __u64)*p;
-@@ -196,7 +196,7 @@ static inline __u64 __le64_to_cpup(const __le64 *p)
- #endif
- }
- 
--static inline __le16 __cpu_to_le16p(const __u16 *p)
-+static __inline__ __le16 __cpu_to_le16p(const __u16 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	return (__force __le16)*p;
-@@ -205,7 +205,7 @@ static inline __le16 __cpu_to_le16p(const __u16 *p)
- #endif
- }
- 
--static inline __le32 __cpu_to_le32p(const __u32 *p)
-+static __inline__ __le32 __cpu_to_le32p(const __u32 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	return (__force __le32)*p;
-@@ -214,7 +214,7 @@ static inline __le32 __cpu_to_le32p(const __u32 *p)
- #endif
- }
- 
--static inline __le64 __cpu_to_le64p(const __u64 *p)
-+static __inline__ __le64 __cpu_to_le64p(const __u64 *p)
- {
- #ifdef __LITTLE_ENDIAN
- 	return (__force __le64)*p;
-@@ -223,7 +223,7 @@ static inline __le64 __cpu_to_le64p(const __u64 *p)
- #endif
- }
- 
--static inline __u16 __be16_to_cpup(const __be16 *p)
-+static __inline__ __u16 __be16_to_cpup(const __be16 *p)
- {
- #ifdef __BIG_ENDIAN
- 	return (__force __u16)*p;
-@@ -232,7 +232,7 @@ static inline __u16 __be16_to_cpup(const __be16 *p)
- #endif
- }
- 
--static inline __u32 __be32_to_cpup(const __be32 *p)
-+static __inline__ __u32 __be32_to_cpup(const __be32 *p)
- {
- #ifdef __BIG_ENDIAN
- 	return (__force __u32)*p;
-@@ -241,7 +241,7 @@ static inline __u32 __be32_to_cpup(const __be32 *p)
- #endif
- }
- 
--static inline __u64 __be64_to_cpup(const __be64 *p)
-+static __inline__ __u64 __be64_to_cpup(const __be64 *p)
- {
- #ifdef __BIG_ENDIAN
- 	return (__force __u64)*p;
-@@ -250,7 +250,7 @@ static inline __u64 __be64_to_cpup(const __be64 *p)
- #endif
- }
- 
--static inline __be16 __cpu_to_be16p(const __u16 *p)
-+static __inline__ __be16 __cpu_to_be16p(const __u16 *p)
- {
- #ifdef __BIG_ENDIAN
- 	return (__force __be16)*p;
-@@ -259,7 +259,7 @@ static inline __be16 __cpu_to_be16p(const __u16 *p)
- #endif
- }
- 
--static inline __be32 __cpu_to_be32p(const __u32 *p)
-+static __inline__ __be32 __cpu_to_be32p(const __u32 *p)
- {
- #ifdef __BIG_ENDIAN
- 	return (__force __be32)*p;
-@@ -268,7 +268,7 @@ static inline __be32 __cpu_to_be32p(const __u32 *p)
- #endif
- }
- 
--static inline __be64 __cpu_to_be64p(const __u64 *p)
-+static __inline__ __be64 __cpu_to_be64p(const __u64 *p)
- {
- #ifdef __BIG_ENDIAN
- 	return (__force __be64)*p;
-diff --git a/include/linux/byteorder/big_endian.h b/include/linux/byteorder/big_endian.h
-index 1cba3f3..8dc10d2 100644
---- a/include/linux/byteorder/big_endian.h
-+++ b/include/linux/byteorder/big_endian.h
-@@ -41,51 +41,51 @@
- #define __cpu_to_be16(x) ((__force __be16)(__u16)(x))
- #define __be16_to_cpu(x) ((__force __u16)(__be16)(x))
- 
--static inline __le64 __cpu_to_le64p(const __u64 *p)
-+static __inline__ __le64 __cpu_to_le64p(const __u64 *p)
- {
- 	return (__force __le64)__swab64p(p);
- }
--static inline __u64 __le64_to_cpup(const __le64 *p)
-+static __inline__ __u64 __le64_to_cpup(const __le64 *p)
- {
- 	return __swab64p((__u64 *)p);
- }
--static inline __le32 __cpu_to_le32p(const __u32 *p)
-+static __inline__ __le32 __cpu_to_le32p(const __u32 *p)
- {
- 	return (__force __le32)__swab32p(p);
- }
--static inline __u32 __le32_to_cpup(const __le32 *p)
-+static __inline__ __u32 __le32_to_cpup(const __le32 *p)
- {
- 	return __swab32p((__u32 *)p);
- }
--static inline __le16 __cpu_to_le16p(const __u16 *p)
-+static __inline__ __le16 __cpu_to_le16p(const __u16 *p)
- {
- 	return (__force __le16)__swab16p(p);
- }
--static inline __u16 __le16_to_cpup(const __le16 *p)
-+static __inline__ __u16 __le16_to_cpup(const __le16 *p)
- {
- 	return __swab16p((__u16 *)p);
- }
--static inline __be64 __cpu_to_be64p(const __u64 *p)
-+static __inline__ __be64 __cpu_to_be64p(const __u64 *p)
- {
- 	return (__force __be64)*p;
- }
--static inline __u64 __be64_to_cpup(const __be64 *p)
-+static __inline__ __u64 __be64_to_cpup(const __be64 *p)
- {
- 	return (__force __u64)*p;
- }
--static inline __be32 __cpu_to_be32p(const __u32 *p)
-+static __inline__ __be32 __cpu_to_be32p(const __u32 *p)
- {
- 	return (__force __be32)*p;
- }
--static inline __u32 __be32_to_cpup(const __be32 *p)
-+static __inline__ __u32 __be32_to_cpup(const __be32 *p)
- {
- 	return (__force __u32)*p;
- }
--static inline __be16 __cpu_to_be16p(const __u16 *p)
-+static __inline__ __be16 __cpu_to_be16p(const __u16 *p)
- {
- 	return (__force __be16)*p;
- }
--static inline __u16 __be16_to_cpup(const __be16 *p)
-+static __inline__ __u16 __be16_to_cpup(const __be16 *p)
- {
- 	return (__force __u16)*p;
- }
-diff --git a/include/linux/byteorder/little_endian.h b/include/linux/byteorder/little_endian.h
-index cedc1b5..5162695 100644
---- a/include/linux/byteorder/little_endian.h
-+++ b/include/linux/byteorder/little_endian.h
-@@ -41,51 +41,51 @@
- #define __cpu_to_be16(x) ((__force __be16)__swab16((x)))
- #define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
- 
--static inline __le64 __cpu_to_le64p(const __u64 *p)
-+static __inline__ __le64 __cpu_to_le64p(const __u64 *p)
- {
- 	return (__force __le64)*p;
- }
--static inline __u64 __le64_to_cpup(const __le64 *p)
-+static __inline__ __u64 __le64_to_cpup(const __le64 *p)
- {
- 	return (__force __u64)*p;
- }
--static inline __le32 __cpu_to_le32p(const __u32 *p)
-+static __inline__ __le32 __cpu_to_le32p(const __u32 *p)
- {
- 	return (__force __le32)*p;
- }
--static inline __u32 __le32_to_cpup(const __le32 *p)
-+static __inline__ __u32 __le32_to_cpup(const __le32 *p)
- {
- 	return (__force __u32)*p;
- }
--static inline __le16 __cpu_to_le16p(const __u16 *p)
-+static __inline__ __le16 __cpu_to_le16p(const __u16 *p)
- {
- 	return (__force __le16)*p;
- }
--static inline __u16 __le16_to_cpup(const __le16 *p)
-+static __inline__ __u16 __le16_to_cpup(const __le16 *p)
- {
- 	return (__force __u16)*p;
- }
--static inline __be64 __cpu_to_be64p(const __u64 *p)
-+static __inline__ __be64 __cpu_to_be64p(const __u64 *p)
- {
- 	return (__force __be64)__swab64p(p);
- }
--static inline __u64 __be64_to_cpup(const __be64 *p)
-+static __inline__ __u64 __be64_to_cpup(const __be64 *p)
- {
- 	return __swab64p((__u64 *)p);
- }
--static inline __be32 __cpu_to_be32p(const __u32 *p)
-+static __inline__ __be32 __cpu_to_be32p(const __u32 *p)
- {
- 	return (__force __be32)__swab32p(p);
- }
--static inline __u32 __be32_to_cpup(const __be32 *p)
-+static __inline__ __u32 __be32_to_cpup(const __be32 *p)
- {
- 	return __swab32p((__u32 *)p);
- }
--static inline __be16 __cpu_to_be16p(const __u16 *p)
-+static __inline__ __be16 __cpu_to_be16p(const __u16 *p)
- {
- 	return (__force __be16)__swab16p(p);
- }
--static inline __u16 __be16_to_cpup(const __be16 *p)
-+static __inline__ __u16 __be16_to_cpup(const __be16 *p)
- {
- 	return __swab16p((__u16 *)p);
- }
-diff --git a/include/linux/byteorder/swabb.h b/include/linux/byteorder/swabb.h
-index 8c780c7..047d3ac 100644
---- a/include/linux/byteorder/swabb.h
-+++ b/include/linux/byteorder/swabb.h
-@@ -89,32 +89,32 @@
-  __fswahb32((x)))
- 
- 
--static inline __u32 __fswahw32(__u32 x)
-+static __inline__ __u32 __fswahw32(__u32 x)
- {
- 	return __arch__swahw32(x);
- }
- 
--static inline __u32 __swahw32p(__u32 *x)
-+static __inline__ __u32 __swahw32p(__u32 *x)
- {
- 	return __arch__swahw32p(x);
- }
- 
--static inline void __swahw32s(__u32 *addr)
-+static __inline__ void __swahw32s(__u32 *addr)
- {
- 	__arch__swahw32s(addr);
- }
- 
--static inline __u32 __fswahb32(__u32 x)
-+static __inline__ __u32 __fswahb32(__u32 x)
- {
- 	return __arch__swahb32(x);
- }
- 
--static inline __u32 __swahb32p(__u32 *x)
-+static __inline__ __u32 __swahb32p(__u32 *x)
- {
- 	return __arch__swahb32p(x);
- }
- 
--static inline void __swahb32s(__u32 *addr)
-+static __inline__ void __swahb32s(__u32 *addr)
- {
- 	__arch__swahb32s(addr);
- }
-diff --git a/include/linux/swab.h b/include/linux/swab.h
-index bbed279..9e249cd 100644
---- a/include/linux/swab.h
-+++ b/include/linux/swab.h
-@@ -43,7 +43,7 @@
-  * ___swab16, ___swab32, ___swab64, ___swahw32, ___swahb32
-  */
- 
--static inline __attribute_const__ __u16 ___swab16(__u16 val)
-+static __inline__ __attribute_const__ __u16 ___swab16(__u16 val)
- {
- #ifdef __arch_swab16
- 	return __arch_swab16(val);
-@@ -52,7 +52,7 @@ static inline __attribute_const__ __u16 ___swab16(__u16 val)
- #endif
- }
- 
--static inline __attribute_const__ __u32 ___swab32(__u32 val)
-+static __inline__ __attribute_const__ __u32 ___swab32(__u32 val)
- {
- #ifdef __arch_swab32
- 	return __arch_swab32(val);
-@@ -61,7 +61,7 @@ static inline __attribute_const__ __u32 ___swab32(__u32 val)
- #endif
- }
- 
--static inline __attribute_const__ __u64 ___swab64(__u64 val)
-+static __inline__ __attribute_const__ __u64 ___swab64(__u64 val)
- {
- #ifdef __arch_swab64
- 	return __arch_swab64(val);
-@@ -74,7 +74,7 @@ static inline __attribute_const__ __u64 ___swab64(__u64 val)
- #endif
- }
- 
--static inline __attribute_const__ __u32 ___swahw32(__u32 val)
-+static __inline__ __attribute_const__ __u32 ___swahw32(__u32 val)
- {
- #ifdef __arch_swahw32
- 	return __arch_swahw32(val);
-@@ -83,7 +83,7 @@ static inline __attribute_const__ __u32 ___swahw32(__u32 val)
- #endif
- }
- 
--static inline __attribute_const__ __u32 ___swahb32(__u32 val)
-+static __inline__ __attribute_const__ __u32 ___swahb32(__u32 val)
- {
- #ifdef __arch_swahb32
- 	return __arch_swahb32(val);
-@@ -145,7 +145,7 @@ static inline __attribute_const__ __u32 ___swahb32(__u32 val)
-  * __swab16p - return a byteswapped 16-bit value from a pointer
-  * @p: pointer to a naturally-aligned 16-bit value
-  */
--static inline __u16 __swab16p(const __u16 *p)
-+static __inline__ __u16 __swab16p(const __u16 *p)
- {
- #ifdef __arch_swab16p
- 	return __arch_swab16p(p);
-@@ -158,7 +158,7 @@ static inline __u16 __swab16p(const __u16 *p)
-  * __swab32p - return a byteswapped 32-bit value from a pointer
-  * @p: pointer to a naturally-aligned 32-bit value
-  */
--static inline __u32 __swab32p(const __u32 *p)
-+static __inline__ __u32 __swab32p(const __u32 *p)
- {
- #ifdef __arch_swab32p
- 	return __arch_swab32p(p);
-@@ -171,7 +171,7 @@ static inline __u32 __swab32p(const __u32 *p)
-  * __swab64p - return a byteswapped 64-bit value from a pointer
-  * @p: pointer to a naturally-aligned 64-bit value
-  */
--static inline __u64 __swab64p(const __u64 *p)
-+static __inline__ __u64 __swab64p(const __u64 *p)
- {
- #ifdef __arch_swab64p
- 	return __arch_swab64p(p);
-@@ -186,7 +186,7 @@ static inline __u64 __swab64p(const __u64 *p)
-  *
-  * See __swahw32() for details of wordswapping.
-  */
--static inline __u32 __swahw32p(const __u32 *p)
-+static __inline__ __u32 __swahw32p(const __u32 *p)
- {
- #ifdef __arch_swahw32p
- 	return __arch_swahw32p(p);
-@@ -201,7 +201,7 @@ static inline __u32 __swahw32p(const __u32 *p)
-  *
-  * See __swahb32() for details of high/low byteswapping.
-  */
--static inline __u32 __swahb32p(const __u32 *p)
-+static __inline__ __u32 __swahb32p(const __u32 *p)
- {
- #ifdef __arch_swahb32p
- 	return __arch_swahb32p(p);
-@@ -214,7 +214,7 @@ static inline __u32 __swahb32p(const __u32 *p)
-  * __swab16s - byteswap a 16-bit value in-place
-  * @p: pointer to a naturally-aligned 16-bit value
-  */
--static inline void __swab16s(__u16 *p)
-+static __inline__ void __swab16s(__u16 *p)
- {
- #ifdef __arch_swab16s
- 	__arch_swab16s(p);
-@@ -226,7 +226,7 @@ static inline void __swab16s(__u16 *p)
-  * __swab32s - byteswap a 32-bit value in-place
-  * @p: pointer to a naturally-aligned 32-bit value
-  */
--static inline void __swab32s(__u32 *p)
-+static __inline__ void __swab32s(__u32 *p)
- {
- #ifdef __arch_swab32s
- 	__arch_swab32s(p);
-@@ -239,7 +239,7 @@ static inline void __swab32s(__u32 *p)
-  * __swab64s - byteswap a 64-bit value in-place
-  * @p: pointer to a naturally-aligned 64-bit value
-  */
--static inline void __swab64s(__u64 *p)
-+static __inline__ void __swab64s(__u64 *p)
- {
- #ifdef __arch_swab64s
- 	__arch_swab64s(p);
-@@ -254,7 +254,7 @@ static inline void __swab64s(__u64 *p)
-  *
-  * See __swahw32() for details of wordswapping
-  */
--static inline void __swahw32s(__u32 *p)
-+static __inline__ void __swahw32s(__u32 *p)
- {
- #ifdef __arch_swahw32s
- 	__arch_swahw32s(p);
-@@ -269,7 +269,7 @@ static inline void __swahw32s(__u32 *p)
-  *
-  * See __swahb32() for details of high and low byte swapping
-  */
--static inline void __swahb32s(__u32 *p)
-+static __inline__ void __swahb32s(__u32 *p)
- {
- #ifdef __arch_swahb32s
- 	__arch_swahb32s(p);
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
++static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ {
+-	asm("bswapl %0"
++	__asm__("bswapl %0"
+ 	    : "=r" (x)
+ 	    : "0" (x));
+ 	return x;
 -- 
 1.6.0.6
 
