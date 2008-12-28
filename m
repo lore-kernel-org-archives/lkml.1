@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbYL1UTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYL1UV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956AbYL1UTu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 15:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYL1UTl
+	id S1754572AbYL1UV1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 15:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbYL1UVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 15:19:41 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:50913 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbYL1UTk (ORCPT
+	Sun, 28 Dec 2008 15:21:17 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56188 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078AbYL1UVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 15:19:40 -0500
-Date: Sun, 28 Dec 2008 20:19:36 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least once per day
-Message-ID: <20081228201936.GA19563@srcf.ucam.org>
-References: <20081228152901.GB13565@srcf.ucam.org> <alpine.LNX.2.00.0812281928370.10294@swampdragon.chaosbits.net>
-MIME-Version: 1.0
+	Sun, 28 Dec 2008 15:21:16 -0500
+Date: Sun, 28 Dec 2008 21:34:25 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       x86@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Remove interrupt stack table usage from x86_64 kernel
+Message-ID: <20081228203425.GF496@one.firstfloor.org>
+References: <87vdt5vfxc.fsf@basil.nowhere.org> <4956A0B1.1060908@redhat.com> <20081227224029.GB496@one.firstfloor.org> <49573FE7.9090802@redhat.com> <20081228131605.GC496@one.firstfloor.org> <49578896.8030703@redhat.com> <20081228190840.GD496@one.firstfloor.org> <4957CE78.6030706@redhat.com> <4957D14B.60805@redhat.com> <4957DCC3.3060505@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0812281928370.10294@swampdragon.chaosbits.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <4957DCC3.3060505@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 28, 2008 at 07:35:25PM +0100, Jesper Juhl wrote:
+On Sun, Dec 28, 2008 at 10:08:35PM +0200, Avi Kivity wrote:
+> Avi Kivity wrote:
+> >Avi Kivity wrote:
+> >>1. Add per-cpu IDT
+> >
+> >Or we could have just two IDTs - one with IST and one without.  I 
+> >clocked LIDT at 58 cycles (and we need two per heavyweight switch), so 
+> >it's not that wonderful.
+> 
+> This makes the whole thing unworthwhile.  The vmload/vmsave pair costs 
+> only 200 cycles (I should have started with this), and 120 cycles on the 
+> heavyweight path plus complexity are not worth 200 cycles on the 
+> lightweight path.
 
-> Not all days are 24*60*60 seconds long. Daylight savings time as well as 
-> leap seconds make this an inaccurate/incorrect constant for representing 
-> "one day".
-> I don't think we really care, but perhaps the comment above should 
-> acknowledge the fact that this is aproximately one day?
+Actually to switch ISTs you need to change the TSS, not the IDT.
+But I suppose that won't be any faster.
 
-"Day" in the ISO 8601 sense, ie:
-
-2.2.5 day
-unit of time, equal to 24 hours
-
-as opposed to
-
-2.2.6 calendar day
-time interval starting at midnight and ending at the next midnight, the 
-latter being also the starting instant of the next calendar day
-
+-Andi
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ak@linux.intel.com
