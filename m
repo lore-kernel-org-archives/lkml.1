@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYL1Muj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYL1M4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbYL1Muj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 07:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbYL1Mua
+	id S1755082AbYL1M4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 07:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbYL1M4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 07:50:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59087 "EHLO mx2.mail.elte.hu"
+	Sun, 28 Dec 2008 07:56:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55737 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674AbYL1Mua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 07:50:30 -0500
-Date: Sun, 28 Dec 2008 13:49:57 +0100
+	id S1754071AbYL1Mz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 07:55:59 -0500
+Date: Sun, 28 Dec 2008 13:55:10 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jeremy@goop.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
-       beckyb@kernel.crashing.org, joerg.roedel@amd.com
-Subject: Re: [PATCH 0 of 9] swiotlb: use phys_addr_t for pages
-Message-ID: <20081228124957.GA6872@elte.hu>
-References: <20081228103419.GA7128@elte.hu> <20081228195952F.fujita.tomonori@lab.ntt.co.jp> <20081228115621.GA11954@elte.hu> <20081228213414O.fujita.tomonori@lab.ntt.co.jp>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, mel@csn.ul.ie
+Subject: Re: [BUG] next-20081216 - WARNING: at kernel/smp.c:333
+	smp_call_function_mask
+Message-ID: <20081228125510.GA10387@elte.hu>
+References: <20081226181733.GA24439@elte.hu> <20081227071138.GA4530@linux.vnet.ibm.com> <4955DBBC.4070508@kernel.org> <20081227083758.GA12138@elte.hu> <20081227083936.GA12609@elte.hu> <20081227112125.GB4530@linux.vnet.ibm.com> <20081227112450.GA24150@elte.hu> <20081227115712.GC4530@linux.vnet.ibm.com> <20081227122632.GA18909@elte.hu> <20081227152918.GD4530@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081228213414O.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081227152918.GD4530@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,14 +39,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> Ok, I'll try to fix the root cause. We need lots of changes to IA64 
-> especially. Hopefully, I can get Tony's ACK on these changes.
+> Hi Ingo,
+> 
+> 	kernel still crashes, with the updated patch.
 
-great - let me know if you need testing help on the x86 side as well. I.e. 
-we can test some preliminary patch series from you as well, without 
-committing it to anything stable (i.e. keeping open the ability to 
-rebase/redo it) - while waiting for Tony's ACK.
+hm, i thought we got all bugs fixed - could you try latest tip/master:
+
+  http://people.redhat.com/mingo/tip.git/README
+
+does it still crash in the same way? (if yes then please attach the new 
+crashlog if it's easy to do)
+
+Thanks,
 
 	Ingo
