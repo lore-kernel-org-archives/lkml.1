@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbYL1AnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbYL1ApR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbYL1AnM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 19:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbYL1Am5
+	id S1755142AbYL1ApR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 19:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbYL1ApE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 19:42:57 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43113 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754521AbYL1Am4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 19:42:56 -0500
-Date: Sun, 28 Dec 2008 00:43:26 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: linux-next: parsing mem=700M broken
-In-Reply-To: <200812272342.54881.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0812280033070.24494@blonde.anvils>
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils>
- <200812241808.16195.rusty@rustcorp.com.au> <Pine.LNX.4.64.0812241437230.15556@blonde.anvils>
- <200812272342.54881.rusty@rustcorp.com.au>
+	Sat, 27 Dec 2008 19:45:04 -0500
+Received: from fe01x03-cgp.akado.ru ([77.232.31.164]:63085 "EHLO akado.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754600AbYL1ApC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 19:45:02 -0500
+Date: Sun, 28 Dec 2008 03:45:05 +0300 (MSK)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: Lock-up on PPC64
+In-Reply-To: <1230165163.7292.32.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru> 
+ <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru> 
+ <20081223234513.GA8730@deepthought>   <871vvy77v4.fsf@linmac.oyster.ru>
+ <1230165163.7292.32.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Dec 2008, Rusty Russell wrote:
-> > On Thursday 25 December 2008 01:14:35 Hugh Dickins wrote:
-> > But (of course: it's a patch to arch/x86) doesn't help at all on
-> > ppc64; and I presume other architectures also remain broken...
-> 
-> Confirmed ppc64.  But it's broken in a *different* way.
-> 
-> Whereas most archs called parse_early_param from setup_arch, powerpc
-> does it before start_kernel.  So instead of moving parsing earlier,
-> my patch actually moved it later for powerpc.
-> 
-> Too late, for mem=.
-> 
-> Rather than try to untangle the powerpc boot process (most archs would
-> do most of this in setup_arch), I think I have to expose the parser
-> again so they can call it:
-> 
-> commit 25bf48b74b9fb23b347d00656b604f9e55c72183
-> Author: Rusty Russell <rusty@rustcorp.com.au>
-> Date:   Sat Dec 27 23:40:37 2008 +1030
-> 
->     Fix powerpc (tested on ppc64) command line handling.
->     Powerpc used to call parse_early_param() really early; the change made
->     it too late.  Put it back.
+On Thu, 25 Dec 2008, Benjamin Herrenschmidt wrote:
 
-I'll make no pretence of reviewing any of this, but this has
-indeed got mem= back working for me on a 2.6.28-rc9-mm1 - thanks!
+> On Wed, 2008-12-24 at 03:08 +0300, malc@pulsesoft.com wrote:
+>> Ken Moffat <zarniwhoop@ntlworld.com> writes:
+>>
+>>> On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
 
-I have to wonder if all this comes too late in the cycle for 2.6.29:
-changing the early param handling of all the arches is difficult,
-and apparently hasn't been much tested in the short time that it's
-been out there in linux-next.  But of course, not for me to decide.
+[..snip..]
 
-Hugh
+>>
+>> Thanks for the reference, but i'm sure, now more than ever, that bad
+>> memory has nothing to do with it, all signs are there that kernel is
+>> confused by the way signals are (mis)used by Mono.
+>
+> It shouldn't be but I agree with you, it smells bad. Can you report that
+> again on the linuxppc-dev@ozlabs.org mailing list ? Along with
+> instructions to d/l, install & run the minimum repro-case ? I'll try to
+> give it a go on different ppc64 machines as soon as I'm over my upcoming
+> xmas hangover :-) If it appears to be ps3 specific, we can work with
+> Geoff Levand (PS3 maintainer for Sony) to try to identify the root cause
+> and fix it.
+
+I've posted a message to linuxppc-dev via gmane, but AFAICS it never made
+it there. Anyhow, here's another try:
+
+Mono can be obtained from:
+http://ftp.novell.com/pub/mono/sources/mono/mono-2.0.1.tar.bz2
+
+Although 2.0.1 only supports ppc32 the problem is still reproducible.
+
+Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
+notice that the problem is gone, bisecting v2.6.27 (which funnily i
+had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
+but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
+
+commit ab598b6680f1e74c267d1547ee352f3e1e530f89
+Author: Paul Mackerras <paulus@samba.org>
+Date:   Sun Nov 30 11:49:45 2008 +0000
+
+     powerpc: Fix system calls on Cell entered with XER.SO=1
+
+Now the lock-up is gone, however the code never exercises the path
+taken during the lock-up so i guess it, at least, deserves a better
+look by PPC64 care takers.
+
+-- 
+mailto:av1474@comtv.ru
