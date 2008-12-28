@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbYL1CIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbYL1E0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbYL1CIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 21:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYL1CID
+	id S1755149AbYL1E0A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 23:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbYL1EZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 21:08:03 -0500
-Received: from rv-out-0506.google.com ([209.85.198.232]:31521 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYL1CIB (ORCPT
+	Sat, 27 Dec 2008 23:25:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50084
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754007AbYL1EZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 21:08:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=RYfhslKZrsY0y1pJeJy0TKJB05czeuClTJZh0bCt8SrHMcSr/2A4nIy7dbppc6UJXy
-         feAXqxDmn1cq7OwHJHoHEIO5hwftqu5Y7o6KSFE71hFNg22/UI6Qi+kbfDnHh9poYo3b
-         xmdGisIpxNjH9FvhL0GxsUhPYpNvFU8AvBgSY=
-Message-ID: <86802c440812271807q3decd21i5da99754d708449d@mail.gmail.com>
-Date: Sat, 27 Dec 2008 18:07:59 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: linux-next: parsing mem=700M broken
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Paul Mackerras" <paulus@samba.org>,
-       "Benjamin Herrenschmidt" <benh@au1.ibm.com>
-In-Reply-To: <Pine.LNX.4.64.0812280033070.24494@blonde.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 27 Dec 2008 23:25:49 -0500
+Date: Sat, 27 Dec 2008 20:25:52 -0800 (PST)
+Message-Id: <20081227.202552.27482357.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org, mingo@elte.hu,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kenchen@google.com,
+       paulus@samba.org, tglx@linutronix.de, hpa@zytor.com,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] sparc64: use unsigned long long for u64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081227094955.GA1355@uranus.ravnborg.org>
+References: <20081227092404.GA10375@uranus.ravnborg.org>
+	<20081227.013712.63335017.davem@davemloft.net>
+	<20081227094955.GA1355@uranus.ravnborg.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils>
-	 <200812241808.16195.rusty@rustcorp.com.au>
-	 <Pine.LNX.4.64.0812241437230.15556@blonde.anvils>
-	 <200812272342.54881.rusty@rustcorp.com.au>
-	 <Pine.LNX.4.64.0812280033070.24494@blonde.anvils>
-X-Google-Sender-Auth: b3f9268bb55b964e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 27, 2008 at 4:43 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> On Sat, 27 Dec 2008, Rusty Russell wrote:
->> > On Thursday 25 December 2008 01:14:35 Hugh Dickins wrote:
->> > But (of course: it's a patch to arch/x86) doesn't help at all on
->> > ppc64; and I presume other architectures also remain broken...
->>
->> Confirmed ppc64.  But it's broken in a *different* way.
->>
->> Whereas most archs called parse_early_param from setup_arch, powerpc
->> does it before start_kernel.  So instead of moving parsing earlier,
->> my patch actually moved it later for powerpc.
->>
->> Too late, for mem=.
->>
->> Rather than try to untangle the powerpc boot process (most archs would
->> do most of this in setup_arch), I think I have to expose the parser
->> again so they can call it:
->>
->> commit 25bf48b74b9fb23b347d00656b604f9e55c72183
->> Author: Rusty Russell <rusty@rustcorp.com.au>
->> Date:   Sat Dec 27 23:40:37 2008 +1030
->>
->>     Fix powerpc (tested on ppc64) command line handling.
->>     Powerpc used to call parse_early_param() really early; the change made
->>     it too late.  Put it back.
->
-> I'll make no pretence of reviewing any of this, but this has
-> indeed got mem= back working for me on a 2.6.28-rc9-mm1 - thanks!
->
-> I have to wonder if all this comes too late in the cycle for 2.6.29:
-> changing the early param handling of all the arches is difficult,
-> and apparently hasn't been much tested in the short time that it's
-> been out there in linux-next.  But of course, not for me to decide.
->
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Sat, 27 Dec 2008 10:49:55 +0100
 
-should be ok, just need to go over all early_param()
+> I have ordered a used Sun Blade 100(*) that should show up
+> before new eve.
+> So when I have it and it is up and running I will redo this
+> patch set. That will likely take a few weeks though.
 
-YH
+Another option, of course, is to use 64-bit cross tools
+on an x86_64 system if you have access to one of those.
+
+> (*) Any distribution recommendations? I will only use it for
+>     sparc kernel development so nothing fancy...
+
+Debian testing works fine, and that's what I'm typing this
+on.
