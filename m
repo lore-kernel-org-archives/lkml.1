@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYL1Ju3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYL1KCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYL1Ju3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 04:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL1JuV
+	id S1754713AbYL1KCy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 05:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbYL1KCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 04:50:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40322 "EHLO mx3.mail.elte.hu"
+	Sun, 28 Dec 2008 05:02:46 -0500
+Received: from sh.osrg.net ([192.16.179.4]:45645 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752737AbYL1JuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 04:50:20 -0500
-Date: Sun, 28 Dec 2008 10:50:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tony.luck@intel.com,
+	id S1752837AbYL1KCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 05:02:45 -0500
+Date: Sun, 28 Dec 2008 19:02:12 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, jeremy@goop.org, tony.luck@intel.com,
        linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       x86@kernel.org, ian.campbell@citrix.com, beckyb@kernel.crashing.org
+       x86@kernel.org, ian.campbell@citrix.com, beckyb@kernel.crashing.org,
+       joerg.roedel@amd.com
 Subject: Re: [PATCH 0 of 9] swiotlb: use phys_addr_t for pages
-Message-ID: <20081228095002.GG9022@elte.hu>
-References: <patchbomb.1229970362@abulafia.goop.org> <20081227104823.GI14639@elte.hu> <20081228000558I.fujita.tomonori@lab.ntt.co.jp> <4957083B.6090801@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4957083B.6090801@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081228093751.GC9022@elte.hu>
+References: <20081228020312K.fujita.tomonori@lab.ntt.co.jp>
+	<20081228142900W.fujita.tomonori@lab.ntt.co.jp>
+	<20081228093751.GC9022@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081228190111H.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 28 Dec 2008 10:37:51 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> 
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > If we really want to clean up the dma mapping operations, we should 
+> > define struct dma_mapping_ops in a generic place (such as 
+> > include/linux/dma-mapping.h) instead each architecture define the own 
+> > struct dma_mapping_ops. These dma_mapping_ops structures are very 
+> > similar but a bit different. That's the root cause of the dma mapping 
+> > operation ugliness.
+> >
+> > If we do, X86 and IA64 can share swiotlb and intel VTD code cleanly, 
+> > X86, IA64, and POWERPC can share swiotlb cleanly too. For example, we 
+> > can define swiotlb_dma_ops in lib/swiotlb.c and then everyone can share 
+> > it. Currently, X86 and IA64 define the own swiotlb_dma_ops (and X86 
+> > needs swiotlb_map_single_phys hack). It doesn't make sense.
+> 
+> Sure.
+> 
+> Note that we went through this process (of unifying dma_mapping_ops) 
+> recently on x86 recently - 32-bit and 64-bit x86 had such differences.
 
-> FUJITA Tomonori wrote:
->> Well, I asked Jeremy to use Becky's approach so I don't have though
->> this patchset isn't enough for Becky (possibly for Xen too) since
->> Jeremy didn't put Becky's map_single_page changes. These changes are
->> necessary to support map_map_page with highmem. I think that we can do
->> it simpler than his patch. I'll send patches to that in a different
->> way soon.
->>
->> It's not principal objection, but as I said, the patches to revert
->> Jeremy's highmem patches in this patchset like the following are
->> pointless.
->>   
->
-> I don't mind either way.  I was hoping to go with something that I've 
-> actually tested, but I don't see any reason why Becky's patches won't 
-> work in principle for Xen.  I'm on vacation at the moment, but I can 
-> test things out when I get back in a couple of weeks and apply whatever 
-> fixes are needed at whatever stage we're at then.
+Not really. x86_32 did not use the dma_ops scheme.
 
-yes, obviously we prefer append-only - i kept your patches and added the 
-Becky lineup and Fujita's cleanups on top of that. If they break your Xen 
-swiotlb use it should all be easily bisectable.
 
-	Ingo
+> Note that the main complication wasnt even the small variations in 
+> signatures, but the different _semantics_: one dma_mapping_ops 
+> implementation passed in kernel-virtual addresses, the other physical 
+> addresses. Unifying that was invasive and non-trivial, and it can break 
+
+I guess that you are talking about the dma_map_single difference
+between x86_32 and x86_64. As far as I know, Only x64_64 uses physical
+address with dma_map_single.
+
+
+> stuff not at the build level but at the runtime level. We can expect 
+> similar complications when done over 20 architectures as well.
+
+We don't need to touch 20 architectures. We are talking about
+unifying dma_mapping_ops. Only architectures that need to handle
+multiple dma mapping operations use the dma_mapping_ops scheme; X86,
+IA64, POWERPC, SPARC, and PARISC. Unifying X86, IA64 and POWERPC is a
+must since they actually share dma_mapping_ops.
+
+
+> But yes, it's all desired. Obviously extending swiotlb to highmem and 
+> using it on xen and powerpc is an essential first step in the direction of 
+> generalizing all this code.
+
+No, it's not about swiotlb highmem patchset.
+
+Due to this problem, IA64 and X86_64 share swiotlb in a very hacky
+way. We added more hacky code due to this problem again when we added
+VT-d support to IA64.
+
+This problem has been for long time. We added ugly hacks again and
+again instead of fixing the root cause.
