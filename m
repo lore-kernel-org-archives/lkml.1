@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYL1Mfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYL1Mj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbYL1Mfh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 07:35:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYL1Mf2
+	id S1754985AbYL1Mj4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 07:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYL1Mjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 07:35:28 -0500
-Received: from sh.osrg.net ([192.16.179.4]:39986 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750874AbYL1Mf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 07:35:28 -0500
-Date: Sun, 28 Dec 2008 21:34:54 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, jeremy@goop.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       x86@kernel.org, ian.campbell@citrix.com, beckyb@kernel.crashing.org,
-       joerg.roedel@amd.com
-Subject: Re: [PATCH 0 of 9] swiotlb: use phys_addr_t for pages
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081228115621.GA11954@elte.hu>
-References: <20081228103419.GA7128@elte.hu>
-	<20081228195952F.fujita.tomonori@lab.ntt.co.jp>
-	<20081228115621.GA11954@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081228213414O.fujita.tomonori@lab.ntt.co.jp>
+	Sun, 28 Dec 2008 07:39:48 -0500
+Received: from mail.iwoars.net ([88.198.9.16]:38462 "HELO
+	eristoteles.iwoars.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753829AbYL1Mjs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 07:39:48 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Dec 2008 07:39:47 EST
+Date: Sun, 28 Dec 2008 13:33:05 +0100
+From: Thomas Themel <thomas@themel.com>
+To: linux-kernel@vger.kernel.org
+Subject: XFS corruption on ARM
+Message-ID: <20081228123305.GE30805@themel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+X-Jabber-ID: themel@amessage.at
+X-ICQ-UIN: 8774749
+X-Postal: Rubensgasse 9/12, 1040 Wien
+X-Phone: +43 650 9903486
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Dec 2008 12:56:21 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Hi,
 
-> 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > You brought up a different topic, DMA bouncing implementations 
-> > unification. DMA bouncing implementations unification is a very nice 
-> > cleanup. But it's not related with Becky's patch to break IA64 build at 
-> > all.
-> 
-> All i'm saying is that obviously neither Jeremy's nor Becky's patches were 
-> created in a vacuum, and had it not been for the need and desire to extend 
-> swiotlb we'd not have seen Becky's 9/9 cleanup patch either.
+there was a thread[0] on this list in 2008-10 about XFS corrupting
+rather quickly on recent ARM kernels, which seems to have petered out
+without any apparent results. I'm still seeing the same problems with
+2.6.28, and I suspect that this qualifies as a kind of regression
+(though ancient), since the devices I'm running this on (Buffalo
+LinkStations) originally ship with a (vendor-modified) 2.6.16 kernel,
+where XFS seems to be working.
 
-As I wrote, Becky's 9/9 cleanup path is not about swiotlb highmem
-extention. We had known about the need to clean up the dma mapping
-operation ugliness. But we has ignored it and added workarounds again
-and again. We haven't seen something like his 9/9 because we added
-workarounds in architecture-specific code.
+Is this still on anyone's radar? I'm willing to test proposed fixes and
+supply data[1], but lack any deep knowledge of either ARM or XFS internals.
 
-Anyway, his 9/9 patch is wrong if we want to fix the root cause. If we
-don't fix the root cause, the lots of changes of his 9/9 patch don't
-make sense. Probably, it would better to add some workarounds in
-architecture-specific code (POWERPC in this case) as we have done in
-the past.
+(Please Cc: me, I'm not on the list.)
 
-Ok, I'll try to fix the root cause. We need lots of changes to IA64
-especially. Hopefully, I can get Tony's ACK on these changes.
+[0] http://lkml.org/lkml/2008/10/1/382
+[1] Though mine doesn't look any different from what was posted in [0]
+    to the little-trained eye.
+
+ciao,
+-- 
+[*Thomas  Themel*]
+[extended contact] But let your communication be, Yea, yea; Nay, nay:
+[info provided in] for whatsoever is more than these cometh of evil.
+[*message header*]      - Matthew 5:37
