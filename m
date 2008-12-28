@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYL1WZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYL1W0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbYL1WZB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 17:25:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbYL1WYt
+	id S1757084AbYL1W0a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 17:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYL1W0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 17:24:49 -0500
-Received: from main.gmane.org ([80.91.229.2]:35456 "EHLO ciao.gmane.org"
+	Sun, 28 Dec 2008 17:26:15 -0500
+Received: from rtr.ca ([76.10.145.34]:59353 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756840AbYL1WYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 17:24:48 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: walt <w41ter@gmail.com>
-Subject: Should <linux/serial.h> define __u32?
-Date: Sun, 28 Dec 2008 14:24:36 -0800
-Message-ID: <4957FCA4.4010201@gmail.com>
-References: <20081010103447.31597.42992.stgit@localhost.localdomain> <20081010103637.31597.41557.stgit@localhost.localdomain>
-Mime-Version: 1.0
+	id S1756861AbYL1W0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 17:26:13 -0500
+Message-ID: <4957FCFF.20606@rtr.ca>
+Date: Sun, 28 Dec 2008 17:26:07 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: Greg Freemyer <greg.freemyer@gmail.com>
+Cc: Redeeman <redeeman@metanurb.dk>, piergiorgio.sartor@nexgo.de,
+       neilb@suse.de, linux-raid@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: detection of silent corruption via ATA long sector reads
+References: <87f94c370812261344s3f70de25r4d132101d2247e00@mail.gmail.com>
+In-Reply-To: <87f94c370812261344s3f70de25r4d132101d2247e00@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Linus Torvalds <torvalds@osdl.org>
-X-Gmane-NNTP-Posting-Host: adsl-69-234-212-7.dsl.irvnca.pacbell.net
-User-Agent: Thunderbird/3.0a2pre (X11; 2008122807)
-In-Reply-To: <20081010103637.31597.41557.stgit@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan and Linus,
+Greg Freemyer wrote:
+> All,
+> 
+> On the mdraid list, there was a recent thread about using raid
+> functionality to detect / repair silent corruption.
+> 
+> The issues brought up were that a lot of silent data corruption occurs
+> when cables, controllers, power supplies, ram, cache, etc. goes bad.
+> 
+> It made me think about another option for detecting silent corruption
+> I have not seen discussed, but maybe I missed it.
+> 
+> Aiui, the ATA spec allows for the reading of a long sector as well as
+> the normal 512 byte sector.  When you get a long sector you also get
+> the CRC (or whatever checksum data there is on the disk that allows
+> the drive itself to detect media errors).
+> 
+> I don't have any idea how easy or hard it would be to do, but I would
+> like to see the entire block subsystem enhanced to optionally allow
+> long sector reads to be used in a "paranoid" fashion.
+> 
+> Effectively it would be:
+> 
+> 1) Read long sector from drive:  verify CRC in kernel.  This tests
+> most everything on the i/o path.
+> 
+> 2) maintain CRC type information in block subsystem.  Verify no
+> corruption just before handing off to userspace.  This would
+> potentially identify CPU/cache/RAM failures.
+> 
+> Mark Lord has implemented long sector reads via hdparm.  Mark can you
+> comment on the feasibility of this idea?
+..
 
-A little background to explain the reason for my question:
+The ATA READ/WRITE LONG commands have been obsoleted in the past few ATA specs,
+even though most drives continue to implement them.
 
-My linux distribution just updated /usr/include/linux to 2.6.28,
-which broke the compilation of wine.
+But not a good avenue.
 
-The cause for the breakage is this commit by Linus:
-commit c26c56c0f40e200e61d1390629c806f6adaffbcc
-Author: Alan Cox <alan@redhat.com>
-Date:   Mon Oct 13 10:37:48 2008 +0100
-     tty: Cris has a nice RS485 ioctl so we should steal it
+There's a separate effort, involving drive vendors and kernel hackers,
+to provide end-to-end CRC protection of data.  I forget what it was called,
+but that's the future of this stuff for high-reliability requirements.
 
-That commit introduced this new struct in serial.h:
-
-+struct serial_rs485 {
-+       __u32   flags;                  /* RS485 feature flags */
-+#define SER_RS485_ENABLED              (1 << 0)
-+#define SER_RS485_RTS_ON_SEND          (1 << 1)
-+#define SER_RS485_RTS_AFTER_SEND       (1 << 2)
-+       __u32   delay_rts_before_send;  /* Milliseconds */
-+       __u32   padding[6];             /* Memory is cheap, new structs
-+                                          are a royal PITA .. */
-+};
-
-The proximate cause of the wine breakage is the __u32, which
-wasn't used in serial.h until now.
-
-So, my question is:  who should be responsible for defining
-that __u32, the author of serial.h or the author of the wine
-code that includes serial.h?
-
-I'm not a professional programmer, just a hobbyist who loves
-doing this stuff.  When I try to trace the chain of definitions
-in /usr/include I'm generally overwhelmed by the complexity of
-what seems to be an endless chain of includes.
-
-Could you give me The Big Picture here?  (For example I'm assuming
-that POSIX plays a confounding role in all of this, but I don't know
-just how.)
-
-Many thanks for any clues!
-
-
+Cheers
