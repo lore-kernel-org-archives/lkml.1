@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYL1JjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYL1Jps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbYL1JjT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 04:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL1JjG
+	id S1754711AbYL1Jps (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 04:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL1Jpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 04:39:06 -0500
-Received: from ozlabs.org ([203.10.76.45]:47118 "EHLO ozlabs.org"
+	Sun, 28 Dec 2008 04:45:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42858 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbYL1JjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 04:39:05 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: clean up setup_clear/force_cpu_cap handling
-Date: Sun, 28 Dec 2008 20:08:57 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <49509418.6040905@kernel.org> <20081227102234.GD14639@elte.hu>
-In-Reply-To: <20081227102234.GD14639@elte.hu>
+	id S1751868AbYL1Jpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 04:45:38 -0500
+Date: Sun, 28 Dec 2008 10:45:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, jeremy@goop.org,
+       joerg.roedel@amd.com, beckyb@kernel.crashing.org
+Subject: Re: [PATCH 0/3] swiotlb cleanups
+Message-ID: <20081228094522.GD9022@elte.hu>
+References: <1230444127-587-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20081228090537.GA9022@elte.hu> <20081228183522O.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812282008.58544.rusty@rustcorp.com.au>
+In-Reply-To: <20081228183522O.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 December 2008 20:52:34 Ingo Molnar wrote:
-> 
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > Impact: fix and cleanup
-> > 
-> > setup_force_cpu_cap() only have one user xen
-> > but it should not reuse cleared_cpu_cpus. it will have problem
-> > for smp.
-> > 
-> > need to have cpu_cpus_set array too.
-> > also need to setup handling before all cpus cap AND
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
-> > 
-> > ---
-> >  arch/x86/include/asm/cpufeature.h |    4 ++--
-> >  arch/x86/include/asm/processor.h  |    3 ++-
-> >  arch/x86/kernel/cpu/common.c      |   17 ++++++++++++-----
-> >  3 files changed, 16 insertions(+), 8 deletions(-)
-> 
-> Rusty, you'll carry this patch in your linux-2.6-boot-params.git tree, 
-> right? Merging this in the x86 tree would just needlessly complicate your 
-> logistics, right?
 
-Yep, if you're happy to ack, I'm happy to carry.
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-Cheers,
-Rusty.
+> On Sun, 28 Dec 2008 10:05:37 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > 
+> > > This is minor swiotlb cleanups. It depends on the swiotlb highmem
+> > > patchset:
+> > > 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git swiotlb
+> > 
+> > thanks, applied them to tip/core/iommu - after Becky's patchset as ported 
+> > by Jeremy.
+> 
+> Thanks,
+> 
+> The log of tip/core/iommu looks really wired. Two patches claim to add 
+> highmem support to swioblb. Becky completely reverts the Jeremy's and 
+> does in a different way without any description.
+
+one is Jeremy's that was tested on Xen. The other is Becky's stuff - that 
+also extends it to powerpc - that is not yet fully tested though.
+
+> As I wrote, I recommend you to reorder the patches. There is no point to 
+> merge Jeremy's highmem patch.
+
+"reordering" commits is not acceptable at this stage, we do append-only 
+steps. If you can see any bug in the end result, let us know.
+
+	Ingo
