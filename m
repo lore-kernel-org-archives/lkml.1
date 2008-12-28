@@ -1,131 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbYL1Sfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYL1SZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbYL1Sfh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 13:35:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYL1Sf2
+	id S1755427AbYL1SZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 13:25:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYL1SZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 13:35:28 -0500
-Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:17239 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbYL1Sf2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 13:35:28 -0500
-Date: Sun, 28 Dec 2008 19:35:25 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Matthew Garrett <mjg@redhat.com>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least
- once per day
-In-Reply-To: <20081228152901.GB13565@srcf.ucam.org>
-Message-ID: <alpine.LNX.2.00.0812281928370.10294@swampdragon.chaosbits.net>
-References: <20081228152901.GB13565@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Sun, 28 Dec 2008 13:25:50 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:15444 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753919AbYL1SZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 13:25:50 -0500
+Date: Sun, 28 Dec 2008 19:25:00 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org
+Subject: Re: oops in __bounce_end_io_read under kvm
+Message-ID: <20081228182459.GX32491@kernel.dk>
+References: <20081226173606.GA14933@lst.de> <20081228181057.GV32491@kernel.dk> <20081228181948.GA23568@lst.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081228181948.GA23568@lst.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Dec 2008, Matthew Garrett wrote:
-
-> Ensure relatime updates atime at least once per day
->     
-> Allow atime to be updated once per day even with relatime. This lets
-> utilities like tmpreaper (which delete files based on last access time)
-> continue working.
->     
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-> Acked-by: Valerie Aurora Henson <vaurora@redhat.com>
-> Acked-by: Alan Cox <alan@redhat.com>
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+On Sun, Dec 28 2008, Christoph Hellwig wrote:
+> On Sun, Dec 28, 2008 at 07:10:59PM +0100, Jens Axboe wrote:
+> > Is this -rc9 stock + xfs patches, or does it include -mm or -next
+> > patches (or the block patches)?
 > 
+> Just -rc9 and xfs updates.  The only change outside of fs/xfs/ is a new
+> define in fs.h and a couple new helpers in inode.c
 
-Overall I think the patch looks good.
-Feel free to add
- Reviewed-by: Jesper Juhl <jj@chaosbits.net>
-if you like.
-
-I only have a single pedantic comment below.
-
-> ---
-> 
-> diff --git a/fs/inode.c b/fs/inode.c
-> index 0487ddb..057c92b 100644
-> --- a/fs/inode.c
-> +++ b/fs/inode.c
-> @@ -1179,6 +1179,40 @@ sector_t bmap(struct inode * inode, sector_t block)
->  }
->  EXPORT_SYMBOL(bmap);
->  
-> +/*
-> + * With relative atime, only update atime if the previous atime is
-> + * earlier than either the ctime or mtime or if at least a day has
-> + * passed since the last atime update.
-> + */
-> +static int relatime_need_update(struct vfsmount *mnt, struct inode *inode,
-> +			     struct timespec now)
-> +{
-> +
-> +	if (!(mnt->mnt_flags & MNT_RELATIME))
-> +		return 1;
-> +	/*
-> +	 * Is mtime younger than atime? If yes, update atime:
-> +	 */
-> +	if (timespec_compare(&inode->i_mtime, &inode->i_atime) >= 0)
-> +		return 1;
-> +	/*
-> +	 * Is ctime younger than atime? If yes, update atime:
-> +	 */
-> +	if (timespec_compare(&inode->i_ctime, &inode->i_atime) >= 0)
-> +		return 1;
-> +
-> +	/*
-> +	 * Is the previous atime value older than a day? If yes,
-> +	 * update atime:
-> +	 */
-> +	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24*60*60)
-> +		return 1;
-
-Not all days are 24*60*60 seconds long. Daylight savings time as well as 
-leap seconds make this an inaccurate/incorrect constant for representing 
-"one day".
-I don't think we really care, but perhaps the comment above should 
-acknowledge the fact that this is aproximately one day?
-
-> +	/*
-> +	 * Good, we can skip the atime update:
-> +	 */
-> +	return 0;
-> +}
-> +
->  /**
->   *	touch_atime	-	update the access time
->   *	@mnt: mount the inode is accessed on
-> @@ -1206,17 +1240,12 @@ void touch_atime(struct vfsmount *mnt, struct dentry *dentry)
->  		goto out;
->  	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
->  		goto out;
-> -	if (mnt->mnt_flags & MNT_RELATIME) {
-> -		/*
-> -		 * With relative atime, only update atime if the previous
-> -		 * atime is earlier than either the ctime or mtime.
-> -		 */
-> -		if (timespec_compare(&inode->i_mtime, &inode->i_atime) < 0 &&
-> -		    timespec_compare(&inode->i_ctime, &inode->i_atime) < 0)
-> -			goto out;
-> -	}
->  
->  	now = current_fs_time(inode->i_sb);
-> +
-> +	if (!relatime_need_update(mnt, inode, now))
-> +		goto out;
-> +
->  	if (timespec_equal(&inode->i_atime, &now))
->  		goto out;
-> 
+OK, then it's surely a new bug. Could you do a gdb l *0xbla on that
+address to check where it's faulting?
 
 -- 
-Jesper Juhl <jj@chaosbits.net>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Jens Axboe
+
