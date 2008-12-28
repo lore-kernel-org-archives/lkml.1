@@ -1,45 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYL1UIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbYL1UJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbYL1UIp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 15:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYL1UIe
+	id S1755295AbYL1UJv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 15:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYL1UJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 15:08:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43329 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbYL1UIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 15:08:34 -0500
-Message-ID: <4957DCC3.3060505@redhat.com>
-Date: Sun, 28 Dec 2008 22:08:35 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Sun, 28 Dec 2008 15:09:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:56404 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752656AbYL1UJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 15:09:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=u8KY22BTfi/1trxikURbkH/RtLZR1wGmmwDBRinu5c+SCek4IXLuZ1A6oetNPkHfza
+         lY20mzXkVzfVB2vJtnxzxuEbfANAK5Zor+808zm8un/euoEq75P5xPGIM4qvug1HFkPA
+         HE/ORqWCJdPvCH+pjqDThYzhVWJq1egT0xLW8=
+Message-ID: <742b1fb30812281209y16000506idb1e390d5f11be1a@mail.gmail.com>
+Date: Sun, 28 Dec 2008 21:09:40 +0100
+From: "Patrizio Bassi" <patrizio.bassi@gmail.com>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [BUG] 2.6.28 kseriod oops on resume afte hibernation
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081225210355.GA7105@x200.localdomain>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-CC: x86@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       KVM list <kvm@vger.kernel.org>
-Subject: Re: [PATCH 0/3] Remove interrupt stack table usage from x86_64 kernel
-References: <1230238726-17506-1-git-send-email-avi@redhat.com> <87vdt5vfxc.fsf@basil.nowhere.org> <4956A0B1.1060908@redhat.com> <20081227224029.GB496@one.firstfloor.org> <49573FE7.9090802@redhat.com> <20081228131605.GC496@one.firstfloor.org> <49578896.8030703@redhat.com> <20081228190840.GD496@one.firstfloor.org> <4957CE78.6030706@redhat.com> <4957D14B.60805@redhat.com>
-In-Reply-To: <4957D14B.60805@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <742b1fb30812251225o38a2e4bak2d9f10ca3c23ada3@mail.gmail.com>
+	 <20081225210355.GA7105@x200.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Avi Kivity wrote:
->> 1. Add per-cpu IDT
+2008/12/25 Alexey Dobriyan <adobriyan@gmail.com>:
+> On Thu, Dec 25, 2008 at 09:25:38PM +0100, Patrizio Bassi wrote:
+>> Call Trace:
+>>  [<c027ac74>] 0xc027ac74
+>>  [<c0124598>] 0xc0124598
+>>  [<c027cd1c>] 0xc027cd1c
+>>  [<c02750a2>] 0xc02750a2
+>>  [<c0275587>] 0xc0275587
+>>  [<c0124598>] 0xc0124598
+>>  [<c0275482>] 0xc0275482
+>>  [<c01242ab>] 0xc01242ab
+>>  [<c0124275>] 0xc0124275
+>>  [<c0103823>] 0xc0103823
+>> Code: 37 c0 31 c0 c7 47 58 1c 87 37 c0 5e 5b 5e 5f 5d c3 55 57 56 53
+>> 83 ec 28 fc b9 06 00 00 00 89 c3 8b 00 8d 7c 24 10 89 04 24 89 c6 <f3>
+>> a5 8b 44 24 14 8b 54 24 18 8b 7c 24 1c 8b 6c 24 10 89 44 24
+>> EIP: [<c027dbdf>]  SS:ESP 0068:d28b3f54
+>> ---[ end trace e760723794b1da56 ]---
 >
-> Or we could have just two IDTs - one with IST and one without.  I 
-> clocked LIDT at 58 cycles (and we need two per heavyweight switch), so 
-> it's not that wonderful.
+> Always run with CONFIG_KALSYMS=y, so normal backtraces are on
+> and nobody will waste time asking to enable it and enabling it.
+>
 
-This makes the whole thing unworthwhile.  The vmload/vmsave pair costs 
-only 200 cycles (I should have started with this), and 120 cycles on the 
-heavyweight path plus complexity are not worth 200 cycles on the 
-lightweight path.
+Reproduced:
+
+Restarting tasks ... done.
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+IP: [<c027ee13>] synaptics_reconnect+0x1a/0x9b
+*pde = 00000000
+Oops: 0000 [#1]
+last sysfs file: /sys/power/state
+Modules linked in: arc4 ecb cryptomgr aead crypto_blkcipher
+crypto_algapi ath5k mac80211 led_class cfg80211
+
+Pid: 207, comm: kseriod Tainted: G       A   (2.6.28 #29) A1B
+EIP: 0060:[<c027ee13>] EFLAGS: 00010282 CPU: 0
+EIP is at synaptics_reconnect+0x1a/0x9b
+EAX: 00000000 EBX: d2a16400 ECX: 00000006 EDX: c027edf9
+ESI: 00000000 EDI: d28a3f64 EBP: d214ac80 ESP: d28a3f54
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process kseriod (pid: 207, ti=d28a2000 task=d287d0e0 task.ti=d28a2000)
+Stack:
+ 00000000 d214a7e0 c027bea8 d287d0e0 c01245ec d28a3f68 d28a3f68 d295e000
+ d295d800 d2a00e70 d2a00200 d2a16400 00000000 d214ac80 c027df50 d2a00200
+ d2a00200 d2a00270 c02762d6 d2a00200 00000246 d214ac80 c02767bb d28a3fb4
+Call Trace:
+ [<c027bea8>] atkbd_set_leds+0x4e/0xdd
+ [<c01245ec>] autoremove_wake_function+0x0/0x2d
+ [<c027df50>] psmouse_reconnect+0x81/0x10c
+ [<c02762d6>] serio_reconnect_port+0x21/0x47
+ [<c02767bb>] serio_thread+0x105/0x2a0
+ [<c01245ec>] autoremove_wake_function+0x0/0x2d
+ [<c02766b6>] serio_thread+0x0/0x2a0
+ [<c01242ff>] kthread+0x36/0x5a
+ [<c01242c9>] kthread+0x0/0x5a
+ [<c010382f>] kernel_thread_helper+0x7/0x10
+Code: 3b c0 31 c0 c7 47 58 b3 20 3b c0 5e 5b 5e 5f 5d c3 55 57 56 53
+83 ec 28 fc b9 06 00 00 00 89 c3 8b 00 8d 7c 24 10 89 04 24 89 c6 <f3>
+a5 8b 44 24 14 8b 54 24 18 8b 7c 24 1c 8b 6c 24 10 89 44 24
+EIP: [<c027ee13>] synaptics_reconnect+0x1a/0x9b SS:ESP 0068:d28a3f54
+---[ end trace da78f1dea9902482 ]---
+
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Patrizio Bassi
+www.patriziobassi.it
+http://piazzadelpopolo.patriziobassi.it
