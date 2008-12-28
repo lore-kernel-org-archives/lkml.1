@@ -1,172 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYL1S4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbYL1THs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbYL1S4m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 13:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbYL1S4c
+	id S1755302AbYL1THs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 14:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbYL1THj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 13:56:32 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:33138 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbYL1S4a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 13:56:30 -0500
-X-Greylist: delayed 579 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Dec 2008 13:56:30 EST
-X-IronPort-AV: E=Sophos;i="4.36,292,1228107600"; 
-   d="scan'208";a="80428328"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Sun, 28 Dec 2008 13:46:56 -0500
-User-Agent: KMail/1.9.5
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Eric Miao" <eric.y.miao@gmail.com>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Eric Miao" <eric.miao@marvell.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Philipp Zabel" <philipp.zabel@gmail.com>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "Ben Gardner" <bgardner@wabtec.com>, "Greg KH" <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <45a44e480811301710v78875425p75dedd850728cbec@mail.gmail.com> <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com>
-In-Reply-To: <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com>
+	Sun, 28 Dec 2008 14:07:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56946 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753733AbYL1THi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 14:07:38 -0500
+Message-ID: <4957CE78.6030706@redhat.com>
+Date: Sun, 28 Dec 2008 21:07:36 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200812281346.56703.rgetz@blackfin.uclinux.org>
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
+CC: x86@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Remove interrupt stack table usage from x86_64 kernel
+References: <1230238726-17506-1-git-send-email-avi@redhat.com> <87vdt5vfxc.fsf@basil.nowhere.org> <4956A0B1.1060908@redhat.com> <20081227224029.GB496@one.firstfloor.org> <49573FE7.9090802@redhat.com> <20081228131605.GC496@one.firstfloor.org> <49578896.8030703@redhat.com> <20081228190840.GD496@one.firstfloor.org>
+In-Reply-To: <20081228190840.GD496@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Dec 2008 18:46:48.0942 (UTC) FILETIME=[A41218E0:01C9691C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 27 Dec 2008 09:55, Jaya Kumar pondered:
-> Oh, gosh darn it, how time has flown. My email above was to make sure
-> I have understood the feedback. I assume I should just get started on
-> implementing. Just to double check, the plan is:
-> - add bitmask support.
-> - add get_batch support
-> - improve naming. I think gpio_get_batch/gpio_set_batch sounds good.
+Andi Kleen wrote:
+> On Sun, Dec 28, 2008 at 04:09:26PM +0200, Avi Kivity wrote:
+>   
+>> I don't see how syscall could work on i386, and indeed:
+>>     
+>
+> i386 has task gates which support unconditional stack switching. But there 
+> are no 64bit task gates, just ISTs.
+>
+>   
 
-for what it is worth - I don't like 'batch'.
+i386 is not that interesting to me (and probably task switching couldn't 
+be made to work well with guest state in TR).
 
-According to wikipedia[1] - in computer science, batch typically refers to:
-  * Batch (Unix), a command to queue jobs for later execution
-  * Batch file, in DOS, OS/2, and Microsoft Windows, a text file containing
-    a series of commands intended to be executed
-  * Batch processing, execution of a series of programs on a computer 
-    without human interaction
-  * Batch renaming, the process of renaming multiple computer files 
-    and folders in an automated fashion
+> BTW I think there are more similar problems in your patch too.
+>   
 
-None of these are really what you are talking about. Batch normally only 
-refers to a group when taking about baking - A batch of cookies - at least 
-where I grew up....
+One fatal problem is enough -- I don't thing that patch can be made to 
+work.  Pity since it did clean up some stuff.
 
-I think that I would prefer 'group' or 'collection' to use some of the words 
-that David described things as 'ganged' or 'bus' or 'bank' or 'adjacent'. 
-(but I think 'adjacent' or 'bank' really is an implementation convention).
+I would like however to speed up kvm.  Here's a plan:
 
-I think I would also prefer to name things like gpio_bus_* as a rather than 
-gpio_*_bus - so the operation always is on the end...
+1. Add per-cpu IDT
+2. When switching to the guest TR (and other state), switch off IST use 
+in the current IDT
+3. When switching away from the kvm task, restore the IST entries
 
-> I 
-> plan to have something like:
-> 
-> void gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bitwidth);
+per-cpu IDT would cost around 4K per cpu.  I propose to make it 
+kconfigurable, and have kvm select it.
 
-Shouldn't the write return an error code (if the data was not written)?
+Ingo, does this sound workable?  It increases complexity rather than 
+decreasing it as the previous solution, but I don't see any way to drop 
+the use of IST as SYSCALL cannot work without IST if NMIs are enabled.
 
-> u32 gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth);
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-Both assume specific SoC and board level impmentation details (which I ask 
-below).
-
-> I think I should explain the bitmask and bitwidth choice. The intended
-> use case is:
-> for (i=0; i < 800*600; i++) {
->  gpio_set_batch(...)
-> }
-> 
-> bitwidth (needed to iterate and map to chip ngpios) could be
-> calculated from bitmask, but that involves iteratively counting bits
-> from the mask, so we would have to do 800*600 bit counts. Unless, we
-> do ugly things like cache the previous bitwidth/mask and compare
-> against the current caller arguments. Given that the bitwidth would
-> typically be a fixed value, I believe it is more intuitive for the
-> caller to provide it, eg:
-> 
-> gpio_set_batch(DB0, value, 0xFFFF, 16)
-> 
-> which has the nice performance benefit of skipping all the bit
-> counting in the most common use case scenario.
-
-but has the requirement that the driver know exactly the board level 
-impmentation details (something that doesn't sound generic).
-
-> While we are here, I was thinking about it, and its better if I give
-> gpio_request/free/direction_batch a miss for now. Nothing prevents
-> those features being added at a later point.
-
-I don't think that request/free are optional.
-
-For example - in most SoC implementations - gpios are implemented as banks of 
-16 or 32. (a 16 or 32 bit register).
-
-Are there facilities to span these registers? 
- - can you request 64 gpios as a 'bank'?
- - can you request gpio_8 -> gpio_40 as a 'bank' on a 32-bit system?
-
-Are non-adjacent/non-contiguous gpios avaliable to be put into 
-a 'bank/batch/bus'? can you use gpio_8 -> 11 &  28 -> 31 as a 8-bit 'bus'? 
-
-How do you know what is avaliable to be talked to as a bank/bus/batch without 
-the request/free operation?
-
-
-I have seen various hardware designs (both at the PCB and SoC level) require 
-all of these options, and would like to see common infrastructure which 
-handles this.
-
-The issue is that on many SoC implementations - dedicated peripherals can also 
-be GPIOs - so it someone wants to use SPI (for example) GPIO's 3->7 might be 
-removed from the avaliable 'gpio' resources. This is determined by the 
-silicon designer - and even the PCB designer has little to no flexibility on 
-this. It gets worse as multiple SPI or I2C are used on the PCB (which can 
-have lots of small (less than 5) dedicated pins in the middle of the larger 
-gpio resources)....
-
-I would think that a 'bank' / 'bus' (whatever) would be a collection of 
-random/multiple GPIOs (a struct of gpio_port_t) rather than a start/length 
-(as you described) - or better yet - the request function takes a list (of 
-individual GPIO's - defined in the platform data), and creates the struct 
-itself.
-
-Something like the way gpio_keys are defined...
-
-static struct gpio_bus bfin_gpio_bus_table[] = {
-        {BIT_0, GPIO_PB8, 1, "gpio-bus: BIT0"},
-        {BIT_1, GPIO_PB9, 1, "gpio-bus: BIT1"},
-        {BIT_2, GPIO_PB10, 1, "gpio-bus: BIT2"},
-        {BIT_3, GPIO_PB11, 1, "gpio-bus: BIT3"},
-};
-
-static struct gpio_bus_data bfin_gpio_bus_data = {
-        .bits        = bfin_gpio_bus_table, 
-        .width       = ARRAY_SIZE(bfin_gpio_keys_table),
-};
-
-static struct platform_device bfin_device_gpiobus = {
-        .name      = "gpio-bus",
-        .dev = {
-                .platform_data = &bfin_gpio_bus_data,
-        },
-};
-
-The request function builds up the bus/masks/shifts from that...
-
--Robin
-
-[1] http://en.wikipedia.org/wiki/Batch
