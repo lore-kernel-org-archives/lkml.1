@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbYL0XrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYL1Aas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754972AbYL0XrS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Dec 2008 18:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYL0XrC
+	id S1754926AbYL1Aas (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Dec 2008 19:30:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYL1Aaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Dec 2008 18:47:02 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34506 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754358AbYL0XrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Dec 2008 18:47:00 -0500
-Date: Sun, 28 Dec 2008 10:46:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-next@vger.kernel.org
-Subject: linux-next: 2.6.30 inclusions
-Message-Id: <20081228104653.cc44b036.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__28_Dec_2008_10_46_53_+1100_p9nH09xXEUjo.yor"
+	Sat, 27 Dec 2008 19:30:39 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:33586 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754582AbYL1Aaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Dec 2008 19:30:39 -0500
+Message-ID: <4956C85A.7050501@pardus.org.tr>
+Date: Sun, 28 Dec 2008 02:29:14 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: hid-dummy in 2.6.28_rc8
+References: <495293BC.9000104@pardus.org.tr> <4956AF21.9070807@gmail.com>
+In-Reply-To: <4956AF21.9070807@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__28_Dec_2008_10_46_53_+1100_p9nH09xXEUjo.yor
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jiri Slaby wrote:
+>
+> Hi, the error is non-fatal in this case, in addition, it's intentional. The
+> module is there only for dependency loading and kills itself by returning the
+> error from load function to not eat resources any further after it does its job.
+> The module will be removed completely in next few releases.
+>
+>   
+Hi,
 
-Hi all,
+In fact, this was probably caused by CONFIG_HID_COMPAT=y which was 
+loading all the hid_* modules(20~ or so) into the kernel. I disabled it 
+and now the message has gone.
 
-Just a reminder that I do *not* want anything destined for 2.6.30 in
-linux-next until (at least) 2.6.29-rc1 is released.  We should give the
-current trees a chance to drain :-)
+Thanks,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
 
---Signature=_Sun__28_Dec_2008_10_46_53_+1100_p9nH09xXEUjo.yor
-Content-Type: application/pgp-signature
+Ozan Çağlayan
+<ozan_at_pardus.org.tr>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklWvm0ACgkQjjKRsyhoI8z/DwCfWVqGy15enCmSI/71PU785sPB
-mrQAn3GN4BHGYAS/0xOfyW35iqsEPhfH
-=wfK2
------END PGP SIGNATURE-----
-
---Signature=_Sun__28_Dec_2008_10_46_53_+1100_p9nH09xXEUjo.yor--
