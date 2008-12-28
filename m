@@ -1,103 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbYL1VZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYL1VhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbYL1VZX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 16:25:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYL1VZB
+	id S1756241AbYL1VhM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 16:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYL1Vgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 16:25:01 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:14767 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755821AbYL1VY7 (ORCPT
+	Sun, 28 Dec 2008 16:36:54 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:50751 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756142AbYL1Vgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 16:24:59 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -12.489
-Message-ID: <4957EEA7.3050101@tudelft.nl>
-Date: Sun, 28 Dec 2008 22:24:55 +0100
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <E.A.B.Piel@tudelft.nl>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+	Sun, 28 Dec 2008 16:36:53 -0500
+Date: Sun, 28 Dec 2008 14:36:36 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: ?ric Piel <E.A.B.Piel@tudelft.nl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least once per day
+Message-ID: <20081228213636.GB2002@parisc-linux.org>
+References: <20081228152901.GB13565@srcf.ucam.org> <4957CDD2.9040903@tudelft.nl> <20081228195921.GB19176@srcf.ucam.org> <4957EEA7.3050101@tudelft.nl>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least
- once per day
-References: <20081228152901.GB13565@srcf.ucam.org> <4957CDD2.9040903@tudelft.nl> <20081228195921.GB19176@srcf.ucam.org>
-In-Reply-To: <20081228195921.GB19176@srcf.ucam.org>
-Content-Type: multipart/mixed;
- boundary="------------040607060101070202090902"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4957EEA7.3050101@tudelft.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040607060101070202090902
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+On Sun, Dec 28, 2008 at 10:24:55PM +0100, ?ric Piel wrote:
+> Yes, it might bring important drawbacks: performance-wise, relatime will
+> become more like atime, making it much less useful. There is also a
+> significant number of desktop computers that are turned on once a day,
+> the boot time may get hindered by those additional writes.
 
-Matthew Garrett schreef:
-> On Sun, Dec 28, 2008 at 08:04:50PM +0100, Éric Piel wrote:
->> Matthew Garrett schreef:
->>> Ensure relatime updates atime at least once per day
->>>     
->>> Allow atime to be updated once per day even with relatime. This lets
->>> utilities like tmpreaper (which delete files based on last access time)
->>> continue working.
->> :
->> Sorry, but I doubt it's a good idea. First, it breaks the simple
->> semantic of relatime (mtime > atime?), mixing it with a rather arbitrary
->> constant. Second, and most important, there are lots of workloads which
->> will be strongly affected by this modification. For instance, running
->> md5sum daily on the filesystem will cause a write for every file.
-> 
-> Yes. And? I can't think of a single case where something could 
-> absolutely depend on the current relatime semantics, so altering them to 
-> more usefully match the atime semantics doesn't seem likely to cause any 
-> trouble.
-Of course, by construction, there is nothing relying on the current
-relatime semantics. The problem is that whenever you are making relatime
-closer to the atime behaviour, you are also getting closer to the
-original drawbacks of atime (one read generates one write).
+Huh?  Nobody's ever claimed that atime writes cost a significant amount
+of performance.  The problem that relatime is designed to solve is
+*spin-up* when a file is accessed.
 
-> The use case in this case is the significant body of currently installed 
-> machines that don't have /tmp on a separate filesystem. In the very 
-> common setup of tmpreaper being used, the current relatime semantics 
-> will result in undesired data loss. I think the proposed alteration 
-> makes the behaviour of relatime massively more useful without any 
-> obvious drawbacks.
-Yes, it might bring important drawbacks: performance-wise, relatime will
-become more like atime, making it much less useful. There is also a
-significant number of desktop computers that are turned on once a day,
-the boot time may get hindered by those additional writes.
+> Actually, you are changing relatime from a boolean condition (maximum
+> one additional write per write) to a atime with a coarse grain (maximum
+> one additional write per day). Today you found a use case that needs a
+> precision of one day. Tomorrow, someone else will find a use case that
+> needs a precision of one hour. So maybe what is actually needed is a
+> third option, a "grainatime" option where you can change the precision
+> of the atime.
 
-Actually, you are changing relatime from a boolean condition (maximum
-one additional write per write) to a atime with a coarse grain (maximum
-one additional write per day). Today you found a use case that needs a
-precision of one day. Tomorrow, someone else will find a use case that
-needs a precision of one hour. So maybe what is actually needed is a
-third option, a "grainatime" option where you can change the precision
-of the atime.
+You're really over-thinking this.
 
-Eric
-
---------------040607060101070202090902
-Content-Type: text/x-vcard; charset=utf-8;
- name="E_A_B_Piel.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="E_A_B_Piel.vcf"
-
-begin:vcard
-fn;quoted-printable:=C3=89ric Piel
-n;quoted-printable:Piel;=C3=89ric
-org:Technical University of Delft;Software Engineering Research Group
-adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
-email;internet:E.A.B.Piel@tudelft.nl
-tel;work:+31 15 278 6338
-tel;cell:+31 6 2437 9135
-x-mozilla-html:FALSE
-url:http://pieleric.free.fr
-version:2.1
-end:vcard
-
-
---------------040607060101070202090902--
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
