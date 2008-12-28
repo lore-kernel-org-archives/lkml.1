@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbYL1T7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYL1UIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbYL1T7g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 14:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYL1T70
+	id S1752734AbYL1UIp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 15:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYL1UIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 14:59:26 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:56729 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbYL1T7Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 14:59:25 -0500
-Date: Sun, 28 Dec 2008 19:59:21 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: =?iso-8859-1?Q?=C9ric?= Piel <E.A.B.Piel@tudelft.nl>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least once per day
-Message-ID: <20081228195921.GB19176@srcf.ucam.org>
-References: <20081228152901.GB13565@srcf.ucam.org> <4957CDD2.9040903@tudelft.nl>
+	Sun, 28 Dec 2008 15:08:34 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43329 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750881AbYL1UIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 15:08:34 -0500
+Message-ID: <4957DCC3.3060505@redhat.com>
+Date: Sun, 28 Dec 2008 22:08:35 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4957CDD2.9040903@tudelft.nl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
+CC: x86@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Remove interrupt stack table usage from x86_64 kernel
+References: <1230238726-17506-1-git-send-email-avi@redhat.com> <87vdt5vfxc.fsf@basil.nowhere.org> <4956A0B1.1060908@redhat.com> <20081227224029.GB496@one.firstfloor.org> <49573FE7.9090802@redhat.com> <20081228131605.GC496@one.firstfloor.org> <49578896.8030703@redhat.com> <20081228190840.GD496@one.firstfloor.org> <4957CE78.6030706@redhat.com> <4957D14B.60805@redhat.com>
+In-Reply-To: <4957D14B.60805@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 28, 2008 at 08:04:50PM +0100, Éric Piel wrote:
-> Matthew Garrett schreef:
-> > Ensure relatime updates atime at least once per day
-> >     
-> > Allow atime to be updated once per day even with relatime. This lets
-> > utilities like tmpreaper (which delete files based on last access time)
-> > continue working.
-> :
-> Sorry, but I doubt it's a good idea. First, it breaks the simple
-> semantic of relatime (mtime > atime?), mixing it with a rather arbitrary
-> constant. Second, and most important, there are lots of workloads which
-> will be strongly affected by this modification. For instance, running
-> md5sum daily on the filesystem will cause a write for every file.
+Avi Kivity wrote:
+> Avi Kivity wrote:
+>> 1. Add per-cpu IDT
+>
+> Or we could have just two IDTs - one with IST and one without.  I 
+> clocked LIDT at 58 cycles (and we need two per heavyweight switch), so 
+> it's not that wonderful.
 
-Yes. And? I can't think of a single case where something could 
-absolutely depend on the current relatime semantics, so altering them to 
-more usefully match the atime semantics doesn't seem likely to cause any 
-trouble.
-
-> I think that to solve the problem for your use case, it's better to use
-> a different approach such as mounting separately /tmp (with the atime
-> option).
-
-The use case in this case is the significant body of currently installed 
-machines that don't have /tmp on a separate filesystem. In the very 
-common setup of tmpreaper being used, the current relatime semantics 
-will result in undesired data loss. I think the proposed alteration 
-makes the behaviour of relatime massively more useful without any 
-obvious drawbacks.
+This makes the whole thing unworthwhile.  The vmload/vmsave pair costs 
+only 200 cycles (I should have started with this), and 120 cycles on the 
+heavyweight path plus complexity are not worth 200 cycles on the 
+lightweight path.
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
