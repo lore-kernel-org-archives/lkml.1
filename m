@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYL1T0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbYL1TiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbYL1T0U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 14:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbYL1T0I
+	id S1755144AbYL1TiH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 14:38:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbYL1Thy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 14:26:08 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:22106 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754796AbYL1T0G (ORCPT
+	Sun, 28 Dec 2008 14:37:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:50006 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbYL1Thx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 14:26:06 -0500
-X-Greylist: delayed 1272 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Dec 2008 14:26:06 EST
-X-Spam-Flag: NO
-X-Spam-Score: -12.489
-Message-ID: <4957CDD2.9040903@tudelft.nl>
-Date: Sun, 28 Dec 2008 20:04:50 +0100
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <E.A.B.Piel@tudelft.nl>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+	Sun, 28 Dec 2008 14:37:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=tsv4QxRKoRxiOX6H0Nkiro+E7kpvjq1tvQ2Iu7ffqlEVzszxlW75ZXhsh1y9FmItfZ
+         6/pDewtfQ7rhg1I6UYMiqMn7TuZo/uBSo6elb7HR8DWLy87R/jDzSUsNNjVJys/DJu2w
+         2PV79u/L3d2+0Py7U4WVI6sS7ZgYh2E5WMzGI=
+Message-ID: <742b1fb30812281137r8774a2fid19498da1bb9071a@mail.gmail.com>
+Date: Sun, 28 Dec 2008 20:37:50 +0100
+From: "Patrizio Bassi" <patrizio.bassi@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [BUG] Kernel Panic with ath5k and 2.6.28
+Cc: "Kernel," <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
+In-Reply-To: <20081226163404.c619fa4f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least
- once per day
-References: <20081228152901.GB13565@srcf.ucam.org>
-In-Reply-To: <20081228152901.GB13565@srcf.ucam.org>
-Content-Type: multipart/mixed;
- boundary="------------050709070709060700000009"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <742b1fb30812251218k66a090f6je8c1e0f9d98dffc5@mail.gmail.com>
+	 <20081226163404.c619fa4f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050709070709060700000009
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+2008/12/27 Andrew Morton <akpm@linux-foundation.org>
+>
+> (cc linux-wireless)
+>
+> On Thu, 25 Dec 2008 21:18:42 +0100 "Patrizio Bassi" <patrizio.bassi@gmail.com> wrote:
+>
+> > Kernel Panic with ath5k and 2.6.28
+> >
+> > Hi all,
+> >
+> > Today i migrated to 2.6.28 and ath5k from 2.6.27 and madwifi.
+> > I have a trust speedshare turbo 108mb/s card
+> > Connection is ok, even with WPA.
+> >
+> > The problem i met is when i tried to bridge the wifi and the eth interface.
+> >
+> > I just rebuild the kernel with the bridge module enabled (builtin) and
+> > i got the panic
+> > in the picture (http://www.patriziobassi.it/downloads/ath5k_panic.jpg)
+>
+> That trace doesn't have symbolic information hence it isn't a lot of
+> use.  Please set CONFIG_KALLSYMS=y and generate a new one.
+>
+> > when i try to put the wifi interface up on startup with old script configuration
+> >
+> > The strange thing is that i'm not adding it to the bridge, i just have
+> > it in the kernel and i'm enabling the interface.
+> > Eth interface goes up flawlessy.
+> > Workaround is to boot the laptop without the card plugged it (pcmcia)
+> > or do not compile the bridge into the kernel.
+> >
+> > Attaching the working config. the broken just has the bridge module enabled.
+> >
+> > I'm ready to test all the patches/suggestions you may provide.
+> >
+> > Config is at http://www.patriziobassi.it/downloads/config-2.6.28
+> >
+>
 
-Matthew Garrett schreef:
-> Ensure relatime updates atime at least once per day
->     
-> Allow atime to be updated once per day even with relatime. This lets
-> utilities like tmpreaper (which delete files based on last access time)
-> continue working.
-:
-Sorry, but I doubt it's a good idea. First, it breaks the simple
-semantic of relatime (mtime > atime?), mixing it with a rather arbitrary
-constant. Second, and most important, there are lots of workloads which
-will be strongly affected by this modification. For instance, running
-md5sum daily on the filesystem will cause a write for every file.
+Hi,
 
-I think that to solve the problem for your use case, it's better to use
-a different approach such as mounting separately /tmp (with the atime
-option).
+i cannot reproduce anymore when i enabled symbol resolution....
+i can run the bridge flawlessy now.
 
-Eric
+I'll try more and report.
 
---------------050709070709060700000009
-Content-Type: text/x-vcard; charset=utf-8;
- name="E_A_B_Piel.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="E_A_B_Piel.vcf"
-
-begin:vcard
-fn;quoted-printable:=C3=89ric Piel
-n;quoted-printable:Piel;=C3=89ric
-org:Technical University of Delft;Software Engineering Research Group
-adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
-email;internet:E.A.B.Piel@tudelft.nl
-tel;work:+31 15 278 6338
-tel;cell:+31 6 2437 9135
-x-mozilla-html:FALSE
-url:http://pieleric.free.fr
-version:2.1
-end:vcard
+Regards
 
 
---------------050709070709060700000009--
+--
+Patrizio Bassi
+www.patriziobassi.it
+http://piazzadelpopolo.patriziobassi.it
