@@ -1,39 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbYL1TTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYL1T0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbYL1TTu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 14:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbYL1TTk
+	id S1755371AbYL1T0U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 14:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbYL1T0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 14:19:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50816 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754795AbYL1TTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 14:19:39 -0500
-Message-ID: <4957D14B.60805@redhat.com>
-Date: Sun, 28 Dec 2008 21:19:39 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Sun, 28 Dec 2008 14:26:08 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:22106 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754796AbYL1T0G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 14:26:06 -0500
+X-Greylist: delayed 1272 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Dec 2008 14:26:06 EST
+X-Spam-Flag: NO
+X-Spam-Score: -12.489
+Message-ID: <4957CDD2.9040903@tudelft.nl>
+Date: Sun, 28 Dec 2008 20:04:50 +0100
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <E.A.B.Piel@tudelft.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-CC: x86@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       KVM list <kvm@vger.kernel.org>
-Subject: Re: [PATCH 0/3] Remove interrupt stack table usage from x86_64 kernel
-References: <1230238726-17506-1-git-send-email-avi@redhat.com> <87vdt5vfxc.fsf@basil.nowhere.org> <4956A0B1.1060908@redhat.com> <20081227224029.GB496@one.firstfloor.org> <49573FE7.9090802@redhat.com> <20081228131605.GC496@one.firstfloor.org> <49578896.8030703@redhat.com> <20081228190840.GD496@one.firstfloor.org> <4957CE78.6030706@redhat.com>
-In-Reply-To: <4957CE78.6030706@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least
+ once per day
+References: <20081228152901.GB13565@srcf.ucam.org>
+In-Reply-To: <20081228152901.GB13565@srcf.ucam.org>
+Content-Type: multipart/mixed;
+ boundary="------------050709070709060700000009"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> 1. Add per-cpu IDT
+This is a multi-part message in MIME format.
+--------------050709070709060700000009
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Or we could have just two IDTs - one with IST and one without.  I 
-clocked LIDT at 58 cycles (and we need two per heavyweight switch), so 
-it's not that wonderful.
+Matthew Garrett schreef:
+> Ensure relatime updates atime at least once per day
+>     
+> Allow atime to be updated once per day even with relatime. This lets
+> utilities like tmpreaper (which delete files based on last access time)
+> continue working.
+:
+Sorry, but I doubt it's a good idea. First, it breaks the simple
+semantic of relatime (mtime > atime?), mixing it with a rather arbitrary
+constant. Second, and most important, there are lots of workloads which
+will be strongly affected by this modification. For instance, running
+md5sum daily on the filesystem will cause a write for every file.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+I think that to solve the problem for your use case, it's better to use
+a different approach such as mounting separately /tmp (with the atime
+option).
 
+Eric
+
+--------------050709070709060700000009
+Content-Type: text/x-vcard; charset=utf-8;
+ name="E_A_B_Piel.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="E_A_B_Piel.vcf"
+
+begin:vcard
+fn;quoted-printable:=C3=89ric Piel
+n;quoted-printable:Piel;=C3=89ric
+org:Technical University of Delft;Software Engineering Research Group
+adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
+email;internet:E.A.B.Piel@tudelft.nl
+tel;work:+31 15 278 6338
+tel;cell:+31 6 2437 9135
+x-mozilla-html:FALSE
+url:http://pieleric.free.fr
+version:2.1
+end:vcard
+
+
+--------------050709070709060700000009--
