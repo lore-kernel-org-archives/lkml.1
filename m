@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYL1VjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYL1VoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbYL1VjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 16:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYL1Vi5
+	id S1756577AbYL1VoA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 16:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYL1Vnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 16:38:57 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:58545 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756184AbYL1Vi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 16:38:56 -0500
-Date: Sun, 28 Dec 2008 21:38:52 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: =?iso-8859-1?Q?=C9ric?= Piel <E.A.B.Piel@tudelft.nl>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least once per day
-Message-ID: <20081228213852.GA20439@srcf.ucam.org>
-References: <20081228152901.GB13565@srcf.ucam.org> <4957CDD2.9040903@tudelft.nl> <20081228195921.GB19176@srcf.ucam.org> <4957EEA7.3050101@tudelft.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4957EEA7.3050101@tudelft.nl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sun, 28 Dec 2008 16:43:47 -0500
+Received: from gate.crashing.org ([63.228.1.57]:40984 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756476AbYL1Vnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 16:43:46 -0500
+Subject: Re: [PATCH 0 of 9] swiotlb: use phys_addr_t for pages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mingo@elte.hu,
+       jeremy@goop.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
+       beckyb@kernel.crashing.org
+In-Reply-To: <20081228073012.GA30012@infradead.org>
+References: <20081228014432L.fujita.tomonori@lab.ntt.co.jp>
+	 <20081227165622.GA19796@elte.hu>
+	 <20081228020312K.fujita.tomonori@lab.ntt.co.jp>
+	 <20081228142900W.fujita.tomonori@lab.ntt.co.jp>
+	 <20081228073012.GA30012@infradead.org>
+Content-Type: text/plain
+Date: Mon, 29 Dec 2008 08:37:44 +1100
+Message-Id: <1230500264.15389.3.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 28, 2008 at 10:24:55PM +0100, Éric Piel wrote:
+On Sun, 2008-12-28 at 02:30 -0500, Christoph Hellwig wrote:
+> Also the calgary iommu is very similar to those used on some pseries
+> machines, but I'd have to look at the code if the interface actually
+> still is similar, or if the PPC firmware adds too much abstractions
+> inbetween.
 
-> Of course, by construction, there is nothing relying on the current
-> relatime semantics. The problem is that whenever you are making relatime
-> closer to the atime behaviour, you are also getting closer to the
-> original drawbacks of atime (one read generates one write).
+Well, we have basically two backends... in the same file but they are
+really different and I may split them one of these days. One is
+"native", used in theory only on POWER4 (and internal bare-metal stuff)
+and one is purely via hypervisor calls.
 
-If your io is sufficiently limited that one write per file per day is a 
-significant problem, then I think there's a more serious underlying 
-problem.
+> Also the older IA64 altixens have a slightly updated version of the
+> iommu used on MIPS IP27 (and the same as on MIPS IP35 which we'll
+> hopefully support one day)
 
-> Actually, you are changing relatime from a boolean condition (maximum
-> one additional write per write) to a atime with a coarse grain (maximum
-> one additional write per day). Today you found a use case that needs a
-> precision of one day. Tomorrow, someone else will find a use case that
-> needs a precision of one hour. So maybe what is actually needed is a
-> third option, a "grainatime" option where you can change the precision
-> of the atime.
+BTW. On a tangent here, but I do prefer in the long run switching DMA
+ops mostly away from struct page * + offset and toward phys_addr_t (even
+if we won't change the SG variant).
 
-The answer to "The current two options are suboptimal in almost all 
-cases" is very rarely "Add a new option". If boot is touching too many 
-files, it should stop touching as many files. If you have crap disks, 
-get better disks. If your life is spent tuning fs parameters for 1% 
-performance gains, find a better job.
+The reason is sneaky :-) But there are cases, especially in embedded
+space, where it would be nice to be able to DMA to/from MMIO areas or in
+general areas not covered by struct pages. Currently doing so requires
+hacking all the way through the stack, it might be possible to do it
+more nicely with arch custom DMA ops provided we can pass around
+addresses an not struct page*.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Cheers, 
+Ben.
+
+
