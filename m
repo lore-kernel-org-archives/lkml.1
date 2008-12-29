@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbYL2NoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbYL2Nth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbYL2NoP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 08:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYL2Nn7
+	id S1754330AbYL2Nth (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 08:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYL2Nt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 08:43:59 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57816 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbYL2Nn7 (ORCPT
+	Mon, 29 Dec 2008 08:49:29 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:4747 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbYL2Nt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 08:43:59 -0500
-Subject: Re: [PATCH 3/3] kmemtrace: Use tracepoints instead of markers.
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <0d1bc24fa2c8d9df136cf833a36be2b72340bc8f.1230499486.git.eduard.munteanu@linux360.ro>
-References: <cover.1230499486.git.eduard.munteanu@linux360.ro>
-	 <01504e3763e57759f34045051e86cb35c17b43b5.1230499486.git.eduard.munteanu@linux360.ro>
-	 <4dcbaab558466e1cd0be66f3b66c7c5d2a0c532b.1230499486.git.eduard.munteanu@linux360.ro>
-	 <0d1bc24fa2c8d9df136cf833a36be2b72340bc8f.1230499486.git.eduard.munteanu@linux360.ro>
-Date: Mon, 29 Dec 2008 15:43:56 +0200
-Message-Id: <1230558236.6078.13.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 29 Dec 2008 08:49:28 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -12.489
+Message-ID: <4958D563.30805@tremplin-utc.net>
+Date: Mon, 29 Dec 2008 14:49:23 +0100
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: for.poige+linux@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: > There are actually more stable versions available but they
+ are not advertised
+References: <43d009740812290542p3e54b90avea7ccc27ec432656@mail.gmail.com>
+In-Reply-To: <43d009740812290542p3e54b90avea7ccc27ec432656@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eduard,
+Igor Podlesny schreef:
+> 2008/12/29 Éric Piel <eric.piel@tremplin-utc.net>:
+>> Igor Podlesny schreef:
+>>> Actually that's either a mistake or I don't know what you guys call "a
+>>> stable version".
+>> [removing all the part which needs bug report numbers]
+>>
+>> I agree with you that the website is not very clear for someone not
+>> accustomed to the Linux kernel development. There are actually more
+>> stable versions available but they are not advertised. Maybe there
+>> should be more trees displayed, something like this:
+>> The latest stable version of the Linux kernel is:       2.6.28
+>> The previous stable version of the Linux kernel is:     2.6.27.10
+>> The latest longtime version of the Linux kernel is:     2.6.16.62
+> 
+> 	Well, I'd call those versions stable if there were ongoing bugfixes
+> (if affected) backporting to it. Otherwise these are rather "outdated"
+> versions.
+That's _exactly_ what those trees are about: backporting bugfixes.
+Let's call them stable then ;-)
 
-On Mon, 2008-12-29 at 03:40 +0200, Eduard - Gabriel Munteanu wrote:
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 1fcb32b..74d405d 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -3624,8 +3624,9 @@ void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
->  {
->  	void *ret = __cache_alloc(cachep, flags, __builtin_return_address(0));
->  
-> -	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-> -			     obj_size(cachep), cachep->buffer_size, flags);
-> +	trace_kmemtrace_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-> +			      obj_size(cachep), cachep->buffer_size,
-> +			      flags, -1);
-
-One minor nit: I'd prefer we call these trace_kmem_cache_alloc(),
-trace_kmalloc(), and so on. The trace_kmemtrace prefix doesn't really
-make much sense to me.
-
+Eric
