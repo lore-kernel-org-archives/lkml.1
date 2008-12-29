@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYL2UiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYL2Uhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbYL2UiB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 15:38:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYL2Ufe
+	id S1754505AbYL2Uhp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 15:37:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYL2Ue6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 15:35:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39086 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753569AbYL2Ufb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 15:35:31 -0500
-Date: Mon, 29 Dec 2008 12:34:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/9] exofs: file and file_inode operations
-Message-Id: <20081229123443.36c022bc.akpm@linux-foundation.org>
-In-Reply-To: <4947C685.1000800@panasas.com>
-References: <4947BFAA.4030208@panasas.com>
-	<4947C685.1000800@panasas.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Dec 2008 15:34:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41415 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753690AbYL2Ue4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 15:34:56 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX19NY5JApQFNnzEG7R1ms4NRNNPNnLImJG2aWoq5wX
+	AMEbC0aXg5nU2Y
+Message-ID: <4959346E.7060600@gmx.de>
+Date: Mon, 29 Dec 2008 21:34:54 +0100
+From: Helge Deller <deller@gmx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: linux-parisc <linux-parisc@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       John David Anglin <dave@hiauly1.hia.nrc.ca>
+Subject: [PATCH] parisc: fix module loading failure of large kernel modules
+ (take 2)
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.75
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 17:17:25 +0200
-Boaz Harrosh <bharrosh@panasas.com> wrote:
+This is the second take of the patch series.
+Changes to previous version:
+- new CONFIG_HAVE_MODULE_SECTION_STUBS config option
+- put stub entries of a code section in front of the section
 
-> 
-> implementation of the file_operations and inode_operations for
-> regular data files.
-> 
-> Most file_operations are generic vfs implementations except:
-> - exofs_truncate will truncate the OSD object as well
-> - Generic file_fsync is not good for none_bd devices so open code it
-> - The default for .flush in Linux is todo nothing so call exofs_fsync
->   on the file.
-> 
-> ...
->
-> +int exofs_file_fsync(struct file *filp, struct dentry *dentry, int datasync)
-> +{
-> +	int ret1, ret2;
-> +	struct address_space *mapping = filp->f_mapping;
-> +
-> +	ret1 = filemap_write_and_wait(mapping);
-> +	ret2 = file_fsync(filp, dentry, datasync);
-> +
-> +	return ret1 ? : ret2;
+____________
+The parisc port (esp. the 32bit kernel) currently lacks the ability to
+load large kernel modules like xfs or ipv6. This is a long outstanding
+bug and has already been reported a few times, e.g.:
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=350482,
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=401439,
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=508489
 
-mutter.  That gccism always makes me fall over dazed and confused. 
-Maybe that's just me.
+The symptom is like this:
+# modprobe xfs
+FATAL: Error inserting xfs
+(/lib/modules/2.6.26-1-parisc/kernel/fs/xfs/xfs.ko): Invalid module
+format
 
-Did we really want to call file_fsync() if filemap_write_and_wait() failed?
+In dmesg:
+module xfs relocation of symbol xfs_btree_read_bufs is out of range
+(0x3ffefffe in 17 bits)
 
-> +}
->
-> ...
->
-> +struct file_operations exofs_file_operations = {
-> +struct inode_operations exofs_file_inode_operations = {
+The reason for the failure is, that the architecture only provides the
+R_PARISC_PCREL17F (for 32bit kernels) and R_PARISC_PCREL22F (for PA2.0
+and 64bit kernels) relocations, which sometimes can't reach the target
+address of the stub entry if the kernel module is too large. Currently
+parisc (like other architectures) creates one big PLT section for all
+stubs at the beginning of the init and core sections.
 
-These both could/should be made const.
+The following two patches changes the parisc module loader to put stubs
+for the code sections in front of each section, so that the distance to
+the stubs more easily fits into the available 17/22 bits.
 
-> +	.truncate	= exofs_truncate,
-> +	.setattr	= exofs_setattr,
-> +};
+The first patch touches the generic module loader and adds a call to the
+new module_additional_section_size() function to get_offset() if
+CONFIG_HAVE_MODULE_SECTION_STUBS is defined. On parisc this
+function returns the additional bytes for the stub area of a given section.
+
+The second patch implements the parisc-specific changes.
+
+Tested with 32- and 64bit parisc kernels.
+
+Helge
 
