@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYL2Vvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYL2V6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYL2Vvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYL2Vv0
+	id S1754015AbYL2V6X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbYL2V6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:51:26 -0500
-Received: from mga12.intel.com ([143.182.124.36]:51832 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754399AbYL2VvY (ORCPT
+	Mon, 29 Dec 2008 16:58:12 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:58670 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751259AbYL2V6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:51:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,297,1228118400"; 
-   d="scan'208";a="94870842"
-Message-ID: <4959466F.5030205@linux.intel.com>
-Date: Mon, 29 Dec 2008 22:51:43 +0100
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-References: <20081227155019.GA15493@elte.hu>
-In-Reply-To: <20081227155019.GA15493@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------090305060501090001080505"
+	Mon, 29 Dec 2008 16:58:11 -0500
+Subject: Re: [PATCH -next v2] cxgb3i: use same dependencies & selects as
+	CHELSIO_T3
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: scsi <linux-scsi@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       kxie@chelsio.com, akpm <akpm@linux-foundation.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081229132312.10934479.randy.dunlap@oracle.com>
+References: <20081230031621.60acd90b.sfr@canb.auug.org.au>
+	 <20081229130110.67d5271a.randy.dunlap@oracle.com>
+	 <20081229132312.10934479.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Mon, 29 Dec 2008 15:58:07 -0600
+Message-Id: <1230587887.3302.70.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090305060501090001080505
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Ingo Molnar wrote:
-
-> today i (belatedly ...) started looking into the status of the tip/x86/mce 
-> branch, and merged it into tip/master as a first step.
+On Mon, 2008-12-29 at 13:23 -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> firstly there's a small complication, it triggers this crash with the 
-> attached config:
-> 
+> Make the CXGB iSCSI driver (that selects the CXGB net driver) have the same
+> dependencies as the net driver, since kconfig doesn't do that automatically.
+> Also make it select INET_LRO & FW_LOADER like the net driver does.
 
-I tested the config on a couple of different systems. Unfortunately I
-wasn't able to reproduce the problem. It booted always fine even on multiple
-tries.
+I thought select of a symbol that selected something else propagated
+correctly (even if select of a symbol that depends on something else
+doesn't).   If this is untrue, we have several other Kconfig problems in
+the kernel.
 
-I had to adapt the configuration slightly to boot in my setup.
-
-The configuration also was not complete, i had
-to press return a few times (are you sure you sent me the correct file?)
-
-One merging issue I noted is that you put the perfctrs and mce self
-on the same vector. The attached patch fixes that.
-
--Andi
+James
 
 
-
-
---------------090305060501090001080505
-Content-Type: text/plain;
- name="mce-merge"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mce-merge"
-
-commit c736d118dcad93929dfc21cb72f33bc94c1b314a
-Author: Andi Kleen <ak@linux.intel.com>
-Date:   Sun Dec 28 14:16:43 2008 +0100
-
-    Avoid conflict of apic error and local perfmon vector
-    
-    Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
-diff --git a/arch/x86/include/asm/irq_vectors.h b/arch/x86/include/asm/irq_vectors.h
-index 73957a2..0fcb682 100644
---- a/arch/x86/include/asm/irq_vectors.h
-+++ b/arch/x86/include/asm/irq_vectors.h
-@@ -88,7 +88,7 @@
- /*
-  * Performance monitoring interrupt vector:
-  */
--#define LOCAL_PERF_VECTOR	0xee
-+#define LOCAL_PERF_VECTOR	0xed
- 
- /*
-  * First APIC vector available to drivers: (vectors 0x30-0xee) we
-
---------------090305060501090001080505--
