@@ -1,151 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYL2A3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbYL2A3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbYL2A3U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 19:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbYL2A27
+	id S1755619AbYL2A3d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 19:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYL2A3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 19:28:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47765 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752633AbYL2A26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 19:28:58 -0500
-Message-ID: <495819A7.1040908@kernel.org>
-Date: Sun, 28 Dec 2008 16:28:23 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Sun, 28 Dec 2008 19:29:14 -0500
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:22325 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755316AbYL2A3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 19:29:12 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AncDABipV0l5LB1fgWdsb2JhbACTcwEBFiKoPFiOYoZE
+X-IronPort-AV: E=Sophos;i="4.36,293,1228051800"; 
+   d="scan'208";a="283621748"
+Date: Mon, 29 Dec 2008 11:28:51 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Thomas Themel <thomas@themel.com>
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: XFS corruption on ARM
+Message-ID: <20081229002851.GD22525@disturbed>
+Mail-Followup-To: Thomas Themel <thomas@themel.com>,
+	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+References: <20081228123305.GE30805@themel.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
-References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com> <20081227173839.GA9793@elte.hu> <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain> <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu>
-In-Reply-To: <20081228233028.GA14697@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081228123305.GE30805@themel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+[CC'd the xfs list.]
+
+On Sun, Dec 28, 2008 at 01:33:05PM +0100, Thomas Themel wrote:
+> Hi,
 > 
->>   b2e2fe9: sparseirq: work around __weak alias bug
+> there was a thread[0] on this list in 2008-10 about XFS corrupting
+> rather quickly on recent ARM kernels, which seems to have petered out
+> without any apparent results. I'm still seeing the same problems with
+> 2.6.28, and I suspect that this qualifies as a kind of regression
+> (though ancient), since the devices I'm running this on (Buffalo
+> LinkStations) originally ship with a (vendor-modified) 2.6.16 kernel,
+> where XFS seems to be working.
 > 
-> here's that fix, standalone too. Kamalesh, i think this should finally fix 
-> the crash you are seeing.
+> Is this still on anyone's radar? I'm willing to test proposed fixes and
+> supply data[1], but lack any deep knowledge of either ARM or XFS internals.
 > 
-> 	Ingo
+> (Please Cc: me, I'm not on the list.)
 > 
-> ---------------->
->>From b2e2fe99628c4f944c3075258e536197b5a4f3f8 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon, 29 Dec 2008 00:16:45 +0100
-> Subject: [PATCH] sparseirq: work around __weak alias bug
+> [0] http://lkml.org/lkml/2008/10/1/382
+> [1] Though mine doesn't look any different from what was posted in [0]
+>     to the little-trained eye.
 > 
-> Impact: fix boot crash if the kernel is built with certain GCC versions
+> ciao,
+> -- 
+> [*Thomas  Themel*]
+> [extended contact] But let your communication be, Yea, yea; Nay, nay:
+> [info provided in] for whatsoever is more than these cometh of evil.
+> [*message header*]      - Matthew 5:37
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> GCC has a bug with __weak alias functions: if the functions are in
-> the same compilation unit as their call site, GCC can decide to
-> inline them - and thus rob the linker of the opportunity to override
-> the weak alias with the real thing.
-> 
-> This can lead to the boot crash reported by Kamalesh Babulal:
-> 
->  ACPI: Core revision 20080926
->  Setting APIC routing to flat
->  BUG: unable to handle kernel NULL pointer dereference at
->  0000000000000000
->  IP: [<ffffffff8021f9a8>] add_pin_to_irq_cpu+0x14/0x74
->  PGD 0
->  Oops: 0000 [#1] SMP
->  [...]
-> 
-> So move the arch_init_chip_data() function from handle.c to manage.c.
 
-that is not enough.
-
-need
-
-
-[PATCH] sparseirq: mvoe two weak functions to chip.c
-
-Impact: fix panic
-
-some gcc compiler will remove the weak global blank function
-Linus noted that we could move those function to other unit to workaround it.
-
-try to workaround it:
-1. one time path: add printk
-2. multi time path: move to chip.c
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- init/main.c         |    9 +++------
- kernel/irq/chip.c   |   10 ++++++++++
- kernel/irq/handle.c |    5 -----
- 3 files changed, 13 insertions(+), 11 deletions(-)
-
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -542,14 +542,11 @@ void __init __weak thread_info_cache_ini
- {
- }
- 
--int __init __weak arch_early_irq_init(void)
--{
--	return 0;
--}
--
- int __init __weak early_irq_init(void)
- {
--	return arch_early_irq_init();
-+	printk(KERN_DEBUG "calling __weak early_irq_init()\n");
-+
-+	return 0;
- }
- 
- asmlinkage void __init start_kernel(void)
-Index: linux-2.6/kernel/irq/chip.c
-===================================================================
---- linux-2.6.orig/kernel/irq/chip.c
-+++ linux-2.6/kernel/irq/chip.c
-@@ -18,6 +18,16 @@
- 
- #include "internals.h"
- 
-+int __init __weak arch_early_irq_init(void)
-+{
-+	return 0;
-+}
-+
-+int __weak arch_init_chip_data(struct irq_desc *desc, int cpu)
-+{
-+	return 0;
-+}
-+
- /**
-  *	dynamic_irq_init - initialize a dynamically allocated irq
-  *	@irq:	irq number to initialize
-Index: linux-2.6/kernel/irq/handle.c
-===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -86,11 +86,6 @@ void init_kstat_irqs(struct irq_desc *de
- 		desc->kstat_irqs = (unsigned int *)ptr;
- }
- 
--int __weak arch_init_chip_data(struct irq_desc *desc, int cpu)
--{
--	return 0;
--}
--
- static void init_one_irq_desc(int irq, struct irq_desc *desc, int cpu)
- {
- 	memcpy(desc, &irq_desc_init, sizeof(struct irq_desc));
+-- 
+Dave Chinner
+david@fromorbit.com
