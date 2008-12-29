@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYL2LKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbYL2LLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbYL2LKZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 06:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYL2LKN
+	id S1754749AbYL2LLU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 06:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYL2LLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 06:10:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44270 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014AbYL2LKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 06:10:11 -0500
-Date: Mon, 29 Dec 2008 12:09:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
-Message-ID: <20081229110954.GB5065@elte.hu>
-References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com> <20081227173839.GA9793@elte.hu> <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain> <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu> <86802c440812281601j57fe5ecdif4b63b72280c65cd@mail.gmail.com> <2f11576a0812290039t11ca9b76sf305e82003ac607@mail.gmail.com>
+	Mon, 29 Dec 2008 06:11:12 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:29356 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753488AbYL2LLK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 06:11:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=EThmaZcr+lX7ziHu247ilX94QBMA+psRknW9FYOPUJdhcb8whoAUj4J7Ogf/JdsQap
+         3dNjHpl563EAQsOAe3BMMqme/fM9tnbr18cY2RFSrm45K3UjQgzTUtETNUWHci/tb9Hk
+         kCDqCzU38XLEVr/Ee4ko/E16ZLw/q/VMF4Klw=
+Message-ID: <aecf5e530812290311l62e0c77bk931f0c86a9fb64e6@mail.gmail.com>
+Date: Mon, 29 Dec 2008 16:41:09 +0530
+From: "sasa sasa" <sasak.1983@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: TTY problem on linux-2.6.28-rc7
+In-Reply-To: <aecf5e530812212011n23627e94r52453aca2c9b6089@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <2f11576a0812290039t11ca9b76sf305e82003ac607@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <aecf5e530812212011n23627e94r52453aca2c9b6089@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Further debugging this issue I found that it is not an issue with tty.
+But there is error in opening shared library libc.so.6 which is used
+to open console.
 
-> >>  kernel/irq/handle.c |    5 -----
-> >>  kernel/irq/manage.c |    9 +++++++++
-> >>  2 files changed, 9 insertions(+), 5 deletions(-)
-> >>
-> >
-> > that is not enough.
-> >
-> > please check
-> >
-> > need one printk, and move two functions into chip.c
-> 
-> I'm sad ;-)
-> 
-> Why you use printk? if develper use non-x86 machine, they will see 
-> perfectly worthless debug messages...
+Regards
+Sasa
 
-yes. If you can reproduce the problem then please check the version in 
-tip/master:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-it doesnt include any needless printks.
-
-	Ingo
+On Mon, Dec 22, 2008 at 9:41 AM, sasa sasa <sasak.1983@gmail.com> wrote:
+> Hi All,
+>
+> I have recently moved to linux-2.6.28-rc7 but I am facing problem in
+> getting console on arm platform when booting through initrd.
+> On linux-2.6.27 system is working fine.
+> The problem is that it got hang after the init process started and
+> when control goes
+> to user space. The request for tty_open and tty_close keeps on coming.
+> Because of that the print stops coming on uart after init process.
+>
+> Does anybody had any idea regarding this?
+>
+> Regards
+> Sandeep
+>
