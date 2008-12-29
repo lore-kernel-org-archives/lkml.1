@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbYL2VCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYL2VIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbYL2VCc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:02:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYL2VCV
+	id S1753152AbYL2VIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYL2VID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:02:21 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:44549 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752940AbYL2VCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:02:19 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH] sh: maple: add support for the Maple mouse on the SEGA Dreamcast
-Date: Mon, 29 Dec 2008 16:02:16 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-sh" <linux-sh@vger.kernel.org>,
-       "linux-input" <linux-input@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
-References: <1230578246.6496.25.camel@localhost.localdomain>
-In-Reply-To: <1230578246.6496.25.camel@localhost.localdomain>
+	Mon, 29 Dec 2008 16:08:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36767 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752356AbYL2VIA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 16:08:00 -0500
+Date: Mon, 29 Dec 2008 13:07:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Roland Dreier <rdreier@cisco.com>
+cc: Aleksey Senin <alekseys@voltaire.com>,
+       "general@lists.openfabrics.org" <general@lists.openfabrics.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: origin tree build failure
+In-Reply-To: <adaljtyu45d.fsf@cisco.com>
+Message-ID: <alpine.LFD.2.00.0812291304471.3082@localhost.localdomain>
+References: <20081229114321.4b6baea5.sfr@canb.auug.org.au> <ada4p0nve4r.fsf@cisco.com> <1230544737.4261.33.camel@alst60> <adaljtyu45d.fsf@cisco.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1825196.4GJIt0R7Bs";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812291602.18572.vapier@gentoo.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1825196.4GJIt0R7Bs
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Monday 29 December 2008 14:17:25 Adrian McMenamin wrote:
-> +static int __devinit probe_maple_mouse(struct device *dev)
-> +static int remove_maple_mouse(struct device *dev)
 
-i thought you were going the rout of not labeling any of the probe/remove=20
-functions ... but if you label the prob with __devinit, then the remove sho=
-uld=20
-be __devexit.  i.e. whichever way you go, the two should be consistent.
-=2Dmike
+On Mon, 29 Dec 2008, Roland Dreier wrote:
+>
+> Something like the following maybe?  (This turns off the RDMA CM if
+> INFINIBAND=y and IPV6=m -- another possibility would be to just turn off
+> RDMA CM IPv6 support in the case that IB is build-in but IPv6 is
+> modular, but that seems like a worse idea overall)
+> 
+> diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
+> index a5dc78a..538a0ba 100644
+> --- a/drivers/infiniband/Kconfig
+> +++ b/drivers/infiniband/Kconfig
+> @@ -36,7 +36,7 @@ config INFINIBAND_USER_MEM
+>  
+>  config INFINIBAND_ADDR_TRANS
+>  	bool
+> -	depends on INET
+> +	depends on INET && !(INFINIBAND = y && IPV6 = m)
+>  	default y
 
---nextPart1825196.4GJIt0R7Bs
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I'd suggest
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+  config IF_IPV6
+	bool
+	depends on INET
+	depends on !(INFINIBAND = y && IPV6 = m)
+	default y
 
-iQIcBAABAgAGBQJJWTraAAoJEEFjO5/oN/WBrk4QAJReN/EhBersFeV+BeCQArrQ
-mmHqZeRCDQGZSHVUNJ7nypZmvL3XN6nLRt1kr6XaW/+tK3i+8Aj5GyA4kD7dV1XM
-c76tCR3XgdL8XQjey2jGhiEtsiG7Ak2wqZynyBV7rYSNInTDDnNPHHbs8QG0SOCD
-4GTbzxYL4OZ9MWekEy/5SAOP6x6vw82WODBpF0pM8a08EGiPewBfjUtcL9QqfKs2
-+1fMFhSxXvV/Ut9ZS69jOpdlEGEAoY4QbtIYYE+P6KGJKP5tXRq0jmx5qZ5Z63am
-iblnEGr2BEXOqvhuIry2X3BHLndV8QY6kjCP9e0x52b8aY3APqMZY4rTDtAzXVLC
-zWuHZrN6UR75qlj8kgc5qWJOkmFGHVIkSvg8gsMS8dOKQ8ZvVdmBDhpe6PZwvBYJ
-G4xFqbWCTZTesHpEhU5VKz7FSuteueDHtyf73Useb6gdmbS/iNd6lde4T95NkwAT
-EHuMlqyoxldlcK12c9RVVNA/V7Oc8ZmDV8xqzZFszTqT6miro553W66R1X6pEx96
-89dIwvJ63XdVEiA/dMr6J+M1mPI9aKUmvqGtzGbSj+ZGkZsUXRzPy9iO5kDG5sS9
-3i+UX5/kQArt+AOfbCbQP1BUJ8TKoc0ZozifnQSRnid7lwIcnVKOfyMzvguStM7v
-L+N9WZWLSJ6AuJKgshUa
-=XlRQ
------END PGP SIGNATURE-----
+and then you can use it not only for the above:
 
---nextPart1825196.4GJIt0R7Bs--
+  config INFINIBAND_ADDR_TRANS
+	bool
+	depends on IF_IPV6
+	default y
+
+but also use it in the source code as a more readable version:
+
+> diff --git a/drivers/infiniband/core/addr.c b/drivers/infiniband/core/addr.c
+> index d98b05b..ec7abb5 100644
+> --- a/drivers/infiniband/core/addr.c> +++ b/drivers/infiniband/core/addr.c
+> @@ -128,6 +128,7 @@ int rdma_translate_ip(struct sockaddr *addr, struct rdma_dev_addr *dev_addr)
+>  		ret = rdma_copy_addr(dev_addr, dev, NULL);
+>  		dev_put(dev);
+>  		break;
+> +#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+
+ie use
+
+	#ifdef CONFIG_IF_IPV6
+
+here instead.
+
+		Linus
