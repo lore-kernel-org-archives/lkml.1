@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYL2VgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYL2Vgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbYL2VgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYL2VgO
+	id S1754169AbYL2Vgs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYL2Vgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:36:14 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:54665 "EHLO e1.ny.us.ibm.com"
+	Mon, 29 Dec 2008 16:36:39 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:55294 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbYL2VgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:36:13 -0500
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Chandru <chandru@in.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <18772.11376.339295.42622@cargo.ozlabs.ibm.com>
-References: <200812241325.49404.chandru@in.ibm.com>
-	 <20081224233536.b067c9da.akpm@linux-foundation.org>
-	 <18772.11376.339295.42622@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 29 Dec 2008 13:36:07 -0800
-Message-Id: <1230586567.19452.100.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1752207AbYL2Vgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 16:36:37 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Subject: Re: [PATCH] sh: maple: add support for the Maple mouse on the SEGA Dreamcast
+Date: Mon, 29 Dec 2008 16:36:34 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "linux-input" <linux-input@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
+References: <1230578246.6496.25.camel@localhost.localdomain> <200812291602.18572.vapier@gentoo.org> <1230586215.6496.28.camel@localhost.localdomain>
+In-Reply-To: <1230586215.6496.28.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart4704389.aT7T707mOG";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200812291636.36303.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-26 at 11:59 +1100, Paul Mackerras wrote:
-> 
-> > diff -puN arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting arch/powerpc/mm/numa.c
-> > --- a/arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting
-> > +++ a/arch/powerpc/mm/numa.c
-> > @@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
-> >                                 start_pfn, end_pfn);
-> >  
-> >               free_bootmem_with_active_regions(nid, end_pfn);
-> > +     }
-> > +
-> > +     for_each_online_node(nid) {
-> >               /*
-> > -              * Be very careful about moving this around.  Future
-> > -              * calls to careful_allocation() depend on this getting
-> > -              * done correctly.
-> > +              * Be very careful about moving this around.
-> >                */
-> >               mark_reserved_regions_for_nid(nid);
-> >               sparse_memory_present_with_active_regions(nid);
+--nextPart4704389.aT7T707mOG
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I think this reintroduces one of the bugs that I squashed.  You *have*
-to call mark_reserved_regions_for_nid() right after you do
-free_bootmem_with_active_regions().  Otherwise, someone else can
-bootmem_alloc() a reserved region from that node.
+On Monday 29 December 2008 16:30:14 Adrian McMenamin wrote:
+> +static int __devexit remove_maple_mouse(struct device *dev)
+> +static struct maple_driver dc_mouse_driver =3D {
+> +	.drv =3D {
+> +		.remove =3D remove_maple_mouse,
 
-Perhaps I need to make that comment a bit more forceful. :)
+does that really build warning free ?  usually you need __devexit_p() in th=
+e=20
+=2Eremove assignment ...
+=2Dmike
 
-/*
- * Don't break this loop out.  Period.  Never.  Ever.
- * No, seriously.  Don't do it.  I mean it.  Really!
- */
+--nextPart4704389.aT7T707mOG
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
--- Dave
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
+iQIcBAABAgAGBQJJWULkAAoJEEFjO5/oN/WBiEMP/AiKIeT3N/TrTcJPgYeUfBex
+qVLMOq+4N+tuVlgV9RdqX//1feVWM2EKJ9gVAx8+zwOLkuZgPmAKSqVPfYxni04q
+2jBFIcvzMMFpfqo7GbKv9c/kRJFNg2Ec8BTiIqYsHtlGPhQvSCLxkMib8up8GHX9
+Acerdx3C/rTnWdz5PofgfrDGgMtE8qmYnPurJJCoDCBWMaOQw3tSRaAZhvQ3DPdG
+QxoPL7xPdBH+Mt3QcAeN1+/LduiM8l8tXq+Om/awpo/8VcWUrulZaMUpLb0094M5
+H1alPqGfghw9oE9RGPfnI/VEkz+70vcIEJ7Z5eQjEdDMN7mcSW4cPo+IpnqpVgKy
+rxDG18SPeOk6hgOqi3nQU1LV6OVWa2leOHpct2w9T2ODG9Pw/ipT7p1USBs9vBui
+yf/kXl2MUbsRdPqcwWDwo7CHiRJhlf5WvLkJ+QyEourtgMRdCZDn1OJAoe0U6b+v
+0A7fq5sZaqRDFZF8mto6MRhLmTu4gpRdv+TPk4xt8FuDJYEcXVMDT3kk0/WU92mF
+VIugXPYdGlC+T7XV2nUc8GMYxIixX0SuSYw0EmJT4qg9L18CyGsnzuYTegvknhk7
+VTbu/rT4dhQ9hsIdSWMeMdm+AVvyAAohzvblPDRnAVovBP95cq7C18YeyrIzkjDP
+ecLO9Kxi25iTvsOZxZzw
+=Hcx1
+-----END PGP SIGNATURE-----
+
+--nextPart4704389.aT7T707mOG--
