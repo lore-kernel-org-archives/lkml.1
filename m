@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYL2WNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbYL2WS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbYL2WNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 17:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYL2WNJ
+	id S1754035AbYL2WS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 17:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYL2WSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 17:13:09 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:52445 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753234AbYL2WNG (ORCPT
+	Mon, 29 Dec 2008 17:18:47 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:7241 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752207AbYL2WSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 17:13:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aDz//kf1RmozjgWXpMKSNi26Y2GrrIWw6ldPMizehjLTpvZ1w6/cRSA3VAUJBwFysz
-         4JtptyBWoETw4GnF9TUvKe/k11Qs9YncGKqQzzOW7TFZMPX/HjwwFk3cJwNXy8BrItyu
-         H0SjbEsVBYO2bqIBH1WRcg962LnjFU7a0kucU=
-Date: Mon, 29 Dec 2008 23:13:02 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
-	the unified tracing API
-Message-ID: <20081229221301.GD5829@nowhere>
-References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081229220937.GC5829@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 29 Dec 2008 17:18:45 -0500
+X-Trace: 124242767/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.224/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.224
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.2 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtUEACvbWElQLLDg/2dsb2JhbACBbLwAWJAIhkQ
+X-IronPort-AV: E=Sophos;i="4.36,297,1228089600"; 
+   d="scan'208";a="124242767"
+Subject: Re: [PATCH] sh: maple: add support for the Maple mouse on the SEGA
+ Dreamcast
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mike Frysinger <vapier@gentoo.org>, LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       linux-input <linux-input@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <20081229214634.GA27064@uranus.ravnborg.org>
+References: <1230578246.6496.25.camel@localhost.localdomain>
+	 <200812291602.18572.vapier@gentoo.org>
+	 <1230586215.6496.28.camel@localhost.localdomain>
+	 <200812291636.36303.vapier@gentoo.org>
+	 <1230586714.6496.29.camel@localhost.localdomain>
+	 <20081229214634.GA27064@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Mon, 29 Dec 2008 22:17:53 +0000
+Message-Id: <1230589073.6496.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 11:09:37PM +0100, Frederic Weisbecker wrote:
-> Pekka, note that I would be pleased to add statistical tracing on
-> this tracer, but I would need a hashtable, or an array, or a list, or whatever
-> iterable to insert the data into the stat tracing api.
-> 
-> But I don't know your projects about this... whether you wanted to use a section
-> or something else...
+On Mon, 2008-12-29 at 22:46 +0100, Sam Ravnborg wrote:
 
-Hmm, forgot to cc Ingo...
+> Look for an increase in section mismatch warning or try to
+> build with:
+> make CONFIG_DEBUG_SECTION_MISMATCH=y
+> 
+
+Just rebuilt the whole thing from scratch with that turned on and no
+extra warnings at all.
 
