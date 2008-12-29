@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYL2Ui2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbYL2UjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbYL2Ui2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 15:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYL2Ufg
+	id S1752987AbYL2UjF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 15:39:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYL2Ugv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 15:35:36 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:20961 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753836AbYL2Ufb (ORCPT
+	Mon, 29 Dec 2008 15:36:51 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54112 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbYL2Ugu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 15:35:31 -0500
-Date: Mon, 29 Dec 2008 12:35:17 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, scsi <linux-scsi@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       kxie@chelsio.com
-Subject: Re: linux-next: Tree for December 29 (cxgb3i)
-Message-Id: <20081229123517.23fd6169.randy.dunlap@oracle.com>
-In-Reply-To: <20081230031621.60acd90b.sfr@canb.auug.org.au>
-References: <20081230031621.60acd90b.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Dec 2008 15:36:50 -0500
+Message-ID: <495934D9.2070908@zytor.com>
+Date: Mon, 29 Dec 2008 12:36:41 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Mike Frysinger <vapier@gentoo.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: auto-convert size types in userspace headers
+References: <49567EB5.5030409@zytor.com> <1230549153-31754-1-git-send-email-vapier@gentoo.org> <20081229140356.GB7327@uranus.ravnborg.org> <200812291534.49577.vapier@gentoo.org>
+In-Reply-To: <200812291534.49577.vapier@gentoo.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.49593488.0220:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Dec 2008 03:16:21 +1100 Stephen Rothwell wrote:
-
-> Hi all,
+Mike Frysinger wrote:
+> On Monday 29 December 2008 09:03:56 Sam Ravnborg wrote:
+>> On Mon, Dec 29, 2008 at 06:12:33AM -0500, Mike Frysinger wrote:
+>>> Rather than constantly fixing up size type breakage in userspace headers,
+>>> auto convert the types u_intXX_t, uintXX_t, intXX_t, uXX, and sXX to the
+>>> appropriate __uXX or __sXX type.
+>> Is this the right thing to do?
+>> uintXX_t belongs to a namespace that the kernel should not use.
 > 
-> Changes since 20081219:
-> 
-> Undropped tree:
-> 	scci
-> 	mtd
-> 
-> Dropped trees (temporarily):
-> 	nfs (akpm request due to 2.6.30 features)
-> 	kvm (build problem)
-> 	rr (build poblem)
-> 	semaphore-removal (due to unfixed conflicts against Linus' tree)
-> 	cpu_alloc (build problem)
-> 	audit (difficult conflicts)
-> 
-> Linus' tree had three build failures requiring patches and one requiring
-> a revert.
+> some headers are shared between projects and so use the uintXX_t form, so i'm 
+> not sure outright banning it is a nice answer for them
 
+Arguably, the right answer is the opposite... the Linux u* and s* forms
+feel much more like nonstandard legacy code to me.  They have the
+advantage of brevity, however.
 
-linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:499: error: 'struct sk_buff' has no member named 'sp'
-linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:512: error: 'struct sk_buff' has no member named 'sp'
-linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:532: error: 'struct sk_buff' has no member named 'sp'
-linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:533: error: 'struct sk_buff' has no member named 'sp'
+	-hpa
 
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
----
-~Randy
