@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbYL2Pk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbYL2Pot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752237AbYL2Pk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 10:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYL2PkN
+	id S1752406AbYL2Pot (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 10:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYL2Pok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 10:40:13 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39760 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYL2PkL (ORCPT
+	Mon, 29 Dec 2008 10:44:40 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:37379 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751234AbYL2Poj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 10:40:11 -0500
-Date: Mon, 29 Dec 2008 10:37:57 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] clean up of netif_rx_reschedule() changes in drivers
-Message-ID: <20081229153757.GA2857@localhost.localdomain>
-References: <20081229110041.0eca977a.sfr@canb.auug.org.au> <20081229102509.GA11111@linux.vnet.ibm.com> <20081229214144.43be8c1d.sfr@canb.auug.org.au>
-MIME-Version: 1.0
+	Mon, 29 Dec 2008 10:44:39 -0500
+Date: Mon, 29 Dec 2008 16:46:10 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
+       Moritz Muehlenhoff <jmm@inutil.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] parisc: fix module loading failure of large modules
+Message-ID: <20081229154610.GA7871@uranus.ravnborg.org>
+References: <4958D99E.4010201@gmx.de> <4958DA54.8060003@gmx.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081229214144.43be8c1d.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+In-Reply-To: <4958DA54.8060003@gmx.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 09:41:44PM +1100, Stephen Rothwell wrote:
-> Hi Kamalesh,
+On Mon, Dec 29, 2008 at 03:10:28PM +0100, Helge Deller wrote:
+> [PATCH 2/2] parisc: fix module loading failure of large modules
 > 
-> On Mon, 29 Dec 2008 15:55:29 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> >
-> > I hit similar build failure due to the change in the netif_rx_reschedule()
-> > 
-> > drivers/net/ehea/ehea_main.c: In function 'ehea_poll':
-> > drivers/net/ehea/ehea_main.c:844: warning: passing argument 1 of 'netif_rx_reschedule' from incompatible pointer type
-> > drivers/net/ehea/ehea_main.c:844: error: too many arguments to function 'netif_rx_reschedule'
-> > make[3]: *** [drivers/net/ehea/ehea_main.o] Error 1
+> On 32bit (and sometimes 64bit) and with big kernel modules like xfs or
+> ipv6 the relocation types R_PARISC_PCREL17F and R_PARISC_PCREL22F may
+> fail to reach their PLT stub if we only create one big stub array for
+> all sections at the beginning of the core or init section.
 > 
-> Linus already took a patch for ibmveth and ehea.
+> With this patch we now instead append individual PLT stub entries
+> directly at the end of the code sections where the stubs are actually
+> called. This reduces the distance between the PCREL location and the
+> stub entry so that the relocations can be fulfilled.
 > 
-> > greping through the sources for the changes missed out, we have
-> > 
-> 	.
-> 	.
-> > 
-> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> > --
-> >  drivers/net/arm/ep93xx_eth.c |    2 +-
-> >  drivers/net/arm/ixp4xx_eth.c |    2 +-
-> >  drivers/net/wan/ixp4xx_hss.c |    2 +-
-> >  3 files changed, 3 insertions(+), 3 deletions(-)
+> The kernel module loader will call module_additional_section_size() and
+> request us to return the amount of additional memory we need for the
+> stubs of each section. The final section size of the code segment will
+> then be increased by that value when the kernel layouts the final
+> addresses of all sections.
 > 
-> Thanks for the patch, I assume that Dave or Linus will take care of that.
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
+> Tested with 32- and 64bit kernels.
+> 
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> 
 
-Thanks guys, not sure how my patch missed that.  I did an allmodconfig build
-that passed successfully.  Thanks!
+> diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+> index 644a70b..cbb622f 100644
+> --- a/arch/parisc/Kconfig
+> +++ b/arch/parisc/Kconfig
+> @@ -34,6 +34,9 @@ config RWSEM_GENERIC_SPINLOCK
+>  config RWSEM_XCHGADD_ALGORITHM
+>  	bool
+>  
+> +config ARCH_WANTS_STUBS_BEHIND_SECTIONS
+> +	def_bool y
+> +
 
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+The recommended practive today is:
 
+In some relevant Kconfig file add:
+
+config HAVE_MODULE_SECTION_STUBS
+	bool
+
+And then in arch/$ARCH/Kconfig do:
+
+config PARISC
+	...
+	select HAVE_MODULE_SECTION_STUBS
+	...
+
+The select are supposed to be sorted alphabetically
+but people seems to use a different alphabet for
+each arch.
+
+	Sam
