@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYL2Ip1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYL2JFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbYL2Ip1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 03:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYL2IpS
+	id S1753869AbYL2JFD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 04:05:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL2JEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 03:45:18 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39484 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbYL2IpR (ORCPT
+	Mon, 29 Dec 2008 04:04:45 -0500
+Received: from fwil.voltaire.com ([193.47.165.2]:35246 "EHLO exil.voltaire.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752514AbYL2JEo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 03:45:17 -0500
-Subject: Re: [PATCH] x86: reboot.c declare port_cf9_safe before they get
-	used
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081227103141.GF14639@elte.hu>
-References: <1230049288.14358.4.camel@jaswinder.satnam>
-	 <20081227103141.GF14639@elte.hu>
-Content-Type: text/plain; charset=utf8
-Date: Mon, 29 Dec 2008 14:13:18 +0530
-Message-Id: <1230540199.3715.11.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 29 Dec 2008 04:04:44 -0500
+X-Greylist: delayed 921 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Dec 2008 04:04:43 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Mailer: Evolution 2.24.1.1 
+Content-class: urn:content-classes:message
+Subject: Re: linux-next: origin tree build failure
+Date: Mon, 29 Dec 2008 10:48:19 +0200
+Message-ID: <1230540499.4261.24.camel@alst60>
+In-Reply-To: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: linux-next: origin tree build failure
+Thread-Index: Aclpkk5w5XrthW/RQya3hkKlAjGvpw==
+References: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
+From: "Aleksey Senin" <alekseys@voltaire.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: "Roland Dreier" <rdreier@cisco.com>, <general@lists.openfabrics.org>,
+       <linux-next@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
+       "Linus" <torvalds@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+I'm going to change it by adding 
 
-On Sat, 2008-12-27 at 11:31 +0100, Ingo Molnar wrote:
+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
 
-> btw., this is ugly now:
+exactly as it solved in ipoib module and as Roland says.
+
+On Mon, 2008-12-29 at 11:43 +1100, Stephen Rothwell wrote:
+> Hi Roland,
 > 
-> > --- a/arch/x86/kernel/reboot.c
-> > +++ b/arch/x86/kernel/reboot.c
-> > @@ -22,6 +22,7 @@
-> >  #endif
-> >  
-> >  #include <mach_ipi.h>
-> > +#include "../pci/pci.h"
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 > 
-> could you send another patch that moves arch/x86/pci/pci.h to 
-> arch/x86/include/asm/pci_x86.h (and update all the pci.h include sites)?
+> ERROR: ".ipv6_chk_addr" [drivers/infiniband/core/ib_addr.ko] undefined!
+> ERROR: ".ip6_route_output" [drivers/infiniband/core/ib_addr.ko] undefined!
 > 
-
-1. I send ﻿[PATCH] move arch/x86/pci/pci.h to
-arch/x86/include/asm/pci_x86.h but I forget to write x86: before this
-patch.
-
-Please let me know which one is better option :
-﻿[PATCH]x86: move arch/x86/pci/pci.h to arch/x86/include/asm/pci_x86.h
-OR
-﻿﻿[PATCH -tip]x86: move arch/x86/pci/pci.h to
-arch/x86/include/asm/pci_x86.h
-OR some other name.
-
-2. I also did not write any reason of patch this may lead confusion to
-other developers, can you please provide some good reasons for this
-patch.
-
-3. I also did some cleanups in ﻿arch/x86/include/asm/pci_x86.h raised
-by  ./scripts/checkpatch.pl, is this OK.
-
-4. Can I resend above patch by solving above issues.
-
-Thank you,
-
-	JSR
-
-
+> Caused by commit 38617c64bf9a10bf20e41d95b69bb81e8560fe9d ("RDMA/addr:
+> Add support for translating IPv6 addresses").  This requires a dependency
+> on IPV6.
+> 
+> I have reverted that commit for today (which fixes the build, but may not
+> be the correct solution).
