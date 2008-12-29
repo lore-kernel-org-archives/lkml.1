@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbYL2Pot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbYL2Pqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbYL2Pot (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 10:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYL2Pok
+	id S1752036AbYL2Pqn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 10:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYL2Pqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 10:44:40 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:37379 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751234AbYL2Poj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 10:44:39 -0500
-Date: Mon, 29 Dec 2008 16:46:10 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
-       Moritz Muehlenhoff <jmm@inutil.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] parisc: fix module loading failure of large modules
-Message-ID: <20081229154610.GA7871@uranus.ravnborg.org>
-References: <4958D99E.4010201@gmx.de> <4958DA54.8060003@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4958DA54.8060003@gmx.de>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 29 Dec 2008 10:46:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:35660 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751450AbYL2Pqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 10:46:35 -0500
+Date: Mon, 29 Dec 2008 16:46:27 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Roth <mroth@nessie.de>
+cc: Andrew Drake <zappacky.lists@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Funny problem with 2.6.28: Kernel stalls
+In-Reply-To: <4958B9B7.8060505@nessie.de>
+Message-ID: <alpine.LFD.2.00.0812291636060.3723@localhost.localdomain>
+References: <4953A35C.8090005@nessie.de> <495411FD.60409@gmail.com> <4958B9B7.8060505@nessie.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 03:10:28PM +0100, Helge Deller wrote:
-> [PATCH 2/2] parisc: fix module loading failure of large modules
+On Mon, 29 Dec 2008, Michael Roth wrote:
+> Andrew Drake schrieb:
+> > Michael Roth wrote:
+> >> The funny part: If I hit any key (on the keyboard connected by USB) the
+> >> kernel resumes to normal work until the next stall.
+> >>
+> > 
+> > This sounds a little bit like my old problem... try kernel option nolapic_timer.
+> > It worked for me, perhaps it can do the same for you.
 > 
-> On 32bit (and sometimes 64bit) and with big kernel modules like xfs or
-> ipv6 the relocation types R_PARISC_PCREL17F and R_PARISC_PCREL22F may
-> fail to reach their PLT stub if we only create one big stub array for
-> all sections at the beginning of the core or init section.
-> 
-> With this patch we now instead append individual PLT stub entries
-> directly at the end of the code sections where the stubs are actually
-> called. This reduces the distance between the PCREL location and the
-> stub entry so that the relocations can be fulfilled.
-> 
-> The kernel module loader will call module_additional_section_size() and
-> request us to return the amount of additional memory we need for the
-> stubs of each section. The final section size of the code segment will
-> then be increased by that value when the kernel layouts the final
-> addresses of all sections.
-> 
-> Tested with 32- and 64bit kernels.
-> 
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> 
+> I didn't checked nolapic_timer (yet), but found these small changes to
+> the kernel config do the trick for me:
+ 
+Can you please provide the following information from the kernel which
+shows these freeze symptoms:
 
-> diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-> index 644a70b..cbb622f 100644
-> --- a/arch/parisc/Kconfig
-> +++ b/arch/parisc/Kconfig
-> @@ -34,6 +34,9 @@ config RWSEM_GENERIC_SPINLOCK
->  config RWSEM_XCHGADD_ALGORITHM
->  	bool
->  
-> +config ARCH_WANTS_STUBS_BEHIND_SECTIONS
-> +	def_bool y
-> +
+output of: dmesg
+output of: cat /proc/timer_list
 
-The recommended practive today is:
+Thanks,
 
-In some relevant Kconfig file add:
-
-config HAVE_MODULE_SECTION_STUBS
-	bool
-
-And then in arch/$ARCH/Kconfig do:
-
-config PARISC
-	...
-	select HAVE_MODULE_SECTION_STUBS
-	...
-
-The select are supposed to be sorted alphabetically
-but people seems to use a different alphabet for
-each arch.
-
-	Sam
+	tglx
