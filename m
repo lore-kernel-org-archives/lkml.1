@@ -1,740 +1,597 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbYL2Jm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754385AbYL2Jop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbYL2Jm4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 04:42:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbYL2Jms
+	id S1754385AbYL2Jop (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 04:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYL2Joh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 04:42:48 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:15598 "EHLO
+	Mon, 29 Dec 2008 04:44:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:16469 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752718AbYL2Jmq (ORCPT
+	with ESMTP id S1752683AbYL2Jog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 04:42:46 -0500
+	Mon, 29 Dec 2008 04:44:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references:x-google-sender-auth;
-        b=WnijHrNhA6M2njRLDkyYNrBsNUbXfx90OCvIk7fSKrifNJIQCw1cYt6HZNvej1Y3/W
-         KJQykhxY7eLvCyYjUiZK4MB4GXTuXBNisojdbOs8CRfcC7xIeR4Wkg87f5F7v6NIeLab
-         hMJ6FL7VRjzdrruszNFvi7zFBFFWNiIQHfhm4=
-Message-ID: <84144f020812290142o6299c225o37c2c499db9f0985@mail.gmail.com>
-Date: Mon, 29 Dec 2008 11:42:43 +0200
+        b=a2TRxz1Sf1fNGOAwo4PsJVWfmJgAn9u5+9xyAFffteQCXsXGhwOd3PiraeY++EJYfB
+         D2Wik5tOgpj3UzzmU4cD65qQtPgo5/tR88Z5ZLDoIyArP8yHgfObzNWlfkyPfJAh5Cct
+         n7mXzb33AkncymcglqvPaYfeiCAjNH+xyLczY=
+Message-ID: <84144f020812290144q38aca42bw1e84d38b3dad2a08@mail.gmail.com>
+Date: Mon, 29 Dec 2008 11:44:32 +0200
 From: "Pekka Enberg" <penberg@cs.helsinki.fi>
 To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH 1/3] RCU: Move some definitions to minimal headers.
+Subject: Re: [PATCH 3/3] kmemtrace: Use tracepoints instead of markers.
 Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
        "Dipankar Sarma" <dipankar@in.ibm.com>,
        "Alexey Dobriyan" <adobriyan@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <01504e3763e57759f34045051e86cb35c17b43b5.1230499486.git.eduard.munteanu@linux360.ro>
+       linux-kernel@vger.kernel.org
+In-Reply-To: <0d1bc24fa2c8d9df136cf833a36be2b72340bc8f.1230499486.git.eduard.munteanu@linux360.ro>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <cover.1230499486.git.eduard.munteanu@linux360.ro>
-	 <01504e3763e57759f34045051e86cb35c17b43b5.1230499486.git.eduard.munteanu@linux360.ro>
-X-Google-Sender-Auth: abaefed21a162f87
+	 <0d1bc24fa2c8d9df136cf833a36be2b72340bc8f.1230499486.git.eduard.munteanu@linux360.ro>
+X-Google-Sender-Auth: 2071636313f65961
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, Dec 29, 2008 at 3:40 AM, Eduard - Gabriel Munteanu
 <eduard.munteanu@linux360.ro> wrote:
-> linux/rcupdate.h used to include SLAB headers, which got in the way of
-> switching kmemtrace to use tracepoints instead of markers. The circular
-> header inclusion pattern that appeared was making it impossible to use
-> tracepoints in SLAB allocator inlines.
->
-> This moves some header code into separate files. As an added bonus,
-> preprocessing is faster if care is taken to use these minimal headers,
-> since no effort is spent on including SLAB headers.
+> kmemtrace now uses tracepoints instead of markers. We no longer need to
+> use format specifiers. Also dropped kmemtrace_mark_alloc_node(), since
+> it's easy to pass -1 as the NUMA node without providing a needless and
+> long-named variant of the same function.
 >
 > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
-I'm okay with this but lets cc Paul for an ack/nak.
+Looks good to me. Mathieu, does this look sane to you as well?
 
 > ---
->  include/linux/rcuclassic.h     |   40 +--------
->  include/linux/rcuclassic_min.h |   77 +++++++++++++++
->  include/linux/rcupdate.h       |  160 +-------------------------------
->  include/linux/rcupdate_min.h   |  205 ++++++++++++++++++++++++++++++++++++++++
->  include/linux/rcupreempt.h     |   32 +------
->  include/linux/rcupreempt_min.h |   68 +++++++++++++
->  6 files changed, 353 insertions(+), 229 deletions(-)
->  create mode 100644 include/linux/rcuclassic_min.h
->  create mode 100644 include/linux/rcupdate_min.h
->  create mode 100644 include/linux/rcupreempt_min.h
+>  include/linux/kmemtrace.h |   76 +++++++++-----------------------------------
+>  include/linux/slab_def.h  |   11 +++---
+>  include/linux/slub_def.h  |   16 +++++-----
+>  lib/Kconfig.debug         |    2 +-
+>  mm/kmemtrace.c            |   50 ++++++++++++++---------------
+>  mm/slab.c                 |   27 ++++++++--------
+>  mm/slob.c                 |   32 +++++++++---------
+>  mm/slub.c                 |   36 ++++++++++----------
+>  8 files changed, 103 insertions(+), 147 deletions(-)
 >
-> diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
-> index 5f89b62..32f1512 100644
-> --- a/include/linux/rcuclassic.h
-> +++ b/include/linux/rcuclassic.h
-> @@ -39,6 +39,7 @@
->  #include <linux/percpu.h>
->  #include <linux/cpumask.h>
->  #include <linux/seqlock.h>
-> +#include <linux/rcuclassic_min.h>
+> diff --git a/include/linux/kmemtrace.h b/include/linux/kmemtrace.h
+> index 5bea8ea..7b38245 100644
+> --- a/include/linux/kmemtrace.h
+> +++ b/include/linux/kmemtrace.h
+> @@ -9,8 +9,8 @@
 >
->  #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
->  #define RCU_SECONDS_TILL_STALL_CHECK   ( 3 * HZ) /* for rcp->jiffies_stall */
-> @@ -131,45 +132,6 @@ static inline void rcu_bh_qsctr_inc(int cpu)
->  extern int rcu_pending(int cpu);
->  extern int rcu_needs_cpu(int cpu);
+>  #ifdef __KERNEL__
 >
-> -#ifdef CONFIG_DEBUG_LOCK_ALLOC
-> -extern struct lockdep_map rcu_lock_map;
-> -# define rcu_read_acquire()    \
-> -                       lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
-> -# define rcu_read_release()    lock_release(&rcu_lock_map, 1, _THIS_IP_)
-> -#else
-> -# define rcu_read_acquire()    do { } while (0)
-> -# define rcu_read_release()    do { } while (0)
-> -#endif
-> -
-> -#define __rcu_read_lock() \
-> -       do { \
-> -               preempt_disable(); \
-> -               __acquire(RCU); \
-> -               rcu_read_acquire(); \
-> -       } while (0)
-> -#define __rcu_read_unlock() \
-> -       do { \
-> -               rcu_read_release(); \
-> -               __release(RCU); \
-> -               preempt_enable(); \
-> -       } while (0)
-> -#define __rcu_read_lock_bh() \
-> -       do { \
-> -               local_bh_disable(); \
-> -               __acquire(RCU_BH); \
-> -               rcu_read_acquire(); \
-> -       } while (0)
-> -#define __rcu_read_unlock_bh() \
-> -       do { \
-> -               rcu_read_release(); \
-> -               __release(RCU_BH); \
-> -               local_bh_enable(); \
-> -       } while (0)
-> -
-> -#define __synchronize_sched() synchronize_rcu()
-> -
-> -#define call_rcu_sched(head, func) call_rcu(head, func)
-> -
->  extern void __rcu_init(void);
->  #define rcu_init_sched()       do { } while (0)
->  extern void rcu_check_callbacks(int cpu, int user);
-> diff --git a/include/linux/rcuclassic_min.h b/include/linux/rcuclassic_min.h
-> new file mode 100644
-> index 0000000..7ea051b
-> --- /dev/null
-> +++ b/include/linux/rcuclassic_min.h
-> @@ -0,0 +1,77 @@
-> +/*
-> + * Read-Copy Update mechanism for mutual exclusion (classic version)
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-> + *
-> + * Copyright IBM Corporation, 2001
-> + *
-> + * Author: Dipankar Sarma <dipankar@in.ibm.com>
-> + *
-> + * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
-> + * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
-> + * Papers:
-> + * http://www.rdrop.com/users/paulmck/paper/rclockpdcsproof.pdf
-> + * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
-> + *
-> + * For detailed explanation of Read-Copy Update mechanism see -
-> + *             Documentation/RCU
-> + *
-> + */
-> +
-> +#ifndef _LINUX_RCUCLASSIC_MIN_H
-> +#define _LINUX_RCUCLASSIC_MIN_H
-> +
-> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
-> +#include <linux/lockdep.h>
-> +extern struct lockdep_map rcu_lock_map;
-> +# define rcu_read_acquire()    \
-> +                       lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
-> +# define rcu_read_release()    lock_release(&rcu_lock_map, 1, _THIS_IP_)
-> +#else
-> +# define rcu_read_acquire()    do { } while (0)
-> +# define rcu_read_release()    do { } while (0)
-> +#endif
-> +
-> +#define __rcu_read_lock() \
-> +       do { \
-> +               preempt_disable(); \
-> +               __acquire(RCU); \
-> +               rcu_read_acquire(); \
-> +       } while (0)
-> +#define __rcu_read_unlock() \
-> +       do { \
-> +               rcu_read_release(); \
-> +               __release(RCU); \
-> +               preempt_enable(); \
-> +       } while (0)
-> +#define __rcu_read_lock_bh() \
-> +       do { \
-> +               local_bh_disable(); \
-> +               __acquire(RCU_BH); \
-> +               rcu_read_acquire(); \
-> +       } while (0)
-> +#define __rcu_read_unlock_bh() \
-> +       do { \
-> +               rcu_read_release(); \
-> +               __release(RCU_BH); \
-> +               local_bh_enable(); \
-> +       } while (0)
-> +
-> +#define __synchronize_sched() synchronize_rcu()
-> +
-> +#define call_rcu_sched(head, func) call_rcu(head, func)
-> +
-> +#endif /* _LINUX_RCUCLASSIC_MIN_H */
-> +
-> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> index 86f1f5e..d7659e8 100644
-> --- a/include/linux/rcupdate.h
-> +++ b/include/linux/rcupdate.h
-> @@ -41,16 +41,7 @@
->  #include <linux/seqlock.h>
->  #include <linux/lockdep.h>
->  #include <linux/completion.h>
-> -
-> -/**
-> - * struct rcu_head - callback structure for use with RCU
-> - * @next: next update requests in a list
-> - * @func: actual update function to call after the grace period.
-> - */
-> -struct rcu_head {
-> -       struct rcu_head *next;
-> -       void (*func)(struct rcu_head *head);
-> -};
-> +#include <linux/rcupdate_min.h>
+> +#include <linux/tracepoint.h>
+>  #include <linux/types.h>
+> -#include <linux/marker.h>
 >
->  #ifdef CONFIG_CLASSIC_RCU
->  #include <linux/rcuclassic.h>
-> @@ -64,131 +55,6 @@ struct rcu_head {
->        (ptr)->next = NULL; (ptr)->func = NULL; \
->  } while (0)
+>  enum kmemtrace_type_id {
+>        KMEMTRACE_TYPE_KMALLOC = 0,     /* kmalloc() or kfree(). */
+> @@ -18,67 +18,23 @@ enum kmemtrace_type_id {
+>        KMEMTRACE_TYPE_PAGES,           /* __get_free_pages() and friends. */
+>  };
 >
-> -/**
-> - * rcu_read_lock - mark the beginning of an RCU read-side critical section.
-> - *
-> - * When synchronize_rcu() is invoked on one CPU while other CPUs
-> - * are within RCU read-side critical sections, then the
-> - * synchronize_rcu() is guaranteed to block until after all the other
-> - * CPUs exit their critical sections.  Similarly, if call_rcu() is invoked
-> - * on one CPU while other CPUs are within RCU read-side critical
-> - * sections, invocation of the corresponding RCU callback is deferred
-> - * until after the all the other CPUs exit their critical sections.
-> - *
-> - * Note, however, that RCU callbacks are permitted to run concurrently
-> - * with RCU read-side critical sections.  One way that this can happen
-> - * is via the following sequence of events: (1) CPU 0 enters an RCU
-> - * read-side critical section, (2) CPU 1 invokes call_rcu() to register
-> - * an RCU callback, (3) CPU 0 exits the RCU read-side critical section,
-> - * (4) CPU 2 enters a RCU read-side critical section, (5) the RCU
-> - * callback is invoked.  This is legal, because the RCU read-side critical
-> - * section that was running concurrently with the call_rcu() (and which
-> - * therefore might be referencing something that the corresponding RCU
-> - * callback would free up) has completed before the corresponding
-> - * RCU callback is invoked.
-> - *
-> - * RCU read-side critical sections may be nested.  Any deferred actions
-> - * will be deferred until the outermost RCU read-side critical section
-> - * completes.
-> - *
-> - * It is illegal to block while in an RCU read-side critical section.
-> - */
-> -#define rcu_read_lock() __rcu_read_lock()
+> -#ifdef CONFIG_KMEMTRACE
 > -
-> -/**
-> - * rcu_read_unlock - marks the end of an RCU read-side critical section.
-> - *
-> - * See rcu_read_lock() for more information.
-> - */
-> -
-> -/*
-> - * So where is rcu_write_lock()?  It does not exist, as there is no
-> - * way for writers to lock out RCU readers.  This is a feature, not
-> - * a bug -- this property is what provides RCU's performance benefits.
-> - * Of course, writers must coordinate with each other.  The normal
-> - * spinlock primitives work well for this, but any other technique may be
-> - * used as well.  RCU does not care how the writers keep out of each
-> - * others' way, as long as they do so.
-> - */
-> -#define rcu_read_unlock() __rcu_read_unlock()
-> -
-> -/**
-> - * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
-> - *
-> - * This is equivalent of rcu_read_lock(), but to be used when updates
-> - * are being done using call_rcu_bh(). Since call_rcu_bh() callbacks
-> - * consider completion of a softirq handler to be a quiescent state,
-> - * a process in RCU read-side critical section must be protected by
-> - * disabling softirqs. Read-side critical sections in interrupt context
-> - * can use just rcu_read_lock().
-> - *
-> - */
-> -#define rcu_read_lock_bh() __rcu_read_lock_bh()
-> -
-> -/*
-> - * rcu_read_unlock_bh - marks the end of a softirq-only RCU critical section
-> - *
-> - * See rcu_read_lock_bh() for more information.
-> - */
-> -#define rcu_read_unlock_bh() __rcu_read_unlock_bh()
-> -
-> -/**
-> - * rcu_read_lock_sched - mark the beginning of a RCU-classic critical section
-> - *
-> - * Should be used with either
-> - * - synchronize_sched()
-> - * or
-> - * - call_rcu_sched() and rcu_barrier_sched()
-> - * on the write-side to insure proper synchronization.
-> - */
-> -#define rcu_read_lock_sched() preempt_disable()
-> -
-> -/*
-> - * rcu_read_unlock_sched - marks the end of a RCU-classic critical section
-> - *
-> - * See rcu_read_lock_sched for more information.
-> - */
-> -#define rcu_read_unlock_sched() preempt_enable()
-> -
-> -
-> -
-> -/**
-> - * rcu_dereference - fetch an RCU-protected pointer in an
-> - * RCU read-side critical section.  This pointer may later
-> - * be safely dereferenced.
-> - *
-> - * Inserts memory barriers on architectures that require them
-> - * (currently only the Alpha), and, more importantly, documents
-> - * exactly which pointers are protected by RCU.
-> - */
-> -
-> -#define rcu_dereference(p)     ({ \
-> -                               typeof(p) _________p1 = ACCESS_ONCE(p); \
-> -                               smp_read_barrier_depends(); \
-> -                               (_________p1); \
-> -                               })
-> -
-> -/**
-> - * rcu_assign_pointer - assign (publicize) a pointer to a newly
-> - * initialized structure that will be dereferenced by RCU read-side
-> - * critical sections.  Returns the value assigned.
-> - *
-> - * Inserts memory barriers on architectures that require them
-> - * (pretty much all of them other than x86), and also prevents
-> - * the compiler from reordering the code that initializes the
-> - * structure after the pointer assignment.  More importantly, this
-> - * call documents which pointers will be dereferenced by RCU read-side
-> - * code.
-> - */
-> -
-> -#define rcu_assign_pointer(p, v) \
-> -       ({ \
-> -               if (!__builtin_constant_p(v) || \
-> -                   ((v) != NULL)) \
-> -                       smp_wmb(); \
-> -               (p) = (v); \
-> -       })
-> -
->  /* Infrastructure to implement the synchronize_() primitives. */
+>  extern void kmemtrace_init(void);
 >
->  struct rcu_synchronize {
-> @@ -211,24 +77,6 @@ void name(void) \
+> -static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
+> -                                            unsigned long call_site,
+> -                                            const void *ptr,
+> -                                            size_t bytes_req,
+> -                                            size_t bytes_alloc,
+> -                                            gfp_t gfp_flags,
+> -                                            int node)
+> -{
+> -       trace_mark(kmemtrace_alloc, "type_id %d call_site %lu ptr %lu "
+> -                  "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
+> -                  type_id, call_site, (unsigned long) ptr,
+> -                  (unsigned long) bytes_req, (unsigned long) bytes_alloc,
+> -                  (unsigned long) gfp_flags, node);
+> -}
+> -
+> -static inline void kmemtrace_mark_free(enum kmemtrace_type_id type_id,
+> -                                      unsigned long call_site,
+> -                                      const void *ptr)
+> -{
+> -       trace_mark(kmemtrace_free, "type_id %d call_site %lu ptr %lu",
+> -                  type_id, call_site, (unsigned long) ptr);
+> -}
+> -
+> -#else /* CONFIG_KMEMTRACE */
+> -
+> -static inline void kmemtrace_init(void)
+> -{
+> -}
+> -
+> -static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
+> -                                            unsigned long call_site,
+> -                                            const void *ptr,
+> -                                            size_t bytes_req,
+> -                                            size_t bytes_alloc,
+> -                                            gfp_t gfp_flags,
+> -                                            int node)
+> -{
+> -}
+> -
+> -static inline void kmemtrace_mark_free(enum kmemtrace_type_id type_id,
+> -                                      unsigned long call_site,
+> -                                      const void *ptr)
+> -{
+> -}
+> -
+> -#endif /* CONFIG_KMEMTRACE */
+> -
+> -static inline void kmemtrace_mark_alloc(enum kmemtrace_type_id type_id,
+> -                                       unsigned long call_site,
+> -                                       const void *ptr,
+> -                                       size_t bytes_req,
+> -                                       size_t bytes_alloc,
+> -                                       gfp_t gfp_flags)
+> -{
+> -       kmemtrace_mark_alloc_node(type_id, call_site, ptr,
+> -                                 bytes_req, bytes_alloc, gfp_flags, -1);
+> -}
+> +DEFINE_TRACE(kmemtrace_alloc,
+> +            TPPROTO(enum kmemtrace_type_id type_id,
+> +                    unsigned long call_site,
+> +                    const void *ptr,
+> +                    size_t bytes_req,
+> +                    size_t bytes_alloc,
+> +                    gfp_t gfp_flags,
+> +                    int node),
+> +            TPARGS(type_id, call_site, ptr,
+> +                   bytes_req, bytes_alloc, gfp_flags, node));
+> +DEFINE_TRACE(kmemtrace_free,
+> +            TPPROTO(enum kmemtrace_type_id type_id,
+> +                    unsigned long call_site,
+> +                    const void *ptr),
+> +            TPARGS(type_id, call_site, ptr));
+>
+>  #endif /* __KERNEL__ */
+>
+> diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+> index 7555ce9..e5a8b60 100644
+> --- a/include/linux/slab_def.h
+> +++ b/include/linux/slab_def.h
+> @@ -76,8 +76,9 @@ found:
+>
+>                ret = kmem_cache_alloc_notrace(cachep, flags);
+>
+> -               kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
+> -                                    size, slab_buffer_size(cachep), flags);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
+> +                                     size, slab_buffer_size(cachep),
+> +                                     flags, -1);
+>
+>                return ret;
+>        }
+> @@ -134,9 +135,9 @@ found:
+>
+>                ret = kmem_cache_alloc_node_notrace(cachep, flags, node);
+>
+> -               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_,
+> -                                         ret, size, slab_buffer_size(cachep),
+> -                                         flags, node);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_,
+> +                                     ret, size, slab_buffer_size(cachep),
+> +                                     flags, node);
+>
+>                return ret;
+>        }
+> diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+> index dc28432..ce69c68 100644
+> --- a/include/linux/slub_def.h
+> +++ b/include/linux/slub_def.h
+> @@ -220,8 +220,8 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
+>        unsigned int order = get_order(size);
+>        void *ret = (void *) __get_free_pages(flags | __GFP_COMP, order);
+>
+> -       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
+> -                            size, PAGE_SIZE << order, flags);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
+> +                             size, PAGE_SIZE << order, flags, -1);
+>
+>        return ret;
+>  }
+> @@ -242,9 +242,9 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+>
+>                        ret = kmem_cache_alloc_notrace(s, flags);
+>
+> -                       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC,
+> -                                            _THIS_IP_, ret,
+> -                                            size, s->size, flags);
+> +                       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +                                             _THIS_IP_, ret,
+> +                                             size, s->size, flags, -1);
+>
+>                        return ret;
+>                }
+> @@ -283,9 +283,9 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>
+>                ret = kmem_cache_alloc_node_notrace(s, flags, node);
+>
+> -               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> -                                         _THIS_IP_, ret,
+> -                                         size, s->size, flags, node);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +                                     _THIS_IP_, ret,
+> +                                     size, s->size, flags, node);
+>
+>                return ret;
+>        }
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index b5417e2..9cf8eb8 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -805,7 +805,7 @@ config FIREWIRE_OHCI_REMOTE_DMA
+>
+>  config KMEMTRACE
+>        bool "Kernel memory tracer (kmemtrace)"
+> -       depends on RELAY && DEBUG_FS && MARKERS
+> +       depends on RELAY && DEBUG_FS && TRACEPOINTS
+>        help
+>          kmemtrace provides tracing for slab allocator functions, such as
+>          kmalloc, kfree, kmem_cache_alloc, kmem_cache_free etc.. Collected
+> diff --git a/mm/kmemtrace.c b/mm/kmemtrace.c
+> index 2a70a80..7bc81b2 100644
+> --- a/mm/kmemtrace.c
+> +++ b/mm/kmemtrace.c
+> @@ -58,8 +58,13 @@ struct kmemtrace_stats_alloc {
+>        s32             numa_node;
+>  } __attribute__ ((__packed__));
+>
+> -static void kmemtrace_probe_alloc(void *probe_data, void *call_data,
+> -                                 const char *format, va_list *args)
+> +static void kmemtrace_probe_alloc(enum kmemtrace_type_id type_id,
+> +                                 unsigned long call_site,
+> +                                 const void *ptr,
+> +                                 size_t bytes_req,
+> +                                 size_t bytes_alloc,
+> +                                 gfp_t gfp_flags,
+> +                                 int node)
+>  {
+>        unsigned long flags;
+>        struct kmemtrace_event *ev;
+> @@ -81,25 +86,26 @@ static void kmemtrace_probe_alloc(void *probe_data, void *call_data,
+>
+>        ev = buf;
+>        ev->event_id = KMEMTRACE_EVENT_ALLOC;
+> -       ev->type_id = va_arg(*args, int);
+> +       ev->type_id = type_id;
+>        ev->event_size = sizeof(struct kmemtrace_event) +
+>                         sizeof(struct kmemtrace_stats_alloc);
+>        ev->seq_num = atomic_add_return(1, &kmemtrace_seq_num);
+> -       ev->call_site = va_arg(*args, unsigned long);
+> -       ev->ptr = va_arg(*args, unsigned long);
+> +       ev->call_site = call_site;
+> +       ev->ptr = (unsigned long) ptr;
+>
+>        stats = buf + sizeof(struct kmemtrace_event);
+> -       stats->bytes_req = va_arg(*args, unsigned long);
+> -       stats->bytes_alloc = va_arg(*args, unsigned long);
+> -       stats->gfp_flags = va_arg(*args, unsigned long);
+> -       stats->numa_node = va_arg(*args, int);
+> +       stats->bytes_req = bytes_req;
+> +       stats->bytes_alloc = bytes_alloc;
+> +       stats->gfp_flags = gfp_flags;
+> +       stats->numa_node = node;
+>
+>  failed:
+>        local_irq_restore(flags);
 >  }
 >
->  /**
-> - * synchronize_sched - block until all CPUs have exited any non-preemptive
-> - * kernel code sequences.
-> - *
-> - * This means that all preempt_disable code sequences, including NMI and
-> - * hardware-interrupt handlers, in progress on entry will have completed
-> - * before this primitive returns.  However, this does not guarantee that
-> - * softirq handlers will have completed, since in some kernels, these
-> - * handlers can run in process context, and can block.
-> - *
-> - * This primitive provides the guarantees made by the (now removed)
-> - * synchronize_kernel() API.  In contrast, synchronize_rcu() only
-> - * guarantees that rcu_read_lock() sections will have completed.
-> - * In "classic RCU", these two guarantees happen to be one and
-> - * the same, but can differ in realtime RCU implementations.
-> - */
-> -#define synchronize_sched() __synchronize_sched()
-> -
-> -/**
->  * call_rcu - Queue an RCU callback for invocation after a grace period.
->  * @head: structure to be used for queueing the RCU updates.
->  * @func: actual update function to be invoked after the grace period
-> @@ -263,12 +111,6 @@ extern void call_rcu(struct rcu_head *head,
->  extern void call_rcu_bh(struct rcu_head *head,
->                        void (*func)(struct rcu_head *head));
+> -static void kmemtrace_probe_free(void *probe_data, void *call_data,
+> -                                const char *format, va_list *args)
+> +static void kmemtrace_probe_free(enum kmemtrace_type_id type_id,
+> +                                unsigned long call_site,
+> +                                const void *ptr)
+>  {
+>        unsigned long flags;
+>        struct kmemtrace_event *ev;
+> @@ -115,11 +121,11 @@ static void kmemtrace_probe_free(void *probe_data, void *call_data,
+>         * C99 does not guarantee the rvalues evaluation order.
+>         */
+>        ev->event_id = KMEMTRACE_EVENT_FREE;
+> -       ev->type_id = va_arg(*args, int);
+> +       ev->type_id = type_id;
+>        ev->event_size = sizeof(struct kmemtrace_event);
+>        ev->seq_num = atomic_add_return(1, &kmemtrace_seq_num);
+> -       ev->call_site = va_arg(*args, unsigned long);
+> -       ev->ptr = va_arg(*args, unsigned long);
+> +       ev->call_site = call_site;
+> +       ev->ptr = (unsigned long) ptr;
 >
-> -/* Exported common interfaces */
-> -extern void synchronize_rcu(void);
-> -extern void rcu_barrier(void);
-> -extern void rcu_barrier_bh(void);
-> -extern void rcu_barrier_sched(void);
-> -
->  /* Internal to kernel */
->  extern void rcu_init(void);
->  extern int rcu_needs_cpu(int cpu);
-> diff --git a/include/linux/rcupdate_min.h b/include/linux/rcupdate_min.h
-> new file mode 100644
-> index 0000000..35ca45d
-> --- /dev/null
-> +++ b/include/linux/rcupdate_min.h
-> @@ -0,0 +1,205 @@
-> +/*
-> + * Read-Copy Update mechanism for mutual exclusion
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-> + *
-> + * Copyright IBM Corporation, 2001
-> + *
-> + * Author: Dipankar Sarma <dipankar@in.ibm.com>
-> + *
-> + * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
-> + * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
-> + * Papers:
-> + * http://www.rdrop.com/users/paulmck/paper/rclockpdcsproof.pdf
-> + * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
-> + *
-> + * This is a minimal header. Use it if you don't require all definitions,
-> + * as it doesn't end up including slab stuff and lots of other headers.
-> + *
-> + * For detailed explanation of Read-Copy Update mechanism see -
-> + *             http://lse.sourceforge.net/locking/rcupdate.html
-> + *
-> + */
-> +
-> +#ifndef __LINUX_RCUPDATE_MIN_H
-> +#define __LINUX_RCUPDATE_MIN_H
-> +
-> +/**
-> + * struct rcu_head - callback structure for use with RCU
-> + * @next: next update requests in a list
-> + * @func: actual update function to call after the grace period.
-> + */
-> +struct rcu_head {
-> +       struct rcu_head *next;
-> +       void (*func)(struct rcu_head *head);
-> +};
-> +
-> +#ifdef CONFIG_CLASSIC_RCU
-> +#include <linux/rcuclassic_min.h>
-> +#else /* #ifdef CONFIG_CLASSIC_RCU */
-> +#include <linux/rcupreempt_min.h>
-> +#endif /* #else #ifdef CONFIG_CLASSIC_RCU */
-> +
-> +/**
-> + * rcu_read_lock - mark the beginning of an RCU read-side critical section.
-> + *
-> + * When synchronize_rcu() is invoked on one CPU while other CPUs
-> + * are within RCU read-side critical sections, then the
-> + * synchronize_rcu() is guaranteed to block until after all the other
-> + * CPUs exit their critical sections.  Similarly, if call_rcu() is invoked
-> + * on one CPU while other CPUs are within RCU read-side critical
-> + * sections, invocation of the corresponding RCU callback is deferred
-> + * until after the all the other CPUs exit their critical sections.
-> + *
-> + * Note, however, that RCU callbacks are permitted to run concurrently
-> + * with RCU read-side critical sections.  One way that this can happen
-> + * is via the following sequence of events: (1) CPU 0 enters an RCU
-> + * read-side critical section, (2) CPU 1 invokes call_rcu() to register
-> + * an RCU callback, (3) CPU 0 exits the RCU read-side critical section,
-> + * (4) CPU 2 enters a RCU read-side critical section, (5) the RCU
-> + * callback is invoked.  This is legal, because the RCU read-side critical
-> + * section that was running concurrently with the call_rcu() (and which
-> + * therefore might be referencing something that the corresponding RCU
-> + * callback would free up) has completed before the corresponding
-> + * RCU callback is invoked.
-> + *
-> + * RCU read-side critical sections may be nested.  Any deferred actions
-> + * will be deferred until the outermost RCU read-side critical section
-> + * completes.
-> + *
-> + * It is illegal to block while in an RCU read-side critical section.
-> + */
-> +#define rcu_read_lock() __rcu_read_lock()
-> +
-> +/**
-> + * rcu_read_unlock - marks the end of an RCU read-side critical section.
-> + *
-> + * See rcu_read_lock() for more information.
-> + */
-> +
-> +/*
-> + * So where is rcu_write_lock()?  It does not exist, as there is no
-> + * way for writers to lock out RCU readers.  This is a feature, not
-> + * a bug -- this property is what provides RCU's performance benefits.
-> + * Of course, writers must coordinate with each other.  The normal
-> + * spinlock primitives work well for this, but any other technique may be
-> + * used as well.  RCU does not care how the writers keep out of each
-> + * others' way, as long as they do so.
-> + */
-> +#define rcu_read_unlock() __rcu_read_unlock()
-> +
-> +/**
-> + * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
-> + *
-> + * This is equivalent of rcu_read_lock(), but to be used when updates
-> + * are being done using call_rcu_bh(). Since call_rcu_bh() callbacks
-> + * consider completion of a softirq handler to be a quiescent state,
-> + * a process in RCU read-side critical section must be protected by
-> + * disabling softirqs. Read-side critical sections in interrupt context
-> + * can use just rcu_read_lock().
-> + *
-> + */
-> +#define rcu_read_lock_bh() __rcu_read_lock_bh()
-> +
-> +/*
-> + * rcu_read_unlock_bh - marks the end of a softirq-only RCU critical section
-> + *
-> + * See rcu_read_lock_bh() for more information.
-> + */
-> +#define rcu_read_unlock_bh() __rcu_read_unlock_bh()
-> +
-> +/**
-> + * rcu_read_lock_sched - mark the beginning of a RCU-classic critical section
-> + *
-> + * Should be used with either
-> + * - synchronize_sched()
-> + * or
-> + * - call_rcu_sched() and rcu_barrier_sched()
-> + * on the write-side to insure proper synchronization.
-> + */
-> +#define rcu_read_lock_sched() preempt_disable()
-> +
-> +/*
-> + * rcu_read_unlock_sched - marks the end of a RCU-classic critical section
-> + *
-> + * See rcu_read_lock_sched for more information.
-> + */
-> +#define rcu_read_unlock_sched() preempt_enable()
-> +
-> +
-> +
-> +/**
-> + * rcu_dereference - fetch an RCU-protected pointer in an
-> + * RCU read-side critical section.  This pointer may later
-> + * be safely dereferenced.
-> + *
-> + * Inserts memory barriers on architectures that require them
-> + * (currently only the Alpha), and, more importantly, documents
-> + * exactly which pointers are protected by RCU.
-> + */
-> +
-> +#define rcu_dereference(p)     ({ \
-> +                               typeof(p) _________p1 = ACCESS_ONCE(p); \
-> +                               smp_read_barrier_depends(); \
-> +                               (_________p1); \
-> +                               })
-> +
-> +/**
-> + * rcu_assign_pointer - assign (publicize) a pointer to a newly
-> + * initialized structure that will be dereferenced by RCU read-side
-> + * critical sections.  Returns the value assigned.
-> + *
-> + * Inserts memory barriers on architectures that require them
-> + * (pretty much all of them other than x86), and also prevents
-> + * the compiler from reordering the code that initializes the
-> + * structure after the pointer assignment.  More importantly, this
-> + * call documents which pointers will be dereferenced by RCU read-side
-> + * code.
-> + */
-> +
-> +#define rcu_assign_pointer(p, v) \
-> +       ({ \
-> +               if (!__builtin_constant_p(v) || \
-> +                   ((v) != NULL)) \
-> +                       smp_wmb(); \
-> +               (p) = (v); \
-> +       })
-> +
-> +/**
-> + * synchronize_sched - block until all CPUs have exited any non-preemptive
-> + * kernel code sequences.
-> + *
-> + * This means that all preempt_disable code sequences, including NMI and
-> + * hardware-interrupt handlers, in progress on entry will have completed
-> + * before this primitive returns.  However, this does not guarantee that
-> + * softirq handlers will have completed, since in some kernels, these
-> + * handlers can run in process context, and can block.
-> + *
-> + * This primitive provides the guarantees made by the (now removed)
-> + * synchronize_kernel() API.  In contrast, synchronize_rcu() only
-> + * guarantees that rcu_read_lock() sections will have completed.
-> + * In "classic RCU", these two guarantees happen to be one and
-> + * the same, but can differ in realtime RCU implementations.
-> + */
-> +#define synchronize_sched() __synchronize_sched()
-> +
-> +/* Exported common interfaces */
-> +extern void synchronize_rcu(void);
-> +extern void rcu_barrier(void);
-> +extern void rcu_barrier_bh(void);
-> +extern void rcu_barrier_sched(void);
-> +
-> +#endif /* __LINUX_RCUPDATE_MIN_H */
-> +
-> diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-> index 3e05c09..1f1dcf1 100644
-> --- a/include/linux/rcupreempt.h
-> +++ b/include/linux/rcupreempt.h
-> @@ -39,6 +39,7 @@
->  #include <linux/percpu.h>
->  #include <linux/cpumask.h>
->  #include <linux/seqlock.h>
-> +#include <linux/rcupreempt_min.h>
+>  failed:
+>        local_irq_restore(flags);
+> @@ -173,26 +179,18 @@ static int kmemtrace_start_probes(void)
+>  {
+>        int err;
 >
->  struct rcu_dyntick_sched {
->        int dynticks;
-> @@ -58,37 +59,6 @@ static inline void rcu_qsctr_inc(int cpu)
+> -       err = marker_probe_register("kmemtrace_alloc", "type_id %d "
+> -                                   "call_site %lu ptr %lu "
+> -                                   "bytes_req %lu bytes_alloc %lu "
+> -                                   "gfp_flags %lu node %d",
+> -                                   kmemtrace_probe_alloc, NULL);
+> +       err = register_trace_kmemtrace_alloc(kmemtrace_probe_alloc);
+>        if (err)
+>                return err;
+> -       err = marker_probe_register("kmemtrace_free", "type_id %d "
+> -                                   "call_site %lu ptr %lu",
+> -                                   kmemtrace_probe_free, NULL);
+> +       err = register_trace_kmemtrace_free(kmemtrace_probe_free);
+>
+>        return err;
 >  }
->  #define rcu_bh_qsctr_inc(cpu)
 >
-> -/*
-> - * Someone might want to pass call_rcu_bh as a function pointer.
-> - * So this needs to just be a rename and not a macro function.
-> - *  (no parentheses)
-> - */
-> -#define call_rcu_bh            call_rcu
-> -
-> -/**
-> - * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
-> - * @head: structure to be used for queueing the RCU updates.
-> - * @func: actual update function to be invoked after the grace period
-> - *
-> - * The update function will be invoked some time after a full
-> - * synchronize_sched()-style grace period elapses, in other words after
-> - * all currently executing preempt-disabled sections of code (including
-> - * hardirq handlers, NMI handlers, and local_irq_save() blocks) have
-> - * completed.
-> - */
-> -extern void call_rcu_sched(struct rcu_head *head,
-> -                          void (*func)(struct rcu_head *head));
-> -
-> -extern void __rcu_read_lock(void)      __acquires(RCU);
-> -extern void __rcu_read_unlock(void)    __releases(RCU);
-> -extern int rcu_pending(int cpu);
-> -extern int rcu_needs_cpu(int cpu);
-> -
-> -#define __rcu_read_lock_bh()   { rcu_read_lock(); local_bh_disable(); }
-> -#define __rcu_read_unlock_bh() { local_bh_enable(); rcu_read_unlock(); }
-> -
-> -extern void __synchronize_sched(void);
-> -
->  extern void __rcu_init(void);
->  extern void rcu_init_sched(void);
->  extern void rcu_check_callbacks(int cpu, int user);
-> diff --git a/include/linux/rcupreempt_min.h b/include/linux/rcupreempt_min.h
-> new file mode 100644
-> index 0000000..37d3693
-> --- /dev/null
-> +++ b/include/linux/rcupreempt_min.h
-> @@ -0,0 +1,68 @@
-> +/*
-> + * Read-Copy Update mechanism for mutual exclusion (RT implementation)
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-> + *
-> + * Copyright (C) IBM Corporation, 2006
-> + *
-> + * Author:  Paul McKenney <paulmck@us.ibm.com>
-> + *
-> + * Based on the original work by Paul McKenney <paul.mckenney@us.ibm.com>
-> + * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
-> + * Papers:
-> + * http://www.rdrop.com/users/paulmck/paper/rclockpdcsproof.pdf
-> + * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
-> + *
-> + * For detailed explanation of Read-Copy Update mechanism see -
-> + *             Documentation/RCU
-> + *
-> + */
-> +
-> +#ifndef __LINUX_RCUPREEMPT_MIN_H
-> +#define __LINUX_RCUPREEMPT_MIN_H
-> +
-> +/*
-> + * Someone might want to pass call_rcu_bh as a function pointer.
-> + * So this needs to just be a rename and not a macro function.
-> + *  (no parentheses)
-> + */
-> +#define call_rcu_bh            call_rcu
-> +
-> +/**
-> + * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
-> + * @head: structure to be used for queueing the RCU updates.
-> + * @func: actual update function to be invoked after the grace period
-> + *
-> + * The update function will be invoked some time after a full
-> + * synchronize_sched()-style grace period elapses, in other words after
-> + * all currently executing preempt-disabled sections of code (including
-> + * hardirq handlers, NMI handlers, and local_irq_save() blocks) have
-> + * completed.
-> + */
-> +extern void call_rcu_sched(struct rcu_head *head,
-> +                          void (*func)(struct rcu_head *head));
-> +
-> +extern void __rcu_read_lock(void)      __acquires(RCU);
-> +extern void __rcu_read_unlock(void)    __releases(RCU);
-> +extern int rcu_pending(int cpu);
-> +extern int rcu_needs_cpu(int cpu);
-> +
-> +#define __rcu_read_lock_bh()   { rcu_read_lock(); local_bh_disable(); }
-> +#define __rcu_read_unlock_bh() { local_bh_enable(); rcu_read_unlock(); }
-> +
-> +extern void __synchronize_sched(void);
-> +
-> +#endif /* __LINUX_RCUPREEMPT_MIN_H */
-> +
+>  static void kmemtrace_stop_probes(void)
+>  {
+> -       marker_probe_unregister("kmemtrace_alloc",
+> -                               kmemtrace_probe_alloc, NULL);
+> -       marker_probe_unregister("kmemtrace_free",
+> -                               kmemtrace_probe_free, NULL);
+> +       unregister_trace_kmemtrace_alloc(kmemtrace_probe_alloc);
+> +       unregister_trace_kmemtrace_free(kmemtrace_probe_free);
+>  }
+>
+>  static int kmemtrace_enabled_get(void *data, u64 *val)
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 1fcb32b..74d405d 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -3624,8 +3624,9 @@ void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+>  {
+>        void *ret = __cache_alloc(cachep, flags, __builtin_return_address(0));
+>
+> -       kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> -                            obj_size(cachep), cachep->buffer_size, flags);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                             obj_size(cachep), cachep->buffer_size,
+> +                             flags, -1);
+>
+>        return ret;
+>  }
+> @@ -3686,9 +3687,9 @@ void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+>        void *ret = __cache_alloc_node(cachep, flags, nodeid,
+>                                       __builtin_return_address(0));
+>
+> -       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> -                                 obj_size(cachep), cachep->buffer_size,
+> -                                 flags, nodeid);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                             obj_size(cachep), cachep->buffer_size,
+> +                             flags, nodeid);
+>
+>        return ret;
+>  }
+> @@ -3716,9 +3717,9 @@ __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
+>                return cachep;
+>        ret = kmem_cache_alloc_node_notrace(cachep, flags, node);
+>
+> -       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> -                                 (unsigned long) caller, ret,
+> -                                 size, cachep->buffer_size, flags, node);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +                             (unsigned long) caller, ret,
+> +                             size, cachep->buffer_size, flags, node);
+>
+>        return ret;
+>  }
+> @@ -3768,9 +3769,9 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
+>                return cachep;
+>        ret = __cache_alloc(cachep, flags, caller);
+>
+> -       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC,
+> -                            (unsigned long) caller, ret,
+> -                            size, cachep->buffer_size, flags);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +                             (unsigned long) caller, ret,
+> +                             size, cachep->buffer_size, flags, -1);
+>
+>        return ret;
+>  }
+> @@ -3816,7 +3817,7 @@ void kmem_cache_free(struct kmem_cache *cachep, void *objp)
+>        __cache_free(cachep, objp);
+>        local_irq_restore(flags);
+>
+> -       kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, objp);
+> +       trace_kmemtrace_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, objp);
+>  }
+>  EXPORT_SYMBOL(kmem_cache_free);
+>
+> @@ -3844,7 +3845,7 @@ void kfree(const void *objp)
+>        __cache_free(c, (void *)objp);
+>        local_irq_restore(flags);
+>
+> -       kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, objp);
+> +       trace_kmemtrace_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, objp);
+>  }
+>  EXPORT_SYMBOL(kfree);
+>
+> diff --git a/mm/slob.c b/mm/slob.c
+> index 0f1a49f..15f812c 100644
+> --- a/mm/slob.c
+> +++ b/mm/slob.c
+> @@ -477,9 +477,9 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+>                *m = size;
+>                ret = (void *)m + align;
+>
+> -               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> -                                         _RET_IP_, ret,
+> -                                         size, size + align, gfp, node);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +                                     _RET_IP_, ret,
+> +                                     size, size + align, gfp, node);
+>        } else {
+>                unsigned int order = get_order(size);
+>
+> @@ -490,9 +490,9 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+>                        page->private = size;
+>                }
+>
+> -               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> -                                         _RET_IP_, ret,
+> -                                         size, PAGE_SIZE << order, gfp, node);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +                                     _RET_IP_, ret,
+> +                                     size, PAGE_SIZE << order, gfp, node);
+>        }
+>
+>        return ret;
+> @@ -514,7 +514,7 @@ void kfree(const void *block)
+>        } else
+>                put_page(&sp->page);
+>
+> -       kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, block);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, block);
+>  }
+>  EXPORT_SYMBOL(kfree);
+>
+> @@ -585,16 +585,16 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
+>
+>        if (c->size < PAGE_SIZE) {
+>                b = slob_alloc(c->size, flags, c->align, node);
+> -               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
+> -                                         _RET_IP_, b, c->size,
+> -                                         SLOB_UNITS(c->size) * SLOB_UNIT,
+> -                                         flags, node);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_CACHE,
+> +                                     _RET_IP_, b, c->size,
+> +                                     SLOB_UNITS(c->size) * SLOB_UNIT,
+> +                                     flags, node);
+>        } else {
+>                b = slob_new_page(flags, get_order(c->size), node);
+> -               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE,
+> -                                         _RET_IP_, b, c->size,
+> -                                         PAGE_SIZE << get_order(c->size),
+> -                                         flags, node);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_CACHE,
+> +                                     _RET_IP_, b, c->size,
+> +                                     PAGE_SIZE << get_order(c->size),
+> +                                     flags, node);
+>        }
+>
+>        if (c->ctor)
+> @@ -632,7 +632,7 @@ void kmem_cache_free(struct kmem_cache *c, void *b)
+>                __kmem_cache_free(b, c->size);
+>        }
+>
+> -       kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, b);
+> +       trace_kmemtrace_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, b);
+>  }
+>  EXPORT_SYMBOL(kmem_cache_free);
+>
+> diff --git a/mm/slub.c b/mm/slub.c
+> index f756915..3a2ec3a 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1620,8 +1620,8 @@ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+>  {
+>        void *ret = slab_alloc(s, gfpflags, -1, _RET_IP_);
+>
+> -       kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> -                            s->objsize, s->size, gfpflags);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                             s->objsize, s->size, gfpflags, -1);
+>
+>        return ret;
+>  }
+> @@ -1640,8 +1640,8 @@ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+>  {
+>        void *ret = slab_alloc(s, gfpflags, node, _RET_IP_);
+>
+> -       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> -                                 s->objsize, s->size, gfpflags, node);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> +                             s->objsize, s->size, gfpflags, node);
+>
+>        return ret;
+>  }
+> @@ -1766,7 +1766,7 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
+>
+>        slab_free(s, page, x, _RET_IP_);
+>
+> -       kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, x);
+> +       trace_kmemtrace_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, x);
+>  }
+>  EXPORT_SYMBOL(kmem_cache_free);
+>
+> @@ -2694,8 +2694,8 @@ void *__kmalloc(size_t size, gfp_t flags)
+>
+>        ret = slab_alloc(s, flags, -1, _RET_IP_);
+>
+> -       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
+> -                            size, s->size, flags);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
+> +                             size, s->size, flags, -1);
+>
+>        return ret;
+>  }
+> @@ -2721,10 +2721,10 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
+>        if (unlikely(size > PAGE_SIZE)) {
+>                ret = kmalloc_large_node(size, flags, node);
+>
+> -               kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> -                                         _RET_IP_, ret,
+> -                                         size, PAGE_SIZE << get_order(size),
+> -                                         flags, node);
+> +               trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC,
+> +                                     _RET_IP_, ret,
+> +                                     size, PAGE_SIZE << get_order(size),
+> +                                     flags, node);
+>
+>                return ret;
+>        }
+> @@ -2736,8 +2736,8 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
+>
+>        ret = slab_alloc(s, flags, node, _RET_IP_);
+>
+> -       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
+> -                                 size, s->size, flags, node);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
+> +                             size, s->size, flags, node);
+>
+>        return ret;
+>  }
+> @@ -2798,7 +2798,7 @@ void kfree(const void *x)
+>        }
+>        slab_free(page->slab, page, object, _RET_IP_);
+>
+> -       kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, x);
+> +       trace_kmemtrace_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, x);
+>  }
+>  EXPORT_SYMBOL(kfree);
+>
+> @@ -3272,8 +3272,8 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
+>        ret = slab_alloc(s, gfpflags, -1, caller);
+>
+>        /* Honor the call site pointer we recieved. */
+> -       kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, caller, ret, size,
+> -                            s->size, gfpflags);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, caller, ret, size,
+> +                             s->size, gfpflags, -1);
+>
+>        return ret;
+>  }
+> @@ -3295,8 +3295,8 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+>        ret = slab_alloc(s, gfpflags, node, caller);
+>
+>        /* Honor the call site pointer we recieved. */
+> -       kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC, caller, ret,
+> -                                 size, s->size, gfpflags, node);
+> +       trace_kmemtrace_alloc(KMEMTRACE_TYPE_KMALLOC, caller, ret,
+> +                             size, s->size, gfpflags, node);
+>
+>        return ret;
+>  }
 > --
 > 1.6.0.6
 >
