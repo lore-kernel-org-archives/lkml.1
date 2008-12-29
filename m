@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYL2UhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYL2UiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbYL2UhQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 15:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYL2Uev
+	id S1754017AbYL2UiB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 15:38:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYL2Ufe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 15:34:51 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:33466 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753552AbYL2Ueu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 15:34:50 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] kbuild: auto-convert size types in userspace headers
-Date: Mon, 29 Dec 2008 15:34:48 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-References: <49567EB5.5030409@zytor.com> <1230549153-31754-1-git-send-email-vapier@gentoo.org> <20081229140356.GB7327@uranus.ravnborg.org>
-In-Reply-To: <20081229140356.GB7327@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart7511048.Gq6DTsmTqc";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 29 Dec 2008 15:35:34 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39086 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753569AbYL2Ufb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 15:35:31 -0500
+Date: Mon, 29 Dec 2008 12:34:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/9] exofs: file and file_inode operations
+Message-Id: <20081229123443.36c022bc.akpm@linux-foundation.org>
+In-Reply-To: <4947C685.1000800@panasas.com>
+References: <4947BFAA.4030208@panasas.com>
+	<4947C685.1000800@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812291534.49577.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart7511048.Gq6DTsmTqc
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 16 Dec 2008 17:17:25 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-On Monday 29 December 2008 09:03:56 Sam Ravnborg wrote:
-> On Mon, Dec 29, 2008 at 06:12:33AM -0500, Mike Frysinger wrote:
-> > Rather than constantly fixing up size type breakage in userspace header=
-s,
-> > auto convert the types u_intXX_t, uintXX_t, intXX_t, uXX, and sXX to the
-> > appropriate __uXX or __sXX type.
+> 
+> implementation of the file_operations and inode_operations for
+> regular data files.
+> 
+> Most file_operations are generic vfs implementations except:
+> - exofs_truncate will truncate the OSD object as well
+> - Generic file_fsync is not good for none_bd devices so open code it
+> - The default for .flush in Linux is todo nothing so call exofs_fsync
+>   on the file.
+> 
+> ...
 >
-> Is this the right thing to do?
-> uintXX_t belongs to a namespace that the kernel should not use.
+> +int exofs_file_fsync(struct file *filp, struct dentry *dentry, int datasync)
+> +{
+> +	int ret1, ret2;
+> +	struct address_space *mapping = filp->f_mapping;
+> +
+> +	ret1 = filemap_write_and_wait(mapping);
+> +	ret2 = file_fsync(filp, dentry, datasync);
+> +
+> +	return ret1 ? : ret2;
 
-some headers are shared between projects and so use the uintXX_t form, so i=
-'m=20
-not sure outright banning it is a nice answer for them
-=2Dmike
+mutter.  That gccism always makes me fall over dazed and confused. 
+Maybe that's just me.
 
---nextPart7511048.Gq6DTsmTqc
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Did we really want to call file_fsync() if filemap_write_and_wait() failed?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+> +}
+>
+> ...
+>
+> +struct file_operations exofs_file_operations = {
+> +struct inode_operations exofs_file_inode_operations = {
 
-iQIcBAABAgAGBQJJWTRpAAoJEEFjO5/oN/WB2pQP/12B/nRGIeUMxEPzcm8cYXvp
-bqFFhZiz4049u3aoM28uyb1vQv6zofQvZxg7210hm1qNwqLdHZMYI6GV70fatrMg
-5st4gj4NBm4PhTmdSVDEXJ43Dy53cZzrUte86ugESYcUAU9q4LV2zb/4EQXVg3g+
-+ETAZP/Fc0fW3qGCgw/gG1vN6Gn0yztQabjak0okABBrClOn5Oqutn4vsd1ZR++4
-NKPmbGgpj+FG7FF1vpTKozVlMMdOmIk+Y64fZTynlaaQBk3LlMA8bHvnVywhnUWN
-y1sIQLtFu2WNkQVZMdVjlQz2F1NZGyYliyOmZUnTEjyJEboMpJi4uqY049M+KxIY
-y1pQW/tJafuZb8PVtdaSR10OUnven6hqACAJDMKIyrh9BVrfKkvEEAmz46LhaaHD
-ZFiActdmvryvxHvzzVxYgCeIJ1GL5QUYQGMvmouDc2DyteYp3bjwaULF1RV6OQO/
-ZSWAUUsALPzgepylo64fJPrlXeyHgEyRaUSV04eKz3apsgrXae5JWjNQaXZ02fxR
-fVAwrSfuLrhSYDwVHdWGSED8BEcERLeaeXi4CMdD9YVntPmKdKGV/gwcQcLcpx1a
-ctZcN1EssMHMb24zYh/HepWUJDGUt9hCfzQkdN0lXdHT8Sky7r4vmMyx7Zf/YpZB
-mjNBmZw9b4tC2hFxJ7QD
-=DMRh
------END PGP SIGNATURE-----
+These both could/should be made const.
 
---nextPart7511048.Gq6DTsmTqc--
+> +	.truncate	= exofs_truncate,
+> +	.setattr	= exofs_setattr,
+> +};
+
