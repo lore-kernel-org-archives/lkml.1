@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYL2In7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYL2Ip1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbYL2In7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 03:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYL2Inv
+	id S1753924AbYL2Ip1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 03:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYL2IpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 03:43:51 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:42300 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509AbYL2Inu (ORCPT
+	Mon, 29 Dec 2008 03:45:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39484 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbYL2IpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 03:43:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=w9ovDhfLeEkkz2Ak6rzCirXoLP9bGzZCOzMSeHGUlk1Ef3e2IMdl6VeD5Z9HMKgj9Y
-         jf7ykD4tDsMQIzvWcUkMWqUeUH/VMJM9BN1mqinodGoiYTCwMYEcHRdbbkQJD+eiNAEl
-         WWsTQGhH8uawFuvTQkNDcYkVG1LAFfPM181TM=
-Date: Mon, 29 Dec 2008 11:48:51 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, mj@ucw.cz
-Subject: Re: [PATCH] move arch/x86/pci/pci.h to
-	arch/x86/include/asm/pci_x86.h
-Message-ID: <20081229084851.GA12756@x200.localdomain>
-References: <1230382948.3373.1.camel@jaswinder.satnam> <20081229065713.GA10960@x200.localdomain> <1230537538.3090.4.camel@jaswinder.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+	Mon, 29 Dec 2008 03:45:17 -0500
+Subject: Re: [PATCH] x86: reboot.c declare port_cf9_safe before they get
+	used
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081227103141.GF14639@elte.hu>
+References: <1230049288.14358.4.camel@jaswinder.satnam>
+	 <20081227103141.GF14639@elte.hu>
+Content-Type: text/plain; charset=utf8
+Date: Mon, 29 Dec 2008 14:13:18 +0530
+Message-Id: <1230540199.3715.11.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1230537538.3090.4.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 01:28:58PM +0530, Jaswinder Singh Rajput wrote:
-> On Mon, 2008-12-29 at 09:57 +0300, Alexey Dobriyan wrote:
-> > On Sat, Dec 27, 2008 at 06:32:28PM +0530, Jaswinder Singh Rajput wrote:
-> > > Impact: cleanup, arch/x86/pci/pci.h -> arch/x86/include/asm/pci_x86.h
-> > 
-> > And this is done for what?
+Hello Ingo,
+
+On Sat, 2008-12-27 at 11:31 +0100, Ingo Molnar wrote:
+
+> btw., this is ugly now:
 > 
-> Don't you think ﻿arch/x86/pci/pci.h looks ugly it should be in
-> arch/x86/incluse/asm directory ?
-
-It was
-
-	#include "../pci/pci.h"
-
-which can look ugly, not full path.
-
-Anyway, you want to put you question into changelog?
-
-> It was suggested by Ingo :
-> http://marc.info/?l=linux-kernel&m=123037395221921&w=2
+> > --- a/arch/x86/kernel/reboot.c
+> > +++ b/arch/x86/kernel/reboot.c
+> > @@ -22,6 +22,7 @@
+> >  #endif
+> >  
+> >  #include <mach_ipi.h>
+> > +#include "../pci/pci.h"
 > 
-> I think Ingo will have more valid reasons to satisfy your curiousity ;-)
+> could you send another patch that moves arch/x86/pci/pci.h to 
+> arch/x86/include/asm/pci_x86.h (and update all the pci.h include sites)?
+> 
 
-So you don't actually have an opinion? Why are you sending patch then?
+1. I send ﻿[PATCH] move arch/x86/pci/pci.h to
+arch/x86/include/asm/pci_x86.h but I forget to write x86: before this
+patch.
 
-	> could you send another patch that moves arch/x86/pci/pci.h to 
-	> arch/x86/include/asm/pci_x86.h
-	       ^^^		   ^^^
-Or should it be arch/x86/include/asm/pci.h ?
+Please let me know which one is better option :
+﻿[PATCH]x86: move arch/x86/pci/pci.h to arch/x86/include/asm/pci_x86.h
+OR
+﻿﻿[PATCH -tip]x86: move arch/x86/pci/pci.h to
+arch/x86/include/asm/pci_x86.h
+OR some other name.
+
+2. I also did not write any reason of patch this may lead confusion to
+other developers, can you please provide some good reasons for this
+patch.
+
+3. I also did some cleanups in ﻿arch/x86/include/asm/pci_x86.h raised
+by  ./scripts/checkpatch.pl, is this OK.
+
+4. Can I resend above patch by solving above issues.
+
+Thank you,
+
+	JSR
+
+
