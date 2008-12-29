@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbYL2TEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbYL2TFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679AbYL2TEw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 14:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYL2TEK
+	id S1753812AbYL2TFQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 14:05:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYL2TEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 14:04:10 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:63827 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752930AbYL2TEJ (ORCPT
+	Mon, 29 Dec 2008 14:04:16 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:54079 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbYL2TEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 14:04:09 -0500
+	Mon, 29 Dec 2008 14:04:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=aB7eK05KqzpYFlSx2vqke0aWZfdj2chn9nQoWAlvmr3aEAgpuRcdd+pipKaN00wUSb
-         uzOWPFBO18EFlIUlVRlqchRMVcggMObBR9SkaSf7ejB5A3Ti1MLXG/VxphQkZW0hsxo8
-         OasUJlJyvG+eM5taabPy3oXHlv5p29cYZ7jIM=
+        b=apEZhXRDJPyIlmwScEgum0FNHbLJZ//6gWX8QDjZFZMXJwIuS6j7VBoSYxmknKMGZA
+         tXfrhT3Pj6lWXdRh0bXWIn2Qk/PrGhnZG5a643rGPzoej1QHIuL8c8LBs5wVvqBx7jC8
+         ModPa/56cAdyALtL5JWBJVTRpUXak8foXdW7U=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 29 Dec 2008 20:04:29 +0100
-Message-Id: <20081229190429.1020.49267.sendpatchset@localhost.localdomain>
+Date: Mon, 29 Dec 2008 20:04:35 +0100
+Message-Id: <20081229190435.1020.45092.sendpatchset@localhost.localdomain>
 In-Reply-To: <20081229190415.1020.43119.sendpatchset@localhost.localdomain>
 References: <20081229190415.1020.43119.sendpatchset@localhost.localdomain>
-Subject: [PATCH 3/6] ide: remove superfluous hwif variable assignment from ide_timer_expiry()
+Subject: [PATCH 4/6] ide: struct ide_atapi_pc - remove unused fields and update documentation
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove superfluous hwif variable assignment from ide_timer_expiry()
-
-There should be no functional changes caused by this patch.
+Subject: [PATCH] ide: struct ide_atapi_pc - remove unused fields and update documentation
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-io.c |    1 -
- 1 file changed, 1 deletion(-)
+ include/linux/ide.h |    4 ----
+ 1 file changed, 4 deletions(-)
 
-Index: b/drivers/ide/ide-io.c
+Index: b/include/linux/ide.h
 ===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -946,7 +946,6 @@ void ide_timer_expiry (unsigned long dat
- 			 * globally mask the specific IRQ:
- 			 */
- 			spin_unlock(&hwif->lock);
--			hwif = drive->hwif;
- 			/* disable_irq_nosync ?? */
- 			disable_irq(hwif->irq);
- 			/* local CPU only,
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -426,13 +426,9 @@ struct ide_atapi_pc {
+ 	struct idetape_bh *bh;
+ 	char *b_data;
+ 
+-	/* idescsi only for now */
+ 	struct scatterlist *sg;
+ 	unsigned int sg_cnt;
+ 
+-	struct scsi_cmnd *scsi_cmd;
+-	void (*done) (struct scsi_cmnd *);
+-
+ 	unsigned long timeout;
+ };
+ 
