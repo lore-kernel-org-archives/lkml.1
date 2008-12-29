@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbYL2O1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYL2O3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755633AbYL2O1j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 09:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYL2O10
+	id S1754548AbYL2O3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 09:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYL2O3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 09:27:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51992 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755178AbYL2O1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 09:27:24 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081229144533.4a0ab696.sfr@canb.auug.org.au>
-References: <20081229144533.4a0ab696.sfr@canb.auug.org.au> <8930.1229560221@redhat.com> <20081218142420.GA16728@infradead.org> <20081218123601.11810b7f.akpm@linux-foundation.org> <200812190007.34581.bernd.schubert@fastmail.fm> <20081218152616.a24c013f.akpm@linux-foundation.org> <20081219110539.7e7e230c.sfr@canb.auug.org.au> 
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Bernd Schubert <bernd.schubert@fastmail.fm>, nfsv4@linux-nfs.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org, steved@redhat.com,
-       linux-fsdevel@vger.kernel.org, rwheeler@redhat.com,
-       linux-next@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Date: Mon, 29 Dec 2008 14:26:31 +0000
-Message-ID: <11990.1230560791@redhat.com>
+	Mon, 29 Dec 2008 09:29:06 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:40900 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751063AbYL2O3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 09:29:05 -0500
+Date: Mon, 29 Dec 2008 14:29:02 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: dtor@mail.ru
+Cc: Nick Warne <nick@ukfsn.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [PATCH] Input: atkbd - broaden the Dell DMI signatures
+Message-ID: <20081229142902.GC31266@srcf.ucam.org>
+References: <20081111074702.75e71055@sauron.linicks.net> <20081112131427.1bbc2a7c@palantir.linicks.net> <20081112165650.GA15594@srcf.ucam.org> <20081229113621.1a64caea@sauron.linicks.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081229113621.1a64caea@sauron.linicks.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Some Dells need the dell input quirk applied but have a different vendor
+string in their DMI tables. Add an extra entry to cover these machines as
+well.
+    
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-> What was the result of discussions around FS-Cache?  I ask because it
-> reappeared in linux-next today via the nfs tree (merged into that on Dec
-> 24 and 25) ...
+---
 
-That is the result of discussions during the kernel summit in Portland.  The
-discussion here is about whether Andrew agrees with adding the patches or not,
-as far as I can tell.  There are a number of people/companies who want them;
-there is Andrew who does not.
+Dmitry, any chance of getting this queued for .29? Probably suitable for 
+-stable as well.
 
-David
+diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+index 379b7ff..d48de0c 100644
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -1476,6 +1476,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+ 		.driver_data = atkbd_dell_laptop_keymap_fixup,
+ 	},
+ 	{
++		.ident = "Dell Laptop",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer Corporation"),
++			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /* Portable */
++		},
++		.callback = atkbd_setup_fixup,
++		.driver_data = atkbd_dell_laptop_keymap_fixup,
++	},
++	{
+ 		.ident = "HP 2133",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
