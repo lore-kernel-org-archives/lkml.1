@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbYL2TYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbYL2Tks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138AbYL2TYg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 14:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYL2TY2
+	id S1752987AbYL2Tks (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 14:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYL2Tki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 14:24:28 -0500
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:51861 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752267AbYL2TY1 (ORCPT
+	Mon, 29 Dec 2008 14:40:38 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:49958
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752243AbYL2Tki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 14:24:27 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: > I even didn't have a backtrace.
-To: for.poige+linux@gmail.com, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Mon, 29 Dec 2008 20:24:18 +0100
-References: <bOpT3-2LN-13@gated-at.bofh.it> <bOpT3-2LN-15@gated-at.bofh.it> <bOpT3-2LN-11@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1LHNit-0001cP-EQ@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+	Mon, 29 Dec 2008 14:40:38 -0500
+X-Greylist: delayed 953 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Dec 2008 14:40:38 EST
+Date: Mon, 29 Dec 2008 11:24:31 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: matthieu castet <castet.matthieu@free.fr>
+Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       linux-usb@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [PATCH -stable] fix USB_STORAGE_CYPRESS_ATACB
+Message-ID: <20081229192431.GZ1469@one-eyed-alien.net>
+Mail-Followup-To: matthieu castet <castet.matthieu@free.fr>,
+	LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+	linux-usb@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>
+References: <495913A6.9070007@free.fr>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bpVaumkpfGNUagdU"
+Content-Disposition: inline
+In-Reply-To: <495913A6.9070007@free.fr>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Mon, 29 Dec 2008 11:24:31 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Igor Podlesny <for.poige+linux@gmail.com> wrote:
-> 2008/12/29 Sitsofe Wheeler <sitsofe@yahoo.com>:
->> Igor Podlesny wrote:
 
->>>        BTW, I wonder -- can the kernel store crash related information (if
->>> any) in RAM, at certain addresses, so it can survive warm reboot and
->>> get displayed "in dmesg" on the next boot?
->>
->> Perhaps you are thinking of kdump - http://lwn.net/Articles/108595/ ?
-> 
-> Similar, but no exactly. I just thought that unlikely BIOS erases
-> memory content during "fast checks", so kernel diagnostic could be
-> left at certain addresses, probably duplicated for safety, and newly
-> booted kernel could check if there were something left for it in RAM.
-> That's simpler than kdump/kexec, the question is only whether memory
-> is really left intact during BIOS work, at least partly.
+--bpVaumkpfGNUagdU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You may want to read "ISA System Architecture
- By Tom Shanley, Don Anderson, John Swindle, MindShare, Inc"
+Boaz, what's your take on this?  It "feels" to me like this should be fixed
+another way, rather than mucking directly with the srb structures.
 
-http://books.google.com/books?id=iXE6mwUCNWQC&pg=PA110&lpg=PA112&ots=ZH_c88LEqd&dq=post+reset+flag+0072+0040&ie=ISO-8859-1&output=htmlhttp://books.google.com/books?id=iXE6mwUCNWQC&pg=PA112&lpg=PA112&dq=post+reset+flag+0072+0040&source=web&ots=ZH_c88LEqd&sig=3EbSpcxbKrPvd1ixhysJK4AuOrA&hl=en&sa=X&oi=book_result&resnum=1&ct=result
+Matt
 
-HTH.
+On Mon, Dec 29, 2008 at 07:15:02PM +0100, matthieu castet wrote:
+> Hi,
+>=20
+> 64a87b244b9297667ca80264aab849a36f494884 broke USB_STORAGE_CYPRESS_ATACB=
+=20
+> translation.
+>=20
+> Could it be applied to kernel-stable ?
+>=20
+> Matthieu
 
+
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+I think the problem is there's a nut loose on your keyboard.
+					-- Greg to Customer
+User Friendly, 1/5/1999=20
+
+--bpVaumkpfGNUagdU
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFJWSPvHL9iwnUZqnkRApcpAKCuueJNglZZFu+e6c5CEhQwrUv3dACfYvp9
+7jezillomwG08pFB0io3ia0=
+=Hfei
+-----END PGP SIGNATURE-----
+
+--bpVaumkpfGNUagdU--
