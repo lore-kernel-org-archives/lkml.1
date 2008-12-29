@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbYL2WEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYL2WJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbYL2WEs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 17:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYL2WEh
+	id S1753937AbYL2WJX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 17:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYL2WJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 17:04:37 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:33814 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752504AbYL2WEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 17:04:36 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] kbuild: auto-convert size types in userspace headers
-Date: Mon, 29 Dec 2008 17:04:34 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-References: <49567EB5.5030409@zytor.com> <200812291534.49577.vapier@gentoo.org> <495934D9.2070908@zytor.com>
-In-Reply-To: <495934D9.2070908@zytor.com>
+	Mon, 29 Dec 2008 17:09:10 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:32743 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbYL2WJI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 17:09:08 -0500
+Message-ID: <49594A4D.6050303@oracle.com>
+Date: Mon, 29 Dec 2008 14:08:13 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1423590.hAfvtJ1MWQ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, kxie@chelsio.com,
+       akpm <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, samr <sam@ravnborg.org>
+Subject: Re: [PATCH -next v2] cxgb3i: use same dependencies & selects as	CHELSIO_T3
+References: <20081230031621.60acd90b.sfr@canb.auug.org.au>	 <20081229130110.67d5271a.randy.dunlap@oracle.com>	 <20081229132312.10934479.randy.dunlap@oracle.com> <1230587887.3302.70.camel@localhost.localdomain>
+In-Reply-To: <1230587887.3302.70.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812291704.35450.vapier@gentoo.org>
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.49594A51.00EE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1423590.hAfvtJ1MWQ
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+James Bottomley wrote:
+> On Mon, 2008-12-29 at 13:23 -0800, Randy Dunlap wrote:
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Make the CXGB iSCSI driver (that selects the CXGB net driver) have the same
+>> dependencies as the net driver, since kconfig doesn't do that automatically.
+>> Also make it select INET_LRO & FW_LOADER like the net driver does.
+> 
+> I thought select of a symbol that selected something else propagated
+> correctly (even if select of a symbol that depends on something else
+> doesn't).
 
-On Monday 29 December 2008 15:36:41 H. Peter Anvin wrote:
-> Mike Frysinger wrote:
-> > On Monday 29 December 2008 09:03:56 Sam Ravnborg wrote:
-> >> On Mon, Dec 29, 2008 at 06:12:33AM -0500, Mike Frysinger wrote:
-> >>> Rather than constantly fixing up size type breakage in userspace
-> >>> headers, auto convert the types u_intXX_t, uintXX_t, intXX_t, uXX, and
-> >>> sXX to the appropriate __uXX or __sXX type.
-> >>
-> >> Is this the right thing to do?
-> >> uintXX_t belongs to a namespace that the kernel should not use.
-> >
-> > some headers are shared between projects and so use the uintXX_t form, =
-so
-> > i'm not sure outright banning it is a nice answer for them
->
-> Arguably, the right answer is the opposite... the Linux u* and s* forms
-> feel much more like nonstandard legacy code to me.  They have the
-> advantage of brevity, however.
+I don't see that happening, at least in this case.
+Sam, can you clarify?
 
-my testing of this patch has revealed an issue along these lines.  building=
-=20
-mplayer fails as it uses linux/dvb/audio.h.  this header does:
-#ifdef __KERNEL__
-#include <linux/types.h>
-#else
-#include <stdint.h>
-#endif
-typedef uint16_t audio_attributes_t;
 
-but since the script has autoconverted uint16_t to __u16, and linux/types.h=
-=20
-isnt being pulled in for userspace, we get a build failure.
-=2Dmike
+> If this is untrue, we have several other Kconfig problems in
+> the kernel.
 
---nextPart1423590.hAfvtJ1MWQ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+That would not be a surprise.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iQIcBAABAgAGBQJJWUlzAAoJEEFjO5/oN/WBk7QQANudOyRutqkhEeuKkxx4/Vmt
-vx3CS+45YUO/W6x+xUwpouGQPrv2fEByv7TJuCo0jJOCae+yEq36SWtYZY8TkviY
-STDpekaQtXH0sHxQD5doDztau+V/aNWjyiUfBdNYY2M+RRcYRLrGyxNdmqO6TSaq
-13vtY/koAwPGN0Z44P3ZQN8VzAgfzjItZLuOJM1czE/fKgnC42hSNrpYBeUqHg6p
-/VSuvtDGfFkxtKi/KUcb85zJCh3EVOXeNBKj6euK6/skaDiMtN2/ir4ZNc6vUe/+
-9YTeVni3g/75Kkr42DRdoyz8Dp+gWUsYDN7SJ98vuY+z6VsWI8APOv6jPd7Qu1QG
-x/sBthSgxMAAmgEhX0FTuUENtD4t8hRX+j12AyhQNMVWgix5vv7f7XmIIj8N6+uD
-k68Wgw1AQ2K6TXG4w5oDYjWqjRLpr8XTil7eq6GOvieGh+hCz5fijbq8xb/JtbD2
-PtRrY+sy5tHap8vDB74YnpRogK0qwpSC+3KDF9YL2jzfR+7TYleZh5gsnebNuWUz
-Lu/0Fz0CuBW1hGnRyub+aLKMDDvEFKn9kX89F83qnBoIRoh9jm58/yyOM4Ik7MJT
-b3HDZ0VcXDP22of2/xoTvjfyfJbgRZJr0ApEDMji3kN3RkRSBp1vdJUm4ZYzpiFl
-rUjT9T1Ku5HukbwUbwIa
-=Y448
------END PGP SIGNATURE-----
-
---nextPart1423590.hAfvtJ1MWQ--
+-- 
+~Randy
