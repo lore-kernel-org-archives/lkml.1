@@ -1,223 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYL2VbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYL2Vb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbYL2VbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYL2VbB
+	id S1753956AbYL2Vb5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:31:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYL2Vbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:31:01 -0500
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:6797 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751850AbYL2VbA (ORCPT
+	Mon, 29 Dec 2008 16:31:48 -0500
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:4678 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbYL2Vbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:31:00 -0500
-X-Trace: 124233273/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.224/None/adrian@newgolddream.dyndns.info
-X-SBRS: None
-X-RemoteIP: 80.44.176.224
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-MUA: Evolution 2.24.2 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAJ/QWElQLLDg/2dsb2JhbACBbLt3WI9+hkQ
-X-IronPort-AV: E=Sophos;i="4.36,297,1228089600"; 
-   d="scan'208";a="124233273"
-Subject: Re: [PATCH] sh: maple: add support for the Maple mouse on the SEGA
- Dreamcast
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-sh <linux-sh@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <200812291602.18572.vapier@gentoo.org>
-References: <1230578246.6496.25.camel@localhost.localdomain>
-	 <200812291602.18572.vapier@gentoo.org>
-Content-Type: text/plain
-Date: Mon, 29 Dec 2008 21:30:14 +0000
-Message-Id: <1230586215.6496.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Dec 2008 16:31:48 -0500
+Date: Mon, 29 Dec 2008 19:30:38 -0200
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: jbd2 inside a device mapper module
+Message-ID: <20081229213038.GO4127@blitiri.com.ar>
+References: <20081224211038.GT4127@blitiri.com.ar> <20081224234915.GA23723@mit.edu> <20081225143535.GA4127@blitiri.com.ar> <20081225155248.GJ9871@mit.edu> <20081226000005.GB4127@blitiri.com.ar> <20081226033736.GK9871@mit.edu> <20081226161708.GC4127@blitiri.com.ar> <20081226180642.GO9871@mit.edu> <20081227030020.GD4127@blitiri.com.ar> <20081227192950.GB30198@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081227192950.GB30198@mit.edu>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding support for Maple mouse
+On Sat, Dec 27, 2008 at 02:29:50PM -0500, Theodore Tso wrote:
+> On Sat, Dec 27, 2008 at 01:00:20AM -0200, Alberto Bertogli wrote:
+> > I have a couple of alternatives in mind, the most decent one at the
+> > moment is having two metadatas (M1 and M2) for the each block, and
+> > update M1 on the first write to the given block, M2 on the second, M1 on
+> > the third, and so on.
+> 
+> I don't see how this would help.  You still have to do synchronous
+> writes for safety, which is what is going to kill your performance.
 
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
----
+I was thinking of queueing the writes to the metadata, and then queue
+the writes of the data marked with bio_barrier(); when the data write
+completes I end the original bio.
 
-diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
-index 4e99342..71cc98a 100644
---- a/drivers/input/mouse/Kconfig
-+++ b/drivers/input/mouse/Kconfig
-@@ -286,4 +286,15 @@ config MOUSE_GPIO
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called gpio_mouse.
- 
-+config MOUSE_MAPLE
-+	tristate "Maple mouse (for the Dreamcast)"
-+	depends on MAPLE
-+	help
-+	  This driver supports the Maple mouse on the SEGA Dreamcast.
-+
-+	  Most Dreamcast users, who have a mouse, will say Y here.
-+
-+	  To compile this driver as a module choose M here: the module will be
-+	  called maplemouse.
-+
- endif
-diff --git a/drivers/input/mouse/Makefile b/drivers/input/mouse/Makefile
-index 96f1dd8..0272f5d 100644
---- a/drivers/input/mouse/Makefile
-+++ b/drivers/input/mouse/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_MOUSE_SERIAL)	+= sermouse.o
- obj-$(CONFIG_MOUSE_HIL)		+= hil_ptr.o
- obj-$(CONFIG_MOUSE_VSXXXAA)	+= vsxxxaa.o
- obj-$(CONFIG_MOUSE_GPIO)	+= gpio_mouse.o
-+obj-$(CONFIG_MOUSE_MAPLE)	+= maplemouse.o
- 
- psmouse-objs := psmouse-base.o synaptics.o
- 
-diff --git a/drivers/input/mouse/maplemouse.c b/drivers/input/mouse/maplemouse.c
-new file mode 100644
-index 0000000..1c0830b
---- /dev/null
-+++ b/drivers/input/mouse/maplemouse.c
-@@ -0,0 +1,135 @@
-+/*
-+ *	SEGA Dreamcast mouse driver
-+ *	Based on drivers/usb/usbmouse.c
-+ *
-+ *	Copyright Yaegashi Takeshi, 2001
-+ *	Adrian McMenamin, 2008
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/input.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/timer.h>
-+#include <linux/maple.h>
-+
-+MODULE_AUTHOR("Adrian McMenamin <adrian@mcmen.demon.co.uk>");
-+MODULE_DESCRIPTION("SEGA Dreamcast mouse driver");
-+MODULE_LICENSE("GPL");
-+
-+struct dc_mouse {
-+	struct input_dev *dev;
-+	struct maple_device *mdev;
-+};
-+
-+static void dc_mouse_callback(struct mapleq *mq)
-+{
-+	int buttons, relx, rely, relz;
-+	struct maple_device *mapledev = mq->dev;
-+	struct dc_mouse *mse = maple_get_drvdata(mapledev);
-+	struct input_dev *dev = mse->dev;
-+	unsigned char *res = mq->recvbuf;
-+
-+	buttons = ~res[8];
-+	relx = *(unsigned short *)(res + 12) - 512;
-+	rely = *(unsigned short *)(res + 14) - 512;
-+	relz = *(unsigned short *)(res + 16) - 512;
-+
-+	input_report_key(dev, BTN_LEFT,   buttons & 4);
-+	input_report_key(dev, BTN_MIDDLE, buttons & 9);
-+	input_report_key(dev, BTN_RIGHT,  buttons & 2);
-+	input_report_rel(dev, REL_X,      relx);
-+	input_report_rel(dev, REL_Y,      rely);
-+	input_report_rel(dev, REL_WHEEL,  relz);
-+	input_sync(dev);
-+}
-+
-+/* allow the mouse to be used */
-+static int __devinit probe_maple_mouse(struct device *dev)
-+{
-+	struct maple_device *mdev;
-+	struct maple_driver *mdrv;
-+	int error;
-+	struct input_dev *input_dev;
-+	struct dc_mouse *mse;
-+
-+	mdev = to_maple_dev(dev);
-+	mdrv = to_maple_driver(dev->driver);
-+
-+	mse = kzalloc(sizeof(struct dc_mouse), GFP_KERNEL);
-+	if (!mse) {
-+		error = -ENOMEM;
-+		goto fail;
-+	}
-+
-+	input_dev = input_allocate_device();
-+	if (!input_dev) {
-+		error = -ENOMEM;
-+		goto fail_nomem;
-+	}
-+
-+	mse->dev = input_dev;
-+	mse->mdev = mdev;
-+
-+	input_set_drvdata(input_dev, mse);
-+	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REL);
-+	input_dev->keybit[BIT_WORD(BTN_MOUSE)] = BIT_MASK(BTN_LEFT) |
-+		BIT_MASK(BTN_RIGHT) | BIT_MASK(BTN_MIDDLE);
-+	input_dev->relbit[0] = BIT_MASK(REL_X) | BIT_MASK(REL_Y) |
-+		BIT_MASK(REL_WHEEL);
-+	input_dev->name = mdev->product_name;
-+	input_dev->id.bustype = BUS_HOST;
-+	error =	input_register_device(input_dev);
-+	if (error)
-+		goto fail_register;
-+
-+	mdev->driver = mdrv;
-+	maple_set_drvdata(mdev, mse);
-+
-+	maple_getcond_callback(mdev, dc_mouse_callback, HZ/50,
-+		MAPLE_FUNC_MOUSE);
-+
-+	return error;
-+
-+fail_register:
-+	input_free_device(input_dev);
-+fail_nomem:
-+	kfree(mse);
-+fail:
-+	return error;
-+}
-+
-+static int __devexit remove_maple_mouse(struct device *dev)
-+{
-+	struct maple_device *mdev = to_maple_dev(dev);
-+	struct dc_mouse *mse = maple_get_drvdata(mdev);
-+
-+	mdev->callback = NULL;
-+	input_unregister_device(mse->dev);
-+	maple_set_drvdata(mdev, NULL);
-+	kfree(mse);
-+	return 0;
-+}
-+
-+static struct maple_driver dc_mouse_driver = {
-+	.function =	MAPLE_FUNC_MOUSE,
-+	.drv = {
-+		.name = "Dreamcast_mouse",
-+		.probe = probe_maple_mouse,
-+		.remove = remove_maple_mouse,
-+	},
-+};
-+
-+static int __init dc_mouse_init(void)
-+{
-+	return maple_driver_register(&dc_mouse_driver);
-+}
-+
-+static void __exit dc_mouse_exit(void)
-+{
-+	maple_driver_unregister(&dc_mouse_driver);
-+}
-+
-+module_init(dc_mouse_init);
-+module_exit(dc_mouse_exit);
+Although if they metadata is on a different device, I do have to wait
+for the metadata to be written because the barrier is useless; but OTOH
+if I use a journal I can't split my data and metadata in two different
+devices, can I? (without using two journals or doing more complex
+stuff).
+
+
+> What you want to do is to batch as many writes as possible.  Until the
+> underlying filesystem requests a flush, you can afford to hold off
+> writing the block to disk.  Otherwise, you'll end up turning each 4k
+
+I think I can't do this at the device-mapper layer. There's a .flush
+function pointer, but I think it's suspend-related; and in any case I
+gave it a try and it's never called during normal operation.
+
+
+> > > Why not just use the ext3/4 external journal format?
+> > 
+> > Wouldn't that lead to confusion, because people can think the device
+> > holds an ext3/4 external journal, while it actually holds a
+> > device-mapper backing device that happens to contain a journal?
+> 
+> Not really; the external journal has a label and uuid, and the journal
+> superblock has a place to store the uuid of the "client" of the
+> journal.  So there is plenty of information available to tie an
+> external journal to some device-mapper backing device.
+> 
+> > What would be the advantages of using the ext3/4 journal format, over a
+> > simple initial sector and the journal following?
+> 
+> There already existing tools to find the external journal, using the
+> blkid library.  So you only have to store the UUID of the journal in
+> the superblock of the device-mapper backing device, and then you can
+> easily find the external journal as follows:
+> 
+>        journal_fn = blkid_get_devname(ctx->blkid, "UUID", uuid);
+
+Thanks a lot for the suggestions!
+
+As I said in the other email, I'll give the writes a try and see how it
+goes. If their performance suck (what, from what you tell me, it's
+likely) at least I'll have something that works.
+
+Thanks a lot,
+		Alberto
 
