@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYL2KTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbYL2KUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755028AbYL2KTt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 05:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbYL2KTh
+	id S1754332AbYL2KUQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 05:20:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYL2KT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 05:19:37 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:54464 "EHLO mgw1.diku.dk"
+	Mon, 29 Dec 2008 05:19:58 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:54475 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753037AbYL2KTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 05:19:35 -0500
-Date: Mon, 29 Dec 2008 11:19:32 +0100 (CET)
+	id S1752980AbYL2KT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 05:19:57 -0500
+Date: Mon, 29 Dec 2008 11:19:55 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-input@vger.kernel.org,
+To: hjlipp@web.de, tilman@imap.cc, gigaset307x-common@lists.sourceforge.net,
        gregkh@suse.de, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/13] drivers/input/tablet: use USB API functions rather than
+Subject: [PATCH 3/13] drivers/isdn/gigaset: use USB API functions rather than
  constants
-Message-ID: <Pine.LNX.4.64.0812291119120.9555@pc-004.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812291119340.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -79,19 +79,19 @@ An extract of the semantic patch that makes these changes is as follows:
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/input/tablet/gtco.c |    2 +-
+ drivers/isdn/gigaset/usb-gigaset.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/input/tablet/gtco.c b/drivers/input/tablet/gtco.c
-index 5524e01..2e18a1c 100644
---- a/drivers/input/tablet/gtco.c
-+++ b/drivers/input/tablet/gtco.c
-@@ -877,7 +877,7 @@ static int gtco_probe(struct usb_interface *usbinterface,
- 	dbg("num endpoints:     %d", usbinterface->cur_altsetting->desc.bNumEndpoints);
- 	dbg("interface class:   %d", usbinterface->cur_altsetting->desc.bInterfaceClass);
- 	dbg("endpoint: attribute:0x%x type:0x%x", endpoint->bmAttributes, endpoint->bDescriptorType);
--	if ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == USB_ENDPOINT_XFER_INT)
-+	if (usb_endpoint_xfer_int(endpoint))
- 		dbg("endpoint: we have interrupt endpoint\n");
- 
- 	dbg("endpoint extra len:%d ", usbinterface->altsetting[0].extralen);
+diff --git a/drivers/isdn/gigaset/usb-gigaset.c b/drivers/isdn/gigaset/usb-gigaset.c
+index e847c6e..16399fb 100644
+--- a/drivers/isdn/gigaset/usb-gigaset.c
++++ b/drivers/isdn/gigaset/usb-gigaset.c
+@@ -783,7 +783,7 @@ static int gigaset_probe(struct usb_interface *interface,
+ 	/* Fill the interrupt urb and send it to the core */
+ 	usb_fill_int_urb(ucs->read_urb, udev,
+ 			 usb_rcvintpipe(udev,
+-					endpoint->bEndpointAddress & 0x0f),
++					usb_endpoint_num(endpoint)),
+ 			 cs->inbuf[0].rcvbuf, buffer_size,
+ 			 gigaset_read_int_callback,
+ 			 cs->inbuf + 0, endpoint->bInterval);
