@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYL2Pfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbYL2Phz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbYL2Pfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 10:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYL2Pfm
+	id S1752496AbYL2Phz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 10:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYL2Phr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 10:35:42 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:60943 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbYL2Pfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 10:35:41 -0500
-Date: Mon, 29 Dec 2008 16:35:38 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh@suse.de, dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 10/13] drivers/usb/gadget: use USB API functions rather
- than constants
-In-Reply-To: <Pine.LNX.4.44L0.0812291025220.2250-100000@iolanthe.rowland.org>
-Message-ID: <Pine.LNX.4.64.0812291628100.9555@pc-004.diku.dk>
-References: <Pine.LNX.4.44L0.0812291025220.2250-100000@iolanthe.rowland.org>
+	Mon, 29 Dec 2008 10:37:47 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:57237 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751428AbYL2Phr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 10:37:47 -0500
+Date: Mon, 29 Dec 2008 09:37:44 -0600
+From: Dean Nelson <dcn@sgi.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, Ben Hutchings <bhutchings@solarflare.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Robert Richter <robert.richter@amd.com>
+Subject: Re: [PATCH 7/8] cpumask: convert misc driver functions
+Message-ID: <20081229153744.GA6512@sgi.com>
+References: <20081219160144.697518000@polaris-admin.engr.sgi.com> <20081219160145.672392000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081219160145.672392000@polaris-admin.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ...
+On Fri, Dec 19, 2008 at 08:01:51AM -0800, Mike Travis wrote:
+> Impact: Reduce stack usage, use new cpumask API.
 > 
-> > diff --git a/drivers/usb/gadget/file_storage.c b/drivers/usb/gadget/file_storage.c
-> > index 88fedd0..c44092b 100644
-> > --- a/drivers/usb/gadget/file_storage.c
-> > +++ b/drivers/usb/gadget/file_storage.c
-> > @@ -248,6 +248,7 @@
-> >  #include <linux/freezer.h>
-> >  #include <linux/utsname.h>
-> >  
-> > +#include <linux/usb.h>
-> >  #include <linux/usb/ch9.h>
-> >  #include <linux/usb/gadget.h>
+> Convert misc driver functions to use struct cpumask.
 > 
-> While there's nothing wrong with this part of the patch, it hardly 
-> seems necessary.  Was there any reason for including it?
+> To Do:
+>   - Convert iucv_buffer_cpumask to cpumask_var_t.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Mike Travis <travis@sgi.com>
 
-The new functions are defined in usb.h. I have added the include in 
-this file and in the file epautoconf.c that this file includes.  If it is 
-removed from both, then the code does not compile (after make 
-allyesconfig):
+[...]
 
-In file included from drivers/usb/gadget/file_storage.c:268:
-drivers/usb/gadget/epautoconf.c: In function 'ep_matches':
-drivers/usb/gadget/epautoconf.c:79: error: implicit declaration of 
-function 'usb_endpoint_type'
-drivers/usb/gadget/epautoconf.c:122: error: implicit declaration of 
-function 'usb_endpoint_dir_in'
-make[1]: *** [drivers/usb/gadget/file_storage.o] Error 1
-make: *** [drivers/usb/gadget/file_storage.o] Error 2
+> --- linux-2.6-for-ingo.orig/drivers/misc/sgi-xp/xpc_main.c
+> +++ linux-2.6-for-ingo/drivers/misc/sgi-xp/xpc_main.c
+> @@ -318,7 +318,7 @@ xpc_hb_checker(void *ignore)
+>  
+>  	/* this thread was marked active by xpc_hb_init() */
+>  
+> -	set_cpus_allowed_ptr(current, &cpumask_of_cpu(XPC_HB_CHECK_CPU));
+> +	set_cpus_allowed_ptr(current, cpumask_of(XPC_HB_CHECK_CPU));
+>  
+>  	/* set our heartbeating to other partitions into motion */
+>  	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
 
-While putting it in epautoconf.c would be sufficient, the includes
+Acked-by: Dean Nelson <dcn@sgi.com>
 
-#include <linux/usb/ch9.h>
-#include <linux/usb/gadget.h>
-
-are already repeated in both, so it would seem reasonable to repeat usb.h 
-in both as well.
-
-julia
