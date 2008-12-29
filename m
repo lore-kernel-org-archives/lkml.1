@@ -1,40 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYL2NmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbYL2Nmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbYL2NmY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 08:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYL2NmQ
+	id S1755375AbYL2Nmk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 08:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYL2Nm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 08:42:16 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:39065 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753227AbYL2NmP (ORCPT
+	Mon, 29 Dec 2008 08:42:29 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:33528 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754895AbYL2Nm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 08:42:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :x-google-sender-auth;
-        b=CpCeMYcoXBv2mmp/9zAYl4kD1MIWcqKHq7+9ojMbK7BarlutcI+xTpVDIiezmz1Bht
-         RPj2lZCLQc1O4OmZOwGYoG5fGhoJfns7odq8vmbsxwzCE4j1zqx3uPnCRk4wtqyRDpw0
-         QFoW2c+3xVt+fp7BKyymg9Xs6MU/qLkPnkxQQ=
-Message-ID: <43d009740812290542p3e54b90avea7ccc27ec432656@mail.gmail.com>
-Date: Mon, 29 Dec 2008 20:42:13 +0700
-From: "Igor Podlesny" <for.poige+linux@gmail.com>
-Reply-To: for.poige+linux@gmail.com
-To: "=?UTF-8?Q?=C3=89ric_Piel?=" <eric.piel@tremplin-utc.net>
-Subject: > There are actually more stable versions available but they are not advertised
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 29 Dec 2008 08:42:28 -0500
+Date: Mon, 29 Dec 2008 14:44:02 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: pending kbuild updates
+Message-ID: <20081229134402.GA7069@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: 348ec28b7659827b
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBTDgSki029666
 
-2008/12/29 Ã‰ric Piel <eric.piel@tremplin-utc.net>:> Igor Podlesny schreef:>> Actually that's either a mistake or I don't know what you guys call "a>> stable version".> [removing all the part which needs bug report numbers]>> I agree with you that the website is not very clear for someone not> accustomed to the Linux kernel development. There are actually more> stable versions available but they are not advertised. Maybe there> should be more trees displayed, something like this:> The latest stable version of the Linux kernel is:       2.6.28> The previous stable version of the Linux kernel is:     2.6.27.10> The latest longtime version of the Linux kernel is:     2.6.16.62
-	Well, I'd call those versions stable if there were ongoing bugfixes(if affected) backporting to it. Otherwise these are rather "outdated"versions.
--- End of message. Next message?ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Following is the next batch queued up for merging.
+Highlights:
+
+o improved userspace header checks (spawns a lot of warnings now!)
+o some kconfig improvements for check of recursive dependencies
+o drop retrun of void warning from sparse
+
+	Sam
+
+Hannes Eder (1):
+      kbuild: disable sparse warning "returning void-valued expression"
+
+Mike Frysinger (2):
+      headers_check.pl: disallow extern's
+      kbuild: in headers_install autoconvert asm/inline/volatile to __xxx__
+
+Randy Dunlap (1):
+      kbuild: make *config usage docs
+
+Sam Ravnborg (9):
+      m68k: fix recursive dependency in Kconfig
+      kconfig: explain symbol value defaults
+      kconfig: add comments to symbol flags
+      kconfig: struct property commented
+      kconfig: improve readout when we hit recursive dependencies
+      kconfig: print all locations when we see a recursive dependency
+      kconfig: improve error messages for bad source statements
+      kbuild: check for leaked CONFIG_ symbols to userspace
+      kbuild: document environment variables
+
+ Documentation/kbuild/00-INDEX       |    6 +-
+ Documentation/kbuild/kbuild.txt     |  126 +++++++++++++++++++++++
+ Documentation/kbuild/kconfig.txt    |  188 +++++++++++++++++++++++++++++++++++
+ Makefile                            |    3 +-
+ README                              |   32 ++++---
+ arch/m68k/Kconfig                   |    1 -
+ scripts/headers_check.pl            |   21 ++++-
+ scripts/headers_install.pl          |    3 +
+ scripts/kconfig/expr.h              |   83 ++++++++++-----
+ scripts/kconfig/lex.zconf.c_shipped |    7 +-
+ scripts/kconfig/menu.c              |    2 +
+ scripts/kconfig/symbol.c            |   27 ++++-
+ scripts/kconfig/zconf.l             |    7 +-
+ 13 files changed, 453 insertions(+), 53 deletions(-)
