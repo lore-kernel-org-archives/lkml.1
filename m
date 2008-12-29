@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYL2QS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbYL2QUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbYL2QS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 11:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYL2QSP
+	id S1752796AbYL2QUn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 11:20:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYL2QUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 11:18:15 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:41495 "EHLO mgw2.diku.dk"
+	Mon, 29 Dec 2008 11:20:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45321 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751807AbYL2QSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 11:18:13 -0500
-Date: Mon, 29 Dec 2008 17:18:10 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh@suse.de, dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 10/13] drivers/usb/gadget: use USB API functions rather
- than constants
-In-Reply-To: <Pine.LNX.4.44L0.0812291111581.2250-100000@iolanthe.rowland.org>
-Message-ID: <Pine.LNX.4.64.0812291715170.9555@pc-004.diku.dk>
-References: <Pine.LNX.4.44L0.0812291111581.2250-100000@iolanthe.rowland.org>
+	id S1751130AbYL2QUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 11:20:34 -0500
+Date: Mon, 29 Dec 2008 17:20:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
+Message-ID: <20081229162017.GB31964@elte.hu>
+References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com> <20081227173839.GA9793@elte.hu> <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain> <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu> <20081229110012.GB11111@linux.vnet.ibm.com> <20081229110533.GA29592@elte.hu> <20081229160538.GA5952@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081229160538.GA5952@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Dec 2008, Alan Stern wrote:
 
-> On Mon, 29 Dec 2008, Julia Lawall wrote:
+* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+> * Ingo Molnar <mingo@elte.hu> [2008-12-29 12:05:33]:
 > 
-> > > ...
+> > 
+> > * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > 
+> > > Hi Ingo,
 > > > 
-> > > > diff --git a/drivers/usb/gadget/file_storage.c b/drivers/usb/gadget/file_storage.c
-> > > > index 88fedd0..c44092b 100644
-> > > > --- a/drivers/usb/gadget/file_storage.c
-> > > > +++ b/drivers/usb/gadget/file_storage.c
-> > > > @@ -248,6 +248,7 @@
-> > > >  #include <linux/freezer.h>
-> > > >  #include <linux/utsname.h>
-> > > >  
-> > > > +#include <linux/usb.h>
-> > > >  #include <linux/usb/ch9.h>
-> > > >  #include <linux/usb/gadget.h>
-> > > 
-> > > While there's nothing wrong with this part of the patch, it hardly 
-> > > seems necessary.  Was there any reason for including it?
+> > > 	kernel crashes after applying the patch, I will retest with 
+> > > the patch posted at http://lkml.org/lkml/2008/12/29/48
 > > 
-> > The new functions are defined in usb.h. I have added the include in 
-> > this file and in the file epautoconf.c that this file includes.  If it is 
-> > removed from both, then the code does not compile (after make 
-> > allyesconfig):
+> > yes - Yinghai observed this too. Could you check tip/master that has all 
+> > the fixlets merged up, to make sure it's finally solved? Thanks,
 > > 
-> > In file included from drivers/usb/gadget/file_storage.c:268:
-> > drivers/usb/gadget/epautoconf.c: In function 'ep_matches':
-> > drivers/usb/gadget/epautoconf.c:79: error: implicit declaration of 
-> > function 'usb_endpoint_type'
-> > drivers/usb/gadget/epautoconf.c:122: error: implicit declaration of 
-> > function 'usb_endpoint_dir_in'
-> > make[1]: *** [drivers/usb/gadget/file_storage.o] Error 1
-> > make: *** [drivers/usb/gadget/file_storage.o] Error 2
+> > also, what is the gcc -v output of your compiler?
 > > 
-> > While putting it in epautoconf.c would be sufficient, the includes
-> > 
-> > #include <linux/usb/ch9.h>
-> > #include <linux/usb/gadget.h>
-> > 
-> > are already repeated in both, so it would seem reasonable to repeat usb.h 
-> > in both as well.
+> > 	Ingo
 > 
-> Ah, but the declarations in ch9.h and gadget.h are used by both files, 
-> whereas the declarations in usb.h are used only by epautoconf.c.  Hence 
-> it seems most reasonable to #include usb.h only in epautoconf.c.
+> Hi Ingo/Yinghai,
+> 
+> 	Thanks for getting it resolved, the latest tip/master boot's up fine :)
 
-Oops, I didn't notice that.  Just ignore that part of the patch then.  Or 
-I can send another one if that would be more convenient.
+thanks for testing it :-)
 
-A bit further down, the same is true of drivers/usb/gadget/gmidi.c and 
-drivers/usb/gadget/printer.c
+Linus - this means irq-core-for-linus + irq-fixes-for-linus-4 (or just 
+plain irq-fixes-for-linus-4) should be golden.
 
-julia
+	Ingo
