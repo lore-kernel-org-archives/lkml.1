@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbYL2KU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYL2KVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbYL2KU7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 05:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbYL2KUp
+	id S1755205AbYL2KVl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 05:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbYL2KVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 05:20:45 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:51655 "EHLO mgw2.diku.dk"
+	Mon, 29 Dec 2008 05:21:13 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:54508 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754344AbYL2KUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 05:20:44 -0500
-Date: Mon, 29 Dec 2008 11:20:42 +0100 (CET)
+	id S1754400AbYL2KVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 05:21:10 -0500
+Date: Mon, 29 Dec 2008 11:21:07 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org, gregkh@suse.de,
+To: jgarzik@pobox.com, netdev@vger.kernel.org, gregkh@suse.de,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/13] drivers/mtd/nand: use USB API functions rather than
+Subject: [PATCH 6/13] drivers/net/usb: use USB API functions rather than
  constants
-Message-ID: <Pine.LNX.4.64.0812291120220.9555@pc-004.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812291120450.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -46,6 +46,14 @@ USB_ENDPOINT_XFER_BULK
 USB_ENDPOINT_XFER_CONTROL
 USB_ENDPOINT_XFER_INT
 USB_ENDPOINT_XFER_ISOC
+
+In drivers/net/wireless/zd1211rw/zd_usb.c the code:
+
+(endpoint->bEndpointAddress & USB_TYPE_MASK) == USB_DIR_OUT
+
+is suspicious.  If it is intended to use USB_ENDPOINT_DIR_MASK rather than
+USB_TYPE_MASK, then the whole conditional test could be converted to a call
+to usb_endpoint_is_bulk_in.
 
 An extract of the semantic patch that makes these changes is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -78,25 +86,34 @@ An extract of the semantic patch that makes these changes is as follows:
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/mtd/nand/alauda.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/usb/hso.c                  |    2 +-
+ drivers/net/wireless/zd1211rw/zd_usb.c |    3 +--
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mtd/nand/alauda.c b/drivers/mtd/nand/alauda.c
-index 9623803..6d96491 100644
---- a/drivers/mtd/nand/alauda.c
-+++ b/drivers/mtd/nand/alauda.c
-@@ -676,11 +676,11 @@ static int alauda_probe(struct usb_interface *interface,
- 		goto error;
+diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
+index 2d41a10..6c30c4f 100644
+--- a/drivers/net/usb/hso.c
++++ b/drivers/net/usb/hso.c
+@@ -3177,7 +3177,7 @@ static struct usb_endpoint_descriptor *hso_get_ep(struct usb_interface *intf,
+ 	for (i = 0; i < iface->desc.bNumEndpoints; i++) {
+ 		endp = &iface->endpoint[i].desc;
+ 		if (((endp->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == dir) &&
+-		    ((endp->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == type))
++		    (usb_endpoint_type(endp) == type))
+ 			return endp;
+ 	}
  
- 	al->write_out = usb_sndbulkpipe(al->dev,
--			ep_wr->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
-+			usb_endpoint_num(ep_wr));
- 	al->bulk_in = usb_rcvbulkpipe(al->dev,
--			ep_in->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
-+			usb_endpoint_num(ep_in));
- 	al->bulk_out = usb_sndbulkpipe(al->dev,
--			ep_out->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
-+			usb_endpoint_num(ep_out));
- 
- 	/* second device is identical up to now */
- 	memcpy(al+1, al, sizeof(*al));
+diff --git a/drivers/net/wireless/zd1211rw/zd_usb.c b/drivers/net/wireless/zd1211rw/zd_usb.c
+index 04c1396..b5db57d 100644
+--- a/drivers/net/wireless/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zd1211rw/zd_usb.c
+@@ -1065,8 +1065,7 @@ static int eject_installer(struct usb_interface *intf)
+ 	/* Find bulk out endpoint */
+ 	endpoint = &iface_desc->endpoint[1].desc;
+ 	if ((endpoint->bEndpointAddress & USB_TYPE_MASK) == USB_DIR_OUT &&
+-	    (endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
+-	    USB_ENDPOINT_XFER_BULK) {
++	    usb_endpoint_xfer_bulk(endpoint)) {
+ 		bulk_out_ep = endpoint->bEndpointAddress;
+ 	} else {
+ 		dev_err(&udev->dev,
