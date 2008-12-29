@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbYL2GKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYL2G0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbYL2GKa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 01:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYL2GKO
+	id S1753196AbYL2G0i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 01:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYL2G01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 01:10:14 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:64652 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYL2GKM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 01:10:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :x-google-sender-auth;
-        b=or+FHjGQTZtPdfBkJifGjg21Jbfn3mYKjtOIEP9hvCZNRXaTlg2fy198kCkGQtNhG+
-         nZ6SI5SZwFC+6LTaGdNafGHc2oxjIN9EFQXy4E8BMhIweuN5DCfCxLcOvDiBunIizJU0
-         9fVvQquNypqLKwFiJXEkeY0+3JaeV77P4Jp+M=
-Message-ID: <43d009740812282210q69cb5e58t657c5f7b2cc4f42e@mail.gmail.com>
-Date: Mon, 29 Dec 2008 13:10:11 +0700
-From: "Igor Podlesny" <for.poige+linux@gmail.com>
-Reply-To: for.poige+linux@gmail.com
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: > Have you filed bug reports to get them fixed ?
-Cc: linux-kernel@vger.kernel.org
+	Mon, 29 Dec 2008 01:26:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49160 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752010AbYL2G00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 01:26:26 -0500
+Message-ID: <49586CCD.8010207@kernel.org>
+Date: Mon, 29 Dec 2008 15:23:09 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Google-Sender-Auth: 9d3df0524aeee7a0
+To: Justin Madru <jdm64@gawab.com>
+CC: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [2.6.28-rc] Sata soft reset filling log
+References: <494318F5.4060007@gawab.com> <494EFD79.7020008@kernel.org> <494F3AD2.3060201@gawab.com> <494F3E41.60304@kernel.org> <49500BE2.6050106@gawab.com> <49504B8C.8080907@kernel.org> <49568CAD.7050509@gawab.com>
+In-Reply-To: <49568CAD.7050509@gawab.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 29 Dec 2008 06:23:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBT6AYki026320
 
-2008/12/29 Willy Tarreau <w@1wt.eu>:> On Mon, Dec 29, 2008 at 12:39:55PM +0700, Igor Podlesny wrote:[â€¦]> Well, I won't say that I find them 100% rock solid, but you seem to be> able to reproduce a lot of serious issues. Have you filed bug reports> to get them fixed ? You cannot expect people to fix bugs they're not> aware of !
-	I even didn't have a backtrace. What's to fill in? "It just crashed 2times, Dear Bugzilla"? :-)
--- End of message. Next message?ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Hello,
+
+Justin Madru wrote:
+> I applied the patch and get the following:
+> 
+> ata2: XXX status=50 after 100 tries
+> ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> ata2.00: ST_FIRST: !(DRQ|ERR|DF)
+> ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+>         cdb 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+>         res 50/00:01:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+> ata2.00: status: { DRDY }
+> ata2: soft resetting link
+> ata2.00: configured for UDMA/33
+> ata2: EH complete
+
+This is so strange.  :-(
+
+> I tried to git bisect the problem. First time I thought the error
+> was between rc2 and rc3, but the bisect gave inconclusive results
+> because I couldn't tell for sure a good commit from a bad.  I tried
+> again with .27 to .28-rc3, but I was unable to bisect because of
+> compile errors (in pre-rc1), and doing git bisect skip, again landed
+> on a commit with compile errors.
+
+Thanks for trying.  I can't think of any relevant change which can
+cause this and I doubt it's something affecting many machines given
+that you're currently the only one reporting this problem.
+
+Any chance it's a hardware fluke?  Can you please make sure it doesn't
+happen with 2.6.27?
+
+> Unless you can think of anything else, I'm just going to wait and see if
+> a commit in .29 will fix the problem.
+
+Eh... I doubt that will happen.  No scheduled change for SFF HSM
+implementation.
+
+Thanks.
+
+-- 
+tejun
