@@ -1,80 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYL2GzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYL2HBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbYL2GzN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 01:55:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYL2GzA
+	id S1753488AbYL2HBE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 02:01:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbYL2HA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 01:55:00 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:58428 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbYL2Gy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 01:54:59 -0500
-Subject: Re: [PATCH] powerpc: fix compile damage from 2a4aca11
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Rusty Russell <rusty@fandango2.ozlabs.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <200812291711.26118.rusty@fandango2.ozlabs.ibm.com>
-References: <200812291711.26118.rusty@fandango2.ozlabs.ibm.com>
-Content-Type: text/plain
-Organization: IBM Australia
-Date: Mon, 29 Dec 2008 17:47:17 +1100
-Message-Id: <1230533237.15389.43.camel@pasglop>
+	Mon, 29 Dec 2008 02:00:56 -0500
+Received: from 1wt.eu ([62.212.114.60]:1442 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751945AbYL2HA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 02:00:56 -0500
+Date: Mon, 29 Dec 2008 08:00:52 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Igor Podlesny <for.poige+linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: > Have you filed bug reports to get them fixed ?
+Message-ID: <20081229070051.GA21200@1wt.eu>
+References: <43d009740812282210q69cb5e58t657c5f7b2cc4f42e@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43d009740812282210q69cb5e58t657c5f7b2cc4f42e@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-29 at 17:41 +1100, Rusty Russell wrote:
-> In file included from /scratch/kisskb/src/arch/powerpc/mm/mem.c:51:
-> /scratch/kisskb/src/arch/powerpc/mm/mmu_decl.h: In function
-> '_tlbil_all':
-> /scratch/kisskb/src/arch/powerpc/mm/mmu_decl.h:34: error: expected ';'
-> before '}' token
-> /scratch/kisskb/src/arch/powerpc/mm/mmu_decl.h:36: error: invalid
-> storage class for function '_tlbil_pid'
-> 
-> "powerpc/mm: Split low level tlb invalidate for nohash processors" needs
-> more semicolons.  Or testing.  Or both.
+On Mon, Dec 29, 2008 at 01:10:11PM +0700, Igor Podlesny wrote:
+> 2008/12/29 Willy Tarreau <w@1wt.eu>:> On Mon, Dec 29, 2008 at 12:39:55PM +0700, Igor Podlesny wrote:[???]> Well, I won't say that I find them 100% rock solid, but you seem to be> able to reproduce a lot of serious issues. Have you filed bug reports> to get them fixed ? You cannot expect people to fix bugs they're not> aware of !
+> 	I even didn't have a backtrace. What's to fill in? "It just crashed 2times, Dear Bugzilla"? :-)
 
-Yeah, looks like both paulus and I are missing 40x and 8xx test configs
-in our build tests :-( I'll fix that.,
+yes. Sometimes someone will jump in adding a "me too" which will make it
+easier to narrow the problem down.
 
-> Signed-off-by: Rusty Russell <rusty@Fandango2.ozlabs.ibm.com>
+If you estimate that what you observe are regressions, you should definitely
+report them, with or without traces.
 
-Nice signed-off :-)
-
-Cheers,
-Ben.
-
-
-> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-> index 4314b39..ad123bc 100644
-> --- a/arch/powerpc/mm/mmu_decl.h
-> +++ b/arch/powerpc/mm/mmu_decl.h
-> @@ -30,11 +30,11 @@
->  #if defined(CONFIG_40x) || defined(CONFIG_8xx)
->  static inline void _tlbil_all(void)
->  {
-> -	asm volatile ("sync; tlbia; isync" : : : "memory")
-> +	asm volatile ("sync; tlbia; isync" : : : "memory");
->  }
->  static inline void _tlbil_pid(unsigned int pid)
->  {
-> -	asm volatile ("sync; tlbia; isync" : : : "memory")
-> +	asm volatile ("sync; tlbia; isync" : : : "memory");
->  }
->  #else /* CONFIG_40x || CONFIG_8xx */
->  extern void _tlbil_all(void);
-> @@ -47,7 +47,7 @@ extern void _tlbil_pid(unsigned int pid);
->  #ifdef CONFIG_8xx
->  static inline void _tlbil_va(unsigned long address, unsigned int pid)
->  {
-> -	asm volatile ("tlbie %0; sync" : : "r" (address) : "memory")
-> +	asm volatile ("tlbie %0; sync" : : "r" (address) : "memory");
->  }
->  #else /* CONFIG_8xx */
->  extern void _tlbil_va(unsigned long address, unsigned int pid);
+Willy
 
