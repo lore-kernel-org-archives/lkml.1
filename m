@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbYL2UjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbYL2Uip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752987AbYL2UjF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 15:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYL2Ugv
+	id S1753848AbYL2Uip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 15:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYL2Uf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 15:36:51 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54112 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754250AbYL2Ugu (ORCPT
+	Mon, 29 Dec 2008 15:35:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55115 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753953AbYL2Ufz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 15:36:50 -0500
-Message-ID: <495934D9.2070908@zytor.com>
-Date: Mon, 29 Dec 2008 12:36:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mike Frysinger <vapier@gentoo.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kbuild: auto-convert size types in userspace headers
-References: <49567EB5.5030409@zytor.com> <1230549153-31754-1-git-send-email-vapier@gentoo.org> <20081229140356.GB7327@uranus.ravnborg.org> <200812291534.49577.vapier@gentoo.org>
-In-Reply-To: <200812291534.49577.vapier@gentoo.org>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 29 Dec 2008 15:35:55 -0500
+Date: Mon, 29 Dec 2008 12:35:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] exofs: symlink_inode and fast_symlink_inode
+ operations
+Message-Id: <20081229123508.01e7da6d.akpm@linux-foundation.org>
+In-Reply-To: <4947C76E.6070807@panasas.com>
+References: <4947BFAA.4030208@panasas.com>
+	<4947C76E.6070807@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On Monday 29 December 2008 09:03:56 Sam Ravnborg wrote:
->> On Mon, Dec 29, 2008 at 06:12:33AM -0500, Mike Frysinger wrote:
->>> Rather than constantly fixing up size type breakage in userspace headers,
->>> auto convert the types u_intXX_t, uintXX_t, intXX_t, uXX, and sXX to the
->>> appropriate __uXX or __sXX type.
->> Is this the right thing to do?
->> uintXX_t belongs to a namespace that the kernel should not use.
-> 
-> some headers are shared between projects and so use the uintXX_t form, so i'm 
-> not sure outright banning it is a nice answer for them
+On Tue, 16 Dec 2008 17:21:18 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-Arguably, the right answer is the opposite... the Linux u* and s* forms
-feel much more like nonstandard legacy code to me.  They have the
-advantage of brevity, however.
+> +struct inode_operations exofs_symlink_inode_operations = {
+> +struct inode_operations exofs_fast_symlink_inode_operations = {
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Can be made const (I think)
