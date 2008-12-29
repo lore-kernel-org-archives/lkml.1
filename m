@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbYL2Phz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbYL2Pk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752496AbYL2Phz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 10:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYL2Phr
+	id S1752237AbYL2Pk3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 10:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYL2PkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 10:37:47 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:57237 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751428AbYL2Phr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 10:37:47 -0500
-Date: Mon, 29 Dec 2008 09:37:44 -0600
-From: Dean Nelson <dcn@sgi.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Ben Hutchings <bhutchings@solarflare.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: Re: [PATCH 7/8] cpumask: convert misc driver functions
-Message-ID: <20081229153744.GA6512@sgi.com>
-References: <20081219160144.697518000@polaris-admin.engr.sgi.com> <20081219160145.672392000@polaris-admin.engr.sgi.com>
+	Mon, 29 Dec 2008 10:40:13 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39760 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbYL2PkL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 10:40:11 -0500
+Date: Mon, 29 Dec 2008 10:37:57 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] clean up of netif_rx_reschedule() changes in drivers
+Message-ID: <20081229153757.GA2857@localhost.localdomain>
+References: <20081229110041.0eca977a.sfr@canb.auug.org.au> <20081229102509.GA11111@linux.vnet.ibm.com> <20081229214144.43be8c1d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081219160145.672392000@polaris-admin.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081229214144.43be8c1d.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 19, 2008 at 08:01:51AM -0800, Mike Travis wrote:
-> Impact: Reduce stack usage, use new cpumask API.
+On Mon, Dec 29, 2008 at 09:41:44PM +1100, Stephen Rothwell wrote:
+> Hi Kamalesh,
 > 
-> Convert misc driver functions to use struct cpumask.
+> On Mon, 29 Dec 2008 15:55:29 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> >
+> > I hit similar build failure due to the change in the netif_rx_reschedule()
+> > 
+> > drivers/net/ehea/ehea_main.c: In function 'ehea_poll':
+> > drivers/net/ehea/ehea_main.c:844: warning: passing argument 1 of 'netif_rx_reschedule' from incompatible pointer type
+> > drivers/net/ehea/ehea_main.c:844: error: too many arguments to function 'netif_rx_reschedule'
+> > make[3]: *** [drivers/net/ehea/ehea_main.o] Error 1
 > 
-> To Do:
->   - Convert iucv_buffer_cpumask to cpumask_var_t.
+> Linus already took a patch for ibmveth and ehea.
 > 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Signed-off-by: Mike Travis <travis@sgi.com>
+> > greping through the sources for the changes missed out, we have
+> > 
+> 	.
+> 	.
+> > 
+> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > --
+> >  drivers/net/arm/ep93xx_eth.c |    2 +-
+> >  drivers/net/arm/ixp4xx_eth.c |    2 +-
+> >  drivers/net/wan/ixp4xx_hss.c |    2 +-
+> >  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> Thanks for the patch, I assume that Dave or Linus will take care of that.
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
 
-[...]
+Thanks guys, not sure how my patch missed that.  I did an allmodconfig build
+that passed successfully.  Thanks!
 
-> --- linux-2.6-for-ingo.orig/drivers/misc/sgi-xp/xpc_main.c
-> +++ linux-2.6-for-ingo/drivers/misc/sgi-xp/xpc_main.c
-> @@ -318,7 +318,7 @@ xpc_hb_checker(void *ignore)
->  
->  	/* this thread was marked active by xpc_hb_init() */
->  
-> -	set_cpus_allowed_ptr(current, &cpumask_of_cpu(XPC_HB_CHECK_CPU));
-> +	set_cpus_allowed_ptr(current, cpumask_of(XPC_HB_CHECK_CPU));
->  
->  	/* set our heartbeating to other partitions into motion */
->  	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
-
-Acked-by: Dean Nelson <dcn@sgi.com>
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
