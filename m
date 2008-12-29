@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbYL2Dpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbYL2D4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbYL2Dpy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 22:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYL2Dpo
+	id S1752946AbYL2D4l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 22:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYL2D4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 22:45:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45556 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbYL2Dpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 22:45:42 -0500
-Date: Mon, 29 Dec 2008 14:45:33 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: dhowells@redhat.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Bernd Schubert <bernd.schubert@fastmail.fm>, nfsv4@linux-nfs.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org, steved@redhat.com,
-       linux-fsdevel@vger.kernel.org, rwheeler@redhat.com,
-       linux-next@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Message-Id: <20081229144533.4a0ab696.sfr@canb.auug.org.au>
-In-Reply-To: <20081219110539.7e7e230c.sfr@canb.auug.org.au>
-References: <8930.1229560221@redhat.com>
-	<20081218142420.GA16728@infradead.org>
-	<20081218123601.11810b7f.akpm@linux-foundation.org>
-	<200812190007.34581.bernd.schubert@fastmail.fm>
-	<20081218152616.a24c013f.akpm@linux-foundation.org>
-	<20081219110539.7e7e230c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__29_Dec_2008_14_45_33_+1100_iuBFkyjGgVegFVSl"
+	Sun, 28 Dec 2008 22:56:32 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:46727 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbYL2D4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 22:56:32 -0500
+Date: Sun, 28 Dec 2008 22:56:27 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: Patch enabling Bluetooth for Asus EEE 901
+In-reply-to: <20081228145835.GB12853@srcf.ucam.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, corentincj@iksaif.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       acpi4asus-user@lists.sourceforge.net
+Message-id: <alpine.LFD.2.00.0812282245450.4738@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20081228102026.GA18096@localhost>
+ <20081228145835.GB12853@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__29_Dec_2008_14_45_33_+1100_iuBFkyjGgVegFVSl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, 28 Dec 2008, Matthew Garrett wrote:
 
-Hi David,
+> On Sun, Dec 28, 2008 at 11:20:27AM +0100, Ondrej Zajicek wrote:
+> > eeepc-laptop driver has interface for enabling/disabling
+> > Bluetooth, but it does not work. This patch fixes it.
+> 
+> An identical patch was posted at the start of the month in 
+> <20081203203111.GA28234@earth.li> - Len, are you picking up patches from 
+> -acpi at the moment, or do they need to be sent to you as well?
 
-On Fri, 19 Dec 2008 11:05:39 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Given the ongoing discussions around FS-Cache, I have removed it from
-> linux-next.  Please ask me to include it again (if sensible) once some
-> decision has been reached about its future.
+Re: list
+The list for this driver is acpi4asus-user@lists.sourceforge.net
 
-What was the result of discussions around FS-Cache?  I ask because it
-reappeared in linux-next today via the nfs tree (merged into that on Dec
-24 and 25) ...
+I'm not on that list, but presumably the maintainer,
+Corentin Chary, is.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+When I see patches for the platform specific drivers on
+linux-acpi, I generally do try to pick them up, but I usually
+request an ACK from the primary maintainer --
+for often I have no means by inspection or testing
+to verify the change, and that maintainer is the one
+who gets the headache if the patch causes problems.
 
---Signature=_Mon__29_Dec_2008_14_45_33_+1100_iuBFkyjGgVegFVSl
-Content-Type: application/pgp-signature
+I'd pick them up if I see them on lkml as well - but I only
+see lkml messages if they are addressed to me or if they
+have the word "ACPI" in them.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Finally, I'd definitely pick them up if the primary
+maintainer forwards them to me.
 
-iEYEARECAAYFAklYR90ACgkQjjKRsyhoI8w2TwCfbPLtgwfzf5IZvp68VjbeV80G
-YHQAn3oqSuhjkCpzR0xdnKHm86LACwdN
-=m9lC
------END PGP SIGNATURE-----
+I've been offline since before the holidays,
+just getting back online now.  Apparently I didn't find the
+holidays as boring as Linus did.
 
---Signature=_Mon__29_Dec_2008_14_45_33_+1100_iuBFkyjGgVegFVSl--
+cheers,
+Len Brown, Intel Open Source Technology Center
