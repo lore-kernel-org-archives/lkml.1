@@ -1,98 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYL2XzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYL2Xzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbYL2XzA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 18:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYL2Xyv
+	id S1754158AbYL2Xzc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 18:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYL2XzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 18:54:51 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37570 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751222AbYL2Xyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 18:54:51 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/FxlUsfPbFIrcl4DmctscH4vnu5w2Pc4goLOH944
-	O9zUdabv+t8Rc1
-Date: Tue, 30 Dec 2008 00:54:51 +0100 (CET)
-From: Guennadi Liakhovetski <lg@denx.de>
-X-X-Sender: lyakh@axis700.grange
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: ben-linux@fluff.org, linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: [PATCH v2] leds: add a dac124s085 SPI LED driver
-In-Reply-To: <20081229151152.5699d59c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0812300016030.8962@axis700.grange>
-References: <Pine.LNX.4.64.0812181213540.5510@axis700.grange>
- <20081218120619.GJ12431@fluff.org.uk> <Pine.LNX.4.64.0812181346440.5510@axis700.grange>
- <20081229151152.5699d59c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.43
+	Mon, 29 Dec 2008 18:55:23 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:44088 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbYL2XzV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 18:55:21 -0500
+Subject: [PATCH] linux/types.h: Do not depend on __GNUC__ for __le64 and
+	__be64
+From: Detlef Riekenberg <wine.dev@web.de>
+To: linux-kernel@vger.kernel.org, hpa@zytor.com
+Content-Type: text/plain
+Date: Tue, 30 Dec 2008 00:55:21 +0100
+Message-Id: <1230594921.7652.35.camel@p4.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18gfFIXv4eBIf1376rJ0krXe4vrXGl8Iee62MEv
+	/5HW7HIheEClWvVS1vhZj3ZArH9vtP+t+CwC1lYHSqnnBQ6yeC
+	xdwj2mqcs=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Dec 2008, Andrew Morton wrote:
+Hi.
+<linux/cdrom.h> is used in Wine, but failed to compile with pcc.
+(__le64 and __be64 are referenced in <linux/byteorder/little_endian.h>)
 
-> On Thu, 18 Dec 2008 13:51:06 +0100 (CET)
-> Guennadi Liakhovetski <lg@denx.de> wrote:
-> 
-> > +static void dac124s085_led_work(struct work_struct *work)
-> > +{
-> > +	struct dac124s085_led *led = container_of(work, struct dac124s085_led,
-> > +						  work);
-> > +	u16 word;
-> > +
-> > +	mutex_lock(&led->mutex);
-> > +	word = cpu_to_le16(((led->id) << 14) | REG_WRITE_UPDATE |
-> > +			   (led->brightness & 0xfff));
-> > +	spi_write(led->spi, (const u8 *)&word, sizeof(word));
-> 
-> This looks like it might have endianness issues?
+There is no reason to restrict the typedefs with __GNUC__.
+As reference, the typedefs for __u64 and __s64 where fixed
+to be available with pcc on 02. Mai 2008 by H. Peter Anvin
+(commit edfa5cfa3dc5bfa95e6aa82a2b8904e7f6c35ed7)
 
-Actually this was an attempt to fix the endianness issue pointed out in an 
-earlier review by Ben Dooks, have I done it wrong?
+Wine: http://www.winehq.org
+pcc:  http://pcc.ludd.ltu.se
 
-> > +	mutex_unlock(&led->mutex);
-> > +}
-> > +
-> > +static void dac124s085_set_brightness(struct led_classdev *ldev,
-> > +				      enum led_brightness brightness)
-> > +{
-> > +	struct dac124s085_led *led = container_of(ldev, struct dac124s085_led,
-> > +						  ldev);
-> > +
-> > +	spin_lock(&led->lock);
-> > +	led->brightness = brightness;
-> > +	schedule_work(&led->work);
-> > +	spin_unlock(&led->lock);
-> > +}
-> 
-> So..  why do we need to defer this to a workqueue rather than just
-> performing the operation synchronously?
 
-Here's why (from include/linux/leds.h):
+Please CC me personally. Thanks
 
-	/* Set LED brightness level */
-	/* Must not sleep, use a workqueue if needed */
-	void		(*brightness_set)(struct led_classdev *led_cdev,
-					  enum led_brightness brightness);
+-- 
+By by ... Detlef
 
-> What happens if there are two calls to set_brightness() in quick
-> succession, and the second occurs before the first has completed?  I
-> think the schedule_work() fails and the second write gets lost?
 
-This seems to be a common "feature" of multiple leds drivers. In fact, if 
-the two calls are successive, then the queue will take care of the 
-execution order. If they are "simultaneous," i.e., the callers didn't 
-synchronise, how do we know who is the first and who is the second? Isn't 
-the one that _completes_ first actually the first? Or am I missing 
-something?
+>From 009605de95d2148c8c54ff83f72ebe0177b805ac Mon Sep 17 00:00:00 2001
+From: Detlef Riekenberg <wine.dev@web.de>
+Date: Mon, 29 Dec 2008 23:52:48 +0100
+Subject: [PATCH] linux/types.h: Do not depend on __GNUC__ for __le64 and
+__be64
 
-Thanks for the review!
-Guennadi
+Signed-off-by: Detlef Riekenberg <wine.dev@web.de>
 ---
-Guennadi Liakhovetski, Ph.D.
+ include/linux/types.h |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+diff --git a/include/linux/types.h b/include/linux/types.h
+index 1d98330..ccf6742 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -181,10 +181,9 @@ typedef __u16 __bitwise __le16;
+ typedef __u16 __bitwise __be16;
+ typedef __u32 __bitwise __le32;
+ typedef __u32 __bitwise __be32;
+-#if defined(__GNUC__)
+ typedef __u64 __bitwise __le64;
+ typedef __u64 __bitwise __be64;
+-#endif
++
+ typedef __u16 __bitwise __sum16;
+ typedef __u32 __bitwise __wsum;
+ 
+-- 
+1.5.4.3
+
+
+
+
