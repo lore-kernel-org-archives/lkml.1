@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbYL2Jd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbYL2Jez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbYL2Jd4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 04:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYL2Jdp
+	id S1754226AbYL2Jez (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 04:34:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbYL2Jer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 04:33:45 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59154 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752637AbYL2Jdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 04:33:44 -0500
-Message-ID: <49589969.3020001@cn.fujitsu.com>
-Date: Mon, 29 Dec 2008 17:33:29 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Mon, 29 Dec 2008 04:34:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46378 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752991AbYL2Jeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 04:34:46 -0500
+Date: Mon, 29 Dec 2008 10:34:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
+Message-ID: <20081229093425.GB27293@elte.hu>
+References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com> <20081227173839.GA9793@elte.hu> <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain> <20081228232729.GA2158@elte.hu> <4958120F.4060804@zytor.com> <86802c440812281606o6e8fbde1ub2e5055f83fea47@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Roland Dreier <rdreier@cisco.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, sean.hefty@intel.com,
-       Aleksey Senin <alekseys@voltaire.com>
-Subject: Re: 2.6.28-git1 build failure
-References: <495853C6.6030000@oracle.com> <49587FDD.5000504@cn.fujitsu.com> <20081229092436.GA25707@elte.hu>
-In-Reply-To: <20081229092436.GA25707@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440812281606o6e8fbde1ub2e5055f83fea47@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar said the following on 2008-12-29 17:24:
-> * Wang Chen <wangchen@cn.fujitsu.com> wrote:
-> 
->> Randy Dunlap said the following on 2008-12-29 12:36:
->>> drivers/built-in.o: In function `addr_resolve_remote':
->>> addr.c:(.text+0x12fe75): undefined reference to `ip6_route_output'
->>> drivers/built-in.o: In function `rdma_translate_ip':
->>> (.text+0x1301a7): undefined reference to `ipv6_chk_addr'
->>> drivers/built-in.o: In function `rdma_resolve_ip':
->>> (.text+0x1303a9): undefined reference to `ipv6_chk_addr'
->>> drivers/built-in.o: In function `rdma_resolve_ip':
->>> (.text+0x13051b): undefined reference to `ip6_route_output'
->>>
->>> when CONFIG_IPV6=n.
->>>
->> Aleksey added IPv6 function to it but not change the Kconfig file.
->> The following patch will temporarily fix this build failure.
->> But IMHO separating the IPv4/IPv6 parts or using #ifdef would be better.
->>
->> Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
->> ---
->> diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
->> index a5dc78a..9535e13 100644
->> --- a/drivers/infiniband/Kconfig
->> +++ b/drivers/infiniband/Kconfig
->> @@ -36,7 +36,7 @@ config INFINIBAND_USER_MEM
->>  
->>  config INFINIBAND_ADDR_TRANS
->>  	bool
->> -	depends on INET
->> +	depends on INET && IPV6
->>  	default y
->>  
-> 
-> that's not good enough yet:
-> 
 
-Aleksey will fix it by adding #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE) now.
-See another thread "linux-next: origin tree build failure" :)
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> net/built-in.o: In function `rpcrdma_ep_disconnect':
-> (.text+0xf12c8): undefined reference to `rdma_disconnect'
-> net/built-in.o: In function `rpcrdma_create_id':
-> verbs.c:(.text+0xf13f9): undefined reference to `rdma_create_id'
-> verbs.c:(.text+0xf1448): undefined reference to `rdma_resolve_addr'
-> verbs.c:(.text+0xf14a7): undefined reference to `rdma_resolve_route'
-> verbs.c:(.text+0xf14f9): undefined reference to `rdma_destroy_id'
-> net/built-in.o: In function `rpcrdma_ep_connect':
-> (.text+0xf15c4): undefined reference to `rdma_destroy_id'
-> net/built-in.o: In function `rpcrdma_ep_connect':
-> (.text+0xf15ce): undefined reference to `rdma_destroy_qp'
-> net/built-in.o: In function `rpcrdma_ep_connect':
-> (.text+0xf15d6): undefined reference to `rdma_destroy_id'
-> net/built-in.o: In function `rpcrdma_ep_connect':
-> (.text+0xf15e9): undefined reference to `rdma_create_qp'
-> net/built-in.o: In function `rpcrdma_ep_connect':
-> (.text+0xf16a3): undefined reference to `rdma_connect'
-> net/built-in.o: In function `rpcrdma_ep_destroy':
-> (.text+0xf1c28): undefined reference to `rdma_destroy_qp'
-> net/built-in.o: In function `rpcrdma_ia_close':
-> (.text+0xf223f): undefined reference to `rdma_destroy_qp'
-> net/built-in.o: In function `rpcrdma_ia_close':
-> (.text+0xf2247): undefined reference to `rdma_destroy_id'
-> net/built-in.o: In function `rpcrdma_ia_open':
-> (.text+0xf2503): undefined reference to `rdma_destroy_id'
-> net/built-in.o: In function `svc_rdma_detach':
-> svc_rdma_transport.c:(.text+0xf2b04): undefined reference to `rdma_disconnect'
-> net/built-in.o: In function `svc_rdma_create':
-> svc_rdma_transport.c:(.text+0xf3003): undefined reference to `rdma_create_id'
-> svc_rdma_transport.c:(.text+0xf303d): undefined reference to `rdma_bind_addr'
-> svc_rdma_transport.c:(.text+0xf306b): undefined reference to `rdma_listen'
-> svc_rdma_transport.c:(.text+0xf30ba): undefined reference to `rdma_destroy_id'
-> net/built-in.o: In function `__svc_rdma_free':
-> svc_rdma_transport.c:(.text+0xf36f5): undefined reference to `rdma_destroy_id'
-> net/built-in.o: In function `svc_rdma_accept':
-> svc_rdma_transport.c:(.text+0xf43d2): undefined reference to `rdma_create_qp'
-> svc_rdma_transport.c:(.text+0xf43f4): undefined reference to `rdma_create_qp'
-> svc_rdma_transport.c:(.text+0xf45b2): undefined reference to `rdma_accept'
-> svc_rdma_transport.c:(.text+0xf4699): undefined reference to `rdma_destroy_id'
+> On Sun, Dec 28, 2008 at 3:55 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> > Ingo Molnar wrote:
+> >>
+> >> ok, agreed. I was hoping for some more generic workaround but nothing
+> >> seemed to keep gcc from inlining such functions.
+> >>
+> >
+> > Other than blacklisting those gcc versions.  It's pretty easy to
+> > understand how a bug like that could creep in, since one of the main
+> > improvements of the early gcc4 series was better inlining as an
+> > optimization.
 > 
-> with the attached config.
-> 
-> 	Ingo
-> 
+> 1. one time path add one dummy printk
+
+dummy printks are not a good idea at all. Often the weak versions are the 
+ones that get used and it would be very annoying if there was a per boot 
+(or even per syscall!) 'dummy printk'.
+
+> 2. multi path, could move it to another file.
+> could add one like kernel/weak.c to collect those ...
+
+that pretty much removes the advantages of __weak symbols: to provide 
+default implementations for various functionality, without having to do
+#ifdefs. The default implementation will often want to be near the usage
+site - so these bugs will reoccur again and again.
+
+	Ingo
