@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYL2XeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbYL2XgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbYL2XeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 18:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYL2XeI
+	id S1753788AbYL2XgA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 18:36:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYL2Xfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 18:34:08 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50757 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751266AbYL2XeI (ORCPT
+	Mon, 29 Dec 2008 18:35:52 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52558 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbYL2Xfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 18:34:08 -0500
-Date: Mon, 29 Dec 2008 23:33:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: 7eggert@gmx.de
-Cc: for.poige+linux@gmail.com, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: > I even didn't have a backtrace.
-Message-ID: <20081229233347.78d488b0@lxorguk.ukuu.org.uk>
-In-Reply-To: <E1LHNit-0001cP-EQ@be1.7eggert.dyndns.org>
-References: <bOpT3-2LN-13@gated-at.bofh.it>
-	<bOpT3-2LN-15@gated-at.bofh.it>
-	<bOpT3-2LN-11@gated-at.bofh.it>
-	<E1LHNit-0001cP-EQ@be1.7eggert.dyndns.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Dec 2008 18:35:51 -0500
+Message-ID: <49595ED1.2080701@zytor.com>
+Date: Mon, 29 Dec 2008 15:35:45 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: auto-convert size types in userspace headers
+References: <49567EB5.5030409@zytor.com> <1230549153-31754-1-git-send-email-vapier@gentoo.org> <20081229140356.GB7327@uranus.ravnborg.org>
+In-Reply-To: <20081229140356.GB7327@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One place to hide stuff is the upper areas of video ram as a lot of
-videocards don't clear the ram on a crash/reboot. I used to use a 3Dfx
-32Mb card as a buffer with good effect.
+Sam Ravnborg wrote:
+> On Mon, Dec 29, 2008 at 06:12:33AM -0500, Mike Frysinger wrote:
+>> Rather than constantly fixing up size type breakage in userspace headers,
+>> auto convert the types u_intXX_t, uintXX_t, intXX_t, uXX, and sXX to the
+>> appropriate __uXX or __sXX type.
+> 
+> Is this the right thing to do?
+> uintXX_t belongs to a namespace that the kernel should not use.
+> 
+> So being restrictive here would be better I think.
 
-Alan
+That's the whole point right here.
+
+All of these types can be -- and are -- used by the kernel internally,
+but should only be exported as __uXX or __sXX.
+
+This is the auto-conversion idea I brought up earlier.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
