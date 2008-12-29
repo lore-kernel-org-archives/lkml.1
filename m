@@ -1,87 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYL2C2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbYL2Ctx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbYL2C2v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 21:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYL2C2l
+	id S1755526AbYL2Ctx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 21:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYL2Cto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 21:28:41 -0500
-Received: from ozlabs.org ([203.10.76.45]:36386 "EHLO ozlabs.org"
+	Sun, 28 Dec 2008 21:49:44 -0500
+Received: from ozlabs.org ([203.10.76.45]:35201 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196AbYL2C2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 21:28:40 -0500
+	id S1751280AbYL2Cto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 21:49:44 -0500
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: [PATCH 7/8] cpumask: convert misc driver functions
-Date: Mon, 29 Dec 2008 12:58:35 +1030
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] cpumask: convert kernel trace functions further
+Date: Mon, 29 Dec 2008 13:19:38 +1030
 User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Robert Richter <robert.richter@amd.com>
-References: <20081219160144.697518000@polaris-admin.engr.sgi.com> <20081219160145.672392000@polaris-admin.engr.sgi.com> <1229815359.2723.19.camel@hashbaz.i.decadent.org.uk>
-In-Reply-To: <1229815359.2723.19.camel@hashbaz.i.decadent.org.uk>
+Cc: Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812291258.36437.rusty@rustcorp.com.au>
+Message-Id: <200812291319.39303.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 21 December 2008 09:52:39 Ben Hutchings wrote:
-> I assume you're moving the allocation up to efx_probe_nic() because
-> efx_wanted_rx_queues() and efx_probe_interrupts() cannot return failure.
-> It really isn't worth exposing that detail up the call chain though.  I
-> think it's acceptable for efx_wanted_rx_queues() to log an error message
-> and return 1 in the exceedingly unlikely case that the allocation fails.
+Impact: Reduce future memory usage, use new cpumask API.
 
-OK, fair call.  I was trying trying hard not to break anything.
+Since the last patch was created and acked, more old cpumask users
+slipped into kernel/trace.
 
-How's this?
-
-cpumask: convert drivers/net/sfc
-
-Remove a cpumask from the stack.  Ben Hutchings indicated that printing
-a warning and returning 1 was acceptable for the corner case where allocation
-fails.
+Mostly trivial conversions, except struct trace_iterator's "started"
+member becomes a cpumask_var_t.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ben Hutchings <bhutchings@solarflare.com>
 
-diff --git a/drivers/net/sfc/efx.c b/drivers/net/sfc/efx.c
---- a/drivers/net/sfc/efx.c
-+++ b/drivers/net/sfc/efx.c
-@@ -854,20 +854,27 @@ static void efx_fini_io(struct efx_nic *
-  * interrupts across them. */
- static int efx_wanted_rx_queues(void)
- {
--	cpumask_t core_mask;
-+	cpumask_var_t core_mask;
- 	int count;
- 	int cpu;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1812,10 +1812,10 @@ static void test_cpu_buff_start(struct t
+ 	if (!(iter->iter_flags & TRACE_FILE_ANNOTATE))
+ 		return;
  
--	cpus_clear(core_mask);
-+	if (!alloc_cpumask_var(&core_mask, GFP_KERNEL)) {
-+		printk(KERN_WARNING
-+		       "efx.c: allocation failure, irq balancing hobbled\n");
-+		return 1;
-+	}
-+
-+	cpumask_clear(core_mask);
- 	count = 0;
- 	for_each_online_cpu(cpu) {
--		if (!cpu_isset(cpu, core_mask)) {
-+		if (!cpumask_test_cpu(cpu, core_mask)) {
- 			++count;
--			cpumask_or(&core_mask, &core_mask,
-+			cpumask_or(core_mask, core_mask,
- 				   topology_core_cpumask(cpu));
- 		}
- 	}
+-	if (cpu_isset(iter->cpu, iter->started))
++	if (cpumask_test_cpu(iter->cpu, iter->started))
+ 		return;
  
-+	free_cpumask_var(core_mask);
- 	return count;
+-	cpu_set(iter->cpu, iter->started);
++	cpumask_set_cpu(iter->cpu, iter->started);
+ 	trace_seq_printf(s, "##### CPU %u buffer started ####\n", iter->cpu);
  }
  
+@@ -3115,10 +3115,15 @@ static int tracing_open_pipe(struct inod
+ 	if (!iter)
+ 		return -ENOMEM;
+ 
++	if (!alloc_cpumask_var(&iter->started, GFP_KERNEL)) {
++		kfree(iter);
++		return -ENOMEM;
++	}
++
+ 	mutex_lock(&trace_types_lock);
+ 
+ 	/* trace pipe does not show start of buffer */
+-	cpus_setall(iter->started);
++	cpumask_setall(iter->started);
+ 
+ 	iter->tr = &global_trace;
+ 	iter->trace = current_trace;
+@@ -3135,6 +3140,7 @@ static int tracing_release_pipe(struct i
+ {
+ 	struct trace_iterator *iter = file->private_data;
+ 
++	free_cpumask_var(iter->started);
+ 	kfree(iter);
+ 	atomic_dec(&tracing_reader);
+ 
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -368,7 +368,7 @@ struct trace_iterator {
+ 	loff_t			pos;
+ 	long			idx;
+ 
+-	cpumask_t		started;
++	cpumask_var_t		started;
+ };
+ 
+ int tracing_is_enabled(void);
+diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
+--- a/kernel/trace/trace_boot.c
++++ b/kernel/trace/trace_boot.c
+@@ -42,7 +42,7 @@ static int boot_trace_init(struct trace_
+ 	int cpu;
+ 	boot_trace = tr;
+ 
+-	for_each_cpu_mask(cpu, cpu_possible_map)
++	for_each_cpu(cpu, cpu_possible_mask)
+ 		tracing_reset(tr, cpu);
+ 
+ 	tracing_sched_switch_assign_trace(tr);
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -79,7 +79,7 @@ print_graph_cpu(struct trace_seq *s, int
+ 	int i;
+ 	int ret;
+ 	int log10_this = log10_cpu(cpu);
+-	int log10_all = log10_cpu(cpus_weight_nr(cpu_online_map));
++	int log10_all = log10_cpu(cpumask_weight(cpu_online_mask));
+ 
+ 
+ 	/*
+diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
+--- a/kernel/trace/trace_hw_branches.c
++++ b/kernel/trace/trace_hw_branches.c
+@@ -46,7 +46,7 @@ static void bts_trace_start(struct trace
+ 
+ 	tracing_reset_online_cpus(tr);
+ 
+-	for_each_cpu_mask(cpu, cpu_possible_map)
++	for_each_cpu(cpu, cpu_possible_mask)
+ 		smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
+ }
+ 
+@@ -62,7 +62,7 @@ static void bts_trace_stop(struct trace_
+ {
+ 	int cpu;
+ 
+-	for_each_cpu_mask(cpu, cpu_possible_map)
++	for_each_cpu(cpu, cpu_possible_mask)
+ 		smp_call_function_single(cpu, bts_trace_stop_cpu, NULL, 1);
+ }
+ 
+@@ -172,7 +172,7 @@ static void trace_bts_prepare(struct tra
+ {
+ 	int cpu;
+ 
+-	for_each_cpu_mask(cpu, cpu_possible_map)
++	for_each_cpu(cpu, cpu_possible_mask)
+ 		smp_call_function_single(cpu, trace_bts_cpu, iter->tr, 1);
+ }
+ 
+diff --git a/kernel/trace/trace_power.c b/kernel/trace/trace_power.c
+--- a/kernel/trace/trace_power.c
++++ b/kernel/trace/trace_power.c
+@@ -39,7 +39,7 @@ static int power_trace_init(struct trace
+ 
+ 	trace_power_enabled = 1;
+ 
+-	for_each_cpu_mask(cpu, cpu_possible_map)
++	for_each_cpu(cpu, cpu_possible_mask)
+ 		tracing_reset(tr, cpu);
+ 	return 0;
+ }
