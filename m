@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbYL2LGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYL2LJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbYL2LGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 06:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYL2LFv
+	id S1754679AbYL2LJT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 06:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYL2LJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 06:05:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43879 "EHLO mx3.mail.elte.hu"
+	Mon, 29 Dec 2008 06:09:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51239 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761AbYL2LFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 06:05:51 -0500
-Date: Mon, 29 Dec 2008 12:05:33 +0100
+	id S1753014AbYL2LJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 06:09:07 -0500
+Date: Mon, 29 Dec 2008 12:08:55 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+To: Jaswinder Singh Rajput <jaswinder@infradead.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
-Message-ID: <20081229110533.GA29592@elte.hu>
-References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com> <20081227173839.GA9793@elte.hu> <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain> <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu> <20081229110012.GB11111@linux.vnet.ibm.com>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: reboot.c declare port_cf9_safe before they get
+	used
+Message-ID: <20081229110855.GA5065@elte.hu>
+References: <1230049288.14358.4.camel@jaswinder.satnam> <20081227103141.GF14639@elte.hu> <1230540199.3715.11.camel@jaswinder.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081229110012.GB11111@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1230540199.3715.11.camel@jaswinder.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,16 +37,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
 
-> Hi Ingo,
+> Hello Ingo,
 > 
-> 	kernel crashes after applying the patch, I will retest with 
-> the patch posted at http://lkml.org/lkml/2008/12/29/48
+> On Sat, 2008-12-27 at 11:31 +0100, Ingo Molnar wrote:
+> 
+> > btw., this is ugly now:
+> > 
+> > > --- a/arch/x86/kernel/reboot.c
+> > > +++ b/arch/x86/kernel/reboot.c
+> > > @@ -22,6 +22,7 @@
+> > >  #endif
+> > >  
+> > >  #include <mach_ipi.h>
+> > > +#include "../pci/pci.h"
+> > 
+> > could you send another patch that moves arch/x86/pci/pci.h to 
+> > arch/x86/include/asm/pci_x86.h (and update all the pci.h include sites)?
+> > 
+> 
+> 1. I send ﻿[PATCH] move arch/x86/pci/pci.h to
+> arch/x86/include/asm/pci_x86.h but I forget to write x86: before this
+> patch.
 
-yes - Yinghai observed this too. Could you check tip/master that has all 
-the fixlets merged up, to make sure it's finally solved? Thanks,
+no, your patch is fine. I routinely fix up commit logs.
 
-also, what is the gcc -v output of your compiler?
+Jesse, is it fine to you if we push this via the x86 tree? A couple of 
+usage sites of arch/x86/pci/pci.h arose that use ../pci/pci.h kind of ugly
+#include prefixes, which justifies moving the file to
+arch/x86/include/asm. No change in behavior.
 
 	Ingo
