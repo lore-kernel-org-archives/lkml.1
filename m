@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbYL2POZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbYL2PSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752042AbYL2POZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 10:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbYL2POR
+	id S1752026AbYL2PSE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 10:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYL2PRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 10:14:17 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59377 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbYL2POQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 10:14:16 -0500
-Date: Mon, 29 Dec 2008 16:27:32 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Al Viro <viro@ZenIV.linux.org.uk>, bfields@fieldses.org,
-       xfs-masters@oss.sgi.com
-Subject: Re: RFC: Fix f_flags races without the BKL
-Message-ID: <20081229152732.GH496@one.firstfloor.org>
-References: <20081229041352.6bbdf57c@tpl> <20081229124151.GA29634@redhat.com>
-Mime-Version: 1.0
+	Mon, 29 Dec 2008 10:17:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38063 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751076AbYL2PRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 10:17:53 -0500
+Date: Mon, 29 Dec 2008 16:17:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@infradead.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: apic.c declare pic_mode before they get used
+Message-ID: <20081229151740.GC26672@elte.hu>
+References: <1230562972.26564.1.camel@jaswinder.satnam>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081229124151.GA29634@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1230562972.26564.1.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0196]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 01:41:51PM +0100, Oleg Nesterov wrote:
-> On 12/29, Jonathan Corbet wrote:
-> >
-> > After pondering for a while, I couldn't come up with anything better than a
-> > global file->f_flags mutex.  There's no point in bloating struct file with
-> > a mutex just for this purpose; it's hard to imagine that there will be any
-> > real contention for this lock.
-> 
-> Yes, this patch is simple and straightforward, but now we can't change
-> ->f_flags in non-preempible context. And the global lock is not very
-> nice anyway.
-> 
-> Once again, can't we use O_LOCK_FLAGS bit? I agree, it is a bit ugly,
-> and I won't insist if you don't like is.
 
-I would prefer O_LOCK_FLAGS bit too. The global lock is not very nice
-and I don't doubt someone will come up with a workload which
-pounds on it.
+applied your patches to tip/x86/cleanups:
 
--Andi
--- 
-ak@linux.intel.com
+ cf3874b: x86_64: pci-gart_64.c iommu_fullflush should be static
+ 788983d: x86: efi.c declare add_efi_memmap before they get used
+ fa0cf44: x86: io_apic.c io_apic_sync should be static
+ 8a4cfcf: x86: apic.c declare pic_mode before they get used
+
+thanks,
+
+	Ingo
