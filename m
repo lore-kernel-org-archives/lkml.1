@@ -1,44 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbYL2M4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbYL2NAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbYL2M4q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 07:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYL2M4i
+	id S1754780AbYL2NAQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 08:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYL2NAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 07:56:38 -0500
-Received: from eu1sys200aog112.obsmtp.com ([207.126.144.133]:37670 "HELO
-	eu1sys200aog112.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752569AbYL2M4h convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 07:56:37 -0500
-X-Greylist: delayed 329 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Dec 2008 07:56:36 EST
-Message-ID: <715ea5c10812290451y393dd10r5b3d8e27f74c8926@mail.gmail.com>
-Date: Mon, 29 Dec 2008 12:51:03 +0000
-From: "Paul Komkoff" <i@stingr.net>
-To: "=?ISO-8859-1?Q?=C9ric_Piel?=" <eric.piel@tremplin-utc.net>
-Subject: Re: Hi! I've noticed that kernel.org advertises 2.6.28 as "The latest stable version of the Linux kernel is".
-Cc: for.poige+linux@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <4958B96E.2090709@tremplin-utc.net>
+	Mon, 29 Dec 2008 08:00:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55165 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752479AbYL2M77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 07:59:59 -0500
+Date: Mon, 29 Dec 2008 13:59:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       mj@ucw.cz
+Subject: Re: [PATCH] move arch/x86/pci/pci.h to
+	arch/x86/include/asm/pci_x86.h
+Message-ID: <20081229125921.GB23674@elte.hu>
+References: <1230382948.3373.1.camel@jaswinder.satnam> <20081229121218.GB9628@elte.hu> <20081229122251.GA13687@elte.hu> <20081229125411.GA1852@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <43d009740812282139x7597aafbn4474455c1aa1e0e8@mail.gmail.com>
-	 <4958B96E.2090709@tremplin-utc.net>
-X-Google-Sender-Auth: 84af077ced39e4fe
+In-Reply-To: <20081229125411.GA1852@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 11:50 AM, Éric Piel <eric.piel@tremplin-utc.net> wrote:
-> stable versions available but they are not advertised. Maybe there
-> should be more trees displayed, something like this:
-> The latest stable version of the Linux kernel is:       2.6.28
-> The previous stable version of the Linux kernel is:     2.6.27.10
-> The latest longtime version of the Linux kernel is:     2.6.16.62
 
-The latest version known to run OK on poige's hardware is: ....
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-(sorry). :)
+> > 
+> > btw., you missed to update a couple of places - pci/pci.h was used outside 
+> > of arch/x86 as well. Updated patch below.
+> > 
+> > 	Ingo
+> > 
+> > ---------------->
+> > >From 54a090abe7cb85c724305124f57d2570b7e9adf1 Mon Sep 17 00:00:00 2001
+> > From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+> > Date: Sat, 27 Dec 2008 18:32:28 +0530
+> > Subject: [PATCH] x86, pci: move arch/x86/pci/pci.h to arch/x86/include/asm/pci_x86.h
+> > 
+> > Impact: cleanup
+> > 
+> > Now that arch/x86/pci/pci.h is used in a number of other places as well,
+> > move the lowlevel x86 pci definitions into the architecture include files.
+> > (not to be confused with the existing arch/x86/include/asm/pci.h file,
+> > which provides public details about x86 PCI)
+> > 
+> > Tested on: X86_32_UP, X86_32_SMP and X86_64_SMP
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> >  arch/x86/include/asm/pci_x86.h     |  165 ++++++++++++++++++++++++++++++++++++
+> >  arch/x86/kernel/mmconf-fam10h_64.c |    3 +-
+> >  arch/x86/kernel/reboot.c           |    3 +-
+> >  arch/x86/pci/acpi.c                |    2 +-
+> >  arch/x86/pci/amd_bus.c             |    2 +-
+> >  arch/x86/pci/common.c              |    3 +-
+> >  arch/x86/pci/direct.c              |    2 +-
+> >  arch/x86/pci/early.c               |    2 +-
+> >  arch/x86/pci/fixup.c               |    3 +-
+> >  arch/x86/pci/i386.c                |    2 +-
+> >  arch/x86/pci/init.c                |    2 +-
+> >  arch/x86/pci/irq.c                 |    3 +-
+> >  arch/x86/pci/legacy.c              |    2 +-
+> >  arch/x86/pci/mmconfig-shared.c     |    3 +-
+> >  arch/x86/pci/mmconfig_32.c         |    2 +-
+> >  arch/x86/pci/mmconfig_64.c         |    3 +-
+> >  arch/x86/pci/numaq_32.c            |    2 +-
+> >  arch/x86/pci/olpc.c                |    2 +-
+> >  arch/x86/pci/pcbios.c              |    5 +-
+> >  arch/x86/pci/pci.h                 |  162 -----------------------------------
+> >  arch/x86/pci/visws.c               |    3 +-
+> >  drivers/pci/hotplug/cpqphp_core.c  |    2 +-
+> >  drivers/pci/hotplug/cpqphp_pci.c   |    2 +-
+> >  drivers/pci/hotplug/ibmphp_core.c  |    2 +-
+> >  24 files changed, 188 insertions(+), 194 deletions(-)
+> 
+> You should teach your script to use:
+> git format-patch -M -B -C 
+> 
+> With -M -B -C you get a much better picture of what happens when you 
+> rename files like in this patch (and copy them).
 
--- 
-This message represents the official view of the voices in my head
+you mean:
+
+  git format-patch --stdout -1 -M -B -C <sha1>
+
+(otherwise people trying this out will be faced with git creating all 
+commits way back to the beginnings of time, as patches in their current 
+directory ;-)
+
+	Ingo
