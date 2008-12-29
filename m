@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYL2LJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYL2LKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbYL2LJT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 06:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYL2LJI
+	id S1755030AbYL2LKZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 06:10:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYL2LKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 06:09:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51239 "EHLO mx2.mail.elte.hu"
+	Mon, 29 Dec 2008 06:10:13 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44270 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014AbYL2LJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 06:09:07 -0500
-Date: Mon, 29 Dec 2008 12:08:55 +0100
+	id S1753014AbYL2LKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 06:10:11 -0500
+Date: Mon, 29 Dec 2008 12:09:54 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: reboot.c declare port_cf9_safe before they get
-	used
-Message-ID: <20081229110855.GA5065@elte.hu>
-References: <1230049288.14358.4.camel@jaswinder.satnam> <20081227103141.GF14639@elte.hu> <1230540199.3715.11.camel@jaswinder.satnam>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
+Message-ID: <20081229110954.GB5065@elte.hu>
+References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com> <20081227173839.GA9793@elte.hu> <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain> <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu> <86802c440812281601j57fe5ecdif4b63b72280c65cd@mail.gmail.com> <2f11576a0812290039t11ca9b76sf305e82003ac607@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1230540199.3715.11.camel@jaswinder.satnam>
+In-Reply-To: <2f11576a0812290039t11ca9b76sf305e82003ac607@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,35 +39,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> Hello Ingo,
+> >>  kernel/irq/handle.c |    5 -----
+> >>  kernel/irq/manage.c |    9 +++++++++
+> >>  2 files changed, 9 insertions(+), 5 deletions(-)
+> >>
+> >
+> > that is not enough.
+> >
+> > please check
+> >
+> > need one printk, and move two functions into chip.c
 > 
-> On Sat, 2008-12-27 at 11:31 +0100, Ingo Molnar wrote:
+> I'm sad ;-)
 > 
-> > btw., this is ugly now:
-> > 
-> > > --- a/arch/x86/kernel/reboot.c
-> > > +++ b/arch/x86/kernel/reboot.c
-> > > @@ -22,6 +22,7 @@
-> > >  #endif
-> > >  
-> > >  #include <mach_ipi.h>
-> > > +#include "../pci/pci.h"
-> > 
-> > could you send another patch that moves arch/x86/pci/pci.h to 
-> > arch/x86/include/asm/pci_x86.h (and update all the pci.h include sites)?
-> > 
-> 
-> 1. I send ﻿[PATCH] move arch/x86/pci/pci.h to
-> arch/x86/include/asm/pci_x86.h but I forget to write x86: before this
-> patch.
+> Why you use printk? if develper use non-x86 machine, they will see 
+> perfectly worthless debug messages...
 
-no, your patch is fine. I routinely fix up commit logs.
+yes. If you can reproduce the problem then please check the version in 
+tip/master:
 
-Jesse, is it fine to you if we push this via the x86 tree? A couple of 
-usage sites of arch/x86/pci/pci.h arose that use ../pci/pci.h kind of ugly
-#include prefixes, which justifies moving the file to
-arch/x86/include/asm. No change in behavior.
+  http://people.redhat.com/mingo/tip.git/README
+
+it doesnt include any needless printks.
 
 	Ingo
