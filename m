@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbYL2MU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYL2MVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbYL2MU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 07:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYL2MUU
+	id S1753840AbYL2MVQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 07:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYL2MVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 07:20:20 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:54936 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307AbYL2MUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 07:20:19 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] linux/uio.h: cleanup for userspace
-Date: Mon, 29 Dec 2008 07:20:17 -0500
-Message-Id: <1230553217-985-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1230360582-6657-1-git-send-email-vapier@gentoo.org>
-References: <1230360582-6657-1-git-send-email-vapier@gentoo.org>
+	Mon, 29 Dec 2008 07:21:01 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:50545 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753372AbYL2MVA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 07:21:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=KPadVRA9lDsxBTZmvTyGfVbBa7+6Gf9+R7iG00NIrHULeAygwLL8O4fJTSj57dyLBz
+         b47fsLXoFy9YiBydPLiFLJzsCcgDegYtH6URvO9uuZP+4RMa9KkLIT9ZhvR6DUj5uexq
+         nJ0JcgNuuJAAiaUkbBvBPs8mqZv5825JgTWOw=
+Message-ID: <8bd0f97a0812290420m2cd2aa8bv7b3dc2e67287f0f7@mail.gmail.com>
+Date: Mon, 29 Dec 2008 07:20:59 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] linux byteorder headers: convert to __inline__ for userspace
+In-Reply-To: <1230360583-6683-1-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1230360583-6683-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hide iov_shorten() behind __KERNEL__ since it's a prototype only.  Use the
-__inline__ form for iov_length() since it's usable by userspace.
+On Sat, Dec 27, 2008 at 01:49, Mike Frysinger <vapier@gentoo.org> wrote:
+> Use __inline__ rather than inline for all the functions exported to
+> userspace.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v2
-	- drop inline conversion stuff
-
- include/linux/uio.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/uio.h b/include/linux/uio.h
-index b7fe138..bd1661b 100644
---- a/include/linux/uio.h
-+++ b/include/linux/uio.h
-@@ -52,6 +52,8 @@ static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
- 	return ret;
- }
- 
-+#ifdef __KERNEL__
- unsigned long iov_shorten(struct iovec *iov, unsigned long nr_segs, size_t to);
-+#endif
- 
- #endif
--- 
-1.6.0.6
-
+this patch can be ignored due to the autoconvert patch proposed for
+headers_install.pl
+-mike
