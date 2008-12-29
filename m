@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbYL2Vp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYL2VrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbYL2Vp7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:45:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYL2Vpt
+	id S1754181AbYL2VrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYL2VrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:45:49 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:58256 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752280AbYL2Vps (ORCPT
+	Mon, 29 Dec 2008 16:47:05 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:35816 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbYL2VrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:45:48 -0500
-Subject: Re: linux-next: Tree for December 29 (fcoe)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, scsi <linux-scsi@vger.kernel.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1230586520.3302.61.camel@localhost.localdomain>
-References: <20081230031621.60acd90b.sfr@canb.auug.org.au>
-	 <20081229123115.9a255fa8.randy.dunlap@oracle.com>
-	 <1230586520.3302.61.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 29 Dec 2008 15:45:41 -0600
-Message-Id: <1230587141.3302.64.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Dec 2008 16:47:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RA7tyByS6sYojBi0HCTpWvDVwkQClDbMYZLyUwbF5mtU3wsdT5aw9Jgiwlr8MczF0P
+         ijM2DfTntHrPIjblkup2cwK80WKZ5KPpdTWp12k3o5tYeBumVIFgd8NomGr0Qr+dgz+k
+         5CV0tI25wL/GBiicHdIHsN1wvltSIIdzascA0=
+Date: Mon, 29 Dec 2008 22:46:58 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
+	the unified tracing API
+Message-ID: <20081229214657.GA5829@nowhere>
+References: <4959443f.09a1660a.44f3.2686@mx.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4959443f.09a1660a.44f3.2686@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-29 at 15:35 -0600, James Bottomley wrote:
-> On Mon, 2008-12-29 at 12:31 -0800, Randy Dunlap wrote:
-> > On Tue, 30 Dec 2008 03:16:21 +1100 Stephen Rothwell wrote:
-> > 
-> > > Hi all,
-> > > 
-> > > Changes since 20081219:
-> > > 
-> > > Undropped tree:
-> > > 	scci
-> > > 	mtd
-> > > 
-> > > Dropped trees (temporarily):
-> > > 	nfs (akpm request due to 2.6.30 features)
-> > > 	kvm (build problem)
-> > > 	rr (build poblem)
-> > > 	semaphore-removal (due to unfixed conflicts against Linus' tree)
-> > > 	cpu_alloc (build problem)
-> > > 	audit (difficult conflicts)
-> > > 
-> > > Linus' tree had three build failures requiring patches and one requiring
-> > > a revert.
-> > 
-> > 
-> > linux-next-20081229/drivers/scsi/fcoe/libfcoe.c:995: error: dereferencing pointer to incomplete type
-> > linux-next-20081229/drivers/scsi/fcoe/libfcoe.c:1015: error: dereferencing pointer to incomplete type
-> > 
-> > (on netdev->name ?)
-> 
-> This looks a bit odd.  libfcoe.h #includes linux/netdevice.h which
-> defines the structure ... I can't see how netdev could have an
-> incomplete type.  Could you make libfcoe.i and see what's happening?
+And of course the headers of the trace have been zapped by git-commit :-)
+An example with the headers:
 
-Actually, I deduce the problem is owner->name and your build has
-CONFIG_MODULE=n ... the definition of struct module is enclosed in a
-#ifdef CONFIG_MODULE.
+# tracer: kmemtrace
+#
+#
+# ALLOC  TYPE  REQ   GIVEN  FLAGS           POINTER         NODE    CALLER
+# FREE   |      |     |       |              |   |            |        |
+# |
 
-This should fix it.
+  -      C                            0xffff88007c088780          file_free_rcu
+  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
+  -      C                            0xffff88007cad6000          putname
+  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
+  +      K    240    240   000000d0   0xffff8800790dc780     -1   d_alloc
+  -      C                            0xffff88007cad6000          putname
+  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
+  +      K    240    240   000000d0   0xffff8800790dc870     -1   d_alloc
+  -      C                            0xffff88007cad6000          putname
+  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
+  +      K    240    240   000000d0   0xffff8800790dc960     -1   d_alloc
+  +      K   1304   1312   000000d0   0xffff8800791d7340     -1   reiserfs_alloc_inode
 
-James
-
----
-
-diff --git a/drivers/scsi/fcoe/libfcoe.c b/drivers/scsi/fcoe/libfcoe.c
-index 1cb549c..fec38f6 100644
---- a/drivers/scsi/fcoe/libfcoe.c
-+++ b/drivers/scsi/fcoe/libfcoe.c
-@@ -992,7 +992,7 @@ static int fcoe_ethdrv_get(const struct net_device *netdev)
- 	owner = fcoe_netdev_to_module_owner(netdev);
- 	if (owner) {
- 		printk(KERN_DEBUG "foce:hold driver module %s for %s\n",
--		       owner->name, netdev->name);
-+		       module_name(owner), netdev->name);
- 		return  try_module_get(owner);
- 	}
- 	return -ENODEV;
-@@ -1012,7 +1012,7 @@ static int fcoe_ethdrv_put(const struct net_device *netdev)
- 	owner = fcoe_netdev_to_module_owner(netdev);
- 	if (owner) {
- 		printk(KERN_DEBUG "foce:release driver module %s for %s\n",
--		       owner->name, netdev->name);
-+		       module_name(owner), netdev->name);
- 		module_put(owner);
- 		return 0;
- 	}
 
 
