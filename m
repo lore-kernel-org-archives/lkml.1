@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYL2L4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYL2L5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbYL2L4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 06:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbYL2L4e
+	id S1753803AbYL2L5O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 06:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbYL2L46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 06:56:34 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:59693 "EHLO smtp.gentoo.org"
+	Mon, 29 Dec 2008 06:56:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56543 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661AbYL2L4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 06:56:34 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
-Date: Mon, 29 Dec 2008 06:56:31 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-References: <1230360604-6711-1-git-send-email-vapier@gentoo.org> <200812271557.07003.vapier@gentoo.org> <495699A0.10305@zytor.com>
-In-Reply-To: <495699A0.10305@zytor.com>
+	id S1753976AbYL2L45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 06:56:57 -0500
+Date: Mon, 29 Dec 2008 12:56:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 1/2] tracing/ftrace: provide the base infrastructure
+	for stat tracing
+Message-ID: <20081229115645.GB22727@elte.hu>
+References: <4956aff1.0405560a.0eb9.ffffd126@mx.google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5381082.IQdzbFilAr";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812290656.32827.vapier@gentoo.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4956aff1.0405560a.0eb9.ffffd126@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5381082.IQdzbFilAr
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Saturday 27 December 2008 16:09:52 H. Peter Anvin wrote:
-> Mike Frysinger wrote:
-> > ...
-> > #ifdef __KERNEL__
-> > # define kernel_flock flock
-> > #endif
-> > struct kernel_flock {
-> > ...
->
-> FWIW, a long time ago I proposed the __kabi_ prefix for these things; I
-> think it is a good thing to make userspace-visible structures stand out
-> even in the kernel code itself.
->
-> As such, I would suggest *not* adding the #define at all.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-the convention based on linux/types.h seems to be to use __kernel_ as the=20
-prefix, but it doesnt matter to me whether it's __kabi_ or __kernel_.  i'll=
-=20
-start doing the latter though in the hopes it'll be less scary ;).
-=2Dmike
+> Impact: enhance the tracing API to provide statistical tracing
+> 
+> The goal of this patch is to normalize and make more easy the 
+> implementation of statistical (histogram) tracing.
+> 
+> It implements a trace_stat file into the /debugfs/tracing directory 
+> where one can print a one-shot output of statistics/histogram entries.
+> 
+> A tracer has to provide two basic iterator callbacks:
+> 
+> stat_start() => the first entry
+> stat_next(prev, idx) => the next one.
+> 
+> Note that it is adapted for arrays or hash tables or lists.... since
+> it provides a pointer to the previous entry and the current index of the
+> iterator.
+> 
+> These two callbacks are called to get a snapshot of the statistics at 
+> each opening of the trace_stat file because. The values are so updated 
+> between two "cat trace_stat". And the tracer is free to lock its datas 
+> during the iteration to keep consistent values.
+> 
+> Since it is almost always interesting to sort statisticals values to 
+> address the problems by priority, this infrastructure provides a 
+> "sorting" of the stat entries too if desired. A tracer has just to 
+> provide a stat_cmp callback to compare two entries and the stat tracing 
+> infrastructure will build a sorted list of the given entries.
+> 
+> A last callback, called stat_headers, can be implemented by a tracer to 
+> output headers on its trace.
+> 
+> If one of these callbacks is changed on runtime, it just have to signal 
+> it to the stat tracing API by calling the init_tracer_stat() helper.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  kernel/trace/Makefile     |    1 +
+>  kernel/trace/trace.c      |    3 +-
+>  kernel/trace/trace.h      |   17 +++
+>  kernel/trace/trace_stat.c |  250 +++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 270 insertions(+), 1 deletions(-)
 
---nextPart5381082.IQdzbFilAr
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+nice! I've put this into tip/tracing/ftrace (as it depends on Steve's 
+event hash rework) - and lets see how this works out with the branch 
+tracer in practice.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iQIcBAABAgAGBQJJWLrwAAoJEEFjO5/oN/WBBToQAM5ol7ufmNIMa8CawSodLST+
-QcfW4/gGgpTMfR10Uu7yirZftJefISxPU+WsqJKv2Vykpyj0AALhVNcZT8uPgKfW
-kA3eVyx+EG8nT1LKRkkfDcOr5uiiPwuNI6wypdzJLb/SagZ61XB3jS+QHNgLq6DQ
-7ByzvpfBQRly2mhi8W/ZMgRw/+fpjM35uVDfTmBF7NQInn+zZkMOYCsRULg3ceIg
-ZXtu/wTqQssz9ezaxsP8t7Mf8DeCOVZDNJnY84tGhGzdyLZuMN8MLZoJ7Z6rcuVo
-ZaoWzCidKySF8ieyuecMGP1BgH6QiBHLEc/+yGP0CtU1cbrgA9BNhaA3WG/lTDi7
-/pXBWR+DCHlZDzXwtDIDRUzIa350Ltdm0cRGKkmwpuPeQJuxNgcyWaISITxIJVVG
-yFvZOXUxtpQo8n1BwdYaaj0aHLozxb30+rrYcfhBNGT0flzJE56fqxy0MJYlldFL
-EVUV1k4f3cEVfkAgn0oIuPu/yQASmoiBhHGSIlA589LC9HalgQmMdKGskLEZ4SYl
-uo+EDc9UKYtQNaC/mEN29IC3Lgxsj/PEHYG6ARV3NQd9Q83l9VET1hWh9YYaO1Qw
-njrzDGjaLJFaEJNqpIrzeoIi/1Od7cHjn2GN1+PHxH3LuNwooNfyGxJ+vspyEl1O
-TWZt+5ZC6oy7Bz00y4Gw
-=T3h5
------END PGP SIGNATURE-----
-
---nextPart5381082.IQdzbFilAr--
+	Ingo
