@@ -1,48 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYL2JFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYL2JS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbYL2JFa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 04:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL2JFJ
+	id S1753780AbYL2JS1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 04:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL2JSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 04:05:09 -0500
-Received: from web30101.mail.mud.yahoo.com ([209.191.69.33]:32317 "HELO
-	web30101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753932AbYL2JFI (ORCPT
+	Mon, 29 Dec 2008 04:18:16 -0500
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:57893 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbYL2JSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 04:05:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=Te9NQUIiJPNdWRMtA2B42LbnUUHRjKsM58p3JRCYkwnciMT+NKVjSsINoJQCs+YfAgtXkT5sMOa0/yefGQoZEYaFQ4g6wPpexy5yFQBsEO+yL+y6PFkPze9+qRCNgVjU83qfhQdEqeAOy+JAjbECUnR50muHaRheFMPVMl2l23c=;
-X-YMail-OSG: eDEtEB4VM1lMLy1mYeg1Is05qmZ7oOKbUUghrwR8eRnTrCMexEnMxljQL66ZFZv0A0agjigJYw20UM3l2tTNX2lZfAr2FWpT284pnjDLnL.JNGk5esEiZHMy8HRiInYz2HXls4HKu20ZufZTQkmrYQAScrOcZyY2fwHPp2eEYFS7J4jyN0A4GWfRim2d
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Mon, 29 Dec 2008 01:05:02 -0800 (PST)
-From: Parav Pandit <paravpandit@yahoo.com>
-Reply-To: paravpandit@yahoo.com
-Subject: finding correct ib_device to call connect()
-To: Linux kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <649524.70022.qm@web30101.mail.mud.yahoo.com>
+	Mon, 29 Dec 2008 04:18:14 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Serge Hallyn <serue@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Mike Waychison <mikew@google.com>, Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v12][PATCH 01/14] Create syscalls: sys_checkpoint, sys_restart
+Date: Mon, 29 Dec 2008 04:16:14 -0500
+Message-Id: <1230542187-10434-2-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <1230542187-10434-1-git-send-email-orenl@cs.columbia.edu>
+References: <1230542187-10434-1-git-send-email-orenl@cs.columbia.edu>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Create trivial sys_checkpoint and sys_restore system calls. They will
+enable to checkpoint and restart an entire container, to and from a
+checkpoint image file descriptor.
 
-Is this the right mailing list for Infiniband, RDMA-iWarp related Linux kernel issues?
+The syscalls take a file descriptor (for the image file) and flags as
+arguments. For sys_checkpoint the first argument identifies the target
+container; for sys_restart it will identify the checkpoint image.
 
-Assuming yes,
-1. Let's say there are two iWarp adapters, they both are in different subnet.
-Their respective net_device is configured in different subnet.
-(say one from Chelsio and other from Neteffect vendor)
+A checkpoint, much like a process coredump, dumps the state of multiple
+processes at once, including the state of the container. The checkpoint
+image is written to (and read from) the file descriptor directly from
+the kernel. This way the data is generated and then pushed out naturally
+as resources and tasks are scanned to save their state. This is the
+approach taken by, e.g., Zap and OpenVZ.
 
-How does connection manager module figures how that a connect() call should be diverted to which ib_device?
+By using a return value and not a file descriptor, we can distinguish
+between a return from checkpoint, a return from restart (in case of a
+checkpoint that includes self, i.e. a task checkpointing its own
+container, or itself), and an error condition, in a manner analogous
+to a fork() call.
 
-Regards,
-Parav Pandit
+We don't use copyin()/copyout() because it requires holding the entire
+image in user space, and does not make sense for restart.  Also, we
+don't use a pipe, pseudo-fs file and the like, because they work by
+generating data on demand as the user pulls it (unless the entire
+image is buffered in the kernel) and would require more complex logic.
+They also would significantly complicate checkpoint that includes self.
 
+Changelog[v5]:
+  - Config is 'def_bool n' by default
 
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+---
+ arch/x86/include/asm/unistd_32.h   |    2 +
+ arch/x86/kernel/syscall_table_32.S |    2 +
+ checkpoint/Kconfig                 |   11 +++++++++
+ checkpoint/Makefile                |    5 ++++
+ checkpoint/sys.c                   |   41 ++++++++++++++++++++++++++++++++++++
+ include/linux/syscalls.h           |    2 +
+ init/Kconfig                       |    2 +
+ kernel/sys_ni.c                    |    4 +++
+ 8 files changed, 69 insertions(+), 0 deletions(-)
+ create mode 100644 checkpoint/Kconfig
+ create mode 100644 checkpoint/Makefile
+ create mode 100644 checkpoint/sys.c
 
+diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+index f2bba78..a5f9e09 100644
+--- a/arch/x86/include/asm/unistd_32.h
++++ b/arch/x86/include/asm/unistd_32.h
+@@ -338,6 +338,8 @@
+ #define __NR_dup3		330
+ #define __NR_pipe2		331
+ #define __NR_inotify_init1	332
++#define __NR_checkpoint		333
++#define __NR_restart		334
+ 
+ #ifdef __KERNEL__
+ 
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index d44395f..5543136 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -332,3 +332,5 @@ ENTRY(sys_call_table)
+ 	.long sys_dup3			/* 330 */
+ 	.long sys_pipe2
+ 	.long sys_inotify_init1
++	.long sys_checkpoint
++	.long sys_restart
+diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
+new file mode 100644
+index 0000000..ffaa635
+--- /dev/null
++++ b/checkpoint/Kconfig
+@@ -0,0 +1,11 @@
++config CHECKPOINT_RESTART
++	prompt "Enable checkpoint/restart (EXPERIMENTAL)"
++	def_bool n
++	depends on X86_32 && EXPERIMENTAL
++	help
++	  Application checkpoint/restart is the ability to save the
++	  state of a running application so that it can later resume
++	  its execution from the time at which it was checkpointed.
++
++	  Turning this option on will enable checkpoint and restart
++	  functionality in the kernel.
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+new file mode 100644
+index 0000000..07d018b
+--- /dev/null
++++ b/checkpoint/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for linux checkpoint/restart.
++#
++
++obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+new file mode 100644
+index 0000000..375129c
+--- /dev/null
++++ b/checkpoint/sys.c
+@@ -0,0 +1,41 @@
++/*
++ *  Generic container checkpoint-restart
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++
++/**
++ * sys_checkpoint - checkpoint a container
++ * @pid: pid of the container init(1) process
++ * @fd: file to which dump the checkpoint image
++ * @flags: checkpoint operation flags
++ *
++ * Returns positive identifier on success, 0 when returning from restart
++ * or negative value on error
++ */
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
++{
++	pr_debug("sys_checkpoint not implemented yet\n");
++	return -ENOSYS;
++}
++/**
++ * sys_restart - restart a container
++ * @crid: checkpoint image identifier
++ * @fd: file from which read the checkpoint image
++ * @flags: restart operation flags
++ *
++ * Returns negative value on error, or otherwise returns in the realm
++ * of the original checkpoint
++ */
++asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
++{
++	pr_debug("sys_restart not implemented yet\n");
++	return -ENOSYS;
++}
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 04fb47b..9750393 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -621,6 +621,8 @@ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
+ asmlinkage long sys_eventfd(unsigned int count);
+ asmlinkage long sys_eventfd2(unsigned int count, int flags);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
++asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+diff --git a/init/Kconfig b/init/Kconfig
+index f763762..57364fe 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -814,6 +814,8 @@ config MARKERS
+ 
+ source "arch/Kconfig"
+ 
++source "checkpoint/Kconfig"
++
+ endmenu		# General setup
+ 
+ config HAVE_GENERIC_DMA_COHERENT
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index e14a232..fcd65cc 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -174,3 +174,7 @@ cond_syscall(compat_sys_timerfd_settime);
+ cond_syscall(compat_sys_timerfd_gettime);
+ cond_syscall(sys_eventfd);
+ cond_syscall(sys_eventfd2);
++
++/* checkpoint/restart */
++cond_syscall(sys_checkpoint);
++cond_syscall(sys_restart);
+-- 
+1.5.4.3
 
-      
