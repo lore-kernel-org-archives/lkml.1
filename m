@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYL2UcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbYL2Ucn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753434AbYL2UcX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 15:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYL2UcP
+	id S1753609AbYL2Ucn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 15:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYL2Ucc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 15:32:15 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:39672 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752489AbYL2UcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 15:32:15 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v4] linux/uio.h: cleanup for userspace
-Date: Mon, 29 Dec 2008 15:32:13 -0500
-Message-Id: <1230582733-8010-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <20081229130353.GA10167@infradead.org>
-References: <20081229130353.GA10167@infradead.org>
+	Mon, 29 Dec 2008 15:32:32 -0500
+Received: from mo-p05-ob.rzone.de ([81.169.146.180]:57239 "EHLO
+	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbYL2Ucc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 15:32:32 -0500
+X-RZG-CLASS-ID: mo05
+X-RZG-AUTH: :J20NVUqhafZjXmY+Np2czPoDrWHf+vfHoOjaOgf6V+LBFT09lZ4=
+Message-ID: <495933D6.1020409@tragetaschen.dyndns.org>
+Date: Mon, 29 Dec 2008 21:32:22 +0100
+From: Kai Ruhnau <kai@tragetaschen.dyndns.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081204)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: System hang in quirk_usb_handoff_ohci
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hide iov_shorten() behind __KERNEL__ since it's a prototype only.  Use the
-__inline__ form for iov_length() since it's usable by userspace.
+Hi,
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v4
-	- hide all funcs behind __KERNEL__
-v3
-	- keep all __KERNEL__ stuff in one place
-v2
-	- drop inline conversion stuff
+Some days ago, I reported a reproducible hang during boot. The
+information around was quite vague and so I took the liberty to further
+dig into the the call stack of pci_init and found the exact place where
+the initialization locks.
+But first the symptoms (those are improved as well):
 
- include/linux/uio.h |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+If I turn on or restart my computer and try to boot without my
+intervention, the system always hangs during boot, the last output being
+the io scheduler registration. However, if I press a key at any time
+after the BIOS (for example manual choosing  the grub entry or during
+the kernel messages) the system happily boots normally.
 
-diff --git a/include/linux/uio.h b/include/linux/uio.h
-index b7fe138..31d75cd 100644
---- a/include/linux/uio.h
-+++ b/include/linux/uio.h
-@@ -19,6 +19,13 @@ struct iovec
- 	__kernel_size_t iov_len; /* Must be size_t (1003.1g) */
- };
- 
-+/*
-+ *	UIO_MAXIOV shall be at least 16 1003.1g (5.4.1.1)
-+ */
-+
-+#define UIO_FASTIOV	8
-+#define UIO_MAXIOV	1024
-+
- #ifdef __KERNEL__
- 
- struct kvec {
-@@ -26,15 +33,6 @@ struct kvec {
- 	size_t iov_len;
- };
- 
--#endif
--
--/*
-- *	UIO_MAXIOV shall be at least 16 1003.1g (5.4.1.1)
-- */
-- 
--#define UIO_FASTIOV	8
--#define UIO_MAXIOV	1024
--
- /*
-  * Total number of bytes covered by an iovec.
-  *
-@@ -55,3 +53,5 @@ static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
- unsigned long iov_shorten(struct iovec *iov, unsigned long nr_segs, size_t to);
- 
- #endif
-+
-+#endif
+After a little printk debugging, it turns out, that
+quirk_usb_handoff_ohci will hang when applied to my first USB OHCI pci
+device. I have marked the offending line in the following snippet (line
+186 in the original---the second writel)
+
+============ (startint at line 182 inn pci-quirks.c)
+[...]
+    u32 control = readl(base + OHCI_CONTROL);
+    if (control & OHCI_CTRL_IR) {
+        int wait_time = 500; /* arbitrary; 5 seconds */
+        writel(OHCI_INTR_OC, base + OHCI_INTRENABLE);
+
+       // The next line might hang
+
+        writel(OHCI_OCR, base + OHCI_CMDSTATUS);
+        while (wait_time > 0 &&
+                readl(base + OHCI_CONTROL) & OHCI_CTRL_IR) {
+            wait_time -= 10;
+            msleep(10);
+        }
+[...]
+=========
+
+The lspci output for the device is
+
+00:13.0 0c03: 1002:4387 (prog-if 10 [OHCI])
+        Subsystem: 1462:7326              
+        Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 16
+        Memory at fdffe000 (32-bit, non-prefetchable) [size=4K]   
+        Kernel driver in use: ohci_hcd                            
+        Kernel modules: ohci-hcd                                  
+
+My system is a
+
+Linux  2.6.28-gentoo #12 SMP PREEMPT Mon Dec 29 21:01:04 CET 2008 x86_64
+Intel(R) Core(TM)2 CPU 6300 @ 1.86GHz GenuineIntel GNU/Linux
+
+Thanks for your time.
+
+Best regards
+Kai
+
 -- 
-1.6.0.6
+This signature is left as an exercise for the reader.
 
