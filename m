@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbYL2OuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYL2Oza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbYL2OuQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 09:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbYL2OuA
+	id S1751893AbYL2Oza (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 09:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYL2OzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 09:50:00 -0500
-Received: from vms173007pub.verizon.net ([206.46.173.7]:64211 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbYL2OuA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 09:50:00 -0500
-Date: Mon, 29 Dec 2008 09:52:54 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: You are fussing about bug reports, here is one.  Seems like a shrug,
- but...
-To: linux-kernel@vger.kernel.org
-Message-id: <200812290952.54095.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.10
+	Mon, 29 Dec 2008 09:55:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52200 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750868AbYL2OzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 09:55:13 -0500
+Message-ID: <4958E4C2.3080405@redhat.com>
+Date: Mon, 29 Dec 2008 09:54:58 -0500
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, dhowells@redhat.com,
+       Bernd Schubert <bernd.schubert@fastmail.fm>, nfsv4@linux-nfs.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org, steved@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-next@vger.kernel.org
+Subject: Re: Pull request for FS-Cache, including NFS patches
+References: <8930.1229560221@redhat.com>	 <20081218142420.GA16728@infradead.org>	 <20081218123601.11810b7f.akpm@linux-foundation.org>	 <200812190007.34581.bernd.schubert@fastmail.fm>	 <20081218152616.a24c013f.akpm@linux-foundation.org>	 <20081219110539.7e7e230c.sfr@canb.auug.org.au>	 <20081229144533.4a0ab696.sfr@canb.auug.org.au>	 <20081228200134.426bf203.akpm@linux-foundation.org> <1230561056.7046.47.camel@heimdal.trondhjem.org>
+In-Reply-To: <1230561056.7046.47.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28.final, has existed most of the way through the 28-rc series.  This ASUS 
-mobo is a $250+ mobo, latest (working bios, the beta does work at all) and 
-has a quad core Phenom with 4GB of dram on it.
+Trond Myklebust wrote:
+> On Sun, 2008-12-28 at 20:01 -0800, Andrew Morton wrote:
+>   
+>> On Mon, 29 Dec 2008 14:45:33 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>
+>>     
+>>> Hi David,
+>>>
+>>> On Fri, 19 Dec 2008 11:05:39 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>>       
+>>>> Given the ongoing discussions around FS-Cache, I have removed it from
+>>>> linux-next.  Please ask me to include it again (if sensible) once some
+>>>> decision has been reached about its future.
+>>>>         
+>>> What was the result of discussions around FS-Cache?
+>>>       
+>> There was none.
+>>
+>> Dan Muntz's question:
+>>
+>>   Solaris has had CacheFS since ~1995, HPUX had a port of it since
+>>   ~1997.  I'd be interested in evidence of even a small fraction of
+>>   Solaris and/or HPUX shops using CacheFS.  I am aware of customers who
+>>   thought it sounded like a good idea, but ended up ditching it for
+>>   various reasons (e.g., CacheFS just adds overhead if you almost
+>>   always hit your local mem cache).
+>>
+>> was an very very good one.
+>>
+>> Seems that instead of answering it, we've decided to investigate the
+>> fate of those who do not learn from history.
+>>     
+>
+> David has given you plenty of arguments for why it helps scale the
+> server (including specific workloads), has given you numbers validating
+> his claim, and has presented claims that Red Hat has customers using
+> cachefs in RHEL-5.
+> The arguments I've seen against it, have so far been:
+>
+>      1. Solaris couldn't sell their implementation
+>      2. It's too big
+>      3. It's intrusive
+>
+> Argument (1) has so far appeared to be pure FUD. In order to discuss the
+> lessons of history, you need to first do the work of analysing and
+> understanding it first. I really don't see how it is relevant to Linux
+> whether or not the Solaris and HPUX cachefs implementations worked out
+> unless you can demonstrate that that their experience shows some fatal
+> flaw in the arguments and numbers that David presented, and that his
+> customers are deluded.
+> If you want examples of permanent caches that clearly do help servers
+> scale, then look no further than the on-disk caches used in almost all
+> http browser implemantations. Alternatively, as David mentioned, there
+> are the on-disk caches used by AFS/DFS/coda.
+>   
 
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 
-generic_get_mtrr+0x11c/0x130()
-[    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
-[    0.000000] Modules linked in:
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28 #1
-[    0.000000] Call Trace:
-[    0.000000]  [<c04267b6>] warn_slowpath+0x76/0x90
-[    0.000000]  [<c050dd97>] vsnprintf+0x2e7/0x680
-[    0.000000]  [<c042750b>] printk+0x1b/0x20
-[    0.000000]  [<c0419e7c>] pat_init+0x7c/0xa0
-[    0.000000]  [<c040e43c>] post_set+0x1c/0x50
-[    0.000000]  [<c0426f5d>] release_console_sem+0x18d/0x1c0
-[    0.000000]  [<c040ea8c>] generic_get_mtrr+0x11c/0x130
-[    0.000000]  [<c0712eda>] mtrr_trim_uncached_memory+0x7a/0x330
-[    0.000000]  [<c042750b>] printk+0x1b/0x20
-[    0.000000]  [<c070fd45>] e820_end_pfn+0xc5/0xf0
-[    0.000000]  [<c070e120>] setup_arch+0x420/0xb60
-[    0.000000]  [<c071126b>] reserve_early_overlap_ok+0x4b/0x60
-[    0.000000]  [<c07079c8>] start_kernel+0x58/0x2e0
-[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+I can add that our Red Hat customers who tried the cachefs preview did 
+find it useful for their workloads (and, by the way, also use the 
+Solaris cachefs on solaris boxes if I remember correctly).  They have 
+been nagging me and others at Red Hat about getting it into supported 
+state for quite a while :-)
 
-What it seems to be is useless noise, and only ASUS knows if it will be fixed.  
-As for reporting this to ASUS, has anyone a contact address?, their website 
-has none that works.
+As you point out, this is all about getting more clients to be driven by 
+a set of NFS servers.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Footnotes are for things you believe don't really belong in LDP manuals,
-but want to include anyway.
-	-- Joel N. Weber II discussing the 'make' chapter of LPG
+Regards,
+
+Ric
+
+> (2) may be valid, but I have yet to see specifics for where you'd like
+> to see the cachefs code slimmed down. Did I miss them?
+>
+> (3) was certainly true 3 years ago, when the code was first presented
+> for review, and so we did a review and critique then. The NFS specific
+> changes have improved greatly as a result, and as far as I know, the
+> security folks are happy too. If you're not happy with the parts that
+> affect the memory management code then, again, it would be useful to see
+> specifics that what you want changed.
+>
+> If there is still controversy concerning this, then I can temporarily
+> remove cachefs from the nfs linux-next branch, but I'm definitely
+> keeping it in the linux-mm branch until someone gives me a reason for
+> why it shouldn't be merged in its current state.
+>
+> Trond
+>
+>   
+
