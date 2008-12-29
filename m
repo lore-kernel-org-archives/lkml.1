@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYL2How@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYL2IBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbYL2How (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 02:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYL2Hor
+	id S1753528AbYL2IBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 03:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYL2IBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 02:44:47 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53579 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbYL2Hoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 02:44:46 -0500
-Message-ID: <49587FDD.5000504@cn.fujitsu.com>
-Date: Mon, 29 Dec 2008 15:44:29 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Roland Dreier <rdreier@cisco.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, sean.hefty@intel.com,
-       Aleksey Senin <alekseys@voltaire.com>
-Subject: Re: 2.6.28-git1 build failure
-References: <495853C6.6030000@oracle.com>
-In-Reply-To: <495853C6.6030000@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Dec 2008 03:01:03 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59196 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752391AbYL2IBB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 03:01:01 -0500
+Subject: Re: [PATCH] move arch/x86/pci/pci.h to
+	arch/x86/include/asm/pci_x86.h
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mj@ucw.cz
+In-Reply-To: <20081229065713.GA10960@x200.localdomain>
+References: <1230382948.3373.1.camel@jaswinder.satnam>
+	 <20081229065713.GA10960@x200.localdomain>
+Content-Type: text/plain; charset=utf8
+Date: Mon, 29 Dec 2008 13:28:58 +0530
+Message-Id: <1230537538.3090.4.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap said the following on 2008-12-29 12:36:
-> drivers/built-in.o: In function `addr_resolve_remote':
-> addr.c:(.text+0x12fe75): undefined reference to `ip6_route_output'
-> drivers/built-in.o: In function `rdma_translate_ip':
-> (.text+0x1301a7): undefined reference to `ipv6_chk_addr'
-> drivers/built-in.o: In function `rdma_resolve_ip':
-> (.text+0x1303a9): undefined reference to `ipv6_chk_addr'
-> drivers/built-in.o: In function `rdma_resolve_ip':
-> (.text+0x13051b): undefined reference to `ip6_route_output'
+On Mon, 2008-12-29 at 09:57 +0300, Alexey Dobriyan wrote:
+> On Sat, Dec 27, 2008 at 06:32:28PM +0530, Jaswinder Singh Rajput wrote:
+> > Impact: cleanup, arch/x86/pci/pci.h -> arch/x86/include/asm/pci_x86.h
 > 
-> when CONFIG_IPV6=n.
-> 
+> And this is done for what?
 
-Aleksey added IPv6 function to it but not change the Kconfig file.
-The following patch will temporarily fix this build failure.
-But IMHO separating the IPv4/IPv6 parts or using #ifdef would be better.
+Don't you think ﻿arch/x86/pci/pci.h looks ugly it should be in
+arch/x86/incluse/asm directory ?
 
-Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
----
-diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
-index a5dc78a..9535e13 100644
---- a/drivers/infiniband/Kconfig
-+++ b/drivers/infiniband/Kconfig
-@@ -36,7 +36,7 @@ config INFINIBAND_USER_MEM
- 
- config INFINIBAND_ADDR_TRANS
- 	bool
--	depends on INET
-+	depends on INET && IPV6
- 	default y
- 
- source "drivers/infiniband/hw/mthca/Kconfig"
+It was suggested by Ingo :
+http://marc.info/?l=linux-kernel&m=123037395221921&w=2
+
+I think Ingo will have more valid reasons to satisfy your curiousity ;-)
+
+Thank you,
+
+JSR
+
+
 
