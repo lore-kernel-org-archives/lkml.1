@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYL2KV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbYL2KW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbYL2KV7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 05:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbYL2KVd
+	id S1755023AbYL2KW1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 05:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYL2KV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 05:21:33 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:59517 "EHLO mgw2.diku.dk"
+	Mon, 29 Dec 2008 05:21:56 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59530 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755847AbYL2KVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 05:21:32 -0500
-Date: Mon, 29 Dec 2008 11:21:29 +0100 (CET)
+	id S1756015AbYL2KVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 05:21:55 -0500
+Date: Mon, 29 Dec 2008 11:21:52 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: lrodriguez@atheros.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+To: gregkh@suse.de, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/13] drivers/staging/otus: use USB API functions rather than
- constants
-Message-ID: <Pine.LNX.4.64.0812291121100.9555@pc-004.diku.dk>
+Subject: [PATCH 8/13] drivers/staging/rspiusb: use USB API functions rather
+ than constants
+Message-ID: <Pine.LNX.4.64.0812291121350.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -78,45 +78,22 @@ An extract of the semantic patch that makes these changes is as follows:
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/staging/otus/usbdrv.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/staging/rspiusb/rspiusb.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/otus/usbdrv.c b/drivers/staging/otus/usbdrv.c
-index 817228d..4443a2c 100644
---- a/drivers/staging/otus/usbdrv.c
-+++ b/drivers/staging/otus/usbdrv.c
-@@ -936,30 +936,26 @@ int zfLnxAllocAllUrbs(struct usbdrv_private *macp)
-     for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i)
-     {
-         endpoint = &iface_desc->endpoint[i].desc;
--        if ((endpoint->bEndpointAddress & 0x80) &&
--            ((endpoint->bmAttributes & 3) == 0x02))
-+	 if (usb_endpoint_is_bulk_in(endpoint))
-         {
-             /* we found a bulk in endpoint */
-             printk(KERN_ERR "bulk in: wMaxPacketSize = %x\n", le16_to_cpu(endpoint->wMaxPacketSize));
-         }
- 
--        if (((endpoint->bEndpointAddress & 0x80) == 0x00) &&
--            ((endpoint->bmAttributes & 3) == 0x02))
-+	 if (usb_endpoint_is_bulk_out(endpoint))
-         {
-             /* we found a bulk out endpoint */
-             printk(KERN_ERR "bulk out: wMaxPacketSize = %x\n", le16_to_cpu(endpoint->wMaxPacketSize));
-         }
- 
--        if ((endpoint->bEndpointAddress & 0x80) &&
--            ((endpoint->bmAttributes & 3) == 0x03))
-+	 if (usb_endpoint_is_int_in(endpoint))
-         {
-             /* we found a interrupt in endpoint */
-             printk(KERN_ERR "interrupt in: wMaxPacketSize = %x\n", le16_to_cpu(endpoint->wMaxPacketSize));
-             printk(KERN_ERR "interrupt in: int_interval = %d\n", endpoint->bInterval);
-         }
- 
--        if (((endpoint->bEndpointAddress & 0x80) == 0x00) &&
--            ((endpoint->bmAttributes & 3) == 0x03))
-+	 if (usb_endpoint_is_int_out(endpoint))
-         {
-             /* we found a interrupt out endpoint */
-             printk(KERN_ERR "interrupt out: wMaxPacketSize = %x\n", le16_to_cpu(endpoint->wMaxPacketSize));
+diff --git a/drivers/staging/rspiusb/rspiusb.c b/drivers/staging/rspiusb/rspiusb.c
+index ca281d6..ecaffb5 100644
+--- a/drivers/staging/rspiusb/rspiusb.c
++++ b/drivers/staging/rspiusb/rspiusb.c
+@@ -781,9 +781,8 @@ static int piusb_probe(struct usb_interface *interface,
+ 			dbg("Endpoint[%d]->MaxPacketSize = %d\n", i,
+ 			    endpoint->wMaxPacketSize);
+ 		}
+-		if ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
+-		    USB_ENDPOINT_XFER_BULK) {
+-			if (endpoint->bEndpointAddress & USB_DIR_IN)
++		if (usb_endpoint_xfer_bulk(endpoint)) {
++			if (usb_endpoint_dir_in(endpoint))
+ 				pdx->hEP[i] =
+ 				    usb_rcvbulkpipe(pdx->udev,
+ 						    endpoint->bEndpointAddress);
