@@ -1,461 +1,361 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYL2UpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbYL2UqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYL2UpW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 15:45:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYL2UpI
+	id S1753729AbYL2UqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 15:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbYL2UqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 15:45:08 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40122 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751689AbYL2UpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 15:45:05 -0500
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX1/tHTswhS/tyYIZ5XXhizbidEaJIE3JMMzLDFOhDs
-	zdOH3tWMeF7Cx1
-Message-ID: <495936D0.8060302@gmx.de>
-Date: Mon, 29 Dec 2008 21:45:04 +0100
-From: Helge Deller <deller@gmx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: linux-parisc <linux-parisc@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       John David Anglin <dave@hiauly1.hia.nrc.ca>
-Subject: [PATCH 2/2] parisc: fix module loading failure of large modules (take
- 2)
-References: <4959346E.7060600@gmx.de>
-In-Reply-To: <4959346E.7060600@gmx.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Dec 2008 15:46:01 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45769 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751836AbYL2Up7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 15:45:59 -0500
+Date: Mon, 29 Dec 2008 12:45:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/9] exofs: address_space_operations
+Message-Id: <20081229124514.71d29ae0.akpm@linux-foundation.org>
+In-Reply-To: <4947C7BD.2050407@panasas.com>
+References: <4947BFAA.4030208@panasas.com>
+	<4947C7BD.2050407@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.39
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 2/2] parisc: fix module loading failure of large modules (take 2)
+On Tue, 16 Dec 2008 17:22:37 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-On 32bit (and sometimes 64bit) and with big kernel modules like xfs or
-ipv6 the relocation types R_PARISC_PCREL17F and R_PARISC_PCREL22F may
-fail to reach their PLT stub if we only create one big stub array for
-all sections at the beginning of the core or init section.
+> 
+> OK Now we start to read and write from osd-objects, page-by-page.
+> The page index is the object's offset.
+> 
+>
+> ...
+>
+> +/*
+> + * Callback function when writepage finishes.  Check for errors, unlock, clean
+> + * up, etc.
+> + */
+> +void writepage_done(struct osd_request *req, void *p)
+> +{
+> +	int ret;
+> +	struct page *page = (struct page *)p;
 
-With this patch we now instead add individual PLT stub entries
-directly in front of the code sections where the stubs are actually
-called. This reduces the distance between the PCREL location and the
-stub entry so that the relocations can be fulfilled.
+unneeded cast
 
-The kernel module loader will call module_additional_section_size() and
-request us to return the amount of additional memory we need for the
-stubs of each section. This memory will then be allocated in front
-of the code code segment when the kernel layouts the final addresses 
-of all sections.
+> +	struct inode *inode = page->mapping->host;
+> +	struct exofs_sb_info *sbi = inode->i_sb->s_fs_info;
+> +
+> +	ret = check_ok(req);
+> +	free_osd_req(req);
+> +	atomic_dec(&sbi->s_curr_pending);
+> +
+> +	if (ret) {
+> +		if (ret == -ENOSPC)
+> +			set_bit(AS_ENOSPC, &page->mapping->flags);
+> +		else
+> +			set_bit(AS_EIO, &page->mapping->flags);
+> +
+> +		SetPageError(page);
+> +	}
+> +
+> +	end_page_writeback(page);
+> +	unlock_page(page);
+> +}
+> +
+> +/*
+> + * Write a page to disk.  page->index gives us the page number.  The page is
+> + * locked before this function is called.  We write asynchronously and then the
+> + * callback function (writepage_done) is called.  We signify that the operation
+> + * has completed by unlocking the page and calling end_page_writeback().
+> + */
+> +static int exofs_writepage(struct page *page, struct writeback_control *wbc)
+> +{
+> +	struct inode *inode = page->mapping->host;
+> +	struct exofs_i_info *oi = EXOFS_I(inode);
+> +	loff_t i_size = i_size_read(inode);
+> +	unsigned long end_index = i_size >> PAGE_CACHE_SHIFT;
+> +	unsigned offset = 0;
+> +	struct osd_request *req = NULL;
+> +	struct exofs_sb_info *sbi;
+> +	uint64_t start;
+> +	uint64_t len = PAGE_CACHE_SIZE;
+> +	unsigned char *kaddr;
+> +	int ret = 0;
+> +
+> +	if (!PageLocked(page))
+> +		BUG();
 
-Tested with 32- and 64bit kernels.
+Could use BUG_ON(!PageLocked)
 
-Signed-off-by: Helge Deller <deller@gmx.de>
+> +	/* if the object has not been created, and we are not in sync mode,
+> +	 * just return.  otherwise, wait. */
+> +	if (!ObjCreated(oi)) {
+> +		if (!Obj2BCreated(oi))
+> +			BUG();
 
-diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-index 644a70b..f975e31 100644
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -9,6 +9,7 @@ config PARISC
- 	def_bool y
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
-+	select HAVE_MODULE_SECTION_STUBS
- 	select RTC_CLASS
- 	select RTC_DRV_PARISC
- 	help
-diff --git a/arch/parisc/include/asm/module.h b/arch/parisc/include/asm/module.h
-index c2cb49e..1f41234 100644
---- a/arch/parisc/include/asm/module.h
-+++ b/arch/parisc/include/asm/module.h
-@@ -23,8 +23,10 @@ struct mod_arch_specific
- {
- 	unsigned long got_offset, got_count, got_max;
- 	unsigned long fdesc_offset, fdesc_count, fdesc_max;
--	unsigned long stub_offset, stub_count, stub_max;
--	unsigned long init_stub_offset, init_stub_count, init_stub_max;
-+	struct {
-+		unsigned long stub_offset;
-+		unsigned int stub_entries;
-+		} *section;
- 	int unwind_section;
- 	struct unwind_table *unwind;
- };
-diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
-index 44138c3..f8129ce 100644
---- a/arch/parisc/kernel/module.c
-+++ b/arch/parisc/kernel/module.c
-@@ -6,6 +6,7 @@
-  *
-  *    Linux/PA-RISC Project (http://www.parisc-linux.org/)
-  *    Copyright (C) 2003 Randolph Chung <tausq at debian . org>
-+ *    Copyright (C) 2008 Helge Deller <deller@gmx.de>
-  *
-  *
-  *    This program is free software; you can redistribute it and/or modify
-@@ -24,6 +25,20 @@
-  *
-  *
-  *    Notes:
-+ *    - PLT stub handling
-+ *      On 32bit (and sometimes 64bit) and with big kernel modules like xfs or
-+ *      ipv6 the relocation types R_PARISC_PCREL17F and R_PARISC_PCREL22F may
-+ *      fail to reach its PLT stub if we only create one big stub array for
-+ *      all sections at the beginning of the core or init section.
-+ *      Instead we now insert individual PLT stub entries directly in front of
-+ *      of the code sections where the stubs are actually called.
-+ *      This reduces the distance between the PCREL location and the stub entry
-+ *      so that the relocations can be fulfilled.
-+ *      The kernel module loader will call module_additional_section_size()
-+ *      and request us to return the amount of additional memory we need for
-+ *      the stubs of each section. This memory will then be allocated in front
-+ *      of the code code segment.
-+ *
-  *    - SEGREL32 handling
-  *      We are not doing SEGREL32 handling correctly. According to the ABI, we
-  *      should do a value offset, like this:
-@@ -58,9 +73,13 @@
- #define DEBUGP(fmt...)
- #endif
- 
-+#define RELOC_REACHABLE(val, bits) \
-+	(( ( !((val) & (1<<((bits)-1))) && ((val)>>(bits)) != 0 )  ||	\
-+	     ( ((val) & (1<<((bits)-1))) && ((val)>>(bits)) != (((__typeof__(val))(~0))>>((bits)+2)))) ? \
-+	0 : 1)
-+
- #define CHECK_RELOC(val, bits) \
--	if ( ( !((val) & (1<<((bits)-1))) && ((val)>>(bits)) != 0 )  ||	\
--	     ( ((val) & (1<<((bits)-1))) && ((val)>>(bits)) != (((__typeof__(val))(~0))>>((bits)+2)))) { \
-+	if (!RELOC_REACHABLE(val, bits)) { \
- 		printk(KERN_ERR "module %s relocation of symbol %s is out of range (0x%lx in %d bits)\n", \
- 		me->name, strtab + sym->st_name, (unsigned long)val, bits); \
- 		return -ENOEXEC;			\
-@@ -92,13 +111,6 @@ static inline int in_local(struct module *me, void *loc)
- 	return in_init(me, loc) || in_core(me, loc);
- }
- 
--static inline int in_local_section(struct module *me, void *loc, void *dot)
--{
--	return (in_init(me, loc) && in_init(me, dot)) ||
--		(in_core(me, loc) && in_core(me, dot));
--}
--
--
- #ifndef CONFIG_64BIT
- struct got_entry {
- 	Elf32_Addr addr;
-@@ -258,23 +270,42 @@ static inline unsigned long count_stubs(const Elf_Rela *rela, unsigned long n)
- /* Free memory returned from module_alloc */
- void module_free(struct module *mod, void *module_region)
- {
-+	kfree(mod->arch.section);
-+	mod->arch.section = NULL;
-+
- 	vfree(module_region);
- 	/* FIXME: If module_region == mod->init_region, trim exception
-            table entries. */
- }
- 
-+/* return number of additional bytes to reserve for a section */
-+unsigned long module_additional_section_size(struct module *mod,
-+					     unsigned int section)
-+{
-+	/* size needed for all stubs of this section (including
-+	 * one additional for correct alignment of the stubs) */
-+	return (mod->arch.section[section].stub_entries + 1)
-+		* sizeof(struct stub_entry);
-+}
-+
- #define CONST 
- int module_frob_arch_sections(CONST Elf_Ehdr *hdr,
- 			      CONST Elf_Shdr *sechdrs,
- 			      CONST char *secstrings,
- 			      struct module *me)
- {
--	unsigned long gots = 0, fdescs = 0, stubs = 0, init_stubs = 0;
-+	unsigned long gots = 0, fdescs = 0, len;
- 	unsigned int i;
- 
-+	len = hdr->e_shnum * sizeof(me->arch.section[0]);
-+	me->arch.section = kzalloc(len, GFP_KERNEL);
-+	if (!me->arch.section)
-+		return -ENOMEM;
-+
- 	for (i = 1; i < hdr->e_shnum; i++) {
--		const Elf_Rela *rels = (void *)hdr + sechdrs[i].sh_offset;
-+		const Elf_Rela *rels = (void *)sechdrs[i].sh_addr;
- 		unsigned long nrels = sechdrs[i].sh_size / sizeof(*rels);
-+		unsigned int count, s;
- 
- 		if (strncmp(secstrings + sechdrs[i].sh_name,
- 			    ".PARISC.unwind", 14) == 0)
-@@ -290,11 +321,23 @@ int module_frob_arch_sections(CONST Elf_Ehdr *hdr,
- 		 */
- 		gots += count_gots(rels, nrels);
- 		fdescs += count_fdescs(rels, nrels);
--		if(strncmp(secstrings + sechdrs[i].sh_name,
--			   ".rela.init", 10) == 0)
--			init_stubs += count_stubs(rels, nrels);
--		else
--			stubs += count_stubs(rels, nrels);
-+
-+		/* XXX: By sorting the relocs and finding duplicate entries
-+		 *  we could reduce the number of necessary stubs and save
-+		 *  some memory. */
-+		count = count_stubs(rels, nrels);
-+		if (!count)
-+			continue;
-+
-+		/* so we need relocation stubs. reserve necessary memory. */
-+		/* sh_info gives the section for which we need to add stubs. */
-+		s = sechdrs[i].sh_info;
-+
-+		/* each code section should only have one relocation section */
-+		WARN_ON(me->arch.section[s].stub_entries);
-+
-+		/* store number of stubs we need for this section */
-+		me->arch.section[s].stub_entries += count;
- 	}
- 
- 	/* align things a bit */
-@@ -306,18 +349,8 @@ int module_frob_arch_sections(CONST Elf_Ehdr *hdr,
- 	me->arch.fdesc_offset = me->core_size;
- 	me->core_size += fdescs * sizeof(Elf_Fdesc);
- 
--	me->core_size = ALIGN(me->core_size, 16);
--	me->arch.stub_offset = me->core_size;
--	me->core_size += stubs * sizeof(struct stub_entry);
--
--	me->init_size = ALIGN(me->init_size, 16);
--	me->arch.init_stub_offset = me->init_size;
--	me->init_size += init_stubs * sizeof(struct stub_entry);
--
- 	me->arch.got_max = gots;
- 	me->arch.fdesc_max = fdescs;
--	me->arch.stub_max = stubs;
--	me->arch.init_stub_max = init_stubs;
- 
- 	return 0;
- }
-@@ -380,23 +413,27 @@ enum elf_stub_type {
- };
- 
- static Elf_Addr get_stub(struct module *me, unsigned long value, long addend,
--	enum elf_stub_type stub_type, int init_section)
-+	enum elf_stub_type stub_type, Elf_Addr loc0, unsigned int targetsec)
- {
--	unsigned long i;
- 	struct stub_entry *stub;
- 
--	if(init_section) {
--		i = me->arch.init_stub_count++;
--		BUG_ON(me->arch.init_stub_count > me->arch.init_stub_max);
--		stub = me->module_init + me->arch.init_stub_offset + 
--			i * sizeof(struct stub_entry);
--	} else {
--		i = me->arch.stub_count++;
--		BUG_ON(me->arch.stub_count > me->arch.stub_max);
--		stub = me->module_core + me->arch.stub_offset + 
--			i * sizeof(struct stub_entry);
-+	/* initialize stub_offset to point in front of the section */
-+	if (!me->arch.section[targetsec].stub_offset) {
-+		loc0 -= (me->arch.section[targetsec].stub_entries + 1) *
-+				sizeof(struct stub_entry);
-+		/* get correct alignment for the stubs */
-+		loc0 = ALIGN(loc0, sizeof(struct stub_entry));
-+		me->arch.section[targetsec].stub_offset = loc0;
- 	}
- 
-+	/* get address of stub entry */
-+	stub = (void *) me->arch.section[targetsec].stub_offset;
-+	me->arch.section[targetsec].stub_offset += sizeof(struct stub_entry);
-+
-+	/* do not write outside available stub area */
-+	BUG_ON(0 == me->arch.section[targetsec].stub_entries--);
-+
-+
- #ifndef CONFIG_64BIT
- /* for 32-bit the stub looks like this:
-  * 	ldil L'XXX,%r1
-@@ -489,15 +526,19 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
- 	Elf32_Addr val;
- 	Elf32_Sword addend;
- 	Elf32_Addr dot;
-+	Elf_Addr loc0;
-+	unsigned int targetsec = sechdrs[relsec].sh_info;
- 	//unsigned long dp = (unsigned long)$global$;
- 	register unsigned long dp asm ("r27");
- 
- 	DEBUGP("Applying relocate section %u to %u\n", relsec,
--	       sechdrs[relsec].sh_info);
-+	       targetsec);
- 	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
- 		/* This is where to make the change */
--		loc = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
-+		loc = (void *)sechdrs[targetsec].sh_addr
- 		      + rel[i].r_offset;
-+		/* This is the start of the target section */
-+		loc0 = sechdrs[targetsec].sh_addr;
- 		/* This is the symbol it is referring to */
- 		sym = (Elf32_Sym *)sechdrs[symindex].sh_addr
- 			+ ELF32_R_SYM(rel[i].r_info);
-@@ -569,19 +610,32 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
- 			break;
- 		case R_PARISC_PCREL17F:
- 			/* 17-bit PC relative address */
--			val = get_stub(me, val, addend, ELF_STUB_GOT, in_init(me, loc));
-+			/* calculate direct call offset */
-+			val += addend;
- 			val = (val - dot - 8)/4;
--			CHECK_RELOC(val, 17)
-+			if (!RELOC_REACHABLE(val, 17)) {
-+				/* direct distance too far, create
-+				 * stub entry instead */
-+				val = get_stub(me, sym->st_value, addend,
-+					ELF_STUB_DIRECT, loc0, targetsec);
-+				val = (val - dot - 8)/4;
-+				CHECK_RELOC(val, 17);
-+			}
- 			*loc = (*loc & ~0x1f1ffd) | reassemble_17(val);
- 			break;
- 		case R_PARISC_PCREL22F:
- 			/* 22-bit PC relative address; only defined for pa20 */
--			val = get_stub(me, val, addend, ELF_STUB_GOT, in_init(me, loc));
--			DEBUGP("STUB FOR %s loc %lx+%lx at %lx\n", 
--			       strtab + sym->st_name, (unsigned long)loc, addend, 
--			       val)
-+			/* calculate direct call offset */
-+			val += addend;
- 			val = (val - dot - 8)/4;
--			CHECK_RELOC(val, 22);
-+			if (!RELOC_REACHABLE(val, 22)) {
-+				/* direct distance too far, create
-+				 * stub entry instead */
-+				val = get_stub(me, sym->st_value, addend,
-+					ELF_STUB_DIRECT, loc0, targetsec);
-+				val = (val - dot - 8)/4;
-+				CHECK_RELOC(val, 22);
-+			}
- 			*loc = (*loc & ~0x3ff1ffd) | reassemble_22(val);
- 			break;
- 
-@@ -610,13 +664,17 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
- 	Elf64_Addr val;
- 	Elf64_Sxword addend;
- 	Elf64_Addr dot;
-+	Elf_Addr loc0;
-+	unsigned int targetsec = sechdrs[relsec].sh_info;
- 
- 	DEBUGP("Applying relocate section %u to %u\n", relsec,
--	       sechdrs[relsec].sh_info);
-+	       targetsec);
- 	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
- 		/* This is where to make the change */
--		loc = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
-+		loc = (void *)sechdrs[targetsec].sh_addr
- 		      + rel[i].r_offset;
-+		/* This is the start of the target section */
-+		loc0 = sechdrs[targetsec].sh_addr;
- 		/* This is the symbol it is referring to */
- 		sym = (Elf64_Sym *)sechdrs[symindex].sh_addr
- 			+ ELF64_R_SYM(rel[i].r_info);
-@@ -672,42 +730,40 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
- 			DEBUGP("PCREL22F Symbol %s loc %p val %lx\n",
- 			       strtab + sym->st_name,
- 			       loc, val);
-+			val += addend;
- 			/* can we reach it locally? */
--			if(!in_local_section(me, (void *)val, (void *)dot)) {
--
--				if (in_local(me, (void *)val))
--					/* this is the case where the
--					 * symbol is local to the
--					 * module, but in a different
--					 * section, so stub the jump
--					 * in case it's more than 22
--					 * bits away */
--					val = get_stub(me, val, addend, ELF_STUB_DIRECT,
--						       in_init(me, loc));
--				else if (strncmp(strtab + sym->st_name, "$$", 2)
-+			if (in_local(me, (void *)val)) {
-+				/* this is the case where the symbol is local
-+				 * to the module, but in a different section,
-+				 * so stub the jump in case it's more than 22
-+				 * bits away */
-+				val = (val - dot - 8)/4;
-+				if (!RELOC_REACHABLE(val, 22)) {
-+					/* direct distance too far, create
-+					 * stub entry instead */
-+					val = get_stub(me, sym->st_value,
-+						addend, ELF_STUB_DIRECT,
-+						loc0, targetsec);
-+				} else {
-+					/* Ok, we can reach it directly. */
-+					val = sym->st_value;
-+					val += addend;
-+				}
-+			} else {
-+				val = sym->st_value;
-+				if (strncmp(strtab + sym->st_name, "$$", 2)
- 				    == 0)
- 					val = get_stub(me, val, addend, ELF_STUB_MILLI,
--						       in_init(me, loc));
-+						       loc0, targetsec);
- 				else
- 					val = get_stub(me, val, addend, ELF_STUB_GOT,
--						       in_init(me, loc));
-+						       loc0, targetsec);
- 			}
- 			DEBUGP("STUB FOR %s loc %lx, val %lx+%lx at %lx\n", 
- 			       strtab + sym->st_name, loc, sym->st_value,
- 			       addend, val);
--			/* FIXME: local symbols work as long as the
--			 * core and init pieces aren't separated too
--			 * far.  If this is ever broken, you will trip
--			 * the check below.  The way to fix it would
--			 * be to generate local stubs to go between init
--			 * and core */
--			if((Elf64_Sxword)(val - dot - 8) > 0x800000 -1 ||
--			   (Elf64_Sxword)(val - dot - 8) < -0x800000) {
--				printk(KERN_ERR "Module %s, symbol %s is out of range for PCREL22F relocation\n",
--				       me->name, strtab + sym->st_name);
--				return -ENOEXEC;
--			}
- 			val = (val - dot - 8)/4;
-+			CHECK_RELOC(val, 22);
- 			*loc = (*loc & ~0x3ff1ffd) | reassemble_22(val);
- 			break;
- 		case R_PARISC_DIR64:
-@@ -794,12 +850,8 @@ int module_finalize(const Elf_Ehdr *hdr,
- 	addr = (u32 *)entry->addr;
- 	printk("INSNS: %x %x %x %x\n",
- 	       addr[0], addr[1], addr[2], addr[3]);
--	printk("stubs used %ld, stubs max %ld\n"
--	       "init_stubs used %ld, init stubs max %ld\n"
--	       "got entries used %ld, gots max %ld\n"
-+	printk("got entries used %ld, gots max %ld\n"
- 	       "fdescs used %ld, fdescs max %ld\n",
--	       me->arch.stub_count, me->arch.stub_max,
--	       me->arch.init_stub_count, me->arch.init_stub_max,
- 	       me->arch.got_count, me->arch.got_max,
- 	       me->arch.fdesc_count, me->arch.fdesc_max);
- #endif
-@@ -829,7 +881,10 @@ int module_finalize(const Elf_Ehdr *hdr,
- 				me->name, me->arch.got_count, MAX_GOTS);
- 		return -EINVAL;
- 	}
--	
-+
-+	kfree(me->arch.section);
-+	me->arch.section = NULL;
-+
- 	/* no symbol table */
- 	if(symhdr == NULL)
- 		return 0;
+BUG_ON()?
+
+> +		if (wbc->sync_mode == WB_SYNC_NONE) {
+> +			redirty_page_for_writepage(wbc, page);
+> +			unlock_page(page);
+> +			ret = 0;
+> +			goto out;
+> +		} else {
+> +			wait_event(oi->i_wq, ObjCreated(oi));
+> +		}
+> +	}
+> +
+> +	/* in this case, the page is within the limits of the file */
+> +	if (page->index < end_index)
+> +		goto do_it;
+> +
+> +	offset = i_size & (PAGE_CACHE_SIZE - 1);
+> +	len = offset;
+> +
+> +	/*in this case, the page is outside the limits (truncate in progress)*/
+> +	if (page->index >= end_index + 1 || !offset) {
+> +		unlock_page(page);
+> +		goto out;
+> +	}
+> +
+> +do_it:
+> +	BUG_ON(PageWriteback(page));
+> +	set_page_writeback(page);
+> +	start = page->index << PAGE_CACHE_SHIFT;
+> +	sbi = inode->i_sb->s_fs_info;
+> +
+> +	kaddr = page_address(page);
+> +
+> +	req = prepare_osd_write(sbi->s_dev, sbi->s_pid,
+> +			      inode->i_ino + EXOFS_OBJ_OFF, len, start, 0,
+> +			      kaddr);
+
+Does prepare_osd_write() modify the memory at *kaddr?  If so, does it
+do the needed flush_dcache_page()?
+
+> +                           
+> +	if (!req) {
+> +		printk(KERN_ERR "ERROR: writepage failed.\n");
+> +		ret = -ENOMEM;
+> +		goto fail;
+> +	}
+> +
+> +	oi->i_commit_size = min_t(uint64_t, oi->i_commit_size, len + start);
+> +
+> +	ret = exofs_async_op(req, writepage_done, (void *)page, oi->i_cred);
+> +	if (ret) {
+> +		free_osd_req(req);
+> +		goto fail;
+> +	}
+> +	atomic_inc(&sbi->s_curr_pending);
+> +out:
+> +	return ret;
+> +fail:
+> +	set_bit(AS_EIO, &page->mapping->flags);
+> +	end_page_writeback(page);
+> +	unlock_page(page);
+> +	goto out;
+> +}
+> +
+> +/*
+> + * Callback for readpage
+> + */
+> +int __readpage_done(struct osd_request *req, void *p, int unlock)
+> +{
+> +	struct page *page = (struct page *)p;
+
+unneeded cast.
+
+> +	struct inode *inode = page->mapping->host;
+> +	struct exofs_sb_info *sbi = inode->i_sb->s_fs_info;
+> +	int ret;
+> +
+> +	ret = check_ok(req);
+> +	free_osd_req(req);
+> +	atomic_dec(&sbi->s_curr_pending);
+> +
+> +	if (ret == 0) {
+> +
+> +		/* Everything is OK */
+> +		SetPageUptodate(page);
+> +		if (PageError(page))
+> +			ClearPageError(page);
+> +	} else if (ret == -EFAULT) {
+> +		char *kaddr;
+> +
+> +		/* In this case we were trying to read something that wasn't on
+> +		 * disk yet - return a page full of zeroes.  This should be OK,
+> +		 * because the object should be empty (if there was a write
+> +		 * before this read, the read would be waiting with the page
+> +		 * locked */
+> +		kaddr = page_address(page);
+> +		memset(kaddr, 0, PAGE_CACHE_SIZE);
+
+There is I think a missing flsh_dcache_page() here.  Use of the
+(somewhat misnamed) zero_user() would be an appropriate fix and
+cleanup.
+
+> +		SetPageUptodate(page);
+> +		if (PageError(page))
+> +			ClearPageError(page);
+> +	} else /* Error */
+> +		SetPageError(page);
+> +
+> +	if (unlock)
+> +		unlock_page(page);
+> +
+> +	return ret;
+> +}
+> +
+> +void readpage_done(struct osd_request *req, void *p)
+> +{
+> +	__readpage_done(req, p, true);
+> +}
+> +
+> +/*
+> + * Read a page from the OSD
+> + */
+> +static int __readpage_filler(struct page *page, bool is_async_unlock)
+> +{
+> +	struct osd_request *req = NULL;
+> +	struct inode *inode = page->mapping->host;
+> +	struct exofs_i_info *oi = EXOFS_I(inode);
+> +	ino_t ino = inode->i_ino;
+> +	loff_t i_size = i_size_read(inode);
+> +	loff_t i_start = page->index << PAGE_CACHE_SHIFT;
+> +	unsigned long end_index = i_size >> PAGE_CACHE_SHIFT;
+
+Using pgoff_t for this would have some small documentation benefit.
+
+> +	struct super_block *sb = inode->i_sb;
+> +	struct exofs_sb_info *sbi = sb->s_fs_info;
+> +	uint64_t amount;
+> +	unsigned char *kaddr;
+> +	int ret = 0;
+> +
+> +	if (!PageLocked(page))
+> +		BUG();
+
+BUG_ON?
+
+> +	if (PageUptodate(page))
+> +		goto out;
+> +
+> +	if (page->index < end_index)
+> +		amount = PAGE_CACHE_SIZE;
+> +	else
+> +		amount = i_size & (PAGE_CACHE_SIZE - 1);
+> +
+> +	/* this will be out of bounds, or doesn't exist yet */
+> +	if ((page->index >= end_index + 1) || !ObjCreated(oi) || !amount
+> +	    /*|| (i_start >= oi->i_commit_size)*/) {
+> +		kaddr = kmap_atomic(page, KM_USER0);
+> +		memset(kaddr, 0, PAGE_CACHE_SIZE);
+> +		flush_dcache_page(page);
+> +		kunmap_atomic(page, KM_USER0);
+
+There's a flush_dcache_page() ;)
+
+Could use clear_highpage() here.
+
+> +		SetPageUptodate(page);
+> +		if (PageError(page))
+> +			ClearPageError(page);
+> +		if (is_async_unlock)
+> +			unlock_page(page);
+> +		goto out;
+> +	}
+> +
+> +	if (amount != PAGE_CACHE_SIZE) {
+> +		kaddr = kmap_atomic(page, KM_USER0);
+> +		memset(kaddr + amount, 0, PAGE_CACHE_SIZE - amount);
+> +		flush_dcache_page(page);
+> +		kunmap_atomic(page, KM_USER0);
+
+Use zero_user()?
+
+> +	}
+> +
+> +	kaddr = page_address(page);
+> +
+> +	req = prepare_osd_read(sbi->s_dev, sbi->s_pid, ino + EXOFS_OBJ_OFF,
+> +			       amount, i_start, 0, kaddr);
+
+flush_dcache_page()?
+
+> +	if (!req) {
+> +		printk(KERN_ERR "ERROR: readpage failed.\n");
+> +		ret = -ENOMEM;
+> +		unlock_page(page);
+> +		goto out;
+> +	}
+> +
+> +	atomic_inc(&sbi->s_curr_pending);
+> +	if (!is_async_unlock) {
+> +		exofs_sync_op(req, sbi->s_timeout, oi->i_cred);
+> +		ret = __readpage_done(req, page, false);
+> +	} else {
+> +		ret = exofs_async_op(req, readpage_done, page, oi->i_cred);
+> +		if (ret) {
+> +			free_osd_req(req);
+> +			unlock_page(page);
+> +			atomic_dec(&sbi->s_curr_pending);
+> +		}
+> +	}
+> +
+> +out:
+> +	return ret;
+> +}
+> +
+> +static int readpage_filler(struct page *page)
+> +{
+> +	int ret = __readpage_filler(page, true);
+> +
+> +	return ret;
+> +}
+> +
+> +/*
+> + * We don't need the file
+> + */
+> +static int exofs_readpage(struct file *file, struct page *page)
+> +{
+> +	return readpage_filler(page);
+> +}
+> +
+> +/*
+> + * We don't need the data
+> + */
+> +static int readpage_strip(void *data, struct page *page)
+> +{
+> +	return readpage_filler(page);
+> +}
+> +
+> +/*
+> + * read a bunch of pages - usually for readahead
+> + */
+> +static int exofs_readpages(struct file *file, struct address_space *mapping,
+> +			   struct list_head *pages, unsigned nr_pages)
+> +{
+> +	return read_cache_pages(mapping, pages, readpage_strip, NULL);
+> +}
+> +
+> +struct address_space_operations exofs_aops = {
+
+const.
+
+> +	.readpage	= exofs_readpage,
+> +	.readpages	= exofs_readpages,
+> +	.writepage	= exofs_writepage,
+> +	.write_begin	= exofs_write_begin_export,
+> +	.write_end	= simple_write_end,
+> +	.writepages	= generic_writepages,
+> +};
+
