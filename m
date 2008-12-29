@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYL2VrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbYL2Vsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbYL2VrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYL2VrF
+	id S1754299AbYL2Vsc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbYL2VsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:47:05 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:35816 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbYL2VrC (ORCPT
+	Mon, 29 Dec 2008 16:48:20 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:30677 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbYL2VsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:47:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RA7tyByS6sYojBi0HCTpWvDVwkQClDbMYZLyUwbF5mtU3wsdT5aw9Jgiwlr8MczF0P
-         ijM2DfTntHrPIjblkup2cwK80WKZ5KPpdTWp12k3o5tYeBumVIFgd8NomGr0Qr+dgz+k
-         5CV0tI25wL/GBiicHdIHsN1wvltSIIdzascA0=
-Date: Mon, 29 Dec 2008 22:46:58 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
-	the unified tracing API
-Message-ID: <20081229214657.GA5829@nowhere>
-References: <4959443f.09a1660a.44f3.2686@mx.google.com>
+	Mon, 29 Dec 2008 16:48:19 -0500
+X-IronPort-AV: E=Sophos;i="4.36,297,1228089600"; 
+   d="scan'208";a="123448576"
+From: Roland Dreier <rdreier@cisco.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "general\@lists.openfabrics.org" <general@lists.openfabrics.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [ofa-general] Re: linux-next: origin tree build failure
+References: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
+	<ada4p0nve4r.fsf@cisco.com> <1230544737.4261.33.camel@alst60>
+	<adaljtyu45d.fsf@cisco.com>
+	<alpine.LFD.2.00.0812291304471.3082@localhost.localdomain>
+	<adahc4mu0l5.fsf@cisco.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 29 Dec 2008 13:48:18 -0800
+In-Reply-To: <adahc4mu0l5.fsf@cisco.com> (Roland Dreier's message of "Mon, 29
+	Dec 2008 13:35:02 -0800")
+Message-ID: <adad4fatzz1.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4959443f.09a1660a.44f3.2686@mx.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 29 Dec 2008 21:48:18.0439 (UTC) FILETIME=[29213970:01C969FF]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And of course the headers of the trace have been zapped by git-commit :-)
-An example with the headers:
+ >  > I'd suggest
+ >  > 
+ >  >   config IF_IPV6
+ >  > 	bool
+ >  > 	depends on INET
+ >  > 	depends on !(INFINIBAND = y && IPV6 = m)
+ >  > 	default y
+ > 
+ > Makes sense, will do.  How about calling it INFINIBAND_USE_IPV6 or
+ > something like that, though?  (Since it's under the INFINIBAND config
+ > stuff and exists to forbid INFINIBAND=y && IPV6=m trying to use IPv6).
 
-# tracer: kmemtrace
-#
-#
-# ALLOC  TYPE  REQ   GIVEN  FLAGS           POINTER         NODE    CALLER
-# FREE   |      |     |       |              |   |            |        |
-# |
+Actually, thinking about this for 30 more seconds, I'm not sure how
+another config symbol helps at all.  I do like splitting dependencies
+onto multiple lines as a replacement for &&, so I have:
 
-  -      C                            0xffff88007c088780          file_free_rcu
-  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
-  -      C                            0xffff88007cad6000          putname
-  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
-  +      K    240    240   000000d0   0xffff8800790dc780     -1   d_alloc
-  -      C                            0xffff88007cad6000          putname
-  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
-  +      K    240    240   000000d0   0xffff8800790dc870     -1   d_alloc
-  -      C                            0xffff88007cad6000          putname
-  +      K   4096   4096   000000d0   0xffff88007cad6000     -1   getname
-  +      K    240    240   000000d0   0xffff8800790dc960     -1   d_alloc
-  +      K   1304   1312   000000d0   0xffff8800791d7340     -1   reiserfs_alloc_inode
+config INFINIBAND_ADDR_TRANS
+	bool
+	depends on INET
+	depends on !(INFINIBAND = y && IPV6 = m)
+	default y
 
+right now.
 
+Not sure if it's worth introducing another Kconfig symbol that depends
+on IPV6 != n to avoid the
 
+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+
+tests.  I note that there are tons of that construction all over the
+tree, and the places without it look somewhat dubious (eg
+net/ipv4/ip_gre.c looks as if it will do the wrong thing if IPV6=m).
+Maybe adding CONFIG_IPV6_ENABLED or something and cleaning up the whole
+tree would be a good janitorial project?
+
+ - R.
