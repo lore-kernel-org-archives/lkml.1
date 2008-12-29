@@ -1,102 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbYL2Qef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYL2Qgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbYL2Qef (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 11:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYL2Qe0
+	id S1752782AbYL2Qgf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 11:36:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYL2Qg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 11:34:26 -0500
-Received: from mail.lang.hm ([64.81.33.126]:35309 "EHLO bifrost.lang.hm"
+	Mon, 29 Dec 2008 11:36:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42305 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751305AbYL2Qe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 11:34:26 -0500
-Date: Mon, 29 Dec 2008 09:36:11 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Scott James Remnant <scott@canonical.com>,
-       Roland McGrath <roland@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] Notify init when processes are reparented to it
-In-Reply-To: <20081229155735.GA6906@redhat.com>
-Message-ID: <alpine.DEB.1.10.0812290930550.15026@asgard.lang.hm>
-References: <1230378128.7026.50.camel@quest> <20081227114452.GA2919@zelda.netsplit.com> <20081228092024.GA21673@redhat.com> <20081228220122.62940FC278@magilla.sf.frob.com> <1230551457.4664.0.camel@wing-commander> <20081229132305.GA31210@redhat.com>
- <1230564071.4664.8.camel@wing-commander> <20081229155735.GA6906@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1751354AbYL2Qg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 11:36:26 -0500
+Date: Mon, 29 Dec 2008 17:36:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
+Message-ID: <20081229163608.GA6307@elte.hu>
+References: <20081227133240.GA8716@elte.hu> <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com> <20081227173839.GA9793@elte.hu> <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain> <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu> <20081229110012.GB11111@linux.vnet.ibm.com> <20081229110533.GA29592@elte.hu> <20081229160538.GA5952@linux.vnet.ibm.com> <2f11576a0812290822t25b26addu9ab7c04001c1ec7a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2f11576a0812290822t25b26addu9ab7c04001c1ec7a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Dec 2008, Oleg Nesterov wrote:
 
-> On 12/29, Scott James Remnant wrote:
->>
->> On Mon, 2008-12-29 at 14:23 +0100, Oleg Nesterov wrote:
->>
->>>> We want to be able to supervise daemons.
->>>
->>> What do you mean?
->>>
->>>> Later on, 1002 will die and init will receive SIGCHLD for it.
->>>>
->>>> Unfortunately neither the 1001 or 1002 processes are known to init, even
->>>> though they are original children of the process it spawned (1000), for
->>>> init to be notified about them - this has been forgotten.
->>>
->>> Ok, with this patch /sbin/init knows that 1002 is a descendant
->>> of apache(1000) which was spwaned by init. What can init do
->>> with this info?
->>>
->> Fundamentally init would now know that the apache service terminated,
->> and with what exit code or by what signal.
->>
->> Right now, all we know is that a process terminated (and why) - we can't
->> link that back to a service in any kind of foolproof manner.
->>
->> With the ability to do that, when the apache service dies, we can log
->> that in a more useful manner (including marking the service as down) -
->> but most importantly, we can respawn it!
->
-> Aha, thanks, I suspected something like this.
->
-> But how can we know (in general) that the service has died? We only
-> know that the process has exited.
->
-> IOW. when apache(1001) exits, we don't respawn. How can init know that
-> the death of apache(1002) means "this is the real exit of service, the
-> previous exits were due to initialization stage".
->
-> The only answer I can see is: because init can figure out that all
-> descendants of initially spawned apache(1000) have exited. But this
-> doesn't look very flexible/reliable to me.
+* KOSAKI Motohiro <kosaki.motohiro@gmail.com> wrote:
 
-there are a number of options here.
+> >> >     kernel crashes after applying the patch, I will retest with
+> >> > the patch posted at http://lkml.org/lkml/2008/12/29/48
+> >>
+> >> yes - Yinghai observed this too. Could you check tip/master that has all
+> >> the fixlets merged up, to make sure it's finally solved? Thanks,
+> >>
+> >> also, what is the gcc -v output of your compiler?
+> >>
+> >>       Ingo
+> >
+> > Hi Ingo/Yinghai,
+> >
+> >        Thanks for getting it resolved, the latest tip/master boot's up fine :)
+> >
+> > $ gcc -v
+> > Using built-in specs.
+> > Target: x86_64-redhat-linux
+> > Configured with: ../configure --prefix=/usr
+> > --mandir=/usr/share/man
+> > --infodir=/usr/share/info
+> > --enable-shared
+> > --enable-threads=posix
+> > --enable-checking=release
+> > --with-system-zlib
+> > --enable-__cxa_atexit
+> > --disable-libunwind-exceptions
+> > --enable-libgcj-multifile
+> > --enable-languages=c,c++,objc,obj-c++,java,fortran,ada
+> > --enable-java-awt=gtk
+> > --disable-dssi
+> > --with-java-home=/usr/lib/jvm/java-1.4.2-gcj-1.4.2.0/jre
+> > --with-cpu=generic
+> > --host=x86_64-redhat-linux
+> > Thread model: posix
+> > gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)
+> 
+> note, my following compiler doesn't have this problem.
 
-init can look for error exit codes and respawn things that died with 
-errors.
+as i said it earlier on, it's a rather rare problem - in a 2.5 years old 
+compiler. The commit has been around for some time and nobody was hit by 
+the regression.
 
-init can be taught what normal behavior is for different daemons (some 
-sort of configuration options)
-
-init can look for cases where all children have exited.
-
-init could do monitoring of aplications, and if an application is deemed 
-'sick' can make sure that it kills all processes associated with that 
-application before trying to respawn it. (this is much more then what init 
-has doesn historicly, and may not be a good idea for the general case, but 
-it is still a possibility that will make sense in some cases)
-
-I'm sure that there are other things that can be done with such a 
-mechansims, this is just what I can think of off the top of my head
-
-> And we already have CONFIG_PROC_EVENTS, init can monitor PROC_EVENT_FORK
-> events, so it can do this without ->adopt_signal ?
-
-wouldn't that require init to pay attention to every fork in the system to 
-find the ones that it cares about?
-
-also, an earlier post gave one reason for wanting to use signals being to 
-eliminate race conditions.
-
-David Lang
+	Ingo
