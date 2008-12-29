@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbYL2A3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbYL2Abg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755619AbYL2A3d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 19:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYL2A3O
+	id S1755652AbYL2Abg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 19:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYL2Ab1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 19:29:14 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:22325 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755316AbYL2A3M (ORCPT
+	Sun, 28 Dec 2008 19:31:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38209 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751620AbYL2Ab1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 19:29:12 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AncDABipV0l5LB1fgWdsb2JhbACTcwEBFiKoPFiOYoZE
-X-IronPort-AV: E=Sophos;i="4.36,293,1228051800"; 
-   d="scan'208";a="283621748"
-Date: Mon, 29 Dec 2008 11:28:51 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Thomas Themel <thomas@themel.com>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS corruption on ARM
-Message-ID: <20081229002851.GD22525@disturbed>
-Mail-Followup-To: Thomas Themel <thomas@themel.com>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <20081228123305.GE30805@themel.com>
+	Sun, 28 Dec 2008 19:31:27 -0500
+Date: Sun, 28 Dec 2008 16:31:15 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
+       "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: origin tree build failure
+In-Reply-To: <20081229103849.1cb1eb54.sfr@canb.auug.org.au>
+Message-ID: <alpine.LFD.2.00.0812281630100.3082@localhost.localdomain>
+References: <20081229103849.1cb1eb54.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081228123305.GE30805@themel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC'd the xfs list.]
 
-On Sun, Dec 28, 2008 at 01:33:05PM +0100, Thomas Themel wrote:
-> Hi,
-> 
-> there was a thread[0] on this list in 2008-10 about XFS corrupting
-> rather quickly on recent ARM kernels, which seems to have petered out
-> without any apparent results. I'm still seeing the same problems with
-> 2.6.28, and I suspect that this qualifies as a kind of regression
-> (though ancient), since the devices I'm running this on (Buffalo
-> LinkStations) originally ship with a (vendor-modified) 2.6.16 kernel,
-> where XFS seems to be working.
-> 
-> Is this still on anyone's radar? I'm willing to test proposed fixes and
-> supply data[1], but lack any deep knowledge of either ARM or XFS internals.
-> 
-> (Please Cc: me, I'm not on the list.)
-> 
-> [0] http://lkml.org/lkml/2008/10/1/382
-> [1] Though mine doesn't look any different from what was posted in [0]
->     to the little-trained eye.
-> 
-> ciao,
-> -- 
-> [*Thomas  Themel*]
-> [extended contact] But let your communication be, Yea, yea; Nay, nay:
-> [info provided in] for whatsoever is more than these cometh of evil.
-> [*message header*]      - Matthew 5:37
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
--- 
-Dave Chinner
-david@fromorbit.com
+On Mon, 29 Dec 2008, Stephen Rothwell wrote:
+> 
+> Maybe someone should have warned Linus about the below known interaction
+> between the net tree and the cifs tree ...
+
+Gaah. I should have grepped for it, since the other place caused a 
+conflict that I fixed. And I even tested that the result of my conflict 
+resolution compiled, but since I don't configure cifs myself, I literally 
+tested just the conflicting file.
+
+Applied the fix, thanks,
+
+		Linus
