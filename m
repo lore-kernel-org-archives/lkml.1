@@ -1,109 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYL2Obj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYL2Ofr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbYL2Obj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 09:31:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYL2Obb
+	id S1751893AbYL2Ofr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 09:35:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYL2Off
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 09:31:31 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:60074 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbYL2Oba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 09:31:30 -0500
-Subject: Re: Pull request for FS-Cache, including NFS patches
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, dhowells@redhat.com,
-       Bernd Schubert <bernd.schubert@fastmail.fm>, nfsv4@linux-nfs.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org, steved@redhat.com,
-       linux-fsdevel@vger.kernel.org, rwheeler@redhat.com,
-       linux-next@vger.kernel.org
-In-Reply-To: <20081228200134.426bf203.akpm@linux-foundation.org>
-References: <8930.1229560221@redhat.com>
-	 <20081218142420.GA16728@infradead.org>
-	 <20081218123601.11810b7f.akpm@linux-foundation.org>
-	 <200812190007.34581.bernd.schubert@fastmail.fm>
-	 <20081218152616.a24c013f.akpm@linux-foundation.org>
-	 <20081219110539.7e7e230c.sfr@canb.auug.org.au>
-	 <20081229144533.4a0ab696.sfr@canb.auug.org.au>
-	 <20081228200134.426bf203.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 29 Dec 2008 09:30:56 -0500
-Message-Id: <1230561056.7046.47.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Mon, 29 Dec 2008 09:35:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:3073 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811AbYL2Ofe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 09:35:34 -0500
+Message-ID: <154e089b0812290635o5792af25jd26fa184a02dc7af@mail.gmail.com>
+Date: Mon, 29 Dec 2008 15:35:31 +0100
+From: "Hannes Eder" <hannes@hanneseder.net>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a compound statement
+Cc: "Krzysztof Halasa" <khc@pm.waw.pl>,
+       "Harvey Harrison" <harvey.harrison@gmail.com>,
+       "=?ISO-8859-1?Q?H=E5kon_L=F8vdal?=" <hlovdal@gmail.com>,
+       netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0812231529030.3535@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 77A79E5E81A309576D27F683E7D0DE80A4FC4D8B
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 300 max/h 9 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
+	 <20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
+	 <m3hc4voo2a.fsf@maximus.localdomain>
+	 <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
+	 <m3ocz2ua3w.fsf@maximus.localdomain> <1230053186.1447.9.camel@brick>
+	 <m3k59qssix.fsf@maximus.localdomain>
+	 <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
+	 <m3hc4usco9.fsf@maximus.localdomain>
+	 <alpine.LFD.2.00.0812231529030.3535@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-12-28 at 20:01 -0800, Andrew Morton wrote:
-> On Mon, 29 Dec 2008 14:45:33 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
-> > Hi David,
-> > 
-> > On Fri, 19 Dec 2008 11:05:39 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > >
-> > > Given the ongoing discussions around FS-Cache, I have removed it from
-> > > linux-next.  Please ask me to include it again (if sensible) once some
-> > > decision has been reached about its future.
-> > 
-> > What was the result of discussions around FS-Cache?
-> 
-> There was none.
-> 
-> Dan Muntz's question:
-> 
->   Solaris has had CacheFS since ~1995, HPUX had a port of it since
->   ~1997.  I'd be interested in evidence of even a small fraction of
->   Solaris and/or HPUX shops using CacheFS.  I am aware of customers who
->   thought it sounded like a good idea, but ended up ditching it for
->   various reasons (e.g., CacheFS just adds overhead if you almost
->   always hit your local mem cache).
-> 
-> was an very very good one.
-> 
-> Seems that instead of answering it, we've decided to investigate the
-> fate of those who do not learn from history.
+On Wed, Dec 24, 2008 at 12:38 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 24 Dec 2008, Krzysztof Halasa wrote:
+>>
+>> So is a case like
+>>       do
+>>               x;
+>>       while (y);
+>> It can't be made more clear with brackets.
+>
+> Oh yes it can. People look at that, and it's so uncommon that they
+> literally believe it is a mis-indent.
+>
+> [snip]
+>
+>> kmalloc(sizeof i) just doesn't look good, the operator looks like
+>> a variable name.
+>
+> And I agree with you. "sizeof i" doesn't look good. It's uncommon, and
+> doesn't match peoples expectations.
+>
+>> But there is this return statement. Some people tend to write
+>> return (x); I simply write return x;
+>
+> I do to. And it's the common thing to do, and only totally confused people
+> think that 'return' is a somehow remotely like a "function" of its
+> arguments (the way 'sizeof' is - sizeof _is_ a function of its arguments,
+> albeit a very rare one).
+>
+>> It's clear, and so is a simple do-while.
+>
+> No. "return x;" is clear because it's the common thing, which means that
+> peopel are good at reading it.
 
-David has given you plenty of arguments for why it helps scale the
-server (including specific workloads), has given you numbers validating
-his claim, and has presented claims that Red Hat has customers using
-cachefs in RHEL-5.
-The arguments I've seen against it, have so far been:
+I got curious and conducted a little experiment, here is the outcome
+for the linux-2.6 kernel tree:
 
-     1. Solaris couldn't sell their implementation
-     2. It's too big
-     3. It's intrusive
+hannes@vmbox:~/linux-2.6$ find . -name "*.[ch]" -print0 | xargs -0 cat
+| ../sparse/cstats -
 
-Argument (1) has so far appeared to be pure FUD. In order to discuss the
-lessons of history, you need to first do the work of analysing and
-understanding it first. I really don't see how it is relevant to Linux
-whether or not the Solaris and HPUX cachefs implementations worked out
-unless you can demonstrate that that their experience shows some fatal
-flaw in the arguments and numbers that David presented, and that his
-customers are deluded.
-If you want examples of permanent caches that clearly do help servers
-scale, then look no further than the on-disk caches used in almost all
-http browser implemantations. Alternatively, as David mentioned, there
-are the on-disk caches used by AFS/DFS/coda.
+stats for '-':
+  do's:         8092, non compound:              79 (  1.0%)
+  sizeof's:    51216, without parenthesis:     1543 (  3.0%)
+  return's:   286167, with parenthesis:       13552 (  4.7%)
 
-(2) may be valid, but I have yet to see specifics for where you'd like
-to see the cachefs code slimmed down. Did I miss them?
+'cstats' is a little program I wrote using the sparse library, see below.
 
-(3) was certainly true 3 years ago, when the code was first presented
-for review, and so we did a review and critique then. The NFS specific
-changes have improved greatly as a result, and as far as I know, the
-security folks are happy too. If you're not happy with the parts that
-affect the memory management code then, again, it would be useful to see
-specifics that what you want changed.
+The value for "return's with parenthesis" is a bit of an estimation,
+as 'cstats' operates only at the token level, so
+"return (x) ? y : z;" counts as "return with parenthesis".
 
-If there is still controversy concerning this, then I can temporarily
-remove cachefs from the nfs linux-next branch, but I'm definitely
-keeping it in the linux-mm branch until someone gives me a reason for
-why it shouldn't be merged in its current state.
+some sanity checks, to ensure the magnitudes are right:
 
-Trond
+hannes@vmbox:~/linux-2.6$ git grep -w do -- *.[ch] | wc -l
+20599
 
+hannes@vmbox:~/linux-2.6$ git grep '\bdo[ \t]*{' -- *.[ch] | wc -l
+7805
+
+I assume 'do' is used frequently in comments:
+
+hannes@vmbox:~/linux-2.6$ git grep '\*.*\bdo\b' -- *.[ch] | wc -l
+11358
+
+hannes@vmbox:~/linux-2.6$ git grep '^[ \t]*do$' -- *.[ch] | wc -l
+34
+
+hannes@vmbox:~/linux-2.6$ git grep -w sizeof -- *.[ch] | wc -l
+49631
+
+constructs like sizeof(array)/sizeof(array[0]) or common:
+
+hannes@vmbox:~/linux-2.6$ git grep  'sizeof.*sizeof' -- *.[ch] | wc -l
+1827
+
+hannes@vmbox:~/linux-2.6$ git grep '\bsizeof [^(]' -- *.[ch] | wc -l
+1534
+
+hannes@vmbox:~/linux-2.6$ git grep -w return -- *.[ch] | wc -l
+295304
+
+hannes@vmbox:~/linux-2.6$ git grep '\breturn (' -- *.[ch] | wc -l
+11067
+
+Best,
+Hannes
+
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include "token.h"
+#include "parse.h"
+
+int main(int argc, char **argv)
+{
+        struct string_list *filelist = NULL;
+        char *filename;
+
+        sparse_initialize(argc, argv, &filelist);
+        FOR_EACH_PTR_NOTAG(filelist, filename) {
+                int fd;
+                struct token *token;
+                int do_stats = 0;
+                int do_stats_nc = 0;
+                int sizeof_exprs = 0;
+                int sizeof_exprs_np = 0;
+                int return_stats = 0;
+                int return_stats_wp = 0;
+
+                if (strcmp(filename, "-") == 0) {
+                        fd = 0;
+                } else {
+                        fd = open(filename, O_RDONLY);
+                        if (fd < 0)
+                                die("No such file: %s", filename);
+                }
+
+                // Tokenize the input stream
+                token = tokenize(filename, fd, NULL, includepath);
+                close(fd);
+
+                for ( ; !eof_token(token); token = token->next) {
+                        if (token_type(token) == TOKEN_IDENT) {
+                                if (token->ident == &do_ident) {
+                                        do_stats++;
+                                        if (!match_op(token->next, '{'))
+                                                do_stats_nc++;
+                                }
+                                else if (token->ident == &sizeof_ident) {
+                                        sizeof_exprs++;
+                                        if (!match_op(token->next, '('))
+                                                sizeof_exprs_np++;
+                                }
+                                else if (token->ident == &return_ident) {
+                                        return_stats++;
+                                        if (match_op(token->next, '('))
+                                                return_stats_wp++;
+                                }
+                        }
+                }
+
+                printf("stats for '%s':\n", filename);
+                printf("  do's:     %8d, non compound:        %8d (%5.1f%%)\n",
+                       do_stats, do_stats_nc,
+                       100.0 * do_stats_nc / (do_stats?:1) );
+                printf("  sizeof's: %8d, without parenthesis: %8d (%5.1f%%)\n",
+                       sizeof_exprs, sizeof_exprs_np,
+                       100.0 * sizeof_exprs_np / (sizeof_exprs?:1) );
+                printf("  return's: %8d, with parenthesis:    %8d (%5.1f%%)\n",
+                       return_stats, return_stats_wp,
+                       100.0 * return_stats_wp / (return_stats?:1) );
+
+        } END_FOR_EACH_PTR_NOTAG(filename);
+        return 0;
+}
