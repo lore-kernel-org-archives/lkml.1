@@ -1,131 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYL2WYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYL2W5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYL2WYE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 17:24:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYL2WXu
+	id S1753888AbYL2W5D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 17:57:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYL2W4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 17:23:50 -0500
-Received: from ozlabs.org ([203.10.76.45]:38483 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751304AbYL2WXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 17:23:49 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: netdev@vger.kernel.org
-Subject: cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits: net
-Date: Tue, 30 Dec 2008 08:53:42 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812300853.43035.rusty@rustcorp.com.au>
+	Mon, 29 Dec 2008 17:56:54 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:43873 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbYL2W4x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 17:56:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=Hnogck5IEa/ZAOM9HaToCupeTipVnhFjJFEoDtNeMz611qDa9b8HOJ42e/QfHRyMpe
+         Rc+nrddBSDmXUrpO+zicHMeXrYSXLr/gG0dJ2jQt/1CIUVqhW1M1rh60CZSH52+UEhI9
+         qPBTiNuOBgatSlZpGWl3R+uKI/SXNPwbrEWQQ=
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org, corbet@lwn.net,
+       Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH] Fix small typo in bio.h's documentation
+Date: Mon, 29 Dec 2008 20:56:16 -0200
+Message-Id: <1230591376-9001-1-git-send-email-albertito@blitiri.com.ar>
+X-Mailer: git-send-email 1.6.1.302.gccd4d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, future-proof
-
-In future all cpumask ops will only be valid (in general) for bit
-numbers < nr_cpu_ids.  So use that instead of NR_CPUS in iterators
-and other comparisons.
-
-This is always safe: no cpu number can be >= nr_cpu_ids, and
-nr_cpu_ids is initialized to NR_CPUS at boot.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
 ---
- net/core/neighbour.c                                  |    4 ++--
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c |    4 ++--
- net/ipv4/route.c                                      |    4 ++--
- net/netfilter/nf_conntrack_standalone.c               |    4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ include/linux/bio.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff -r bb80787e9617 net/core/neighbour.c
---- a/net/core/neighbour.c	Fri Oct 24 00:27:01 2008 +1100
-+++ b/net/core/neighbour.c	Fri Oct 24 00:28:25 2008 +1100
-@@ -2423,7 +2423,7 @@ static void *neigh_stat_seq_start(struct
- 	if (*pos == 0)
- 		return SEQ_START_TOKEN;
- 
--	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
-@@ -2438,7 +2438,7 @@ static void *neigh_stat_seq_next(struct 
- 	struct neigh_table *tbl = pde->data;
- 	int cpu;
- 
--	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
-diff -r bb80787e9617 net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c	Fri Oct 24 00:27:01 2008 +1100
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c	Fri Oct 24 00:28:25 2008 +1100
-@@ -291,7 +291,7 @@ static void *ct_cpu_seq_start(struct seq
- 	if (*pos == 0)
- 		return SEQ_START_TOKEN;
- 
--	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
-@@ -306,7 +306,7 @@ static void *ct_cpu_seq_next(struct seq_
- 	struct net *net = seq_file_net(seq);
- 	int cpu;
- 
--	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
-diff -r bb80787e9617 net/ipv4/route.c
---- a/net/ipv4/route.c	Fri Oct 24 00:27:01 2008 +1100
-+++ b/net/ipv4/route.c	Fri Oct 24 00:28:25 2008 +1100
-@@ -427,7 +427,7 @@ static void *rt_cpu_seq_start(struct seq
- 	if (*pos == 0)
- 		return SEQ_START_TOKEN;
- 
--	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
-@@ -440,7 +440,7 @@ static void *rt_cpu_seq_next(struct seq_
- {
- 	int cpu;
- 
--	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
-diff -r bb80787e9617 net/netfilter/nf_conntrack_standalone.c
---- a/net/netfilter/nf_conntrack_standalone.c	Fri Oct 24 00:27:01 2008 +1100
-+++ b/net/netfilter/nf_conntrack_standalone.c	Fri Oct 24 00:28:25 2008 +1100
-@@ -200,7 +200,7 @@ static void *ct_cpu_seq_start(struct seq
- 	if (*pos == 0)
- 		return SEQ_START_TOKEN;
- 
--	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu + 1;
-@@ -215,7 +215,7 @@ static void *ct_cpu_seq_next(struct seq_
- 	struct net *net = seq_file_net(seq);
- 	int cpu;
- 
--	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
-+	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu + 1;
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 6a64209..b29e2b3 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -135,7 +135,7 @@ struct bio {
+  * bit 1 -- rw-ahead when set
+  * bit 2 -- barrier
+  *	Insert a serialization point in the IO queue, forcing previously
+- *	submitted IO to be completed before this oen is issued.
++ *	submitted IO to be completed before this one is issued.
+  * bit 3 -- synchronous I/O hint: the block layer will unplug immediately
+  *	Note that this does NOT indicate that the IO itself is sync, just
+  *	that the block layer will not postpone issue of this IO by plugging.
+-- 
+1.6.1.302.gccd4d
+
