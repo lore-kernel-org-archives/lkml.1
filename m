@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYL2VIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYL2VIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbYL2VIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYL2VID
+	id S1753811AbYL2VIx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYL2VIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:08:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36767 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752356AbYL2VIA (ORCPT
+	Mon, 29 Dec 2008 16:08:44 -0500
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1064 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbYL2VIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:08:00 -0500
-Date: Mon, 29 Dec 2008 13:07:16 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Roland Dreier <rdreier@cisco.com>
-cc: Aleksey Senin <alekseys@voltaire.com>,
-       "general@lists.openfabrics.org" <general@lists.openfabrics.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: origin tree build failure
-In-Reply-To: <adaljtyu45d.fsf@cisco.com>
-Message-ID: <alpine.LFD.2.00.0812291304471.3082@localhost.localdomain>
-References: <20081229114321.4b6baea5.sfr@canb.auug.org.au> <ada4p0nve4r.fsf@cisco.com> <1230544737.4261.33.camel@alst60> <adaljtyu45d.fsf@cisco.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 29 Dec 2008 16:08:43 -0500
+Date: Mon, 29 Dec 2008 19:05:37 -0200
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Shyam_Iyer@Dell.com
+Cc: dm-devel@redhat.com, Alex.Zhuravlev@sun.com, linux-ext4@vger.kernel.org,
+       tytso@MIT.EDU, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: jbd2 inside a device mapper module
+Message-ID: <20081229210537.GN4127@blitiri.com.ar>
+References: <20081225143535.GA4127@blitiri.com.ar> <20081227200127.GX5000@webber.adilger.int> <46A00B48CC54E4468EF6911F877AC4CA01DDBB66@blrx3m10.blr.amer.dell.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A00B48CC54E4468EF6911F877AC4CA01DDBB66@blrx3m10.blr.amer.dell.com>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 29 Dec 2008, Roland Dreier wrote:
->
-> Something like the following maybe?  (This turns off the RDMA CM if
-> INFINIBAND=y and IPV6=m -- another possibility would be to just turn off
-> RDMA CM IPv6 support in the case that IB is build-in but IPv6 is
-> modular, but that seems like a worse idea overall)
+On Mon, Dec 29, 2008 at 11:50:14AM +0530, Shyam_Iyer@Dell.com wrote:
+> Andreas Dilger wrote:
+> > On Dec 25, 2008  12:35 -0200, Alberto Bertogli wrote:
+> > > On Wed, Dec 24, 2008 at 06:49:15PM -0500, Theodore Tso wrote:
+> > > > I have no idea why you would need to do manual __breads().  No
+> doubt
+> > > > I'm missing some context here.  
+> > >
+> > > I'm writing (just for fun and learning purposes) a device mapper
+> > > module that stores checksums on writes and verifies them on reads.
+> The
+> > > integrity metadata (currently just the checksum) is interleaved in
+> the
+> > > backing device: one sector holding the integrity metadata for the
+> > > following 64 data sectors.
 > 
-> diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
-> index a5dc78a..538a0ba 100644
-> --- a/drivers/infiniband/Kconfig
-> +++ b/drivers/infiniband/Kconfig
-> @@ -36,7 +36,7 @@ config INFINIBAND_USER_MEM
->  
->  config INFINIBAND_ADDR_TRANS
->  	bool
-> -	depends on INET
-> +	depends on INET && !(INFINIBAND = y && IPV6 = m)
->  	default y
+> > Alex and I discussed implementing checksums for ext4 using an external
+> device like this, and he might have some more design information for
+> you.
+> 
+> 
+> That external device could possibly be a TPM chip that can store
+> checksums.
 
-I'd suggest
+Thanks for the suggestion. The code I have at the moment (without the
+journal stuff) already has the capability of storing checksums in a
+different device. It's one of the reasons why I would prefer to avoid
+using jbd.
 
-  config IF_IPV6
-	bool
-	depends on INET
-	depends on !(INFINIBAND = y && IPV6 = m)
-	default y
+I think I'll go with the "two metadatas" approach and see how it goes.
+Worst case scenario is that I have to drop that code, which means to be
+back where I am now, only with one less option.
 
-and then you can use it not only for the above:
+Thanks,
+		Alberto
 
-  config INFINIBAND_ADDR_TRANS
-	bool
-	depends on IF_IPV6
-	default y
-
-but also use it in the source code as a more readable version:
-
-> diff --git a/drivers/infiniband/core/addr.c b/drivers/infiniband/core/addr.c
-> index d98b05b..ec7abb5 100644
-> --- a/drivers/infiniband/core/addr.c> +++ b/drivers/infiniband/core/addr.c
-> @@ -128,6 +128,7 @@ int rdma_translate_ip(struct sockaddr *addr, struct rdma_dev_addr *dev_addr)
->  		ret = rdma_copy_addr(dev_addr, dev, NULL);
->  		dev_put(dev);
->  		break;
-> +#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-
-ie use
-
-	#ifdef CONFIG_IF_IPV6
-
-here instead.
-
-		Linus
