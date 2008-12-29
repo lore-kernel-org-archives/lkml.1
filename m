@@ -1,115 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbYL2U2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbYL2Uaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbYL2U2H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 15:28:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYL2U1z
+	id S1753207AbYL2Uaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 15:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYL2UaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 15:27:55 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:48527 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbYL2U1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 15:27:54 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] kbuild: warn about headers using __[us]{8,16,32,64} types w/out linux/types.h
-Date: Mon, 29 Dec 2008 15:27:51 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <1230553127-953-1-git-send-email-vapier@gentoo.org> <20081229132456.GA6938@uranus.ravnborg.org>
-In-Reply-To: <20081229132456.GA6938@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6160406.cFuKtZrNQK";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 29 Dec 2008 15:30:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52779 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751509AbYL2UaS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 15:30:18 -0500
+Date: Mon, 29 Dec 2008 12:29:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] exofs: osd Swiss army knife
+Message-Id: <20081229122959.2cb48cf7.akpm@linux-foundation.org>
+In-Reply-To: <1229439174-30492-1-git-send-email-bharrosh@panasas.com>
+References: <4947BFAA.4030208@panasas.com>
+	<1229439174-30492-1-git-send-email-bharrosh@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812291527.53317.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6160406.cFuKtZrNQK
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 16 Dec 2008 16:52:54 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-On Monday 29 December 2008 08:24:56 Sam Ravnborg wrote:
-> On Mon, Dec 29, 2008 at 07:18:47AM -0500, Mike Frysinger wrote:
-> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> > ---
-> >  scripts/headers_check.pl |   20 ++++++++++++++++++++
-> >  1 files changed, 20 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-> > index bdd9fb6..5036319 100644
-> > --- a/scripts/headers_check.pl
-> > +++ b/scripts/headers_check.pl
-> > @@ -37,6 +37,7 @@ foreach my $file (@files) {
-> >  		check_include();
-> >  		check_prototypes();
-> >  		check_config();
-> > +		check_sizetypes();
-> >  	}
-> >  	close FH;
-> >  }
-> > @@ -72,3 +73,22 @@ sub check_config
-> >  		printf STDERR "$filename:$lineno: leaks CONFIG_$1 to userspace where
-> > it is not valid\n"; }
-> >  }
-> > +
-> > +my $linux_types;
-> > +sub check_sizetypes
-> > +{
-> > +	if ($lineno =3D=3D 1) {
-> > +		$linux_types =3D 0;
-> > +	} elsif ($linux_types) {
-> > +		return;
-> > +	}
-> > +	if ($line =3D~ m/^\s*#\s*include\s+<linux\/types.h>/) {
-> > +		$linux_types =3D 1;
-> > +		return;
-> > +	}
-> > +	if ($line =3D~ m/__[us](8|16|32|64)\b/) {
-> > +		printf STDERR "$filename:$lineno: found __[us]{8,16,32,64} type w/out
-> > #include <linux/types.h>\n"; +		# Warn until headers are all fixed
-> > +		#$ret =3D 1;
-> > +	}
-> > +}
+> In this patch are all the osd infrastructure that will be used later
+> by the file system.
+> 
+> Also the declarations of constants, on disk structures, and prototypes.
+> 
+> And the Kbuild+Kconfig files needed to build the exofs module.
+> 
 >
-> We do not need to warn for each line in a file. Only once is enough.
+> ...
+>
+> +struct exofs_sb_info {
+> +	struct osd_dev	*s_dev;			/* returned by get_osd_dev    */
+> +	uint64_t	s_pid;			/* partition ID of file system*/
+> +	int		s_timeout;		/* timeout for OSD operations */
+> +	uint32_t	s_nextid;		/* highest object ID used     */
+> +	uint32_t	s_numfiles;		/* number of files on fs      */
+> +	spinlock_t	s_next_gen_lock;	/* spinlock for gen # update  */
+> +	u32		s_next_generation;	/* next gen # to use          */
+> +	atomic_t	s_curr_pending;		/* number of pending commands */
+> +	uint8_t		s_cred[OSD_CAP_LEN];	/* all-powerful credential    */
+> +};
+> +
+> +/*
+> + * our inode flags
+> + */
+> +#ifdef ARCH_HAS_ATOMIC_UNSIGNED
 
-i wasnt sure about that ... got pretty noisy the way i posted it :)
+This doesn't exist, and it would be fairly bad to introduce it.  Please
+kill the ifdefs.
 
-> Also I assume that include <asm/types.h> is also ok.
+> +typedef unsigned exofs_iflags_t;
+> +#else
+> +typedef unsigned long exofs_iflags_t;
+> +#endif
 
-i dont think so ... does it really make sense for headers to be hitting=20
-asm/types.h anyways ?  shouldnt they all be going through linux/types.h ? =
-=20
-checkpatch would certainly warn about it ...
-=2Dmike
+Then please kill the typedef altogether and replace it with `unsigned
+long' everywhere.
 
---nextPart6160406.cFuKtZrNQK
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> +#define OBJ_2BCREATED	0	/* object will be created soon*/
+> +#define OBJ_CREATED	1	/* object has been created on the osd*/
+> +
+> +#define Obj2BCreated(oi) \
+> +	test_bit(OBJ_2BCREATED, &(oi->i_flags))
+> +#define SetObj2BCreated(oi) \
+> +	set_bit(OBJ_2BCREATED, &(oi->i_flags))
+> +
+> +#define ObjCreated(oi) \
+> +	test_bit(OBJ_CREATED, &(oi->i_flags))
+> +#define SetObjCreated(oi) \
+> +	set_bit(OBJ_CREATED, &(oi->i_flags))
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+- please only implement code in macros when it CANNOT be implemented
+  in C.  There are numerous reasons.  One of which is that the above
+  macros will happily compile when passed a pointer to ANY truct whcih
+  has an i_flags field.  If it were a properly typechecked C function,
+  that can't happen.
 
-iQIcBAABAgAGBQJJWTLJAAoJEEFjO5/oN/WBZtcP/iYTDVNQyDZRmVfPj7eN27UV
-gxAeExBnyiTJCKQgFjRS2puFiSfoV8BgkNzvajqrBQPXJFcCm+Ra/ZhmL+TynW/w
-NIQFa8Ur/Fe/zVM6Njx2fnxCJCRBZEpCatkJSSn3ExK9oEg3ZdsGfzWX8IJBrRaV
-bts/tjsSCLbgOcizoOCRmpNcZYSr0tNJYSqd12Dq6RFAu2eFB2guIq8Lhmgumvs2
-r5qcDww6VRvfxGq/X3UeuWOH1Nb+KHVucQkF11KOo4u6lERVayy7qSFzBkrmxMNm
-MOtLz4EcUPyk1pIDKrGTJu9v/bDItle5sOo46Xh90GFFcllXe07ZtFrzEhsoWG7T
-D8/yXB1RAXDNsw3VeQU4r3UKKZltLK20Zmj2zPxF6Phh43xMZWuaIjkyaiS08MuN
-rvrmLAVBZBQJS8ShQu1IY/+md9xjBcHNiAKer4t6EThA+gxRa5zV2tPWCGz7EdBX
-PHdhwcK6frvhwwA4qXR9iuXUVYHDoMqRw3iwLQezikYLBs2eljn5uG6oeyDeRHj9
-j+FJCJsHe1IKQqrd4AzPRY4KWwWL9f3RQyj3w4QCYG6+r7eA63BLbqI3LXBupRKV
-cKYz5WgyZhIG+gi04pQC9mPBBZlx5FP4CxymT7M941AzZF+VLYbXAG2hxLedA2L0
-Lt+1mGwJS5ISHcZ6VXQ+
-=DoHX
------END PGP SIGNATURE-----
+- These "functions" have odd names.  This:
 
---nextPart6160406.cFuKtZrNQK--
+	static inline void obj_created(struct exofs_i_info *ei)
+
+  would be more Linux-like.
+
+> +/*
+> + * our extension to the in-memory inode
+> + */
+> +struct exofs_i_info {
+> +	exofs_iflags_t i_flags;            /* various atomic flags            */
+> +	__le32	       i_data[EXOFS_IDATA];/*short symlink names and device #s*/
+> +	uint32_t       i_dir_start_lookup; /* which page to start lookup      */
+> +	wait_queue_head_t i_wq;            /* wait queue for inode            */
+> +	uint64_t       i_commit_size;      /* the object's written length     */
+> +	uint8_t        i_cred[OSD_CAP_LEN];/* all-powerful credential         */
+> +	struct inode   vfs_inode;          /* normal in-memory inode          */
+> +};
+> +
+> +/*
+> + * get to our inode from the vfs inode
+> + */
+> +static inline struct exofs_i_info *EXOFS_I(struct inode *inode)
+> +{
+> +	return container_of(inode, struct exofs_i_info, vfs_inode);
+> +}
+
+yeah, well.  We got lazy when, we converted EXT2_I from a macro to a C
+function.  That doesn't mean that the mistake should have been copied :)
+exofs_i() would be a more suitable name.
+
+> +/*************************
+> + * function declarations *
+> + *************************/
+>
+> ...
+>
+> +#include <scsi/scsi_device.h>
+> +#include <scsi/osd_sense.h>
+> +
+> +#include "exofs.h"
+> +
+> +int check_ok(struct osd_request *req)
+
+eek.  This is a kernel-wide symbol.  The choice of identifier is bad.
+
+> +{
+> +	struct osd_sense_info osi;
+> +	int ret = osd_req_decode_sense(req, &osi);
+> +
+> +	if (ret) { /* translate to Linux codes */
+> +		if (osi.additional_code == scsi_invalid_field_in_cdb) {
+> +			if (osi.cdb_field_offset == OSD_CFO_STARTING_BYTE)
+> +				ret = -EFAULT;
+> +			if (osi.cdb_field_offset == OSD_CFO_OBJECT_ID)
+> +				ret = -ENOENT;
+> +			else
+> +				ret = -EINVAL;
+> +		} else if (osi.additional_code == osd_quota_error)
+> +			ret = -ENOSPC;
+> +		else
+> +			ret = -EIO;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +void make_credential(uint8_t cred_a[OSD_CAP_LEN], uint64_t pid, uint64_t oid)
+
+Ditto.  I suspect I'm going to see a lot of this.  Please review the
+entire fs for its namespace niceness
+
+> +{
+> +	struct osd_obj_id obj = {
+> +		.partition = pid,
+> +		.id = oid
+> +	};
+> +
+> +	osd_sec_init_nosec_doall_caps(cred_a, &obj, false, true);
+> +}
+> +
+>
+> ...
+>
+> +int prepare_get_attr_list_add_entry(struct osd_request *req,
+> +				    uint32_t page_num,
+> +				    uint32_t attr_num,
+> +				    uint32_t attr_len)
+> +{
+> +	struct osd_attr attr = {
+> +		.page = page_num,
+
+Kernel developers expect a field called "page" to have type `struct
+page *'.  osd_attr.page is thus designed to confuse.
+
+>
+> ...
+>
+
