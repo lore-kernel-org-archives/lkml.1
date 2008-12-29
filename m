@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYL2EBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYL2EC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbYL2EBz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 23:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYL2EBn
+	id S1754703AbYL2EC0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 23:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYL2ECP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 23:01:43 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53917
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751404AbYL2EBm (ORCPT
+	Sun, 28 Dec 2008 23:02:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42025 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752307AbYL2ECO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 23:01:42 -0500
-Date: Sun, 28 Dec 2008 20:01:45 -0800 (PST)
-Message-Id: <20081228.200145.33502228.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: nhorman@tuxdriver.com, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: linux-next: origin tree build warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081229113525.89450db7.sfr@canb.auug.org.au>
-References: <20081229113525.89450db7.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 28 Dec 2008 23:02:14 -0500
+Date: Sun, 28 Dec 2008 20:01:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: dhowells@redhat.com, Bernd Schubert <bernd.schubert@fastmail.fm>,
+       nfsv4@linux-nfs.org, hch@infradead.org, linux-kernel@vger.kernel.org,
+       steved@redhat.com, linux-fsdevel@vger.kernel.org, rwheeler@redhat.com,
+       linux-next@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Message-Id: <20081228200134.426bf203.akpm@linux-foundation.org>
+In-Reply-To: <20081229144533.4a0ab696.sfr@canb.auug.org.au>
+References: <8930.1229560221@redhat.com>
+	<20081218142420.GA16728@infradead.org>
+	<20081218123601.11810b7f.akpm@linux-foundation.org>
+	<200812190007.34581.bernd.schubert@fastmail.fm>
+	<20081218152616.a24c013f.akpm@linux-foundation.org>
+	<20081219110539.7e7e230c.sfr@canb.auug.org.au>
+	<20081229144533.4a0ab696.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 29 Dec 2008 11:35:25 +1100
+On Mon, 29 Dec 2008 14:45:33 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> Hi Neil,
+> Hi David,
 > 
-> Today's linux-next build (powerpc ppc64_defconfig) produced these new
-> warnings:
+> On Fri, 19 Dec 2008 11:05:39 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > Given the ongoing discussions around FS-Cache, I have removed it from
+> > linux-next.  Please ask me to include it again (if sensible) once some
+> > decision has been reached about its future.
 > 
-> drivers/net/pasemi_mac.c: In function 'pasemi_mac_rx_intr':
-> drivers/net/pasemi_mac.c:957: warning: unused variable 'dev'
-> drivers/net/pasemi_mac.c: In function 'pasemi_mac_poll':
-> drivers/net/pasemi_mac.c:1637: warning: unused variable 'dev'
-> drivers/net/spider_net.c: In function 'spider_net_poll':
-> drivers/net/spider_net.c:1280: warning: unused variable 'netdev'
-> 
-> Probably caused by commit 908a7a16b852ffd618a9127be8d62432182d81b4 ("net:
-> Remove unused netdev arg from some NAPI interfaces").
-> 
-> Please fix these up.
+> What was the result of discussions around FS-Cache?
 
-I'll take care of all of these issues, along with the
-ibmveth et al. ones you reported seperately.
+There was none.
 
-Thanks Stephen.
+Dan Muntz's question:
+
+  Solaris has had CacheFS since ~1995, HPUX had a port of it since
+  ~1997.  I'd be interested in evidence of even a small fraction of
+  Solaris and/or HPUX shops using CacheFS.  I am aware of customers who
+  thought it sounded like a good idea, but ended up ditching it for
+  various reasons (e.g., CacheFS just adds overhead if you almost
+  always hit your local mem cache).
+
+was an very very good one.
+
+Seems that instead of answering it, we've decided to investigate the
+fate of those who do not learn from history.
+
+>  I ask because it
+> reappeared in linux-next today via the nfs tree (merged into that on Dec
+> 24 and 25) ...
+
+oh.
