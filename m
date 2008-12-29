@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYL2Qnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbYL2Qoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbYL2Qnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 11:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYL2Qnh
+	id S1752970AbYL2Qoy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 11:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYL2Qoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 11:43:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35741 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYL2Qng (ORCPT
+	Mon, 29 Dec 2008 11:44:46 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46104 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbYL2Qoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 11:43:36 -0500
-Subject: x86: genx2apic_phys.c x2apic_send_IPI_self and init_x2apic_ldr
-	should be static
+	Mon, 29 Dec 2008 11:44:46 -0500
+Subject: [PATCH] x86: bios_uv.c uv_systab should be static
 From: Jaswinder Singh Rajput <jaswinder@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 29 Dec 2008 22:11:40 +0530
-Message-Id: <1230568900.26564.18.camel@jaswinder.satnam>
+Date: Mon, 29 Dec 2008 22:12:50 +0530
+Message-Id: <1230568970.26564.20.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -25,36 +24,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, reduce kernel size a bit, avoid sparse warnings
+Impact: cleanup, reduce kernel size a bit, avoid sparse warning
 
-Fixes sparse warnings:
-arch/x86/kernel/genx2apic_phys.c:164:6: warning: symbol 'x2apic_send_IPI_self' was not declared. Should it be static?
-arch/x86/kernel/genx2apic_phys.c:169:6: warning: symbol 'init_x2apic_ldr' was not declared. Should it be static?
+Fixes sparse warning:
+arch/x86/kernel/bios_uv.c:28:18: warning: symbol 'uv_systab' was not declared. Should it be static?
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/kernel/genx2apic_phys.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/bios_uv.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/genx2apic_phys.c b/arch/x86/kernel/genx2apic_phys.c
-index 62895cf..21bcc0e 100644
---- a/arch/x86/kernel/genx2apic_phys.c
-+++ b/arch/x86/kernel/genx2apic_phys.c
-@@ -161,12 +161,12 @@ static unsigned int phys_pkg_id(int index_msb)
- 	return current_cpu_data.initial_apicid >> index_msb;
- }
+diff --git a/arch/x86/kernel/bios_uv.c b/arch/x86/kernel/bios_uv.c
+index 2a0a2a3..f638827 100644
+--- a/arch/x86/kernel/bios_uv.c
++++ b/arch/x86/kernel/bios_uv.c
+@@ -25,7 +25,7 @@
+ #include <asm/uv/bios.h>
+ #include <asm/uv/uv_hub.h>
  
--void x2apic_send_IPI_self(int vector)
-+static void x2apic_send_IPI_self(int vector)
- {
- 	apic_write(APIC_SELF_IPI, vector);
- }
+-struct uv_systab uv_systab;
++static struct uv_systab uv_systab;
  
--void init_x2apic_ldr(void)
-+static void init_x2apic_ldr(void)
+ s64 uv_bios_call(enum uv_bios_cmd which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
  {
- 	return;
- }
 -- 
 1.5.5.1
 
