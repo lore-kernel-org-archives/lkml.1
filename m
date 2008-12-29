@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYL2NYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbYL2NZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbYL2NYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 08:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYL2NYL
+	id S1754862AbYL2NZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 08:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYL2NZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 08:24:11 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:56942 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752507AbYL2NYK (ORCPT
+	Mon, 29 Dec 2008 08:25:15 -0500
+Received: from pih-relay06.plus.net ([212.159.14.19]:58076 "EHLO
+	pih-relay06.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752661AbYL2NZO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 08:24:10 -0500
-Date: Mon, 29 Dec 2008 14:25:41 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       mj@ucw.cz
-Subject: Re: [PATCH] move arch/x86/pci/pci.h to arch/x86/include/asm/pci_x86.h
-Message-ID: <20081229132541.GB6938@uranus.ravnborg.org>
-References: <1230382948.3373.1.camel@jaswinder.satnam> <20081229121218.GB9628@elte.hu> <20081229122251.GA13687@elte.hu> <20081229125411.GA1852@uranus.ravnborg.org> <20081229125921.GB23674@elte.hu> <20081229130133.GA26634@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081229130133.GA26634@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 29 Dec 2008 08:25:14 -0500
+X-Greylist: delayed 1519 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Dec 2008 08:25:14 EST
+Message-ID: <4958C9CD.5050003@yahoo.com>
+Date: Mon, 29 Dec 2008 12:59:57 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
+MIME-Version: 1.0
+To: for.poige+linux@gmail.com
+CC: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
+Subject: Re: > I even didn't have a backtrace.
+References: <fa.q3E31Fk9IOYkDJ38/mQp9Iyp2TI@ifi.uio.no> <fa.qMGHzuTz1nuoHKywmH/aLmriclo@ifi.uio.no> <fa.LbTTdeLVGfaCxioVgNMO13Libio@ifi.uio.no>
+In-Reply-To: <fa.LbTTdeLVGfaCxioVgNMO13Libio@ifi.uio.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: dcbf12887fb17869f7f24121bf3b4486
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > you mean:
-> > 
-> >   git format-patch --stdout -1 -M -B -C <sha1>
-> 
-> also, this does not result in a patch that will be applied properly by the 
-> usual patch-tools that people use when they pick up patches from email. So 
-> i'll just keep my old script ;-)
-I sometimes forget about the stoneage....
+Igor Podlesny wrote:
+> 	Similar, but no exactly. I just thought that unlikely BIOS erases
+> memory content during "fast checks", so kernel diagnostic could be
 
-	Sam
+My understanding is that the only part of the BIOS that doesn't get 
+cleared over a reboot (the hardware clock) is already being abused for 
+suspend tracing  - 
+http://mjmwired.net/kernel/Documentation/power/s2ram.txt .
