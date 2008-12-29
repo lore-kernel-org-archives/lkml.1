@@ -1,156 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbYL2Ctx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbYL2Db4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbYL2Ctx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 21:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYL2Cto
+	id S1752811AbYL2Db4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 22:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYL2Dbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 21:49:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:35201 "EHLO ozlabs.org"
+	Sun, 28 Dec 2008 22:31:47 -0500
+Received: from tundra.namei.org ([65.99.196.166]:3094 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbYL2Cto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 21:49:44 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] cpumask: convert kernel trace functions further
-Date: Mon, 29 Dec 2008 13:19:38 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org
+	id S1751668AbYL2Dbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Dec 2008 22:31:47 -0500
+Date: Mon, 29 Dec 2008 14:30:48 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [GIT] Security changes for 2.6.29
+In-Reply-To: <alpine.LFD.2.00.0812281651480.3082@localhost.localdomain>
+Message-ID: <alpine.LRH.1.10.0812291429520.14432@tundra.namei.org>
+References: <alpine.LFD.2.00.0812281232350.3057@localhost.localdomain> <alpine.LRH.1.10.0812251158550.27893@tundra.namei.org> <7921.1230511311@redhat.com> <alpine.LFD.2.00.0812281651480.3082@localhost.localdomain>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812291319.39303.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Reduce future memory usage, use new cpumask API.
+On Sun, 28 Dec 2008, Linus Torvalds wrote:
 
-Since the last patch was created and acked, more old cpumask users
-slipped into kernel/trace.
+> On Mon, 29 Dec 2008, David Howells wrote:
+> > 
+> > Does this fix the warning?  My compiler doesn't show it; of course, I'm not
+> > using gcc-4.3.2, but something older.
+> 
+> Yup, this seems to fix it for me in my quick test. It seems that not 
+> initializing the pointer for the error case makes gcc unhappy.
+> 
 
-Mostly trivial conversions, except struct trace_iterator's "started"
-member becomes a cpumask_var_t.
+This fix is available to be pulled:
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+The following changes since commit 
+3c92ec8ae91ecf59d88c798301833d7cf83f2179:
+  Linus Torvalds (1):
+        Merge branch 'next' of git://git.kernel.org/.../paulus/powerpc
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1812,10 +1812,10 @@ static void test_cpu_buff_start(struct t
- 	if (!(iter->iter_flags & TRACE_FILE_ANNOTATE))
- 		return;
- 
--	if (cpu_isset(iter->cpu, iter->started))
-+	if (cpumask_test_cpu(iter->cpu, iter->started))
- 		return;
- 
--	cpu_set(iter->cpu, iter->started);
-+	cpumask_set_cpu(iter->cpu, iter->started);
- 	trace_seq_printf(s, "##### CPU %u buffer started ####\n", iter->cpu);
- }
- 
-@@ -3115,10 +3115,15 @@ static int tracing_open_pipe(struct inod
- 	if (!iter)
- 		return -ENOMEM;
- 
-+	if (!alloc_cpumask_var(&iter->started, GFP_KERNEL)) {
-+		kfree(iter);
-+		return -ENOMEM;
-+	}
-+
- 	mutex_lock(&trace_types_lock);
- 
- 	/* trace pipe does not show start of buffer */
--	cpus_setall(iter->started);
-+	cpumask_setall(iter->started);
- 
- 	iter->tr = &global_trace;
- 	iter->trace = current_trace;
-@@ -3135,6 +3140,7 @@ static int tracing_release_pipe(struct i
- {
- 	struct trace_iterator *iter = file->private_data;
- 
-+	free_cpumask_var(iter->started);
- 	kfree(iter);
- 	atomic_dec(&tracing_reader);
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -368,7 +368,7 @@ struct trace_iterator {
- 	loff_t			pos;
- 	long			idx;
- 
--	cpumask_t		started;
-+	cpumask_var_t		started;
- };
- 
- int tracing_is_enabled(void);
-diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
---- a/kernel/trace/trace_boot.c
-+++ b/kernel/trace/trace_boot.c
-@@ -42,7 +42,7 @@ static int boot_trace_init(struct trace_
- 	int cpu;
- 	boot_trace = tr;
- 
--	for_each_cpu_mask(cpu, cpu_possible_map)
-+	for_each_cpu(cpu, cpu_possible_mask)
- 		tracing_reset(tr, cpu);
- 
- 	tracing_sched_switch_assign_trace(tr);
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -79,7 +79,7 @@ print_graph_cpu(struct trace_seq *s, int
- 	int i;
- 	int ret;
- 	int log10_this = log10_cpu(cpu);
--	int log10_all = log10_cpu(cpus_weight_nr(cpu_online_map));
-+	int log10_all = log10_cpu(cpumask_weight(cpu_online_mask));
- 
- 
- 	/*
-diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
---- a/kernel/trace/trace_hw_branches.c
-+++ b/kernel/trace/trace_hw_branches.c
-@@ -46,7 +46,7 @@ static void bts_trace_start(struct trace
- 
- 	tracing_reset_online_cpus(tr);
- 
--	for_each_cpu_mask(cpu, cpu_possible_map)
-+	for_each_cpu(cpu, cpu_possible_mask)
- 		smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
- }
- 
-@@ -62,7 +62,7 @@ static void bts_trace_stop(struct trace_
- {
- 	int cpu;
- 
--	for_each_cpu_mask(cpu, cpu_possible_map)
-+	for_each_cpu(cpu, cpu_possible_mask)
- 		smp_call_function_single(cpu, bts_trace_stop_cpu, NULL, 1);
- }
- 
-@@ -172,7 +172,7 @@ static void trace_bts_prepare(struct tra
- {
- 	int cpu;
- 
--	for_each_cpu_mask(cpu, cpu_possible_map)
-+	for_each_cpu(cpu, cpu_possible_mask)
- 		smp_call_function_single(cpu, trace_bts_cpu, iter->tr, 1);
- }
- 
-diff --git a/kernel/trace/trace_power.c b/kernel/trace/trace_power.c
---- a/kernel/trace/trace_power.c
-+++ b/kernel/trace/trace_power.c
-@@ -39,7 +39,7 @@ static int power_trace_init(struct trace
- 
- 	trace_power_enabled = 1;
- 
--	for_each_cpu_mask(cpu, cpu_possible_map)
-+	for_each_cpu(cpu, cpu_possible_mask)
- 		tracing_reset(tr, cpu);
- 	return 0;
- }
+are available in the git repository at:
+
+  
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
+
+David Howells (1):
+      KEYS: Fix variable uninitialisation warnings
+
+ security/keys/keyctl.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+
+-- 
+James Morris
+<jmorris@namei.org>
