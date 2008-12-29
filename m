@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYL2IjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYL2In7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbYL2IjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 03:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYL2IjE
+	id S1753827AbYL2In7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 03:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYL2Inv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 03:39:04 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:17114 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbYL2IjC (ORCPT
+	Mon, 29 Dec 2008 03:43:51 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:42300 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752509AbYL2Inu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 03:39:02 -0500
+	Mon, 29 Dec 2008 03:43:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=ZcylXcaKopeqAU7nmMb89QHKOeN/YvghVaqiC5D9xKq87/sMy+5Dbm30dx3+d+E8SC
-         VPGt6q8s9IRkP0yeraRYQWcQXxE+bFtnl4fEslJTngDIdO4Q23Z5BaE8UEyZbGZQGDys
-         uA1DAGt3iB0iDh+yaK1EVnhifGc4l647wBeh8=
-Message-ID: <2f11576a0812290039t11ca9b76sf305e82003ac607@mail.gmail.com>
-Date: Mon, 29 Dec 2008 17:39:01 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-In-Reply-To: <86802c440812281601j57fe5ecdif4b63b72280c65cd@mail.gmail.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=w9ovDhfLeEkkz2Ak6rzCirXoLP9bGzZCOzMSeHGUlk1Ef3e2IMdl6VeD5Z9HMKgj9Y
+         jf7ykD4tDsMQIzvWcUkMWqUeUH/VMJM9BN1mqinodGoiYTCwMYEcHRdbbkQJD+eiNAEl
+         WWsTQGhH8uawFuvTQkNDcYkVG1LAFfPM181TM=
+Date: Mon, 29 Dec 2008 11:48:51 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mj@ucw.cz
+Subject: Re: [PATCH] move arch/x86/pci/pci.h to
+	arch/x86/include/asm/pci_x86.h
+Message-ID: <20081229084851.GA12756@x200.localdomain>
+References: <1230382948.3373.1.camel@jaswinder.satnam> <20081229065713.GA10960@x200.localdomain> <1230537538.3090.4.camel@jaswinder.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu>
-	 <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com>
-	 <20081227173839.GA9793@elte.hu>
-	 <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain>
-	 <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu>
-	 <86802c440812281601j57fe5ecdif4b63b72280c65cd@mail.gmail.com>
-X-Google-Sender-Auth: 633010093f711ca5
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1230537538.3090.4.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>  kernel/irq/handle.c |    5 -----
->>  kernel/irq/manage.c |    9 +++++++++
->>  2 files changed, 9 insertions(+), 5 deletions(-)
->>
->
-> that is not enough.
->
-> please check
->
-> need one printk, and move two functions into chip.c
+On Mon, Dec 29, 2008 at 01:28:58PM +0530, Jaswinder Singh Rajput wrote:
+> On Mon, 2008-12-29 at 09:57 +0300, Alexey Dobriyan wrote:
+> > On Sat, Dec 27, 2008 at 06:32:28PM +0530, Jaswinder Singh Rajput wrote:
+> > > Impact: cleanup, arch/x86/pci/pci.h -> arch/x86/include/asm/pci_x86.h
+> > 
+> > And this is done for what?
+> 
+> Don't you think ﻿arch/x86/pci/pci.h looks ugly it should be in
+> arch/x86/incluse/asm directory ?
 
-I'm sad ;-)
+It was
 
-Why you use printk?
-if develper use non-x86 machine, they will see perfectly worthless
-debug messages...
+	#include "../pci/pci.h"
 
-although something function calling is needed, we can avoid tty output imho.
+which can look ugly, not full path.
+
+Anyway, you want to put you question into changelog?
+
+> It was suggested by Ingo :
+> http://marc.info/?l=linux-kernel&m=123037395221921&w=2
+> 
+> I think Ingo will have more valid reasons to satisfy your curiousity ;-)
+
+So you don't actually have an opinion? Why are you sending patch then?
+
+	> could you send another patch that moves arch/x86/pci/pci.h to 
+	> arch/x86/include/asm/pci_x86.h
+	       ^^^		   ^^^
+Or should it be arch/x86/include/asm/pci.h ?
