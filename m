@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYL2KIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYL2KPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbYL2KIW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 05:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYL2KIN
+	id S1754047AbYL2KPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 05:15:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYL2KPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 05:08:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34540 "EHLO mx2.mail.elte.hu"
+	Mon, 29 Dec 2008 05:15:12 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:52319 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753785AbYL2KIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 05:08:12 -0500
-Date: Mon, 29 Dec 2008 11:07:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, mj@ucw.cz
-Subject: Re: [PATCH] move arch/x86/pci/pci.h to
-	arch/x86/include/asm/pci_x86.h
-Message-ID: <20081229100746.GA12159@elte.hu>
-References: <1230382948.3373.1.camel@jaswinder.satnam> <20081229065713.GA10960@x200.localdomain> <1230537538.3090.4.camel@jaswinder.satnam>
+	id S1750867AbYL2KPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 05:15:11 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] headers_check.pl: disallow extern's
+Date: Mon, 29 Dec 2008 05:15:08 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <1230363816-24097-1-git-send-email-vapier@gentoo.org> <20081227184355.GA9264@uranus.ravnborg.org> <20081227185415.GA10361@uranus.ravnborg.org>
+In-Reply-To: <20081227185415.GA10361@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1230537538.3090.4.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart1285319.Rd85L7B90i";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200812290515.09121.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1285319.Rd85L7B90i
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+On Saturday 27 December 2008 13:54:15 Sam Ravnborg wrote:
+> > And we need to get these fixed before we apply this patch.
+> > Otherwise we will break every allyesconfig/allmodconfig builds
+>
+> I turned them into warnings for now.
+> And when I was there I fixed the TODO:
+>
+> From 2bbc376f97c4a75fbbb603b34f73db235a8cd2c1 Mon Sep 17 00:00:00 2001
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Sat, 27 Dec 2008 19:52:20 +0100
+> Subject: [PATCH] kbuild: check for leaked CONFIG_ symbols to userspace
 
-> On Mon, 2008-12-29 at 09:57 +0300, Alexey Dobriyan wrote:
-> > On Sat, Dec 27, 2008 at 06:32:28PM +0530, Jaswinder Singh Rajput wrote:
-> > > Impact: cleanup, arch/x86/pci/pci.h -> arch/x86/include/asm/pci_x86.h
-> > 
-> > And this is done for what?
-> 
-> Don't you think ﻿arch/x86/pci/pci.h looks ugly it should be in
-> arch/x86/incluse/asm directory ?
-> 
-> It was suggested by Ingo :
-> http://marc.info/?l=linux-kernel&m=123037395221921&w=2
-> 
-> I think Ingo will have more valid reasons to satisfy your curiousity ;-)
+btw, do you maintain these in a git tree somewhere, or you just posting the=
+m=20
+to lkml ?  the two kbuild trees under your name on kernel.org/git seems to =
+be=20
+lacking this change.  i was looking at adding another check: barf if the=20
+header uses __[us]{8,16,32,64} types but does not include linux/types.h.
+=2Dmike
 
-yes - the reason why i asked for that is that asm/pci.h already exists, 
-and it is included in generic code (via linux/include/pci.h) and provides 
-public PCI interfaces.
+--nextPart1285319.Rd85L7B90i
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-pci_x86.h (a'ka arch/x86/pci/pci.h) includes lowlevel x86-only internals, 
-included from a handful PCI arch/x86/ platform .c files.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-	Ingo
+iQIcBAABAgAGBQJJWKMtAAoJEEFjO5/oN/WBZY0P/iyWvVesi9o4Gt5LA1kC3LCX
+smeOYFsJWB6qSS25fz9RKGPCk3KM1aMhm86g4wFWULUwHX7uT2hVEgW1yCOicVK0
+dNVIth5V6zepobtZCR3reCy1aNuB1EMvF9N71Om4SzEyjf++D3IvC/8i6lve5T86
+fi/vJMtXj1+WiqGpoFPUxgs+Xv4UZzsEu8lb7EGG6PmviNh0MyNjJinMRukQFA6s
+9IvIjsav1JxpLeffCh/Av9My8x32ANPnfjRaKQC2n5cEd0dyLfAqaKynn23ZMruf
+mOhfwyINwg4SiPaLYfD820kECfDGKiQUksfAp1FJoG4tunvxk/W4fBTuXSkVH5Rg
+ANb7LFEBrr+wayXIrfqvAsceT46Ct0WfbxpAmSmanuS5AREpy/T7RWl64WkQqd2c
+qc7hLZWEDwZnVkF92bPWRF6Ch5TsjDwcvtQWDn58Uy0KHvNKLW/SzKprZfIntzqP
+uVXyzab/Apha1XeXSZfBaUUnyFpQi3Du+EAqBaNDktSJS4rWTo7+rRF6A9kb3r95
+DHmgX+m8gGgpjBhaqCCw48D4/cNV4LLM3IRX3u0fJ1UBIFFCEoUKB/nzwoWs9PpO
+l9y6rL52bZ6qhS2dc7M1c/dxouWN+yRSesJp+p6/wxYIQ/UGDq5aHZXd6uQdwh6c
+EeUDrfalByphCii36r1y
+=Qw6H
+-----END PGP SIGNATURE-----
+
+--nextPart1285319.Rd85L7B90i--
