@@ -1,38 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbYL2NZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYL2NZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbYL2NZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 08:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYL2NZP
+	id S1755327AbYL2NZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 08:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYL2NZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 08:25:15 -0500
-Received: from pih-relay06.plus.net ([212.159.14.19]:58076 "EHLO
-	pih-relay06.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbYL2NZO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 08:25:14 -0500
-X-Greylist: delayed 1519 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Dec 2008 08:25:14 EST
-Message-ID: <4958C9CD.5050003@yahoo.com>
-Date: Mon, 29 Dec 2008 12:59:57 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
+	Mon, 29 Dec 2008 08:25:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57165 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753825AbYL2NZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 08:25:31 -0500
+Date: Mon, 29 Dec 2008 14:23:05 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Scott James Remnant <scott@canonical.com>
+Cc: Roland McGrath <roland@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] Notify init when processes are reparented to it
+Message-ID: <20081229132305.GA31210@redhat.com>
+References: <1230378128.7026.50.camel@quest> <20081227114452.GA2919@zelda.netsplit.com> <20081228092024.GA21673@redhat.com> <20081228220122.62940FC278@magilla.sf.frob.com> <1230551457.4664.0.camel@wing-commander>
 MIME-Version: 1.0
-To: for.poige+linux@gmail.com
-CC: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: > I even didn't have a backtrace.
-References: <fa.q3E31Fk9IOYkDJ38/mQp9Iyp2TI@ifi.uio.no> <fa.qMGHzuTz1nuoHKywmH/aLmriclo@ifi.uio.no> <fa.LbTTdeLVGfaCxioVgNMO13Libio@ifi.uio.no>
-In-Reply-To: <fa.LbTTdeLVGfaCxioVgNMO13Libio@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: dcbf12887fb17869f7f24121bf3b4486
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1230551457.4664.0.camel@wing-commander>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Igor Podlesny wrote:
-> 	Similar, but no exactly. I just thought that unlikely BIOS erases
-> memory content during "fast checks", so kernel diagnostic could be
+On 12/29, Scott James Remnant wrote:
+>
+> On Sun, 2008-12-28 at 14:01 -0800, Roland McGrath wrote:
+>
+> > I'm highly skeptical that this is a desireable feature at all, and
+> > certainly I find the abuse of siginfo_t.si_status here extremely
+> > questionable.  I think we need a clear explanation of what problems
+> > the feature is intended to address.
+> >
+> Did the original e-mail not address this?
 
-My understanding is that the only part of the BIOS that doesn't get 
-cleared over a reboot (the hardware clock) is already being abused for 
-suspend tracing  - 
-http://mjmwired.net/kernel/Documentation/power/s2ram.txt .
+Do you mean
+
+	[RFC] Notify init when processes are reparented to it
+	http://marc.info/?l=linux-kernel&m=123038049428388
+
+?
+
+I am not sure I really understand the problem. And thus I can't
+understand how this patch can help.
+
+OK,
+
+> We want to be able to supervise daemons.
+
+What do you mean?
+
+> Later on, 1002 will die and init will receive SIGCHLD for it.
+>
+> Unfortunately neither the 1001 or 1002 processes are known to init, even
+> though they are original children of the process it spawned (1000), for
+> init to be notified about them - this has been forgotten.
+
+Ok, with this patch /sbin/init knows that 1002 is a descendant
+of apache(1000) which was spwaned by init. What can init do
+with this info?
+
+To clarify, I am not arguing, I am just trying to understand.
+
+Oleg.
+
