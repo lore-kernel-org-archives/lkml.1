@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbYL2PE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbYL2PFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbYL2PE7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 10:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbYL2PEt
+	id S1752540AbYL2PFW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 10:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYL2PEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 10:04:49 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41817 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbYL2PEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 10:04:48 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081228200726.7b7078b4.akpm@linux-foundation.org>
-References: <20081228200726.7b7078b4.akpm@linux-foundation.org> <8930.1229560221@redhat.com> <20081218142420.GA16728@infradead.org> <20081218123601.11810b7f.akpm@linux-foundation.org> <200812190007.34581.bernd.schubert@fastmail.fm> <20081218152616.a24c013f.akpm@linux-foundation.org> <20081219110539.7e7e230c.sfr@canb.auug.org.au> <20081229144533.4a0ab696.sfr@canb.auug.org.au> 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Bernd Schubert <bernd.schubert@fastmail.fm>, nfsv4@linux-nfs.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org, steved@redhat.com,
-       linux-fsdevel@vger.kernel.org, rwheeler@redhat.com,
-       linux-next@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Date: Mon, 29 Dec 2008 15:04:35 +0000
-Message-ID: <12273.1230563075@redhat.com>
+	Mon, 29 Dec 2008 10:04:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45089 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751429AbYL2PEx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 10:04:53 -0500
+Subject: [PATCH] x86_64: apic.c declare pic_mode before they get used
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 29 Dec 2008 20:32:52 +0530
+Message-Id: <1230562972.26564.1.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Impact: cleanup, avoid sparse warning
 
-> And that of course means that many many 2.6.28 patches which I am
-> maintaining will need significant rework to apply on top of linux-next,
-> and then they won't apply to mainline.  Or that linux-next will not apply
-> on top of those patches.  Mainly memory management.
+In asm/mpspec.h moved out pic_mode from CONFIG_X86_32 as it is common for both 32 and 64 bit.
 
-Significant rework to many many patches?  The FS-Cache patches don't have all
-that much impact outside of their own directories, AFS and NFS.
+Fixes this sparse warning for x86_64:
+arch/x86/kernel/apic.c:128:5: warning: symbol 'pic_mode' was not declared. Should it be static?
 
-> Please drop the NFS tree until after -rc1.
-> 
-> Guys, this: http://lkml.org/lkml/2008/12/27/173
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/mpspec.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Okay, that's a reasonable request.
+diff --git a/arch/x86/include/asm/mpspec.h b/arch/x86/include/asm/mpspec.h
+index 91885c2..62d14ce 100644
+--- a/arch/x86/include/asm/mpspec.h
++++ b/arch/x86/include/asm/mpspec.h
+@@ -6,13 +6,13 @@
+ #include <asm/mpspec_def.h>
+ 
+ extern int apic_version[MAX_APICS];
++extern int pic_mode;
+ 
+ #ifdef CONFIG_X86_32
+ #include <mach_mpspec.h>
+ 
+ extern unsigned int def_to_bigsmp;
+ extern u8 apicid_2_node[];
+-extern int pic_mode;
+ 
+ #ifdef CONFIG_X86_NUMAQ
+ extern int mp_bus_id_to_node[MAX_MP_BUSSES];
+-- 
+1.5.5.1
 
-David
+
+
