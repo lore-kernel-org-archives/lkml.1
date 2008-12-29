@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYL2VIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYL2VJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbYL2VIx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:08:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYL2VIo
+	id S1753852AbYL2VJx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:09:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYL2VJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:08:44 -0500
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1064 "EHLO
-	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbYL2VIn (ORCPT
+	Mon, 29 Dec 2008 16:09:41 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:49025 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbYL2VJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:08:43 -0500
-Date: Mon, 29 Dec 2008 19:05:37 -0200
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: Shyam_Iyer@Dell.com
-Cc: dm-devel@redhat.com, Alex.Zhuravlev@sun.com, linux-ext4@vger.kernel.org,
-       tytso@MIT.EDU, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: jbd2 inside a device mapper module
-Message-ID: <20081229210537.GN4127@blitiri.com.ar>
-References: <20081225143535.GA4127@blitiri.com.ar> <20081227200127.GX5000@webber.adilger.int> <46A00B48CC54E4468EF6911F877AC4CA01DDBB66@blrx3m10.blr.amer.dell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46A00B48CC54E4468EF6911F877AC4CA01DDBB66@blrx3m10.blr.amer.dell.com>
-User-Agent: Mutt/1.5.17 (2008-03-04)
+	Mon, 29 Dec 2008 16:09:41 -0500
+Subject: Re: [GIT]: Networking
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Mohr <andi@lisas.de>, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, bunk@kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>, auke-jan.h.kok@intel.com,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081229091728.d869f1c1.akpm@linux-foundation.org> (sfid-20081229_181758_636992_0F22E604)
+References: <20081228.000118.121541932.davem@davemloft.net>
+	 <20081229102515.GA17171@rhlx01.hs-esslingen.de>
+	 <20081229091728.d869f1c1.akpm@linux-foundation.org>
+	 (sfid-20081229_181758_636992_0F22E604)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mHKO0YKAf/leICG7iUFE"
+Date: Mon, 29 Dec 2008 22:09:43 +0100
+Message-Id: <1230584983.3116.71.camel@johannes>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 11:50:14AM +0530, Shyam_Iyer@Dell.com wrote:
-> Andreas Dilger wrote:
-> > On Dec 25, 2008  12:35 -0200, Alberto Bertogli wrote:
-> > > On Wed, Dec 24, 2008 at 06:49:15PM -0500, Theodore Tso wrote:
-> > > > I have no idea why you would need to do manual __breads().  No
-> doubt
-> > > > I'm missing some context here.  
-> > >
-> > > I'm writing (just for fun and learning purposes) a device mapper
-> > > module that stores checksums on writes and verifies them on reads.
-> The
-> > > integrity metadata (currently just the checksum) is interleaved in
-> the
-> > > backing device: one sector holding the integrity metadata for the
-> > > following 64 data sectors.
-> 
-> > Alex and I discussed implementing checksums for ext4 using an external
-> device like this, and he might have some more design information for
-> you.
-> 
-> 
-> That external device could possibly be a TPM chip that can store
-> checksums.
 
-Thanks for the suggestion. The code I have at the moment (without the
-journal stuff) already has the capability of storing checksums in a
-different device. It's one of the reasons why I would prefer to avoid
-using jbd.
+--=-mHKO0YKAf/leICG7iUFE
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I think I'll go with the "two metadatas" approach and see how it goes.
-Worst case scenario is that I have to drop that code, which means to be
-back where I am now, only with one less option.
+On Mon, 2008-12-29 at 09:17 -0800, Andrew Morton wrote:
 
-Thanks,
-		Alberto
+> > - acx100 (ok, that one is a bit mean to add to this list ;)
+>=20
+> What's that?
+>=20
+> Just resend everything, please, fulyl changelogged, with all necessary
+> cc's.
+
+acx100 is legally challenged. We don't want to see it without a clear
+and full indication by the authors that they can guarantee that it was
+written without any copyrighted Texas Instruments material. Which
+they've never bothered to provide.
+
+johannes
+
+--=-mHKO0YKAf/leICG7iUFE
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJWTyUAAoJEKVg1VMiehFYDPYP/2uPKU70e/BMRVYC44aM5Mu+
+oZqnaGCGtspFpqavXmyYf1NI4GQHFzijlSQbj7IUfOZK1Ehzx0yzmkke5NVDbIvt
+hc5+fh3dZGUuBedn1tBKqmmpqRM3xjCgy8N0WOz0yTvfohwYisJpbrCTrfvghYWc
+L0clWfSRB+t/WH9IWZfatb51e4YD2iBDaq3z5lqhylMvr/2dFj5ImLeWwE92Dayg
+emAOWigI7Zcw7zwX2ZgGr8LoxfPGo/An5QMDe5mMD+7LQp1easctSEKU3ah0OE+z
+OhK7lqkGvLlLMELr/v0Ov96SBk2XYRmoApP1d6hH3gtY8llXuvM5z72Fao431TMD
+iHBa6npNd28/BPOXUCUUhFkU4QH5eEagcXJNorXOOIDMOU4HLGadZY4S1pMfVkLo
+lAO+DcaFBPK1iSGvIA3c2IkuY29Lxeu//n2PdCS66nQaj5tTqOkvP7X9OfgjJG4h
++fR5PfPic5gPZB9UtjGoenm0kWZO2cL2QW4dZyQhC4UZ17EIBIoNiulJ0VtwdUmI
+AkPt1qowMwmwolgWk2Uutqm9CQKYZ7GwjH13aoNKM9MyT2Gev22uHCODkqnLGpan
+SYIZGoQ2DFNrEXaNL8BrtpD9BM2KNOtexJyVwL/N3b29S5P36Ch6Ba0OzznIkTxX
+wP9O/0fFcn2NmKu5sNsa
+=7gLW
+-----END PGP SIGNATURE-----
+
+--=-mHKO0YKAf/leICG7iUFE--
 
