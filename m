@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYL2JFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYL2JFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbYL2JFD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 04:05:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL2JEp
+	id S1754052AbYL2JFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 04:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYL2JFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 04:04:45 -0500
-Received: from fwil.voltaire.com ([193.47.165.2]:35246 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752514AbYL2JEo convert rfc822-to-8bit (ORCPT
+	Mon, 29 Dec 2008 04:05:09 -0500
+Received: from web30101.mail.mud.yahoo.com ([209.191.69.33]:32317 "HELO
+	web30101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753932AbYL2JFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 04:04:44 -0500
-X-Greylist: delayed 921 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Dec 2008 04:04:43 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Mon, 29 Dec 2008 04:05:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=Te9NQUIiJPNdWRMtA2B42LbnUUHRjKsM58p3JRCYkwnciMT+NKVjSsINoJQCs+YfAgtXkT5sMOa0/yefGQoZEYaFQ4g6wPpexy5yFQBsEO+yL+y6PFkPze9+qRCNgVjU83qfhQdEqeAOy+JAjbECUnR50muHaRheFMPVMl2l23c=;
+X-YMail-OSG: eDEtEB4VM1lMLy1mYeg1Is05qmZ7oOKbUUghrwR8eRnTrCMexEnMxljQL66ZFZv0A0agjigJYw20UM3l2tTNX2lZfAr2FWpT284pnjDLnL.JNGk5esEiZHMy8HRiInYz2HXls4HKu20ZufZTQkmrYQAScrOcZyY2fwHPp2eEYFS7J4jyN0A4GWfRim2d
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Mon, 29 Dec 2008 01:05:02 -0800 (PST)
+From: Parav Pandit <paravpandit@yahoo.com>
+Reply-To: paravpandit@yahoo.com
+Subject: finding correct ib_device to call connect()
+To: Linux kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Mailer: Evolution 2.24.1.1 
-Content-class: urn:content-classes:message
-Subject: Re: linux-next: origin tree build failure
-Date: Mon, 29 Dec 2008 10:48:19 +0200
-Message-ID: <1230540499.4261.24.camel@alst60>
-In-Reply-To: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: linux-next: origin tree build failure
-Thread-Index: Aclpkk5w5XrthW/RQya3hkKlAjGvpw==
-References: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
-From: "Aleksey Senin" <alekseys@voltaire.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: "Roland Dreier" <rdreier@cisco.com>, <general@lists.openfabrics.org>,
-       <linux-next@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
-       "Linus" <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <649524.70022.qm@web30101.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm going to change it by adding 
+Hi,
 
-#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+Is this the right mailing list for Infiniband, RDMA-iWarp related Linux kernel issues?
 
-exactly as it solved in ipoib module and as Roland says.
+Assuming yes,
+1. Let's say there are two iWarp adapters, they both are in different subnet.
+Their respective net_device is configured in different subnet.
+(say one from Chelsio and other from Neteffect vendor)
 
-On Mon, 2008-12-29 at 11:43 +1100, Stephen Rothwell wrote:
-> Hi Roland,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> 
-> ERROR: ".ipv6_chk_addr" [drivers/infiniband/core/ib_addr.ko] undefined!
-> ERROR: ".ip6_route_output" [drivers/infiniband/core/ib_addr.ko] undefined!
-> 
-> Caused by commit 38617c64bf9a10bf20e41d95b69bb81e8560fe9d ("RDMA/addr:
-> Add support for translating IPv6 addresses").  This requires a dependency
-> on IPV6.
-> 
-> I have reverted that commit for today (which fixes the build, but may not
-> be the correct solution).
+How does connection manager module figures how that a connect() call should be diverted to which ib_device?
+
+Regards,
+Parav Pandit
+
+
+
+
+      
