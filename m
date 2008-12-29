@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbYL2HDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYL2H0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbYL2HDU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 02:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYL2HDM
+	id S1753396AbYL2H0t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 02:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYL2H0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 02:03:12 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:9381 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbYL2HDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 02:03:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :x-google-sender-auth;
-        b=ohPr7YwR60ZS+PD2HMajRQlQWBvurLWvCFiD6dUuN/TN0JYnr0/mLjNCVLD762STYz
-         n8um1L2j/+/esewCQGc1XZHtWJxr/NktxnaeEwAEqeOT6jz7ashIBOLeaHTlx9ok63sZ
-         HsnbhykIUat8eqzwG1hM0uek3uF1de31pxhm0=
-Message-ID: <43d009740812282303r2015e6beyc2dae4c26d6aa686@mail.gmail.com>
-Date: Mon, 29 Dec 2008 14:03:09 +0700
-From: "Igor Podlesny" <for.poige+linux@gmail.com>
-Reply-To: for.poige+linux@gmail.com
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: > I even didn't have a backtrace.
-Cc: linux-kernel@vger.kernel.org
+	Mon, 29 Dec 2008 02:26:42 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:36178 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751500AbYL2H0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 02:26:41 -0500
+Date: Mon, 29 Dec 2008 07:26:39 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org
+Subject: [git pull] AGP
+Message-ID: <alpine.DEB.2.00.0812290723320.20427@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 9bd0d22eb05746d9
+Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-777585004-1230535599=:20427"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/29 Igor Podlesny <for.poige+linux@gmail.com>:
-> 2008/12/29 Willy Tarreau <w@1wt.eu>:
->> On Mon, Dec 29, 2008 at 12:39:55PM +0700, Igor Podlesny wrote:
-> [...]
->> Well, I won't say that I find them 100% rock solid, but you seem to be
->> able to reproduce a lot of serious issues. Have you filed bug reports
->> to get them fixed ? You cannot expect people to fix bugs they're not
->> aware of !
->
->        I even didn't have a backtrace. What's to fill in? "It just crashed 2
-> times, Dear Bugzilla"? :-)
->
-	BTW, I wonder -- can the kernel store crash related information (if
-any) in RAM, at certain addresses, so it can survive warm reboot and
-get displayed "in dmesg" on the next boot?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
--- 
-End of message. Next message?
+--29444707-777585004-1230535599=:20427
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+
+
+Hi Linus,
+
+Please pull the 'agp-next' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-next
+
+Just a minor fix + new PCI ID.
+
+Dave.
+
+ drivers/char/agp/intel-agp.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+commit b854b2ab959e8175d75e01cf8ed452ed2624d0c8
+Author: Eric Anholt <eric@anholt.net>
+Date:   Mon Dec 22 18:56:27 2008 -0800
+
+    agp/intel: Fix broken ® symbol in device name.
+    
+    Signed-off-by: Eric Anholt <eric@anholt.net>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+commit a50ccc6c6623ab0e64f2109881e07c176b2d876f
+Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
+Date:   Mon Nov 17 14:39:00 2008 +0800
+
+    agp/intel: add support for G41 chipset
+    
+    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+    Signed-off-by: Eric Anholt <eric@anholt.net>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
+--29444707-777585004-1230535599=:20427--
