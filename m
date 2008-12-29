@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbYL2LR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYL2LUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbYL2LR2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 06:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYL2LRT
+	id S1754077AbYL2LUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 06:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYL2LUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 06:17:19 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:49337 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750887AbYL2LRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 06:17:19 -0500
-Date: Mon, 29 Dec 2008 11:17:16 +0000
-From: Nick Warne <nick@ukfsn.org>
-To: Len Brown <lenb@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [QUESTION] Rather high /proc/interrupts ERR count
-Message-ID: <20081229111716.74131849@sauron.linicks.net>
-In-Reply-To: <alpine.LFD.2.00.0812282225380.4738@localhost.localdomain>
-References: <20081226085335.2ecd5cfb@sauron.linicks.net>
-	<alpine.LFD.2.00.0812282225380.4738@localhost.localdomain>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Dec 2008 06:20:37 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:50809 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751573AbYL2LUg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 06:20:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=p6s+rjkXQKHIeidz3Gr3jOut91ZY1LW9Low6I2BSSb2VrdcTPVQPZz9JM9FJXLeAGN
+         9ar0kpTfqqjkFm+ckX8jjBo0UEczpNkiq1m+pn9SthuvAVsrhhBoMwjBf/hLcThBB4X1
+         oEqWzcU01iS+kniRlvhrWhWeuWMcSX9O9TAwQ=
+Message-ID: <2f11576a0812290320m27d08a6fr3d43093ee53f74da@mail.gmail.com>
+Date: Mon, 29 Dec 2008 20:20:34 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [git pull] sparseirq / irq updates for v2.6.29
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
+In-Reply-To: <20081229110954.GB5065@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081225160741.GA14486@elte.hu> <20081227133240.GA8716@elte.hu>
+	 <2f11576a0812270927taef068fobbad997dc5e5aacf@mail.gmail.com>
+	 <20081227173839.GA9793@elte.hu>
+	 <alpine.LFD.2.00.0812281510370.3082@localhost.localdomain>
+	 <20081228232729.GA2158@elte.hu> <20081228233028.GA14697@elte.hu>
+	 <86802c440812281601j57fe5ecdif4b63b72280c65cd@mail.gmail.com>
+	 <2f11576a0812290039t11ca9b76sf305e82003ac607@mail.gmail.com>
+	 <20081229110954.GB5065@elte.hu>
+X-Google-Sender-Auth: e5aaa513ba1aa81e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Dec 2008 22:39:32 -0500 (EST)
-Len Brown <lenb@kernel.org> wrote:
+>> I'm sad ;-)
+>>
+>> Why you use printk? if develper use non-x86 machine, they will see
+>> perfectly worthless debug messages...
+>
+> yes. If you can reproduce the problem then please check the version in
+> tip/master:
 
-> 
-> On Fri, 26 Dec 2008, Nick Warne wrote:
+Unfortunately, No I can't.
 
-> > ERR:     354616
-> > MIS:          0
-> 
-> 21189+333431 = 354620
-> 
-> So virtually all of the ERR's are from IRQ7,
-> which is how  the PIC identifies interrupts
-> when it has no idea of the real source.
-> 
-> The PIC actually doesn't have a concept of directing
-> interrupts to non CPU0, and the fact that CPU1
-> on this box thinks it receives some of the interrupts
-> is in the undocumented area known as "implementation specific"
-> or maybe stated as "don't do this at home".
-> 
-> So the better thing to focus on would be how to get rid of
-> "noapic" on your cmdline and get the system into IOAPIC
-> mode, as it was designed to be.
 
-Thanks Len - you explained it to me perfectly, and as suggested:
 
-           CPU0       CPU1       
-  0:        121        494   IO-APIC-edge      timer
-  1:         17      20796   IO-APIC-edge      i8042
-  6:          0          3   IO-APIC-edge      floppy
-  7:          1          0   IO-APIC-edge    
-  8:          0          1   IO-APIC-edge      rtc0
-  9:          0          0   IO-APIC-fasteoi   acpi
- 14:          2        139   IO-APIC-edge      pata_amd
- 15:          0          0   IO-APIC-edge      pata_amd
- 16:         86      85163   IO-APIC-fasteoi   nvidia
- 20:          0          4   IO-APIC-fasteoi   ehci_hcd:usb1
- 21:          0          0   IO-APIC-fasteoi   sata_nv
- 22:        570     404175   IO-APIC-fasteoi   sata_nv, Intel ICH
- 23:       1236    8996739   IO-APIC-fasteoi   ohci_hcd:usb2, eth0
-NMI:          0          0   Non-maskable interrupts
-LOC:    4497869    5381066   Local timer interrupts
-RES:     999249     570052   Rescheduling interrupts
-CAL:     105254     112444   Function call interrupts
-TLB:      14640       6594   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          1
-MIS:          0
-
-Now appears fine (I get one ERR at boot, for some reason).
-
-Thanks for the information.
-
-Nick
--- 
-Free Software Foundation Associate Member 5508
-http://linicks.net/
+>  http://people.redhat.com/mingo/tip.git/README
+>
+> it doesnt include any needless printks.
+>
+>        Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
