@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbYL2ODZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbYL2OHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755680AbYL2ODZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 09:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYL2ODO
+	id S1755302AbYL2OHg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 09:07:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYL2OH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 09:03:14 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:37241 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753655AbYL2ODN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 09:03:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references:x-google-sender-auth;
-        b=r/RDIwC6075cBoEtyyMFcV65Yk1yJnt3rza/QBzUgXR4eGs/wdm8xfmI4jOPbZou9u
-         mRX9EM5o1r/m0f47U94hXy8Nro/8vqZL2H2hVeAbaVNSFfO9lLnohmxrTYIJHVn5WFv8
-         +goeM8J5L//tLFW0TERJ4B2Fcqmtt4kEOxEvg=
-Message-ID: <43d009740812290603s5d4b4ef1idec88bccfda7b965@mail.gmail.com>
-Date: Mon, 29 Dec 2008 21:03:10 +0700
-From: "Igor Podlesny" <for.poige+linux@gmail.com>
-Reply-To: for.poige+linux@gmail.com
-To: "=?UTF-8?Q?=C3=89ric_Piel?=" <eric.piel@tremplin-utc.net>
-Subject: Re: > There are actually more stable versions available but they are not advertised
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4958D563.30805@tremplin-utc.net>
+	Mon, 29 Dec 2008 09:07:27 -0500
+Received: from mail.gmx.net ([213.165.64.20]:58368 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753021AbYL2OH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 09:07:27 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX19OPA4Z4E9OhDoCZP0bAKKqPWdtudKBGspnVhMApE
+	9g7/MHufdBSkrO
+Message-ID: <4958D99E.4010201@gmx.de>
+Date: Mon, 29 Dec 2008 15:07:26 +0100
+From: Helge Deller <deller@gmx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <43d009740812290542p3e54b90avea7ccc27ec432656@mail.gmail.com>
-	 <4958D563.30805@tremplin-utc.net>
-X-Google-Sender-Auth: 78e6330dbc4c6ca9
+To: linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
+       Moritz Muehlenhoff <jmm@inutil.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Helge Deller <deller@gmx.de>
+Subject: [PATCH] parisc: fix module loading failure of large kernel modules
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBTE3qki029926
 
-2008/12/29 √âric Piel <eric.piel@tremplin-utc.net>:[...]>>> The latest longtime version of the Linux kernel is:     2.6.16.62>>>>       Well, I'd call those versions stable if there were ongoing bugfixes>> (if affected) backporting to it. Otherwise these are rather "outdated">> versions.> That's _exactly_ what those trees are about: backporting bugfixes.> Let's call them stable then ;-)
-	:-)
-	According to http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.16.62the last commit to this version was made at Mon, 21 Jul 2008 22:48:10+0300. Looks like it's really stable ;-)
-	BTW, several distros keep patching 2.6.18, that's a bit fresher; butanyway, there's a valuable gap between that stable and kernel.org'sadvertised one.
--- End of message. Next message?ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+The parisc port (esp. the 32bit kernel) currently lacks the ability to
+load large kernel modules like xfs or ipv6. This is a long outstanding
+bug and has already been reported a few times, e.g.:
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=350482,
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=401439,
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=508489
+
+The symptom is like this:
+# modprobe xfs
+FATAL: Error inserting xfs
+(/lib/modules/2.6.26-1-parisc/kernel/fs/xfs/xfs.ko): Invalid module
+format
+
+In dmesg:
+module xfs relocation of symbol xfs_btree_read_bufs is out of range
+(0x3ffefffe in 17 bits)
+
+The reason for the failure is, that the architecture only provides the
+R_PARISC_PCREL17F (for 32bit kernels) and R_PARISC_PCREL22F (for PA2.0
+and 64bit kernels) relocations, which sometimes can't reach the target
+address of the stub entry if the kernel module is too large. Currently
+parisc (like other architectures) creates one big PLT section for all
+stubs at the beginning of the init and core sections.
+
+The following two patches changes the parisc module loader to put stubs
+in between the code sections instead, so that the distance to the stubs
+more easily fits into the available 17/22 bits.
+
+The first patch touches the generic module loader and adds a call to the
+new module_additional_section_size() function to get_offset() if
+CONFIG_ARCH_WANTS_STUBS_BEHIND_SECTIONS is defined. On parisc this
+function returns the additional bytes for the stub area of a given section.
+
+The second patch implements the parisc-specific changes.
+
+Tested with 32- and 64bit parisc kernels.
+
+Helge
