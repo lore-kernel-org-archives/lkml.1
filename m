@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYL2NwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYL2NwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYL2NwG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 08:52:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYL2Nvu
+	id S1753947AbYL2NwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 08:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYL2Nvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 08:51:50 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:43002 "EHLO
+	Mon, 29 Dec 2008 08:51:51 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:42999 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbYL2Nvt (ORCPT
+	with ESMTP id S1752727AbYL2Nvt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Dec 2008 08:51:49 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: Mike Frysinger <vapier@gentoo.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 08/13] headers_check.pl: disallow extern's
-Date: Mon, 29 Dec 2008 14:53:18 +0100
-Message-Id: <1230558803-7168-8-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 05/13] kconfig: improve readout when we hit recursive dependencies
+Date: Mon, 29 Dec 2008 14:53:15 +0100
+Message-Id: <1230558803-7168-5-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20081229134402.GA7069@uranus.ravnborg.org>
 References: <20081229134402.GA7069@uranus.ravnborg.org>
@@ -24,52 +24,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier@gentoo.org>
+Following sample:
+    config TEST1
+            bool
+            depends on TEST2 && PCI
+            select TEST2
 
-Since prototypes with "extern" refer to kernel functions, they make no
-sense in userspace, so reject them automatically.
+    config TEST2
+            bool
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-[sam: made it into a warning]
+Will result in the following output:
+
+    Kconfig:1:error: found recursive dependency:
+                TEST1
+             -> TEST2 (arch/x86/Kconfig:6)
+             -> TEST1 (arch/x86/Kconfig:1)
+
+The sample above gave a segmentation fault
+which is also fixed by this patch.
+
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/headers_check.pl |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+ scripts/kconfig/expr.h   |    1 +
+ scripts/kconfig/menu.c   |    2 ++
+ scripts/kconfig/symbol.c |   11 ++++++++---
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-index 488a3b1..5bdd975 100644
---- a/scripts/headers_check.pl
-+++ b/scripts/headers_check.pl
-@@ -14,7 +14,9 @@
- #    Only include files located in asm* and linux* are checked.
- #    The rest are assumed to be system include files.
- #
--# 2) TODO: check for leaked CONFIG_ symbols
-+# 2) It is checked that prototypes does not use "extern"
-+#
-+# 3) TODO: check for leaked CONFIG_ symbols
+diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
+index 6408fef..d587895 100644
+--- a/scripts/kconfig/expr.h
++++ b/scripts/kconfig/expr.h
+@@ -132,6 +132,7 @@ enum prop_type {
+ 	P_SELECT,   /* select BAR */
+ 	P_RANGE,    /* range 7..100 (for a symbol) */
+ 	P_ENV,      /* value from environment variable */
++	P_SYMBOL,   /* where a symbol is defined */
+ };
  
- use strict;
+ struct property {
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index 07ff8d1..aa0e2f2 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -55,6 +55,8 @@ void menu_add_entry(struct symbol *sym)
+ 	*last_entry_ptr = menu;
+ 	last_entry_ptr = &menu->next;
+ 	current_entry = menu;
++	if (sym)
++		 menu_add_prop(P_SYMBOL, NULL, NULL, NULL);
+ }
  
-@@ -33,6 +35,7 @@ foreach my $file (@files) {
- 	while ($line = <FH>) {
- 		$lineno++;
- 		check_include();
-+		check_prototypes();
+ void menu_end_entry(void)
+diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
+index 18f3e5c..474dae2 100644
+--- a/scripts/kconfig/symbol.c
++++ b/scripts/kconfig/symbol.c
+@@ -856,8 +856,9 @@ struct symbol *sym_check_deps(struct symbol *sym)
+ 	struct property *prop;
+ 
+ 	if (sym->flags & SYMBOL_CHECK) {
+-		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
+-		        sym->prop->file->name, sym->prop->lineno,
++		fprintf(stderr, "%s:%d:error: found recursive dependency:\n",
++		        sym->prop->file->name, sym->prop->lineno);
++		fprintf(stderr, "\t    %s\n",
+ 			sym->name ? sym->name : "<choice>");
+ 		return sym;
  	}
- 	close FH;
- }
-@@ -54,3 +57,10 @@ sub check_include
- 		}
+@@ -877,7 +878,9 @@ struct symbol *sym_check_deps(struct symbol *sym)
  	}
- }
-+
-+sub check_prototypes
-+{
-+	if ($line =~ m/^\s*extern\b/) {
-+		printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
-+	}
-+}
+ 
+ 	if (sym2) {
+-		fprintf(stderr, " -> %s", sym->name ? sym->name : "<choice>");
++		fprintf(stderr, "\t -> %s (%s:%d)\n",
++		        sym->name ? sym->name : "<choice>",
++			sym->prop->file->name, sym->prop->lineno);
+ 		if (sym2 == sym) {
+ 			fprintf(stderr, "\n");
+ 			zconfnerrs++;
+@@ -937,6 +940,8 @@ const char *prop_get_type_name(enum prop_type type)
+ 		return "select";
+ 	case P_RANGE:
+ 		return "range";
++	case P_SYMBOL:
++		return "symbol";
+ 	case P_UNKNOWN:
+ 		break;
+ 	}
 -- 
 1.6.0.2.GIT
 
