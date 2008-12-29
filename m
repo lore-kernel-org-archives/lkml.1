@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbYL2SPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbYL2SLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbYL2SPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 13:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYL2SPV
+	id S1753032AbYL2SLU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 13:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYL2SLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 13:15:21 -0500
-Received: from smtp7-g19.free.fr ([212.27.42.64]:52005 "EHLO smtp7-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752560AbYL2SPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 13:15:19 -0500
-Message-ID: <495913A6.9070007@free.fr>
-Date: Mon, 29 Dec 2008 19:15:02 +0100
-From: matthieu castet <castet.matthieu@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 Iceape/1.1.14 (Debian-1.1.14-1)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       linux-usb@vger.kernel.org
-CC: Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Boaz Harrosh <bharrosh@panasas.com>
-Subject: [PATCH -stable] fix USB_STORAGE_CYPRESS_ATACB
-Content-Type: multipart/mixed;
- boundary="------------020205060409000804060008"
+	Mon, 29 Dec 2008 13:11:11 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38413 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbYL2SLK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 13:11:10 -0500
+Subject: [PATCH] sched: sched.c declare variables before they get used
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain
+Date: Mon, 29 Dec 2008 23:39:17 +0530
+Message-Id: <1230574157.26564.37.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020205060409000804060008
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Impact: cleanup, avoid sparse warnings
 
-Hi,
+In linux/sched.h moved out sysctl_sched_latency, sysctl_sched_min_granularity, sysctl_sched_wakeup_granularity, sysctl_sched_shares_ratelimit and sysctl_sched_shares_thresh from #ifdef CONFIG_SCHED_DEBUG as these variables are common for both.
 
-64a87b244b9297667ca80264aab849a36f494884 broke USB_STORAGE_CYPRESS_ATACB 
-translation.
+Fixes these sparse warnings:
+kernel/sched.c:825:14: warning: symbol 'sysctl_sched_shares_ratelimit' was not declared. Should it be static?
+kernel/sched.c:832:14: warning: symbol 'sysctl_sched_shares_thresh' was not declared. Should it be static?
+kernel/sched_fair.c:37:14: warning: symbol 'sysctl_sched_latency' was not declared. Should it be static?
+kernel/sched_fair.c:43:14: warning: symbol 'sysctl_sched_min_granularity' was not declared. Should it be static?
+kernel/sched_fair.c:72:14: warning: symbol 'sysctl_sched_wakeup_granularity' was not declared. Should it be static?
 
-Could it be applied to kernel-stable ?
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/sched.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Matthieu
-
---------------020205060409000804060008
-Content-Type: text/x-patch;
- name="cypress_atacb_fix.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cypress_atacb_fix.diff"
-
-
-64a87b244b9297667ca80264aab849a36f494884 commit change the scsi_eh_prep_cmnd logic by making it clear the ->cmnd buffer.
-
-But the sat to cypress atacb translation supposed the ->cmnd buffer wasn't modified.
-
-This patch makes it set the ->cmnd buffer after scsi_eh_prep_cmnd call.
-
-
-Signed-off-by: Matthieu CASTET <castet.matthieu@free.fr>
-diff --git a/drivers/usb/storage/cypress_atacb.c b/drivers/usb/storage/cypress_atacb.c
-index 898e67d..526c9aa 100644
---- a/drivers/usb/storage/cypress_atacb.c
-+++ b/drivers/usb/storage/cypress_atacb.c
-@@ -143,6 +143,8 @@ void cypress_atacb_passthrough(struct scsi_cmnd *srb, struct us_data *us)
- 		 * the read taskfile bit, for not executing atacb command,
- 		 * but reading register selected in srb->cmnd[4]
- 		 */
-+		srb->cmd_len = 16;
-+		memcpy(srb->cmnd, ses.cmnd, srb->cmd_len);
- 		srb->cmnd[2] = 1;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 7eec8ca..272d6b1 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1707,16 +1707,16 @@ extern void wake_up_idle_cpu(int cpu);
+ static inline void wake_up_idle_cpu(int cpu) { }
+ #endif
  
- 		usb_stor_transparent_scsi_command(srb, us);
+-#ifdef CONFIG_SCHED_DEBUG
+ extern unsigned int sysctl_sched_latency;
+ extern unsigned int sysctl_sched_min_granularity;
+ extern unsigned int sysctl_sched_wakeup_granularity;
++extern unsigned int sysctl_sched_shares_ratelimit;
++extern unsigned int sysctl_sched_shares_thresh;
++#ifdef CONFIG_SCHED_DEBUG
+ extern unsigned int sysctl_sched_child_runs_first;
+ extern unsigned int sysctl_sched_features;
+ extern unsigned int sysctl_sched_migration_cost;
+ extern unsigned int sysctl_sched_nr_migrate;
+-extern unsigned int sysctl_sched_shares_ratelimit;
+-extern unsigned int sysctl_sched_shares_thresh;
+ 
+ int sched_nr_latency_handler(struct ctl_table *table, int write,
+ 		struct file *file, void __user *buffer, size_t *length,
+-- 
+1.5.5.1
 
---------------020205060409000804060008--
+
+
