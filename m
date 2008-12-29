@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbYL2Vfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYL2VgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbYL2Vfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbYL2Vf0
+	id S1754107AbYL2VgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYL2VgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:35:26 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60153 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753851AbYL2VfY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:35:24 -0500
-Subject: Re: linux-next: Tree for December 29 (fcoe)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, scsi <linux-scsi@vger.kernel.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081229123115.9a255fa8.randy.dunlap@oracle.com>
-References: <20081230031621.60acd90b.sfr@canb.auug.org.au>
-	 <20081229123115.9a255fa8.randy.dunlap@oracle.com>
+	Mon, 29 Dec 2008 16:36:14 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54665 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbYL2VgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 16:36:13 -0500
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Chandru <chandru@in.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <18772.11376.339295.42622@cargo.ozlabs.ibm.com>
+References: <200812241325.49404.chandru@in.ibm.com>
+	 <20081224233536.b067c9da.akpm@linux-foundation.org>
+	 <18772.11376.339295.42622@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Mon, 29 Dec 2008 15:35:20 -0600
-Message-Id: <1230586520.3302.61.camel@localhost.localdomain>
+Date: Mon, 29 Dec 2008 13:36:07 -0800
+Message-Id: <1230586567.19452.100.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-29 at 12:31 -0800, Randy Dunlap wrote:
-> On Tue, 30 Dec 2008 03:16:21 +1100 Stephen Rothwell wrote:
+On Fri, 2008-12-26 at 11:59 +1100, Paul Mackerras wrote:
 > 
-> > Hi all,
-> > 
-> > Changes since 20081219:
-> > 
-> > Undropped tree:
-> > 	scci
-> > 	mtd
-> > 
-> > Dropped trees (temporarily):
-> > 	nfs (akpm request due to 2.6.30 features)
-> > 	kvm (build problem)
-> > 	rr (build poblem)
-> > 	semaphore-removal (due to unfixed conflicts against Linus' tree)
-> > 	cpu_alloc (build problem)
-> > 	audit (difficult conflicts)
-> > 
-> > Linus' tree had three build failures requiring patches and one requiring
-> > a revert.
-> 
-> 
-> linux-next-20081229/drivers/scsi/fcoe/libfcoe.c:995: error: dereferencing pointer to incomplete type
-> linux-next-20081229/drivers/scsi/fcoe/libfcoe.c:1015: error: dereferencing pointer to incomplete type
-> 
-> (on netdev->name ?)
+> > diff -puN arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting arch/powerpc/mm/numa.c
+> > --- a/arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting
+> > +++ a/arch/powerpc/mm/numa.c
+> > @@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
+> >                                 start_pfn, end_pfn);
+> >  
+> >               free_bootmem_with_active_regions(nid, end_pfn);
+> > +     }
+> > +
+> > +     for_each_online_node(nid) {
+> >               /*
+> > -              * Be very careful about moving this around.  Future
+> > -              * calls to careful_allocation() depend on this getting
+> > -              * done correctly.
+> > +              * Be very careful about moving this around.
+> >                */
+> >               mark_reserved_regions_for_nid(nid);
+> >               sparse_memory_present_with_active_regions(nid);
 
-This looks a bit odd.  libfcoe.h #includes linux/netdevice.h which
-defines the structure ... I can't see how netdev could have an
-incomplete type.  Could you make libfcoe.i and see what's happening?
+I think this reintroduces one of the bugs that I squashed.  You *have*
+to call mark_reserved_regions_for_nid() right after you do
+free_bootmem_with_active_regions().  Otherwise, someone else can
+bootmem_alloc() a reserved region from that node.
 
-Thanks,
+Perhaps I need to make that comment a bit more forceful. :)
 
-James
+/*
+ * Don't break this loop out.  Period.  Never.  Ever.
+ * No, seriously.  Don't do it.  I mean it.  Really!
+ */
 
+-- Dave
 
