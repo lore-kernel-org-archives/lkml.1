@@ -1,119 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYL2Oza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbYL2O47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751893AbYL2Oza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 09:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYL2OzP
+	id S1752015AbYL2O47 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 09:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYL2O4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 09:55:15 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52200 "EHLO mx2.redhat.com"
+	Mon, 29 Dec 2008 09:56:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41066 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750868AbYL2OzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 09:55:13 -0500
-Message-ID: <4958E4C2.3080405@redhat.com>
-Date: Mon, 29 Dec 2008 09:54:58 -0500
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1750811AbYL2O4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 09:56:50 -0500
+Date: Mon, 29 Dec 2008 15:56:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] RCU: Move some definitions to minimal headers.
+Message-ID: <20081229145630.GB16205@elte.hu>
+References: <cover.1230499486.git.eduard.munteanu@linux360.ro> <01504e3763e57759f34045051e86cb35c17b43b5.1230499486.git.eduard.munteanu@linux360.ro>
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, dhowells@redhat.com,
-       Bernd Schubert <bernd.schubert@fastmail.fm>, nfsv4@linux-nfs.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org, steved@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-next@vger.kernel.org
-Subject: Re: Pull request for FS-Cache, including NFS patches
-References: <8930.1229560221@redhat.com>	 <20081218142420.GA16728@infradead.org>	 <20081218123601.11810b7f.akpm@linux-foundation.org>	 <200812190007.34581.bernd.schubert@fastmail.fm>	 <20081218152616.a24c013f.akpm@linux-foundation.org>	 <20081219110539.7e7e230c.sfr@canb.auug.org.au>	 <20081229144533.4a0ab696.sfr@canb.auug.org.au>	 <20081228200134.426bf203.akpm@linux-foundation.org> <1230561056.7046.47.camel@heimdal.trondhjem.org>
-In-Reply-To: <1230561056.7046.47.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <01504e3763e57759f34045051e86cb35c17b43b5.1230499486.git.eduard.munteanu@linux360.ro>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Sun, 2008-12-28 at 20:01 -0800, Andrew Morton wrote:
->   
->> On Mon, 29 Dec 2008 14:45:33 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>
->>     
->>> Hi David,
->>>
->>> On Fri, 19 Dec 2008 11:05:39 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>>       
->>>> Given the ongoing discussions around FS-Cache, I have removed it from
->>>> linux-next.  Please ask me to include it again (if sensible) once some
->>>> decision has been reached about its future.
->>>>         
->>> What was the result of discussions around FS-Cache?
->>>       
->> There was none.
->>
->> Dan Muntz's question:
->>
->>   Solaris has had CacheFS since ~1995, HPUX had a port of it since
->>   ~1997.  I'd be interested in evidence of even a small fraction of
->>   Solaris and/or HPUX shops using CacheFS.  I am aware of customers who
->>   thought it sounded like a good idea, but ended up ditching it for
->>   various reasons (e.g., CacheFS just adds overhead if you almost
->>   always hit your local mem cache).
->>
->> was an very very good one.
->>
->> Seems that instead of answering it, we've decided to investigate the
->> fate of those who do not learn from history.
->>     
->
-> David has given you plenty of arguments for why it helps scale the
-> server (including specific workloads), has given you numbers validating
-> his claim, and has presented claims that Red Hat has customers using
-> cachefs in RHEL-5.
-> The arguments I've seen against it, have so far been:
->
->      1. Solaris couldn't sell their implementation
->      2. It's too big
->      3. It's intrusive
->
-> Argument (1) has so far appeared to be pure FUD. In order to discuss the
-> lessons of history, you need to first do the work of analysing and
-> understanding it first. I really don't see how it is relevant to Linux
-> whether or not the Solaris and HPUX cachefs implementations worked out
-> unless you can demonstrate that that their experience shows some fatal
-> flaw in the arguments and numbers that David presented, and that his
-> customers are deluded.
-> If you want examples of permanent caches that clearly do help servers
-> scale, then look no further than the on-disk caches used in almost all
-> http browser implemantations. Alternatively, as David mentioned, there
-> are the on-disk caches used by AFS/DFS/coda.
->   
 
-I can add that our Red Hat customers who tried the cachefs preview did 
-find it useful for their workloads (and, by the way, also use the 
-Solaris cachefs on solaris boxes if I remember correctly).  They have 
-been nagging me and others at Red Hat about getting it into supported 
-state for quite a while :-)
+* Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
 
-As you point out, this is all about getting more clients to be driven by 
-a set of NFS servers.
+> linux/rcupdate.h used to include SLAB headers, which got in the way of 
+> switching kmemtrace to use tracepoints instead of markers. The circular 
+> header inclusion pattern that appeared was making it impossible to use 
+> tracepoints in SLAB allocator inlines.
+> 
+> This moves some header code into separate files. As an added bonus, 
+> preprocessing is faster if care is taken to use these minimal headers, 
+> since no effort is spent on including SLAB headers.
+> 
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  include/linux/rcuclassic.h     |   40 +--------
+>  include/linux/rcuclassic_min.h |   77 +++++++++++++++
+>  include/linux/rcupdate.h       |  160 +-------------------------------
+>  include/linux/rcupdate_min.h   |  205 ++++++++++++++++++++++++++++++++++++++++
+>  include/linux/rcupreempt.h     |   32 +------
+>  include/linux/rcupreempt_min.h |   68 +++++++++++++
+>  6 files changed, 353 insertions(+), 229 deletions(-)
+>  create mode 100644 include/linux/rcuclassic_min.h
+>  create mode 100644 include/linux/rcupdate_min.h
+>  create mode 100644 include/linux/rcupreempt_min.h
 
-Regards,
+ok, i like the idea - i'm just not sure this is the best approach. If we 
+want to do a splitup, it should be along the lines of spinlock.h and 
+spinlock_types.h.
 
-Ric
+The principle there is that the type declarations and inline function 
+definitions kept separate. The 'type' headers are lightweight with minimal 
+dependencies - the 'inline function' headers are more heavyweight.
 
-> (2) may be valid, but I have yet to see specifics for where you'd like
-> to see the cachefs code slimmed down. Did I miss them?
->
-> (3) was certainly true 3 years ago, when the code was first presented
-> for review, and so we did a review and critique then. The NFS specific
-> changes have improved greatly as a result, and as far as I know, the
-> security folks are happy too. If you're not happy with the parts that
-> affect the memory management code then, again, it would be useful to see
-> specifics that what you want changed.
->
-> If there is still controversy concerning this, then I can temporarily
-> remove cachefs from the nfs linux-next branch, but I'm definitely
-> keeping it in the linux-mm branch until someone gives me a reason for
-> why it shouldn't be merged in its current state.
->
-> Trond
->
->   
+For RCU ... cannot we get away much simpler, by removing the headers from 
+rcupdate.h that cause the SLAB dependency hell? Does rcupdate.h really 
+need to include all of:
 
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+ #include <linux/threads.h>
+ #include <linux/percpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
+ #include <linux/lockdep.h>
+ #include <linux/completion.h>
+
+AFAICS it should be able to get away with spinlock_types.h and i'm not 
+sure it needs cache.h. The other headers are 'data type' headers mostly.
+
+Which one is causing the trouble for you - cache.h ? If you do a patch 
+that removes that trouble include file i can make wide build coverage 
+tests to make sure it's OK to remove it.
+
+but rcu_types.h would be nice to have too - i'm just not sure it's really 
+what you need. (you seem to need certain RCU functions too, right?)
+
+	Ingo
