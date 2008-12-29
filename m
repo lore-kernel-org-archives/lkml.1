@@ -1,201 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYL2Ofr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbYL2Ojl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751893AbYL2Ofr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 09:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYL2Off
+	id S1751777AbYL2Ojl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 09:39:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbYL2Ojc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 09:35:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:3073 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbYL2Ofe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 09:35:34 -0500
-Message-ID: <154e089b0812290635o5792af25jd26fa184a02dc7af@mail.gmail.com>
-Date: Mon, 29 Dec 2008 15:35:31 +0100
-From: "Hannes Eder" <hannes@hanneseder.net>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 02/27] drivers/net: fix sparse warnings: make do-while a compound statement
-Cc: "Krzysztof Halasa" <khc@pm.waw.pl>,
-       "Harvey Harrison" <harvey.harrison@gmail.com>,
-       "=?ISO-8859-1?Q?H=E5kon_L=F8vdal?=" <hlovdal@gmail.com>,
-       netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0812231529030.3535@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Dec 2008 09:39:32 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:52973 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750750AbYL2Ojb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 09:39:31 -0500
+Date: Mon, 29 Dec 2008 23:39:32 +0900 (JST)
+Message-Id: <20081229.233932.25909762.anemo@mba.ocn.ne.jp>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org, maciej.sosnowski@intel.com,
+       dan.j.williams@intel.com
+Subject: dw_dmac driver questions
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081222191259.11807.53190.stgit@vmbox.hanneseder.net>
-	 <20081222191507.11807.50794.stgit@vmbox.hanneseder.net>
-	 <m3hc4voo2a.fsf@maximus.localdomain>
-	 <a01a16b50812221544x45c3559ap808ac0095ee8f01@mail.gmail.com>
-	 <m3ocz2ua3w.fsf@maximus.localdomain> <1230053186.1447.9.camel@brick>
-	 <m3k59qssix.fsf@maximus.localdomain>
-	 <alpine.LFD.2.00.0812231008350.3535@localhost.localdomain>
-	 <m3hc4usco9.fsf@maximus.localdomain>
-	 <alpine.LFD.2.00.0812231529030.3535@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 24, 2008 at 12:38 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Wed, 24 Dec 2008, Krzysztof Halasa wrote:
->>
->> So is a case like
->>       do
->>               x;
->>       while (y);
->> It can't be made more clear with brackets.
->
-> Oh yes it can. People look at that, and it's so uncommon that they
-> literally believe it is a mis-indent.
->
-> [snip]
->
->> kmalloc(sizeof i) just doesn't look good, the operator looks like
->> a variable name.
->
-> And I agree with you. "sizeof i" doesn't look good. It's uncommon, and
-> doesn't match peoples expectations.
->
->> But there is this return statement. Some people tend to write
->> return (x); I simply write return x;
->
-> I do to. And it's the common thing to do, and only totally confused people
-> think that 'return' is a somehow remotely like a "function" of its
-> arguments (the way 'sizeof' is - sizeof _is_ a function of its arguments,
-> albeit a very rare one).
->
->> It's clear, and so is a simple do-while.
->
-> No. "return x;" is clear because it's the common thing, which means that
-> peopel are good at reading it.
+Hi.  I'm writing a new DMA driver, using dw_dmac driver in kernel
+2.6.28 as a reference implementation.
 
-I got curious and conducted a little experiment, here is the outcome
-for the linux-2.6 kernel tree:
-
-hannes@vmbox:~/linux-2.6$ find . -name "*.[ch]" -print0 | xargs -0 cat
-| ../sparse/cstats -
-
-stats for '-':
-  do's:         8092, non compound:              79 (  1.0%)
-  sizeof's:    51216, without parenthesis:     1543 (  3.0%)
-  return's:   286167, with parenthesis:       13552 (  4.7%)
-
-'cstats' is a little program I wrote using the sparse library, see below.
-
-The value for "return's with parenthesis" is a bit of an estimation,
-as 'cstats' operates only at the token level, so
-"return (x) ? y : z;" counts as "return with parenthesis".
-
-some sanity checks, to ensure the magnitudes are right:
-
-hannes@vmbox:~/linux-2.6$ git grep -w do -- *.[ch] | wc -l
-20599
-
-hannes@vmbox:~/linux-2.6$ git grep '\bdo[ \t]*{' -- *.[ch] | wc -l
-7805
-
-I assume 'do' is used frequently in comments:
-
-hannes@vmbox:~/linux-2.6$ git grep '\*.*\bdo\b' -- *.[ch] | wc -l
-11358
-
-hannes@vmbox:~/linux-2.6$ git grep '^[ \t]*do$' -- *.[ch] | wc -l
-34
-
-hannes@vmbox:~/linux-2.6$ git grep -w sizeof -- *.[ch] | wc -l
-49631
-
-constructs like sizeof(array)/sizeof(array[0]) or common:
-
-hannes@vmbox:~/linux-2.6$ git grep  'sizeof.*sizeof' -- *.[ch] | wc -l
-1827
-
-hannes@vmbox:~/linux-2.6$ git grep '\bsizeof [^(]' -- *.[ch] | wc -l
-1534
-
-hannes@vmbox:~/linux-2.6$ git grep -w return -- *.[ch] | wc -l
-295304
-
-hannes@vmbox:~/linux-2.6$ git grep '\breturn (' -- *.[ch] | wc -l
-11067
-
-Best,
-Hannes
+I can see an outline of the dw_dmac driver and framework (well,
+hopefully), but have some questions in details.
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
+1. map/unmap DMA buffers for slave transfer
 
-#include "token.h"
-#include "parse.h"
+For slave-DMA, it seems dmac driver is responsible for mapping DMA
+buffers, and client is responsible for unmapping them.  Is it right?
 
-int main(int argc, char **argv)
-{
-        struct string_list *filelist = NULL;
-        char *filename;
+Now dwc_descriptor_complete() unmaps DMA buffer unless
+DMA_COMPL_SKIP_XXX_UNMAP set.  These unmapping should be done only for
+non-slave transfers?  I.e. I suppose "if (!dwc->dws)" is required
+around dma_unmap_page() pair.
 
-        sparse_initialize(argc, argv, &filelist);
-        FOR_EACH_PTR_NOTAG(filelist, filename) {
-                int fd;
-                struct token *token;
-                int do_stats = 0;
-                int do_stats_nc = 0;
-                int sizeof_exprs = 0;
-                int sizeof_exprs_np = 0;
-                int return_stats = 0;
-                int return_stats_wp = 0;
+I also wonder why dwc_prep_slave_sg() calculates total_len. The
+total_len is stored in first descriptor of the chain and it is only
+referenced for unmapping DMA buffers.  But the scatterlist may contain
+uncontinuous buffers, so they can not be unmaped at a time.
 
-                if (strcmp(filename, "-") == 0) {
-                        fd = 0;
-                } else {
-                        fd = open(filename, O_RDONLY);
-                        if (fd < 0)
-                                die("No such file: %s", filename);
-                }
 
-                // Tokenize the input stream
-                token = tokenize(filename, fd, NULL, includepath);
-                close(fd);
+2.  dwc_is_tx_complete() and dwc->lock
 
-                for ( ; !eof_token(token); token = token->next) {
-                        if (token_type(token) == TOKEN_IDENT) {
-                                if (token->ident == &do_ident) {
-                                        do_stats++;
-                                        if (!match_op(token->next, '{'))
-                                                do_stats_nc++;
-                                }
-                                else if (token->ident == &sizeof_ident) {
-                                        sizeof_exprs++;
-                                        if (!match_op(token->next, '('))
-                                                sizeof_exprs_np++;
-                                }
-                                else if (token->ident == &return_ident) {
-                                        return_stats++;
-                                        if (match_op(token->next, '('))
-                                                return_stats_wp++;
-                                }
-                        }
-                }
+The function dwc_is_tx_complete() calls dwc_scan_descriptors() without
+dwc->lock (and disabling bh).  Is it safe?  All other callers of
+dwc_scan_descriptors() take dwc->lock and disable bh.
 
-                printf("stats for '%s':\n", filename);
-                printf("  do's:     %8d, non compound:        %8d (%5.1f%%)\n",
-                       do_stats, do_stats_nc,
-                       100.0 * do_stats_nc / (do_stats?:1) );
-                printf("  sizeof's: %8d, without parenthesis: %8d (%5.1f%%)\n",
-                       sizeof_exprs, sizeof_exprs_np,
-                       100.0 * sizeof_exprs_np / (sizeof_exprs?:1) );
-                printf("  return's: %8d, with parenthesis:    %8d (%5.1f%%)\n",
-                       return_stats, return_stats_wp,
-                       100.0 * return_stats_wp / (return_stats?:1) );
 
-        } END_FOR_EACH_PTR_NOTAG(filename);
-        return 0;
-}
+3.  dwc->queue list management
+
+The function dwc_tx_submit() add the descriptor to dwc->queue list if
+active list was not empty.  But it does not manage lli.llp list.  And
+all descriptors in the queue list will be moved to active list at a
+time.  So it seems non-first descriptors in queue list will never
+processed by the hardware.
+
+The dwc_tx_submit() should rewrite lli.llp of the last descriptor in
+queue list (it it had children, the last children of it) by txd.phys
+of newly queued descriptor.  Or, only first elements of queue list
+should be moved to active list at a time.
+
+Is my analysis correct?
+
+
+BTW, I found some redundant code in the driver.
+
+* memset(dw, 0, sizeof *dw) seems redundant while dw is allocated
+  kzalloc().
+
+* platform_get_drvdata(pdev) is called twice in dw_shutdown,
+  dw_suspend_late.
+
+Both of them harmless.
+
+---
+Atsushi Nemoto
