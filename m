@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYL2Djo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbYL2DpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbYL2Djo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Dec 2008 22:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYL2Djg
+	id S1752872AbYL2DpG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Dec 2008 22:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYL2Doy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Dec 2008 22:39:36 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:64295 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYL2Djf (ORCPT
+	Sun, 28 Dec 2008 22:44:54 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:43543 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbYL2Dox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Dec 2008 22:39:35 -0500
-Date: Sun, 28 Dec 2008 22:39:32 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [QUESTION] Rather high /proc/interrupts ERR count
-In-reply-to: <20081226085335.2ecd5cfb@sauron.linicks.net>
-X-X-Sender: lenb@localhost.localdomain
-To: Nick Warne <nick@ukfsn.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.2.00.0812282225380.4738@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20081226085335.2ecd5cfb@sauron.linicks.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 28 Dec 2008 22:44:53 -0500
+X-IronPort-AV: E=Sophos;i="4.36,293,1228089600"; 
+   d="scan'208";a="220742973"
+From: Roland Dreier <rdreier@cisco.com>
+To: general@lists.openfabrics.org, Aleksey Senin <alekseys@voltaire.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: origin tree build failure
+References: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 28 Dec 2008 19:44:52 -0800
+In-Reply-To: <20081229114321.4b6baea5.sfr@canb.auug.org.au> (Stephen
+	Rothwell's message of "Mon, 29 Dec 2008 11:43:21 +1100")
+Message-ID: <ada4p0nve4r.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 29 Dec 2008 03:44:52.0705 (UTC) FILETIME=[CEB16510:01C96967]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > ERROR: ".ipv6_chk_addr" [drivers/infiniband/core/ib_addr.ko] undefined!
+ > ERROR: ".ip6_route_output" [drivers/infiniband/core/ib_addr.ko] undefined!
+ > 
+ > Caused by commit 38617c64bf9a10bf20e41d95b69bb81e8560fe9d ("RDMA/addr:
+ > Add support for translating IPv6 addresses").  This requires a dependency
+ > on IPV6.
 
-On Fri, 26 Dec 2008, Nick Warne wrote:
+So how do we want to fix this?  (This question is mostly directed to the
+IB guys)  One possibility is to make all this depend on IPV6 in Kconfig,
+but I think we want the RDMA CM to be buildable/usable even if IPv6
+isn't enabled.  A better option is to just put all the IPv6 related
+stuff into
 
-> Hi all,
-> 
-> Running 2.6.28 stable.
-> 
-> x86_64 system with AMD Athlon(tm) 64 X2 Dual Core Processor 5200+
-> 
-> The machine runs perfectly fine, but...
-> 
-> ...should I be concerned with the rather high ERR count below (this
-> is after 41 minutes uptime).  I also have to boot with noapic to stop
-> lockups (nvidia driver, I expect):
-> 
->            CPU0       CPU1       
->   0:        125          1    XT-PIC-XT        timer
->   1:       5534         97    XT-PIC-XT        i8042
->   2:          0          0    XT-PIC-XT        cascade
->   3:          1          0    XT-PIC-XT      
->   4:          1          1    XT-PIC-XT      
->   5:      78933      11713    XT-PIC-XT        sata_nv, ohci_hcd:usb2, Intel ICH
->   6:          3          0    XT-PIC-XT        floppy
->   7:      21189     333431    XT-PIC-XT      
->   8:          1          0    XT-PIC-XT        rtc0
->   9:          0          0    XT-PIC-XT        acpi
->  10:     246562       9267    XT-PIC-XT        eth0
->  11:       2296         72    XT-PIC-XT        sata_nv, ehci_hcd:usb1, nvidia
->  14:         98         51    XT-PIC-XT        pata_amd
->  15:          0          0    XT-PIC-XT        pata_amd
-> NMI:          0          0   Non-maskable interrupts
-> LOC:     236200     234958   Local timer interrupts
-> RES:      33224      73287   Rescheduling interrupts
-> CAL:        890        964   Function call interrupts
-> TLB:        982       1127   TLB shootdowns
-> TRM:          0          0   Thermal event interrupts
-> THR:          0          0   Threshold APIC interrupts
-> SPU:          0          0   Spurious interrupts
-> ERR:     354616
-> MIS:          0
+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
 
-21189+333431 = 354620
+and add a Kconfig dependency on (IPV6 || IPV6=n) as we did for IPoIB.
 
-So virtually all of the ERR's are from IRQ7,
-which is how  the PIC identifies interrupts
-when it has no idea of the real source.
+But then this leads to the behavior that loading the RDMA CM will cause
+the ipv6 module to be loaded if IPV6=m in the kernel config, even if the
+administrator doesn't want to enable IPv6, just as with IPoIB today.
+And people already complain about that.
 
-The PIC actually doesn't have a concept of directing
-interrupts to non CPU0, and the fact that CPU1
-on this box thinks it receives some of the interrupts
-is in the undocumented area known as "implementation specific"
-or maybe stated as "don't do this at home".
+Anyone see a better solution (which we could use for IPoIB even)?
 
-So the better thing to focus on would be how to get rid of
-"noapic" on your cmdline and get the system into IOAPIC
-mode, as it was designed to be.
-
--- Len Brown, Intel Open Source Technology Center> 
-
+ - R.
