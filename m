@@ -1,74 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYL2Lgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYL2Lqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbYL2Lgd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 06:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbYL2LgZ
+	id S1754058AbYL2Lqz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 06:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYL2Lqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 06:36:25 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:45407 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbYL2LgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 06:36:24 -0500
-Date: Mon, 29 Dec 2008 11:36:21 +0000
-From: Nick Warne <nick@ukfsn.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make Dell keyboard repeat quirk apply to a wider range
- of hardware
-Message-ID: <20081229113621.1a64caea@sauron.linicks.net>
-In-Reply-To: <20081112165650.GA15594@srcf.ucam.org>
-References: <20081111074702.75e71055@sauron.linicks.net>
-	<20081112131427.1bbc2a7c@palantir.linicks.net>
-	<20081112165650.GA15594@srcf.ucam.org>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Dec 2008 06:46:46 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58530 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750939AbYL2Lqp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 06:46:45 -0500
+X-Sasl-enc: Ld8rDGS4mksGp505eAqiIWA4VVXOXNrg+j7YxJsIlXfa 1230551203
+Message-ID: <4958B896.3030801@imap.cc>
+Date: Mon, 29 Dec 2008 12:46:30 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Julia Lawall <julia@diku.dk>
+CC: hjlipp@web.de, gigaset307x-common@lists.sourceforge.net, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/13] drivers/isdn/gigaset: use USB API functions rather
+ than constants
+References: <Pine.LNX.4.64.0812291119340.9555@pc-004.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0812291119340.9555@pc-004.diku.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC7261E909D30CE9F9F5095B7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 16:56:50 +0000
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC7261E909D30CE9F9F5095B7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Does this work?
-> 
-> diff --git a/drivers/input/keyboard/atkbd.c
-> b/drivers/input/keyboard/atkbd.c index 22016ca..15479ef 100644
-> --- a/drivers/input/keyboard/atkbd.c
-> +++ b/drivers/input/keyboard/atkbd.c
-> @@ -1460,6 +1460,15 @@ static struct dmi_system_id
-> atkbd_dmi_quirk_table[] __initdata = { .driver_data =
-> atkbd_dell_laptop_keymap_fixup, },
->  	{
-> +		.ident = "Dell Laptop",
-> +		.matches = {
-> +			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer
-> Corporation"),
-> +			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /*
-> Portable */
-> +		},
-> +		.callback = atkbd_setup_fixup,
-> +		.driver_data = atkbd_dell_laptop_keymap_fixup,
-> +	},
-> +	{
->  		.ident = "HP 2133",
->  		.matches = {
->  			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-> 
+On Mon, 29 Dec 2008 11:19:55 +0100 (CET), Julia Lawall wrote:
+> This set of patches introduces calls to the following set of functions:=
 
-Hi Matthew,
+>=20
+> usb_endpoint_dir_in(epd)
+> usb_endpoint_dir_out(epd)
+> usb_endpoint_is_bulk_in(epd)
+> usb_endpoint_is_bulk_out(epd)
+> usb_endpoint_is_int_in(epd)
+> usb_endpoint_is_int_out(epd)
+> usb_endpoint_num(epd)
+> usb_endpoint_type(epd)
+> usb_endpoint_xfer_bulk(epd)
+> usb_endpoint_xfer_control(epd)
+> usb_endpoint_xfer_int(epd)
+> usb_endpoint_xfer_isoc(epd)
+[...]
+>=20
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-I see this didn't make into the 2.6.28 release, and a lot of Ubuntu
-users are being bitten by it - I also assume that the Ubuntu kernel
-guys will not add it until it is officially applied, and they will then
-backport it.
+Acked-by: Tilman Schmidt <tilman@imap.cc>
 
-The Ubuntu bug report confirms this works OK for people:
+Thanks,
+Tilman
 
-https://bugs.launchpad.net/ubuntu/+source/acpid/+bug/285323
+> ---
+>  drivers/isdn/gigaset/usb-gigaset.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/isdn/gigaset/usb-gigaset.c b/drivers/isdn/gigaset/=
+usb-gigaset.c
+> index e847c6e..16399fb 100644
+> --- a/drivers/isdn/gigaset/usb-gigaset.c
+> +++ b/drivers/isdn/gigaset/usb-gigaset.c
+> @@ -783,7 +783,7 @@ static int gigaset_probe(struct usb_interface *inte=
+rface,
+>  	/* Fill the interrupt urb and send it to the core */
+>  	usb_fill_int_urb(ucs->read_urb, udev,
+>  			 usb_rcvintpipe(udev,
+> -					endpoint->bEndpointAddress & 0x0f),
+> +					usb_endpoint_num(endpoint)),
+>  			 cs->inbuf[0].rcvbuf, buffer_size,
+>  			 gigaset_read_int_callback,
+>  			 cs->inbuf + 0, endpoint->bInterval);
 
-Nick
--- 
-Free Software Foundation Associate Member 5508
-http://linicks.net/
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enigC7261E909D30CE9F9F5095B7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFJWLigQ3+did9BuFsRAmj/AKCId1mtOjzYLX2B2FRNzq+5Wu8NVgCfWOZV
+KuJyrR6d1ZLK7sHir9YAZvw=
+=tQQd
+-----END PGP SIGNATURE-----
+
+--------------enigC7261E909D30CE9F9F5095B7--
