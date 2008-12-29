@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbYL2OCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbYL2ODZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbYL2OCp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 09:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbYL2OCc
+	id S1755680AbYL2ODZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 09:03:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYL2ODO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 09:02:32 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:40730 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754983AbYL2OCb (ORCPT
+	Mon, 29 Dec 2008 09:03:14 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:37241 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753655AbYL2ODN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 09:02:31 -0500
-Message-ID: <4958D86D.2000506@davidnewall.com>
-Date: Tue, 30 Dec 2008 00:32:21 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Mon, 29 Dec 2008 09:03:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references:x-google-sender-auth;
+        b=r/RDIwC6075cBoEtyyMFcV65Yk1yJnt3rza/QBzUgXR4eGs/wdm8xfmI4jOPbZou9u
+         mRX9EM5o1r/m0f47U94hXy8Nro/8vqZL2H2hVeAbaVNSFfO9lLnohmxrTYIJHVn5WFv8
+         +goeM8J5L//tLFW0TERJ4B2Fcqmtt4kEOxEvg=
+Message-ID: <43d009740812290603s5d4b4ef1idec88bccfda7b965@mail.gmail.com>
+Date: Mon, 29 Dec 2008 21:03:10 +0700
+From: "Igor Podlesny" <for.poige+linux@gmail.com>
+Reply-To: for.poige+linux@gmail.com
+To: "=?UTF-8?Q?=C3=89ric_Piel?=" <eric.piel@tremplin-utc.net>
+Subject: Re: > There are actually more stable versions available but they are not advertised
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4958D563.30805@tremplin-utc.net>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Igor Podlesny <for.poige+linux@gmail.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: Hi! I've noticed that kernel.org advertises 2.6.28 as "The	latest
- stable version of the Linux kernel is".
-References: <43d009740812282139x7597aafbn4474455c1aa1e0e8@mail.gmail.com> <20081229092124.GA18987@infradead.org>
-In-Reply-To: <20081229092124.GA18987@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <43d009740812290542p3e54b90avea7ccc27ec432656@mail.gmail.com>
+	 <4958D563.30805@tremplin-utc.net>
+X-Google-Sender-Auth: 78e6330dbc4c6ca9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBTE3qki029926
 
-Christoph Hellwig wrote:
-> instead of these rants bug reports would be more useful.
-
-Igor didn't rant, not even a little bit, and it reflects poorly on you
-that you engage in hyperbole rather than hear his story.  In fact, or at
-least in my opinion as a computer programmer with 30 years experience,
-he's right: A newly stable kernel is not stable.  He might even be right
-about regressions since 2.6.24.
-
-It's a sorry day when somebody making a simple, reasonable and accurate
-feedback is criticised for not providing bug reports.  But don't let him
-(or me) stop you guys from toasting your fine success.  You believe it's
-stable; what more could anyone want?
+2008/12/29 Ã‰ric Piel <eric.piel@tremplin-utc.net>:[...]>>> The latest longtime version of the Linux kernel is:     2.6.16.62>>>>       Well, I'd call those versions stable if there were ongoing bugfixes>> (if affected) backporting to it. Otherwise these are rather "outdated">> versions.> That's _exactly_ what those trees are about: backporting bugfixes.> Let's call them stable then ;-)
+	:-)
+	According to http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.16.62the last commit to this version was made at Mon, 21 Jul 2008 22:48:10+0300. Looks like it's really stable ;-)
+	BTW, several distros keep patching 2.6.18, that's a bit fresher; butanyway, there's a valuable gap between that stable and kernel.org'sadvertised one.
+-- End of message. Next message?ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
