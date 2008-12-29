@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYL2NBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYL2NEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbYL2NBw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 08:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYL2NBo
+	id S1754815AbYL2NEE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 08:04:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYL2NDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 08:01:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55357 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbYL2NBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 08:01:43 -0500
-Date: Mon, 29 Dec 2008 14:01:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       mj@ucw.cz
-Subject: Re: [PATCH] move arch/x86/pci/pci.h to
-	arch/x86/include/asm/pci_x86.h
-Message-ID: <20081229130133.GA26634@elte.hu>
-References: <1230382948.3373.1.camel@jaswinder.satnam> <20081229121218.GB9628@elte.hu> <20081229122251.GA13687@elte.hu> <20081229125411.GA1852@uranus.ravnborg.org> <20081229125921.GB23674@elte.hu>
+	Mon, 29 Dec 2008 08:03:54 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:41037 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751109AbYL2NDy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 08:03:54 -0500
+Date: Mon, 29 Dec 2008 08:03:53 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] linux/uio.h: cleanup for userspace
+Message-ID: <20081229130353.GA10167@infradead.org>
+References: <20081229125609.GB1852@uranus.ravnborg.org> <1230555599-23568-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081229125921.GB23674@elte.hu>
+In-Reply-To: <1230555599-23568-1-git-send-email-vapier@gentoo.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
+On Mon, Dec 29, 2008 at 07:59:59AM -0500, Mike Frysinger wrote:
+> Hide iov_shorten() behind __KERNEL__ since it's a prototype only.  Use the
+> __inline__ form for iov_length() since it's usable by userspace.
 > 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+> v3
+> 	- keep all __KERNEL__ stuff in one place
+> v2
+> 	- drop inline conversion stuff
 > 
-> > > 
-> > > btw., you missed to update a couple of places - pci/pci.h was used outside 
-> > > of arch/x86 as well. Updated patch below.
-> > > 
-> > > 	Ingo
-> > > 
-> > > ---------------->
-> > > >From 54a090abe7cb85c724305124f57d2570b7e9adf1 Mon Sep 17 00:00:00 2001
-> > > From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-> > > Date: Sat, 27 Dec 2008 18:32:28 +0530
-> > > Subject: [PATCH] x86, pci: move arch/x86/pci/pci.h to arch/x86/include/asm/pci_x86.h
-> > > 
-> > > Impact: cleanup
-> > > 
-> > > Now that arch/x86/pci/pci.h is used in a number of other places as well,
-> > > move the lowlevel x86 pci definitions into the architecture include files.
-> > > (not to be confused with the existing arch/x86/include/asm/pci.h file,
-> > > which provides public details about x86 PCI)
-> > > 
-> > > Tested on: X86_32_UP, X86_32_SMP and X86_64_SMP
-> > > 
-> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > ---
-> > >  arch/x86/include/asm/pci_x86.h     |  165 ++++++++++++++++++++++++++++++++++++
-> > >  arch/x86/kernel/mmconf-fam10h_64.c |    3 +-
-> > >  arch/x86/kernel/reboot.c           |    3 +-
-> > >  arch/x86/pci/acpi.c                |    2 +-
-> > >  arch/x86/pci/amd_bus.c             |    2 +-
-> > >  arch/x86/pci/common.c              |    3 +-
-> > >  arch/x86/pci/direct.c              |    2 +-
-> > >  arch/x86/pci/early.c               |    2 +-
-> > >  arch/x86/pci/fixup.c               |    3 +-
-> > >  arch/x86/pci/i386.c                |    2 +-
-> > >  arch/x86/pci/init.c                |    2 +-
-> > >  arch/x86/pci/irq.c                 |    3 +-
-> > >  arch/x86/pci/legacy.c              |    2 +-
-> > >  arch/x86/pci/mmconfig-shared.c     |    3 +-
-> > >  arch/x86/pci/mmconfig_32.c         |    2 +-
-> > >  arch/x86/pci/mmconfig_64.c         |    3 +-
-> > >  arch/x86/pci/numaq_32.c            |    2 +-
-> > >  arch/x86/pci/olpc.c                |    2 +-
-> > >  arch/x86/pci/pcbios.c              |    5 +-
-> > >  arch/x86/pci/pci.h                 |  162 -----------------------------------
-> > >  arch/x86/pci/visws.c               |    3 +-
-> > >  drivers/pci/hotplug/cpqphp_core.c  |    2 +-
-> > >  drivers/pci/hotplug/cpqphp_pci.c   |    2 +-
-> > >  drivers/pci/hotplug/ibmphp_core.c  |    2 +-
-> > >  24 files changed, 188 insertions(+), 194 deletions(-)
-> > 
-> > You should teach your script to use:
-> > git format-patch -M -B -C 
-> > 
-> > With -M -B -C you get a much better picture of what happens when you 
-> > rename files like in this patch (and copy them).
+>  include/linux/uio.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> you mean:
-> 
->   git format-patch --stdout -1 -M -B -C <sha1>
+> diff --git a/include/linux/uio.h b/include/linux/uio.h
+> index b7fe138..3debd89 100644
+> --- a/include/linux/uio.h
+> +++ b/include/linux/uio.h
+> @@ -26,6 +26,8 @@ struct kvec {
+>  	size_t iov_len;
+>  };
+>  
+> +unsigned long iov_shorten(struct iovec *iov, unsigned long nr_segs, size_t to);
+> +
+>  #endif
+>  
+>  /*
+> @@ -52,6 +54,4 @@ static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
+>  	return ret;
+>  }
+>  
+> -unsigned long iov_shorten(struct iovec *iov, unsigned long nr_segs, size_t to);
+> -
+>  #endif
 
-also, this does not result in a patch that will be applied properly by the 
-usual patch-tools that people use when they pick up patches from email. So 
-i'll just keep my old script ;-)
+Umm, iov_length is another kernel-only thing and should not be left
+user-visible.  And struct kvec is in another __KERNEL__ block.
 
-	Ingo
+Just move UIO_FASTIOV and UIO_MAXIOV up and have a single __KERNEL__
+block for the rest.
+
