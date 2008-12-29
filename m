@@ -1,43 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbYL2QBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752147AbYL2QJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752087AbYL2QBg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 11:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYL2QB2
+	id S1752147AbYL2QJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 11:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYL2QJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 11:01:28 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:44643 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbYL2QB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 11:01:28 -0500
-To: torvalds@linux-foundation.org
-Subject: [git pull] jfs update
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Message-Id: <20081229160115.7A98A4C9B71@norville.austin.ibm.com>
-Date: Mon, 29 Dec 2008 10:01:15 -0600 (CST)
-From: shaggy@linux.vnet.ibm.com
+	Mon, 29 Dec 2008 11:09:46 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43735 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750822AbYL2QJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 11:09:45 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX1/zL+dgXa/zF1285U5bQZ8/sYLjPh1UcgJm75TTbj
+	tzPuN0J0x1WPBw
+Message-ID: <4958F648.6010401@gmx.de>
+Date: Mon, 29 Dec 2008 17:09:44 +0100
+From: Helge Deller <deller@gmx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
+       Moritz Muehlenhoff <jmm@inutil.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH 2/2] parisc: fix module loading failure of large modules
+References: <4958D99E.4010201@gmx.de> <4958DA54.8060003@gmx.de> <20081229154610.GA7871@uranus.ravnborg.org>
+In-Reply-To: <20081229154610.GA7871@uranus.ravnborg.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Sam Ravnborg wrote:
+> On Mon, Dec 29, 2008 at 03:10:28PM +0100, Helge Deller wrote:
+>> [PATCH 2/2] parisc: fix module loading failure of large modules
+>>
+>> On 32bit (and sometimes 64bit) and with big kernel modules like xfs or
+>> ipv6 the relocation types R_PARISC_PCREL17F and R_PARISC_PCREL22F may
+>> fail to reach their PLT stub if we only create one big stub array for
+>> all sections at the beginning of the core or init section.
+>>
+>> With this patch we now instead append individual PLT stub entries
+>> directly at the end of the code sections where the stubs are actually
+>> called. This reduces the distance between the PCREL location and the
+>> stub entry so that the relocations can be fulfilled.
+>>
+>> The kernel module loader will call module_additional_section_size() and
+>> request us to return the amount of additional memory we need for the
+>> stubs of each section. The final section size of the code segment will
+>> then be increased by that value when the kernel layouts the final
+>> addresses of all sections.
+>>
+>> Tested with 32- and 64bit kernels.
+>>
+>> Signed-off-by: Helge Deller <deller@gmx.de>
+>>
+> 
+>> diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+>> index 644a70b..cbb622f 100644
+>> --- a/arch/parisc/Kconfig
+>> +++ b/arch/parisc/Kconfig
+>> @@ -34,6 +34,9 @@ config RWSEM_GENERIC_SPINLOCK
+>>  config RWSEM_XCHGADD_ALGORITHM
+>>  	bool
+>>  
+>> +config ARCH_WANTS_STUBS_BEHIND_SECTIONS
+>> +	def_bool y
+>> +
+> 
+> The recommended practive today is:
+> 
+> In some relevant Kconfig file add:
+> 
+> config HAVE_MODULE_SECTION_STUBS
+> 	bool
+> 
+> And then in arch/$ARCH/Kconfig do:
+> 
+> config PARISC
+> 	...
+> 	select HAVE_MODULE_SECTION_STUBS
+> 	...
+> 
+> The select are supposed to be sorted alphabetically
+> but people seems to use a different alphabet for
+> each arch.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
+Thanks Sam,
+I'll change that and respin.
 
-This will update the following files:
-
- fs/jfs/inode.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
-
-through these ChangeSets:
-
-commit d69e83d99cf87e3328c47bb54684360e32aef17d
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Date:   Tue Dec 16 10:21:34 2008 -0600
-
-    jfs: ensure symlinks are NUL-terminated
-    
-    This is an alternate fix for a bug reported and fixed by Duane Griffin.
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-    Reported-by: Duane Griffin <duaneg@dghda.com>
+Helge
