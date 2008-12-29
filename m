@@ -1,115 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYL2VQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbYL2VXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbYL2VQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 16:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYL2VQO
+	id S1753557AbYL2VXr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 16:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYL2VXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 16:16:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:36912 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbYL2VQN (ORCPT
+	Mon, 29 Dec 2008 16:23:36 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:57142 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbYL2VXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 16:16:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZtCNoA6Mv2draM0IwoIpJ92S8Cy9tjBBWEZQwpQvRppDcpuD0xS0HEREEnUBygxF0i
-         M3aXHokSSxc/NJJHwqfpQ3JqSJtwKgY782uWTUIq4xAon24ABj1jyUk0eiqegRnRo3rI
-         WW4JCIfQMWCQvZfZ+1Tue+2OIjg7Gi10BT8N4=
-Subject: Re: [PATCH] ACPI: Do not modify SCI_EN directly
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+	Mon, 29 Dec 2008 16:23:35 -0500
+X-Greylist: delayed 1318 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Dec 2008 16:23:35 EST
+Date: Mon, 29 Dec 2008 13:23:12 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: scsi <linux-scsi@vger.kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, kxie@chelsio.com,
+       akpm <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <200812291919.07663.rjw@sisk.pl>
-References: <200812291919.07663.rjw@sisk.pl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 29 Dec 2008 23:16:06 +0200
-Message-Id: <1230585366.4667.26.camel@maxim-laptop>
+       jejb <James.Bottomley@hansenpartnership.com>
+Subject: [PATCH -next v2] cxgb3i: use same dependencies & selects as
+ CHELSIO_T3
+Message-Id: <20081229132312.10934479.randy.dunlap@oracle.com>
+In-Reply-To: <20081229130110.67d5271a.randy.dunlap@oracle.com>
+References: <20081230031621.60acd90b.sfr@canb.auug.org.au>
+	<20081229130110.67d5271a.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.49593FC5.01A1:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-29 at 19:19 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> According to the ACPI specification the SCI_EN flag is controlled by
-> the hardware, which sets this flag to inform the kernel that ACPI is
-> enabled.  For this reason, we shouldn't try to modify SCI_EN
-> directly.  Also, we don't need to do it in irqrouter_resume(), since
-> lower-level resume code takes care of enabling ACPI in case it hasn't
-> been enabled by the BIOS before passing control to the kernel (which
-> by the way is against the ACPI specification).
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Make the CXGB iSCSI driver (that selects the CXGB net driver) have the same
+dependencies as the net driver, since kconfig doesn't do that automatically.
+Also make it select INET_LRO & FW_LOADER like the net driver does.
 
-Hi, 
+drivers/net/cxgb3/cxgb3_main.c:269: error: implicit declaration of function 'pci_disable_msix'
+drivers/net/cxgb3/cxgb3_main.c:272: error: implicit declaration of function 'pci_disable_msi'
+drivers/net/cxgb3/cxgb3_main.c:2778: error: array type has incomplete element type
+drivers/net/cxgb3/cxgb3_main.c:2781: warning: type defaults to 'int' in declaration of 'type name'
+drivers/net/cxgb3/cxgb3_main.c:2781: warning: type defaults to 'int' in declaration of 'type name'
+drivers/net/cxgb3/cxgb3_main.c:2781: error: size of array 'type name' is negative
+drivers/net/cxgb3/cxgb3_main.c:2784: error: implicit declaration of function 'pci_enable_msix'
+drivers/net/cxgb3/cxgb3_main.c:2784: warning: type defaults to 'int' in declaration of 'type name'
+drivers/net/cxgb3/cxgb3_main.c:2784: warning: type defaults to 'int' in declaration of 'type name'
+drivers/net/cxgb3/cxgb3_main.c:2784: error: size of array 'type name' is negative
+drivers/net/cxgb3/cxgb3_main.c:2786: warning: type defaults to 'int' in declaration of 'type name'
+drivers/net/cxgb3/cxgb3_main.c:2786: warning: type defaults to 'int' in declaration of 'type name'
+drivers/net/cxgb3/cxgb3_main.c:2786: error: size of array 'type name' is negative
+drivers/net/cxgb3/cxgb3_main.c:2778: warning: unused variable 'entries'
+drivers/net/cxgb3/cxgb3_main.c:3011: error: implicit declaration of function 'pci_enable_msi'
 
-I am an unfortunate owner of an acer notebook ( aspire 5720 if this
-matters) and it doesn't come back after second suspend, subsequently  I
-figured out that bios doesn't pass control to linux at all, after second
-resume, and moreover, a suspend to disk , 'fixes' this and enables me to
-do another suspend/resume cycle. This is a poor man workaround I use
-now.
+and from a different build:
 
-I already told about this here, and many peoples from here (including
-you) tried to help me, but unfortunately this is very weird issue, and
-nether me nor you can do much about, it is all about guesswork,
-something, at least something is 'armed' on resume, so it confuses bios
-then (it could be that yet, the critical part that confuses bios happens
-in second suspend time)
+ERROR: "lro_vlan_hwaccel_receive_frags" [drivers/net/cxgb3/cxgb3.ko] undefined!
+ERROR: "lro_receive_frags" [drivers/net/cxgb3/cxgb3.ko] undefined!
+ERROR: "lro_receive_skb" [drivers/net/cxgb3/cxgb3.ko] undefined!
+ERROR: "lro_vlan_hwaccel_receive_skb" [drivers/net/cxgb3/cxgb3.ko] undefined!
+ERROR: "lro_flush_all" [drivers/net/cxgb3/cxgb3.ko] undefined!
 
-Needless to say that nothing useful appears in the logs, and everything
-seems to work fine following each successful resume (both disk and ram).
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/scsi/cxgb3i/Kconfig |    3 +++
+ 1 file changed, 3 insertions(+)
 
-so I have a question, do you have a git branch to pull that includes all
-patches like this to test, so I build it weekly, and who knows, maybe
-something like above will fix it.
-
-Anyway I would gladly test any patch that you suspect might be involved
-here.
-
-
-Also, I tried to do a I/O port and PCI config dump before and after a
-resume, aka in 'armed' and 'unarmed' state.
-
-While there were many I/O port registers changes, and I yet to process
-it bit after bit (and unfortunately there are plenty of undocumented
-stuff), I noticed a meaningful change between bad and good state:
-
-
->From ICH8 manual:
-
-"PIRQ[n]_ROUT—PIRQ[A,B,C,D] Routing Control Register
-
-and
-
-PIRQ[n]_ROUT—PIRQ[E,F,G,H]
-
-Interrupt Routing Enable (IRQEN) — R/W.
-0 = The corresponding PIRQ is routed to one of the ISA-compatible
-interrupts
-      specified in bits[3:0].
-1 = The PIRQ is not routed to the 8259.
-
-NOTE: BIOS must program this bit to 0 during POST for any of the PIRQs
-that are being used. The value of this bit may subsequently be changed
-by the OS when setting up for I/O APIC interrupt delivery mode."
-
-
-bit #7 of all those regs is '1' in good state, and '0' in bad state.
-
-I tried to change it back, but this didn't help, so I post this just in
-case, I don't think it is useful.
-
-
-Best regards,
-	Maxim Levitsky
-
-
-
+--- linux-next-20081229.orig/drivers/scsi/cxgb3i/Kconfig
++++ linux-next-20081229/drivers/scsi/cxgb3i/Kconfig
+@@ -1,6 +1,9 @@
+ config SCSI_CXGB3_ISCSI
+ 	tristate "Chelsio S3xx iSCSI support"
++	depends on PCI && INET
+ 	select CHELSIO_T3
+ 	select SCSI_ISCSI_ATTRS
++	select INET_LRO
++	select FW_LOADER
+ 	---help---
+ 	This driver supports iSCSI offload for the Chelsio S3 series devices.
