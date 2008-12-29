@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYL2Lvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYL2Lzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbYL2Lvd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 06:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYL2LvX
+	id S1754865AbYL2Lzp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 06:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYL2Lzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 06:51:23 -0500
-Received: from monster.nessie.de ([84.200.20.120]:46104 "EHLO
-	monster.nessie.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752746AbYL2LvW (ORCPT
+	Mon, 29 Dec 2008 06:55:37 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36378 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837AbYL2Lzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 06:51:22 -0500
-Message-ID: <4958B9B7.8060505@nessie.de>
-Date: Mon, 29 Dec 2008 12:51:19 +0100
-From: Michael Roth <mroth@nessie.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081123)
-MIME-Version: 1.0
-To: Andrew Drake <zappacky.lists@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Funny problem with 2.6.28: Kernel stalls
-References: <4953A35C.8090005@nessie.de> <495411FD.60409@gmail.com>
-In-Reply-To: <495411FD.60409@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Dec 2008 06:55:36 -0500
+Date: Mon, 29 Dec 2008 12:57:06 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Oleg Nesterov <oleg@redhat.com>, bfields@fieldses.org,
+       xfs-masters@oss.sgi.com
+Subject: Re: RFC: Fix f_flags races without the BKL
+Message-ID: <20081229115706.GA955@uranus.ravnborg.org>
+References: <20081229041352.6bbdf57c@tpl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081229041352.6bbdf57c@tpl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Drake schrieb:
-> Michael Roth wrote:
->> The funny part: If I hit any key (on the keyboard connected by USB) the
->> kernel resumes to normal work until the next stall.
->>
+On Mon, Dec 29, 2008 at 04:13:52AM -0700, Jonathan Corbet wrote:
+> Accesses to the f_flags field have always involved a read-modify-write
+> operation, and have always been racy in the absence of the BKL.  The recent
+> BKL-removal work made this problem worse, but it has been there for a very
+> long time.  The race is quite small, and, arguably, has never affected
+> anybody, but it's still worth fixing.
 > 
-> This sounds a little bit like my old problem... try kernel option nolapic_timer.
-> It worked for me, perhaps it can do the same for you.
+> After pondering for a while, I couldn't come up with anything better than a
+> global file->f_flags mutex.  There's no point in bloating struct file with
+> a mutex just for this purpose; it's hard to imagine that there will be any
+> real contention for this lock.
+Rather than open coded mutex how about adding a few helpers to
+set and clear the flags and hide locking there?
 
-I didn't checked nolapic_timer (yet), but found these small changes to
-the kernel config do the trick for me:
+Not that your patch looks invasive..
 
-
---- config-not-working  2008-12-28 16:09:29.000000000 +0100
-+++ .config     2008-12-28 16:15:28.000000000 +0100
-@@ -153,9 +153,8 @@
- #
- # Processor type and features
- #
--CONFIG_TICK_ONESHOT=y
- # CONFIG_NO_HZ is not set
--CONFIG_HIGH_RES_TIMERS=y
-+# CONFIG_HIGH_RES_TIMERS is not set
- CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
- # CONFIG_SMP is not set
- # CONFIG_X86_MPPARSE is not set
-@@ -278,7 +277,7 @@
- # CONFIG_HZ_300 is not set
- CONFIG_HZ_1000=y
- CONFIG_HZ=1000
--CONFIG_SCHED_HRTICK=y
-+# CONFIG_SCHED_HRTICK is not set
- # CONFIG_KEXEC is not set
- # CONFIG_CRASH_DUMP is not set
- CONFIG_PHYSICAL_START=0x100000
+	Sam
