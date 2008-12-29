@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYL2KXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYL2KWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYL2KXz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 05:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbYL2KX1
+	id S1755871AbYL2KWp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 05:22:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbYL2KWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 05:23:27 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:42442 "EHLO mgw1.diku.dk"
+	Mon, 29 Dec 2008 05:22:20 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59540 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755909AbYL2KXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 05:23:25 -0500
-Date: Mon, 29 Dec 2008 11:23:22 +0100 (CET)
+	id S1755517AbYL2KWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 05:22:17 -0500
+Date: Mon, 29 Dec 2008 11:22:14 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: felipe.balbi@nokia.com, linux-usb@vger.kernel.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 12/13] drivers/usb/musb: use USB API functions rather than
- constants
-Message-ID: <Pine.LNX.4.64.0812291123050.9555@pc-004.diku.dk>
+To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 9/13] drivers/usb: use USB API functions rather than constants
+Message-ID: <Pine.LNX.4.64.0812291121550.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -78,48 +77,147 @@ An extract of the semantic patch that makes these changes is as follows:
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/usb/musb/musb_gadget.c |    6 +++---
- drivers/usb/musb/musb_host.c   |    4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/usb/core/devices.c      |    2 +-
+ drivers/usb/core/endpoint.c     |    9 ++++-----
+ drivers/usb/host/r8a66597-hcd.c |   15 +++++++--------
+ drivers/usb/serial/keyspan.c    |    2 +-
+ drivers/usb/storage/usb.c       |    6 +++---
+ 5 files changed, 16 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
-index 6197dae..4ea3053 100644
---- a/drivers/usb/musb/musb_gadget.c
-+++ b/drivers/usb/musb/musb_gadget.c
-@@ -874,10 +874,10 @@ static int musb_gadget_enable(struct usb_ep *ep,
- 		status = -EBUSY;
- 		goto fail;
- 	}
--	musb_ep->type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-+	musb_ep->type = usb_endpoint_type(desc);
- 
- 	/* check direction and (later) maxpacket size against endpoint */
--	if ((desc->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK) != epnum)
-+	if (usb_endpoint_num(desc) != epnum)
- 		goto fail;
- 
- 	/* REVISIT this rules out high bandwidth periodic transfers */
-@@ -890,7 +890,7 @@ static int musb_gadget_enable(struct usb_ep *ep,
- 	 * packet size (or fail), set the mode, clear the fifo
- 	 */
- 	musb_ep_select(mbase, epnum);
--	if (desc->bEndpointAddress & USB_DIR_IN) {
-+	if (usb_endpoint_dir_in(desc)) {
- 		u16 int_txe = musb_readw(mbase, MUSB_INTRTXE);
- 
- 		if (hw_ep->is_shared_fifo)
-diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
-index 99fa612..a035cec 100644
---- a/drivers/usb/musb/musb_host.c
-+++ b/drivers/usb/musb/musb_host.c
-@@ -1847,8 +1847,8 @@ static int musb_urb_enqueue(
- 		goto done;
+diff --git a/drivers/usb/core/devices.c b/drivers/usb/core/devices.c
+index 6ec3817..73c108d 100644
+--- a/drivers/usb/core/devices.c
++++ b/drivers/usb/core/devices.c
+@@ -187,7 +187,7 @@ static char *usb_dump_endpoint_descriptor(int speed, char *start, char *end,
  	}
  
--	qh->epnum = epd->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
--	qh->type = epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-+	qh->epnum = usb_endpoint_num(epd);
-+	qh->type = usb_endpoint_type(epd);
+ 	/* this isn't checking for illegal values */
+-	switch (desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) {
++	switch (usb_endpoint_type(desc)) {
+ 	case USB_ENDPOINT_XFER_CONTROL:
+ 		type = "Ctrl";
+ 		if (speed == USB_SPEED_HIGH) 	/* uframes per NAK */
+diff --git a/drivers/usb/core/endpoint.c b/drivers/usb/core/endpoint.c
+index e1710f2..40dee2a 100644
+--- a/drivers/usb/core/endpoint.c
++++ b/drivers/usb/core/endpoint.c
+@@ -66,7 +66,7 @@ static ssize_t show_ep_type(struct device *dev, struct device_attribute *attr,
+ 	struct ep_device *ep = to_ep_device(dev);
+ 	char *type = "unknown";
  
- 	/* NOTE: urb->dev->devnum is wrong during SET_ADDRESS */
- 	qh->addr_reg = (u8) usb_pipedevice(urb->pipe);
+-	switch (ep->desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) {
++	switch (usb_endpoint_type(ep->desc)) {
+ 	case USB_ENDPOINT_XFER_CONTROL:
+ 		type = "Control";
+ 		break;
+@@ -94,7 +94,7 @@ static ssize_t show_ep_interval(struct device *dev,
+ 
+ 	in = (ep->desc->bEndpointAddress & USB_DIR_IN);
+ 
+-	switch (ep->desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) {
++	switch (usb_endpoint_type(ep->desc)) {
+ 	case USB_ENDPOINT_XFER_CONTROL:
+ 		if (ep->udev->speed == USB_SPEED_HIGH) 	/* uframes per NAK */
+ 			interval = ep->desc->bInterval;
+@@ -131,10 +131,9 @@ static ssize_t show_ep_direction(struct device *dev,
+ 	struct ep_device *ep = to_ep_device(dev);
+ 	char *direction;
+ 
+-	if ((ep->desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
+-			USB_ENDPOINT_XFER_CONTROL)
++	if (usb_endpoint_xfer_control(ep->desc))
+ 		direction = "both";
+-	else if (ep->desc->bEndpointAddress & USB_DIR_IN)
++	else if (usb_endpoint_dir_in(ep->desc))
+ 		direction = "in";
+ 	else
+ 		direction = "out";
+diff --git a/drivers/usb/host/r8a66597-hcd.c b/drivers/usb/host/r8a66597-hcd.c
+index 3190412..5e942d9 100644
+--- a/drivers/usb/host/r8a66597-hcd.c
++++ b/drivers/usb/host/r8a66597-hcd.c
+@@ -660,9 +660,9 @@ static u16 get_empty_pipenum(struct r8a66597 *r8a66597,
+ 	u16 array[R8A66597_MAX_NUM_PIPE], i = 0, min;
+ 
+ 	memset(array, 0, sizeof(array));
+-	switch (ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) {
++	switch (usb_endpoint_type(ep)) {
+ 	case USB_ENDPOINT_XFER_BULK:
+-		if (ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
++		if (usb_endpoint_dir_in(ep))
+ 			array[i++] = 4;
+ 		else {
+ 			array[i++] = 3;
+@@ -670,7 +670,7 @@ static u16 get_empty_pipenum(struct r8a66597 *r8a66597,
+ 		}
+ 		break;
+ 	case USB_ENDPOINT_XFER_INT:
+-		if (ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK) {
++		if (usb_endpoint_dir_in(ep)) {
+ 			array[i++] = 6;
+ 			array[i++] = 7;
+ 			array[i++] = 8;
+@@ -678,7 +678,7 @@ static u16 get_empty_pipenum(struct r8a66597 *r8a66597,
+ 			array[i++] = 9;
+ 		break;
+ 	case USB_ENDPOINT_XFER_ISOC:
+-		if (ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
++		if (usb_endpoint_dir_in(ep))
+ 			array[i++] = 2;
+ 		else
+ 			array[i++] = 1;
+@@ -928,10 +928,9 @@ static void init_pipe_info(struct r8a66597 *r8a66597, struct urb *urb,
+ 
+ 	info.pipenum = get_empty_pipenum(r8a66597, ep);
+ 	info.address = get_urb_to_r8a66597_addr(r8a66597, urb);
+-	info.epnum = ep->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
++	info.epnum = usb_endpoint_num(ep);
+ 	info.maxpacket = le16_to_cpu(ep->wMaxPacketSize);
+-	info.type = get_r8a66597_type(ep->bmAttributes
+-				      & USB_ENDPOINT_XFERTYPE_MASK);
++	info.type = get_r8a66597_type(usb_endpoint_type(ep));
+ 	info.bufnum = get_bufnum(info.pipenum);
+ 	info.buf_bsize = get_buf_bsize(info.pipenum);
+ 	if (info.type == R8A66597_BULK) {
+@@ -941,7 +940,7 @@ static void init_pipe_info(struct r8a66597 *r8a66597, struct urb *urb,
+ 		info.interval = get_interval(urb, ep->bInterval);
+ 		info.timer_interval = get_timer_interval(urb, ep->bInterval);
+ 	}
+-	if (ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
++	if (usb_endpoint_dir_in(ep))
+ 		info.dir_in = 1;
+ 	else
+ 		info.dir_in = 0;
+diff --git a/drivers/usb/serial/keyspan.c b/drivers/usb/serial/keyspan.c
+index 9878c0f..00daa8f 100644
+--- a/drivers/usb/serial/keyspan.c
++++ b/drivers/usb/serial/keyspan.c
+@@ -1507,7 +1507,7 @@ static struct urb *keyspan_setup_urb(struct usb_serial *serial, int endpoint,
+ 	} else {
+ 		dev_warn(&serial->interface->dev,
+ 			 "unsupported endpoint type %x\n",
+-			 ep_desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK);
++			 usb_endpoint_type(ep_desc));
+ 		usb_free_urb(urb);
+ 		return NULL;
+ 	}
+diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
+index b25c448..a6c6a7e 100644
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -793,12 +793,12 @@ static int get_pipes(struct us_data *us)
+ 	us->send_ctrl_pipe = usb_sndctrlpipe(us->pusb_dev, 0);
+ 	us->recv_ctrl_pipe = usb_rcvctrlpipe(us->pusb_dev, 0);
+ 	us->send_bulk_pipe = usb_sndbulkpipe(us->pusb_dev,
+-		ep_out->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
++		usb_endpoint_num(ep_out));
+ 	us->recv_bulk_pipe = usb_rcvbulkpipe(us->pusb_dev, 
+-		ep_in->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
++		usb_endpoint_num(ep_in));
+ 	if (ep_int) {
+ 		us->recv_intr_pipe = usb_rcvintpipe(us->pusb_dev,
+-			ep_int->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
++			usb_endpoint_num(ep_int));
+ 		us->ep_bInterval = ep_int->bInterval;
+ 	}
+ 	return 0;
