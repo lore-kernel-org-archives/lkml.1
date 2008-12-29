@@ -1,75 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYL2WWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYL2WYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbYL2WWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 17:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYL2WWE
+	id S1754528AbYL2WYE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 17:24:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYL2WXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 17:22:04 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:55003 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753421AbYL2WWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 17:22:01 -0500
-Message-ID: <49594D79.30806@oracle.com>
-Date: Mon, 29 Dec 2008 14:21:45 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 29 Dec 2008 17:23:50 -0500
+Received: from ozlabs.org ([203.10.76.45]:38483 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751304AbYL2WXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 17:23:49 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: netdev@vger.kernel.org
+Subject: cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits: net
+Date: Tue, 30 Dec 2008 08:53:42 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, scsi <linux-scsi@vger.kernel.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 29 (fcoe)
-References: <20081230031621.60acd90b.sfr@canb.auug.org.au>	 <20081229123115.9a255fa8.randy.dunlap@oracle.com>	 <1230586520.3302.61.camel@localhost.localdomain> <1230587141.3302.64.camel@localhost.localdomain>
-In-Reply-To: <1230587141.3302.64.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.49594D7D.01DC:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200812300853.43035.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> 
-> Actually, I deduce the problem is owner->name and your build has
-> CONFIG_MODULE=n ... the definition of struct module is enclosed in a
-> #ifdef CONFIG_MODULE.
-> 
-> This should fix it.
-> 
-> James
+Impact: cleanup, future-proof
 
-Ack.  Thanks.
+In future all cpumask ops will only be valid (in general) for bit
+numbers < nr_cpu_ids.  So use that instead of NR_CPUS in iterators
+and other comparisons.
 
-> ---
-> 
-> diff --git a/drivers/scsi/fcoe/libfcoe.c b/drivers/scsi/fcoe/libfcoe.c
-> index 1cb549c..fec38f6 100644
-> --- a/drivers/scsi/fcoe/libfcoe.c
-> +++ b/drivers/scsi/fcoe/libfcoe.c
-> @@ -992,7 +992,7 @@ static int fcoe_ethdrv_get(const struct net_device *netdev)
->  	owner = fcoe_netdev_to_module_owner(netdev);
->  	if (owner) {
->  		printk(KERN_DEBUG "foce:hold driver module %s for %s\n",
-> -		       owner->name, netdev->name);
-> +		       module_name(owner), netdev->name);
->  		return  try_module_get(owner);
->  	}
->  	return -ENODEV;
-> @@ -1012,7 +1012,7 @@ static int fcoe_ethdrv_put(const struct net_device *netdev)
->  	owner = fcoe_netdev_to_module_owner(netdev);
->  	if (owner) {
->  		printk(KERN_DEBUG "foce:release driver module %s for %s\n",
-> -		       owner->name, netdev->name);
-> +		       module_name(owner), netdev->name);
->  		module_put(owner);
->  		return 0;
->  	}
-> 
-> 
+This is always safe: no cpu number can be >= nr_cpu_ids, and
+nr_cpu_ids is initialized to NR_CPUS at boot.
 
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Mike Travis <travis@sgi.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+---
+ net/core/neighbour.c                                  |    4 ++--
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c |    4 ++--
+ net/ipv4/route.c                                      |    4 ++--
+ net/netfilter/nf_conntrack_standalone.c               |    4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
--- 
-~Randy
+diff -r bb80787e9617 net/core/neighbour.c
+--- a/net/core/neighbour.c	Fri Oct 24 00:27:01 2008 +1100
++++ b/net/core/neighbour.c	Fri Oct 24 00:28:25 2008 +1100
+@@ -2423,7 +2423,7 @@ static void *neigh_stat_seq_start(struct
+ 	if (*pos == 0)
+ 		return SEQ_START_TOKEN;
+ 
+-	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+@@ -2438,7 +2438,7 @@ static void *neigh_stat_seq_next(struct 
+ 	struct neigh_table *tbl = pde->data;
+ 	int cpu;
+ 
+-	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+diff -r bb80787e9617 net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c	Fri Oct 24 00:27:01 2008 +1100
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c	Fri Oct 24 00:28:25 2008 +1100
+@@ -291,7 +291,7 @@ static void *ct_cpu_seq_start(struct seq
+ 	if (*pos == 0)
+ 		return SEQ_START_TOKEN;
+ 
+-	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+@@ -306,7 +306,7 @@ static void *ct_cpu_seq_next(struct seq_
+ 	struct net *net = seq_file_net(seq);
+ 	int cpu;
+ 
+-	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+diff -r bb80787e9617 net/ipv4/route.c
+--- a/net/ipv4/route.c	Fri Oct 24 00:27:01 2008 +1100
++++ b/net/ipv4/route.c	Fri Oct 24 00:28:25 2008 +1100
+@@ -427,7 +427,7 @@ static void *rt_cpu_seq_start(struct seq
+ 	if (*pos == 0)
+ 		return SEQ_START_TOKEN;
+ 
+-	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+@@ -440,7 +440,7 @@ static void *rt_cpu_seq_next(struct seq_
+ {
+ 	int cpu;
+ 
+-	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+diff -r bb80787e9617 net/netfilter/nf_conntrack_standalone.c
+--- a/net/netfilter/nf_conntrack_standalone.c	Fri Oct 24 00:27:01 2008 +1100
++++ b/net/netfilter/nf_conntrack_standalone.c	Fri Oct 24 00:28:25 2008 +1100
+@@ -200,7 +200,7 @@ static void *ct_cpu_seq_start(struct seq
+ 	if (*pos == 0)
+ 		return SEQ_START_TOKEN;
+ 
+-	for (cpu = *pos-1; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos-1; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu + 1;
+@@ -215,7 +215,7 @@ static void *ct_cpu_seq_next(struct seq_
+ 	struct net *net = seq_file_net(seq);
+ 	int cpu;
+ 
+-	for (cpu = *pos; cpu < NR_CPUS; ++cpu) {
++	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu + 1;
