@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYL2SyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbYL2Syl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbYL2SyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 13:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYL2SyB
+	id S1752327AbYL2Syl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 13:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYL2SyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 13:54:01 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:33781 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752493AbYL2Sx7 (ORCPT
+	Mon, 29 Dec 2008 13:54:07 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:50556 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbYL2SyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 13:53:59 -0500
+	Mon, 29 Dec 2008 13:54:06 -0500
 From: Darren Hart <dvhltc@us.ibm.com>
-Subject: [PATCH 1/2] futex: make futex_(get|put)_key() calls symmetric
+Subject: [PATCH 2/2] futex: correct futex_requeue futex key ref counting in
+	requeue loop
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Darren Hart <dvhltc@us.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>, Rusty Russell <rusty@au1.ibm.com>
-Date: Mon, 29 Dec 2008 10:53:56 -0800
-Message-ID: <20081229185355.10342.85717.stgit@Aeon>
+Date: Mon, 29 Dec 2008 10:54:02 -0800
+Message-ID: <20081229185402.10342.77396.stgit@Aeon>
 In-Reply-To: <20081229185238.10342.75651.stgit@Aeon>
 References: <20081229185238.10342.75651.stgit@Aeon>
 User-Agent: StGIT/0.14.2
@@ -27,11 +28,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
-
-This patch makes the calls to futex_get_key_refs() and futex_drop_key_refs()
-explicitly symmetric by only "putting" keys we successfully "got".  Also
-cleanup a couple return points that didn't "put" after a successful "get".
+The requeue loop takes multiple references to key2, but the corresponding
+put loop decrements the refs for key1.  This patch corrects the accounting.
 
 Build and boot tested on an x86_64 system.
 
@@ -41,257 +39,20 @@ Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Rusty Russell <rusty@au1.ibm.com>
 ---
 
- kernel/futex.c |   66 ++++++++++++++++++++++++++++++--------------------------
- 1 files changed, 35 insertions(+), 31 deletions(-)
+ kernel/futex.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/futex.c b/kernel/futex.c
-index b4f87ba..cf363ce 100644
+index cf363ce..3b66d91 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -723,8 +723,8 @@ static int futex_wake(u32 __user *uaddr, int fshared, int nr_wake, u32 bitset)
- 	}
+@@ -919,7 +919,7 @@ out_unlock:
  
- 	spin_unlock(&hb->lock);
--out:
- 	put_futex_key(fshared, &key);
-+out:
- 	return ret;
- }
- 
-@@ -748,7 +748,7 @@ retryfull:
- 		goto out;
- 	ret = get_futex_key(uaddr2, fshared, &key2);
- 	if (unlikely(ret != 0))
--		goto out;
-+		goto out_put_key1;
- 
- 	hb1 = hash_futex(&key1);
- 	hb2 = hash_futex(&key2);
-@@ -770,12 +770,12 @@ retry:
- 		 * but we might get them from range checking
- 		 */
- 		ret = op_ret;
--		goto out;
-+		goto out_put_keys;
- #endif
- 
- 		if (unlikely(op_ret != -EFAULT)) {
- 			ret = op_ret;
--			goto out;
-+			goto out_put_keys;
- 		}
- 
- 		/*
-@@ -789,7 +789,7 @@ retry:
- 			ret = futex_handle_fault((unsigned long)uaddr2,
- 						 attempt);
- 			if (ret)
--				goto out;
-+				goto out_put_keys;
- 			goto retry;
- 		}
- 
-@@ -827,10 +827,11 @@ retry:
- 	spin_unlock(&hb1->lock);
- 	if (hb1 != hb2)
- 		spin_unlock(&hb2->lock);
--out:
-+out_put_keys:
- 	put_futex_key(fshared, &key2);
-+out_put_key1:
- 	put_futex_key(fshared, &key1);
--
-+out:
- 	return ret;
- }
- 
-@@ -847,13 +848,13 @@ static int futex_requeue(u32 __user *uaddr1, int fshared, u32 __user *uaddr2,
- 	struct futex_q *this, *next;
- 	int ret, drop_count = 0;
- 
-- retry:
-+retry:
- 	ret = get_futex_key(uaddr1, fshared, &key1);
- 	if (unlikely(ret != 0))
- 		goto out;
- 	ret = get_futex_key(uaddr2, fshared, &key2);
- 	if (unlikely(ret != 0))
--		goto out;
-+		goto out_put_key1;
- 
- 	hb1 = hash_futex(&key1);
- 	hb2 = hash_futex(&key2);
-@@ -875,7 +876,7 @@ static int futex_requeue(u32 __user *uaddr1, int fshared, u32 __user *uaddr2,
- 			if (!ret)
- 				goto retry;
- 
--			return ret;
-+			goto out_put_keys;
- 		}
- 		if (curval != *cmpval) {
- 			ret = -EAGAIN;
-@@ -920,9 +921,10 @@ out_unlock:
+ 	/* drop_futex_key_refs() must be called outside the spinlocks. */
  	while (--drop_count >= 0)
- 		drop_futex_key_refs(&key1);
+-		drop_futex_key_refs(&key1);
++		drop_futex_key_refs(&key2);
  
--out:
  	put_futex_key(fshared, &key2);
-+out_put_key1:
- 	put_futex_key(fshared, &key1);
-+out:
- 	return ret;
- }
- 
-@@ -983,7 +985,7 @@ static int unqueue_me(struct futex_q *q)
- 	int ret = 0;
- 
- 	/* In the common case we don't take the spinlock, which is nice. */
-- retry:
-+retry:
- 	lock_ptr = q->lock_ptr;
- 	barrier();
- 	if (lock_ptr != NULL) {
-@@ -1165,11 +1167,11 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 
- 	q.pi_state = NULL;
- 	q.bitset = bitset;
-- retry:
-+retry:
- 	q.key = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr, fshared, &q.key);
- 	if (unlikely(ret != 0))
--		goto out_release_sem;
-+		goto out;
- 
- 	hb = queue_lock(&q);
- 
-@@ -1197,6 +1199,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 
- 	if (unlikely(ret)) {
- 		queue_unlock(&q, hb);
-+		put_futex_key(fshared, &q.key);
- 
- 		ret = get_user(uval, uaddr);
- 
-@@ -1206,7 +1209,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 	}
- 	ret = -EWOULDBLOCK;
- 	if (uval != val)
--		goto out_unlock_release_sem;
-+		goto out_unlock_put_key;
- 
- 	/* Only actually queue if *uaddr contained val.  */
- 	queue_me(&q, hb);
-@@ -1298,11 +1301,11 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 		return -ERESTART_RESTARTBLOCK;
- 	}
- 
-- out_unlock_release_sem:
-+out_unlock_put_key:
- 	queue_unlock(&q, hb);
--
-- out_release_sem:
- 	put_futex_key(fshared, &q.key);
-+
-+out:
- 	return ret;
- }
- 
-@@ -1351,16 +1354,16 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 	}
- 
- 	q.pi_state = NULL;
-- retry:
-+retry:
- 	q.key = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr, fshared, &q.key);
- 	if (unlikely(ret != 0))
--		goto out_release_sem;
-+		goto out;
- 
-- retry_unlocked:
-+retry_unlocked:
- 	hb = queue_lock(&q);
- 
-- retry_locked:
-+retry_locked:
- 	ret = lock_taken = 0;
- 
- 	/*
-@@ -1381,14 +1384,14 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 	 */
- 	if (unlikely((curval & FUTEX_TID_MASK) == task_pid_vnr(current))) {
- 		ret = -EDEADLK;
--		goto out_unlock_release_sem;
-+		goto out_unlock_put_key;
- 	}
- 
- 	/*
- 	 * Surprise - we got the lock. Just return to userspace:
- 	 */
- 	if (unlikely(!curval))
--		goto out_unlock_release_sem;
-+		goto out_unlock_put_key;
- 
- 	uval = curval;
- 
-@@ -1424,7 +1427,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 	 * We took the lock due to owner died take over.
- 	 */
- 	if (unlikely(lock_taken))
--		goto out_unlock_release_sem;
-+		goto out_unlock_put_key;
- 
- 	/*
- 	 * We dont have the lock. Look up the PI state (or create it if
-@@ -1463,7 +1466,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 				goto retry_locked;
- 			}
- 		default:
--			goto out_unlock_release_sem;
-+			goto out_unlock_put_key;
- 		}
- 	}
- 
-@@ -1554,16 +1557,17 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 		destroy_hrtimer_on_stack(&to->timer);
- 	return ret != -EINTR ? ret : -ERESTARTNOINTR;
- 
-- out_unlock_release_sem:
-+out_unlock_put_key:
- 	queue_unlock(&q, hb);
- 
-- out_release_sem:
-+out_put_key:
- 	put_futex_key(fshared, &q.key);
-+out:
- 	if (to)
- 		destroy_hrtimer_on_stack(&to->timer);
- 	return ret;
- 
-- uaddr_faulted:
-+uaddr_faulted:
- 	/*
- 	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
- 	 * atomically.  Therefore, if we continue to fault after get_user()
-@@ -1576,7 +1580,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 	if (attempt++) {
- 		ret = futex_handle_fault((unsigned long)uaddr, attempt);
- 		if (ret)
--			goto out_release_sem;
-+			goto out_put_key;
- 		goto retry_unlocked;
- 	}
- 
-@@ -1668,9 +1672,9 @@ retry_unlocked:
- 
- out_unlock:
- 	spin_unlock(&hb->lock);
--out:
- 	put_futex_key(fshared, &key);
- 
-+out:
- 	return ret;
- 
- pi_faulted:
+ out_put_key1:
 
