@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYL2R4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbYL2SKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbYL2R4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 12:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYL2R4l
+	id S1752609AbYL2SKQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 13:10:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYL2SKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 12:56:41 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33513 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751520AbYL2R4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 12:56:40 -0500
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX189J7QBrSc9ZzSUHpoILdyAnhEaFRu2650kdUszJ2
-	5Ql25rROXTsKWV
-Message-ID: <49590F58.9040909@gmx.de>
-Date: Mon, 29 Dec 2008 18:56:40 +0100
-From: Helge Deller <deller@gmx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 29 Dec 2008 13:10:01 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:40565 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbYL2SKA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 13:10:00 -0500
+Message-ID: <49591331.9080403@novell.com>
+Date: Mon, 29 Dec 2008 13:13:05 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: John David Anglin <dave@hiauly1.hia.nrc.ca>
-CC: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@mcmartin.ca, randolph@tausq.org, jmm@inutil.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 2/2] parisc: fix module loading failure of large modules
-References: <20081229161446.C91EB4EDA@hiauly1.hia.nrc.ca>
-In-Reply-To: <20081229161446.C91EB4EDA@hiauly1.hia.nrc.ca>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] RT scheduler updates for tip
+References: <493939B1.40506@novell.com> <20081208143228.GF14856@elte.hu> <20081208161246.GB4570@elte.hu> <493E8246.1090309@novell.com> <20081212113415.GH32640@elte.hu> <20081212114952.GA16976@elte.hu> <4958EEB6.5020105@novell.com>
+In-Reply-To: <4958EEB6.5020105@novell.com>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6899999999999999
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFE09EDE8989DE9D2F5396357"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John David Anglin wrote:
-> Hi Helge,
-> 
->> With this patch we now instead append individual PLT stub entries
->> directly at the end of the code sections where the stubs are actually
->> called. This reduces the distance between the PCREL location and the
->> stub entry so that the relocations can be fulfilled.
-> 
-> GCC for PA-RISC assumes that the stubs will be placed before the code
-> section.  This is what HP-UX does.  It's also not possible to compute
-> the distance to the end of a function in GCC due to the way branch
-> shortening is done.  If the distance to the start of the code section
-> is too large, GCC outputs a long call.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFE09EDE8989DE9D2F5396357
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Interesting. I didn't knew that.
+Gregory Haskins wrote:
+> Ingo Molnar wrote:
+>  =20
+>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>    =20
+>>>
+>>> Could you send a delta fix against cpus4096 for that bug you fixed?
+>>>    =20
+>>>      =20
 
-> If you can insert them before the code section where the stubs are
-> called, this will minimize the chance that a pc-relative call will
-> not reach its stub.
+Hi Ingo,
+  I have rebased the series against tip/cpus4096 as of today.  I
+built/boot this kernel for both SMP/UP on a 4-way x86_64 box, and they
+look sane.  Let me know if they still look broken to you.
 
-Yes, good idea.
-I'll change that and send an updated patch.
+The following changes since commit 6092848a2a23b660150a38bc06f59d75838d70=
+c8:
+  Sergio Luis (1):
+        x86: mark get_cpu_leaves() with __cpuinit annotation
 
-> Great patch!
+are available in the git repository at:
 
-Thanks!
+=20
+git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.gi=
+t
+sched/latest
 
-Helge
+Gregory Haskins (11):
+      sched: cleanup inc/dec_rt_tasks
+      sched: track the next-highest priority on each runqueue
+      sched: use highest_prio.curr for pull threshold
+      sched: use highest_prio.next to optimize pull operations
+      sched: only try to push a task on wakeup if it is migratable
+      sched: pull only one task during NEWIDLE balancing to limit
+critical section
+      sched: make double-lock-balance fair
+      sched: add sched_class->needs_post_schedule() member
+      plist: fix PLIST_NODE_INIT to work with debug enabled
+      sched: create "pushable_tasks" list to limit pushing to one attempt=
+
+      RT: fix push_rt_task() to handle dequeue_pushable properly
+
+ include/linux/init_task.h |    1 +
+ include/linux/plist.h     |    9 +-
+ include/linux/sched.h     |    2 +
+ kernel/sched.c            |   89 +++++++++++--
+ kernel/sched_rt.c         |  324
++++++++++++++++++++++++++++++++--------------
+ 5 files changed, 311 insertions(+), 114 deletions(-)
+
+
+
+--------------enigFE09EDE8989DE9D2F5396357
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAklZEzEACgkQlOSOBdgZUxlWiQCfRCjZRPDn5k/D3kdB1zAFIxq8
+vp8AnR69HkP3SXnVDvfkeWCv/u2UsCWe
+=wrYc
+-----END PGP SIGNATURE-----
+
+--------------enigFE09EDE8989DE9D2F5396357--
