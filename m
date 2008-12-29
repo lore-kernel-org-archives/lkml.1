@@ -1,100 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbYL2ST7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbYL2SyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbYL2ST7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 13:19:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbYL2STv
+	id S1752680AbYL2SyD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 13:54:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYL2Sxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 13:19:51 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:5071 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969AbYL2STu (ORCPT
+	Mon, 29 Dec 2008 13:53:53 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:50509 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbYL2Sxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 13:19:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=WOhw49EjxiUlPws0MnU6q4NObYetuvJDpjy19UWKk8r/E+9ANEWFJzSxbwicAclbvD
-         atnokZpfdUpTy7fatGj3/FCRG7gQinBYRQt/LyrBok4v/kjszg+NLR6LOmTgCasw1Pj4
-         ijh93ZOBijaQM16NjrfUE77OQ9MRQam775kQo=
-Message-ID: <c6d9bea0812291019l44761349xcf64cf9f44b44f1b@mail.gmail.com>
-Date: Mon, 29 Dec 2008 13:19:48 -0500
-From: "C. Scott Ananian" <cscott@laptop.org>
-To: "Eric Paris" <eparis@redhat.com>
-Subject: Re: [RFC PATCH -v4 00/14] fsnotify, dnotify, and inotify
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1229979211.9566.15.camel@localhost.localdomain>
+	Mon, 29 Dec 2008 13:53:52 -0500
+From: Darren Hart <dvhltc@us.ibm.com>
+Subject: [PATCH 0/2] futex_key reference accounting fixes
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Date: Mon, 29 Dec 2008 10:53:49 -0800
+Message-ID: <20081229185238.10342.75651.stgit@Aeon>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
-	 <c6d9bea0812181536p2a3aaeacmbd6af0474279b7b@mail.gmail.com>
-	 <1229916126.29604.47.camel@localhost.localdomain>
-	 <c6d9bea0812221159h30b0501dm8f48d93e0cb53bfa@mail.gmail.com>
-	 <1229979211.9566.15.camel@localhost.localdomain>
-X-Google-Sender-Auth: 889f68783b28a234
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 22, 2008 at 3:53 PM, Eric Paris <eparis@redhat.com> wrote:
-> fanotify doesn't have directory notifications.  You get notifications
-> about the individual inodes.  I don't have mv tracking, and I'm not sure
-> how much trouble it'll be.  Maybe not that bad since a mv doesn't have
-> to deliver the fd to userspace.  I promise to think about how to make
-> this better for you.  In any case, you can get pathnames, dev, and inode
-> very quickly.
+This series fixes several problems with symmetric reference counting of the
+futex keys.
 
-For consistency, directory events could appear as mutations
-(write/close_was_writable) of the directory inodes, with an open file
-descriptor to the directory.
+---
 
-It would be a bit annoying, but you wouldn't even have to pass the
-'from' and 'to' names.  You can then readdir the open file descriptor
-to the directory find out what's changed for yourself.  (If you do
-pass 'from' and 'to' path information, then the open file descriptor
-to the directory is unnecessary.)
+Darren Hart (2):
+      futex: correct futex_requeue futex key ref counting in requeue loop
+      futex: make futex_(get|put)_key() calls symmetric
 
-Capturing a coherent directory listing on startup (or while processing
-a directory mutation) is the other tricky bit; being able to
-block-for-ack on a rename would make that much easier, returning
-SEND_DELAY for example.  The basic ideas seem coherent with what
-you've got in fanotify.  A write_need_access_decision on directories
-would allow userspace locking during the scan, and you'd set a
-fastpath (with SURVIVE_WRITE cleared) after the scan was complete.
 
-The write_need_access_decision method would, as testiment to the
-generality of the mechanism, allow userspace implementations of
-copy-on-write and versioning file systems.  A versioning filesystem
-could check in the 'new version' of a file on close_was_writable;
-write_need_access would just need to block until userland had
-completed the checkin to prevent races between kernel and userland.
-For a copy-on-write system based on hardlinks,
-write_need_access_decision would break a hardlink if necessary, and
-regardless install a fast path skipping future checks.
-
-> In any case, event coallessing seems like it needs to work by walking
-> the notification queue starting at the back and working forwards.  If
-> you find a duplicate just drop.  If you find a mv, place this one at the
-> end.  Kinda sucks that we are taking and O(1) operation and making it
-> O(n).
->
-> At least with fanotify you don't have mv races, since you have an open
-> fd which still gives you the access you need even if it mv'd.
-
-On reflection event coalescing is not necessary so long as you're
-passing open file descriptors around.  The kernel mechanisms are
-sufficient to ensure that the file descriptors are still valid even if
-unlink/move operations occur after the mutation.
-
-To briefly summarize my fanotify wishlist:
- 1) write/close_was_writable events on directory inodes triggered by
-create/rename/unlink.
- 2) write_need_access_decision event applicable to both regular files
-and directories.
- --scott
+ kernel/futex.c |   68 ++++++++++++++++++++++++++++++--------------------------
+ 1 files changed, 36 insertions(+), 32 deletions(-)
 
 -- 
-                         ( http://cscott.net/ )
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
