@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYL2KDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYL2KFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbYL2KDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 05:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYL2KDW
+	id S1754686AbYL2KFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 05:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYL2KF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 05:03:22 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:39390 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbYL2KDW (ORCPT
+	Mon, 29 Dec 2008 05:05:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57626 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbYL2KF1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 05:03:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OsB1YJSMwDzJqMiP+qrtAKP83XxJUsz/9BrDMH2Alw8n/G41cxyjDb1hiWuNh7GpVY
-         fJBxVrYdI11PQBFA070o95GgQaA0aiajoniEC5UY+ei0WrYqj92DY4KZtpzCQB8VwKp3
-         oYm3SQeSSuS3sQIBbNFAjUFBJHTiJaUUSXenA=
-Message-ID: <71cd59b00812290203w11cf752bk49e127509a776a40@mail.gmail.com>
-Date: Mon, 29 Dec 2008 11:03:19 +0100
-From: "Corentin Chary" <corentin.chary@gmail.com>
-To: "Len Brown" <lenb@kernel.org>
-Subject: Re: Patch enabling Bluetooth for Asus EEE 901
-Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Ondrej Zajicek" <santiago@crfreenet.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       acpi4asus-user@lists.sourceforge.net
-In-Reply-To: <alpine.LFD.2.00.0812282245450.4738@localhost.localdomain>
+	Mon, 29 Dec 2008 05:05:27 -0500
+Message-ID: <4958A015.1070007@kernel.org>
+Date: Mon, 29 Dec 2008 02:01:57 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mj@ucw.cz
+Subject: Re: [PATCH] move arch/x86/pci/pci.h to	arch/x86/include/asm/pci_x86.h
+References: <1230382948.3373.1.camel@jaswinder.satnam> <20081229065713.GA10960@x200.localdomain> <1230537538.3090.4.camel@jaswinder.satnam> <20081229084851.GA12756@x200.localdomain>
+In-Reply-To: <20081229084851.GA12756@x200.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081228102026.GA18096@localhost>
-	 <20081228145835.GB12853@srcf.ucam.org>
-	 <alpine.LFD.2.00.0812282245450.4738@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm not on that list, but presumably the maintainer,
-> Corentin Chary, is.
->
+Alexey Dobriyan wrote:
+> 
+> So you don't actually have an opinion? Why are you sending patch then?
+> 
+> 	> could you send another patch that moves arch/x86/pci/pci.h to 
+> 	> arch/x86/include/asm/pci_x86.h
+> 	       ^^^		   ^^^
+> Or should it be arch/x86/include/asm/pci.h ?
+> 
 
-In fact.
-In the next days I'll recolt patch like theses, then send you a series
-(including select/depends on change for asus-laptop).
+<asm/pci.h> already exists, though.  This file contains definitions
+private to the x86 implementation, whereas <asm/pci.h> contains arch
+implementations of panarchitectural interfaces.
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+The reason for moving it was to avoid ugly ../ paths.
+
+	-hpa
