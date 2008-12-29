@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752399AbYL2PZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbYL2P1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752399AbYL2PZO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 10:25:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYL2PZB
+	id S1752504AbYL2P1l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 10:27:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYL2P1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 10:25:01 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:25149 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751366AbYL2PZA (ORCPT
+	Mon, 29 Dec 2008 10:27:31 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:36181 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751497AbYL2P1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 10:25:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=P2QeQV/KK32wgtBvvfOnpnoAp2+ad0QzhCZxGsbodE/FMquuTbz15HFCUzmwz7O/BY
-         ZgxPIFuWkK9MTsyjSXhfmanQHEm0eubbHt/rc+XiEJa5Xacu9OXXhue6q6TMyHh2Ezlh
-         obcL3DqJGP2kO1MBaab27iLISzRwjUvXSvYh4=
-Date: Mon, 29 Dec 2008 18:24:56 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: io_apic.c io_apic_sync should be static
-Message-ID: <20081229152456.GA7459@localhost>
-References: <1230563075.26564.4.camel@jaswinder.satnam>
+	Mon, 29 Dec 2008 10:27:30 -0500
+Date: Mon, 29 Dec 2008 10:27:28 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Julia Lawall <julia@diku.dk>
+cc: gregkh@suse.de, <dbrownell@users.sourceforge.net>,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <kernel-janitors@vger.kernel.org>
+Subject: Re: [PATCH 10/13] drivers/usb/gadget: use USB API functions rather
+ than constants
+In-Reply-To: <Pine.LNX.4.64.0812291122180.9555@pc-004.diku.dk>
+Message-ID: <Pine.LNX.4.44L0.0812291025220.2250-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1230563075.26564.4.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jaswinder Singh Rajput - Mon, Dec 29, 2008 at 08:34:35PM +0530]
-| Impact: cleanup, reduce kernel size a bit, avoid sparse warning
-| 
-| Fixes sparse warning:
-| arch/x86/kernel/io_apic.c:709:6: warning: symbol 'io_apic_sync' was not declared. Should it be static?
-| 
-| Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-| ---
-|  arch/x86/kernel/io_apic.c |    2 +-
-|  1 files changed, 1 insertions(+), 1 deletions(-)
-| 
-| diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-| index 62ecfc9..6991172 100644
-| --- a/arch/x86/kernel/io_apic.c
-| +++ b/arch/x86/kernel/io_apic.c
-| @@ -706,7 +706,7 @@ static void __unmask_IO_APIC_irq(struct irq_cfg *cfg)
-|  }
-|  
-|  #ifdef CONFIG_X86_64
-| -void io_apic_sync(struct irq_pin_list *entry)
-| +static void io_apic_sync(struct irq_pin_list *entry)
-|  {
-|  	/*
-|  	 * Synchronize the IO-APIC and the CPU by doing
-| -- 
-| 1.5.5.1
+On Mon, 29 Dec 2008, Julia Lawall wrote:
 
-Thanks Jaswinder! It should be static.
+> From: Julia Lawall <julia@diku.dk>
+> 
+> This set of patches introduces calls to the following set of functions:
+> 
+> usb_endpoint_dir_in(epd)
+> usb_endpoint_dir_out(epd)
+> usb_endpoint_is_bulk_in(epd)
+> usb_endpoint_is_bulk_out(epd)
+> usb_endpoint_is_int_in(epd)
+> usb_endpoint_is_int_out(epd)
+> usb_endpoint_num(epd)
+> usb_endpoint_type(epd)
+> usb_endpoint_xfer_bulk(epd)
+> usb_endpoint_xfer_control(epd)
+> usb_endpoint_xfer_int(epd)
+> usb_endpoint_xfer_isoc(epd)
 
-		- Cyrill -
+...
+
+> drivers/usb/gadget/file_storage.c   |    1 +
+
+...
+
+> diff --git a/drivers/usb/gadget/file_storage.c b/drivers/usb/gadget/file_storage.c
+> index 88fedd0..c44092b 100644
+> --- a/drivers/usb/gadget/file_storage.c
+> +++ b/drivers/usb/gadget/file_storage.c
+> @@ -248,6 +248,7 @@
+>  #include <linux/freezer.h>
+>  #include <linux/utsname.h>
+>  
+> +#include <linux/usb.h>
+>  #include <linux/usb/ch9.h>
+>  #include <linux/usb/gadget.h>
+
+While there's nothing wrong with this part of the patch, it hardly 
+seems necessary.  Was there any reason for including it?
+
+Alan Stern
+
