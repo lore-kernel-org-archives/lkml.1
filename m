@@ -1,54 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbYL3R3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbYL3Rgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbYL3R3d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 12:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYL3R3W
+	id S1753226AbYL3Rgp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 12:36:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYL3Rgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 12:29:22 -0500
-Received: from verein.lst.de ([213.95.11.210]:58970 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbYL3R3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 12:29:22 -0500
-Date: Tue, 30 Dec 2008 18:29:01 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: David Howells <dhowells@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: access(2) regressions in current mainline
-Message-ID: <20081230172901.GA5610@lst.de>
-References: <20081230170941.GA5083@lst.de> <20081230134248.GA30124@lst.de> <24505.1230656810@redhat.com> <32709.1230657626@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <32709.1230657626@redhat.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	Tue, 30 Dec 2008 12:36:33 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:36785 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbYL3Rgc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 12:36:32 -0500
+Message-ID: <495A5C10.3060204@oracle.com>
+Date: Tue, 30 Dec 2008 09:36:16 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, scsi <linux-scsi@vger.kernel.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Robert Love <robert.w.love@intel.com>
+Subject: Re: linux-next: Tree for December 29 (fcoe/libfc)
+References: <20081230031621.60acd90b.sfr@canb.auug.org.au>	 <20081229195358.6a239657.randy.dunlap@oracle.com>	 <1230651870.3296.2.camel@localhost.localdomain>	 <495A5259.2080208@oracle.com> <1230657124.3296.20.camel@localhost.localdomain>
+In-Reply-To: <1230657124.3296.20.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.495A5C15.02CF:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 05:20:26PM +0000, David Howells wrote:
-> Christoph Hellwig <hch@lst.de> wrote:
+James Bottomley wrote:
+> On Tue, 2008-12-30 at 08:54 -0800, Randy Dunlap wrote:
+>> James Bottomley wrote:
+>>> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+>>> index 0e5e084..9f4cc8e 100644
+>>> --- a/drivers/scsi/Kconfig
+>>> +++ b/drivers/scsi/Kconfig
+>>> @@ -607,13 +607,12 @@ config SCSI_FLASHPOINT
+>>>  
+>>>  config LIBFC
+>>>  	tristate "LibFC module"
+>>> -	depends on SCSI && SCSI_FC_ATTRS
+>>> +	select SCSI_FC_ATTRS
+>>>  	---help---
+>>>  	  Fibre Channel library module
+>>>  
+>>>  config FCOE
+>>>  	tristate "FCoE module"
+>>> -	depends on SCSI
+>>>  	select LIBFC
+>>>  	---help---
+>>>  	  Fibre Channel over Ethernet module
+>>>
+>>>
+>> This still has a build error when CONFIG_PCI=n:
+>>
+>>
+>> linux-next-20081229/drivers/scsi/fcoe/fc_transport_fcoe.c: In function 'fcoe_load_transport_driver':
+>> linux-next-20081229/drivers/scsi/fcoe/fc_transport_fcoe.c:324: error: 'pci_bus_type' undeclared (first use in this function)
+>> make[4]: *** [drivers/scsi/fcoe/fc_transport_fcoe.o] Error 1
 > 
-> > On Tue, Dec 30, 2008 at 05:06:50PM +0000, David Howells wrote:
-> > > Did this test ever get run on the linux-next tree prior to the merge?  If
-> > > so, what was the result?
-> > 
-> > I have no idea if people ever ran it, and if they did they will to
-> > respond for themselves..
+> OK, so take two would make FCOE depend on SCSI, like this.
 > 
-> Is it possible for me to grab the XFS test GIT tree for myself?  And can it be
-> run on a non-XFS filesystem?
-
-You can grab it, although currently the trees are undergoing some
-changes, so what you pull today might now be there tomorrow..
-
-Try to grab git://oss.sgi.com/xfs-cmds, it's in the xfstests subdir.
-
-The QA harness currently only runs on xfs, nfs and udf, but this
-particular test program should work on any fs if run outside the
-testharness.
-
+> James
 > 
-> David
----end quoted text---
+> ---
+> 
+> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Subject: [SCSI] fcoe: fix configuration problems
+> 
+> fcoe selects libfc and requires SCSI and PCI (the SCSI requirement is
+> implicitly covered by an enclosing if).  Fix them both up so they
+> cannot be configured in an invalid state: make LIBFC select
+> SCSI_FC_ATTRS and make FCOE depend on PCI and select LIBFC.
+> 
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> ---
+>  drivers/scsi/Kconfig |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index 0e5e084..152d4aa 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -607,13 +607,13 @@ config SCSI_FLASHPOINT
+>  
+>  config LIBFC
+>  	tristate "LibFC module"
+> -	depends on SCSI && SCSI_FC_ATTRS
+> +	select SCSI_FC_ATTRS
+>  	---help---
+>  	  Fibre Channel library module
+>  
+>  config FCOE
+>  	tristate "FCoE module"
+> -	depends on SCSI
+> +	depends on PCI
+>  	select LIBFC
+>  	---help---
+>  	  Fibre Channel over Ethernet module
+
+OK, that works for me.  Ack.  Thanks.
+
+-- 
+~Randy
