@@ -1,85 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYL3Pi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYL3PnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbYL3Pi1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 10:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYL3PiI
+	id S1753639AbYL3PnP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 10:43:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYL3Pm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 10:38:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36103 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbYL3PiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 10:38:07 -0500
-Date: Tue, 30 Dec 2008 16:37:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
-	the unified tracing API
-Message-ID: <20081230153752.GA2984@elte.hu>
-References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere> <1230623364.6091.9.camel@penberg-laptop> <20081230081600.GD2455@elte.hu> <20081230141608.GA5722@nowhere>
+	Tue, 30 Dec 2008 10:42:59 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:22845 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbYL3Pm6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 10:42:58 -0500
+X-IronPort-AV: E=Sophos;i="4.36,302,1228089600"; 
+   d="scan'208";a="123633953"
+From: Roland Dreier <rdreier@cisco.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, Linus <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: linux-next: origin tree build failure
+References: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
+	<adavdt2ru39.fsf@cisco.com>
+	<20081230193048.db7ee462.sfr@canb.auug.org.au>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 30 Dec 2008 07:41:36 -0800
+In-Reply-To: <20081230193048.db7ee462.sfr@canb.auug.org.au> (Stephen
+	Rothwell's message of "Tue, 30 Dec 2008 19:30:48 +1100")
+Message-ID: <adaljtxsma7.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081230141608.GA5722@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 30 Dec 2008 15:41:36.0883 (UTC) FILETIME=[1997F430:01C96A95]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > I can drop the revert after your fix goes into Linus' tree (since that is
+ > where the breakage is) ... looking forward to it, thanks.
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Shouldn't it work if the fix is in my for-next branch, since you pull
+that as part of the -next tree?  Or am I unclear on how -next works?
 
-> On Tue, Dec 30, 2008 at 09:16:00AM +0100, Ingo Molnar wrote:
-> > 
-> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > 
-> > > Hi Frederic,
-> > > 
-> > > On Mon, 2008-12-29 at 23:09 +0100, Frederic Weisbecker wrote:
-> > > > Pekka, note that I would be pleased to add statistical tracing on
-> > > > this tracer, but I would need a hashtable, or an array, or a list, or whatever
-> > > > iterable to insert the data into the stat tracing api.
-> > > > 
-> > > > But I don't know your projects about this... whether you wanted to use a section
-> > > > or something else...
-> > > 
-> > > It really depends on what we're tracing. If we're interested in just the 
-> > > allocation hotspots, a section will do just fine. However, if we're 
-> > > tracing memory footprint, we need to take into store the object pointer 
-> > > returned from kmalloc() and kmem_cache_alloc() so we can update 
-> > > call-site statistics properly upon kfree().
-> > > 
-> > > So I suppose we need both, a section for per call-site statistics and a 
-> > > hash table for the object -> call-site mapping.
-> > 
-> > 1)
-> > 
-> > i think the call_site based tracking should be a built-in capability - the 
-> > branch tracer needs that too for example. That would also make it very 
-> > simple on the usage place: you wouldnt have to worry about sections in 
-> > slub.c/etc.
-> 
-> 
-> I think that too. Can we use sections here? The traced functions are not 
-> directly kmalloc/kmem_cache_alloc and to use a section which contains 
-> the per site allocation requests, such a thing is required (we can't 
-> build a section with per site allocations requests by using intermediate 
-> level allocation function I fear...).
-
-i think initially this should be a fixed-size allocation array + hash as 
-well. (like lockdep uses) The number of allocation sites is even the most 
-extreme case at most a few thousand - and is typically at most a couple of 
-hundred.
-
-	Ingo
+ - R.
