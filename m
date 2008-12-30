@@ -1,263 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbYL3N2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbYL3NbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752945AbYL3N2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 08:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYL3N2l
+	id S1753692AbYL3NbZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 08:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYL3NbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 08:28:41 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:24582 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbYL3N2k (ORCPT
+	Tue, 30 Dec 2008 08:31:17 -0500
+Received: from [78.227.24.35] ([78.227.24.35]:42711 "HELO
+	briare1.fullpliant.org" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with SMTP id S1751709AbYL3NbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 08:28:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=K1T7YodCxEDkuIEK28PZxGi1k2ye8s3bWKNvqDEjCn8dTqNu6XfQXvm+PZeIu28ClK
-         WcMdBvUaKU1uct8876FRZrT5sjpct8J20XtcSfuXxce5mmPVE6sXt63cig8pDtL82F/v
-         BcdD41AIepyi9rIaRsSYWquzwcdB+0ivKJWlg=
-Message-ID: <2f11576a0812300528t6ed12fccg8698d33dc778b9c3@mail.gmail.com>
-Date: Tue, 30 Dec 2008 22:28:38 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [2.6.28] NULL pointer dereference at get_stats()
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org
-In-Reply-To: <200812302153.ECH86976.MFLOQFJHtSOOFV@I-love.SAKURA.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200812302153.ECH86976.MFLOQFJHtSOOFV@I-love.SAKURA.ne.jp>
-X-Google-Sender-Auth: 42df179f4d23e44b
+	Tue, 30 Dec 2008 08:31:16 -0500
+X-Greylist: delayed 705 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Dec 2008 08:31:15 EST
+From: Hubert Tonneau <hubert.tonneau@fullpliant.org>
+To: airlied@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: i915 KMS framebuffer oops report
+Date: Tue, 30 Dec 2008 14:21:44 GMT
+Message-ID: <08IR6K911@briare1.fullpliant.org>
+X-Mailer: Pliant 105
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+I've tested the GIT tree submitted by Airlied for inclusion
+in 2.6.29, and just got an oops when trying to load i915
+with kernel mode setting:
 
-CC to netdev.
+<6>Linux agpgart interface v0.103
+<6>agpgart-intel 0000:00:00.0: Intel 945GM Chipset
+<6>agpgart-intel 0000:00:00.0: detected 7932K stolen memory
+<6>agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
+<6>[drm] Initialized drm 1.1.0 20060810
+<6>pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+<7>pci 0000:00:02.0: setting latency timer to 64
+<1>BUG: unable to handle kernel NULL pointer dereference at 00000000
+<1>IP: [<00000000>] 0x0
+<4>*pde = 00000000 
+<0>Oops: 0000 [#1] SMP 
+<0>last sysfs file: 
+<4>Modules linked in: i915(+) cfbfillrect cfbimgblt cfbcopyarea i2c_algo_bit drm i2c_core intel_agp agpgart
+<4>
+<4>Pid: 1420, comm: insmod Not tainted (2.6.28 #1) Latitude D820                   
+<4>EIP: 0060:[<00000000>] EFLAGS: 00010246 CPU: 1
+<4>EIP is at 0x0
+<4>EAX: 00000000 EBX: c1fbc2a0 ECX: c2008500 EDX: c1fbc2a0
+<4>ESI: 00000000 EDI: f6f64148 EBP: 00000000 ESP: f648bca8
+<4> DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+<0>Process insmod (pid: 1420, ti=f648a000 task=f6fcd8d0 task.ti=f648a000)
+<0>Stack:
+<4> c0152fe0 000000d0 00000000 00000000 00000000 00000000 f6f64148 c0153054
+<0> 00000000 00000000 00000000 00000000 00000020 f65853c0 c01530f0 00000000
+<0> f65853c0 f7e08bcc 00000000 f7cd3931 f6437f40 f6f64148 f6585440 f65853c0
+<0>Call Trace:
+<0> [<c0152fe0>] __read_cache_page+0x70/0xc0
+<0> [<c0153054>] read_cache_page_async+0x24/0xb0
+<0> [<c01530f0>] read_cache_page+0x10/0x50
+<0> [<f7e08bcc>] i915_gem_object_get_page_list+0x7c/0x100 [i915]
+<0> [<f7cd3931>] drm_mm_split_at_start+0x21/0x80 [drm]
+<0> [<f7e09437>] i915_gem_object_bind_to_gtt+0xd7/0x1f0 [i915]
+<0> [<f7e0a617>] i915_gem_object_pin+0x87/0xd0 [i915]
+<0> [<f7e0a9e2>] i915_gem_init_object+0x12/0x50 [i915]
+<0> [<f7ccc627>] drm_gem_object_alloc+0x87/0xb0 [drm]
+<0> [<f7e0aff1>] i915_gem_init_ringbuffer+0x71/0x340 [i915]
+<0> [<f7cd3887>] drm_mm_create_tail_node+0x27/0x80 [drm]
+<0> [<f7e03fc7>] i915_load_modeset_init+0x2e7/0x460 [i915]
+<0> [<f7e0434a>] i915_driver_load+0x1ba/0x2c0 [i915]
+<0> [<f7cd085e>] drm_get_dev+0x1ce/0x200 [drm]
+<0> [<c01ff5f0>] pci_get_dev_by_id+0x40/0x80
+<0> [<f7ccb17c>] drm_init+0x8c/0xf0 [drm]
+<0> [<f7c78000>] i915_init+0x0/0x6a [i915]
+<0> [<c0101113>] do_one_initcall+0x23/0x1d0
+<0> [<c01ee015>] idr_get_empty_slot+0xc5/0x150
+<0> [<c01b19d2>] sysfs_add_one+0x12/0x50
+<0> [<c01ee74f>] ida_get_new_above+0x3f/0x1b0
+<0> [<c01b1880>] sysfs_ilookup_test+0x0/0x10
+<0> [<c01b1880>] sysfs_ilookup_test+0x0/0x10
+<0> [<c0183de1>] ifind+0x31/0xa0
+<0> [<c01b1987>] __sysfs_add_one+0x47/0x80
+<0> [<c01b19d2>] sysfs_add_one+0x12/0x50
+<0> [<c01b18cf>] sysfs_addrm_start+0x3f/0xb0
+<0> [<c01b1b5e>] sysfs_addrm_finish+0xe/0xa0
+<0> [<c016a7bd>] __vunmap+0x4d/0xc0
+<0> [<c014a8c4>] load_module+0xa14/0xb70
+<0> [<c0152bb0>] filemap_fault+0x0/0x360
+<0> [<c013f277>] blocking_notifier_call_chain+0x17/0x20
+<0> [<c014ab06>] sys_init_module+0xe6/0x1a0
+<0> [<c010340a>] syscall_call+0x7/0xb
+<0>Code:  Bad EIP value.
+<0>EIP: [<00000000>] 0x0 SS:ESP 0068:f648bca8
+<4>---[ end trace 6e26e53289db93ad ]---
 
-Can you reproduce this bug on native linux?
-your log seems a bit strange.
-
-it doesn't have any network card initialization log, but kernel
-crashed in network driver.
-in addition, loaded module list indicate your network card is pcnet32,
-but pcnet32 doesn't have
-get_stats() function. (instead, it has pcnet32_get_stats() )
-
-
-(intentional fully quoted)
-> Hello.
->
-> I got this on 2.6.28 .
->
-> CentOS 5.2 (gcc (GCC) 4.1.2 20071124 (Red Hat 4.1.2-42)) on VMware Workstation 6.5.1.
->
-> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.28 .
-> Full log is at http://I-love.SAKURA.ne.jp/tmp/messages6.txt .
->
-> ----------------------------------------
-> BIOS EBDA/lowmem at: 0009f800/0009f800
-> Linux version 2.6.28 (root@tomoyo) (gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)) #1 SMP Tue Dec 30 21:11:13 JST 2008
-> KERNEL supported cpus:
->  Intel GenuineIntel
->  AMD AuthenticAMD
->  NSC Geode by NSC
->  Cyrix CyrixInstead
->  Centaur CentaurHauls
->  Transmeta GenuineTMx86
->  Transmeta TransmetaCPU
->  UMC UMC UMC UMC
-> (... snipped ...)
-> INIT: Entering runlevel: 3
->
-> Entering non-interactive startup
-> Applying Intel CPU microcode update: [  OK  ]
->
-> Starting sysstat:  Calling the system activity data collector (sadc): BUG: unable to handle kernel NULL pointer dereference at 00000004
-> IP: [<c055f2f5>] get_stats+0x1d/0x48
-> Oops: 0000 [#1] SMP
-> last sysfs file: /sys/class/firmware/microcode/loading
-> Modules linked in: dm_mirror dm_region_hash dm_log dm_multipath dm_mod rfkill input_polldev sbs sbshc battery lp sg floppy ide_cd_mod cdrom serio_raw parport_pc parport rtc_cmos rtc_core ac button pcnet32 rtc_lib mii ata_piix i2c_piix4 libata i2c_core pcspkr mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded: microcode]
->
-> Pid: 2459, comm: sadc Not tainted (2.6.28 #1) VMware Virtual Platform
-> EIP: 0060:[<c055f2f5>] EFLAGS: 00010297 CPU: 0
-> EIP is at get_stats+0x1d/0x48
-> EAX: 00000000 EBX: df94c858 ECX: 00000001 EDX: 00000001
-> ESI: 00000000 EDI: 00000000 EBP: 206a4abf ESP: df163f0c
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process sadc (pid: 2459, ti=df163000 task=df8c56d0 task.ti=df163000)
-> Stack:
->  df94c800 dfb2ae40 df94c800 000000c8 c05bcc0f c066ee4c dfb2ae40 c04828b3
->  00000400 b7f6b000 df1dcf00 dfb2ae60 00000000 00000001 00000000 00000000
->  00000000 df8e4340 c04826ec fffffffb df1dcf00 c049f08d df163fa0 00000400
-> Call Trace:
->  [<c05bcc0f>] dev_seq_show+0x1c/0x77
->  [<c04828b3>] seq_read+0x1c7/0x2a0
->  [<c04826ec>] seq_read+0x0/0x2a0
->  [<c049f08d>] proc_reg_read+0x58/0x6b
->  [<c049f035>] proc_reg_read+0x0/0x6b
->  [<c0470444>] vfs_read+0x81/0xf4
->  [<c0470720>] sys_read+0x3c/0x63
->  [<c0403841>] sysenter_do_call+0x12/0x21
-> Code: ff 00 89 d8 e8 28 e6 05 00 31 c0 5b 5e c3 55 83 c9 ff 57 31 ff 56 31 f6 53 8b a8 6c 03 00 00 8d 58 58 eb 0c 89 e8 f7 d0 8b 04 88 <03> 78 04 03 30 89 c8 ba a0 9c 81 c0 e8 66 a1 f8 ff 83 f8 1f 89
-> EIP: [<c055f2f5>] get_stats+0x1d/0x48 SS:ESP 0068:df163f0c
-> ---[ end trace 8be667e49b995a38 ]---
-> /etc/rc3.d/S03sysstat: line 34:  2459 Segmentation fault      /usr/lib/sa/sadc -F -L -
->
-> [FAILED]
->
-> Starting background readahead: [  OK  ]
->
-> Bringing up loopback interface:  BUG: unable to handle kernel NULL pointer dereference at 00000004
-> IP: [<c055f2f5>] get_stats+0x1d/0x48
-> *pde = 00000000
-> Oops: 0000 [#2] SMP
-> last sysfs file: /sys/class/firmware/microcode/loading
-> Modules linked in: dm_mirror dm_region_hash dm_log dm_multipath dm_mod rfkill input_polldev sbs sbshc battery lp sg floppy ide_cd_mod cdrom serio_raw parport_pc parport rtc_cmos rtc_core ac button pcnet32 rtc_lib mii ata_piix i2c_piix4 libata i2c_core pcspkr mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded: microcode]
->
-> Pid: 2534, comm: ip Tainted: G      D    (2.6.28 #1) VMware Virtual Platform
-> EIP: 0060:[<c055f2f5>] EFLAGS: 00010297 CPU: 0
-> EIP is at get_stats+0x1d/0x48
-> EAX: 00000000 EBX: df94c858 ECX: 00000001 EDX: 00000001
-> ESI: 00000000 EDI: 00000000 EBP: 206a4abf ESP: df0b0c88
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process ip (pid: 2534, ti=df0b0000 task=df8c7b60 task.ti=df0b0000)
-> Stack:
->  df99a08c df94c964 deda4780 df94c800 c05c571a 0000000b df99a000 dfb2a940
->  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00004034
->  df94c800 dfb2a940 00000000 deda4780 c05c5fe7 000009e6 495a15d3 00000000
-> Call Trace:
->  [<c05c571a>] rtnl_fill_ifinfo+0x2c9/0x498
->  [<c05c5fe7>] rtnl_dump_ifinfo+0x40/0x69
->  [<c05d0cff>] netlink_dump+0x4a/0x163
->  [<c05d2812>] netlink_dump_start+0xf9/0x11c
->  [<c05c5fa7>] rtnl_dump_ifinfo+0x0/0x69
->  [<c05c5d59>] rtnetlink_rcv_msg+0xad/0x1ac
->  [<c05c5fa7>] rtnl_dump_ifinfo+0x0/0x69
->  [<c05c5cac>] rtnetlink_rcv_msg+0x0/0x1ac
->  [<c05d1a0c>] netlink_rcv_skb+0x2d/0x71
->  [<c05c5ca6>] rtnetlink_rcv+0x14/0x1a
->  [<c05d1836>] netlink_unicast+0x1a2/0x205
->  [<c05d1f0b>] netlink_sendmsg+0x24a/0x257
->  [<c05b44c4>] sock_sendmsg+0xc7/0xe1
->  [<c0434958>] autoremove_wake_function+0x0/0x2d
->  [<c0450d0c>] sync_page+0x0/0x36
->  [<c044f17d>] __delayacct_blkio_end+0x56/0x59
->  [<c0629b6b>] io_schedule+0x65/0x81
->  [<c0629c9d>] __wait_on_bit_lock+0x4b/0x52
->  [<c0450ba2>] find_get_page+0x1d/0x7a
->  [<c04ee9d9>] copy_from_user+0x23/0x4f
->  [<c05b4e0a>] sys_sendto+0xfc/0x127
->  [<c045c52d>] __do_fault+0x2fb/0x33d
->  [<c05b5719>] sys_socketcall+0xfc/0x1a9
->  [<c0403841>] sysenter_do_call+0x12/0x21
-> Code: ff 00 89 d8 e8 28 e6 05 00 31 c0 5b 5e c3 55 83 c9 ff 57 31 ff 56 31 f6 53 8b a8 6c 03 00 00 8d 58 58 eb 0c 89 e8 f7 d0 8b 04 88 <03> 78 04 03 30 89 c8 ba a0 9c 81 c0 e8 66 a1 f8 ff 83 f8 1f 89
-> EIP: [<c055f2f5>] get_stats+0x1d/0x48 SS:ESP 0068:df0b0c88
-> ---[ end trace 8be667e49b995a38 ]---
-> ----------------------------------------
->
-> After doing "chkconfig microcode_ctl off" and reboot, I got below.
->
-> ----------------------------------------
-> (... snipped ...)
-> INIT: Entering runlevel: 3
->
-> Entering non-interactive startup
-> Starting sysstat:  Calling the system activity data collector (sadc): BUG: unable to handle kernel NULL pointer dereference at 00000004
-> IP: [<c055f2f5>] get_stats+0x1d/0x48
-> Oops: 0000 [#1] SMP
-> last sysfs file: /sys/block/hda/removable
-> Modules linked in: dm_mirror dm_region_hash dm_log dm_multipath dm_mod rfkill input_polldev sbs sbshc battery lp sg floppy ide_cd_mod cdrom serio_raw parport_pc parport rtc_cmos rtc_core rtc_lib ac pcnet32 button mii ata_piix libata i2c_piix4 pcspkr i2c_core mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
->
-> Pid: 2417, comm: sadc Not tainted (2.6.28 #1) VMware Virtual Platform
-> EIP: 0060:[<c055f2f5>] EFLAGS: 00010297 CPU: 0
-> EIP is at get_stats+0x1d/0x48
-> EAX: 00000000 EBX: df94b858 ECX: 00000001 EDX: 00000001
-> ESI: 00000000 EDI: 00000000 EBP: 206a5abf ESP: df396f0c
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process sadc (pid: 2417, ti=df396000 task=df87edb0 task.ti=df396000)
-> Stack:
->  df94b800 df970f00 df94b800 000000c8 c05bcc0f c066ee4c df970f00 c04828b3
->  00000400 b7f93000 dfb89380 df970f20 00000000 00000001 00000000 00000000
->  00000000 df8e1340 c04826ec fffffffb dfb89380 c049f08d df396fa0 00000400
-> Call Trace:
->  [<c05bcc0f>] dev_seq_show+0x1c/0x77
->  [<c04828b3>] seq_read+0x1c7/0x2a0
->  [<c04826ec>] seq_read+0x0/0x2a0
->  [<c049f08d>] proc_reg_read+0x58/0x6b
->  [<c049f035>] proc_reg_read+0x0/0x6b
->  [<c0470444>] vfs_read+0x81/0xf4
->  [<c0470720>] sys_read+0x3c/0x63
->  [<c0403841>] sysenter_do_call+0x12/0x21
-> Code: ff 00 89 d8 e8 28 e6 05 00 31 c0 5b 5e c3 55 83 c9 ff 57 31 ff 56 31 f6 53 8b a8 6c 03 00 00 8d 58 58 eb 0c 89 e8 f7 d0 8b 04 88 <03> 78 04 03 30 89 c8 ba a0 9c 81 c0 e8 66 a1 f8 ff 83 f8 1f 89
-> EIP: [<c055f2f5>] get_stats+0x1d/0x48 SS:ESP 0068:df396f0c
-> ---[ end trace 51b8087926b0fb03 ]---
-> /etc/rc3.d/S03sysstat: line 34:  2417 Segmentation fault      /usr/lib/sa/sadc -F -L -
->
-> [FAILED]
->
-> Starting background readahead: [  OK  ]
->
-> Bringing up loopback interface:  BUG: unable to handle kernel NULL pointer dereference at 00000004
-> IP: [<c055f2f5>] get_stats+0x1d/0x48
-> *pde = 00000000
-> Oops: 0000 [#2] SMP
-> last sysfs file: /sys/block/hda/removable
-> Modules linked in: dm_mirror dm_region_hash dm_log dm_multipath dm_mod rfkill input_polldev sbs sbshc battery lp sg floppy ide_cd_mod cdrom serio_raw parport_pc parport rtc_cmos rtc_core rtc_lib ac pcnet32 button mii ata_piix libata i2c_piix4 pcspkr i2c_core mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
->
-> Pid: 2492, comm: ip Tainted: G      D    (2.6.28 #1) VMware Virtual Platform
-> EIP: 0060:[<c055f2f5>] EFLAGS: 00010297 CPU: 0
-> EIP is at get_stats+0x1d/0x48
-> EAX: 00000000 EBX: df94b858 ECX: 00000001 EDX: 00000001
-> ESI: 00000000 EDI: 00000000 EBP: 206a5abf ESP: deea4c88
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process ip (pid: 2492, ti=deea4000 task=df87edb0 task.ti=deea4000)
-> Stack:
->  dee5908c df94b964 df1c36c0 df94b800 c05c571a dedc3040 dee59000 df93e916
->  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00004034
->  df94b800 df16b9c0 00000000 df1c36c0 c05c5fe7 000009bc 495a1819 00000000
-> Call Trace:
->  [<c05c571a>] rtnl_fill_ifinfo+0x2c9/0x498
->  [<c05c5fe7>] rtnl_dump_ifinfo+0x40/0x69
->  [<c05d0cff>] netlink_dump+0x4a/0x163
->  [<c05d2812>] netlink_dump_start+0xf9/0x11c
->  [<c05c5fa7>] rtnl_dump_ifinfo+0x0/0x69
->  [<c05c5d59>] rtnetlink_rcv_msg+0xad/0x1ac
->  [<c05c5fa7>] rtnl_dump_ifinfo+0x0/0x69
->  [<c04dfad4>] __generic_unplug_device+0x1a/0x1c
->  [<c05c5cac>] rtnetlink_rcv_msg+0x0/0x1ac
->  [<c05d1a0c>] netlink_rcv_skb+0x2d/0x71
->  [<c05c5ca6>] rtnetlink_rcv+0x14/0x1a
->  [<c05d1836>] netlink_unicast+0x1a2/0x205
->  [<c05d1f0b>] netlink_sendmsg+0x24a/0x257
->  [<c05b44c4>] sock_sendmsg+0xc7/0xe1
->  [<c0434958>] autoremove_wake_function+0x0/0x2d
->  [<c0450d0c>] sync_page+0x0/0x36
->  [<c044f17d>] __delayacct_blkio_end+0x56/0x59
->  [<c0629b6b>] io_schedule+0x65/0x81
->  [<c0629c9d>] __wait_on_bit_lock+0x4b/0x52
->  [<c0450ba2>] find_get_page+0x1d/0x7a
->  [<c04ee9d9>] copy_from_user+0x23/0x4f
->  [<c05b4e0a>] sys_sendto+0xfc/0x127
->  [<c045c52d>] __do_fault+0x2fb/0x33d
->  [<c05b5719>] sys_socketcall+0xfc/0x1a9
->  [<c0403841>] sysenter_do_call+0x12/0x21
-> Code: ff 00 89 d8 e8 28 e6 05 00 31 c0 5b 5e c3 55 83 c9 ff 57 31 ff 56 31 f6 53 8b a8 6c 03 00 00 8d 58 58 eb 0c 89 e8 f7 d0 8b 04 88 <03> 78 04 03 30 89 c8 ba a0 9c 81 c0 e8 66 a1 f8 ff 83 f8 1f 89
-> EIP: [<c055f2f5>] get_stats+0x1d/0x48 SS:ESP 0068:deea4c88
-> ---[ end trace 51b8087926b0fb03 ]---
-> ----------------------------------------
->
-> This bug resembles the one I reported at http://lkml.org/lkml/2008/11/28/99 .
->
-> Regards.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
