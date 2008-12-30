@@ -1,96 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYL3Qiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbYL3Qlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbYL3Qiv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 11:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYL3Qil
+	id S1752644AbYL3Qlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 11:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYL3Qll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 11:38:41 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46647 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750887AbYL3Qik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 11:38:40 -0500
-Message-ID: <495A4E85.6070800@redhat.com>
-Date: Tue, 30 Dec 2008 18:38:29 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Tue, 30 Dec 2008 11:41:41 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:35882 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751222AbYL3Qlk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 11:41:40 -0500
+Message-ID: <495A4F35.2080603@oracle.com>
+Date: Tue, 30 Dec 2008 08:41:25 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Tony Battersby <tonyb@cybernetics.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
-Subject: Re: [PATCH] [DMAR] Fix endless "Unknown DMAR structure type" loop
-References: <495A4A39.20903@cybernetics.com>
-In-Reply-To: <495A4A39.20903@cybernetics.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Karen Xie <kxie@chelsio.com>
+CC: James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-next@vger.kernel.org,
+       sfr@canb.auug.org.au
+Subject: Re: [PATCH 1/1] cxgb3i - remove use of skb->sp
+References: <200812300543.mBU5hPcb020725@localhost.localdomain>
+In-Reply-To: <200812300543.mBU5hPcb020725@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.495A4F39.0304:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(copying relevant people)
+Karen Xie wrote:
+> [PATCH 1/1] cxgb3i - remove use of skb->sp
+> 
+> From: Karen Xie <kxie@chelsio.com>
+> 
+> The cxgb3i was using skb->sp pointer for some internal book-keeping which is not related to the secure path. Changed it to use skb->cb[] instead.
+> 
+> Signed-off-by: Karen Xie <kxie@chelsio.com>
 
-Tony Battersby wrote:
-> I have a SuperMicro C2SBX motherboard with BIOS revision 1.0b.  With
-> vt-d enabled in the BIOS, Linux gets into an endless loop printing
-> "DMAR:Unknown DMAR structure type" when booting.  Here is the DMAR ACPI
-> table:
->
-> DMAR @ 0x7fe86dec
->   0000: 44 4d 41 52 98 00 00 00 01 6f 49 6e 74 65 6c 20  DMAR.....oIntel 
->   0010: 4f 45 4d 44 4d 41 52 20 00 00 04 06 4c 4f 48 52  OEMDMAR ....LOHR
->   0020: 01 00 00 00 23 00 00 00 00 00 00 00 00 00 00 00  ....#...........
->   0030: 01 00 58 00 00 00 00 00 00 a0 e8 7f 00 00 00 00  ..X.............
->   0040: ff ff ef 7f 00 00 00 00 01 08 00 00 00 00 1d 00  ................
->   0050: 01 08 00 00 00 00 1d 01 01 08 00 00 00 00 1d 02  ................
->   0060: 01 08 00 00 00 00 1d 07 01 08 00 00 00 00 1a 00  ................
->   0070: 01 08 00 00 00 00 1a 01 01 08 00 00 00 00 1a 02  ................
->   0080: 01 08 00 00 00 00 1a 07 01 08 00 00 00 00 1a 07  ................
->   0090: c0 00 68 00 04 10 66 60                          ..h...f`
->
-> Here are the messages printed by the kernel:
->
-> DMAR:Host address width 36
-> DMAR:RMRR base: 0x000000007fe8a000 end: 0x000000007fefffff
-> DMAR:Unknown DMAR structure type
-> DMAR:Unknown DMAR structure type
-> DMAR:Unknown DMAR structure type
-> ...
->
-> Although I not very familiar with ACPI, to me it looks like
-> struct acpi_dmar_header::length == 0x0058 is incorrect, causing
-> parse_dmar_table() to look at an invalid offset on the next loop.  This
-> offset happens to have struct acpi_dmar_header::length == 0x0000, which
-> prevents the loop from ever terminating.  This patch checks for this
-> condition and bails out instead of looping forever.
->
-> Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+
 > ---
->
-> I previously sent this to linux-acpi on August 18, 2008, but got no
-> reply.  Please apply this patch upstream (2.6.29 if possible).
->
-> --- linux-2.6.28-git2/drivers/pci/dmar.c.orig	2008-12-24 18:26:37.000000000 -0500
-> +++ linux-2.6.28-git2/drivers/pci/dmar.c	2008-12-30 11:01:17.000000000 -0500
-> @@ -339,6 +339,14 @@ parse_dmar_table(void)
->  	entry_header = (struct acpi_dmar_header *)(dmar + 1);
->  	while (((unsigned long)entry_header) <
->  			(((unsigned long)dmar) + dmar_tbl->length)) {
-> +		/* Avoid looping forever on bad ACPI tables */
-> +		if (entry_header->length == 0) {
-> +			printk(KERN_WARNING PREFIX
-> +				"Invalid 0-length structure\n");
-> +			ret = -EINVAL;
-> +			break;
-> +		}
-> +
->  		dmar_table_print_dmar_entry(entry_header);
+> 
+>  drivers/scsi/cxgb3i/cxgb3i_offload.c |    8 ++++----
+>  drivers/scsi/cxgb3i/cxgb3i_offload.h |    6 +++---
+>  2 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> 
+> diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+> index 5f16081..a865f1f 100644
+> --- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
+> +++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+> @@ -496,7 +496,7 @@ static inline void reset_wr_list(struct s3_conn *c3cn)
+>  static inline void enqueue_wr(struct s3_conn *c3cn,
+>  			      struct sk_buff *skb)
+>  {
+> -	skb->sp = NULL;
+> +	skb_wr_data(skb) = NULL;
 >  
->  		switch (entry_header->type) {
->
->
->   
+>  	/*
+>  	 * We want to take an extra reference since both us and the driver
+> @@ -509,7 +509,7 @@ static inline void enqueue_wr(struct s3_conn *c3cn,
+>  	if (!c3cn->wr_pending_head)
+>  		c3cn->wr_pending_head = skb;
+>  	else
+> -		c3cn->wr_pending_tail->sp = (void *)skb;
+> +		skb_wr_data(skb) = skb;
+>  	c3cn->wr_pending_tail = skb;
+>  }
+>  
+> @@ -529,8 +529,8 @@ static inline struct sk_buff *dequeue_wr(struct s3_conn *c3cn)
+>  
+>  	if (likely(skb)) {
+>  		/* Don't bother clearing the tail */
+> -		c3cn->wr_pending_head = (struct sk_buff *)skb->sp;
+> -		skb->sp = NULL;
+> +		c3cn->wr_pending_head = skb_wr_data(skb);
+> +		skb_wr_data(skb) = NULL;
+>  	}
+>  	return skb;
+>  }
+> diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.h b/drivers/scsi/cxgb3i/cxgb3i_offload.h
+> index 5b93d62..d231569 100644
+> --- a/drivers/scsi/cxgb3i/cxgb3i_offload.h
+> +++ b/drivers/scsi/cxgb3i/cxgb3i_offload.h
+> @@ -180,7 +180,7 @@ void cxgb3i_c3cn_release(struct s3_conn *);
+>   * @seq:	tcp sequence number
+>   * @ddigest:	pdu data digest
+>   * @pdulen:	recovered pdu length
+> - * @ulp_data:	scratch area for ULP
+> + * @wr_data:	scratch area for tx wr
+>   */
+>  struct cxgb3_skb_cb {
+>  	__u8 flags;
+> @@ -188,7 +188,7 @@ struct cxgb3_skb_cb {
+>  	__u32 seq;
+>  	__u32 ddigest;
+>  	__u32 pdulen;
+> -	__u8 ulp_data[16];
+> +	struct sk_buff *wr_data;
+>  };
+>  
+>  #define CXGB3_SKB_CB(skb)	((struct cxgb3_skb_cb *)&((skb)->cb[0]))
+> @@ -196,7 +196,7 @@ struct cxgb3_skb_cb {
+>  #define skb_ulp_mode(skb)	(CXGB3_SKB_CB(skb)->ulp_mode)
+>  #define skb_ulp_ddigest(skb)	(CXGB3_SKB_CB(skb)->ddigest)
+>  #define skb_ulp_pdulen(skb)	(CXGB3_SKB_CB(skb)->pdulen)
+> -#define skb_ulp_data(skb)	(CXGB3_SKB_CB(skb)->ulp_data)
+> +#define skb_wr_data(skb)	(CXGB3_SKB_CB(skb)->wr_data)
+>  
+>  enum c3cb_flags {
+>  	C3CB_FLAG_NEED_HDR = 1 << 0,	/* packet needs a TX_DATA_WR header */
 
 
 -- 
-error compiling committee.c: too many arguments to function
-
+~Randy
