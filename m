@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbYL3MAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751128AbYL3MGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752557AbYL3MAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 07:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYL3MA3
+	id S1751128AbYL3MGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 07:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYL3MFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 07:00:29 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34171 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751109AbYL3MA2 (ORCPT
+	Tue, 30 Dec 2008 07:05:54 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:49636 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbYL3MFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 07:00:28 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Joe Peterson <joe@skyrush.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [BUG?] tty doesn't handle ^D at cooked/non-cooked switching corner case
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081230201932.128D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue, 30 Dec 2008 21:00:23 +0900 (JST)
+	Tue, 30 Dec 2008 07:05:53 -0500
+Date: Tue, 30 Dec 2008 13:07:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andreas Schwab <schwab@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       janitors <kernel-janitors@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Many warnings from our userspace headers
+Message-ID: <20081230120725.GA4622@uranus.ravnborg.org>
+References: <20081230103348.GA363@uranus.ravnborg.org> <jeiqp2j645.fsf@sykes.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <jeiqp2j645.fsf@sykes.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi tty expert,
+On Tue, Dec 30, 2008 at 11:43:22AM +0100, Andreas Schwab wrote:
+> Sam Ravnborg <sam@ravnborg.org> writes:
+> 
+> > /home/sam/kernel/knext.git/usr/include/linux/acct.h:62: leaks CONFIG_M68K to userspace where it is not valid
+> 
+> IMHO this is a false positive, since it is protected by __KERNEL__ in
+> the same expression.
 
-Recently, ruby (scripting program language) developing group found
-that linux doesn't handle ^D properly at cooked/non-cooked switching
-corner case.
+Correct - but we can rewrite it like this:
 
-They (and I) think it isn't typical case, but scripting language vm
-shouldn't hang up although script user write any crap and strange code.
+diff --git a/include/linux/acct.h b/include/linux/acct.h
+index 882dc72..bcc6d2f 100644
+--- a/include/linux/acct.h
++++ b/include/linux/acct.h
+@@ -59,8 +59,12 @@ struct acct
+ 	comp_t		ac_majflt;		/* Major Pagefaults */
+ 	comp_t		ac_swaps;		/* Number of Swaps */
+ /* m68k had no padding here. */
+-#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
++#ifndef __KERNEL__
+ 	__u16		ac_ahz;			/* AHZ */
++#else
++  #ifndef CONFIG_M68K
++	__u16		ac_ahz;			/* AHZ */
++  #endif
+ #endif
+ 	__u32		ac_exitcode;		/* Exitcode */
+ 	char		ac_comm[ACCT_COMM + 1];	/* Command Name */
 
-They create following patch. is it right way?
+This is at least for me also easier to parse.
+So we remove a (bogus) warning and make the code easier to read.
 
-
-
-reproduce way
---------------
-1. run tty_test.sh (see below)
-2. input any key before output "cooked"
-3. input ^D, but do nothing
-
-
-tty_test.sh
---------------
-#!/bin/sh
-
-exec 3<&0
-cat <&3 &
-pid=$!
-stty -icanon
-echo raw
-sleep 1
-stty icanon
-echo cooked
-wait $pid
-
----
- drivers/char/n_tty.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/drivers/char/n_tty.c
-===================================================================
---- a/drivers/char/n_tty.c
-+++ b/drivers/char/n_tty.c
-@@ -1893,7 +1893,7 @@ do_it_again:
- 			check_unthrottle(tty);
- 		}
- 
--		if (b - buf >= minimum)
-+		if (b - buf >= (tty->icanon ? 0 : minimum))
- 			break;
- 		if (time)
- 			timeout = time;
-
-
-
-
-
-
+	Sam
