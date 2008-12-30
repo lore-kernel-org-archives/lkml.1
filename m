@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYL3AVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYL3AVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbYL3AVe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 19:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYL3AVY
+	id S1754167AbYL3AVs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 19:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbYL3AVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 19:21:24 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:35236 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbYL3AVX (ORCPT
+	Mon, 29 Dec 2008 19:21:36 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:14840 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753805AbYL3AVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 19:21:23 -0500
-Date: Tue, 30 Dec 2008 00:20:23 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
-       Jaya Kumar <jayakumar.lkml@gmail.com>,
-       Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Eric Miao <eric.miao@marvell.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>,
-       Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Message-ID: <20081230002023.GA5309@shareable.org>
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com> <200812281346.56703.rgetz@blackfin.uclinux.org> <200812291156.12230.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812291156.12230.david-b@pacbell.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 29 Dec 2008 19:21:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:x-mailer:mime-version:content-type
+         :content-transfer-encoding:from;
+        b=Gh/d+7O4ZYOZ8DQnYYzUUno82X7UZ5TeQpkJZMliscBzPG7l0BgTSbtvnBMx4HVhsq
+         Y6RND6dP+TdcrXDukE6w3elM5sYvy5OAI+Qe6WOBzpElcaG1mdn6tdd7vbfuceXENd1H
+         pfVcvCs6v+6JXYigjloDjgJ220HKocOIbxwIE=
+Date: Mon, 29 Dec 2008 19:21:28 -0500
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [pxamci] fix dma_unmap_sg length
+Message-ID: <20081229192128.18a17619@vsauder-lx.localdomain>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.0; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+From: Vernon Sauder <vernoninhand@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> The reason single-bit operations don't provide error paths is twofold.
-> First, they started as wrappers for can't-fail register accessors.
-> Second, it's extremely unrealisitic to expect much code to handle any
-> kind of faults in the middle of bitbanging loops ... or even just in
-> classic "set this bit and continue" configuration code.
+dma_unmap_sg should be given the same length as dma_map_sg, not the
+value returned from dma_map_sg
 
-That's interesting.  I'm not sure it's a good idea not to return an
-error code.  The caller can just ignore it if they don't care, and
-it's extremely cheap to "return 0" in GPIO drivers which can't error.
+Signed-off-by: Vernon Sauder <vsauder@inhand.com>
+---
+based on latest Linus tree
+ drivers/mmc/host/pxamci.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-If I were bit-banging on GPIOs reached via some peripheral chip (such
-a GPIO-fanout chip over I2C/SPI, where that chip is itself feeding a
-secondary I2C or similar bit-banging bus), I probably would like to
-check for errors and take emergency action if the peripheral chip
-isn't responding, or just report to userspace.
+diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
+index 83ffe8e..3fb2be9 100644
+--- a/drivers/mmc/host/pxamci.c
++++ b/drivers/mmc/host/pxamci.c
+@@ -283,7 +283,7 @@ static int pxamci_data_done(struct pxamci_host *host, unsigned int stat)
+ 		return 0;
+ 
+ 	DCSR(host->dma) = 0;
+-	dma_unmap_sg(mmc_dev(host->mmc), data->sg, host->dma_len,
++	dma_unmap_sg(mmc_dev(host->mmc), data->sg, data->sg_len,
+ 		     host->dma_dir);
+ 
+ 	if (stat & STAT_READ_TIME_OUT)
+-- 
+1.5.2.4
 
-This has actually happened on a board I worked with, where the primary
-I2C failed due to a plugged in peripheral loading it too much, and a
-secondary bit-banging bus was not then reachable.
-
--- Jamie
