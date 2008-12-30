@@ -1,101 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYL3IOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYL3IOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbYL3IOY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 03:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYL3IOP
+	id S1753872AbYL3IOi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 03:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYL3IO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 03:14:15 -0500
-Received: from mx2.suse.de ([195.135.220.15]:48401 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804AbYL3IOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 03:14:14 -0500
-Date: Tue, 30 Dec 2008 09:14:12 +0100
-From: Nick Piggin <npiggin@suse.de>
+	Tue, 30 Dec 2008 03:14:27 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:60832 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753019AbYL3IOZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 03:14:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BuKizrB6j3A1POne/eFRZgaZ+Y+26/XwyNfsPb1S4wio7e3ctkCo4JgVW0RSsP+PP9
+         L2bripRejJ6X1N7pRmmgvHT2+HKz/F9W4gfQcab0xUN/fNbmj9o4TRa2F5sXjyPyKoSP
+         1454wA7xHpLJK42r12OyqHt+QFZVt05f+Kxpg=
+Date: Tue, 30 Dec 2008 10:14:45 +0200
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, ijc@hellion.org.uk
-Subject: Re: early fixmap causes kmap breakage
-Message-ID: <20081230081412.GD14132@wotan.suse.de>
-References: <20081218211543.GB10681@wotan.suse.de> <20081229151731.2a2c5a02.akpm@linux-foundation.org> <20081230040118.GA27679@wotan.suse.de> <20081230061344.GA28281@elte.hu> <20081230075428.GC14132@wotan.suse.de>
-Mime-Version: 1.0
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] RCU: Don't include unnecessary headers, allow
+	kmemtrace w/ tracepoints.
+Message-ID: <20081230081445.GC10635@localhost>
+References: <cover.1230622068.git.eduard.munteanu@linux360.ro> <86493e5e7b0a47e8acf0350a87ab3f22633a5789.1230622069.git.eduard.munteanu@linux360.ro> <20081230074952.GA5482@elte.hu> <20081230075337.GA9594@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081230075428.GC14132@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20081230075337.GA9594@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 08:54:28AM +0100, Nick Piggin wrote:
-> On Tue, Dec 30, 2008 at 07:13:44AM +0100, Ingo Molnar wrote:
-> > 
-> > * Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > On Mon, Dec 29, 2008 at 03:17:31PM -0800, Andrew Morton wrote:
-> > > > On Thu, 18 Dec 2008 22:15:43 +0100
-> > > > Nick Piggin <npiggin@suse.de> wrote:
-> > > > 
-> > > > > Hi,
-> > > > > 
-> > > > > I've debugged a problem where i386+pae systems with more than a few CPUs
-> > > > > blow up at boot in the kmap_atomic code.
-> > > > 
-> > > > ping?
-> > > 
-> > > No further progress here, I'm waiting on input for how to fix this 
-> > > "nicely". Meantime, clearing the early fixmap pte I guess works, but you 
-> > > lose a page... is it possible to put it into .initdata or is there some 
-> > > issue with that? (I guess on a PAE kernel, 4K isn't a big deal).
-> > 
-> > yeah, 4K shouldnt be a big deal. Mind sending a patch for this?
+On Tue, Dec 30, 2008 at 08:53:37AM +0100, Ingo Molnar wrote:
+> hm, there are quite a few such dependencies it appears, for example:
 > 
-> I don't know if we should put a warning when we encounter this condition,
-> to help catch other unintended uses...
+> In file included from init/do_mounts_initrd.c:4:
+> include/linux/fs.h: In function 'alloc_secdata':
+> include/linux/fs.h:2214: error: implicit declaration of function 'get_zeroed_page'
+> include/linux/fs.h:2214: error: 'GFP_KERNEL' undeclared (first use in this function)
+> include/linux/fs.h:2214: error: (Each undeclared identifier is reported only once
+> include/linux/fs.h:2214: error: for each function it appears in.)
+> include/linux/fs.h: In function 'free_secdata':
+> include/linux/fs.h:2219: error: implicit declaration of function 
+> 'free_page'
+> In file included from include/linux/slab.h:13,
+>                  from include/linux/percpu.h:6,
+>                  from include/linux/percpu_counter.h:14,
+>                  from include/linux/ext2_fs_sb.h:21,
+>                  from include/linux/ext2_fs.h:70,
+>                  from init/do_mounts_initrd.c:6:
 > 
-> But this at least clears out the early fixmap pte and provides a contiguous
-> allocation...
+> config attached.
 > 
-> ---
->  arch/x86/mm/init_32.c |   15 ++++++++++++++-
->  1 file changed, 14 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/arch/x86/mm/init_32.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mm/init_32.c
-> +++ linux-2.6/arch/x86/mm/init_32.c
-> @@ -155,6 +155,7 @@ page_table_range_init(unsigned long star
->  	unsigned long vaddr;
->  	pgd_t *pgd;
->  	pmd_t *pmd;
-> +	pte_t *lastpte = NULL;
->  
->  	vaddr = start;
->  	pgd_idx = pgd_index(vaddr);
-> @@ -166,7 +167,19 @@ page_table_range_init(unsigned long star
->  		pmd = pmd + pmd_index(vaddr);
->  		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
->  							pmd++, pmd_idx++) {
-> -			one_page_table_init(pmd);
-> +			pte_t *pte;
-> +
-> +			pte = one_page_table_init(pmd);
-> +			if (lastpte && lastpte + PTRS_PER_PTE != pte) {
-> +				pte_t *newpte;
-> +
-> +				pmd_clear(pmd);
+> 	Ingo
 
-Hmm, no actually we do need a TLB flush here.
+Hm, that's weird, I was also testing on a 2.6.28-based tree. And I don't
+see any reference to RCU headers in this error message. My guess is some
+code assumes a certain header provides some definitions it isn't
+required to.
 
-> +				newpte = one_page_table_init(pmd);
-> +				BUG_ON(lastpte + PTRS_PER_PTE != newpte);
-> +				memset(newpte, pte, PAGE_SIZE);
+I'll checkout your tree and have a look.
 
-And here we probably need a loop doing set_pte just in case the
-CPU speculatively loads an incomplete TLB...
 
-> +				pte = lastpte;
-> +			}
-> +			lastpte = pte;
->  
->  			vaddr += PMD_SIZE;
->  		}
+	Eduard
+
