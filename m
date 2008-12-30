@@ -1,68 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbYL3Fn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbYL3F4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbYL3Fn1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 00:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYL3FnT
+	id S1751959AbYL3F4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 00:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYL3F41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 00:43:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53024 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbYL3FnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 00:43:19 -0500
-Date: Tue, 30 Dec 2008 06:42:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Rusty Russell <rusty@au1.ibm.com>
-Subject: Re: [PATCH] futex: add WARN_ON to catch certain assymetric
-	(get|put)_futex_key calls
-Message-ID: <20081230054257.GC11037@elte.hu>
-References: <20081230034320.24404.56248.stgit@Aeon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 30 Dec 2008 00:56:27 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:30579 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179AbYL3F4Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 00:56:25 -0500
+Date: Mon, 29 Dec 2008 22:00:47 -0800
+From: Karen Xie <kxie@chelsio.com>
+To: randy.dunlap@oracle.com, James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-next@vger.kernel.org, sfr@canb.auug.org.au, kxie@chelsio.com
+Subject: RE: linux-next: Tree for December 29 (cxgb3i)
+Message-ID: <20081230060047.GA20917@qatest2a.asicdesigners.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
 Content-Disposition: inline
-In-Reply-To: <20081230034320.24404.56248.stgit@Aeon>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Darren Hart <dvhltc@us.ibm.com> wrote:
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Following up on my previous key reference accounting patches, this patch
-> will catch puts on keys that haven't been "got".  This won't catch nested
-> get/put mismatches though.
+
+Hi, Randy & James,
+
+The cxgb3i driver was using the skb->sp for some internal stuff. I have just submitted a patch to remove the usage of it since it is not really related to the secure path.
+
+The patch is submitted to the list (http://marc.info/?l=linux-scsi&m=123061555414193&w=2) and is also attached here.
+
+Sorry for the late response, I am traveling this week.
+
+Thanks,
+Karen
+
+-----Original Message-----
+From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
+Sent: Mon 12/29/2008 2:10 PM
+To: James Bottomley
+Cc: Stephen Rothwell; scsi; linux-next@vger.kernel.org; LKML; Karen Xie
+Subject: Re: linux-next: Tree for December 29 (cxgb3i)
+ 
+James Bottomley wrote:
+> On Mon, 2008-12-29 at 12:35 -0800, Randy Dunlap wrote:
+>> On Tue, 30 Dec 2008 03:16:21 +1100 Stephen Rothwell wrote:
+>>
+>>> Hi all,
+>>>
+>>> Changes since 20081219:
+>>>
+>>> Undropped tree:
+>>> 	scci
+>>> 	mtd
+>>>
+>>> Dropped trees (temporarily):
+>>> 	nfs (akpm request due to 2.6.30 features)
+>>> 	kvm (build problem)
+>>> 	rr (build poblem)
+>>> 	semaphore-removal (due to unfixed conflicts against Linus' tree)
+>>> 	cpu_alloc (build problem)
+>>> 	audit (difficult conflicts)
+>>>
+>>> Linus' tree had three build failures requiring patches and one requiring
+>>> a revert.
+>>
+>> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:499: error: 'struct sk_buff' has no member named 'sp'
+>> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:512: error: 'struct sk_buff' has no member named 'sp'
+>> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:532: error: 'struct sk_buff' has no member named 'sp'
+>> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:533: error: 'struct sk_buff' has no member named 'sp'
 > 
-> Build and boot tested, with minimal desktop activity and a run of the
-> open_posix_testsuite in LTP for testing.  No warnings logged.
-> 
-> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-> Cc: "Peter Zijlstra" <peterz@infradead.org>
-> Cc: "Thomas Gleixner" <tglx@linutronix.de>
-> Cc: "Rusty Russell" <rusty@au1.ibm.com>
-> ---
-> 
->  kernel/futex.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
+> In the config 20 questions, my guess for this is CONFIG_XFRM=n
 
-applied to tip/core/futexes, thanks!
+That's correct.  config file is now attached.
 
-I changed this:
+> I'm not at all sure why this driver is playing with the secure path ...
+> I suspect the use needs to be enclosed in #ifdef CONFIG_XFRM pairs, but
+> I'd like the maintainers to verify.
 
-> +		WARN_ON(1);
->  		return;
+-- 
+andy
 
-to WARN_ON_ONCE() - warning once per bootup is good enough for 
-kerneloops.org to pick it up, while a ton of warnings add no extra (other 
-than to inconvenience the user, or even make the system unworkable).
 
-	Ingo
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="122908-cxgb3i-no-wr-sp.patch"
+
+[PATCH 1/1] cxgb3i - remove use of skb->sp
+
+From: Karen Xie <kxie@chelsio.com>
+
+The cxgb3i was using skb->sp pointer for some internal book-keeping which is not related to the secure path. Changed it to use skb->cb[] instead.
+
+Signed-off-by: Karen Xie <kxie@chelsio.com>
+---
+
+ drivers/scsi/cxgb3i/cxgb3i_offload.c |    8 ++++----
+ drivers/scsi/cxgb3i/cxgb3i_offload.h |    6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+
+diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+index 5f16081..a865f1f 100644
+--- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
++++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+@@ -496,7 +496,7 @@ static inline void reset_wr_list(struct s3_conn *c3cn)
+ static inline void enqueue_wr(struct s3_conn *c3cn,
+ 			      struct sk_buff *skb)
+ {
+-	skb->sp = NULL;
++	skb_wr_data(skb) = NULL;
+ 
+ 	/*
+ 	 * We want to take an extra reference since both us and the driver
+@@ -509,7 +509,7 @@ static inline void enqueue_wr(struct s3_conn *c3cn,
+ 	if (!c3cn->wr_pending_head)
+ 		c3cn->wr_pending_head = skb;
+ 	else
+-		c3cn->wr_pending_tail->sp = (void *)skb;
++		skb_wr_data(skb) = skb;
+ 	c3cn->wr_pending_tail = skb;
+ }
+ 
+@@ -529,8 +529,8 @@ static inline struct sk_buff *dequeue_wr(struct s3_conn *c3cn)
+ 
+ 	if (likely(skb)) {
+ 		/* Don't bother clearing the tail */
+-		c3cn->wr_pending_head = (struct sk_buff *)skb->sp;
+-		skb->sp = NULL;
++		c3cn->wr_pending_head = skb_wr_data(skb);
++		skb_wr_data(skb) = NULL;
+ 	}
+ 	return skb;
+ }
+diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.h b/drivers/scsi/cxgb3i/cxgb3i_offload.h
+index 5b93d62..d231569 100644
+--- a/drivers/scsi/cxgb3i/cxgb3i_offload.h
++++ b/drivers/scsi/cxgb3i/cxgb3i_offload.h
+@@ -180,7 +180,7 @@ void cxgb3i_c3cn_release(struct s3_conn *);
+  * @seq:	tcp sequence number
+  * @ddigest:	pdu data digest
+  * @pdulen:	recovered pdu length
+- * @ulp_data:	scratch area for ULP
++ * @wr_data:	scratch area for tx wr
+  */
+ struct cxgb3_skb_cb {
+ 	__u8 flags;
+@@ -188,7 +188,7 @@ struct cxgb3_skb_cb {
+ 	__u32 seq;
+ 	__u32 ddigest;
+ 	__u32 pdulen;
+-	__u8 ulp_data[16];
++	struct sk_buff *wr_data;
+ };
+ 
+ #define CXGB3_SKB_CB(skb)	((struct cxgb3_skb_cb *)&((skb)->cb[0]))
+@@ -196,7 +196,7 @@ struct cxgb3_skb_cb {
+ #define skb_ulp_mode(skb)	(CXGB3_SKB_CB(skb)->ulp_mode)
+ #define skb_ulp_ddigest(skb)	(CXGB3_SKB_CB(skb)->ddigest)
+ #define skb_ulp_pdulen(skb)	(CXGB3_SKB_CB(skb)->pdulen)
+-#define skb_ulp_data(skb)	(CXGB3_SKB_CB(skb)->ulp_data)
++#define skb_wr_data(skb)	(CXGB3_SKB_CB(skb)->wr_data)
+ 
+ enum c3cb_flags {
+ 	C3CB_FLAG_NEED_HDR = 1 << 0,	/* packet needs a TX_DATA_WR header */
+
+--fUYQa+Pmc3FrFX/N--
