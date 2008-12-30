@@ -1,80 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751987AbYL3GEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752298AbYL3GGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751987AbYL3GEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 01:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYL3GEd
+	id S1752298AbYL3GGP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 01:06:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYL3GF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 01:04:33 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:7708 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbYL3GEb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 01:04:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=abJ53EUDdbN4P8HBNmjAgSLsmyJMOoZfz1SxVtBkx0QQCErZsI+mBfTf1ifyy44Bdz
-         hWvLQ+c8adLpamJoKoN95T7l4RScsTYowVatfGGrfvig4bv+JOa+0Ycx7KGGl07KSqpK
-         IlJhbbCD1edxWKsQwz+l8Vg9OpakIjubTrLUw=
-Message-ID: <4959B9B7.2050800@gmail.com>
-Date: Tue, 30 Dec 2008 11:03:35 +0500
-From: "Alexander E. Patrakov" <patrakov@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.1.19) Gecko/20081226 SeaMonkey/1.1.14
+	Tue, 30 Dec 2008 01:05:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39985 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751182AbYL3GFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 01:05:55 -0500
+Date: Tue, 30 Dec 2008 07:05:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Tantilov, Emil S" <emil.s.tantilov@intel.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Duyck, Alexander H" <alexander.h.duyck@intel.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] locking, percpu counters: introduce separate lock
+	classes
+Message-ID: <20081230060536.GG11037@elte.hu>
+References: <20081229103735.GA9763@gondor.apana.org.au> <20081229112858.GA16385@elte.hu> <20081229114907.GA10170@gondor.apana.org.au> <20081229115827.GA441@elte.hu> <20081229120132.GA10363@gondor.apana.org.au> <20081229121626.GF9628@elte.hu> <20081229123819.GA18321@elte.hu> <20081229124444.GA20306@elte.hu> <20081229141417.GA1493@elte.hu> <20081230035815.GA16454@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Arjan Opmeer <arjan@opmeer.net>
-CC: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: 2.6.28 thinks that my PS/2 mouse is a touchpad
-References: <gj4r8h$okm$1@ger.gmane.org> <20081229185619.GA18394@adopmeer.homeip.net>
-In-Reply-To: <20081229185619.GA18394@adopmeer.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081230035815.GA16454@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan Opmeer wrote:
-> On Sat, Dec 27, 2008 at 02:06:29PM +0500, Alexander E. Patrakov wrote:
->> elantech.c: Elantech version query result 0x00, 0x01, 0x64.
->> elantech.c: assuming hardware version 1, firmware version 0.100
->> elantech.c: Synaptics capabilities query result 0x00, 0x02, 0x64.
+
+* Herbert Xu <herbert@gondor.apana.org.au> wrote:
+
+> On Mon, Dec 29, 2008 at 03:14:17PM +0100, Ingo Molnar wrote:
+> >
+> > my testing efforts today are not particularly dominated by luck :-)
+> > 
+> > Below is the latest splat that i got with Peter's patch plus the revert of 
+> > dd24c00191 applied.
 > 
-> However, all version query results I have seen from Elantech touchpads have
-> a non-zero first byte and a zero second byte. So we could test for that to
-> prevent this mouse from being detected as a touchpad.
+> > [   78.679386] 
+> > [   78.679389] =================================
+> > [   78.680039] [ INFO: inconsistent lock state ]
+> > [   78.680039] 2.6.28-tip-03885-g44c31d5-dirty #13188
+> > [   78.680039] ---------------------------------
+> > [   78.680039] inconsistent {softirq-on-W} -> {in-softirq-W} usage.
+> > [   78.680039] ssh/4054 [HC0[0]:SC1[1]:HE1:SE0] takes:
+> > [   78.680039]  (key#8){-+..}, at: [<c042710e>] __percpu_counter_add+0x52/0x7a
+> > [   78.680039] {softirq-on-W} state was registered at:
+> > [   78.680039]   [<c0163e6e>] __lock_acquire+0x288/0xa93
+> > [   78.680039]   [<c01646d6>] lock_acquire+0x5d/0x7a
+> > [   78.680039]   [<c0ae0473>] _spin_lock+0x20/0x2f
+> > [   78.680039]   [<c042710e>] __percpu_counter_add+0x52/0x7a
+> > [   78.680039]   [<c09c3e2f>] percpu_counter_add+0xf/0x12
+> > [   78.680039]   [<c09c50ef>] tcp_v4_init_sock+0xe5/0xea
 > 
-> Dmitry, do you think something like this is sufficient?
+> Right, this is the correct version of the earlier splat :)
 > 
-> --- elantech.c.ORIG	2008-12-29 19:35:01.000000000 +0100
-> +++ elantech.c.NEW	2008-12-29 19:38:59.000000000 +0100
-> @@ -618,6 +618,10 @@ int elantech_init(struct psmouse *psmous
->  	}
->  	pr_info("elantech.c: Elantech version query result 0x%02x, 0x%02x, 0x%02x.\n",
->  		param[0], param[1], param[2]);
-> +	if (param[0] == 0 || param[1] != 0) {
-> +		pr_info("elantech.c: Probably not a real Elantech touchpad. Aborting.\n");
-> +		goto init_fail;
-> +	}
->  	etd->fw_version_maj = param[0];
->  	etd->fw_version_min = param[2];
+> Anyway, I've extended Peter's patch to cover the other cases.
+> Please let me know if it still bitches with this + Peter's fbc
+> patch.
+> 
+> net: Fix percpu counters deadlock
+> 
+> When we converted the protocol atomic counters such as the orphan
+> count and the total socket count deadlocks were introduced due to
+> the mismatch in BH status of the spots that used the percpu counter
+> operations.
+> 
+> Based on the diagnosis and patch by Peter Zijlstra, this patch
+> fixes these issues by disabling BH where we may be in process
+> context.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-This is still slightly wrong. The mouse does work, but is misnamed in 
-the dmesg output and in /proc/bus/input/devices:
+thanks, will start testing it now.
 
-psmouse serio1: ID: 10 00 64<6>elantech.c: Elantech version query result 
-0x00, 0x01, 0x64.
-elantech.c: Probably not a real Elantech touchpad. Aborting.
-input: ImExPS/2 Elantech Touchpad as /class/input/input8
+One small nit: could you please add the Reported-by line for Jeff Kirscher 
+who reported the problem originally:
 
-I: Bus=0011 Vendor=0002 Product=0006 Version=0000
-N: Name="ImExPS/2 Elantech Touchpad"
-P: Phys=isa0060/serio1/input0
-S: Sysfs=/class/input/input8
-U: Uniq=
-H: Handlers=mouse1 event6
-B: EV=7
-B: KEY=1f0000 0 0 0 0 0 0 0 0
-B: REL=143
+ Reported-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
--- 
-Alexander E. Patrakov
+	Ingo
