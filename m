@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbYL3NPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYL3NXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbYL3NPF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 08:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYL3NOw
+	id S1752737AbYL3NXL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 08:23:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYL3NW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 08:14:52 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:40253 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbYL3NOv (ORCPT
+	Tue, 30 Dec 2008 08:22:57 -0500
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:60924 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702AbYL3NW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 08:14:51 -0500
-Date: Tue, 30 Dec 2008 13:14:47 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.28: How come some kernel options cannot be disabled for non-existent hardware?
-Message-ID: <20081230131447.GA14942@srcf.ucam.org>
-References: <alpine.DEB.1.10.0812300641390.11356@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812300641390.11356@p34.internal.lan>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Tue, 30 Dec 2008 08:22:56 -0500
+X-Greylist: delayed 970 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Dec 2008 08:22:56 EST
+Subject: [PATCH][TRIVIAL] Add a space (and a comma) to a printk
+From: Paul Bolle <pebolle@tiscali.nl>
+To: trivial@kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 30 Dec 2008 14:06:43 +0100
+Message-Id: <1230642403.13647.31.camel@test.thuisdomein>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.3.1 (2.25.3.1-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 07:25:42AM -0500, Justin Piszcz wrote:
+Commit d87a6d9 ("drivers/serial/: remove CVS keywords") removed one
+space too many in the printk in serial8250_init(). Put it back in (and
+add a comma for clarity).
+    
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 303272a..31b3c08 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -3018,7 +3018,7 @@ static int __init serial8250_init(void)
+ 	if (nr_uarts > UART_NR)
+ 		nr_uarts = UART_NR;
+ 
+-	printk(KERN_INFO "Serial: 8250/16550 driver"
++	printk(KERN_INFO "Serial: 8250/16550 driver, "
+ 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
+ 		share_irqs ? "en" : "dis");
+ 
 
-> It still shows up as enabled and it is in dmesg shown above.  How come 
-> some kernel options are enabled and cannot (easily?) be disabled for 
-> hardware that does not exist in my machine?
 
-It's enabled by the ATA_ACPI support so libata can handle ACPI-based 
-drive hotswaps. You can check these by looking at the help for an option 
-in make menuconfig. That'll tell you what's selecting an option.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
