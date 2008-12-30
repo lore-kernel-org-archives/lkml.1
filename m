@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYL3AVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYL3AXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbYL3AVs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 19:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbYL3AVg
+	id S1754026AbYL3AXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 19:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYL3AXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 19:21:36 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:14840 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753805AbYL3AVe (ORCPT
+	Mon, 29 Dec 2008 19:23:21 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47270 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752539AbYL3AXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 19:21:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:x-mailer:mime-version:content-type
-         :content-transfer-encoding:from;
-        b=Gh/d+7O4ZYOZ8DQnYYzUUno82X7UZ5TeQpkJZMliscBzPG7l0BgTSbtvnBMx4HVhsq
-         Y6RND6dP+TdcrXDukE6w3elM5sYvy5OAI+Qe6WOBzpElcaG1mdn6tdd7vbfuceXENd1H
-         pfVcvCs6v+6JXYigjloDjgJ220HKocOIbxwIE=
-Date: Mon, 29 Dec 2008 19:21:28 -0500
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] [pxamci] fix dma_unmap_sg length
-Message-ID: <20081229192128.18a17619@vsauder-lx.localdomain>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.0; i586-suse-linux-gnu)
+	Mon, 29 Dec 2008 19:23:20 -0500
+Date: Mon, 29 Dec 2008 16:23:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
+Subject: Re: [PATCH 00/14] Kernel memory leak detector
+Message-Id: <20081229162310.705a25fe.akpm@linux-foundation.org>
+In-Reply-To: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Vernon Sauder <vernoninhand@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma_unmap_sg should be given the same length as dma_map_sg, not the
-value returned from dma_map_sg
+On Fri, 19 Dec 2008 18:12:56 +0000
+Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-Signed-off-by: Vernon Sauder <vsauder@inhand.com>
----
-based on latest Linus tree
- drivers/mmc/host/pxamci.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> A new kmemleak version is available. Thanks to all who reviewed the code
+> and provided feedback.
 
-diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
-index 83ffe8e..3fb2be9 100644
---- a/drivers/mmc/host/pxamci.c
-+++ b/drivers/mmc/host/pxamci.c
-@@ -283,7 +283,7 @@ static int pxamci_data_done(struct pxamci_host *host, unsigned int stat)
- 		return 0;
- 
- 	DCSR(host->dma) = 0;
--	dma_unmap_sg(mmc_dev(host->mmc), data->sg, host->dma_len,
-+	dma_unmap_sg(mmc_dev(host->mmc), data->sg, data->sg_len,
- 		     host->dma_dir);
- 
- 	if (stat & STAT_READ_TIME_OUT)
--- 
-1.5.2.4
+There are a largeish number of trivialish rejects against all the
+pending 2.6.29 code.  Fairly easily fixed.
+
+I merge these patches into my tree, but I'd like to drop them again ;)
+
+> Kmemleak can also be found on this git tree:
+> 
+> git://linux-arm.org/linux-2.6.git kmemleak
+
+Please prepare and maintain a tree for inclusion in linux-next shortly
+after 2.6.29-rc1 is released.
+
+
+
+
+What is the track record of this code?  Has it found many leaks?  Do
+we expect that it will find sufficient leaks of sufficient importance
+to justify kmemleak's inclusion and maintenance?
+
+
+I'm a little doubtful personally.  We often fix leaks, and they are
+almost always things which nobody noticed at runtime, and which were
+found by code inspection or source-code checking tools.  And they're
+usually leaks which nobody would care about much anyway?
 
