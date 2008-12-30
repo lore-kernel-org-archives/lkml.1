@@ -1,104 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbYL3SAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbYL3SKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbYL3SAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 13:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYL3SAV
+	id S1753084AbYL3SKo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 13:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYL3SKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 13:00:21 -0500
-Received: from ppp-111-10.adsl.restena.lu ([158.64.111.10]:34543 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751634AbYL3SAT (ORCPT
+	Tue, 30 Dec 2008 13:10:35 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55764 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbYL3SKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 13:00:19 -0500
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Dec 2008 13:00:19 EST
-Date: Tue, 30 Dec 2008 18:50:37 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: linux-ide@vger.kernel.org
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: S3 with pata_via fails to resume, ide_via82Cxxx works
-Message-ID: <20081230185037.7ec94e94@neptune.home>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Dec 2008 13:10:34 -0500
+Date: Tue, 30 Dec 2008 13:10:32 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Kyle McMartin <kyle@infradead.org>
+Cc: Helge Deller <deller@gmx.de>, linux-parisc <linux-parisc@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       John David Anglin <dave@hiauly1.hia.nrc.ca>, rusty@rustcorp.com.au
+Subject: Re: [PATCH 1/2] module.c: fix module loading failure of large
+	modules (take 2)
+Message-ID: <20081230181032.GB15235@bombadil.infradead.org>
+References: <4959346E.7060600@gmx.de> <49593660.2010900@gmx.de> <20081230180724.GA15235@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081230180724.GA15235@bombadil.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ugh, I fail at typing, resending for rusty's benefit.
 
-On a system (Commell LE365) with VIA CX700M chipset I experience
-varying resume results:
-
-When built with IDE subsystem and VIA82CXXX driver the system suspends
-and resumes properly [2.6.28].
------
-CONFIG_HAVE_IDE=y
-CONFIG_IDE=y
-CONFIG_IDE_TIMINGS=y
-CONFIG_IDE_GD=y
-CONFIG_IDE_GD_ATA=y
-CONFIG_BLK_DEV_IDEACPI=y
-CONFIG_BLK_DEV_IDEDMA_SFF=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_BLK_DEV_VIA82CXXX=y
-CONFIG_BLK_DEV_IDEDMA=y
-# CONFIG_ATA is not set
------
-When built with ATA subsystem and PATA_VIA driver the system suspends
-but hangs during resume (HDD LED remains active) [2.6.28] though it
-manages to resume when the CompactFlash card is disconnected [2.6.27].
------
-# CONFIG_IDE is not set
-CONFIG_ATA=y
-CONFIG_ATA_ACPI=y
-CONFIG_SATA_AHCI=y
-CONFIG_ATA_SFF=y
-CONFIG_SATA_VIA=y
-CONFIG_PATA_VIA=y
------
-
-Is there some known bigger difference between behavior of both drivers?
-I might start comparing behavior of both drivers and try to adjust
-PATA_VIA to successfully resume the system, though any hint/suggestion
-is welcome!
-
-- SATA HDD with system partition  [seen as IDE Primary master]
-- CompactFlash card               [seen as IDE Secondary slave]
-
-lspci output:
-00:00.0 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:0324] (rev 03)
-00:00.1 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:1324]
-00:00.2 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:2324]
-00:00.3 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:3324]
-00:00.4 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:4324]
-00:00.7 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:7324]
-00:01.0 PCI bridge [0604]: VIA Technologies, Inc. VT8237 PCI Bridge [1106:b198]
-00:0f.0 IDE interface [0101]: VIA Technologies, Inc. Device [1106:0581]
-00:10.0 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
-00:10.1 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
-00:10.2 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
-00:10.4 USB Controller [0c03]: VIA Technologies, Inc. USB 2.0 [1106:3104] (rev 90)
-00:11.0 ISA bridge [0601]: VIA Technologies, Inc. CX700 PCI to ISA Bridge [1106:8324]
-00:11.7 Host bridge [0600]: VIA Technologies, Inc. CX700 Internal Module Bus [1106:324e]
-00:13.0 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:324b]
-00:13.1 PCI bridge [0604]: VIA Technologies, Inc. CX700 PCI to PCI Bridge [1106:324a]
-01:00.0 VGA compatible controller [0300]: VIA Technologies, Inc. CX700M2 UniChrome PRO II Graphics [1106:3157] (rev 03)
-02:08.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RTL-8169 Gigabit Ethernet [10ec:8169] (rev 10)
-80:01.0 Audio device [0403]: VIA Technologies, Inc. VIA High Definition Audio Controller [1106:3288] (rev 10)
-
-
-
-
-Secondary note, with ATA subsystem it is possible to discover hot-plugged
-second SATA drive with issuing
-  echo '- - -' > host0/scsi_host/host0/scan
-though the same action causes the access to first SATA drive to fail after
-removing second drive. (unfortunately BIOS does only allows configuring
-the chipset in IDE mode - so not possible to use SATA_VIA or AHCI).
-I guess this is caused by some incorrect detection of speed settings.
-
-What is the way to ask driver to rescan with IDE driver?
-
-Bruno
+On Tue, Dec 30, 2008 at 01:07:24PM -0500, Kyle McMartin wrote:
+> [Adding rusty to CC]
+> 
+> On Mon, Dec 29, 2008 at 09:43:12PM +0100, Helge Deller wrote:
+> > +unsigned long module_additional_section_size(struct module *mod,
+> > +					     unsigned int section);
+> > +
+> 
+> I think this would be more palatable as
+> 
+> #ifdef HAVE_MODULE_SECTION_STUBS
+> unsigned long module_additional_section_size(struct module *mod,
+> 	unsigned int section);
+> #else
+> static inline unsigned long module_additional_section_size(struct module *mod,
+> 	unsigned int section)
+> {
+> 	return 0;
+> }
+> #endif
+> 
+> and removing the conditional in kernel/module.c, possibly the symbol
+> should be "arch_module_a..." just to make it clear to anyone reading.
+> 
+> Anyway, it's up to rusty.
+> 
+> Rusty, we'd like to get this patch in, so I can merge the dependent
+> parisc-specific patch.
+> 
+> regards, Kyle
+> 
+> >  /* Allocator used for allocating struct module, core sections and init
+> >     sections.  Returns NULL on failure. */
+> >  void *module_alloc(unsigned long size);
+> > diff --git a/init/Kconfig b/init/Kconfig
+> > index f763762..5383815 100644
+> > --- a/init/Kconfig
+> > +++ b/init/Kconfig
+> > @@ -908,6 +908,9 @@ config MODULE_SRCVERSION_ALL
+> >  	  the version).  With this option, such a "srcversion" field
+> >  	  will be created for all modules.  If unsure, say N.
+> >  
+> > +config HAVE_MODULE_SECTION_STUBS
+> > +	bool
+> > +
+> >  config KMOD
+> >  	def_bool y
+> >  	help
+> > diff --git a/kernel/module.c b/kernel/module.c
+> > index 1f4cc00..4b86308 100644
+> > --- a/kernel/module.c
+> > +++ b/kernel/module.c
+> > @@ -1579,10 +1579,15 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
+> >  }
+> >  
+> >  /* Update size with this section: return offset. */
+> > -static long get_offset(unsigned int *size, Elf_Shdr *sechdr)
+> > +static long get_offset(struct module *mod, unsigned int *size,
+> > +		Elf_Shdr *sechdr, unsigned int section)
+> >  {
+> >  	long ret;
+> >  
+> > +#ifdef CONFIG_HAVE_MODULE_SECTION_STUBS
+> > +	/* allocate some memory for stubs in front of each section */
+> > +	*size += module_additional_section_size(mod, section);
+> > +#endif
+> >  	ret = ALIGN(*size, sechdr->sh_addralign ?: 1);
+> >  	*size = ret + sechdr->sh_size;
+> >  	return ret;
+> > @@ -1622,7 +1627,7 @@ static void layout_sections(struct module *mod,
+> >  			    || strncmp(secstrings + s->sh_name,
+> >  				       ".init", 5) == 0)
+> >  				continue;
+> > -			s->sh_entsize = get_offset(&mod->core_size, s);
+> > +			s->sh_entsize = get_offset(mod, &mod->core_size, s, i);
+> >  			DEBUGP("\t%s\n", secstrings + s->sh_name);
+> >  		}
+> >  		if (m == 0)
+> > @@ -1640,7 +1645,7 @@ static void layout_sections(struct module *mod,
+> >  			    || strncmp(secstrings + s->sh_name,
+> >  				       ".init", 5) != 0)
+> >  				continue;
+> > -			s->sh_entsize = (get_offset(&mod->init_size, s)
+> > +			s->sh_entsize = (get_offset(mod, &mod->init_size, s, i)
+> >  					 | INIT_OFFSET_MASK);
+> >  			DEBUGP("\t%s\n", secstrings + s->sh_name);
+> >  		}
+> > 
+> 
