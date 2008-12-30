@@ -1,32 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752298AbYL3GGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbYL3GOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752298AbYL3GGP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 01:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYL3GF4
+	id S1752489AbYL3GOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 01:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYL3GOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 01:05:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39985 "EHLO mx3.mail.elte.hu"
+	Tue, 30 Dec 2008 01:14:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46944 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbYL3GFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 01:05:55 -0500
-Date: Tue, 30 Dec 2008 07:05:36 +0100
+	id S1751179AbYL3GOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 01:14:11 -0500
+Date: Tue, 30 Dec 2008 07:13:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Tantilov, Emil S" <emil.s.tantilov@intel.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Duyck, Alexander H" <alexander.h.duyck@intel.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] locking, percpu counters: introduce separate lock
-	classes
-Message-ID: <20081230060536.GG11037@elte.hu>
-References: <20081229103735.GA9763@gondor.apana.org.au> <20081229112858.GA16385@elte.hu> <20081229114907.GA10170@gondor.apana.org.au> <20081229115827.GA441@elte.hu> <20081229120132.GA10363@gondor.apana.org.au> <20081229121626.GF9628@elte.hu> <20081229123819.GA18321@elte.hu> <20081229124444.GA20306@elte.hu> <20081229141417.GA1493@elte.hu> <20081230035815.GA16454@gondor.apana.org.au>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, ijc@hellion.org.uk
+Subject: Re: early fixmap causes kmap breakage
+Message-ID: <20081230061344.GA28281@elte.hu>
+References: <20081218211543.GB10681@wotan.suse.de> <20081229151731.2a2c5a02.akpm@linux-foundation.org> <20081230040118.GA27679@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081230035815.GA16454@gondor.apana.org.au>
+In-Reply-To: <20081230040118.GA27679@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,55 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Herbert Xu <herbert@gondor.apana.org.au> wrote:
+* Nick Piggin <npiggin@suse.de> wrote:
 
-> On Mon, Dec 29, 2008 at 03:14:17PM +0100, Ingo Molnar wrote:
-> >
-> > my testing efforts today are not particularly dominated by luck :-)
+> On Mon, Dec 29, 2008 at 03:17:31PM -0800, Andrew Morton wrote:
+> > On Thu, 18 Dec 2008 22:15:43 +0100
+> > Nick Piggin <npiggin@suse.de> wrote:
 > > 
-> > Below is the latest splat that i got with Peter's patch plus the revert of 
-> > dd24c00191 applied.
+> > > Hi,
+> > > 
+> > > I've debugged a problem where i386+pae systems with more than a few CPUs
+> > > blow up at boot in the kmap_atomic code.
+> > 
+> > ping?
 > 
-> > [   78.679386] 
-> > [   78.679389] =================================
-> > [   78.680039] [ INFO: inconsistent lock state ]
-> > [   78.680039] 2.6.28-tip-03885-g44c31d5-dirty #13188
-> > [   78.680039] ---------------------------------
-> > [   78.680039] inconsistent {softirq-on-W} -> {in-softirq-W} usage.
-> > [   78.680039] ssh/4054 [HC0[0]:SC1[1]:HE1:SE0] takes:
-> > [   78.680039]  (key#8){-+..}, at: [<c042710e>] __percpu_counter_add+0x52/0x7a
-> > [   78.680039] {softirq-on-W} state was registered at:
-> > [   78.680039]   [<c0163e6e>] __lock_acquire+0x288/0xa93
-> > [   78.680039]   [<c01646d6>] lock_acquire+0x5d/0x7a
-> > [   78.680039]   [<c0ae0473>] _spin_lock+0x20/0x2f
-> > [   78.680039]   [<c042710e>] __percpu_counter_add+0x52/0x7a
-> > [   78.680039]   [<c09c3e2f>] percpu_counter_add+0xf/0x12
-> > [   78.680039]   [<c09c50ef>] tcp_v4_init_sock+0xe5/0xea
-> 
-> Right, this is the correct version of the earlier splat :)
-> 
-> Anyway, I've extended Peter's patch to cover the other cases.
-> Please let me know if it still bitches with this + Peter's fbc
-> patch.
-> 
-> net: Fix percpu counters deadlock
-> 
-> When we converted the protocol atomic counters such as the orphan
-> count and the total socket count deadlocks were introduced due to
-> the mismatch in BH status of the spots that used the percpu counter
-> operations.
-> 
-> Based on the diagnosis and patch by Peter Zijlstra, this patch
-> fixes these issues by disabling BH where we may be in process
-> context.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> No further progress here, I'm waiting on input for how to fix this 
+> "nicely". Meantime, clearing the early fixmap pte I guess works, but you 
+> lose a page... is it possible to put it into .initdata or is there some 
+> issue with that? (I guess on a PAE kernel, 4K isn't a big deal).
 
-thanks, will start testing it now.
-
-One small nit: could you please add the Reported-by line for Jeff Kirscher 
-who reported the problem originally:
-
- Reported-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+yeah, 4K shouldnt be a big deal. Mind sending a patch for this?
 
 	Ingo
