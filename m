@@ -1,80 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbYL3Lof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbYL3Lue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbYL3Lof (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 06:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYL3Lo0
+	id S1753878AbYL3Lue (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 06:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYL3LuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 06:44:26 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:35144 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751629AbYL3LoZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 06:44:25 -0500
-Subject: Re: [PATCH 00/14] Kernel memory leak detector
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-In-Reply-To: <20081229162310.705a25fe.akpm@linux-foundation.org>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20081229162310.705a25fe.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 30 Dec 2008 11:43:50 +0000
-Message-Id: <1230637430.3909.38.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 30 Dec 2008 06:50:18 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:49538 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbYL3LuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 06:50:17 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] kbuild: warn about headers using __[us]{8,16,32,64} types w/out linux/types.h
+Date: Tue, 30 Dec 2008 06:50:14 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <1230553127-953-1-git-send-email-vapier@gentoo.org> <200812291527.53317.vapier@gentoo.org> <20081230104303.GA486@uranus.ravnborg.org>
+In-Reply-To: <20081230104303.GA486@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart5981463.2A98Ec162t";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Dec 2008 11:43:52.0471 (UTC) FILETIME=[E3576A70:01C96A73]
+Message-Id: <200812300650.15201.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-29 at 16:23 -0800, Andrew Morton wrote:
-> What is the track record of this code?  Has it found many leaks?  Do
-> we expect that it will find sufficient leaks of sufficient importance
-> to justify kmemleak's inclusion and maintenance?
+--nextPart5981463.2A98Ec162t
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It found a few leaks not found by static code analysis (not many though)
-but I mainly tested it on small embedded systems. I think it may be
-better to include it in the -mm tree for a while so that more people
-test it before deciding whether to merge it into mainline.
+On Tuesday 30 December 2008 05:43:03 Sam Ravnborg wrote:
+> On Mon, Dec 29, 2008 at 03:27:51PM -0500, Mike Frysinger wrote:
+> > > We do not need to warn for each line in a file. Only once is enough.
+> >
+> > i wasnt sure about that ... got pretty noisy the way i posted it :)
+> >
+> > > Also I assume that include <asm/types.h> is also ok.
+> >
+> > i dont think so ... does it really make sense for headers to be hitting
+> > asm/types.h anyways ?  shouldnt they all be going through linux/types.h=
+ ?
+> > checkpatch would certainly warn about it ...
+>
+> I added following patch which I have pushed out.
+>
+> 	Sam
+>
+> From 1f71c478dadbe1425eeaa704e50c7030ab011c5b Mon Sep 17 00:00:00 2001
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Tue, 30 Dec 2008 11:34:58 +0100
+> Subject: [PATCH] kbuild: add checks for include of linux/types in userspa=
+ce
+> headers
+>
+> If we see __[us](8|16|32|64) then we must include <linux/types.h>
+> If wee see include of <asm/types.h> then we recommend <linux/types.h>
+>
+> Original script from Mike but modified by me.
+>
+> Cc: Mike Frysinger <vapier@gentoo.org>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  scripts/headers_check.pl |   47
+> +++++++++++++++++++++++++++++++++++++++++++-- 1 files changed, 44
+> insertions(+), 3 deletions(-)
+>
+> diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
+> index 72924a7..b62c319 100644
+> --- a/scripts/headers_check.pl
+> +++ b/scripts/headers_check.pl
+> @@ -34,9 +34,11 @@ foreach my $file (@files) {
+>  	$lineno =3D 0;
+>  	while ($line =3D <FH>) {
+>  		$lineno++;
+> -		check_include();
+> -		check_prototypes();
+> -		check_config();
+> +		&check_include();
+> +		&check_asm_types();
+> +		&check_sizetypes();
+> +		&check_prototypes();
+> +		&check_config();
+>  	}
+>  	close FH;
+>  }
+> @@ -73,3 +75,42 @@ sub check_config
+>  	}
+>  }
+>
+> +my $linux_asm_types;
+> +sub check_asm_types()
+> +{
+> +	if ($lineno =3D=3D 1) {
+> +		$linux_asm_types =3D 0;
+> +	} elsif ($linux_asm_types >=3D 1) {
+> +		return;
+> +	}
+> +	if ($line =3D~ m/^\s*#\s*include\s+<asm\/types.h>/) {
+> +		$linux_asm_types =3D 1;
+> +		printf STDERR "$filename:$lineno: " .
+> +		"include of <linux/types.h> is preferred over <asm/types.h>\n"
+> +		# Warn until headers are all fixed
+> +		#$ret =3D 1;
+> +	}
+> +}
 
-FYI, here are some past reports:
+you'll want to special case linux/types.h as it should be pulling in=20
+asm/types.h ... off the top of my head, that's the only one ...
+=2Dmike
 
-http://lkml.org/lkml/2006/5/28/37
-http://lkml.org/lkml/2006/7/10/370
-http://lkml.org/lkml/2006/8/10/207
-http://lkml.org/lkml/2006/8/12/11
-http://lkml.org/lkml/2006/8/19/44
-http://lkml.org/lkml/2006/12/9/178
-http://lkml.org/lkml/2006/12/9/176
-http://lkml.org/lkml/2007/3/8/222
-http://lkml.org/lkml/2008/11/19/204
+--nextPart5981463.2A98Ec162t
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> I'm a little doubtful personally.  We often fix leaks, and they are
-> almost always things which nobody noticed at runtime, and which were
-> found by code inspection or source-code checking tools.  And they're
-> usually leaks which nobody would care about much anyway?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-I'm a bit biased to comment on the usefulness of kmemleak :-). Anyway,
-AFAIK static code checking tools (like coverity) are good for relatively
-simple things like not freeing on an error return path (maybe they can
-go further across multiple files, I haven't tried it). I doubt such
-tools can catch leaks caused by incorrect reference counting or very
-complex code. OTOH, kmemleak doesn't report a leak unless it occurred,
-so static and dynamic checking tools are rather complementary.
+iQIcBAABAgAGBQJJWgr3AAoJEEFjO5/oN/WBNj8QALc8+xURGtUpZF/YCCH1KW+k
+YvSv5sHbZfceRKPcJCT+nW8DZWO0uWS1FA6Xcxi/hVNiQm4ewWTO3yKjs9UZ0o4w
+/iGeZnTpaEaj4UPO6BtM38G9ARi15ITJwtnTVycitBXF/ZUVnhmEwIvAePc5bEl1
++I5LknMT0SHOOKMfga/PMc7IFuitCoz8TVDlws3wfkOdovhnciUxqUo4Bw4qsruh
+W72n33gKuXUlNCesC0W0MT187vO4VAY708O3arkUCl71BLDxWUPmPRObfuRkkk4G
+T21EcYhrK3th50/QiO8pMo0WZad1DUmcO6GvtztFD33shEM9DulHsik/fQaRVBjm
+1guTwKFlZwTi0iSuyEVcdWJtB0uJsLSQ/3uAOf/D3I+iqk4AtmDT4LyTIMXHbIM6
+0zha8shl7gxt2mMt5HdyRewWk21tqcKwFzmFlqZPnhNO+PV4pxYmjilhUyXNBOTf
+p+wUJ4w9nECxXzflfPQeWqUJ/aCHdO0vNwWtukv9c4MYIQd19dX2zpCxeicx8cMy
+rMWQ/54GkWlX1gxs5O0KDG5iLxN949DEqCpZOi2ND1PyG2xmLMIW5k07RnccpCtX
+9sg4YdFa3sSR8Hk+FLFtXdTx7zofv7lw/k9mHVWo6YyH6NnYe8dbp9weT8VVk9XP
+2qQajCQliR6uamOqgtj8
+=SnJw
+-----END PGP SIGNATURE-----
 
-Now, as long as the code is correctly written and with additional static
-checking, kmemleak shouldn't find a significant number of bugs. However,
-some (earlier) bugs mentioned above were causing tens of (small) leaks
-in a few minutes. They may have become visible after days of running but
-it's much easier to catch and fix them early.
-
-You can't really tell whether a leak is serious or not until you check
-the code. A leak doesn't necessarily mean that you can no longer reuse a
-block of memory but the code possibly frees a different one still in use
-by other parts of the kernel (e.g. the last report mentioned above).
-
--- 
-Catalin
-
+--nextPart5981463.2A98Ec162t--
