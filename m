@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYL3IBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYL3IOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbYL3IBZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 03:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYL3IBL
+	id S1752980AbYL3IOY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 03:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYL3IOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 03:01:11 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:21104 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbYL3IBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 03:01:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oM9EbuCGuzQU507aoPbfHHrAU8m098/s0e1M6vAhev5+wf3vAv/ufOJycVCGWIFw1G
-         hPqF8qB30epgKLr6JEyplr9bwspC36BAWAWxY0mz1zKte2fReQr8oqTokPo2HyUoBXpB
-         fBF7oNZHpuFBxuvlu7lPTOWf7FscyGEMme+1A=
-Date: Tue, 30 Dec 2008 10:01:30 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, mingo@elte.hu
-Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
-	the unified tracing API
-Message-ID: <20081230080129.GA10635@localhost>
-References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere> <1230623364.6091.9.camel@penberg-laptop>
-MIME-Version: 1.0
+	Tue, 30 Dec 2008 03:14:15 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48401 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750804AbYL3IOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 03:14:14 -0500
+Date: Tue, 30 Dec 2008 09:14:12 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, ijc@hellion.org.uk
+Subject: Re: early fixmap causes kmap breakage
+Message-ID: <20081230081412.GD14132@wotan.suse.de>
+References: <20081218211543.GB10681@wotan.suse.de> <20081229151731.2a2c5a02.akpm@linux-foundation.org> <20081230040118.GA27679@wotan.suse.de> <20081230061344.GA28281@elte.hu> <20081230075428.GC14132@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1230623364.6091.9.camel@penberg-laptop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081230075428.GC14132@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 09:49:24AM +0200, Pekka Enberg wrote:
-> Hi Frederic,
-> 
-> On Mon, 2008-12-29 at 23:09 +0100, Frederic Weisbecker wrote:
-> > Pekka, note that I would be pleased to add statistical tracing on
-> > this tracer, but I would need a hashtable, or an array, or a list, or whatever
-> > iterable to insert the data into the stat tracing api.
+On Tue, Dec 30, 2008 at 08:54:28AM +0100, Nick Piggin wrote:
+> On Tue, Dec 30, 2008 at 07:13:44AM +0100, Ingo Molnar wrote:
 > > 
-> > But I don't know your projects about this... whether you wanted to use a section
-> > or something else...
+> > * Nick Piggin <npiggin@suse.de> wrote:
+> > 
+> > > On Mon, Dec 29, 2008 at 03:17:31PM -0800, Andrew Morton wrote:
+> > > > On Thu, 18 Dec 2008 22:15:43 +0100
+> > > > Nick Piggin <npiggin@suse.de> wrote:
+> > > > 
+> > > > > Hi,
+> > > > > 
+> > > > > I've debugged a problem where i386+pae systems with more than a few CPUs
+> > > > > blow up at boot in the kmap_atomic code.
+> > > > 
+> > > > ping?
+> > > 
+> > > No further progress here, I'm waiting on input for how to fix this 
+> > > "nicely". Meantime, clearing the early fixmap pte I guess works, but you 
+> > > lose a page... is it possible to put it into .initdata or is there some 
+> > > issue with that? (I guess on a PAE kernel, 4K isn't a big deal).
+> > 
+> > yeah, 4K shouldnt be a big deal. Mind sending a patch for this?
 > 
-> It really depends on what we're tracing. If we're interested in just the
-> allocation hotspots, a section will do just fine. However, if we're
-> tracing memory footprint, we need to take into store the object pointer
-> returned from kmalloc() and kmem_cache_alloc() so we can update
-> call-site statistics properly upon kfree().
+> I don't know if we should put a warning when we encounter this condition,
+> to help catch other unintended uses...
 > 
-> So I suppose we need both, a section for per call-site statistics and a
-> hash table for the object -> call-site mapping.
+> But this at least clears out the early fixmap pte and provides a contiguous
+> allocation...
 > 
-> 		Pekka
+> ---
+>  arch/x86/mm/init_32.c |   15 ++++++++++++++-
+>  1 file changed, 14 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/arch/x86/mm/init_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/init_32.c
+> +++ linux-2.6/arch/x86/mm/init_32.c
+> @@ -155,6 +155,7 @@ page_table_range_init(unsigned long star
+>  	unsigned long vaddr;
+>  	pgd_t *pgd;
+>  	pmd_t *pmd;
+> +	pte_t *lastpte = NULL;
+>  
+>  	vaddr = start;
+>  	pgd_idx = pgd_index(vaddr);
+> @@ -166,7 +167,19 @@ page_table_range_init(unsigned long star
+>  		pmd = pmd + pmd_index(vaddr);
+>  		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
+>  							pmd++, pmd_idx++) {
+> -			one_page_table_init(pmd);
+> +			pte_t *pte;
+> +
+> +			pte = one_page_table_init(pmd);
+> +			if (lastpte && lastpte + PTRS_PER_PTE != pte) {
+> +				pte_t *newpte;
+> +
+> +				pmd_clear(pmd);
 
-Hi Frederic,
+Hmm, no actually we do need a TLB flush here.
 
-Thanks for doing this work.
+> +				newpte = one_page_table_init(pmd);
+> +				BUG_ON(lastpte + PTRS_PER_PTE != newpte);
+> +				memset(newpte, pte, PAGE_SIZE);
 
-kmemtrace-user currently shows two main views: per call-site and
-per-allocation. For the former, it uses a hashtable to accumulate
-statistics. There's also a hashtable for individual allocations (by ptr
-address), which we use to check for consistency for example ("if this is
-going to be freed, has it been allocated?"). Apart from those two views,
-it also shows global statistics.
+And here we probably need a loop doing set_pte just in case the
+CPU speculatively loads an incomplete TLB...
 
-
-	Thanks again,
-	Eduard
-
+> +				pte = lastpte;
+> +			}
+> +			lastpte = pte;
+>  
+>  			vaddr += PMD_SIZE;
+>  		}
