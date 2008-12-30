@@ -1,107 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbYL3IQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYL3ISW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbYL3IQW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 03:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYL3IQO
+	id S1753283AbYL3ISW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 03:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYL3ISN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 03:16:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57859 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbYL3IQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 03:16:14 -0500
-Date: Tue, 30 Dec 2008 09:16:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
-	the unified tracing API
-Message-ID: <20081230081600.GD2455@elte.hu>
-References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere> <1230623364.6091.9.camel@penberg-laptop>
+	Tue, 30 Dec 2008 03:18:13 -0500
+Received: from rn-out-0910.google.com ([64.233.170.189]:54899 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbYL3ISL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 03:18:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=r0RajNvN1++LwNsk5P89NtJBfmkniEZcp7XXgXc88Q9ij9WLlxDf3OpkHEkKMN4vAo
+         tXMQ0UTdNp6kdHEBo58eku0qdcIpfH8aQUyo4gePUqAxAXBmwfIOsvsoiU+O4rT/x+2u
+         1aT4uhpu10RyQYEttAoHJARqRsQVSppiTk6Nw=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH] sh: maple: add support for the Maple mouse on the SEGA Dreamcast
+Date: Tue, 30 Dec 2008 00:17:44 -0800
+User-Agent: KMail/1.10.3 (Linux/2.6.27.9-159.fc10.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "linux-input" <linux-input@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
+References: <1230578246.6496.25.camel@localhost.localdomain> <1230589073.6496.30.camel@localhost.localdomain> <200812291719.47754.vapier@gentoo.org>
+In-Reply-To: <200812291719.47754.vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1230623364.6091.9.camel@penberg-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200812300017.45336.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 29 December 2008 14:19:42 Mike Frysinger wrote:
+> On Monday 29 December 2008 17:17:53 Adrian McMenamin wrote:
+> > On Mon, 2008-12-29 at 22:46 +0100, Sam Ravnborg wrote:
+> > > Look for an increase in section mismatch warning or try to
+> > > build with:
+> > > make CONFIG_DEBUG_SECTION_MISMATCH=y
+> >
+> > Just rebuilt the whole thing from scratch with that turned on and no
+> > extra warnings at all.
+>
+> regardless, please add the aforementioned wrapping.  this comes up from
+> time to time in various configurations.
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-
-> Hi Frederic,
-> 
-> On Mon, 2008-12-29 at 23:09 +0100, Frederic Weisbecker wrote:
-> > Pekka, note that I would be pleased to add statistical tracing on
-> > this tracer, but I would need a hashtable, or an array, or a list, or whatever
-> > iterable to insert the data into the stat tracing api.
-> > 
-> > But I don't know your projects about this... whether you wanted to use a section
-> > or something else...
-> 
-> It really depends on what we're tracing. If we're interested in just the 
-> allocation hotspots, a section will do just fine. However, if we're 
-> tracing memory footprint, we need to take into store the object pointer 
-> returned from kmalloc() and kmem_cache_alloc() so we can update 
-> call-site statistics properly upon kfree().
-> 
-> So I suppose we need both, a section for per call-site statistics and a 
-> hash table for the object -> call-site mapping.
-
-1)
-
-i think the call_site based tracking should be a built-in capability - the 
-branch tracer needs that too for example. That would also make it very 
-simple on the usage place: you wouldnt have to worry about sections in 
-slub.c/etc.
-
-2)
-
-i think a possibly useful intermediate object would be the slab cache 
-itself, which could be the basis for some highlevel stats too. It would 
-probably overlap /proc/slabinfo statistics but it's a natural part of this 
-abstraction i think.
-
-3)
-
-the most lowlevel (and hence most allocation-footprint sensitive) object 
-to track would be the memory object itself. I think the best approach 
-would be to do a static, limited size hash that could track up to N memory 
-objects.
-
-The advantage of such an approach is that it does not impact allocation 
-patterns at all (besides the one-time allocation cost of the hash itself 
-during tracer startup).
-
-The disadvantage is when an overflow happens: the sizing heuristics would 
-get the size correct most of the time anyway, so it's not a practical 
-issue. There would be some sort of sizing control similar to 
-/debug/tracing/buffer_size_kb, and a special trace entry that signals an 
-'overflow' of the hash table. (in that case we wont track certain objects 
-- but it would be clear from the trace output what happens and the hash 
-size can be adjusted.)
-
-Another advantage would be that it would trivially not interact with any 
-allocator - because the hash itself would never 'allocate' in any dynamic 
-way. Either there are free entries available (in which case we use it), or 
-not - in which case we emit an hash-overflow trace entry.
-
-And this too would be driven from ftrace mainly - the SLAB code would only 
-offer the alloc+free callbacks with the object IDs. [ and this means that 
-we could detect memory leaks by looking at the hash table and print out 
-the age of entries :-) ]
-
-How does this sound to you?
-
-	Ingo
+It could be that neither of the platforms this driver is running on defines
+CONFIG_HOTPLUG and then I think it is harmless but yes, we better have
+__devexit_p() there.
+ 
+-- 
+Dmitry
