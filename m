@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYL3NnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbYL3Noa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbYL3NnV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 08:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYL3NnJ
+	id S1753936AbYL3Noa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 08:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbYL3NoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 08:43:09 -0500
-Received: from verein.lst.de ([213.95.11.210]:56474 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbYL3NnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 08:43:08 -0500
-Date: Tue, 30 Dec 2008 14:42:48 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: dhowells@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: access(2) regressions in current mainline
-Message-ID: <20081230134248.GA30124@lst.de>
+	Tue, 30 Dec 2008 08:44:22 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59859 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752073AbYL3NoV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 08:44:21 -0500
+Date: Tue, 30 Dec 2008 13:44:27 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Joe Peterson <joe@skyrush.com>, LKML <linux-kernel@vger.kernel.org>,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [BUG?] tty doesn't handle ^D at cooked/non-cooked switching
+ corner case
+Message-ID: <20081230134427.003ff13a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081230201932.128D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081230201932.128D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the merge of the current git tree into the xfs tree I see a
-regression in XFSQA 088:
+On Tue, 30 Dec 2008 21:00:23 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-088	 - output mismatch (see 088.out.bad)
---- 088.out	2008-12-30 12:01:09.000000000 +0000
-+++ 088.out.bad	2008-12-30 13:37:24.000000000 +0000
-@@ -1,9 +1,9 @@
- QA output created by 088
- access(TEST_DIR/t_access, 0) returns 0
--access(TEST_DIR/t_access, R_OK) returns 0
--access(TEST_DIR/t_access, W_OK) returns 0
-+access(TEST_DIR/t_access, R_OK) returns -1
-+access(TEST_DIR/t_access, W_OK) returns -1
- access(TEST_DIR/t_access, X_OK) returns -1
--access(TEST_DIR/t_access, R_OK | W_OK) returns 0
-+access(TEST_DIR/t_access, R_OK | W_OK) returns -1
- access(TEST_DIR/t_access, R_OK | X_OK) returns -1
- access(TEST_DIR/t_access, W_OK | X_OK) returns -1
- access(TEST_DIR/t_access, R_OK | W_OK | X_OK) returns -1
+> Hi tty expert,
+> 
+> Recently, ruby (scripting program language) developing group found
+> that linux doesn't handle ^D properly at cooked/non-cooked switching
+> corner case.
 
-Given that XFS uses bog-standard generic_permission and the creds merge
-just happened I'd look for the cause there.  The source for the xfs
-testcase is here:
+I don't believe the behaviour of input characters typed across that
+boundary is defined by the standards at all. That said I think the
+behaviour you expect is reasonable.
 
-	http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs-cmds/.git;a=blob;f=xfstests/088;h=726ad009fd10cfde8c223f931e0994f596bcdc26;hb=HEAD
+> They create following patch. is it right way?
 
+You could recompute minimum in this case but zero is definitely
+incorrect. I think what you would actually need to do is to extract out
+the code just below do_it_again: which computes minimum and recompute it
+properly.
+
+Alan
