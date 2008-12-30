@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbYL3Hyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYL3H7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbYL3Hyo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 02:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYL3Hye
+	id S1753275AbYL3H7v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 02:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYL3H7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 02:54:34 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47832 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbYL3Hyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 02:54:33 -0500
-Date: Tue, 30 Dec 2008 08:54:28 +0100
-From: Nick Piggin <npiggin@suse.de>
+	Tue, 30 Dec 2008 02:59:43 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33072 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750804AbYL3H7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 02:59:42 -0500
+Date: Mon, 29 Dec 2008 23:59:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, ijc@hellion.org.uk
-Subject: Re: early fixmap causes kmap breakage
-Message-ID: <20081230075428.GC14132@wotan.suse.de>
-References: <20081218211543.GB10681@wotan.suse.de> <20081229151731.2a2c5a02.akpm@linux-foundation.org> <20081230040118.GA27679@wotan.suse.de> <20081230061344.GA28281@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/14] kmemleak: Add the base support
+Message-Id: <20081229235922.4f5d9846.akpm@linux-foundation.org>
+In-Reply-To: <20081230075202.GB5482@elte.hu>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	<20081219181302.7778.15966.stgit@pc1117.cambridge.arm.com>
+	<20081229162314.1cc7a549.akpm@linux-foundation.org>
+	<20081230073807.GA2455@elte.hu>
+	<20081229234447.41c3c1b1.akpm@linux-foundation.org>
+	<20081230075202.GB5482@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081230061344.GA28281@elte.hu>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 07:13:44AM +0100, Ingo Molnar wrote:
+On Tue, 30 Dec 2008 08:52:02 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> * Nick Piggin <npiggin@suse.de> wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > On Mon, Dec 29, 2008 at 03:17:31PM -0800, Andrew Morton wrote:
-> > > On Thu, 18 Dec 2008 22:15:43 +0100
-> > > Nick Piggin <npiggin@suse.de> wrote:
-> > > 
-> > > > Hi,
-> > > > 
-> > > > I've debugged a problem where i386+pae systems with more than a few CPUs
-> > > > blow up at boot in the kmap_atomic code.
-> > > 
-> > > ping?
+> > On Tue, 30 Dec 2008 08:38:07 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 > > 
-> > No further progress here, I'm waiting on input for how to fix this 
-> > "nicely". Meantime, clearing the early fixmap pte I guess works, but you 
-> > lose a page... is it possible to put it into .initdata or is there some 
-> > issue with that? (I guess on a PAE kernel, 4K isn't a big deal).
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > > +/*
+> > > > > + * Stop the automatic memory scanning thread. This function must be called
+> > > > > + * with the kmemleak_mutex held.
+> > > > > + */
+> > > > > +void stop_scan_thread(void)
+> > > > > +{
+> > > > > +	if (scan_thread) {
+> > > > > +		kthread_stop(scan_thread);
+> > > > > +		scan_thread = NULL;
+> > > > > +	}
+> > > > > +}
+> > > > 
+> > > > so... why do we need a kernel thread?
+> > > > 
+> > > > We could have (for the sake of argument) a sys_kmemleak_scan() which 
+> > > > does a single scan then returns.  Or something like that.  That way, 
+> > > > userspace directly gets to set the scanning frequency, thread priority, 
+> > > > etc.
+> > > 
+> > > thread priority of a kernel thread can be set anyway. Kernel threads tend 
+> > > to be better for such simple things because we can control all aspects, 
+> > > start them automatically so that test setups catch it (without needing any 
+> > > userspace component), etc.
+> > > 
+> > 
+> > yeah yeah, userspace is too hard for kernel programmers, so we put our 
+> > applications, English-only pretty-printers etc into the kernel.  It's a 
+> > broken record.
 > 
-> yeah, 4K shouldnt be a big deal. Mind sending a patch for this?
+> above a certain threshold i think we need to start thinking about merging 
+> klibc, and moving some key system applications into the kernel source 
+> proper (those which closely depend on the kernel version anyway and need 
+> to be updated together).
+> 
 
-I don't know if we should put a warning when we encounter this condition,
-to help catch other unintended uses...
+Sure, but I don't think we'd need klibc for this.  We already ship
+quite a lot of ad-hoc userspace in Documentation/, and Sam's recently
+(and hopefully temporarily) lost patch which moves all that stuff into
+./tests/ (should have been ./userspace/tests/) seemed to work OK.
 
-But this at least clears out the early fixmap pte and provides a contiguous
-allocation...
-
----
- arch/x86/mm/init_32.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/mm/init_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -155,6 +155,7 @@ page_table_range_init(unsigned long star
- 	unsigned long vaddr;
- 	pgd_t *pgd;
- 	pmd_t *pmd;
-+	pte_t *lastpte = NULL;
- 
- 	vaddr = start;
- 	pgd_idx = pgd_index(vaddr);
-@@ -166,7 +167,19 @@ page_table_range_init(unsigned long star
- 		pmd = pmd + pmd_index(vaddr);
- 		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
- 							pmd++, pmd_idx++) {
--			one_page_table_init(pmd);
-+			pte_t *pte;
-+
-+			pte = one_page_table_init(pmd);
-+			if (lastpte && lastpte + PTRS_PER_PTE != pte) {
-+				pte_t *newpte;
-+
-+				pmd_clear(pmd);
-+				newpte = one_page_table_init(pmd);
-+				BUG_ON(lastpte + PTRS_PER_PTE != newpte);
-+				memset(newpte, pte, PAGE_SIZE);
-+				pte = lastpte;
-+			}
-+			lastpte = pte;
- 
- 			vaddr += PMD_SIZE;
- 		}
