@@ -1,135 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbYL3VDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbYL3VJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052AbYL3VDW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 16:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYL3VDL
+	id S1752838AbYL3VJu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 16:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYL3VJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 16:03:11 -0500
-Received: from mu-out-0910.google.com ([209.85.134.187]:1591 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbYL3VDK (ORCPT
+	Tue, 30 Dec 2008 16:09:41 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:34871 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbYL3VJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 16:03:10 -0500
+	Tue, 30 Dec 2008 16:09:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=APAcLHtwGJ2HBudozBNffKDkGQHYAfDPL8JVK02GAXghUwFAGyoG4tHgB/T0Cyekn/
-         JZoAPXIsO9zDYhpQnw5V/cm6U6NaaJmIw2dkC1E6iT/ha/7p6zLK80SuMH/iPROJUmtR
-         s2QhdZRl2LdLDfgkaNYeOokx1MyVbPb1/RLVA=
-Date: Tue, 30 Dec 2008 22:03:04 +0100
+        b=bK+WhT7g9Y5FaR8KM8nv4Rfwctc4JP8mVWHkbbcPgq13x+NFnFVoReMwUyLzbEe+NI
+         /CvILPn0LeYTZYeEug6KrYwipxVOfofdqpNQrRz8b7XIGI5IFhC4xlOdyRkHIA13Zs0e
+         nD0hH5gd8mMe1nzEOEYCG3Y8ore3fLk/JiK+E=
+Date: Tue, 30 Dec 2008 22:09:36 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [PATCH][RFC 2/23]: SCST core
-Message-ID: <20081230210303.GB6151@nowhere>
-References: <20081211210917.GB27010@uranus.ravnborg.org> <4942BA85.3070408@vlnb.net> <1229118607.24995.18.camel@localhost.localdomain> <4943CAAB.4050008@vlnb.net> <c62985530812131635k362fc8d2q3c65e8284141f491@mail.gmail.com> <494A37E9.5000009@vlnb.net> <c62985530812200506u647fc135wcc818bc57d06cb04@mail.gmail.com> <495137F4.9010404@vlnb.net> <20081227112055.GB18819@elte.hu> <495A56A8.1030208@vlnb.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
+	the unified tracing API
+Message-ID: <20081230210934.GC6151@nowhere>
+References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere> <1230623364.6091.9.camel@penberg-laptop> <20081230081600.GD2455@elte.hu> <20081230141608.GA5722@nowhere> <20081230153752.GA2984@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <495A56A8.1030208@vlnb.net>
+In-Reply-To: <20081230153752.GA2984@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 08:13:12PM +0300, Vladislav Bolkhovitin wrote:
-> Ingo Molnar, on 12/27/2008 02:20 PM wrote:
->> * Vladislav Bolkhovitin <vst@vlnb.net> wrote:
->>
->>>> The word graph is actually here to explain here that we not only 
->>>> trace each function call but we can actually retrieve all of the 
->>>> call path of a function and then draw it as if it was C code:
->>>>
->>>>  0) ! 108.528 us  |            }
->>>>  0)               |            irq_exit() {
->>>>  0)               |              do_softirq() {
->>>>  0)               |                __do_softirq() {
->>>>  0)   0.895 us    |                  __local_bh_disable();
->>>>  0)               |                  run_timer_softirq() {
->>>>  0)   0.827 us    |                    hrtimer_run_pending();
->>>>  0)   1.226 us    |                    _spin_lock_irq();
->>>>  0)               |                    _spin_unlock_irq() {
->>>>  0)   6.550 us    |                  }
->>>>  0)   0.924 us    |                  _local_bh_enable();
->>>>  0) + 12.129 us   |                }
->>>>  0) + 13.911 us   |              }
->>>>  0)   0.707 us    |              idle_cpu();
->>>>  0) + 17.009 us   |            }
->>>>  0) ! 137.419 us  |          }
->>>>  0)   <========== |
->>>>  0)   1.045 us    |          }
->>>>  0) ! 148.908 us  |        }
->>>>  0) ! 151.022 us  |      }
->>>>  0) ! 153.022 us  |    }
->>>>  0)   0.963 us    |    journal_mark_dirty();
->>>>  0)   0.925 us    |    __brelse();
->>> Unfortunately, it lacks very useful "TASK-PID, CPU#, TIMESTAMP" 
->>> header fields..
->>
->> those obscure readability in the typical usecases, but you can get them 
->> anytime via using this existing trace_options runtime switch:
->>
->>   echo funcgraph-proc > /debug/tracing/trace_options 
->>
->> resulting in traces like this:
->>
->> # CPU TASK/PID     OVERHEAD/DURATION            FUNCTION CALLS
->> # |   |      |              |                   |   |   |   |
->>  ------------------------------------------
->>   0) distccd-28400  =>   cc1-30212
->>  ------------------------------------------
->>
->>   0)   cc1-30212    |   0.270 us    |    }
->>   0)   cc1-30212    |               |    __do_fault() {
->>   0)   cc1-30212    |               |      filemap_fault() {
->>   0)   cc1-30212    |               |        find_lock_page() {
->>   0)   cc1-30212    |   0.453 us    |          find_get_page();
->>   0)   cc1-30212    |   0.997 us    |        }
->>   0)   cc1-30212    |               |        PageUptodate() {
->>   0)   cc1-30212    |   0.266 us    |          constant_test_bit();
->>   0)   cc1-30212    |   0.799 us    |        }
->>   0)   cc1-30212    |   0.379 us    |        mark_page_accessed();
->>   0)   cc1-30212    |   3.275 us    |      }
->>   0)   cc1-30212    |   0.276 us    |      _spin_lock();
->>   0)   cc1-30212    |   0.389 us    |      page_add_file_rmap();
->>   0)   cc1-30212    |               |      unlock_page() {
->>   0)   cc1-30212    |   0.266 us    |        page_waitqueue();
->>   0)   cc1-30212    |   0.381 us    |        __wake_up_bit();
->>   0)   cc1-30212    |   1.442 us    |      }
->>   0)   cc1-30212    |   6.897 us    |    }
->>   0)   cc1-30212    |+ 11.663 us    |  }
->>   0)   cc1-30212    |               |  up_read() {
->>   0)   cc1-30212    |   0.280 us    |    _spin_lock_irqsave();
->
-> This view is OK for us, I can suggest only two things:
->
-> 1. Add an option to disable "OVERHEAD/DURATION", it isn't needed in our  
-> case of SCSI commands processing troubleshooting, hence would only hurt  
-> readability and (I guess) add not needed overhead.
+On Tue, Dec 30, 2008 at 04:37:52PM +0100, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > On Tue, Dec 30, 2008 at 09:16:00AM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > > 
+> > > > Hi Frederic,
+> > > > 
+> > > > On Mon, 2008-12-29 at 23:09 +0100, Frederic Weisbecker wrote:
+> > > > > Pekka, note that I would be pleased to add statistical tracing on
+> > > > > this tracer, but I would need a hashtable, or an array, or a list, or whatever
+> > > > > iterable to insert the data into the stat tracing api.
+> > > > > 
+> > > > > But I don't know your projects about this... whether you wanted to use a section
+> > > > > or something else...
+> > > > 
+> > > > It really depends on what we're tracing. If we're interested in just the 
+> > > > allocation hotspots, a section will do just fine. However, if we're 
+> > > > tracing memory footprint, we need to take into store the object pointer 
+> > > > returned from kmalloc() and kmem_cache_alloc() so we can update 
+> > > > call-site statistics properly upon kfree().
+> > > > 
+> > > > So I suppose we need both, a section for per call-site statistics and a 
+> > > > hash table for the object -> call-site mapping.
+> > > 
+> > > 1)
+> > > 
+> > > i think the call_site based tracking should be a built-in capability - the 
+> > > branch tracer needs that too for example. That would also make it very 
+> > > simple on the usage place: you wouldnt have to worry about sections in 
+> > > slub.c/etc.
+> > 
+> > 
+> > I think that too. Can we use sections here? The traced functions are not 
+> > directly kmalloc/kmem_cache_alloc and to use a section which contains 
+> > the per site allocation requests, such a thing is required (we can't 
+> > build a section with per site allocations requests by using intermediate 
+> > level allocation function I fear...).
+> 
+> i think initially this should be a fixed-size allocation array + hash as 
+> well. (like lockdep uses) The number of allocation sites is even the most 
+> extreme case at most a few thousand - and is typically at most a couple of 
+> hundred.
+> 
+> 	Ingo
 
-
-You can disable the overhead but not yet the duration.
-But it's on my TODO list and should be available for 2.6.30
-
-
-> 2. If possible, make the view more compact, i.e. with less spaces on  
-> each line. Our tracing lines can be quite long.
->
-> Thanks,
-> Vlad
->
-
-I'm not sure... The spaces are mostly here to keep fixed width columns, 
-in case we have huge durations, or long cmdlines...
+Why not. And if someone reports too much overruns, we could make the size of this
+array an option for the kernel.
 
