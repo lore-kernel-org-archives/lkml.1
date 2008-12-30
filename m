@@ -1,73 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYL3IOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbYL3IQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbYL3IOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 03:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYL3IO1
+	id S1752824AbYL3IQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 03:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYL3IQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 03:14:27 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:60832 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753019AbYL3IOZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 03:14:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BuKizrB6j3A1POne/eFRZgaZ+Y+26/XwyNfsPb1S4wio7e3ctkCo4JgVW0RSsP+PP9
-         L2bripRejJ6X1N7pRmmgvHT2+HKz/F9W4gfQcab0xUN/fNbmj9o4TRa2F5sXjyPyKoSP
-         1454wA7xHpLJK42r12OyqHt+QFZVt05f+Kxpg=
-Date: Tue, 30 Dec 2008 10:14:45 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] RCU: Don't include unnecessary headers, allow
-	kmemtrace w/ tracepoints.
-Message-ID: <20081230081445.GC10635@localhost>
-References: <cover.1230622068.git.eduard.munteanu@linux360.ro> <86493e5e7b0a47e8acf0350a87ab3f22633a5789.1230622069.git.eduard.munteanu@linux360.ro> <20081230074952.GA5482@elte.hu> <20081230075337.GA9594@elte.hu>
+	Tue, 30 Dec 2008 03:16:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57859 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751252AbYL3IQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 03:16:14 -0500
+Date: Tue, 30 Dec 2008 09:16:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
+	the unified tracing API
+Message-ID: <20081230081600.GD2455@elte.hu>
+References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere> <1230623364.6091.9.camel@penberg-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081230075337.GA9594@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1230623364.6091.9.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 08:53:37AM +0100, Ingo Molnar wrote:
-> hm, there are quite a few such dependencies it appears, for example:
+
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+
+> Hi Frederic,
 > 
-> In file included from init/do_mounts_initrd.c:4:
-> include/linux/fs.h: In function 'alloc_secdata':
-> include/linux/fs.h:2214: error: implicit declaration of function 'get_zeroed_page'
-> include/linux/fs.h:2214: error: 'GFP_KERNEL' undeclared (first use in this function)
-> include/linux/fs.h:2214: error: (Each undeclared identifier is reported only once
-> include/linux/fs.h:2214: error: for each function it appears in.)
-> include/linux/fs.h: In function 'free_secdata':
-> include/linux/fs.h:2219: error: implicit declaration of function 
-> 'free_page'
-> In file included from include/linux/slab.h:13,
->                  from include/linux/percpu.h:6,
->                  from include/linux/percpu_counter.h:14,
->                  from include/linux/ext2_fs_sb.h:21,
->                  from include/linux/ext2_fs.h:70,
->                  from init/do_mounts_initrd.c:6:
+> On Mon, 2008-12-29 at 23:09 +0100, Frederic Weisbecker wrote:
+> > Pekka, note that I would be pleased to add statistical tracing on
+> > this tracer, but I would need a hashtable, or an array, or a list, or whatever
+> > iterable to insert the data into the stat tracing api.
+> > 
+> > But I don't know your projects about this... whether you wanted to use a section
+> > or something else...
 > 
-> config attached.
+> It really depends on what we're tracing. If we're interested in just the 
+> allocation hotspots, a section will do just fine. However, if we're 
+> tracing memory footprint, we need to take into store the object pointer 
+> returned from kmalloc() and kmem_cache_alloc() so we can update 
+> call-site statistics properly upon kfree().
 > 
-> 	Ingo
+> So I suppose we need both, a section for per call-site statistics and a 
+> hash table for the object -> call-site mapping.
 
-Hm, that's weird, I was also testing on a 2.6.28-based tree. And I don't
-see any reference to RCU headers in this error message. My guess is some
-code assumes a certain header provides some definitions it isn't
-required to.
+1)
 
-I'll checkout your tree and have a look.
+i think the call_site based tracking should be a built-in capability - the 
+branch tracer needs that too for example. That would also make it very 
+simple on the usage place: you wouldnt have to worry about sections in 
+slub.c/etc.
 
+2)
 
-	Eduard
+i think a possibly useful intermediate object would be the slab cache 
+itself, which could be the basis for some highlevel stats too. It would 
+probably overlap /proc/slabinfo statistics but it's a natural part of this 
+abstraction i think.
 
+3)
+
+the most lowlevel (and hence most allocation-footprint sensitive) object 
+to track would be the memory object itself. I think the best approach 
+would be to do a static, limited size hash that could track up to N memory 
+objects.
+
+The advantage of such an approach is that it does not impact allocation 
+patterns at all (besides the one-time allocation cost of the hash itself 
+during tracer startup).
+
+The disadvantage is when an overflow happens: the sizing heuristics would 
+get the size correct most of the time anyway, so it's not a practical 
+issue. There would be some sort of sizing control similar to 
+/debug/tracing/buffer_size_kb, and a special trace entry that signals an 
+'overflow' of the hash table. (in that case we wont track certain objects 
+- but it would be clear from the trace output what happens and the hash 
+size can be adjusted.)
+
+Another advantage would be that it would trivially not interact with any 
+allocator - because the hash itself would never 'allocate' in any dynamic 
+way. Either there are free entries available (in which case we use it), or 
+not - in which case we emit an hash-overflow trace entry.
+
+And this too would be driven from ftrace mainly - the SLAB code would only 
+offer the alloc+free callbacks with the object IDs. [ and this means that 
+we could detect memory leaks by looking at the hash table and print out 
+the age of entries :-) ]
+
+How does this sound to you?
+
+	Ingo
