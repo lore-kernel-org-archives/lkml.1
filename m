@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbYL3AFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbYL3ARx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753698AbYL3AFN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 19:05:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYL3AFA
+	id S1753612AbYL3ARx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 19:17:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYL3ARo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 19:05:00 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59598 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbYL3AE7 (ORCPT
+	Mon, 29 Dec 2008 19:17:44 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:56195 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751647AbYL3ARn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 19:04:59 -0500
-Message-ID: <495965A7.3010700@zytor.com>
-Date: Mon, 29 Dec 2008 16:04:55 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 29 Dec 2008 19:17:43 -0500
+Date: Mon, 29 Dec 2008 18:17:29 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC][PATCH] Fix cpu hotplug hang
+Message-ID: <20081230001729.GD6958@localdomain>
+References: <20081201140907.56743abd@bull.net>
+ <20081215123128.172b21be@bull.net>
 MIME-Version: 1.0
-To: Detlef Riekenberg <wine.dev@web.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] linux/types.h: Do not depend on __GNUC__ for __le64 and
- __be64
-References: <1230594921.7652.35.camel@p4.lan>
-In-Reply-To: <1230594921.7652.35.camel@p4.lan>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081215123128.172b21be@bull.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 4434D77A-D607-11DD-AC43-5720C92D7133-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Detlef Riekenberg wrote:
-> Hi.
-> <linux/cdrom.h> is used in Wine, but failed to compile with pcc.
-> (__le64 and __be64 are referenced in <linux/byteorder/little_endian.h>)
+Sebastien Dugue wrote:
+> On Mon, 1 Dec 2008 14:09:07 +0100 Sebastien Dugue <sebastien.dugue@bull.net> wrote:
 > 
-> There is no reason to restrict the typedefs with __GNUC__.
-> As reference, the typedefs for __u64 and __s64 where fixed
-> to be available with pcc on 02. Mai 2008 by H. Peter Anvin
-> (commit edfa5cfa3dc5bfa95e6aa82a2b8904e7f6c35ed7)
+> > 
+> >   here is a patch that fixes a CPU hotplug hang I get on a Power6
+> > box. It may not be the only possible fix but it appears to be the
+> > cleanest I can think of at the moment.
+> > 
+> >   Comments welcomed.
 > 
-> Wine: http://www.winehq.org
-> pcc:  http://pcc.ludd.ltu.se
-> 
+>   Ingo, Thomas, anybody care to comment on the hang and this possible fix?
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+FWIW, I was able to recreate this hang with 2.6.28 on a 8-way Power5
+system, and Sebastien's patch does appear to fix the problem for my
+testcase, which does a few hundred offline/online operations.
