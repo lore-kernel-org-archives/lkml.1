@@ -1,41 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbYL3RUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbYL3R11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbYL3RUl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 12:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYL3RUc
+	id S1753253AbYL3R11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 12:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYL3R1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 12:20:32 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53790 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751813AbYL3RUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 12:20:31 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081230170941.GA5083@lst.de>
-References: <20081230170941.GA5083@lst.de> <20081230134248.GA30124@lst.de> <24505.1230656810@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: access(2) regressions in current mainline
-Date: Tue, 30 Dec 2008 17:20:26 +0000
-Message-ID: <32709.1230657626@redhat.com>
+	Tue, 30 Dec 2008 12:27:15 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:48619 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbYL3R1O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 12:27:14 -0500
+Date: Tue, 30 Dec 2008 09:26:28 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dst@ioremap.net, netdev@vger.kernel.org
+Subject: Re: [7/7] dst: kconfig and makefile changes.
+Message-Id: <20081230092628.16662796.randy.dunlap@oracle.com>
+In-Reply-To: <1230292576-23963-8-git-send-email-zbr@ioremap.net>
+References: <1230292576-23963-1-git-send-email-zbr@ioremap.net>
+	<1230292576-23963-2-git-send-email-zbr@ioremap.net>
+	<1230292576-23963-3-git-send-email-zbr@ioremap.net>
+	<1230292576-23963-4-git-send-email-zbr@ioremap.net>
+	<1230292576-23963-5-git-send-email-zbr@ioremap.net>
+	<1230292576-23963-6-git-send-email-zbr@ioremap.net>
+	<1230292576-23963-7-git-send-email-zbr@ioremap.net>
+	<1230292576-23963-8-git-send-email-zbr@ioremap.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.495A59C8.0056:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@lst.de> wrote:
+On Fri, 26 Dec 2008 14:56:16 +0300 Evgeniy Polyakov wrote:
 
-> On Tue, Dec 30, 2008 at 05:06:50PM +0000, David Howells wrote:
-> > Did this test ever get run on the linux-next tree prior to the merge?  If
-> > so, what was the result?
+> Signed-off-by: Evgeniy Polaykov <zbr@ioremap.net>
 > 
-> I have no idea if people ever ran it, and if they did they will to
-> respond for themselves..
+> diff --git a/drivers/block/dst/Kconfig b/drivers/block/dst/Kconfig
+> new file mode 100644
+> index 0000000..12ffa37
+> --- /dev/null
+> +++ b/drivers/block/dst/Kconfig
+> @@ -0,0 +1,71 @@
+> +config DST
+> +	tristate "Distributed storage"
+> +	depends on NET && CRYPTO && SYSFS
+> +	select CONNECTOR
+> +	select LIBCRC32C
+> +	---help---
+> +	DST is a network block device storage, which can be used to organize
+> +	exported storages on the remote nodes into the local block device.
+> +
+> +	DST is a network block device storage, which can be used to organize
+> +	exported storages on the remote nodes into the local block device.
+> +
+(I thought that I had already reported this...)
 
-Is it possible for me to grab the XFS test GIT tree for myself?  And can it be
-run on a non-XFS filesystem?
+Above paragraph is duplicated.  Also, "storages" isn't proper AFAIK.
+Just use "storage".
 
-David
+
+> +	DST works on top of any network media and protocol, it is just a matter
+
+s/,/;/
+
+> +	of configuration utility to understand the correct addresses. The most
+> +	common example is TCP over IP allows to pass through firewalls and
+
+	                      over IP, which can pass through firewalls and
+
+> +	created remote backup storage in the different datacenter. DST requires
+
+	create remote backup storage in a different
+
+> +	single port to be enabled on the exporting node and outgoing connections
+> +	on the local node.
+> +
+> +	DST works with in-kernel client and server, which improves the performance
+
+	                                                  improves performance by
+
+> +	eliminating unneded data copies and allows not to depend on the version
+
+	                                and by not depending on the version
+
+> +	of the external IO components. It requires userspace configuration utility
+> +	though.
+> +
+> +	DST uses transaction model, when each store has to be explicitly acked
+> +	from the remote node to be considered as successfully written. There
+> +	may be lots of in-flight transactions. When remote host does not ack
+> +	the transaction it will be resent predefined number of times with specified
+> +	timeouts between them. All those parameters are configurable. Transactions
+> +	are marked as failed after all resends completed unsuccessfully, having
+
+	                                       complete unsuccessfully; having
+
+> +	long enough resend timeout and/or large number of resends allows not to
+> +	return error to the higher (FS usually) layer in case of short network
+> +	problems or remote node outages. In case of network RAID setup this means
+> +	that storage will not degrade until transactions are marked as failed, and
+> +	thus will not force checksum recalculation and data rebuild. In case of
+> +	connection failure DST will try to reconnect to the remote node automatically.
+> +	DST sends ping commands at idle time to detect if remote node is alive.
+> +
+> +	Because of transactional model it is possible to use zero-copy sending
+> +	without worry of data corruption (which in turn could be detected by the
+> +	strong checksums though).
+> +
+> +	DST may fully encrypt the data channel in case of untrusted channel and implement
+> +	strong checksum of the transferred data. It is possible to configure algorithms
+> +	and crypto keys, they should match on both sides of the network channel.
+
+	           keys;
+
+> +	Crypto processing does not introduce noticeble performance overhead, since DST
+> +	uses configurable pool of threads to perform crypto processing.
+> +
+> +	DST utilizes memory pool model of all its transaction allocations (it is the
+> +	only additional allocation on the client) and server allocations (bio pools,
+> +	while pages are allocated from the slab).
+> +
+> +	At startup DST performs a simple negotiation with the export node to determine
+> +	access permissions and size of the exported storage. It can be extended if
+> +	new parameters should be autonegotiated.
+> +
+> +	DST carries block IO flags in the protocol, which allows to transparently implement
+> +	barriers and sync/flush operations. Those flags are used in the export node where
+> +	IO against the local storage is performed, which means that sync write will be sync
+> +	on the remote node too, which in turn improves data integrity and improved resistance
+> +	to errors and data corruption during power outages or storage damages.
+> +
+> +	Homepage: http://www.ioremap.net/projects/dst
+> +	Userspace configuration utility and the latest releases: http://www.ioremap.net/archive/dst/
+> +
+> +config DST_DEBUG
+> +	bool "DST debug"
+> +	depends on DST
+> +	---help---
+> +	This option will turn HEAVY debugging of the DST.
+
+	                 s/turn/enable/
+
+> +	Turn it on ONLY if you have to debug some really obscure problem.
+
+
+---
+~Randy
