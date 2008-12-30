@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYL3OjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYL3OmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbYL3OjO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 09:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYL3Oi4
+	id S1753833AbYL3OmV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 09:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYL3OmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 09:38:56 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:57223 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160AbYL3Oiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 09:38:55 -0500
-To: kosaki.motohiro@jp.fujitsu.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org
-Subject: Re: [2.6.28] NULL pointer dereference at get_stats()
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200812302153.ECH86976.MFLOQFJHtSOOFV@I-love.SAKURA.ne.jp>
-	<2f11576a0812300528t6ed12fccg8698d33dc778b9c3@mail.gmail.com>
-In-Reply-To: <2f11576a0812300528t6ed12fccg8698d33dc778b9c3@mail.gmail.com>
-Message-Id: <200812302338.GDF34307.JOOMSFVQHFLFOt@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Tue, 30 Dec 2008 23:38:53 +0900
+	Tue, 30 Dec 2008 09:42:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:36005 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160AbYL3OmM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 09:42:12 -0500
+Subject: [PATCH -tip] fix compilation error
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, fweisbec@gmail.com
+Content-Type: text/plain
+Date: Tue, 30 Dec 2008 20:10:07 +0530
+Message-Id: <1230648007.10677.1.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Impact: cleanup, avoid compilation error
 
-KOSAKI Motohiro wrote:
-> it doesn't have any network card initialization log, but kernel
-> crashed in network driver.
-> in addition, loaded module list indicate your network card is pcnet32,
-> but pcnet32 doesn't have
-> get_stats() function. (instead, it has pcnet32_get_stats() )
+fixes this compilation error:
+  CC      mm/slab.o
+mm/slab.c:105:29: error: linux/kmemtrace.h: No such file or directory
+make[1]: *** [mm/slab.o] Error 1
+make: *** [mm] Error 2
 
-I think pcnet32 is unrelated.
-It seems to me that the problem is loopback device.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ mm/slab.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I added "init=/bin/bash" and tried below commands.
-----------------------------------------
-# lsmod
-Module                  Size  Used by
-mptspi                 19208  1 
-mptscsih               33152  1 mptspi
-mptbase                74084  2 mptspi,mptscsih
-scsi_transport_spi     23296  1 mptspi
-sd_mod                 27416  2 
-scsi_mod              138260  4 mptspi,mptscsih,scsi_transport_spi,sd_mod
-ext3                  109576  1 
-jbd                    43924  1 ext3
-uhci_hcd               22800  0 
-ohci_hcd               23696  0 
-ehci_hcd               33036  0 
-# ls -1 /sys/class/net/
-lo
-# cat /sys/class/net/lo/statistics/rx_packets
-BUG: unable to handle kernel NULL pointer dereference at 00000004
-IP: [<c055f2f5>] get_stats+0x1d/0x48
-*pde = 00000000 
-Oops: 0000 [#1] SMP 
-last sysfs file: /sys/class/net/lo/statistics/rx_packets
-Modules linked in: mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
+diff --git a/mm/slab.c b/mm/slab.c
+index 90e0cac..ce072de 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -102,7 +102,7 @@
+ #include	<linux/cpu.h>
+ #include	<linux/sysctl.h>
+ #include	<linux/module.h>
+-#include	<linux/kmemtrace.h>
++#include	<trace/kmemtrace.h>
+ #include	<linux/rcupdate.h>
+ #include	<linux/string.h>
+ #include	<linux/uaccess.h>
+-- 
+1.5.5.1
 
-Pid: 597, comm: cat Not tainted (2.6.28 #1) VMware Virtual Platform
-EIP: 0060:[<c055f2f5>] EFLAGS: 00010297 CPU: 0
-EIP is at get_stats+0x1d/0x48
-EAX: 00000000 EBX: df956858 ECX: 00000001 EDX: 00000001
-ESI: 00000000 EDI: 00000000 EBP: 2069abbf ESP: df89af24
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process cat (pid: 597, ti=df89a000 task=df8c8db0 task.ti=df89a000)
-Stack:
- df956800 00000000 dedb9000 c0732a00 c05c82fa c073a0ac fffffffb c05c83dc
- c05c83e3 00000000 c0559190 dedaaa00 ffffffed df959718 c04a8da6 00001000
- 0804f000 dedaaa14 df956bf4 df8a5840 0804f000 c04a8d1d 00001000 c0470444
-Call Trace:
- [<c05c82fa>] netstat_show+0x48/0x64
- [<c05c83dc>] show_rx_packets+0x0/0x9
- [<c05c83e3>] show_rx_packets+0x7/0x9
- [<c0559190>] dev_attr_show+0x16/0x32
- [<c04a8da6>] sysfs_read_file+0x89/0xe8
- [<c04a8d1d>] sysfs_read_file+0x0/0xe8
- [<c0470444>] vfs_read+0x81/0xf4
- [<c0470720>] sys_read+0x3c/0x63
- [<c0403841>] sysenter_do_call+0x12/0x21
-Code: ff 00 89 d8 e8 28 e6 05 00 31 c0 5b 5e c3 55 83 c9 ff 57 31 ff 56 31 f6 53 8b a8 6c 03 00 00 8d 58 58 eb 0c 89 e8 f7 d0 8b 04 88 <03> 78 04 03 30 89 c8 ba a0 9c 81 c0 e8 66 a1 f8 ff 83 f8 1f 89 
-EIP: [<c055f2f5>] get_stats+0x1d/0x48 SS:ESP 0068:df89af24
----[ end trace e9672264d489cc49 ]---
-----------------------------------------
 
-Regards.
+
