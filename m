@@ -1,68 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYL3TIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYL3Tfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbYL3TIm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 14:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYL3TIb
+	id S1753198AbYL3Tfz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 14:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYL3Tfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 14:08:31 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:44281 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751932AbYL3TIa (ORCPT
+	Tue, 30 Dec 2008 14:35:47 -0500
+Received: from mx01.mailboxcop.com ([206.125.223.71]:47644 "EHLO
+	mx01.mailboxcop.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751989AbYL3Tfq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 14:08:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=k+9ShwhJOfKciOTENcCYLrRPFgYrevdSERSibfmTu1FCi/gSo/AVJa8aRC4w9L4+OK
-         qEJ3PrnbEF0PYyQgLvE1ZF2EH5Skt6gg0nZYY7LWrofCgyllY2/RLHL/VEE1ybH9k+xt
-         6wqQDR5FKTJ+naz2eot/eP6ujp/P2MTFQxbkg=
-Message-ID: <9b2b86520812301108k525ca193gac0307b630bdbbd1@mail.gmail.com>
-Date: Tue, 30 Dec 2008 19:08:28 +0000
-From: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>
-To: "Grant Grundler" <grundler@google.com>
-Subject: Re: 2.6.28: Is there a way to disable sata probing for certain ports?
-Cc: "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <da824cf30812300908x3ff6061cn569203d5163664ea@mail.gmail.com>
+	Tue, 30 Dec 2008 14:35:46 -0500
+Message-ID: <495A788B.3010001@jaysonking.com>
+Date: Tue, 30 Dec 2008 13:37:47 -0600
+From: Jayson King <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+CC: a.p.zijlstra@chello.nl, mingo@elte.hu
+Subject: Re: problem with "sched: revert back to per-rq vruntime"?
+References: <495948E0.8040502@jaysonking.com>
+In-Reply-To: <495948E0.8040502@jaysonking.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.10.0812300605250.11356@p34.internal.lan>
-	 <da824cf30812300908x3ff6061cn569203d5163664ea@mail.gmail.com>
-X-Google-Sender-Auth: fd321968bfc45266
+X-Canit-CHI2: 0.50
+X-Bayes-Prob: 0.9891 (Score 4, tokens from: @@RPTN, outgoing)
+X-Spam-Score: 4.10 (****) [Hold at 5.20] RDNS_NONE,2(1.2),6947(-1.2),Bayes(0.9891,4.0)
+X-CanItPRO-Stream: outgoing (inherits from default)
+X-Canit-Stats-ID: 333068985 - dd8405089393
+X-Antispam-Training-Forget: http://mailboxcop.com/canit/b.php?i=333068985&m=dd8405089393&c=f
+X-Antispam-Training-Nonspam: http://mailboxcop.com/canit/b.php?i=333068985&m=dd8405089393&c=n
+X-Antispam-Training-Spam: http://mailboxcop.com/canit/b.php?i=333068985&m=dd8405089393&c=s
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 5:08 PM, Grant Grundler <grundler@google.com> wrote:
-> On Tue, Dec 30, 2008 at 4:24 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->> When I boot from an Intel X25-E SSD, it takes roughly a few seconds;
->> however, items such as:
->>
->> $ dmesg|grep link\ down
->> [    2.447030] ata4: SATA link down (SStatus 0 SControl 300)
->> [    4.481288] ata5: SATA link down (SStatus 0 SControl 0)
->> [    6.501288] ata6: SATA link down (SStatus 0 SControl 0)
->> [    8.522038] ata7: SATA link down (SStatus 0 SControl 0)
->> [   10.552288] ata8: SATA link down (SStatus 0 SControl 0)
->>
->> Scanning for devices on channels that have nothing connected adds to the
->> boot time, is there anyway to turn off/disable scanning for certain ports to
->> help speed the boot process?
->
-> Some BIOSs allow one to enable/disable each port individually.
-> Have you checked the BIOS config menus for such an option?
->
-> drivers/ata/libata-core.c declares "ata_force_param_buf" but I don't
-> see any documentation for it despite the reference to
-> Documentation/kernel-parameters.txt .
+Here's some times using bash, for example. Let me know if there are some 
+other tests I can do.
 
-There is.  Search the file for "libata.force".  But it doesn't support
-disabling the scan for specific ports; that has yet to be implemented.
+It shows on vanilla 2.6.28, a huge increase in latency (about 37X to 
+39X) starting bash -i when the CPU is loaded with 100% nice tasks, 
+relative to idle CPU. But after reverting 
+f9c0b0950d5fd8c8c5af39bc061f27ea8fddcac3 the latency increase is not as 
+great (about 2X).
 
-<https://kerneltrap.org/mailarchive/linux-kernel/2008/8/11/2900064/thread>
+# running bash -i on vanilla 2.6.28,
+# with idle CPU
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
 
-Alan
+real    0m0.020s
+user    0m0.008s
+sys     0m0.014s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.020s
+user    0m0.014s
+sys     0m0.005s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.020s
+user    0m0.008s
+sys     0m0.009s
+
+
+
+# running bash -i on vanilla 2.6.28,
+# with 100% nice CPU usage
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.753s
+user    0m0.011s
+sys     0m0.011s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.752s
+user    0m0.012s
+sys     0m0.012s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.786s
+user    0m0.010s
+sys     0m0.008s
+
+
+
+# running 2.6.28 reverted f9c0b0950d5fd8c8c5af39bc061f27ea8fddcac3,
+# with idle CPU
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.021s
+user    0m0.012s
+sys     0m0.007s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.020s
+user    0m0.012s
+sys     0m0.011s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.020s
+user    0m0.011s
+sys     0m0.012s
+
+
+
+# running 2.6.28 reverted f9c0b0950d5fd8c8c5af39bc061f27ea8fddcac3,
+# with 100% nice CPU usage
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.043s
+user    0m0.010s
+sys     0m0.009s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.046s
+user    0m0.011s
+sys     0m0.007s
+[jayson@atlas tmp]$ time bash -i -c 'exit'
+exit
+
+real    0m0.047s
+user    0m0.011s
+sys     0m0.006s
+
+
+
+
+Jayson
+
