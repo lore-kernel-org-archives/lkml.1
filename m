@@ -1,460 +1,343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYL3LPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbYL3LRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbYL3LPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 06:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYL3LPh
+	id S1753606AbYL3LRE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 06:17:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYL3LQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 06:15:37 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48907 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbYL3LPg (ORCPT
+	Tue, 30 Dec 2008 06:16:50 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58566 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751756AbYL3LQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 06:15:36 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Oleg Nesterov <oleg@redhat.com>, Jiri Pirko <jpirko@redhat.com>,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH for -mm] getrusage: fill ru_maxrss value
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue, 30 Dec 2008 20:15:33 +0900 (JST)
+	Tue, 30 Dec 2008 06:16:48 -0500
+Subject: [PATCH -net-next 2/4] firmware: convert acenic driver to
+	request_firmware() -- without firmware data
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: davem@redhat.com, netdev <netdev@vger.kernel.org>, jes@sgi.com,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Content-Type: text/plain; charset=utf8
+Date: Tue, 30 Dec 2008 16:44:54 +0530
+Message-Id: <1230635694.10603.20.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+﻿acenic is having huge firmware data so mailing lists are rejecting complete patch.
 
-Oleg, Jiri, this is my getrusage testcase and proposal patch.
-Could you please review it?
+So I removed acenic firmware data from this patch.
 
-
-
-Changes Jiris's last version
-  - At wait_task_zombie(), parent process doesn't only collect child maxrss,
-    but also cmaxrss.
-  - ru_maxrss inherit at exec()
-  - style fixes.
-
-Applied after: introduce-get_mm_hiwater_xxx-fix-taskstats-hiwater_xxx-accounting.patch
-==
-From: Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-Subject: [PATCH for -mm] getrusage: fill ru_maxrss value
-
-This patch makes ->ru_maxrss value in struct rusage filled accordingly to
-rss hiwater mark. This struct is filled as a parameter to
-getrusage syscall. ->ru_maxrss value is set to KBs which is the way it
-is done in BSD systems. /usr/bin/time (gnu time) application converts
-->ru_maxrss to KBs which seems to be incorrect behavior. Maintainer of
-this util was notified by me with the patch which corrects it and cc'ed.
-
-To make this happen we extend struct signal_struct by two fields. The
-first one is ->maxrss which we use to store rss hiwater of the task. The
-second one is ->cmaxrss which we use to store highest rss hiwater of all
-task childs. These values are used in k_getrusage() to actually fill
-->ru_maxrss. k_getrusage() uses current rss hiwater value directly
-if mm struct exists.
-
-Note:
-exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
-it is intetionally behavior. *BSD getrusage have exec() inheriting.
+and data is available in:
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=e39c0e190f52331b35931fbe5e34a07114d66171
 
 
-Test progmam and test case
-===========================
+Subject: [PATCH] firmware: convert acenic driver to request_firmware()
 
-getrusage.c
-----
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <signal.h>
+We store the firmware in its native big-endian form now, so the loop in
+ace_copy() is modified to use be32_to_cpup() when writing it out.
 
-static void consume(int mega)
-{
-	size_t sz = mega * 1024 * 1024;
-	void *ptr;
+We can forget the BSS,SBSS sections of the firmware, since we were
+clearing all the device's RAM anyway. And the text,rodata,data sections
+can all be loaded as a single chunk since they're contiguous (give or
+take a few dozen bytes in between).
 
-	ptr = malloc(sz);
-	memset(ptr, 0, sz);
-	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
-}
-
-static void show_rusage(char *prefix)
-{
-	int err, err2;
-	struct rusage rusage_self;
-	struct rusage rusage_children;
-
-	printf("%s: ", prefix);
-	err = getrusage(RUSAGE_SELF, &rusage_self);
-	if (!err)
-		printf("self %ld ", rusage_self.ru_maxrss);
-	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
-	if (!err2)
-		printf("children %ld ", rusage_children.ru_maxrss);
-
-	printf("\n");
-}
-
-int main(int argc, char** argv)
-{
-	int status;
-	int c;
-	int need_sleep_before_wait = 0;
-	int consume_large_memory_at_first = 0;
-	int create_child_at_first = 0;
-	int sigign = 0;
-	int create_child_before_exec = 0;
-	int after_fork_test = 0;
-
-	while ((c = getopt(argc, argv, "ceflsz")) != -1) {
-		switch (c) {
-		case 'c':
-			create_child_at_first = 1;
-			break;
-		case 'e':
-			create_child_before_exec = 1;
-			break;
-		case 'f':
-			after_fork_test = 1;
-			break;
-		case 'l':
-			consume_large_memory_at_first = 1;
-			break;
-		case 's':
-			sigign = 1;
-			break;
-		case 'z':
-			need_sleep_before_wait = 1;
-			break;
-		default:
-			break;
-		}
-	}
-
-	if (consume_large_memory_at_first)
-		consume(100);   
-
-	if (create_child_at_first)
-		system("./child -q"); 
-	
-	if (sigign)
-		signal(SIGCHLD, SIG_IGN);
-
-	if (fork()) {
-		usleep(1);
-		if (need_sleep_before_wait)
-			sleep(3); /* children become zombie */
-		show_rusage("pre_wait");
-		wait(&status);
-		show_rusage("post_wait");
-	} else {
-		usleep(1);
-		show_rusage("fork");
-		
-		if (after_fork_test) {
-			consume(30);
-			show_rusage("fork2");
-		}
-		if (create_child_before_exec) {
-			system("./child -lq"); 
-			usleep(1);
-			show_rusage("fork3");
-		}
-
-		execl("./child", "child", 0);
-		exit(0);
-	}
-	     
-	return 0;
-}
-
-child.c
-----
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-
-static void consume(int mega)
-{
-	size_t sz = mega * 1024 * 1024;
-	void *ptr;
-
-	ptr = malloc(sz);
-	memset(ptr, 0, sz);
-	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
-}
-
-static void show_rusage(char *prefix)
-{
-	int err, err2;
-	struct rusage rusage_self;
-	struct rusage rusage_children;
-
-	printf("%s: ", prefix);
-	err = getrusage(RUSAGE_SELF, &rusage_self);
-	if (!err)
-		printf("self %ld ", rusage_self.ru_maxrss);
-	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
-	if (!err2)
-		printf("children %ld ", rusage_children.ru_maxrss);
-
-	printf("\n");
-
-}
-
-
-int main(int argc, char** argv)
-{
-	int status;
-	int c;
-	int silent = 0;
-	int light_weight = 0;
-
-	while ((c = getopt(argc, argv, "lq")) != -1) {
-		switch (c) {
-		case 'l':
-			light_weight = 1;
-			break;
-		case 'q':
-			silent = 1;
-			break;
-		default:
-			break;
-		}
-	}
-
-	if (!silent)
-		show_rusage("exec");
-
-	if (fork()) {
-		if (light_weight)
-			consume(400);
-		else
-			consume(700);
-		wait(&status);
-	} else {
-		if (light_weight)
-			consume(600);
-		else
-			consume(900);
-
-		exit(0);
-	}
-
-	return 0;
-}
-
-testcase
-==================
-1. inherit fork?
-   
-   test way:
-   	% ./getrusage -lc 
-
-   bsd result:
-   	fork line is "fork: self 0 children 0".
-
-   	-> rusage sholdn't be inherit by fork.
-	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-
-2. inherit exec?
-
-   test way:
-   	% ./getrusage -lce
-
-   bsd result:
-   	fork3: self 103204 children 60000 
-	exec: self 103204 children 60000
-
-   	fork3 and exec line are the same.
-
-   	-> rusage shold be inherit by exec.
-	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-
-3. getrusage(RUSAGE_CHILDREN) collect grandchild statics?
-
-   test way:
-   	% ./getrusage
-
-   bsd result:
-   	post_wait line is about "post_wait: self 0 children 90000".
-
-	-> RUSAGE_CHILDREN can collect grandchild.
-
-4. zombie, but not waited children collect or not?
-
-   test way:
-   	% ./getrusage -z
-
-   bsd result:
-   	pre_wait line is "pre_wait: self 0 children 0".
-
-	-> zombie child process (not waited-for child process)
-	   isn't accounted.
-
-5. SIG_IGN collect or not
-
-   test way:
-   	% ./getrusage -s
-
-   bsd result:
-   	post_wait line is "post_wait: self 0 children 0".
-
-	-> if SIGCHLD is ignored, children isn't accounted.
-
-6. fork and malloc
-   test way:
-   	% ./getrusage -lcf
-
-   bsd result:
-   	fork line is "fork: self 0 children 0".
-   	fork2 line is about "fork: self 130000 children 0".
-
-   	-> rusage sholdn't be inherit by fork.
-	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-	   but additional memory cunsumption cause right
-	   maxrss calculation.
-
-
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- fs/exec.c             |    5 +++++
- include/linux/sched.h |    1 +
- kernel/exit.c         |    6 ++++++
- kernel/fork.c         |    1 +
- kernel/sys.c          |   15 +++++++++++++++
- 5 files changed, 28 insertions(+)
+ drivers/net/acenic.c          |  122 +-
+ drivers/net/acenic.h          |    4 +
+ drivers/net/acenic_firmware.h | 9456 -----------------------------------------
+ firmware/Makefile             |    7 +
+ firmware/WHENCE               |   12 +
+ firmware/acenic/tg1.bin.ihex  | 4573 ++++++++++++++++++++
+ firmware/acenic/tg2.bin.ihex  | 4844 +++++++++++++++++++++
+ 7 files changed, 9516 insertions(+), 9502 deletions(-)
+ delete mode 100644 drivers/net/acenic_firmware.h
+ create mode 100644 firmware/acenic/tg1.bin.ihex
+ create mode 100644 firmware/acenic/tg2.bin.ihex
 
-Index: b/include/linux/sched.h
-===================================================================
---- a/include/linux/sched.h	2008-12-29 23:27:59.000000000 +0900
-+++ b/include/linux/sched.h	2008-12-30 03:25:23.000000000 +0900
-@@ -562,6 +562,7 @@ struct signal_struct {
- 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
- 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
- 	unsigned long inblock, oublock, cinblock, coublock;
-+	unsigned long maxrss, cmaxrss;
- 	struct task_io_accounting ioac;
+diff --git a/drivers/net/acenic.c b/drivers/net/acenic.c
+index 517fce4..4835eee 100644
+--- a/drivers/net/acenic.c
++++ b/drivers/net/acenic.c
+@@ -66,6 +66,7 @@
+ #include <linux/mm.h>
+ #include <linux/highmem.h>
+ #include <linux/sockios.h>
++#include <linux/firmware.h>
  
- 	/*
-Index: b/kernel/exit.c
-===================================================================
---- a/kernel/exit.c	2008-12-29 23:27:59.000000000 +0900
-+++ b/kernel/exit.c	2008-12-30 17:35:51.000000000 +0900
-@@ -1053,6 +1053,10 @@ NORET_TYPE void do_exit(long code)
- 	if (group_dead) {
- 		hrtimer_cancel(&tsk->signal->real_timer);
- 		exit_itimers(tsk->signal);
-+		if (tsk->mm) {
-+			unsigned long maxrss = get_mm_hiwater_rss(tsk->mm);
-+			tsk->signal->maxrss = max(maxrss, tsk->signal->maxrss);
-+		}
- 	}
- 	acct_collect(code, group_dead);
- 	if (group_dead)
-@@ -1349,6 +1353,8 @@ static int wait_task_zombie(struct task_
- 		psig->coublock +=
- 			task_io_get_oublock(p) +
- 			sig->oublock + sig->coublock;
-+		psig->cmaxrss = max(max(sig->maxrss, sig->cmaxrss),
-+				    psig->cmaxrss);
- 		task_io_accounting_add(&psig->ioac, &p->ioac);
- 		task_io_accounting_add(&psig->ioac, &sig->ioac);
- 		spin_unlock_irq(&p->parent->sighand->siglock);
-Index: b/kernel/fork.c
-===================================================================
---- a/kernel/fork.c	2008-12-25 08:26:37.000000000 +0900
-+++ b/kernel/fork.c	2008-12-30 03:48:09.000000000 +0900
-@@ -849,6 +849,7 @@ static int copy_signal(unsigned long clo
- 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
- 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
- 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
-+	sig->maxrss = sig->cmaxrss = 0;
- 	task_io_accounting_init(&sig->ioac);
- 	taskstats_tgid_init(sig);
+ #if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+ #include <linux/if_vlan.h>
+@@ -95,8 +96,11 @@
+ #else
+ #define ACE_IS_TIGON_I(ap)	(ap->version == 1)
+ #define ACE_TX_RING_ENTRIES(ap)	ap->tx_ring_entries
++#define FIRMWARE_TG1		"acenic/tg1.bin"
+ #endif
  
-Index: b/kernel/sys.c
-===================================================================
---- a/kernel/sys.c	2008-12-25 08:26:37.000000000 +0900
-+++ b/kernel/sys.c	2008-12-30 04:04:18.000000000 +0900
-@@ -1569,6 +1569,7 @@ static void k_getrusage(struct task_stru
- 			r->ru_majflt = p->signal->cmaj_flt;
- 			r->ru_inblock = p->signal->cinblock;
- 			r->ru_oublock = p->signal->coublock;
-+			r->ru_maxrss = p->signal->cmaxrss;
- 
- 			if (who == RUSAGE_CHILDREN)
- 				break;
-@@ -1583,6 +1584,8 @@ static void k_getrusage(struct task_stru
- 			r->ru_majflt += p->signal->maj_flt;
- 			r->ru_inblock += p->signal->inblock;
- 			r->ru_oublock += p->signal->oublock;
-+			if (r->ru_maxrss < p->signal->maxrss)
-+				r->ru_maxrss = p->signal->maxrss;
- 			t = p;
- 			do {
- 				accumulate_thread_rusage(t, r);
-@@ -1598,6 +1601,18 @@ static void k_getrusage(struct task_stru
- out:
- 	cputime_to_timeval(utime, &r->ru_utime);
- 	cputime_to_timeval(stime, &r->ru_stime);
++#define FIRMWARE_TG2		"acenic/tg2.bin"
 +
-+	if (who != RUSAGE_CHILDREN) {
-+		struct mm_struct *mm = get_task_mm(p);
-+		if (mm) {
-+			unsigned long maxrss = get_mm_hiwater_rss(mm);
+ #ifndef PCI_VENDOR_ID_ALTEON
+ #define PCI_VENDOR_ID_ALTEON		0x12ae
+ #endif
+@@ -186,8 +190,6 @@ MODULE_DEVICE_TABLE(pci, acenic_pci_tbl);
+ #define MAX_RODATA_LEN	8*1024
+ #define MAX_DATA_LEN	2*1024
+ 
+-#include "acenic_firmware.h"
+-
+ #ifndef tigon2FwReleaseLocal
+ #define tigon2FwReleaseLocal 0
+ #endif
+@@ -417,6 +419,10 @@ static int dis_pci_mem_inval[ACE_MAX_MOD_PARMS] = {1, 1, 1, 1, 1, 1, 1, 1};
+ MODULE_AUTHOR("Jes Sorensen <jes@trained-monkey.org>");
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("AceNIC/3C985/GA620 Gigabit Ethernet driver");
++#ifndef CONFIG_ACENIC_OMIT_TIGON_I
++MODULE_FIRMWARE(FIRMWARE_TG1);
++#endif
++MODULE_FIRMWARE(FIRMWARE_TG2);
+ 
+ module_param_array_named(link, link_state, int, NULL, 0);
+ module_param_array(trace, int, NULL, 0);
+@@ -943,8 +949,8 @@ static int __devinit ace_init(struct net_device *dev)
+ 	case 4:
+ 	case 5:
+ 		printk(KERN_INFO "  Tigon I  (Rev. %i), Firmware: %i.%i.%i, ",
+-		       tig_ver, tigonFwReleaseMajor, tigonFwReleaseMinor,
+-		       tigonFwReleaseFix);
++		       tig_ver, ap->firmware_major, ap->firmware_minor,
++		       ap->firmware_fix);
+ 		writel(0, &regs->LocalCtrl);
+ 		ap->version = 1;
+ 		ap->tx_ring_entries = TIGON_I_TX_RING_ENTRIES;
+@@ -952,8 +958,8 @@ static int __devinit ace_init(struct net_device *dev)
+ #endif
+ 	case 6:
+ 		printk(KERN_INFO "  Tigon II (Rev. %i), Firmware: %i.%i.%i, ",
+-		       tig_ver, tigon2FwReleaseMajor, tigon2FwReleaseMinor,
+-		       tigon2FwReleaseFix);
++		       tig_ver, ap->firmware_major, ap->firmware_minor,
++		       ap->firmware_fix);
+ 		writel(readl(&regs->CpuBCtrl) | CPU_HALT, &regs->CpuBCtrl);
+ 		readl(&regs->CpuBCtrl);		/* PCI write posting */
+ 		/*
+@@ -1205,7 +1211,9 @@ static int __devinit ace_init(struct net_device *dev)
+ 	memset(ap->info, 0, sizeof(struct ace_info));
+ 	memset(ap->skb, 0, sizeof(struct ace_skb));
+ 
+-	ace_load_firmware(dev);
++	if (ace_load_firmware(dev))
++		goto init_error;
 +
-+			if (r->ru_maxrss < maxrss)
-+				r->ru_maxrss = maxrss;
-+			mmput(mm);
-+		}
-+	}
-+	r->ru_maxrss <<= PAGE_SHIFT - 10;
+ 	ap->fw_running = 0;
+ 
+ 	tmp_ptr = ap->info_dma;
+@@ -1441,10 +1449,7 @@ static int __devinit ace_init(struct net_device *dev)
+ 	if (ap->version >= 2)
+ 		writel(tmp, &regs->TuneFastLink);
+ 
+-	if (ACE_IS_TIGON_I(ap))
+-		writel(tigonFwStartAddr, &regs->Pc);
+-	if (ap->version == 2)
+-		writel(tigon2FwStartAddr, &regs->Pc);
++	writel(ap->firmware_start, &regs->Pc);
+ 
+ 	writel(0, &regs->Mb0Lo);
+ 
+@@ -2761,8 +2766,8 @@ static void ace_get_drvinfo(struct net_device *dev,
+ 
+ 	strlcpy(info->driver, "acenic", sizeof(info->driver));
+ 	snprintf(info->version, sizeof(info->version), "%i.%i.%i",
+-		tigonFwReleaseMajor, tigonFwReleaseMinor,
+-		tigonFwReleaseFix);
++		 ap->firmware_major, ap->firmware_minor,
++		 ap->firmware_fix);
+ 
+ 	if (ap->pdev)
+ 		strlcpy(info->bus_info, pci_name(ap->pdev),
+@@ -2869,11 +2874,10 @@ static struct net_device_stats *ace_get_stats(struct net_device *dev)
  }
  
- int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
-Index: b/fs/exec.c
-===================================================================
---- a/fs/exec.c	2008-12-25 08:26:37.000000000 +0900
-+++ b/fs/exec.c	2008-12-30 17:42:32.000000000 +0900
-@@ -774,6 +774,7 @@ static int de_thread(struct task_struct 
- 	spinlock_t *lock = &oldsighand->siglock;
- 	struct task_struct *leader = NULL;
- 	int count;
-+	unsigned long maxrss = 0;
+
+-static void __devinit ace_copy(struct ace_regs __iomem *regs, void *src,
+-			    u32 dest, int size)
++static void __devinit ace_copy(struct ace_regs __iomem *regs, const __be32 *src,
++			       u32 dest, int size)
+ {
+ 	void __iomem *tdest;
+-	u32 *wsrc;
+ 	short tsize, i;
  
- 	if (thread_group_empty(tsk))
- 		goto no_thread_group;
-@@ -870,6 +871,10 @@ static int de_thread(struct task_struct 
- 	sig->notify_count = 0;
+ 	if (size <= 0)
+@@ -2885,20 +2889,15 @@ static void __devinit ace_copy(struct ace_regs __iomem *regs, void *src,
+ 		tdest = (void __iomem *) &regs->Window +
+ 			(dest & (ACE_WINDOW_SIZE - 1));
+ 		writel(dest & ~(ACE_WINDOW_SIZE - 1), &regs->WinBase);
+-		/*
+-		 * This requires byte swapping on big endian, however
+-		 * writel does that for us
+-		 */
+-		wsrc = src;
+ 		for (i = 0; i < (tsize / 4); i++) {
+-			writel(wsrc[i], tdest + i*4);
++			/* Firmware is big-endian */
++			writel(be32_to_cpup(src), tdest);
++			src++;
++			tdest += 4;
++			dest += 4;
++			size -= 4;
+ 		}
+-		dest += tsize;
+-		src += tsize;
+-		size -= tsize;
+ 	}
+-
+-	return;
+ }
  
- no_thread_group:
-+	if (current->mm)
-+		maxrss = get_mm_hiwater_rss(current->mm);
-+	sig->maxrss = max(sig->maxrss, maxrss);
+
+@@ -2937,8 +2936,13 @@ static void __devinit ace_clear(struct ace_regs __iomem *regs, u32 dest, int siz
+  */
+ static int __devinit ace_load_firmware(struct net_device *dev)
+ {
++	const struct firmware *fw;
++	const char *fw_name = FIRMWARE_TG2;
+ 	struct ace_private *ap = netdev_priv(dev);
+ 	struct ace_regs __iomem *regs = ap->regs;
++	const __be32 *fw_data;
++	u32 load_addr;
++	int ret;
+ 
+ 	if (!(readl(&regs->CpuCtrl) & CPU_HALTED)) {
+ 		printk(KERN_ERR "%s: trying to download firmware while the "
+@@ -2946,28 +2950,54 @@ static int __devinit ace_load_firmware(struct net_device *dev)
+ 		return -EFAULT;
+ 	}
+ 
++#ifndef CONFIG_ACENIC_OMIT_TIGON_I
++	if (ACE_IS_TIGON_I(ap))
++		fw_name = FIRMWARE_TG1;
++#endif
 +
- 	exit_itimers(sig);
- 	flush_itimer_signals();
- 	if (leader)
++	ret = request_firmware(&fw, fw_name, &ap->pdev->dev);
++	if (ret) {
++		printk(KERN_ERR "%s: Failed to load firmware \"%s\"\n",
++		       ap->name, fw_name);
++		return ret;
++	}
++
++	fw_data = (void *)fw->data;
++
++	/* Firmware blob starts with version numbers, followed by
++	   load and start address. Remainder is the blob to be loaded
++	   contiguously from load address. We don't bother to represent
++	   the BSS/SBSS sections any more, since we were clearing the
++	   whole thing anyway. */
++	ap->firmware_major = fw->data[0];
++	ap->firmware_minor = fw->data[1];
++	ap->firmware_fix = fw->data[2];
++
++	ap->firmware_start = be32_to_cpu(fw_data[1]);
++	if (ap->firmware_start < 0x4000 || ap->firmware_start >= 0x80000) {
++		printk(KERN_ERR "%s: bogus load address %08x in \"%s\"\n",
++		       ap->name, ap->firmware_start, fw_name);
++		ret = -EINVAL;
++		goto out;
++	}
++
++	load_addr = be32_to_cpu(fw_data[2]);
++	if (load_addr < 0x4000 || load_addr >= 0x80000) {
++		printk(KERN_ERR "%s: bogus load address %08x in \"%s\"\n",
++		       ap->name, load_addr, fw_name);
++		ret = -EINVAL;
++		goto out;
++	}
++
+ 	/*
+-	 * Do not try to clear more than 512KB or we end up seeing
+-	 * funny things on NICs with only 512KB SRAM
++	 * Do not try to clear more than 512KiB or we end up seeing
++	 * funny things on NICs with only 512KiB SRAM
+ 	 */
+ 	ace_clear(regs, 0x2000, 0x80000-0x2000);
+-	if (ACE_IS_TIGON_I(ap)) {
+-		ace_copy(regs, tigonFwText, tigonFwTextAddr, tigonFwTextLen);
+-		ace_copy(regs, tigonFwData, tigonFwDataAddr, tigonFwDataLen);
+-		ace_copy(regs, tigonFwRodata, tigonFwRodataAddr,
+-			 tigonFwRodataLen);
+-		ace_clear(regs, tigonFwBssAddr, tigonFwBssLen);
+-		ace_clear(regs, tigonFwSbssAddr, tigonFwSbssLen);
+-	}else if (ap->version == 2) {
+-		ace_clear(regs, tigon2FwBssAddr, tigon2FwBssLen);
+-		ace_clear(regs, tigon2FwSbssAddr, tigon2FwSbssLen);
+-		ace_copy(regs, tigon2FwText, tigon2FwTextAddr,tigon2FwTextLen);
+-		ace_copy(regs, tigon2FwRodata, tigon2FwRodataAddr,
+-			 tigon2FwRodataLen);
+-		ace_copy(regs, tigon2FwData, tigon2FwDataAddr,tigon2FwDataLen);
+-	}
+-
+-	return 0;
++	ace_copy(regs, &fw_data[3], load_addr, fw->size - 12);
++out:
++	release_firmware(fw);
++	return ret;
+ }
+ 
+
+diff --git a/drivers/net/acenic.h b/drivers/net/acenic.h
+index 4487f32..c987c9b 100644
+--- a/drivers/net/acenic.h
++++ b/drivers/net/acenic.h
+@@ -694,6 +694,10 @@ struct ace_private
+ 	u32			last_tx, last_std_rx, last_mini_rx;
+ #endif
+ 	int			pci_using_dac;
++	u8			firmware_major;
++	u8			firmware_minor;
++	u8			firmware_fix;
++	u32			firmware_start;
+ };
+ 
+
+diff --git a/firmware/Makefile b/firmware/Makefile
+index d99000d..8a9eba2 100644
+--- a/firmware/Makefile
++++ b/firmware/Makefile
+@@ -20,6 +20,13 @@ fw-external-y := $(subst ",,$(CONFIG_EXTRA_FIRMWARE))
+ # accurate. In the latter case it doesn't matter -- it'll use $(fw-shipped-all).
+ # But be aware that the config file might not be included at all.
+ 
++ifdef CONFIG_ACENIC_OMIT_TIGON_I
++acenic-objs := acenic/tg2.bin
++fw-shipped- += acenic/tg1.bin
++else
++acenic-objs := acenic/tg1.bin acenic/tg2.bin
++endif
++fw-shipped-$(CONFIG_ACENIC) += $(acenic-objs)
+ fw-shipped-$(CONFIG_ATARI_DSP56K) += dsp56k/bootstrap.bin
+ fw-shipped-$(CONFIG_ATM_AMBASSADOR) += atmsar11.fw
+ fw-shipped-$(CONFIG_CASSINI) += sun/cassini.bin
+diff --git a/firmware/WHENCE b/firmware/WHENCE
+index 040967f..e315a33 100644
+--- a/firmware/WHENCE
++++ b/firmware/WHENCE
+@@ -371,3 +371,15 @@ Licence: Unknown
+ Found in hex form in kernel source.
+ 
+ --------------------------------------------------------------------------
++
++Driver: acenic -- Alteon AceNIC Gigabit Ethernet card
++
++File: acenic/tg1.bin
++File: acenic/tg2.bin
++
++Licence: Unknown
++
++Found in hex form in kernel source, but source allegedly available at
++http://alteon.shareable.org/
++
++--------------------------------------------------------------------------
 
 
