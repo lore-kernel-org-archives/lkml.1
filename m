@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752102AbYL3GWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbYL3G1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752102AbYL3GWA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 01:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYL3GVv
+	id S1752278AbYL3G1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 01:27:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYL3G1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 01:21:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54065 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbYL3GVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 01:21:50 -0500
-Date: Tue, 30 Dec 2008 07:21:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-Message-ID: <20081230062139.GA30038@elte.hu>
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <28c262360812291543ia322a13g6af854a685ce7632@mail.gmail.com> <20081230024819.GA23301@balbir.in.ibm.com>
+	Tue, 30 Dec 2008 01:27:31 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:57002 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbYL3G1a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 01:27:30 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, ijc@hellion.org.uk
+Subject: Re: early fixmap causes kmap breakage
+References: <20081218211543.GB10681@wotan.suse.de>
+	<20081229151731.2a2c5a02.akpm@linux-foundation.org>
+	<20081230040118.GA27679@wotan.suse.de>
+Date: Mon, 29 Dec 2008 22:22:12 -0800
+In-Reply-To: <20081230040118.GA27679@wotan.suse.de> (Nick Piggin's message of
+	"Tue, 30 Dec 2008 05:01:18 +0100")
+Message-ID: <m1tz8m41yj.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081230024819.GA23301@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: npiggin@suse.de, ijc@hellion.org.uk, mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nick Piggin <npiggin@suse.de> writes:
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> On Mon, Dec 29, 2008 at 03:17:31PM -0800, Andrew Morton wrote:
+>> On Thu, 18 Dec 2008 22:15:43 +0100
+>> Nick Piggin <npiggin@suse.de> wrote:
+>> 
+>> > Hi,
+>> > 
+>> > I've debugged a problem where i386+pae systems with more than a few CPUs
+>> > blow up at boot in the kmap_atomic code.
+>> 
+>> ping?
+>
+> No further progress here, I'm waiting on input for how to fix this
+> "nicely". Meantime, clearing the early fixmap pte I guess works, but
+> you lose a page... is it possible to put it into .initdata or is
+> there some issue with that? (I guess on a PAE kernel, 4K isn't a
+> big deal).
+>
+>  
+>> > The problem is that the kmap_atomic pte pages all need to be contiguous
+>> > memory because the pte is calculated via the first kmap pte page + an
+>> > offset (so as not to have to walk the page tables every time).
+>> > 
+>> > The fixmap setup code crudely allocates contiguous pte pages, which is fine,
+>> > but if it finds an already populated pmd entry, then it will not switch it
+>> > to a new, contiguous pte page. So the early fixmap introduces a discontig
+>> > page table right in the middle of the kmap atomic fixmaps.
 
-> > > KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
-> > > package system
-> > >
-> > > SchedMC Run Time     Package Idle    Energy  Power
-> > > 0       81.68        52.83% 54.71%  1.00x J 1.00y W
-> > > 1       80.70        36.62% 70.11%  0.95x J 0.96y W
-> > > 2       74.95        19.53% 85.92%  0.90x J 0.98y W
+Where is this?
 
-> > Your result is very interesting.
-> > level 2 is more fast and efficient of power.
-> > 
-> > What's major contributor to use less time in level 2?
-> > I think it's cache bounce is less time than old.
-> > Is right ?
-> 
-> Yes, correct
+>> > Commenting out the eaarly fixmap setup in head_32.S gets everything working
+>> > properly. What would be the best way to fix this? Could we put the early
+>> > fixmap page table in initdata, and then have the fixmap setup proper first
+>> > clear its corresponding pmd entry?
 
-yes, i too noticed that runtime improved so dramatically: +7.5% on 
-kernbench is a _very_ big deal.
+Why would we want or need to?
 
-So i wanted to ask you to re-test whether this speedup is reproducible, 
-and if yes, please check a few other workloads (for example sysbench on 
-postgresql / mysqld) and send a patch that changes the 
-sched_mc_power_savings default to POWERSAVINGS_BALANCE_WAKEUP (2).
+>> How come users/testers aren't reporting this?
+>
+> Because apparently nobody tests 32-bit PAE systems with more than a couple
+> of CPUs anymore. This bug comes from HW vendor doing testing of SLES11.
 
-Sidenote, _please_ fix your mail client to not mess up the Cc: list via:
+Hmm.
 
-Mail-Followup-To: MinChan Kim <minchan.kim@gmail.com>,
-        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-        Linux Kernel <linux-kernel@vger.kernel.org>,
-        Suresh B Siddha <suresh.b.siddha@intel.com>,
-        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-        Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-        Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-        Andi Kleen <andi@firstfloor.org>,
-        David Collier-Brown <davecb@sun.com>,
-        Tim Connors <tconnors@astro.swin.edu.au>,
-        Max Krasnyansky <maxk@qualcomm.com>,
-        Gregory Haskins <gregory.haskins@gmail.com>,
-        Pavel Machek <pavel@suse.cz>,
-        Andrew Morton <akpm@linux-foundation.org>
+I have taken a quick skim and I am not seeming the part of the code you are
+talking about.  Is the problem code in mainline?
 
-	Ingo
+I'm guessing it has something to do with reserve_top_address() being called
+with a bad value in the normal case.  But I don't see it being called
+at all in the normal case.
+
+Eric
+
