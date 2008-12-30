@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYL3Xiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbYL3XIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbYL3Xiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 18:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYL3Xip
+	id S1753911AbYL3XIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 18:08:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYL3XIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 18:38:45 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:20254 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbYL3Xio (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 18:38:44 -0500
-X-IronPort-AV: E=Sophos;i="4.36,304,1228089600"; 
-   d="scan'208";a="221681526"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 30 Dec 2008 15:38:43 -0800
-Message-ID: <adavdt1qlmk.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 30 Dec 2008 18:08:21 -0500
+Received: from ozlabs.org ([203.10.76.45]:54920 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751351AbYL3XIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 18:08:18 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [RFC] cpualloc: improvements to per-cpu allocation
+Date: Wed, 31 Dec 2008 09:38:09 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: catalin.marinas@arm.com, Christoph Lameter <cl@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 Dec 2008 23:38:43.0863 (UTC) FILETIME=[C09A7270:01C96AD7]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Disposition: inline
+Message-Id: <200812310938.09912.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBV0RwMt000651
 
-Linus, please pull from
-
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-This tree is also available from kernel.org mirrors at:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-A build fix and an endianness bug fix before the new year:
-
-Roland Dreier (3):
-      RDMA/addr: Fix build breakage when IPv6 is disabled
-      IB/mlx4: Fix reading SL field out of cqe->sl_vid
-      Merge branches 'cma' and 'mlx4' into for-linus
-
- drivers/infiniband/Kconfig      |    1 +
- drivers/infiniband/core/addr.c  |   47 +++++++++++++++++++++++++++++++++-----
- drivers/infiniband/hw/mlx4/cq.c |    2 +-
- 3 files changed, 42 insertions(+), 8 deletions(-)
+This finally uses the "static" per-cpu region for alloc_percpu.  It includesa number of cleanups required to make that happen, and some cleanups are doneafterwards, with many more to come (eg. local_t is now more useful, if we sortthe semantics of what it should look like).
+  http://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-cpualloc                                                            
+commit 6b24141396c424dd3b9979fc1b915a51636f6ad6Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:46 2008 +1030
+    alloc_percpu: big_percpu_alloc        Impact: New API        We never allowed the dynamic per-cpu allocator to use the per-cpu region,    waiting until that region became resizable.  That was over 5 years ago.        Christoph Lameter has demonstrated that small dynamic per-cpu allocations    make sense, and most allocations are small.  So we want to use the same    efficient per-cpu access paths for alloc_percpu() memory.        But some places really do allocate large amounts of percpu memory.  We    give them a separate API (equivalent to the current inefficient one).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+commit b9b67f3c818b617bb47344a8574de8bcd5f6b294Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:46 2008 +1030
+    alloc_percpu: Move SNMP and ip_rt_acct to big_percpu        If we look at percpu allocations to boot an x86/32 "allyesconfig"    kernel, we see the following:        File and line			Number		Size		Total    net/ipv4/af_inet.c:1287		 21		2048		 43008    net/ipv4/af_inet.c:1290		 21		2048		 43008    net/ipv4/af_inet.c:1287		 48		 128		  6144    net/ipv4/af_inet.c:1290		 48		 128		  6144    net/ipv4/route.c:3258		  1		4096		  4096    net/ipv4/af_inet.c:1287		  1		 288		   288    net/ipv4/af_inet.c:1290		  1		 288		   288    net/ipv4/af_inet.c:1287		  1		 256		   256    net/ipv4/af_inet.c:1290		  1		 256		   256    net/ipv4/af_inet.c:1287		  1		 104		   104    net/ipv4/af_inet.c:1290		  1		 104		   104    Subtotal:							103696        Total (including other callers untouched by this patch)		117228        So networking is chubby: worst case about 100k per cpu for SNMP stats.    This can be reduced, but it's still 88% of the percpu memory, and IA64    has a hardcoded limit of 64k at the moment.        That's why these two callers get moved to big_percpu_alloc.        Note: ip_rt_acct could be simplified and made more efficient by making    it a DEFINE_PER_CPU.  But DaveM made some argument about image size    and I have far too much respect to argue with BloatBoy :)        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: netdev@vger.kernel.org
+commit d782824cdeacc530836661d98014a3872772d3a0Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:47 2008 +1030
+    alloc_percpu: remove alignment on cpu_workqueue_struct.        Since we're improving alloc_percpu, we don't need to waste space.    On 32-bit this drops struct cpu_workqueue_struct from 128 to 64 bytes.        File and line			Number		Size		Total    Before:      kernel/workqueue.c:819	 72		 128		 9126    After:      kernel/workqueue.c:819	 72		  64		 4608        It's still the biggest dynamic percpu user though.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+commit 9eac9d07744882b52653d47fef6facd93d469b35Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:47 2008 +1030
+    alloc_percpu: change percpu_ptr to per_cpu_ptr        Impact: cleanup        There are two allocated per-cpu accessor macros with almost identical    spelling.  The original and far more popular is per_cpu_ptr (44    files), so change over the other 4 files.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: mingo@redhat.com    Cc: lenb@kernel.org    Cc: cpufreq@vger.kernel.org
+commit 1aebde676d5a1e4965e98de401cf60e9a8e35351Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:48 2008 +1030
+    alloc_percpu: add align argument to __alloc_percpu.        This prepares for a real __alloc_percpu, by adding an alignment argument.    Only one place uses __alloc_percpu directly, and that's for a string.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Christoph Lameter <cl@linux-foundation.org>    Cc: Jens Axboe <axboe@kernel.dk>
+commit ba26c860d5d47896aee45ec5f13c0d7bd21a784aAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:48 2008 +1030
+    alloc_percpu: make the per cpu reserve configurable and larger.        This is based on Christoph Lameter's "cpualloc: make the per cpu    reserve configurable" patch, and his "Increase default reserve percpu    area" patch.        Christoph did the hard work of figuring out what the number should be    (based on converting the slub allocator).  allyesconfig on x86-32 uses    7k before mounting root, so 10k seems reasonable.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Christoph Lameter <cl@linux-foundation.org>
+commit f39b80d1009c1611f791b665640e8b41191733f2Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:49 2008 +1030
+    alloc_percpu: make percpu_modalloc/modfree more generic        Remove the "name" arg to percpu_modalloc, and make it zero memory.    Make percpu_modfree take NULL without barfing.    Make non-SMP versions do kzalloc/kfree.        These trivial changes make it suitable for use as a general per-cpu    allocator.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Christoph Lameter <cl@linux-foundation.org>
+commit 98bd1519536ef62d283cee221232c3c2d6157218Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:49 2008 +1030
+    alloc_percpu: expose percpu_modalloc and percpu_modfree        This simply moves the percpu allocator functions from the module code    to mm/allocpercpu.c.  percpu_modinit is renamed percpu_alloc_init and    called from init/main.c.        (Note: this allocator will need to be weaned off krealloc for use in    the slab allocator itself as Christoph does in one of his patches).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Christoph Lameter <cl@linux-foundation.org>
+commit 5fe633a3432021d0cf719ab238f6c936ef99d5eeAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:50 2008 +1030
+    alloc_percpu: switch over to (renamed) percpu_modfree.        Now the switch: rename percpu_modalloc to __alloc_percpu, and    percpu_modfree to free_percpu and export them.        We delete the old ones, including the unused percpu_alloc,    percpu_alloc_mask and percpu_ptr.        per_cpu_ptr now uses RELOC_HIDE on per_cpu_offset, just like static    per-cpu variables (not SHIFT_PERCPU_PTR: this has side effects on    S/390 and Alpha).        The Alpha changes are untested.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Christoph Lameter <cl@linux-foundation.org>
+commit 5f930541571ae751b5b0639c0294c3109f76933fAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:50 2008 +1030
+    alloc_percpu: documentation        Since we can now endorse this interface without wincing, we should    document it.   Nothing has changed API-wise, but it's a nice cleanup.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Christoph Lameter <cl@linux-foundation.org>
+commit 987afcb643485258568e02cd94e2b906969e080eAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:51 2008 +1030
+    alloc_percpu: __get_cpu_ptr/get_cpu_ptr/put_cpu_ptr        Now we have a decent implementation it makes sense to have an    interface for "this cpu", analogous to __get_cpu_var.        Alpha is untested.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Christoph Lameter <cl@linux-foundation.org>
+commit ae6f86a1492dd62523ef8c75455b3b784799cefaAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:52 2008 +1030
+    alloc_percpu: read_percpu_var / read_percpu_ptr        Impact: New API        get_cpu_var/get_cpu_ptr return lvalues, but for ia64 and x86/32 (and one    day x86/64) there are more efficient ways if you just want an rvalue.        The x86-specific versions have proven popular in that arch, so I expect    they'll be popular generally.        So introduce read_percpu_var and read_percpu_ptr.  They are separate,    because when we enlarge percpu areas IA64 is not going to be able to    do its trick on abitrary per-cpu pointers, only vars (which are in the    first 64k).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+commit defbdecc2b971063c6311db91f0be6007306a9bdAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:52 2008 +1030
+    alloc_percpu: rename percpu vars which cause name clashes.        Currently DECLARE_PER_CPU vars have per_cpu__ prefixed to them, and    this effectively puts them in a separate namespace.  No surprise that    they clash with other names when that prefix is removed.        There may be others I've missed, but if so the transform is simple.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+commit a56f30e8a075e8ce15b4dff8e3fe0edb9baff7eaAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:53 2008 +1030
+    alloc_percpu: remove per_cpu__ prefix.        Now that the return from alloc_percpu is compatible with the address    of per-cpu vars, it makes sense to hand around the address of per-cpu    variables.  To make this sane, we remove the per_cpu__ prefix we used    created to stop people accidentally using these vars directly.        Now we have sparse, we can use that (next patch).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+commit a3c45e59bb71da1a013e0063469c523fca50295bAuthor: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:53 2008 +1030
+    alloc_percpu: use __percpu annotation for sparse.        Add __percpu for sparse.        We have to make __kernel "__attribute__((address_space(0)))" so we can    cast to it.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Al Viro <viro@zeniv.linux.org.uk>
+commit 1d8e4bd04436d08d66807bfc772f6adadf0eadf8Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:54 2008 +1030
+    alloc_percpu: Use __get_cpu_ptr in block/        Impact: slight efficiency improvement on some archs.        Let's use __get_cpu_ptr and get_cpu_ptr now, rather than    per_cpu_ptr(..., smp_processor_id()).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Jens Axboe <axboe@kernel.dk>
+commit 7de8836a4c54bb950932508a2396b822bc41f939Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:54 2008 +1030
+    alloc_percpu: Use __get_cpu_ptr in crypto/        Impact: slight efficiency improvement on some archs.        Let's use __get_cpu_ptr and get_cpu_ptr now, rather than    per_cpu_ptr(..., smp_processor_id()).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Herbert Xu <herbert@gondor.apana.org.au>
+commit 21307114ab782c98ae172f4bd1db6685de8f0269Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:55 2008 +1030
+    alloc_percpu: Use __get_cpu_ptr in drivers/dma        Impact: slight efficiency improvement on some archs.        Let's use __get_cpu_ptr and get_cpu_ptr now, rather than    per_cpu_ptr(..., smp_processor_id()).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>    Cc: Dan Williams <dan.j.williams@intel.com>
+commit c88c3d8ed7eea6bc06d1f128c86bc5f309d71235Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:55 2008 +1030
+    alloc_percpu: Use __raw_get_cpu_ptr in fs/ext4        Impact: slight efficiency improvement on some archs.        Let's use __raw_get_cpu_ptr now, rather than per_cpu_ptr(...,    raw_smp_processor_id()).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Theodore Ts'o <tytso@mit.edu>    Cc: adilger@sun.com    Cc: linux-ext4@vger.kernel.org
+commit 010674876450701d458cfb15d8d4c70388603cf6Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:56 2008 +1030
+    alloc_percpu: Use get_cpu_ptr in fs/nfs        Impact: slight efficiency improvement on some archs.        Let's use get_cpu_ptr_ptr now, rather than per_cpu_ptr(..., smp_processor_id()).        Note that now we have real dynamic per-cpu allocations, cacheline aligning    should not win anything, and is a little antisocial.        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Trond Myklebust <Trond.Myklebust@netapp.com>    Cc: linux-nfs@vger.kernel.org
+commit b456282af0715bd986d57cba6a629a5b71ca7692Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:56 2008 +1030
+    alloc_percpu: Use __get_cpu_ptr in fs/xfs        Impact: slight efficiency improvement on some archs.        Let's use get_cpu_ptr now, rather than per_cpu_ptr(..., smp_processor_id()).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Tim Shimmin <xfs-masters@oss.sgi.com>    Cc: xfs@oss.sgi.com
+commit ea59384cda8cbeb40c5749f3b070df346667f7a7Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:57 2008 +1030
+    alloc_percpu: Use __get_cpu_ptr / get_cpu_ptr / get_cpu_var in kernel        Impact: slight efficiency improvement on some archs.        Let's use __get_cpu_ptr and get_cpu_ptr now, rather than    per_cpu_ptr(..., smp_processor_id()).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Thomas Gleixner <tglx@linutronix.de>    Cc: Ingo Molnar <mingo@elte.hu>    Cc: Dipankar Sarma <dipankar@in.ibm.com>
+commit 9ba7023fdebca58d35f970bb66fbcd91403a9ab7Author: Rusty Russell <rusty@rustcorp.com.au>Date:   Wed Dec 31 09:21:57 2008 +1030
+    alloc_percpu: Use __get_cpu_ptr in networking        Impact: slight efficiency improvement on some archs.        Let's use __get_cpu_ptr and get_cpu_ptr now, rather than    per_cpu_ptr(..., smp_processor_id()).        (The nfconntrack code seems a bit confused over when raw_smp_processor_id()     should be used: not here).        Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>    Cc: Hoang-Nam Nguyen <hnguyen@de.ibm.com>    Cc: Christoph Raisch <raisch@de.ibm.com>    Cc: netdev@vger.kernel.org 
+ Documentation/kernel-parameters.txt         |    8 + arch/alpha/include/asm/percpu.h             |   21 ++- arch/cris/arch-v10/kernel/entry.S           |    2 +-  arch/cris/arch-v32/mm/mmu.S                 |    2 +-  arch/ia64/include/asm/percpu.h              |    5 +-  arch/ia64/kernel/ia64_ksyms.c               |    4 +-  arch/ia64/mm/discontig.c                    |    2 +-  arch/parisc/lib/fixup.S                     |    8 +-  arch/powerpc/platforms/pseries/hvCall.S     |    2 +-  arch/sparc64/kernel/rtrap.S                 |    8 +-  arch/x86/include/asm/percpu.h               |   24 ++- arch/x86/include/asm/timer.h                |    5 +-  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c  |    2 +-  arch/x86/kernel/entry_64.S                  |    4 +-  arch/x86/kernel/head_32.S                   |    2 +-  arch/x86/kernel/head_64.S                   |    2 +-  arch/x86/kernel/tsc.c                       |    4 +-  arch/x86/xen/xen-asm_32.S                   |    4 +-  block/blktrace.c                            |    4 +-  crypto/async_tx/async_tx.c                  |    5 +-  drivers/acpi/processor_perflib.c            |    4 +-  drivers/dma/dmaengine.c                     |   32 ++-- drivers/infiniband/hw/ehca/ehca_irq.c       |    3 +-   drivers/net/chelsio/sge.c                   |    5 +-   drivers/net/loopback.c                      |    4 +-   drivers/net/veth.c                          |    7 +- fs/ext4/mballoc.c                           |    2 +- fs/nfs/iostat.h                             |   10 +- fs/xfs/xfs_mount.c                          |    9 +- include/asm-generic/percpu.h                |   60 ++++++- include/linux/compiler.h                    |    4 +- include/linux/percpu.h                      |  117 +++++++----- include/net/netfilter/nf_conntrack.h        |    4 +- include/net/netfilter/nf_conntrack_ecache.h |    2 +- include/net/snmp.h                          |   12 +- init/main.c                                 |    3 + kernel/lockdep.c                            |   11 +- kernel/module.c                             |  154 +--------------- kernel/posix-cpu-timers.c                   |    2 +- kernel/sched.c                              |   21 +- kernel/sched_stats.h                        |    4 +- kernel/softirq.c                            |    4 +- kernel/softlockup.c                         |   12 +- kernel/srcu.c                               |    4 +- kernel/stop_machine.c                       |    2 +- kernel/workqueue.c                          |    6 +- mm/allocpercpu.c                            |  265 ++++++++++++++++----------- mm/vmstat.c                                 |    6 +- net/core/sock.c                             |    3 +- net/ipv4/af_inet.c                          |   14 +- net/ipv4/ip_input.c                         |    3 +- net/ipv4/route.c                            |    4 +- net/netfilter/nf_conntrack_ecache.c         |    4 +- net/xfrm/xfrm_ipcomp.c                      |   20 +-- 54 files changed, 469 insertions(+), 466 deletions(-)
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
