@@ -1,102 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYL3Aay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbYL3AnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbYL3Aay (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 19:30:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYL3Aaq
+	id S1753862AbYL3AnV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 19:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYL3AnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 19:30:46 -0500
-Received: from mo-p05-ob.rzone.de ([81.169.146.180]:11810 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbYL3Aap (ORCPT
+	Mon, 29 Dec 2008 19:43:09 -0500
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:29720 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751709AbYL3AnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 19:30:45 -0500
-X-RZG-CLASS-ID: mo05
-X-RZG-AUTH: :J20NVUqhafZjXmY+Np2czPoDrWHf+vfHoOjaOgf6V+LBFT09lZ4=
-Message-ID: <49596BAE.2090206@tragetaschen.dyndns.org>
-Date: Tue, 30 Dec 2008 01:30:38 +0100
-From: Kai Ruhnau <kai@tragetaschen.dyndns.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081204)
+	Mon, 29 Dec 2008 19:43:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=C9uvOolYd+b/j/vW+FbLE4vGksHFarHKViiQ3M+Vi1vMxk2Z5u11i8ngqZM2He08cP5thquFAryykYFhiUqFvbGABfVbgH/5RppQTGVGf+7vxmIAerGNOPV7GWxBOJyXvFwT/2y1qSU2g5A203brCJn5KS92TKLFxueVHkTARLw=  ;
+X-YMail-OSG: 5A2peL0VM1kldMaGiYrv562RUqTIY.2LEoBbq9M90iMyC5jXmgljlr2yCZ1sruIO2Iy6b7xeKicnOq79JG9fUofPexF9Aw3V95xMB97EMSqvNYk4iZReiClu.XVBfbRIkVamukwOiT5_fx6UegmK5e8kHwadkDIDYAyuPMWP.YgJ6ULFzMaM3f9IWRPX
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jamie Lokier <jamie@shareable.org>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Mon, 29 Dec 2008 16:43:03 -0800
+User-Agent: KMail/1.9.10
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Eric Miao <eric.miao@marvell.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>,
+       Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <200812291156.12230.david-b@pacbell.net> <20081230002023.GA5309@shareable.org>
+In-Reply-To: <20081230002023.GA5309@shareable.org>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: System hang in quirk_usb_handoff_ohci
-References: <495933D6.1020409@tragetaschen.dyndns.org> <49593C85.9070502@shaw.ca>
-In-Reply-To: <49593C85.9070502@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812291643.03798.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Kai Ruhnau wrote:
->> Hi,
->>
->> Some days ago, I reported a reproducible hang during boot. The
->> information around was quite vague and so I took the liberty to further
->> dig into the the call stack of pci_init and found the exact place where
->> the initialization locks.
->> But first the symptoms (those are improved as well):
->>
->> If I turn on or restart my computer and try to boot without my
->> intervention, the system always hangs during boot, the last output being
->> the io scheduler registration. However, if I press a key at any time
->> after the BIOS (for example manual choosing  the grub entry or during
->> the kernel messages) the system happily boots normally.
->>
->> After a little printk debugging, it turns out, that
->> quirk_usb_handoff_ohci will hang when applied to my first USB OHCI pci
->> device. I have marked the offending line in the following snippet (line
->> 186 in the original---the second writel)
->>
->> ============ (startint at line 182 inn pci-quirks.c)
->> [...]
->>     u32 control = readl(base + OHCI_CONTROL);
->>     if (control & OHCI_CTRL_IR) {
->>         int wait_time = 500; /* arbitrary; 5 seconds */
->>         writel(OHCI_INTR_OC, base + OHCI_INTRENABLE);
->>
->>        // The next line might hang
->>
->>         writel(OHCI_OCR, base + OHCI_CMDSTATUS);
->>         while (wait_time > 0 &&
->>                 readl(base + OHCI_CONTROL) & OHCI_CTRL_IR) {
->>             wait_time -= 10;
->>             msleep(10);
->>         }
->> [...]
->> =========
->>
->> The lspci output for the device is
->>
->> 00:13.0 0c03: 1002:4387 (prog-if 10 [OHCI])
->>         Subsystem: 1462:7326                      Flags: bus master,
->> 66MHz, medium devsel, latency 64, IRQ 16
->>         Memory at fdffe000 (32-bit, non-prefetchable) [size=4K]  
->>         Kernel driver in use: ohci_hcd                           
->>         Kernel modules: ohci-hcd                                 
->> My system is a
->>
->> Linux  2.6.28-gentoo #12 SMP PREEMPT Mon Dec 29 21:01:04 CET 2008 x86_64
->> Intel(R) Core(TM)2 CPU 6300 @ 1.86GHz GenuineIntel GNU/Linux
->>
->> Thanks for your time.
->
-> It's most likely a BIOS bug, it somehow blows up when we tell it to
-> give up control of the USB controller (the BIOS will control it
-> initially to handle USB keyboard/mouse support). Is there an update
-> available?
+On Monday 29 December 2008, Jamie Lokier wrote:
+> David Brownell wrote:
+> > The reason single-bit operations don't provide error paths is twofold.
+> > First, they started as wrappers for can't-fail register accessors.
+> > Second, it's extremely unrealisitic to expect much code to handle any
+> > kind of faults in the middle of bitbanging loops ... or even just in
+> > classic "set this bit and continue" configuration code.
+> 
+> That's interesting.  I'm not sure it's a good idea not to return an
+> error code.  The caller can just ignore it if they don't care, and
+> it's extremely cheap to "return 0" in GPIO drivers which can't error.
 
-I just checked, but sadly there is none and I can't expect one: An OEM
-manufacturer, the BIOS clearly states to be only for this manufacturer
-and the sold "operating system" (Vista...) does not have this problem.
-Sounds like out of luck.
+I'm not sure either; at this point I *might* consider doing
+it differently -- but primarily for the case of external GPIO
+chips, e.g. over I2C or SPI -- where errors are realistic.  But
+it's been this way for a few years now, and changing stuff
+that hasn't been observed to be a problem isn't on my list.
 
-Thank you anyway for identifying.
+But as I noted:  patches for $SUBJECT don't seem to have any
+reason not to report whatever faults they encounter.
 
-Best regards
-Kai
+Also worth remembering:  when reading a GPIO value, it's not
+so easy to "ignore" a tristate (0, 1, error) return value.
 
--- 
-This signature is left as an exercise for the reader.
+ 
+> If I were bit-banging on GPIOs reached via some peripheral chip (such
+> a GPIO-fanout chip over I2C/SPI, where that chip is itself feeding a
+> secondary I2C or similar bit-banging bus), I probably would like to
+> check for errors and take emergency action if the peripheral chip
+> isn't responding, or just report to userspace.
+
+If I had to do that, I'd *certainly* want to bang the hardware
+designer over the head with some sort of cluebat or cluebrick.  :(
+
+
+> This has actually happened on a board I worked with, where the primary
+> I2C failed due to a plugged in peripheral loading it too much, and a
+> secondary bit-banging bus was not then reachable.
+
+It should now be realistic for I2C device drivers to have
+fault recovery logic...
+
+But for a long time, I2c only returned -EPERM so it was
+completely hopeless trying to figure out how to "handle"
+any problem beyond logging the problem and hoping someone
+is watching syslog output.  That's a big part of why most
+current I2C drivers have such unfriendly fault handling.
+
+- Dave
+
+
+
+> 
+> -- Jamie
+> 
+> 
+
 
