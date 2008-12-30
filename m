@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbYL3CRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbYL3CRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbYL3CRg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 21:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYL3CR1
+	id S1752002AbYL3CRv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 21:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYL3CRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 21:17:27 -0500
-Received: from mail.lang.hm ([64.81.33.126]:46885 "EHLO bifrost.lang.hm"
+	Mon, 29 Dec 2008 21:17:38 -0500
+Received: from iabervon.org ([66.92.72.58]:41778 "EHLO iabervon.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750905AbYL3CR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 21:17:27 -0500
-Date: Mon, 29 Dec 2008 19:19:26 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: lmage11@twcny.rr.com
-cc: Jesper Juhl <jj@chaosbits.net>, linux-kernel@vger.kernel.org
-Subject: Re: IRC?
-In-Reply-To: <20081230014726.RGDBA.401474.root@hrndva-web19-z02>
-Message-ID: <alpine.DEB.1.10.0812291913130.15026@asgard.lang.hm>
-References: <20081230014726.RGDBA.401474.root@hrndva-web19-z02>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1752573AbYL3CRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Dec 2008 21:17:36 -0500
+Date: Mon, 29 Dec 2008 21:17:35 -0500 (EST)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Igor Podlesny <for.poige+linux@gmail.com>
+cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
+Subject: Re: > I even didn't have a backtrace.
+In-Reply-To: <43d009740812282303r2015e6beyc2dae4c26d6aa686@mail.gmail.com>
+Message-ID: <alpine.LNX.1.00.0812292044510.19665@iabervon.org>
+References: <43d009740812282303r2015e6beyc2dae4c26d6aa686@mail.gmail.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Dec 2008, lmage11@twcny.rr.com wrote:
+On Mon, 29 Dec 2008, Igor Podlesny wrote:
 
-> ---- Jesper Juhl <jj@chaosbits.net> wrote:
->> On Mon, 29 Dec 2008, lmage11@twcny.rr.com wrote:
->>>
->> You might want to add your name to that address when sending mail...
->>
->>> I know that Linux kernel development discussion has pretty much always
->>> taken place on mailing lists, but would you guys consider developing a
->>> presence on an IRC network, probably Freenode? There already exists a
->>> ##kernel channel which could be used, and other channels could be
->>> created for specific subsystems. I think it'd be an interesting new
->>> medium to try out for discussion between developers, and it would also
->>> make the developers more accessible to users who find the mailing lists
->>> inconvenient or intimidating. The only subsystem I know of that
->>> maintains a reliable presence on IRC is the DRM subsystem (i.e. Dave
->>> Airlie, Eric Anholt, etc), and it works great.
->>>
->>> Not trying to start a flame war here, just wondering what you guys
->>> think. :)
->>>
->> Everyone and their grandmother knows how to use email - :)
->> Significantly fewer people know how to use IRC - :(
->>
->> The mailing list is archived in various places - :)
->> IRC chats are rarely archived - :(
->>
->> Archiving all LKML mail locally is easy - :)
->> Archiving all of a IRC channel continuously locally is not so easy - :(
->>
->> Email archives are easily searchable by subject, sender etc - :)
->> IRC archives are not so easily searchable by subject etc - :(
->>
->> Email is nicely asynchronous, letting people read and respond at their leisure - :)
->> IRC chats are not as asynchronous - :(
->>
->> Patches are easily distributed via email - :)
->> Patches are not very easily distributed via IRC - :(
->>
->> IRC channels can be a nice suplement when a few people need to discuss
->> something in semi-real-time related to some LKML thread or just some
->> kernel related topic, but it's no replacement for the mailing list.
->
-> Yeah, I wasn't proposing it as a replacement... Just as an alternative means of
-> communication for those that prefer it. For me personally, it would also make
-> kernel developers feel more "accessible", which would be nice.
+> 2008/12/29 Igor Podlesny <for.poige+linux@gmail.com>:
+> > 2008/12/29 Willy Tarreau <w@1wt.eu>:
+> >> On Mon, Dec 29, 2008 at 12:39:55PM +0700, Igor Podlesny wrote:
+> > [...]
+> >> Well, I won't say that I find them 100% rock solid, but you seem to be
+> >> able to reproduce a lot of serious issues. Have you filed bug reports
+> >> to get them fixed ? You cannot expect people to fix bugs they're not
+> >> aware of !
+> >
+> >        I even didn't have a backtrace. What's to fill in? "It just crashed 2
+> > times, Dear Bugzilla"? :-)
+> >
+> 	BTW, I wonder -- can the kernel store crash related information (if
+> any) in RAM, at certain addresses, so it can survive warm reboot and
+> get displayed "in dmesg" on the next boot?
 
-IRC interrupts people. would you rather the kernel developers feel 
-accessible, or get work done?
+Usually, you get one of:
 
-the kernel developers are very accessable, but they are not on-call to 
-respond instantly to your requests.
+ - some bus is locked, and the CPU can't get kernel code from RAM, let 
+   alone write anything anywhere
+ - triple fault, and the system spontaneously reboots
+ - system is unaware that anything's wrong, but nothing runs
+ - any attempt to get data useful for debugging hangs
+ - system is alive enough that you can interact with it and get info
 
-that being said, some of the developers do use IRC for various things, but 
-there is no 'official' place to always find them and no requirement for 
-them to be available to be contacted at specific times.
+That doesn't leave a big possibility for the kernel to determine that the 
+system has crashed and put something in memory for a warm reboot to find. 
+There isn't really any case where the kernel reboots intentionally in a 
+context where it thinks the system is crashing but has the ability to do 
+lots of information gathering.
 
-David Lang
+About the only common reasons for the kernel to panic these days are a 
+missing filesystem or hardware driver, such that it can't find a root 
+partition or init, and these really ought to allow the user to debug 
+interactively (at least scroll up and look at messages) unless the system 
+is configured to reboot.
+
+On your original question: your .config and boot dmesg, and anything 
+similar about the situations (like, "both times I was running hwclock" or 
+"I was copying big files over XFS..."). If you can trigger it reliably or 
+at least repeatably, that's at least as good as a backtrace.
+
+You might post the oopses from your kernel logs, too. Also, 
+failing-to-suspend tends to leave useful messages in dmesg and not be too 
+hard to explain (at least as compared to failing to resume), and there's 
+been a push for getting all drivers to support suspending, even ones for 
+desktop hardware, so that can probably be fixed (of course, relatively few 
+people actually try suspending desktops, so it's easier for bugs to go 
+unnoticed there).
+
+	-Daniel
+*This .sig left intentionally blank*
