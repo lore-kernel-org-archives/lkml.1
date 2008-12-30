@@ -1,59 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbYL3Svk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYL3S7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbYL3Svk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 13:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYL3Sv2
+	id S1752737AbYL3S7b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 13:59:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYL3S7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 13:51:28 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45996 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbYL3Sv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 13:51:27 -0500
-Date: Tue, 30 Dec 2008 13:51:26 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
-Subject: Re: 2.6.27.10: ata1.00: HPA detected: current 293044655, native
-	293046768
-Message-ID: <20081230185126.GC15235@bombadil.infradead.org>
-References: <alpine.DEB.1.10.0812300657050.11356@p34.internal.lan>
+	Tue, 30 Dec 2008 13:59:23 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55848 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751446AbYL3S7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 13:59:22 -0500
+Date: Tue, 30 Dec 2008 18:59:19 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, wassim dagash <wassim.dagash@gmail.com>
+Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order
+	allocation
+Message-ID: <20081230185919.GA17725@csn.ul.ie>
+References: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812300657050.11356@p34.internal.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 07:26:40AM -0500, Justin Piszcz wrote:
-> On one system, two Raptor 150s:
->
-> [    0.739402] ata1.00: HPA detected: current 293044655, native 293046768
-> [    0.739491] ata1.00: ATA-7: WDC WD1500ADFD-00NLR5, 21.07QR5, max UDMA/133
-> [    0.739577] ata1.00: 293044655 sectors, multi 0: LBA48 NCQ (depth 31/32)
-> [    0.742454] ata1.00: configured for UDMA/133
->
-> [    1.059146] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [    1.061406] ata2.00: ATA-7: WDC WD1500ADFD-00NLR5, 21.07QR5, max UDMA/133
-> [    1.061494] ata2.00: 293046768 sectors, multi 0: LBA48 NCQ (depth 31/32)
-> [    1.064360] ata2.00: configured for UDMA/133
->
-> Two disks in a RAID-1 (mdadm) configuration, how come the first one
-> has an issue w/HPA as the firmware of both disks is the same..?
->
-> l1:~# smartctl -a /dev/sda | grep -i bytes
-> User Capacity:    150,038,863,360 bytes
-> l1:~# smartctl -a /dev/sdb | grep -i bytes
-> User Capacity:    150,039,945,216 bytes
-> l1:~#
->
-> Why does this occur?
->
+On Tue, Dec 30, 2008 at 07:55:47PM +0900, KOSAKI Motohiro wrote:
+> 
+> ok, wassim confirmed this patch works well.
+> 
+> 
+> ==
+> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
+> 
+> Wassim Dagash reported following kswapd infinite loop problem.
+> 
+>   kswapd runs in some infinite loop trying to swap until order 10 of zone
+>   highmem is OK, While zone higmem (as I understand) has nothing to do
+>   with contiguous memory (cause there is no 1-1 mapping) which means
+>   kswapd will continue to try to balance order 10 of zone highmem
+>   forever (or until someone release a very large chunk of highmem).
+> 
+> He proposed remove contenious checking on highmem at all.
+> However hugepage on highmem need contenious highmem page.
+> 
 
-Bonghits... Anyway, pass libata.ignore_hpa=1 if you want to use the full
-capacity of your disk.
+I'm lacking the original problem report, but contiguous order-10 pages are
+indeed required for hugepages in highmem and reclaiming for them should not
+be totally disabled at any point. While no 1-1 mapping exists for the kernel,
+contiguity is still required.
 
-regards, Kyle
+kswapd gets a sc.order when it is known there is a process trying to get
+high-order pages so it can reclaim at that order in an attempt to prevent
+future direct reclaim at a high-order. Your patch does not appear to depend on
+GFP_KERNEL at all so I found the comment misleading. Furthermore, asking it to
+loop again at order-0 means it may scan and reclaim more memory unnecessarily
+seeing as all_zones_ok was calculated based on a high-order value, not order-0.
+
+While constantly looping trying to balance for high-orders is indeed bad,
+I'm unconvinced this is the correct change. As we have already gone through
+a priorities and scanned everything at the high-order, would it not make
+more sense to do just give up with something like the following?
+
+       /*
+        * If zones are still not balanced, loop again and continue attempting
+        * to rebalance the system. For high-order allocations, fragmentation
+        * can prevent the zones being rebalanced no matter how hard kswapd
+        * works, particularly on systems with little or no swap. For costly
+        * orders, just give up and assume interested processes will either
+        * direct reclaim or wake up kswapd as necessary.
+        */
+        if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+                cond_resched();
+
+                try_to_freeze();
+
+                goto loop_again;
+        }
+
+I used PAGE_ALLOC_COSTLY_ORDER instead of sc.order == 0 because we are
+expected to support allocations up to that order in a fairly reliable fashion.
+
+> To add infinite loop stopper is simple and good.
+> 
+> 
+> 
+> Reported-by: wassim dagash <wassim.dagash@gmail.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+For the moment
+
+NAKed-by: Mel Gorman <mel@csn.ul.ie>
+
+How about the following (compile-tested-only) patch?
+
+=============
+From: Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH] mm: stop kswapd's infinite loop at high order allocation
+
+  kswapd runs in some infinite loop trying to swap until order 10 of zone
+  highmem is OK.... kswapd will continue to try to balance order 10 of zone
+  highmem forever (or until someone release a very large chunk of highmem).
+
+For costly high-order allocations, the system may never be balanced due to
+fragmentation but kswapd should not infinitely loop as a result. The
+following patch lets kswapd stop reclaiming in the event it cannot
+balance zones and the order is high-order.
+
+Reported-by: wassim dagash <wassim.dagash@gmail.com>
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 62e7f62..03ed9a0 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1867,7 +1867,16 @@ out:
+ 
+ 		zone->prev_priority = temp_priority[i];
+ 	}
+-	if (!all_zones_ok) {
++
++	/*
++	 * If zones are still not balanced, loop again and continue attempting
++	 * to rebalance the system. For high-order allocations, fragmentation
++	 * can prevent the zones being rebalanced no matter how hard kswapd
++	 * works, particularly on systems with little or no swap. For costly
++	 * orders, just give up and assume interested processes will either
++	 * direct reclaim or wake up kswapd as necessary.
++	 */
++	if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+ 		cond_resched();
+ 
+ 		try_to_freeze();
