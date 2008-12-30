@@ -1,138 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYL3S7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbYL3Tdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbYL3S7b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 13:59:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYL3S7X
+	id S1753294AbYL3Tdz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 14:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYL3Tdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 13:59:23 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:55848 "EHLO gir.skynet.ie"
+	Tue, 30 Dec 2008 14:33:46 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46268 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbYL3S7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 13:59:22 -0500
-Date: Tue, 30 Dec 2008 18:59:19 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, wassim dagash <wassim.dagash@gmail.com>
-Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order
-	allocation
-Message-ID: <20081230185919.GA17725@csn.ul.ie>
-References: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1751971AbYL3Tdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 14:33:46 -0500
+Date: Tue, 30 Dec 2008 17:33:10 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Patrick Boettcher <patrick.boettcher@desy.de>
+Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes, crash in
+ af9005_usb_module_init()
+Message-ID: <20081230173310.41711eb9@pedra.chehab.org>
+In-Reply-To: <20081227171122.GA20147@localhost>
+References: <20081224121252.7560391e@caramujo.chehab.org>
+	<20081225081907.GA4628@elte.hu>
+	<20081225212459.4c7e31b4@caramujo.chehab.org>
+	<20081226090220.GF755@elte.hu>
+	<20081226111324.3fbb804b@caramujo.chehab.org>
+	<20081226132426.GA26953@elte.hu>
+	<20081227164020.GA9726@elte.hu>
+	<20081227171122.GA20147@localhost>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 07:55:47PM +0900, KOSAKI Motohiro wrote:
+
+On Sat, 27 Dec 2008 20:11:22 +0300
+Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+
+> [Ingo Molnar - Sat, Dec 27, 2008 at 05:40:20PM +0100]
+> | 
+> | * Ingo Molnar <mingo@elte.hu> wrote:
+> | 
+> | > [...] I have re-enabled the driver in tip/master [...]
+> | 
+> | ok, just got this build failure:
+> | 
+> |  drivers/built-in.o: In function `dm1105_probe':
+> |  dm1105.c:(.devinit.text+0x2298b): undefined reference to `cx24116_attach'
+> |  make: *** [.tmp_vmlinux1] Error 1
+> | 
+> | config attached. Can test any fix patch.
+> | 
+> | 	Ingo
+> |
 > 
-> ok, wassim confirmed this patch works well.
-> 
-> 
-> ==
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
-> 
-> Wassim Dagash reported following kswapd infinite loop problem.
-> 
->   kswapd runs in some infinite loop trying to swap until order 10 of zone
->   highmem is OK, While zone higmem (as I understand) has nothing to do
->   with contiguous memory (cause there is no 1-1 mapping) which means
->   kswapd will continue to try to balance order 10 of zone highmem
->   forever (or until someone release a very large chunk of highmem).
-> 
-> He proposed remove contenious checking on highmem at all.
-> However hugepage on highmem need contenious highmem page.
-> 
+> Something like that?
 
-I'm lacking the original problem report, but contiguous order-10 pages are
-indeed required for hugepages in highmem and reclaiming for them should not
-be totally disabled at any point. While no 1-1 mapping exists for the kernel,
-contiguity is still required.
+I suspect that this will work. Could you please send your SOB?
 
-kswapd gets a sc.order when it is known there is a process trying to get
-high-order pages so it can reclaim at that order in an attempt to prevent
-future direct reclaim at a high-order. Your patch does not appear to depend on
-GFP_KERNEL at all so I found the comment misleading. Furthermore, asking it to
-loop again at order-0 means it may scan and reclaim more memory unnecessarily
-seeing as all_zones_ok was calculated based on a high-order value, not order-0.
 
-While constantly looping trying to balance for high-orders is indeed bad,
-I'm unconvinced this is the correct change. As we have already gone through
-a priorities and scanned everything at the high-order, would it not make
-more sense to do just give up with something like the following?
-
-       /*
-        * If zones are still not balanced, loop again and continue attempting
-        * to rebalance the system. For high-order allocations, fragmentation
-        * can prevent the zones being rebalanced no matter how hard kswapd
-        * works, particularly on systems with little or no swap. For costly
-        * orders, just give up and assume interested processes will either
-        * direct reclaim or wake up kswapd as necessary.
-        */
-        if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
-                cond_resched();
-
-                try_to_freeze();
-
-                goto loop_again;
-        }
-
-I used PAGE_ALLOC_COSTLY_ORDER instead of sc.order == 0 because we are
-expected to support allocations up to that order in a fairly reliable fashion.
-
-> To add infinite loop stopper is simple and good.
-> 
-> 
-> 
-> Reported-by: wassim dagash <wassim.dagash@gmail.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
-For the moment
-
-NAKed-by: Mel Gorman <mel@csn.ul.ie>
-
-How about the following (compile-tested-only) patch?
-
-=============
-From: Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH] mm: stop kswapd's infinite loop at high order allocation
-
-  kswapd runs in some infinite loop trying to swap until order 10 of zone
-  highmem is OK.... kswapd will continue to try to balance order 10 of zone
-  highmem forever (or until someone release a very large chunk of highmem).
-
-For costly high-order allocations, the system may never be balanced due to
-fragmentation but kswapd should not infinitely loop as a result. The
-following patch lets kswapd stop reclaiming in the event it cannot
-balance zones and the order is high-order.
-
-Reported-by: wassim dagash <wassim.dagash@gmail.com>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 62e7f62..03ed9a0 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1867,7 +1867,16 @@ out:
- 
- 		zone->prev_priority = temp_priority[i];
- 	}
--	if (!all_zones_ok) {
-+
-+	/*
-+	 * If zones are still not balanced, loop again and continue attempting
-+	 * to rebalance the system. For high-order allocations, fragmentation
-+	 * can prevent the zones being rebalanced no matter how hard kswapd
-+	 * works, particularly on systems with little or no swap. For costly
-+	 * orders, just give up and assume interested processes will either
-+	 * direct reclaim or wake up kswapd as necessary.
-+	 */
-+	if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
- 		cond_resched();
- 
- 		try_to_freeze();
+Cheers,
+Mauro
