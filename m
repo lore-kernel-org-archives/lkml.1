@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbYL3QpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYL3QrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753121AbYL3QpF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 11:45:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbYL3Qoy
+	id S1753283AbYL3QrA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 11:47:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYL3Qqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 11:44:54 -0500
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:59209 "EHLO
+	Tue, 30 Dec 2008 11:46:52 -0500
+Received: from ribosome.natur.cuni.cz ([195.113.57.20]:33666 "EHLO
 	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbYL3Qow (ORCPT
+	with ESMTP id S1751738AbYL3Qqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 11:44:52 -0500
-Message-ID: <495A4FFF.5010302@ribosome.natur.cuni.cz>
-Date: Tue, 30 Dec 2008 17:44:47 +0100
-From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
+	Tue, 30 Dec 2008 11:46:50 -0500
+Message-ID: <495A4EE4.5020701@ribosome.natur.cuni.cz>
+Date: Tue, 30 Dec 2008 17:40:04 +0100
+From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mokrejsm@ribosome.natur.cuni.cz>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081227 SeaMonkey/1.1.14
 MIME-Version: 1.0
 To: LKML <linux-kernel@vger.kernel.org>
 Subject: Dying hardware?: Eeek! page_mapcount(page) went negative! (-1)
 X-Enigmail-Version: 0.95.7
 Content-Type: multipart/mixed;
- boundary="------------080104050909010603000708"
+ boundary="------------020800020105020709020003"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------080104050909010603000708
+--------------020800020105020709020003
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
@@ -52,7 +52,7 @@ Thanks for any clues,
 Martin
 P.S.: Please Cc: me in replies.
 
---------------080104050909010603000708
+--------------020800020105020709020003
 Content-Type: text/plain;
  name="dmesg-2.6.28.txt"
 Content-Transfer-Encoding: base64
@@ -540,7 +540,7 @@ YiA1MCAyYyBiOCBjMCBiYiA1MCBjMCBlOCBiNSA5MiBmZSBmZiA8MGY+IDBiIGViIGZlIDhi
 IDUzIDEwIDgzIGUyIDAxIGY3IGRhIDgzIGMyIDA4IDhiIDAzIGMxIGU4IDFlIDY5IApFSVA6
 IFs8YzAxNWIxMzQ+XSBwYWdlX3JlbW92ZV9ybWFwKzB4YjYvMHhlNSBTUzpFU1AgMDA2ODpm
 NWM3ZGVkNAotLS1bIGVuZCB0cmFjZSAzMTE3NjAzMjM2N2Y3OTI1IF0tLS0K
---------------080104050909010603000708
+--------------020800020105020709020003
 Content-Type: application/gzip;
  name="config.gz"
 Content-Transfer-Encoding: base64
@@ -771,4 +771,4 @@ okq3aJt0HOzajZLbOnVRaYprlde1dWWhb5z2jy7BIM76GUfsL8eymMT34pBXk1V+yavR9Yde
 N5eac0zNySmpdv7Q07bS48b/t5K1sdD2lis1PG2h4ZN4ak125UwDvkSncW11lF5pWsXPXLut
 6Au2U8T9sTXLNGuW6rbyDAUq1bo0lz/NjUuLBgzypPsU06tIap/M8vVbNLqFS2R3iO4fzqgT
 czDGAAA=
---------------080104050909010603000708--
+--------------020800020105020709020003--
