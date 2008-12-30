@@ -1,703 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYL3Iqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYL3Irn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbYL3Iqn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 03:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYL3IqD
+	id S1754076AbYL3Irn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 03:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYL3Irf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 03:46:03 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48062 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbYL3Ip1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 03:45:27 -0500
-Subject: [PATCH -net-next 4/4] starfire: use request_firmware()
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: davem@redhat.com, netdev <netdev@vger.kernel.org>, becker@scyld.com,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 30 Dec 2008 14:11:50 +0530
-Message-Id: <1230626510.24796.28.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Dec 2008 03:47:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53394 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750980AbYL3Ire (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 03:47:34 -0500
+Date: Tue, 30 Dec 2008 09:47:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
+	the unified tracing API
+Message-ID: <20081230084724.GA24637@elte.hu>
+References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere> <1230623364.6091.9.camel@penberg-laptop> <20081230081600.GD2455@elte.hu> <20081230084127.GE10635@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081230084127.GE10635@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Firmware blob is big endian
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- drivers/net/starfire.c                |   54 +++++-
- drivers/net/starfire_firmware.h       |  346 ---------------------------------
- drivers/net/starfire_firmware.pl      |   31 ---
- firmware/Makefile                     |    2 +
- firmware/WHENCE                       |   19 ++
- firmware/adaptec/starfire_rx.bin.ihex |   53 +++++
- firmware/adaptec/starfire_tx.bin.ihex |   53 +++++
- 7 files changed, 175 insertions(+), 383 deletions(-)
- delete mode 100644 drivers/net/starfire_firmware.h
- delete mode 100644 drivers/net/starfire_firmware.pl
- create mode 100644 firmware/adaptec/starfire_rx.bin.ihex
- create mode 100644 firmware/adaptec/starfire_tx.bin.ihex
+* Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
 
-diff --git a/drivers/net/starfire.c b/drivers/net/starfire.c
-index f54ac23..57fb1f7 100644
---- a/drivers/net/starfire.c
-+++ b/drivers/net/starfire.c
-@@ -42,11 +42,11 @@
- #include <linux/mii.h>
- #include <linux/if_vlan.h>
- #include <linux/mm.h>
-+#include <linux/firmware.h>
- #include <asm/processor.h>		/* Processor type for cache alignment. */
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
--#include "starfire_firmware.h"
- /*
-  * The current frame processor firmware fails to checksum a fragment
-  * of length 1. If and when this is fixed, the #define below can be removed.
-@@ -173,6 +173,10 @@ static int full_duplex[MAX_UNITS] = {0, };
- #define skb_first_frag_len(skb)	skb_headlen(skb)
- #define skb_num_frags(skb) (skb_shinfo(skb)->nr_frags + 1)
- 
-+/* Firmware names */
-+#define FIRMWARE_RX	"adaptec/starfire_rx.bin"
-+#define FIRMWARE_TX	"adaptec/starfire_tx.bin"
-+
- /* These identify the driver base version and may not be removed. */
- static char version[] =
- KERN_INFO "starfire.c:v1.03 7/26/2000  Written by Donald Becker <becker@scyld.com>\n"
-@@ -182,6 +186,8 @@ MODULE_AUTHOR("Donald Becker <becker@scyld.com>");
- MODULE_DESCRIPTION("Adaptec Starfire Ethernet driver");
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_VERSION);
-+MODULE_FIRMWARE(FIRMWARE_RX);
-+MODULE_FIRMWARE(FIRMWARE_TX);
- 
- module_param(max_interrupt_work, int, 0);
- module_param(mtu, int, 0);
-@@ -902,9 +908,12 @@ static void mdio_write(struct net_device *dev, int phy_id, int location, int val
- 
- static int netdev_open(struct net_device *dev)
- {
-+	const struct firmware *fw_rx, *fw_tx;
-+	const __be32 *fw_rx_data, *fw_tx_data;
- 	struct netdev_private *np = netdev_priv(dev);
- 	void __iomem *ioaddr = np->base;
- 	int i, retval;
-+	size_t tx_size, rx_size;
- 	size_t tx_done_q_size, rx_done_q_size, tx_ring_size, rx_ring_size;
- 
- 	/* Do we ever need to reset the chip??? */
-@@ -1040,11 +1049,40 @@ static int netdev_open(struct net_device *dev)
- 	writel(ETH_P_8021Q, ioaddr + VlanType);
- #endif /* VLAN_SUPPORT */
- 
-+	retval = request_firmware(&fw_rx, FIRMWARE_RX, &np->pci_dev->dev);
-+	if (retval) {
-+		printk(KERN_ERR "starfire: Failed to load firmware \"%s\"\n",
-+		       FIRMWARE_RX);
-+		return retval;
-+	}
-+	if (fw_rx->size % 4) {
-+		printk(KERN_ERR "starfire: bogus length %zu in \"%s\"\n",
-+		       fw_rx->size, FIRMWARE_RX);
-+		retval = -EINVAL;
-+		goto out_rx;
-+	}
-+	retval = request_firmware(&fw_tx, FIRMWARE_TX, &np->pci_dev->dev);
-+	if (retval) {
-+		printk(KERN_ERR "starfire: Failed to load firmware \"%s\"\n",
-+		       FIRMWARE_TX);
-+		goto out_rx;
-+	}
-+	if (fw_tx->size % 4) {
-+		printk(KERN_ERR "starfire: bogus length %zu in \"%s\"\n",
-+		       fw_tx->size, FIRMWARE_TX);
-+		retval = -EINVAL;
-+		goto out_tx;
-+	}
-+	fw_rx_data = (const __be32 *)&fw_rx->data[0];
-+	fw_tx_data = (const __be32 *)&fw_tx->data[0];
-+	rx_size = fw_rx->size / 4;
-+	tx_size = fw_tx->size / 4;
-+
- 	/* Load Rx/Tx firmware into the frame processors */
--	for (i = 0; i < FIRMWARE_RX_SIZE * 2; i++)
--		writel(firmware_rx[i], ioaddr + RxGfpMem + i * 4);
--	for (i = 0; i < FIRMWARE_TX_SIZE * 2; i++)
--		writel(firmware_tx[i], ioaddr + TxGfpMem + i * 4);
-+	for (i = 0; i < rx_size; i++)
-+		writel(be32_to_cpup(&fw_rx_data[i]), ioaddr + RxGfpMem + i * 4);
-+	for (i = 0; i < tx_size; i++)
-+		writel(be32_to_cpup(&fw_tx_data[i]), ioaddr + TxGfpMem + i * 4);
- 	if (enable_hw_cksum)
- 		/* Enable the Rx and Tx units, and the Rx/Tx frame processors. */
- 		writel(TxEnable|TxGFPEnable|RxEnable|RxGFPEnable, ioaddr + GenCtrl);
-@@ -1056,7 +1094,11 @@ static int netdev_open(struct net_device *dev)
- 		printk(KERN_DEBUG "%s: Done netdev_open().\n",
- 		       dev->name);
- 
--	return 0;
-+out_tx:
-+	release_firmware(fw_tx);
-+out_rx:
-+	release_firmware(fw_rx);
-+	return retval;
- }
- 
+> On Tue, Dec 30, 2008 at 09:16:00AM +0100, Ingo Molnar wrote:
+> > 3)
+> > 
+> > the most lowlevel (and hence most allocation-footprint sensitive) object 
+> > to track would be the memory object itself. I think the best approach 
+> > would be to do a static, limited size hash that could track up to N memory 
+> > objects.
+> > 
+> > The advantage of such an approach is that it does not impact allocation 
+> > patterns at all (besides the one-time allocation cost of the hash itself 
+> > during tracer startup).
+> 
+> kmemtrace-user handles this by analysing offline :). I presume you could 
+> get around this by discarding every hash collision in a well-sized 
+> hashtable. The hashing algo in kmemtrace-user performs okay, considering 
+> it fills the hashtable almost entirely, but I presume you're doing that 
+> in-kernel and using other available code.
 
-diff --git a/drivers/net/starfire_firmware.h b/drivers/net/starfire_firmware.h
-deleted file mode 100644
-index 0a66852..0000000
---- a/drivers/net/starfire_firmware.h
-+++ /dev/null
-@@ -1,346 +0,0 @@
--/*
-- * Copyright 2003 Adaptec, Inc.
-- *
-- * Please read the following license before using the Adaptec Software
-- * ("Program"). If you do not agree to the license terms, do not use the
-- * Program:
-- *
-- * You agree to be bound by version 2 of the General Public License ("GPL")
-- * dated June 1991, which can be found at http://www.fsf.org/licenses/gpl.html.
-- * If the link is broken, write to Free Software Foundation, 59 Temple Place,
-- * Boston, Massachusetts 02111-1307.
-- *
-- * BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE IT IS LICENSED "AS IS" AND
-- * THERE IS NO WARRANTY FOR THE PROGRAM, INCLUDING BUT NOT LIMITED TO THE
-- * IMPLIED WARRANTIES OF MERCHANTIBILITY OR FITNESS FOR A PARTICULAR PURPOSE
-- * (TO THE EXTENT PERMITTED BY APPLICABLE LAW). USE OF THE PROGRAM IS AT YOUR
-- * OWN RISK. IN NO EVENT WILL ADAPTEC OR ITS LICENSORS BE LIABLE TO YOU FOR
-- * DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES
-- * ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM.
-- *
-- */
--
--static const u32 firmware_rx[] = {
--  0x010003dc, 0x00000000,
--  0x04000421, 0x00000086,
--  0x80000015, 0x0000180e,
--  0x81000015, 0x00006664,
--  0x1a0040ab, 0x00000b06,
--  0x14200011, 0x00000000,
--  0x14204022, 0x0000aaaa,
--  0x14204022, 0x00000300,
--  0x14204022, 0x00000000,
--  0x1a0040ab, 0x00000b14,
--  0x14200011, 0x00000000,
--  0x83000015, 0x00000002,
--  0x04000021, 0x00000000,
--  0x00000010, 0x00000000,
--  0x04000421, 0x00000087,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00008015, 0x00000000,
--  0x0000003e, 0x00000000,
--  0x00000010, 0x00000000,
--  0x82000015, 0x00004000,
--  0x009e8050, 0x00000000,
--  0x03008015, 0x00000000,
--  0x86008015, 0x00000000,
--  0x82000015, 0x00008000,
--  0x0100001c, 0x00000000,
--  0x000050a0, 0x0000010c,
--  0x4e20d011, 0x00006008,
--  0x1420d012, 0x00004008,
--  0x0000f090, 0x00007000,
--  0x0000c8b0, 0x00003000,
--  0x00004040, 0x00000000,
--  0x00108015, 0x00000000,
--  0x00a2c150, 0x00004000,
--  0x00a400b0, 0x00000014,
--  0x00000020, 0x00000000,
--  0x2500400d, 0x00002525,
--  0x00047220, 0x00003100,
--  0x00934070, 0x00000000,
--  0x00000020, 0x00000000,
--  0x00924460, 0x00000184,
--  0x2b20c011, 0x00000000,
--  0x0000c420, 0x00000540,
--  0x36014018, 0x0000422d,
--  0x14200011, 0x00000000,
--  0x00924460, 0x00000183,
--  0x3200001f, 0x00000034,
--  0x02ac0015, 0x00000002,
--  0x00a60110, 0x00000008,
--  0x42200011, 0x00000000,
--  0x00924060, 0x00000103,
--  0x0000001e, 0x00000000,
--  0x00000020, 0x00000100,
--  0x0000001e, 0x00000000,
--  0x00924460, 0x00000086,
--  0x00004080, 0x00000000,
--  0x0092c070, 0x00000000,
--  0x00924060, 0x00000100,
--  0x0000c890, 0x00005000,
--  0x00a6c110, 0x00000000,
--  0x00b0c090, 0x00000012,
--  0x021c0015, 0x00000000,
--  0x3200001f, 0x00000034,
--  0x00924460, 0x00000510,
--  0x44210011, 0x00000000,
--  0x42000011, 0x00000000,
--  0x83000015, 0x00000040,
--  0x00924460, 0x00000508,
--  0x45014018, 0x00004545,
--  0x00808050, 0x00000000,
--  0x62208012, 0x00000000,
--  0x82000015, 0x00000800,
--  0x15200011, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x80000015, 0x0000eea4,
--  0x81000015, 0x0000005f,
--  0x00000060, 0x00000000,
--  0x00004120, 0x00000000,
--  0x00004a00, 0x00004000,
--  0x00924460, 0x00000190,
--  0x5601401a, 0x00005956,
--  0x14000011, 0x00000000,
--  0x00934050, 0x00000018,
--  0x00930050, 0x00000018,
--  0x3601403a, 0x0000002d,
--  0x000643a9, 0x00000000,
--  0x0000c420, 0x00000140,
--  0x5601401a, 0x00005956,
--  0x14000011, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x000642a9, 0x00000000,
--  0x00024420, 0x00000183,
--  0x5601401a, 0x00005956,
--  0x82000015, 0x00002000,
--  0x15200011, 0x00000000,
--  0x82000015, 0x00000010,
--  0x15200011, 0x00000000,
--  0x82000015, 0x00000010,
--  0x15200011, 0x00000000,
--};	/* 104 Rx instructions */
--#define FIRMWARE_RX_SIZE 104
--
--static const u32 firmware_tx[] = {
--  0x010003dc, 0x00000000,
--  0x04000421, 0x00000086,
--  0x80000015, 0x0000180e,
--  0x81000015, 0x00006664,
--  0x1a0040ab, 0x00000b06,
--  0x14200011, 0x00000000,
--  0x14204022, 0x0000aaaa,
--  0x14204022, 0x00000300,
--  0x14204022, 0x00000000,
--  0x1a0040ab, 0x00000b14,
--  0x14200011, 0x00000000,
--  0x83000015, 0x00000002,
--  0x04000021, 0x00000000,
--  0x00000010, 0x00000000,
--  0x04000421, 0x00000087,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00008015, 0x00000000,
--  0x0000003e, 0x00000000,
--  0x00000010, 0x00000000,
--  0x82000015, 0x00004000,
--  0x009e8050, 0x00000000,
--  0x03008015, 0x00000000,
--  0x86008015, 0x00000000,
--  0x82000015, 0x00008000,
--  0x0100001c, 0x00000000,
--  0x000050a0, 0x0000010c,
--  0x4e20d011, 0x00006008,
--  0x1420d012, 0x00004008,
--  0x0000f090, 0x00007000,
--  0x0000c8b0, 0x00003000,
--  0x00004040, 0x00000000,
--  0x00108015, 0x00000000,
--  0x00a2c150, 0x00004000,
--  0x00a400b0, 0x00000014,
--  0x00000020, 0x00000000,
--  0x2500400d, 0x00002525,
--  0x00047220, 0x00003100,
--  0x00934070, 0x00000000,
--  0x00000020, 0x00000000,
--  0x00924460, 0x00000184,
--  0x2b20c011, 0x00000000,
--  0x0000c420, 0x00000540,
--  0x36014018, 0x0000422d,
--  0x14200011, 0x00000000,
--  0x00924460, 0x00000183,
--  0x3200001f, 0x00000034,
--  0x02ac0015, 0x00000002,
--  0x00a60110, 0x00000008,
--  0x42200011, 0x00000000,
--  0x00924060, 0x00000103,
--  0x0000001e, 0x00000000,
--  0x00000020, 0x00000100,
--  0x0000001e, 0x00000000,
--  0x00924460, 0x00000086,
--  0x00004080, 0x00000000,
--  0x0092c070, 0x00000000,
--  0x00924060, 0x00000100,
--  0x0000c890, 0x00005000,
--  0x00a6c110, 0x00000000,
--  0x00b0c090, 0x00000012,
--  0x021c0015, 0x00000000,
--  0x3200001f, 0x00000034,
--  0x00924460, 0x00000510,
--  0x44210011, 0x00000000,
--  0x42000011, 0x00000000,
--  0x83000015, 0x00000040,
--  0x00924460, 0x00000508,
--  0x45014018, 0x00004545,
--  0x00808050, 0x00000000,
--  0x62208012, 0x00000000,
--  0x82000015, 0x00000800,
--  0x15200011, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x80000015, 0x0000eea4,
--  0x81000015, 0x0000005f,
--  0x00000060, 0x00000000,
--  0x00004120, 0x00000000,
--  0x00004a00, 0x00004000,
--  0x00924460, 0x00000190,
--  0x5601401a, 0x00005956,
--  0x14000011, 0x00000000,
--  0x00934050, 0x00000018,
--  0x00930050, 0x00000018,
--  0x3601403a, 0x0000002d,
--  0x000643a9, 0x00000000,
--  0x0000c420, 0x00000140,
--  0x5601401a, 0x00005956,
--  0x14000011, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x000642a9, 0x00000000,
--  0x00024420, 0x00000183,
--  0x5601401a, 0x00005956,
--  0x82000015, 0x00002000,
--  0x15200011, 0x00000000,
--  0x82000015, 0x00000010,
--  0x15200011, 0x00000000,
--  0x82000015, 0x00000010,
--  0x15200011, 0x00000000,
--};	/* 104 Tx instructions */
--#define FIRMWARE_TX_SIZE 104
--#if 0
--static const u32 firmware_wol[] = {
--  0x010003dc, 0x00000000,
--  0x19000421, 0x00000087,
--  0x80000015, 0x00001a1a,
--  0x81000015, 0x00001a1a,
--  0x1a0040ab, 0x00000b06,
--  0x15200011, 0x00000000,
--  0x15204022, 0x0000aaaa,
--  0x15204022, 0x00000300,
--  0x15204022, 0x00000000,
--  0x1a0040ab, 0x00000b15,
--  0x15200011, 0x00000000,
--  0x83000015, 0x00000002,
--  0x04000021, 0x00000000,
--  0x00000010, 0x00000000,
--  0x04000421, 0x00000087,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00008015, 0x00000000,
--  0x0000003e, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x82000015, 0x00004000,
--  0x82000015, 0x00008000,
--  0x0000000c, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00004080, 0x00000100,
--  0x1f20c011, 0x00001122,
--  0x2720f011, 0x00003011,
--  0x19200071, 0x00000000,
--  0x1a200051, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x1d2040a4, 0x00003344,
--  0x1d2040a2, 0x00005566,
--  0x000040a0, 0x00000100,
--  0x00108050, 0x00000001,
--  0x1a208012, 0x00000006,
--  0x82000015, 0x00008080,
--  0x010003dc, 0x00000000,
--  0x1d2040a4, 0x00002233,
--  0x1d2040a4, 0x00004455,
--  0x2d208011, 0x00000005,
--  0x1d2040a4, 0x00006611,
--  0x00108050, 0x00000001,
--  0x27200011, 0x00000000,
--  0x1d2050a4, 0x00006600,
--  0x82000015, 0x00008080,
--  0x010003dc, 0x00000000,
--  0x00000050, 0x00000000,
--  0x1b200031, 0x00000000,
--  0x0000001e, 0x00000000,
--  0x0000001e, 0x00000000,
--  0x0000001e, 0x00000000,
--  0x0000001e, 0x00000000,
--  0x00924460, 0x00000086,
--  0x00004080, 0x00000000,
--  0x0092c070, 0x00000000,
--  0x00924060, 0x00000100,
--  0x0000c890, 0x00005000,
--  0x00a6c110, 0x00000000,
--  0x00b0c090, 0x00000012,
--  0x021c0015, 0x00000000,
--  0x3200001f, 0x00000034,
--  0x00924460, 0x00000510,
--  0x44210011, 0x00000000,
--  0x42000011, 0x00000000,
--  0x83000015, 0x00000040,
--  0x00924460, 0x00000508,
--  0x476a0012, 0x00000100,
--  0x83000015, 0x00000008,
--  0x16200011, 0x00000000,
--  0x001e8050, 0x00000000,
--  0x001e8050, 0x00000000,
--  0x00808050, 0x00000000,
--  0x03008015, 0x00000000,
--  0x62208012, 0x00000000,
--  0x82000015, 0x00000800,
--  0x16200011, 0x00000000,
--  0x80000015, 0x0000eea4,
--  0x81000015, 0x0000005f,
--  0x00000020, 0x00000000,
--  0x00004120, 0x00000000,
--  0x00004a00, 0x00004000,
--  0x00924460, 0x00000190,
--  0x5c01401a, 0x0000595c,
--  0x15000011, 0x00000000,
--  0x00934050, 0x00000018,
--  0x00930050, 0x00000018,
--  0x3601403a, 0x0000002d,
--  0x00064029, 0x00000000,
--  0x0000c420, 0x00000140,
--  0x5c01401a, 0x0000595c,
--  0x15000011, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00000010, 0x00000000,
--  0x00064029, 0x00000000,
--  0x00024420, 0x00000183,
--  0x5c01401a, 0x0000595c,
--  0x82000015, 0x00002000,
--  0x16200011, 0x00000000,
--  0x82000015, 0x00000010,
--  0x16200011, 0x00000000,
--  0x82000015, 0x00000010,
--  0x16200011, 0x00000000,
--};	/* 104 WoL instructions */
--#define FIRMWARE_WOL_SIZE 104
--#endif
-diff --git a/drivers/net/starfire_firmware.pl b/drivers/net/starfire_firmware.pl
-deleted file mode 100644
-index 0c82b80..0000000
---- a/drivers/net/starfire_firmware.pl
-+++ /dev/null
-@@ -1,31 +0,0 @@
--#!/usr/bin/perl
--
--# This script can be used to generate a new starfire_firmware.h
--# from GFP_RX.DAT and GFP_TX.DAT, files included with the DDK
--# and also with the Novell drivers.
--
--open FW, "GFP_RX.DAT" || die;
--open FWH, ">starfire_firmware.h" || die;
--
--printf(FWH "static u32 firmware_rx[] = {\n");
--$counter = 0;
--while ($foo = <FW>) {
--  chomp;
--  printf(FWH "  0x%s, 0x0000%s,\n", substr($foo, 4, 8), substr($foo, 0, 4));
--  $counter++;
--}
--
--close FW;
--open FW, "GFP_TX.DAT" || die;
--
--printf(FWH "};\t/* %d Rx instructions */\n#define FIRMWARE_RX_SIZE %d\n\nstatic u32 firmware_tx[] = {\n", $counter, $counter);
--$counter = 0;
--while ($foo = <FW>) {
--  chomp;
--  printf(FWH "  0x%s, 0x0000%s,\n", substr($foo, 4, 8), substr($foo, 0, 4));
--  $counter++;
--}
--
--close FW;
--printf(FWH "};\t/* %d Tx instructions */\n#define FIRMWARE_TX_SIZE %d\n", $counter, $counter);
--close(FWH);
-diff --git a/firmware/Makefile b/firmware/Makefile
-index 1d63311..7cb4a02 100644
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -27,6 +27,8 @@ else
- acenic-objs := acenic/tg1.bin acenic/tg2.bin
- endif
- fw-shipped-$(CONFIG_ACENIC) += $(acenic-objs)
-+fw-shipped-$(CONFIG_ADAPTEC_STARFIRE) += adaptec/starfire_rx.bin \
-+					 adaptec/starfire_tx.bin
- fw-shipped-$(CONFIG_ATARI_DSP56K) += dsp56k/bootstrap.bin
- fw-shipped-$(CONFIG_ATM_AMBASSADOR) += atmsar11.fw
- fw-shipped-$(CONFIG_CASSINI) += sun/cassini.bin
-diff --git a/firmware/WHENCE b/firmware/WHENCE
-index fb6122a..8b56513 100644
---- a/firmware/WHENCE
-+++ b/firmware/WHENCE
-@@ -402,3 +402,22 @@ Licence:
- Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
-+
-+Driver: ADAPTEC_STARFIRE - Adaptec Starfire/DuraLAN support
-+
-+File: adaptec/starfire_rx.bin
-+File: adaptec/starfire_tx.bin
-+
-+Licence: Allegedly GPLv2, but no source visible.
-+
-+Found in hex form in kernel source, with the following notice:
-+
-+ BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE IT IS LICENSED "AS IS" AND
-+ THERE IS NO WARRANTY FOR THE PROGRAM, INCLUDING BUT NOT LIMITED TO THE
-+ IMPLIED WARRANTIES OF MERCHANTIBILITY OR FITNESS FOR A PARTICULAR PURPOSE
-+ (TO THE EXTENT PERMITTED BY APPLICABLE LAW). USE OF THE PROGRAM IS AT YOUR
-+ OWN RISK. IN NO EVENT WILL ADAPTEC OR ITS LICENSORS BE LIABLE TO YOU FOR
-+ DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES
-+ ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM.
-+
-+--------------------------------------------------------------------------
-diff --git a/firmware/adaptec/starfire_rx.bin.ihex b/firmware/adaptec/starfire_rx.bin.ihex
-new file mode 100644
-index 0000000..6b1fae0
---- /dev/null
-+++ b/firmware/adaptec/starfire_rx.bin.ihex
-@@ -0,0 +1,53 @@
-+:10000000010003DC00000000040004210000008661
-+:10001000800000150000180E8100001500006664C5
-+:100020001A0040AB00000B06142000110000000075
-+:10003000142040220000AAAA14204022000003003D
-+:1000400014204022000000001A0040AB00000B14F6
-+:1000500014200011000000008300001500000002C1
-+:10006000040000210000000000000010000000005B
-+:1000700004000421000000870000001000000000C0
-+:1000800000000010000000000000801500000000CB
-+:100090000000003E00000000000000100000000012
-+:1000A0008200001500004000009E8050000000000B
-+:1000B000030080150000000086008015000000008D
-+:1000C00082000015000080000100001C00000000FC
-+:1000D000000050A00000010C4E20D011000060086C
-+:1000E0001420D012000040080000F09000007000C2
-+:1000F0000000C8B0000030000000404000000000D8
-+:10010000001080150000000000A2C1500000400057
-+:1001100000A400B000000014000000200000000057
-+:100120002500400D0000252500047220000031004C
-+:10013000009340700000000000000020000000005C
-+:1001400000924460000001842B20C01100000000D8
-+:100150000000C42000000540360140180000422D78
-+:100160001420001100000000009244600000018390
-+:100170003200001F0000003402AC00150000000235
-+:1001800000A601100000000842200011000000003D
-+:1001900000924060000001030000001E000000000B
-+:1001A00000000020000001000000001E0000000010
-+:1001B00000924460000000860000408000000000C3
-+:1001C0000092C0700000000000924060000001003A
-+:1001D0000000C8900000500000A6C1100000000000
-+:1001E00000B0C09000000012021C001500000000CA
-+:1001F0003200001F0000003400924460000005102F
-+:100200004421001100000000420000110000000025
-+:1002100083000015000000400092446000000508C3
-+:100220004501401800004545008080500000000056
-+:10023000622080120000000082000015000008000B
-+:100240001520001100000000000000100000000058
-+:10025000000000100000000000000010000000007E
-+:10026000000000100000000000000010000000006E
-+:10027000800000150000EEA4810000150000005F62
-+:1002800000000060000000000000412000000000AD
-+:1002900000004A000000400000924460000001900D
-+:1002A0005601401A000059561400001100000000C9
-+:1002B0000093405000000018009300500000001808
-+:1002C0003601403A0000002D000643A9000000005E
-+:1002D0000000C420000001405601401A0000595699
-+:1002E00014000011000000000000001000000000D9
-+:1002F0000000001000000000000642A900000000FD
-+:1003000000024420000001835601401A00005956A3
-+:1003100082000015000020001520001100000000E0
-+:1003200082000015000000101520001100000000E0
-+:1003300082000015000000101520001100000000D0
-+:00000001FF
-diff --git a/firmware/adaptec/starfire_tx.bin.ihex b/firmware/adaptec/starfire_tx.bin.ihex
-new file mode 100644
-index 0000000..6b1fae0
---- /dev/null
-+++ b/firmware/adaptec/starfire_tx.bin.ihex
-@@ -0,0 +1,53 @@
-+:10000000010003DC00000000040004210000008661
-+:10001000800000150000180E8100001500006664C5
-+:100020001A0040AB00000B06142000110000000075
-+:10003000142040220000AAAA14204022000003003D
-+:1000400014204022000000001A0040AB00000B14F6
-+:1000500014200011000000008300001500000002C1
-+:10006000040000210000000000000010000000005B
-+:1000700004000421000000870000001000000000C0
-+:1000800000000010000000000000801500000000CB
-+:100090000000003E00000000000000100000000012
-+:1000A0008200001500004000009E8050000000000B
-+:1000B000030080150000000086008015000000008D
-+:1000C00082000015000080000100001C00000000FC
-+:1000D000000050A00000010C4E20D011000060086C
-+:1000E0001420D012000040080000F09000007000C2
-+:1000F0000000C8B0000030000000404000000000D8
-+:10010000001080150000000000A2C1500000400057
-+:1001100000A400B000000014000000200000000057
-+:100120002500400D0000252500047220000031004C
-+:10013000009340700000000000000020000000005C
-+:1001400000924460000001842B20C01100000000D8
-+:100150000000C42000000540360140180000422D78
-+:100160001420001100000000009244600000018390
-+:100170003200001F0000003402AC00150000000235
-+:1001800000A601100000000842200011000000003D
-+:1001900000924060000001030000001E000000000B
-+:1001A00000000020000001000000001E0000000010
-+:1001B00000924460000000860000408000000000C3
-+:1001C0000092C0700000000000924060000001003A
-+:1001D0000000C8900000500000A6C1100000000000
-+:1001E00000B0C09000000012021C001500000000CA
-+:1001F0003200001F0000003400924460000005102F
-+:100200004421001100000000420000110000000025
-+:1002100083000015000000400092446000000508C3
-+:100220004501401800004545008080500000000056
-+:10023000622080120000000082000015000008000B
-+:100240001520001100000000000000100000000058
-+:10025000000000100000000000000010000000007E
-+:10026000000000100000000000000010000000006E
-+:10027000800000150000EEA4810000150000005F62
-+:1002800000000060000000000000412000000000AD
-+:1002900000004A000000400000924460000001900D
-+:1002A0005601401A000059561400001100000000C9
-+:1002B0000093405000000018009300500000001808
-+:1002C0003601403A0000002D000643A9000000005E
-+:1002D0000000C420000001405601401A0000595699
-+:1002E00014000011000000000000001000000000D9
-+:1002F0000000001000000000000642A900000000FD
-+:1003000000024420000001835601401A00005956A3
-+:1003100082000015000020001520001100000000E0
-+:1003200082000015000000101520001100000000E0
-+:1003300082000015000000101520001100000000D0
-+:00000001FF
--- 
-1.5.5.1
+yeah - this is not a replacement for kmemtrace-user - analyzing raw trace 
+events offline is still possible of course.
 
+> > And this too would be driven from ftrace mainly - the SLAB code would 
+> > only offer the alloc+free callbacks with the object IDs. [ and this 
+> > means that we could detect memory leaks by looking at the hash table 
+> > and print out the age of entries :-) ]
+> 
+> Some time ago I dropped timestamps because they were not providing a 
+> good way to reorder packets in userspace. We're currently relying on a 
+> sequence number to do that. You could take that as 'age', but it's not 
+> temporally-meaningful.
 
+yeah - ftrace entries generally have a timestamp so it should be rather 
+easy.
 
+	Ingo
