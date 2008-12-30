@@ -1,182 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYLaAP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYL3XRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbYLaAP3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 19:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYLaAPJ
+	id S1753917AbYL3XRd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 18:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYL3XRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 19:15:09 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:59409 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751859AbYLaAPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 19:15:07 -0500
-Subject: Re: [PATCH 2/2] Add /proc controls for pdflush threads
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <495AB5DD.8040204@oracle.com>
-References: <20081230231152.10427.50620.stgit@hermosa.site>
-	 <20081230231233.10427.11443.stgit@hermosa.site>
-	 <495AB5DD.8040204@oracle.com>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Tue, 30 Dec 2008 17:15:00 -0700
-Message-Id: <1230682500.3470.3.camel@hermosa.site>
+	Tue, 30 Dec 2008 18:17:24 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:56599 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752250AbYL3XRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 18:17:23 -0500
+Date: Wed, 31 Dec 2008 10:17:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-next@vger.kernel.org, Linus <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: linux-next: origin tree build failure
+Message-Id: <20081231101717.0ef30e15.sfr@canb.auug.org.au>
+In-Reply-To: <adahc4ls262.fsf@cisco.com>
+References: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
+	<adavdt2ru39.fsf@cisco.com>
+	<20081230193048.db7ee462.sfr@canb.auug.org.au>
+	<adaljtxsma7.fsf@cisco.com>
+	<20081231024654.a73f20df.sfr@canb.auug.org.au>
+	<20081231095228.b21cffe0.sfr@canb.auug.org.au>
+	<adahc4ls262.fsf@cisco.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-30 at 15:59 -0800, Randy Dunlap wrote:
-> Peter W Morreale wrote:
-> > From: \"Peter W. Morreale\" <pmorreale@novell.com>
-> > 
-> > This patch adds /proc entries to give the admin the ability to
-> > control the minimum and maximum number of pdflush threads.  This allows
-> > finer control of pdflush on both large and small machines.
-> > 
-> > The patch adds '/proc/sys/vm/nr_pdflush_threads_min' and
-> > '/proc/sys/vm/nr_pdflush_threads_max' with r/w permissions.
-> 
-> These need to be documented in (ugh) either
-> Documentation/filesystems/proc.txt or
-> Documentation/sysctl/vm.txt.  Hard to say which one, but I'd
-> recommend the latter (vm.txt) since they are sysctls.
-> 
+--Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Excellent point.  Will re-spin.
+Hi Roland,
 
-Thx,
--PWM
+On Tue, 30 Dec 2008 14:56:05 -0800 Roland Dreier <rdreier@cisco.com> wrote:
+>
+>  > So instead of the revert, I will cherry-pick your fix commit just after
+>  > Linus' tree today on the assumption that you will send it to him ASAP.
+>=20
+> Yes, I will batch up a few other things and send a pull request today.
 
-> 
-> It looks like there is a lot of duplication between them.
-> That's not good IMO.
-> 
-> > ---
-> > 
-> > Signed-off-by: Peter W Morreale <pmorreale@novell.com>
-> > 
-> >  include/linux/sysctl.h    |    2 ++
-> >  include/linux/writeback.h |    2 ++
-> >  kernel/sysctl.c           |   16 ++++++++++++++++
-> >  mm/pdflush.c              |   19 ++++++++++++++-----
-> >  4 files changed, 34 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-> > index d0437f3..9921e62 100644
-> > --- a/include/linux/sysctl.h
-> > +++ b/include/linux/sysctl.h
-> > @@ -205,6 +205,8 @@ enum
-> >  	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
-> >  	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
-> >  	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
-> > +	VM_NR_PDFLUSH_THREADS_MAX=36, /* nr_pdflush_threads_max */
-> > +	VM_NR_PDFLUSH_THREADS_MIN=37, /* nr_pdflush_threads_min */
-> >  };
-> >  
-> >  
-> > diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-> > index 12b15c5..ee566a0 100644
-> > --- a/include/linux/writeback.h
-> > +++ b/include/linux/writeback.h
-> > @@ -150,6 +150,8 @@ void writeback_set_ratelimit(void);
-> >  /* pdflush.c */
-> >  extern int nr_pdflush_threads;	/* Global so it can be exported to sysctl
-> >  				   read-only. */
-> > +extern int nr_pdflush_threads_max; /* Global so it can be exported to sysctl */
-> > +extern int nr_pdflush_threads_min; /* Global so it can be exported to sysctl */
-> >  
-> >  
-> >  #endif		/* WRITEBACK_H */
-> > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> > index 50ec088..6dae777 100644
-> > --- a/kernel/sysctl.c
-> > +++ b/kernel/sysctl.c
-> > @@ -948,6 +948,22 @@ static struct ctl_table vm_table[] = {
-> >  		.proc_handler	= &proc_dointvec,
-> >  	},
-> >  	{
-> > +		.ctl_name	= VM_NR_PDFLUSH_THREADS_MIN,
-> > +		.procname	= "nr_pdflush_threads_min",
-> > +		.data		= &nr_pdflush_threads_min,
-> > +		.maxlen		= sizeof nr_pdflush_threads_min,
-> > +		.mode		= 0644 /* read-only*/,
-> > +		.proc_handler	= &proc_dointvec,
-> > +	},
-> > +	{
-> > +		.ctl_name	= VM_NR_PDFLUSH_THREADS_MAX,
-> > +		.procname	= "nr_pdflush_threads_max",
-> > +		.data		= &nr_pdflush_threads_max,
-> > +		.maxlen		= sizeof nr_pdflush_threads_max,
-> > +		.mode		= 0644 /* read-only*/,
-> > +		.proc_handler	= &proc_dointvec,
-> > +	},
-> > +	{
-> >  		.ctl_name	= VM_SWAPPINESS,
-> >  		.procname	= "swappiness",
-> >  		.data		= &vm_swappiness,
-> > diff --git a/mm/pdflush.c b/mm/pdflush.c
-> > index 481680f..9a6f835 100644
-> > --- a/mm/pdflush.c
-> > +++ b/mm/pdflush.c
-> > @@ -58,6 +58,14 @@ static DEFINE_SPINLOCK(pdflush_lock);
-> >  int nr_pdflush_threads = 0;
-> >  
-> >  /*
-> > + * The max/min number of pdflush threads. R/W by sysctl at 
-> > + * /proc/sys/vm/nr_pdflush_threads_max 
-> > + */
-> > +int nr_pdflush_threads_max = MAX_PDFLUSH_THREADS;
-> > +int nr_pdflush_threads_min = MIN_PDFLUSH_THREADS;
-> > +
-> > +
-> > +/*
-> >   * The time at which the pdflush thread pool last went empty
-> >   */
-> >  static unsigned long last_empty_jifs;
-> > @@ -68,7 +76,7 @@ static unsigned long last_empty_jifs;
-> >   * Thread pool management algorithm:
-> >   * 
-> >   * - The minimum and maximum number of pdflush instances are bound
-> > - *   by MIN_PDFLUSH_THREADS and MAX_PDFLUSH_THREADS.
-> > + *   by nr_pdflush_threads_min and nr_pdflush_threads_max.
-> >   * 
-> >   * - If there have been no idle pdflush instances for 1 second, create
-> >   *   a new one.
-> > @@ -133,7 +141,8 @@ static int __pdflush(struct pdflush_work *my_work)
-> >  		 */
-> >  		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
-> >  			if (list_empty(&pdflush_list)) {
-> > -				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS) {
-> > +				if (nr_pdflush_threads <
-> > +						nr_pdflush_threads_max) {
-> >  					nr_pdflush_threads++;
-> >  					spin_unlock_irq(&pdflush_lock);
-> >  					start_one_pdflush_thread();
-> > @@ -150,7 +159,7 @@ static int __pdflush(struct pdflush_work *my_work)
-> >  		 */
-> >  		if (list_empty(&pdflush_list))
-> >  			continue;
-> > -		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
-> > +		if (nr_pdflush_threads <= nr_pdflush_threads_min)
-> >  			continue;
-> >  		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
-> >  		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
-> > @@ -246,9 +255,9 @@ static int __init pdflush_init(void)
-> >  	 * Pre-set nr_pdflush_threads...  If we fail to create, 
-> >  	 * the count will be decremented.
-> >  	 */
-> > -	nr_pdflush_threads = MIN_PDFLUSH_THREADS;
-> > +	nr_pdflush_threads = nr_pdflush_threads_min;
-> >  
-> > -	for (i = 0; i < MIN_PDFLUSH_THREADS; i++)
-> > +	for (i = 0; i < nr_pdflush_threads_min; i++)
-> >  		start_one_pdflush_thread();
-> >  	return 0;
-> >  }
-> 
-> 
+Excellent!
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklaq/0ACgkQjjKRsyhoI8z4DQCeNbpBtdRZty48CAeF1ojLJ4Xq
+IAsAnRBvrIaqk8q2vHxbh2W7gicUi5dE
+=uc+K
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F--
