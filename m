@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbYL3Hmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYL3Hm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753707AbYL3Hmo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 02:42:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYL3HmA
+	id S1754146AbYL3Hm7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 02:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbYL3Hmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 02:42:00 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35482 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753705AbYL3Hl6 (ORCPT
+	Tue, 30 Dec 2008 02:42:39 -0500
+Received: from mailrelay012.isp.belgacom.be ([195.238.6.179]:48555 "EHLO
+	mailrelay012.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753994AbYL3Hmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 02:41:58 -0500
-Subject: Re: [RFC][PATCH] Multimedia scheduling class
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jussi Laako <jussi@sonarnerd.net>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4959198A.3020209@sonarnerd.net>
-References: <4959198A.3020209@sonarnerd.net>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 30 Dec 2008 08:42:05 +0100
-Message-Id: <1230622925.16718.26.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Tue, 30 Dec 2008 02:42:37 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtUEAJdfWUlR8Sb2/2dsb2JhbACBbLsEWJA9hkQ
+Date: Tue, 30 Dec 2008 08:42:34 +0100 (CET)
+From: Hans Lambrechts <hans.lambrechts@skynet.be>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Hans Lambrechts <hans.lambrechts@skynet.be>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Happy v2.6.28
+In-Reply-To: <1230548230.8603.5.camel@penberg-laptop>
+Message-ID: <Pine.LNX.4.64.0812300835300.3744@server.home.lan>
+References: <bMLNZ-3QM-1@gated-at.bofh.it>  <200812250853.mBP8rxrr004080@server.home.lan>
+  <84144f020812250426x255cc00esd33f0075292b486b@mail.gmail.com> 
+ <Pine.LNX.4.64.0812251336320.4497@server.home.lan> <1230548230.8603.5.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-29 at 20:40 +0200, Jussi Laako wrote:
-> Hi,
+
+
+On Mon, 29 Dec 2008, Pekka Enberg wrote:
+
+> Hi Hans,
 > 
-> I have created an experimental multimedia scheduling class (SCHED_MM)
-> for use with multithreaded non-hardcore-realtime multimedia
-> applications, such as ones based on gstreamer. These typically don't
-> follow the determinism rules of well behaved SCHED_FIFO applications.
-> However, these usually handle tasks like VoIP call audio processing,
-> where somewhat lower scheduling latency is needed to obtain good user
-> experience. Usually these are not very CPU-heavy and are mostly IO-bound
-> processes. Thus, something between normal SCHED_OTHER and SCHED_FIFO is
-> needed in a way where different threads of execution can set different
-> kinds of scheduling parameters.
+> On Thu, 2008-12-25 at 13:45 +0100, Hans Lambrechts wrote:
+> > > Looks like slab corruption. Can we have your .config, please? I'm
+> > > cc'ing netdev as the oops happens in kmem_cache_alloc() so the
+> > > networking code is a prime suspect of the corrupting kmem_cache_free()
+> > > call (although the bug might be elsewhere as well).
 > 
-> I have attached an initial version of my experimental patch for comments...
+> Can you boot the kernel with "slub_debug slub_nomerge" passed as kernel
+> parameters and try to reproduce the oops, please? Maybe we can get more
+> information on the bug.
+> 
+> Alternatively, you can do a git bisect to pinpoint the broken patch
+> between -rc9 and -final.
+> 
+> 		Pekka
+> 
 
-Sorry, I don't think this is a viable solution for anything.
 
-This is typically the domain of soft-realtime, and as such would need a
-realtime scheduling class -- using a proportional class like you did
-just doesn't make sense for these tasks.
+Hi Pekka,
 
-Eventually we'd hope to provide an sporadic task EDF based scheduler
-with hard and soft realtime capabilities, but until that time, FIFO and
-RR are the classes to use for anything realtime.
+after the first oops I've decided to try 2.6.28 again so I could send 
+you more information. I'm running 2.6.28 now for a few days with several 
+restarts and no more oops.
+This seems a very rare to hit bug or my 6yo box is almost end of life.
 
-I'm not sure why you think SCHED_FIFO isn't good enough for your
-applications, could you elaborate on that?
-
+	Hans
