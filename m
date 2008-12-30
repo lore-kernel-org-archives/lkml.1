@@ -1,19 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbYL3M1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYL3M1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbYL3M1K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 07:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYL3M0S
+	id S1754759AbYL3M1q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 07:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbYL3M0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 07:26:18 -0500
-Received: from lucidpixels.com ([75.144.35.66]:35944 "EHLO lucidpixels.com"
+	Tue, 30 Dec 2008 07:26:42 -0500
+Received: from lucidpixels.com ([75.144.35.66]:40994 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754158AbYL3M0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 07:26:17 -0500
-Date: Tue, 30 Dec 2008 07:26:17 -0500 (EST)
+	id S1754391AbYL3M0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 07:26:41 -0500
+Date: Tue, 30 Dec 2008 07:26:40 -0500 (EST)
 From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Different IRQ mapping from 2.6.27->2.6.28?
-Message-ID: <alpine.DEB.1.10.0812300714190.11356@p34.internal.lan>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: 2.6.27.10: ata1.00: HPA detected: current 293044655, native
+ 293046768
+Message-ID: <alpine.DEB.1.10.0812300657050.11356@p34.internal.lan>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
@@ -21,45 +24,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Had a quick question, prior to 2.6.28 the 915 controller always shared irq 16
-with the 3ware controller and possibly usb.
+On one system, two Raptor 150s:
 
-$ cat /proc/interrupts
-            CPU0       CPU1       CPU2       CPU3
-   0:        829          0          0          0   IO-APIC-edge      timer
-   1:          2          0          0          0   IO-APIC-edge      i8042
-   9:          0          0          0          0   IO-APIC-fasteoi   acpi
-  12:          4          0          0          0   IO-APIC-edge      i8042
-  16:     426034     626134    1351627    1342735   IO-APIC-fasteoi   3w-9xxx, uhci_hcd:usb3
-  17:          0          0          0          0   IO-APIC-fasteoi   pata_marvell
-  18:          0          0          0          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb7
-  19:       1375        341          0          0   IO-APIC-fasteoi   ohci1394, uhci_hcd:usb6
-  21:     297232    2133384     741689    1238741   IO-APIC-fasteoi   uhci_hcd:usb4, eth1
-  22:     205140     294852    1063046     234799   IO-APIC-fasteoi   HDA Intel, eth2
-  23:     332083    3050489          0          0   IO-APIC-fasteoi   ehci_hcd:usb2, uhci_hcd:usb5
-375:     376161    1019158     163030      68967   PCI-MSI-edge      ahci
-376:      56580    2533694     390596    2673511   PCI-MSI-edge      eth0
-377:          0          0          0          0   PCI-MSI-edge      i915@pci:0000:00:02.0
-NMI:          0          0          0          0   Non-maskable interrupts
-LOC:  213813409  215685728  213463846  214264243   Local timer interrupts
-RES:      62066      64812      41593      54593   Rescheduling interrupts
-CAL:       1425       1476       1445        606   Function call interrupts
-TLB:      96105      94258     117036     107468   TLB shootdowns
-TRM:          0          0          0          0   Thermal event interrupts
-THR:          0          0          0          0   Threshold APIC interrupts
-SPU:          0          0          0          0   Spurious interrupts
-ERR:          0
-MIS:          0
+[    0.739402] ata1.00: HPA detected: current 293044655, native 293046768
+[    0.739491] ata1.00: ATA-7: WDC WD1500ADFD-00NLR5, 21.07QR5, max UDMA/133
+[    0.739577] ata1.00: 293044655 sectors, multi 0: LBA48 NCQ (depth 31/32)
+[    0.742454] ata1.00: configured for UDMA/133
 
-I was curious if this change had something to do with it?
+[    1.059146] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[    1.061406] ata2.00: ATA-7: WDC WD1500ADFD-00NLR5, 21.07QR5, max UDMA/133
+[    1.061494] ata2.00: 293046768 sectors, multi 0: LBA48 NCQ (depth 31/32)
+[    1.064360] ata2.00: configured for UDMA/133
 
-From:
-http://kernelnewbies.org/LinuxChanges?action=print
-i915: Add support for MSI and interrupt mitigation. (commit), disable MSI on GM965 (errata says it doesn't work) (commit)
+Two disks in a RAID-1 (mdadm) configuration, how come the first one
+has an issue w/HPA as the firmware of both disks is the same..?
 
-Are there any pros or cons having the device mapped to the PCI-MSI-edge vs.
-sitting on a regular IRQ?  I am trying to understand the differences here,
-thanks!
+l1:~# smartctl -a /dev/sda | grep -i bytes
+User Capacity:    150,038,863,360 bytes
+l1:~# smartctl -a /dev/sdb | grep -i bytes
+User Capacity:    150,039,945,216 bytes
+l1:~#
+
+Why does this occur?
 
 Justin.
-
