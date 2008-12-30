@@ -1,175 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbYL3F4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751987AbYL3GEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751959AbYL3F4k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 00:56:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYL3F41
+	id S1751987AbYL3GEl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 01:04:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYL3GEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 00:56:27 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:30579 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751179AbYL3F4Z (ORCPT
+	Tue, 30 Dec 2008 01:04:33 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:7708 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbYL3GEb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 00:56:25 -0500
-Date: Mon, 29 Dec 2008 22:00:47 -0800
-From: Karen Xie <kxie@chelsio.com>
-To: randy.dunlap@oracle.com, James.Bottomley@HansenPartnership.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-next@vger.kernel.org, sfr@canb.auug.org.au, kxie@chelsio.com
-Subject: RE: linux-next: Tree for December 29 (cxgb3i)
-Message-ID: <20081230060047.GA20917@qatest2a.asicdesigners.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Tue, 30 Dec 2008 01:04:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=abJ53EUDdbN4P8HBNmjAgSLsmyJMOoZfz1SxVtBkx0QQCErZsI+mBfTf1ifyy44Bdz
+         hWvLQ+c8adLpamJoKoN95T7l4RScsTYowVatfGGrfvig4bv+JOa+0Ycx7KGGl07KSqpK
+         IlJhbbCD1edxWKsQwz+l8Vg9OpakIjubTrLUw=
+Message-ID: <4959B9B7.2050800@gmail.com>
+Date: Tue, 30 Dec 2008 11:03:35 +0500
+From: "Alexander E. Patrakov" <patrakov@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.1.19) Gecko/20081226 SeaMonkey/1.1.14
+MIME-Version: 1.0
+To: Arjan Opmeer <arjan@opmeer.net>
+CC: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: 2.6.28 thinks that my PS/2 mouse is a touchpad
+References: <gj4r8h$okm$1@ger.gmane.org> <20081229185619.GA18394@adopmeer.homeip.net>
+In-Reply-To: <20081229185619.GA18394@adopmeer.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-
-Hi, Randy & James,
-
-The cxgb3i driver was using the skb->sp for some internal stuff. I have just submitted a patch to remove the usage of it since it is not really related to the secure path.
-
-The patch is submitted to the list (http://marc.info/?l=linux-scsi&m=123061555414193&w=2) and is also attached here.
-
-Sorry for the late response, I am traveling this week.
-
-Thanks,
-Karen
-
------Original Message-----
-From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
-Sent: Mon 12/29/2008 2:10 PM
-To: James Bottomley
-Cc: Stephen Rothwell; scsi; linux-next@vger.kernel.org; LKML; Karen Xie
-Subject: Re: linux-next: Tree for December 29 (cxgb3i)
- 
-James Bottomley wrote:
-> On Mon, 2008-12-29 at 12:35 -0800, Randy Dunlap wrote:
->> On Tue, 30 Dec 2008 03:16:21 +1100 Stephen Rothwell wrote:
->>
->>> Hi all,
->>>
->>> Changes since 20081219:
->>>
->>> Undropped tree:
->>> 	scci
->>> 	mtd
->>>
->>> Dropped trees (temporarily):
->>> 	nfs (akpm request due to 2.6.30 features)
->>> 	kvm (build problem)
->>> 	rr (build poblem)
->>> 	semaphore-removal (due to unfixed conflicts against Linus' tree)
->>> 	cpu_alloc (build problem)
->>> 	audit (difficult conflicts)
->>>
->>> Linus' tree had three build failures requiring patches and one requiring
->>> a revert.
->>
->> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:499: error: 'struct sk_buff' has no member named 'sp'
->> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:512: error: 'struct sk_buff' has no member named 'sp'
->> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:532: error: 'struct sk_buff' has no member named 'sp'
->> linux-next-20081229/drivers/scsi/cxgb3i/cxgb3i_offload.c:533: error: 'struct sk_buff' has no member named 'sp'
+Arjan Opmeer wrote:
+> On Sat, Dec 27, 2008 at 02:06:29PM +0500, Alexander E. Patrakov wrote:
+>> elantech.c: Elantech version query result 0x00, 0x01, 0x64.
+>> elantech.c: assuming hardware version 1, firmware version 0.100
+>> elantech.c: Synaptics capabilities query result 0x00, 0x02, 0x64.
 > 
-> In the config 20 questions, my guess for this is CONFIG_XFRM=n
+> However, all version query results I have seen from Elantech touchpads have
+> a non-zero first byte and a zero second byte. So we could test for that to
+> prevent this mouse from being detected as a touchpad.
+> 
+> Dmitry, do you think something like this is sufficient?
+> 
+> --- elantech.c.ORIG	2008-12-29 19:35:01.000000000 +0100
+> +++ elantech.c.NEW	2008-12-29 19:38:59.000000000 +0100
+> @@ -618,6 +618,10 @@ int elantech_init(struct psmouse *psmous
+>  	}
+>  	pr_info("elantech.c: Elantech version query result 0x%02x, 0x%02x, 0x%02x.\n",
+>  		param[0], param[1], param[2]);
+> +	if (param[0] == 0 || param[1] != 0) {
+> +		pr_info("elantech.c: Probably not a real Elantech touchpad. Aborting.\n");
+> +		goto init_fail;
+> +	}
+>  	etd->fw_version_maj = param[0];
+>  	etd->fw_version_min = param[2];
 
-That's correct.  config file is now attached.
+This is still slightly wrong. The mouse does work, but is misnamed in 
+the dmesg output and in /proc/bus/input/devices:
 
-> I'm not at all sure why this driver is playing with the secure path ...
-> I suspect the use needs to be enclosed in #ifdef CONFIG_XFRM pairs, but
-> I'd like the maintainers to verify.
+psmouse serio1: ID: 10 00 64<6>elantech.c: Elantech version query result 
+0x00, 0x01, 0x64.
+elantech.c: Probably not a real Elantech touchpad. Aborting.
+input: ImExPS/2 Elantech Touchpad as /class/input/input8
+
+I: Bus=0011 Vendor=0002 Product=0006 Version=0000
+N: Name="ImExPS/2 Elantech Touchpad"
+P: Phys=isa0060/serio1/input0
+S: Sysfs=/class/input/input8
+U: Uniq=
+H: Handlers=mouse1 event6
+B: EV=7
+B: KEY=1f0000 0 0 0 0 0 0 0 0
+B: REL=143
 
 -- 
-andy
-
-
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="122908-cxgb3i-no-wr-sp.patch"
-
-[PATCH 1/1] cxgb3i - remove use of skb->sp
-
-From: Karen Xie <kxie@chelsio.com>
-
-The cxgb3i was using skb->sp pointer for some internal book-keeping which is not related to the secure path. Changed it to use skb->cb[] instead.
-
-Signed-off-by: Karen Xie <kxie@chelsio.com>
----
-
- drivers/scsi/cxgb3i/cxgb3i_offload.c |    8 ++++----
- drivers/scsi/cxgb3i/cxgb3i_offload.h |    6 +++---
- 2 files changed, 7 insertions(+), 7 deletions(-)
-
-
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-index 5f16081..a865f1f 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-@@ -496,7 +496,7 @@ static inline void reset_wr_list(struct s3_conn *c3cn)
- static inline void enqueue_wr(struct s3_conn *c3cn,
- 			      struct sk_buff *skb)
- {
--	skb->sp = NULL;
-+	skb_wr_data(skb) = NULL;
- 
- 	/*
- 	 * We want to take an extra reference since both us and the driver
-@@ -509,7 +509,7 @@ static inline void enqueue_wr(struct s3_conn *c3cn,
- 	if (!c3cn->wr_pending_head)
- 		c3cn->wr_pending_head = skb;
- 	else
--		c3cn->wr_pending_tail->sp = (void *)skb;
-+		skb_wr_data(skb) = skb;
- 	c3cn->wr_pending_tail = skb;
- }
- 
-@@ -529,8 +529,8 @@ static inline struct sk_buff *dequeue_wr(struct s3_conn *c3cn)
- 
- 	if (likely(skb)) {
- 		/* Don't bother clearing the tail */
--		c3cn->wr_pending_head = (struct sk_buff *)skb->sp;
--		skb->sp = NULL;
-+		c3cn->wr_pending_head = skb_wr_data(skb);
-+		skb_wr_data(skb) = NULL;
- 	}
- 	return skb;
- }
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.h b/drivers/scsi/cxgb3i/cxgb3i_offload.h
-index 5b93d62..d231569 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.h
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.h
-@@ -180,7 +180,7 @@ void cxgb3i_c3cn_release(struct s3_conn *);
-  * @seq:	tcp sequence number
-  * @ddigest:	pdu data digest
-  * @pdulen:	recovered pdu length
-- * @ulp_data:	scratch area for ULP
-+ * @wr_data:	scratch area for tx wr
-  */
- struct cxgb3_skb_cb {
- 	__u8 flags;
-@@ -188,7 +188,7 @@ struct cxgb3_skb_cb {
- 	__u32 seq;
- 	__u32 ddigest;
- 	__u32 pdulen;
--	__u8 ulp_data[16];
-+	struct sk_buff *wr_data;
- };
- 
- #define CXGB3_SKB_CB(skb)	((struct cxgb3_skb_cb *)&((skb)->cb[0]))
-@@ -196,7 +196,7 @@ struct cxgb3_skb_cb {
- #define skb_ulp_mode(skb)	(CXGB3_SKB_CB(skb)->ulp_mode)
- #define skb_ulp_ddigest(skb)	(CXGB3_SKB_CB(skb)->ddigest)
- #define skb_ulp_pdulen(skb)	(CXGB3_SKB_CB(skb)->pdulen)
--#define skb_ulp_data(skb)	(CXGB3_SKB_CB(skb)->ulp_data)
-+#define skb_wr_data(skb)	(CXGB3_SKB_CB(skb)->wr_data)
- 
- enum c3cb_flags {
- 	C3CB_FLAG_NEED_HDR = 1 << 0,	/* packet needs a TX_DATA_WR header */
-
---fUYQa+Pmc3FrFX/N--
+Alexander E. Patrakov
