@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYL3RkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbYL3RnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbYL3RkW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 12:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYL3RkJ
+	id S1753393AbYL3RnJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 12:43:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYL3Rm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 12:40:09 -0500
-Received: from main.gmane.org ([80.91.229.2]:55109 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752010AbYL3RkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 12:40:08 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: 2.6.27.10: ata1.00: HPA detected: current 293044655, native 
-  293046768
-Date: Tue, 30 Dec 2008 11:30:07 -0600
-Message-ID: <495A5A9F.9020406@shaw.ca>
-References: <alpine.DEB.1.10.0812300657050.11356@p34.internal.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 30 Dec 2008 12:42:56 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44836 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbYL3Rmz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 12:42:55 -0500
+Message-ID: <495A5D97.7070706@zytor.com>
+Date: Tue, 30 Dec 2008 09:42:47 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: auto-convert size types in userspace headers
+References: <49567EB5.5030409@zytor.com> <1230549153-31754-1-git-send-email-vapier@gentoo.org> <20081229140356.GB7327@uranus.ravnborg.org> <49595ED1.2080701@zytor.com> <20081230104351.GB486@uranus.ravnborg.org>
+In-Reply-To: <20081230104351.GB486@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: linux-raid@vger.kernel.org, linux-ide@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-In-Reply-To: <alpine.DEB.1.10.0812300657050.11356@p34.internal.lan>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> On one system, two Raptor 150s:
+Sam Ravnborg wrote:
+> On Mon, Dec 29, 2008 at 03:35:45PM -0800, H. Peter Anvin wrote:
+>> Sam Ravnborg wrote:
+>>> On Mon, Dec 29, 2008 at 06:12:33AM -0500, Mike Frysinger wrote:
+>>>> Rather than constantly fixing up size type breakage in userspace headers,
+>>>> auto convert the types u_intXX_t, uintXX_t, intXX_t, uXX, and sXX to the
+>>>> appropriate __uXX or __sXX type.
+>>> Is this the right thing to do?
+>>> uintXX_t belongs to a namespace that the kernel should not use.
+>>>
+>>> So being restrictive here would be better I think.
+>> That's the whole point right here.
+>>
+>> All of these types can be -- and are -- used by the kernel internally,
+>> but should only be exported as __uXX or __sXX.
+>>
+>> This is the auto-conversion idea I brought up earlier.
 > 
-> [    0.739402] ata1.00: HPA detected: current 293044655, native 293046768
-> [    0.739491] ata1.00: ATA-7: WDC WD1500ADFD-00NLR5, 21.07QR5, max 
-> UDMA/133
-> [    0.739577] ata1.00: 293044655 sectors, multi 0: LBA48 NCQ (depth 31/32)
-> [    0.742454] ata1.00: configured for UDMA/133
+> So the patch from Mike has your "Acked-by"?
 > 
-> [    1.059146] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [    1.061406] ata2.00: ATA-7: WDC WD1500ADFD-00NLR5, 21.07QR5, max 
-> UDMA/133
-> [    1.061494] ata2.00: 293046768 sectors, multi 0: LBA48 NCQ (depth 31/32)
-> [    1.064360] ata2.00: configured for UDMA/133
-> 
-> Two disks in a RAID-1 (mdadm) configuration, how come the first one
-> has an issue w/HPA as the firmware of both disks is the same..?
-> 
-> l1:~# smartctl -a /dev/sda | grep -i bytes
-> User Capacity:    150,038,863,360 bytes
-> l1:~# smartctl -a /dev/sdb | grep -i bytes
-> User Capacity:    150,039,945,216 bytes
-> l1:~#
-> 
-> Why does this occur?
 
-Presumably somebody or something set up a host protected area on one 
-drive and not the other.. I believe there are some utilities out there 
-that can be used to disable the HPA and allow the full capacity to be used.
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
