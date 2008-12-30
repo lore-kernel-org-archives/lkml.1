@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751803AbYL3FjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbYL3FkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751803AbYL3FjY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 00:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYL3FjN
+	id S1752075AbYL3FkP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 00:40:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYL3FkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 00:39:13 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:22697 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYL3FjM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 00:39:12 -0500
-Date: Mon, 29 Dec 2008 21:43:25 -0800
-From: Karen Xie <kxie@chelsio.com>
-Message-Id: <200812300543.mBU5hPcb020725@localhost.localdomain>
-To: randy.dunlap@oracle.com, James.Bottomley@HansenPartnership.com
-Subject: [PATCH 1/1] cxgb3i - remove use of skb->sp
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-next@vger.kernel.org, sfr@canb.auug.org.au, kxie@chelsio.com
+	Tue, 30 Dec 2008 00:40:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43298 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750722AbYL3FkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 00:40:01 -0500
+Date: Tue, 30 Dec 2008 06:39:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Rusty Russell <rusty@rustcorp.com.au>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 0/2] futex_key reference accounting fixes
+Message-ID: <20081230053938.GA11037@elte.hu>
+References: <20081229185238.10342.75651.stgit@Aeon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081229185238.10342.75651.stgit@Aeon>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 1/1] cxgb3i - remove use of skb->sp
 
-From: Karen Xie <kxie@chelsio.com>
+* Darren Hart <dvhltc@us.ibm.com> wrote:
 
-The cxgb3i was using skb->sp pointer for some internal book-keeping which is not related to the secure path. Changed it to use skb->cb[] instead.
+> This series fixes several problems with symmetric reference counting of the
+> futex keys.
+> 
+> ---
+> 
+> Darren Hart (2):
+>       futex: correct futex_requeue futex key ref counting in requeue loop
+>       futex: make futex_(get|put)_key() calls symmetric
+> 
+> 
+>  kernel/futex.c |   68 ++++++++++++++++++++++++++++++--------------------------
+>  1 files changed, 36 insertions(+), 32 deletions(-)
 
-Signed-off-by: Karen Xie <kxie@chelsio.com>
----
+applied to tip/core/futexes, thanks Darren!
 
- drivers/scsi/cxgb3i/cxgb3i_offload.c |    8 ++++----
- drivers/scsi/cxgb3i/cxgb3i_offload.h |    6 +++---
- 2 files changed, 7 insertions(+), 7 deletions(-)
-
-
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-index 5f16081..a865f1f 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-@@ -496,7 +496,7 @@ static inline void reset_wr_list(struct s3_conn *c3cn)
- static inline void enqueue_wr(struct s3_conn *c3cn,
- 			      struct sk_buff *skb)
- {
--	skb->sp = NULL;
-+	skb_wr_data(skb) = NULL;
- 
- 	/*
- 	 * We want to take an extra reference since both us and the driver
-@@ -509,7 +509,7 @@ static inline void enqueue_wr(struct s3_conn *c3cn,
- 	if (!c3cn->wr_pending_head)
- 		c3cn->wr_pending_head = skb;
- 	else
--		c3cn->wr_pending_tail->sp = (void *)skb;
-+		skb_wr_data(skb) = skb;
- 	c3cn->wr_pending_tail = skb;
- }
- 
-@@ -529,8 +529,8 @@ static inline struct sk_buff *dequeue_wr(struct s3_conn *c3cn)
- 
- 	if (likely(skb)) {
- 		/* Don't bother clearing the tail */
--		c3cn->wr_pending_head = (struct sk_buff *)skb->sp;
--		skb->sp = NULL;
-+		c3cn->wr_pending_head = skb_wr_data(skb);
-+		skb_wr_data(skb) = NULL;
- 	}
- 	return skb;
- }
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.h b/drivers/scsi/cxgb3i/cxgb3i_offload.h
-index 5b93d62..d231569 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.h
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.h
-@@ -180,7 +180,7 @@ void cxgb3i_c3cn_release(struct s3_conn *);
-  * @seq:	tcp sequence number
-  * @ddigest:	pdu data digest
-  * @pdulen:	recovered pdu length
-- * @ulp_data:	scratch area for ULP
-+ * @wr_data:	scratch area for tx wr
-  */
- struct cxgb3_skb_cb {
- 	__u8 flags;
-@@ -188,7 +188,7 @@ struct cxgb3_skb_cb {
- 	__u32 seq;
- 	__u32 ddigest;
- 	__u32 pdulen;
--	__u8 ulp_data[16];
-+	struct sk_buff *wr_data;
- };
- 
- #define CXGB3_SKB_CB(skb)	((struct cxgb3_skb_cb *)&((skb)->cb[0]))
-@@ -196,7 +196,7 @@ struct cxgb3_skb_cb {
- #define skb_ulp_mode(skb)	(CXGB3_SKB_CB(skb)->ulp_mode)
- #define skb_ulp_ddigest(skb)	(CXGB3_SKB_CB(skb)->ddigest)
- #define skb_ulp_pdulen(skb)	(CXGB3_SKB_CB(skb)->pdulen)
--#define skb_ulp_data(skb)	(CXGB3_SKB_CB(skb)->ulp_data)
-+#define skb_wr_data(skb)	(CXGB3_SKB_CB(skb)->wr_data)
- 
- enum c3cb_flags {
- 	C3CB_FLAG_NEED_HDR = 1 << 0,	/* packet needs a TX_DATA_WR header */
+	Ingo
