@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYL3OUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbYL3O3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbYL3OUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 09:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYL3OUc
+	id S1753349AbYL3O3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 09:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYL3O3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 09:20:32 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:58965 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbYL3OUb (ORCPT
+	Tue, 30 Dec 2008 09:29:08 -0500
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:49249 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbYL3O3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 09:20:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=d1oHzOXZpBqqbunnfN/Sj03os2witUeeIxtSOWSFaZVafeecn2wJCqg6inKlvqTuxU
-         zqbzg4oJvtUzYaF1dBJ1mgdX4rjBMExh6DKQGDzbVzRtE9jf0rFMHtRyBx8QqKY5MHjo
-         c/nzWHpQWzZpCBKe4yiJhc1gmefxXypsgXCcs=
-Date: Tue, 30 Dec 2008 08:20:26 -0600
-From: Matt Garman <matthew.garman@gmail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       smartmontools-support@lists.sourceforge.net,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: mismatch_cnt, random bitflips, silent corruption(?), mdadm/sw
-	raid[156]
-Message-ID: <20081230142026.GB3549@sewage.raw-sewage.fake>
-References: <alpine.DEB.1.10.0812250435260.12329@p34.internal.lan>
+	Tue, 30 Dec 2008 09:29:07 -0500
+Date: Tue, 30 Dec 2008 15:29:03 +0100
+From: Arjan Opmeer <arjan@opmeer.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Alexander E. Patrakov" <patrakov@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Message-ID: <20081230142903.GA3449@adopmeer.homeip.net>
+References: <gj4r8h$okm$1@ger.gmane.org> <20081229185619.GA18394@adopmeer.homeip.net> <4959B9B7.2050800@gmail.com> <200812300115.02408.dmitry.torokhov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812250435260.12329@p34.internal.lan>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200812300115.02408.dmitry.torokhov@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: 2.6.28 thinks that my PS/2 mouse is a touchpad
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 25, 2008 at 01:04:07PM -0500, Justin Piszcz wrote:
-> Options/alternatives for maintaining data integrity?
->
-> 1. Obviously DVD and/or LTO-tape (multiple copies of data at rest)
-> http://epoka.dk/media/Linear_Tape_Open_(LTO)_Ultrium_Data_Cartridges.pdf
-> -> For LTO-2/LTO-3
-> -> Uncorrected bit error rate 1x10-17 1x10-17
-> -> Undetected bit error rate 1x10-27 1x10-27
->
-> 2. ZFS, but only runs in user-space in Linux.
->
-> 3. Keep an md5sum for each file on the filesystem and run daily
-> checks?
+On Tue, Dec 30, 2008 at 01:15:01AM -0800, Dmitry Torokhov wrote:
+> On Monday 29 December 2008 22:03:35 Alexander E. Patrakov wrote:
+> >
+> > This is still slightly wrong. The mouse does work, but is misnamed in
+> > the dmesg output and in /proc/bus/input/devices:
+> >
+> > psmouse serio1: ID: 10 00 64<6>elantech.c: Elantech version query result
+> > 0x00, 0x01, 0x64.
+> > elantech.c: Probably not a real Elantech touchpad. Aborting.
+> > input: ImExPS/2 Elantech Touchpad as /class/input/input8
+> 
+> Yeah, elantech_init() is too late, we need to do something in
+> elantech_detect()... 
 
-I've recently started using par2[1][2] on backed up files.
+Well, we could also move that Elantech version query and test for sane
+values into elantech_detect().  However, because we have no private data
+structure at that time it would mean we have to do the same query again in
+elantech_init() to store fw_version_maj and fw_version_min.
 
-I just started doing this, so don't know how it will work in the
-long run.  Can't hurt, anyway, other than taking up more space.
+> Maybe we need to pull part of Logitech check (number of buttons for
+> example) from logips2pp.c.
 
-[1] http://www.par2.net/
-[2] http://parchive.sourceforge.net/
+I think the solution above is simpler although maybe not as pretty... :)
 
+
+Arjan
