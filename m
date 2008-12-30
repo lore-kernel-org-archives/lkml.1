@@ -1,141 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYL3QMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbYL3QUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbYL3QMg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 11:12:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYL3QM1
+	id S1752973AbYL3QUY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 11:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYL3QUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 11:12:27 -0500
-Received: from mail.mnsspb.ru ([84.204.75.2]:48242 "EHLO mail.mnsspb.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750990AbYL3QM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 11:12:26 -0500
-X-Greylist: delayed 2353 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Dec 2008 11:12:25 EST
-From: Kirill Smelkov <kirr@mns.spb.ru>
-To: linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, kirr@landau.phys.spbu.ru,
-       Dmitry Gryazin <gdu@mns.spb.ru>, Kirill Smelkov <kirr@mns.spb.ru>
-Subject: [PATCH] ide: motherboard-info based blacklist for ide-dma
-Date: Tue, 30 Dec 2008 18:33:59 +0300
-Message-Id: <1230651239-29388-1-git-send-email-kirr@mns.spb.ru>
-X-Mailer: git-send-email 1.6.1.49.g94ee8
+	Tue, 30 Dec 2008 11:20:11 -0500
+Received: from host64.cybernetics.com ([98.174.209.230]:2053 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbYL3QUK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 11:20:10 -0500
+Message-ID: <495A4A39.20903@cybernetics.com>
+Date: Tue, 30 Dec 2008 11:20:09 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: avi@redhat.com
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [DMAR] Fix endless "Unknown DMAR structure type" loop
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Gryazin <gdu@mns.spb.ru>
+I have a SuperMicro C2SBX motherboard with BIOS revision 1.0b.  With
+vt-d enabled in the BIOS, Linux gets into an endless loop printing
+"DMAR:Unknown DMAR structure type" when booting.  Here is the DMAR ACPI
+table:
 
-We need to keep our kernel working on both legacy and modern hardware.
+DMAR @ 0x7fe86dec
+  0000: 44 4d 41 52 98 00 00 00 01 6f 49 6e 74 65 6c 20  DMAR.....oIntel 
+  0010: 4f 45 4d 44 4d 41 52 20 00 00 04 06 4c 4f 48 52  OEMDMAR ....LOHR
+  0020: 01 00 00 00 23 00 00 00 00 00 00 00 00 00 00 00  ....#...........
+  0030: 01 00 58 00 00 00 00 00 00 a0 e8 7f 00 00 00 00  ..X.............
+  0040: ff ff ef 7f 00 00 00 00 01 08 00 00 00 00 1d 00  ................
+  0050: 01 08 00 00 00 00 1d 01 01 08 00 00 00 00 1d 02  ................
+  0060: 01 08 00 00 00 00 1d 07 01 08 00 00 00 00 1a 00  ................
+  0070: 01 08 00 00 00 00 1a 01 01 08 00 00 00 00 1a 02  ................
+  0080: 01 08 00 00 00 00 1a 07 01 08 00 00 00 00 1a 07  ................
+  0090: c0 00 68 00 04 10 66 60                          ..h...f`
 
-As it turned out, some boards don't have proper IDE DMA support for
-CompactFlash (CF) adaptors, because pin connectors which relate to DMA are left
-unsoldered (*).
+Here are the messages printed by the kernel:
 
-To verify this we even bought external IDE CF adaptor which showed the same
-symthoms, and then manually soldered pins that were left dangling, and voila,
-DMA started to work!
+DMAR:Host address width 36
+DMAR:RMRR base: 0x000000007fe8a000 end: 0x000000007fefffff
+DMAR:Unknown DMAR structure type
+DMAR:Unknown DMAR structure type
+DMAR:Unknown DMAR structure type
+...
 
-Again, as they say, lots of manufacturers of not-so-new hardware did CF
-soldering by the wrong way with respect to DMA, so we need a workaround.
+Although I not very familiar with ACPI, to me it looks like
+struct acpi_dmar_header::length == 0x0058 is incorrect, causing
+parse_dmar_table() to look at an invalid offset on the next loop.  This
+offset happens to have struct acpi_dmar_header::length == 0x0000, which
+prevents the loop from ever terminating.  This patch checks for this
+condition and bails out instead of looping forever.
 
-For this __ide_dma_bad_drive function is enhance to check not only drives
-blacklist but motherboards blacklist too.
-
-Please apply before 2.6.29
-
-(*) On IEI PCISA-C3/EDEN the kernel boots _very_ slowly, becuase we have lots
-of DMA timer expiry:
-
-    <~30s pause>
-    hdc: dma_timer_epiry: dma_status == 0x21
-    hdc: DMA timeout error
-    ...
-    hdc: DMA disabled
-    ide1: dma reset
-
-    <and the whole story repeats:>
-    <~30s pause>
-    hdc: dma_timer_epiry: dma_status == 0x21
-    ...
-
-Also see this posts from 2006 where they say this is usually a problem with CF
-adapter not fully soldered:
-
-http://lkml.org/lkml/2006/5/23/198
-http://lkml.org/lkml/2006/6/20/164
-
-Signed-off-by: Dmitry Gryazin <gdu@mns.spb.ru>
-Signed-off-by: Kirill Smelkov <kirr@mns.spb.ru>
+Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
 ---
- drivers/ide/ide-dma.c |   42 +++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 41 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
-index fffd117..adb5d9d 100644
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -33,6 +33,21 @@
- #include <linux/ide.h>
- #include <linux/scatterlist.h>
- #include <linux/dma-mapping.h>
-+#include <linux/dmi.h>
-+
-+/* Internal structure for blacklisted boards */
-+struct board_blacklist_entry {
-+	const char *board_vendor;
-+	const char *board_name;
-+	const char *drive_name;
-+};
-+
-+/* Blacklisted boards which have problems with DMA */
-+static const struct board_blacklist_entry board_blacklist[] = {
-+	/* on IEI PCISA-C3 CF adapter pin connectors for DMA are missing */
-+	{ "FIC"		,	"PT-2200"	,	"hdc"	},
-+	{ NULL		,	NULL		,	NULL	}
-+};
- 
- static const struct drive_list_entry drive_whitelist[] = {
- 	{ "Micropolis 2112A"	,       NULL		},
-@@ -207,6 +222,30 @@ void ide_dma_on(ide_drive_t *drive)
- 	drive->hwif->dma_ops->dma_host_set(drive, 1);
- }
- 
-+static int __ide_dma_bad_adaptor(ide_drive_t *drive)
-+{
-+	const struct board_blacklist_entry *table = board_blacklist;
-+
-+	const char *board_vendor = dmi_get_system_info(DMI_BOARD_VENDOR);
-+	const char *board_name   = dmi_get_system_info(DMI_BOARD_NAME);
-+
-+	if (!board_vendor || !board_name)
-+		return 0;
-+
-+	for ( ; table->board_name ; table++)
-+		if ((!strcmp(board_vendor, table->board_vendor)) &&
-+		    (!strcmp(board_name,   table->board_name))   &&
-+		    (!strcmp(drive->name,  table->drive_name))) {
-+			printk(KERN_WARNING "%s: Disabling (U)DMA for %s "
-+				"(Board %s %s is blacklisted)\n", drive->name,
-+				(char *)&drive->id[ATA_ID_PROD], board_vendor,
-+				board_name);
-+			return 1;
+I previously sent this to linux-acpi on August 18, 2008, but got no
+reply.  Please apply this patch upstream (2.6.29 if possible).
+
+--- linux-2.6.28-git2/drivers/pci/dmar.c.orig	2008-12-24 18:26:37.000000000 -0500
++++ linux-2.6.28-git2/drivers/pci/dmar.c	2008-12-30 11:01:17.000000000 -0500
+@@ -339,6 +339,14 @@ parse_dmar_table(void)
+ 	entry_header = (struct acpi_dmar_header *)(dmar + 1);
+ 	while (((unsigned long)entry_header) <
+ 			(((unsigned long)dmar) + dmar_tbl->length)) {
++		/* Avoid looping forever on bad ACPI tables */
++		if (entry_header->length == 0) {
++			printk(KERN_WARNING PREFIX
++				"Invalid 0-length structure\n");
++			ret = -EINVAL;
++			break;
 +		}
 +
-+	return 0;
-+}
-+
- int __ide_dma_bad_drive(ide_drive_t *drive)
- {
- 	u16 *id = drive->id;
-@@ -217,7 +256,8 @@ int __ide_dma_bad_drive(ide_drive_t *drive)
- 				    drive->name, (char *)&id[ATA_ID_PROD]);
- 		return blacklist;
- 	}
--	return 0;
-+
-+	return __ide_dma_bad_adaptor(drive);
- }
- EXPORT_SYMBOL(__ide_dma_bad_drive);
+ 		dmar_table_print_dmar_entry(entry_header);
  
--- 
-1.6.1.49.g94ee8
+ 		switch (entry_header->type) {
+
 
