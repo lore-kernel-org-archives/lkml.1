@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYL3IAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYL3IBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753845AbYL3IAz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 03:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYL3IAo
+	id S1754056AbYL3IBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 03:01:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYL3IBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 03:00:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51314 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804AbYL3IAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 03:00:43 -0500
-Date: Tue, 30 Dec 2008 09:00:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+	Tue, 30 Dec 2008 03:01:11 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:21104 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbYL3IBJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 03:01:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=oM9EbuCGuzQU507aoPbfHHrAU8m098/s0e1M6vAhev5+wf3vAv/ufOJycVCGWIFw1G
+         hPqF8qB30epgKLr6JEyplr9bwspC36BAWAWxY0mz1zKte2fReQr8oqTokPo2HyUoBXpB
+         fBF7oNZHpuFBxuvlu7lPTOWf7FscyGEMme+1A=
+Date: Tue, 30 Dec 2008 10:01:30 +0200
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+       Steven Rostedt <rostedt@goodmis.org>, mingo@elte.hu
 Subject: Re: [PATCH] tracing/kmemtrace: normalize the raw tracer event to
 	the unified tracing API
-Message-ID: <20081230080031.GB2455@elte.hu>
-References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere>
+Message-ID: <20081230080129.GA10635@localhost>
+References: <4959443f.09a1660a.44f3.2686@mx.google.com> <20081229220937.GC5829@nowhere> <1230623364.6091.9.camel@penberg-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081229220937.GC5829@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1230623364.6091.9.camel@penberg-laptop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 30, 2008 at 09:49:24AM +0200, Pekka Enberg wrote:
+> Hi Frederic,
+> 
+> On Mon, 2008-12-29 at 23:09 +0100, Frederic Weisbecker wrote:
+> > Pekka, note that I would be pleased to add statistical tracing on
+> > this tracer, but I would need a hashtable, or an array, or a list, or whatever
+> > iterable to insert the data into the stat tracing api.
+> > 
+> > But I don't know your projects about this... whether you wanted to use a section
+> > or something else...
+> 
+> It really depends on what we're tracing. If we're interested in just the
+> allocation hotspots, a section will do just fine. However, if we're
+> tracing memory footprint, we need to take into store the object pointer
+> returned from kmalloc() and kmem_cache_alloc() so we can update
+> call-site statistics properly upon kfree().
+> 
+> So I suppose we need both, a section for per call-site statistics and a
+> hash table for the object -> call-site mapping.
+> 
+> 		Pekka
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Hi Frederic,
 
-> Pekka, note that I would be pleased to add statistical tracing on this 
-> tracer, but I would need a hashtable, or an array, or a list, or 
-> whatever iterable to insert the data into the stat tracing api.
+Thanks for doing this work.
 
-there would be a couple of natural objects to group events by:
+kmemtrace-user currently shows two main views: per call-site and
+per-allocation. For the former, it uses a hashtable to accumulate
+statistics. There's also a hashtable for individual allocations (by ptr
+address), which we use to check for consistency for example ("if this is
+going to be freed, has it been allocated?"). Apart from those two views,
+it also shows global statistics.
 
-	1) callsite [IP] of kmalloc()/kfree()/etc.
 
-	2) slab cache
+	Thanks again,
+	Eduard
 
-	3) slab object
-
-for 1) callsite based histograms, i think ftrace should have a built-in 
-mechanism for that. kmemtrace tracepoints already pass in a call_site 
-argument that can be used to drive it.
-
-for 2) slab cache based histograms (counts) - we need some knowledge about 
-the affected slab caches, and we need some space as well. The tracepoints 
-could be extended with a kmem_cache argument perhaps. A callback is needed 
-at cache creation time (which could be in the form of a tracepoint) that 
-gives kernel/tracing/kmemtrace.c the right place to allocate the per slab 
-histogram. (so that the other tracepoints dont have to do it implicitly - 
-which would be fragile as we are in the SLAB code, often with spinlocks 
-taken, so we cannot allocate)
-
-i think 3) is the hardest so lets skip it for now ;-)
-
-	Ingo
