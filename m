@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbYL3ARx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYL3AVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753612AbYL3ARx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Dec 2008 19:17:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYL3ARo
+	id S1753833AbYL3AVe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Dec 2008 19:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYL3AVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Dec 2008 19:17:44 -0500
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:56195 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbYL3ARn (ORCPT
+	Mon, 29 Dec 2008 19:21:24 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:35236 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbYL3AVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Dec 2008 19:17:43 -0500
-Date: Mon, 29 Dec 2008 18:17:29 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Gilles Carry <Gilles.Carry@ext.bull.net>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC][PATCH] Fix cpu hotplug hang
-Message-ID: <20081230001729.GD6958@localdomain>
-References: <20081201140907.56743abd@bull.net>
- <20081215123128.172b21be@bull.net>
+	Mon, 29 Dec 2008 19:21:23 -0500
+Date: Tue, 30 Dec 2008 00:20:23 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Eric Miao <eric.miao@marvell.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>,
+       Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Message-ID: <20081230002023.GA5309@shareable.org>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com> <200812281346.56703.rgetz@blackfin.uclinux.org> <200812291156.12230.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081215123128.172b21be@bull.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Pobox-Relay-ID: 4434D77A-D607-11DD-AC43-5720C92D7133-04752483!a-sasl-fastnet.pobox.com
+In-Reply-To: <200812291156.12230.david-b@pacbell.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastien Dugue wrote:
-> On Mon, 1 Dec 2008 14:09:07 +0100 Sebastien Dugue <sebastien.dugue@bull.net> wrote:
-> 
-> > 
-> >   here is a patch that fixes a CPU hotplug hang I get on a Power6
-> > box. It may not be the only possible fix but it appears to be the
-> > cleanest I can think of at the moment.
-> > 
-> >   Comments welcomed.
-> 
->   Ingo, Thomas, anybody care to comment on the hang and this possible fix?
+David Brownell wrote:
+> The reason single-bit operations don't provide error paths is twofold.
+> First, they started as wrappers for can't-fail register accessors.
+> Second, it's extremely unrealisitic to expect much code to handle any
+> kind of faults in the middle of bitbanging loops ... or even just in
+> classic "set this bit and continue" configuration code.
 
-FWIW, I was able to recreate this hang with 2.6.28 on a 8-way Power5
-system, and Sebastien's patch does appear to fix the problem for my
-testcase, which does a few hundred offline/online operations.
+That's interesting.  I'm not sure it's a good idea not to return an
+error code.  The caller can just ignore it if they don't care, and
+it's extremely cheap to "return 0" in GPIO drivers which can't error.
+
+If I were bit-banging on GPIOs reached via some peripheral chip (such
+a GPIO-fanout chip over I2C/SPI, where that chip is itself feeding a
+secondary I2C or similar bit-banging bus), I probably would like to
+check for errors and take emergency action if the peripheral chip
+isn't responding, or just report to userspace.
+
+This has actually happened on a board I worked with, where the primary
+I2C failed due to a plugged in peripheral loading it too much, and a
+secondary bit-banging bus was not then reachable.
+
+-- Jamie
