@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYL3Hm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751557AbYL3Hpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYL3Hm7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 02:42:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbYL3Hmj
+	id S1751557AbYL3Hpq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 02:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYL3Hph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 02:42:39 -0500
-Received: from mailrelay012.isp.belgacom.be ([195.238.6.179]:48555 "EHLO
-	mailrelay012.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753994AbYL3Hmh (ORCPT
+	Tue, 30 Dec 2008 02:45:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54442 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751682AbYL3Hph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 02:42:37 -0500
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtUEAJdfWUlR8Sb2/2dsb2JhbACBbLsEWJA9hkQ
-Date: Tue, 30 Dec 2008 08:42:34 +0100 (CET)
-From: Hans Lambrechts <hans.lambrechts@skynet.be>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Hans Lambrechts <hans.lambrechts@skynet.be>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Happy v2.6.28
-In-Reply-To: <1230548230.8603.5.camel@penberg-laptop>
-Message-ID: <Pine.LNX.4.64.0812300835300.3744@server.home.lan>
-References: <bMLNZ-3QM-1@gated-at.bofh.it>  <200812250853.mBP8rxrr004080@server.home.lan>
-  <84144f020812250426x255cc00esd33f0075292b486b@mail.gmail.com> 
- <Pine.LNX.4.64.0812251336320.4497@server.home.lan> <1230548230.8603.5.camel@penberg-laptop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Dec 2008 02:45:37 -0500
+Date: Mon, 29 Dec 2008 23:44:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/14] kmemleak: Add the base support
+Message-Id: <20081229234447.41c3c1b1.akpm@linux-foundation.org>
+In-Reply-To: <20081230073807.GA2455@elte.hu>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	<20081219181302.7778.15966.stgit@pc1117.cambridge.arm.com>
+	<20081229162314.1cc7a549.akpm@linux-foundation.org>
+	<20081230073807.GA2455@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Dec 2008 08:38:07 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-
-On Mon, 29 Dec 2008, Pekka Enberg wrote:
-
-> Hi Hans,
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> On Thu, 2008-12-25 at 13:45 +0100, Hans Lambrechts wrote:
-> > > Looks like slab corruption. Can we have your .config, please? I'm
-> > > cc'ing netdev as the oops happens in kmem_cache_alloc() so the
-> > > networking code is a prime suspect of the corrupting kmem_cache_free()
-> > > call (although the bug might be elsewhere as well).
+> > > +/*
+> > > + * Stop the automatic memory scanning thread. This function must be called
+> > > + * with the kmemleak_mutex held.
+> > > + */
+> > > +void stop_scan_thread(void)
+> > > +{
+> > > +	if (scan_thread) {
+> > > +		kthread_stop(scan_thread);
+> > > +		scan_thread = NULL;
+> > > +	}
+> > > +}
+> > 
+> > so... why do we need a kernel thread?
+> > 
+> > We could have (for the sake of argument) a sys_kmemleak_scan() which 
+> > does a single scan then returns.  Or something like that.  That way, 
+> > userspace directly gets to set the scanning frequency, thread priority, 
+> > etc.
 > 
-> Can you boot the kernel with "slub_debug slub_nomerge" passed as kernel
-> parameters and try to reproduce the oops, please? Maybe we can get more
-> information on the bug.
-> 
-> Alternatively, you can do a git bisect to pinpoint the broken patch
-> between -rc9 and -final.
-> 
-> 		Pekka
+> thread priority of a kernel thread can be set anyway. Kernel threads tend 
+> to be better for such simple things because we can control all aspects, 
+> start them automatically so that test setups catch it (without needing any 
+> userspace component), etc.
 > 
 
-
-Hi Pekka,
-
-after the first oops I've decided to try 2.6.28 again so I could send 
-you more information. I'm running 2.6.28 now for a few days with several 
-restarts and no more oops.
-This seems a very rare to hit bug or my 6yo box is almost end of life.
-
-	Hans
+yeah yeah, userspace is too hard for kernel programmers, so we put our
+applications, English-only pretty-printers etc into the kernel.  It's a
+broken record.
