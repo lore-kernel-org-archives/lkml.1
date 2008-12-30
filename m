@@ -1,144 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbYL3TgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYL3TkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbYL3TgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 14:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYL3Tfx
+	id S1753234AbYL3TkU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 14:40:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYL3TkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 14:35:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48850 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752564AbYL3Tfw (ORCPT
+	Tue, 30 Dec 2008 14:40:05 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:38745 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751969AbYL3TkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 14:35:52 -0500
-Date: Tue, 30 Dec 2008 11:35:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: kmannth@us.ibm.com, linux-kernel@vger.kernel.org, sekharan@us.ibm.com
-Subject: Re: [Patch][RFC] Supress Buffer I/O errors when SCSI REQ_QUIET flag
- set
-Message-Id: <20081230113514.fe09d495.akpm@linux-foundation.org>
-In-Reply-To: <20081125091917.GU26308@kernel.dk>
-References: <1227561983.6487.32.camel@keith-laptop>
-	<20081125091917.GU26308@kernel.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Dec 2008 14:40:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xe6dCPW53OtkUzOmks3Qj5bFDkfHFsVsZaDHmlzXaYQRtttKFRHskqKZ0v9HvcgRm0
+         rLmhX1a4FELN7Lw8W221MgJKsaxF0yiEuWRX+G9U//JjVYdqZ40ZiRZCmo1vR56wBjNb
+         MO7KyeNl5Ep+ITE/HENq92WZsRIqO0mp12kXQ=
+Date: Tue, 30 Dec 2008 22:40:00 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Patrick Boettcher <patrick.boettcher@desy.de>
+Subject: Re: [GIT PATCHES for 2.6.28] V4L/DVB fixes, crash in
+	af9005_usb_module_init()
+Message-ID: <20081230194000.GA7420@localhost>
+References: <20081224121252.7560391e@caramujo.chehab.org> <20081225081907.GA4628@elte.hu> <20081225212459.4c7e31b4@caramujo.chehab.org> <20081226090220.GF755@elte.hu> <20081226111324.3fbb804b@caramujo.chehab.org> <20081226132426.GA26953@elte.hu> <20081227164020.GA9726@elte.hu> <20081227171122.GA20147@localhost> <20081230173310.41711eb9@pedra.chehab.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081230173310.41711eb9@pedra.chehab.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008 10:19:18 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+[Mauro Carvalho Chehab - Tue, Dec 30, 2008 at 05:33:10PM -0200]
+| 
+| On Sat, 27 Dec 2008 20:11:22 +0300
+| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > [Ingo Molnar - Sat, Dec 27, 2008 at 05:40:20PM +0100]
+| > | 
+| > | * Ingo Molnar <mingo@elte.hu> wrote:
+| > | 
+| > | > [...] I have re-enabled the driver in tip/master [...]
+| > | 
+| > | ok, just got this build failure:
+| > | 
+| > |  drivers/built-in.o: In function `dm1105_probe':
+| > |  dm1105.c:(.devinit.text+0x2298b): undefined reference to `cx24116_attach'
+| > |  make: *** [.tmp_vmlinux1] Error 1
+| > | 
+| > | config attached. Can test any fix patch.
+| > | 
+| > | 	Ingo
+| > |
+| > 
+| > Something like that?
+| 
+| I suspect that this will work. Could you please send your SOB?
+| 
 
-> On Mon, Nov 24 2008, Keith Mannthey wrote:
-> > Allow the scsi request REQ_QUIET flag to be propagated to the buffer
-> > file system layer. The basic ideas is to pass the flag from the scsi
-> > request to the bio (block IO) and then to the buffer layer.  The buffer
-> > layer can then suppress needless printks. 
-> > 
-> > This patch declutters the kernel log by removed the 40-50 (per lun)
-> > buffer io error messages seen during a boot in my multipath setup . It
-> > is a good chance any real errors will be missed in the "noise" it the
-> > logs without this patch. 
-> > 
-> > During boot I see blocks of messages like 
-> > "
-> > __ratelimit: 211 callbacks suppressed
-> > Buffer I/O error on device sdm, logical block 5242879
-> > Buffer I/O error on device sdm, logical block 5242879
-> > Buffer I/O error on device sdm, logical block 5242847
-> > Buffer I/O error on device sdm, logical block 1
-> > Buffer I/O error on device sdm, logical block 5242878
-> > Buffer I/O error on device sdm, logical block 5242879
-> > Buffer I/O error on device sdm, logical block 5242879
-> > Buffer I/O error on device sdm, logical block 5242879
-> > Buffer I/O error on device sdm, logical block 5242879
-> > Buffer I/O error on device sdm, logical block 5242872
-> > "
-> > in my logs. 
-> > 
-> > My disk environment is multipath fiber channel using the SCSI_DH_RDAC
-> > code and multipathd.  This topology includes an "active" and "ghost"
-> > path for each lun. IO's to the "ghost" path will never complete and the
-> > SCSI layer, via the scsi device handler rdac code, quick returns the IOs
-> > to theses paths and sets the REQ_QUIET scsi flag to suppress the scsi
-> > layer messages. 
-> > 
-> >  I am wanting to extend the QUIET behavior to include the buffer file
-> > system layer to deal with these errors as well. I have been running this
-> > patch for a while now on several boxes without issue.  A few runs of
-> > bonnie++ show no noticeable difference in performance in my setup. 
-> > 
-> > Thanks for John Stultz for the quiet_error finalization. 
-> 
-> Looks good to me. I'll merge it up for 2.6.29.
+Without problem :)
 
-So a month later this turns up in linux-next.  During the merge
-window, giving a nice pile of rejects to keep me amused.
+---
+Subject: [PATCH] DVB: cx24116 - build fix
 
-Can we do better than this, please?  A lot?
+Add missed MODULE check to eliminate inapropriate
+declaration being choosed which causes a build error.
 
-> +static int quiet_error(struct buffer_head *bh)
-> +{
-> +       if (!test_bit(BH_Quiet, &bh->b_state) && printk_ratelimit())
-> +               return 0;
-> +       return 1;
-> +}
-> 
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
 
-For better of for worse, we have a convention of using cpp-generated
-helper functions for the buffer_head flags.  There's no reason why this
-new code needs to diverge from that.  The above should use buffer_quiet().
+ drivers/media/dvb/frontends/cx24116.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-The functions in fs/buffer.c have been nicely commented.
-
-This function is poorly named.  What does "quiet_error" *mean*?
-
-<tries to work it out>
-
-Every caller of this function does `if (!quiet_error(bh))'.  Would it
-not make more sense to invert the sense of its return value?
-
-static int permit_bh_errors(struct buffer_head *bh)
-{
-	if (buffer_quiet(bh))
-		return 0;	/* IO layer suppressed error messages */
-	return printk_ratelimit();
-}
-
-Did I translate that right?  If so, then the addition of the
-printk_ratelimit() to the non-buffer_quiet() buffers is an
-unchangelogged and unrelated alteration.
-
-The use of printk_ratelimit() needs some thought.  It shares
-ratelimiting state with all other printk_ratelimit() callsites.  Was
-that desirable?  Would it have been better to create a private
-ratelimit_state for buffer_heads?  Per physical device?  Per
-something-else?
-
-
-> +       if (unlikely (test_bit(BIO_QUIET,&bio->bi_flags)))
-> +               set_bit(BH_Quiet, &bh->b_state);
-
-And the above (which has coding-style errors and has apparently not been
-checkpatched) should use set_buffer_quiet().
-
-
-> --- a/include/linux/buffer_head.h
-> +++ b/include/linux/buffer_head.h
-> @@ -35,6 +35,7 @@ enum bh_state_bits {
->         BH_Ordered,     /* ordered write */
->         BH_Eopnotsupp,  /* operation not supported (barrier) */
->         BH_Unwritten,   /* Buffer is allocated on disk but not written */
-> +       BH_Quiet,       /* Buffer Error Prinks to be quiet */
->  
->         BH_PrivateStart,/* not a state bit, but the first bit available
->                          * for private allocation by other entities
-
-Add
-
-+ BUFFER_FNS(Quiet, quiet)
-
-around line 123 to generate the helper functions.
-
+Index: linux-2.6.git/drivers/media/dvb/frontends/cx24116.h
+===================================================================
+--- linux-2.6.git.orig/drivers/media/dvb/frontends/cx24116.h
++++ linux-2.6.git/drivers/media/dvb/frontends/cx24116.h
+@@ -37,7 +37,8 @@ struct cx24116_config {
+ 	u8 mpg_clk_pos_pol:0x02;
+ };
+ 
+-#if defined(CONFIG_DVB_CX24116) || defined(CONFIG_DVB_CX24116_MODULE)
++#if defined(CONFIG_DVB_CX24116) || \
++	(defined(CONFIG_DVB_CX24116_MODULE) && defined(MODULE))
+ extern struct dvb_frontend *cx24116_attach(
+ 	const struct cx24116_config *config,
+ 	struct i2c_adapter *i2c);
