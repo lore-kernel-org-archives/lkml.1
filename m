@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbYL3FkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbYL3Fn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752075AbYL3FkP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 00:40:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYL3FkB
+	id S1751979AbYL3Fn1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 00:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYL3FnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 00:40:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43298 "EHLO mx2.mail.elte.hu"
+	Tue, 30 Dec 2008 00:43:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53024 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbYL3FkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 00:40:01 -0500
-Date: Tue, 30 Dec 2008 06:39:38 +0100
+	id S1751143AbYL3FnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 00:43:19 -0500
+Date: Tue, 30 Dec 2008 06:42:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Darren Hart <dvhltc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Rusty Russell <rusty@rustcorp.com.au>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 0/2] futex_key reference accounting fixes
-Message-ID: <20081230053938.GA11037@elte.hu>
-References: <20081229185238.10342.75651.stgit@Aeon>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Rusty Russell <rusty@au1.ibm.com>
+Subject: Re: [PATCH] futex: add WARN_ON to catch certain assymetric
+	(get|put)_futex_key calls
+Message-ID: <20081230054257.GC11037@elte.hu>
+References: <20081230034320.24404.56248.stgit@Aeon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081229185238.10342.75651.stgit@Aeon>
+In-Reply-To: <20081230034320.24404.56248.stgit@Aeon>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,19 +38,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Darren Hart <dvhltc@us.ibm.com> wrote:
 
-> This series fixes several problems with symmetric reference counting of the
-> futex keys.
+> Following up on my previous key reference accounting patches, this patch
+> will catch puts on keys that haven't been "got".  This won't catch nested
+> get/put mismatches though.
 > 
+> Build and boot tested, with minimal desktop activity and a run of the
+> open_posix_testsuite in LTP for testing.  No warnings logged.
+> 
+> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> Cc: "Peter Zijlstra" <peterz@infradead.org>
+> Cc: "Thomas Gleixner" <tglx@linutronix.de>
+> Cc: "Rusty Russell" <rusty@au1.ibm.com>
 > ---
 > 
-> Darren Hart (2):
->       futex: correct futex_requeue futex key ref counting in requeue loop
->       futex: make futex_(get|put)_key() calls symmetric
-> 
-> 
->  kernel/futex.c |   68 ++++++++++++++++++++++++++++++--------------------------
->  1 files changed, 36 insertions(+), 32 deletions(-)
+>  kernel/futex.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
 
-applied to tip/core/futexes, thanks Darren!
+applied to tip/core/futexes, thanks!
+
+I changed this:
+
+> +		WARN_ON(1);
+>  		return;
+
+to WARN_ON_ONCE() - warning once per bootup is good enough for 
+kerneloops.org to pick it up, while a ton of warnings add no extra (other 
+than to inconvenience the user, or even make the system unworkable).
 
 	Ingo
