@@ -1,36 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbYL3Ry0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbYL3SAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828AbYL3Ry0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 12:54:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYL3RyQ
+	id S1752841AbYL3SAc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 13:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYL3SAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 12:54:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53271 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbYL3RyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 12:54:15 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081230172901.GA5610@lst.de>
-References: <20081230172901.GA5610@lst.de> <20081230170941.GA5083@lst.de> <20081230134248.GA30124@lst.de> <24505.1230656810@redhat.com> <32709.1230657626@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: access(2) regressions in current mainline
-Date: Tue, 30 Dec 2008 17:54:11 +0000
-Message-ID: <605.1230659651@redhat.com>
+	Tue, 30 Dec 2008 13:00:21 -0500
+Received: from ppp-111-10.adsl.restena.lu ([158.64.111.10]:34543 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751634AbYL3SAT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 13:00:19 -0500
+X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Dec 2008 13:00:19 EST
+Date: Tue, 30 Dec 2008 18:50:37 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: linux-ide@vger.kernel.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: S3 with pata_via fails to resume, ide_via82Cxxx works
+Message-ID: <20081230185037.7ec94e94@neptune.home>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@lst.de> wrote:
+Hi,
 
-> Try to grab git://oss.sgi.com/xfs-cmds, it's in the xfstests subdir.
+On a system (Commell LE365) with VIA CX700M chipset I experience
+varying resume results:
 
-Hmmm...  It requires an 'fsstress', but which of the several things that go by
-that name is it referring to?
+When built with IDE subsystem and VIA82CXXX driver the system suspends
+and resumes properly [2.6.28].
+-----
+CONFIG_HAVE_IDE=y
+CONFIG_IDE=y
+CONFIG_IDE_TIMINGS=y
+CONFIG_IDE_GD=y
+CONFIG_IDE_GD_ATA=y
+CONFIG_BLK_DEV_IDEACPI=y
+CONFIG_BLK_DEV_IDEDMA_SFF=y
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+CONFIG_BLK_DEV_VIA82CXXX=y
+CONFIG_BLK_DEV_IDEDMA=y
+# CONFIG_ATA is not set
+-----
+When built with ATA subsystem and PATA_VIA driver the system suspends
+but hangs during resume (HDD LED remains active) [2.6.28] though it
+manages to resume when the CompactFlash card is disconnected [2.6.27].
+-----
+# CONFIG_IDE is not set
+CONFIG_ATA=y
+CONFIG_ATA_ACPI=y
+CONFIG_SATA_AHCI=y
+CONFIG_ATA_SFF=y
+CONFIG_SATA_VIA=y
+CONFIG_PATA_VIA=y
+-----
 
-David
+Is there some known bigger difference between behavior of both drivers?
+I might start comparing behavior of both drivers and try to adjust
+PATA_VIA to successfully resume the system, though any hint/suggestion
+is welcome!
+
+- SATA HDD with system partition  [seen as IDE Primary master]
+- CompactFlash card               [seen as IDE Secondary slave]
+
+lspci output:
+00:00.0 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:0324] (rev 03)
+00:00.1 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:1324]
+00:00.2 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:2324]
+00:00.3 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:3324]
+00:00.4 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:4324]
+00:00.7 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:7324]
+00:01.0 PCI bridge [0604]: VIA Technologies, Inc. VT8237 PCI Bridge [1106:b198]
+00:0f.0 IDE interface [0101]: VIA Technologies, Inc. Device [1106:0581]
+00:10.0 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
+00:10.1 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
+00:10.2 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
+00:10.4 USB Controller [0c03]: VIA Technologies, Inc. USB 2.0 [1106:3104] (rev 90)
+00:11.0 ISA bridge [0601]: VIA Technologies, Inc. CX700 PCI to ISA Bridge [1106:8324]
+00:11.7 Host bridge [0600]: VIA Technologies, Inc. CX700 Internal Module Bus [1106:324e]
+00:13.0 Host bridge [0600]: VIA Technologies, Inc. CX700 Host Bridge [1106:324b]
+00:13.1 PCI bridge [0604]: VIA Technologies, Inc. CX700 PCI to PCI Bridge [1106:324a]
+01:00.0 VGA compatible controller [0300]: VIA Technologies, Inc. CX700M2 UniChrome PRO II Graphics [1106:3157] (rev 03)
+02:08.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RTL-8169 Gigabit Ethernet [10ec:8169] (rev 10)
+80:01.0 Audio device [0403]: VIA Technologies, Inc. VIA High Definition Audio Controller [1106:3288] (rev 10)
+
+
+
+
+Secondary note, with ATA subsystem it is possible to discover hot-plugged
+second SATA drive with issuing
+  echo '- - -' > host0/scsi_host/host0/scan
+though the same action causes the access to first SATA drive to fail after
+removing second drive. (unfortunately BIOS does only allows configuring
+the chipset in IDE mode - so not possible to use SATA_VIA or AHCI).
+I guess this is caused by some incorrect detection of speed settings.
+
+What is the way to ask driver to rescan with IDE driver?
+
+Bruno
