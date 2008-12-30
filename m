@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYL3MIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752673AbYL3MY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbYL3MIZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 07:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYL3MIE
+	id S1752673AbYL3MY6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 07:24:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYL3MYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 07:08:04 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:36684 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbYL3MH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 07:07:58 -0500
-Date: Tue, 30 Dec 2008 13:07:56 +0100
-From: Andreas Mohr <andim2@users.sourceforge.net>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andreas Mohr <andi@lisas.de>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       bunk@kernel.org, auke-jan.h.kok@intel.com,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-Message-ID: <20081230120756.GA5393@rhlx01.hs-esslingen.de>
-Reply-To: andi@lisas.de
-References: <20081228.000118.121541932.davem@davemloft.net> <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20081229091728.d869f1c1.akpm@linux-foundation.org> <9929d2390812291515y623d6a51yed1bef021ab6847e@mail.gmail.com>
+	Tue, 30 Dec 2008 07:24:49 -0500
+Received: from lucidpixels.com ([75.144.35.66]:35146 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbYL3MYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 07:24:48 -0500
+Date: Tue, 30 Dec 2008 07:24:47 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: 2.6.28: Is there a way to disable sata probing for certain ports?
+Message-ID: <alpine.DEB.1.10.0812300605250.11356@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9929d2390812291515y623d6a51yed1bef021ab6847e@mail.gmail.com>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 03:15:37PM -0800, Jeff Kirsher wrote:
-> He is referring to a patch to add support for devices which do not use
-> the MII interface which use an Intel MAC.  I have the patch in my
-> local tree and have been keeping it up-to-date.  I should have an
-> update on this patch after the New Year.
+When I boot from an Intel X25-E SSD, it takes roughly a few seconds; 
+however, items such as:
 
-Thanks!
+$ dmesg|grep link\ down
+[    2.447030] ata4: SATA link down (SStatus 0 SControl 300)
+[    4.481288] ata5: SATA link down (SStatus 0 SControl 0)
+[    6.501288] ata6: SATA link down (SStatus 0 SControl 0)
+[    8.522038] ata7: SATA link down (SStatus 0 SControl 0)
+[   10.552288] ata8: SATA link down (SStatus 0 SControl 0)
 
-One idea worth pondering might be to provide a special struct
-mii_if_info hookup (fully emulated mdio_read()/write())
-for the case of the non-MII hardware types of this driver,
-thus eliminating any added penalty in the case of nicely MII-compliant
-hardware.
-But this should be tackled later, now let's better move on with eepro100
-(non-)plans...
+Scanning for devices on channels that have nothing connected adds to the 
+boot time, is there anyway to turn off/disable scanning for certain ports 
+to help speed the boot process?
 
-Andreas Mohr
+
