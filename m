@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbYL3Hip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYL3Hlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753613AbYL3Hip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 02:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYL3HiW
+	id S1753201AbYL3Hlr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 02:41:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYL3Hli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 02:38:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36489 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751497AbYL3HiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 02:38:21 -0500
-Date: Tue, 30 Dec 2008 08:38:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/14] kmemleak: Add the base support
-Message-ID: <20081230073807.GA2455@elte.hu>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com> <20081219181302.7778.15966.stgit@pc1117.cambridge.arm.com> <20081229162314.1cc7a549.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081229162314.1cc7a549.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 30 Dec 2008 02:41:38 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:17372 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751520AbYL3Hlh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 02:41:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=A9Qhc8pOoR40bEndl2ZA6lCIw7IXxl9cnVMDj8Zr9xHmiRWN2mENOX+xf4RUsbQB72
+         hRnXtxp6UAGmEFqBxZag9lZc7hw+F8Ng0FP9xtUA1CnnuSudCJZA4FiC/oYox/4m+XD8
+         rrugwuW4KROZpmhMY4zkn+5kgjQUK85ZDpgyQ=
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] kmemtrace over tracepoints (resubmit)
+Date: Tue, 30 Dec 2008 09:41:26 +0200
+Message-Id: <cover.1230622068.git.eduard.munteanu@linux360.ro>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi again,
 
-> > +/*
-> > + * Stop the automatic memory scanning thread. This function must be called
-> > + * with the kmemleak_mutex held.
-> > + */
-> > +void stop_scan_thread(void)
-> > +{
-> > +	if (scan_thread) {
-> > +		kthread_stop(scan_thread);
-> > +		scan_thread = NULL;
-> > +	}
-> > +}
-> 
-> so... why do we need a kernel thread?
-> 
-> We could have (for the sake of argument) a sys_kmemleak_scan() which 
-> does a single scan then returns.  Or something like that.  That way, 
-> userspace directly gets to set the scanning frequency, thread priority, 
-> etc.
+I've figured out a way to minimally modify RCU headers. If you still think
+splitting RCU headers is a good idea, let me know, but this is meant to get
+kmemtrace in Linus' tree as soon as possible.
 
-thread priority of a kernel thread can be set anyway. Kernel threads tend 
-to be better for such simple things because we can control all aspects, 
-start them automatically so that test setups catch it (without needing any 
-userspace component), etc.
+I also renamed tracers as Pekka suggested.
 
-	Ingo
+Let me know what you think.
+
+
+	Cheers,
+	Eduard
+
+
+Eduard - Gabriel Munteanu (2):
+  RCU: Don't include unnecessary headers, allow kmemtrace w/
+    tracepoints.
+  kmemtrace: Use tracepoints instead of markers.
+
+ include/linux/kmemtrace.h  |   91 +++++++++++------------------------------
+ include/linux/rcuclassic.h |    1 -
+ include/linux/rcupdate.h   |    1 -
+ include/linux/rcupreempt.h |    2 +-
+ include/linux/slab_def.h   |    9 ++--
+ include/linux/slub_def.h   |   12 ++----
+ lib/Kconfig.debug          |    2 +-
+ mm/kmemtrace.c             |   96 ++++++++++++++++++++++++++++++++------------
+ mm/slab.c                  |   25 +++++------
+ mm/slob.c                  |   27 +++++-------
+ mm/slub.c                  |   30 +++++--------
+ 11 files changed, 140 insertions(+), 156 deletions(-)
+
