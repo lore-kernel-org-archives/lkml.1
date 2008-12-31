@@ -1,500 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYLaSJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbYLaSjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbYLaSJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 13:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYLaSJG
+	id S1757165AbYLaSjd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbYLaSjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 13:09:06 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48986 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032AbYLaSJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 13:09:04 -0500
-Date: Wed, 31 Dec 2008 19:08:41 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, Oleg Nesterov <oleg@redhat.com>,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
-Message-ID: <20081231190841.406c8274@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20081231110816.5f80e265@psychotron.englab.brq.redhat.com>
-	<20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 13:39:20 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:46731 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbYLaSjS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 13:39:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=JLSN5MvS44JIJkceepbhRfE6c9GKwPu09jk+tV9IYbF/EMyLReCg1GbR/RN4uDmQ/8
+         yQ9L7E8vwMlhwcaLaIL8+SS9yQQ+rjH1ml2LUjYf8De8DWInNV3Wl0Dqcaq1Bph2cb6J
+         m1w43Pd5Mi4izYdjywASIkebWdDVusGzCiBgM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Subject: Re: S3 with pata_via fails to resume, ide_via82Cxxx works
+Date: Wed, 31 Dec 2008 19:19:14 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-next-20081229; KDE/4.1.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+References: <20081230185037.7ec94e94@neptune.home> <20081230215953.235ce1b4@neptune.home>
+In-Reply-To: <20081230215953.235ce1b4@neptune.home>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200812311919.14579.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008 21:42:36 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> Hi!
-> 
-> > > Changes Jiris's last version
-> > >   - At wait_task_zombie(), parent process doesn't only collect child maxrss,
-> > >     but also cmaxrss.
-> > Yes, this is what we were missing so far.
+On Tuesday 30 December 2008, Bruno Prémont wrote:
+> On Tue, 30 December 2008 Bruno Prémont wrote:
+> > Secondary note, with ATA subsystem it is possible to discover
+> > hot-plugged second SATA drive with issuing
+> >   echo '- - -' > host0/scsi_host/host0/scan
+> > though the same action causes the access to first SATA drive to fail
+> > after removing second drive. (unfortunately BIOS does only allows
+> > configuring the chipset in IDE mode - so not possible to use SATA_VIA
+> > or AHCI). I guess this is caused by some incorrect detection of speed
+> > settings.
 > > 
-> > >   - ru_maxrss inherit at exec()
-> > >   - style fixes.
-> > 
-> > New patch seems almost fine to me. Only I do not like usage of max()
-> > macro in do_exit() and in de_thread(). It's unnecessary and little
-> > wasting (yes only a little :)). This two spots would be maybe better
-> > solved with if(<).
-> 
-> Done!
+> > What is the way to ask driver to rescan with IDE driver?
+> I found:
+>   Documentation/ide/warm-plug-howto.txt
 > 
 > 
-Okay - now I'm happy with this patch. Let's see with what Oleg will come :)
+> Doing just:
+>   echo -n "1" > /sys/class/ide_port/idex/scan
+> causes the following BUG():
+> <<<< during boot
+> Dec 30 18:19:50 venus [    3.909946] Uniform Multi-Platform E-IDE driver
+> Dec 30 18:19:50 venus [    3.913075] via82cxxx 0000:00:0f.0: VIA cx700 (rev 00) IDE UDMA133
+> Dec 30 18:19:50 venus [    3.916069] via82cxxx 0000:00:0f.0: IDE controller (0x1106:0x0581 rev 0x00)
+> Dec 30 18:19:50 venus [    3.919138] via82cxxx 0000:00:0f.0: not 100% native mode: will probe irqs later
+> Dec 30 18:19:50 venus [    3.924945]     ide0: BM-DMA at 0xff00-0xff07
+> Dec 30 18:19:50 venus [    3.927990]     ide1: BM-DMA at 0xff08-0xff0f
+> Dec 30 18:19:50 venus [    3.930901] Probing IDE interface ide0...
+> Dec 30 18:19:50 venus [    4.050047] Marking TSC unstable due to cpufreq changes
+> Dec 30 18:19:50 venus [    4.370099] hda: FUJITSU MHY2250BH, ATA DISK drive
+> Dec 30 18:19:50 venus [    4.390026] Clocksource tsc unstable (delta = -215834270 ns)
+> Dec 30 18:19:50 venus [    4.730309] hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+> Dec 30 18:19:50 venus [    4.730462] hda: UDMA/100 mode selected
+> Dec 30 18:19:50 venus [    4.735541] Probing IDE interface ide1...
+> Dec 30 18:19:50 venus [    5.420127] hdd: , ATA DISK drive
+> Dec 30 18:19:50 venus [    5.480288] hdd: host max PIO5 wanted PIO255(auto-tune) selected PIO2
+> Dec 30 18:19:50 venus [    5.480330] hdd: UDMA/66 mode selected
+> Dec 30 18:19:50 venus [    5.485099] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> Dec 30 18:19:50 venus [    5.565605] ide1 at 0x170-0x177,0x376 on irq 15
+> Dec 30 18:19:50 venus [    5.573072] ide-gd driver 1.18
+> Dec 30 18:19:50 venus [    5.577684] hda: max request size: 512KiB
+> Dec 30 18:19:50 venus [    5.582339] hda: 488397168 sectors (250059 MB) w/8192KiB Cache, CHS=30401/255/63
+> Dec 30 18:19:50 venus [    5.592346] hda: cache flushes supported
+> Dec 30 18:19:50 venus [    5.597500]  hda: hda1 hda2 hda3 hda4 hda5 hda6
+> Dec 30 18:19:50 venus [    5.646208] hdd: max request size: 128KiB
+> Dec 30 18:19:50 venus [    5.651361] hdd: 8043840 sectors (4118 MB) w/1KiB Cache, CHS=7980/16/63
+> Dec 30 18:19:50 venus [    5.656901]  hdd: hdd1
+> -- snip --
+> <<<< some time later, triggering the scan
+> Dec 30 21:35:55 venus [ 7866.335247] Probing IDE interface ide0...
+> Dec 30 21:35:55 venus [ 7866.650105] hda: FUJITSU MHY2250BH, ATA DISK drive
+> Dec 30 21:35:56 venus [ 7867.370055] hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+> Dec 30 21:35:56 venus [ 7867.370221] hda: UDMA/100 mode selected
+> Dec 30 21:35:56 venus [ 7867.370375] BUG: unable to handle kernel NULL pointer dereference at 0000000c
+> Dec 30 21:35:56 venus [ 7867.370400] IP: [<c0248bf6>] elv_may_queue+0x6/0x20
+> Dec 30 21:35:56 venus [ 7867.370440] *pde = 00000000 
+> Dec 30 21:35:56 venus [ 7867.370459] Oops: 0000 [#1] 
+> Dec 30 21:35:56 venus [ 7867.375572] last sysfs file: /sys/devices/pci0000:00/0000:00:0f.0/ide0/ide_port/ide0/scan
+> Dec 30 21:35:56 venus [ 7867.380014] Modules linked in: snd_hda_intel snd_pcm snd_timer snd soundcore snd_page_alloc via_agp agpgart
+> Dec 30 21:35:56 venus [ 7867.380014] 
+> Dec 30 21:35:56 venus [ 7867.380014] Pid: 1855, comm: bash Not tainted (2.6.28-ide #3) CX700+W697HG
+> Dec 30 21:35:56 venus [ 7867.380014] EIP: 0060:[<c0248bf6>] EFLAGS: 00010046 CPU: 0
+> Dec 30 21:35:56 venus [ 7867.380014] EIP is at elv_may_queue+0x6/0x20
+> Dec 30 21:35:56 venus [ 7867.380014] EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: 00000000
+> Dec 30 21:35:56 venus [ 7867.380014] ESI: 00000000 EDI: 00000010 EBP: f6bb3e28 ESP: f6bb3e24
+> Dec 30 21:35:56 venus [ 7867.380014]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> Dec 30 21:35:56 venus [ 7867.380014] Process bash (pid: 1855, ti=f6bb3000 task=f7110d80 task.ti=f6bb3000)
+> Dec 30 21:35:56 venus [ 7867.380014] Stack:
+> Dec 30 21:35:56 venus [ 7867.380014]  00000000 f6bb3e50 c024b40b 00000000 000000e1 f7005890 00000078 00000282
+> Dec 30 21:35:56 venus [ 7867.380014]  00000000 f73d0020 00000000 f6bb3e80 c024b82c 00000010 00000000 f6bb3e7c
+> Dec 30 21:35:56 venus [ 7867.380014]  00000282 00000001 000000e1 000000e1 00000001 f73d0020 f6bb3ee4 f6bb3e8c
+> Dec 30 21:35:56 venus [ 7867.380014] Call Trace:
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c024b40b>] ? get_request+0x1b/0x240
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c024b82c>] ? get_request_wait+0x1c/0xd0
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c024bc48>] ? blk_get_request+0x18/0x30
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c02e2d3a>] ? ide_raw_taskfile+0x2a/0x90
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c02e2e21>] ? taskfile_lib_get_identify+0x61/0x70
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c02e5ff0>] ? ide_acpi_port_init_devices+0x90/0xe0
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c02e2379>] ? ide_port_scan+0x39/0x50
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c02e23d1>] ? store_scan+0x41/0x60
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c02e2390>] ? store_scan+0x0/0x60
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c02cc03c>] ? dev_attr_store+0x2c/0x40
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c01a468d>] ? sysfs_write_file+0x9d/0x100
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c016b215>] ? vfs_write+0x95/0x120
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c01a45f0>] ? sysfs_write_file+0x0/0x100
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c016b34d>] ? sys_write+0x3d/0x70
+> Dec 30 21:35:56 venus [ 7867.380014]  [<c0103b01>] ? sysenter_do_call+0x12/0x25
+> Dec 30 21:35:56 venus [ 7867.380014] Code: bf 00 00 00 00 55 8b 40 0c 89 e5 8b 00 8b 48 34 85 c9 74 04 89 d0 ff d1 5d c3 8d 74 26 00 8d bc 27 00 00 00 00 55 89 e5 53 89 c3 <8b> 40 0c 8b 00 8b 48 38 31 c0 85 c9 74 04 89 d8 ff d1 5b 5d c3 
+> Dec 30 21:35:56 venus [ 7867.380014] EIP: [<c0248bf6>] elv_may_queue+0x6/0x20 SS:ESP 0068:f6bb3e24
+> Dec 30 21:35:56 venus [ 7867.380014] ---[ end trace b966cf347b1167e4 ]---
+> Dec 30 21:36:15 venus [ 7886.330025] ide_timer_expiry: hwgroup->drive was NULL
+> Dec 30 21:36:29 venus [ 7899.770239] Buffer I/O error on device hda3, logical block 115511
+> Dec 30 21:36:29 venus [ 7899.777078] lost page write due to I/O error on hda3
+> Dec 30 21:36:29 venus [ 7899.783856] Buffer I/O error on device hda3, logical block 115512
+> Dec 30 21:36:29 venus [ 7899.790570] lost page write due to I/O error on hda3
+> 
+> Same effect with:
+>   cd /sys/class/ide_port/ide0/
+>   sync; sleep 1; echo -n 1 > delete_devices; sleep 1; echo -n 1 > scan
 
-> 
-> Changelog
-> v1 -> v2
->   - Removed unnecessary max() macro
->   - To avoid ru_maxrss recalculation in k_getrusage()
->   - style fixes
-> 
-> Jiri's resend3 -> v1
->  - At wait_task_zombie(), parent process doesn't only collect child maxrss,
->    but also cmaxrss.
->  - ru_maxrss inherit at exec()
->  - style fixes
-> 
-> 
-> Applied after: introduce-get_mm_hiwater_xxx-fix-taskstats-hiwater_xxx-accounting.patch
-> ==
-> From: Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> Subject: [PATCH for -mm] getrusage: fill ru_maxrss value
-> 
-> This patch makes ->ru_maxrss value in struct rusage filled accordingly to
-> rss hiwater mark. This struct is filled as a parameter to
-> getrusage syscall. ->ru_maxrss value is set to KBs which is the way it
-> is done in BSD systems. /usr/bin/time (gnu time) application converts
-> ->ru_maxrss to KBs which seems to be incorrect behavior. Maintainer of
-> this util was notified by me with the patch which corrects it and cc'ed.
-> 
-> To make this happen we extend struct signal_struct by two fields. The
-> first one is ->maxrss which we use to store rss hiwater of the task. The
-> second one is ->cmaxrss which we use to store highest rss hiwater of all
-> task childs. These values are used in k_getrusage() to actually fill
-> ->ru_maxrss. k_getrusage() uses current rss hiwater value directly
-> if mm struct exists.
-> 
-> Note:
-> exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
-> it is intetionally behavior. *BSD getrusage have exec() inheriting.
-> 
-> 
-> Test progmam and test case
-> ===========================
-> 
-> getrusage.c
-> ----
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/types.h>
-> #include <sys/time.h>
-> #include <sys/resource.h>
-> #include <sys/types.h>
-> #include <sys/wait.h>
-> #include <unistd.h>
-> #include <signal.h>
-> 
-> static void consume(int mega)
-> {
-> 	size_t sz = mega * 1024 * 1024;
-> 	void *ptr;
-> 
-> 	ptr = malloc(sz);
-> 	memset(ptr, 0, sz);
-> 	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
-> }
-> 
-> static void show_rusage(char *prefix)
-> {
-> 	int err, err2;
-> 	struct rusage rusage_self;
-> 	struct rusage rusage_children;
-> 
-> 	printf("%s: ", prefix);
-> 	err = getrusage(RUSAGE_SELF, &rusage_self);
-> 	if (!err)
-> 		printf("self %ld ", rusage_self.ru_maxrss);
-> 	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
-> 	if (!err2)
-> 		printf("children %ld ", rusage_children.ru_maxrss);
-> 
-> 	printf("\n");
-> }
-> 
-> int main(int argc, char** argv)
-> {
-> 	int status;
-> 	int c;
-> 	int need_sleep_before_wait = 0;
-> 	int consume_large_memory_at_first = 0;
-> 	int create_child_at_first = 0;
-> 	int sigign = 0;
-> 	int create_child_before_exec = 0;
-> 	int after_fork_test = 0;
-> 
-> 	while ((c = getopt(argc, argv, "ceflsz")) != -1) {
-> 		switch (c) {
-> 		case 'c':
-> 			create_child_at_first = 1;
-> 			break;
-> 		case 'e':
-> 			create_child_before_exec = 1;
-> 			break;
-> 		case 'f':
-> 			after_fork_test = 1;
-> 			break;
-> 		case 'l':
-> 			consume_large_memory_at_first = 1;
-> 			break;
-> 		case 's':
-> 			sigign = 1;
-> 			break;
-> 		case 'z':
-> 			need_sleep_before_wait = 1;
-> 			break;
-> 		default:
-> 			break;
-> 		}
-> 	}
-> 
-> 	if (consume_large_memory_at_first)
-> 		consume(100);   
-> 
-> 	if (create_child_at_first)
-> 		system("./child -q"); 
-> 	
-> 	if (sigign)
-> 		signal(SIGCHLD, SIG_IGN);
-> 
-> 	if (fork()) {
-> 		usleep(1);
-> 		if (need_sleep_before_wait)
-> 			sleep(3); /* children become zombie */
-> 		show_rusage("pre_wait");
-> 		wait(&status);
-> 		show_rusage("post_wait");
-> 	} else {
-> 		usleep(1);
-> 		show_rusage("fork");
-> 		
-> 		if (after_fork_test) {
-> 			consume(30);
-> 			show_rusage("fork2");
-> 		}
-> 		if (create_child_before_exec) {
-> 			system("./child -lq"); 
-> 			usleep(1);
-> 			show_rusage("fork3");
-> 		}
-> 
-> 		execl("./child", "child", 0);
-> 		exit(0);
-> 	}
-> 	     
-> 	return 0;
-> }
-> 
-> child.c
-> ----
-> #include <sys/types.h>
-> #include <unistd.h>
-> #include <sys/types.h>
-> #include <sys/wait.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/types.h>
-> #include <sys/time.h>
-> #include <sys/resource.h>
-> 
-> static void consume(int mega)
-> {
-> 	size_t sz = mega * 1024 * 1024;
-> 	void *ptr;
-> 
-> 	ptr = malloc(sz);
-> 	memset(ptr, 0, sz);
-> 	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
-> }
-> 
-> static void show_rusage(char *prefix)
-> {
-> 	int err, err2;
-> 	struct rusage rusage_self;
-> 	struct rusage rusage_children;
-> 
-> 	printf("%s: ", prefix);
-> 	err = getrusage(RUSAGE_SELF, &rusage_self);
-> 	if (!err)
-> 		printf("self %ld ", rusage_self.ru_maxrss);
-> 	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
-> 	if (!err2)
-> 		printf("children %ld ", rusage_children.ru_maxrss);
-> 
-> 	printf("\n");
-> 
-> }
-> 
-> 
-> int main(int argc, char** argv)
-> {
-> 	int status;
-> 	int c;
-> 	int silent = 0;
-> 	int light_weight = 0;
-> 
-> 	while ((c = getopt(argc, argv, "lq")) != -1) {
-> 		switch (c) {
-> 		case 'l':
-> 			light_weight = 1;
-> 			break;
-> 		case 'q':
-> 			silent = 1;
-> 			break;
-> 		default:
-> 			break;
-> 		}
-> 	}
-> 
-> 	if (!silent)
-> 		show_rusage("exec");
-> 
-> 	if (fork()) {
-> 		if (light_weight)
-> 			consume(400);
-> 		else
-> 			consume(700);
-> 		wait(&status);
-> 	} else {
-> 		if (light_weight)
-> 			consume(600);
-> 		else
-> 			consume(900);
-> 
-> 		exit(0);
-> 	}
-> 
-> 	return 0;
-> }
-> 
-> testcase
-> ==================
-> 1. inherit fork?
->    
->    test way:
->    	% ./getrusage -lc 
-> 
->    bsd result:
->    	fork line is "fork: self 0 children 0".
-> 
->    	-> rusage sholdn't be inherit by fork.
-> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-> 
-> 2. inherit exec?
-> 
->    test way:
->    	% ./getrusage -lce
-> 
->    bsd result:
->    	fork3: self 103204 children 60000 
-> 	exec: self 103204 children 60000
-> 
->    	fork3 and exec line are the same.
-> 
->    	-> rusage shold be inherit by exec.
-> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-> 
-> 3. getrusage(RUSAGE_CHILDREN) collect grandchild statics?
-> 
->    test way:
->    	% ./getrusage
-> 
->    bsd result:
->    	post_wait line is about "post_wait: self 0 children 90000".
-> 
-> 	-> RUSAGE_CHILDREN can collect grandchild.
-> 
-> 4. zombie, but not waited children collect or not?
-> 
->    test way:
->    	% ./getrusage -z
-> 
->    bsd result:
->    	pre_wait line is "pre_wait: self 0 children 0".
-> 
-> 	-> zombie child process (not waited-for child process)
-> 	   isn't accounted.
-> 
-> 5. SIG_IGN collect or not
-> 
->    test way:
->    	% ./getrusage -s
-> 
->    bsd result:
->    	post_wait line is "post_wait: self 0 children 0".
-> 
-> 	-> if SIGCHLD is ignored, children isn't accounted.
-> 
-> 6. fork and malloc
->    test way:
->    	% ./getrusage -lcf
-> 
->    bsd result:
->    	fork line is "fork: self 0 children 0".
->    	fork2 line is about "fork: self 130000 children 0".
-> 
->    	-> rusage sholdn't be inherit by fork.
-> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-> 	   but additional memory cunsumption cause right
-> 	   maxrss calculation.
-> 
-> 
-> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  fs/exec.c             |    7 +++++++
->  include/linux/sched.h |    1 +
->  kernel/exit.c         |   10 ++++++++++
->  kernel/fork.c         |    1 +
->  kernel/sys.c          |   16 ++++++++++++++++
->  5 files changed, 35 insertions(+)
-> 
-> Index: b/include/linux/sched.h
-> ===================================================================
-> --- a/include/linux/sched.h	2008-12-29 23:27:59.000000000 +0900
-> +++ b/include/linux/sched.h	2008-12-30 03:25:23.000000000 +0900
-> @@ -562,6 +562,7 @@ struct signal_struct {
->  	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
->  	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
->  	unsigned long inblock, oublock, cinblock, coublock;
-> +	unsigned long maxrss, cmaxrss;
->  	struct task_io_accounting ioac;
->  
->  	/*
-> Index: b/kernel/exit.c
-> ===================================================================
-> --- a/kernel/exit.c	2008-12-29 23:27:59.000000000 +0900
-> +++ b/kernel/exit.c	2008-12-31 21:08:08.000000000 +0900
-> @@ -1053,6 +1053,12 @@ NORET_TYPE void do_exit(long code)
->  	if (group_dead) {
->  		hrtimer_cancel(&tsk->signal->real_timer);
->  		exit_itimers(tsk->signal);
-> +		if (tsk->mm) {
-> +			unsigned long hiwater_rss = get_mm_hiwater_rss(tsk->mm);
-> +
-> +			if (tsk->signal->maxrss < hiwater_rss)
-> +				tsk->signal->maxrss = hiwater_rss;
-> +		}
->  	}
->  	acct_collect(code, group_dead);
->  	if (group_dead)
-> @@ -1298,6 +1304,7 @@ static int wait_task_zombie(struct task_
->  		struct signal_struct *psig;
->  		struct signal_struct *sig;
->  		struct task_cputime cputime;
-> +		unsigned long maxrss;
->  
->  		/*
->  		 * The resource counters for the group leader are in its
-> @@ -1349,6 +1356,9 @@ static int wait_task_zombie(struct task_
->  		psig->coublock +=
->  			task_io_get_oublock(p) +
->  			sig->oublock + sig->coublock;
-> +		maxrss = max(sig->maxrss, sig->cmaxrss);
-> +		if (psig->cmaxrss < maxrss)
-> +			psig->cmaxrss = maxrss;
->  		task_io_accounting_add(&psig->ioac, &p->ioac);
->  		task_io_accounting_add(&psig->ioac, &sig->ioac);
->  		spin_unlock_irq(&p->parent->sighand->siglock);
-> Index: b/kernel/fork.c
-> ===================================================================
-> --- a/kernel/fork.c	2008-12-25 08:26:37.000000000 +0900
-> +++ b/kernel/fork.c	2008-12-30 03:48:09.000000000 +0900
-> @@ -849,6 +849,7 @@ static int copy_signal(unsigned long clo
->  	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
->  	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
->  	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
-> +	sig->maxrss = sig->cmaxrss = 0;
->  	task_io_accounting_init(&sig->ioac);
->  	taskstats_tgid_init(sig);
->  
-> Index: b/kernel/sys.c
-> ===================================================================
-> --- a/kernel/sys.c	2008-12-25 08:26:37.000000000 +0900
-> +++ b/kernel/sys.c	2008-12-31 21:06:03.000000000 +0900
-> @@ -1546,6 +1546,7 @@ static void k_getrusage(struct task_stru
->  	unsigned long flags;
->  	cputime_t utime, stime;
->  	struct task_cputime cputime;
-> +	unsigned long maxrss = 0;
->  
->  	memset((char *) r, 0, sizeof *r);
->  	utime = stime = cputime_zero;
-> @@ -1569,6 +1570,7 @@ static void k_getrusage(struct task_stru
->  			r->ru_majflt = p->signal->cmaj_flt;
->  			r->ru_inblock = p->signal->cinblock;
->  			r->ru_oublock = p->signal->coublock;
-> +			maxrss = p->signal->cmaxrss;
->  
->  			if (who == RUSAGE_CHILDREN)
->  				break;
-> @@ -1583,6 +1585,8 @@ static void k_getrusage(struct task_stru
->  			r->ru_majflt += p->signal->maj_flt;
->  			r->ru_inblock += p->signal->inblock;
->  			r->ru_oublock += p->signal->oublock;
-> +			if (maxrss < p->signal->maxrss)
-> +				maxrss = p->signal->maxrss;
->  			t = p;
->  			do {
->  				accumulate_thread_rusage(t, r);
-> @@ -1598,6 +1602,18 @@ static void k_getrusage(struct task_stru
->  out:
->  	cputime_to_timeval(utime, &r->ru_utime);
->  	cputime_to_timeval(stime, &r->ru_stime);
-> +
-> +	if (who != RUSAGE_CHILDREN) {
-> +		struct mm_struct *mm = get_task_mm(p);
-> +		if (mm) {
-> +			unsigned long hiwater_rss = get_mm_hiwater_rss(mm);
-> +
-> +			if (maxrss < hiwater_rss)
-> +				maxrss = hiwater_rss;
-> +			mmput(mm);
-> +		}
-> +	}
-> +	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
->  }
->  
->  int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
-> Index: b/fs/exec.c
-> ===================================================================
-> --- a/fs/exec.c	2008-12-25 08:26:37.000000000 +0900
-> +++ b/fs/exec.c	2008-12-31 21:11:28.000000000 +0900
-> @@ -870,6 +870,13 @@ static int de_thread(struct task_struct 
->  	sig->notify_count = 0;
->  
->  no_thread_group:
-> +	if (current->mm) {
-> +		unsigned long hiwater_rss = get_mm_hiwater_rss(current->mm);
-> +
-> +		if (sig->maxrss < hiwater_rss)
-> +			sig->maxrss = hiwater_rss;
-> +	}
-> +
->  	exit_itimers(sig);
->  	flush_itimer_signals();
->  	if (leader)
-> 
-> 
+Thanks for the report, the following patch fixes the OOPS for me:
+
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: fix ide_port_scan() to do ACPI setup after initializing request queues
+
+This makes ide_port_scan()'s behavior match ide_host_register()'s
+one and fixes OOPS in elv_may_queue() during port re-scan.
+
+Reported-by: Bruno Prémont <bonbons@linux-vserver.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-probe.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1694,8 +1694,8 @@ void ide_port_scan(ide_hwif_t *hwif)
+ 	hwif->present = 1;
+ 
+ 	ide_port_tune_devices(hwif);
+-	ide_acpi_port_init_devices(hwif);
+ 	ide_port_setup_devices(hwif);
++	ide_acpi_port_init_devices(hwif);
+ 	hwif_register_devices(hwif);
+ 	ide_proc_port_register_devices(hwif);
+ }
