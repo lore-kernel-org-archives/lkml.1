@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYLaWI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbYLaWiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbYLaWI5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 17:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYLaWIr
+	id S1757071AbYLaWiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 17:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYLaWiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 17:08:47 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:38301 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752326AbYLaWIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 17:08:47 -0500
-Message-ID: <495BED6D.8040307@sgi.com>
-Date: Wed, 31 Dec 2008 14:08:45 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 31 Dec 2008 17:38:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:30772 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYLaWiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 17:38:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jpnOZ/gESE5wFMt6o/BtghNsGT3KgFtgi7Evj/OyY07zVQAgnUK4Tx8AbmGB8IK0vU
+         xpkbfxNge+E1S/i85cZkVz+9SZ+/+nFf7ZrDhAsrqTTO5SOpPuHadlj+frO/9gs82JIC
+         bgZMGyjNS+EHlriJ+BVJZri8bv72qbuokhkaw=
+Message-ID: <b637ec0b0812311438h44b45697p62954ea52a0a7d9a@mail.gmail.com>
+Date: Wed, 31 Dec 2008 23:38:01 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Jayson King" <dev@jaysonking.com>
+Subject: Re: large intermittent latency spike 2.6.28 (and 2.6.27.10), bisect commit ca7e716c7833aeaeb8fedd6d004c5f5d5e14d325 -> Revert "sched_clock: prevent scd->clock from moving backwards"
+Cc: arjan@linux.intel.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       shaggy@linux.vnet.ibm.com, rjw@sisk.pl
+In-Reply-To: <495BF1BD.1070408@jaysonking.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>
-Subject: tip/master merge problem?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <495A96FF.1000200@jaysonking.com> <495BF1BD.1070408@jaysonking.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The revert you did was rejected in the 2.6.28 timeframe becaused it
+caused a regression on my laptop. The patch Ingo suggested (originally
+from Thomas Gleixner) addresses both your issue and mine.
 
-Hi Ingo,
+Regards,
+Fabio
 
-I found this code snippet in kernel/sched.c in the tip/master tree.  It
-appears to be a merge mistake:  (cut and pasted - no tabs)
-
-292                 /*
-293                  * If this cpu is the one which updates jiffies, then
-294                  * give up the assignment and let it be taken by the
-295                  * cpu which runs the tick timer next, which might be
-296                  * this cpu as well. If we don't drop this here the
-297                  * jiffies might be stale and do_timer() never
-298                  * invoked.
-299                  */
-300                 if (cpu == tick_do_timer_cpu)
-301                         tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-302
-303                 if (delta_jiffies > 1)
-304
-305                 /* Skip reprogram of event if its not changed */
-306                 if (ts->tick_stopped && ktime_equal(expires, dev->next_event))
-307                         goto out;
-308
-309                         cpumask_set_cpu(cpu, nohz_cpu_mask);
-
-I think the "Skip reprogram" was inserted into the middle of a previous
-if-then statement.
-
-git blames it on:
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 292)              /*
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 293)               * If this cpu is the one which updates jiffies, then
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 294)               * give up the assignment and let it be taken by the
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 295)               * cpu which runs the tick timer next, which might be
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 296)               * this cpu as well. If we don't drop this here the
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 297)               * jiffies might be stale and do_timer() never
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 298)               * invoked.
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 299)               */
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 300)              if (cpu == tick_do_timer_cpu)
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 301)                      tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 302)
-6ba9b346 (Ingo Molnar       2007-02-19 18:11:56 +0000 303)              if (delta_jiffies > 1)
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 304)
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 305)              /* Skip reprogram of event if its not changed */
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 306)              if (ts->tick_stopped && ktime_equal(expires, dev->next_event))
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 307)                      goto out;
-00147449 (Woodruff, Richard 2008-12-01 14:18:11 -0800 308)
-6a7b3dc3 (Rusty Russell     2008-11-25 02:35:04 +1030 309)                      cpumask_set_cpu(cpu, nohz_cpu_mask);
-
-I've Cc'd both interested parties.
-
-Thanks,
-Mike
+On Wed, Dec 31, 2008 at 11:27 PM, Jayson King <dev@jaysonking.com> wrote:
+> Arjan van de Ven wrote:
+>> Jayson King <dev@jaysonking.com> wrote:
+>>> Please disregard this. ...
+>>
+>> can you run latencytop to see if it can pinpoint a cause of latency?
+>
+> Like I said in my other reply I was running the wrong kernel when I wrote
+> that (oops)... So now I am still sure it is ca7e716.
+>
+> Ingo's patch makes the same change that reverting ca7e716 does here:
+>
+> -       max_clock = scd->tick_gtod + TICK_NSEC;
+> +       max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
+>
+>
+> And with that change (I'm using Ingo's patch now) I can't trigger the hang
+> anymore. And before, I could reliably trigger it in a short time.
+>
+> Jayson
+>
+>
