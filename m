@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYLaDA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYLaDBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbYLaDA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 22:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYLaC7X
+	id S1755936AbYLaDBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 22:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYLaC7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 21:59:23 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61085 "EHLO song.cn.fujitsu.com"
+	Tue, 30 Dec 2008 21:59:31 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54727 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755513AbYLaC7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 21:59:20 -0500
-Message-ID: <495ADF4E.8080802@cn.fujitsu.com>
-Date: Wed, 31 Dec 2008 10:56:14 +0800
+	id S1755542AbYLaC73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 21:59:29 -0500
+Message-ID: <495ADF57.8030008@cn.fujitsu.com>
+Date: Wed, 31 Dec 2008 10:56:23 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/5] ftrace: add ftrace_bprintk()
+Subject: [PATCH 4/5] ftrace: show ftrace_bprintk()'s formats
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,270 +24,142 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: Add a generic printk() for ftrace, like ftrace_printk()
+Impact: let user knows the format
 
-ftrace_bprintk() use the infrastructure to record events on ring_buffer.
+Create a file on <debugfs-dir>/tracing/ to show ftrace_bprintk()'s formats.
+
+This formats will help for these condition:
+1) User get binary data from core file.(formats are backup before coredump)
+2) User splice ring_buffer to a file.
+User can use formats for parsing the binary data in userspace.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
- include/asm-generic/vmlinux.lds.h |    3
- include/linux/ftrace.h            |   21 ++++++
- include/linux/module.h            |    5 +
- kernel/module.c                   |    6 +
- kernel/trace/trace.c              |   15 ++++
- kernel/trace/trace_bprintk.c      |  118 +++++++++++++++++++++++++++++++++++++-
- 6 files changed, 167 insertions(+), 1 deletion(-)
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index c61fab1..d5d5d42 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -91,6 +91,9 @@
- 		*(__vermagic)		/* Kernel version magic */	\
- 		*(__markers_strings)	/* Markers: strings */		\
- 		*(__tracepoints_strings)/* Tracepoints: strings */	\
-+		VMLINUX_SYMBOL(__start___trace_bprintk_fmt) = .;	\
-+		*(__trace_printk_fmt)	/* Trace_printk fmt' pointer */	\
-+		VMLINUX_SYMBOL(__stop___trace_bprintk_fmt) = .;		\
- 	}								\
- 									\
- 	.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {		\
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 0ec4752..9be4b3c 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -183,6 +183,27 @@ extern int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr);
- 
- #ifdef CONFIG_TRACE_BPRINTK
- extern int trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
-+extern int __ftrace_bprintk(unsigned long ip, const char *fmt, ...)
-+		__attribute__ ((format (printf, 2, 3)));
-+
-+static inline void  ____ftrace_bprintk_check_format(const char *fmt, ...)
-+		__attribute__ ((format (printf, 1, 2)));
-+static inline void ____ftrace_bprintk_check_format(const char *fmt, ...) {}
-+#define __ftrace_bprintk_check_format(fmt, args...)			\
-+do {									\
-+	if (0)								\
-+		____ftrace_bprintk_check_format(fmt, ##args);		\
-+} while (0)
-+
-+#define ftrace_bprintk(fmt, args...)					\
-+do {									\
-+	static char *__attribute__((section("__trace_bprintk_fmt")))	\
-+			ftrace_bprintk_fmt = fmt;			\
-+	__ftrace_bprintk_check_format(fmt, ##args);			\
-+	__ftrace_bprintk(_THIS_IP_, ftrace_bprintk_fmt, ##args);	\
-+} while (0)
-+#else
-+#define ftrace_bprintk ftrace_printk
- #endif
- 
- /* May be defined in arch */
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 3bfed01..89fc51c 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -337,6 +337,11 @@ struct module
- 	unsigned int num_tracepoints;
- #endif
- 
-+#ifdef CONFIG_TRACE_BPRINTK
-+	const char **trace_bprintk_fmt_start;
-+	unsigned int num_trace_bprintk_fmt;
-+#endif
-+
- #ifdef CONFIG_MODULE_UNLOAD
- 	/* What modules depend on me? */
- 	struct list_head modules_which_use_me;
-diff --git a/kernel/module.c b/kernel/module.c
-index dd2a541..3a1e000 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2126,6 +2126,12 @@ static noinline struct module *load_module(void __user *umod,
- 					&mod->num_tracepoints);
- #endif
- 
-+#ifdef CONFIG_TRACE_BPRINTK
-+	mod->trace_bprintk_fmt_start = section_objs(hdr, sechdrs, secstrings,
-+			"__trace_bprintk_fmt", sizeof(char *),
-+			&mod->num_trace_bprintk_fmt);
-+#endif
-+
- #ifdef CONFIG_MODVERSIONS
- 	if ((mod->num_syms && !mod->crcs)
- 	    || (mod->num_gpl_syms && !mod->gpl_crcs)
+ trace.c         |    8 +++++
+ trace.h         |    1
+ trace_bprintk.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 88 insertions(+)
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 6e5c9df..61c9108 100644
+index 61c9108..085cc8a 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3084,6 +3084,21 @@ out:
- }
- EXPORT_SYMBOL_GPL(trace_vbprintk);
+@@ -2944,6 +2944,14 @@ static __init int tracer_init_debugfs(void)
+ 		pr_warning("Could not create debugfs "
+ 			   "'trace_marker' entry\n");
  
-+int __ftrace_bprintk(unsigned long ip, const char *fmt, ...)
-+{
-+	int ret;
-+	va_list ap;
++#ifdef CONFIG_TRACE_BPRINTK
++	entry = debugfs_create_file("trace_bprintk_formats", 0444, d_tracer,
++				    NULL, &trace_bprintk_fmt_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'trace_bprintk_formats' entry\n");
++#endif
 +
-+	if (!fmt)
-+		return 0;
-+
-+	va_start(ap, fmt);
-+	ret = trace_vbprintk(ip, fmt, ap);
-+	va_end(ap);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(__ftrace_bprintk);
-+
- static int trace_panic_handler(struct notifier_block *this,
- 			       unsigned long event, void *unused)
- {
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 	entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
+ 				    &ftrace_update_tot_cnt,
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 6885d13..c50826d 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -128,6 +128,7 @@ struct bprintk_entry {
+ 	u32 buf[];
+ };
+ #ifdef CONFIG_TRACE_BPRINTK
++extern struct file_operations trace_bprintk_fmt_fops;
+ extern int trace_bprintk_enable;
+ #endif
+ 
 diff --git a/kernel/trace/trace_bprintk.c b/kernel/trace/trace_bprintk.c
-index 1f8e532..84c7a9c 100644
+index 84c7a9c..cbe89dd 100644
 --- a/kernel/trace/trace_bprintk.c
 +++ b/kernel/trace/trace_bprintk.c
-@@ -19,6 +19,8 @@
+@@ -156,6 +156,85 @@ static struct notifier_block module_trace_bprintk_format_nb = {
+ 	.notifier_call = module_trace_bprintk_format_notify,
+ };
  
- #include "trace.h"
- 
-+static inline void shrink_trace_bprintk_fmt(void);
++/* shows ftrace_bprintk()'s format */
++extern char *__start___trace_bprintk_fmt[], *__stop___trace_bprintk_fmt[];
 +
- /* binary printk basic */
- static DEFINE_MUTEX(btrace_mutex);
- static int btrace_metadata_count;
-@@ -44,9 +46,116 @@ static void put_btrace_metadata(void)
- {
- 	lock_btrace();
- 	btrace_metadata_count--;
-+
-+	if (!btrace_metadata_count) {
-+		shrink_trace_bprintk_fmt();
-+	}
- 	unlock_btrace();
- }
- 
-+/*
-+ * modules ftrace_bprintk()'s formats are autosaved in struct trace_bprintk_fmt
-+ * which are queued on trace_bprintk_fmt_list.
-+ */
-+static LIST_HEAD(trace_bprintk_fmt_list);
-+
-+struct trace_bprintk_fmt {
-+	struct list_head list;
-+	int count;
-+	char fmt[0];
-+};
-+
-+/*
-+ * If trace_bprintk() is not active, we release the trace_bprintk's
-+ * formats that no modules has reference to.
-+ */
-+static inline void shrink_trace_bprintk_fmt(void)
++static void *fmt_start(struct seq_file *m, loff_t *pos)
 +{
-+	struct trace_bprintk_fmt *pos, *next;
-+	list_for_each_entry_safe(pos, next, &trace_bprintk_fmt_list, list) {
-+		if (!pos->count) {
-+			list_del(&pos->list);
-+			kfree(pos);
-+		}
-+	}
-+}
++	loff_t tmp;
++	struct trace_bprintk_fmt *tb_fmt;
 +
-+static inline struct trace_bprintk_fmt *lookup_format(const char *fmt)
-+{
-+	struct trace_bprintk_fmt *pos;
-+	list_for_each_entry(pos, &trace_bprintk_fmt_list, list) {
-+		if (!strcmp(pos->fmt, fmt))
-+			return pos;
++	lock_btrace();
++	if (*pos < __stop___trace_bprintk_fmt - __start___trace_bprintk_fmt)
++		return __stop___trace_bprintk_fmt[*pos - 1];
++
++	tmp = __start___trace_bprintk_fmt + *pos - __stop___trace_bprintk_fmt;
++	list_for_each_entry(tb_fmt, &trace_bprintk_fmt_list, list) {
++		if (tmp-- == 0)
++			return tb_fmt->fmt;
 +	}
 +	return NULL;
 +}
 +
-+static
-+void hold_module_trace_bprintk_format(const char **start, const char **end)
++static void *fmt_next(struct seq_file *m, void *p, loff_t *pos)
 +{
-+	const char **iter;
-+	lock_btrace();
-+	for (iter = start; iter < end; iter++) {
-+		struct trace_bprintk_fmt *tb_fmt = lookup_format(*iter);
-+		if (tb_fmt) {
-+			tb_fmt->count++;
-+			*iter = tb_fmt->fmt;
-+			continue;
-+		}
++	char *fmt = p;
++	struct list_head *list;
 +
-+		tb_fmt = kmalloc(offsetof(struct trace_bprintk_fmt, fmt)
-+				+ strlen(*iter) + 1, GFP_KERNEL);
-+		if (tb_fmt) {
-+			list_add_tail(&tb_fmt->list, &trace_bprintk_fmt_list);
-+			tb_fmt->count = 1;
-+			strcpy(tb_fmt->fmt, *iter);
-+			*iter = tb_fmt->fmt;
-+		} else
-+			*iter = NULL;
-+	}
++	++*pos;
++	if (*pos < __stop___trace_bprintk_fmt - __start___trace_bprintk_fmt)
++		return __stop___trace_bprintk_fmt[*pos - 1];
++
++	if (__start___trace_bprintk_fmt + *pos - __stop___trace_bprintk_fmt)
++		list = &container_of(fmt, struct trace_bprintk_fmt, fmt[0])
++				->list;
++	else
++		list = &trace_bprintk_fmt_list;
++
++	if (list->next != &trace_bprintk_fmt_list)
++		return list_entry(list->next, struct trace_bprintk_fmt, list)
++				->fmt;
++	return NULL;
++}
++
++static void fmt_stop(struct seq_file *m, void *p)
++{
 +	unlock_btrace();
 +}
 +
-+static
-+void release_module_trace_bprintk_format(const char **start, const char **end)
++static int fmt_show(struct seq_file *m, void *p)
 +{
-+	const char **iter;
-+	lock_btrace();
-+	for (iter = start; iter < end; iter++) {
-+		struct trace_bprintk_fmt *tb_fmt;
-+		if (!*iter)
-+			continue;
-+
-+		tb_fmt = container_of(*iter, struct trace_bprintk_fmt, fmt[0]);
-+		tb_fmt->count--;
-+		if (!tb_fmt->count && !btrace_metadata_count) {
-+			list_del(&tb_fmt->list);
-+			kfree(tb_fmt);
-+		}
-+	}
-+	unlock_btrace();
-+}
-+
-+static int module_trace_bprintk_format_notify(struct notifier_block *self,
-+		unsigned long val, void *data)
-+{
-+	struct module *mod = data;
-+	if (mod->num_trace_bprintk_fmt) {
-+		const char **start = mod->trace_bprintk_fmt_start;
-+		const char **end = start + mod->num_trace_bprintk_fmt;
-+
-+		if (val == MODULE_STATE_COMING)
-+			hold_module_trace_bprintk_format(start, end);
-+		else if (val == MODULE_STATE_GOING)
-+			release_module_trace_bprintk_format(start, end);
-+	}
++	seq_printf(m, "addr=%p fmt=%s\n", p, (char *)p);
 +	return 0;
 +}
 +
-+static struct notifier_block module_trace_bprintk_format_nb = {
-+	.notifier_call = module_trace_bprintk_format_notify,
++static struct seq_operations trace_bprintk_fmt_seq_ops = {
++	.start		= fmt_start,
++	.next		= fmt_next,
++	.stop		= fmt_stop,
++	.show		= fmt_show,
++};
++
++static int fmt_open(struct inode *inode, struct file *file)
++{
++	int ret = seq_open(file, &trace_bprintk_fmt_seq_ops);
++	if (!ret)
++		get_btrace_metadata();
++	return ret;
++}
++
++static int fmt_release(struct inode *inode, struct file *file)
++{
++	put_btrace_metadata();
++	return seq_release(inode, file);
++}
++
++struct file_operations trace_bprintk_fmt_fops = {
++	.open		= fmt_open,
++	.read		= seq_read,
++	.release	= fmt_release,
 +};
 +
  /* events tracer */
  int trace_bprintk_enable;
  
-@@ -81,7 +190,14 @@ static struct tracer bprintk_trace __read_mostly =
- 
- static __init int init_bprintk(void)
- {
--	return register_tracer(&bprintk_trace);
-+	int ret = register_module_notifier(&module_trace_bprintk_format_nb);
-+	if (ret)
-+		return ret;
-+
-+	ret = register_tracer(&bprintk_trace);
-+	if (ret)
-+		unregister_module_notifier(&module_trace_bprintk_format_nb);
-+	return ret;
- }
- 
- device_initcall(init_bprintk);
 
 
 
