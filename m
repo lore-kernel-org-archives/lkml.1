@@ -1,108 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYLaT0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbYLaWTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbYLaT0S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 14:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbYLaTZo
+	id S1757491AbYLaWTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 17:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbYLaWTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 14:25:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52565 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756627AbYLaTZm (ORCPT
+	Wed, 31 Dec 2008 17:19:07 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:61638 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbYLaWTG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 14:25:42 -0500
-Date: Wed, 31 Dec 2008 11:25:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, avishay@gmail.com,
-       jeff@garzik.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH 7/9] exofs: mkexofs
-Message-Id: <20081231112515.2d790d1c.akpm@linux-foundation.org>
-In-Reply-To: <495B8D90.1090004@panasas.com>
-References: <4947BFAA.4030208@panasas.com>
-	<4947CA5C.50104@panasas.com>
-	<20081229121423.efde9d06.akpm@linux-foundation.org>
-	<495B8D90.1090004@panasas.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 17:19:06 -0500
+Date: Wed, 31 Dec 2008 14:17:24 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Mark Fasheh <mfasheh@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com, jack@suse.cz
+Subject: Re: [PATCH 19/56] mm: Export pdflush_operation()
+Message-ID: <20081231221723.GA14548@mail.oracle.com>
+Mail-Followup-To: Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+	jack@suse.cz
+References: <1229982517-3455-1-git-send-email-mfasheh@suse.com> <1229982517-3455-20-git-send-email-mfasheh@suse.com> <20081222160104.6633cd77.akpm@linux-foundation.org> <20081225010544.GB17410@wotan.suse.de> <20081231192854.GK17410@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081231192854.GK17410@wotan.suse.de>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.495BEFC6.0152:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008 17:19:44 +0200 Boaz Harrosh <bharrosh@panasas.com> wrote:
-
-> Andrew Morton wrote:
-> > On Tue, 16 Dec 2008 17:33:48 +0200
-> > Boaz Harrosh <bharrosh@panasas.com> wrote:
+On Wed, Dec 31, 2008 at 11:28:54AM -0800, Mark Fasheh wrote:
+> On Wed, Dec 24, 2008 at 05:05:44PM -0800, Mark Fasheh wrote:
+> > On Mon, Dec 22, 2008 at 04:01:04PM -0800, Andrew Morton wrote:
+> > > On Mon, 22 Dec 2008 13:48:00 -0800
+> > > Mark Fasheh <mfasheh@suse.com> wrote:
+> > > 
+> > > > OCSF2 will need to queue up work for periodic syncing of quotas
+> > > > among nodes in the cluster. pdflush() is good thread for this so
+> > > > export it's controlling function so that OCFS2 can use it.
+> > > 
+> > > I trust that nothing will explode if pdflush_operation() fails
+> > > to do anything and returns -1?
 > > 
-> >> We need a mechanism to prepare the file system (mkfs).
-> >> I chose to implement that by means of a couple of
-> >> mount-options. Because there is no user-mode API for committing
-> >> OSD commands. And also, all this stuff is highly internal to
-> >> the file system itself.
-> >>
-> >> - Added two mount options mkfs=0/1,format=capacity_in_meg, so mkfs/format
-> >>   can be executed by kernel code just before mount. An mkexofs utility
-> >>   can now be implemented by means of a script that mounts and unmount the
-> >>   file system with proper options.
-> > 
-> > Doing mkfs in-kernel is unusual.  I don't think the above description
-> > sufficiently helps the uninitiated understand why mkfs cannot be done
-> > in userspace as usual.  Please flesh it out a bit.
+> > Hmm, Jan do you have any opinion here? I'm wondering if we just need our own
+> > thread for this after all...
+> > 	--Mark
 > 
-> There are a few main reasons.
-> - There is no user-mode API for initiating OSD commands. Such a subsystem
->   would be hundredfold bigger then the mkfs code submitted. I think it would be
->   hard and stupid to maintain a complex user-mode API just for creating
->   a couple of objects and writing a couple of on disk structures.
-> - I intend to refactor the code further to make use of more super.c services,
->   so to make this addition even smaller. Also future direction of raid over
->   multiple objects will make even more kernel infrastructure needed which
->   will need even more user-mode code duplication.
-> - I anticipate problems that are not yet addressed in this body of work
->   but will be in the future, mainly that a single OSD-target (lun) can
->   be shared by lots of FSs, and a single FS can span many OSD-targets.
->   Some central management is much easier to do in Kernel.
+> Ok, looking at this closer, it seems like this could be a problem after all.
+> Starving the quota syncing thread doesn't seem like a great idea either.
 
-OK.  Please add the above info to the changelog for that patch.
+	Definitely don't like the pdflush method.  You guys are right
+that it is buggy.
+ 
+> The following patch changes things to use a workqueue. Really, this doesn't
+> seem like a big deal anyway - the workqueue has reasonable overhead.
 
-> > 
-> > What are the dependencies for this filesystem code?  I assume that it
-> > depends on various block- and scsi-level patches?  Which ones, and
-> > what is their status, and is this code even compileable without them?
-> > 
-> 
-> This OSD-based file system is dependent on the open-osd initiator library
-> code that I've submitted for inclusion for 2.6.29. It has been sitting
-> in linux-next for a while now, and has not been receiving any comments
-> for the last two updated patchsets I've sent to scsi-misc/lkml. However
-> it has not yet been submitted into Jame's scsi-misc git tree, and James
-> is the ultimate maintainer that should submit this work. I hope it will
-> still be submitted into 2.6.29, as this code is totally self sufficient
-> and does not endangers or changes any other Kernel subsystems.
-> (All the needed ground work was already submitted to Linus since 2.6.26)
-> So why should it not?
-> 
-> Once the open-osd initiator library is accepted this file system
-> could be accepted. I was hoping as a 2.6.30 time frame. (One Kernel
-> after the open-osd library)
-> 
-> > Thanks.
-> 
-> Thank you dear Andrew for your most valuable input.
-> 
-> I will constify all the const needed code. will fix the global name space
-> litter, will inline the macros and lower case the inlines. Will remove
-> the typedefs.
-> 
-> I will reply to individual patches, I have a couple of questions. But
-> all your comments are right and I will take care of them.
-> 
-> When, if, all is fixed, through which tree/maintainer can exofs be submitted?
+	I like the patch overall.  A couple comments.
 
-I can merge them.  Or you can run a git tree of your own, add it to
-linux-next and ask Linus to pull it at the appropriate time.
+> I could add this on top of my upstream branch along with a revert of the
+> 'mm: Export pdflush_operation()' patch, or I could work this into the patch
+> series so we never get the export patch in the 1st place.
 
+	Regarding merge, I'd rather drop the export patch and merge this
+with the patch that uses pdflush_operation().
+
+> diff --git a/fs/ocfs2/quota_local.c b/fs/ocfs2/quota_local.c
+> index a5f6e2a..07deec5 100644
+> --- a/fs/ocfs2/quota_local.c
+> +++ b/fs/ocfs2/quota_local.c
+> @@ -780,7 +780,7 @@ static int ocfs2_local_free_info(struct super_block *sb, int type)
+>  	/* At this point we know there are no more dquots and thus
+>  	 * even if there's some sync in the pdflush queue, it won't
+>  	 * find any dquots and return without doing anything */
+> -	del_timer_sync(&oinfo->dqi_sync_timer);
+> +	cancel_delayed_work_sync(&oinfo->dqi_sync_work);
+>  	iput(oinfo->dqi_gqinode);
+>  	ocfs2_simple_drop_lockres(OCFS2_SB(sb), &oinfo->dqi_gqlock);
+>  	ocfs2_lock_res_free(&oinfo->dqi_gqlock);
+
+	Ok, I found what I was looking for.  The workqueue is not
+flushed when unmounting a single volume, and I wanted to be sure that
+was correct.  It is, as vfs_quota_disable() calls ->write_info() before
+calling ->free_file_info() here.  So we can just cancel any delayed work
+and forget about it safely.
+
+> diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+> index a79e67b..25ccf22 100644
+> --- a/fs/ocfs2/super.c
+> +++ b/fs/ocfs2/super.c
+> @@ -1326,6 +1326,10 @@ static int __init ocfs2_init(void)
+>  		mlog(ML_ERROR, "Unable to create ocfs2 debugfs root.\n");
+>  	}
+>  
+> +	status = ocfs2_quota_setup();
+> +	if (status)
+> +		goto leave;
+> +
+>  	ocfs2_set_locking_protocol();
+>  
+>  	status = register_quota_format(&ocfs2_quota_format);
+
+	Don't you need to shutdown the quota workqueue if
+register_quota_format() fails?
+
+Joel
+
+-- 
+
+Life's Little Instruction Book #80
+
+	"Slow dance"
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
