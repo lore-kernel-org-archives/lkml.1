@@ -1,52 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbYLaWa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbYLaRVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbYLaWa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 17:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbYLaWaM
+	id S1756294AbYLaRVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 12:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYLaRVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 17:30:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:40978 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYLaWaL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 17:30:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aLnMNRaSMf3ySQe7WVdbuYkx9bqYtw53q9bDVDJPeX8m6g2kr9X9h84HWt0mN6Xfzb
-         THW+CyFHyQOdidBV/BE1aTITVPyCrWtk0nz4kviJAyTmZUdMjKQK4vEB+0MVodhJGBEO
-         jWKETN1QMyTE9A7usk8QlzXOKfjfUF0rKl4YA=
-Date: Thu, 1 Jan 2009 01:30:07 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: david@lang.hm, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-Message-ID: <20081231223007.GA3664@localhost>
-References: <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <alpine.DEB.1.10.0812311204580.18334@asgard.lang.hm> <20081231191214.GF20882@localhost> <alpine.DEB.1.10.0812311316350.18569@asgard.lang.hm> <20081231202346.GH20882@localhost> <20081231202744.GA32152@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081231202744.GA32152@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 31 Dec 2008 12:21:45 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:58623 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752233AbYLaRVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 12:21:44 -0500
+Date: Wed, 31 Dec 2008 18:21:35 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] mmc_block: ensure all sectors that do not have
+ errors are read
+Message-ID: <20081231182135.57447238@mjolnir.drzeus.cx>
+In-Reply-To: <494F7A02.2030302@nokia.com>
+References: <48F74121.1020409@nokia.com>
+	<20081026123228.26d2a86a@mjolnir.drzeus.cx>
+	<4908727F.5080003@nokia.com>
+	<20081130200558.21f2561b@mjolnir.drzeus.cx>
+	<49390BD7.3040305@nokia.com>
+	<20081221152915.352d5c05@mjolnir.drzeus.cx>
+	<494F7A02.2030302@nokia.com>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-8403-1230744101-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Wed, Dec 31, 2008 at 11:27:44PM +0300]
-...
-| | Thanks David, if I recognize correctly now it fails at
-| | vfs_caches_init. hmm...
-| | 
-| | 		- Cyrill -
-| 
-| no suprises - vfs_caches_init uses SLAB_PANIC and since
-| we seems to have "memory related" problems earlier now
-| we've been catched explicitly by slab code.
-| 
-| 		- Cyrill -
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-on the other hand I think we would have different Oops
-form here if it would really be slab panic... checking.
+--=_freyr.drzeus.cx-8403-1230744101-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-		- Cyrill -
+On Mon, 22 Dec 2008 13:29:06 +0200
+Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+
+> Pierre Ossman wrote:
+> >=20
+> > Unfortunately, there is no guarantee that the sg list will be sector
+> > aligned.
+>=20
+> OK.  I am curious though - do you know anywhere in the kernel that actual=
+ly
+> does submit I/O in buffers that are not aligned to 512?
+>=20
+
+Not really, no. Not that I've gone digging.
+
+>=20
+> From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> Subject: [PATCH] mmc_block: ensure all sectors that do not have errors ar=
+e read
+>=20
+> If a card encounters an ECC error while reading a sector it will
+> timeout.  Instead of reporting the entire I/O request as having
+> an error, redo the I/O one sector at a time so that all readable
+> sectors are provided to the upper layers.
+>=20
+> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> ---
+
+Queued up. Thanks for sticking through this somewhat long review
+process. :)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-8403-1230744101-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAklbqiMACgkQ7b8eESbyJLg9fgCgsSFNVoFO0uhWXzirfKFNcz2A
+LdgAoP1XbJmAcrQmC6wP2/tRc0sgyd/k
+=ep6a
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-8403-1230744101-0001-2--
