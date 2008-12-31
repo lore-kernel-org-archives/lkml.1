@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYLaQaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbYLaRuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbYLaQaV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 11:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbYLaQaH
+	id S1756416AbYLaRuV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 12:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbYLaRuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 11:30:07 -0500
-Received: from winston.telenet-ops.be ([195.130.137.75]:60674 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756011AbYLaQaG (ORCPT
+	Wed, 31 Dec 2008 12:50:06 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:51092 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756062AbYLaRuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 11:30:06 -0500
-Date: Wed, 31 Dec 2008 17:30:00 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andreas Bombe <aeb@debian.org>
-cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] amiflop: get rid of sleep_on calls
-In-Reply-To: <20081223142246.GA5122@infernal.debian.net>
-Message-ID: <Pine.LNX.4.64.0812311728430.14380@anakin>
-References: <1228755578-26069-1-git-send-email-aeb@debian.org>
- <Pine.LNX.4.64.0812090927580.29640@anakin> <20081210010219.GB5073@infernal.debian.net>
- <Pine.LNX.4.64.0812141719300.5936@anakin> <20081223142246.GA5122@infernal.debian.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 31 Dec 2008 12:50:05 -0500
+Date: Wed, 31 Dec 2008 09:49:04 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] fs/inode: fix kernel-doc notation
+Message-Id: <20081231094904.2337e571.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.495BB092.0250:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Dec 2008, Andreas Bombe wrote:
-> On Sun, Dec 14, 2008 at 05:21:17PM +0100, Geert Uytterhoeven wrote:
-> > On Wed, 10 Dec 2008, Andreas Bombe wrote:
-> > > I just tried out my Amiga and it appears to be in better shape than
-> > > expected.  So I might get to actually test it when I find the time.  My
-> > > Amiga has no Linux installation so I need to whip up a ramdisk or
-> > > something else sufficient to test it.
-> > 
-> > I think the good old ELF ramdisk at
-> > ftp://ftp.uni-erlangen.de/pub/unix/Linux/680x0/v2.0/filesys/filesys-ELF-2.0.x-1400K-2.gz
-> > should be sufficient to give it a try...
-> 
-> Not that easy with just 8 Megs of Fast RAM.  Besides, I couldn't gunzip
-> the file to look at the image, gzip gives a format error.
-> 
-> Now, I finally got to test it with a very simply self-made initrd.  So
-> far I only did some read tests in a single thread (dd to /dev/null at
-> various offsets).  It didn't crash or hang, but I noticed that the
-> floppy motor is never shut off (I'm not sure about the motor, at least
-> the floppy LED stays on).  However, that is not a regression, I tested
-> the mainline code and it shows the same problem.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Indeed, the floppy motor keeps on running.
+Fix kernel-doc notation:
 
-I added some debug code and got this:
+Warning(linux-2.6.28-git3//fs/inode.c:120): No description found for parameter 'sb'
+Warning(linux-2.6.28-git3//fs/inode.c:120): No description found for parameter 'inode'
+Warning(linux-2.6.28-git3//fs/inode.c:588): No description found for parameter 'sb'
+Warning(linux-2.6.28-git3//fs/inode.c:588): No description found for parameter 'inode'
 
-	floppy_off: nr = 0x40000000
-	floppy_off: mod motor_off_timer 0 jiffies + 3*HZ
-	fd_motor_off: drive = 0xc0000000
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ fs/inode.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-
-diff --git a/drivers/block/amiflop.c b/drivers/block/amiflop.c
-index 8df436f..e42f168 100644
---- a/drivers/block/amiflop.c
-+++ b/drivers/block/amiflop.c
-@@ -336,6 +336,7 @@ static int fd_motor_on(int nr)
- {
- 	nr &= 3;
+--- linux-2.6.28-git3.orig/fs/inode.c
++++ linux-2.6.28-git3/fs/inode.c
+@@ -110,8 +110,8 @@ static void wake_up_inode(struct inode *
  
-+pr_err("%s: del motor_off_timer %d\n", __func__, nr);
- 	del_timer(motor_off_timer + nr);
+ /**
+  * inode_init_always - perform inode structure intialisation
+- * @sb		- superblock inode belongs to.
+- * @inode	- inode to initialise
++ * @sb: superblock inode belongs to
++ * @inode: inode to initialise
+  *
+  * These are initializations that need to be done on every inode
+  * allocation as the fields are not initialised by slab allocation.
+@@ -574,8 +574,8 @@ __inode_add_to_lists(struct super_block 
  
- 	if (!unit[nr].motor) {
-@@ -368,16 +369,13 @@ static int fd_motor_on(int nr)
- static void fd_motor_off(unsigned long drive)
- {
- 	long calledfromint;
--#ifdef MODULE
--	long decusecount;
--
--	decusecount = drive & 0x40000000;
--#endif
-+pr_err("%s: drive = 0x%lx\n", __func__, drive);
- 	calledfromint = drive & 0x80000000;
- 	drive&=3;
- 	if (calledfromint && !try_fdc(drive)) {
- 		/* We would be blocked in an interrupt, so try again later */
- 		motor_off_timer[drive].expires = jiffies + 1;
-+pr_err("%s: add motor_off_timer %ld jiffies + 1\n", __func__, drive);
- 		add_timer(motor_off_timer + drive);
- 		return;
- 	}
-@@ -391,9 +389,11 @@ static void floppy_off (unsigned int nr)
- {
- 	int drive;
- 
-+pr_err("%s: nr = 0x%x\n", __func__, nr);
- 	drive = nr & 3;
- 	/* called this way it is always from interrupt */
- 	motor_off_timer[drive].data = nr | 0x80000000;
-+pr_err("%s: mod motor_off_timer %d jiffies + 3*HZ\n", __func__, drive);
- 	mod_timer(motor_off_timer + drive, jiffies + 3*HZ);
- }
- 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ /**
+  * inode_add_to_lists - add a new inode to relevant lists
+- * @sb		- superblock inode belongs to.
+- * @inode	- inode to mark in use
++ * @sb: superblock inode belongs to
++ * @inode: inode to mark in use
+  *
+  * When an inode is allocated it needs to be accounted for, added to the in use
+  * list, the owning superblock and the inode hash. This needs to be done under
