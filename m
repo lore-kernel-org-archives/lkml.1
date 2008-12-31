@@ -1,103 +1,500 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYLaRWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYLaSJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbYLaRWV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 12:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbYLaRWC
+	id S1756845AbYLaSJT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYLaSJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 12:22:02 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59612 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752233AbYLaRWA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 12:22:00 -0500
-Date: Wed, 31 Dec 2008 09:21:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] vfs patches, part 1
-In-Reply-To: <20081231074356.GA28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0812310905580.5086@localhost.localdomain>
-References: <20081231074356.GA28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 31 Dec 2008 13:09:06 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48986 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756032AbYLaSJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 13:09:04 -0500
+Date: Wed, 31 Dec 2008 19:08:41 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, Oleg Nesterov <oleg@redhat.com>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+Message-ID: <20081231190841.406c8274@psychotron.englab.brq.redhat.com>
+In-Reply-To: <20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081231110816.5f80e265@psychotron.englab.brq.redhat.com>
+	<20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 31 Dec 2008 21:42:36 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
+> Hi!
+> 
+> > > Changes Jiris's last version
+> > >   - At wait_task_zombie(), parent process doesn't only collect child maxrss,
+> > >     but also cmaxrss.
+> > Yes, this is what we were missing so far.
+> > 
+> > >   - ru_maxrss inherit at exec()
+> > >   - style fixes.
+> > 
+> > New patch seems almost fine to me. Only I do not like usage of max()
+> > macro in do_exit() and in de_thread(). It's unnecessary and little
+> > wasting (yes only a little :)). This two spots would be maybe better
+> > solved with if(<).
+> 
+> Done!
+> 
+> 
+Okay - now I'm happy with this patch. Let's see with what Oleg will come :)
 
-On Wed, 31 Dec 2008, Al Viro wrote:
->
-> Beginning of VFS queue for .29-rc1; that's just the first part. Please pull from
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus.
-
-Al, can you please try to clean up the commit messages? 
-
-There's tons of unnecessary "[PATCH, v5]" things in those commit headers, 
-and that seems to mean that you intentionally pass the "--keep" flag to 
-git to keep the crap in subject lines, rather than let git clean it up for 
-you.
-
-Git by default will try to clean things up, so you literally have done 
-extra work to make your commits look like shit!
-
-Similarly, look at commit ef564e5cb82dbadc49949c93d8f7908f58c1016b: not 
-only does it have a "[patch][rfc]" at the head of the subject line (it 
-sure as hell isn't a rfc any more when you've committed it and intend to 
-push it to me!), but the commit message itself contains
-
-    Hi,
-    Comments?
-    Thanks,
-    Nick
-    
-    --
-
-in front of the actual message (that commit also lacks a sign-off, btw, 
-probably exactly because Nick wasn't sure it should be applied).
-
-Those things make sense when people pass around patches for comments, but 
-you're supposed to clean the damn things up before applying them! They are 
-pure and utter crap if they make it into the git history - they only add 
-distracting noise, and look bad.
-
-I can understand _occasional_ cases where you miss something like this, 
-but EVERY SINGLE COMMIT is broken in this series. Some just have the 
-crappy [PATCH] thing, but there are several that have extra email crud 
-that makes sense in an email, but not in a commit message.
-
-I pulled it, but after looking at it, I unpulled it again. It really is 
-every single commit that is broken. Even the ones that aren't from emails 
-(they seem to be just your own commits) are broken. Look at 
-4edb9c1f26c7b7ccd39b7e3fe8aee5096786fdee: it has that [PATCH] header even 
-though it's your own commit (so you apparently wrote it by hand), and the 
-one-liner thing (the one you see in shortlogs or in the gitk overview) is 
-just
-
-	[PATCH] nfsd races, reiserfs
-
-which isn't exactly readable. Why isn't it real proper English, something 
-like
-
-	Fix nfsd races in reiserfs
-
-which is a properly capitalized real sentence and thus just more readable? 
-And shorter to boot?
-
-Yeah, "git shortlog" will get rid of at least some of these things (it 
-will remove the pure "[patch] " prefixes), and yeah, it used to be common 
-to see [PATCH] in the git logs back early on before we learnt how to make 
-things more readable, so it wouldn't _hurt_ to pull. But I decided to 
-unpull just because I don't want to continue to see things like this. 
-
-And btw, feel free to push the pain downward. If they people who send you 
-patches send bad changelogs, just tell them to re-send with a better one. 
-I end up just always editing the mbox I have by hand in order to fix 
-things like this, but I also make sure that people who send me lots of 
-patches know to send them in the right format where I no longer need to 
-fix things. After a while, the number of messages I need to fix up has 
-dropped dramatically, and everybody is happy.
-
-		Linus
+> 
+> Changelog
+> v1 -> v2
+>   - Removed unnecessary max() macro
+>   - To avoid ru_maxrss recalculation in k_getrusage()
+>   - style fixes
+> 
+> Jiri's resend3 -> v1
+>  - At wait_task_zombie(), parent process doesn't only collect child maxrss,
+>    but also cmaxrss.
+>  - ru_maxrss inherit at exec()
+>  - style fixes
+> 
+> 
+> Applied after: introduce-get_mm_hiwater_xxx-fix-taskstats-hiwater_xxx-accounting.patch
+> ==
+> From: Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> Subject: [PATCH for -mm] getrusage: fill ru_maxrss value
+> 
+> This patch makes ->ru_maxrss value in struct rusage filled accordingly to
+> rss hiwater mark. This struct is filled as a parameter to
+> getrusage syscall. ->ru_maxrss value is set to KBs which is the way it
+> is done in BSD systems. /usr/bin/time (gnu time) application converts
+> ->ru_maxrss to KBs which seems to be incorrect behavior. Maintainer of
+> this util was notified by me with the patch which corrects it and cc'ed.
+> 
+> To make this happen we extend struct signal_struct by two fields. The
+> first one is ->maxrss which we use to store rss hiwater of the task. The
+> second one is ->cmaxrss which we use to store highest rss hiwater of all
+> task childs. These values are used in k_getrusage() to actually fill
+> ->ru_maxrss. k_getrusage() uses current rss hiwater value directly
+> if mm struct exists.
+> 
+> Note:
+> exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
+> it is intetionally behavior. *BSD getrusage have exec() inheriting.
+> 
+> 
+> Test progmam and test case
+> ===========================
+> 
+> getrusage.c
+> ----
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <string.h>
+> #include <sys/types.h>
+> #include <sys/time.h>
+> #include <sys/resource.h>
+> #include <sys/types.h>
+> #include <sys/wait.h>
+> #include <unistd.h>
+> #include <signal.h>
+> 
+> static void consume(int mega)
+> {
+> 	size_t sz = mega * 1024 * 1024;
+> 	void *ptr;
+> 
+> 	ptr = malloc(sz);
+> 	memset(ptr, 0, sz);
+> 	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
+> }
+> 
+> static void show_rusage(char *prefix)
+> {
+> 	int err, err2;
+> 	struct rusage rusage_self;
+> 	struct rusage rusage_children;
+> 
+> 	printf("%s: ", prefix);
+> 	err = getrusage(RUSAGE_SELF, &rusage_self);
+> 	if (!err)
+> 		printf("self %ld ", rusage_self.ru_maxrss);
+> 	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
+> 	if (!err2)
+> 		printf("children %ld ", rusage_children.ru_maxrss);
+> 
+> 	printf("\n");
+> }
+> 
+> int main(int argc, char** argv)
+> {
+> 	int status;
+> 	int c;
+> 	int need_sleep_before_wait = 0;
+> 	int consume_large_memory_at_first = 0;
+> 	int create_child_at_first = 0;
+> 	int sigign = 0;
+> 	int create_child_before_exec = 0;
+> 	int after_fork_test = 0;
+> 
+> 	while ((c = getopt(argc, argv, "ceflsz")) != -1) {
+> 		switch (c) {
+> 		case 'c':
+> 			create_child_at_first = 1;
+> 			break;
+> 		case 'e':
+> 			create_child_before_exec = 1;
+> 			break;
+> 		case 'f':
+> 			after_fork_test = 1;
+> 			break;
+> 		case 'l':
+> 			consume_large_memory_at_first = 1;
+> 			break;
+> 		case 's':
+> 			sigign = 1;
+> 			break;
+> 		case 'z':
+> 			need_sleep_before_wait = 1;
+> 			break;
+> 		default:
+> 			break;
+> 		}
+> 	}
+> 
+> 	if (consume_large_memory_at_first)
+> 		consume(100);   
+> 
+> 	if (create_child_at_first)
+> 		system("./child -q"); 
+> 	
+> 	if (sigign)
+> 		signal(SIGCHLD, SIG_IGN);
+> 
+> 	if (fork()) {
+> 		usleep(1);
+> 		if (need_sleep_before_wait)
+> 			sleep(3); /* children become zombie */
+> 		show_rusage("pre_wait");
+> 		wait(&status);
+> 		show_rusage("post_wait");
+> 	} else {
+> 		usleep(1);
+> 		show_rusage("fork");
+> 		
+> 		if (after_fork_test) {
+> 			consume(30);
+> 			show_rusage("fork2");
+> 		}
+> 		if (create_child_before_exec) {
+> 			system("./child -lq"); 
+> 			usleep(1);
+> 			show_rusage("fork3");
+> 		}
+> 
+> 		execl("./child", "child", 0);
+> 		exit(0);
+> 	}
+> 	     
+> 	return 0;
+> }
+> 
+> child.c
+> ----
+> #include <sys/types.h>
+> #include <unistd.h>
+> #include <sys/types.h>
+> #include <sys/wait.h>
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <string.h>
+> #include <sys/types.h>
+> #include <sys/time.h>
+> #include <sys/resource.h>
+> 
+> static void consume(int mega)
+> {
+> 	size_t sz = mega * 1024 * 1024;
+> 	void *ptr;
+> 
+> 	ptr = malloc(sz);
+> 	memset(ptr, 0, sz);
+> 	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
+> }
+> 
+> static void show_rusage(char *prefix)
+> {
+> 	int err, err2;
+> 	struct rusage rusage_self;
+> 	struct rusage rusage_children;
+> 
+> 	printf("%s: ", prefix);
+> 	err = getrusage(RUSAGE_SELF, &rusage_self);
+> 	if (!err)
+> 		printf("self %ld ", rusage_self.ru_maxrss);
+> 	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
+> 	if (!err2)
+> 		printf("children %ld ", rusage_children.ru_maxrss);
+> 
+> 	printf("\n");
+> 
+> }
+> 
+> 
+> int main(int argc, char** argv)
+> {
+> 	int status;
+> 	int c;
+> 	int silent = 0;
+> 	int light_weight = 0;
+> 
+> 	while ((c = getopt(argc, argv, "lq")) != -1) {
+> 		switch (c) {
+> 		case 'l':
+> 			light_weight = 1;
+> 			break;
+> 		case 'q':
+> 			silent = 1;
+> 			break;
+> 		default:
+> 			break;
+> 		}
+> 	}
+> 
+> 	if (!silent)
+> 		show_rusage("exec");
+> 
+> 	if (fork()) {
+> 		if (light_weight)
+> 			consume(400);
+> 		else
+> 			consume(700);
+> 		wait(&status);
+> 	} else {
+> 		if (light_weight)
+> 			consume(600);
+> 		else
+> 			consume(900);
+> 
+> 		exit(0);
+> 	}
+> 
+> 	return 0;
+> }
+> 
+> testcase
+> ==================
+> 1. inherit fork?
+>    
+>    test way:
+>    	% ./getrusage -lc 
+> 
+>    bsd result:
+>    	fork line is "fork: self 0 children 0".
+> 
+>    	-> rusage sholdn't be inherit by fork.
+> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+> 
+> 2. inherit exec?
+> 
+>    test way:
+>    	% ./getrusage -lce
+> 
+>    bsd result:
+>    	fork3: self 103204 children 60000 
+> 	exec: self 103204 children 60000
+> 
+>    	fork3 and exec line are the same.
+> 
+>    	-> rusage shold be inherit by exec.
+> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+> 
+> 3. getrusage(RUSAGE_CHILDREN) collect grandchild statics?
+> 
+>    test way:
+>    	% ./getrusage
+> 
+>    bsd result:
+>    	post_wait line is about "post_wait: self 0 children 90000".
+> 
+> 	-> RUSAGE_CHILDREN can collect grandchild.
+> 
+> 4. zombie, but not waited children collect or not?
+> 
+>    test way:
+>    	% ./getrusage -z
+> 
+>    bsd result:
+>    	pre_wait line is "pre_wait: self 0 children 0".
+> 
+> 	-> zombie child process (not waited-for child process)
+> 	   isn't accounted.
+> 
+> 5. SIG_IGN collect or not
+> 
+>    test way:
+>    	% ./getrusage -s
+> 
+>    bsd result:
+>    	post_wait line is "post_wait: self 0 children 0".
+> 
+> 	-> if SIGCHLD is ignored, children isn't accounted.
+> 
+> 6. fork and malloc
+>    test way:
+>    	% ./getrusage -lcf
+> 
+>    bsd result:
+>    	fork line is "fork: self 0 children 0".
+>    	fork2 line is about "fork: self 130000 children 0".
+> 
+>    	-> rusage sholdn't be inherit by fork.
+> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+> 	   but additional memory cunsumption cause right
+> 	   maxrss calculation.
+> 
+> 
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  fs/exec.c             |    7 +++++++
+>  include/linux/sched.h |    1 +
+>  kernel/exit.c         |   10 ++++++++++
+>  kernel/fork.c         |    1 +
+>  kernel/sys.c          |   16 ++++++++++++++++
+>  5 files changed, 35 insertions(+)
+> 
+> Index: b/include/linux/sched.h
+> ===================================================================
+> --- a/include/linux/sched.h	2008-12-29 23:27:59.000000000 +0900
+> +++ b/include/linux/sched.h	2008-12-30 03:25:23.000000000 +0900
+> @@ -562,6 +562,7 @@ struct signal_struct {
+>  	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
+>  	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+>  	unsigned long inblock, oublock, cinblock, coublock;
+> +	unsigned long maxrss, cmaxrss;
+>  	struct task_io_accounting ioac;
+>  
+>  	/*
+> Index: b/kernel/exit.c
+> ===================================================================
+> --- a/kernel/exit.c	2008-12-29 23:27:59.000000000 +0900
+> +++ b/kernel/exit.c	2008-12-31 21:08:08.000000000 +0900
+> @@ -1053,6 +1053,12 @@ NORET_TYPE void do_exit(long code)
+>  	if (group_dead) {
+>  		hrtimer_cancel(&tsk->signal->real_timer);
+>  		exit_itimers(tsk->signal);
+> +		if (tsk->mm) {
+> +			unsigned long hiwater_rss = get_mm_hiwater_rss(tsk->mm);
+> +
+> +			if (tsk->signal->maxrss < hiwater_rss)
+> +				tsk->signal->maxrss = hiwater_rss;
+> +		}
+>  	}
+>  	acct_collect(code, group_dead);
+>  	if (group_dead)
+> @@ -1298,6 +1304,7 @@ static int wait_task_zombie(struct task_
+>  		struct signal_struct *psig;
+>  		struct signal_struct *sig;
+>  		struct task_cputime cputime;
+> +		unsigned long maxrss;
+>  
+>  		/*
+>  		 * The resource counters for the group leader are in its
+> @@ -1349,6 +1356,9 @@ static int wait_task_zombie(struct task_
+>  		psig->coublock +=
+>  			task_io_get_oublock(p) +
+>  			sig->oublock + sig->coublock;
+> +		maxrss = max(sig->maxrss, sig->cmaxrss);
+> +		if (psig->cmaxrss < maxrss)
+> +			psig->cmaxrss = maxrss;
+>  		task_io_accounting_add(&psig->ioac, &p->ioac);
+>  		task_io_accounting_add(&psig->ioac, &sig->ioac);
+>  		spin_unlock_irq(&p->parent->sighand->siglock);
+> Index: b/kernel/fork.c
+> ===================================================================
+> --- a/kernel/fork.c	2008-12-25 08:26:37.000000000 +0900
+> +++ b/kernel/fork.c	2008-12-30 03:48:09.000000000 +0900
+> @@ -849,6 +849,7 @@ static int copy_signal(unsigned long clo
+>  	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
+>  	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+>  	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
+> +	sig->maxrss = sig->cmaxrss = 0;
+>  	task_io_accounting_init(&sig->ioac);
+>  	taskstats_tgid_init(sig);
+>  
+> Index: b/kernel/sys.c
+> ===================================================================
+> --- a/kernel/sys.c	2008-12-25 08:26:37.000000000 +0900
+> +++ b/kernel/sys.c	2008-12-31 21:06:03.000000000 +0900
+> @@ -1546,6 +1546,7 @@ static void k_getrusage(struct task_stru
+>  	unsigned long flags;
+>  	cputime_t utime, stime;
+>  	struct task_cputime cputime;
+> +	unsigned long maxrss = 0;
+>  
+>  	memset((char *) r, 0, sizeof *r);
+>  	utime = stime = cputime_zero;
+> @@ -1569,6 +1570,7 @@ static void k_getrusage(struct task_stru
+>  			r->ru_majflt = p->signal->cmaj_flt;
+>  			r->ru_inblock = p->signal->cinblock;
+>  			r->ru_oublock = p->signal->coublock;
+> +			maxrss = p->signal->cmaxrss;
+>  
+>  			if (who == RUSAGE_CHILDREN)
+>  				break;
+> @@ -1583,6 +1585,8 @@ static void k_getrusage(struct task_stru
+>  			r->ru_majflt += p->signal->maj_flt;
+>  			r->ru_inblock += p->signal->inblock;
+>  			r->ru_oublock += p->signal->oublock;
+> +			if (maxrss < p->signal->maxrss)
+> +				maxrss = p->signal->maxrss;
+>  			t = p;
+>  			do {
+>  				accumulate_thread_rusage(t, r);
+> @@ -1598,6 +1602,18 @@ static void k_getrusage(struct task_stru
+>  out:
+>  	cputime_to_timeval(utime, &r->ru_utime);
+>  	cputime_to_timeval(stime, &r->ru_stime);
+> +
+> +	if (who != RUSAGE_CHILDREN) {
+> +		struct mm_struct *mm = get_task_mm(p);
+> +		if (mm) {
+> +			unsigned long hiwater_rss = get_mm_hiwater_rss(mm);
+> +
+> +			if (maxrss < hiwater_rss)
+> +				maxrss = hiwater_rss;
+> +			mmput(mm);
+> +		}
+> +	}
+> +	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
+>  }
+>  
+>  int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
+> Index: b/fs/exec.c
+> ===================================================================
+> --- a/fs/exec.c	2008-12-25 08:26:37.000000000 +0900
+> +++ b/fs/exec.c	2008-12-31 21:11:28.000000000 +0900
+> @@ -870,6 +870,13 @@ static int de_thread(struct task_struct 
+>  	sig->notify_count = 0;
+>  
+>  no_thread_group:
+> +	if (current->mm) {
+> +		unsigned long hiwater_rss = get_mm_hiwater_rss(current->mm);
+> +
+> +		if (sig->maxrss < hiwater_rss)
+> +			sig->maxrss = hiwater_rss;
+> +	}
+> +
+>  	exit_itimers(sig);
+>  	flush_itimer_signals();
+>  	if (leader)
+> 
+> 
