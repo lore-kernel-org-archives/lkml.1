@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbYLaQvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYLaQgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757059AbYLaQvW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 11:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYLaQuW
+	id S1756596AbYLaQgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 11:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbYLaQgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 11:50:22 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:34059 "EHLO kumera.dghda.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756127AbYLaQuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 11:50:20 -0500
-From: "Duane Griffin" <duaneg@dghda.com>
-To: Evgeniy Dushistov <dushistov@mail.ru>
-Cc: linux-kernel@vger.kernel.org, Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH 4/4] ufs: copy symlink data into the correct union member
-Date: Wed, 31 Dec 2008 16:50:08 +0000
-Message-Id: <1230742208-23972-4-git-send-email-duaneg@dghda.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1230742208-23972-3-git-send-email-duaneg@dghda.com>
-References: <1230742208-23972-1-git-send-email-duaneg@dghda.com>
- <1230742208-23972-2-git-send-email-duaneg@dghda.com>
- <1230742208-23972-3-git-send-email-duaneg@dghda.com>
+	Wed, 31 Dec 2008 11:36:37 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:49983 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755956AbYLaQgg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 11:36:36 -0500
+X-IronPort-AV: E=Sophos;i="4.36,308,1228089600"; 
+   d="scan'208";a="222058919"
+From: Roland Dreier <rdreier@cisco.com>
+To: Or Gerlitz <ogerlitz@voltaire.com>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.29
+References: <aday6y7x2yr.fsf@cisco.com> <495B66AE.1050706@voltaire.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 31 Dec 2008 08:36:33 -0800
+In-Reply-To: <495B66AE.1050706@voltaire.com> (Or Gerlitz's message of "Wed, 31
+	Dec 2008 14:33:50 +0200")
+Message-ID: <adaabacqp2m.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 31 Dec 2008 16:36:33.0706 (UTC) FILETIME=[F110F8A0:01C96B65]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Copy symlink data into the union member it is accessed through. Although
-this shouldn't make a difference to behaviour it makes the code easier
-to follow and grep through. It may also prevent problems if the
-struct/union definitions change in the future.
+ > What about Jack's raw QP support/fixes patch set which he reposted on
+ > December 15th?
 
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
----
- fs/ufs/namei.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/ufs/namei.c b/fs/ufs/namei.c
-index e3a9b1f..3884730 100644
---- a/fs/ufs/namei.c
-+++ b/fs/ufs/namei.c
-@@ -147,7 +147,7 @@ static int ufs_symlink (struct inode * dir, struct dentry * dentry,
- 	} else {
- 		/* fast symlink */
- 		inode->i_op = &ufs_fast_symlink_inode_operations;
--		memcpy((char*)&UFS_I(inode)->i_u1.i_data,symname,l);
-+		memcpy((char *) &UFS_I(inode)->i_u1.i_symlink, symname, l);
- 		inode->i_size = l-1;
- 	}
- 	mark_inode_dirty(inode);
--- 
-1.6.0.6
-
+didn't make this window.  How are you using raw QPs?
