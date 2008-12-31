@@ -1,283 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYLaXKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbYLaXTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbYLaXKA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 18:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYLaXJw
+	id S1757023AbYLaXTk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 18:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYLaXT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 18:09:52 -0500
-Received: from ns1.suse.de ([195.135.220.2]:33556 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751895AbYLaXJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 18:09:51 -0500
-Date: Wed, 31 Dec 2008 15:09:49 -0800
-From: Mark Fasheh <mfasheh@suse.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com, jack@suse.cz
-Subject: Re: [Ocfs2-devel] [PATCH 19/56] mm: Export pdflush_operation()
-Message-ID: <20081231230949.GL17410@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <1229982517-3455-1-git-send-email-mfasheh@suse.com> <1229982517-3455-20-git-send-email-mfasheh@suse.com> <20081222160104.6633cd77.akpm@linux-foundation.org> <20081225010544.GB17410@wotan.suse.de> <20081231192854.GK17410@wotan.suse.de> <20081231221723.GA14548@mail.oracle.com>
+	Wed, 31 Dec 2008 18:19:29 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:34851 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895AbYLaXT2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 18:19:28 -0500
+Subject: Re: Btrfs for mainline
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>
+In-Reply-To: <20081231104533.abfb1cf9.akpm@linux-foundation.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>
+	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 31 Dec 2008 18:19:09 -0500
+Message-Id: <1230765549.7538.8.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081231221723.GA14548@mail.oracle.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.495BFDF1.0027:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 02:17:24PM -0800, Joel Becker wrote:
-> On Wed, Dec 31, 2008 at 11:28:54AM -0800, Mark Fasheh wrote:
-> > On Wed, Dec 24, 2008 at 05:05:44PM -0800, Mark Fasheh wrote:
-> > > On Mon, Dec 22, 2008 at 04:01:04PM -0800, Andrew Morton wrote:
-> > > > On Mon, 22 Dec 2008 13:48:00 -0800
-> > > > Mark Fasheh <mfasheh@suse.com> wrote:
-> > > > 
-> > > > > OCSF2 will need to queue up work for periodic syncing of quotas
-> > > > > among nodes in the cluster. pdflush() is good thread for this so
-> > > > > export it's controlling function so that OCFS2 can use it.
-> > > > 
-> > > > I trust that nothing will explode if pdflush_operation() fails
-> > > > to do anything and returns -1?
-> > > 
-> > > Hmm, Jan do you have any opinion here? I'm wondering if we just need our own
-> > > thread for this after all...
-> > > 	--Mark
-> > 
-> > Ok, looking at this closer, it seems like this could be a problem after all.
-> > Starving the quota syncing thread doesn't seem like a great idea either.
+On Wed, 2008-12-31 at 10:45 -0800, Andrew Morton wrote:
+> On Wed, 31 Dec 2008 06:28:55 -0500 Chris Mason <chris.mason@oracle.com> wrote:
 > 
-> 	Definitely don't like the pdflush method.  You guys are right
-> that it is buggy.
->  
-> > The following patch changes things to use a workqueue. Really, this doesn't
-> > seem like a big deal anyway - the workqueue has reasonable overhead.
+> > Hello everyone,
 > 
-> 	I like the patch overall.  A couple comments.
+> Hi!
 > 
-> > I could add this on top of my upstream branch along with a revert of the
-> > 'mm: Export pdflush_operation()' patch, or I could work this into the patch
-> > series so we never get the export patch in the 1st place.
+> > I've done some testing against Linus' git tree from last night and the
+> > current btrfs trees still work well.
 > 
-> 	Regarding merge, I'd rather drop the export patch and merge this
-> with the patch that uses pdflush_operation().
+> what's btrfs?  I think I've heard the name before, but I've never
+> seen the patches :)
 
-Sounds good. I think (hope) that shouldn't be too bad :)
+The source is up to around 38k loc, I thought it better to use that http
+thing for people who were interested in the code.
 
- 
-> > diff --git a/fs/ocfs2/quota_local.c b/fs/ocfs2/quota_local.c
-> > index a5f6e2a..07deec5 100644
-> > --- a/fs/ocfs2/quota_local.c
-> > +++ b/fs/ocfs2/quota_local.c
-> > @@ -780,7 +780,7 @@ static int ocfs2_local_free_info(struct super_block *sb, int type)
-> >  	/* At this point we know there are no more dquots and thus
-> >  	 * even if there's some sync in the pdflush queue, it won't
-> >  	 * find any dquots and return without doing anything */
-> > -	del_timer_sync(&oinfo->dqi_sync_timer);
-> > +	cancel_delayed_work_sync(&oinfo->dqi_sync_work);
-> >  	iput(oinfo->dqi_gqinode);
-> >  	ocfs2_simple_drop_lockres(OCFS2_SB(sb), &oinfo->dqi_gqlock);
-> >  	ocfs2_lock_res_free(&oinfo->dqi_gqlock);
-> 
-> 	Ok, I found what I was looking for.  The workqueue is not
-> flushed when unmounting a single volume, and I wanted to be sure that
-> was correct.  It is, as vfs_quota_disable() calls ->write_info() before
-> calling ->free_file_info() here.  So we can just cancel any delayed work
-> and forget about it safely.
-> 
-> > diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-> > index a79e67b..25ccf22 100644
-> > --- a/fs/ocfs2/super.c
-> > +++ b/fs/ocfs2/super.c
-> > @@ -1326,6 +1326,10 @@ static int __init ocfs2_init(void)
-> >  		mlog(ML_ERROR, "Unable to create ocfs2 debugfs root.\n");
-> >  	}
-> >  
-> > +	status = ocfs2_quota_setup();
-> > +	if (status)
-> > +		goto leave;
-> > +
-> >  	ocfs2_set_locking_protocol();
-> >  
-> >  	status = register_quota_format(&ocfs2_quota_format);
-> 
-> 	Don't you need to shutdown the quota workqueue if
-> register_quota_format() fails?
+There is also a standalone git repo:
 
-Yep, good catch. Fixed patch follows. I'll start merging it all now.
-	--Mark
+http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable-standalone.git;a=summary
 
-From: Mark Fasheh <mfasheh@suse.com>
+This has only btrfs as a module and would be the fastest way to see
+the .c files.  btrfs doesn't have any changes outside of fs/Makefile and
+fs/Kconfig
 
-ocfs2/quota: Use workqueue for periodic syncing instead of pdflush()
+(happy new year ;)
 
-Using pdflush_operation() for this was potentially buggy - we could get into
-a situation where the work function never gets run. Instead, just create a
-workqueue, 'o2quota' and just constantly queue a delayed work item. The
-impact of this should be pretty minimal.
+-chris
 
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/quota.h        |    5 +++-
- fs/ocfs2/quota_global.c |   48 ++++++++++++++++++++++++++++++----------------
- fs/ocfs2/quota_local.c  |    2 +-
- fs/ocfs2/super.c        |    7 ++++++
- 4 files changed, 43 insertions(+), 19 deletions(-)
-
-diff --git a/fs/ocfs2/quota.h b/fs/ocfs2/quota.h
-index abf6941..6d190c0 100644
---- a/fs/ocfs2/quota.h
-+++ b/fs/ocfs2/quota.h
-@@ -60,7 +60,7 @@ struct ocfs2_mem_dqinfo {
- 	struct buffer_head *dqi_lqi_bh;	/* Buffer head with local quota file inode */
- 	struct buffer_head *dqi_ibh;	/* Buffer with information header */
- 	struct qtree_mem_dqinfo dqi_gi;	/* Info about global file */
--	struct timer_list dqi_sync_timer;	/* Timer for syncing dquots */
-+	struct delayed_work dqi_sync_work;	/* Work for syncing dquots */
- 	struct ocfs2_quota_recovery *dqi_rec;	/* Pointer to recovery
- 						 * information, in case we
- 						 * enable quotas on file
-@@ -114,4 +114,7 @@ int ocfs2_read_quota_block(struct inode *inode, u64 v_block,
- extern struct dquot_operations ocfs2_quota_operations;
- extern struct quota_format_type ocfs2_quota_format;
- 
-+int ocfs2_quota_setup(void);
-+void ocfs2_quota_shutdown(void);
-+
- #endif /* _OCFS2_QUOTA_H */
-diff --git a/fs/ocfs2/quota_global.c b/fs/ocfs2/quota_global.c
-index 9184953..6aff8f2 100644
---- a/fs/ocfs2/quota_global.c
-+++ b/fs/ocfs2/quota_global.c
-@@ -7,8 +7,8 @@
- #include <linux/quotaops.h>
- #include <linux/dqblk_qtree.h>
- #include <linux/jiffies.h>
--#include <linux/timer.h>
- #include <linux/writeback.h>
-+#include <linux/workqueue.h>
- 
- #define MLOG_MASK_PREFIX ML_QUOTA
- #include <cluster/masklog.h>
-@@ -25,7 +25,9 @@
- #include "uptodate.h"
- #include "quota.h"
- 
--static void qsync_timer_fn(unsigned long oinfo_ptr);
-+static struct workqueue_struct *ocfs2_quota_wq = NULL;
-+
-+static void qsync_work_fn(struct work_struct *work);
- 
- static void ocfs2_global_disk2memdqb(struct dquot *dquot, void *dp)
- {
-@@ -348,10 +350,10 @@ int ocfs2_global_read_info(struct super_block *sb, int type)
- 	oinfo->dqi_gi.dqi_usable_bs = sb->s_blocksize -
- 						OCFS2_QBLK_RESERVED_SPACE;
- 	oinfo->dqi_gi.dqi_qtree_depth = qtree_depth(&oinfo->dqi_gi);
--	setup_timer(&oinfo->dqi_sync_timer, qsync_timer_fn,
--		    (unsigned long)oinfo);
--	mod_timer(&oinfo->dqi_sync_timer,
--		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
-+	INIT_DELAYED_WORK(&oinfo->dqi_sync_work, qsync_work_fn);
-+	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
-+			   oinfo->dqi_syncjiff);
-+
- out_err:
- 	mlog_exit(status);
- 	return status;
-@@ -594,21 +596,16 @@ out:
- 	return status;
- }
- 
--static void ocfs2_do_qsync(unsigned long oinfo_ptr)
-+static void qsync_work_fn(struct work_struct *work)
- {
--	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
-+	struct ocfs2_mem_dqinfo *oinfo = container_of(work,
-+						      struct ocfs2_mem_dqinfo,
-+						      dqi_sync_work.work);
- 	struct super_block *sb = oinfo->dqi_gqinode->i_sb;
- 
- 	dquot_scan_active(sb, ocfs2_sync_dquot_helper, oinfo->dqi_type);
--}
--
--static void qsync_timer_fn(unsigned long oinfo_ptr)
--{
--	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
--
--	pdflush_operation(ocfs2_do_qsync, oinfo_ptr);
--	mod_timer(&oinfo->dqi_sync_timer,
--		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
-+	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
-+			   oinfo->dqi_syncjiff);
- }
- 
- /*
-@@ -1009,3 +1006,20 @@ struct dquot_operations ocfs2_quota_operations = {
- 	.alloc_dquot	= ocfs2_alloc_dquot,
- 	.destroy_dquot	= ocfs2_destroy_dquot,
- };
-+
-+int ocfs2_quota_setup(void)
-+{
-+	ocfs2_quota_wq = create_workqueue("o2quot");
-+	if (!ocfs2_quota_wq)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+void ocfs2_quota_shutdown(void)
-+{
-+	if (ocfs2_quota_wq) {
-+		flush_workqueue(ocfs2_quota_wq);
-+		destroy_workqueue(ocfs2_quota_wq);
-+		ocfs2_quota_wq = NULL;
-+	}
-+}
-diff --git a/fs/ocfs2/quota_local.c b/fs/ocfs2/quota_local.c
-index a5f6e2a..07deec5 100644
---- a/fs/ocfs2/quota_local.c
-+++ b/fs/ocfs2/quota_local.c
-@@ -780,7 +780,7 @@ static int ocfs2_local_free_info(struct super_block *sb, int type)
- 	/* At this point we know there are no more dquots and thus
- 	 * even if there's some sync in the pdflush queue, it won't
- 	 * find any dquots and return without doing anything */
--	del_timer_sync(&oinfo->dqi_sync_timer);
-+	cancel_delayed_work_sync(&oinfo->dqi_sync_work);
- 	iput(oinfo->dqi_gqinode);
- 	ocfs2_simple_drop_lockres(OCFS2_SB(sb), &oinfo->dqi_gqlock);
- 	ocfs2_lock_res_free(&oinfo->dqi_gqlock);
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index a79e67b..43ed113 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -1326,11 +1326,16 @@ static int __init ocfs2_init(void)
- 		mlog(ML_ERROR, "Unable to create ocfs2 debugfs root.\n");
- 	}
- 
-+	status = ocfs2_quota_setup();
-+	if (status)
-+		goto leave;
-+
- 	ocfs2_set_locking_protocol();
- 
- 	status = register_quota_format(&ocfs2_quota_format);
- leave:
- 	if (status < 0) {
-+		ocfs2_quota_shutdown();
- 		ocfs2_free_mem_caches();
- 		exit_ocfs2_uptodate_cache();
- 	}
-@@ -1347,6 +1352,8 @@ static void __exit ocfs2_exit(void)
- {
- 	mlog_entry_void();
- 
-+	ocfs2_quota_shutdown();
-+
- 	if (ocfs2_wq) {
- 		flush_workqueue(ocfs2_wq);
- 		destroy_workqueue(ocfs2_wq);
--- 
-1.5.6
 
