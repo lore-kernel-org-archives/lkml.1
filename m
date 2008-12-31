@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYLaQ6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbYLaR52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbYLaQ6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 11:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYLaQ6N
+	id S1756729AbYLaR52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 12:57:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbYLaR5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 11:58:13 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:50362 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbYLaQ6M convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 11:58:12 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH] headers_check.pl: disallow extern's
-Date: Wed, 31 Dec 2008 17:58:03 +0100
-User-Agent: KMail/1.9.9
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-References: <1230363816-24097-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1230363816-24097-1-git-send-email-vapier@gentoo.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200812311758.04516.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19i8Sl15G2+O97kNyEKL+61XQLyN8Es4kFKak2
- 8u6vOWSVrrN8hqqdarveBvXECOuToA2VdPIYcDCrfvTde0LGl7
- TZrun3Y+kjxJpWWEDpK8g==
+	Wed, 31 Dec 2008 12:57:20 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:48952 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755889AbYLaR5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 12:57:19 -0500
+Date: Wed, 31 Dec 2008 18:57:14 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Vernon Sauder <vernoninhand@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [pxamci] fix dma_unmap_sg length
+Message-ID: <20081231185714.42ca4063@mjolnir.drzeus.cx>
+In-Reply-To: <20081229192128.18a17619@vsauder-lx.localdomain>
+References: <20081229192128.18a17619@vsauder-lx.localdomain>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 December 2008, Mike Frysinger wrote:
-> +
-> +sub check_prototypes
-> +{
-> +       if ($line =~ m/^\s*extern\b/) {
-> +               printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
-> +               $ret = 1;
-> +       }
-> +}
+On Mon, 29 Dec 2008 19:21:28 -0500
+Vernon Sauder <vernoninhand@gmail.com> wrote:
 
-Unfortunately, this way you can only detect prototypes with an explicit
-'extern' in them, not the equivalent form with an implicit extern.
+> dma_unmap_sg should be given the same length as dma_map_sg, not the
+> value returned from dma_map_sg
+> 
+> Signed-off-by: Vernon Sauder <vsauder@inhand.com>
+> ---
 
-Not sure if we can detect the other form reliably from perl.
+Quite right. Queued.
 
-	Arnd <><
+Thanks
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
