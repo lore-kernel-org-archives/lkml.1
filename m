@@ -1,78 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYLaQIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYLaSaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbYLaQIr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 11:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbYLaQIi
+	id S1757206AbYLaSaw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:30:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbYLaSao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 11:08:38 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:40438 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755914AbYLaQIh (ORCPT
+	Wed, 31 Dec 2008 13:30:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:47811 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755921AbYLaSam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 11:08:37 -0500
-Subject: Re: [PATCH 0/2] pdflush fix and enhancement
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081231132738.GS496@one.firstfloor.org>
-References: <20081230231152.10427.50620.stgit@hermosa.site>
-	 <87fxk5ur0h.fsf@basil.nowhere.org> <1230688589.3470.45.camel@hermosa.site>
-	 <20081231024609.GQ496@one.firstfloor.org>
-	 <1230696664.3470.105.camel@hermosa.site>
-	 <20081231132738.GS496@one.firstfloor.org>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Wed, 31 Dec 2008 09:08:26 -0700
-Message-Id: <1230739706.3470.162.camel@hermosa.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 13:30:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QKm6SZly9h8i4UjVEgWq5G/2cXwrNdliQ2fnwjS0fRGbxTNwUZdIoYs7Ccc60LfJam
+         hz6pzNQxmD2oX4CHaqsyrxLeIKKneC+ZI9IenjEXUd8gSV/oMreAtCgFWFPsmddvCeVg
+         htgraNG+82nYMhbKsN8TQh9B7tCJ+NEi+2Anw=
+Date: Wed, 31 Dec 2008 21:30:39 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: david@lang.hm
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20081231183039.GE20882@localhost>
+References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-31 at 14:27 +0100, Andi Kleen wrote:
-> > I say most because the assumption would be that we will be successful in
-> > creating the new thread.  Not that bad an assumption I think.  Besides,
-> 
-> And that the memory read is not reordered (rmb()).
-> 
+[david@lang.hm - Wed, Dec 31, 2008 at 11:12:12AM -0800]
+> On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
+>
+>> [david@lang.hm - Tue, Dec 30, 2008 at 05:39:29PM -0800]
+>>> On Wed, 31 Dec 2008, Andi Kleen wrote:
+>>>
+>>>> david@lang.hm writes:
+>>>>>
+>>>>> doing a grep through System.map for the address that appears in the
+>>>>> error returns nothing
+>>>>
+>>>> This might be obvious, but you can't grep directly for these addresses
+>>>> because System.map contains the starting addresses of functions only
+>>>> and normally the reported address is somewhere in the middle of a
+>>>> function. So you instead have to look for the highest number lower or equal
+>>>> the address from the exception.
+>>>
+>>> thanks, this was not obvious to me
+>>>
+>>> the -2 error maps to
+>>>
+>>> ffffffff8099e4c1 T free_bootmem_node
+>>> ffffffff8099e4e5 t alloc_bootmem_core
+>>> ffffffff8099e774 t ___alloc_bootmem_nopanic
+>>>
+>>>
+>>> the first error maps to
+>>>
+>>> ffffffff809c2de4 T free_bootmem_node
+>>> ffffffff809c2e08 t alloc_bootmem_core
+>>> ffffffff809c3097 t ___alloc_bootmem_nopanic
+>>>
+>>>
+>>> so it looks like this is in alloc_bootmem_core in both cases.
+>>>
+>>> David Lang
+>>>
+>>
+>> Along with Andi's proposed earlyprintk=vga I think
+>> bootmem_debug option could be usefull here too.
+>
+> adding bootmem_debug creates so much additonal output that the oops  
+> scrolls off the screen (except the last 'paragraph' of it)
+>
+> it looks like it's individual items being allocated (trying to scan it as 
+> it scrolled by)
 
-At the risk of showing my b*tt here...  I'm not very clear on memory
-barriers, is this necessary even inside a critical region?  (recall
-we're protected by the spin lock).  If so, does the barrier go after the
-read, or before?   (Thanks for not laughing, however grins are allowed)
+on the picture you sent me i noticed the message
+"Your memory is not aligned you need to rebuild your
+kernel with bigger NODEMAP SIZE shift=20" and then
+srat code complains about "No NUMA code hash function found"
+which looks a bit scary. Btw, could you post this picture
+on some public resource so NUMA people could check it?
 
+>
+> if that output is needed I will need to setup a serial console to gather  
+> it (can this be done for the earlyprintk?)
 
-> 
-> Ok it probably needs some kind of feedback mechanism.
-> 
+yep, earlyprintk=serial (at least code say it would support it :)
 
-Actually, I tend to think we need an entirely different approach to
-flushing, please see my post to David Chinner which outlines some
-thoughts.  Basically a flushing heuristic that takes into account the
-characteristics of the various block devices.  
-
-
-> > 
-> > I was thinking about a patch that would go both directions - forward and
-> > reverse depending upon, say, a bit in jiffies...  Certainly not perfect,
-> > but a bit more fair.  
-> 
-> Better a real RNG. But such probalistic schemes unfortunately tend to drive
-> benchmarkers crazy, that is why it is better to avoid them. 
-> 
-
-Nod, but that's ok. Having been one for several years I can truthfully
-say that benchmarkers are a little crazy anyways... :-)
-
-
-> I suppose you could just keep some state per fs to ensure fairness.
-> 
-
-Nod, this would be ideal.
-
--PWM
-
-> -Andi
-
+>
+> David Lang
+>
+		- Cyrill -
