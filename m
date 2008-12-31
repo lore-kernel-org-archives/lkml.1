@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYLaWQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbYLaWa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbYLaWQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 17:16:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYLaWQU
+	id S1757173AbYLaWa0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 17:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbYLaWaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 17:16:20 -0500
-Received: from ozlabs.org ([203.10.76.45]:56243 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753172AbYLaWQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 17:16:20 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] parisc: fix module loading failure of large kernel modules (take 4)
-Date: Thu, 1 Jan 2009 08:46:12 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Helge Deller <deller@gmx.de>,
-       "linux-parisc" <linux-parisc@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       John David Anglin <dave@hiauly1.hia.nrc.ca>
-References: <4959346E.7060600@gmx.de> <495B5806.3080505@gmx.de> <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain>
+	Wed, 31 Dec 2008 17:30:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:40978 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbYLaWaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 17:30:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=aLnMNRaSMf3ySQe7WVdbuYkx9bqYtw53q9bDVDJPeX8m6g2kr9X9h84HWt0mN6Xfzb
+         THW+CyFHyQOdidBV/BE1aTITVPyCrWtk0nz4kviJAyTmZUdMjKQK4vEB+0MVodhJGBEO
+         jWKETN1QMyTE9A7usk8QlzXOKfjfUF0rKl4YA=
+Date: Thu, 1 Jan 2009 01:30:07 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: david@lang.hm, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20081231223007.GA3664@localhost>
+References: <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <alpine.DEB.1.10.0812311204580.18334@asgard.lang.hm> <20081231191214.GF20882@localhost> <alpine.DEB.1.10.0812311316350.18569@asgard.lang.hm> <20081231202346.GH20882@localhost> <20081231202744.GA32152@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901010846.13881.rusty@rustcorp.com.au>
+In-Reply-To: <20081231202744.GA32152@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 January 2009 03:59:36 Linus Torvalds wrote:
-> 
-> On Wed, 31 Dec 2008, Helge Deller wrote:
-> >
-> > [PATCH 1/2] module.c: fix module loading failure of large kernel modules
-> > 
-> > When creating the final layout of a kernel module in memory, allow the
-> > module loader to reserve some additional memory in front of a given section.
-> > This is currently only needed for the parisc port which needs to put the
-> > stub entries there to fulfill the 17/22bit PCREL relocations with large
-> > kernel modules like xfs.
-> > 
-> > Differences of this patch to previous versions:
-> > - added weak funtion arch_module_section_size()
-> 
-> This doesn't work.
-> 
-> We've had this bug several times now, and one of them just very recently.
-> 
-> Some gcc versions will inline weak functions if they are in scope
+[Cyrill Gorcunov - Wed, Dec 31, 2008 at 11:27:44PM +0300]
+...
+| | Thanks David, if I recognize correctly now it fails at
+| | vfs_caches_init. hmm...
+| | 
+| | 		- Cyrill -
+| 
+| no suprises - vfs_caches_init uses SLAB_PANIC and since
+| we seems to have "memory related" problems earlier now
+| we've been catched explicitly by slab code.
+| 
+| 		- Cyrill -
 
-Ah, someone hit this elsewhere and thought this was an arch-specific bug.
-Any chance we can just kill those compiler versions and move on with our
-lives?  4.1.3 definitely doesn't have the problem.
+on the other hand I think we would have different Oops
+form here if it would really be slab panic... checking.
 
-> We don't write out that whole "__attribute__" crud.
-
-I think what you mean is "I prefer __weak".  Which is fine, and not
-trivially disprovable by grep.
-
-It's a gratuitous kernelism, but it's an inoffensive one.
-Rusty.
+		- Cyrill -
