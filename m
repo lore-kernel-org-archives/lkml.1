@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYLaESS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbYLaEWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755735AbYLaESS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 23:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYLaESF
+	id S1755702AbYLaEWw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 23:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYLaEWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 23:18:05 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:37398 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbYLaESD (ORCPT
+	Tue, 30 Dec 2008 23:22:43 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:43220 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752435AbYLaEWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 23:18:03 -0500
-From: Roland Dreier <rdreier@cisco.com>
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: swiotlb: Add missing __init annotations
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 30 Dec 2008 20:18:00 -0800
-Message-ID: <adamyedq8p3.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 30 Dec 2008 23:22:43 -0500
+Message-ID: <495AF348.9080105@oracle.com>
+Date: Tue, 30 Dec 2008 20:21:28 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 Dec 2008 04:18:01.0175 (UTC) FILETIME=[C4BD5670:01C96AFE]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH] spi.h uses/needs device.h
+References: <200812310006.mBV060iV029753@imap1.linux-foundation.org>
+In-Reply-To: <200812310006.mBV060iV029753@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.495AF34B.002A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current kernel build warns:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-    WARNING: vmlinux.o(.text+0x11458): Section mismatch in reference from the function swiotlb_alloc_boot() to the function .init.text:__alloc_bootmem_low()
-    The function swiotlb_alloc_boot() references
-    the function __init __alloc_bootmem_low().
-    This is often because swiotlb_alloc_boot lacks a __init
-    annotation or the annotation of __alloc_bootmem_low is wrong.
-    
-    WARNING: vmlinux.o(.text+0x1011f2): Section mismatch in reference from the function swiotlb_late_init_with_default_size() to the function .init.text:__alloc_bootmem_low()
-    The function swiotlb_late_init_with_default_size() references
-    the function __init __alloc_bootmem_low().
-    This is often because swiotlb_late_init_with_default_size lacks a __init
-    annotation or the annotation of __alloc_bootmem_low is wrong.
+Include header files as used/needed:
 
-and indeed the functions calling __alloc_bootmem_low() can be marked
-__init as well.
+In file included from mmotm-2008-1230-1605/drivers/leds/leds-dac124s085.c:16:
+mmotm-2008-1230-1605/include/linux/spi/spi.h:66: error: field 'dev' has incomplete type
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'to_spi_device':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:100: warning: type defaults to 'int' in declaration of '__mptr'
+mmotm-2008-1230-1605/include/linux/spi/spi.h:100: warning: initialization from incompatible pointer type
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_dev_get':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:106: error: implicit declaration of function 'get_device'
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_dev_put':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:112: error: implicit declaration of function 'put_device'
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_set_drvdata':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:130: error: implicit declaration of function 'dev_set_drvdata'
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_get_drvdata':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:135: error: implicit declaration of function 'dev_get_drvdata'
+mmotm-2008-1230-1605/include/linux/spi/spi.h:135: warning: return makes pointer from integer without a cast
+mmotm-2008-1230-1605/include/linux/spi/spi.h: At top level:
+mmotm-2008-1230-1605/include/linux/spi/spi.h:172: error: expected declaration specifiers or '...' before 'pm_message_t'
+mmotm-2008-1230-1605/include/linux/spi/spi.h:174: error: field 'driver' has incomplete type
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'to_spi_driver':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:179: warning: type defaults to 'int' in declaration of '__mptr'
+mmotm-2008-1230-1605/include/linux/spi/spi.h:179: warning: initialization from incompatible pointer type
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_unregister_driver':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:192: error: implicit declaration of function 'driver_unregister'
+mmotm-2008-1230-1605/include/linux/spi/spi.h: At top level:
+mmotm-2008-1230-1605/include/linux/spi/spi.h:225: error: field 'dev' has incomplete type
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_master_get_devdata':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:271: warning: return makes pointer from integer without a cast
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_message_alloc':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:494: error: implicit declaration of function 'kzalloc'
+mmotm-2008-1230-1605/include/linux/spi/spi.h:496: warning: assignment makes pointer from integer without a cast
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_message_free':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:510: error: implicit declaration of function 'kfree'
+mmotm-2008-1230-1605/include/linux/spi/spi.h: In function 'spi_unregister_device':
+mmotm-2008-1230-1605/include/linux/spi/spi.h:801: error: implicit declaration of function 'device_unregister'
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: David Brownell <dbrownell@users.sourceforge.net>
 ---
-Not 100% sure if this is the correct fix but it seems OK for me.
+ include/linux/spi/spi.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
- arch/x86/kernel/pci-swiotlb_64.c |    2 +-
- lib/swiotlb.c                    |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
-index 242c344..8cba374 100644
---- a/arch/x86/kernel/pci-swiotlb_64.c
-+++ b/arch/x86/kernel/pci-swiotlb_64.c
-@@ -13,7 +13,7 @@
+--- mmotm-2008-1230-1605.orig/include/linux/spi/spi.h
++++ mmotm-2008-1230-1605/include/linux/spi/spi.h
+@@ -19,6 +19,8 @@
+ #ifndef __LINUX_SPI_H
+ #define __LINUX_SPI_H
  
- int swiotlb __read_mostly;
- 
--void *swiotlb_alloc_boot(size_t size, unsigned long nslabs)
-+void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
- {
- 	return alloc_bootmem_low_pages(size);
- }
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index fa2dc4e..1b76f78 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -116,7 +116,7 @@ setup_io_tlb_npages(char *str)
- __setup("swiotlb=", setup_io_tlb_npages);
- /* make io_tlb_overflow tunable too? */
- 
--void * __weak swiotlb_alloc_boot(size_t size, unsigned long nslabs)
-+void * __weak __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
- {
- 	return alloc_bootmem_low_pages(size);
- }
-@@ -186,7 +186,7 @@ static void swiotlb_print_info(unsigned long bytes)
-  * Statically reserve bounce buffer space and initialize bounce buffer data
-  * structures for the software IO TLB used to implement the DMA API.
-  */
--void __init
-+void __init __weak
- swiotlb_init_with_default_size(size_t default_size)
- {
- 	unsigned long i, bytes;
++#include <linux/device.h>
++
+ /*
+  * INTERFACES between SPI master-side drivers and SPI infrastructure.
+  * (There's no SPI slave support for Linux yet...)
