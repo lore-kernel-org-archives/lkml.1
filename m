@@ -1,89 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYLaMHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYLaMH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYLaMHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 07:07:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYLaMH3
+	id S1756841AbYLaMH6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 07:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756653AbYLaMHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 07:07:29 -0500
-Received: from smtp-out-41.synserver.de ([217.119.50.41]:1044 "HELO
-	smtp-out-41.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755908AbYLaMH1 (ORCPT
+	Wed, 31 Dec 2008 07:07:36 -0500
+Received: from homer.mvista.com ([63.81.120.155]:41160 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755979AbYLaMHf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 07:07:27 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Dec 2008 07:07:27 EST
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 23572
-Date: Wed, 31 Dec 2008 13:00:43 +0100
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, yinghai@kernel.org
-Subject: Re: [sparseirq] remove debug printks (io_apic.c)
-Message-ID: <20081231120043.GA2419@gentoox2.trippelsdorf.de>
-References: <20081225160741.GA14486@elte.hu>
+	Wed, 31 Dec 2008 07:07:35 -0500
+Message-ID: <495B6080.7020802@ru.mvista.com>
+Date: Wed, 31 Dec 2008 15:07:28 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081225160741.GA14486@elte.hu>
+To: Shane McDonald <mcdonald.shane@gmail.com>
+Cc: alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] Resurrect IT8172 IDE controller driver
+References: <E1LHrff-0007jd-Rp@localhost>
+In-Reply-To: <E1LHrff-0007jd-Rp@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 25, 2008 at 05:07:41PM +0100, Ingo Molnar wrote:
-> 
-> Please pull the latest irq-core-for-linus git tree from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-core-for-linus
-> 
-> Most of the changes here are related to enable and implement sparseirq 
-> support on x86.
+Hello.
 
-> Yinghai Lu (10):
->       sparse irq_desc[] array: core kernel and x86 changes
->       x86: use NR_IRQS_LEGACY
->       x86: MSI start irq numbering from nr_irqs_gsi
->       x86, MSI: pass irq_cfg and irq_desc
->       sparseirq: fix Alpha build failure
->       sparseirq: fix !SMP && !PCI_MSI && !HT_IRQ build
->       x86, sparseirq: move irq_desc according to smp_affinity, v7
->       sparseirq: fix !SMP building, #2
->       sparseirq: add kernel-doc notation for new member in irq_desc, -v2
->       sparseirq: fix numa_migrate_irq_desc dependency and comments
+Shane McDonald wrote:
 
-The message "alloc irq_2_pin on cpu 0 node 0" is printed way too often.
+> Support for the IT8172 IDE controller was removed from the kernel
+> sometime after 2.6.18.  Support for the only boards that used the IT8172
+> was removed from the kernel after 2.6.18, as they had never compiled
+> since 2.6.0.  However, there are a couple of platforms that use this
+> chip: the PMC-Sierra Xiao Hu thin-client computer, which is no longer
+> in production, and the Linksys NSS4000 Network Attached Storage box,
+> which is based on the Xiao Hu board.  I am attempting to add support
+> for the Xiao Hu to the kernel, and this IT8172 IDE controller is the
+> first bit of code in this effort.
+>
+> This patch resurrects the IT8172 IDE controller code.  I began with
+> the 2.6.18 version of the it8172.c file, and have moved it forward so
+> that it works with the latest version of the kernel.  I have run this
+> driver on a PMC-Sierra Xiao Hu board with the 2.6.28 kernel, and
+> I have had no problems with it in my configuration.  The attached patch
+> applies cleanly against 2.6.28.
+>
+> Signed-off-by: Shane McDonald <mcdonald.shane@gmail.com>
+>   
 
-% dmesg|grep irq_2_pin|wc -l
-20
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Get rid of the debug printks.
+> diff -uprN a/drivers/ide/it8172.c b/drivers/ide/it8172.c
+> --- a/drivers/ide/it8172.c	1969-12-31 18:00:00.000000000 -0600
+> +++ b/drivers/ide/it8172.c	2008-12-30 20:55:29.000000000 -0600
+> @@ -0,0 +1,173 @@
+> +static void it8172_set_pio_mode(ide_drive_t *drive, const u8 pio)
+> +{
+> +	ide_hwif_t *hwif	= HWIF(drive);
+> +	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+> +	u16 drive_enables;
+> +	u32 drive_timing;
+> +
+> +				     /* RTx  PWx */
+> +	static const u8 timings[][2] = {
+> +					{ 7, 7 },
+>   
 
-Signed-off-by: Markus Trippelsdorf <markus@trippelsdorf.de>
----
- arch/x86/kernel/io_apic.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+   By a "happy concidence" these are also an optimal MWDMA0 timings 
+(PIO0 is considerably slower).
 
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index f6ea94b..66f97b2 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -129,7 +129,6 @@ static struct irq_pin_list *get_one_free_irq_2_pin(int cpu)
- 	node = cpu_to_node(cpu);
- 
- 	pin = kzalloc_node(sizeof(*pin), GFP_ATOMIC, node);
--	printk(KERN_DEBUG "  alloc irq_2_pin on cpu %d node %d\n", cpu, node);
- 
- 	return pin;
- }
-@@ -207,7 +206,6 @@ static struct irq_cfg *get_one_free_irq_cfg(int cpu)
- 	node = cpu_to_node(cpu);
- 
- 	cfg = kzalloc_node(sizeof(*cfg), GFP_ATOMIC, node);
--	printk(KERN_DEBUG "  alloc irq_cfg on cpu %d node %d\n", cpu, node);
- 
- 	return cfg;
- }
--- 
-Markus
+> +					{ 7, 4 },
+> +					{ 3, 3 },
+> +					{ 2, 2 },
+> +					{ 1, 2 }, };
+> +	/*
+> +	 * The highest value of DIOR/DIOW pulse width and recovery time
+> +	 * that can be set in the IT8172 is 8 PCI clock cycles.  As a result,
+> +	 * it cannot be configured for PIO mode 0.  This table sets these
+> +	 * parameters to the maximum supported by the IT8172.
+> +	 */
+>   
+
+   This comment seems somewhat mispalced...
+
+> +	pci_read_config_word(dev, 0x40, &drive_enables);
+> +	pci_read_config_dword(dev, 0x44, &drive_timing);
+> +
+> +	/*
+> +	 * Enable port 0x44. The IT8172 spec is confused; it calls
+> +	 * this register the "Slave IDE Timing Register", but in fact,
+> +	 * it controls timing for both master and slave drives.
+> +	 */
+> +	drive_enables |= 0x4000;
+> +
+> +	drive_enables &= drive->dn ? 0xc006 : 0xc060;
+> +	if (drive->media == ide_disk)
+> +		/* enable prefetch */
+> +		drive_enables |= 0x0004 << (drive->dn * 4);
+> +	if (ata_id_has_iordy(drive->id))
+> +		/* enable IORDY sample-point */
+> +		drive_enables |= 0x0002 << (drive->dn * 4);
+> +
+> +	drive_timing &= drive->dn ? 0x00003f00 : 0x000fc000;
+> +	drive_timing |= ((timings[pio][0] << 11) | (timings[pio][1] << 8))
+> +			<< (drive->dn * 6);
+>   
+
+   This can be somewhat shortened:
+
+	drive_timing |= ((timings[pio][0] << 3) | timings[pio][1]) <<
+			(drive->dn * 6 + 8);
+
+
+   Could've be shortened even more if timings[] was single-dimensional...
+
+MBR, Sergei
+
+
