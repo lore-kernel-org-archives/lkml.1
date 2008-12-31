@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbYLaWI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbYLaWeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757168AbYLaWI2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 17:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYLaWIU
+	id S1757013AbYLaWeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 17:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYLaWeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 17:08:20 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:46141 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbYLaWIT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 17:08:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=geaaaV/T1lJmtDvqrnkhFogVEa9phSMEzL6abRKXAe0zgP/uNdmsZCboI5wKRMP5ZN
-         /JJuJqhM+s7GIo98sto4MtYBuG+Hklyx2040pZAviVMgLgFSqhH67WcF3dN0ye2NloJb
-         7MjNicFHmunYDugZFCsrwpL90qPrbf9P3to2Y=
-Date: Thu, 1 Jan 2009 00:08:12 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@gmail.com>
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
- tracing_reset_online_cpus() helper)
-Message-ID: <20090101000812.1fd2c088@iki.fi>
-In-Reply-To: <alpine.DEB.1.10.0812311401120.6750@gandalf.stny.rr.com>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
-	<c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com>
-	<alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com>
-	<20081220004453.50aec846@daedalus.pq.iki.fi>
-	<alpine.DEB.1.10.0812191827390.26234@gandalf.stny.rr.com>
-	<20081220041759.5a026f5a@daedalus.pq.iki.fi>
-	<alpine.DEB.1.10.0812192140350.29275@gandalf.stny.rr.com>
-	<20081231155325.392699d0@iki.fi>
-	<alpine.DEB.1.10.0812311332410.6262@gandalf.stny.rr.com>
-	<20081231205708.4ee8b141@iki.fi>
-	<alpine.DEB.1.10.0812311401120.6750@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 31 Dec 2008 17:34:08 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:56648 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751292AbYLaWeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 17:34:07 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] headers_check.pl: disallow extern's
+Date: Wed, 31 Dec 2008 17:32:32 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+References: <1230363816-24097-1-git-send-email-vapier@gentoo.org> <200812311758.04516.arnd@arndb.de>
+In-Reply-To: <200812311758.04516.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1578474.HVQtXtH7GF";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200812311732.40076.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008 14:06:26 -0500 (EST)
-Steven Rostedt <rostedt@goodmis.org> wrote:
+--nextPart1578474.HVQtXtH7GF
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> I was thinking of only changing the debugfs file.
-> 
-> > Are we controlling an action (recording events), a feature (a buffer
-> > where to record) or an implementation (a ring buffer)?
-> 
-> Good point. It only disables the recording, so perhaps a "record_enabled" 
-> would be better?
+On Wednesday 31 December 2008 11:58:03 Arnd Bergmann wrote:
+> On Saturday 27 December 2008, Mike Frysinger wrote:
+> > +sub check_prototypes
+> > +{
+> > +	if ($line =3D~ m/^\s*extern\b/) {
+> > +		printf STDERR "extern's make no sense in userspace\n";
+> > +		$ret =3D 1;
+> > +	}
+> > +}
+>
+> Unfortunately, this way you can only detect prototypes with an explicit
+> 'extern' in them, not the equivalent form with an implicit extern.
+>
+> Not sure if we can detect the other form reliably from perl.
 
-To me "record" sounds more of a noun than a verb, but it's both and
-I'm not a native speaker. Still, it brings me to "recording_enabled",
-and do we really need the "_enabled" part? So we end up to what I
-suggested earlier: "recording" with values 0 and 1. :-)
+yes, i already mentioned both of these issues.  that's why i suggested we=20
+start adding "extern" to all the headers (or at least the userspace ones).
+=2Dmike
 
-Anyway, it's good to start the file name with a few distinct letters,
-it makes tab-completion so much easier on the command line.
+--nextPart1578474.HVQtXtH7GF
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> > What does the user actually want to control? A buffer? A ring
-> > buffer? Recording stuff? The tracer? Tracing? Data flow?
-> > Assuming there are also other users than tracing, does it make
-> > sense to control the ring buffer facility itself?
-> 
-> I think the name record_enabled for debugfs is the best. This is exactly 
-> what happens (not how it is implemented). When someone echos 0 to 
-> record_enabled (currently called tracing_on), it stops the recording, and 
-> nothing else. The tracers still try to write to the buffer, but the write 
-> always fails. This does not disable the tracers or even notify the tracer 
-> that the buffers have stopped recording. This is just a simple light 
-> weight way to stop and start recording to the trace buffers from either 
-> user space or kernel space.  Kernel space can stop it, and user space can 
-> start it again (that was the original request for this feature).
-> 
-> I'm leaning towards record_enabled now.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+iQIcBAABAgAGBQJJW/MIAAoJEEFjO5/oN/WB6GoQAL44anAHDXppKHCvkh9Gh+m4
+OLbDiEtKnCJAbx6Ii/A7LhHcK5O6BjE0D4Haj3v90R70fWKZE3W2J3Tl3iWYHVmO
+mjFyfDKFVy0X6g8eD6BRQ0YFHEK6lqmwrfXLSYQEkjwgP0eUYgp/U19+PlTzGdeO
+RgslQE2jKhVQb+JREwDUTHuWq3X2SLxp9EmK7BF/pY/fQPhP/x7HMLoT6KS4dbHv
+EXfyLe4JqwL4Lzg8tzA9oOUrUg3V0reFiS/QPp0N6liMNFk10a8wfuKAwWeDeidq
+BuqQTMjzFbgfGqbbecAFrPs+Z77GjTC/FbqpWq6268M8ZDCpdWNeMQU5roJaNaO/
+06D9ywhzkDCH5drL2Wa6paDyYMlJqUzPFjhN6V+a3kd8R6OCNHMVsEZmZJLb1MLW
+36QlGjGFpURz2PXW4enpPjO100pzvKVBhTux9hYKTYbiALUQi6NOmIaHy7TPrhMc
+444oZraCKwo6W1GlTF7Zekx7YZyylrcscXSTn91vJQClJAqlOPYPzHsAxwktWpxy
+36ZsP4MNwoBYzEsFJ4ae2XamTpElGlOlQXzRcHmx661UsARJRq3G6F/5fnadnCTL
+Lawsck8fQl/NQDbdSBuzqzJOi96eUIenj1fKTz4sWk0LpxCa0w0sGYw6WIG4NGLx
+I5OiRlFR39y34GS2XuWa
+=elQ3
+-----END PGP SIGNATURE-----
+
+--nextPart1578474.HVQtXtH7GF--
