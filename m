@@ -1,81 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYLaCdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYLaCir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYLaCdA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 21:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYLaCcr
+	id S1754730AbYLaCir (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 21:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYLaCie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 21:32:47 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:43510 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292AbYLaCcr (ORCPT
+	Tue, 30 Dec 2008 21:38:34 -0500
+Received: from charybdis-ext.suse.de ([195.135.221.2]:58077 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754607AbYLaCie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 21:32:47 -0500
-Date: Wed, 31 Dec 2008 03:46:09 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Peter W. Morreale" <pmorreale@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] pdflush fix and enhancement
-Message-ID: <20081231024609.GQ496@one.firstfloor.org>
-References: <20081230231152.10427.50620.stgit@hermosa.site> <87fxk5ur0h.fsf@basil.nowhere.org> <1230688589.3470.45.camel@hermosa.site>
+	Tue, 30 Dec 2008 21:38:34 -0500
+Subject: Re: [PATCH 2/2] Add /proc controls for pdflush threads
+From: "Peter W. Morreale" <pmorreale@novell.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <495AB5DD.8040204@oracle.com>
+References: <20081230231152.10427.50620.stgit@hermosa.site>
+	 <20081230231233.10427.11443.stgit@hermosa.site>
+	 <495AB5DD.8040204@oracle.com>
+Content-Type: text/plain
+Organization: Linux Solutions Group
+Date: Tue, 30 Dec 2008 19:38:27 -0700
+Message-Id: <1230691107.3470.55.camel@hermosa.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1230688589.3470.45.camel@hermosa.site>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 06:56:29PM -0700, Peter W. Morreale wrote:
-> The rational is simply because one-size may not fit all.  Currently
-> there is minimalistic tuning wrt pdflush thread creation. 
-
-Thanks. Please put this into the commit description for future
-reference. 
-
-Some comments below.
-
-> Each pdflush thread arbitrarily decides to create another thread solely
-> on the basis of all currently existing threads being busy for >= one
-> second.  So this can result in NCPUS pdflush threads being created
-> 'concurrently' should all existing threads wind up in the idle check at
-> the same time (I have seen this).  Or it can result in a thread being
-
-So perhaps a simple lock serializing creation of new pdflush threads
-would avoid the problem?
-
-> More to the point, on small systems with few file systems, what is the
-> point of having 8 (the current max) threads competing with each other on
-> a single disk?  Likewise, on a 64-way, or larger system with dozens of
-> filesystems/disks, why wouldn't I want more background flushing?
-
-That makes some sense, but perhaps it would be better to base the default
-size on the number of underlying block devices then?
-
-Ok one issue there is that there are lots of different types of 
-block devices, e.g. a big raid array may look like a single disk.
-Still I suspect defaults based on the block devices would do reasonably
-well.
-
+On Tue, 2008-12-30 at 15:59 -0800, Randy Dunlap wrote:
+> Peter W Morreale wrote:
+> > From: \"Peter W. Morreale\" <pmorreale@novell.com>
+> > 
+> > This patch adds /proc entries to give the admin the ability to
+> > control the minimum and maximum number of pdflush threads.  This allows
+> > finer control of pdflush on both large and small machines.
+> > 
+> > The patch adds '/proc/sys/vm/nr_pdflush_threads_min' and
+> > '/proc/sys/vm/nr_pdflush_threads_max' with r/w permissions.
 > 
-> I actually think the question is: Why not allow the admin to control
-> this?  Since it seems like this is a matter of policy based on machine
-> configuration. 
+> These need to be documented in (ugh) either
+> Documentation/filesystems/proc.txt or
+> Documentation/sysctl/vm.txt.  Hard to say which one, but I'd
+> recommend the latter (vm.txt) since they are sysctls.
+> 
+> 
+> It looks like there is a lot of duplication between them.
+> That's not good IMO.
+> 
 
-The kernel should know the current machine config and most 
-admins don't really want to do very fine grained configuration;
-they expect the system to perform well out of the box. That is
-why it is adventageous to try to come up with good auto tuning.
+Hummm... worse than that.  Documentation/sysctl/vm.txt is missing 9
+proc/sys/vm entries and hasn't been updated since (ahem) 2.2.10. 
 
-> And btw Andi, I should have cc'ed you on this, I know from the flush
-> code that you were heavily involved.  I only cc'ed Peter Z. since his
-> name was in pdflush.c.  My apologies.  
+Documentation/file_systems/proc.txt is much more recent -
+2.4.0-test11-pre4.  My how time flies... :-)
 
-No problem, but I think you're confusing me with someone else :). I don't
-remember ever hacking on this. Perhaps you thought of Andrew Morton
-who did pdflush originally.
+I can take a stab at updating vm.txt.  Would it be ok to remove the vm
+verbiage from proc.txt and replace it with a pointer to vm.txt? 
 
--Andi
+-PWM
+ 
+> > ---
+> > 
+> > Signed-off-by: Peter W Morreale <pmorreale@novell.com>
+> > 
+> >  include/linux/sysctl.h    |    2 ++
+> >  include/linux/writeback.h |    2 ++
+> >  kernel/sysctl.c           |   16 ++++++++++++++++
+> >  mm/pdflush.c              |   19 ++++++++++++++-----
+> >  4 files changed, 34 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+> > index d0437f3..9921e62 100644
+> > --- a/include/linux/sysctl.h
+> > +++ b/include/linux/sysctl.h
+> > @@ -205,6 +205,8 @@ enum
+> >  	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
+> >  	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
+> >  	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
+> > +	VM_NR_PDFLUSH_THREADS_MAX=36, /* nr_pdflush_threads_max */
+> > +	VM_NR_PDFLUSH_THREADS_MIN=37, /* nr_pdflush_threads_min */
+> >  };
+> >  
+> >  
+> > diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+> > index 12b15c5..ee566a0 100644
+> > --- a/include/linux/writeback.h
+> > +++ b/include/linux/writeback.h
+> > @@ -150,6 +150,8 @@ void writeback_set_ratelimit(void);
+> >  /* pdflush.c */
+> >  extern int nr_pdflush_threads;	/* Global so it can be exported to sysctl
+> >  				   read-only. */
+> > +extern int nr_pdflush_threads_max; /* Global so it can be exported to sysctl */
+> > +extern int nr_pdflush_threads_min; /* Global so it can be exported to sysctl */
+> >  
+> >  
+> >  #endif		/* WRITEBACK_H */
+> > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> > index 50ec088..6dae777 100644
+> > --- a/kernel/sysctl.c
+> > +++ b/kernel/sysctl.c
+> > @@ -948,6 +948,22 @@ static struct ctl_table vm_table[] = {
+> >  		.proc_handler	= &proc_dointvec,
+> >  	},
+> >  	{
+> > +		.ctl_name	= VM_NR_PDFLUSH_THREADS_MIN,
+> > +		.procname	= "nr_pdflush_threads_min",
+> > +		.data		= &nr_pdflush_threads_min,
+> > +		.maxlen		= sizeof nr_pdflush_threads_min,
+> > +		.mode		= 0644 /* read-only*/,
+> > +		.proc_handler	= &proc_dointvec,
+> > +	},
+> > +	{
+> > +		.ctl_name	= VM_NR_PDFLUSH_THREADS_MAX,
+> > +		.procname	= "nr_pdflush_threads_max",
+> > +		.data		= &nr_pdflush_threads_max,
+> > +		.maxlen		= sizeof nr_pdflush_threads_max,
+> > +		.mode		= 0644 /* read-only*/,
+> > +		.proc_handler	= &proc_dointvec,
+> > +	},
+> > +	{
+> >  		.ctl_name	= VM_SWAPPINESS,
+> >  		.procname	= "swappiness",
+> >  		.data		= &vm_swappiness,
+> > diff --git a/mm/pdflush.c b/mm/pdflush.c
+> > index 481680f..9a6f835 100644
+> > --- a/mm/pdflush.c
+> > +++ b/mm/pdflush.c
+> > @@ -58,6 +58,14 @@ static DEFINE_SPINLOCK(pdflush_lock);
+> >  int nr_pdflush_threads = 0;
+> >  
+> >  /*
+> > + * The max/min number of pdflush threads. R/W by sysctl at 
+> > + * /proc/sys/vm/nr_pdflush_threads_max 
+> > + */
+> > +int nr_pdflush_threads_max = MAX_PDFLUSH_THREADS;
+> > +int nr_pdflush_threads_min = MIN_PDFLUSH_THREADS;
+> > +
+> > +
+> > +/*
+> >   * The time at which the pdflush thread pool last went empty
+> >   */
+> >  static unsigned long last_empty_jifs;
+> > @@ -68,7 +76,7 @@ static unsigned long last_empty_jifs;
+> >   * Thread pool management algorithm:
+> >   * 
+> >   * - The minimum and maximum number of pdflush instances are bound
+> > - *   by MIN_PDFLUSH_THREADS and MAX_PDFLUSH_THREADS.
+> > + *   by nr_pdflush_threads_min and nr_pdflush_threads_max.
+> >   * 
+> >   * - If there have been no idle pdflush instances for 1 second, create
+> >   *   a new one.
+> > @@ -133,7 +141,8 @@ static int __pdflush(struct pdflush_work *my_work)
+> >  		 */
+> >  		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
+> >  			if (list_empty(&pdflush_list)) {
+> > -				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS) {
+> > +				if (nr_pdflush_threads <
+> > +						nr_pdflush_threads_max) {
+> >  					nr_pdflush_threads++;
+> >  					spin_unlock_irq(&pdflush_lock);
+> >  					start_one_pdflush_thread();
+> > @@ -150,7 +159,7 @@ static int __pdflush(struct pdflush_work *my_work)
+> >  		 */
+> >  		if (list_empty(&pdflush_list))
+> >  			continue;
+> > -		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
+> > +		if (nr_pdflush_threads <= nr_pdflush_threads_min)
+> >  			continue;
+> >  		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
+> >  		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
+> > @@ -246,9 +255,9 @@ static int __init pdflush_init(void)
+> >  	 * Pre-set nr_pdflush_threads...  If we fail to create, 
+> >  	 * the count will be decremented.
+> >  	 */
+> > -	nr_pdflush_threads = MIN_PDFLUSH_THREADS;
+> > +	nr_pdflush_threads = nr_pdflush_threads_min;
+> >  
+> > -	for (i = 0; i < MIN_PDFLUSH_THREADS; i++)
+> > +	for (i = 0; i < nr_pdflush_threads_min; i++)
+> >  		start_one_pdflush_thread();
+> >  	return 0;
+> >  }
+> 
+> 
 
--- 
-ak@linux.intel.com
