@@ -1,88 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbYLaRkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYLaTKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbYLaRkG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 12:40:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbYLaRjy
+	id S1757327AbYLaTKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 14:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbYLaTKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 12:39:54 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36830 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755888AbYLaRjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 12:39:54 -0500
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX1+yxdx5Z9eyAQO9/tdq644oz6Xeg9enyXGewU5bM1
-	0BZfxyEQ8SDrV7
-Message-ID: <495BAE6B.2030100@gmx.de>
-Date: Wed, 31 Dec 2008 18:39:55 +0100
-From: Helge Deller <deller@gmx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 31 Dec 2008 14:10:16 -0500
+Received: from qmta01.emeryville.ca.mail.comcast.net ([76.96.30.16]:48747 "EHLO
+	QMTA01.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756527AbYLaTKP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 14:10:15 -0500
+From: Peter W Morreale <pmorreale@novell.com>
+Subject: [PATCH 1/2] Fix pdflush thread creation upper bound.
+To: pmorreale@novell.com, akpm@linux-foundation.org, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, spamtrap@knobisoft.de
+Date: Wed, 31 Dec 2008 12:10:11 -0700
+Message-ID: <20081231191011.30792.17202.stgit@hermosa.site>
+In-Reply-To: <20081231190755.30792.24205.stgit@hermosa.site>
+References: <20081231190755.30792.24205.stgit@hermosa.site>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-parisc <linux-parisc@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       John David Anglin <dave@hiauly1.hia.nrc.ca>
-Subject: Re: [PATCH] parisc: fix module loading failure of large kernel modules
- (take 4)
-References: <4959346E.7060600@gmx.de> <200812310915.41693.rusty@rustcorp.com.au> <495B5806.3080505@gmx.de> <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Wed, 31 Dec 2008, Helge Deller wrote:
->> [PATCH 1/2] module.c: fix module loading failure of large kernel modules
->>
->> When creating the final layout of a kernel module in memory, allow the
->> module loader to reserve some additional memory in front of a given section.
->> This is currently only needed for the parisc port which needs to put the
->> stub entries there to fulfill the 17/22bit PCREL relocations with large
->> kernel modules like xfs.
->>
->> Differences of this patch to previous versions:
->> - added weak funtion arch_module_section_size()
-> 
-> This doesn't work.
-> 
-> We've had this bug several times now, and one of them just very recently.
-> 
-> Some gcc versions will inline weak functions if they are in scope - even 
-> if there is a non-weak function somewhere else. So you MUST NOT have the 
-> weak definition in the same file (or indirectly called through some inline 
-> functions in a header file) as the call. Because if you do, then any user 
-> with the wrong version of gcc will get the weak function semantics, even 
-> if it was meant to be overridden by something else.
+This patch fixes a race on creating pdflush threads.  Without the patch,
+it is possible to create more than MAX_PDFLUSH_THREADS threads, and this
+has been observed in practice on IO loaded SMP machines.
 
-Ok, that might explain why I saw some strange things in the unwind tables
-after that I switched to using the weak function (hppa-crosscompiler, gcc-3.3.4).
+The fix involves moving the lock around to protect the check against the
+thread count and correctly dealing with thread creation failure.
 
->> +/* Additional bytes needed by arch in front of individual sections */
->> +unsigned int __attribute__ ((weak)) arch_module_section_size(
->> +		struct module *mod, unsigned int section)
-> 
-> We don't write out that whole "__attribute__" crud. We use
-> 
-> 	unsigned in __weak arch_module_section_size(struct module *mod, unsigned int section)
-> 
-> instead.
+This fix also _mostly_ repairs a race condition on how quickly the
+threads are created.  The original intent was to create a pdflush thread
+(up to the max allowed) every second.  Without this patch is is possible
+to create NCPUS pdflush threads concurrently.  The 'mostly' caveat is
+because an assumption is made that thread creation will be successful.
+If we fail to create the thread, the miss is not considered fatal. (we
+will try again in 1 second)
+---
 
-Ok.
+Signed-off-by: Peter W Morreale <pmorreale@novell.com>
 
-> But as mentioned, it needs to be in another compilation unit.
+ mm/pdflush.c |   32 +++++++++++++++++++++++++-------
+ 1 files changed, 25 insertions(+), 7 deletions(-)
 
-Understood.
+diff --git a/mm/pdflush.c b/mm/pdflush.c
+index 0cbe0c6..80745c7 100644
+--- a/mm/pdflush.c
++++ b/mm/pdflush.c
+@@ -98,7 +98,6 @@ static int __pdflush(struct pdflush_work *my_work)
+ 	INIT_LIST_HEAD(&my_work->list);
+ 
+ 	spin_lock_irq(&pdflush_lock);
+-	nr_pdflush_threads++;
+ 	for ( ; ; ) {
+ 		struct pdflush_work *pdf;
+ 
+@@ -126,20 +125,26 @@ static int __pdflush(struct pdflush_work *my_work)
+ 
+ 		(*my_work->fn)(my_work->arg0);
+ 
++		spin_lock_irq(&pdflush_lock);
++
+ 		/*
+ 		 * Thread creation: For how long have there been zero
+-		 * available threads?
++		 * available threads?  
++		 *
++		 * To throttle creation, we reset last_empty_jifs.
+ 		 */
+ 		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
+-			/* unlocked list_empty() test is OK here */
+ 			if (list_empty(&pdflush_list)) {
+-				/* unlocked test is OK here */
+-				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS)
++				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS) {
++					last_empty_jifs = jiffies;
++					nr_pdflush_threads++;
++					spin_unlock_irq(&pdflush_lock);
+ 					start_one_pdflush_thread();
++					spin_lock_irq(&pdflush_lock);
++				}
+ 			}
+ 		}
+ 
+-		spin_lock_irq(&pdflush_lock);
+ 		my_work->fn = NULL;
+ 
+ 		/*
+@@ -226,13 +231,26 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
+ 
+ static void start_one_pdflush_thread(void)
+ {
+-	kthread_run(pdflush, NULL, "pdflush");
++	struct task_struct *k;
++
++	k = kthread_run(pdflush, NULL, "pdflush");
++	if (unlikely(IS_ERR(k))) {
++		spin_lock_irq(&pdflush_lock);
++		nr_pdflush_threads--;
++		spin_unlock_irq(&pdflush_lock);
++	}
+ }
+ 
+ static int __init pdflush_init(void)
+ {
+ 	int i;
+ 
++	/*
++	 * Pre-set nr_pdflush_threads...  If we fail to create, 
++	 * the count will be decremented.
++	 */
++	nr_pdflush_threads = MIN_PDFLUSH_THREADS;
++
+ 	for (i = 0; i < MIN_PDFLUSH_THREADS; i++)
+ 		start_one_pdflush_thread();
+ 	return 0;
 
-Rusty, back to you for an advise on how to continue ;-)
-(I assume Rusty is just right now celebrating new-year)
-
-Helge
