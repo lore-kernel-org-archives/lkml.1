@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbYLaC7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbYLaDA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755635AbYLaC7v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 21:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbYLaC7I
+	id S1755796AbYLaDA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 22:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbYLaC7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 21:59:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52636 "EHLO song.cn.fujitsu.com"
+	Tue, 30 Dec 2008 21:59:15 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62647 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754509AbYLaC7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 21:59:06 -0500
-Message-ID: <495ADF3C.4030305@cn.fujitsu.com>
-Date: Wed, 31 Dec 2008 10:55:56 +0800
+	id S1755425AbYLaC7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 21:59:12 -0500
+Message-ID: <495ADF45.2030203@cn.fujitsu.com>
+Date: Wed, 31 Dec 2008 10:56:05 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/5] add binary printf
+Subject: [PATCH 2/5] ftrace: infrastructure for supporting binary record
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,512 +24,364 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: Add APIs for binary trace printk infrastructure
+Impact: save on memory for tracing
 
-vbin_printf(): write args to binary buffer, string is copied
-when "%s" is occurred.
+Current tracers are typically using a struct(like struct ftrace_entry,
+struct ctx_switch_entry, struct special_entr etc...)to record a binary
+event. These structs can only record a their own kind of events.
+A new kind of tracer need a new struct and a lot of code too handle it.
 
-bstr_printf(): read from binary buffer for args and format a string
+So we need a generic binary record for events. This infrastructure
+is for this purpose.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
- b/lib/Kconfig          |    3
- b/lib/vsprintf.c       |  442 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/string.h |    7
- 3 files changed, 452 insertions(+)
-diff --git a/include/linux/string.h b/include/linux/string.h
-index d18fc19..27ac317 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -10,6 +10,7 @@
- #include <linux/compiler.h>	/* for inline */
- #include <linux/types.h>	/* for size_t */
- #include <linux/stddef.h>	/* for NULL */
-+#include <stdarg.h>
+ include/linux/ftrace.h       |    3 +
+ kernel/trace/Kconfig         |    6 ++
+ kernel/trace/Makefile        |    1
+ kernel/trace/trace.c         |   57 ++++++++++++++++++++++++++++
+ kernel/trace/trace.h         |   12 +++++
+ kernel/trace/trace_bprintk.c |   87 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_output.c  |   72 +++++++++++++++++++++++++++++++++++
+ 7 files changed, 238 insertions(+)
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 677432b..0ec4752 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -181,6 +181,9 @@ extern int ftrace_make_nop(struct module *mod,
+  */
+ extern int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr);
  
- extern char *strndup_user(const char __user *, long);
++#ifdef CONFIG_TRACE_BPRINTK
++extern int trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
++#endif
  
-@@ -111,6 +112,12 @@ extern void argv_free(char **argv);
+ /* May be defined in arch */
+ extern int ftrace_arch_read_dyn_info(char *buf, int size);
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index e2a4ff6..887bd89 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -77,6 +77,12 @@ config FUNCTION_GRAPH_TRACER
+ 	  This is done by setting the current return address on the current
+ 	  task structure into a stack of calls.
  
- extern bool sysfs_streq(const char *s1, const char *s2);
++config TRACE_BPRINTK
++	bool "Binary printk for tracing"
++	default y
++	depends on TRACING
++	select BINARY_PRINTF
++
+ config IRQSOFF_TRACER
+ 	bool "Interrupts-off Latency Tracer"
+ 	default n
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index 31cd5fb..8ca3952 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
+ obj-$(CONFIG_TRACING) += trace.o
+ obj-$(CONFIG_TRACING) += trace_output.o
+ obj-$(CONFIG_TRACING) += trace_stat.o
++obj-$(CONFIG_TRACE_BPRINTK) += trace_bprintk.o
+ obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
+ obj-$(CONFIG_SYSPROF_TRACER) += trace_sysprof.o
+ obj-$(CONFIG_FUNCTION_TRACER) += trace_functions.o
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index b789c01..6e5c9df 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3027,6 +3027,63 @@ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ }
+ EXPORT_SYMBOL_GPL(__ftrace_printk);
  
-+#ifdef CONFIG_BINARY_PRINTF
-+int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
-+int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf);
-+int bprintf(u32 *bin_buf, size_t size, const char *fmt, ...) __printf(3, 4);
++/**
++ * trace_vbprintk - write binary msg to tracing buffer
++ *
++ * Caller must insure @fmt are valid when msg is in tracing buffer.
++ */
++int trace_vbprintk(unsigned long ip, const char *fmt, va_list args)
++{
++	static DEFINE_SPINLOCK(trace_buf_lock);
++	static u32 trace_buf[TRACE_BUF_SIZE];
++
++	struct ring_buffer_event *event;
++	struct trace_array *tr = &global_trace;
++	struct trace_array_cpu *data;
++	struct bprintk_entry *entry;
++	unsigned long flags, irq_flags;
++	int cpu, len = 0, size, pc;
++
++	if (tracing_disabled || !trace_bprintk_enable)
++		return 0;
++
++	pc = preempt_count();
++	preempt_disable_notrace();
++	cpu = raw_smp_processor_id();
++	data = tr->data[cpu];
++
++	if (unlikely(atomic_read(&data->disabled)))
++		goto out;
++
++	spin_lock_irqsave(&trace_buf_lock, flags);
++	len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
++
++	if (len > TRACE_BUF_SIZE || len < 0)
++		goto out_unlock;
++
++	size = sizeof(*entry) + sizeof(u32) * len;
++	event = ring_buffer_lock_reserve(tr->buffer, size, &irq_flags);
++	if (!event)
++		goto out_unlock;
++	entry = ring_buffer_event_data(event);
++	tracing_generic_entry_update(&entry->ent, flags, pc);
++	entry->ent.type			= TRACE_BPRINTK;
++	entry->ip			= ip;
++	entry->fmt			= fmt;
++
++	memcpy(entry->buf, trace_buf, sizeof(u32) * len);
++	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
++
++out_unlock:
++	spin_unlock_irqrestore(&trace_buf_lock, flags);
++
++out:
++	preempt_enable_notrace();
++
++	return len;
++}
++EXPORT_SYMBOL_GPL(trace_vbprintk);
++
+ static int trace_panic_handler(struct notifier_block *this,
+ 			       unsigned long event, void *unused)
+ {
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index a8b624c..6885d13 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -18,6 +18,7 @@ enum trace_type {
+ 	TRACE_WAKE,
+ 	TRACE_STACK,
+ 	TRACE_PRINT,
++	TRACE_BPRINTK,
+ 	TRACE_SPECIAL,
+ 	TRACE_MMIO_RW,
+ 	TRACE_MMIO_MAP,
+@@ -120,6 +121,16 @@ struct print_entry {
+ 	char			buf[];
+ };
+ 
++struct bprintk_entry {
++	struct trace_entry ent;
++	unsigned long ip;
++	const char *fmt;
++	u32 buf[];
++};
++#ifdef CONFIG_TRACE_BPRINTK
++extern int trace_bprintk_enable;
 +#endif
 +
- extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
- 			const void *from, size_t available);
+ #define TRACE_OLD_SIZE		88
  
-diff --git a/lib/Kconfig b/lib/Kconfig
-index fd4118e..aa16cd6 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -2,6 +2,9 @@
- # Library configuration
- #
- 
-+config BINARY_PRINTF
-+	def_bool n
-+
- menu "Library routines"
- 
- config BITREVERSE
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 3b77702..b8dd704 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -1051,6 +1051,448 @@ int sprintf(char * buf, const char *fmt, ...)
- }
- EXPORT_SYMBOL(sprintf);
- 
-+#ifdef CONFIG_BINARY_PRINTF
+ struct trace_field_cont {
+@@ -262,6 +273,7 @@ extern void __ftrace_bad_type(void);
+ 		IF_ASSIGN(var, ent, struct stack_entry, TRACE_STACK);	\
+ 		IF_ASSIGN(var, ent, struct userstack_entry, TRACE_USER_STACK);\
+ 		IF_ASSIGN(var, ent, struct print_entry, TRACE_PRINT);	\
++		IF_ASSIGN(var, ent, struct bprintk_entry, TRACE_BPRINTK);\
+ 		IF_ASSIGN(var, ent, struct special_entry, 0);		\
+ 		IF_ASSIGN(var, ent, struct trace_mmiotrace_rw,		\
+ 			  TRACE_MMIO_RW);				\
+diff --git a/kernel/trace/trace_bprintk.c b/kernel/trace/trace_bprintk.c
+new file mode 100644
+index 0000000..1f8e532
+--- /dev/null
++++ b/kernel/trace/trace_bprintk.c
+@@ -0,0 +1,87 @@
 +/*
-+ * bprintf service:
-+ * vbin_printf() - VA arguments to binary data
-+ * bstr_printf() - Binary data to text string
++ * trace binary printk
++ *
++ * Copyright (C) 2008 Lai Jiangshan <laijs@cn.fujitsu.com>
++ *
 + */
++#include <linux/kernel.h>
++#include <linux/ftrace.h>
++#include <linux/string.h>
++#include <linux/ctype.h>
++#include <linux/list.h>
++#include <linux/mutex.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <linux/fs.h>
++#include <linux/marker.h>
++#include <linux/uaccess.h>
 +
-+/**
-+ * vbin_printf - Parse a format string and place args' binary value in a buffer
-+ * @bin_buf: The buffer to place args' binary value
-+ * @size: The size of the buffer(by words(32bits), not characters)
-+ * @fmt: The format string to use
-+ * @args: Arguments for the format string
-+ *
-+ * The format follows C99 vsnprintf, except %n is ignored, and its argument
-+ * is skiped.
-+ *
-+ * The return value is the number of words(32bits) which would be generated for
-+ * the given input.
-+ *
-+ * NOTE:
-+ * If the return value is greater than @size, the resulting bin_buf is NOT
-+ * valid for bstr_printf().
-+ */
-+int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args)
++#include "trace.h"
++
++/* binary printk basic */
++static DEFINE_MUTEX(btrace_mutex);
++static int btrace_metadata_count;
++
++static inline void lock_btrace(void)
 +{
-+	char *str, *end;
-+	int qualifier;
-+
-+	str = (char *)bin_buf;
-+	end = (char *)(bin_buf + size);
-+
-+#define save_arg(type)							\
-+do {									\
-+	if (sizeof(type) == 8) {					\
-+		unsigned long long value;				\
-+		str = PTR_ALIGN(str, sizeof(u32));			\
-+		value = va_arg(args, unsigned long long);		\
-+		if (str + sizeof(type) <= end) {			\
-+			*(u32 *)str = *(u32 *)&value;			\
-+			*(u32 *)(str + 4) = *((u32 *)&value + 1);	\
-+		}							\
-+	} else {							\
-+		unsigned long value;					\
-+		str = PTR_ALIGN(str, sizeof(type));			\
-+		value = va_arg(args, int);				\
-+		if (str + sizeof(type) <= end)				\
-+			*(typeof(type) *)str = (type)value;		\
-+	}								\
-+	str += sizeof(type);						\
-+} while (0)
-+
-+	for (; *fmt ; ++fmt) {
-+		if (*fmt != '%')
-+			continue;
-+
-+repeat:
-+		/* parse flags */
-+		++fmt;		/* this also skips first '%' */
-+		if (*fmt == '-' || *fmt == '+' || *fmt == ' '
-+				|| *fmt == '#' || *fmt == '0')
-+			goto repeat;
-+
-+		/* parse field width */
-+		if (isdigit(*fmt))
-+			skip_atoi(&fmt);
-+		else if (*fmt == '*') {
-+			++fmt;
-+			/* it's the next argument */
-+			save_arg(int);
-+		}
-+
-+		/* parse the precision */
-+		if (*fmt == '.') {
-+			++fmt;
-+			if (isdigit(*fmt))
-+				skip_atoi(&fmt);
-+			else if (*fmt == '*') {
-+				++fmt;
-+				/* it's the next argument */
-+				save_arg(int);
-+			}
-+		}
-+
-+		/* parse the conversion qualifier */
-+		qualifier = -1;
-+		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
-+		    *fmt == 'Z' || *fmt == 'z' || *fmt == 't') {
-+			qualifier = *fmt;
-+			++fmt;
-+			if (qualifier == 'l' && *fmt == 'l') {
-+				qualifier = 'L';
-+				++fmt;
-+			}
-+		}
-+
-+		/* parse format type */
-+		switch (*fmt) {
-+		case 'c':
-+			save_arg(char);
-+			continue;
-+		case 's': {
-+			/* save the string argument */
-+			const char *save_str = va_arg(args, char *);
-+			size_t len;
-+			if ((unsigned long)save_str > (unsigned long)-PAGE_SIZE
-+					|| (unsigned long)save_str < PAGE_SIZE)
-+				save_str = "<NULL>";
-+			len = strlen(save_str);
-+			if (str + len + 1 < end)
-+				memcpy(str, save_str, len + 1);
-+			str += len + 1;
-+			continue;
-+		}
-+		case 'p':
-+			save_arg(void *);
-+			/* skip all alphanumeric pointer suffixes */
-+			while (isalnum(fmt[1]))
-+				fmt++;
-+			continue;
-+		case 'n': {
-+			/* skip %n 's argument */
-+			void *skip_arg;
-+			if (qualifier == 'l')
-+				skip_arg = va_arg(args, long *);
-+			else if (qualifier == 'Z' || qualifier == 'z')
-+				skip_arg = va_arg(args, size_t *);
-+			else
-+				skip_arg = va_arg(args, int *);
-+			continue;
-+		}
-+		case 'o':
-+		case 'x':
-+		case 'X':
-+		case 'd':
-+		case 'i':
-+		case 'u':
-+			/* save arg for case: 'o', 'x', 'X', 'd', 'i', 'u' */
-+			if (qualifier == 'L')
-+				save_arg(long long);
-+			else if (qualifier == 'l')
-+				save_arg(unsigned long);
-+			else if (qualifier == 'Z' || qualifier == 'z')
-+				save_arg(size_t);
-+			else if (qualifier == 't')
-+				save_arg(ptrdiff_t);
-+			else if (qualifier == 'h')
-+				save_arg(short);
-+			else
-+				save_arg(int);
-+			continue;
-+		default:
-+			if (!*fmt)
-+				--fmt;
-+			continue;
-+		}
-+	}
-+#undef save_arg
-+
-+	return (u32 *)(PTR_ALIGN(str, sizeof(u32))) - bin_buf;
++	mutex_lock(&btrace_mutex);
 +}
-+EXPORT_SYMBOL_GPL(vbin_printf);
 +
-+/**
-+ * bstr_printf - Format a string from binary arguments and place it in a buffer
-+ * @buf: The buffer to place the result into
-+ * @size: The size of the buffer, including the trailing null space
-+ * @fmt: The format string to use
-+ * @bin_buf: Binary arguments for the format string
-+ *
-+ * This function like C99 vsnprintf, but the difference is that vsnprintf gets
-+ * arguments from stack, and bstr_printf gets arguments from @bin_buf which is
-+ * a binary buffer that generated by vbin_printf.
-+ *
-+ * The format follows C99 vsnprintf, but has some extensions:
-+ * %pS output the name of a text symbol
-+ * %pF output the name of a function pointer
-+ * %pR output the address range in a struct resource
-+ * %n is ignored
-+ *
-+ * The return value is the number of characters which would
-+ * be generated for the given input, excluding the trailing
-+ * '\0', as per ISO C99. If you want to have the exact
-+ * number of characters written into @buf as return value
-+ * (not including the trailing '\0'), use vscnprintf(). If the
-+ * return is greater than or equal to @size, the resulting
-+ * string is truncated.
-+ */
-+int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
++static inline void unlock_btrace(void)
 +{
-+	unsigned long long num;
-+	int base;
-+	char *str, *end, c;
-+	const char *args = (const char *)bin_buf;
-+
-+	int flags;
-+	int field_width;
-+	int precision;
-+	int qualifier;
-+
-+	if (unlikely((int) size < 0)) {
-+		/* There can be only one.. */
-+		static char warn = 1;
-+		WARN_ON(warn);
-+		warn = 0;
-+		return 0;
-+	}
-+
-+	str = buf;
-+	end = buf + size;
-+
-+#define get_arg(type)							\
-+({									\
-+	typeof(type) value;						\
-+	if (sizeof(type) == 8) {					\
-+		args = PTR_ALIGN(args, sizeof(u32));			\
-+		*(u32 *)&value = *(u32 *)args;				\
-+		*((u32 *)&value + 1) = *(u32 *)(args + 4);		\
-+	} else {							\
-+		args = PTR_ALIGN(args, sizeof(type));			\
-+		value = *(typeof(type) *)args;				\
-+	}								\
-+	args += sizeof(type);						\
-+	value;								\
-+})
-+
-+	/* Make sure end is always >= buf */
-+	if (end < buf) {
-+		end = ((void *)-1);
-+		size = end - buf;
-+	}
-+
-+	for (; *fmt ; ++fmt) {
-+		if (*fmt != '%') {
-+			if (str < end)
-+				*str = *fmt;
-+			++str;
-+			continue;
-+		}
-+
-+		/* process flags */
-+		flags = 0;
-+repeat:
-+		++fmt;		/* this also skips first '%' */
-+		switch (*fmt) {
-+		case '-':
-+			flags |= LEFT;
-+			goto repeat;
-+		case '+':
-+			flags |= PLUS;
-+			goto repeat;
-+		case ' ':
-+			flags |= SPACE;
-+			goto repeat;
-+		case '#':
-+			flags |= SPECIAL;
-+			goto repeat;
-+		case '0':
-+			flags |= ZEROPAD;
-+			goto repeat;
-+		}
-+
-+		/* get field width */
-+		field_width = -1;
-+		if (isdigit(*fmt))
-+			field_width = skip_atoi(&fmt);
-+		else if (*fmt == '*') {
-+			++fmt;
-+			/* it's the next argument */
-+			field_width = get_arg(int);
-+			if (field_width < 0) {
-+				field_width = -field_width;
-+				flags |= LEFT;
-+			}
-+		}
-+
-+		/* get the precision */
-+		precision = -1;
-+		if (*fmt == '.') {
-+			++fmt;
-+			if (isdigit(*fmt))
-+				precision = skip_atoi(&fmt);
-+			else if (*fmt == '*') {
-+				++fmt;
-+				/* it's the next argument */
-+				precision = get_arg(int);
-+			}
-+			if (precision < 0)
-+				precision = 0;
-+		}
-+
-+		/* get the conversion qualifier */
-+		qualifier = -1;
-+		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
-+		    *fmt == 'Z' || *fmt == 'z' || *fmt == 't') {
-+			qualifier = *fmt;
-+			++fmt;
-+			if (qualifier == 'l' && *fmt == 'l') {
-+				qualifier = 'L';
-+				++fmt;
-+			}
-+		}
-+
-+		/* default base */
-+		base = 10;
-+
-+		switch (*fmt) {
-+		case 'c':
-+			if (!(flags & LEFT)) {
-+				while (--field_width > 0) {
-+					if (str < end)
-+						*str = ' ';
-+					++str;
-+				}
-+			}
-+			c = (unsigned char) get_arg(char);
-+			if (str < end)
-+				*str = c;
-+			++str;
-+			while (--field_width > 0) {
-+				if (str < end)
-+					*str = ' ';
-+				++str;
-+			}
-+			continue;
-+
-+		case 's':{
-+			const char *str_arg = args;
-+			size_t len = strlen(str_arg);
-+			args += len + 1;
-+			str = string(str, end, (char *)str_arg, field_width,
-+					precision, flags);
-+			continue;
-+		}
-+
-+		case 'p':
-+			str = pointer(fmt+1, str, end, get_arg(void *),
-+					field_width, precision, flags);
-+			/* Skip all alphanumeric pointer suffixes */
-+			while (isalnum(fmt[1]))
-+				fmt++;
-+			continue;
-+
-+		case 'n':
-+			/* skip %n */
-+			continue;
-+
-+		case '%':
-+			if (str < end)
-+				*str = '%';
-+			++str;
-+			continue;
-+
-+		/* integer number formats - set up the flags and "break" */
-+		case 'o':
-+			base = 8;
-+			break;
-+
-+		case 'x':
-+			flags |= SMALL;
-+		case 'X':
-+			base = 16;
-+			break;
-+
-+		case 'd':
-+		case 'i':
-+			flags |= SIGN;
-+		case 'u':
-+			break;
-+
-+		default:
-+			if (str < end)
-+				*str = '%';
-+			++str;
-+			if (*fmt) {
-+				if (str < end)
-+					*str = *fmt;
-+				++str;
-+			} else {
-+				--fmt;
-+			}
-+			continue;
-+		}
-+		if (qualifier == 'L')
-+			num = get_arg(long long);
-+		else if (qualifier == 'l') {
-+			num = get_arg(unsigned long);
-+			if (flags & SIGN)
-+				num = (signed long) num;
-+		} else if (qualifier == 'Z' || qualifier == 'z') {
-+			num = get_arg(size_t);
-+		} else if (qualifier == 't') {
-+			num = get_arg(ptrdiff_t);
-+		} else if (qualifier == 'h') {
-+			num = (unsigned short) get_arg(short);
-+			if (flags & SIGN)
-+				num = (signed short) num;
-+		} else {
-+			num = get_arg(unsigned int);
-+			if (flags & SIGN)
-+				num = (signed int) num;
-+		}
-+		str = number(str, end, num, base,
-+				field_width, precision, flags);
-+	}
-+	if (size > 0) {
-+		if (str < end)
-+			*str = '\0';
-+		else
-+			end[-1] = '\0';
-+	}
-+#undef get_arg
-+
-+	/* the trailing null byte doesn't count towards the total */
-+	return str - buf;
++	mutex_unlock(&btrace_mutex);
 +}
-+EXPORT_SYMBOL_GPL(bstr_printf);
 +
-+/**
-+ * bprintf - Parse a format string and place args' binary value in a buffer
-+ * @bin_buf: The buffer to place args' binary value
-+ * @size: The size of the buffer(by words(32bits), not characters)
-+ * @fmt: The format string to use
-+ * @...: Arguments for the format string
-+ *
-+ * The function returns the number of words(u32) written
-+ * into @bin_buf.
-+ */
-+int bprintf(u32 *bin_buf, size_t size, const char *fmt, ...)
++static void get_btrace_metadata(void)
 +{
-+	va_list args;
++	lock_btrace();
++	btrace_metadata_count++;
++	unlock_btrace();
++}
++
++static void put_btrace_metadata(void)
++{
++	lock_btrace();
++	btrace_metadata_count--;
++	unlock_btrace();
++}
++
++/* events tracer */
++int trace_bprintk_enable;
++
++static void start_bprintk_trace(struct trace_array *tr)
++{
++	get_btrace_metadata();
++	tracing_reset_online_cpus(tr);
++	trace_bprintk_enable = 1;
++}
++
++static void stop_bprintk_trace(struct trace_array *tr)
++{
++	trace_bprintk_enable = 0;
++	tracing_reset_online_cpus(tr);
++	put_btrace_metadata();
++}
++
++static int init_bprintk_trace(struct trace_array *tr)
++{
++	start_bprintk_trace(tr);
++	return 0;
++}
++
++static struct tracer bprintk_trace __read_mostly =
++{
++	.name	     = "events",
++	.init	     = init_bprintk_trace,
++	.reset	     = stop_bprintk_trace,
++	.start	     = start_bprintk_trace,
++	.stop	     = stop_bprintk_trace,
++};
++
++static __init int init_bprintk(void)
++{
++	return register_tracer(&bprintk_trace);
++}
++
++device_initcall(init_bprintk);
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index df0c25c..ccc9fa7 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -53,6 +53,26 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ 	return len;
+ }
+ 
++static int
++trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
++{
++	int len = (PAGE_SIZE - 1) - s->len;
 +	int ret;
 +
-+	va_start(args, fmt);
-+	ret = vbin_printf(bin_buf, size, fmt, args);
-+	va_end(args);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(bprintf);
++	if (!len)
++		return 0;
 +
-+#endif /* CONFIG_BINARY_PRINTF */
++	ret = bstr_printf(s->buffer + s->len, len, fmt, binary);
++
++	/* If we can't write it all, don't bother writing anything */
++	if (ret >= len)
++		return 0;
++
++	s->len += ret;
++
++	return len;
++}
 +
  /**
-  * vsscanf - Unformat a buffer into a list of arguments
-  * @buf:	input buffer
-
+  * trace_seq_puts - trace sequence printing of simple string
+  * @s: trace sequence descriptor
+@@ -800,6 +820,57 @@ static struct trace_event trace_print_event = {
+ 	.binary		= trace_nop_print,
+ };
+ 
++/* TRACE_BPRINTK */
++static int
++trace_bprintk_print(struct trace_seq *s, struct trace_entry *entry, int flags)
++{
++	struct bprintk_entry *field;
++
++	trace_assign_type(field, entry);
++
++	if (!seq_print_ip_sym(s, field->ip, flags))
++		goto partial;
++
++	if (!trace_seq_puts(s, ": "))
++		goto partial;
++
++	if (!trace_seq_bprintf(s, field->fmt, field->buf))
++		goto partial;
++
++	return 0;
++
++ partial:
++	return TRACE_TYPE_PARTIAL_LINE;
++}
++
++static int
++trace_bprintk_raw(struct trace_seq *s, struct trace_entry *entry, int flags)
++{
++	struct bprintk_entry *field;
++
++	trace_assign_type(field, entry);
++
++	if (!trace_seq_printf(s, ": %lx : ", field->ip))
++		goto partial;
++
++	if (!trace_seq_bprintf(s, field->fmt, field->buf))
++		goto partial;
++
++	return 0;
++
++ partial:
++	return TRACE_TYPE_PARTIAL_LINE;
++}
++
++static struct trace_event trace_bprintk_event = {
++	.type	 	= TRACE_BPRINTK,
++	.trace		= trace_bprintk_print,
++	.latency_trace	= trace_bprintk_print,
++	.raw		= trace_bprintk_raw,
++	.hex		= trace_nop_print,
++	.binary		= trace_nop_print,
++};
++
+ static struct trace_event *events[] __initdata = {
+ 	&trace_fn_event,
+ 	&trace_ctx_event,
+@@ -808,6 +879,7 @@ static struct trace_event *events[] __initdata = {
+ 	&trace_stack_event,
+ 	&trace_user_stack_event,
+ 	&trace_print_event,
++	&trace_bprintk_event,
+ 	NULL
+ };
+ 
 
 
 
