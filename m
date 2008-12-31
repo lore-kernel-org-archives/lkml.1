@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYLaQu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYLaU16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756300AbYLaQu1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 11:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbYLaQuP
+	id S1757215AbYLaU16 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 15:27:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYLaU1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 11:50:15 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:34050 "EHLO kumera.dghda.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753443AbYLaQuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 11:50:14 -0500
-From: "Duane Griffin" <duaneg@dghda.com>
-To: Evgeniy Dushistov <dushistov@mail.ru>
-Cc: linux-kernel@vger.kernel.org, Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH 1/4] ufs: validate maximum fast symlink size from superblock
-Date: Wed, 31 Dec 2008 16:50:05 +0000
-Message-Id: <1230742208-23972-1-git-send-email-duaneg@dghda.com>
-X-Mailer: git-send-email 1.6.0.6
+	Wed, 31 Dec 2008 15:27:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:14029 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752684AbYLaU1t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 15:27:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Q2al16tGN3Dm3MrvjSDcVCVTJit7FNpihHbKqJDUAbIOVDwCrT4ongm2mv/8sEGGnQ
+         grQFXDqDgb1nriUPJl8D8227SIcSbNH+tdZB6b/Z23qoY4d3gpWl9R0UOyey7jJTtggS
+         apt3EEwL48Uy4qZ1oZC9bx3dkVfcHTv0x6bEQ=
+Date: Wed, 31 Dec 2008 23:27:44 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: david@lang.hm, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20081231202744.GA32152@localhost>
+References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <alpine.DEB.1.10.0812311204580.18334@asgard.lang.hm> <20081231191214.GF20882@localhost> <alpine.DEB.1.10.0812311316350.18569@asgard.lang.hm> <20081231202346.GH20882@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081231202346.GH20882@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The maximum fast symlink size is set in the superblock of certain types
-of UFS filesystem. Before using it we need to check that it isn't longer
-than the available space we have in the inode.
+[Cyrill Gorcunov - Wed, Dec 31, 2008 at 11:23:46PM +0300]
+...
+| >>
+| >> also you could just pass numa=off and check if it help.
+| >> (even if it help it would not mean that problem are gone
+| >> but become hidden)
+| >
+| > with numa=off the system looks like it gets a bit further
+| >
+| > http://linux.lang.hm/linux/IMG00031.jpg
+| >
+| > this is with framebuffer disabled, earlyprintk=vga bootmem_debug numa=off
+| >
+| > David Lang
+| >
+| 
+| Thanks David, if I recognize correctly now it fails at
+| vfs_caches_init. hmm...
+| 
+| 		- Cyrill -
 
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
----
- fs/ufs/super.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+no suprises - vfs_caches_init uses SLAB_PANIC and since
+we seems to have "memory related" problems earlier now
+we've been catched explicitly by slab code.
 
-diff --git a/fs/ufs/super.c b/fs/ufs/super.c
-index e65212d..a959cdc 100644
---- a/fs/ufs/super.c
-+++ b/fs/ufs/super.c
-@@ -636,6 +636,7 @@ static int ufs_fill_super(struct super_block *sb, void *data, int silent)
- 	unsigned block_size, super_block_size;
- 	unsigned flags;
- 	unsigned super_block_offset;
-+	unsigned maxsymlen;
- 	int ret = -EINVAL;
- 
- 	uspi = NULL;
-@@ -1069,6 +1070,16 @@ magic_found:
- 		uspi->s_maxsymlinklen =
- 		    fs32_to_cpu(sb, usb3->fs_un2.fs_44.fs_maxsymlinklen);
- 
-+	if (uspi->fs_magic == UFS2_MAGIC)
-+		maxsymlen = 2 * 4 * (UFS_NDADDR + UFS_NINDIR);
-+	else
-+		maxsymlen = 4 * (UFS_NDADDR + UFS_NINDIR);
-+	if (uspi->s_maxsymlinklen > maxsymlen) {
-+		printk(KERN_WARNING "ufs_read_super: excessive maximum fast "
-+		       "symlink size (%u)\n", uspi->s_maxsymlinklen);
-+		uspi->s_maxsymlinklen = maxsymlen;
-+	}
-+
- 	inode = ufs_iget(sb, UFS_ROOTINO);
- 	if (IS_ERR(inode)) {
- 		ret = PTR_ERR(inode);
--- 
-1.6.0.6
-
+		- Cyrill -
