@@ -1,131 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbYLaTBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbYLaUX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbYLaTBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 14:01:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbYLaTBh
+	id S1757190AbYLaUX7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 15:23:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYLaUXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 14:01:37 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:49749 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756087AbYLaTBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 14:01:36 -0500
-Date: Wed, 31 Dec 2008 20:01:25 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC merge for 2.6.29
-Message-ID: <20081231200125.3d07d5e4@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-10526-1230750091-0001-2"
+	Wed, 31 Dec 2008 15:23:51 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:9430 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784AbYLaUXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 15:23:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=s6TvgnrNYdka33KAEL4JD7j5Gb74bMWKkyUtkp+dsUtHuagmn8WhK1ZN7YD9vs0zbK
+         KwRytcOlOsd18Ryr3UWgbof56XuWmpCKliygx0hQtH0F9dkaFc0ZyXBT0pzfSesCxc8B
+         h5Kir+Wh9PeVOZlPxfTnouBnOG+nPojmQ31P8=
+Date: Wed, 31 Dec 2008 23:23:46 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: david@lang.hm
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20081231202346.GH20882@localhost>
+References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <alpine.DEB.1.10.0812311204580.18334@asgard.lang.hm> <20081231191214.GF20882@localhost> <alpine.DEB.1.10.0812311316350.18569@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0812311316350.18569@asgard.lang.hm>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+[david@lang.hm - Wed, Dec 31, 2008 at 01:18:25PM -0800]
+> On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
+>
+>> [david@lang.hm - Wed, Dec 31, 2008 at 12:07:33PM -0800]
+>>> On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
+>>>
+>>>> [david@lang.hm - Wed, Dec 31, 2008 at 11:12:12AM -0800]
+>>>>> On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
+>>>>>
+>>>>>> [david@lang.hm - Tue, Dec 30, 2008 at 05:39:29PM -0800]
+>>>>>>>
+>>>>>>> so it looks like this is in alloc_bootmem_core in both cases.
+>>>>>>>
+>>>>>>> David Lang
+>>>>>>>
+>>>>>>
+>>>>>> Along with Andi's proposed earlyprintk=vga I think
+>>>>>> bootmem_debug option could be usefull here too.
+>>>>>
+>>>>> adding bootmem_debug creates so much additonal output that the oops
+>>>>> scrolls off the screen (except the last 'paragraph' of it)
+>>>>>
+>>>>> it looks like it's individual items being allocated (trying to scan it as
+>>>>> it scrolled by)
+>>>>
+>>>> on the picture you sent me i noticed the message
+>>>> "Your memory is not aligned you need to rebuild your
+>>>> kernel with bigger NODEMAP SIZE shift=20" and then
+>>>> srat code complains about "No NUMA code hash function found"
+>>>> which looks a bit scary. Btw, could you post this picture
+>>>> on some public resource so NUMA people could check it?
+>>>
+>>> http://linux.lang.hm/linux/IMG00030.jpg
+>>>
+>>> I'll try rebuilding with a bigger nodemap size and let you know
+>>>
+>>> David Lang
+>>>
+>>
+>> also you could just pass numa=off and check if it help.
+>> (even if it help it would not mean that problem are gone
+>> but become hidden)
+>
+> with numa=off the system looks like it gets a bit further
+>
+> http://linux.lang.hm/linux/IMG00031.jpg
+>
+> this is with framebuffer disabled, earlyprintk=vga bootmem_debug numa=off
+>
+> David Lang
+>
 
---=_freyr.drzeus.cx-10526-1230750091-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Thanks David, if I recognize correctly now it fails at
+vfs_caches_init. hmm...
 
-Linus, please pull from
-
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
-nus
-
-to receive the following updates:
-
- drivers/mmc/card/block.c      |  122 ++++++++++++++++++++++++++-------
- drivers/mmc/core/core.c       |   77 +++++++++++++++++++++
- drivers/mmc/core/mmc.c        |   18 ++++-
- drivers/mmc/host/Makefile     |    3 +
- drivers/mmc/host/at91_mci.c   |    4 +-
- drivers/mmc/host/mmc_spi.c    |    4 +-
- drivers/mmc/host/of_mmc_spi.c |  149 +++++++++++++++++++++++++++++++++++++=
-++++
- drivers/mmc/host/pxamci.c     |    2 +-
- drivers/mmc/host/ricoh_mmc.c  |   17 +++--
- drivers/mmc/host/sdhci-pci.c  |    2 +-
- drivers/mmc/host/sdhci.c      |   17 +++--
- drivers/mmc/host/sdhci.h      |    2 +-
- drivers/mmc/host/sdricoh_cs.c |    4 +-
- drivers/mmc/host/tmio_mmc.c   |    3 +-
- include/linux/mmc/core.h      |    2 +
- include/linux/mmc/host.h      |    2 +
- include/linux/spi/mmc_spi.h   |   15 ++++-
- 17 files changed, 392 insertions(+), 51 deletions(-)
- create mode 100644 drivers/mmc/host/of_mmc_spi.c
-
-Adrian Hunter (2):
-      mmc_block: print better error messages
-      mmc_block: ensure all sectors that do not have errors are read
-
-Anton Vorontsov (2):
-      mmc: Add mmc_vddrange_to_ocrmask() helper function
-      mmc_spi: Add support for OpenFirmware bindings
-
-Arjan van de Ven (1):
-      pci: use pci_ioremap_bar() in drivers/mmc
-
-David Brownell (1):
-      mmc: warn about voltage mismatches
-
-Harvey Harrison (1):
-      mmc: trivial annotation of 'blocks'
-
-Jarkko Lavinen (1):
-      mmc: Add 8-bit bus width support
-
-Julia Lawall (1):
-      drivers/mmc: Move a dereference below a NULL test
-
-Nicolas Ferre (1):
-      mmc: at91_mci: reorder timer setup and mmc_add_host() call
-
-Pierre Ossman (2):
-      sdhci: handle built-in sdhci with modular leds class
-      Merge branch 'master' of ../mmc
-
-Roel Kluin (1):
-      mmc: balanc pci_iomap with pci_iounmap
-
-Sascha Sommer (1):
-      sdricoh_cs: Add support for Bay Controller devices
-
-Vernon Sauder (1):
-      pxamci: fix dma_unmap_sg length
-
-philipl@overt.org (1):
-      ricoh_mmc: Handle newer models of Ricoh controllers
-
-=C3=89ric Piel (1):
-      sdhci: activate led support also when module
-
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-10526-1230750091-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAklbwYoACgkQ7b8eESbyJLgOygCfYOwywzElbZIvWiib+Dq5LTp0
-Pc8An1lBqTwjJUduu5/uwLfg6WYUiRcr
-=A7q9
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-10526-1230750091-0001-2--
+		- Cyrill -
