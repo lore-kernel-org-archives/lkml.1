@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYLaVoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbYLaVnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbYLaVoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 16:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYLaVnt
+	id S1757159AbYLaVnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 16:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYLaVnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 16:43:49 -0500
-Received: from lexington.centerclick.org ([66.114.92.10]:55476 "EHLO
-	lexington.centerclick.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754513AbYLaVns (ORCPT
+	Wed, 31 Dec 2008 16:43:10 -0500
+Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:27386 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbYLaVnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 16:43:48 -0500
-X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Dec 2008 16:43:48 EST
-From: Dave Johnson <dave-lkml-01@centerclick.org>
+	Wed, 31 Dec 2008 16:43:09 -0500
+Date: Wed, 31 Dec 2008 22:43:06 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Andrey Vul <andrey.vul@gmail.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28: BUG in r8169
+In-Reply-To: <e38d12ff0812311037i14efe091m8550080678d0e2@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.0812312200130.11912@swampdragon.chaosbits.net>
+References: <e38d12ff0812311037i14efe091m8550080678d0e2@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18779.58377.160214.225792@wellington.i202.centerclick.org>
-Date: Wed, 31 Dec 2008 16:28:41 -0500
-To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: [ext3] kjournald writing after each read despite noatime,commit=nnn
-X-Mailer: VM 7.19 under 21.4 (patch 19) "Constant Variable" XEmacs Lucid
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 31 Dec 2008, Andrey Vul wrote:
 
-Since upgrading from 2.6.23.1 to 2.6.27.8, I'm now seeing kjournald
-perform a write 2 seconds after each read to an ext3 fs.
+> trigger: wget 192.168.1.42/jdk-6-sdk-docs.zip
+> eth0 speed grinds to zero in a few seconds
+> IIRC r8169 worked fine in 2.6.27.8
+> Anybody want to assist me with my first git bisect?
+> 
+There is lots of documentation, tutorials and howto documents etc on git 
+bisect online.
 
-laptop mode is on and filesystem is mounted with noatime and a large
-commit time (6 hours).
+Here are a few:
+ http://www.kernel.org/pub/software/scm/git/docs/git-bisect.html
+ http://www.reactivated.net/weblog/archives/2006/01/using-git-bisect-to-find-buggy-kernel-patches/
+ http://kerneltrap.org/node/11753
+ http://jbowes.dangerouslyinc.com/2007/02/18/git-bisect-a-practical-example-with-yum/
+ http://desprofundis.blogspot.com/2008/06/git-bisect-instructions.html
+ http://elinux.org/Notes_On_Git_Bisect#bisect
 
-Did I miss something or is this expected?
+Mostly it's as simple as
+ install git
+ clone (usually) Linus' tree
+ $ git bisect start
+ $ git bisect bad v[bad-version]
+ $ git bisect goot v[good-version]
+ git now checks out a version to test, copy in your config, run make 
+oldconfig, copile, test, then run
+ $ git bisect [good|bad]
+ depending on the result of the test and repeat with the next version git 
+spits out until git tells you what the bad commit is.
 
-
-Note, there is no other activity reported by block_dump at this time
-from any other mounted filesystem.
-
-Some examples:
-
-Dec 31 15:43:14 gw kernel: w(26329): READ block 756266 on hda1 
-Dec 31 15:43:16 gw kernel: kjournald(760): WRITE block 2152 on hda1 
-
-Dec 31 15:45:05 gw kernel: top(26366): READ block 756008 on hda1 
-Dec 31 15:45:05 gw kernel: top(26366): READ block 756016 on hda1 
-Dec 31 15:45:05 gw kernel: top(26366): READ block 756026 on hda1 
-Dec 31 15:45:05 gw kernel: top(26366): READ block 756098 on hda1 
-Dec 31 15:45:07 gw kernel: kjournald(760): WRITE block 2154 on hda1 
-
-Dec 31 15:48:43 gw kernel: cat(26430): READ block 502016 on hda1 
-Dec 31 15:48:43 gw kernel: cat(26430): READ block 502024 on hda1 
-Dec 31 15:48:43 gw kernel: cat(26430): READ block 502032 on hda1 
-Dec 31 15:48:43 gw kernel: cat(26430): READ block 502040 on hda1 
-Dec 31 15:48:43 gw kernel: cat(26430): READ block 502042 on hda1 
-Dec 31 15:48:43 gw kernel: cat(26430): READ block 502050 on hda1 
-Dec 31 15:48:43 gw kernel: cat(26430): READ block 502114 on hda1 
-Dec 31 15:48:45 gw kernel: kjournald(760): WRITE block 2156 on hda1 
-
-Dec 31 15:48:55 gw kernel: bash(26436): READ block 744586 on hda1 
-Dec 31 15:48:55 gw kernel: bash(26436): READ block 744594 on hda1 
-Dec 31 15:48:55 gw kernel: bash(26436): READ block 744602 on hda1 
-Dec 31 15:48:55 gw kernel: bash(26436): READ block 744610 on hda1 
-Dec 31 15:48:55 gw kernel: bash(26436): READ block 744612 on hda1 
-Dec 31 15:48:55 gw kernel: reset(26436): READ block 744620 on hda1 
-Dec 31 15:48:57 gw kernel: kjournald(760): WRITE block 2158 on hda1 
-
-$ grep ext3 /proc/mounts 
-/dev/root / ext3 rw,noatime,errors=remount-ro,commit=21600,data=ordered 0 0
-
-$ for f in /proc/sys/vm/*; do printf "%-50s" $f; cat $f; done
-/proc/sys/vm/block_dump                           1
-/proc/sys/vm/dirty_background_ratio               10
-/proc/sys/vm/dirty_expire_centisecs               2160000
-/proc/sys/vm/dirty_ratio                          60
-/proc/sys/vm/dirty_writeback_centisecs            2160000
-/proc/sys/vm/drop_caches                          0
-/proc/sys/vm/laptop_mode                          2
-/proc/sys/vm/legacy_va_layout                     0
-/proc/sys/vm/lowmem_reserve_ratio                 256   32
-/proc/sys/vm/max_map_count                        65536
-/proc/sys/vm/min_free_kbytes                      1440
-/proc/sys/vm/nr_pdflush_threads                   2
-/proc/sys/vm/oom_dump_tasks                       0
-/proc/sys/vm/oom_kill_allocating_task             0
-/proc/sys/vm/overcommit_memory                    0
-/proc/sys/vm/overcommit_ratio                     50
-/proc/sys/vm/page-cluster                         3
-/proc/sys/vm/panic_on_oom                         0
-/proc/sys/vm/percpu_pagelist_fraction             0
-/proc/sys/vm/swappiness                           60
-/proc/sys/vm/vdso_enabled                         2
-/proc/sys/vm/vfs_cache_pressure                   100
-$ 
 
 -- 
-Dave
+Jesper Juhl <jj@chaosbits.net>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
+
