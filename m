@@ -1,220 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYLaEy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYLaEzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbYLaEy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 23:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYLaEyT
+	id S1755826AbYLaEzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 23:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbYLaEzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 23:54:19 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:28092 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbYLaEyS (ORCPT
+	Tue, 30 Dec 2008 23:55:40 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:65210 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbYLaEzj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 23:54:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=N6kbvSlMrqJwQ8vdz62OGIzZNZtK1kbMqN7At4Mf5fNmPLu73FUZ/nrBp0fVXr4F+M
-         13gaVAwMQc3pwANUDvQ/dJMORcksjVCbDHGRHPfk44HaatlC9910UORqK/gy6zKow7Wj
-         XWmepapSw+dJocfUBRtdVVWgnYqZ7d9AcxM9g=
-Message-ID: <2f11576a0812302054rd26d8bcw6a113b3abefe8965@mail.gmail.com>
-Date: Wed, 31 Dec 2008 13:54:17 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Mel Gorman" <mel@csn.ul.ie>
-Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "wassim dagash" <wassim.dagash@gmail.com>
-In-Reply-To: <20081230185919.GA17725@csn.ul.ie>
+	Tue, 30 Dec 2008 23:55:39 -0500
+X-IronPort-AV: E=Sophos;i="4.36,306,1228107600"; 
+   d="scan'208";a="64631548"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Tue, 30 Dec 2008 23:55:44 -0500
+User-Agent: KMail/1.9.5
+Cc: "Jaya Kumar" <jayakumar.lkml@gmail.com>,
+       "Eric Miao" <eric.y.miao@gmail.com>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Eric Miao" <eric.miao@marvell.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Philipp Zabel" <philipp.zabel@gmail.com>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Ben Gardner" <bgardner@wabtec.com>, "Greg KH" <greg@kroah.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <200812281346.56703.rgetz@blackfin.uclinux.org> <200812291156.12230.david-b@pacbell.net>
+In-Reply-To: <200812291156.12230.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081230185919.GA17725@csn.ul.ie>
-X-Google-Sender-Auth: 3652fe99e6725d32
+Message-Id: <200812302355.45193.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 31 Dec 2008 04:55:36.0304 (UTC) FILETIME=[04E6B700:01C96B04]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Mon 29 Dec 2008 14:56, David Brownell pondered:
+> On Sunday 28 December 2008, Robin Getz wrote:
+> > On Sat 27 Dec 2008 09:55, Jaya Kumar pondered:
+> > 
+> > I think that I would prefer 'group' or 'collection' to use some of 
+> > the words that David described things as 'ganged' or 'bus' or 'bank' 
+> > or 'adjacent'.  (but I think 'adjacent' or 'bank' really is an 
+> > implementation convention).
+> > 
+> > I think I would also prefer to name things like gpio_bus_* as a 
+> > rather than gpio_*_bus - so the operation always is on the end...
+> 
+> I'd avoid "bus"; the term has specific meanings, which aren't
+> necessarily relevant in these contexts.  Agreed about "adjacent" and 
+> "bank". 
+> 
+> If it weren't for its verb usage, I'd suggest "set".  :)
 
-thank you for reviewing.
+So, any suggestions? how about "gang" or "group"? or as you said 
+below "multiple".
 
->> ==
->> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
->>
->> Wassim Dagash reported following kswapd infinite loop problem.
->>
->>   kswapd runs in some infinite loop trying to swap until order 10 of zone
->>   highmem is OK, While zone higmem (as I understand) has nothing to do
->>   with contiguous memory (cause there is no 1-1 mapping) which means
->>   kswapd will continue to try to balance order 10 of zone highmem
->>   forever (or until someone release a very large chunk of highmem).
->>
->> He proposed remove contenious checking on highmem at all.
->> However hugepage on highmem need contenious highmem page.
->>
+
+> > Shouldn't the write return an error code (if the data was not
+> > written)?
+> 
+> For these operations, I think reads/writes should have that possibility.
+> 
+> The reason single-bit operations don't provide error paths is twofold.
+> First, they started as wrappers for can't-fail register accessors.
+> Second, it's extremely unrealisitic to expect much code to handle any
+> kind of faults in the middle of bitbanging loops ... or even just in
+> classic "set this bit and continue" configuration code.
+> 
+> Those reasons don't apply well to these multi-bit cases.
+
+I'm just trying to think of what the error case might be. The only think I can 
+really think of - is the case where you try to do a set/get on something that 
+has been freed.
+
+Otherwise - it should be pretty much the same. (basic bitbanging loops, which 
+call multiple/basic can't-fail register accessors).
+
+> > > While we are here, I was thinking about it, and its better if I give
+> > > gpio_request/free/direction_batch a miss for now. Nothing prevents
+> > > those features being added at a later point.
+> > 
+> > I don't think that request/free are optional.
+> 
+> Agreed.  If there's any difficulty implementing them, that would
+> suggest there's a significant conceptual problem to address ...
 >
-> I'm lacking the original problem report, but contiguous order-10 pages are
-> indeed required for hugepages in highmem and reclaiming for them should not
-> be totally disabled at any point. While no 1-1 mapping exists for the kernel,
-> contiguity is still required.
+> > For example - in most SoC implementations - gpios are implemented
+> > as banks of 16 or 32. (a 16 or 32 bit register).
+> > 
+> > Are there facilities to span these registers? 
+> >  - can you request 64 gpios as a 'bank'?
+> >  - can you request gpio_8 -> gpio_40 as a 'bank' on a 32-bit system?
+> > 
+> > Are non-adjacent/non-contiguous gpios avaliable to be put into 
+> > a 'bank/batch/bus'? can you use gpio_8 -> 11 &  28 -> 31 as a
+> > 8-bit 'bus'? 
+> > 
+> > How do you know what is avaliable to be talked to as a bank/bus/batch
+> > without the request/free operation?
+> > 
+> > 
+> > I have seen various hardware designs (both at the PCB and SoC level)
+> > require all of these options, and would like to see common 
+> > infrastructure which handles this.
+> 
+> Right.  Get the interface right -- it should allow all those
+> complexities! -- and maybe take shortcuts in the first versions
+> of the implementation, by only talking to one gpio_chip at a
+> time.  I'd expect any shortcuts would be resolved quickly, to
+> the extent they cause problems.
 
-correct.
-but that's ok.
+Yeah, I hadn't thought about spanning more than one gpio_chip. That's a good 
+point.
 
-my patch only change corner case bahavior and only disable high-order
-when priority==0. typical hugepage reclaim don't need and don't reach
-priority==0.
+> > The issue is that on many SoC implementations - dedicated peripherals
+> > can also be GPIOs - so it someone wants to use SPI (for example) GPIO's
+> > 3->7 might be removed from the avaliable 'gpio' resources. This is
+> > determined by the silicon designer - and even the PCB designer has 
+> > little to no flexibility on this. It gets worse as multiple SPI or I2C
+> > are used on the PCB (which can have lots of small (less than 5) 
+> > dedicated pins in the middle of the larger gpio resources)....
+> 
+> Such pin-muxing is a different issue though.  Don't expect GPIO
+> calls to resolve those problems.
 
-and sorry. I agree with my "2nd loop"  word of the patch comment is a
-bit misleading.
+I wasn't trying to make the point about pin muxing (I agree - different 
+problem) - just that it is unlikely that the gang of gpios will be 
+adjacent/contiguous in most cases.
 
+> > I would think that a 'bank' / 'bus' (whatever) would be a collection
+> > of random/multiple GPIOs (a struct of gpio_port_t) rather than a
+> > start/length (as you described) - or better yet - the request function
+> > takes a list (of individual GPIO's - defined in the platform data), 
+> > and creates the struct itself.
+> 
+> That's why I pointed to <linux/bitmask.h> as one model:  it allows
+> an arbitrary set of bits (GPIOs) to be specified.
 
-> kswapd gets a sc.order when it is known there is a process trying to get
-> high-order pages so it can reclaim at that order in an attempt to prevent
-> future direct reclaim at a high-order. Your patch does not appear to depend on
-> GFP_KERNEL at all so I found the comment misleading. Furthermore, asking it to
-> loop again at order-0 means it may scan and reclaim more memory unnecessarily
-> seeing as all_zones_ok was calculated based on a high-order value, not order-0.
-
-Yup. my patch doesn't depend on GFP_KERNEL.
-
-but, Why order-0 means it may scan more memory unnecessary?
-all_zones_ok() is calculated by zone_watermark_ok() and zone_watermark_ok()
-depend on order argument. and my patch set order variable to 0 too.
-
-
-> While constantly looping trying to balance for high-orders is indeed bad,
-> I'm unconvinced this is the correct change. As we have already gone through
-> a priorities and scanned everything at the high-order, would it not make
-> more sense to do just give up with something like the following?
->
->       /*
->        * If zones are still not balanced, loop again and continue attempting
->        * to rebalance the system. For high-order allocations, fragmentation
->        * can prevent the zones being rebalanced no matter how hard kswapd
->        * works, particularly on systems with little or no swap. For costly
->        * orders, just give up and assume interested processes will either
->        * direct reclaim or wake up kswapd as necessary.
->        */
->        if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
->                cond_resched();
->
->                try_to_freeze();
->
->                goto loop_again;
->        }
->
-> I used PAGE_ALLOC_COSTLY_ORDER instead of sc.order == 0 because we are
-> expected to support allocations up to that order in a fairly reliable fashion.
-
-my comment is bellow.
+I can see that being useful.
 
 
-> =============
-> From: Mel Gorman <mel@csn.ul.ie>
-> Subject: [PATCH] mm: stop kswapd's infinite loop at high order allocation
->
->  kswapd runs in some infinite loop trying to swap until order 10 of zone
->  highmem is OK.... kswapd will continue to try to balance order 10 of zone
->  highmem forever (or until someone release a very large chunk of highmem).
->
-> For costly high-order allocations, the system may never be balanced due to
-> fragmentation but kswapd should not infinitely loop as a result. The
-> following patch lets kswapd stop reclaiming in the event it cannot
-> balance zones and the order is high-order.
->
-> Reported-by: wassim dagash <wassim.dagash@gmail.com>
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
->
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 62e7f62..03ed9a0 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1867,7 +1867,16 @@ out:
->
->                zone->prev_priority = temp_priority[i];
->        }
-> -       if (!all_zones_ok) {
-> +
-> +       /*
-> +        * If zones are still not balanced, loop again and continue attempting
-> +        * to rebalance the system. For high-order allocations, fragmentation
-> +        * can prevent the zones being rebalanced no matter how hard kswapd
-> +        * works, particularly on systems with little or no swap. For costly
-> +        * orders, just give up and assume interested processes will either
-> +        * direct reclaim or wake up kswapd as necessary.
-> +        */
-> +       if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
->                cond_resched();
->
->                try_to_freeze();
+> I'll NAK any "gpio_port_t" name based entirely on kernel coding
+> conventions though.  ;)
+> 
+> 
+> > Something like the way gpio_keys are defined...
+> > 
+> > static struct gpio_bus bfin_gpio_bus_table[] = {
+> >         {BIT_0, GPIO_PB8, 1, "gpio-bus: BIT0"},
+> >         {BIT_1, GPIO_PB9, 1, "gpio-bus: BIT1"},
+> >         {BIT_2, GPIO_PB10, 1, "gpio-bus: BIT2"},
+> >         {BIT_3, GPIO_PB11, 1, "gpio-bus: BIT3"},
+> > };
+> > 
+> > static struct gpio_bus_data bfin_gpio_bus_data = {
+> >         .bits        = bfin_gpio_bus_table, 
+> >         .width       = ARRAY_SIZE(bfin_gpio_keys_table),
+> > };
+> > 
+> > static struct platform_device bfin_device_gpiobus = {
+> >         .name      = "gpio-bus",
+> >         .dev = {
+> >                 .platform_data = &bfin_gpio_bus_data,
+> >         },
+> > };
+> > 
+> > The request function builds up the bus/masks/shifts from that...
+> 
+> That sort of thing might be made to work.  Whatever this
+> multiple-GPIO-set abstraction is, I suspect you're right
+> about wanting the request function to be able to build
+> up some data structures behind it.  And that it would be
+> simpler to require all the GPIOs to be listed up front,
+> rather than support "add these to the set" requests.
 
-this patch seems no good.
-kswapd come this point every SWAP_CLUSTER_MAX reclaimed because to avoid
-unnecessary priority variable decreasing.
-then "nr_reclaimed >= SWAP_CLUSTER_MAX" indicate kswapd need reclaim more.
+Yeah, I would prefer the data structures to 16 calls to a request function to 
+build up a 16-bit wide group...
 
-kswapd purpose is "reclaim until pages_high", not reclaim
-SWAP_CLUSTER_MAX pages.
-
-if your patch applied and kswapd start to reclaim for hugepage, kswapd
-exit balance_pgdat() function after to reclaim only 32 pages
-(SWAP_CLUSTER_MAX).
-
-In the other hand, "nr_reclaimed < SWAP_CLUSTER_MAX" mean kswapd can't
-reclaim enough
-page although priority == 0.
-in this case, retry is worthless.
-
-sorting out again.
-"goto loop_again" reaching happend by two case.
-
-1. kswapd reclaimed SWAP_CLUSTER_MAX pages.
-    at that time, kswapd reset priority variable to prevent
-unnecessary priority decreasing.
-    I don't hope this behavior change.
-2. kswapd scanned until priority==0.
-    this case is debatable. my patch reset any order to 0. but
-following code is also considerable to me. (sorry for tab corrupted,
-current my mail environment is very poor)
-
-
-code-A:
-       if (!all_zones_ok) {
-              if ((nr_reclaimed >= SWAP_CLUSTER_MAX) ||
-                 (sc.order <= PAGE_ALLOC_COSTLY_ORDER)) {
-                          cond_resched();
-                           try_to_freeze();
-                           goto loop_again;
-                }
-       }
-
-or
-
-code-B:
-       if (!all_zones_ok) {
-              cond_resched();
-               try_to_freeze();
-
-              if (nr_reclaimed >= SWAP_CLUSTER_MAX)
-                           goto loop_again;
-
-              if (sc.order <= PAGE_ALLOC_COSTLY_ORDER)) {
-                           order = sc.order = 0;
-                           goto loop_again;
-              }
-       }
-
-
-However, I still like my original proposal because ..
-  - code-A forget to order-1 (for stack) allocation also can cause
-infinite loop.
-  - code-B doesn't simpler than my original proposal.
-
-What do you think it?
