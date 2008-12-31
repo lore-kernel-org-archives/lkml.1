@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbYLaPmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbYLaPnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756693AbYLaPmB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 10:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbYLaPlw
+	id S1756333AbYLaPnf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 10:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbYLaPnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 10:41:52 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:40579 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755144AbYLaPlw (ORCPT
+	Wed, 31 Dec 2008 10:43:22 -0500
+Received: from mail-fx0-f26.google.com ([209.85.220.26]:59613 "EHLO
+	mail-fx0-f26.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756753AbYLaPnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 10:41:52 -0500
+	Wed, 31 Dec 2008 10:43:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=T1TcLJFvxPM63NIxEcKA0QPudC/a44h1z/BCh5LIhut4P6HFB1X29jjXWokz9zXw7m
-         jdl0rw5pJJpXZRNjQc8agvByu+O2VoTz3u321+9k/fXPXtBJwX22ctuT0lFerMjUTxuA
-         3Xp4BYztqL2bKcX1VQwVx+zZkwSDWDe1bFdUY=
-Date: Wed, 31 Dec 2008 16:41:48 +0100
+        h=message-id:date:from:to:cc:subject;
+        b=GPEqCkIqQWTTi7VIWOaIQMEmSh4lqdJKN7AMSOwG5tZSx43WPOlkJfLC+pLQRU5Kok
+         eNRa8JNRE0uKhRS1uTy6bG98lOIjICG7s5Jkg+MpvWLMHwTvSy03n1A6aNS+g73RfltQ
+         CCpIQ0/cp6NUwdfWUaAM+ju46YM9EisJHkOiQ=
+Message-ID: <495b9316.1358560a.1934.7f61@mx.google.com>
+Date: Wed, 31 Dec 2008 07:43:18 -0800 (PST)
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -25,29 +25,120 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        fweisbec@gmail.com
-Subject: [PATCH 0/2] tracing/stat handling updates
-Message-ID: <20081231154147.GB5748@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: [PATCH 2/2] tracing/branch-tracer: adapt to the new reentrant stat tracing api
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After a quick look on the need of stats tracers, it looks like it is often
-needed to have several stat modes/files for a single tracer.
+Impact: make all and annotated branches available simultaneously
 
-The current tracing stat API doesn't support more than one stat file per tracer.
+Create two files "all" and "annotated" inside the /debugfs/tracing/trace_stat
+directory, making the both stats simultaneously available instead of needing
+to change an option to switch from one stat file to another.
 
-The first patch makes the tracing/stat Api reentrant and let a tracer able
-implement more than one stat file.
+The output of these stats haven't changed.
 
-The second one adapts this Api to the branch tracer.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
- kernel/trace/trace.h        |   35 ++++---
- kernel/trace/trace_branch.c |   69 +++++--------
- kernel/trace/trace_stat.c   |  229 +++++++++++++++++++++++++++++++------------
- 3 files changed, 216 insertions(+), 117 deletions(-)
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index 4785a3b..da5cf3e 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -306,19 +306,6 @@ static int annotated_branch_stat_cmp(void *p1, void *p2)
+ }
+ 
+ #ifdef CONFIG_PROFILE_ALL_BRANCHES
+-enum {
+-	TRACE_BRANCH_OPT_ALL = 0x1
+-};
+-
+-static struct tracer_opt branch_opts[] = {
+-	{ TRACER_OPT(stat_all_branch, TRACE_BRANCH_OPT_ALL) },
+-	{ }
+-};
+-
+-static struct tracer_flags branch_flags = {
+-	.val = 0,
+-	.opts = branch_opts
+-};
+ 
+ extern unsigned long __start_branch_profile[];
+ extern unsigned long __stop_branch_profile[];
+@@ -352,28 +339,36 @@ all_branch_stat_next(void *v, int idx)
+ 	return p;
+ }
+ 
+-static int branch_set_flag(u32 old_flags, u32 bit, int set)
+-{
+-	if (bit == TRACE_BRANCH_OPT_ALL) {
+-		if (set) {
+-			branch_trace.stat_headers = all_branch_stat_headers;
+-			branch_trace.stat_start = all_branch_stat_start;
+-			branch_trace.stat_next = all_branch_stat_next;
+-			branch_trace.stat_cmp = NULL;
+-		} else {
+-			branch_trace.stat_headers =
+-				annotated_branch_stat_headers;
+-			branch_trace.stat_start = annotated_branch_stat_start;
+-			branch_trace.stat_next = annotated_branch_stat_next;
+-			branch_trace.stat_cmp = annotated_branch_stat_cmp;
+-		}
+-		init_tracer_stat(&branch_trace);
+-	}
+-	return 0;
+-}
++static struct tracer_stat branch_stats[] = {
++	{.name = "annotated",
++	.stat_start = annotated_branch_stat_start,
++	.stat_next = annotated_branch_stat_next,
++	.stat_cmp = annotated_branch_stat_cmp,
++	.stat_headers = annotated_branch_stat_headers,
++	.stat_show = branch_stat_show},
+ 
++	{.name = "all",
++	.stat_start = all_branch_stat_start,
++	.stat_next = all_branch_stat_next,
++	.stat_headers = all_branch_stat_headers,
++	.stat_show = branch_stat_show},
++
++	{ }
++};
++#else
++static struct tracer_stat branch_stats[] = {
++	{.name = "annotated",
++	.stat_start = annotated_branch_stat_start,
++	.stat_next = annotated_branch_stat_next,
++	.stat_cmp = annotated_branch_stat_cmp,
++	.stat_headers = annotated_branch_stat_headers,
++	.stat_show = branch_stat_show},
++
++	{ }
++};
+ #endif /* CONFIG_PROFILE_ALL_BRANCHES */
+ 
++
+ static struct tracer branch_trace __read_mostly =
+ {
+ 	.name		= "branch",
+@@ -383,16 +378,8 @@ static struct tracer branch_trace __read_mostly =
+ #ifdef CONFIG_FTRACE_SELFTEST
+ 	.selftest	= trace_selftest_startup_branch,
+ #endif /* CONFIG_FTRACE_SELFTEST */
+-#endif /* CONFIG_BRANCH_TRACER */
+-	.stat_start	=	annotated_branch_stat_start,
+-	.stat_next	= annotated_branch_stat_next,
+-	.stat_show	= branch_stat_show,
+-	.stat_headers	= annotated_branch_stat_headers,
+-	.stat_cmp	= annotated_branch_stat_cmp,
+-#ifdef CONFIG_PROFILE_ALL_BRANCHES
+-	.flags	= &branch_flags,
+-	.set_flag	= branch_set_flag,
+ #endif
++	.stats		= branch_stats
+ };
+ 
+ __init static int init_branch_trace(void)
+-- 
+1.6.0.4
 
 
