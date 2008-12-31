@@ -1,78 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYLaSKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbYLaQ0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbYLaSKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 13:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbYLaSKO
+	id S1756689AbYLaQ0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 11:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbYLaQ0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 13:10:14 -0500
-Received: from mail.lang.hm ([64.81.33.126]:52332 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756556AbYLaSKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 13:10:12 -0500
-Date: Wed, 31 Dec 2008 11:12:12 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-In-Reply-To: <20081231093803.GA20882@localhost>
-Message-ID: <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 31 Dec 2008 11:26:23 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48836 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754923AbYLaQ0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 11:26:23 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+yUtMe+5eyiiV3cxiT9Ega/lY9zRH5Eh2kZ4wSoe
+	DuWf1bpp4I/fRC
+Subject: Re: problem with "sched: revert back to per-rq vruntime"?
+From: Mike Galbraith <efault@gmx.de>
+To: Jayson King <dev@jaysonking.com>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, mingo@elte.hu
+In-Reply-To: <495A788B.3010001@jaysonking.com>
+References: <495948E0.8040502@jaysonking.com>
+	 <495A788B.3010001@jaysonking.com>
+Content-Type: text/plain
+Date: Wed, 31 Dec 2008 17:26:13 +0100
+Message-Id: <1230740773.6412.21.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
+On Tue, 2008-12-30 at 13:37 -0600, Jayson King wrote:
+> Here's some times using bash, for example. Let me know if there are some 
+> other tests I can do.
+> 
 
-> [david@lang.hm - Tue, Dec 30, 2008 at 05:39:29PM -0800]
->> On Wed, 31 Dec 2008, Andi Kleen wrote:
->>
->>> david@lang.hm writes:
->>>>
->>>> doing a grep through System.map for the address that appears in the
->>>> error returns nothing
->>>
->>> This might be obvious, but you can't grep directly for these addresses
->>> because System.map contains the starting addresses of functions only
->>> and normally the reported address is somewhere in the middle of a
->>> function. So you instead have to look for the highest number lower or equal
->>> the address from the exception.
->>
->> thanks, this was not obvious to me
->>
->> the -2 error maps to
->>
->> ffffffff8099e4c1 T free_bootmem_node
->> ffffffff8099e4e5 t alloc_bootmem_core
->> ffffffff8099e774 t ___alloc_bootmem_nopanic
->>
->>
->> the first error maps to
->>
->> ffffffff809c2de4 T free_bootmem_node
->> ffffffff809c2e08 t alloc_bootmem_core
->> ffffffff809c3097 t ___alloc_bootmem_nopanic
->>
->>
->> so it looks like this is in alloc_bootmem_core in both cases.
->>
->> David Lang
->>
->
-> Along with Andi's proposed earlyprintk=vga I think
-> bootmem_debug option could be usefull here too.
+> [jayson@atlas tmp]$ time bash -i -c 'exit'
+> exit
+> 
+> real    0m0.753s
+> user    0m0.011s
+> sys     0m0.011s
 
-adding bootmem_debug creates so much additonal output that the oops 
-scrolls off the screen (except the last 'paragraph' of it)
+Yeah, it's b0rked.  The problem is that we call sched_slice() before the
+new task's load weight has been added to the runqueue.  
 
-it looks like it's individual items being allocated (trying to scan it as 
-it scrolled by)
+Normally this doesn't cause horrible problems, but when there is a +nice
+hog on the runqueue, the lighter the hog, and/or heavier the victim...
 
-if that output is needed I will need to setup a serial console to gather 
-it (can this be done for the earlyprintk?)
+[  160.489402] bash:5858 vslice: 3840000000 weight: 1024 rq_weight: 15 inv_weight: 268435456
 
-David Lang
+...the closer the victim's vruntime gets to the middle of next week.
+
+Not-signed-off diag hack.
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 5ad4440..3254213 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -449,13 +449,34 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ }
+ 
+ /*
++ * A freshly forked task's load weight has not yet been added to the runqueue,
++ * so we can't call calc_delta_weight() and get sane results.  Therefore, we roll
++ * our own so place_entity() can place this task in the right spot.  The runqueue
++ * weight and nr_running will be updated when the task is enqueued.
++ */
++static u64 sched_initial_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
++{
++	u64 slice = __sched_period(cfs_rq->nr_running + 1);
++
++	for_each_sched_entity(se) {
++		struct load_weight lw = cfs_rq->load;
++
++		lw.weight += se->load.weight;
++		lw.inv_weight = 0;
++		slice = calc_delta_mine(slice, se->load.weight, &lw);
++	}
++
++	return slice;
++}
++
++/*
+  * We calculate the vruntime slice of a to be inserted task
+  *
+  * vs = s/w
+  */
+ static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+-	return calc_delta_fair(sched_slice(cfs_rq, se), se);
++	return calc_delta_fair(sched_initial_slice(cfs_rq, se), se);
+ }
+ 
+ /*
+
+
