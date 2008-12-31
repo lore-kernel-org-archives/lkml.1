@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYLaHIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbYLaHSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbYLaHIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 02:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbYLaHIH
+	id S1755540AbYLaHSJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 02:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYLaHRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 02:08:07 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:7458 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752027AbYLaHIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 02:08:06 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjUEAImnWkl5LB1fgWdsb2JhbACDHJBfAQEWIrgmhkQ
-X-IronPort-AV: E=Sophos;i="4.36,306,1228051800"; 
-   d="scan'208";a="284785858"
-Date: Wed, 31 Dec 2008 18:08:02 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: "Peter W. Morreale" <pmorreale@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] pdflush fix and enhancement
-Message-ID: <20081231070802.GE10725@disturbed>
-Mail-Followup-To: "Peter W. Morreale" <pmorreale@novell.com>,
-	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-References: <20081230231152.10427.50620.stgit@hermosa.site> <87fxk5ur0h.fsf@basil.nowhere.org> <1230688589.3470.45.camel@hermosa.site> <20081231024609.GQ496@one.firstfloor.org> <1230696664.3470.105.camel@hermosa.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1230696664.3470.105.camel@hermosa.site>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 31 Dec 2008 02:17:55 -0500
+Received: from main.gmane.org ([80.91.229.2]:56606 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024AbYLaHRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 02:17:55 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PCI resource collision message
+Date: Wed, 31 Dec 2008 01:17:40 -0600
+Message-ID: <495B1C94.7040907@shaw.ca>
+References: <b681c62b0812302251p195debf5v360e1058de5c18e1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+In-Reply-To: <b681c62b0812302251p195debf5v360e1058de5c18e1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 09:11:04PM -0700, Peter W. Morreale wrote:
-> Actually, it seems to me that we need to look at a radically different
-> approach.  What about making background writes a property of the super
-> block? (which implies the file system)  Has that been discussed before?
+yogeshwar sonawane wrote:
+> Hi all,
+> 
+> I have seen the following message in /var/log/messages file :-
+> 
+> PCI: Device 0000:01:00.0 not available because of resource collisions
+> 
+> Whenever this msg comes, the PCI card which is present in 0000:01:00.0
+> is not useful/accessible.
+> While detection of card, pci_set_master() fails.
+> But after reboot, that msg goes & card is working fine.
+> 
+> This card is a Network controller PCI-Express based card.
+> The above problem comes very rarely & not on all the test nodes. The
+> situation may be difficult to reproduce.
+> 
+> So, my question is, what to interpret from the above message ?
+> PCI bios allocates the PCI resources. So where to look to remove this error ?
 
-Sure - there was a recent discussion in the context of how broken the
-sync(2) syscall is.
+Is there something overlapping in the PCI resource allocations? Can you 
+post the lspci -vv output?
 
-That is, some filesystems (e.g. XFS) have certain requirements
-to ensure sync actually works in all circumstances and the current
-methods that sync employs make it impossible to sync correctly.
-
-It's made worse by the fact that XFS already has internal methods
-to completely and cleanly sync the filesystem (i.e. the freeze
-code) but that can't be called in the sync() context because
-writeback is a property of the VFS and not the filesystem.
-
-It was discussed on linux-fsdevel. <rummage>
-
-http://marc.info/?l=linux-fsdevel&m=122535673232638&w=2
-
-I simply haven't had time to dig into this far enough to
-come up with a patchset to fix the problem....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
