@@ -1,114 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbYLaDOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYLaDUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbYLaDOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 22:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYLaDOF
+	id S1755693AbYLaDUZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 22:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYLaDUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 22:14:05 -0500
-Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:37496 "HELO
-	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754503AbYLaDOD (ORCPT
+	Tue, 30 Dec 2008 22:20:11 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:12433 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbYLaDUJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 22:14:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eJuksSU7Ad7yVx12Rvd/ORPC2cLxn+2z2V1h+ze6GIsrjycuibT8qU1l/tWVIvBJQbf7/JAMuzJqMvVC1aQGijyW+NqKH9zQyfRWPKlY4yEOglpOyce2F/HvSBC6lVuXGa3V+RrqnjhN7zITn8LszCseiPL8kMj5WEo/S9RqNtQ=  ;
-X-YMail-OSG: Dm.86T4VM1lNCxeODOFZDlOiQMf.BJ87EYlpqfkhwfVUscZ2o5rJLs8qshXlQYZA1gUs9adhUZai3OIaMI5eeOjQ3U_FOpxXAnVf2Y8F6Mu7Rr79fcmoOm3TpUkj2dTwbQOHbStaqi0RBClWFwA.R0pldfgtNrbdH9cjWvdsoYRmdwfM0QBCDvYlPJ_WRWMzvs3tnqH2cq6RM_9ftLZnnSkpEhcqpZdaug--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] cpuset,mm: fix allocating page cache/slab object on the unallowed node when memory spread is set
-Date: Wed, 31 Dec 2008 14:13:44 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: miaox@cn.fujitsu.com, menage@google.com, cl@linux-foundation.org,
-       penberg@cs.helsinki.fi, mpm@selenic.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <49547B93.5090905@cn.fujitsu.com> <20081230142805.3c6f78e3.akpm@linux-foundation.org>
-In-Reply-To: <20081230142805.3c6f78e3.akpm@linux-foundation.org>
+	Tue, 30 Dec 2008 22:20:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=aam13rLKHXZtgXAfEIPNr+jRSJeL6Fmyx6sdpeMWzf6YInJX9G3uNUAFIfnjNe1eDn
+         FQbbWigFy5y8y5Cf4w+DvcVga8jRH6wlW8J3kCpkdYRukHpP5+lwEzpFyFjJ3nA6aV5K
+         ZHlqpH+t7dDOvEKkxNW2SUi9XK86r3e6fVnGI=
+Message-ID: <b2b2f2320812301920y551371b7u2292fbccc73f4fec@mail.gmail.com>
+Date: Tue, 30 Dec 2008 21:20:07 -0600
+From: "Shane McDonald" <mcdonald.shane@gmail.com>
+To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH v3] Resurrect IT8172 IDE controller driver
+Cc: alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <49580131.6090006@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200812311413.45127.nickpiggin@yahoo.com.au>
+References: <E1LEfcO-0007lL-Mq@localhost> <49580131.6090006@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 December 2008 09:28:05 Andrew Morton wrote:
-> On Fri, 26 Dec 2008 14:37:07 +0800
+I have made the changes you have suggested.  See resolution below.
+A v4 patch follows shortly.
+
+On Sun, Dec 28, 2008 at 4:44 PM, Sergei Shtylyov
+<sshtylyov@ru.mvista.com> wrote:
+> Shane McDonald wrote:
 >
-> Miao Xie <miaox@cn.fujitsu.com> wrote:
-> > The task still allocated the page caches on old node after modifying its
-> > cpuset's mems when 'memory_spread_page' was set, it is caused by the old
-> > mem_allowed_list of the task. Slab has the same problem.
+>  Well, you're close. :-)
+
+Just 3 more iterations... :-)
+
+>> diff -uprN a/drivers/ide/it8172.c b/drivers/ide/it8172.c
+>> --- a/drivers/ide/it8172.c      1969-12-31 18:00:00.000000000 -0600
+>> +++ b/drivers/ide/it8172.c      2008-12-22 01:23:15.000000000 -0600
+>> @@ -0,0 +1,188 @@
+>> +                                    /* RTx  PWx */
+>> +       static const u8 timings[][2] = {
+>> +                                       { 7, 7 },
+>> +                                       { 3, 4 },
 >
-> ok...
+>  This is not enough for PIO mode 1, as this only gives 150 ns active + 120
+> ns recovery = 270 ns where minimum is 383 ns
+
+OK, I think I understand the required timings now.  I will update PIO mode 1
+to set RTx to 7 and PWx to 4, giving 150 ns active + 240 ns recovery
+= 390 ns (> minimum 383 ns).
+
+>> +       if (drive->dn) {
 >
-> > diff --git a/mm/filemap.c b/mm/filemap.c
-> > index f3e5f89..d978983 100644
-> > --- a/mm/filemap.c
-> > +++ b/mm/filemap.c
-> > @@ -517,6 +517,9 @@ int add_to_page_cache_lru(struct page *page, struct
-> > address_space *mapping, #ifdef CONFIG_NUMA
-> >  struct page *__page_cache_alloc(gfp_t gfp)
-> >  {
-> > +	if ((gfp & __GFP_WAIT) && !in_interrupt())
-> > +		cpuset_update_task_memory_state();
-> > +
-> >  	if (cpuset_do_page_mem_spread()) {
-> >  		int n = cpuset_mem_spread_node();
-> >  		return alloc_pages_node(n, gfp, 0);
-> > diff --git a/mm/slab.c b/mm/slab.c
-> > index 0918751..3b6e3d7 100644
-> > --- a/mm/slab.c
-> > +++ b/mm/slab.c
-> > @@ -3460,6 +3460,9 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t
-> > flags, void *caller) if (should_failslab(cachep, flags))
-> >  		return NULL;
-> >
-> > +	if ((flags & __GFP_WAIT) && !in_interrupt())
-> > +		cpuset_update_task_memory_state();
-> > +
+>  Would have been good to collapse both branches...
 
-These paths are pretty performance critical. Why don't cpusets code do this
-work in the slowpath where the cpuset's mems_allowed gets changed rather
-than putting these calls all over the place with apparently no real rhyme or
-reason :( (this is not against your patch, but just this part of the cpusets
-design)
+Yes, the code is quite repetitive.  I've collapsed it into a single
+chunk of code.
 
-> >  	cache_alloc_debugcheck_before(cachep, flags);
-> >  	local_irq_save(save_flags);
-> >  	objp = __do_cache_alloc(cachep, flags);
+>> +               if (pio > 2 || ata_id_has_iordy(drive->id))
 >
-> Problems.
+>  You can actually skip "pio > 2" test.
+
+Agreed.
+
+>> +       if (speed >= XFER_UDMA_0) {
+>> +               u8 udma = speed - XFER_UDMA_0;
+>> +               u_speed = min_t(u8, 2 - (udma & 1), udma) << (drive->dn *
+>> 4);
 >
-> a) There's no need to test in_interrupt().  Any caller who passed us
->    __GFP_WAIT from interrupt context is horridly buggy and needs to be
->    fixed.
+>  There's no need to use such complex math when the chip only supports
+> UltraDMA modes 0 thru 2. Be simple:
+>
+>                u_speed = udma << (drive->dn * 4);
 
-Right. There are existing sites that do the same check, which is probably
-where it is copied from.
+Suggested change has been implemented.
 
+>> +               if (speed >= XFER_MW_DMA_0)
+>
+>  We dropped support for SWDMA, so the check  should not be needed...
 
-> b) Even if the caller _did_ set __GFP_WAIT, there's no guarantee
->    that we're deadlock safe here.  Does anyone ever do a __GFP_WAIT
->    allocation while holding callback_mutex?  If so, it'll deadlock.
+Yes.  Check will be removed.
 
-It's static to cpuset.c, so I'd hope not.
+>> +                       pio = mwdma_to_pio[speed - XFER_MW_DMA_0];
+>> +               else
+>> +                       pio = 2;
+>>
+>
+>  ... and *else* branch is pointless.
 
+and is now removed.
 
-> c) These are two of the kernel's hottest code paths.  We really
->    really really really don't want to be polling for some dopey
->    userspace admin change on each call to __cache_alloc()!
+>> +               it8172_set_pio_mode(drive, pio);
+>
+>  Well, not the best place in the PIIX driver -- DMA modes shouldn't affect
+> prefetch and IORDY settings (regardless of what the Intel's programming
+> manuals say :-).
+> Àlthough, it's probably OK to continue abusing the set_pio_mode() method.
 
-Yeah, right. Let's try to fix cpuset.c instead...
+I will continue to abuse set_pio_mode().
 
+>
+>> +static const struct ide_port_info it8172_port_info __devinitdata = {
+>> +       .name           = DRV_NAME,
+>> +       .port_ops       = &it8172_port_ops,
+>> +       .enablebits     = {{0x41, 0x80, 0x80}, {0x00, 0x00, 0x00} },
+>>
+>
+>  Inconsistent spacing, add space after first {...
 
-> d) How does slub handle this problem?
+I will correct the spacing.
 
-SLUB seems to do a "sloppy" kind of memory policy allocation, where it just
-relies on the page allocator to hand us the correct page and AFAIKS does not
-exactly obey this stuff all the time.
+> MBR, Sergei
 
+Shane
