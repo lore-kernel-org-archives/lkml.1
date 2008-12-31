@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYLaWOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYLaUoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbYLaWOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 17:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYLaWOH
+	id S1756889AbYLaUoE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 15:44:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYLaUny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 17:14:07 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46628
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751191AbYLaWOG (ORCPT
+	Wed, 31 Dec 2008 15:43:54 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:43199 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751719AbYLaUnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 17:14:06 -0500
-Date: Wed, 31 Dec 2008 14:14:08 -0800 (PST)
-Message-Id: <20081231.141408.60544902.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, rdreier@cisco.com, mingo@elte.hu,
-       ian.campbell@citrix.com, jeremy.fitzhardinge@citrix.com, deller@gmx.de,
-       rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kyle@mcmartin.ca, randolph@tausq.org,
-       sam@ravnborg.org, dave@hiauly1.hia.nrc.ca
-Subject: Re: [PATCH] parisc: fix module loading failure of large kernel
- modules (take 4)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain>
-References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain>
-	<20081231105425.9ccac21d.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0812311318420.5086@localhost.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 15:43:53 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] vfs patches, part 1
+References: <20081231074356.GA28946@ZenIV.linux.org.uk>
+ <alpine.LFD.2.00.0812310905580.5086@localhost.localdomain>
+ <alpine.LFD.2.00.0812310935080.5086@localhost.localdomain>
+Date: Wed, 31 Dec 2008 12:43:46 -0800
+In-Reply-To: <alpine.LFD.2.00.0812310935080.5086@localhost.localdomain>
+ (Linus Torvalds's message of "Wed, 31 Dec 2008 09:41:59 -0800 (PST)")
+Message-ID: <7v3ag4xegt.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: BBD768EA-D77B-11DD-BCA7-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 31 Dec 2008 13:22:53 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> On Wed, 31 Dec 2008, Andrew Morton wrote:
-> > 
-> > Adrian claimed that it was gcc-4.1.0 and 4.1.1 only.  He proposed
-> > banning them: http://lkml.org/lkml/2008/8/5/444
-> 
-> If it really is just those releases, then yes, considering the number of 
-> cases we apparently have, and considering how ugly it is in some cases to 
-> move the weak function anywhere else, maybe banning those versions is the 
-> proper thing to do.
-> 
-> It probably won't hurt very many people - yeah, some people will be forced 
-> to upgrade, but I have this memory of early 4.1 having had other bugs 
-> anyway, so it's probably a good idea.
+> In case you wonder what the easiest way to fix things up is: just export 
+> the series as a mbox ("git log -p --stat --pretty=email linus.. > mbox") 
+> and then just edit the single mbox file to remove crud. Then you can 
+> re-apply it with "git am".
+>
+> Of course, with git you can do it in a million different ways: You could 
+> do it with "git format-patch" or with "git rebase -i" too, for example, 
+> but exporting it as an mbox means that you can do it in one single editing 
+> session, which is how at least I personally work. Much nicer than having 
+> to handle each commit individually.
 
-I think this is probably the best way to handle this.
+The "format-patch" equivalent to export to a single mbox is:
+
+    $ git format-patch --stdout linus.. >mbox
+
