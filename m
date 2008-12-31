@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYLaSOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbYLaSKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYLaSOt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 13:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbYLaSOi
+	id S1757197AbYLaSKU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbYLaSKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 13:14:38 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:39930 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755871AbYLaSOh (ORCPT
+	Wed, 31 Dec 2008 13:10:05 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:55977 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755422AbYLaSKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 13:14:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=L3BCyj52c6by6XadYPU0yjK2kG/R2R56apvNLko+tnWTvzjD88RqBEpqAuQ6qrwxmi
-         XW3FWbtM/Tjr8LPGU7rXGaeazJhqDYl25yenr8yXoaMAMdDgfTTIn56KqEYh7lSs+yC7
-         n1OFEOcmKwWNDvC9hYtexViDlwXbydBaIE/Gc=
-Message-ID: <9bd6b5360812311014l4b36ddcfj45f1b3e6103ca793@mail.gmail.com>
-Date: Thu, 1 Jan 2009 02:14:35 +0800
-From: sniper <s3c24xx@gmail.com>
-To: "Daniel Phillips" <phillips@phunq.net>
-Subject: Re: [Tux3] Tux3 report: A Golden Copy
-Cc: "Dave Chinner" <david@fromorbit.com>, tux3@tux3.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Jeff Dike" <jdike@addtoit.com>
-In-Reply-To: <200812310140.49503.phillips@phunq.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 13:10:04 -0500
+Date: Wed, 31 Dec 2008 19:11:37 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Helge Deller <deller@gmx.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John David Anglin <dave@hiauly1.hia.nrc.ca>
+Subject: Re: [PATCH] parisc: fix module loading failure of large kernel modules (take 4)
+Message-ID: <20081231181136.GA4382@uranus.ravnborg.org>
+References: <4959346E.7060600@gmx.de> <200812310915.41693.rusty@rustcorp.com.au> <495B5806.3080505@gmx.de> <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain> <ada63l0qmba.fsf@cisco.com> <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200812301935.49303.phillips@phunq.net>
-	 <200812310000.55256.phillips@phunq.net>
-	 <20081231083123.GF10725@disturbed>
-	 <200812310140.49503.phillips@phunq.net>
+In-Reply-To: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry I meet another problem. After the system was completely setupped,
-the gdb interface will be covered with that system interaction interface.
-So, I can't stop the system's running and add some new break point etc.
-But I can do those operations in remote kgdb debugging.
+> 
+> I guess I could make a sparse rule for this, but nobody seems to run or 
+> care about sparse anyway. Sad.
 
-Any method to fix this problem?
+There is some increased janitorial effort recently.
+Try to grep for [Ss]+parse in the shortlog for the last couple
+of months.
 
-Thanks.
+	Sam
