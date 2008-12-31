@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYLaOqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYLaQcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYLaOqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 09:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYLaOqh
+	id S1756733AbYLaQcI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 11:32:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbYLaQby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 09:46:37 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45624 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754177AbYLaOqg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 09:46:36 -0500
-Date: Wed, 31 Dec 2008 23:45:46 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>,
-       Dmitry Torokhov <dtor@mail.ru>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH for mmotm1230] input: fix incomplete prototype of input_init_abs_bypass()
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <200812310006.mBV060iV029753@imap1.linux-foundation.org>
-References: <200812310006.mBV060iV029753@imap1.linux-foundation.org>
-Message-Id: <20081231234238.129C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 31 Dec 2008 11:31:54 -0500
+Received: from rtr.ca ([76.10.145.34]:56562 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755782AbYLaQbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 11:31:53 -0500
+Message-ID: <495B9ED3.8050008@rtr.ca>
+Date: Wed, 31 Dec 2008 11:33:23 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-ide@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27.10: ata1.00: HPA detected: current 293044655, native 
+  293046768
+References: <alpine.DEB.1.10.0812300657050.11356@p34.internal.lan> <495A5A9F.9020406@shaw.ca>
+In-Reply-To: <495A5A9F.9020406@shaw.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch against: mmotm 1230
-Applied after: input-allow-certain-ev_abs-events-to-bypass-all-filtering.patch
-==
-Impact: warning fixes
+Robert Hancock wrote:
+> Justin Piszcz wrote:
+>> On one system, two Raptor 150s:
+>>
+>> [    0.739402] ata1.00: HPA detected: current 293044655, native 293046768
+..
+> Presumably somebody or something set up a host protected area on one 
+> drive and not the other.. I believe there are some utilities out there 
+> that can be used to disable the HPA and allow the full capacity to be used.
+..
 
-fix incomplete prototype of input_init_abs_bypass().
+"hdparm -N" can do this, temporarily or permanently.
+Get the latest version from Sourceforge, and see the manpage for details.
 
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Henrik Rydberg <rydberg@euromail.se>
-CC: Dmitry Torokhov <dtor@mail.ru>
-
----
- drivers/input/input.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/drivers/input/input.c
-===================================================================
---- a/drivers/input/input.c	2008-12-31 14:22:38.000000000 +0900
-+++ b/drivers/input/input.c	2008-12-31 14:53:49.000000000 +0900
-@@ -1657,7 +1657,7 @@ static const struct file_operations inpu
- 	.open = input_open_file,
- };
- 
--static void __init input_init_abs_bypass()
-+static void __init input_init_abs_bypass(void)
- {
- 	const unsigned int *p;
- 	for (p = input_abs_bypass_init_data; *p; p++)
-
+-ml
 
