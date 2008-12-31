@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbYLaXTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbYLaX23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757023AbYLaXTk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 18:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYLaXT3
+	id S1757398AbYLaX23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 18:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbYLaX2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 18:19:29 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:34851 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895AbYLaXT2 (ORCPT
+	Wed, 31 Dec 2008 18:28:18 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:44165 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbYLaX2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 18:19:28 -0500
-Subject: Re: Btrfs for mainline
-From: Chris Mason <chris.mason@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>
-In-Reply-To: <20081231104533.abfb1cf9.akpm@linux-foundation.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 31 Dec 2008 18:19:09 -0500
-Message-Id: <1230765549.7538.8.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.495BFDF1.0027:SCFSTAT928724,ss=1,fgs=0
+	Wed, 31 Dec 2008 18:28:17 -0500
+Date: Wed, 31 Dec 2008 17:27:49 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       catalin.marinas@arm.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [RFC] cpualloc: improvements to per-cpu allocation
+In-Reply-To: <200812310938.09912.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0812311717050.22685@quilx.com>
+References: <200812310938.09912.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-31 at 10:45 -0800, Andrew Morton wrote:
-> On Wed, 31 Dec 2008 06:28:55 -0500 Chris Mason <chris.mason@oracle.com> wrote:
-> 
-> > Hello everyone,
-> 
-> Hi!
-> 
-> > I've done some testing against Linus' git tree from last night and the
-> > current btrfs trees still work well.
-> 
-> what's btrfs?  I think I've heard the name before, but I've never
-> seen the patches :)
+On Wed, 31 Dec 2008, Rusty Russell wrote:
 
-The source is up to around 38k loc, I thought it better to use that http
-thing for people who were interested in the code.
+> afterwards, with many more to come (eg. local_t is now more useful, if we sort
+> the semantics of what it should look like).
 
-There is also a standalone git repo:
-
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable-standalone.git;a=summary
-
-This has only btrfs as a module and would be the fastest way to see
-the .c files.  btrfs doesn't have any changes outside of fs/Makefile and
-fs/Kconfig
-
-(happy new year ;)
-
--chris
+Well I dont like local_t as you may have noticed. It limits us to an int.
+I think its better to start out with the idea of the cmpxchg that applies
+to any scalar. Focus on the operations instead of the use of types.
 
 
+> commit b9b67f3c818b617bb47344a8574de8bcd5f6b294
+> Author: Rusty Russell <rusty@rustcorp.com.au>
+> Date:   Wed Dec 31 09:21:46 2008 +1030
+>
+>     alloc_percpu: Move SNMP and ip_rt_acct to big_percpu
+>
+>     If we look at percpu allocations to boot an x86/32 "allyesconfig"
+>     kernel, we see the following:
+
+Ok so a special allocator for big percpu that avoids the need to
+dynamically resize percpu sections. But this still leaves the problem that
+too many small allocations may overflow the percpu area.
+
+
+> commit ba26c860d5d47896aee45ec5f13c0d7bd21a784a
+> Author: Rusty Russell <rusty@rustcorp.com.au>
+> Date:   Wed Dec 31 09:21:48 2008 +1030
+>
+>     alloc_percpu: make the per cpu reserve configurable and larger.
+>
+>     This is based on Christoph Lameter's "cpualloc: make the per cpu
+>     reserve configurable" patch, and his "Increase default reserve percpu
+>     area" patch.
+>
+>     Christoph did the hard work of figuring out what the number should be
+>     (based on converting the slub allocator).  allyesconfig on x86-32 uses
+>     7k before mounting root, so 10k seems reasonable.
+
+This is only the requirement if the page allocator and slab allocator is
+converted to use the percpu area. Additional users may require more space.
+
+> commit a56f30e8a075e8ce15b4dff8e3fe0edb9baff7ea
+> Author: Rusty Russell <rusty@rustcorp.com.au>
+> Date:   Wed Dec 31 09:21:53 2008 +1030
+>
+>     alloc_percpu: remove per_cpu__ prefix.
+>
+>     Now that the return from alloc_percpu is compatible with the address
+>     of per-cpu vars, it makes sense to hand around the address of per-cpu
+>     variables.  To make this sane, we remove the per_cpu__ prefix we used
+>     created to stop people accidentally using these vars directly.
+
+Doesnt that move limit how the percpu area can be handled by the arch? If
+it becomes a requirement that a percpu address is like any other global
+variable then the zero based approach no longer works and with that we may
+create x86_64 issues for pda conversion.
