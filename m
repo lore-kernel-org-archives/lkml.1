@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYLaJiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYLaJlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbYLaJiT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 04:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYLaJiJ
+	id S1756079AbYLaJlI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 04:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYLaJky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 04:38:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:12573 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbYLaJiI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 04:38:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ddzNytPuDlqisjZrzEDU4q8o/xt7pAwIxoFnVNYMGyLCkAwOuO9IoPnolAacmUPUf0
-         ZFMUaE/cEGyHHku80YCcNPhKEZadC86wi4P0OWSo2UeEFyMjpv8bsD0nxeKqIR22s9YK
-         /zcD87vj23kPeN2FRv+F6/UK0LP6LxDmS/Gq4=
-Date: Wed, 31 Dec 2008 12:38:03 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: david@lang.hm
-Cc: Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-Message-ID: <20081231093803.GA20882@localhost>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm>
+	Wed, 31 Dec 2008 04:40:54 -0500
+Received: from phunq.net ([64.81.85.152]:44792 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752296AbYLaJkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 04:40:53 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Dave Chinner <david@fromorbit.com>
+Subject: Re: [Tux3] Tux3 report: A Golden Copy
+Date: Wed, 31 Dec 2008 01:40:49 -0800
+User-Agent: KMail/1.9.5
+Cc: tux3@tux3.org, sniper <s3c24xx@gmail.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>
+References: <200812301935.49303.phillips@phunq.net> <200812310000.55256.phillips@phunq.net> <20081231083123.GF10725@disturbed>
+In-Reply-To: <20081231083123.GF10725@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200812310140.49503.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[david@lang.hm - Tue, Dec 30, 2008 at 05:39:29PM -0800]
-> On Wed, 31 Dec 2008, Andi Kleen wrote:
->
->> david@lang.hm writes:
->>>
->>> doing a grep through System.map for the address that appears in the
->>> error returns nothing
->>
->> This might be obvious, but you can't grep directly for these addresses
->> because System.map contains the starting addresses of functions only
->> and normally the reported address is somewhere in the middle of a
->> function. So you instead have to look for the highest number lower or equal
->> the address from the exception.
->
-> thanks, this was not obvious to me
->
-> the -2 error maps to
->
-> ffffffff8099e4c1 T free_bootmem_node
-> ffffffff8099e4e5 t alloc_bootmem_core
-> ffffffff8099e774 t ___alloc_bootmem_nopanic
->
->
-> the first error maps to
->
-> ffffffff809c2de4 T free_bootmem_node
-> ffffffff809c2e08 t alloc_bootmem_core
-> ffffffff809c3097 t ___alloc_bootmem_nopanic
->
->
-> so it looks like this is in alloc_bootmem_core in both cases.
->
-> David Lang
->
+On Wednesday 31 December 2008 00:31, Dave Chinner wrote:
+> On Wed, Dec 31, 2008 at 12:00:54AM -0800, Daniel Phillips wrote:
+> > On Tuesday 30 December 2008 23:34, sniper wrote:
+> > > Great, I have mounted tux3 filesystem under UML with stuffs in this mail,
+> > > but I still can't debug it with gdb. Anyone gives me suggestion?
+> ....
+> > In the mean time, you could just tell gdb to mask off all segfaults,
+> > but would be kind of problematic for debugging.
+> 
+> Not really. That's the default setting I use for XFS debugging. I
+> just put breakpoints on "panic" and "stop" (sometimes
+> bust_spinlocks) and just let the kernel panic routine handle the
+> segv which will trip a breakpoint. Then just walk back up the stack
+> to the function that triggered the real SEGV and go from there.
+> 
+> This is pretty much necessary for XFS debugging because
+> just mounting a filesystem causes 8-10 SEGV signals to occur.
+> You simply can't run xfsqa when that is occurring...
 
-Along with Andi's proposed earlyprintk=vga I think
-bootmem_debug option could be usefull here too.
+Thanks for the howto.  That was Jeff's suggestion also, but it would
+be so much slicker if it was automagic, and first-time users would not
+be constantly hitting this.  I realize the difficulty.  We have two
+big tools that are not a perfect match, and don't know how to
+cooperate to smooth out the bumps.  Sigh.  It was ever thus.
 
-		- Cyrill -
+UML used to know about gdb, because it had to - the ptrace version of
+UML could not be debugged as a regular task so gdb was execced from
+UML.  The result was very slick.  You said "linux debug" and you would
+land at the gdb command prompt from which you could continue, or
+"linux debug=go" and it would continue without pausing, great for
+rapid development.  Now, it's all much more high tech and better I am
+sure, but not as slick.  You have to set up a .gdbinit, it's more to
+do and not something you are going to get around to doing on every
+machine you might develop on.  So I typically end up just typing cont
+and lots of carriage returns, not so pretty.
+
+By the way, gdb -args linux ubda=... is very convenient.
+
+Added Jeff to CC.  Thanks Jeff, I still think UML is the best kernel
+development tool ever.
+
+Regards,
+
+Daniel
