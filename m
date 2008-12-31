@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbYLaB4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYLaCF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752182AbYLaB4r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 20:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYLaB4h
+	id S1753250AbYLaCF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 21:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYLaCFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 20:56:37 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:53804 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752911AbYLaB4g (ORCPT
+	Tue, 30 Dec 2008 21:05:09 -0500
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:8016 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753021AbYLaCFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 20:56:36 -0500
-Subject: Re: [PATCH 0/2] pdflush fix and enhancement
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <87fxk5ur0h.fsf@basil.nowhere.org>
-References: <20081230231152.10427.50620.stgit@hermosa.site>
-	 <87fxk5ur0h.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Tue, 30 Dec 2008 18:56:29 -0700
-Message-Id: <1230688589.3470.45.camel@hermosa.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Dec 2008 21:05:07 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgQDACthWkl5LB1fgWdsb2JhbACTdgEBFiK4VYZE
+X-IronPort-AV: E=Sophos;i="4.36,305,1228051800"; 
+   d="scan'208";a="284655072"
+Date: Wed, 31 Dec 2008 13:05:03 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: access(2) regressions in current mainline
+Message-ID: <20081231020503.GD10725@disturbed>
+Mail-Followup-To: David Howells <dhowells@redhat.com>,
+	Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <20081230172901.GA5610@lst.de> <20081230170941.GA5083@lst.de> <20081230134248.GA30124@lst.de> <24505.1230656810@redhat.com> <32709.1230657626@redhat.com> <605.1230659651@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <605.1230659651@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-31 at 01:28 +0100, Andi Kleen wrote:
-> Peter W Morreale <pmorreale@novell.com> writes:
+On Tue, Dec 30, 2008 at 05:54:11PM +0000, David Howells wrote:
+> Christoph Hellwig <hch@lst.de> wrote:
 > 
-> > The following series implements a fix for pdflush thread creation and an
-> > enhancement for allowing the setting of the minimum and maximun number
-> > of pdflush threads. 
+> > Try to grab git://oss.sgi.com/xfs-cmds, it's in the xfstests subdir.
 > 
-> You forgot to state why the admin should control that?
-> 
-> Each sysctl essentially presents a failure of the automatic tuning
-> algorithms of the kernel (kernel hackers admitting defeat). 
-> 
-> So a patch adding new ones at least needs a clear rationale what
-> problem it is trying to fix and why the automatic tuning cannot be
-> fixed instead to address this case without new knobs.
-> 
+> Hmmm...  It requires an 'fsstress', but which of the several things that go by
+> that name is it referring to?
 
-Understood.  
+You need to build xfstests, and then it will build the xfstests/ltp
+directory and that is where it will find the fsstress binary.
 
-The rational is simply because one-size may not fit all.  Currently
-there is minimalistic tuning wrt pdflush thread creation. 
+Cheers,
 
-Each pdflush thread arbitrarily decides to create another thread solely
-on the basis of all currently existing threads being busy for >= one
-second.  So this can result in NCPUS pdflush threads being created
-'concurrently' should all existing threads wind up in the idle check at
-the same time (I have seen this).  Or it can result in a thread being
-created every second, up to the max.  That seems indeterministic at
-best. 
-
-Note that this patch doesn't change that algorithm at all, it merely
-allows the admin to control the bounds without having to recompile the
-kernel. 
-
-More to the point, on small systems with few file systems, what is the
-point of having 8 (the current max) threads competing with each other on
-a single disk?  Likewise, on a 64-way, or larger system with dozens of
-filesystems/disks, why wouldn't I want more background flushing?
-
-I actually think the question is: Why not allow the admin to control
-this?  Since it seems like this is a matter of policy based on machine
-configuration.  I don't look at this as a matter of defeat, rather, a
-matter of policy. Note that the current defaults remain the same.
-
-So that's the rational.  Its not an attempt to fix background flushing,
-and regardless, I would still argue that any 'fix' to background
-flushing would involve a number of threads that were bounded by some
-min/max  and that min/max would still need to be set on some admin
-policy based on intended machine size/use. 
-
-And btw Andi, I should have cc'ed you on this, I know from the flush
-code that you were heavily involved.  I only cc'ed Peter Z. since his
-name was in pdflush.c.  My apologies.  
-
-Best,
--PWM
-
-
-
-> -Andi
-> 
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
