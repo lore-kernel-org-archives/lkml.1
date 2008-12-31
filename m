@@ -1,470 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbYLaPnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYLaP5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756759AbYLaPnU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 10:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbYLaPnI
+	id S1756332AbYLaP5x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 10:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755782AbYLaP5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 10:43:08 -0500
-Received: from mail-fx0-f26.google.com ([209.85.220.26]:59613 "EHLO
-	mail-fx0-f26.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755635AbYLaPnG (ORCPT
+	Wed, 31 Dec 2008 10:57:41 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46346 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755495AbYLaP5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 10:43:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:cc:subject;
-        b=EdIA+z/QWILKqHsyyIVSLcqOHUS243wXu7ndTZ1BXWRGSjP9cw3pCaVeoCbOzyiWJY
-         2rQsDqwM98hZecJTWAVFdZVC8L5kVC5St85ol4aKlJ74vzQ4+I+Y4lAuwHW9WQKGXBm6
-         eUX75wyhHeKcxTnID3tF1JpCWx8C0jmE38Tuw=
-Message-ID: <495b9305.0405560a.0ec4.29c0@mx.google.com>
-Date: Wed, 31 Dec 2008 07:43:01 -0800 (PST)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       fweisbec@gmail.com
-Subject: [PATCH 1/2] tracing/ftrace: handle more than one stat file per tracer
+	Wed, 31 Dec 2008 10:57:39 -0500
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, avishay@gmail.com,
+       jeff@garzik.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <495B8D90.1090004@panasas.com>
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>
+	 <20081229121423.efde9d06.akpm@linux-foundation.org>
+	 <495B8D90.1090004@panasas.com>
+Content-Type: text/plain
+Date: Wed, 31 Dec 2008 15:57:32 +0000
+Message-Id: <1230739053.3408.74.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: new API for tracers
+On Wed, 2008-12-31 at 17:19 +0200, Boaz Harrosh wrote:
+> Andrew Morton wrote:
+> > On Tue, 16 Dec 2008 17:33:48 +0200
+> > Boaz Harrosh <bharrosh@panasas.com> wrote:
+> > 
+> >> We need a mechanism to prepare the file system (mkfs).
+> >> I chose to implement that by means of a couple of
+> >> mount-options. Because there is no user-mode API for committing
+> >> OSD commands. And also, all this stuff is highly internal to
+> >> the file system itself.
+> >>
+> >> - Added two mount options mkfs=0/1,format=capacity_in_meg, so mkfs/format
+> >>   can be executed by kernel code just before mount. An mkexofs utility
+> >>   can now be implemented by means of a script that mounts and unmount the
+> >>   file system with proper options.
+> > 
+> > Doing mkfs in-kernel is unusual.  I don't think the above description
+> > sufficiently helps the uninitiated understand why mkfs cannot be done
+> > in userspace as usual.  Please flesh it out a bit.
+> 
+> There are a few main reasons.
+> - There is no user-mode API for initiating OSD commands. Such a subsystem
+>   would be hundredfold bigger then the mkfs code submitted. I think it would be
+>   hard and stupid to maintain a complex user-mode API just for creating
+>   a couple of objects and writing a couple of on disk structures.
 
-Make the stat tracing API reentrant. And also provide the new directory
-/debugfs/tracing/trace_stat which will contain all the stat files for the
-current active tracer.
+This is really a reflection of the whole problem with the OSD paradigm.
 
-Now a tracer will, if desired, want to provide a zero terminated array of
-tracer_stat structures.
-Each one contains the callbacks necessary for one stat file.
-It have to provide at least a name for its stat file, an iterator with
-stat_start/start_next callback and an output callback for one stat entry.
+In theory, a filesystem on OSD is a thin layer of metadata mapping
+objects to files.  Get this right and the storage will manage things,
+like security and access and attributes (there's even a natural mapping
+to the VFS concept of extended attributes).  Plus, the storage has
+enough information to manage persistence, backups and replication.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 46677ea..b093f36 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -335,6 +335,25 @@ struct tracer_flags {
- #define TRACER_OPT(s, b)	.name = #s, .bit = b
- 
- /*
-+ * If you want to provide a stat file (one-shot statistics), fill
-+ * an iterator with stat_start/stat_next and a stat_show callbacks.
-+ * The others callbacks are optional.
-+ */
-+struct tracer_stat {
-+	/* The name of your stat file */
-+	const char		*name;
-+	/* Iteration over statistic entries */
-+	void			*(*stat_start)(void);
-+	void			*(*stat_next)(void *prev, int idx);
-+	/* Compare two entries for sorting (optional) for stats */
-+	int			(*stat_cmp)(void *p1, void *p2);
-+	/* Print a stat entry */
-+	int			(*stat_show)(struct seq_file *s, void *p);
-+	/* Print the headers of your stat entries */
-+	int			(*stat_headers)(struct seq_file *s);
-+};
-+
-+/*
-  * A specific tracer, represented by methods that operate on a trace array:
-  */
- struct tracer {
-@@ -361,21 +380,7 @@ struct tracer {
- 	struct tracer		*next;
- 	int			print_max;
- 	struct tracer_flags 	*flags;
--
--	/*
--	 * If you change one of the following on tracing runtime, recall
--	 * init_tracer_stat()
--	 */
--
--	/* Iteration over statistic entries */
--	void			*(*stat_start)(void);
--	void			*(*stat_next)(void *prev, int idx);
--	/* Compare two entries for sorting (optional) for stats */
--	int			(*stat_cmp)(void *p1, void *p2);
--	/* Print a stat entry */
--	int			(*stat_show)(struct seq_file *s, void *p);
--	/* Print the headers of your stat entries */
--	int			(*stat_headers)(struct seq_file *s);
-+	struct tracer_stat	*stats;
- };
- 
- struct trace_seq {
-diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-index 6f194a3..293be1c 100644
---- a/kernel/trace/trace_stat.c
-+++ b/kernel/trace/trace_stat.c
-@@ -21,31 +21,29 @@ struct trace_stat_list {
- 	void *stat;
- };
- 
--static struct trace_stat_list stat_list;
-+/* A stat session is the stats output in one file */
-+struct tracer_stat_session {
-+	struct tracer_stat *ts;
-+	struct trace_stat_list	stat_list;
-+	struct mutex stat_mutex;
-+};
- 
--/*
-- * This is a copy of the current tracer to avoid racy
-- * and dangerous output while the current tracer is
-- * switched.
-- */
--static struct tracer current_tracer;
--
--/*
-- * Protect both the current tracer and the global
-- * stat list.
-- */
--static DEFINE_MUTEX(stat_list_mutex);
-+/* All of the sessions currently in use. Each stat file embeed one session */
-+static struct tracer_stat_session **all_stat_sessions;
-+static int nb_sessions;
-+static struct dentry *stat_dir, **stat_files;
- 
- 
--static void reset_stat_list(void)
-+static void reset_stat_session(struct tracer_stat_session *session)
- {
-+	struct trace_stat_list *root = &session->stat_list;
- 	struct trace_stat_list *node;
- 	struct list_head *next;
- 
--	if (list_empty(&stat_list.list))
-+	if (list_empty(&root->list))
- 		return;
- 
--	node = list_entry(stat_list.list.next, struct trace_stat_list, list);
-+	node = list_entry(root->list.next, struct trace_stat_list, list);
- 	next = node->list.next;
- 
- 	while (&node->list != next) {
-@@ -54,14 +52,65 @@ static void reset_stat_list(void)
- 	}
- 	kfree(node);
- 
--	INIT_LIST_HEAD(&stat_list.list);
-+	INIT_LIST_HEAD(&root->list);
- }
- 
--void init_tracer_stat(struct tracer *trace)
-+/* Called when a tracer is initialized */
-+static int init_all_sessions(int nb, struct tracer_stat *ts)
-+{
-+	int i, j;
-+	struct tracer_stat_session *session;
-+
-+	if (all_stat_sessions) {
-+		for (i = 0; i < nb_sessions; i++) {
-+			session = all_stat_sessions[i];
-+			reset_stat_session(session);
-+			mutex_destroy(&session->stat_mutex);
-+			kfree(session);
-+		}
-+	}
-+	all_stat_sessions = kmalloc(sizeof(struct tracer_stat_session *) * nb,
-+				    GFP_KERNEL);
-+	if (!all_stat_sessions)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < nb; i++) {
-+		session = kmalloc(sizeof(struct tracer_stat_session) * nb,
-+				  GFP_KERNEL);
-+		if (!session)
-+			goto free_sessions;
-+
-+		INIT_LIST_HEAD(&session->stat_list.list);
-+		mutex_init(&session->stat_mutex);
-+		session->ts = &ts[i];
-+		all_stat_sessions[i] = session;
-+	}
-+	nb_sessions = nb;
-+	return 0;
-+
-+free_sessions:
-+
-+	for (j = 0; j < i; j++)
-+		kfree(all_stat_sessions[i]);
-+
-+	kfree(all_stat_sessions);
-+	all_stat_sessions = NULL;
-+
-+	return -ENOMEM;
-+}
-+
-+static int basic_tracer_stat_checks(struct tracer_stat *ts)
- {
--	mutex_lock(&stat_list_mutex);
--	current_tracer = *trace;
--	mutex_unlock(&stat_list_mutex);
-+	int i;
-+
-+	if (!ts)
-+		return 0;
-+
-+	for (i = 0; ts[i].name; i++) {
-+		if (!ts[i].stat_start || !ts[i].stat_next || !ts[i].stat_show)
-+			return -EBUSY;
-+	}
-+	return i;
- }
- 
- /*
-@@ -79,22 +128,19 @@ static int dummy_cmp(void *p1, void *p2)
-  * All of these copies and sorting are required on all opening
-  * since the stats could have changed between two file sessions.
-  */
--static int stat_seq_init(void)
-+static int stat_seq_init(struct tracer_stat_session *session)
- {
--	struct trace_stat_list *iter_entry, *new_entry;
-+	struct trace_stat_list *iter_entry, *new_entry, *root;
-+	struct tracer_stat *ts = session->ts;
- 	void *prev_stat;
- 	int ret = 0;
- 	int i;
- 
--	mutex_lock(&stat_list_mutex);
--	reset_stat_list();
--
--	if (!current_tracer.stat_start || !current_tracer.stat_next ||
--					!current_tracer.stat_show)
--		goto exit;
-+	mutex_lock(&session->stat_mutex);
-+	reset_stat_session(session);
- 
--	if (!current_tracer.stat_cmp)
--		current_tracer.stat_cmp = dummy_cmp;
-+	if (!ts->stat_cmp)
-+		ts->stat_cmp = dummy_cmp;
- 
- 	/*
- 	 * The first entry. Actually this is the second, but the first
-@@ -107,8 +153,9 @@ static int stat_seq_init(void)
- 	}
- 
- 	INIT_LIST_HEAD(&new_entry->list);
--	list_add(&new_entry->list, &stat_list.list);
--	new_entry->stat = current_tracer.stat_start();
-+	root = &session->stat_list;
-+	list_add(&new_entry->list, &root->list);
-+	new_entry->stat = ts->stat_start();
- 
- 	prev_stat = new_entry->stat;
- 
-@@ -124,15 +171,15 @@ static int stat_seq_init(void)
- 		}
- 
- 		INIT_LIST_HEAD(&new_entry->list);
--		new_entry->stat = current_tracer.stat_next(prev_stat, i);
-+		new_entry->stat = ts->stat_next(prev_stat, i);
- 
- 		/* End of insertion */
- 		if (!new_entry->stat)
- 			break;
- 
--		list_for_each_entry(iter_entry, &stat_list.list, list) {
-+		list_for_each_entry(iter_entry, &root->list, list) {
- 			/* Insertion with a descendent sorting */
--			if (current_tracer.stat_cmp(new_entry->stat,
-+			if (ts->stat_cmp(new_entry->stat,
- 						iter_entry->stat) > 0) {
- 
- 				list_add_tail(&new_entry->list,
-@@ -141,7 +188,7 @@ static int stat_seq_init(void)
- 
- 			/* The current smaller value */
- 			} else if (list_is_last(&iter_entry->list,
--						&stat_list.list)) {
-+						&root->list)) {
- 				list_add(&new_entry->list, &iter_entry->list);
- 				break;
- 			}
-@@ -150,46 +197,49 @@ static int stat_seq_init(void)
- 		prev_stat = new_entry->stat;
- 	}
- exit:
--	mutex_unlock(&stat_list_mutex);
-+	mutex_unlock(&session->stat_mutex);
- 	return ret;
- 
- exit_free_list:
--	reset_stat_list();
--	mutex_unlock(&stat_list_mutex);
-+	reset_stat_session(session);
-+	mutex_unlock(&session->stat_mutex);
- 	return ret;
- }
- 
- 
- static void *stat_seq_start(struct seq_file *s, loff_t *pos)
- {
--	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
-+	struct tracer_stat_session *session = s->private;
- 
- 	/* Prevent from tracer switch or stat_list modification */
--	mutex_lock(&stat_list_mutex);
-+	mutex_lock(&session->stat_mutex);
- 
- 	/* If we are in the beginning of the file, print the headers */
--	if (!*pos && current_tracer.stat_headers)
--		current_tracer.stat_headers(s);
-+	if (!*pos && session->ts->stat_headers)
-+		session->ts->stat_headers(s);
- 
--	return seq_list_start(&l->list, *pos);
-+	return seq_list_start(&session->stat_list.list, *pos);
- }
- 
- static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
- {
--	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
-+	struct tracer_stat_session *session = s->private;
- 
--	return seq_list_next(p, &l->list, pos);
-+	return seq_list_next(p, &session->stat_list.list, pos);
- }
- 
--static void stat_seq_stop(struct seq_file *m, void *p)
-+static void stat_seq_stop(struct seq_file *s, void *p)
- {
--	mutex_unlock(&stat_list_mutex);
-+	struct tracer_stat_session *session = s->private;
-+	mutex_unlock(&session->stat_mutex);
- }
- 
- static int stat_seq_show(struct seq_file *s, void *v)
- {
-+	struct tracer_stat_session *session = s->private;
- 	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
--	return current_tracer.stat_show(s, l->stat);
-+
-+	return session->ts->stat_show(s, l->stat);
- }
- 
- static const struct seq_operations trace_stat_seq_ops = {
-@@ -199,15 +249,18 @@ static const struct seq_operations trace_stat_seq_ops = {
- 	.show = stat_seq_show
- };
- 
-+/* The session stat is refilled and resorted at each stat file opening */
- static int tracing_stat_open(struct inode *inode, struct file *file)
- {
- 	int ret;
- 
-+	struct tracer_stat_session *session = inode->i_private;
-+
- 	ret = seq_open(file, &trace_stat_seq_ops);
- 	if (!ret) {
- 		struct seq_file *m = file->private_data;
--		m->private = &stat_list;
--		ret = stat_seq_init();
-+		m->private = session;
-+		ret = stat_seq_init(session);
- 	}
- 
- 	return ret;
-@@ -219,9 +272,11 @@ static int tracing_stat_open(struct inode *inode, struct file *file)
-  */
- static int tracing_stat_release(struct inode *i, struct file *f)
- {
--	mutex_lock(&stat_list_mutex);
--	reset_stat_list();
--	mutex_unlock(&stat_list_mutex);
-+	struct tracer_stat_session *session = i->i_private;
-+
-+	mutex_lock(&session->stat_mutex);
-+	reset_stat_session(session);
-+	mutex_unlock(&session->stat_mutex);
- 	return 0;
- }
- 
-@@ -232,18 +287,70 @@ static const struct file_operations tracing_stat_fops = {
- 	.release	= tracing_stat_release
- };
- 
-+
-+static void destroy_trace_stat_files(void)
-+{
-+	int i;
-+
-+	if (stat_files) {
-+		for (i = 0; i < nb_sessions; i++)
-+			debugfs_remove(stat_files[i]);
-+		kfree(stat_files);
-+		stat_files = NULL;
-+	}
-+}
-+
-+static void init_trace_stat_files(void)
-+{
-+	int i;
-+
-+	if (!stat_dir || !nb_sessions)
-+		return;
-+
-+	stat_files = kmalloc(sizeof(struct dentry *) * nb_sessions, GFP_KERNEL);
-+
-+	if (!stat_files) {
-+		pr_warning("trace stat: not enough memory\n");
-+		return;
-+	}
-+
-+	for (i = 0; i < nb_sessions; i++) {
-+		struct tracer_stat_session *session = all_stat_sessions[i];
-+		stat_files[i] = debugfs_create_file(session->ts->name, 0644,
-+						stat_dir,
-+						session, &tracing_stat_fops);
-+		if (!stat_files[i])
-+			pr_warning("cannot create %s entry\n",
-+				   session->ts->name);
-+	}
-+}
-+
-+void init_tracer_stat(struct tracer *trace)
-+{
-+	int nb = basic_tracer_stat_checks(trace->stats);
-+
-+	destroy_trace_stat_files();
-+
-+	if (nb < 0) {
-+		pr_warning("stat tracing: missing stat callback on %s\n",
-+			   trace->name);
-+		return;
-+	}
-+	if (!nb)
-+		return;
-+
-+	init_all_sessions(nb, trace->stats);
-+	init_trace_stat_files();
-+}
-+
- static int __init tracing_stat_init(void)
- {
- 	struct dentry *d_tracing;
--	struct dentry *entry;
- 
--	INIT_LIST_HEAD(&stat_list.list);
- 	d_tracing = tracing_init_dentry();
- 
--	entry = debugfs_create_file("trace_stat", 0444, d_tracing,
--					NULL,
--				    &tracing_stat_fops);
--	if (!entry)
-+	stat_dir = debugfs_create_dir("trace_stat", d_tracing);
-+	if (!stat_dir)
- 		pr_warning("Could not create debugfs "
- 			   "'trace_stat' entry\n");
- 	return 0;
--- 
-1.6.0.4
+The real problem is that no-one has actually managed to come up with a
+useful VFS<->OSD mapping layer (even by extending or altering the VFS).
+Every filesystem that currently uses OSD has a separate direct OSD
+speaking interface (i.e. it slices out the block layer to do this and
+talks directly to the storage).
+
+I suppose this could be taken to show that such a layer is impossibly
+complex, as you assert, but its lack is reflected in strange looking
+design decisions like in-kernel mkfs.  It would also mean that there
+would be very little layered code sharing between ODS based filesystems.
+
+> - I intend to refactor the code further to make use of more super.c services,
+>   so to make this addition even smaller. Also future direction of raid over
+>   multiple objects will make even more kernel infrastructure needed which
+>   will need even more user-mode code duplication.
+> - I anticipate problems that are not yet addressed in this body of work
+>   but will be in the future, mainly that a single OSD-target (lun) can
+>   be shared by lots of FSs, and a single FS can span many OSD-targets.
+>   Some central management is much easier to do in Kernel.
+> 
+> > 
+> > What are the dependencies for this filesystem code?  I assume that it
+> > depends on various block- and scsi-level patches?  Which ones, and
+> > what is their status, and is this code even compileable without them?
+> > 
+> 
+> This OSD-based file system is dependent on the open-osd initiator library
+> code that I've submitted for inclusion for 2.6.29. It has been sitting
+> in linux-next for a while now, and has not been receiving any comments
+> for the last two updated patchsets I've sent to scsi-misc/lkml. However
+> it has not yet been submitted into Jame's scsi-misc git tree, and James
+> is the ultimate maintainer that should submit this work. I hope it will
+> still be submitted into 2.6.29, as this code is totally self sufficient
+> and does not endangers or changes any other Kernel subsystems.
+> (All the needed ground work was already submitted to Linus since 2.6.26)
+> So why should it not?
+
+I don't like it mainly because it's not truly a useful general framework
+for others to build on.  However, as argued above, there might not
+actually be such a useful framework, so as long as the only two
+consumers (you and Lustre) want an interface like this, I'll put it in.
+
+James
 
 
