@@ -1,72 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbYLaB0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbYLaBcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462AbYLaB0v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 20:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYLaB0n
+	id S1752516AbYLaBcr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 20:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYLaBcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 20:26:43 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33816 "EHLO mx2.suse.de"
+	Tue, 30 Dec 2008 20:32:39 -0500
+Received: from ns.suse.de ([195.135.220.2]:44221 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751727AbYLaB0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 20:26:43 -0500
-Date: Wed, 31 Dec 2008 02:26:41 +0100
+	id S1751779AbYLaBci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 20:32:38 -0500
+Date: Wed, 31 Dec 2008 02:32:33 +0100
 From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Evgeniy Dushistov <dushistov@mail.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] minix: fix add link - wrong position calculation
-Message-ID: <20081231012640.GA32239@wotan.suse.de>
-References: <20081228232550.GA11504@rain> <20081230153230.8e72dc88.akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       wassim dagash <wassim.dagash@gmail.com>
+Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation
+Message-ID: <20081231013233.GB32239@wotan.suse.de>
+References: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081230185919.GA17725@csn.ul.ie>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081230153230.8e72dc88.akpm@linux-foundation.org>
+In-Reply-To: <20081230185919.GA17725@csn.ul.ie>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 03:32:30PM -0800, Andrew Morton wrote:
-> On Mon, 29 Dec 2008 02:25:50 +0300
-> Evgeniy Dushistov <dushistov@mail.ru> wrote:
-> 
-> > This patch fixes add link method.
-> > Position in directory was calculated in wrong way.
+On Tue, Dec 30, 2008 at 06:59:19PM +0000, Mel Gorman wrote:
+> On Tue, Dec 30, 2008 at 07:55:47PM +0900, KOSAKI Motohiro wrote:
 > > 
-> > Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
-> > ---
-> >  fs/minix/dir.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > ok, wassim confirmed this patch works well.
 > > 
-> > diff --git a/fs/minix/dir.c b/fs/minix/dir.c
-> > index f704338..4b603b7 100644
-> > --- a/fs/minix/dir.c
-> > +++ b/fs/minix/dir.c
-> > @@ -280,7 +280,7 @@ int minix_add_link(struct dentry *dentry, struct inode *inode)
-> >  	return -EINVAL;
-> >  
-> >  got_it:
-> > -	pos = (page->index >> PAGE_CACHE_SHIFT) + p - (char*)page_address(page);
-> > +	pos = page_offset(page) + p - (char*)page_address(page);
-> >  	err = __minix_write_begin(NULL, page->mapping, pos, sbi->s_dirsize,
-> >  					AOP_FLAG_UNINTERRUPTIBLE, &page, NULL);
-> >  	if (err)
+> > 
+> > ==
+> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
+> > 
+> > Wassim Dagash reported following kswapd infinite loop problem.
+> > 
+> >   kswapd runs in some infinite loop trying to swap until order 10 of zone
+> >   highmem is OK, While zone higmem (as I understand) has nothing to do
+> >   with contiguous memory (cause there is no 1-1 mapping) which means
+> >   kswapd will continue to try to balance order 10 of zone highmem
+> >   forever (or until someone release a very large chunk of highmem).
+> > 
+> > He proposed remove contenious checking on highmem at all.
+> > However hugepage on highmem need contenious highmem page.
+> > 
 > 
-> Well that's cute.  Seems that we broke it over a year ago:
-> 
-> commit 4a66af9eaa9531372cfcb9e20103ed147c729ff9
-> Author:     Nick Piggin <npiggin@suse.de>
-> AuthorDate: Tue Oct 16 01:25:21 2007 -0700
-> Commit:     Linus Torvalds <torvalds@woody.linux-foundation.org>
-> CommitDate: Tue Oct 16 09:42:57 2007 -0700
-> 
->     minixfs: convert to new aops
-> 
-> Is minixfs getting THAT little use, or is this bustage more subtle
-> than it appears?
+> I'm lacking the original problem report, but contiguous order-10 pages are
+> indeed required for hugepages in highmem and reclaiming for them should not
+> be totally disabled at any point. While no 1-1 mapping exists for the kernel,
+> contiguity is still required.
 
-Not getting used, I'd suspect (although I definitely have used it -- I
-converted it to large block size for testing fsblock, probably I didn't
-test softlinks).
+This doesn't totally disable them. It disables asynchronous reclaim for them
+until the next time kswapd kicks is kicked by a higher order allocator. The
+guy who kicked us off this time should go into direct reclaim.
 
-But anyway I think it is still useful as a primer for ext2? Probably there
-are quite a lot of other filesystems that are less useful than minix ;)
+
+> kswapd gets a sc.order when it is known there is a process trying to get
+> high-order pages so it can reclaim at that order in an attempt to prevent
+> future direct reclaim at a high-order. Your patch does not appear to depend on
+> GFP_KERNEL at all so I found the comment misleading. Furthermore, asking it to
+> loop again at order-0 means it may scan and reclaim more memory unnecessarily
+> seeing as all_zones_ok was calculated based on a high-order value, not order-0.
+
+It shouldn't, because it should check all that.
+
+
+> While constantly looping trying to balance for high-orders is indeed bad,
+> I'm unconvinced this is the correct change. As we have already gone through
+> a priorities and scanned everything at the high-order, would it not make
+> more sense to do just give up with something like the following?
+> 
+>        /*
+>         * If zones are still not balanced, loop again and continue attempting
+>         * to rebalance the system. For high-order allocations, fragmentation
+>         * can prevent the zones being rebalanced no matter how hard kswapd
+>         * works, particularly on systems with little or no swap. For costly
+>         * orders, just give up and assume interested processes will either
+>         * direct reclaim or wake up kswapd as necessary.
+>         */
+>         if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+>                 cond_resched();
+> 
+>                 try_to_freeze();
+> 
+>                 goto loop_again;
+>         }
+> 
+> I used PAGE_ALLOC_COSTLY_ORDER instead of sc.order == 0 because we are
+> expected to support allocations up to that order in a fairly reliable fashion.
+
+I actually think it's better to do it for all orders, because that
+constant is more or less arbitrary. It is possible a zone might become
+too fragmented to support this, but the allocating process has been OOMed or
+had their allocation satisfied from another zone. kswapd would have no way
+out of the loop even if the system no longer requires higher order allocations.
+
+IOW, I don't see a big downside, and there is a real upside.
+
+I think the patch is good.
+
+> 
+> > To add infinite loop stopper is simple and good.
+> > 
+> > 
+> > 
+> > Reported-by: wassim dagash <wassim.dagash@gmail.com>
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
+> For the moment
+> 
+> NAKed-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> How about the following (compile-tested-only) patch?
+> 
+> =============
+> From: Mel Gorman <mel@csn.ul.ie>
+> Subject: [PATCH] mm: stop kswapd's infinite loop at high order allocation
+> 
+>   kswapd runs in some infinite loop trying to swap until order 10 of zone
+>   highmem is OK.... kswapd will continue to try to balance order 10 of zone
+>   highmem forever (or until someone release a very large chunk of highmem).
+> 
+> For costly high-order allocations, the system may never be balanced due to
+> fragmentation but kswapd should not infinitely loop as a result. The
+> following patch lets kswapd stop reclaiming in the event it cannot
+> balance zones and the order is high-order.
+> 
+> Reported-by: wassim dagash <wassim.dagash@gmail.com>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 62e7f62..03ed9a0 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1867,7 +1867,16 @@ out:
+>  
+>  		zone->prev_priority = temp_priority[i];
+>  	}
+> -	if (!all_zones_ok) {
+> +
+> +	/*
+> +	 * If zones are still not balanced, loop again and continue attempting
+> +	 * to rebalance the system. For high-order allocations, fragmentation
+> +	 * can prevent the zones being rebalanced no matter how hard kswapd
+> +	 * works, particularly on systems with little or no swap. For costly
+> +	 * orders, just give up and assume interested processes will either
+> +	 * direct reclaim or wake up kswapd as necessary.
+> +	 */
+> +	if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+>  		cond_resched();
+>  
+>  		try_to_freeze();
