@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYLaOX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYLaPWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbYLaOX0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 09:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbYLaOXR
+	id S1756505AbYLaPWV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 10:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbYLaPWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 09:23:17 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:56784 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754989AbYLaOXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 09:23:16 -0500
-Message-ID: <495B8042.1080001@knaff.lu>
-Date: Wed, 31 Dec 2008 15:22:58 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Wed, 31 Dec 2008 10:22:11 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:18063 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbYLaPWK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 10:22:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=rIym7X10JGeTvAcGrZnHY2hINln740cLND6S0Me85wksPEUIqnXHkhq1zwA1tflz5u
+         kT7qSz/4JRRjQZc6+MXm0DTFz7wv4ULJYf5LRG44iEH1wzfcxzerqfFbZWtWoOos28rw
+         0/SYa4/skexLfv0fhI3lokOYcECdi6ThKzbuE=
+Message-ID: <c32efac40812310722x238c8348j5f4ed48ae87c4704@mail.gmail.com>
+Date: Wed, 31 Dec 2008 07:22:08 -0800
+From: "Dave Hylands" <dhylands@gmail.com>
+To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.28 1/1] gpiolib: add set/get batch v3
+Cc: "David Brownell" <david-b@pacbell.net>,
+       "Eric Miao" <eric.miao@marvell.com>,
+       "Paulius Zaleckas" <paulius.zaleckas@teltonika.lt>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Ben Gardner" <bgardner@wabtec.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <12307156721518-git-send-email-jayakumar.lkml@gmail.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>, greg@kroah.com,
-       Roland <devzero@web.de>
-Subject: Re: The bzip2/lzma patches
-References: <495ADD46.7080601@zytor.com> <495B319B.5080601@knaff.lu> <20081231134218.GC2388@uranus.ravnborg.org>
-In-Reply-To: <20081231134218.GC2388@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12307156721518-git-send-email-jayakumar.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> Hi Alain.
-> 
->> If I may suggest something: what if *YOU* provided a patch (or series of
->> patches, or whatever you like) complying to your high stylistic
->> requirements
-> 
-> hpa does not have any high stylistic requirments he just have good taste.
-> He simply ask you do do a better job and if you want this in then
-> please follow his advice.
-> 
-> Asking him to do the job you want to have done is just not the way forward.
-> 
-> 	Sam
+Hi Jaya,
 
-Thanks for the advice. You're right, this is not the way forward. I must
-admit that I did indeed an huge mistake with this patch.
+...snip...
+> There was a question about why have both bitmask AND width when width
+> could be worked out from bitmask. The reason for having both bitmask and
+> length is for performance. Let's compare the following two scenarios:
+>
+> /* flash to black */
+> for (i=0; i < 800*600; i++)
+>        gpio_set_batch(DB0, 0x00000000, 0x0000FFFF)
+>
+> Internally, the above implementation has to work out the length of bits
+> that are being set in bitmask in order to figure out which register
+> boundaries are being crossed. That means looping through the bitmask
+> and counting bits. That would need to be repeated for every call of
+> gpio_set_batch in the above loop and would be a relatively high expense.
+>
+> /* flash to black */
+> for (i=0; i < 800*600; i++)
+>        gpio_set_batch(DB0, 0x00000000, 0x0000FFFF, 16)
+>
+> In the 2nd case, the implementation is able to skip all the bit counting.
+> This usage method is also the intuitive way for drivers that are trying
+> to push data across a gpio bus since they explicitly know the bus length.
+...snip...
 
-I've initially developed it a couple of years ago for use in udpcast.
-Once done, regular attention was needed for it to adapt it to new
-kernels. At one point in time (this September), I figured that I could
-save that maintenance effort by getting it integrated into the mainline
-kernel. At the same time, I figured, other developers of embedded
-systems could profit from it. A win-win situation. Or so I thought.
+I haven't been following too closely, but what about
 
-However, now that I look back on the 3 past months, I figure that the
-amount of effort that I poured into this was disproportionate compared
-to what I used to spend on maintaining it out of kernel. Even if I
-continued evolving it until the end of my life, I would spend _less_
-time on it than I did in the last 3 months.
+        gpio_set_batch(DB0, 0x00000000, 0x00FF00FF, 16)
 
-My conclusion is that I'll continue like I did before last summer: to
-maintain it on my own website (http://udpcast.linux.lu/source.html)
-along with udpcast.
+That also has 16 bits set, but in different positions.
 
-Anybody is still welcome to use it as he sees fit. If a brave soul with
-more patience than me wants to plead with the powers-that-be to get it
-into official kernel, he has my support. But for myself, I give up on
-this quest, it is simply too much hassle to be worthwhile...
+Shouldn't you just not bother with the length and optimize particular
+bitmasks (i.e. 0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF)?
 
-Regards,
-
-Alain
-
+-- 
+Dave Hylands
+Shuswap, BC, Canada
+http://www.DaveHylands.com/
