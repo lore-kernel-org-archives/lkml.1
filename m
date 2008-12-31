@@ -1,164 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYLaEkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYLaEy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbYLaEkr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 23:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbYLaEkj
+	id S1755659AbYLaEy1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 23:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYLaEyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 23:40:39 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36645 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbYLaEkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 23:40:37 -0500
-Date: Wed, 31 Dec 2008 15:40:27 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Ken Chen <kenchen@google.com>,
-       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org
-Subject: Re: [patch] powerpc: change u64/s64 to a long long integer type
-Message-Id: <20081231154027.457d9197.sfr@canb.auug.org.au>
-In-Reply-To: <20081222080341.GA18897@elte.hu>
-References: <20081222152247.b934ed5b.sfr@canb.auug.org.au>
-	<b040c32a0812212249p45aba306tbb68a960b79cd0ee@mail.gmail.com>
-	<20081222070426.GD29160@elte.hu>
-	<20081222181932.5dd9514e.sfr@canb.auug.org.au>
-	<20081222080341.GA18897@elte.hu>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__31_Dec_2008_15_40_27_+1100_lxmpQ31sob3ZmrIW"
+	Tue, 30 Dec 2008 23:54:19 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:28092 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbYLaEyS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 23:54:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=N6kbvSlMrqJwQ8vdz62OGIzZNZtK1kbMqN7At4Mf5fNmPLu73FUZ/nrBp0fVXr4F+M
+         13gaVAwMQc3pwANUDvQ/dJMORcksjVCbDHGRHPfk44HaatlC9910UORqK/gy6zKow7Wj
+         XWmepapSw+dJocfUBRtdVVWgnYqZ7d9AcxM9g=
+Message-ID: <2f11576a0812302054rd26d8bcw6a113b3abefe8965@mail.gmail.com>
+Date: Wed, 31 Dec 2008 13:54:17 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Mel Gorman" <mel@csn.ul.ie>
+Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "wassim dagash" <wassim.dagash@gmail.com>
+In-Reply-To: <20081230185919.GA17725@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081230185919.GA17725@csn.ul.ie>
+X-Google-Sender-Auth: 3652fe99e6725d32
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__31_Dec_2008_15_40_27_+1100_lxmpQ31sob3ZmrIW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi
 
-Hi Ingo,
+thank you for reviewing.
 
-On Mon, 22 Dec 2008 09:03:41 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>> ==
+>> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
+>>
+>> Wassim Dagash reported following kswapd infinite loop problem.
+>>
+>>   kswapd runs in some infinite loop trying to swap until order 10 of zone
+>>   highmem is OK, While zone higmem (as I understand) has nothing to do
+>>   with contiguous memory (cause there is no 1-1 mapping) which means
+>>   kswapd will continue to try to balance order 10 of zone highmem
+>>   forever (or until someone release a very large chunk of highmem).
+>>
+>> He proposed remove contenious checking on highmem at all.
+>> However hugepage on highmem need contenious highmem page.
+>>
 >
-> Subject: powerpc: change u64/s64 to a long long integer type
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon Dec 22 08:32:41 CET 2008
->=20
-> Convert arch/powerpc/ over to long long based u64:
->=20
->  -#ifdef __powerpc64__
->  -# include <asm-generic/int-l64.h>
->  -#else
->  -# include <asm-generic/int-ll64.h>
->  -#endif
->  +#include <asm-generic/int-ll64.h>
->=20
-> This will avoid reoccuring spurious warnings in core kernel code that=20
-> comes when people test on their own hardware. (i.e. x86 in ~98% of the=20
-> cases) This is what x86 uses and it generally helps keep 64-bit code=20
-> 32-bit clean too.
+> I'm lacking the original problem report, but contiguous order-10 pages are
+> indeed required for hugepages in highmem and reclaiming for them should not
+> be totally disabled at any point. While no 1-1 mapping exists for the kernel,
+> contiguity is still required.
 
-Thanks for this great start.  Just a few comments ...
+correct.
+but that's ok.
 
-Firstly, it would be nice if we could split this into things we can do
-now (e.g. logical bug fixes) and things that must be done at the time of
-the u64 type change (e.g. the printk's etc).  That will make the second
-patch hopefully somewhat smaller.
+my patch only change corner case bahavior and only disable high-order
+when priority==0. typical hugepage reclaim don't need and don't reach
+priority==0.
 
-> Index: linux/arch/powerpc/kernel/prom.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux.orig/arch/powerpc/kernel/prom.c
-> +++ linux/arch/powerpc/kernel/prom.c
-> @@ -824,11 +824,11 @@ static int __init early_init_dt_scan_cho
->  #endif
-> =20
->  #ifdef CONFIG_KEXEC
-> -	lprop =3D (u64*)of_get_flat_dt_prop(node, "linux,crashkernel-base", NUL=
-L);
-> +	lprop =3D (unsigned long *)of_get_flat_dt_prop(node, "linux,crashkernel=
--base", NULL);
->  	if (lprop)
->  		crashk_res.start =3D *lprop;
-> =20
-> -	lprop =3D (u64*)of_get_flat_dt_prop(node, "linux,crashkernel-size", NUL=
-L);
-> +	lprop =3D (unsigned long *)of_get_flat_dt_prop(node, "linux,crashkernel=
--size", NULL);
+and sorry. I agree with my "2nd loop"  word of the patch comment is a
+bit misleading.
 
-These casts are actually not needed at all as of_get_flat_dt_prop()
-returns "void *".
 
-> Index: linux/arch/powerpc/oprofile/cell/vma_map.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux.orig/arch/powerpc/oprofile/cell/vma_map.c
-> +++ linux/arch/powerpc/oprofile/cell/vma_map.c
-> @@ -92,7 +92,7 @@ vma_map_add(struct vma_to_fileoffset_map
->   * A pointer to the first vma_map in the generated list
->   * of vma_maps is returned.  */
->  struct vma_to_fileoffset_map *create_vma_map(const struct spu *aSpu,
-> -					     unsigned long __spu_elf_start)
-> +					     u64 __spu_elf_start)
+> kswapd gets a sc.order when it is known there is a process trying to get
+> high-order pages so it can reclaim at that order in an attempt to prevent
+> future direct reclaim at a high-order. Your patch does not appear to depend on
+> GFP_KERNEL at all so I found the comment misleading. Furthermore, asking it to
+> loop again at order-0 means it may scan and reclaim more memory unnecessarily
+> seeing as all_zones_ok was calculated based on a high-order value, not order-0.
 
-Wouldn't it make more sense to change the prototype to match the
-implementation and the only caller (which passes an "unsigned long")?
+Yup. my patch doesn't depend on GFP_KERNEL.
 
-> Index: linux/arch/powerpc/platforms/cell/interrupt.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux.orig/arch/powerpc/platforms/cell/interrupt.c
-> +++ linux/arch/powerpc/platforms/cell/interrupt.c
-> @@ -148,7 +148,7 @@ static unsigned int iic_get_irq(void)
-> =20
->  	iic =3D &__get_cpu_var(iic);
->  	*(unsigned long *) &pending =3D
-> -		in_be64((unsigned long __iomem *) &iic->regs->pending_destr);
-> +		in_be64((unsigned long long __iomem *) &iic->regs->pending_destr);
+but, Why order-0 means it may scan more memory unnecessary?
+all_zones_ok() is calculated by zone_watermark_ok() and zone_watermark_ok()
+depend on order argument. and my patch set order variable to 0 too.
 
-in_be64()'s argument is "const volatile u64 __iomem *" so the
-original "unsigned long" should have been "u64".
 
-> Index: linux/arch/powerpc/platforms/cell/spu_base.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux.orig/arch/powerpc/platforms/cell/spu_base.c
-> +++ linux/arch/powerpc/platforms/cell/spu_base.c
-> @@ -139,10 +139,10 @@ static void spu_restart_dma(struct spu *
->  {
->  	struct spu_priv2 __iomem *priv2 =3D spu->priv2;
-> =20
-> -	if (!test_bit(SPU_CONTEXT_SWITCH_PENDING, &spu->flags))
-> +	if (!test_bit(SPU_CONTEXT_SWITCH_PENDING, (unsigned long *)&spu->flags))
->  		out_be64(&priv2->mfc_control_RW, MFC_CNTL_RESTART_DMA_COMMAND);
->  	else {
-> -		set_bit(SPU_CONTEXT_FAULT_PENDING, &spu->flags);
-> +		set_bit(SPU_CONTEXT_FAULT_PENDING, (unsigned long *)&spu->flags);
+> While constantly looping trying to balance for high-orders is indeed bad,
+> I'm unconvinced this is the correct change. As we have already gone through
+> a priorities and scanned everything at the high-order, would it not make
+> more sense to do just give up with something like the following?
+>
+>       /*
+>        * If zones are still not balanced, loop again and continue attempting
+>        * to rebalance the system. For high-order allocations, fragmentation
+>        * can prevent the zones being rebalanced no matter how hard kswapd
+>        * works, particularly on systems with little or no swap. For costly
+>        * orders, just give up and assume interested processes will either
+>        * direct reclaim or wake up kswapd as necessary.
+>        */
+>        if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+>                cond_resched();
+>
+>                try_to_freeze();
+>
+>                goto loop_again;
+>        }
+>
+> I used PAGE_ALLOC_COSTLY_ORDER instead of sc.order == 0 because we are
+> expected to support allocations up to that order in a fairly reliable fashion.
 
-I have submitted a different patch for this.  The bitops work on unsigned
-longs, so I changed the "flags" to be unsigned long.
+my comment is bellow.
 
-So, would you like me to push this along - including splitting it up a
-bit (keeping your Signed-off-by, of course)?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__31_Dec_2008_15_40_27_+1100_lxmpQ31sob3ZmrIW
-Content-Type: application/pgp-signature
+> =============
+> From: Mel Gorman <mel@csn.ul.ie>
+> Subject: [PATCH] mm: stop kswapd's infinite loop at high order allocation
+>
+>  kswapd runs in some infinite loop trying to swap until order 10 of zone
+>  highmem is OK.... kswapd will continue to try to balance order 10 of zone
+>  highmem forever (or until someone release a very large chunk of highmem).
+>
+> For costly high-order allocations, the system may never be balanced due to
+> fragmentation but kswapd should not infinitely loop as a result. The
+> following patch lets kswapd stop reclaiming in the event it cannot
+> balance zones and the order is high-order.
+>
+> Reported-by: wassim dagash <wassim.dagash@gmail.com>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+>
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 62e7f62..03ed9a0 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1867,7 +1867,16 @@ out:
+>
+>                zone->prev_priority = temp_priority[i];
+>        }
+> -       if (!all_zones_ok) {
+> +
+> +       /*
+> +        * If zones are still not balanced, loop again and continue attempting
+> +        * to rebalance the system. For high-order allocations, fragmentation
+> +        * can prevent the zones being rebalanced no matter how hard kswapd
+> +        * works, particularly on systems with little or no swap. For costly
+> +        * orders, just give up and assume interested processes will either
+> +        * direct reclaim or wake up kswapd as necessary.
+> +        */
+> +       if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+>                cond_resched();
+>
+>                try_to_freeze();
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+this patch seems no good.
+kswapd come this point every SWAP_CLUSTER_MAX reclaimed because to avoid
+unnecessary priority variable decreasing.
+then "nr_reclaimed >= SWAP_CLUSTER_MAX" indicate kswapd need reclaim more.
 
-iEYEARECAAYFAkla97sACgkQjjKRsyhoI8xctgCgqNgbRUgxUA8aWzvYgKnM4jme
-tCMAoJj8OIJR3iikTE1SuIOqB4rUZW2U
-=MlgA
------END PGP SIGNATURE-----
+kswapd purpose is "reclaim until pages_high", not reclaim
+SWAP_CLUSTER_MAX pages.
 
---Signature=_Wed__31_Dec_2008_15_40_27_+1100_lxmpQ31sob3ZmrIW--
+if your patch applied and kswapd start to reclaim for hugepage, kswapd
+exit balance_pgdat() function after to reclaim only 32 pages
+(SWAP_CLUSTER_MAX).
+
+In the other hand, "nr_reclaimed < SWAP_CLUSTER_MAX" mean kswapd can't
+reclaim enough
+page although priority == 0.
+in this case, retry is worthless.
+
+sorting out again.
+"goto loop_again" reaching happend by two case.
+
+1. kswapd reclaimed SWAP_CLUSTER_MAX pages.
+    at that time, kswapd reset priority variable to prevent
+unnecessary priority decreasing.
+    I don't hope this behavior change.
+2. kswapd scanned until priority==0.
+    this case is debatable. my patch reset any order to 0. but
+following code is also considerable to me. (sorry for tab corrupted,
+current my mail environment is very poor)
+
+
+code-A:
+       if (!all_zones_ok) {
+              if ((nr_reclaimed >= SWAP_CLUSTER_MAX) ||
+                 (sc.order <= PAGE_ALLOC_COSTLY_ORDER)) {
+                          cond_resched();
+                           try_to_freeze();
+                           goto loop_again;
+                }
+       }
+
+or
+
+code-B:
+       if (!all_zones_ok) {
+              cond_resched();
+               try_to_freeze();
+
+              if (nr_reclaimed >= SWAP_CLUSTER_MAX)
+                           goto loop_again;
+
+              if (sc.order <= PAGE_ALLOC_COSTLY_ORDER)) {
+                           order = sc.order = 0;
+                           goto loop_again;
+              }
+       }
+
+
+However, I still like my original proposal because ..
+  - code-A forget to order-1 (for stack) allocation also can cause
+infinite loop.
+  - code-B doesn't simpler than my original proposal.
+
+What do you think it?
