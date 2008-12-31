@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbYLaTFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYLaWjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbYLaTFf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 14:05:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbYLaTF1
+	id S1757405AbYLaWjN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 17:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYLaWi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 14:05:27 -0500
-Received: from mail.lang.hm ([64.81.33.126]:59607 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756139AbYLaTF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 14:05:26 -0500
-Date: Wed, 31 Dec 2008 12:07:33 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-In-Reply-To: <20081231183039.GE20882@localhost>
-Message-ID: <alpine.DEB.1.10.0812311204580.18334@asgard.lang.hm>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm>
- <20081231183039.GE20882@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 31 Dec 2008 17:38:58 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:32821 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYLaWi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 17:38:57 -0500
+Date: Wed, 31 Dec 2008 16:37:44 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, miaox@cn.fujitsu.com,
+       menage@google.com, penberg@cs.helsinki.fi, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] cpuset,mm: fix allocating page cache/slab object on the
+ unallowed node when memory spread is set
+In-Reply-To: <200812311413.45127.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0812311633150.21130@quilx.com>
+References: <49547B93.5090905@cn.fujitsu.com> <20081230142805.3c6f78e3.akpm@linux-foundation.org>
+ <200812311413.45127.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
+On Wed, 31 Dec 2008, Nick Piggin wrote:
 
-> [david@lang.hm - Wed, Dec 31, 2008 at 11:12:12AM -0800]
->> On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
->>
->>> [david@lang.hm - Tue, Dec 30, 2008 at 05:39:29PM -0800]
->>>> On Wed, 31 Dec 2008, Andi Kleen wrote:
->>>>
->>>>> david@lang.hm writes:
->>>>>>
->>>>>> doing a grep through System.map for the address that appears in the
->>>>>> error returns nothing
->>>>>
->>>>> This might be obvious, but you can't grep directly for these addresses
->>>>> because System.map contains the starting addresses of functions only
->>>>> and normally the reported address is somewhere in the middle of a
->>>>> function. So you instead have to look for the highest number lower or equal
->>>>> the address from the exception.
->>>>
->>>> thanks, this was not obvious to me
->>>>
->>>> the -2 error maps to
->>>>
->>>> ffffffff8099e4c1 T free_bootmem_node
->>>> ffffffff8099e4e5 t alloc_bootmem_core
->>>> ffffffff8099e774 t ___alloc_bootmem_nopanic
->>>>
->>>>
->>>> the first error maps to
->>>>
->>>> ffffffff809c2de4 T free_bootmem_node
->>>> ffffffff809c2e08 t alloc_bootmem_core
->>>> ffffffff809c3097 t ___alloc_bootmem_nopanic
->>>>
->>>>
->>>> so it looks like this is in alloc_bootmem_core in both cases.
->>>>
->>>> David Lang
->>>>
->>>
->>> Along with Andi's proposed earlyprintk=vga I think
->>> bootmem_debug option could be usefull here too.
->>
->> adding bootmem_debug creates so much additonal output that the oops
->> scrolls off the screen (except the last 'paragraph' of it)
->>
->> it looks like it's individual items being allocated (trying to scan it as
->> it scrolled by)
+> These paths are pretty performance critical. Why don't cpusets code do this
+> work in the slowpath where the cpuset's mems_allowed gets changed rather
+> than putting these calls all over the place with apparently no real rhyme or
+> reason :( (this is not against your patch, but just this part of the cpusets
+> design)
+
+Right.
+
+> > d) How does slub handle this problem?
 >
-> on the picture you sent me i noticed the message
-> "Your memory is not aligned you need to rebuild your
-> kernel with bigger NODEMAP SIZE shift=20" and then
-> srat code complains about "No NUMA code hash function found"
-> which looks a bit scary. Btw, could you post this picture
-> on some public resource so NUMA people could check it?
+> SLUB seems to do a "sloppy" kind of memory policy allocation, where it just
+> relies on the page allocator to hand us the correct page and AFAIKS does not
+> exactly obey this stuff all the time.
 
-http://linux.lang.hm/linux/IMG00030.jpg
+Slub avoids hanlding memory policy decisions and lets the page allocator
+deal with it. That means that memory policies are not enforced on an
+object basis but on a page basis. If you allocate a series of objects
+under MPOL_INTERLEAVE then SLAB will give you one object from each node.
+SLUB will give you objects from one page until the objects in a page are
+exhausted. The next page will be acquired according to the current
+memory policy. Meaning the page will come from the next node if
+MPOL_INTERLEAVE is set. The following set of objects will be allocated
+from that node. This allows a faster allocation for NUMA since the cachelines
+for allocation can be kept hot. The page are still allocated from all
+nodes.
 
-I'll try rebuilding with a bigger nodemap size and let you know
 
-David Lang
+
