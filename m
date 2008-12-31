@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYLaR7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYLaWCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbYLaR7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 12:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbYLaR7d
+	id S1757316AbYLaWCd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 17:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYLaWCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 12:59:33 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:47762 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752598AbYLaR7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 12:59:32 -0500
-Date: Wed, 31 Dec 2008 18:59:28 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org, Madhusudhan Chikkature <madhu.cr@ti.com>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 5/5] omap mmc: Add new omap hsmmc controller for 2430
- and 34xx
-Message-ID: <20081231185928.2ba325e6@mjolnir.drzeus.cx>
-In-Reply-To: <20081230083624.GD7850@atomide.com>
-References: <20081207213617.10456.43951.stgit@localhost>
-	<20081207215139.10456.46405.stgit@localhost>
-	<20081221171700.3efc0c3a@mjolnir.drzeus.cx>
-	<20081229165531.GG22065@atomide.com>
-	<20081230083624.GD7850@atomide.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 17:02:25 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48269 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752647AbYLaWCY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 17:02:24 -0500
+Date: Wed, 31 Dec 2008 16:59:39 -0500 (EST)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+cc: Jeff Arnold <jbarnold@MIT.EDU>, linux-kernel@vger.kernel.org,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: Re: [PATCH 1/7] Make section names compatible with -ffunction-sections
+ -fdata-sections
+In-Reply-To: <20081231195215.GU496@one.firstfloor.org>
+Message-ID: <alpine.DEB.2.00.0812311649180.2230@vinegar-pot.mit.edu>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-2-git-send-email-jbarnold@mit.edu> <8763lxwv0d.fsf@basil.nowhere.org> <alpine.DEB.2.00.0812311410070.2230@vinegar-pot.mit.edu> <20081231195215.GU496@one.firstfloor.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Dec 2008 10:36:26 +0200
-Tony Lindgren <tony@atomide.com> wrote:
+Hi Andrew,
 
-> 
-> Here's one more version that leaves out the unnecessary TWL4030
-> dependency in the Kconfig as pointed out by David Brownell.
-> 
+I'd like to get this -ffunction-sections patch merged sometime during the 
+2.6.29 merge window.  I've updated it in my git repository to work on top 
+of Linus' current master; how do you want to handle this?
 
-Looks ok.
+Thanks,
 
-Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+ 	-Tim Abbott
 
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
