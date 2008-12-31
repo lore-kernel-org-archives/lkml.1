@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYLaJuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYLaJwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbYLaJuM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 04:50:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYLaJt7
+	id S1756133AbYLaJwn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 04:52:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYLaJwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 04:49:59 -0500
-Received: from mx02.mailboxcop.com ([206.125.223.72]:53087 "EHLO
-	mx02.mailboxcop.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752957AbYLaJt7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 04:49:59 -0500
-Message-ID: <495B40C1.4080305@jaysonking.com>
-Date: Wed, 31 Dec 2008 03:52:01 -0600
-From: Jayson King <dev@jaysonking.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mingo@elte.hu, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       shaggy@linux.vnet.ibm.com, rjw@sisk.pl, fabio.comolli@gmail.com
-Subject: Disregard: was Re: large intermittent latency spike 2.6.28 (and 2.6.27.10),
- bisect commit ca7e716c7833aeaeb8fedd6d004c5f5d5e14d325 -> Revert "sched_clock:
- prevent scd->clock from moving backwards"
-References: <495A96FF.1000200@jaysonking.com>
-In-Reply-To: <495A96FF.1000200@jaysonking.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Canit-CHI2: 0.50
-X-Bayes-Prob: 0.9999 (Score 4, tokens from: @@RPTN, outgoing)
-X-Spam-Score: 4.10 (****) [Hold at 5.20] RDNS_NONE,2(1.2),6947(-1.2),Bayes(0.9999,4.0)
-X-CanItPRO-Stream: outgoing (inherits from default)
-X-Canit-Stats-ID: 333250006 - a7a05fccb0eb
-X-Antispam-Training-Forget: http://mailboxcop.com/canit/b.php?i=333250006&m=a7a05fccb0eb&c=f
-X-Antispam-Training-Nonspam: http://mailboxcop.com/canit/b.php?i=333250006&m=a7a05fccb0eb&c=n
-X-Antispam-Training-Spam: http://mailboxcop.com/canit/b.php?i=333250006&m=a7a05fccb0eb&c=s
+	Wed, 31 Dec 2008 04:52:35 -0500
+Received: from vena.lwn.net ([206.168.112.25]:50519 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753281AbYLaJwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 04:52:34 -0500
+Date: Wed, 31 Dec 2008 02:52:20 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@lst.de>,
+       Al@oss.sgi.com, Oleg Nesterov <oleg@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, bfields@fieldses.org,
+       xfs-masters@oss.sgi.com, Viro <viro@ZenIV.linux.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [xfs-masters] RFC: Fix f_flags races without the BKL
+Message-ID: <20081231025220.1e67236e@tpl>
+In-Reply-To: <20081230144836.GA31439@lst.de>
+References: <20081229041352.6bbdf57c@tpl>
+	<20081229124151.GA29634@redhat.com>
+	<20081229152732.GH496@one.firstfloor.org>
+	<20081230055956.1747bd86@tpl>
+	<20081230130439.GA28874@lst.de>
+	<20081230133737.GM496@one.firstfloor.org>
+	<20081230144836.GA31439@lst.de>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I noticed large latency spikes in 2.6.28 (and 2.6.27.10) which would 
-> make the system unresponsive for minutes at a time (alt+Fn switching 
-> wouldn't even work) when the system is under load. I could trigger the 
-> latency by running a large make -j 3. Sometimes it would trigger in a 
-> few seconds other times it would take a few minutes.
->
-> I bisected it in 2.6.27.10 to d9a888b061f55534016d2d86a21639948312a117 
-> -> Revert "sched_clock: prevent scd->clock from moving backwards" 
-> (ca7e716c7833aeaeb8fedd6d004c5f5d5e14d325 in 2.6.28) and reverting it 
-> in 2.6.28 make the latency spike go away. At least, so far no spike in 
-> over 24 hours.
-Please disregard this. I just had a latency spike again, so this is not 
-the change I'm looking for... I'll need to look for what is causing it 
-again, apparently not only the make -j 3 I thought, and do another test.
+On Tue, 30 Dec 2008 15:48:37 +0100
+Christoph Hellwig <hch@lst.de> wrote:
 
-Jayson
+> That beeing said I took another look at the patch and it seems like
+> most places are indeed just very quick flags setting / clearing
+> with the only sleeping possible inside ->fasync.  So having a
+> file_flags_lock spinlock, and another sleeping mutex protecting
+> ->fasync might be another options.  
+> 
+> Jon, do you remember what we actually need to protect in -fasync?
+> any reason not to take the locking inside the method?  Together with
+> ->lock and the old ->ioctl it's pretty special in fops as none of  
+> the others have any locking at all.
 
+There's nothing special about fasync() itself.  The problem is that the
+setting of the FASYNC flag and the associated call to fasync() need to
+be atomic, lest the driver/filesystem and the VFS end up with differing
+ideas about the setting of that flag.  In the absence of that
+constraint, one could just use the normal bit operations on f_flags.
+
+jon
