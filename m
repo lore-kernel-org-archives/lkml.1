@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbYLaRuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYLaTtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756672AbYLaRuq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 12:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbYLaRuf
+	id S1756839AbYLaTtu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 14:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYLaTtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 12:50:35 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:35563 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756098AbYLaRue (ORCPT
+	Wed, 31 Dec 2008 14:49:41 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:49588 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784AbYLaTtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 12:50:34 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=25zMqcOnjZ5WvFo9OfERuy1k8TsmyhPV4mOrG3q8+CVlZz9RzlnYSGTI4YB4UQYoLLog9TIxxxOvrrZg37mxp8Z7J2nrSEAhQlK2+HLT0+UnNy6DpOswbBgpv8frDuoJXqQ3ufeMNcmlphPu+oct4jVKv/bBlYoDM6AVO2c/vQ0=  ;
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>, lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.28] mmc: warn about voltage mismatches
-Date: Wed, 31 Dec 2008 09:50:30 -0800
-User-Agent: KMail/1.9.10
+	Wed, 31 Dec 2008 14:49:41 -0500
+Message-ID: <0a2901c96b80$e595de80$0201a8c0@bui.materna.com>
+From: "Roland" <devzero@web.de>
+To: <linux-kernel@vger.kernel.org>
+Cc: "Chris Mason" <chris.mason@oracle.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Btrfs for mainline
+Date: Wed, 31 Dec 2008 20:49:29 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812310950.30478.david-b@pacbell.net>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+X-Provags-ID: V01U2FsdGVkX18ai/MW/Bf52fRFPcQuuLi4l+g8DuMhMHGf9HnX
+	f23dE5G+5Ibtg7sDE16OYFCAl0NUE2sIVzOu1ACkr5PLHWf0vO
+	oLEQ7A8JI=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+>I've done some testing against Linus' git tree from last night and the
+>current btrfs trees still work well.
 
-Get rid of a silent failure mode when the MMC/SD host doesn't
-support the voltages needed to operate a given card, by
-adding a warning.  A 3.3V host and a 3.0V card, for example,
-no longer need to mysteriously just not work at all.
+i`d like to confirm that it`s already quite stable, even if used with 
+compression.
 
-This isn't the best diagnostic; ideally it would also tell
-what voltage the card and host support (and not just by
-dumping the bitmasks).
+happy new year to everyone !
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/mmc/core/core.c |    2 ++
- 1 file changed, 2 insertions(+)
+roland
 
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -467,6 +467,8 @@ u32 mmc_select_voltage(struct mmc_host *
- 		host->ios.vdd = bit;
- 		mmc_set_ios(host);
- 	} else {
-+		pr_warning("%s: host doesn't support card's voltages\n",
-+				mmc_hostname(host));
- 		ocr = 0;
- 	}
- 
+
+>There are a few bug fixes that I need to include from while I was on
+>vacation but I haven't made any large changes since early in December:
+
+>Btrfs details and usage information can be found:
+
+>http://btrfs.wiki.kernel.org/
+
+>The btrfs kernel code is here:
+
+>http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=summary
+
+>And the utilities are here:
+
+>http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-progs-unstable.git;a=summary
+
+>-chris
+
