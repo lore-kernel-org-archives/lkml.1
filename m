@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbYLaRcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYLaSH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756491AbYLaRcE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 12:32:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbYLaRbx
+	id S1756980AbYLaSH7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:07:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbYLaSHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 12:31:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52316 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752515AbYLaRbw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 12:31:52 -0500
-Date: Wed, 31 Dec 2008 09:31:49 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] vfs patches, part 1
-In-Reply-To: <alpine.LFD.2.00.0812310905580.5086@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0812310930360.5086@localhost.localdomain>
-References: <20081231074356.GA28946@ZenIV.linux.org.uk> <alpine.LFD.2.00.0812310905580.5086@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 31 Dec 2008 13:07:51 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:53084 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755422AbYLaSHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 13:07:50 -0500
+Date: Wed, 31 Dec 2008 19:07:47 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Philip Langdale <philipl@overt.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: mmotm 2008-12-30-16-05 uploaded (mmc)
+Message-ID: <20081231190747.3416280d@mjolnir.drzeus.cx>
+In-Reply-To: <495AEE05.1080005@oracle.com>
+References: <200812310006.mBV060iV029753@imap1.linux-foundation.org>
+	<495AEE05.1080005@oracle.com>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Dec 2008 19:59:01 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-
-On Wed, 31 Dec 2008, Linus Torvalds wrote:
+> akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2008-12-30-16-05 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > It contains the following patches against 2.6.28:
 > 
-> There's tons of unnecessary "[PATCH, v5]" things in those commit headers, 
-> and that seems to mean that you intentionally pass the "--keep" flag to 
-> git to keep the crap in subject lines, rather than let git clean it up for 
-> you.
 > 
-> Git by default will try to clean things up, so you literally have done 
-> extra work to make your commits look like shit!
+> mmotm-2008-1230-1605/drivers/mmc/host/ricoh_mmc.c:235: error: variable 'ricoh_mmc_pm_opts' has initializer but incomplete type
+> mmotm-2008-1230-1605/drivers/mmc/host/ricoh_mmc.c:236: error: unknown field 'suspend_noirq' specified in initializer
+> mmotm-2008-1230-1605/drivers/mmc/host/ricoh_mmc.c:236: warning: excess elements in struct initializer
+> mmotm-2008-1230-1605/drivers/mmc/host/ricoh_mmc.c:236: warning: (near initialization for 'ricoh_mmc_pm_opts')
+> mmotm-2008-1230-1605/drivers/mmc/host/ricoh_mmc.c:237: error: unknown field 'resume_noirq' specified in initializer
+> mmotm-2008-1230-1605/drivers/mmc/host/ricoh_mmc.c:237: warning: excess elements in struct initializer
+> mmotm-2008-1230-1605/drivers/mmc/host/ricoh_mmc.c:237: warning: (near initialization for 'ricoh_mmc_pm_opts')
+> 
+> 
+> struct dev_pm_ops seems not to exist AFAICT.
+> 
+> 
 
-The alternative, of course, is that you're using some _really_ old git 
-version, or that you have your own scripts that create the commits by 
-hand. If so, please just update.
+This is no longer in my tree so it must be some bad ordering in
+Rafael's tree.
 
-		Linus
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
