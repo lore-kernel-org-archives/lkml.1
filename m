@@ -1,102 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbYLaTZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYLaT3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757191AbYLaTZz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 14:25:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYLaTZj
+	id S1757270AbYLaT3M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 14:29:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYLaT25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 14:25:39 -0500
-Received: from ppp-110-52.adsl.restena.lu ([158.64.110.52]:42929 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751882AbYLaTZi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 14:25:38 -0500
-X-Greylist: delayed 598 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Dec 2008 14:25:37 EST
-Date: Wed, 31 Dec 2008 20:15:35 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: S3 with pata_via fails to resume, ide_via82Cxxx works
-Message-ID: <20081231201535.4d86c159@neptune.home>
-In-Reply-To: <200812311919.14579.bzolnier@gmail.com>
-References: <20081230185037.7ec94e94@neptune.home>
-	<20081230215953.235ce1b4@neptune.home>
-	<200812311919.14579.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; i686-pc-linux-gnu)
+	Wed, 31 Dec 2008 14:28:57 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46082 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752537AbYLaT24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 14:28:56 -0500
+Date: Wed, 31 Dec 2008 11:28:54 -0800
+From: Mark Fasheh <mfasheh@suse.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       joel.becker@oracle.com, jack@suse.cz
+Subject: Re: [PATCH 19/56] mm: Export pdflush_operation()
+Message-ID: <20081231192854.GK17410@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <1229982517-3455-1-git-send-email-mfasheh@suse.com> <1229982517-3455-20-git-send-email-mfasheh@suse.com> <20081222160104.6633cd77.akpm@linux-foundation.org> <20081225010544.GB17410@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081225010544.GB17410@wotan.suse.de>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the patch, it fixes the oops for me too.
-
-Unfortunately the re-discovery of the drive causes at least XFS to
-error and shutdown its mounts :(
-
-Is it possible to block any access to the devices on the scanned port
-until the scan has completed? Otherwise this renders rescanning
-on port with mounted (e.g. /) partition to suicide...
-
-I also wonder why it took so long and there is that complaint about
-lost interrupt + failure. Was there some operation in progress that
-got "killed" by the scan?
-
-Bruno
-
-
-
-Dec 31 19:58:26 venus [   83.716209] Probing IDE interface ide0...
-Dec 31 19:58:27 venus [   84.030107] hda: FUJITSU MHY2250BH, ATA DISK drive
-Dec 31 19:58:27 venus [   84.390048] hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-Dec 31 19:58:27 venus [   84.390205] hda: UDMA/100 mode selected
-Dec 31 19:58:39 venus [   96.640225] I/O error in filesystem ("hda3") meta-data dev hda3 block 0x202f14       ("xlog_iodone") error 5 buf count 1024
-Dec 31 19:58:39 venus [   96.640274] xfs_force_shutdown(hda3,0x2) called from line 1062 of file /usr/src/linux-2.6.28/fs/xfs/xfs_log.c.  Return address = 0xc021418a
-Dec 31 19:58:39 venus [   96.640331] Filesystem "hda3": Log I/O Error Detected.  Shutting down filesystem: hda3
-Dec 31 19:58:39 venus [   96.640359] Please umount the filesystem, and rectify the problem(s)
-Dec 31 18:58:46 venus [  103.710105] hda: dma_timer_expiry: DMA status (0x20)
-Dec 31 18:58:46 venus [  103.710128] hda: lost interrupt
-Dec 31 18:58:46 venus [  103.710148] hda: ide_dma_intr: bad DMA status (0x30)
-Dec 31 18:58:46 venus [  103.710168] hda: dma_intr: status=0x50 { DriveReady SeekComplete }
-Dec 31 18:58:46 venus [  103.710192] ide: failed opcode was: unknown
-Dec 31 18:58:47 venus [  104.063206] hda: max request size: 512KiB
-Dec 31 18:58:47 venus [  104.063230] hda: 488397168 sectors (250059 MB) w/8192KiB Cache, CHS=30401/255/63
-Dec 31 18:58:47 venus [  104.063450] hda: cache flushes supported
-Dec 31 18:59:09 venus [  126.640091] Filesystem "hda3": xfs_log_force: error 5 returned.
-Dec 31 18:59:39 venus [  156.640109] Filesystem "hda3": xfs_log_force: error 5 returned.
-Dec 31 19:00:09 venus [  186.640093] Filesystem "hda3": xfs_log_force: error 5 returned.
-
-
-
-On Wed, 31 December 2008 Bartlomiej Zolnierkiewicz wrote:
-> Thanks for the report, the following patch fixes the OOPS for me:
+On Wed, Dec 24, 2008 at 05:05:44PM -0800, Mark Fasheh wrote:
+> On Mon, Dec 22, 2008 at 04:01:04PM -0800, Andrew Morton wrote:
+> > On Mon, 22 Dec 2008 13:48:00 -0800
+> > Mark Fasheh <mfasheh@suse.com> wrote:
+> > 
+> > > OCSF2 will need to queue up work for periodic syncing of quotas
+> > > among nodes in the cluster. pdflush() is good thread for this so
+> > > export it's controlling function so that OCFS2 can use it.
+> > 
+> > I trust that nothing will explode if pdflush_operation() fails
+> > to do anything and returns -1?
 > 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: fix ide_port_scan() to do ACPI setup after
-> initializing request queues
-> 
-> This makes ide_port_scan()'s behavior match ide_host_register()'s
-> one and fixes OOPS in elv_may_queue() during port re-scan.
-> 
-> Reported-by: Bruno Prémont <bonbons@linux-vserver.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-probe.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: b/drivers/ide/ide-probe.c
-> ===================================================================
-> --- a/drivers/ide/ide-probe.c
-> +++ b/drivers/ide/ide-probe.c
-> @@ -1694,8 +1694,8 @@ void ide_port_scan(ide_hwif_t *hwif)
->  	hwif->present = 1;
->  
->  	ide_port_tune_devices(hwif);
-> -	ide_acpi_port_init_devices(hwif);
->  	ide_port_setup_devices(hwif);
-> +	ide_acpi_port_init_devices(hwif);
->  	hwif_register_devices(hwif);
->  	ide_proc_port_register_devices(hwif);
->  }
-> 
+> Hmm, Jan do you have any opinion here? I'm wondering if we just need our own
+> thread for this after all...
+> 	--Mark
+
+Ok, looking at this closer, it seems like this could be a problem after all.
+Starving the quota syncing thread doesn't seem like a great idea either.
+
+The following patch changes things to use a workqueue. Really, this doesn't
+seem like a big deal anyway - the workqueue has reasonable overhead.
+
+I could add this on top of my upstream branch along with a revert of the
+'mm: Export pdflush_operation()' patch, or I could work this into the patch
+series so we never get the export patch in the 1st place.
+	--Mark
+
+--
+Mark Fasheh
+
+From: Mark Fasheh <mfasheh@suse.com>
+
+ocfs2/quota: Use workqueue for periodic syncing instead of pdflush()
+
+Using pdflush_operation() for this was potentially buggy - we could get into
+a situation where the work function never gets run. Instead, just create a
+workqueue, 'o2quota' and just constantly queue a delayed work item. The
+impact of this should be pretty minimal.
+
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/quota.h        |    5 ++++-
+ fs/ocfs2/quota_global.c |   45 ++++++++++++++++++++++++++++-----------------
+ fs/ocfs2/quota_local.c  |    2 +-
+ fs/ocfs2/super.c        |    6 ++++++
+ 4 files changed, 39 insertions(+), 19 deletions(-)
+
+diff --git a/fs/ocfs2/quota.h b/fs/ocfs2/quota.h
+index abf6941..6d190c0 100644
+--- a/fs/ocfs2/quota.h
++++ b/fs/ocfs2/quota.h
+@@ -60,7 +60,7 @@ struct ocfs2_mem_dqinfo {
+ 	struct buffer_head *dqi_lqi_bh;	/* Buffer head with local quota file inode */
+ 	struct buffer_head *dqi_ibh;	/* Buffer with information header */
+ 	struct qtree_mem_dqinfo dqi_gi;	/* Info about global file */
+-	struct timer_list dqi_sync_timer;	/* Timer for syncing dquots */
++	struct delayed_work dqi_sync_work;	/* Work for syncing dquots */
+ 	struct ocfs2_quota_recovery *dqi_rec;	/* Pointer to recovery
+ 						 * information, in case we
+ 						 * enable quotas on file
+@@ -114,4 +114,7 @@ int ocfs2_read_quota_block(struct inode *inode, u64 v_block,
+ extern struct dquot_operations ocfs2_quota_operations;
+ extern struct quota_format_type ocfs2_quota_format;
+ 
++int ocfs2_quota_setup(void);
++void ocfs2_quota_shutdown(void);
++
+ #endif /* _OCFS2_QUOTA_H */
+diff --git a/fs/ocfs2/quota_global.c b/fs/ocfs2/quota_global.c
+index 9184953..fa9101c 100644
+--- a/fs/ocfs2/quota_global.c
++++ b/fs/ocfs2/quota_global.c
+@@ -7,8 +7,8 @@
+ #include <linux/quotaops.h>
+ #include <linux/dqblk_qtree.h>
+ #include <linux/jiffies.h>
+-#include <linux/timer.h>
+ #include <linux/writeback.h>
++#include <linux/workqueue.h>
+ 
+ #define MLOG_MASK_PREFIX ML_QUOTA
+ #include <cluster/masklog.h>
+@@ -25,7 +25,9 @@
+ #include "uptodate.h"
+ #include "quota.h"
+ 
+-static void qsync_timer_fn(unsigned long oinfo_ptr);
++static struct workqueue_struct *ocfs2_quota_wq = NULL;
++
++static void qsync_work_fn(struct work_struct *work);
+ 
+ static void ocfs2_global_disk2memdqb(struct dquot *dquot, void *dp)
+ {
+@@ -348,10 +350,10 @@ int ocfs2_global_read_info(struct super_block *sb, int type)
+ 	oinfo->dqi_gi.dqi_usable_bs = sb->s_blocksize -
+ 						OCFS2_QBLK_RESERVED_SPACE;
+ 	oinfo->dqi_gi.dqi_qtree_depth = qtree_depth(&oinfo->dqi_gi);
+-	setup_timer(&oinfo->dqi_sync_timer, qsync_timer_fn,
+-		    (unsigned long)oinfo);
+-	mod_timer(&oinfo->dqi_sync_timer,
+-		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
++	INIT_DELAYED_WORK(&oinfo->dqi_sync_work, qsync_work_fn);
++	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
++			   oinfo->dqi_syncjiff);
++
+ out_err:
+ 	mlog_exit(status);
+ 	return status;
+@@ -594,21 +596,16 @@ out:
+ 	return status;
+ }
+ 
+-static void ocfs2_do_qsync(unsigned long oinfo_ptr)
++static void qsync_work_fn(struct work_struct *work)
+ {
+-	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
++	struct ocfs2_mem_dqinfo *oinfo = container_of(work,
++						      struct ocfs2_mem_dqinfo,
++						      dqi_sync_work.work);
+ 	struct super_block *sb = oinfo->dqi_gqinode->i_sb;
+ 
+ 	dquot_scan_active(sb, ocfs2_sync_dquot_helper, oinfo->dqi_type);
+-}
+-
+-static void qsync_timer_fn(unsigned long oinfo_ptr)
+-{
+-	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
+-
+-	pdflush_operation(ocfs2_do_qsync, oinfo_ptr);
+-	mod_timer(&oinfo->dqi_sync_timer,
+-		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
++	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
++			   oinfo->dqi_syncjiff);
+ }
+ 
+ /*
+@@ -1009,3 +1006,17 @@ struct dquot_operations ocfs2_quota_operations = {
+ 	.alloc_dquot	= ocfs2_alloc_dquot,
+ 	.destroy_dquot	= ocfs2_destroy_dquot,
+ };
++
++int ocfs2_quota_setup(void)
++{
++	ocfs2_quota_wq = create_workqueue("o2quot");
++	if (!ocfs2_quota_wq)
++		return -ENOMEM;
++	return 0;
++}
++
++void ocfs2_quota_shutdown(void)
++{
++	flush_workqueue(ocfs2_quota_wq);
++	destroy_workqueue(ocfs2_quota_wq);
++}
+diff --git a/fs/ocfs2/quota_local.c b/fs/ocfs2/quota_local.c
+index a5f6e2a..07deec5 100644
+--- a/fs/ocfs2/quota_local.c
++++ b/fs/ocfs2/quota_local.c
+@@ -780,7 +780,7 @@ static int ocfs2_local_free_info(struct super_block *sb, int type)
+ 	/* At this point we know there are no more dquots and thus
+ 	 * even if there's some sync in the pdflush queue, it won't
+ 	 * find any dquots and return without doing anything */
+-	del_timer_sync(&oinfo->dqi_sync_timer);
++	cancel_delayed_work_sync(&oinfo->dqi_sync_work);
+ 	iput(oinfo->dqi_gqinode);
+ 	ocfs2_simple_drop_lockres(OCFS2_SB(sb), &oinfo->dqi_gqlock);
+ 	ocfs2_lock_res_free(&oinfo->dqi_gqlock);
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index a79e67b..25ccf22 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -1326,6 +1326,10 @@ static int __init ocfs2_init(void)
+ 		mlog(ML_ERROR, "Unable to create ocfs2 debugfs root.\n");
+ 	}
+ 
++	status = ocfs2_quota_setup();
++	if (status)
++		goto leave;
++
+ 	ocfs2_set_locking_protocol();
+ 
+ 	status = register_quota_format(&ocfs2_quota_format);
+@@ -1347,6 +1351,8 @@ static void __exit ocfs2_exit(void)
+ {
+ 	mlog_entry_void();
+ 
++	ocfs2_quota_shutdown();
++
+ 	if (ocfs2_wq) {
+ 		flush_workqueue(ocfs2_wq);
+ 		destroy_workqueue(ocfs2_wq);
+-- 
+1.5.6
+
