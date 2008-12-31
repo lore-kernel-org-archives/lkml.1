@@ -1,102 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbYLaNxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbYLaN70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756239AbYLaNxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 08:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbYLaNxf
+	id S1756253AbYLaN70 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 08:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbYLaN7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 08:53:35 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:33297 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755436AbYLaNxe (ORCPT
+	Wed, 31 Dec 2008 08:59:17 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:50190 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755135AbYLaN7R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 08:53:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=eRM/dBw+LKp9F7e1aNY4FadVhYp5CDBMb9OFz0LQLTW7tFJ6J4TDRuScj6HToJE33X
-         JlqqhddErzXLPbh/tfmDwq+kXEMxzXsDkwzap/4SmdqAoV9kKcJK0zvV2u+BSYPG2XRU
-         0PENaIsveGJCDAda1nvPs/PBX2W5CIsJdFJCc=
-Date: Wed, 31 Dec 2008 15:53:25 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@gmail.com>
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
- tracing_reset_online_cpus() helper)
-Message-ID: <20081231155325.392699d0@iki.fi>
-In-Reply-To: <alpine.DEB.1.10.0812192140350.29275@gandalf.stny.rr.com>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
-	<c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com>
-	<alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com>
-	<20081220004453.50aec846@daedalus.pq.iki.fi>
-	<alpine.DEB.1.10.0812191827390.26234@gandalf.stny.rr.com>
-	<20081220041759.5a026f5a@daedalus.pq.iki.fi>
-	<alpine.DEB.1.10.0812192140350.29275@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 08:59:17 -0500
+Date: Wed, 31 Dec 2008 14:59:15 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Bob Copeland <me@bobcopeland.com>, ath5k-devel@venema.h4ckr.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ath5k-devel] Bugs on aspire one A150
+Message-ID: <20081231135914.GA31780@rhlx01.hs-esslingen.de>
+References: <1230641016.5770.5.camel@maxim-laptop> <20081231091845.GA2516@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081231091845.GA2516@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008 21:47:53 -0500 (EST)
-Steven Rostedt <rostedt@goodmis.org> wrote:
+Hi,
 
-> > > The tracing_enabled is the way to start and stop a trace. I'm considering 
-> > > to implement Frederic's request to reset the buffer on enabled. This is 
-> > > quick but requires locks and mutexes to be taken. It calls a hook to the 
-> > > plugin because different plugins actually want to reset (the irq latency 
-> > > tracers reset with this).
-> > > 
-> > > The tracing_on is something that has been asked by developers to give a 
-> > > way to start and stop tracing fast as possible, with no mutexes or added 
-> > > locks. In fact, this option is local to the ring buffer code. Ftrace does 
-> > > not even use it directly.  It just a global flag to stop tracing. There's 
-> > > also an in-kernel equivalent tracing_on() and tracing_off(). This just 
-> > > sets or clears a global flag that will stop any more writes to the trace 
-> > > buffer.
-> > 
-> > Why not call tracing_on, say, logging_enabled?
-> > IMHO tracing_enabled vs. tracing_on is incomprehesible, but
-> > tracing_enabled vs. logging_enabled is a little more understandable.
-> > current_tracer is self-explanatory, and tracing_enabled used to be.
+On Wed, Dec 31, 2008 at 10:18:45AM +0100, Andreas Mohr wrote:
+> Hi,
 > 
-> One of the hardest things about ftrace is coming up with good naming. This 
-> is not always so easy, as you can tell. I'm not sure "logging_enabled" is 
-> any better. That would confuse myself ;-)   The reason I chose "on" is 
-> because it is like an on/off switch, where as enabled/disabled is usually 
-> (in the kernel anyway) associated to nesting.
+> > Sure, will test, I am also sure that this will work.
 > 
-> How about tracing_enabled_light? ;-)
+> A110L, 2.6.28, success (also inverted here, traffic blanks it).
+> 
+> Note that CONFIG_LEDS_TRIGGER_DEFAULT_ON=m, might be related
+> (possibly ath5k is just mis-using LEDs API, in light of this setting?).
 
-"tracing_on" is not a function call, so nesting does not make sense.
-It is a file in debugfs, and therefore an end user interface. I am only
-talking about the debugfs files, not functions. Only developers use
-functions and devels can be expected to find the implementation and
-read the fine documentation.
+Nope, genuinely inverted,  modprobe ledtrig-default-on and
+# echo default-on > /sys/class/leds/ath5k-phy0\:\:*x/trigger
+actually blanks the LED.
+ledtrig-heartbeat exhibits a weird inverted but actually heartbeat-like pattern,
+too.
 
-How about /debug/tracing/recording with values 0 and 1?
-That would be a clear distinction to /debug/tracing/tracing_enabled.
-I have also wondered about the "tracing_" prefix, the files are
-already in the tracing/ directory.
+IOW, our hardware _is_ inverted for real I believe and the driver needs
+to be fixed.
 
-I am just trying to think what file names would make sense in
-debugfs. I completely agree with you on function naming, but should
-the file have the same name as the function? Sure, for developers
-it would be easier to remember, but the name might not make any
-sense unless you know the internal implementation.
+Oh, and what about the second LED on the left side? That one would be
+available for driver implementation, too, right?
+Or is that one hard-wired (via Embedded Controller?)
+to rfkill mechanical switch?
 
-If something else than tracing starts to use the ring buffer
-facility, we have to think about the names again. Until then,
-just my 2c. :-)
+(default use for those two would then be rfkill / Rx/Tx triggers, right?)
 
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+Andreas Mohr
