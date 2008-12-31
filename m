@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYLaIbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbYLaIc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbYLaIbj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 03:31:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYLaIba
+	id S1755773AbYLaIc4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 03:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYLaIcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 03:31:30 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:33952 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752096AbYLaIb3 (ORCPT
+	Wed, 31 Dec 2008 03:32:47 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:23686 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbYLaIcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 03:31:29 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnIDAN+7Wkl5LB1fgWdsb2JhbACTewEBFiK4K4ZE
-X-IronPort-AV: E=Sophos;i="4.36,307,1228051800"; 
-   d="scan'208";a="284811694"
-Date: Wed, 31 Dec 2008 19:31:23 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: tux3@tux3.org, sniper <s3c24xx@gmail.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Tux3] Tux3 report: A Golden Copy
-Message-ID: <20081231083123.GF10725@disturbed>
-Mail-Followup-To: Daniel Phillips <phillips@phunq.net>, tux3@tux3.org,
-	sniper <s3c24xx@gmail.com>, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <200812301935.49303.phillips@phunq.net> <9bd6b5360812302334t2c6aca67s62ba54438d2bda9e@mail.gmail.com> <200812310000.55256.phillips@phunq.net>
+	Wed, 31 Dec 2008 03:32:47 -0500
+X-Greylist: delayed 35178 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Dec 2008 03:32:46 EST
+X-RZG-CLASS-ID: mo00
+X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUMITI/P7ox
+Message-ID: <495B2E27.4020704@hartkopp.net>
+Date: Wed, 31 Dec 2008 09:32:39 +0100
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812310000.55256.phillips@phunq.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC PATCH] hrtimer: removing all ur callback modes
+References: <1227613431.4259.1537.camel@twins> <1228385830.5092.43.camel@twins> <493BB1EB.5000004@hartkopp.net> <493BC8A8.2030200@hartkopp.net> <1228731359.5778.18.camel@twins> <493E2725.7090305@hartkopp.net> <1228810331.12729.59.camel@twins> <20081209105902.GB21618@elte.hu> <495AA4BB.8020903@hartkopp.net>
+In-Reply-To: <495AA4BB.8020903@hartkopp.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 12:00:54AM -0800, Daniel Phillips wrote:
-> On Tuesday 30 December 2008 23:34, sniper wrote:
-> > Great, I have mounted tux3 filesystem under UML with stuffs in this mail,
-> > but I still can't debug it with gdb. Anyone gives me suggestion?
-....
-> In the mean time, you could just tell gdb to mask off all segfaults,
-> but would be kind of problematic for debugging.
+Oliver Hartkopp wrote:
+>
+> AFAICS the commit ca109491f612aab5c8152207631c0444f63da97f
+>
+> "hrtimer: removing all ur callback modes" with "Impact: cleanup, move 
+> all hrtimer processing into hardirq context"
+>
+> did not find it's way into linux-2.6.git - is there any reason for this?
 
-Not really. That's the default setting I use for XFS debugging. I
-just put breakpoints on "panic" and "stop" (sometimes
-bust_spinlocks) and just let the kernel panic routine handle the
-segv which will trip a breakpoint. Then just walk back up the stack
-to the function that triggered the real SEGV and go from there.
+Just seen it has been pulled half an hour after my mail ... sorry for 
+the noise.
 
-This is pretty much necessary for XFS debugging because
-just mounting a filesystem causes 8-10 SEGV signals to occur.
-You simply can't run xfsqa when that is occurring...
+Thanks,
+Oliver
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
