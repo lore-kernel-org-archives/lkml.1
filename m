@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbYLaLG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYLaLOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756625AbYLaLG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 06:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbYLaLGt
+	id S1756172AbYLaLOr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 06:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbYLaLOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 06:06:49 -0500
-Received: from ozlabs.org ([203.10.76.45]:34409 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755394AbYLaLGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 06:06:48 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH -tip] cpumask: fix compile error in kernel/irq/proc.c
-Date: Wed, 31 Dec 2008 21:36:40 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <495B345A.5080302@cn.fujitsu.com>
-In-Reply-To: <495B345A.5080302@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 31 Dec 2008 06:14:39 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41563 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbYLaLOj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 06:14:39 -0500
+Subject: [PATCH] x86: ldt.c fix style problems
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 31 Dec 2008 16:42:20 +0530
+Message-Id: <1230721940.3738.5.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812312136.40502.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 December 2008 19:29:06 Li Zefan wrote:
-> diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-> index 2abd3a7..5a5ac60 100644
-> --- a/kernel/irq/proc.c
-> +++ b/kernel/irq/proc.c
-> @@ -111,7 +111,7 @@ static ssize_t default_affinity_write(struct file *file,
->  	if (err)
->  		goto out;
->  
-> -	if (!is_affinity_mask_valid(new_value)) {
-> +	if (!is_affinity_mask_valid(*new_value)) {
->  		err = -EINVAL;
->  		goto out;
->  	}
+Impact: cleanup, fix style problems
 
-This looks like one for Mike: I have *new_value in the cpumask tree.
+Fixes style problems:
+WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
+ERROR: space required before the open parenthesis '('
 
-Mike?
+total: 1 errors, 1 warnings
 
-Thanks,
-Rusty.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/ldt.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
+index eee32b4..71f1d99 100644
+--- a/arch/x86/kernel/ldt.c
++++ b/arch/x86/kernel/ldt.c
+@@ -12,8 +12,8 @@
+ #include <linux/mm.h>
+ #include <linux/smp.h>
+ #include <linux/vmalloc.h>
++#include <linux/uaccess.h>
+ 
+-#include <asm/uaccess.h>
+ #include <asm/system.h>
+ #include <asm/ldt.h>
+ #include <asm/desc.h>
+@@ -93,7 +93,7 @@ static inline int copy_ldt(mm_context_t *new, mm_context_t *old)
+ 	if (err < 0)
+ 		return err;
+ 
+-	for(i = 0; i < old->size; i++)
++	for (i = 0; i < old->size; i++)
+ 		write_ldt_entry(new->ldt, i, old->ldt + i * LDT_ENTRY_SIZE);
+ 	return 0;
+ }
+-- 
+1.5.5.1
+
+
+
