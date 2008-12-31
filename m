@@ -1,122 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYLaTKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYLaQu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbYLaTKl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 14:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbYLaTKQ
+	id S1756300AbYLaQu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 11:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbYLaQuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 14:10:16 -0500
-Received: from qmta01.emeryville.ca.mail.comcast.net ([76.96.30.16]:48747 "EHLO
-	QMTA01.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756527AbYLaTKP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 14:10:15 -0500
-From: Peter W Morreale <pmorreale@novell.com>
-Subject: [PATCH 1/2] Fix pdflush thread creation upper bound.
-To: pmorreale@novell.com, akpm@linux-foundation.org, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, spamtrap@knobisoft.de
-Date: Wed, 31 Dec 2008 12:10:11 -0700
-Message-ID: <20081231191011.30792.17202.stgit@hermosa.site>
-In-Reply-To: <20081231190755.30792.24205.stgit@hermosa.site>
-References: <20081231190755.30792.24205.stgit@hermosa.site>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 11:50:15 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:34050 "EHLO kumera.dghda.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753443AbYLaQuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 11:50:14 -0500
+From: "Duane Griffin" <duaneg@dghda.com>
+To: Evgeniy Dushistov <dushistov@mail.ru>
+Cc: linux-kernel@vger.kernel.org, Duane Griffin <duaneg@dghda.com>
+Subject: [PATCH 1/4] ufs: validate maximum fast symlink size from superblock
+Date: Wed, 31 Dec 2008 16:50:05 +0000
+Message-Id: <1230742208-23972-1-git-send-email-duaneg@dghda.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a race on creating pdflush threads.  Without the patch,
-it is possible to create more than MAX_PDFLUSH_THREADS threads, and this
-has been observed in practice on IO loaded SMP machines.
+The maximum fast symlink size is set in the superblock of certain types
+of UFS filesystem. Before using it we need to check that it isn't longer
+than the available space we have in the inode.
 
-The fix involves moving the lock around to protect the check against the
-thread count and correctly dealing with thread creation failure.
-
-This fix also _mostly_ repairs a race condition on how quickly the
-threads are created.  The original intent was to create a pdflush thread
-(up to the max allowed) every second.  Without this patch is is possible
-to create NCPUS pdflush threads concurrently.  The 'mostly' caveat is
-because an assumption is made that thread creation will be successful.
-If we fail to create the thread, the miss is not considered fatal. (we
-will try again in 1 second)
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
 ---
+ fs/ufs/super.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-Signed-off-by: Peter W Morreale <pmorreale@novell.com>
-
- mm/pdflush.c |   32 +++++++++++++++++++++++++-------
- 1 files changed, 25 insertions(+), 7 deletions(-)
-
-diff --git a/mm/pdflush.c b/mm/pdflush.c
-index 0cbe0c6..80745c7 100644
---- a/mm/pdflush.c
-+++ b/mm/pdflush.c
-@@ -98,7 +98,6 @@ static int __pdflush(struct pdflush_work *my_work)
- 	INIT_LIST_HEAD(&my_work->list);
+diff --git a/fs/ufs/super.c b/fs/ufs/super.c
+index e65212d..a959cdc 100644
+--- a/fs/ufs/super.c
++++ b/fs/ufs/super.c
+@@ -636,6 +636,7 @@ static int ufs_fill_super(struct super_block *sb, void *data, int silent)
+ 	unsigned block_size, super_block_size;
+ 	unsigned flags;
+ 	unsigned super_block_offset;
++	unsigned maxsymlen;
+ 	int ret = -EINVAL;
  
- 	spin_lock_irq(&pdflush_lock);
--	nr_pdflush_threads++;
- 	for ( ; ; ) {
- 		struct pdflush_work *pdf;
+ 	uspi = NULL;
+@@ -1069,6 +1070,16 @@ magic_found:
+ 		uspi->s_maxsymlinklen =
+ 		    fs32_to_cpu(sb, usb3->fs_un2.fs_44.fs_maxsymlinklen);
  
-@@ -126,20 +125,26 @@ static int __pdflush(struct pdflush_work *my_work)
- 
- 		(*my_work->fn)(my_work->arg0);
- 
-+		spin_lock_irq(&pdflush_lock);
-+
- 		/*
- 		 * Thread creation: For how long have there been zero
--		 * available threads?
-+		 * available threads?  
-+		 *
-+		 * To throttle creation, we reset last_empty_jifs.
- 		 */
- 		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
--			/* unlocked list_empty() test is OK here */
- 			if (list_empty(&pdflush_list)) {
--				/* unlocked test is OK here */
--				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS)
-+				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS) {
-+					last_empty_jifs = jiffies;
-+					nr_pdflush_threads++;
-+					spin_unlock_irq(&pdflush_lock);
- 					start_one_pdflush_thread();
-+					spin_lock_irq(&pdflush_lock);
-+				}
- 			}
- 		}
- 
--		spin_lock_irq(&pdflush_lock);
- 		my_work->fn = NULL;
- 
- 		/*
-@@ -226,13 +231,26 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
- 
- static void start_one_pdflush_thread(void)
- {
--	kthread_run(pdflush, NULL, "pdflush");
-+	struct task_struct *k;
-+
-+	k = kthread_run(pdflush, NULL, "pdflush");
-+	if (unlikely(IS_ERR(k))) {
-+		spin_lock_irq(&pdflush_lock);
-+		nr_pdflush_threads--;
-+		spin_unlock_irq(&pdflush_lock);
++	if (uspi->fs_magic == UFS2_MAGIC)
++		maxsymlen = 2 * 4 * (UFS_NDADDR + UFS_NINDIR);
++	else
++		maxsymlen = 4 * (UFS_NDADDR + UFS_NINDIR);
++	if (uspi->s_maxsymlinklen > maxsymlen) {
++		printk(KERN_WARNING "ufs_read_super: excessive maximum fast "
++		       "symlink size (%u)\n", uspi->s_maxsymlinklen);
++		uspi->s_maxsymlinklen = maxsymlen;
 +	}
- }
- 
- static int __init pdflush_init(void)
- {
- 	int i;
- 
-+	/*
-+	 * Pre-set nr_pdflush_threads...  If we fail to create, 
-+	 * the count will be decremented.
-+	 */
-+	nr_pdflush_threads = MIN_PDFLUSH_THREADS;
 +
- 	for (i = 0; i < MIN_PDFLUSH_THREADS; i++)
- 		start_one_pdflush_thread();
- 	return 0;
+ 	inode = ufs_iget(sb, UFS_ROOTINO);
+ 	if (IS_ERR(inode)) {
+ 		ret = PTR_ERR(inode);
+-- 
+1.6.0.6
 
