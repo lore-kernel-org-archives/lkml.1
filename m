@@ -1,46 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYLaQcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbYLaPUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYLaQcI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 11:32:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbYLaQby
+	id S1756248AbYLaPUF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 10:20:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYLaPTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 11:31:54 -0500
-Received: from rtr.ca ([76.10.145.34]:56562 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755782AbYLaQbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 11:31:53 -0500
-Message-ID: <495B9ED3.8050008@rtr.ca>
-Date: Wed, 31 Dec 2008 11:33:23 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Wed, 31 Dec 2008 10:19:53 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:22827 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755382AbYLaPTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 10:19:52 -0500
+Message-ID: <495B8D90.1090004@panasas.com>
+Date: Wed, 31 Dec 2008 17:19:44 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-ide@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27.10: ata1.00: HPA detected: current 293044655, native 
-  293046768
-References: <alpine.DEB.1.10.0812300657050.11356@p34.internal.lan> <495A5A9F.9020406@shaw.ca>
-In-Reply-To: <495A5A9F.9020406@shaw.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com> <20081229121423.efde9d06.akpm@linux-foundation.org>
+In-Reply-To: <20081229121423.efde9d06.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Dec 2008 15:19:43.0331 (UTC) FILETIME=[35119330:01C96B5B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Justin Piszcz wrote:
->> On one system, two Raptor 150s:
+Andrew Morton wrote:
+> On Tue, 16 Dec 2008 17:33:48 +0200
+> Boaz Harrosh <bharrosh@panasas.com> wrote:
+> 
+>> We need a mechanism to prepare the file system (mkfs).
+>> I chose to implement that by means of a couple of
+>> mount-options. Because there is no user-mode API for committing
+>> OSD commands. And also, all this stuff is highly internal to
+>> the file system itself.
 >>
->> [    0.739402] ata1.00: HPA detected: current 293044655, native 293046768
-..
-> Presumably somebody or something set up a host protected area on one 
-> drive and not the other.. I believe there are some utilities out there 
-> that can be used to disable the HPA and allow the full capacity to be used.
-..
+>> - Added two mount options mkfs=0/1,format=capacity_in_meg, so mkfs/format
+>>   can be executed by kernel code just before mount. An mkexofs utility
+>>   can now be implemented by means of a script that mounts and unmount the
+>>   file system with proper options.
+> 
+> Doing mkfs in-kernel is unusual.  I don't think the above description
+> sufficiently helps the uninitiated understand why mkfs cannot be done
+> in userspace as usual.  Please flesh it out a bit.
 
-"hdparm -N" can do this, temporarily or permanently.
-Get the latest version from Sourceforge, and see the manpage for details.
+There are a few main reasons.
+- There is no user-mode API for initiating OSD commands. Such a subsystem
+  would be hundredfold bigger then the mkfs code submitted. I think it would be
+  hard and stupid to maintain a complex user-mode API just for creating
+  a couple of objects and writing a couple of on disk structures.
+- I intend to refactor the code further to make use of more super.c services,
+  so to make this addition even smaller. Also future direction of raid over
+  multiple objects will make even more kernel infrastructure needed which
+  will need even more user-mode code duplication.
+- I anticipate problems that are not yet addressed in this body of work
+  but will be in the future, mainly that a single OSD-target (lun) can
+  be shared by lots of FSs, and a single FS can span many OSD-targets.
+  Some central management is much easier to do in Kernel.
 
--ml
+> 
+> What are the dependencies for this filesystem code?  I assume that it
+> depends on various block- and scsi-level patches?  Which ones, and
+> what is their status, and is this code even compileable without them?
+> 
 
+This OSD-based file system is dependent on the open-osd initiator library
+code that I've submitted for inclusion for 2.6.29. It has been sitting
+in linux-next for a while now, and has not been receiving any comments
+for the last two updated patchsets I've sent to scsi-misc/lkml. However
+it has not yet been submitted into Jame's scsi-misc git tree, and James
+is the ultimate maintainer that should submit this work. I hope it will
+still be submitted into 2.6.29, as this code is totally self sufficient
+and does not endangers or changes any other Kernel subsystems.
+(All the needed ground work was already submitted to Linus since 2.6.26)
+So why should it not?
+
+Once the open-osd initiator library is accepted this file system
+could be accepted. I was hoping as a 2.6.30 time frame. (One Kernel
+after the open-osd library)
+
+> Thanks.
+
+Thank you dear Andrew for your most valuable input.
+
+I will constify all the const needed code. will fix the global name space
+litter, will inline the macros and lower case the inlines. Will remove
+the typedefs.
+
+I will reply to individual patches, I have a couple of questions. But
+all your comments are right and I will take care of them.
+
+When, if, all is fixed, through which tree/maintainer can exofs be submitted?
+
+Thanks
+Boaz
