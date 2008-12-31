@@ -1,76 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYLaTUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYLaVoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757164AbYLaTUP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 14:20:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYLaTUD
+	id S1757412AbYLaVoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 16:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYLaVnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 14:20:03 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:57149 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751882AbYLaTUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 14:20:01 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] UV: remove erroneous BAU initialization
-Cc: mingo@elte.hu, gregkh@suse.de, dcn@sgi.com
-Message-Id: <E1LI6cc-00045u-4i@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Wed, 31 Dec 2008 13:20:50 -0600
+	Wed, 31 Dec 2008 16:43:49 -0500
+Received: from lexington.centerclick.org ([66.114.92.10]:55476 "EHLO
+	lexington.centerclick.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754513AbYLaVns (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 16:43:48 -0500
+X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Dec 2008 16:43:48 EST
+From: Dave Johnson <dave-lkml-01@centerclick.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18779.58377.160214.225792@wellington.i202.centerclick.org>
+Date: Wed, 31 Dec 2008 16:28:41 -0500
+To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: [ext3] kjournald writing after each read despite noatime,commit=nnn
+X-Mailer: VM 7.19 under 21.4 (patch 19) "Constant Variable" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Wickman <cpw@sgi.com>
 
-UV is the SGI "UltraViolet" machine, which is x86_64 based.
-BAU is the "Broadcast Assist Unit", used for TLB shootdown in UV.
+Since upgrading from 2.6.23.1 to 2.6.27.8, I'm now seeing kjournald
+perform a write 2 seconds after each read to an ext3 fs.
 
-This patch removes the allocation and initialization of an unused table.
+laptop mode is on and filesystem is mounted with noatime and a large
+commit time (6 hours).
 
-This table is left over from a development test mode.  It is unused in
-the present code.
-And it was incorrectly initialized: 8 entries allocated but 17 initialized,
-causing slab corruption.
+Did I miss something or is this expected?
 
-This patch should go into 2.6.27 and 2.6.28 as well as the current tree.
 
-Diffed against 2.6.28 (linux-next, 12/30/08)
+Note, there is no other activity reported by block_dump at this time
+from any other mounted filesystem.
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
----
- arch/x86/kernel/tlb_uv.c |    9 ---------
- 1 file changed, 9 deletions(-)
+Some examples:
 
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c
-+++ linux/arch/x86/kernel/tlb_uv.c
-@@ -582,7 +582,6 @@ static int __init uv_ptc_init(void)
- static struct bau_control * __init uv_table_bases_init(int blade, int node)
- {
- 	int i;
--	int *ip;
- 	struct bau_msg_status *msp;
- 	struct bau_control *bau_tabp;
- 
-@@ -599,13 +598,6 @@ static struct bau_control * __init uv_ta
- 		bau_cpubits_clear(&msp->seen_by, (int)
- 				  uv_blade_nr_possible_cpus(blade));
- 
--	bau_tabp->watching =
--	    kmalloc_node(sizeof(int) * DEST_NUM_RESOURCES, GFP_KERNEL, node);
--	BUG_ON(!bau_tabp->watching);
--
--	for (i = 0, ip = bau_tabp->watching; i < DEST_Q_SIZE; i++, ip++)
--		*ip = 0;
--
- 	uv_bau_table_bases[blade] = bau_tabp;
- 
- 	return bau_tabp;
-@@ -628,7 +620,6 @@ uv_table_bases_finish(int blade, int nod
- 		bcp->bau_msg_head	= bau_tablesp->va_queue_first;
- 		bcp->va_queue_first	= bau_tablesp->va_queue_first;
- 		bcp->va_queue_last	= bau_tablesp->va_queue_last;
--		bcp->watching		= bau_tablesp->watching;
- 		bcp->msg_statuses	= bau_tablesp->msg_statuses;
- 		bcp->descriptor_base	= adp;
- 	}
+Dec 31 15:43:14 gw kernel: w(26329): READ block 756266 on hda1 
+Dec 31 15:43:16 gw kernel: kjournald(760): WRITE block 2152 on hda1 
+
+Dec 31 15:45:05 gw kernel: top(26366): READ block 756008 on hda1 
+Dec 31 15:45:05 gw kernel: top(26366): READ block 756016 on hda1 
+Dec 31 15:45:05 gw kernel: top(26366): READ block 756026 on hda1 
+Dec 31 15:45:05 gw kernel: top(26366): READ block 756098 on hda1 
+Dec 31 15:45:07 gw kernel: kjournald(760): WRITE block 2154 on hda1 
+
+Dec 31 15:48:43 gw kernel: cat(26430): READ block 502016 on hda1 
+Dec 31 15:48:43 gw kernel: cat(26430): READ block 502024 on hda1 
+Dec 31 15:48:43 gw kernel: cat(26430): READ block 502032 on hda1 
+Dec 31 15:48:43 gw kernel: cat(26430): READ block 502040 on hda1 
+Dec 31 15:48:43 gw kernel: cat(26430): READ block 502042 on hda1 
+Dec 31 15:48:43 gw kernel: cat(26430): READ block 502050 on hda1 
+Dec 31 15:48:43 gw kernel: cat(26430): READ block 502114 on hda1 
+Dec 31 15:48:45 gw kernel: kjournald(760): WRITE block 2156 on hda1 
+
+Dec 31 15:48:55 gw kernel: bash(26436): READ block 744586 on hda1 
+Dec 31 15:48:55 gw kernel: bash(26436): READ block 744594 on hda1 
+Dec 31 15:48:55 gw kernel: bash(26436): READ block 744602 on hda1 
+Dec 31 15:48:55 gw kernel: bash(26436): READ block 744610 on hda1 
+Dec 31 15:48:55 gw kernel: bash(26436): READ block 744612 on hda1 
+Dec 31 15:48:55 gw kernel: reset(26436): READ block 744620 on hda1 
+Dec 31 15:48:57 gw kernel: kjournald(760): WRITE block 2158 on hda1 
+
+$ grep ext3 /proc/mounts 
+/dev/root / ext3 rw,noatime,errors=remount-ro,commit=21600,data=ordered 0 0
+
+$ for f in /proc/sys/vm/*; do printf "%-50s" $f; cat $f; done
+/proc/sys/vm/block_dump                           1
+/proc/sys/vm/dirty_background_ratio               10
+/proc/sys/vm/dirty_expire_centisecs               2160000
+/proc/sys/vm/dirty_ratio                          60
+/proc/sys/vm/dirty_writeback_centisecs            2160000
+/proc/sys/vm/drop_caches                          0
+/proc/sys/vm/laptop_mode                          2
+/proc/sys/vm/legacy_va_layout                     0
+/proc/sys/vm/lowmem_reserve_ratio                 256   32
+/proc/sys/vm/max_map_count                        65536
+/proc/sys/vm/min_free_kbytes                      1440
+/proc/sys/vm/nr_pdflush_threads                   2
+/proc/sys/vm/oom_dump_tasks                       0
+/proc/sys/vm/oom_kill_allocating_task             0
+/proc/sys/vm/overcommit_memory                    0
+/proc/sys/vm/overcommit_ratio                     50
+/proc/sys/vm/page-cluster                         3
+/proc/sys/vm/panic_on_oom                         0
+/proc/sys/vm/percpu_pagelist_fraction             0
+/proc/sys/vm/swappiness                           60
+/proc/sys/vm/vdso_enabled                         2
+/proc/sys/vm/vfs_cache_pressure                   100
+$ 
+
+-- 
+Dave
