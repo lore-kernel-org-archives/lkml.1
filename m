@@ -1,98 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbYLaRmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYLaSJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756064AbYLaRmV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 12:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYLaRlx
+	id S1756213AbYLaSJe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYLaSJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 12:41:53 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:23193 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756081AbYLaRlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 12:41:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ibo3egqhJqX3zfSnKymUsul3Ky0cA0mYIoPqZO/8RiwgpyzTdSjld8z7DtSo9Z8gKX
-         zY0VSWwLt24IJ9bdWq5znBxNTrsH4VI6zluBlUGC4ZNAf7I4kVjL24V/TrX+iYHn1CVE
-         uRlAF/xUfPI64OKmbivYl0wRSymYE2OF+KGEY=
-Message-ID: <495BAED9.3000305@gmail.com>
-Date: Wed, 31 Dec 2008 09:41:45 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Martin Steigerwald <martin.steigerwald@googlemail.com>
-CC: Daniel Phillips <phillips@phunq.net>, tux3@tux3.org,
-       sniper <s3c24xx@gmail.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Tux3] Tux3 report: A Golden Copy
-References: <200812301935.49303.phillips@phunq.net> <200812310000.55256.phillips@phunq.net> <495B2A02.5010701@gmail.com> (sfid-20081231_102522_624170_EF6300E3) <200812311109.12635.Martin@lichtvoll.de>
-In-Reply-To: <200812311109.12635.Martin@lichtvoll.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 13:09:24 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:58878 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757099AbYLaSJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 13:09:23 -0500
+Date: Wed, 31 Dec 2008 12:09:17 -0600
+From: Russ Anderson <rja@sgi.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
+Message-ID: <20081231180917.GA18061@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu> <20081230211310.GA19653@sgi.com> <495B7457.1040605@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495B7457.1040605@linux.intel.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Steigerwald wrote:
-> Am Mittwoch 31 Dezember 2008 schrieb Justin P. Mattock:
->   
->> Daniel Phillips wrote:
->>     
->>> On Tuesday 30 December 2008 23:34, sniper wrote:
->>>       
->>>> Great, I have mounted tux3 filesystem under UML with stuffs in this
->>>> mail, but I still can't debug it with gdb. Anyone gives me
->>>> suggestion?
->>>>         
->>> You just have to give a "cont" command a bunch of times and you will
->>> eventually get to a command prompt.  The reason for this is, uml uses
->>> the segfault interrupt as part of its machine simulation, and there
->>> is no exsiting way for uml and gdb to communicate in such a way that
->>> uml can recognize that the interrupt came from its own code and
->>> filter it.
->>>       
->
-> [...]
->
->   
->> Hmm.. seems like a redundancy;
->> Anyways I looked at you're site, but am still
->> confused at what tux3 is: what is tux3?
->>
->> (at first I thought it was  a  video game, but was wrong);
->> can I use tux3 to secure a linux system or is it for
->> something else?
->>
->>     
->
-> Hmmm, I thought
->
-> ---------------------------------------------------------------------
-> Tux3 is a write-anywhere, atomic commit, btree-based versioning 
-> filesystem. It is the spiritual and moral successor of Tux2, the most 
-> famous filesystem that was never released. The main purpose of Tux3 is to 
-> embody Daniel Phillips's new ideas on storage data versioning. The 
-> secondary goal is to provide a more efficient snapshotting and 
-> replication method for the Zumastor NAS project, and a tertiary goal is 
-> to be better than ZFS.
-> ---------------------------------------------------------------------
-> http://tux3.org/
->
-> was pretty clear. What are you missing?
->
-> Ciao,
->   
+On Wed, Dec 31, 2008 at 02:32:07PM +0100, Andi Kleen wrote:
+> Russ Anderson wrote:
+> 
+> >Summary ASCII information is useful, especially if the error
+> >is clearly a hardware error.  Andi is right that decoding the
+> >information to print the specific failing hardware (ie which 
+> >DIMM) may be too dificult to decode on the way down.  It would
+> >be great to identify the failing hardware component on the
+> >way down, when possible.
+> 
+> This will hopefully happen in the future. In fact mcelog has support
+> to decode using DMI tables, but it turns out this doesn't work
+> very well in practice (both because of BIOS problems and because
+> the DMI standard was not really designed for this). That is why
+> I wouldn't advocate right now to move this code from mcelog
+> into the kernel. This might change later.
 
-I guess this is what is confusing to me:
-atomic commit, btree-based versioning.
+Yes.  The way ia64 deals with this is the SAL (bios) does much of the
+platform specific interpretation to identify the failing hardware
+and passes that information up to linux.  That allows the kernel
+to be more platform independent while the SAL (bios) deals with the
+platform specifics.  
 
-irregardless about how it's worded,
-I'm wondering if I should use this mechanism,
-or not. 
- 
-regards;
+The problem of not having a spec, such as the ia64 SAL spec, is
+that other interfaces end up getting overloaded, such as 
+the DMI tables.  Should this be part of the EFI standard?
+It really does need to be part of a standard specification.
 
-Justin P. Mattock
+> >>>It turns out that users don't really find this more enlightening (most 
+> >>>users have no clue what a Northbridge is).  They think it's some kind of 
+> >>>kernel bug even with the HARDWARE ERROR header.
+> >>You should not assume that administrators/users reading kernel crash 
+> >>messages are dumb. (an ordinary user wont see it most of the time anyway) 
+> >>
+> >>The usage patterns i see is that admins who get an MCE crash often fail 
+> >>to write down the whole MCE message (not realizing that it is important) 
+> >>and have to go back and reproduce the MCE crash once again before they 
+> >>can get any meaningful information.
+> >
+> >This is why saving the error records to MVRAM is so useful.
+> >After reboot the records can be read, formatted, and logged.
+> 
+> I've been looking at using EFI runtime services for this, but it's
 
+I believe that is the right approach.  Error handling was one
+of my primary motivations for getting in EFI runtime services
+for UV.  Having a more standard interface, rather than platform
+specific, would be good. 
+
+> also somewhat problematic (e.g. getting the messages out again in
+> a useful way without risking duplicating events)
+
+In ia64, salinfo_decode looks for duplicate records when reading
+from SAL (bios).  SGI SAL uses hardware timestamps when building 
+error records to avoid duplicates.  There are still occasional
+duplicate records in a few cases, but rare enough to not be a
+problem.  
+
+One case that always generates duplicate records is a recovered
+MCA.  The MCA record is logged to NVRAM before linux tries to 
+recover (in case the system crashes).  After recovery, the MCA
+record is logged with a recovered status, making the record look
+different than the record logged to NVRAM (to salinfo_decoded).
+salinfo_decoded logs both the original MCA record and the MCA
+record marked recovered (writing them to /var/log/salinfo/decoded).
+It turned out to be useful to have both records when explaining
+to customers how error recovery worked (in the case of an
+application hitting a memory uncorrectable error).  When they
+realize that each duplicate MCA record represents a time that the
+system did not crash, they suddenly like those duplicate records. :-)
+
+The bigger concern is not losing records (especially with a burst
+of errors).  The issue is keeping the older (more significant)
+error records and dropping the newer (less significant), not
+to be confused with thresholding correctable errors...
+
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
