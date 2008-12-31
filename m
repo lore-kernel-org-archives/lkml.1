@@ -1,116 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbYLaNOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYLaNZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbYLaNOZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 08:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYLaNOR
+	id S1756128AbYLaNZX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 08:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbYLaNZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 08:14:17 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48682 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752296AbYLaNOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 08:14:16 -0500
-Date: Wed, 31 Dec 2008 14:27:39 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Peter W. Morreale" <pmorreale@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] pdflush fix and enhancement
-Message-ID: <20081231132738.GS496@one.firstfloor.org>
-References: <20081230231152.10427.50620.stgit@hermosa.site> <87fxk5ur0h.fsf@basil.nowhere.org> <1230688589.3470.45.camel@hermosa.site> <20081231024609.GQ496@one.firstfloor.org> <1230696664.3470.105.camel@hermosa.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 31 Dec 2008 08:25:10 -0500
+Received: from ozlabs.org ([203.10.76.45]:46250 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755135AbYLaNZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 08:25:08 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 1/1] work_on_cpu: use in drivers/pci/pci-driver.c
+Date: Wed, 31 Dec 2008 23:54:56 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+References: <200812011850.42203.rusty@rustcorp.com.au> <200812091452.48824.jbarnes@virtuousgeek.org>
+In-Reply-To: <200812091452.48824.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1230696664.3470.105.camel@hermosa.site>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200812312354.56454.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I say most because the assumption would be that we will be successful in
-> creating the new thread.  Not that bad an assumption I think.  Besides,
-
-And that the memory read is not reordered (rmb()).
-
-> the consequences of a miss are not harmful. 
-
-Nod. Sounds reasonable.
-
->  
-> > 
-> > > More to the point, on small systems with few file systems, what is the
-> > > point of having 8 (the current max) threads competing with each other on
-> > > a single disk?  Likewise, on a 64-way, or larger system with dozens of
-> > > filesystems/disks, why wouldn't I want more background flushing?
-> > 
-> > That makes some sense, but perhaps it would be better to base the default
-> > size on the number of underlying block devices then?
-> > 
-> > Ok one issue there is that there are lots of different types of 
-> > block devices, e.g. a big raid array may look like a single disk.
-> > Still I suspect defaults based on the block devices would do reasonably
-> > well.
+On Wednesday 10 December 2008 09:22:48 Jesse Barnes wrote:
+> On Monday, December 01, 2008 12:20 am Rusty Russell wrote:
+> > This uses work_on_cpu(), rather than altering the cpumask of the
+> > thread which we happen to be.
 > 
-> Could be...  However bear in mind that we traverse *filesystems*, not
-> block devs with background_writeout() (the pdflush work function). 
+> Nice, I applied this to my linux-next branch to get some build/test coverage.  
+> Please cc linux-pci in the future though.
 
-My thinking was that on traditional block devices you roughly
-want only N, N small number, flushers per spingle because 
-otherwise they will just seek too much.
+Hi Jesse,
 
-Anyways iirc there's a way now to distingush SSDs from normal
-block devices based on hints from the block layer, but that still 
-doesn't handle the big RAID array case well.
+   I don't see this in linux-next, nor Linus' tree.  Here it is again...
 
-> 
-> But even if we did block devices, consider that we still don't know the
-> speed of those devices (consider SSD v. raid v. disk) and consequently,
-> we don't know how many threads to throw at the device before it becomes
-> congested and we're merely spinning our wheels.  I mean, an SSD at
-> 500MB/s (or greater) certainly could handle more pages being thrown at
-> it than an IDE drive... 
+Subject: work_on_cpu: use in drivers/pci/pci-driver.c
 
-I was thinking just of the initial default, but you're right
-it really needs to tune the upper limit.
+This uses work_on_cpu(), rather than altering the cpumask of the
+thread which we happen to be.
 
-> 
-> And this ties back to MAX_WRITEBACK_PAGES (currently 1k) which is the
-> chunk that we write out in one pass.   In order to not "hold the inode
-> lock too long", this is the chunk we attempt to write out.  
-> 
-> What is the right magic number for the various types of block devs?  1k
-> for all?  for all time?  :-)
+Note the cleanups:
 
-Ok it probably needs some kind of feedback mechanism.
+1) I've removed the CONFIG_NUMA test, since dev_to_node() returns -1
+   for !CONFIG_NUMA anyway and the compiler will eliminate it.
 
-Perhaps have keep an estimate of the average IO time for a single
-flush and when it reaches some threshold start more threads? 
-Or have feedback from the elevators how busy they are.
+2) No need to reset mempolicy to default (a bad idea anyway) since
+   work_on_cpu is run from a workqueue.
 
-Of course it would still need a upper limit to prevent
-a thread explosion in case IO suddenly becomes very slow
-(e.g. in a error recovery case), but it could be much
-higher than today.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+---
+ drivers/pci/pci-driver.c |   52 ++++++++++++++++++++++++++++-------------------
+ 1 file changed, 32 insertions(+), 20 deletions(-)
 
-> 
-> Anyway, back to the traversal of filesystems.  In writeback_inodes(), we
-> currently traverse the super block list in reverse.  I don't quite
-> understand why we do this, but <shrug>.  
-> 
-> What this does mean is that unfairly penalize certain file systems when
-> attempting to clean dirty pages.  If I have 5 filesystems, all getting
-> hit on, then the last one in will always be the 'cleanest'.   Not sure
-> that makes sense.  
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -16,6 +16,7 @@
+ #include <linux/string.h>
+ #include <linux/slab.h>
+ #include <linux/sched.h>
++#include <linux/cpu.h>
+ #include "pci.h"
+ 
+ /*
+@@ -183,32 +184,43 @@ static const struct pci_device_id *pci_m
+ 	return pci_match_id(drv->id_table, dev);
+ }
+ 
++struct drv_dev_and_id {
++	struct pci_driver *drv;
++	struct pci_dev *dev;
++	const struct pci_device_id *id;
++};
++
++static long local_pci_probe(void *_ddi)
++{
++	struct drv_dev_and_id *ddi = _ddi;
++
++	return ddi->drv->probe(ddi->dev, ddi->id);
++}
++
+ static int pci_call_probe(struct pci_driver *drv, struct pci_dev *dev,
+ 			  const struct pci_device_id *id)
+ {
+-	int error;
+-#ifdef CONFIG_NUMA
+-	/* Execute driver initialization on node where the
+-	   device's bus is attached to.  This way the driver likely
+-	   allocates its local memory on the right node without
+-	   any need to change it. */
+-	struct mempolicy *oldpol;
+-	cpumask_t oldmask = current->cpus_allowed;
+-	int node = dev_to_node(&dev->dev);
++	int error, node;
++	struct drv_dev_and_id ddi = { drv, dev, id };
+ 
++	/* Execute driver initialization on node where the device's
++	   bus is attached to.  This way the driver likely allocates
++	   its local memory on the right node without any need to
++	   change it. */
++	node = dev_to_node(&dev->dev);
+ 	if (node >= 0) {
++		int cpu;
+ 		node_to_cpumask_ptr(nodecpumask, node);
+-		set_cpus_allowed_ptr(current, nodecpumask);
+-	}
+-	/* And set default memory allocation policy */
+-	oldpol = current->mempolicy;
+-	current->mempolicy = NULL;	/* fall back to system default policy */
+-#endif
+-	error = drv->probe(dev, id);
+-#ifdef CONFIG_NUMA
+-	set_cpus_allowed_ptr(current, &oldmask);
+-	current->mempolicy = oldpol;
+-#endif
++
++		get_online_cpus();
++		cpu = cpumask_any_and(nodecpumask, cpu_online_mask);
++		if (cpu < nr_cpu_ids)
++			error = work_on_cpu(cpu, local_pci_probe, &ddi);
++		else
++			error = local_pci_probe(&ddi);
++		put_online_cpus();
++	} else
++		error = local_pci_probe(&ddi);
+ 	return error;
+ }
+ 
 
-Probably not.
-
-> 
-> I was thinking about a patch that would go both directions - forward and
-> reverse depending upon, say, a bit in jiffies...  Certainly not perfect,
-> but a bit more fair.  
-
-Better a real RNG. But such probalistic schemes unfortunately tend to drive
-benchmarkers crazy, that is why it is better to avoid them. 
-
-I suppose you could just keep some state per fs to ensure fairness.
-
--Andi
