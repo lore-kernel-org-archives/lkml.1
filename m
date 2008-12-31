@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYLaPg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYLaQ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804AbYLaPg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 10:36:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYLaPgR
+	id S1756553AbYLaQ6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 11:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYLaQ6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 10:36:17 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:17595 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755846AbYLaPgQ (ORCPT
+	Wed, 31 Dec 2008 11:58:13 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:50362 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbYLaQ6M convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 10:36:16 -0500
-Message-ID: <495B916C.7090205@panasas.com>
-Date: Wed, 31 Dec 2008 17:36:12 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Wed, 31 Dec 2008 11:58:12 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH] headers_check.pl: disallow extern's
+Date: Wed, 31 Dec 2008 17:58:03 +0100
+User-Agent: KMail/1.9.9
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+References: <1230363816-24097-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1230363816-24097-1-git-send-email-vapier@gentoo.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/9] exofs: file and file_inode operations
-References: <4947BFAA.4030208@panasas.com>	<4947C685.1000800@panasas.com> <20081229123443.36c022bc.akpm@linux-foundation.org>
-In-Reply-To: <20081229123443.36c022bc.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Dec 2008 15:36:10.0875 (UTC) FILETIME=[81B0D4B0:01C96B5D]
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200812311758.04516.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19i8Sl15G2+O97kNyEKL+61XQLyN8Es4kFKak2
+ 8u6vOWSVrrN8hqqdarveBvXECOuToA2VdPIYcDCrfvTde0LGl7
+ TZrun3Y+kjxJpWWEDpK8g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 16 Dec 2008 17:17:25 +0200
-> Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->> implementation of the file_operations and inode_operations for
->> regular data files.
->>
->> Most file_operations are generic vfs implementations except:
->> - exofs_truncate will truncate the OSD object as well
->> - Generic file_fsync is not good for none_bd devices so open code it
->> - The default for .flush in Linux is todo nothing so call exofs_fsync
->>   on the file.
->>
->> ...
->>
->> +int exofs_file_fsync(struct file *filp, struct dentry *dentry, int datasync)
->> +{
->> +	int ret1, ret2;
->> +	struct address_space *mapping = filp->f_mapping;
->> +
->> +	ret1 = filemap_write_and_wait(mapping);
->> +	ret2 = file_fsync(filp, dentry, datasync);
->> +
->> +	return ret1 ? : ret2;
-> 
-> mutter.  That gccism always makes me fall over dazed and confused. 
-> Maybe that's just me.
-> 
+On Saturday 27 December 2008, Mike Frysinger wrote:
+> +
+> +sub check_prototypes
+> +{
+> +       if ($line =~ m/^\s*extern\b/) {
+> +               printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
+> +               $ret = 1;
+> +       }
+> +}
 
-I've seen it done and felt like you exactly, only I liked the feeling. I'll change
-it.
+Unfortunately, this way you can only detect prototypes with an explicit
+'extern' in them, not the equivalent form with an implicit extern.
 
-> Did we really want to call file_fsync() if filemap_write_and_wait() failed?
-> 
+Not sure if we can detect the other form reliably from perl.
 
-I think it cannot hurt, other places do the same including generic code.
-
+	Arnd <><
