@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYLaJrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYLaJuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYLaJrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 04:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755147AbYLaJr3
+	id S1756137AbYLaJuM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 04:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYLaJt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 04:47:29 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33213 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753812AbYLaJr2 (ORCPT
+	Wed, 31 Dec 2008 04:49:59 -0500
+Received: from mx02.mailboxcop.com ([206.125.223.72]:53087 "EHLO
+	mx02.mailboxcop.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752957AbYLaJt7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 04:47:28 -0500
-Date: Wed, 31 Dec 2008 10:49:04 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Muntz, Daniel" <Dan.Muntz@netapp.com>
-Cc: "Trond Myklebust" <trond.myklebust@fys.uio.no>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Bernd Schubert" <bernd.schubert@fastmail.fm>, <nfsv4@linux-nfs.org>,
-       <linux-kernel@vger.kernel.org>, <steved@redhat.com>,
-       <dhowells@redhat.com>, <linux-next@vger.kernel.org>,
-       <linux-fsdevel@vger.kernel.org>, <rwheeler@redhat.com>
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Message-ID: <20081231104904.5a89fc60@infradead.org>
-In-Reply-To: <7A24DF798E223B4C9864E8F92E8C93EC01AAFE66@SACMVEXC1-PRD.hq.netapp.com>
-References: <1230662677.4952.37.camel@heimdal.trondhjem.org>
-	<7A24DF798E223B4C9864E8F92E8C93EC01AAFE66@SACMVEXC1-PRD.hq.netapp.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 31 Dec 2008 04:49:59 -0500
+Message-ID: <495B40C1.4080305@jaysonking.com>
+Date: Wed, 31 Dec 2008 03:52:01 -0600
+From: Jayson King <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: mingo@elte.hu, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       shaggy@linux.vnet.ibm.com, rjw@sisk.pl, fabio.comolli@gmail.com
+Subject: Disregard: was Re: large intermittent latency spike 2.6.28 (and 2.6.27.10),
+ bisect commit ca7e716c7833aeaeb8fedd6d004c5f5d5e14d325 -> Revert "sched_clock:
+ prevent scd->clock from moving backwards"
+References: <495A96FF.1000200@jaysonking.com>
+In-Reply-To: <495A96FF.1000200@jaysonking.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Canit-CHI2: 0.50
+X-Bayes-Prob: 0.9999 (Score 4, tokens from: @@RPTN, outgoing)
+X-Spam-Score: 4.10 (****) [Hold at 5.20] RDNS_NONE,2(1.2),6947(-1.2),Bayes(0.9999,4.0)
+X-CanItPRO-Stream: outgoing (inherits from default)
+X-Canit-Stats-ID: 333250006 - a7a05fccb0eb
+X-Antispam-Training-Forget: http://mailboxcop.com/canit/b.php?i=333250006&m=a7a05fccb0eb&c=f
+X-Antispam-Training-Nonspam: http://mailboxcop.com/canit/b.php?i=333250006&m=a7a05fccb0eb&c=n
+X-Antispam-Training-Spam: http://mailboxcop.com/canit/b.php?i=333250006&m=a7a05fccb0eb&c=s
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Dec 2008 14:15:42 -0800
-"Muntz, Daniel" <Dan.Muntz@netapp.com> wrote:
+> I noticed large latency spikes in 2.6.28 (and 2.6.27.10) which would 
+> make the system unresponsive for minutes at a time (alt+Fn switching 
+> wouldn't even work) when the system is under load. I could trigger the 
+> latency by running a large make -j 3. Sometimes it would trigger in a 
+> few seconds other times it would take a few minutes.
+>
+> I bisected it in 2.6.27.10 to d9a888b061f55534016d2d86a21639948312a117 
+> -> Revert "sched_clock: prevent scd->clock from moving backwards" 
+> (ca7e716c7833aeaeb8fedd6d004c5f5d5e14d325 in 2.6.28) and reverting it 
+> in 2.6.28 make the latency spike go away. At least, so far no spike in 
+> over 24 hours.
+Please disregard this. I just had a latency spike again, so this is not 
+the change I'm looking for... I'll need to look for what is causing it 
+again, apparently not only the make -j 3 I thought, and do another test.
 
-> >> As for security, look at what MIT had to do to prevent local disk 
-> >> caching from breaking the security guarantees of AFS.
-> >
-> >See what David has added to the LSM code to provide the same
-> >guarantees
-> for cachefs...
-> >
-> >Trond
-> 
-> Unless it (at least) leverages TPM, the issues I had in mind can't
-> really be addressed in code.  One requirement is to prevent a local
-> root user from accessing fs information without appropriate
-> permissions. 
+Jayson
 
-we're talking about NFS here (but also local CDs and potentially CIFS
-etc). The level of security you're talking about is going to be the
-same before or after cachefs.... very little against local root.
-
-Frankly, any networking filesystem just trusts that the connection is
-authenticated... eg there is SOMEONE on the machine who has the right
-credentials. 
-
-Cachefs doesn't change that; it still validates with the server before
-giving userspace the data.
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
