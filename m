@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYLaBnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYLaBrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640AbYLaBnr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 20:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYLaBnj
+	id S1752560AbYLaBrg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 20:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYLaBr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 20:43:39 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:51957 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751853AbYLaBnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 20:43:39 -0500
-Message-ID: <495ACEB2.1080105@sgi.com>
-Date: Wed, 31 Dec 2008 12:45:22 +1100
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-Organization: SGI
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Tue, 30 Dec 2008 20:47:28 -0500
+Received: from ethlife-a.ethz.ch ([129.132.49.178]:56158 "HELO ethlife.ethz.ch"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751916AbYLaBr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 20:47:28 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Dec 2008 20:47:27 EST
+Message-ID: <495ACD9A.40804@pflanze.mine.nu>
+Date: Wed, 31 Dec 2008 02:40:42 +0100
+From: Christian Jaeger <christian@pflanze.mine.nu>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.29
-References: <20081230030845.A4F0558AE206@chook.melbourne.sgi.com> <alpine.LFD.2.00.0812301738250.3082@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812301738250.3082@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kyle McMartin <kyle@infradead.org>
+CC: lmage11@twcny.rr.com, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: IRC?
+References: <20081229.183402.50984633.davem@davemloft.net> <20081230024651.K102R.401971.root@hrndva-web19-z02> <20081230033552.GE29678@bombadil.infradead.org>
+In-Reply-To: <20081230033552.GE29678@bombadil.infradead.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Tue, 30 Dec 2008, Lachlan McIlroy wrote:
->> The following changes since commit 3c92ec8ae91ecf59d88c798301833d7cf83f2179:
->>   Linus Torvalds (1):
->>         Merge branch 'next' of git://git.kernel.org/.../paulus/powerpc
->>
->> are available in the git repository at:
->>
->>   git://oss.sgi.com/oss/git/xfs/xfs.git for-linus
-> 
-> Not to me they aren't:
-> 
-> 	fatal: The remote end hung up unexpectedly
-> 
-> Hmm?
-Linus,
+Kyle McMartin wrote:
+> I believe the kernelnewbies folks already have a well-publicized irc
+> location... There are typically at least a few developers there.
 
-Could you please try
+I quite like the #kernelnewbies since it's the only place I know where I
+can ask userspace questions :~D
 
-git://oss.sgi.com/xfs/xfs.git for-linus
+I'm mostly a userspace developer, my life writing kernel code is
+restricted to a couple of tiny drivers and one-line tweaks. And merging
+of thirdparty patches. So I don't have much need for asking questions
+about kernelspace questions, but frequently I need to know how I
+interface to something in the kernel but don't know how (example: how do
+I get at the blocksize and size of a block device? (I know the answer
+now.) Or what the name of the "sandboxing" feature of Linux was
+(seccomp) and how it seemed to have changed interfaces. Getting clarity
+with questions like which tool displays which kind of cpu usage ("what
+is iowait?"). Getting help when I see strange behaviour like with I/O
+almost locking up the machine. Which are the right git trees to get the
+kernel. "Is there a way to change the pipe kernel buffer size from user
+space
+?" "What is a/the 'TSC'?" How to crosscompile (make ARCH=i386). etc. etc.)
 
-(the /oss/git prefix is needed for ssh - I should have noticed that)
+I'm almost always feeling guilty misusing that channel for such
+questions, but it's the best place I know where I can get answers to
+such questions... :) Thanks for anyone there bearing with me.
 
-Thanks.
-
-> 
-> 		Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Christian.
