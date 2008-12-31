@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbYLaWSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYLaSzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbYLaWSa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 17:18:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbYLaWSV
+	id S1756199AbYLaSzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbYLaSzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 17:18:21 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:34117 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752756AbYLaWSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 17:18:21 -0500
-Message-ID: <495BEFA9.80804@sgi.com>
-Date: Wed, 31 Dec 2008 14:18:17 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 31 Dec 2008 13:55:40 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:61446 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756903AbYLaSzj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 13:55:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=TusrkGLYR67tNtQPbO34FXv3OJGnWYQxx4wIjDJaxQ9ZcofZsFqhrM1Bep2WhKU9J+
+         qfKKUWU9kwMQIasW+Cy821DfSn+IeyUtElMQprxCz++0QN1KHMV/h8aUEfgp2yaOuDfN
+         Rqoqhwandys8l2xH34IzONOyZgdKVYvHX0Qvo=
+Message-ID: <5a4c581d0812311055m5f9f395ci331457f9ed1d1a7f@mail.gmail.com>
+Date: Wed, 31 Dec 2008 19:55:35 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.28-git3 and i915 Kconfig new dependency on framebuffer
 MIME-Version: 1.0
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: Fix incorrect __read_mostly on _boot_cpu_pda
-References: <20081231214446.GA6856@localdomain>
-In-Reply-To: <20081231214446.GA6856@localdomain>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravikiran G Thirumalai wrote:
-> The pda rework (commit 3461b0af025251bbc6b3d56c821c6ac2de6f7209)
-> to remove static boot cpu pdas introduced a bug.  _boot_cpu_pda is the
-> actual pda used by the boot cpu and is definitely not "__read_mostly" and
-> ended up polluting the read mostly section with writes.  This bug caused
-> regression of about 8-10% on certain syscall intensive workloads.
-> 
-> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-> 
-> Index: linux-2.6/arch/x86/kernel/head64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/head64.c	2008-12-30 15:28:08.000000000 -0800
-> +++ linux-2.6/arch/x86/kernel/head64.c	2008-12-31 10:36:21.000000000 -0800
-> @@ -27,7 +27,7 @@
->  #include <asm/trampoline.h>
->  
->  /* boot cpu pda */
-> -static struct x8664_pda _boot_cpu_pda __read_mostly;
-> +static struct x8664_pda _boot_cpu_pda;
->  
->  #ifdef CONFIG_SMP
->  /*
+make oldconfig from -git2 to -git3 doesn't build i915.ko unless
+ one has CONFIG_FB enabled; this causes /dev/dri/card0 to
+ be missing, and DRI disabled from within X.
 
-Thanks for catching that!
+Do I now (2.6.28-git3+) need CONFIG_FB to enable i915 DRM ?
 
-Mike
+Thanks,
+
+--alessandro
+
+ "Sun keeps rising in the west / I keep on waking fully confused"
+
+   (The Replacements, "Within Your Reach")
