@@ -1,208 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYLaMLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbYLaMYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYLaMLm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 07:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYLaMLd
+	id S1756343AbYLaMYe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 07:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYLaMY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 07:11:33 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:44454 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754142AbYLaMLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 07:11:33 -0500
-Date: Wed, 31 Dec 2008 12:11:31 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Wed, 31 Dec 2008 07:24:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:7953 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753834AbYLaMYZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 07:24:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=CuKoi5/31giewDCUXkYdN70Zv6GN5VREd4sPSeMw8NSmsPegg0bIdazD087EBsGcwy
+         5FjBFyMGZJNPGqjiAV7qseLoDINwFsXymu7Afp1MDNOZjcfNgYPnteq581Kud3atBAxV
+         6piP2lfRdnStZSug3nTwqh71hrm/yYfdwwkNk=
+Message-ID: <cb94e63d0812310424t7f8c63a9k49deaeb0565836ae@mail.gmail.com>
+Date: Wed, 31 Dec 2008 14:24:21 +0200
+From: "wassim dagash" <wassim.dagash@gmail.com>
+To: "Mel Gorman" <mel@csn.ul.ie>
+Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
        LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       wassim dagash <wassim.dagash@gmail.com>
-Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order
-	allocation
-Message-ID: <20081231121130.GD20534@csn.ul.ie>
-References: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081230185919.GA17725@csn.ul.ie> <20081231013233.GB32239@wotan.suse.de> <20081231110619.GA20534@csn.ul.ie> <20081231111647.GF32239@wotan.suse.de>
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>
+In-Reply-To: <20081231120554.GC20534@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081231111647.GF32239@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20081230195006.1286.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081230185919.GA17725@csn.ul.ie>
+	 <2f11576a0812302054rd26d8bcw6a113b3abefe8965@mail.gmail.com>
+	 <cb94e63d0812310059s263a0a75x12905a20526dafaf@mail.gmail.com>
+	 <20081231120554.GC20534@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 12:16:47PM +0100, Nick Piggin wrote:
-> On Wed, Dec 31, 2008 at 11:06:19AM +0000, Mel Gorman wrote:
-> > On Wed, Dec 31, 2008 at 02:32:33AM +0100, Nick Piggin wrote:
-> > > On Tue, Dec 30, 2008 at 06:59:19PM +0000, Mel Gorman wrote:
-> > > > On Tue, Dec 30, 2008 at 07:55:47PM +0900, KOSAKI Motohiro wrote:
-> > > > kswapd gets a sc.order when it is known there is a process trying to get
-> > > > high-order pages so it can reclaim at that order in an attempt to prevent
-> > > > future direct reclaim at a high-order. Your patch does not appear to depend on
-> > > > GFP_KERNEL at all so I found the comment misleading. Furthermore, asking it to
-> > > > loop again at order-0 means it may scan and reclaim more memory unnecessarily
-> > > > seeing as all_zones_ok was calculated based on a high-order value, not order-0.
-> > > 
-> > > It shouldn't, because it should check all that.
-> > > 
-> > 
-> > Ok, with KOSAKI's patch we
-> > 
-> > 1. Set order to 0 (and stop kswapd doing what it was asked to do)
-> > 2. goto loop_again
-> > 3. nr_reclaimed gets set to 0 (meaning we lose that value, but no biggie
-> >    as it doesn't get used by the caller anyway)
-> > 4. Reset all priorities
-> > 5. Do something like the following
-> > 
-> > 	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
-> > 		...
-> > 		all_zones_ok = 1;
-> > 		for (i = pgdat->nr_zones - 1; i >= 0; i--) {
-> > 			...
-> > 			if (inactive_anon_is_low(zone)) {
-> > 				shrink_active_list(SWAP_CLUSTER_MAX, zone,
-> > 					&sc, priority, 0);
-> > 			}
-> > 
-> > 			if (!zone_watermark_ok(zone, order, zone->pages_high,
-> > 					0, 0)) {
-> > 				end_zone = i;
-> > 				break;
-> > 			}
-> > 		}
-> > 	}
-> > 
-> >   So, by looping around, we could end up shrinking the active list again
-> >   before we recheck the zone watermarks depending on the size of the
-> >   inactive lists.
-> 
-> If this is a problem, it is a problem with that code, because kswapd
-> can be woken up for any zone at any time anyway.
-> 
-> 
-> > > >                 cond_resched();
-> > > > 
-> > > >                 try_to_freeze();
-> > > > 
-> > > >                 goto loop_again;
-> > > >         }
-> > > > 
-> > > > I used PAGE_ALLOC_COSTLY_ORDER instead of sc.order == 0 because we are
-> > > > expected to support allocations up to that order in a fairly reliable fashion.
-> > > 
-> > > I actually think it's better to do it for all orders, because that
-> > > constant is more or less arbitrary.
-> > 
-> > i.e.
-> > 
-> > if (!all_zones_ok && sc.order == 0) {
-> > 
-> > ? or something else
-> 
-> Well, I jus tdon't see what's wrong with the original patch.
-> 
+On Wed, Dec 31, 2008 at 2:05 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> On Wed, Dec 31, 2008 at 10:59:58AM +0200, wassim dagash wrote:
+>> Hi ,
+>> Thank you all for reviewing.
+>> Why don't we implement a solution where the order is defined per zone?
+>
+> kswapd is scanning trying to balance the whole system, not just one of
+> the zones. You don't know which of the zones would be the best to
+> rebalance and glancing through your path, the zone that would be
+> balanced is the last zone in the zonelist. i.e. kswapd will try to
+> rebalance the least-preferred zone to be used by the calling process.
+>
 
-I've more or less convinced myself it's ok as any anomolies I spotted have
-either been described as intentional behaviour or is arguably correct. A
-fixed up (or deleted - misleading comments suck) comment and I'm happy.
+You are right, but what is meant by 'order per zone' is that we will
+balance all zones to kswapd_max_order which is the highest order from
+which allocation was done on that zone.
+What I tried to re-balance is the zone for which the allocation was
+made, the other zones are fallback to that allocation ( correct me if
+I'm wrong). As I understood from documentation, the first zone on the
+list is the zone for which the allocation was made.
 
->  
-> > What I did miss was that we have 
-> > 
-> >                 if (nr_reclaimed >= SWAP_CLUSTER_MAX)
-> >                         break;
-> > 
-> > so with my patch, kswapd is bailing out early without trying to reclaim for
-> > high-orders that hard. That was not what I intended as it means we only ever
-> > really rebalance the full system for order-0 pages and for everything else we
-> > do relatively light scanning. The impact is that high-order users will direct
-> > reclaim rather than depending on kswapd scanning very heavily. Arguably,
-> > this is a good thing.
-> > 
-> > However, it also means that KOSAKI's and my patches only differs in that mine
-> > bails early and KOSAKI rechecks everything at order-0, possibly reclaiming
-> > more. If the comment was not so misleading, I'd have been a lot happier.
-> 
-> Rechecking everything is fine by me; order-0 is going to be the most
-> common and most important. If higher order allocations sometimes have
-> to enter direct reclaim or kick off kswapd again, it isn't a big deal.
-> 
+>> I implemented such a solution for my kernel (2.6.18) and tested it, it
+>> worked fine for me. Attached a patch with a solution for 2.6.28
+>> (compile tested only).
+>>
+>
+> One big one;
+>
+> zone_watermark_ok() now always calculates order based on
+> zone->kswapd_max_order. This means that a process that wants an order-0 page
+> may check watermarks at order-10 because some other process overwrote the
+> zone value. That is unfair.
+>
 
-Grand so. Initially it looked like accidental rather than intentional
-behaviour but after thinking about it some more, it should be ok.
+This can be fixed by differing re-balance and allocation.
 
-> 
-> > > IOW, I don't see a big downside, and there is a real upside.
-> > > 
-> > > I think the patch is good.
-> > > 
-> > 
-> > Which one, KOSAKI's or my one?
-> > 
-> > Here is my one again which bails out for any high-order allocation after
-> > just light scanning.
-> > 
-> > ====
-> > 
-> > >From 0e09fe002d8e9956de227b880ef8458842b71ca9 Mon Sep 17 00:00:00 2001
-> > From: Mel Gorman <mel@csn.ul.ie>
-> > Date: Tue, 30 Dec 2008 18:53:23 +0000
-> > Subject: [PATCH] mm: stop kswapd's infinite loop at high order allocation
-> > 
-> > Wassim Dagash reported the following (editted) kswapd infinite loop problem.
-> > 
-> >   kswapd runs in some infinite loop trying to swap until order 10 of zone
-> >   highmem is OK.... kswapd will continue to try to balance order 10 of zone
-> >   highmem forever (or until someone release a very large chunk of highmem).
-> > 
-> > For costly high-order allocations, the system may never be balanced due to
-> > fragmentation but kswapd should not infinitely loop as a result. The
-> > following patch lets kswapd stop reclaiming in the event it cannot
-> > balance zones and the order is high-order.
-> 
-> This one bails out if it was a higher order reclaim, but there is still
-> an order-0 shortage. I prefer to run the loop again at order==0 to avoid
-> that condition. A higher kswapd reclaim order shouldn't weaken kswapd
-> postcondition for order-0 memory.
-> 
-> > 
-> > Reported-by: wassim dagash <wassim.dagash@gmail.com>
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > 
-> > ---
-> >  mm/vmscan.c |   11 ++++++++++-
-> >  1 files changed, 10 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 62e7f62..7b0f412 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -1867,7 +1867,16 @@ out:
-> >  
-> >  		zone->prev_priority = temp_priority[i];
-> >  	}
-> > -	if (!all_zones_ok) {
-> > +
-> > +	/*
-> > +	 * If zones are still not balanced, loop again and continue attempting
-> > +	 * to rebalance the system. For high-order allocations, fragmentation
-> > +	 * can prevent the zones being rebalanced no matter how hard kswapd
-> > +	 * works, particularly on systems with little or no swap. For
-> > +	 * high-orders, just give up and assume interested processes will
-> > +	 * either direct reclaim or wake up kswapd again as necessary.
-> > +	 */
-> > +	if (!all_zones_ok && sc.order == 0) {
-> >  		cond_resched();
-> >  
-> >  		try_to_freeze();
-> 
+> One less obvious one;
+>
+> You add a field that is written often beside a field that is read-mostly
+> in struct zone. This results in poorer cache behaviour. It's easily
+> fixed though.
+>
+
+Sorry, but I'm very new to kernel programming, I read your book (and
+other books) in order to figure out why KSWAPD loops in an endless
+loop :)
+
+I just wanted to understand why 'kswapd_max_order' was implemented
+'per node' and not 'per zone' ? Is there a reason?
+
+Thanks,
+
+>> On Wed, Dec 31, 2008 at 6:54 AM, KOSAKI Motohiro
+>> <kosaki.motohiro@jp.fujitsu.com> wrote:
+>> > Hi
+>> >
+>> > thank you for reviewing.
+>> >
+>> >>> ==
+>> >>> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> >>> Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
+>> >>>
+>> >>> Wassim Dagash reported following kswapd infinite loop problem.
+>> >>>
+>> >>>   kswapd runs in some infinite loop trying to swap until order 10 of zone
+>> >>>   highmem is OK, While zone higmem (as I understand) has nothing to do
+>> >>>   with contiguous memory (cause there is no 1-1 mapping) which means
+>> >>>   kswapd will continue to try to balance order 10 of zone highmem
+>> >>>   forever (or until someone release a very large chunk of highmem).
+>> >>>
+>> >>> He proposed remove contenious checking on highmem at all.
+>> >>> However hugepage on highmem need contenious highmem page.
+>> >>>
+>> >>
+>> >> I'm lacking the original problem report, but contiguous order-10 pages are
+>> >> indeed required for hugepages in highmem and reclaiming for them should not
+>> >> be totally disabled at any point. While no 1-1 mapping exists for the kernel,
+>> >> contiguity is still required.
+>> >
+>> > correct.
+>> > but that's ok.
+>> >
+>> > my patch only change corner case bahavior and only disable high-order
+>> > when priority==0. typical hugepage reclaim don't need and don't reach
+>> > priority==0.
+>> >
+>> > and sorry. I agree with my "2nd loop"  word of the patch comment is a
+>> > bit misleading.
+>> >
+>> >
+>> >> kswapd gets a sc.order when it is known there is a process trying to get
+>> >> high-order pages so it can reclaim at that order in an attempt to prevent
+>> >> future direct reclaim at a high-order. Your patch does not appear to depend on
+>> >> GFP_KERNEL at all so I found the comment misleading. Furthermore, asking it to
+>> >> loop again at order-0 means it may scan and reclaim more memory unnecessarily
+>> >> seeing as all_zones_ok was calculated based on a high-order value, not order-0.
+>> >
+>> > Yup. my patch doesn't depend on GFP_KERNEL.
+>> >
+>> > but, Why order-0 means it may scan more memory unnecessary?
+>> > all_zones_ok() is calculated by zone_watermark_ok() and zone_watermark_ok()
+>> > depend on order argument. and my patch set order variable to 0 too.
+>> >
+>> >
+>> >> While constantly looping trying to balance for high-orders is indeed bad,
+>> >> I'm unconvinced this is the correct change. As we have already gone through
+>> >> a priorities and scanned everything at the high-order, would it not make
+>> >> more sense to do just give up with something like the following?
+>> >>
+>> >>       /*
+>> >>        * If zones are still not balanced, loop again and continue attempting
+>> >>        * to rebalance the system. For high-order allocations, fragmentation
+>> >>        * can prevent the zones being rebalanced no matter how hard kswapd
+>> >>        * works, particularly on systems with little or no swap. For costly
+>> >>        * orders, just give up and assume interested processes will either
+>> >>        * direct reclaim or wake up kswapd as necessary.
+>> >>        */
+>> >>        if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+>> >>                cond_resched();
+>> >>
+>> >>                try_to_freeze();
+>> >>
+>> >>                goto loop_again;
+>> >>        }
+>> >>
+>> >> I used PAGE_ALLOC_COSTLY_ORDER instead of sc.order == 0 because we are
+>> >> expected to support allocations up to that order in a fairly reliable fashion.
+>> >
+>> > my comment is bellow.
+>> >
+>> >
+>> >> =============
+>> >> From: Mel Gorman <mel@csn.ul.ie>
+>> >> Subject: [PATCH] mm: stop kswapd's infinite loop at high order allocation
+>> >>
+>> >>  kswapd runs in some infinite loop trying to swap until order 10 of zone
+>> >>  highmem is OK.... kswapd will continue to try to balance order 10 of zone
+>> >>  highmem forever (or until someone release a very large chunk of highmem).
+>> >>
+>> >> For costly high-order allocations, the system may never be balanced due to
+>> >> fragmentation but kswapd should not infinitely loop as a result. The
+>> >> following patch lets kswapd stop reclaiming in the event it cannot
+>> >> balance zones and the order is high-order.
+>> >>
+>> >> Reported-by: wassim dagash <wassim.dagash@gmail.com>
+>> >> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+>> >>
+>> >> diff --git a/mm/vmscan.c b/mm/vmscan.c
+>> >> index 62e7f62..03ed9a0 100644
+>> >> --- a/mm/vmscan.c
+>> >> +++ b/mm/vmscan.c
+>> >> @@ -1867,7 +1867,16 @@ out:
+>> >>
+>> >>                zone->prev_priority = temp_priority[i];
+>> >>        }
+>> >> -       if (!all_zones_ok) {
+>> >> +
+>> >> +       /*
+>> >> +        * If zones are still not balanced, loop again and continue attempting
+>> >> +        * to rebalance the system. For high-order allocations, fragmentation
+>> >> +        * can prevent the zones being rebalanced no matter how hard kswapd
+>> >> +        * works, particularly on systems with little or no swap. For costly
+>> >> +        * orders, just give up and assume interested processes will either
+>> >> +        * direct reclaim or wake up kswapd as necessary.
+>> >> +        */
+>> >> +       if (!all_zones_ok && sc.order <= PAGE_ALLOC_COSTLY_ORDER) {
+>> >>                cond_resched();
+>> >>
+>> >>                try_to_freeze();
+>> >
+>> > this patch seems no good.
+>> > kswapd come this point every SWAP_CLUSTER_MAX reclaimed because to avoid
+>> > unnecessary priority variable decreasing.
+>> > then "nr_reclaimed >= SWAP_CLUSTER_MAX" indicate kswapd need reclaim more.
+>> >
+>> > kswapd purpose is "reclaim until pages_high", not reclaim
+>> > SWAP_CLUSTER_MAX pages.
+>> >
+>> > if your patch applied and kswapd start to reclaim for hugepage, kswapd
+>> > exit balance_pgdat() function after to reclaim only 32 pages
+>> > (SWAP_CLUSTER_MAX).
+>> >
+>> > In the other hand, "nr_reclaimed < SWAP_CLUSTER_MAX" mean kswapd can't
+>> > reclaim enough
+>> > page although priority == 0.
+>> > in this case, retry is worthless.
+>> >
+>> > sorting out again.
+>> > "goto loop_again" reaching happend by two case.
+>> >
+>> > 1. kswapd reclaimed SWAP_CLUSTER_MAX pages.
+>> >    at that time, kswapd reset priority variable to prevent
+>> > unnecessary priority decreasing.
+>> >    I don't hope this behavior change.
+>> > 2. kswapd scanned until priority==0.
+>> >    this case is debatable. my patch reset any order to 0. but
+>> > following code is also considerable to me. (sorry for tab corrupted,
+>> > current my mail environment is very poor)
+>> >
+>> >
+>> > code-A:
+>> >       if (!all_zones_ok) {
+>> >              if ((nr_reclaimed >= SWAP_CLUSTER_MAX) ||
+>> >                 (sc.order <= PAGE_ALLOC_COSTLY_ORDER)) {
+>> >                          cond_resched();
+>> >                           try_to_freeze();
+>> >                           goto loop_again;
+>> >                }
+>> >       }
+>> >
+>> > or
+>> >
+>> > code-B:
+>> >       if (!all_zones_ok) {
+>> >              cond_resched();
+>> >               try_to_freeze();
+>> >
+>> >              if (nr_reclaimed >= SWAP_CLUSTER_MAX)
+>> >                           goto loop_again;
+>> >
+>> >              if (sc.order <= PAGE_ALLOC_COSTLY_ORDER)) {
+>> >                           order = sc.order = 0;
+>> >                           goto loop_again;
+>> >              }
+>> >       }
+>> >
+>> >
+>> > However, I still like my original proposal because ..
+>> >  - code-A forget to order-1 (for stack) allocation also can cause
+>> > infinite loop.
+>> >  - code-B doesn't simpler than my original proposal.
+>> >
+>> > What do you think it?
+>> >
+>>
+>>
+>>
+>> --
+>> too much is never enough!!!!!
+>
+>
+>
 > --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+> Mel Gorman
+> Part-time Phd Student                          Linux Technology Center
+> University of Limerick                         IBM Dublin Software Lab
+>
+
+
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+too much is never enough!!!!!
