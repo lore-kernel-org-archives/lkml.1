@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYLaLCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYLaLF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbYLaLCl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 06:02:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYLaLCb
+	id S1756194AbYLaLF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 06:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbYLaLFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 06:02:31 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:38594 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755639AbYLaLCb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 06:02:31 -0500
-Date: Wed, 31 Dec 2008 12:02:26 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 30
-In-Reply-To: <20081231033039.f203b59c.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0812311202000.14380@anakin>
-References: <20081231033039.f203b59c.sfr@canb.auug.org.au>
+	Wed, 31 Dec 2008 06:05:19 -0500
+Received: from ozlabs.org ([203.10.76.45]:34368 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752963AbYLaLFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 06:05:18 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [-tip tree] compile error in arch/ia64/kernel/acpi.c
+Date: Wed, 31 Dec 2008 21:35:08 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luck, Tony" <tony.luck@intel.com>
+References: <495B3857.90802@cn.fujitsu.com>
+In-Reply-To: <495B3857.90802@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812312135.09293.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008, Stephen Rothwell wrote:
-> Status of my local build tests will be at
-> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-> advice about cross compilers/configs that work, we are always open to add
-> more builds.
+On Wednesday 31 December 2008 19:46:07 Li Zefan wrote:
+> arch/ia64/kernel/acpi.c:205: error: conflicting types for 'total_cpus'
+> include/linux/smp.h:25: error: previous declaration of 'total_cpus' was here
+> 
+> due to [PATCH 3/3] cpumask: add sysfs displays for configured and disabled cpu maps
+> (http://lkml.org/lkml/2008/12/19/25)
 
-The website doesn't seem to have been updated during the last few days?
+Hmm, I don't know how this escaped linux-next.  But the fix is simple:
 
-Gr{oetje,eeting}s,
+Subject: Remove IA64 definition of total_cpus now it's in core code
 
-						Geert
+Impact: fix IA64 compile
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Fortunately, they have exactly the same semantics.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
+--- a/arch/ia64/kernel/acpi.c
++++ b/arch/ia64/kernel/acpi.c
+@@ -202,7 +202,6 @@ char *__init __acpi_map_table(unsigned l
+                             Boot-time Table Parsing
+    -------------------------------------------------------------------------- */
+ 
+-static int total_cpus __initdata;
+ static int available_cpus __initdata;
+ struct acpi_table_madt *acpi_madt __initdata;
+ static u8 has_8259;
