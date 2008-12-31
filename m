@@ -1,198 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbYLaIis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbYLaIlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbYLaIis (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 03:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYLaIih
+	id S1755921AbYLaIlO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 03:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYLaIk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 03:38:37 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61774 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753592AbYLaIig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 03:38:36 -0500
-Message-ID: <495B2F54.7000100@cn.fujitsu.com>
-Date: Wed, 31 Dec 2008 16:37:40 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 31 Dec 2008 03:40:59 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:55897 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752765AbYLaIk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 03:40:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HVbd0fWMl9IpZczg63w580sXOq5ukwB9DZROs+/bRXC06x75J0VVHssyzzQd9KbiBC
+         9LfMbbNHN50UUhfMFCs5b4NV3agsz3A03AyWRSiyOJx30gtyi9JZWgw4sWLrXJWqGqRJ
+         2XjOdDwcBWZU/FHsiQE0z1zXWnPJBQmxOusjI=
+Message-ID: <3f9a31f40812310040y27c39b87v456ae38e46031624@mail.gmail.com>
+Date: Wed, 31 Dec 2008 14:10:57 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH -tip] fix compilation error
+Cc: "Frederic Weisbecker" <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
+       "x86 maintainers" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20081231081458.GB12942@elte.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Mike Travis <travis@sgi.com>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/6] cpuset: remove remaining pointers to cpumask_t
-References: <495B2EA6.7010808@cn.fujitsu.com> <495B2EC2.9090305@cn.fujitsu.com> <495B2EE7.4040406@cn.fujitsu.com> <495B2EFB.302@cn.fujitsu.com> <495B2F19.7040806@cn.fujitsu.com> <495B2F2C.7060303@cn.fujitsu.com>
-In-Reply-To: <495B2F2C.7060303@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1230648007.10677.1.camel@jaswinder.satnam>
+	 <20081230205230.GA6151@nowhere> <495AA87D.9060704@kernel.org>
+	 <495ABDF8.2070703@kernel.org> <20081231004722.GA28472@nowhere>
+	 <495AC45D.8010102@kernel.org> <20081231014747.GB28472@nowhere>
+	 <20081231081458.GB12942@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanups, use new cpumask API
+Hello Ingo,
 
-Final trivial cleanups: mainly s/cpumask_t/struct cpumask
+On Wed, Dec 31, 2008 at 1:44 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> Could you check whether latest tip/master is still OK? I had these
+> problems resolved locally (but forgot to push them out), and now i also
+> had to do a few conflict resolutions with latest -git, hopefully i have
+> not lost hpa's fixes ...
+>
 
-Note there is a FIXME in generate_sched_domains(). A future patch will
-change struct cpumask *doms to struct cpumask *doms[].
-(I suppose Rusty will do this.)
+With latest/tip, I am still getting error on X86_32 machines :
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/cpuset.h |   10 ++++++----
- kernel/cpuset.c        |   28 +++++++++++++++-------------
- 2 files changed, 21 insertions(+), 17 deletions(-)
+  CC      mm/slab.o
+mm/slab.c:105:31: error: tracing/kmemtrace.h: No such file or directory
+make[1]: *** [mm/slab.o] Error 1
+make: *** [mm] Error 2
 
-diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-index 51ea2bd..90c6074 100644
---- a/include/linux/cpuset.h
-+++ b/include/linux/cpuset.h
-@@ -20,8 +20,9 @@ extern int number_of_cpusets;	/* How many cpusets are defined in system? */
- extern int cpuset_init_early(void);
- extern int cpuset_init(void);
- extern void cpuset_init_smp(void);
--extern void cpuset_cpus_allowed(struct task_struct *p, cpumask_t *mask);
--extern void cpuset_cpus_allowed_locked(struct task_struct *p, cpumask_t *mask);
-+extern void cpuset_cpus_allowed(struct task_struct *p, struct cpumask *mask);
-+extern void cpuset_cpus_allowed_locked(struct task_struct *p,
-+				       struct cpumask *mask);
- extern nodemask_t cpuset_mems_allowed(struct task_struct *p);
- #define cpuset_current_mems_allowed (current->mems_allowed)
- void cpuset_init_current_mems_allowed(void);
-@@ -86,12 +87,13 @@ static inline int cpuset_init_early(void) { return 0; }
- static inline int cpuset_init(void) { return 0; }
- static inline void cpuset_init_smp(void) {}
- 
--static inline void cpuset_cpus_allowed(struct task_struct *p, cpumask_t *mask)
-+static inline void cpuset_cpus_allowed(struct task_struct *p,
-+				       struct cpumask *mask)
- {
- 	*mask = cpu_possible_map;
- }
- static inline void cpuset_cpus_allowed_locked(struct task_struct *p,
--								cpumask_t *mask)
-+					      struct cpumask *mask)
- {
- 	*mask = cpu_possible_map;
- }
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 25df51f..a87323b 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -289,7 +289,8 @@ static struct file_system_type cpuset_fs_type = {
-  * Call with callback_mutex held.
-  */
- 
--static void guarantee_online_cpus(const struct cpuset *cs, cpumask_t *pmask)
-+static void guarantee_online_cpus(const struct cpuset *cs,
-+				  struct cpumask *pmask)
- {
- 	while (cs && !cpumask_intersects(cs->cpus_allowed, cpu_online_mask))
- 		cs = cs->parent;
-@@ -610,7 +611,8 @@ update_domain_attr_tree(struct sched_domain_attr *dattr, struct cpuset *c)
-  *	element of the partition (one sched domain) to be passed to
-  *	partition_sched_domains().
-  */
--static int generate_sched_domains(cpumask_t **domains,
-+/* FIXME: see the FIXME in partition_sched_domains() */
-+static int generate_sched_domains(struct cpumask **domains,
- 			struct sched_domain_attr **attributes)
- {
- 	LIST_HEAD(q);		/* queue of cpusets to be scanned */
-@@ -618,10 +620,10 @@ static int generate_sched_domains(cpumask_t **domains,
- 	struct cpuset **csa;	/* array of all cpuset ptrs */
- 	int csn;		/* how many cpuset ptrs in csa so far */
- 	int i, j, k;		/* indices for partition finding loops */
--	cpumask_t *doms;	/* resulting partition; i.e. sched domains */
-+	struct cpumask *doms;	/* resulting partition; i.e. sched domains */
- 	struct sched_domain_attr *dattr;  /* attributes for custom domains */
- 	int ndoms = 0;		/* number of sched domains in result */
--	int nslot;		/* next empty doms[] cpumask_t slot */
-+	int nslot;		/* next empty doms[] struct cpumask slot */
- 
- 	doms = NULL;
- 	dattr = NULL;
-@@ -629,7 +631,7 @@ static int generate_sched_domains(cpumask_t **domains,
- 
- 	/* Special case for the 99% of systems with one, full, sched domain */
- 	if (is_sched_load_balance(&top_cpuset)) {
--		doms = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
-+		doms = kmalloc(cpumask_size(), GFP_KERNEL);
- 		if (!doms)
- 			goto done;
- 
-@@ -708,7 +710,7 @@ restart:
- 	 * Now we know how many domains to create.
- 	 * Convert <csn, csa> to <ndoms, doms> and populate cpu masks.
- 	 */
--	doms = kmalloc(ndoms * sizeof(cpumask_t), GFP_KERNEL);
-+	doms = kmalloc(ndoms * cpumask_size(), GFP_KERNEL);
- 	if (!doms)
- 		goto done;
- 
-@@ -720,7 +722,7 @@ restart:
- 
- 	for (nslot = 0, i = 0; i < csn; i++) {
- 		struct cpuset *a = csa[i];
--		cpumask_t *dp;
-+		struct cpumask *dp;
- 		int apn = a->pn;
- 
- 		if (apn < 0) {
-@@ -743,7 +745,7 @@ restart:
- 			continue;
- 		}
- 
--		cpus_clear(*dp);
-+		cpumask_clear(dp);
- 		if (dattr)
- 			*(dattr + nslot) = SD_ATTR_INIT;
- 		for (j = i; j < csn; j++) {
-@@ -790,7 +792,7 @@ done:
- static void do_rebuild_sched_domains(struct work_struct *unused)
- {
- 	struct sched_domain_attr *attr;
--	cpumask_t *doms;
-+	struct cpumask *doms;
- 	int ndoms;
- 
- 	get_online_cpus();
-@@ -2059,7 +2061,7 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
- 				unsigned long phase, void *unused_cpu)
- {
- 	struct sched_domain_attr *attr;
--	cpumask_t *doms;
-+	struct cpumask *doms;
- 	int ndoms;
- 
- 	switch (phase) {
-@@ -2129,7 +2131,7 @@ void __init cpuset_init_smp(void)
- /**
-  * cpuset_cpus_allowed - return cpus_allowed mask from a tasks cpuset.
-  * @tsk: pointer to task_struct from which to obtain cpuset->cpus_allowed.
-- * @pmask: pointer to cpumask_t variable to receive cpus_allowed set.
-+ * @pmask: pointer to struct cpumask variable to receive cpus_allowed set.
-  *
-  * Description: Returns the cpumask_var_t cpus_allowed of the cpuset
-  * attached to the specified @tsk.  Guaranteed to return some non-empty
-@@ -2137,7 +2139,7 @@ void __init cpuset_init_smp(void)
-  * tasks cpuset.
-  **/
- 
--void cpuset_cpus_allowed(struct task_struct *tsk, cpumask_t *pmask)
-+void cpuset_cpus_allowed(struct task_struct *tsk, struct cpumask *pmask)
- {
- 	mutex_lock(&callback_mutex);
- 	cpuset_cpus_allowed_locked(tsk, pmask);
-@@ -2148,7 +2150,7 @@ void cpuset_cpus_allowed(struct task_struct *tsk, cpumask_t *pmask)
-  * cpuset_cpus_allowed_locked - return cpus_allowed mask from a tasks cpuset.
-  * Must be called with callback_mutex held.
-  **/
--void cpuset_cpus_allowed_locked(struct task_struct *tsk, cpumask_t *pmask)
-+void cpuset_cpus_allowed_locked(struct task_struct *tsk, struct cpumask *pmask)
- {
- 	task_lock(tsk);
- 	guarantee_online_cpus(task_cs(tsk), pmask);
--- 
-1.5.4.rc3
-
-
-
+Thank you,
+JSR
