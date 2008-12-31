@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYL3XRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYLaAO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbYL3XRd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 18:17:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYL3XRY
+	id S1753178AbYLaAO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 19:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYLaAOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 18:17:24 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56599 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752250AbYL3XRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 18:17:23 -0500
-Date: Wed, 31 Dec 2008 10:17:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-next@vger.kernel.org, Linus <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: linux-next: origin tree build failure
-Message-Id: <20081231101717.0ef30e15.sfr@canb.auug.org.au>
-In-Reply-To: <adahc4ls262.fsf@cisco.com>
-References: <20081229114321.4b6baea5.sfr@canb.auug.org.au>
-	<adavdt2ru39.fsf@cisco.com>
-	<20081230193048.db7ee462.sfr@canb.auug.org.au>
-	<adaljtxsma7.fsf@cisco.com>
-	<20081231024654.a73f20df.sfr@canb.auug.org.au>
-	<20081231095228.b21cffe0.sfr@canb.auug.org.au>
-	<adahc4ls262.fsf@cisco.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F"
+	Tue, 30 Dec 2008 19:14:50 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:55262 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbYLaAOt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 19:14:49 -0500
+Date: Wed, 31 Dec 2008 00:14:45 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: [PATCH, resend] misc: Add dell-wmi driver for hotkey control
+Message-ID: <20081231001445.GA23563@srcf.ucam.org>
+References: <20081228153128.GC13424@srcf.ucam.org> <20081230155035.8224ca86.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081230155035.8224ca86.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Dec 30, 2008 at 03:50:35PM -0800, Andrew Morton wrote:
 
-Hi Roland,
+> One wonders whether this driver should really live in drivers/input/?
 
-On Tue, 30 Dec 2008 14:56:05 -0800 Roland Dreier <rdreier@cisco.com> wrote:
->
->  > So instead of the revert, I will cherry-pick your fix commit just after
->  > Linus' tree today on the assumption that you will send it to him ASAP.
->=20
-> Yes, I will batch up a few other things and send a pull request today.
+Mm. There's certainly an argument for that given its current 
+functionality, but the Dell WMI interface also exposes a bunch of other 
+functionality - we just don't know how to use any of it right now. 
+Moving it later might be more confusing.
 
-Excellent!
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklaq/0ACgkQjjKRsyhoI8z4DQCeNbpBtdRZty48CAeF1ojLJ4Xq
-IAsAnRBvrIaqk8q2vHxbh2W7gicUi5dE
-=uc+K
------END PGP SIGNATURE-----
-
---Signature=_Wed__31_Dec_2008_10_17_17_+1100_YK=2CfQti+BOU60F--
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
