@@ -1,473 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYLaKJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYLaKf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbYLaKJb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 05:09:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYLaKJW
+	id S1755816AbYLaKf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 05:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbYLaKfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 05:09:22 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39133 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752963AbYLaKJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 05:09:21 -0500
-Date: Wed, 31 Dec 2008 11:08:16 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
-Message-ID: <20081231110816.5f80e265@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Dec 2008 05:35:13 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:19223 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753033AbYLaKfM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 05:35:12 -0500
+Message-ID: <495B4ADB.3020904@panasas.com>
+Date: Wed, 31 Dec 2008 12:35:07 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: matthieu castet <castet.matthieu@free.fr>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+CC: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       linux-usb@vger.kernel.org
+Subject: [PATCH -stable] fix USB_STORAGE_CYPRESS_ATACB
+References: <495913A6.9070007@free.fr> <20081229192431.GZ1469@one-eyed-alien.net> <495A475D.7060608@panasas.com>
+In-Reply-To: <495A475D.7060608@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 31 Dec 2008 10:35:06.0073 (UTC) FILETIME=[723ACC90:01C96B33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Dec 2008 20:15:33 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Hi Matthieu, Matthew
 
-> Hi
-> 
-> Oleg, Jiri, this is my getrusage testcase and proposal patch.
-> Could you please review it?
-> 
-> 
-> 
-> Changes Jiris's last version
->   - At wait_task_zombie(), parent process doesn't only collect child maxrss,
->     but also cmaxrss.
-Yes, this is what we were missing so far.
+I fixed lots of "mucking directly" with scsi_cmnd and scsi_eh_save
+internal members but the actual set of srb->cmnd{,_len} is needed
+still. Though we don't need the copy since we restore the original
+command right after. If anyone can test this to verify it could
+be grate.
 
->   - ru_maxrss inherit at exec()
->   - style fixes.
+Sorry for the mishap
+Boaz
+ 
+---
+From: Boaz Harrosh <bharrosh@panasas.com>
+Subject: [PATCH] fix USB_STORAGE_CYPRESS_ATACB
 
-New patch seems almost fine to me. Only I do not like usage of max()
-macro in do_exit() and in de_thread(). It's unnecessary and little
-wasting (yes only a little :)). This two spots would be maybe better
-solved with if(<).
+commit 64a87b24: [SCSI] Let scsi_cmnd->cmnd use request->cmd buffer
+changed the scsi_eh_prep_cmnd logic by making it clear
+the ->cmnd buffer. But the sat to cypress atacb translation supposed
+the ->cmnd buffer wasn't modified.
 
-> 
-> Applied after: introduce-get_mm_hiwater_xxx-fix-taskstats-hiwater_xxx-accounting.patch
-> ==
-> From: Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> Subject: [PATCH for -mm] getrusage: fill ru_maxrss value
-> 
-> This patch makes ->ru_maxrss value in struct rusage filled accordingly to
-> rss hiwater mark. This struct is filled as a parameter to
-> getrusage syscall. ->ru_maxrss value is set to KBs which is the way it
-> is done in BSD systems. /usr/bin/time (gnu time) application converts
-> ->ru_maxrss to KBs which seems to be incorrect behavior. Maintainer of
-> this util was notified by me with the patch which corrects it and cc'ed.
-> 
-> To make this happen we extend struct signal_struct by two fields. The
-> first one is ->maxrss which we use to store rss hiwater of the task. The
-> second one is ->cmaxrss which we use to store highest rss hiwater of all
-> task childs. These values are used in k_getrusage() to actually fill
-> ->ru_maxrss. k_getrusage() uses current rss hiwater value directly
-> if mm struct exists.
-> 
-> Note:
-> exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
-> it is intetionally behavior. *BSD getrusage have exec() inheriting.
-> 
-> 
-> Test progmam and test case
-> ===========================
-> 
-> getrusage.c
-> ----
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/types.h>
-> #include <sys/time.h>
-> #include <sys/resource.h>
-> #include <sys/types.h>
-> #include <sys/wait.h>
-> #include <unistd.h>
-> #include <signal.h>
-> 
-> static void consume(int mega)
-> {
-> 	size_t sz = mega * 1024 * 1024;
-> 	void *ptr;
-> 
-> 	ptr = malloc(sz);
-> 	memset(ptr, 0, sz);
-> 	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
-> }
-> 
-> static void show_rusage(char *prefix)
-> {
-> 	int err, err2;
-> 	struct rusage rusage_self;
-> 	struct rusage rusage_children;
-> 
-> 	printf("%s: ", prefix);
-> 	err = getrusage(RUSAGE_SELF, &rusage_self);
-> 	if (!err)
-> 		printf("self %ld ", rusage_self.ru_maxrss);
-> 	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
-> 	if (!err2)
-> 		printf("children %ld ", rusage_children.ru_maxrss);
-> 
-> 	printf("\n");
-> }
-> 
-> int main(int argc, char** argv)
-> {
-> 	int status;
-> 	int c;
-> 	int need_sleep_before_wait = 0;
-> 	int consume_large_memory_at_first = 0;
-> 	int create_child_at_first = 0;
-> 	int sigign = 0;
-> 	int create_child_before_exec = 0;
-> 	int after_fork_test = 0;
-> 
-> 	while ((c = getopt(argc, argv, "ceflsz")) != -1) {
-> 		switch (c) {
-> 		case 'c':
-> 			create_child_at_first = 1;
-> 			break;
-> 		case 'e':
-> 			create_child_before_exec = 1;
-> 			break;
-> 		case 'f':
-> 			after_fork_test = 1;
-> 			break;
-> 		case 'l':
-> 			consume_large_memory_at_first = 1;
-> 			break;
-> 		case 's':
-> 			sigign = 1;
-> 			break;
-> 		case 'z':
-> 			need_sleep_before_wait = 1;
-> 			break;
-> 		default:
-> 			break;
-> 		}
-> 	}
-> 
-> 	if (consume_large_memory_at_first)
-> 		consume(100);   
-> 
-> 	if (create_child_at_first)
-> 		system("./child -q"); 
-> 	
-> 	if (sigign)
-> 		signal(SIGCHLD, SIG_IGN);
-> 
-> 	if (fork()) {
-> 		usleep(1);
-> 		if (need_sleep_before_wait)
-> 			sleep(3); /* children become zombie */
-> 		show_rusage("pre_wait");
-> 		wait(&status);
-> 		show_rusage("post_wait");
-> 	} else {
-> 		usleep(1);
-> 		show_rusage("fork");
-> 		
-> 		if (after_fork_test) {
-> 			consume(30);
-> 			show_rusage("fork2");
-> 		}
-> 		if (create_child_before_exec) {
-> 			system("./child -lq"); 
-> 			usleep(1);
-> 			show_rusage("fork3");
-> 		}
-> 
-> 		execl("./child", "child", 0);
-> 		exit(0);
-> 	}
-> 	     
-> 	return 0;
-> }
-> 
-> child.c
-> ----
-> #include <sys/types.h>
-> #include <unistd.h>
-> #include <sys/types.h>
-> #include <sys/wait.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/types.h>
-> #include <sys/time.h>
-> #include <sys/resource.h>
-> 
-> static void consume(int mega)
-> {
-> 	size_t sz = mega * 1024 * 1024;
-> 	void *ptr;
-> 
-> 	ptr = malloc(sz);
-> 	memset(ptr, 0, sz);
-> 	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
-> }
-> 
-> static void show_rusage(char *prefix)
-> {
-> 	int err, err2;
-> 	struct rusage rusage_self;
-> 	struct rusage rusage_children;
-> 
-> 	printf("%s: ", prefix);
-> 	err = getrusage(RUSAGE_SELF, &rusage_self);
-> 	if (!err)
-> 		printf("self %ld ", rusage_self.ru_maxrss);
-> 	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
-> 	if (!err2)
-> 		printf("children %ld ", rusage_children.ru_maxrss);
-> 
-> 	printf("\n");
-> 
-> }
-> 
-> 
-> int main(int argc, char** argv)
-> {
-> 	int status;
-> 	int c;
-> 	int silent = 0;
-> 	int light_weight = 0;
-> 
-> 	while ((c = getopt(argc, argv, "lq")) != -1) {
-> 		switch (c) {
-> 		case 'l':
-> 			light_weight = 1;
-> 			break;
-> 		case 'q':
-> 			silent = 1;
-> 			break;
-> 		default:
-> 			break;
-> 		}
-> 	}
-> 
-> 	if (!silent)
-> 		show_rusage("exec");
-> 
-> 	if (fork()) {
-> 		if (light_weight)
-> 			consume(400);
-> 		else
-> 			consume(700);
-> 		wait(&status);
-> 	} else {
-> 		if (light_weight)
-> 			consume(600);
-> 		else
-> 			consume(900);
-> 
-> 		exit(0);
-> 	}
-> 
-> 	return 0;
-> }
-> 
-> testcase
-> ==================
-> 1. inherit fork?
->    
->    test way:
->    	% ./getrusage -lc 
-> 
->    bsd result:
->    	fork line is "fork: self 0 children 0".
-> 
->    	-> rusage sholdn't be inherit by fork.
-> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-> 
-> 2. inherit exec?
-> 
->    test way:
->    	% ./getrusage -lce
-> 
->    bsd result:
->    	fork3: self 103204 children 60000 
-> 	exec: self 103204 children 60000
-> 
->    	fork3 and exec line are the same.
-> 
->    	-> rusage shold be inherit by exec.
-> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-> 
-> 3. getrusage(RUSAGE_CHILDREN) collect grandchild statics?
-> 
->    test way:
->    	% ./getrusage
-> 
->    bsd result:
->    	post_wait line is about "post_wait: self 0 children 90000".
-> 
-> 	-> RUSAGE_CHILDREN can collect grandchild.
-> 
-> 4. zombie, but not waited children collect or not?
-> 
->    test way:
->    	% ./getrusage -z
-> 
->    bsd result:
->    	pre_wait line is "pre_wait: self 0 children 0".
-> 
-> 	-> zombie child process (not waited-for child process)
-> 	   isn't accounted.
-> 
-> 5. SIG_IGN collect or not
-> 
->    test way:
->    	% ./getrusage -s
-> 
->    bsd result:
->    	post_wait line is "post_wait: self 0 children 0".
-> 
-> 	-> if SIGCHLD is ignored, children isn't accounted.
-> 
-> 6. fork and malloc
->    test way:
->    	% ./getrusage -lcf
-> 
->    bsd result:
->    	fork line is "fork: self 0 children 0".
->    	fork2 line is about "fork: self 130000 children 0".
-> 
->    	-> rusage sholdn't be inherit by fork.
-> 	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
-> 	   but additional memory cunsumption cause right
-> 	   maxrss calculation.
-> 
-Testcases look good. Thanks for doing this.
+This patch makes it set the ->cmnd buffer after scsi_eh_prep_cmnd call.
+The problem and a fix was reported by Matthieu CASTET <castet.matthieu@free.fr>
 
-> 
-> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  fs/exec.c             |    5 +++++
->  include/linux/sched.h |    1 +
->  kernel/exit.c         |    6 ++++++
->  kernel/fork.c         |    1 +
->  kernel/sys.c          |   15 +++++++++++++++
->  5 files changed, 28 insertions(+)
-> 
-> Index: b/include/linux/sched.h
-> ===================================================================
-> --- a/include/linux/sched.h	2008-12-29 23:27:59.000000000 +0900
-> +++ b/include/linux/sched.h	2008-12-30 03:25:23.000000000 +0900
-> @@ -562,6 +562,7 @@ struct signal_struct {
->  	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
->  	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
->  	unsigned long inblock, oublock, cinblock, coublock;
-> +	unsigned long maxrss, cmaxrss;
->  	struct task_io_accounting ioac;
->  
->  	/*
-> Index: b/kernel/exit.c
-> ===================================================================
-> --- a/kernel/exit.c	2008-12-29 23:27:59.000000000 +0900
-> +++ b/kernel/exit.c	2008-12-30 17:35:51.000000000 +0900
-> @@ -1053,6 +1053,10 @@ NORET_TYPE void do_exit(long code)
->  	if (group_dead) {
->  		hrtimer_cancel(&tsk->signal->real_timer);
->  		exit_itimers(tsk->signal);
-> +		if (tsk->mm) {
-> +			unsigned long maxrss = get_mm_hiwater_rss(tsk->mm);
-> +			tsk->signal->maxrss = max(maxrss, tsk->signal->maxrss);
-> +		}
->  	}
->  	acct_collect(code, group_dead);
->  	if (group_dead)
-> @@ -1349,6 +1353,8 @@ static int wait_task_zombie(struct task_
->  		psig->coublock +=
->  			task_io_get_oublock(p) +
->  			sig->oublock + sig->coublock;
-> +		psig->cmaxrss = max(max(sig->maxrss, sig->cmaxrss),
-> +				    psig->cmaxrss);
->  		task_io_accounting_add(&psig->ioac, &p->ioac);
->  		task_io_accounting_add(&psig->ioac, &sig->ioac);
->  		spin_unlock_irq(&p->parent->sighand->siglock);
-> Index: b/kernel/fork.c
-> ===================================================================
-> --- a/kernel/fork.c	2008-12-25 08:26:37.000000000 +0900
-> +++ b/kernel/fork.c	2008-12-30 03:48:09.000000000 +0900
-> @@ -849,6 +849,7 @@ static int copy_signal(unsigned long clo
->  	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
->  	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
->  	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
-> +	sig->maxrss = sig->cmaxrss = 0;
->  	task_io_accounting_init(&sig->ioac);
->  	taskstats_tgid_init(sig);
->  
-> Index: b/kernel/sys.c
-> ===================================================================
-> --- a/kernel/sys.c	2008-12-25 08:26:37.000000000 +0900
-> +++ b/kernel/sys.c	2008-12-30 04:04:18.000000000 +0900
-> @@ -1569,6 +1569,7 @@ static void k_getrusage(struct task_stru
->  			r->ru_majflt = p->signal->cmaj_flt;
->  			r->ru_inblock = p->signal->cinblock;
->  			r->ru_oublock = p->signal->coublock;
-> +			r->ru_maxrss = p->signal->cmaxrss;
->  
->  			if (who == RUSAGE_CHILDREN)
->  				break;
-> @@ -1583,6 +1584,8 @@ static void k_getrusage(struct task_stru
->  			r->ru_majflt += p->signal->maj_flt;
->  			r->ru_inblock += p->signal->inblock;
->  			r->ru_oublock += p->signal->oublock;
-> +			if (r->ru_maxrss < p->signal->maxrss)
-> +				r->ru_maxrss = p->signal->maxrss;
->  			t = p;
->  			do {
->  				accumulate_thread_rusage(t, r);
-> @@ -1598,6 +1601,18 @@ static void k_getrusage(struct task_stru
->  out:
->  	cputime_to_timeval(utime, &r->ru_utime);
->  	cputime_to_timeval(stime, &r->ru_stime);
-> +
-> +	if (who != RUSAGE_CHILDREN) {
-> +		struct mm_struct *mm = get_task_mm(p);
-> +		if (mm) {
-> +			unsigned long maxrss = get_mm_hiwater_rss(mm);
-> +
-> +			if (r->ru_maxrss < maxrss)
-> +				r->ru_maxrss = maxrss;
-> +			mmput(mm);
-> +		}
-> +	}
-> +	r->ru_maxrss <<= PAGE_SHIFT - 10;
->  }
->  
->  int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
-> Index: b/fs/exec.c
-> ===================================================================
-> --- a/fs/exec.c	2008-12-25 08:26:37.000000000 +0900
-> +++ b/fs/exec.c	2008-12-30 17:42:32.000000000 +0900
-> @@ -774,6 +774,7 @@ static int de_thread(struct task_struct 
->  	spinlock_t *lock = &oldsighand->siglock;
->  	struct task_struct *leader = NULL;
->  	int count;
-> +	unsigned long maxrss = 0;
->  
->  	if (thread_group_empty(tsk))
->  		goto no_thread_group;
-> @@ -870,6 +871,10 @@ static int de_thread(struct task_struct 
->  	sig->notify_count = 0;
->  
->  no_thread_group:
-> +	if (current->mm)
-> +		maxrss = get_mm_hiwater_rss(current->mm);
-> +	sig->maxrss = max(sig->maxrss, maxrss);
-> +
->  	exit_itimers(sig);
->  	flush_itimer_signals();
->  	if (leader)
-> 
-> 
+It also removes all the hackery fiddling of scsi_cmnd and scsi_eh_save by
+requesting from scsi_eh_prep_cmnd to prepare a read into ->sense_buffer,
+which is much more suitable a buffer for HW transfers, then after the command
+execution the regs read is copied into regs buffer before actual preparation
+of sense_buffer.
+
+Also fix an alien comment character to my utf-8 editor.
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Signed-off-by: Matthieu CASTET <castet.matthieu@free.fr>
+---
+ drivers/usb/storage/cypress_atacb.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/usb/storage/cypress_atacb.c b/drivers/usb/storage/cypress_atacb.c
+index 898e67d..9466a99 100644
+--- a/drivers/usb/storage/cypress_atacb.c
++++ b/drivers/usb/storage/cypress_atacb.c
+@@ -133,19 +133,18 @@ void cypress_atacb_passthrough(struct scsi_cmnd *srb, struct us_data *us)
+ 
+ 		/* build the command for
+ 		 * reading the ATA registers */
+-		scsi_eh_prep_cmnd(srb, &ses, NULL, 0, 0);
+-		srb->sdb.length = sizeof(regs);
+-		sg_init_one(&ses.sense_sgl, regs, srb->sdb.length);
+-		srb->sdb.table.sgl = &ses.sense_sgl;
+-		srb->sc_data_direction = DMA_FROM_DEVICE;
+-		srb->sdb.table.nents = 1;
++		scsi_eh_prep_cmnd(srb, &ses, NULL, 0, sizeof(regs));
++
+ 		/* we use the same command as before, but we set
+ 		 * the read taskfile bit, for not executing atacb command,
+ 		 * but reading register selected in srb->cmnd[4]
+ 		 */
++		srb->cmd_len = 16;
++		srb->cmnd = ses.cmnd;
+ 		srb->cmnd[2] = 1;
+ 
+ 		usb_stor_transparent_scsi_command(srb, us);
++		memcpy(regs, srb->sense_buffer, sizeof(regs));
+ 		tmp_result = srb->result;
+ 		scsi_eh_restore_cmnd(srb, &ses);
+ 		/* we fail to get registers, report invalid command */
+@@ -162,8 +161,8 @@ void cypress_atacb_passthrough(struct scsi_cmnd *srb, struct us_data *us)
+ 
+ 		/* XXX we should generate sk, asc, ascq from status and error
+ 		 * regs
+-		 * (see 11.1 Error translation � ATA device error to SCSI error map)
+-		 * and ata_to_sense_error from libata.
++		 * (see 11.1 Error translation ATA device error to SCSI error
++		 *  map, and ata_to_sense_error from libata.)
+ 		 */
+ 
+ 		/* Sense data is current and format is descriptor. */
+-- 
+1.6.0.1
+
