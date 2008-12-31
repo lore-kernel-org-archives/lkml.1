@@ -1,43 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbYLaTgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYLaSDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756895AbYLaTgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 14:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYLaTgm
+	id S1757176AbYLaSDt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 13:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbYLaSDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 14:36:42 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:50996 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbYLaTgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 14:36:41 -0500
-Date: Wed, 31 Dec 2008 20:50:05 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: david@lang.hm, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-Message-ID: <20081231195005.GT496@one.firstfloor.org>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost>
+	Wed, 31 Dec 2008 13:03:38 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:33857 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756091AbYLaSDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 13:03:37 -0500
+Date: Wed, 31 Dec 2008 19:03:34 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmc_spi: Add support for OpenFirmware bindings
+Message-ID: <20081231190334.137ba624@mjolnir.drzeus.cx>
+In-Reply-To: <20081230151528.GA14950@oksana.dev.rtsoft.ru>
+References: <20081230151528.GA14950@oksana.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081231183039.GE20882@localhost>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> on the picture you sent me i noticed the message
-> "Your memory is not aligned you need to rebuild your
-> kernel with bigger NODEMAP SIZE shift=20" and then
-> srat code complains about "No NUMA code hash function found"
-> which looks a bit scary. Btw, could you post this picture
-> on some public resource so NUMA people could check it?
+On Tue, 30 Dec 2008 18:15:28 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-This case used to be handled cleanly (NUMA disabled), but perhaps
-that has regressed. But still it sounds like something is going wrong,
-unless his machine really has a very weird memory map.
+> The support is implemented via platform data accessors, new module
+> (of_mmc_spi) will be created automatically when the driver compiles
+> on OpenFirmware platforms. Link-time dependency will load the module
+> automatically.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
 
--Andi
+Queued up.
+
+> 
+> Hello Pierre,
+> 
+> All the needed patches were merged into Linus' tree, so I believe
+> it's time for the bindings.
+> 
+> Note that you need to pull Linus' tree into mmc.git's next branch
+> before applying this patch, otherwise it will break bisect, since
+> of_mmc_spi isn't buildable without some patches that are in Linus'
+> tree, but not in the current mmc.git next.
+> 
+
+mmc.git#next gets rebased constantly to the current linus HEAD, so this
+isn't a problem. And since this doesn't really mess with the old SPI
+driver, I'm pushing this for .29.
+
+Rgds
 -- 
-ak@linux.intel.com
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
