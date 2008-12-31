@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYLaVXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYLaTUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbYLaVXv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 16:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYLaVXm
+	id S1757164AbYLaTUP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 14:20:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYLaTUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 16:23:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60340 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750738AbYLaVXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 16:23:41 -0500
-Date: Wed, 31 Dec 2008 13:22:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Helge Deller <deller@gmx.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       John David Anglin <dave@hiauly1.hia.nrc.ca>
-Subject: Re: [PATCH] parisc: fix module loading failure of large kernel
- modules (take 4)
-In-Reply-To: <20081231105425.9ccac21d.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain>
-References: <4959346E.7060600@gmx.de> <200812310915.41693.rusty@rustcorp.com.au> <495B5806.3080505@gmx.de> <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain> <ada63l0qmba.fsf@cisco.com> <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain>
- <20081231105425.9ccac21d.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 31 Dec 2008 14:20:03 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:57149 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751882AbYLaTUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 14:20:01 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] UV: remove erroneous BAU initialization
+Cc: mingo@elte.hu, gregkh@suse.de, dcn@sgi.com
+Message-Id: <E1LI6cc-00045u-4i@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Wed, 31 Dec 2008 13:20:50 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Cliff Wickman <cpw@sgi.com>
 
+UV is the SGI "UltraViolet" machine, which is x86_64 based.
+BAU is the "Broadcast Assist Unit", used for TLB shootdown in UV.
 
-On Wed, 31 Dec 2008, Andrew Morton wrote:
-> 
-> Adrian claimed that it was gcc-4.1.0 and 4.1.1 only.  He proposed
-> banning them: http://lkml.org/lkml/2008/8/5/444
+This patch removes the allocation and initialization of an unused table.
 
-If it really is just those releases, then yes, considering the number of 
-cases we apparently have, and considering how ugly it is in some cases to 
-move the weak function anywhere else, maybe banning those versions is the 
-proper thing to do.
+This table is left over from a development test mode.  It is unused in
+the present code.
+And it was incorrectly initialized: 8 entries allocated but 17 initialized,
+causing slab corruption.
 
-It probably won't hurt very many people - yeah, some people will be forced 
-to upgrade, but I have this memory of early 4.1 having had other bugs 
-anyway, so it's probably a good idea.
+This patch should go into 2.6.27 and 2.6.28 as well as the current tree.
 
-		Linus
+Diffed against 2.6.28 (linux-next, 12/30/08)
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+---
+ arch/x86/kernel/tlb_uv.c |    9 ---------
+ 1 file changed, 9 deletions(-)
+
+Index: linux/arch/x86/kernel/tlb_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/tlb_uv.c
++++ linux/arch/x86/kernel/tlb_uv.c
+@@ -582,7 +582,6 @@ static int __init uv_ptc_init(void)
+ static struct bau_control * __init uv_table_bases_init(int blade, int node)
+ {
+ 	int i;
+-	int *ip;
+ 	struct bau_msg_status *msp;
+ 	struct bau_control *bau_tabp;
+ 
+@@ -599,13 +598,6 @@ static struct bau_control * __init uv_ta
+ 		bau_cpubits_clear(&msp->seen_by, (int)
+ 				  uv_blade_nr_possible_cpus(blade));
+ 
+-	bau_tabp->watching =
+-	    kmalloc_node(sizeof(int) * DEST_NUM_RESOURCES, GFP_KERNEL, node);
+-	BUG_ON(!bau_tabp->watching);
+-
+-	for (i = 0, ip = bau_tabp->watching; i < DEST_Q_SIZE; i++, ip++)
+-		*ip = 0;
+-
+ 	uv_bau_table_bases[blade] = bau_tabp;
+ 
+ 	return bau_tabp;
+@@ -628,7 +620,6 @@ uv_table_bases_finish(int blade, int nod
+ 		bcp->bau_msg_head	= bau_tablesp->va_queue_first;
+ 		bcp->va_queue_first	= bau_tablesp->va_queue_first;
+ 		bcp->va_queue_last	= bau_tablesp->va_queue_last;
+-		bcp->watching		= bau_tablesp->watching;
+ 		bcp->msg_statuses	= bau_tablesp->msg_statuses;
+ 		bcp->descriptor_base	= adp;
+ 	}
