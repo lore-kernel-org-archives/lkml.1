@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYLaUQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbYLaWAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbYLaUQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 15:16:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYLaUQU
+	id S1757131AbYLaWAa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 17:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYLaWAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 15:16:20 -0500
-Received: from mail.lang.hm ([64.81.33.126]:40138 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753568AbYLaUQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 15:16:19 -0500
-Date: Wed, 31 Dec 2008 13:18:25 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-In-Reply-To: <20081231191214.GF20882@localhost>
-Message-ID: <alpine.DEB.1.10.0812311316350.18569@asgard.lang.hm>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm>
- <20081231183039.GE20882@localhost> <alpine.DEB.1.10.0812311204580.18334@asgard.lang.hm> <20081231191214.GF20882@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 31 Dec 2008 17:00:21 -0500
+Received: from rv-out-0506.google.com ([209.85.198.233]:40549 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYLaWAV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 17:00:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=R1NsTMFH7JyG5KZR8pt6zQt+TIwz3zdI/urjkd3E6nn//qfQlzqXXrHS0H0y0m0ekw
+         H2jHLhZX+tMTqpKpgHykmJ2SusPK5Ca7Cm72LK7gtkYY9x6EpLU/l3938lqA7VMKBszt
+         78m0vNyNcvX/ekBnb1SHPf7/HywTORLzcC0F8=
+Message-ID: <84ee33570812311400m5492af64n45c645a13fe91c2c@mail.gmail.com>
+Date: Wed, 31 Dec 2008 17:00:19 -0500
+From: "Matt Cross" <matt.cross@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: ebtables match inverted in 2.6.28?
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
+I think the work to move ebtables to use xtables broke ebtables.
+Specifically, in commit 8cc784eec6676b58e7f60419c88179aaa97bf71c the
+return value of the match functions was inverted so that they return 1
+(true) on matches instead of EBT_MATCH (0), and vice versa (look in
+ebt_ip.c).  The logic in ebtables.c (ebt_do_table() and
+EBT_MATCH_ITERATE()) expect match functions to return 0 for matches.
 
-> [david@lang.hm - Wed, Dec 31, 2008 at 12:07:33PM -0800]
->> On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
->>
->>> [david@lang.hm - Wed, Dec 31, 2008 at 11:12:12AM -0800]
->>>> On Wed, 31 Dec 2008, Cyrill Gorcunov wrote:
->>>>
->>>>> [david@lang.hm - Tue, Dec 30, 2008 at 05:39:29PM -0800]
->>>>>>
->>>>>> so it looks like this is in alloc_bootmem_core in both cases.
->>>>>>
->>>>>> David Lang
->>>>>>
->>>>>
->>>>> Along with Andi's proposed earlyprintk=vga I think
->>>>> bootmem_debug option could be usefull here too.
->>>>
->>>> adding bootmem_debug creates so much additonal output that the oops
->>>> scrolls off the screen (except the last 'paragraph' of it)
->>>>
->>>> it looks like it's individual items being allocated (trying to scan it as
->>>> it scrolled by)
->>>
->>> on the picture you sent me i noticed the message
->>> "Your memory is not aligned you need to rebuild your
->>> kernel with bigger NODEMAP SIZE shift=20" and then
->>> srat code complains about "No NUMA code hash function found"
->>> which looks a bit scary. Btw, could you post this picture
->>> on some public resource so NUMA people could check it?
->>
->> http://linux.lang.hm/linux/IMG00030.jpg
->>
->> I'll try rebuilding with a bigger nodemap size and let you know
->>
->> David Lang
->>
->
-> also you could just pass numa=off and check if it help.
-> (even if it help it would not mean that problem are gone
-> but become hidden)
+The patch at the end of this message fixes the problem, but seems a
+little hacky to me.  Who's the right person to address this?
 
-with numa=off the system looks like it gets a bit further
+    -Matt
 
-http://linux.lang.hm/linux/IMG00031.jpg
 
-this is with framebuffer disabled, earlyprintk=vga bootmem_debug numa=off
+--- linux-2.6.28.orig/net/bridge/netfilter/ebtables.c   2008-12-24
+18:26:37.000000000 -0500
++++ linux-2.6.28/net/bridge/netfilter/ebtables.c        2008-12-31
+16:17:44.000000000 -0500
+@@ -80,7 +80,7 @@
+ {
+        par->match     = m->u.match;
+        par->matchinfo = m->data;
+-       return m->u.match->match(skb, par);
++       return !m->u.match->match(skb, par);
+ }
 
-David Lang
+ static inline int ebt_dev_check(char *entry, const struct net_device *device)
