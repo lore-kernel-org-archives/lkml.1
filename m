@@ -1,138 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYLaELU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYLaESS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbYLaELU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 23:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYLaELL
+	id S1755735AbYLaESS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 23:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYLaESF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 23:11:11 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:45825 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751530AbYLaELK (ORCPT
+	Tue, 30 Dec 2008 23:18:05 -0500
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:37398 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752435AbYLaESD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 23:11:10 -0500
-Subject: Re: [PATCH 0/2] pdflush fix and enhancement
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081231024609.GQ496@one.firstfloor.org>
-References: <20081230231152.10427.50620.stgit@hermosa.site>
-	 <87fxk5ur0h.fsf@basil.nowhere.org> <1230688589.3470.45.camel@hermosa.site>
-	 <20081231024609.GQ496@one.firstfloor.org>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Tue, 30 Dec 2008 21:11:04 -0700
-Message-Id: <1230696664.3470.105.camel@hermosa.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Dec 2008 23:18:03 -0500
+From: Roland Dreier <rdreier@cisco.com>
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: swiotlb: Add missing __init annotations
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 30 Dec 2008 20:18:00 -0800
+Message-ID: <adamyedq8p3.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 31 Dec 2008 04:18:01.0175 (UTC) FILETIME=[C4BD5670:01C96AFE]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-31 at 03:46 +0100, Andi Kleen wrote:
-> On Tue, Dec 30, 2008 at 06:56:29PM -0700, Peter W. Morreale wrote:
-> > The rational is simply because one-size may not fit all.  Currently
-> > there is minimalistic tuning wrt pdflush thread creation. 
-> 
-> Thanks. Please put this into the commit description for future
-> reference. 
-> 
+The current kernel build warns:
 
-Will do.
+    WARNING: vmlinux.o(.text+0x11458): Section mismatch in reference from the function swiotlb_alloc_boot() to the function .init.text:__alloc_bootmem_low()
+    The function swiotlb_alloc_boot() references
+    the function __init __alloc_bootmem_low().
+    This is often because swiotlb_alloc_boot lacks a __init
+    annotation or the annotation of __alloc_bootmem_low is wrong.
+    
+    WARNING: vmlinux.o(.text+0x1011f2): Section mismatch in reference from the function swiotlb_late_init_with_default_size() to the function .init.text:__alloc_bootmem_low()
+    The function swiotlb_late_init_with_default_size() references
+    the function __init __alloc_bootmem_low().
+    This is often because swiotlb_late_init_with_default_size lacks a __init
+    annotation or the annotation of __alloc_bootmem_low is wrong.
 
-> Some comments below.
-> 
-> > Each pdflush thread arbitrarily decides to create another thread solely
-> > on the basis of all currently existing threads being busy for >= one
-> > second.  So this can result in NCPUS pdflush threads being created
-> > 'concurrently' should all existing threads wind up in the idle check at
-> > the same time (I have seen this).  Or it can result in a thread being
-> 
-> So perhaps a simple lock serializing creation of new pdflush threads
-> would avoid the problem?
+and indeed the functions calling __alloc_bootmem_low() can be marked
+__init as well.
 
-nod.  It's probably even simpler than that.  By merely updating
-'last_empty_jifs" when we decide to create the next pdflush thread, we
-could easily account for _most_ of the races without adding significant
-overhead.  
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+Not 100% sure if this is the correct fix but it seems OK for me.
 
-I say most because the assumption would be that we will be successful in
-creating the new thread.  Not that bad an assumption I think.  Besides,
-the consequences of a miss are not harmful. 
+ arch/x86/kernel/pci-swiotlb_64.c |    2 +-
+ lib/swiotlb.c                    |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
+index 242c344..8cba374 100644
+--- a/arch/x86/kernel/pci-swiotlb_64.c
++++ b/arch/x86/kernel/pci-swiotlb_64.c
+@@ -13,7 +13,7 @@
  
-> 
-> > More to the point, on small systems with few file systems, what is the
-> > point of having 8 (the current max) threads competing with each other on
-> > a single disk?  Likewise, on a 64-way, or larger system with dozens of
-> > filesystems/disks, why wouldn't I want more background flushing?
-> 
-> That makes some sense, but perhaps it would be better to base the default
-> size on the number of underlying block devices then?
-> 
-> Ok one issue there is that there are lots of different types of 
-> block devices, e.g. a big raid array may look like a single disk.
-> Still I suspect defaults based on the block devices would do reasonably
-> well.
-
-Could be...  However bear in mind that we traverse *filesystems*, not
-block devs with background_writeout() (the pdflush work function). 
-
-But even if we did block devices, consider that we still don't know the
-speed of those devices (consider SSD v. raid v. disk) and consequently,
-we don't know how many threads to throw at the device before it becomes
-congested and we're merely spinning our wheels.  I mean, an SSD at
-500MB/s (or greater) certainly could handle more pages being thrown at
-it than an IDE drive... 
-
-And this ties back to MAX_WRITEBACK_PAGES (currently 1k) which is the
-chunk that we write out in one pass.   In order to not "hold the inode
-lock too long", this is the chunk we attempt to write out.  
-
-What is the right magic number for the various types of block devs?  1k
-for all?  for all time?  :-)
-
-Anyway, back to the traversal of filesystems.  In writeback_inodes(), we
-currently traverse the super block list in reverse.  I don't quite
-understand why we do this, but <shrug>.  
-
-What this does mean is that unfairly penalize certain file systems when
-attempting to clean dirty pages.  If I have 5 filesystems, all getting
-hit on, then the last one in will always be the 'cleanest'.   Not sure
-that makes sense.  
-
-I was thinking about a patch that would go both directions - forward and
-reverse depending upon, say, a bit in jiffies...  Certainly not perfect,
-but a bit more fair.  
-
-Actually, it seems to me that we need to look at a radically different
-approach.  What about making background writes a property of the super
-block? (which implies the file system)  Has that been discussed before?
-
-
-Best,
--PWM
-
-
-
-> 
-> > 
-> > I actually think the question is: Why not allow the admin to control
-> > this?  Since it seems like this is a matter of policy based on machine
-> > configuration. 
-> 
-> The kernel should know the current machine config and most 
-> admins don't really want to do very fine grained configuration;
-> they expect the system to perform well out of the box. That is
-> why it is adventageous to try to come up with good auto tuning.
-> 
-> > And btw Andi, I should have cc'ed you on this, I know from the flush
-> > code that you were heavily involved.  I only cc'ed Peter Z. since his
-> > name was in pdflush.c.  My apologies.  
-> 
-> No problem, but I think you're confusing me with someone else :). I don't
-> remember ever hacking on this. Perhaps you thought of Andrew Morton
-> who did pdflush originally.
-> 
-> -Andi
-> 
-
+ int swiotlb __read_mostly;
+ 
+-void *swiotlb_alloc_boot(size_t size, unsigned long nslabs)
++void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
+ {
+ 	return alloc_bootmem_low_pages(size);
+ }
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index fa2dc4e..1b76f78 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -116,7 +116,7 @@ setup_io_tlb_npages(char *str)
+ __setup("swiotlb=", setup_io_tlb_npages);
+ /* make io_tlb_overflow tunable too? */
+ 
+-void * __weak swiotlb_alloc_boot(size_t size, unsigned long nslabs)
++void * __weak __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
+ {
+ 	return alloc_bootmem_low_pages(size);
+ }
+@@ -186,7 +186,7 @@ static void swiotlb_print_info(unsigned long bytes)
+  * Statically reserve bounce buffer space and initialize bounce buffer data
+  * structures for the software IO TLB used to implement the DMA API.
+  */
+-void __init
++void __init __weak
+ swiotlb_init_with_default_size(size_t default_size)
+ {
+ 	unsigned long i, bytes;
