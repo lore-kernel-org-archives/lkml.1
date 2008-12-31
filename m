@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYLaAhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYLaAhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbYLaAhd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 19:37:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYLaAhY
+	id S1753476AbYLaAhq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 19:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYLaAhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 19:37:24 -0500
-Received: from mail.lang.hm ([64.81.33.126]:51565 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752197AbYLaAhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 19:37:23 -0500
-Date: Tue, 30 Dec 2008 17:39:29 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-In-Reply-To: <87k59hur5f.fsf@basil.nowhere.org>
-Message-ID: <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 30 Dec 2008 19:37:31 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43004 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752708AbYLaAha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Dec 2008 19:37:30 -0500
+Message-ID: <495ABDF8.2070703@kernel.org>
+Date: Tue, 30 Dec 2008 16:34:00 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -tip] fix compilation error
+References: <1230648007.10677.1.camel@jaswinder.satnam> <20081230205230.GA6151@nowhere> <495AA87D.9060704@kernel.org>
+In-Reply-To: <495AA87D.9060704@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008, Andi Kleen wrote:
+H. Peter Anvin wrote:
+> 
+> Applied to tip:tracing/kmemtrace2.
+> 
 
-> david@lang.hm writes:
->>
->> doing a grep through System.map for the address that appears in the
->> error returns nothing
->
-> This might be obvious, but you can't grep directly for these addresses
-> because System.map contains the starting addresses of functions only
-> and normally the reported address is somewhere in the middle of a
-> function. So you instead have to look for the highest number lower or equal
-> the address from the exception.
+Hm, there still seems to be a build failure, in particular
+trace_output.h is missing.  It looks to me at the moment as if just
+removing the #include works; assuming that compiles I will check that in
+to tip:tracing/kmemtrace2 as well.
 
-thanks, this was not obvious to me
-
-the -2 error maps to
-
-ffffffff8099e4c1 T free_bootmem_node
-ffffffff8099e4e5 t alloc_bootmem_core
-ffffffff8099e774 t ___alloc_bootmem_nopanic
-
-
-the first error maps to
-
-ffffffff809c2de4 T free_bootmem_node
-ffffffff809c2e08 t alloc_bootmem_core
-ffffffff809c3097 t ___alloc_bootmem_nopanic
-
-
-so it looks like this is in alloc_bootmem_core in both cases.
-
-David Lang
+	-hpa
