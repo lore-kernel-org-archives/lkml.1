@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbYLaBFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbYLaBM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbYLaBFR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Dec 2008 20:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYLaBFF
+	id S1752495AbYLaBM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Dec 2008 20:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYLaBMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Dec 2008 20:05:05 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46098 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbYLaBFD (ORCPT
+	Tue, 30 Dec 2008 20:12:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45278 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702AbYLaBMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Dec 2008 20:05:03 -0500
-Message-ID: <495AC45D.8010102@kernel.org>
-Date: Tue, 30 Dec 2008 17:01:17 -0800
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -tip] fix compilation error
-References: <1230648007.10677.1.camel@jaswinder.satnam> <20081230205230.GA6151@nowhere> <495AA87D.9060704@kernel.org> <495ABDF8.2070703@kernel.org> <20081231004722.GA28472@nowhere>
-In-Reply-To: <20081231004722.GA28472@nowhere>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Dec 2008 20:12:19 -0500
+Date: Wed, 31 Dec 2008 02:25:42 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: david@lang.hm
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20081231012542.GP496@one.firstfloor.org>
+References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Dec 30, 2008 at 04:34:00PM -0800, H. Peter Anvin wrote:
->> H. Peter Anvin wrote:
->>> Applied to tip:tracing/kmemtrace2.
->>>
->> Hm, there still seems to be a build failure, in particular
->> trace_output.h is missing.  It looks to me at the moment as if just
->> removing the #include works; assuming that compiles I will check that in
->> to tip:tracing/kmemtrace2 as well.
->>
->> 	-hpa
+On Tue, Dec 30, 2008 at 05:39:29PM -0800, david@lang.hm wrote:
+> On Wed, 31 Dec 2008, Andi Kleen wrote:
 > 
-> While I worked on this tracer, I had to base the thing against tracing/kmemtrace
-> because I needed the kmemtrace bits.
-> But I saw that this topic was a bit out of sync against tip/master, some updates from
-> Steven were not merged. But I didn't wonder, thinking that Ingo would resolve the
-> conflicts. But it seems there were some lost stuffs :-)
+> >david@lang.hm writes:
+> >>
+> >>doing a grep through System.map for the address that appears in the
+> >>error returns nothing
+> >
+> >This might be obvious, but you can't grep directly for these addresses
+> >because System.map contains the starting addresses of functions only
+> >and normally the reported address is somewhere in the middle of a
+> >function. So you instead have to look for the highest number lower or equal
+> >the address from the exception.
 > 
-> I'm checking it and will send a patch to solve the rest...
+> thanks, this was not obvious to me
 > 
+> the -2 error maps to
 
-If it's only the trace_output.h #include removal, don't worry about it;
-I'm about to commit that patch, but it would be good if you could check
-out the tracing/kmemtrace2 branch afterwards.
+You should also boot with earlyprintk=vga to get more context.
 
-	-hpa
+-Andi
