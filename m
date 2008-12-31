@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYLaU16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYLaQum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbYLaU16 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 15:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYLaU1u
+	id S1756833AbYLaQum (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 11:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYLaQuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 15:27:50 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:14029 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbYLaU1t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 15:27:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Q2al16tGN3Dm3MrvjSDcVCVTJit7FNpihHbKqJDUAbIOVDwCrT4ongm2mv/8sEGGnQ
-         grQFXDqDgb1nriUPJl8D8227SIcSbNH+tdZB6b/Z23qoY4d3gpWl9R0UOyey7jJTtggS
-         apt3EEwL48Uy4qZ1oZC9bx3dkVfcHTv0x6bEQ=
-Date: Wed, 31 Dec 2008 23:27:44 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: david@lang.hm, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-Message-ID: <20081231202744.GA32152@localhost>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <alpine.DEB.1.10.0812311204580.18334@asgard.lang.hm> <20081231191214.GF20882@localhost> <alpine.DEB.1.10.0812311316350.18569@asgard.lang.hm> <20081231202346.GH20882@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081231202346.GH20882@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 31 Dec 2008 11:50:19 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:34053 "EHLO kumera.dghda.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755825AbYLaQuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 11:50:15 -0500
+From: "Duane Griffin" <duaneg@dghda.com>
+To: Evgeniy Dushistov <dushistov@mail.ru>
+Cc: linux-kernel@vger.kernel.org, Duane Griffin <duaneg@dghda.com>
+Subject: [PATCH 2/4] ufs: don't truncate longer ufs2 fast symlinks
+Date: Wed, 31 Dec 2008 16:50:06 +0000
+Message-Id: <1230742208-23972-2-git-send-email-duaneg@dghda.com>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1230742208-23972-1-git-send-email-duaneg@dghda.com>
+References: <1230742208-23972-1-git-send-email-duaneg@dghda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Wed, Dec 31, 2008 at 11:23:46PM +0300]
-...
-| >>
-| >> also you could just pass numa=off and check if it help.
-| >> (even if it help it would not mean that problem are gone
-| >> but become hidden)
-| >
-| > with numa=off the system looks like it gets a bit further
-| >
-| > http://linux.lang.hm/linux/IMG00031.jpg
-| >
-| > this is with framebuffer disabled, earlyprintk=vga bootmem_debug numa=off
-| >
-| > David Lang
-| >
-| 
-| Thanks David, if I recognize correctly now it fails at
-| vfs_caches_init. hmm...
-| 
-| 		- Cyrill -
+ufs2 fast symlinks can be twice as long as ufs ones, however the code
+was using the ufs size in various places. Fix that so ufs2 symlinks over
+60 characters aren't truncated.
 
-no suprises - vfs_caches_init uses SLAB_PANIC and since
-we seems to have "memory related" problems earlier now
-we've been catched explicitly by slab code.
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+---
+ fs/ufs/inode.c |    4 ++--
+ fs/ufs/ufs.h   |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-		- Cyrill -
+diff --git a/fs/ufs/inode.c b/fs/ufs/inode.c
+index 39f8778..c1ea916 100644
+--- a/fs/ufs/inode.c
++++ b/fs/ufs/inode.c
+@@ -708,7 +708,7 @@ static int ufs2_read_inode(struct inode *inode, struct ufs2_inode *ufs2_inode)
+ 			ufsi->i_u1.u2_i_data[i] =
+ 				ufs2_inode->ui_u2.ui_addr.ui_db[i];
+ 	} else {
+-		for (i = 0; i < (UFS_NDADDR + UFS_NINDIR) * 4; i++)
++		for (i = 0; i < (UFS_NDADDR + UFS_NINDIR) * 4 * 2; i++)
+ 			ufsi->i_u1.i_symlink[i] = ufs2_inode->ui_u2.ui_symlink[i];
+ 	}
+ 	return 0;
+@@ -853,7 +853,7 @@ static void ufs2_update_inode(struct inode *inode, struct ufs2_inode *ufs_inode)
+ 		for (i = 0; i < (UFS_NDADDR + UFS_NINDIR); i++)
+ 			ufs_inode->ui_u2.ui_addr.ui_db[i] = ufsi->i_u1.u2_i_data[i];
+ 	} else {
+-		for (i = 0; i < (UFS_NDADDR + UFS_NINDIR) * 4; i++)
++		for (i = 0; i < (UFS_NDADDR + UFS_NINDIR) * 4 * 2; i++)
+ 			ufs_inode->ui_u2.ui_symlink[i] = ufsi->i_u1.i_symlink[i];
+  	}
+ 
+diff --git a/fs/ufs/ufs.h b/fs/ufs/ufs.h
+index 11c0351..69b3427 100644
+--- a/fs/ufs/ufs.h
++++ b/fs/ufs/ufs.h
+@@ -23,7 +23,7 @@ struct ufs_sb_info {
+ struct ufs_inode_info {
+ 	union {
+ 		__fs32	i_data[15];
+-		__u8	i_symlink[4*15];
++		__u8	i_symlink[2 * 4 * 15];
+ 		__fs64	u2_i_data[15];
+ 	} i_u1;
+ 	__u32	i_flags;
+-- 
+1.6.0.6
+
