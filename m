@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZABCyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZABDUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZABCyS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 21:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZABCyF
+	id S1756914AbZABDUW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 22:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbZABDUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 21:54:05 -0500
-Received: from smtp.tal.de ([81.92.1.5]:34387 "EHLO smtp.tal.de"
+	Thu, 1 Jan 2009 22:20:10 -0500
+Received: from main.gmane.org ([80.91.229.2]:53745 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbZABCyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 21:54:04 -0500
-From: ib@wupperonline.de (Ingo Brueckl)
-Date: Fri, 02 Jan 2009 03:48:00 +0100
-Subject: Re: compile time warnings
-X-Mailer: blueMail 1.4 (SlipDoor 2.2)
-Message-ID: <495d7b8d@wupperonline.de>
-In-Reply-To: <495d3100@wupperonline.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
+	id S1755729AbZABDUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 22:20:08 -0500
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
+From: Raja R Harinath <harinath@hurrynot.org>
+Subject: Re: [PATCH for -tip 4/4] irq: for_each_irq_desc() makes simplify
+Date: Thu, 01 Jan 2009 23:35:21 +0530
+Message-ID: <87wsdezyu6.fsf@hariville.hurrynot.org>
+References: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081226122830.5CAF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 59.96.115.95
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+Cancel-Lock: sha1:/7QksPgAYijkdPRuwX7uAGx7zcY=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What we have so far:
+Hi,
 
-  arch/x86/kernel/setup.c:742: warning: 'dmi_low_memory_corruption'
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
 
-is already fixed in the git tree.
+> Subject: [PATCH] irq: for_each_irq_desc() makes simplify
+> Impact: cleanup
+>
+> all for_each_irq_desc() usage point have !desc check.
+> then its check can move into for_each_irq_desc() macro.
+[snip]
+> Index: b/include/linux/irqnr.h
+> ===================================================================
+> --- a/include/linux/irqnr.h
+> +++ b/include/linux/irqnr.h
+> @@ -25,10 +25,14 @@ extern struct irq_desc *irq_to_desc(unsi
+>  
+>  # define for_each_irq_desc(irq, desc)					\
+>  	for (irq = 0, desc = irq_to_desc(irq); irq < nr_irqs;		\
+> -	     irq++, desc = irq_to_desc(irq))
+> +	     irq++, desc = irq_to_desc(irq))				\
+> +		if (desc)
+> +
+> +
+>  # define for_each_irq_desc_reverse(irq, desc)				\
+>  	for (irq = nr_irqs - 1, desc = irq_to_desc(irq); irq >= 0;	\
+> -	     irq--, desc = irq_to_desc(irq))
+> +	     irq--, desc = irq_to_desc(irq))				\
+> +		if (desc)
 
-  arch/x86/mm/init_32.c:515: warning: unused variable 'pgd_base'
+I know this has gone in, but isn't this naked 'if' unsafe.  Consider the
+following hypothetical code:
 
-could be fixed with Jespers patch (which I like best).
+  if (safe)
+    for_each_irq_desc(irq, desc) {
+       ...
+    }
+  else
+    panic();
 
-  WARNING: modpost: Found 1 section mismatch(es).
+With the macro definition above, the loop would panic() each time !desc,
+and _not_ panic() when !safe.  I'd consider this behaviour to be
+unexpected, to say the least :-)
 
-which is (with CONFIG_DEBUG_SECTION_MISMATCH=y):
+The fix is to change the
 
-  WARNING: vmlinux.o(.cpuinit.data+0x0): Section mismatch in reference from
-  the variable initial_code to the function .init.text:i386_start_kernel()
-  The variable __cpuinitdata initial_code references a function __init
-  i386_start_kernel(). If i386_start_kernel is only used by initial_code then
-  annotate i386_start_kernel with a matching annotation.
+  if (desc)
 
-was already noticed some time ago by linuxtwid...@gmail.com, but is still
-unfixed.
+in the macro to
 
-Here is what linuxtwid...@gmail.com suggested:
+  if (!desc) ; else
 
---- linux-2.6.27.1/arch/x86/kernel/head_32.S	2008-10-16 00:49:00.000000000 -0500
-+++ linux-2.6.27.1-test/arch/x86/kernel/head_32.S	2008-10-16 01:45:10.000000000 -0500
-@@ -600,6 +600,7 @@ ignore_int:
+- Hari
 
- .section .cpuinit.data,"wa"
- .align 4
-+__REFDATA
- ENTRY(initial_code)
- 	.long i386_start_kernel
-
-The remaining
-
-  /usr/src/linux/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
-
-is very strange and a mystery to me. (There were already reports on that
-issue which seem to point to a gcc bug.)
