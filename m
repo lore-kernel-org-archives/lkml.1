@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZAAWjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZAAWr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756270AbZAAWjj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 17:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZAAWj3
+	id S1756337AbZAAWr6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 17:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZAAWrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 17:39:29 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39166 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515AbZAAWj2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 17:39:28 -0500
-Message-ID: <20090101223925.PJUBH.263802.root@hrndva-web18-z01>
-Date: Thu, 1 Jan 2009 22:39:25 +0000
-From: <lmage11@twcny.rr.com>
-To: linux-kernel@vger.kernel.org
-Subject: Curious problems with /proc/kmsg?
+	Thu, 1 Jan 2009 17:47:48 -0500
+Received: from smtp7-g19.free.fr ([212.27.42.64]:43090 "EHLO smtp7-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753389AbZAAWrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 17:47:47 -0500
+Message-ID: <495D480F.3010208@free.fr>
+Date: Thu, 01 Jan 2009 23:47:43 +0100
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 Iceape/1.1.14 (Debian-1.1.14-1)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH -stable] fix USB_STORAGE_CYPRESS_ATACB
+References: <495913A6.9070007@free.fr> <20081229192431.GZ1469@one-eyed-alien.net> <495A475D.7060608@panasas.com> <495B4ADB.3020904@panasas.com>
+In-Reply-To: <495B4ADB.3020904@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-X-Originating-IP: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm currently trying to debug a problem with my wireless driver,
-and while looking at the copious output that the driver produces,
-I've been noticing some very odd stuff come out of /proc/kmsg (which
-is also where my syslog daemon gets kernel messages). I'm getting stuff
-like:
+Hi,
 
-Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx enter
-Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx leave
-Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx enter
-Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx leave
-Jan  1 01:59:03 tank ieee80211 phy0: I iwl4965_mac_tx ente
-Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
-Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
-Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
-Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
-Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
-Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
-Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
+Boaz Harrosh wrote:
+> Hi Matthieu, Matthew
+> 
+> I fixed lots of "mucking directly" with scsi_cmnd and scsi_eh_save
+> internal members but the actual set of srb->cmnd{,_len} is needed
+> still. Though we don't need the copy since we restore the original
+> command right after. If anyone can test this to verify it could
+> be grate.
+> 
+your patch works for me.
 
-As you can see, the first few lines are fine, but the next few
-lines are complete nonsense. It looks to me as if characters
-are getting semi-randomly "skipped" sometimes, or something???
-Very strange. This oddity does not show up when I look at the
-kernel output through dmesg.
+Thanks and happy new year
 
-Some more examples of strange output follow:
 
-Jan  1 01:59:04 tank w46_a_xlae<>ee01 h0  w46_a_xetr<>ee01 h0  w46_a_xlae<3>ieee80211 phy0: I iwl4965_mac_tx enter
-Jan  1 01:59:04 tank ieee80211 phy0:  iwleqeehm edn omn ESTVT_M #8,sq x46 8btsa 6[]4<>ee01 h0  w_eei_m_alakbc rmSNIIIYCD(x0000
-Jan  1 01:59:05 tank 3ie821py:Iilgnrccdclbc akfo EL_XLN_ULT_M 00000)<>ee01 h0  w46_a_xetr<>ee01 h0  w46_a_xlaev
-
-Any comments? I'm using 2.6.28.
-
-Thanks!
-
-Ari
+Matthieu
