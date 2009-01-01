@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZAAQED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZAAQHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbZAAQED (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 11:04:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbZAAQDv
+	id S1756661AbZAAQHp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 11:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZAAQHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 11:03:51 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:4586 "EHLO
+	Thu, 1 Jan 2009 11:07:35 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:1117 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756188AbZAAQDu (ORCPT
+	with ESMTP id S1752926AbZAAQHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 11:03:50 -0500
+	Thu, 1 Jan 2009 11:07:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=tlYUvbJGOINPe6zNTpRgVfpgSOyK0hqrKNJTI5g3+RHLZcVUstBmpS/0pfvp3cqRfo
-         4z3I1zpEXfNbOTgOBTVrMS0b+LzYLNvwQS+681oOQQHjxtR6o3avZa7JCTMilBDkwOMa
-         kWCg8fJY9jMJzOyM0b9bxGV/6m9lNvDNRU4uk=
-Date: Fri, 2 Jan 2009 00:03:43 +0800
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MLdYoj7QkATwgy5d00IXXLiZ2v7MBp3bHYDIA8VEdId32UvnHc8OimABzKIo/p51uR
+         ROJuJhAplWhko35WXwLV+otHMn2zCl43XNV6j3DQ9V88fW/SdpSQa9G7OXKgHrX3xMKV
+         tdjE9BpwTOfHi1LLmyPsjadIx0ihMz7GE1GSE=
+Date: Fri, 2 Jan 2009 00:07:27 +0800
 From: Yan Li <elliot.li.tech@gmail.com>
 To: gregkh@suse.de, linux-usb@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Enable CONFIG_USB_SUSPEND by default or some mobile HD can't be
-	unplugged safely
-Message-ID: <20090101160343.GA4278@thyme.bj.intel.com>
+Subject: [PATCH] enable CONFIG_USB_SUSPEND by default
+Message-ID: <20090101160727.GA4390@thyme.bj.intel.com>
 Mail-Followup-To: gregkh@suse.de, linux-usb@vger.kernel.org,
 	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090101160343.GA4278@thyme.bj.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello List,
+Some USB devices need to be put into suspend mode before
+unplugging. Without CONFIG_USB_SUSPEND we have no way to unplug them
+safely.
 
-By default CONFIG_USB_SUSPEND is not enabled and today I got bite by
-this when I got a new WDC My Book hard drive. I have no way to unplug
-it safely, according to it's manual, with a kernel that doesn't have
-CONFIG_USB_SUSPEND=y.
+Signed-off-by: Yan Li <elliot.li.tech@gmail.com>
+---
+ drivers/usb/core/Kconfig |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-On it's manual read "you should unplug and remove the device only when
-the light is off." On Linux unmounting it won't turn it's light off
-and I can feel it's motor is still running.  The only way to unplug it
-properly on a Linux system, as to my knowledge, is to echo `suspend'
-to `/sys/bus/usb/devices/$DEV/power/level'. And one has to have
-CONFIG_USB_SUSPEND=y to do this.
+diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
+index e1759d1..457ee9d 100644
+--- a/drivers/usb/core/Kconfig
++++ b/drivers/usb/core/Kconfig
+@@ -89,18 +89,20 @@ config USB_DYNAMIC_MINORS
+ config USB_SUSPEND
+ 	bool "USB selective suspend/resume and wakeup"
+ 	depends on USB && PM
++	default y
+ 	help
+ 	  If you say Y here, you can use driver calls or the sysfs
+ 	  "power/level" file to suspend or resume individual USB
+-	  peripherals and to enable or disable autosuspend (see
+-	  Documentation/usb/power-management.txt for more details).
++	  peripherals and to enable or disable autosuspend. Some USB
++	  devices need to be put into suspend mode before unplugging
++	  (see Documentation/usb/power-management.txt for more details).
+ 
+ 	  Also, USB "remote wakeup" signaling is supported, whereby some
+ 	  USB devices (like keyboards and network adapters) can wake up
+ 	  their parent hub.  That wakeup cascades up the USB tree, and
+ 	  could wake the system from states like suspend-to-RAM.
+ 
+-	  If you are unsure about this, say N here.
++	  If you are unsure about this, say Y here.
+ 
+ config USB_OTG
+ 	bool
+-- 
+1.5.6.5
 
-On Windows and Mac OS, `safely remove this device' function effectly
-turns it into `suspend' mode, and it's light off.
-
-I'm new in this field and I understood people's concern on enabling
-autosuspend.  As to my understanding, `enabling suspend' and `enabling
-autosuspend' should be controlled by two different knobs.  I did a
-quick search in LKML and haven't found specific oppose to enable USB
-suspend by default, and Debian has started shipping a kernel with
-it turned on since 2.6.26.
-
-Perhaps we should consider turning it on by default?  Thanks!
 
 -- 
 Li, Yan
