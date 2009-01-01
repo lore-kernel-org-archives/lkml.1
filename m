@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZAACgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZAADNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbZAACgb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 21:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZAACgX
+	id S1755913AbZAADNU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 22:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZAADNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 21:36:23 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58495 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbZAACgW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 21:36:22 -0500
-Date: Thu, 1 Jan 2009 02:36:20 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: Evgeniy Dushistov <dushistov@mail.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] ufs: copy symlink data into the correct union
-	member
-Message-ID: <20090101023620.GD28946@ZenIV.linux.org.uk>
-References: <1230742208-23972-1-git-send-email-duaneg@dghda.com> <1230742208-23972-2-git-send-email-duaneg@dghda.com> <1230742208-23972-3-git-send-email-duaneg@dghda.com> <1230742208-23972-4-git-send-email-duaneg@dghda.com>
+	Wed, 31 Dec 2008 22:13:04 -0500
+Received: from ozlabs.org ([203.10.76.45]:59999 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753450AbZAADND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 22:13:03 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC] cpualloc: improvements to per-cpu allocation
+Date: Thu, 1 Jan 2009 13:42:58 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       catalin.marinas@arm.com, akpm@linux-foundation.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+References: <200812310938.09912.rusty@rustcorp.com.au> <200901011056.23443.rusty@rustcorp.com.au> <Pine.LNX.4.64.0812311902050.24421@quilx.com>
+In-Reply-To: <Pine.LNX.4.64.0812311902050.24421@quilx.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1230742208-23972-4-git-send-email-duaneg@dghda.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200901011342.58933.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 04:50:08PM +0000, Duane Griffin wrote:
-> Copy symlink data into the union member it is accessed through. Although
-> this shouldn't make a difference to behaviour it makes the code easier
-> to follow and grep through. It may also prevent problems if the
-> struct/union definitions change in the future.
+On Thursday 01 January 2009 11:33:00 Christoph Lameter wrote:
+> On Thu, 1 Jan 2009, Rusty Russell wrote:
 > 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> ---
->  fs/ufs/namei.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> > I don't think it's a problem.  You still can't use them directly (this
+> > wording was not meant to imply that), but you can now hand their addresses
+> > to per_cpu_ptr() etc.  So zero-based x86-64 should Just Work.
 > 
-> diff --git a/fs/ufs/namei.c b/fs/ufs/namei.c
-> index e3a9b1f..3884730 100644
-> --- a/fs/ufs/namei.c
-> +++ b/fs/ufs/namei.c
-> @@ -147,7 +147,7 @@ static int ufs_symlink (struct inode * dir, struct dentry * dentry,
->  	} else {
->  		/* fast symlink */
->  		inode->i_op = &ufs_fast_symlink_inode_operations;
-> -		memcpy((char*)&UFS_I(inode)->i_u1.i_data,symname,l);
-> +		memcpy((char *) &UFS_I(inode)->i_u1.i_symlink, symname, l);
+> Ok so this is going to be merged for 2.6.29? Its a good cleanup and a step
+> forward to our goals.
 
-Just what are these cast and & doing there?  i_symlink is an array of u8,
-for fsck sake; taking its address is a pointless obfuscation.  And memcpy()
-is just as fine with u8 * as it is with char *...
+I'm on the fence, but you've convinced me.  I'll put this in linux-next,
+and if there's no damage, I'll push to Linus.  The actual conversions I'll
+send via the maintainers though.
+
+These patches have been around for a while, and though they've been polished
+a little more in the last week or so the changes were mainly cosmetic.
+
+Thanks,
+Rusty.
