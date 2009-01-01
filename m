@@ -1,80 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbZAAAP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZAAAwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbZAAAP6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 19:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbZAAAOr
+	id S1755776AbZAAAwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 19:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZAAAwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 19:14:47 -0500
-Received: from rv-out-0506.google.com ([209.85.198.225]:51356 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757262AbZAAAOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 19:14:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=N+7bLmzLuc2lYBSXT6w0yOTNGxpqxAoM64JIgh2kVWRiNz94BYJYWiAI8PV2R8Nts+
-         LvN8tkyhxjif5JwT2IKyFqopu/71BcdzewMQl90V9HBbZl6XB9wkmFz2m2qXqgG8Dkti
-         pxyRwfCy3vOKHA6QuUexQz2jqTxw7Ed6lWfjo=
-Message-ID: <86802c440812311614n4a0ef459u4bb8be65d33994a@mail.gmail.com>
-Date: Wed, 31 Dec 2008 16:14:44 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: random.c changes for sparse irq_desc are crap
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@osdl.org>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1230766826.19620.150.camel@calx>
+	Wed, 31 Dec 2008 19:52:07 -0500
+Received: from ozlabs.org ([203.10.76.45]:55410 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933AbZAAAwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 19:52:05 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] parisc: fix module loading failure of large kernel modules (take 4)
+Date: Thu, 1 Jan 2009 11:22:00 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: "linux-parisc" <linux-parisc@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       John David Anglin <dave@hiauly1.hia.nrc.ca>
+References: <4959346E.7060600@gmx.de> <200901010002.41477.rusty@rustcorp.com.au> <495B7E24.9010802@gmx.de>
+In-Reply-To: <495B7E24.9010802@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1230748169.19620.132.camel@calx> <495BFB48.8080506@kernel.org>
-	 <1230766826.19620.150.camel@calx>
-X-Google-Sender-Auth: a5d013722b88b6c2
+Message-Id: <200901011122.01109.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 3:40 PM, Matt Mackall <mpm@selenic.com> wrote:
-> On Wed, 2008-12-31 at 15:07 -0800, Yinghai Lu wrote:
->> Matt Mackall wrote:
->> > I just noticed you merged a change that pointlessly converts two
->> > random.c functions into ugly random.h inlines without going through the
->> > maintainer.
->> >
->> > I also don't like the look of the newly-introduced sparse variants of
->> > these functions. Failure to find an irq descriptor in
->> > get_timer_rand_state is a BUG_ON should-never-happen sort of condition,
->> > not something to silently ignore. Letting the code try to dereference
->> > NULL is preferred here: we'll actually be able to find and fix the
->> > broken driver that's throwing around meaningless irq vectors.
->> >
->> > Throwing away the timer_state pointer in the set_timer_rand_state
->> > function is similarly bogus in addition to being a memory leak.
->> >
->> > Please fix this up.
->> >
->>
->> want something like this?
->
-> Not quite.
->
-> First, please turn these back into normal functions in random.c.
-> Inlining functions is generally discouraged these days unless you have a
-> good reason and numbers to back it up.
+On Thursday 01 January 2009 00:43:56 Helge Deller wrote:
+> Rusty Russell wrote:
+> > Not quite what I had in mind... let me show you:
+> > ...
+> > Otherwise I'd have called it "arch_module_extra_size()".
+> 
+> This would mean that I can increase the section size in the arch-specific function
+> by returning a bigger value than sh_size.
+> This would give me space at the end of the section, but not at the beginning 
+> (which is what I need), as sh_entsize (the offset into memory) will stay the 
+> same as before.
 
-Ingo wanted to hide that #ifdef to .h
+Ah, OK.  I assumed that extra room at the end was sufficient.
 
->
-> Second, as I tried to explain above, BUG_ON(!desc) is doing very little
-> that the subsequent desc->timer_rand_state wouldn't already do
-> (generating a traceback). In cases where dereferencing NULL should never
-> happen, it's preferable to not add the extra check and just let the oops
-> happen. We'll still get a backtrace if anything ever goes wrong, but we
-> won't have wasted any code space or CPU cycles when it doesn't.
+So I've taken your previous patch and renamed the function to
+arch_mod_section_prepend().  If we decide not to kill those bad gcc versions,
+I'll stick it in some other random file (lib/weak.c?  Blech...)
 
-ok
+BTW, this is very late for this merge window.  I would have liked to see
+this a month ago :(
 
-YH
+Subject: module: fix module loading failure of large kernel modules for parisc
+Date: Wed, 31 Dec 2008 12:31:18 +0100
+From: Helge Deller <deller@gmx.de>
+
+When creating the final layout of a kernel module in memory, allow the
+module loader to reserve some additional memory in front of a given section.
+This is currently only needed for the parisc port which needs to put the
+stub entries there to fulfill the 17/22bit PCREL relocations with large
+kernel modules like xfs.
+
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (renamed fn)
+
+diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
+--- a/include/linux/moduleloader.h
++++ b/include/linux/moduleloader.h
+@@ -12,6 +12,9 @@ int module_frob_arch_sections(Elf_Ehdr *
+ 			      Elf_Shdr *sechdrs,
+ 			      char *secstrings,
+ 			      struct module *mod);
++
++/* Additional bytes needed by arch in front of individual sections */
++unsigned int arch_mod_section_prepend(struct module *mod, unsigned int section);
+ 
+ /* Allocator used for allocating struct module, core sections and init
+    sections.  Returns NULL on failure. */
+diff --git a/kernel/module.c b/kernel/module.c
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1588,11 +1588,21 @@ static int simplify_symbols(Elf_Shdr *se
+ 	return ret;
+ }
+ 
++/* Additional bytes needed by arch in front of individual sections */
++unsigned int __weak arch_mod_section_prepend(struct module *mod,
++					     unsigned int section)
++{
++	/* default implementation just returns zero */
++	return 0;
++}
++
+ /* Update size with this section: return offset. */
+-static long get_offset(unsigned int *size, Elf_Shdr *sechdr)
++static long get_offset(struct module *mod, unsigned int *size,
++		       Elf_Shdr *sechdr, unsigned int section)
+ {
+ 	long ret;
+ 
++	*size += arch_mod_section_prepend(mod, section);
+ 	ret = ALIGN(*size, sechdr->sh_addralign ?: 1);
+ 	*size = ret + sechdr->sh_size;
+ 	return ret;
+@@ -1632,7 +1642,7 @@ static void layout_sections(struct modul
+ 			    || strncmp(secstrings + s->sh_name,
+ 				       ".init", 5) == 0)
+ 				continue;
+-			s->sh_entsize = get_offset(&mod->core_size, s);
++			s->sh_entsize = get_offset(mod, &mod->core_size, s, i);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+ 		if (m == 0)
+@@ -1650,7 +1660,7 @@ static void layout_sections(struct modul
+ 			    || strncmp(secstrings + s->sh_name,
+ 				       ".init", 5) != 0)
+ 				continue;
+-			s->sh_entsize = (get_offset(&mod->init_size, s)
++			s->sh_entsize = (get_offset(mod, &mod->init_size, s, i)
+ 					 | INIT_OFFSET_MASK);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
