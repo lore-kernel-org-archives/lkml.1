@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZAAHNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbZAAHl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZAAHNA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 02:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZAAHMv
+	id S1756208AbZAAHl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 02:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZAAHlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 02:12:51 -0500
-Received: from gw.goop.org ([64.81.55.164]:46178 "EHLO mail.goop.org"
+	Thu, 1 Jan 2009 02:41:19 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:39441 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbZAAHMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 02:12:50 -0500
-Message-ID: <495C6CE9.3080402@goop.org>
-Date: Thu, 01 Jan 2009 18:12:41 +1100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1751773AbZAAHlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 02:41:18 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Subject: Re: [PATCH] sh: maple: add support for the Maple mouse on the SEGA Dreamcast
+Date: Thu, 1 Jan 2009 02:41:14 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "linux-input" <linux-input@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
+References: <1230578246.6496.25.camel@localhost.localdomain> <200812300017.45336.dmitry.torokhov@gmail.com> <1230668825.6489.1.camel@localhost.localdomain>
+In-Reply-To: <1230668825.6489.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Helge Deller <deller@gmx.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Randolph Chung <randolph@tausq.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       John David Anglin <dave@hiauly1.hia.nrc.ca>
-Subject: Re: [PATCH] parisc: fix module loading failure of large kernel modules
- (take 4)
-References: <4959346E.7060600@gmx.de> <200812310915.41693.rusty@rustcorp.com.au> <495B5806.3080505@gmx.de> <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812310926450.5086@localhost.localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart32419704.AYxseJ8L90";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200901010241.16185.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Some gcc versions will inline weak functions if they are in scope - even 
-> if there is a non-weak function somewhere else. So you MUST NOT have the 
-> weak definition in the same file (or indirectly called through some inline 
-> functions in a header file) as the call. Because if you do, then any user 
-> with the wrong version of gcc will get the weak function semantics, even 
-> if it was meant to be overridden by something else.
->   
+--nextPart32419704.AYxseJ8L90
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes.  I think this behaviour is considered to be desperately broken by 
-the gcc developers and has been fixed in all recent gccs.  There are a 
-couple of broken versions, and there have been patches floating around 
-to just refuse to use them; otherwise __weak is effectively unusable.  
-(Ah, I see Adrian has posted it again and everyone agrees with it.)
+On Tuesday 30 December 2008 15:27:05 Adrian McMenamin wrote:
+> Adding maple mouse with proper __devexit_p() handling
 
-On the other hand, I have seen a couple of instances of "inline __weak" 
-which is insane, but I don't know if gcc does anything crazy with it, or 
-if its common enough to bother warning about.
+this kind of patch revision info typically goes below the --- marker and  t=
+he=20
+patch itself gets "v2", "v3", etc... header markers
 
-    J
+otherwise, driver looks OK to me.  thanks for your dreamcast work.
+Acked-by: Mike Frysinger <vapier@gentoo.org>
+
+> +	mse =3D kzalloc(sizeof(struct dc_mouse), GFP_KERNEL);
+
+personally i find this style less likely to rot:
+mse =3D kzalloc(sizeof(*mse), GFP_KERNEL);
+=2Dmike
+
+--nextPart32419704.AYxseJ8L90
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iQIcBAABAgAGBQJJXHOcAAoJEEFjO5/oN/WBlqwQAMKseiErdo+hELWlxq9bXqSt
+Xu6D18iVDLTsph930I1U2hKZbKi/DWZXcc602kg7CNOzfqtlRepXpn5WWDP0GWoN
+fCb3IRjSJ4YcgJjJkvEhpytvd43K1n6GOmZtNXzPU4wF0U/6/33bYJiRaWdjVSEQ
+SFw20Zb8mdcuhMTRohJ7CkW34LB7Wq2tnccKw1u1t03F0tT4qRJaFoq1hxCTJjFf
+g2+AJYx8QtdfC0H+qBM6RHavs/SDOFvDQpom8nCyNaBeP69WD3oGag+oW/FUKBAy
+N9wn6J2V/9Cjpxjme14bEVUG+lbaN8y4qvcrbPq1bDR64FrpfMOGuTo2hTwT8Vkk
+fSltj4BdbhxmzYAqv9xIkF/u6VmbULlyUTPxHqNBUVO05+9u2WDqtIwlEi9kz86J
+mr7CMVyMbmbNq8mTYErqfOckob8DG01nkIbqdF9jm+xmH9dDl+OdyC8dhbx6OoGX
+PKPF1l8eIhgKuLewKxqukKnLr4NPS9Icg/4E0WQvdfpWiMA3qqpbD++1/RFet2Qh
+vkkwGJyTh3ozdO2k5GPQn560r0KXRLNsW/qsgkzUlfqhz2m771FgAY/BUHouP8BZ
+/o3X/llKDHZzIp2ifibQ04V5tCAUBHFxZntr8ctU/0cAi86bpU7Y7nE1j8zfCQ+p
+ErHfH5XfHIBmWkCifiey
+=o85d
+-----END PGP SIGNATURE-----
+
+--nextPart32419704.AYxseJ8L90--
