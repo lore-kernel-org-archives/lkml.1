@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZAADnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZAAEES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbZAADnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 22:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZAADnD
+	id S1755979AbZAAEES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 23:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZAAEED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 22:43:03 -0500
-Received: from ozlabs.org ([203.10.76.45]:45991 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753589AbZAADnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 22:43:01 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Yinghai Lu" <yinghai@kernel.org>, Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: linux-next: parsing mem=700M broken
-Date: Thu, 1 Jan 2009 14:12:56 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: "Hugh Dickins" <hugh@veritas.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Paul Mackerras" <paulus@samba.org>,
-       "Benjamin Herrenschmidt" <benh@au1.ibm.com>
-References: <Pine.LNX.4.64.0812230257440.27467@blonde.anvils> <Pine.LNX.4.64.0812280033070.24494@blonde.anvils> <86802c440812271807q3decd21i5da99754d708449d@mail.gmail.com>
-In-Reply-To: <86802c440812271807q3decd21i5da99754d708449d@mail.gmail.com>
-MIME-Version: 1.0
+	Wed, 31 Dec 2008 23:04:03 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60026 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753620AbZAAEED (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Dec 2008 23:04:03 -0500
+Date: Thu, 1 Jan 2009 05:17:27 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: david@lang.hm
+Cc: Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20090101041727.GW496@one.firstfloor.org>
+References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901011412.57707.rusty@rustcorp.com.au>
+In-Reply-To: <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 28 December 2008 12:37:59 Yinghai Lu wrote:
-> On Sat, Dec 27, 2008 at 4:43 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> > I have to wonder if all this comes too late in the cycle for 2.6.29:
-> > changing the early param handling of all the arches is difficult,
-> > and apparently hasn't been much tested in the short time that it's
-> > been out there in linux-next.  But of course, not for me to decide.
+On Wed, Dec 31, 2008 at 12:59:08PM -0800, david@lang.hm wrote:
+> On Wed, 31 Dec 2008, Andi Kleen wrote:
 > 
-> should be ok, just need to go over all early_param()
+> >>on the picture you sent me i noticed the message
+> >>"Your memory is not aligned you need to rebuild your
+> >>kernel with bigger NODEMAP SIZE shift=20" and then
+> >>srat code complains about "No NUMA code hash function found"
+> >>which looks a bit scary. Btw, could you post this picture
+> >>on some public resource so NUMA people could check it?
+> >
+> >This case used to be handled cleanly (NUMA disabled), but perhaps
+> >that has regressed. But still it sounds like something is going wrong,
+> >unless his machine really has a very weird memory map.
+> 
+> it shouldn't, it was one of the high-volume servers 4-5 years ago and only 
+> has 4G of ram in it
 
-Yes, and understanding the intricacies of all 20+ archs boot code.
-For example, I've just noticed that MIPS sets up the command line
-in prom_init, called from setup_arch, so I've broken that entirely.
+>From looking at the screenshot Cyrill sent you seem to have a funny
+SRAT with overlapping areas that is rejected in the end. I suspect the 
+fallback code doesn't handle this properly.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-boot-params.git
+Does it work when you boot with numa=noacpi ? 
 
-This is not going to make this merge window: I need to audit each arch
-more deeply, then get help testing.
+-Andi
 
-Thanks,
-Rusty.
