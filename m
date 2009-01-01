@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbZAAQsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbZAAQty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbZAAQsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 11:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbZAAQsD
+	id S1756876AbZAAQty (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 11:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbZAAQto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 11:48:03 -0500
-Received: from rn-out-0910.google.com ([64.233.170.186]:9020 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756203AbZAAQsA (ORCPT
+	Thu, 1 Jan 2009 11:49:44 -0500
+Received: from lexington.centerclick.org ([66.114.92.10]:48584 "EHLO
+	lexington.centerclick.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756284AbZAAQtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 11:48:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=YZ/nt8HYwu1Sv6dSElsMNZbEnCYnTAOSU0ziHvzUJKYe1SGiJRv8wa7QHV0PeoyAVu
-         hOig7GqlzEM2Sp8h7TsAv8n5+6q23YdrXAVVBDH+Wm+u9voxeDMRMoOLzYWjj/fCWKAo
-         mwlpwaAqd8KLxHTAVmdz/qfTQ8+mA/8PWoVcg=
-Message-ID: <495CF3BA.8080403@gmail.com>
-Date: Thu, 01 Jan 2009 08:47:54 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Thu, 1 Jan 2009 11:49:43 -0500
+From: Dave Johnson <dave-lkml-01@centerclick.org>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: snd-hda-intel no front mute switch
-References: <495B31E2.6000801@gmail.com> <s5hvdszpd87.wl%tiwai@suse.de>
-In-Reply-To: <s5hvdszpd87.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18780.62500.100687.402706@wellington.i202.centerclick.org>
+Date: Thu, 1 Jan 2009 11:49:40 -0500
+To: Bart Samwel <bart@samwel.tk>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [ext3] kjournald writing after each read despite noatime,commit=nnn
+In-Reply-To: <495CCCDF.3030606@samwel.tk>
+References: <18779.58377.160214.225792@wellington.i202.centerclick.org>
+	<495CCCDF.3030606@samwel.tk>
+X-Mailer: VM 7.19 under 21.4 (patch 19) "Constant Variable" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> At Wed, 31 Dec 2008 00:48:34 -0800,
-> Justin P. Mattock wrote:
->   
->> Not sure if I have my configurations correct, but after
->> pulling the latest git, I notice that my mixer has no switch to mute
->> the "front", or external speaker on a macbook pro(ati chipset);
->> other than that the sound sounds really good.
->> (solution I guess: plug-in headphones, and mute headphone option);
->>     
->
-> Could you run alsa-info.sh with --no-upload option on both old and
-> new kernels, and attach the generated files to compare?
-> The script is found in
->     http://www.alsa-project.org/alsa-info.sh
->
-> You can find some other information regarding HD-audio in
-> Documentation/sound/alsa/HD-Audio.txt.
->
->
-> thanks,
->
-> Takashi
->
->   
-After adjusting my .config,
-I am getting a speaker option to mute
-the external speakers, as well as the headphones.
-the options that I added were:
+Bart Samwel writes:
+> This is the defined behaviour for laptop_mode. Whenever a *physical*
+> READ takes place, this is taken to indicate that the disk is spun up at
+> that time. The laptop_mode functionality then takes that opportunity to
+> sync any dirty data to disk, two seconds (or whatever value you put in
+> /proc/sys/vm/laptop_mode) after the physical disk activity has ceased.
+> The rationale behind this is that you want to sync your stuff when the
+> disk is spun up, and then you want to hold back writing back stuff for a
+> very long while. And the only way it can detect that the disk is spun up
+> is when there is physical disk activity.
+> 
+> This is exactly what happens in your case. The READ activity reported by
+> block_dump is *physical* read activity: some data was needed that was
+> not cached in memory. block_dump does not show you what data was
+> retrieved from the ext3 fs *without* having to access the disk, it only
+> shows actual physical disk I/O.
 
-SND_HRTIMER [=y]
-SND_HDA_RECONFIG [=y]
-SND_HDA_INPUT_BEEP [=y]
+Yep sounds good, but this happens even if there is no dirty data
+needing a sync back to disk.
 
-before adding these, like what I mentioned
-there was no "speaker" option(or "front");
-As for the sound itself, I'll have to
-blast myself with some good tunes,
-and see If I hear or experience any anomalies.
-(then wakeup the next day unable to hear);
-: )
+$ grep 'Dirty\|Write' /proc/meminfo 
+Dirty:               0 kB
+Writeback:           0 kB
+WritebackTmp:        0 kB
+$ cat /some/uncached/file >/dev/null 
 
-regards;
-
-Justin P. Mattock
+Jan  1 11:43:49 gw kernel: cat(6615): READ block 864408 on hda1 
+Jan  1 11:43:51 gw kernel: kjournald(760): WRITE block 2376 on hda1 
 
 
+Note, the reason I ask is this is a SSD so just because a physical
+read has taken place recently unneeded writes should be avoided.
+
+Turning laptop_mode to 0, but leaving other settings the same
+resolves the uneeded write:
+
+$ echo 0 > /proc/sys/vm/laptop_mode 
+$ grep 'Dirty\|Write' /proc/meminfo 
+Dirty:               0 kB
+Writeback:           0 kB
+WritebackTmp:        0 kB
+$ cat /some/other/uncached/file >/dev/null
+
+Jan  1 11:47:15 gw kernel: cat(6653): READ block 864258 on hda1 
 
 
+-- 
+Dave
