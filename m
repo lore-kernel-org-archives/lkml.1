@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbYLaX23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbZAAAP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398AbYLaX23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Dec 2008 18:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbYLaX2S
+	id S1757524AbZAAAP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Dec 2008 19:15:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbZAAAOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Dec 2008 18:28:18 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:44165 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYLaX2R (ORCPT
+	Wed, 31 Dec 2008 19:14:47 -0500
+Received: from rv-out-0506.google.com ([209.85.198.225]:51356 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757262AbZAAAOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Dec 2008 18:28:17 -0500
-Date: Wed, 31 Dec 2008 17:27:49 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       catalin.marinas@arm.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [RFC] cpualloc: improvements to per-cpu allocation
-In-Reply-To: <200812310938.09912.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0812311717050.22685@quilx.com>
-References: <200812310938.09912.rusty@rustcorp.com.au>
+	Wed, 31 Dec 2008 19:14:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=N+7bLmzLuc2lYBSXT6w0yOTNGxpqxAoM64JIgh2kVWRiNz94BYJYWiAI8PV2R8Nts+
+         LvN8tkyhxjif5JwT2IKyFqopu/71BcdzewMQl90V9HBbZl6XB9wkmFz2m2qXqgG8Dkti
+         pxyRwfCy3vOKHA6QuUexQz2jqTxw7Ed6lWfjo=
+Message-ID: <86802c440812311614n4a0ef459u4bb8be65d33994a@mail.gmail.com>
+Date: Wed, 31 Dec 2008 16:14:44 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: random.c changes for sparse irq_desc are crap
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@osdl.org>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1230766826.19620.150.camel@calx>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1230748169.19620.132.camel@calx> <495BFB48.8080506@kernel.org>
+	 <1230766826.19620.150.camel@calx>
+X-Google-Sender-Auth: a5d013722b88b6c2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008, Rusty Russell wrote:
-
-> afterwards, with many more to come (eg. local_t is now more useful, if we sort
-> the semantics of what it should look like).
-
-Well I dont like local_t as you may have noticed. It limits us to an int.
-I think its better to start out with the idea of the cmpxchg that applies
-to any scalar. Focus on the operations instead of the use of types.
-
-
-> commit b9b67f3c818b617bb47344a8574de8bcd5f6b294
-> Author: Rusty Russell <rusty@rustcorp.com.au>
-> Date:   Wed Dec 31 09:21:46 2008 +1030
+On Wed, Dec 31, 2008 at 3:40 PM, Matt Mackall <mpm@selenic.com> wrote:
+> On Wed, 2008-12-31 at 15:07 -0800, Yinghai Lu wrote:
+>> Matt Mackall wrote:
+>> > I just noticed you merged a change that pointlessly converts two
+>> > random.c functions into ugly random.h inlines without going through the
+>> > maintainer.
+>> >
+>> > I also don't like the look of the newly-introduced sparse variants of
+>> > these functions. Failure to find an irq descriptor in
+>> > get_timer_rand_state is a BUG_ON should-never-happen sort of condition,
+>> > not something to silently ignore. Letting the code try to dereference
+>> > NULL is preferred here: we'll actually be able to find and fix the
+>> > broken driver that's throwing around meaningless irq vectors.
+>> >
+>> > Throwing away the timer_state pointer in the set_timer_rand_state
+>> > function is similarly bogus in addition to being a memory leak.
+>> >
+>> > Please fix this up.
+>> >
+>>
+>> want something like this?
 >
->     alloc_percpu: Move SNMP and ip_rt_acct to big_percpu
+> Not quite.
 >
->     If we look at percpu allocations to boot an x86/32 "allyesconfig"
->     kernel, we see the following:
+> First, please turn these back into normal functions in random.c.
+> Inlining functions is generally discouraged these days unless you have a
+> good reason and numbers to back it up.
 
-Ok so a special allocator for big percpu that avoids the need to
-dynamically resize percpu sections. But this still leaves the problem that
-too many small allocations may overflow the percpu area.
+Ingo wanted to hide that #ifdef to .h
 
-
-> commit ba26c860d5d47896aee45ec5f13c0d7bd21a784a
-> Author: Rusty Russell <rusty@rustcorp.com.au>
-> Date:   Wed Dec 31 09:21:48 2008 +1030
 >
->     alloc_percpu: make the per cpu reserve configurable and larger.
->
->     This is based on Christoph Lameter's "cpualloc: make the per cpu
->     reserve configurable" patch, and his "Increase default reserve percpu
->     area" patch.
->
->     Christoph did the hard work of figuring out what the number should be
->     (based on converting the slub allocator).  allyesconfig on x86-32 uses
->     7k before mounting root, so 10k seems reasonable.
+> Second, as I tried to explain above, BUG_ON(!desc) is doing very little
+> that the subsequent desc->timer_rand_state wouldn't already do
+> (generating a traceback). In cases where dereferencing NULL should never
+> happen, it's preferable to not add the extra check and just let the oops
+> happen. We'll still get a backtrace if anything ever goes wrong, but we
+> won't have wasted any code space or CPU cycles when it doesn't.
 
-This is only the requirement if the page allocator and slab allocator is
-converted to use the percpu area. Additional users may require more space.
+ok
 
-> commit a56f30e8a075e8ce15b4dff8e3fe0edb9baff7ea
-> Author: Rusty Russell <rusty@rustcorp.com.au>
-> Date:   Wed Dec 31 09:21:53 2008 +1030
->
->     alloc_percpu: remove per_cpu__ prefix.
->
->     Now that the return from alloc_percpu is compatible with the address
->     of per-cpu vars, it makes sense to hand around the address of per-cpu
->     variables.  To make this sane, we remove the per_cpu__ prefix we used
->     created to stop people accidentally using these vars directly.
-
-Doesnt that move limit how the percpu area can be handled by the arch? If
-it becomes a requirement that a percpu address is like any other global
-variable then the zero based approach no longer works and with that we may
-create x86_64 issues for pda conversion.
+YH
