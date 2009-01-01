@@ -1,91 +1,72 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754393AbZALHEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbZAAFKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393AbZALHEQ (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Mon, 12 Jan 2009 02:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZALHD5
+	id S1755791AbZAAFKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 00:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbZAAFK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 02:03:57 -0500
-Received: from rex.securecomputing.com ([203.24.151.4]:35547 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751556AbZALHD4 (ORCPT
+	Thu, 1 Jan 2009 00:10:28 -0500
+Received: from smarthost1.greenhost.nl ([195.190.28.78]:56827 "EHLO
+	smarthost1.samage.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750719AbZAAFK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 02:03:56 -0500
-Message-ID: <48E9B842.1020303@snapgear.com>
-Date: Mon, 06 Oct 2008 17:03:30 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 1 Jan 2009 00:10:28 -0500
+Message-ID: <57128.124.177.22.144.1230786624.squirrel@secure.greenhost.nl>
+In-Reply-To: <20081229122449.GG9628@elte.hu>
+References: <54882.124.179.251.206.1230523141.squirrel@secure.greenhost.nl>
+    <1230536044-14847-1-git-send-email-indan@nul.nu>
+    <20081229122449.GG9628@elte.hu>
+Date: Thu, 1 Jan 2009 06:10:24 +0100 (CET)
+Subject: Re: [PATCH] Fix race in ring_buffer_consume(): Replace 
+     ring_buffer_consume and ring_buffer_peek with ring_buffer_get_event
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Steven Rostedt" <srostedt@redhat.com>, "Ingo Molnar" <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-        geert@linux-m68k.org, dhowells@redhat.com
-Subject: Re: [PATCH] get rid of the last symlink in uml build
-References: <20081217061250.GX28946@ZenIV.linux.org.uk> <20081217072620.GA3551@uranus.ravnborg.org> <20081217083734.GA28946@ZenIV.linux.org.uk> <20081217085539.GA4152@uranus.ravnborg.org> <20081217091058.GB28946@ZenIV.linux.org.uk> <20081217112723.GA5027@uranus.ravnborg.org> <20081217170257.GE28946@ZenIV.linux.org.uk> <20081217171800.GA5436@uranus.ravnborg.org>
-In-Reply-To: <20081217171800.GA5436@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -0.1
+X-Scan-Signature: 9090f8a1960d7f777b94d17b6f36e747
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
-
-Sam Ravnborg wrote:
-> On Wed, Dec 17, 2008 at 05:02:57PM +0000, Al Viro wrote:
->> 	BTW, after taking a look at the remaing asm-*...
+On Mon, December 29, 2008 13:24, Ingo Molnar wrote:
+>
+> * Indan Zupancic <indan@nul.nu> wrote:
+>
+>> Original mail was mangled, patch resent via git.
 >>
->> * frv, m32r and h8300 should be as trivial as git mv
-> 
-> Yep - I already have positive feedback from arch maintainers that
-> they will fix it in the -rc1 timeframe.
-> 
->> * m68k has a bit of extra PITA - we need to clean up two non-trivial
->>   includes from m68knommu (pci.h and setup.h) first, then it's a matter
->>   of git mv, adding arch/m68k/include to search path on m68knommu and
->>   removal of dummy headers from the latter.
-> 
-> I took a different route here and unified the headers for m68k and m68knommu
-> under arch/m68k/include/asm
-> It was based on a script originally developed by Arnd Bergmann.
-> 
-> Geert already acked it, and I expect Greg to apply it in the -rc1 timeframe.
+>> Signed-off-by: Indan Zupancic <indan@nul.nu>
+>> ---
+>>  include/linux/ring_buffer.h   |    4 +---
+>>  kernel/trace/ring_buffer.c    |   39
+>> ++++++++-------------------------------
+>>  kernel/trace/trace.c          |   15 ++++++++-------
+>>  kernel/trace/trace_selftest.c |    2 +-
+>>  4 files changed, 18 insertions(+), 42 deletions(-)
+>
+> there's been a number of updates here - could you please do a patch
+> against tip/master:
+>
+>   http://people.redhat.com/mingo/tip.git/README
 
-I have been away for the last few weeks, so I haven't looked at this
-at all yet. I will over the next few days though.
+Thanks for that readme, now I discovered git remote, which is not
+mentioned often enough for some reason.
 
-Regards
-Greg
+A lot changed indeed, most importantly the race that I hit is
+fixed in tip by improved locking. Replace ring_buffer_consume()
+and ring_buffer_peek() with ring_buffer_get_event() or not is
+just a matter of taste now. Are you still interested in such a
+patch?
+
+(34 EXPORT_SYMBOL_GPLs in ring_buffer.c seems a bit excessive though.)
+
+Greetings,
+
+Indan
 
 
-
-> http://marc.info/?l=linux-kbuild&m=122927123805002&w=2 has Geert's ack,
-> but original patch did not hit marc?!?
-> 
->> * xtensa is already moved in linux-next
-> Yes.
-> 
-> 
->> * arm seems to be lacking the final push for few remaining headers; presumably
->>   will happen eventually
-> rmk knows it and takes care.
-> 
->> * mn10300 is playing with symlinks - the last one to do that for headers,
->>   AFAICS.
->>
->> I've thrown together a patch series on top of linux-next doing m68k and
->> mn10300.  *WARNING* - it's completely untested, basically about half an
->> hour diversion from sifting through the mailbox for missed VFS patches.
->> And that half and hour did *not* include anything resembling building
->> the resulting tree.  So take that with a trainload of salt.
-> Thanks Al.
-> I will take a closer look at the mn10300 bits and send them to David
-> in due time.
-> 
-> 	Sam
-> 
-
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
