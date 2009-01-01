@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZAAFPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZAAFVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756049AbZAAFPR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 00:15:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbZAAFPD
+	id S1756211AbZAAFVB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 00:21:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbZAAFUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 00:15:03 -0500
-Received: from mail.lang.hm ([64.81.33.126]:44156 "EHLO bifrost.lang.hm"
+	Thu, 1 Jan 2009 00:20:44 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:58112 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750724AbZAAFPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 00:15:01 -0500
-Date: Wed, 31 Dec 2008 22:17:06 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Andi Kleen <andi@firstfloor.org>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-In-Reply-To: <20090101041727.GW496@one.firstfloor.org>
-Message-ID: <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm>
-References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm>
- <20081231183039.GE20882@localhost> <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm> <20090101041727.GW496@one.firstfloor.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1750860AbZAAFUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 00:20:43 -0500
+Message-Id: <20090101050741.372438529@I-love.SAKURA.ne.jp>
+User-Agent: quilt/0.46-1
+Date: Thu, 01 Jan 2009 14:07:41 +0900
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [TOMOYO #14 (mmotm 2008-12-30-16-05) 00/10] TOMOYO Linux
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Jan 2009, Andi Kleen wrote:
+Happy new year!
 
-> On Wed, Dec 31, 2008 at 12:59:08PM -0800, david@lang.hm wrote:
->> On Wed, 31 Dec 2008, Andi Kleen wrote:
->>
->>>> on the picture you sent me i noticed the message
->>>> "Your memory is not aligned you need to rebuild your
->>>> kernel with bigger NODEMAP SIZE shift=20" and then
->>>> srat code complains about "No NUMA code hash function found"
->>>> which looks a bit scary. Btw, could you post this picture
->>>> on some public resource so NUMA people could check it?
->>>
->>> This case used to be handled cleanly (NUMA disabled), but perhaps
->>> that has regressed. But still it sounds like something is going wrong,
->>> unless his machine really has a very weird memory map.
->>
->> it shouldn't, it was one of the high-volume servers 4-5 years ago and only
->> has 4G of ram in it
->
-> From looking at the screenshot Cyrill sent you seem to have a funny
-> SRAT with overlapping areas that is rejected in the end. I suspect the
-> fallback code doesn't handle this properly.
->
-> Does it work when you boot with numa=noacpi ?
+TOMOYO Linux is a name-based MAC extension (LSM module) for the Linux kernel.
 
-it gets past the point where the bootmemory_debug messages flow by, but I 
-get another oops (snapshot of the screen is at 
-http://linux.lang.hm/linux/IMG00031.jpg )
+The security_path_* LSM hooks have just got merged into Linus's git tree!
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=be6d3e56a6b9b3a4ee44a0685e39e595073c6f0d
 
-David Lang
+Now, it's time to repost #13.
+This patchset is for mmotm 2008-12-30-16-05 .
+
+How to try:
+1. Compile kernel with CONFIG_SECURITY_TOMOYO=y.
+2. 'make' and 'make install' userspace tools (ccs-tools) available at
+   http://sourceforge.jp/projects/tomoyo/releases/30298/ .
+3. Run /usr/lib/ccs/tomoyo_init_policy.sh .
+4. Run following commands to set learning-mode as default.
+   (This step is optional but recommended on your first try.)
+   # echo '<kernel>' > /etc/tomoyo/domain_policy.conf
+   # echo 'use_profile 1' >> /etc/tomoyo/domain_policy.conf
+5. Reboot.
+   (If you compiled kernel with CONFIG_SECURITY_{SELINUX,SMACK}=y,
+    add 'security=tomoyo' to kernel's command line.)
+6. Run /usr/sbin/ccs-editpolicy to browse and edit policy.
+
+LiveCD-based tutorials are available at
+http://tomoyo.sourceforge.jp/en/1.6.x/1st-step/ubuntu8.04-live/
+http://tomoyo.sourceforge.jp/en/1.6.x/1st-step/centos5-live/ .
+Though these tutorials use non-LSM version of TOMOYO,
+they are useful for you to know what TOMOYO is.
+
+Regards.
+
