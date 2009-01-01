@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbZAAHqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbZAAIHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbZAAHqW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 02:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZAAHqO
+	id S1756348AbZAAIHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 03:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZAAIHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 02:46:14 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40599 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751765AbZAAHqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 02:46:13 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19dmWRjVHBd7cJ8z2rExiXkbLSzbxbJlFp4AP2OYd
-	nSszO7D3oZQsIs
-Subject: [patch] Re: problem with "sched: revert back to per-rq vruntime"?
-From: Mike Galbraith <efault@gmx.de>
-To: Jayson King <dev@jaysonking.com>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, mingo@elte.hu
-In-Reply-To: <495BD346.9040408@jaysonking.com>
-References: <495948E0.8040502@jaysonking.com>
-	 <495A788B.3010001@jaysonking.com>
-	 <1230740773.6412.21.camel@marge.simson.net>
-	 <495BD346.9040408@jaysonking.com>
-Content-Type: text/plain
-Date: Thu, 01 Jan 2009 08:46:03 +0100
-Message-Id: <1230795963.5892.14.camel@marge.simson.net>
+	Thu, 1 Jan 2009 03:07:23 -0500
+Received: from casper.infradead.org ([85.118.1.10]:42343 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbZAAIHW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 03:07:22 -0500
+Date: Thu, 1 Jan 2009 09:09:00 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Muntz, Daniel" <Dan.Muntz@netapp.com>
+Cc: "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "Bernd Schubert" <bernd.schubert@fastmail.fm>, <nfsv4@linux-nfs.org>,
+       <linux-kernel@vger.kernel.org>, <steved@redhat.com>,
+       <dhowells@redhat.com>, <linux-next@vger.kernel.org>,
+       <linux-fsdevel@vger.kernel.org>, <rwheeler@redhat.com>
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Message-ID: <20090101090900.551ada4a@infradead.org>
+In-Reply-To: <7A24DF798E223B4C9864E8F92E8C93EC01BD14BB@SACMVEXC1-PRD.hq.netapp.com>
+References: <1230679056.11508.37.camel@heimdal.trondhjem.org>
+	<7A24DF798E223B4C9864E8F92E8C93EC01BD14BB@SACMVEXC1-PRD.hq.netapp.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Would perhaps be prettier to have the load already in place at call
-time, but methinks the enqueue/dequeue accounting logic is nice as is,
-so complete the unlikely case handling in an unlikely block.
- 
-Impact: bug fixlet.
+On Wed, 31 Dec 2008 20:11:13 -0800
+"Muntz, Daniel" <Dan.Muntz@netapp.com> wrote:
 
-Account for tasks which have not yet been enqueued in calc_delta_weight().
+please don't top post.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
+> Sure, trusted kernel and trusted executables,  but it's easier than it
+> sounds.  If you start with a "clean" system, you don't need to verify
+> excutables _if_ they're coming from the secured file server (by
+> induction: if you started out secure, the executables on the file
+> server will remain secure).  You simply can't trust the local disk
+> from one user to the next.  Following the protocol, a student can log
+> into a machine, su to do their OS homework, but not compromise the
+> security of the distributed file system.
+> 
+> If I can su while another user is logged in, or the kernel/cmds are
+> not validated between users, cryptfs isn't safe either.
+> 
+> If you're following the protocol, it doesn't even matter if a bad guy
+> ("untrusted user"?) gets root on the client--they still can't gain
+> inappropriate access to the file server.  OTOH, if my security plan is
+> simply to not allow root access to untrusted users, history says I'm
+> going to lose.
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 5ad4440..4685f28 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -392,8 +392,16 @@ static inline unsigned long
- calc_delta_weight(unsigned long delta, struct sched_entity *se)
- {
- 	for_each_sched_entity(se) {
--		delta = calc_delta_mine(delta,
--				se->load.weight, &cfs_rq_of(se)->load);
-+		struct load_weight *load = &cfs_rq_of(se)->load;
-+
-+		if (unlikely(!se->on_rq)) {
-+			struct load_weight tmp;
-+
-+			tmp.weight = load->weight + se->load.weight;
-+			tmp.inv_weight = 0;
-+			load = &tmp;
-+		}
-+		delta = calc_delta_mine(delta, se->load.weight, load);
- 	}
- 
- 	return delta;
+if you have a user, history says you're going to lose.
+
+you can make your system as secure as you want, with physical access
+all bets are off.
+keyboard sniffer.. easy.
+special dimms that mirror data... not even all THAT hard, just takes a
+bit of cash.
+running the user in a VM without him noticing.. not too hard either.
+etc.
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
