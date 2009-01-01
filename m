@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZAANCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZAANd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbZAANCo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 08:02:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbZAANCg
+	id S1756605AbZAANd2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 08:33:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbZAANdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 08:02:36 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36911 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755962AbZAANCg (ORCPT
+	Thu, 1 Jan 2009 08:33:16 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:11678 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755974AbZAANdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 08:02:36 -0500
-Date: Thu, 1 Jan 2009 14:04:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "J.H." <warthog19@eaglescrag.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, ftpadmin@kernel.org
-Subject: Re: [KORG] Announcement: patchwork.kernel.org
-Message-ID: <20090101130411.GB21886@uranus.ravnborg.org>
-References: <495BFEF8.7000808@eaglescrag.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <495BFEF8.7000808@eaglescrag.net>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 1 Jan 2009 08:33:15 -0500
+Message-ID: <495CC612.30800@panasas.com>
+Date: Thu, 01 Jan 2009 15:33:06 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	<20081229121423.efde9d06.akpm@linux-foundation.org>	<495B8D90.1090004@panasas.com> <20081231112515.2d790d1c.akpm@linux-foundation.org>
+In-Reply-To: <20081231112515.2d790d1c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jan 2009 13:33:06.0941 (UTC) FILETIME=[7AEFAAD0:01C96C15]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 03:23:36PM -0800, J.H. wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+Andrew Morton wrote:
+>>> Boaz Harrosh <bharrosh@panasas.com> wrote:
+>> When, if, all is fixed, through which tree/maintainer can exofs be submitted?
 > 
-> Hey everyone,
+> I can merge them.  Or you can run a git tree of your own, add it to
+> linux-next and ask Linus to pull it at the appropriate time.
 > 
-> Just a heads up, there was a request that came up at Kernel Summit this
-> year for patchwork to become available for general use.  We are now
-> proud to announce that patchwork.kernel.org is available and has been
-> monitoring LKML for a few days without issue, so we are going to open it
-> up for general consumption.
 
-Hi John.
+Hi James
 
-Can you add linux-kbuild to the queue. Then I will try to see it it
-become a usefull tool there.
+Andrew suggested that maybe I should push exofs file system directly to
+Linus as it is pretty orthogonal to any other work. Sitting in linux-next
+will quickly expose any advancements in VFS and will force me to keep
+the tree uptodate.
 
-Thanks,
+If that is so, and is accepted by Linus, would you rather that also the
+open-osd initiator library will be submitted through the same tree?
+The conflicts with scsi are very very narrow. The only real dependency
+is the ULD being a SCSI ULD. I will routinely ask your ACK on any scsi 
+or ULD related patches. Which are very few. This way it will be easier
+to manage the dependencies between the OSD work, the OSD pNFS-Objects
+trees at pNFS project, and the pNFSD+EXOFS export. One less dependency.
 
-	Sam
+[I already have such a public tree at git.open-osd.org for a while now]
+
+Thanks
+Boaz
+ 
