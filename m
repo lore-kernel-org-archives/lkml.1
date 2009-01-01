@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbZAAFKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZAAFPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755791AbZAAFKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 00:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbZAAFK2
+	id S1756049AbZAAFPR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 00:15:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbZAAFPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 00:10:28 -0500
-Received: from smarthost1.greenhost.nl ([195.190.28.78]:56827 "EHLO
-	smarthost1.samage.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750719AbZAAFK2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 00:10:28 -0500
-Message-ID: <57128.124.177.22.144.1230786624.squirrel@secure.greenhost.nl>
-In-Reply-To: <20081229122449.GG9628@elte.hu>
-References: <54882.124.179.251.206.1230523141.squirrel@secure.greenhost.nl>
-    <1230536044-14847-1-git-send-email-indan@nul.nu>
-    <20081229122449.GG9628@elte.hu>
-Date: Thu, 1 Jan 2009 06:10:24 +0100 (CET)
-Subject: Re: [PATCH] Fix race in ring_buffer_consume(): Replace 
-     ring_buffer_consume and ring_buffer_peek with ring_buffer_get_event
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Steven Rostedt" <srostedt@redhat.com>, "Ingo Molnar" <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
+	Thu, 1 Jan 2009 00:15:03 -0500
+Received: from mail.lang.hm ([64.81.33.126]:44156 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbZAAFPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 00:15:01 -0500
+Date: Wed, 31 Dec 2008 22:17:06 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Andi Kleen <andi@firstfloor.org>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+In-Reply-To: <20090101041727.GW496@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm>
+References: <alpine.DEB.1.10.0812301416550.16847@asgard.lang.hm> <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm>
+ <20081231183039.GE20882@localhost> <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm> <20090101041727.GW496@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -0.1
-X-Scan-Signature: 9090f8a1960d7f777b94d17b6f36e747
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, December 29, 2008 13:24, Ingo Molnar wrote:
->
-> * Indan Zupancic <indan@nul.nu> wrote:
->
->> Original mail was mangled, patch resent via git.
+On Thu, 1 Jan 2009, Andi Kleen wrote:
+
+> On Wed, Dec 31, 2008 at 12:59:08PM -0800, david@lang.hm wrote:
+>> On Wed, 31 Dec 2008, Andi Kleen wrote:
 >>
->> Signed-off-by: Indan Zupancic <indan@nul.nu>
->> ---
->>  include/linux/ring_buffer.h   |    4 +---
->>  kernel/trace/ring_buffer.c    |   39
->> ++++++++-------------------------------
->>  kernel/trace/trace.c          |   15 ++++++++-------
->>  kernel/trace/trace_selftest.c |    2 +-
->>  4 files changed, 18 insertions(+), 42 deletions(-)
+>>>> on the picture you sent me i noticed the message
+>>>> "Your memory is not aligned you need to rebuild your
+>>>> kernel with bigger NODEMAP SIZE shift=20" and then
+>>>> srat code complains about "No NUMA code hash function found"
+>>>> which looks a bit scary. Btw, could you post this picture
+>>>> on some public resource so NUMA people could check it?
+>>>
+>>> This case used to be handled cleanly (NUMA disabled), but perhaps
+>>> that has regressed. But still it sounds like something is going wrong,
+>>> unless his machine really has a very weird memory map.
+>>
+>> it shouldn't, it was one of the high-volume servers 4-5 years ago and only
+>> has 4G of ram in it
 >
-> there's been a number of updates here - could you please do a patch
-> against tip/master:
+> From looking at the screenshot Cyrill sent you seem to have a funny
+> SRAT with overlapping areas that is rejected in the end. I suspect the
+> fallback code doesn't handle this properly.
 >
->   http://people.redhat.com/mingo/tip.git/README
+> Does it work when you boot with numa=noacpi ?
 
-Thanks for that readme, now I discovered git remote, which is not
-mentioned often enough for some reason.
+it gets past the point where the bootmemory_debug messages flow by, but I 
+get another oops (snapshot of the screen is at 
+http://linux.lang.hm/linux/IMG00031.jpg )
 
-A lot changed indeed, most importantly the race that I hit is
-fixed in tip by improved locking. Replace ring_buffer_consume()
-and ring_buffer_peek() with ring_buffer_get_event() or not is
-just a matter of taste now. Are you still interested in such a
-patch?
-
-(34 EXPORT_SYMBOL_GPLs in ring_buffer.c seems a bit excessive though.)
-
-Greetings,
-
-Indan
-
-
+David Lang
