@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbZAASNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZAAShM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbZAASNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 13:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbZAASND
+	id S1756249AbZAAShM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 13:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbZAASg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 13:13:03 -0500
-Received: from lazybastard.de ([212.112.238.170]:49882 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbZAASNB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 13:13:01 -0500
-Date: Thu, 1 Jan 2009 19:12:23 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       open-osd development <osd-dev@open-osd.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       avishay@gmail.com, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [osd-dev] [PATCH 7/9] exofs: mkexofs
-Message-ID: <20090101181223.GA29913@logfs.org>
-References: <4947BFAA.4030208@panasas.com> <4947CA5C.50104@panasas.com> <20081229121423.efde9d06.akpm@linux-foundation.org> <495B8D90.1090004@panasas.com> <1230739053.3408.74.camel@localhost.localdomain> <495C8B65.4010202@panasas.com> <495C92C8.5040702@garzik.org> <495CD1C4.1030605@panasas.com>
+	Thu, 1 Jan 2009 13:36:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37380 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750925AbZAASg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 13:36:59 -0500
+Date: Thu, 1 Jan 2009 13:36:46 -0500
+From: Dave Jones <davej@redhat.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: "J.H." <warthog19@eaglescrag.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, ftpadmin@kernel.org
+Subject: Re: [KORG] Announcement: patchwork.kernel.org
+Message-ID: <20090101183646.GA13585@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Sitsofe Wheeler <sitsofe@yahoo.com>,
+	"J.H." <warthog19@eaglescrag.net>,
+	linux-kernel <linux-kernel@vger.kernel.org>, ftpadmin@kernel.org
+References: <fa.f9uNEYqmpJX02C68okHq8SDYyFI@ifi.uio.no> <495CD285.1000501@yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <495CD1C4.1030605@panasas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <495CD285.1000501@yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 January 2009 16:23:00 +0200, Benny Halevy wrote:
-> 
-> Personally, I'm not sure if maintaining that intimate knowledge in a
-> user space program is an ideal model with respect to keeping both
-> in sync, avoiding code duplication, and dealing with upgrade issues
-> (e.g. upgrading the kernel and not the user space utils)
+On Thu, Jan 01, 2009 at 02:26:13PM +0000, Sitsofe Wheeler wrote:
+ > J.H. wrote:
+ > > If you have problems, concerns or issues please e-mail ftpadmin@kernel.org.
+ > 
+ > I get a python error when I try and do a search:
+ > http://patchwork.kernel.org/project/LKML/list/?q=lzma
 
-None of those problems actually matter, because you will have them
-anyway.  If your filesystem is any good, someone will reimplement it for
-Windows, Grub, UBoot, Solaris or some other system.  And even if it
-isn't any good, you still need to stay compatible with your own
-implementation from last year.
+I've seen a number of tracebacks. They seem to be transient,
+in that reloading any particular page eventually causes it
+to trigger.  Reloading then makes it work again.
 
-Ok, maybe code duplication is a valid concern.  But that will hardly
-outweigh the arguments in favor of a userland mkfs.  The only exception
-I am aware of is jffs2, where a newly erased flash happens to be a valid
-(empty) filesystem.  And even there you can view flash_eraseall as a
-trivial mkfs program. ;)
-
-Jörn
+	Dave
 
 -- 
-It's just what we asked for, but not what we want!
--- anonymous
+http://www.codemonkey.org.uk
