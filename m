@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZAAWr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZAAWwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbZAAWr6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 17:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZAAWrs
+	id S1756463AbZAAWwT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 17:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZAAWwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 17:47:48 -0500
-Received: from smtp7-g19.free.fr ([212.27.42.64]:43090 "EHLO smtp7-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753389AbZAAWrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 17:47:47 -0500
-Message-ID: <495D480F.3010208@free.fr>
-Date: Thu, 01 Jan 2009 23:47:43 +0100
-From: matthieu castet <castet.matthieu@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 Iceape/1.1.14 (Debian-1.1.14-1)
+	Thu, 1 Jan 2009 17:52:09 -0500
+Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:10540 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbZAAWwJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 17:52:09 -0500
+Date: Thu, 1 Jan 2009 23:52:03 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Ingo Brueckl <ib@wupperonline.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: compile time warnings
+In-Reply-To: <495d3100@wupperonline.de>
+Message-ID: <alpine.LNX.2.00.0901012312450.11772@swampdragon.chaosbits.net>
+References: <495d3100@wupperonline.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH -stable] fix USB_STORAGE_CYPRESS_ATACB
-References: <495913A6.9070007@free.fr> <20081229192431.GZ1469@one-eyed-alien.net> <495A475D.7060608@panasas.com> <495B4ADB.3020904@panasas.com>
-In-Reply-To: <495B4ADB.3020904@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 1 Jan 2009, Ingo Brueckl wrote:
 
-Boaz Harrosh wrote:
-> Hi Matthieu, Matthew
+> Maybe somebody noticed already, with kernel 2.6.28 and gcc 4.3.2 there are a
+> few compile time warnings:
 > 
-> I fixed lots of "mucking directly" with scsi_cmnd and scsi_eh_save
-> internal members but the actual set of srb->cmnd{,_len} is needed
-> still. Though we don't need the copy since we restore the original
-> command right after. If anyone can test this to verify it could
-> be grate.
+I've looked at these with the kernel from git as of today. I've only read 
+the code, not build it.
+
+>   arch/x86/kernel/setup.c:742: warning: 'dmi_low_memory_corruption' defined but not used
 > 
-your patch works for me.
+I see dmi_low_memory_corruption() as well as usage of it both inside 
+#ifdef CONFIG_X86_RESERVE_LOW_64K - looks fine to me:
 
-Thanks and happy new year
+#ifdef CONFIG_X86_RESERVE_LOW_64K
+static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
+{
+...
+static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
+#ifdef CONFIG_X86_RESERVE_LOW_64K
+        {
+                .callback = dmi_low_memory_corruption,
+...
 
 
-Matthieu
+>   arch/x86/mm/init_32.c: In function 'pagetable_init':
+>   arch/x86/mm/init_32.c:515: warning: unused variable 'pgd_base'
+> 
+
+I see this : 
+
+static void __init pagetable_init(void)
+{
+        pgd_t *pgd_base = swapper_pg_dir;
+
+        permanent_kmaps_init(pgd_base);
+}
+
+pgd_base is very much used...
+
+>   drivers/acpi/tables/tbfadt.c: In function 'acpi_tb_create_local_fadt':
+>   /usr/src/linux/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
+> 
+>   drivers/usb/core/hcd.c: In function 'usb_hcd_poll_rh_status':
+>   /usr/src/linux/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
+> 
+Not sure about these.
+
+-- 
+Jesper Juhl <jj@chaosbits.net>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
+
