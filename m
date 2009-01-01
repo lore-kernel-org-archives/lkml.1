@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZAAO0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZAAO2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbZAAO0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 09:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbZAAO0P
+	id S1756862AbZAAO2Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 09:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZAAO2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 09:26:15 -0500
-Received: from pih-relay08.plus.net ([212.159.14.20]:33436 "EHLO
-	pih-relay08.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbZAAO0O (ORCPT
+	Thu, 1 Jan 2009 09:28:13 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:60299 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756148AbZAAO2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 09:26:14 -0500
-Message-ID: <495CD285.1000501@yahoo.com>
-Date: Thu, 01 Jan 2009 14:26:13 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Thu, 1 Jan 2009 09:28:12 -0500
+Date: Thu, 1 Jan 2009 07:28:10 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       avishay@gmail.com, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [osd-dev] [PATCH 7/9] exofs: mkexofs
+Message-ID: <20090101142810.GN2002@parisc-linux.org>
+References: <4947BFAA.4030208@panasas.com> <4947CA5C.50104@panasas.com> <20081229121423.efde9d06.akpm@linux-foundation.org> <495B8D90.1090004@panasas.com> <1230739053.3408.74.camel@localhost.localdomain> <495C8B65.4010202@panasas.com> <495C92C8.5040702@garzik.org> <495CD1C4.1030605@panasas.com>
 MIME-Version: 1.0
-To: "J.H." <warthog19@eaglescrag.net>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, ftpadmin@kernel.org
-Subject: Re: [KORG] Announcement: patchwork.kernel.org
-References: <fa.f9uNEYqmpJX02C68okHq8SDYyFI@ifi.uio.no>
-In-Reply-To: <fa.f9uNEYqmpJX02C68okHq8SDYyFI@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 49e660ab5374faa7cba2cc53bd4c3906
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495CD1C4.1030605@panasas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.H. wrote:
-> If you have problems, concerns or issues please e-mail ftpadmin@kernel.org.
+On Thu, Jan 01, 2009 at 04:23:00PM +0200, Benny Halevy wrote:
+> Personally, I'm not sure if maintaining that intimate knowledge in a
+> user space program is an ideal model with respect to keeping both
+> in sync, avoiding code duplication, and dealing with upgrade issues
+> (e.g. upgrading the kernel and not the user space utils)
 
-I get a python error when I try and do a search:
-http://patchwork.kernel.org/project/LKML/list/?q=lzma
+The other 30-40 filesystems that Linux supports manage to do it this
+way.  I'm not sure why osdfs is different in this regard.
 
+You need to be careful with the filesystem layout anyway -- when you
+upgrade the kernel, it still needs to be able to access all the files
+contained in existing filesystems.  And it needs to create new files
+which are still readable by older kernels (users have this pesky habit
+of downgrading).
 
-
-
-
-
-
-
-
-
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
