@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZAAJiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbZAAJuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756498AbZAAJiL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 04:38:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZAAJh4
+	id S1756433AbZAAJuP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 04:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbZAAJuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 04:37:56 -0500
-Received: from ns1.suse.de ([195.135.220.2]:33120 "EHLO mx1.suse.de"
+	Thu, 1 Jan 2009 04:50:03 -0500
+Received: from ns.suse.de ([195.135.220.2]:33654 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755532AbZAAJhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 04:37:55 -0500
-Date: Thu, 01 Jan 2009 10:37:53 +0100
-Message-ID: <s5hiqozz7ri.wl%tiwai@suse.de>
+	id S1751696AbZAAJuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 04:50:02 -0500
+Date: Thu, 01 Jan 2009 10:50:00 +0100
+Message-ID: <s5hvdszpd87.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Julia Lawall <julia@diku.dk>
-Cc: perex@perex.cz, alsa-devel@alsa-project.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 11/13] sound/usb: use USB API functions rather than constants
-In-Reply-To: <Pine.LNX.4.64.0812291122420.9555@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0812291122420.9555@pc-004.diku.dk>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: snd-hda-intel no front mute switch
+In-Reply-To: <495B31E2.6000801@gmail.com>
+References: <495B31E2.6000801@gmail.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -27,65 +26,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 29 Dec 2008 11:23:02 +0100 (CET),
-Julia Lawall wrote:
+At Wed, 31 Dec 2008 00:48:34 -0800,
+Justin P. Mattock wrote:
 > 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> This set of patches introduces calls to the following set of functions:
-> 
-> usb_endpoint_dir_in(epd)
-> usb_endpoint_dir_out(epd)
-> usb_endpoint_is_bulk_in(epd)
-> usb_endpoint_is_bulk_out(epd)
-> usb_endpoint_is_int_in(epd)
-> usb_endpoint_is_int_out(epd)
-> usb_endpoint_num(epd)
-> usb_endpoint_type(epd)
-> usb_endpoint_xfer_bulk(epd)
-> usb_endpoint_xfer_control(epd)
-> usb_endpoint_xfer_int(epd)
-> usb_endpoint_xfer_isoc(epd)
-> 
-> In some cases, introducing one of these functions is not possible, and it
-> just replaces an explicit integer value by one of the following constants:
-> 
-> USB_ENDPOINT_XFER_BULK
-> USB_ENDPOINT_XFER_CONTROL
-> USB_ENDPOINT_XFER_INT
-> USB_ENDPOINT_XFER_ISOC
-> 
-> An extract of the semantic patch that makes these changes is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r1@ struct usb_endpoint_descriptor *epd; @@
-> 
-> - ((epd->bmAttributes & \(USB_ENDPOINT_XFERTYPE_MASK\|3\)) ==
-> - \(USB_ENDPOINT_XFER_CONTROL\|0\))
-> + usb_endpoint_xfer_control(epd)
-> 
-> @r5@ struct usb_endpoint_descriptor *epd; @@
-> 
-> - ((epd->bEndpointAddress & \(USB_ENDPOINT_DIR_MASK\|0x80\)) ==
-> -  \(USB_DIR_IN\|0x80\))
-> + usb_endpoint_dir_in(epd)
-> 
-> @inc@
-> @@
-> 
-> #include <linux/usb.h>
-> 
-> @depends on !inc && (r1||r5)@
-> @@
-> 
-> + #include <linux/usb.h>
->   #include <linux/usb/...>
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> Not sure if I have my configurations correct, but after
+> pulling the latest git, I notice that my mixer has no switch to mute
+> the "front", or external speaker on a macbook pro(ati chipset);
+> other than that the sound sounds really good.
+> (solution I guess: plug-in headphones, and mute headphone option);
 
-Applied now.  Thanks.
+Could you run alsa-info.sh with --no-upload option on both old and
+new kernels, and attach the generated files to compare?
+The script is found in
+    http://www.alsa-project.org/alsa-info.sh
 
+You can find some other information regarding HD-audio in
+Documentation/sound/alsa/HD-Audio.txt.
+
+
+thanks,
 
 Takashi
