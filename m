@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbZAAQty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZAAQwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbZAAQty (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 11:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbZAAQto
+	id S1756891AbZAAQwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 11:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbZAAQwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 11:49:44 -0500
-Received: from lexington.centerclick.org ([66.114.92.10]:48584 "EHLO
-	lexington.centerclick.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756284AbZAAQtn (ORCPT
+	Thu, 1 Jan 2009 11:52:45 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:8832 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756312AbZAAQwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 11:49:43 -0500
-From: Dave Johnson <dave-lkml-01@centerclick.org>
+	Thu, 1 Jan 2009 11:52:44 -0500
+Message-ID: <f73f7ab80901010852u21ffda9sef714e8cc1730cc4@mail.gmail.com>
+Date: Thu, 1 Jan 2009 11:52:41 -0500
+From: "Kyle Moffett" <kyle@moffetthome.net>
+To: "Sitsofe Wheeler" <sitsofe@yahoo.com>
+Subject: Re: [KORG] Announcement: patchwork.kernel.org
+Cc: "J. H." <warthog19@eaglescrag.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, ftpadmin@kernel.org
+In-Reply-To: <f73f7ab80901010842i70eabb27nf23bb66398f376d1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <18780.62500.100687.402706@wellington.i202.centerclick.org>
-Date: Thu, 1 Jan 2009 11:49:40 -0500
-To: Bart Samwel <bart@samwel.tk>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [ext3] kjournald writing after each read despite noatime,commit=nnn
-In-Reply-To: <495CCCDF.3030606@samwel.tk>
-References: <18779.58377.160214.225792@wellington.i202.centerclick.org>
-	<495CCCDF.3030606@samwel.tk>
-X-Mailer: VM 7.19 under 21.4 (patch 19) "Constant Variable" XEmacs Lucid
+Content-Disposition: inline
+References: <fa.f9uNEYqmpJX02C68okHq8SDYyFI@ifi.uio.no>
+	 <495CD285.1000501@yahoo.com>
+	 <f73f7ab80901010842i70eabb27nf23bb66398f376d1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Samwel writes:
-> This is the defined behaviour for laptop_mode. Whenever a *physical*
-> READ takes place, this is taken to indicate that the disk is spun up at
-> that time. The laptop_mode functionality then takes that opportunity to
-> sync any dirty data to disk, two seconds (or whatever value you put in
-> /proc/sys/vm/laptop_mode) after the physical disk activity has ceased.
-> The rationale behind this is that you want to sync your stuff when the
-> disk is spun up, and then you want to hold back writing back stuff for a
-> very long while. And the only way it can detect that the disk is spun up
-> is when there is physical disk activity.
-> 
-> This is exactly what happens in your case. The READ activity reported by
-> block_dump is *physical* read activity: some data was needed that was
-> not cached in memory. block_dump does not show you what data was
-> retrieved from the ext3 fs *without* having to access the disk, it only
-> shows actual physical disk I/O.
+On Thu, Jan 1, 2009 at 11:42 AM, Kyle Moffett <kyle@moffetthome.net> wrote:
+> On Thu, Jan 1, 2009 at 9:26 AM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+>> J.H. wrote:
+>>>
+>>> If you have problems, concerns or issues please e-mail
+>>> ftpadmin@kernel.org.
+>>
+>> I get a python error when I try and do a search:
+>> http://patchwork.kernel.org/project/LKML/list/?q=lzma
+>
+> It looks like there is some kind of caching-related bug... I just
+> tried several pages and got a python error "Site does not exist" the
+> *first* time I tried to load any given page.  After it had displayed
+> once as "Site does not exist", a simple reload would display the
+> actual page.
 
-Yep sounds good, but this happens even if there is no dirty data
-needing a sync back to disk.
+Ok, appended is the copy-paste of the Django error text.
 
-$ grep 'Dirty\|Write' /proc/meminfo 
-Dirty:               0 kB
-Writeback:           0 kB
-WritebackTmp:        0 kB
-$ cat /some/uncached/file >/dev/null 
-
-Jan  1 11:43:49 gw kernel: cat(6615): READ block 864408 on hda1 
-Jan  1 11:43:51 gw kernel: kjournald(760): WRITE block 2376 on hda1 
+Cheers,
+Kyle Moffett
 
 
-Note, the reason I ask is this is a SSD so just because a physical
-read has taken place recently unneeded writes should be avoided.
-
-Turning laptop_mode to 0, but leaving other settings the same
-resolves the uneeded write:
-
-$ echo 0 > /proc/sys/vm/laptop_mode 
-$ grep 'Dirty\|Write' /proc/meminfo 
-Dirty:               0 kB
-Writeback:           0 kB
-WritebackTmp:        0 kB
-$ cat /some/other/uncached/file >/dev/null
-
-Jan  1 11:47:15 gw kernel: cat(6653): READ block 864258 on hda1 
 
 
--- 
-Dave
+Environment:
+
+Request Method: GET
+Request URL: http://patchwork.kernel.org/project/linux-acpi/list/
+Django Version: 1.0-final-SVN-unknown
+Python Version: 2.5.1
+Installed Applications:
+['django.contrib.auth',
+ 'django.contrib.contenttypes',
+ 'django.contrib.sessions',
+ 'django.contrib.sites',
+ 'django.contrib.admin',
+ 'patchwork',
+ 'registration']
+Installed Middleware:
+('django.middleware.common.CommonMiddleware',
+ 'django.contrib.sessions.middleware.SessionMiddleware',
+ 'django.contrib.auth.middleware.AuthenticationMiddleware',
+ 'django.middleware.doc.XViewMiddleware')
+
+
+Traceback:
+File "/usr/lib/python2.5/site-packages/django/core/handlers/base.py"
+in get_response
+  86.                 response = callback(request, *callback_args,
+**callback_kwargs)
+File "/var/www/patchwork/apps/patchwork/views/patch.py" in list
+  128.             view_args = {'project_id': project.linkname})
+File "/var/www/patchwork/apps/patchwork/views/__init__.py" in generic_list
+  31.             list_view_params = view_args)
+File "/var/www/patchwork/apps/patchwork/requestcontext.py" in __init__
+  70.                 'site': Site.objects.get_current(),
+File "/usr/lib/python2.5/site-packages/django/contrib/sites/models.py"
+in get_current
+  22.             current_site = self.get(pk=sid)
+File "/usr/lib/python2.5/site-packages/django/db/models/manager.py" in get
+  93.         return self.get_query_set().get(*args, **kwargs)
+File "/usr/lib/python2.5/site-packages/django/db/models/query.py" in get
+  303.                     % self.model._meta.object_name)
+
+Exception Type: DoesNotExist at /project/linux-acpi/list/
+Exception Value: Site matching query does not exist.
