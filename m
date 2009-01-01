@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbZAARiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbZAARpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbZAARiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 12:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZAARiH
+	id S1756722AbZAARpK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 12:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZAARo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 12:38:07 -0500
-Received: from host49.cc-host.de ([195.140.232.81]:56536 "EHLO
-	host49.cc-host.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbZAARiG (ORCPT
+	Thu, 1 Jan 2009 12:44:57 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:48961 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752275AbZAARo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 12:38:06 -0500
-X-Greylist: delayed 4805 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Jan 2009 12:38:05 EST
-From: Anders Larsen <al@alarsen.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Include <linux/types.h> for definitions of __[us]{8,16,32,64} types
-Date: Thu,  1 Jan 2009 17:17:35 +0100
-Message-Id: <1230826655-18495-1-git-send-email-al@alarsen.net>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
-X-ALL-TLD-GmbH-Information: AEV Virus and Spam Secure Mail System
-X-ALL-TLD-GmbH-SpamCheck: 
-X-MailScanner-From: anders@alarsen.net
+	Thu, 1 Jan 2009 12:44:57 -0500
+Date: Thu, 1 Jan 2009 18:44:54 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: cannot reliably detect USB device
+Message-ID: <20090101174453.GA3805@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081225104753.GB15733@localhost>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-12-30 11:32:33, Sam Ravnborg wrote:
-> We have added a few additional validation checks of the userspace headers:
-...
-> 3) We should include <linux/types.h> and not <asm/types.h>
-> 4) If we use a __[us]{8,16,32,64} type then we must include <linux/types.h>
+Hi,
 
-Satisfy these requirements for the linux/qnx*.h headers.
+> > > I have a pl2303 USB-RS232 converter that cannot be reliably
+> > > detected.
+> > 
+> > Faulty hardware?  Flaky cables?  Bad connections?  If this is
+> > reproducable for the same device on multiple machines, I'd just go buy
+> > a
+> > new device :)
+> 
+> I decided to give it a last try before planning a replacement - then I
+> find that /dev/ttyUSB0 could be created if I enlarge the retry times.
+> 
+> It could take 10 seconds to get a valid response. It must go crazy.
 
-Signed-off-by: Anders Larsen <al@alarsen.net>
----
- include/linux/qnx4_fs.h  |    4 +---
- include/linux/qnxtypes.h |    5 ++---
- 2 files changed, 3 insertions(+), 6 deletions(-)
+Detected _instantly_ on 2.6.28 here:
 
-diff --git a/include/linux/qnx4_fs.h b/include/linux/qnx4_fs.h
-index 34a196e..787d19e 100644
---- a/include/linux/qnx4_fs.h
-+++ b/include/linux/qnx4_fs.h
-@@ -2,14 +2,12 @@
-  *  Name                         : qnx4_fs.h
-  *  Author                       : Richard Frowijn
-  *  Function                     : qnx4 global filesystem definitions
-- *  Version                      : 1.0.2
-- *  Last modified                : 2000-01-31
-- *
-  *  History                      : 23-03-1998 created
-  */
- #ifndef _LINUX_QNX4_FS_H
- #define _LINUX_QNX4_FS_H
- 
-+#include <linux/types.h>
- #include <linux/qnxtypes.h>
- #include <linux/magic.h>
- 
-diff --git a/include/linux/qnxtypes.h b/include/linux/qnxtypes.h
-index a3eb113..bebbe5c 100644
---- a/include/linux/qnxtypes.h
-+++ b/include/linux/qnxtypes.h
-@@ -2,9 +2,6 @@
-  *  Name                         : qnxtypes.h
-  *  Author                       : Richard Frowijn
-  *  Function                     : standard qnx types
-- *  Version                      : 1.0.2
-- *  Last modified                : 2000-01-06
-- *
-  *  History                      : 22-03-1998 created
-  *
-  */
-@@ -12,6 +9,8 @@
- #ifndef _QNX4TYPES_H
- #define _QNX4TYPES_H
- 
-+#include <linux/types.h>
-+
- typedef __le16 qnx4_nxtnt_t;
- typedef __u8  qnx4_ftype_t;
- 
--- 
-1.5.4.3
+[59750.560209] usb 1-1: USB disconnect, address 5
+[59750.561888] pl2303 ttyUSB0: pl2303 converter now disconnected from ttyUSB0
+[59750.561970] pl2303 1-1:1.0: device disconnected
+[59752.904108] usb 1-1: new full speed USB device using uhci_hcd and address 6
+[59753.059546] usb 1-1: configuration #1 chosen from 1 choice
+[59753.061460] pl2303 1-1:1.0: pl2303 converter detected
+[59753.114738] usb 1-1: pl2303 converter now attached to ttyUSB0
 
+(the 3-second delay basically was me waiting before reinserting)
+
+
+Bus 001 Device 006: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
+
+Label: "GMUS-03 USB Serial Adapter"
+
+Detection test only, _not_ used for actual serial communication currently...
+
+
+But there are more PL2303 adapters than flies on this planet,
+thus someone else also has some input on this?
+
+Andreas Mohr
