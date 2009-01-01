@@ -1,101 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZAAWI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZAAWjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbZAAWI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 17:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbZAAWIt
+	id S1756270AbZAAWjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 17:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZAAWj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 17:08:49 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:60632 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307AbZAAWIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 17:08:48 -0500
-Date: Thu, 1 Jan 2009 14:08:46 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: linux-kernel@vger.kernel.org, dipankar@in.ibm.com
-Subject: Re: [BUG] Cpustall with kcore
-Message-ID: <20090101220846.GB7134@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090101201914.GB6698@alice>
+	Thu, 1 Jan 2009 17:39:29 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39166 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbZAAWj2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 17:39:28 -0500
+Message-ID: <20090101223925.PJUBH.263802.root@hrndva-web18-z01>
+Date: Thu, 1 Jan 2009 22:39:25 +0000
+From: <lmage11@twcny.rr.com>
+To: linux-kernel@vger.kernel.org
+Subject: Curious problems with /proc/kmsg?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090101201914.GB6698@alice>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 01, 2009 at 09:19:14PM +0100, Eric Sesterhenn wrote:
-> hi,
-> 
-> when i issue a "cat /proc/kcore > /dev/null", the kernel issues  the
-> following warning and i cant kill the cat process anymore.
-> 
-> [  356.948019] INFO: RCU detected CPU 0 stall (t=2500 jiffies)
-> [  356.948019] Pid: 4156, comm: cat Not tainted 2.6.28 #77
-> [  356.948019] Call Trace:
-> [  356.948019]  [<c05a99f6>] ? printk+0x18/0x1a
-> [  356.948019]  [<c016d682>] __rcu_pending+0x62/0x250
-> [  356.948019]  [<c014becb>] ? trace_hardirqs_off+0xb/0x10
-> [  356.948019]  [<c016d882>] rcu_pending+0x12/0x40
-> [  356.948019]  [<c0132c5a>] update_process_times+0x2a/0x60
-> [  356.948019]  [<c0149a65>] tick_sched_timer+0x55/0xc0
-> [  356.948019]  [<c0149a10>] ? tick_sched_timer+0x0/0xc0
-> [  356.948019]  [<c0140ab0>] __run_hrtimer+0x70/0xe0
-> [  356.948019]  [<c0149a10>] ? tick_sched_timer+0x0/0xc0
-> [  356.948019]  [<c014128d>] hrtimer_interrupt+0xed/0x190
-> [  356.948019]  [<c01059cb>] timer_interrupt+0x3b/0x50
-> [  356.948019]  [<c016a779>] handle_IRQ_event+0x29/0x60
-> [  356.948019]  [<c016c505>] handle_level_irq+0x65/0xe0
-> [  356.948019]  [<c016c4a0>] ? handle_level_irq+0x0/0xe0
-> [  356.948019]  <IRQ>  [<c014e321>] ?
-> trace_hardirqs_on_caller+0x151/0x1c0
-> [  356.948019]  [<c0103bac>] ? common_interrupt+0x2c/0x34
-> [  356.948019]  [<c018007b>] ? setup_per_zone_pages_min+0x11b/0x270
-> [  356.948019]  [<c029fdc2>] ? copy_to_user+0x112/0x120
-> [  356.948019]  [<c01ec705>] ? read_kcore+0x385/0x440
-> [  356.948019]  [<c01ec380>] ? read_kcore+0x0/0x440
-> [  356.948019]  [<c01e38dd>] ? proc_reg_read+0x5d/0x90
-> [  356.948019]  [<c01a6129>] ? vfs_read+0x99/0x160
-> [  356.948019]  [<c010357f>] ? sysenter_exit+0xf/0x16
-> [  356.948019]  [<c01e3880>] ? proc_reg_read+0x0/0x90
-> [  356.948019]  [<c01a62ad>] ? sys_read+0x3d/0x70
-> [  356.948019]  [<c0103551>] ? sysenter_do_call+0x12/0x31
+I'm currently trying to debug a problem with my wireless driver,
+and while looking at the copious output that the driver produces,
+I've been noticing some very odd stuff come out of /proc/kmsg (which
+is also where my syslog daemon gets kernel messages). I'm getting stuff
+like:
 
-This message indicates that RCU is no longer getting any response from
-CPU 0.  This is most likely because CPU 0 is spinning in an infinite loop
-with interrupts disabled -- otherwise CPU 0 would have reported itself
-and given a stack trace.
+Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx enter
+Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx leave
+Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx enter
+Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx leave
+Jan  1 01:59:03 tank ieee80211 phy0: I iwl4965_mac_tx ente
+Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
+Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
+Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
+Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
+Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
+Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
+Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
 
-So, do you have any way to collect CPU 0's stack trace?  Kernel debugger
-or some such?
+As you can see, the first few lines are fine, but the next few
+lines are complete nonsense. It looks to me as if characters
+are getting semi-randomly "skipped" sometimes, or something???
+Very strange. This oddity does not show up when I look at the
+kernel output through dmesg.
 
-> RCU options are:
-> # CONFIG_CLASSIC_RCU is not set
-> # CONFIG_TREE_RCU is not set
-> CONFIG_PREEMPT_RCU=y
-> CONFIG_RCU_TRACE=y
-> # CONFIG_TREE_RCU_TRACE is not set
-> CONFIG_PREEMPT_RCU_TRACE=y
-> CONFIG_RCU_TORTURE_TEST=m
-> 
-> I tried this on another machine, which completely hangs after the cat,
-> i cant log in anymore via ssh. This one has
-> 
-> # CONFIG_CLASSIC_RCU is not set
-> CONFIG_TREE_RCU=y
-> # CONFIG_PREEMPT_RCU is not set
-> CONFIG_RCU_TRACE=y
-> CONFIG_RCU_FANOUT=32
-> # CONFIG_RCU_FANOUT_EXACT is not set
-> CONFIG_TREE_RCU_TRACE=y
-> # CONFIG_PREEMPT_RCU_TRACE is not set
-> CONFIG_RCU_TORTURE_TEST=m
-> CONFIG_RCU_CPU_STALL_DETECTOR=y
+Some more examples of strange output follow:
 
-If I am correct about the CPU going out to lunch with interrupts
-disabled, the type of RCU will be irrelevant.  It would nevertheless
-be interesting to try Classic RCU with CPU stall detection enabled.
+Jan  1 01:59:04 tank w46_a_xlae<>ee01 h0  w46_a_xetr<>ee01 h0  w46_a_xlae<3>ieee80211 phy0: I iwl4965_mac_tx enter
+Jan  1 01:59:04 tank ieee80211 phy0:  iwleqeehm edn omn ESTVT_M #8,sq x46 8btsa 6[]4<>ee01 h0  w_eei_m_alakbc rmSNIIIYCD(x0000
+Jan  1 01:59:05 tank 3ie821py:Iilgnrccdclbc akfo EL_XLN_ULT_M 00000)<>ee01 h0  w46_a_xetr<>ee01 h0  w46_a_xlaev
 
-							Thanx, Paul
+Any comments? I'm using 2.6.28.
+
+Thanks!
+
+Ari
