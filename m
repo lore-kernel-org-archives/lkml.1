@@ -1,257 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZABTSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbZABTUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbZABTSt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 14:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbZABTSh
+	id S1759008AbZABTUc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 14:20:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbZABTUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 14:18:37 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:46997 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbZABTSf (ORCPT
+	Fri, 2 Jan 2009 14:20:24 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:40416 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbZABTUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 14:18:35 -0500
+	Fri, 2 Jan 2009 14:20:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=sWSWCmMCaGpIbXfLGkxi5c6Mb2nyIDJ5W9e6MvXtOPwCfOXav0SMVxayyoEUgWYrV/
-         GnKsBRXJN4xAMxMkH+XVk99Ol9QoWuI6kQllMZeSWidbo90+yiACRYK3sLqp1deCNbwz
-         NMVzyrcLb83WbTG8+gV+VL1j+dNJsAlCkt7fo=
-Message-ID: <a00b9da20901021118h3e698d04q33fa9e87519e4d42@mail.gmail.com>
-Date: Fri, 2 Jan 2009 20:18:31 +0100
-From: "Frank Groeneveld" <frankgroeneveld@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: Kernel 2.6.28 regression: Hang after hibernate
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <a00b9da20901020910i2625073av96ce68ec0c313a8c@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Gx8D8D6d7zo18UTalzLACqKbdBeRJbp2xxB7Z+8Kbq4kAdqHPevhC/nVLPwtgz1R/D
+         KB1OswC11jRddoIPAezdDJKJJj7K0IPS3iB4JsB+qhKJuvX9vH6vVad8MUj49FgYHrbv
+         RSBvCRne2Lq/Hr3hh1xeOXiHYPYbyHsBru9H0=
+Message-ID: <495E68F5.5010309@gmail.com>
+Date: Fri, 02 Jan 2009 20:20:21 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_179456_30339610.1230923911964"
-References: <a00b9da20812281234u76da2ef5tb715f4c409eaf37c@mail.gmail.com>
-	 <20090102162220.GB1555@ucw.cz>
-	 <a00b9da20901020910i2625073av96ce68ec0c313a8c@mail.gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] ftrace: unsigned idx cannot be less than 0
+References: <495E2987.3070501@gmail.com> <20090102154805.GA6833@nowhere>
+In-Reply-To: <20090102154805.GA6833@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_179456_30339610.1230923911964
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-A kernel without SMP doesn't solve the problem. It gives the same
-output as before, except without the CPU notices. I also found out
-that a "vanilla" 2.6.27 does have the same problem. A patched 2.6.27
-kernel (by Gentoo Linux) doesn't have this problem. I attached that
-patch, so you might see what the problem is now.
-
-Regards,
-Frank
-
-2009/1/2 Frank Groeneveld <frankgroeneveld@gmail.com>:
-> With minimum config you mean only the most necessary drivers (like
-> disabling ALSA)?
-> I will try a kernel without SMP.
->
-> Frank
->
-> 2009/1/2 Pavel Machek <pavel@suse.cz>:
->> Hi!
+Frederic Weisbecker wrote:
+> On Fri, Jan 02, 2009 at 03:49:43PM +0100, Roel Kluin wrote:
+>> // vi kernel/trace/ftrace.c +787
+>> struct ftrace_iterator {
+>> ...
+>>         unsigned                idx;
+>> ...
+>> };
 >>
->>> Today I tried the new kernel and found out it has a regression. With
->>> kernel 2.6.27 I never had problems resuming from hibernate, but with
->>> 2.6.28 it hangs. The output is something like this (it's not exactly,
->>> I skipped some words that are before the PCI lines):
->>>
->>> PM: read .. MB in .. seconds
->>> SDA: Synchronizing SCSI cache
->>> r8169: PME# enabled
->>> PCI INT A disabled
->>> PCI INT D disabled
->>> PCI INT B disabled
->>> PCI INT C disabled
->>> PCI INT D disabled
->>> PCI INT A disabled
->>> Disabling non-boot CPUs
->>> CPU1 is now offline
->>> CPU1 is down
->>> CPU2 is now offline
->>> CPU2 is down
->>> CPU3 is now offline
->>> CPU3 is down
->>> SMP Alternatives: switching to UP code
->>>
->>> I first thought it's the same as bug 12155, but I'm not sure it is.
->>> If there's any other ouput I can send to help, let me know.
+>> idx is unsigned and cannot be less than 0.
 >>
->> Can you try with minimum config? And maybe !CONFIG_SMP?
->>                                                                        Pavel
->> --
->> (english) http://www.livejournal.com/~pavelmachek
->> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->>
->
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>> ---
+>> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+>> index 2f32969..a344add 100644
+>> --- a/kernel/trace/ftrace.c
+>> +++ b/kernel/trace/ftrace.c
+>> @@ -842,7 +842,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
+>>  	void *p = NULL;
+>>  
+>>  	if (*pos > 0) {
+>> -		if (iter->idx < 0)
+>> +		if (iter->idx == 0)
+>>  			return p;
+>>  		(*pos)--;
+>>  		iter->idx--;
+> 
+> 
+> Hi Roel,
+> 
+> I'm not sure this is the right fix.
+> If you look at t_next, if there is no more page to look at,
+> iter_idx takes -1.
+> 
+> A 0 value would mean: we are in the first index on the page, which means
+> there is something to read and we don't want to return NULL.
+> 
+> I guess that would be better to turn idx into a signed int.
 
-------=_Part_179456_30339610.1230923911964
-Content-Type: application/octet-stream; name=patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fph8av7z0
-Content-Disposition: attachment; filename=patch
+If we turn idx in a signed int, isn't it true that
+in kernel/trace/ftrace.c, line 806:
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L3I4MTY5LmMgYi9kcml2ZXJzL25ldC9yODE2OS5jCmlu
-ZGV4IDBmNmY5NzQuLjM5YzE3YmIgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbmV0L3I4MTY5LmMKKysr
-IGIvZHJpdmVycy9uZXQvcjgxNjkuYwpAQCAtMzcwLDggKzM3MCw5IEBAIHN0cnVjdCByaW5nX2lu
-Zm8gewogfTsKIAogZW51bSBmZWF0dXJlcyB7Ci0JUlRMX0ZFQVRVUkVfV09MCT0gKDEgPDwgMCks
-Ci0JUlRMX0ZFQVRVUkVfTVNJCT0gKDEgPDwgMSksCisJUlRMX0ZFQVRVUkVfV09MCQk9ICgxIDw8
-IDApLAorCVJUTF9GRUFUVVJFX01TSQkJPSAoMSA8PCAxKSwKKwlSVExfRkVBVFVSRV9HTUlJCT0g
-KDEgPDwgMiksCiB9OwogCiBzdHJ1Y3QgcnRsODE2OV9wcml2YXRlIHsKQEAgLTQwNiwxMyArNDA3
-LDE1IEBAIHN0cnVjdCBydGw4MTY5X3ByaXZhdGUgewogCXN0cnVjdCB2bGFuX2dyb3VwICp2bGdy
-cDsKICNlbmRpZgogCWludCAoKnNldF9zcGVlZCkoc3RydWN0IG5ldF9kZXZpY2UgKiwgdTggYXV0
-b25lZywgdTE2IHNwZWVkLCB1OCBkdXBsZXgpOwotCXZvaWQgKCpnZXRfc2V0dGluZ3MpKHN0cnVj
-dCBuZXRfZGV2aWNlICosIHN0cnVjdCBldGh0b29sX2NtZCAqKTsKKwlpbnQgKCpnZXRfc2V0dGlu
-Z3MpKHN0cnVjdCBuZXRfZGV2aWNlICosIHN0cnVjdCBldGh0b29sX2NtZCAqKTsKIAl2b2lkICgq
-cGh5X3Jlc2V0X2VuYWJsZSkodm9pZCBfX2lvbWVtICopOwogCXZvaWQgKCpod19zdGFydCkoc3Ry
-dWN0IG5ldF9kZXZpY2UgKik7CiAJdW5zaWduZWQgaW50ICgqcGh5X3Jlc2V0X3BlbmRpbmcpKHZv
-aWQgX19pb21lbSAqKTsKIAl1bnNpZ25lZCBpbnQgKCpsaW5rX29rKSh2b2lkIF9faW9tZW0gKik7
-CiAJc3RydWN0IGRlbGF5ZWRfd29yayB0YXNrOwogCXVuc2lnbmVkIGZlYXR1cmVzOworCisJc3Ry
-dWN0IG1paV9pZl9pbmZvIG1paTsKIH07CiAKIE1PRFVMRV9BVVRIT1IoIlJlYWx0ZWsgYW5kIHRo
-ZSBMaW51eCByODE2OSBjcmV3IDxuZXRkZXZAdmdlci5rZXJuZWwub3JnPiIpOwpAQCAtNDgyLDYg
-KzQ4NSwyMyBAQCBzdGF0aWMgaW50IG1kaW9fcmVhZCh2b2lkIF9faW9tZW0gKmlvYWRkciwgaW50
-IHJlZ19hZGRyKQogCXJldHVybiB2YWx1ZTsKIH0KIAorc3RhdGljIHZvaWQgcnRsX21kaW9fd3Jp
-dGUoc3RydWN0IG5ldF9kZXZpY2UgKmRldiwgaW50IHBoeV9pZCwgaW50IGxvY2F0aW9uLAorCQkJ
-ICAgaW50IHZhbCkKK3sKKwlzdHJ1Y3QgcnRsODE2OV9wcml2YXRlICp0cCA9IG5ldGRldl9wcml2
-KGRldik7CisJdm9pZCBfX2lvbWVtICppb2FkZHIgPSB0cC0+bW1pb19hZGRyOworCisJbWRpb193
-cml0ZShpb2FkZHIsIGxvY2F0aW9uLCB2YWwpOworfQorCitzdGF0aWMgaW50IHJ0bF9tZGlvX3Jl
-YWQoc3RydWN0IG5ldF9kZXZpY2UgKmRldiwgaW50IHBoeV9pZCwgaW50IGxvY2F0aW9uKQorewor
-CXN0cnVjdCBydGw4MTY5X3ByaXZhdGUgKnRwID0gbmV0ZGV2X3ByaXYoZGV2KTsKKwl2b2lkIF9f
-aW9tZW0gKmlvYWRkciA9IHRwLT5tbWlvX2FkZHI7CisKKwlyZXR1cm4gbWRpb19yZWFkKGlvYWRk
-ciwgbG9jYXRpb24pOworfQorCiBzdGF0aWMgdm9pZCBydGw4MTY5X2lycV9tYXNrX2FuZF9hY2so
-dm9pZCBfX2lvbWVtICppb2FkZHIpCiB7CiAJUlRMX1cxNihJbnRyTWFzaywgMHgwMDAwKTsKQEAg
-LTcyMCw5ICs3NDAsMTMgQEAgc3RhdGljIGludCBydGw4MTY5X3NldF9zcGVlZF94bWlpKHN0cnVj
-dCBuZXRfZGV2aWNlICpkZXYsCiAKIAlhdXRvX25lZ28gfD0gQURWRVJUSVNFX1BBVVNFX0NBUCB8
-IEFEVkVSVElTRV9QQVVTRV9BU1lNOwogCi0JaWYgKCh0cC0+bWFjX3ZlcnNpb24gPT0gUlRMX0dJ
-R0FfTUFDX1ZFUl8xMikgfHwKLQkgICAgKHRwLT5tYWNfdmVyc2lvbiA9PSBSVExfR0lHQV9NQUNf
-VkVSXzE3KSkgewotCQkvKiBWZW5kb3Igc3BlY2lmaWMgKDB4MWYpIGFuZCByZXNlcnZlZCAoMHgw
-ZSkgTUlJIHJlZ2lzdGVycy4gKi8KKwlpZiAoKHRwLT5tYWNfdmVyc2lvbiA9PSBSVExfR0lHQV9N
-QUNfVkVSXzExKSB8fAorCSAgICAodHAtPm1hY192ZXJzaW9uID09IFJUTF9HSUdBX01BQ19WRVJf
-MTIpIHx8CisJICAgICh0cC0+bWFjX3ZlcnNpb24gPj0gUlRMX0dJR0FfTUFDX1ZFUl8xNykpIHsK
-KwkJLyoKKwkJICogV2FrZSB1cCB0aGUgUEhZLgorCQkgKiBWZW5kb3Igc3BlY2lmaWMgKDB4MWYp
-IGFuZCByZXNlcnZlZCAoMHgwZSkgTUlJIHJlZ2lzdGVycy4KKwkJICovCiAJCW1kaW9fd3JpdGUo
-aW9hZGRyLCAweDFmLCAweDAwMDApOwogCQltZGlvX3dyaXRlKGlvYWRkciwgMHgwZSwgMHgwMDAw
-KTsKIAl9CkBAIC04NTAsNyArODc0LDcgQEAgc3RhdGljIGludCBydGw4MTY5X3J4X3ZsYW5fc2ti
-KHN0cnVjdCBydGw4MTY5X3ByaXZhdGUgKnRwLCBzdHJ1Y3QgUnhEZXNjICpkZXNjLAogCiAjZW5k
-aWYKIAotc3RhdGljIHZvaWQgcnRsODE2OV9nc2V0X3RiaShzdHJ1Y3QgbmV0X2RldmljZSAqZGV2
-LCBzdHJ1Y3QgZXRodG9vbF9jbWQgKmNtZCkKK3N0YXRpYyBpbnQgcnRsODE2OV9nc2V0X3RiaShz
-dHJ1Y3QgbmV0X2RldmljZSAqZGV2LCBzdHJ1Y3QgZXRodG9vbF9jbWQgKmNtZCkKIHsKIAlzdHJ1
-Y3QgcnRsODE2OV9wcml2YXRlICp0cCA9IG5ldGRldl9wcml2KGRldik7CiAJdm9pZCBfX2lvbWVt
-ICppb2FkZHIgPSB0cC0+bW1pb19hZGRyOwpAQCAtODY3LDY1ICs4OTEsMjkgQEAgc3RhdGljIHZv
-aWQgcnRsODE2OV9nc2V0X3RiaShzdHJ1Y3QgbmV0X2RldmljZSAqZGV2LCBzdHJ1Y3QgZXRodG9v
-bF9jbWQgKmNtZCkKIAogCWNtZC0+c3BlZWQgPSBTUEVFRF8xMDAwOwogCWNtZC0+ZHVwbGV4ID0g
-RFVQTEVYX0ZVTEw7IC8qIEFsd2F5cyBzZXQgKi8KKworCXJldHVybiAwOwogfQogCi1zdGF0aWMg
-dm9pZCBydGw4MTY5X2dzZXRfeG1paShzdHJ1Y3QgbmV0X2RldmljZSAqZGV2LCBzdHJ1Y3QgZXRo
-dG9vbF9jbWQgKmNtZCkKK3N0YXRpYyBpbnQgcnRsODE2OV9nc2V0X3htaWkoc3RydWN0IG5ldF9k
-ZXZpY2UgKmRldiwgc3RydWN0IGV0aHRvb2xfY21kICpjbWQpCiB7CiAJc3RydWN0IHJ0bDgxNjlf
-cHJpdmF0ZSAqdHAgPSBuZXRkZXZfcHJpdihkZXYpOwotCXZvaWQgX19pb21lbSAqaW9hZGRyID0g
-dHAtPm1taW9fYWRkcjsKLQl1OCBzdGF0dXM7Ci0KLQljbWQtPnN1cHBvcnRlZCA9IFNVUFBPUlRF
-RF8xMGJhc2VUX0hhbGYgfAotCQkJIFNVUFBPUlRFRF8xMGJhc2VUX0Z1bGwgfAotCQkJIFNVUFBP
-UlRFRF8xMDBiYXNlVF9IYWxmIHwKLQkJCSBTVVBQT1JURURfMTAwYmFzZVRfRnVsbCB8Ci0JCQkg
-U1VQUE9SVEVEXzEwMDBiYXNlVF9GdWxsIHwKLQkJCSBTVVBQT1JURURfQXV0b25lZyB8Ci0JCQkg
-U1VQUE9SVEVEX1RQOwotCi0JY21kLT5hdXRvbmVnID0gMTsKLQljbWQtPmFkdmVydGlzaW5nID0g
-QURWRVJUSVNFRF9UUCB8IEFEVkVSVElTRURfQXV0b25lZzsKLQotCWlmICh0cC0+cGh5X2F1dG9f
-bmVnb19yZWcgJiBBRFZFUlRJU0VfMTBIQUxGKQotCQljbWQtPmFkdmVydGlzaW5nIHw9IEFEVkVS
-VElTRURfMTBiYXNlVF9IYWxmOwotCWlmICh0cC0+cGh5X2F1dG9fbmVnb19yZWcgJiBBRFZFUlRJ
-U0VfMTBGVUxMKQotCQljbWQtPmFkdmVydGlzaW5nIHw9IEFEVkVSVElTRURfMTBiYXNlVF9GdWxs
-OwotCWlmICh0cC0+cGh5X2F1dG9fbmVnb19yZWcgJiBBRFZFUlRJU0VfMTAwSEFMRikKLQkJY21k
-LT5hZHZlcnRpc2luZyB8PSBBRFZFUlRJU0VEXzEwMGJhc2VUX0hhbGY7Ci0JaWYgKHRwLT5waHlf
-YXV0b19uZWdvX3JlZyAmIEFEVkVSVElTRV8xMDBGVUxMKQotCQljbWQtPmFkdmVydGlzaW5nIHw9
-IEFEVkVSVElTRURfMTAwYmFzZVRfRnVsbDsKLQlpZiAodHAtPnBoeV8xMDAwX2N0cmxfcmVnICYg
-QURWRVJUSVNFXzEwMDBGVUxMKQotCQljbWQtPmFkdmVydGlzaW5nIHw9IEFEVkVSVElTRURfMTAw
-MGJhc2VUX0Z1bGw7Ci0KLQlzdGF0dXMgPSBSVExfUjgoUEhZc3RhdHVzKTsKLQotCWlmIChzdGF0
-dXMgJiBfMTAwMGJwc0YpCi0JCWNtZC0+c3BlZWQgPSBTUEVFRF8xMDAwOwotCWVsc2UgaWYgKHN0
-YXR1cyAmIF8xMDBicHMpCi0JCWNtZC0+c3BlZWQgPSBTUEVFRF8xMDA7Ci0JZWxzZSBpZiAoc3Rh
-dHVzICYgXzEwYnBzKQotCQljbWQtPnNwZWVkID0gU1BFRURfMTA7Ci0KLQlpZiAoc3RhdHVzICYg
-VHhGbG93Q3RybCkKLQkJY21kLT5hZHZlcnRpc2luZyB8PSBBRFZFUlRJU0VEX0FzeW1fUGF1c2U7
-Ci0JaWYgKHN0YXR1cyAmIFJ4Rmxvd0N0cmwpCi0JCWNtZC0+YWR2ZXJ0aXNpbmcgfD0gQURWRVJU
-SVNFRF9QYXVzZTsKLQotCWNtZC0+ZHVwbGV4ID0gKChzdGF0dXMgJiBfMTAwMGJwc0YpIHx8IChz
-dGF0dXMgJiBGdWxsRHVwKSkgPwotCQkgICAgICBEVVBMRVhfRlVMTCA6IERVUExFWF9IQUxGOwor
-CisJcmV0dXJuIG1paV9ldGh0b29sX2dzZXQoJnRwLT5taWksIGNtZCk7CiB9CiAKIHN0YXRpYyBp
-bnQgcnRsODE2OV9nZXRfc2V0dGluZ3Moc3RydWN0IG5ldF9kZXZpY2UgKmRldiwgc3RydWN0IGV0
-aHRvb2xfY21kICpjbWQpCiB7CiAJc3RydWN0IHJ0bDgxNjlfcHJpdmF0ZSAqdHAgPSBuZXRkZXZf
-cHJpdihkZXYpOwogCXVuc2lnbmVkIGxvbmcgZmxhZ3M7CisJaW50IHJjOwogCiAJc3Bpbl9sb2Nr
-X2lycXNhdmUoJnRwLT5sb2NrLCBmbGFncyk7CiAKLQl0cC0+Z2V0X3NldHRpbmdzKGRldiwgY21k
-KTsKKwlyYyA9IHRwLT5nZXRfc2V0dGluZ3MoZGV2LCBjbWQpOwogCiAJc3Bpbl91bmxvY2tfaXJx
-cmVzdG9yZSgmdHAtPmxvY2ssIGZsYWdzKTsKLQlyZXR1cm4gMDsKKwlyZXR1cm4gcmM7CiB9CiAK
-IHN0YXRpYyB2b2lkIHJ0bDgxNjlfZ2V0X3JlZ3Moc3RydWN0IG5ldF9kZXZpY2UgKmRldiwgc3Ry
-dWN0IGV0aHRvb2xfcmVncyAqcmVncywKQEAgLTE1MTMsNyArMTUwMSw3IEBAIHN0YXRpYyBjb25z
-dCBzdHJ1Y3QgcnRsX2NmZ19pbmZvIHsKIAl1bnNpZ25lZCBpbnQgYWxpZ247CiAJdTE2IGludHJf
-ZXZlbnQ7CiAJdTE2IG5hcGlfZXZlbnQ7Ci0JdW5zaWduZWQgbXNpOworCXVuc2lnbmVkIGZlYXR1
-cmVzOwogfSBydGxfY2ZnX2luZm9zIFtdID0gewogCVtSVExfQ0ZHXzBdID0gewogCQkuaHdfc3Rh
-cnQJPSBydGxfaHdfc3RhcnRfODE2OSwKQEAgLTE1MjIsNyArMTUxMCw3IEBAIHN0YXRpYyBjb25z
-dCBzdHJ1Y3QgcnRsX2NmZ19pbmZvIHsKIAkJLmludHJfZXZlbnQJPSBTWVNFcnIgfCBMaW5rQ2hn
-IHwgUnhPdmVyZmxvdyB8CiAJCQkJICBSeEZJRk9PdmVyIHwgVHhFcnIgfCBUeE9LIHwgUnhPSyB8
-IFJ4RXJyLAogCQkubmFwaV9ldmVudAk9IFJ4RklGT092ZXIgfCBUeEVyciB8IFR4T0sgfCBSeE9L
-IHwgUnhPdmVyZmxvdywKLQkJLm1zaQkJPSAwCisJCS5mZWF0dXJlcwk9IFJUTF9GRUFUVVJFX0dN
-SUkKIAl9LAogCVtSVExfQ0ZHXzFdID0gewogCQkuaHdfc3RhcnQJPSBydGxfaHdfc3RhcnRfODE2
-OCwKQEAgLTE1MzEsNyArMTUxOSw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3QgcnRsX2NmZ19pbmZv
-IHsKIAkJLmludHJfZXZlbnQJPSBTWVNFcnIgfCBMaW5rQ2hnIHwgUnhPdmVyZmxvdyB8CiAJCQkJ
-ICBUeEVyciB8IFR4T0sgfCBSeE9LIHwgUnhFcnIsCiAJCS5uYXBpX2V2ZW50CT0gVHhFcnIgfCBU
-eE9LIHwgUnhPSyB8IFJ4T3ZlcmZsb3csCi0JCS5tc2kJCT0gUlRMX0ZFQVRVUkVfTVNJCisJCS5m
-ZWF0dXJlcwk9IFJUTF9GRUFUVVJFX0dNSUkgfCBSVExfRkVBVFVSRV9NU0kKIAl9LAogCVtSVExf
-Q0ZHXzJdID0gewogCQkuaHdfc3RhcnQJPSBydGxfaHdfc3RhcnRfODEwMSwKQEAgLTE1NDAsNyAr
-MTUyOCw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3QgcnRsX2NmZ19pbmZvIHsKIAkJLmludHJfZXZl
-bnQJPSBTWVNFcnIgfCBMaW5rQ2hnIHwgUnhPdmVyZmxvdyB8IFBDU1RpbWVvdXQgfAogCQkJCSAg
-UnhGSUZPT3ZlciB8IFR4RXJyIHwgVHhPSyB8IFJ4T0sgfCBSeEVyciwKIAkJLm5hcGlfZXZlbnQJ
-PSBSeEZJRk9PdmVyIHwgVHhFcnIgfCBUeE9LIHwgUnhPSyB8IFJ4T3ZlcmZsb3csCi0JCS5tc2kJ
-CT0gUlRMX0ZFQVRVUkVfTVNJCisJCS5mZWF0dXJlcwk9IFJUTF9GRUFUVVJFX01TSQogCX0KIH07
-CiAKQEAgLTE1NTIsNyArMTU0MCw3IEBAIHN0YXRpYyB1bnNpZ25lZCBydGxfdHJ5X21zaShzdHJ1
-Y3QgcGNpX2RldiAqcGRldiwgdm9pZCBfX2lvbWVtICppb2FkZHIsCiAJdTggY2ZnMjsKIAogCWNm
-ZzIgPSBSVExfUjgoQ29uZmlnMikgJiB+TVNJRW5hYmxlOwotCWlmIChjZmctPm1zaSkgeworCWlm
-IChjZmctPmZlYXR1cmVzICYgUlRMX0ZFQVRVUkVfTVNJKSB7CiAJCWlmIChwY2lfZW5hYmxlX21z
-aShwZGV2KSkgewogCQkJZGV2X2luZm8oJnBkZXYtPmRldiwgIm5vIE1TSS4gQmFjayB0byBJTlR4
-LlxuIik7CiAJCX0gZWxzZSB7CkBAIC0xNTc4LDYgKzE1NjYsNyBAQCBydGw4MTY5X2luaXRfb25l
-KHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBjb25zdCBzdHJ1Y3QgcGNpX2RldmljZV9pZCAqZW50KQog
-CWNvbnN0IHN0cnVjdCBydGxfY2ZnX2luZm8gKmNmZyA9IHJ0bF9jZmdfaW5mb3MgKyBlbnQtPmRy
-aXZlcl9kYXRhOwogCWNvbnN0IHVuc2lnbmVkIGludCByZWdpb24gPSBjZmctPnJlZ2lvbjsKIAlz
-dHJ1Y3QgcnRsODE2OV9wcml2YXRlICp0cDsKKwlzdHJ1Y3QgbWlpX2lmX2luZm8gKm1paTsKIAlz
-dHJ1Y3QgbmV0X2RldmljZSAqZGV2OwogCXZvaWQgX19pb21lbSAqaW9hZGRyOwogCXVuc2lnbmVk
-IGludCBpOwpAQCAtMTYwMiw2ICsxNTkxLDE0IEBAIHJ0bDgxNjlfaW5pdF9vbmUoc3RydWN0IHBj
-aV9kZXYgKnBkZXYsIGNvbnN0IHN0cnVjdCBwY2lfZGV2aWNlX2lkICplbnQpCiAJdHAtPnBjaV9k
-ZXYgPSBwZGV2OwogCXRwLT5tc2dfZW5hYmxlID0gbmV0aWZfbXNnX2luaXQoZGVidWcubXNnX2Vu
-YWJsZSwgUjgxNjlfTVNHX0RFRkFVTFQpOwogCisJbWlpID0gJnRwLT5taWk7CisJbWlpLT5kZXYg
-PSBkZXY7CisJbWlpLT5tZGlvX3JlYWQgPSBydGxfbWRpb19yZWFkOworCW1paS0+bWRpb193cml0
-ZSA9IHJ0bF9tZGlvX3dyaXRlOworCW1paS0+cGh5X2lkX21hc2sgPSAweDFmOworCW1paS0+cmVn
-X251bV9tYXNrID0gMHgxZjsKKwltaWktPnN1cHBvcnRzX2dtaWkgPSAhIShjZmctPmZlYXR1cmVz
-ICYgUlRMX0ZFQVRVUkVfR01JSSk7CisKIAkvKiBlbmFibGUgZGV2aWNlIChpbmNsLiBQQ0kgUE0g
-d2FrZXVwIGFuZCBob3RwbHVnIHNldHVwKSAqLwogCXJjID0gcGNpX2VuYWJsZV9kZXZpY2UocGRl
-dik7CiAJaWYgKHJjIDwgMCkgewpAQCAtMjA5OSw4ICsyMDk2LDYgQEAgc3RhdGljIHZvaWQgcnRs
-X2h3X3N0YXJ0XzgxNjgoc3RydWN0IG5ldF9kZXZpY2UgKmRldikKIAogCVJUTF9SOChJbnRyTWFz
-ayk7CiAKLQlSVExfVzMyKFJ4TWlzc2VkLCAwKTsKLQogCXJ0bF9zZXRfcnhfbW9kZShkZXYpOwog
-CiAJUlRMX1c4KENoaXBDbWQsIENtZFR4RW5iIHwgQ21kUnhFbmIpOwpAQCAtMjE0Myw4ICsyMTM4
-LDYgQEAgc3RhdGljIHZvaWQgcnRsX2h3X3N0YXJ0XzgxMDEoc3RydWN0IG5ldF9kZXZpY2UgKmRl
-dikKIAogCVJUTF9SOChJbnRyTWFzayk7CiAKLQlSVExfVzMyKFJ4TWlzc2VkLCAwKTsKLQogCXJ0
-bF9zZXRfcnhfbW9kZShkZXYpOwogCiAJUlRMX1c4KENoaXBDbWQsIENtZFR4RW5iIHwgQ21kUnhF
-bmIpOwpAQCAtMjkyMiw2ICsyOTE1LDE3IEBAIHN0YXRpYyBpbnQgcnRsODE2OV9wb2xsKHN0cnVj
-dCBuYXBpX3N0cnVjdCAqbmFwaSwgaW50IGJ1ZGdldCkKIAlyZXR1cm4gd29ya19kb25lOwogfQog
-CitzdGF0aWMgdm9pZCBydGw4MTY5X3J4X21pc3NlZChzdHJ1Y3QgbmV0X2RldmljZSAqZGV2LCB2
-b2lkIF9faW9tZW0gKmlvYWRkcikKK3sKKwlzdHJ1Y3QgcnRsODE2OV9wcml2YXRlICp0cCA9IG5l
-dGRldl9wcml2KGRldik7CisKKwlpZiAodHAtPm1hY192ZXJzaW9uID4gUlRMX0dJR0FfTUFDX1ZF
-Ul8wNikKKwkJcmV0dXJuOworCisJZGV2LT5zdGF0cy5yeF9taXNzZWRfZXJyb3JzICs9IChSVExf
-UjMyKFJ4TWlzc2VkKSAmIDB4ZmZmZmZmKTsKKwlSVExfVzMyKFJ4TWlzc2VkLCAwKTsKK30KKwog
-c3RhdGljIHZvaWQgcnRsODE2OV9kb3duKHN0cnVjdCBuZXRfZGV2aWNlICpkZXYpCiB7CiAJc3Ry
-dWN0IHJ0bDgxNjlfcHJpdmF0ZSAqdHAgPSBuZXRkZXZfcHJpdihkZXYpOwpAQCAtMjkzOSw5ICsy
-OTQzLDcgQEAgY29yZV9kb3duOgogCiAJcnRsODE2OV9hc2ljX2Rvd24oaW9hZGRyKTsKIAotCS8q
-IFVwZGF0ZSB0aGUgZXJyb3IgY291bnRzLiAqLwotCWRldi0+c3RhdHMucnhfbWlzc2VkX2Vycm9y
-cyArPSBSVExfUjMyKFJ4TWlzc2VkKTsKLQlSVExfVzMyKFJ4TWlzc2VkLCAwKTsKKwlydGw4MTY5
-X3J4X21pc3NlZChkZXYsIGlvYWRkcik7CiAKIAlzcGluX3VubG9ja19pcnEoJnRwLT5sb2NrKTsK
-IApAQCAtMzA2Myw4ICszMDY1LDcgQEAgc3RhdGljIHN0cnVjdCBuZXRfZGV2aWNlX3N0YXRzICpy
-dGw4MTY5X2dldF9zdGF0cyhzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQogCiAJaWYgKG5ldGlmX3J1
-bm5pbmcoZGV2KSkgewogCQlzcGluX2xvY2tfaXJxc2F2ZSgmdHAtPmxvY2ssIGZsYWdzKTsKLQkJ
-ZGV2LT5zdGF0cy5yeF9taXNzZWRfZXJyb3JzICs9IFJUTF9SMzIoUnhNaXNzZWQpOwotCQlSVExf
-VzMyKFJ4TWlzc2VkLCAwKTsKKwkJcnRsODE2OV9yeF9taXNzZWQoZGV2LCBpb2FkZHIpOwogCQlz
-cGluX3VubG9ja19pcnFyZXN0b3JlKCZ0cC0+bG9jaywgZmxhZ3MpOwogCX0KIApAQCAtMzA4OSw4
-ICszMDkwLDcgQEAgc3RhdGljIGludCBydGw4MTY5X3N1c3BlbmQoc3RydWN0IHBjaV9kZXYgKnBk
-ZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSkKIAogCXJ0bDgxNjlfYXNpY19kb3duKGlvYWRkcik7CiAK
-LQlkZXYtPnN0YXRzLnJ4X21pc3NlZF9lcnJvcnMgKz0gUlRMX1IzMihSeE1pc3NlZCk7Ci0JUlRM
-X1czMihSeE1pc3NlZCwgMCk7CisJcnRsODE2OV9yeF9taXNzZWQoZGV2LCBpb2FkZHIpOwogCiAJ
-c3Bpbl91bmxvY2tfaXJxKCZ0cC0+bG9jayk7Cg==
-------=_Part_179456_30339610.1230923911964--
+retry:
+if (iter->idx >= iter->pg->index) {
+	...
+} else {
+	iter->idx++;
+	if ( a certain rec-> and iter->flags )
+		goto retry;
+}
+
+since iter->pg->index is an unsigned long, when larger than INT_MAX this
+could result in an endless loop?
+
+Roel
