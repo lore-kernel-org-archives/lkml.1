@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZABCho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZABCmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbZABCho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 21:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZABChe
+	id S1756945AbZABCmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 21:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZABCmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 21:37:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49460 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755483AbZABChd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 21:37:33 -0500
-Message-ID: <495D7DC9.8070101@kernel.org>
-Date: Fri, 02 Jan 2009 11:36:57 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata hibernation fixes
-References: <20081104062734.GA4420@havoc.gtf.org>
-In-Reply-To: <20081104062734.GA4420@havoc.gtf.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 1 Jan 2009 21:42:11 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51454 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755550AbZABCmK (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 21:42:10 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2008-12-30-16-05 uploaded
+In-Reply-To: Your message of "Thu, 01 Jan 2009 18:31:57 PST."
+             <20090101183157.dfbe9789.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200812310006.mBV060iV029753@imap1.linux-foundation.org> <22921.1230843108@turing-police.cc.vt.edu>
+            <20090101183157.dfbe9789.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1230864125_3311P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 02 Jan 2009 02:37:04 +0000 (UTC)
+Date: Thu, 01 Jan 2009 21:42:05 -0500
+Message-ID: <18080.1230864125@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> This adds code at a late stage (heading towards -rc4), but does
-> eliminate a particular spin-up overcycling behavior associated with
-> hibernation.
+--==_Exmh_1230864125_3311P
+Content-Type: text/plain; charset=us-ascii
+
+On Thu, 01 Jan 2009 18:31:57 PST, Andrew Morton said:
+> On Thu, 01 Jan 2009 15:51:48 -0500 Valdis.Kletnieks@vt.edu wrote:
 > 
-> Rafael's extended description below...  Separated to make it easier to
-> pull-or-not, separate from the other libata fixes.  There shouldn't be
-> any merge trouble between the two.
+> > On Tue, 30 Dec 2008 16:06:00 PST, akpm@linux-foundation.org said:
+> > > The mm-of-the-moment snapshot 2008-12-30-16-05 has been uploaded to
+> > 
+> > 
+> >   CC =5BM=5D  drivers/misc/dell-laptop.o
+> > drivers/misc/dell-laptop.c: In function dell_send_request:
+> > drivers/misc/dell-laptop.c:147: error: implicit declaration of function dcdbas_smi_request
+> > 
+> > Fix: move misc-add-dell-laptop-driver.patch to someplace below
+> > dcdbas-export-functionality-for-use-in-other-drivers.patch in the series file.
+> > 
 > 
-> SATA: Blacklist systems that spin off disks during ACPI power off
+> OK, thanks, done.
+> 
+> Confused.  I assume you were doing a bisection.
 
-Jeff, I think this should be merged into 2.6.29 unless Linus still
-objects.  Linus, as discussed in this thread, this is workaround for a
-hardware / firmware problem and vanilla windows also suffers the
-problem, so as ugly as it is, we need this to prevent double spin down
-on the machine.
+Yeah, I got a kernel that died very early - no early_printk, no penguin logos,
+nada.  Turned out to be self-inflicted.
 
-Thanks and happy new year.
+--==_Exmh_1230864125_3311P
+Content-Type: application/pgp-signature
 
--- 
-tejun
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJXX79cC3lWbTT17ARAnSyAKCa6wK6YW9wq6eWpyUuCwUa0yIFmQCdH5OA
+5r6eBWj6vRPUOAEESesAzyU=
+=JXRG
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1230864125_3311P--
