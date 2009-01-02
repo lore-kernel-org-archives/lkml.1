@@ -1,93 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932221AbZABTmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbZABTtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932221AbZABTmW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 14:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbZABTmM
+	id S932089AbZABTtS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 14:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZABTtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 14:42:12 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:21507 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbZABTmL (ORCPT
+	Fri, 2 Jan 2009 14:49:04 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:57054 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751031AbZABTtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 14:42:11 -0500
-Message-ID: <495E6DA2.8060901@oracle.com>
-Date: Fri, 02 Jan 2009 11:40:18 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Peter W Morreale <pmorreale@novell.com>
-CC: linux-kernel@vger.kernel.org, riel@nl.linux.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH v3] Update of Documentation/
-References: <20090102193116.8124.22532.stgit@hermosa.site>
-In-Reply-To: <20090102193116.8124.22532.stgit@hermosa.site>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.495E6DA6.00F5:SCFSTAT928724,ss=1,fgs=0
+	Fri, 2 Jan 2009 14:49:01 -0500
+Date: Fri, 2 Jan 2009 20:50:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT] final batch of kbuild updates 
+Message-ID: <20090102195039.GA7343@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter W Morreale wrote:
-> This patch updates Documentation/sysctl/vm.txt and
-> Documentation/filesystems/proc.txt.   More specifically, the section on
-> /proc/sys/vm in Documentation/filesystems/proc.txt was removed and a
-> link to Documentation/sysctl/vm.txt added.
-> 
-> Most of the verbiage from proc.txt was simply moved in vm.txt, with new
-> addtional text for "swappiness" and "stat_interval".
-> 
-> This update applies against linux-next-20090102.
-> 
-> Best,
-> -PWM
-> ---
-> 
-> Signed-off-by: Peter W Morreale <pmorreale@novell.com>
-> 
->  Documentation/filesystems/proc.txt |  266 ----------------
->  Documentation/sysctl/vm.txt        |  590 +++++++++++++++++++++++++-----------
->  2 files changed, 413 insertions(+), 443 deletions(-)
+Hi Linus.
 
-I get this when trying to apply the patch (using 'patch'), but I don't
-see why (yet):
+Here follows the final batch of kbuild updates for the merge window.
 
+Highlights:
 
-|diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-|index 334ef2f..0a9c66a 100644
-|--- a/Documentation/filesystems/proc.txt
-|+++ b/Documentation/filesystems/proc.txt
---------------------------
-Patching file Documentation/filesystems/proc.txt using Plan A...
-Hunk #1 succeeded at 5.
-Hunk #2 succeeded at 1373.
-Hmm...  The next patch looks like a unified diff to me...
-The text leading up to this was:
---------------------------
-|diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-|index e9a5c28..9c97c68 100644
-|--- a/Documentation/sysctl/vm.txt
-|+++ b/Documentation/sysctl/vm.txt
---------------------------
-Patching file Documentation/sysctl/vm.txt using Plan A...
-Hunk #1 succeeded at 1.
-Hunk #2 FAILED at 17.
-1 out of 2 hunks FAILED -- saving rejects to file Documentation/sysctl/vm.txt.rej
-Hmm...missing header for unified diff at line 603 of patch
-  The next patch looks like a unified diff to me...
-can't find file to patch at input line 603
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-| 
---------------------------
-File to patch:
+o We no longer let sparse warm about void-valued expressions
+o We have implmented additional checks on out user space headers
+  We do not fail on these yet - there are to much to be fixed.
+o Added some long needed documentation for kconfig and kbuild
+  Always room for more - especially on the kbuild parts.
+
+This set includes a fix in the m68k specific Kconfig file - this 
+is acked by Gert.
+
+The kconfig changes is mostly adding comments. The actual changes will
+wait until next merge window.
+
+Please pull from:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-next.git master
+
+	Sam
 
 
+Hannes Eder (1):
+      kbuild: disable sparse warning "returning void-valued expression"
 
+Mike Frysinger (2):
+      headers_check.pl: disallow extern's
+      kbuild: in headers_install autoconvert asm/inline/volatile to __xxx__
 
--- 
-~Randy
+Randy Dunlap (1):
+      kbuild: make *config usage docs
+
+Sam Ravnborg (10):
+      m68k: fix recursive dependency in Kconfig
+      kconfig: explain symbol value defaults
+      kconfig: add comments to symbol flags
+      kconfig: struct property commented
+      kconfig: improve error messages for bad source statements
+      kbuild: check for leaked CONFIG_ symbols to userspace
+      kbuild: document environment variables
+      kbuild: drop debugging leftover in tags.sh
+      kbuild: add checks for include of linux/types in userspace headers
+      kbuild: ignore a few files in headers_check
+
+ Documentation/kbuild/00-INDEX       |    6 +-
+ Documentation/kbuild/kbuild.txt     |  126 +++++++++++++++++++++++
+ Documentation/kbuild/kconfig.txt    |  188 +++++++++++++++++++++++++++++++++++
+ Makefile                            |    3 +-
+ README                              |   32 ++++---
+ arch/m68k/Kconfig                   |    1 -
+ scripts/headers_check.pl            |   70 +++++++++++++-
+ scripts/headers_install.pl          |    3 +
+ scripts/kconfig/expr.h              |   82 ++++++++++-----
+ scripts/kconfig/lex.zconf.c_shipped |    7 +-
+ scripts/kconfig/zconf.l             |    7 +-
+ scripts/tags.sh                     |    1 -
+ 12 files changed, 476 insertions(+), 50 deletions(-)
