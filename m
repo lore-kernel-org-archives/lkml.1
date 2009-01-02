@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbZABOAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbZABOF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757780AbZABOAm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 09:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZABOAd
+	id S1757819AbZABOF0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 09:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZABOFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 09:00:33 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:27070 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbZABOAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 09:00:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=glh2NGqJX/8p80HaMfHznvwMqbYUGxto5xLHVxeDUM8BXHxY8oHg3M1s0z/pjaHdi4
-         nWeYApBJhBa7RlR4uR7om8nH/fvwDYGQ0TMq8tB3TEUM1rF5uNAsreQsPewrWbZzIxDH
-         fQg19KOlKxgV0n65wOaAVcOWmrHIO6CrLfkLY=
-Date: Fri, 2 Jan 2009 22:00:23 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: Tino Keitel <tino.keitel@gmx.de>, Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Enable CONFIG_USB_SUSPEND by default or some mobile HD can't
-	be unplugged safely
-Message-ID: <20090102140023.GC4833@thyme.bj.intel.com>
-Mail-Followup-To: Tino Keitel <tino.keitel@gmx.de>,
-	Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de,
-	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090101160343.GA4278@thyme.bj.intel.com> <20090102095643.GB17103@x61>
+	Fri, 2 Jan 2009 09:05:14 -0500
+Received: from thunk.org ([69.25.196.29]:49020 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752444AbZABOFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 09:05:12 -0500
+Date: Fri, 2 Jan 2009 09:04:09 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Rob Landley <rob@landley.net>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Message-ID: <20090102140409.GA4758@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Rob Landley <rob@landley.net>,
+	Christoph Hellwig <hch@infradead.org>,
+	Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+	linux-kernel@vger.kernel.org,
+	Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <200901021026.37905.a.miskiewicz@gmail.com> <20090102094934.GB17841@infradead.org> <200901020656.32013.rob@landley.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090102095643.GB17103@x61>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200901020656.32013.rob@landley.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 10:56:43AM +0100, Tino Keitel wrote:
-> With a WD My Passport drive (2,5"), I need to use sg_start --stop --pc=3
-> to stop the disk before unplugging it. Maybe this works with your
-> drive, too.  This is also required by some Firewire hard disks.  Maybe
-> the eject command should be extended to use this method, as it is used
-> also by HAL to eject hotplug devices.
+On Fri, Jan 02, 2009 at 06:56:31AM -0600, Rob Landley wrote: 
+> That said, how is bash _worse_ than perl?  (Where's the second
+> implementation of perl?  Even Python had jython, but perl
+> has... what?  The attempt to rebase on Parrot went down in
+> flames...)
 
-Hum...  I grepped my hal and hal-info packages but haven't found any
-scripts using `sg_*'. I'm using hal package 0.5.11-6 from Debian
-testing.
+(1) bash implies POSIX extensions; perl is actually quite portable.
 
-Now I know 3 methods supposed can be used to shut the device:
-1. (Alan Stern said Windows use this) cut the USB port's power
-2. send STOP SCSI command to stop it
-3. put it into suspend mode
+(2) There are distributions that install with perl by default but not
+bash; they use dash for speed reasons.
 
-For the 1st method I have no much experience with Windows so I can't
-verify. But now I doubt it. Since there are many early USB devices
-that still show light on after you "safely remove" it from Windows. I
-guess the power is still supplied but the device is send a command to
-be shutdown or suspended.
+Sounds like though modulo dealing with 64-bit arithmetic, your patches
+are mostly dash/POSIX.2 comformant, so you're probably mostly good on
+that front once you address the 32/64-bit issues.  I'd also suggest
+explicitly add a reminder to the shell scripts' comments to avoid
+bashisms for maximum portability, to remind developers in the future
+who might try to change the shell scripts to watch out for portability
+issues.
 
-For the 2nd and 3rd methods, I don't know which one is better, hope
-some experts can give advice.
+							- Ted
 
-Whatever, I think the suspend mode is a standard USB design and the
-kernel should support it by default so we should enable
-CONFIG_USB_SUSPEND.
-
--- 
-Li, Yan
