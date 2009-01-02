@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZABJXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZABJXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbZABJXy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZABJXq
+	id S1757529AbZABJXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZABJXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:23:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47320 "EHLO mx2.mail.elte.hu"
+	Fri, 2 Jan 2009 04:23:13 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35214 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752670AbZABJXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:23:45 -0500
-Date: Fri, 2 Jan 2009 10:23:30 +0100
+	id S1752007AbZABJXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 04:23:13 -0500
+Date: Fri, 2 Jan 2009 10:22:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
 Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Cyrill Gorcunov <gorcunov@openvz.org>, Len Brown <lenb@kernel.org>
-Subject: Re: [patch 3/3] acpi: check for pxm_to_node_map overflow
-Message-ID: <20090102092330.GB1975@elte.hu>
-References: <20090102082717.810810508@gmail.com>> <495dd169.0437560a.1cd3.ffffd503@mx.google.com>
+       Cyrill Gorcunov <gorcunov@openvz.org>,
+       William Irwin <wli@holomorphy.com>
+Subject: Re: [patch 2/3] mm: hugetlb -- get rid of redundant if operation
+Message-ID: <20090102092221.GA1975@elte.hu>
+References: <20090102082717.810810508@gmail.com>> <495dd169.0405560a.0ebf.ffff938c@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <495dd169.0437560a.1cd3.ffffd503@mx.google.com>
+In-Reply-To: <495dd169.0405560a.0ebf.ffff938c@mx.google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,20 +37,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+Andrew Cc:-ed.
 
-> It is hardly (if ever) possible but in case of broken _PXM
-> entry we could reach out of pxm_to_node_map array
-> bounds in acpi_map_pxm_to_node() call. Lets check it
-> (it's not that expensive and safe).
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> CC: Len Brown <lenb@kernel.org>
-> ---
->  drivers/acpi/numa.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+patch looks correct to me.
 
-just curious - how did you find this - code review or some tool help like 
-Sparse output or a compiler warning?
+Reviewed-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
+
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+
+> At this point we already know that 'addr' is not NULL
+> so get rid of redundant 'if'. Probably gcc eliminate it
+> by optimization pass.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> CC: William Irwin <wli@holomorphy.com>
+> ---
+>  mm/hugetlb.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> Index: linux-2.6.git/mm/hugetlb.c
+> ===================================================================
+> --- linux-2.6.git.orig/mm/hugetlb.c
+> +++ linux-2.6.git/mm/hugetlb.c
+> @@ -991,8 +991,7 @@ __attribute__((weak)) int alloc_bootmem_
+>  			 * puts them into the mem_map).
+>  			 */
+>  			m = addr;
+> -			if (m)
+> -				goto found;
+> +			goto found;
+>  		}
+>  		hstate_next_node(h);
+>  		nr_nodes--;
+> 
+> -- 
