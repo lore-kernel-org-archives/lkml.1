@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932602AbZABXDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbZABXLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932602AbZABXDI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 18:03:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZABXCz
+	id S1759068AbZABXLu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 18:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbZABXLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 18:02:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:30962 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756989AbZABXCy (ORCPT
+	Fri, 2 Jan 2009 18:11:38 -0500
+Received: from rn-out-0910.google.com ([64.233.170.187]:43307 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbZABXLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 18:02:54 -0500
+	Fri, 2 Jan 2009 18:11:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ixsGMBDhForX3cRBFrbIiuW/0fYWb+D/FRj/u8uyWci6LR7HupFKAs4tVnLQXY+DW2
-         yhpO9HKaLpDwGNGDbz9+xZsBon4F7WGQNkBS6DfZk5q0quvHK/EUU+45nvTw5cgC5j+z
-         NOvUd4on910zuPNRMR0cLGKDO07LQ8ZH+mU/Y=
-Date: Sat, 3 Jan 2009 01:03:14 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] kmemtrace: Use tracepoints instead of markers.
-Message-ID: <20090102230314.GC5235@localhost>
-References: <cover.1230499486.git.eduard.munteanu@linux360.ro> <0d1bc24fa2c8d9df136cf833a36be2b72340bc8f.1230499486.git.eduard.munteanu@linux360.ro> <84144f020812290144q38aca42bw1e84d38b3dad2a08@mail.gmail.com> <20090102205426.GC25473@Krystal>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Sjxn1VfJ81RJMSJOaCEzT+r8e8yNtAkvyYxwhcWLRO8wWnzbD4CqbV8F33i3tBZij+
+         0K0i7V+AWFVRX6JpI41hA9xi/2yVU+PBq10yhQIQX7WjfQmkhS/JXyVVLaJ8IC8Wc7St
+         3Fy0TgzWPG0qcwcFzD8HeRAKC+dkFVqwAZuZY=
+Message-ID: <495E9F22.3080206@gmail.com>
+Date: Fri, 02 Jan 2009 15:11:30 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090102205426.GC25473@Krystal>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Daniel Phillips <phillips@phunq.net>
+CC: tux3@tux3.org, Martin Steigerwald <Martin@lichtvoll.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Tux3] Tux3 report: A Golden Copy
+References: <200812301935.49303.phillips@phunq.net> <495BAED9.3000305@gmail.com> <200901022117.24504.Martin@Lichtvoll.de> <200901021445.37062.phillips@phunq.net>
+In-Reply-To: <200901021445.37062.phillips@phunq.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 03:54:26PM -0500, Mathieu Desnoyers wrote:
-> * Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> > On Mon, Dec 29, 2008 at 3:40 AM, Eduard - Gabriel Munteanu
-> > <eduard.munteanu@linux360.ro> wrote:
-> > > kmemtrace now uses tracepoints instead of markers. We no longer need to
-> > > use format specifiers. Also dropped kmemtrace_mark_alloc_node(), since
-> > > it's easy to pass -1 as the NUMA node without providing a needless and
-> > > long-named variant of the same function.
-> > >
-> > > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > 
-> > Looks good to me. Mathieu, does this look sane to you as well?
-> > 
-> 
-> Just got back from vacation. Just replied to it.
-> 
-> Happy new year :)
-> 
-> Mathieu
+Daniel Phillips wrote:
+> On Friday 02 January 2009 12:17, Martin Steigerwald wrote:
+>   
+>> Am Mittwoch 31 Dezember 2008 schrieb Justin P. Mattock:
+>>     
+>>> I guess this is what is confusing to me:
+>>> atomic commit, btree-based versioning.
+>>>       
+>> Ah, the buzz words. ;)
+>>
+>> The tux3 mailing list contains quite some design notes about these 
+>> concepts. I think others can give better answers about these concepts - I 
+>> think I understood what it is for, not the implementation details. But 
+>> basically "atomic commit" is a strategy to have the filesystem always in 
+>> a consistent state
+>>     
+>
+> Right.  Atomic commit is a term that came from the database world and
+> was first applied to filesystems in an LKML message from Victor
+> Yodaiken back in 1998 as I dimly recall, and I adopted it to describe
+> the tree ased atomic update strategy I was developing for Tux2 at the
+> time.  Tux3 uses a new logging variant that is supposed to avoid the
+> write-twice behaviour of journalling and the recursive copy behavior of
+> WAFL, ZFS and Btrfs, so should be pretty good at synchronous write
+> loads and generally reduce write traffic.
+>
+>   
+>> and btree-based versioning allows to keep different  
+>> versions of a file / directory around. And unlike other filesystem tux3  
+>> has this per inode and not for the complete filesystem. At least if I 
+>> understand correctly.
+>>     
+>
+> You do.
+>
+> "Btree-based" and "versioning" are separate buzzwords.  Tux3 is a btree
+> of btrees: the inode table is a btree, containing files that are
+> btrees.  It was conceived to demonstrate a new method of versioning
+> files that puts the versioning information at the btree leaves instead
+> of having multiple independently rooted trees sharing subtrees:
+>
+>    Versioned pointers: a new method of representing snapshots
+>    http://lwn.net/Articles/288896/
+>
+> This approach lends itself to per-object versioning: each data pointer
+> and each inode attribute has its own version label.  Making it work
+> per file and even per directory is a matter of clever mapping tricks to
+> turn global version numbers into per pointer version numbers.
+>
+> But note that versioning support is still just a nice demo: the focus
+> has shifted to Tux3 as general purpose filesystem, with versioning
+> seen as a feature to be integrated after the basic Ext3-class
+> functionality is solid and reviewed.
+>
+>   
+>> But at least it should clear that tux3 is a filesystem and not a video 
+>> game ;).
+>>     
+>
+> It's kind of like a video game where you sneak through IRC channels
+> trying to frag bugs with your BFG.
+>
+> Regards,
+>
+> Daniel
+>
+>   
+The game that came to mind when I first
+heard of tux3(I had to google a bit to find the name)
+was tux racer.  :^)
+quick question:
+what is the state for security file labeling for
+SELinux on this filesystem?
 
-Thanks for pitching in. Happy new year!
 
+regards;
 
-	Cheers,
-	Eduard
+Justin P. Mattock
 
