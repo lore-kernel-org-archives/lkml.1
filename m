@@ -1,91 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbZABTAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758515AbZABTCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932139AbZABTAb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 14:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbZABTAX
+	id S1758515AbZABTCF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 14:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758419AbZABTBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 14:00:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60873 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752891AbZABTAW (ORCPT
+	Fri, 2 Jan 2009 14:01:54 -0500
+Received: from mail-gx0-f13.google.com ([209.85.217.13]:53783 "EHLO
+	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757698AbZABTBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 14:00:22 -0500
-Date: Fri, 2 Jan 2009 10:59:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: 2.6.28-mmotm1230 - BUG during 'shutdown -h'
-Message-Id: <20090102105944.69277670.akpm@linux-foundation.org>
-In-Reply-To: <4491.1230900738@turing-police.cc.vt.edu>
-References: <4491.1230900738@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 Jan 2009 14:01:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ix4Uv8j3Zb3pooi0Ca4F70ledeOTgify5/objj5NbWo7DXw2B1Tz28wLMVh3T+fDxu
+         xXnvVpqAlTWmqaBf9qUEF4v6iVJ2WL+nFXIvMhVM5lYfXwfzL673B1GB26cE/WejgASA
+         XzLfMGq9wM1cA4bTn7JGixD1YTEVWWodvAHEg=
+Message-ID: <495E649B.7030006@gmail.com>
+Date: Fri, 02 Jan 2009 11:01:47 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: snd-hda-intel no front mute switch
+References: <495B31E2.6000801@gmail.com>	<s5hvdszpd87.wl%tiwai@suse.de>	<495CF3BA.8080403@gmail.com> <s5heizmhti7.wl%tiwai@suse.de>
+In-Reply-To: <s5heizmhti7.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Jan 2009 07:52:18 -0500 Valdis.Kletnieks@vt.edu wrote:
+Takashi Iwai wrote:
+> At Thu, 01 Jan 2009 08:47:54 -0800,
+> Justin P. Mattock wrote:
+>   
+>> Takashi Iwai wrote:
+>>     
+>>> At Wed, 31 Dec 2008 00:48:34 -0800,
+>>> Justin P. Mattock wrote:
+>>>   
+>>>       
+>>>> Not sure if I have my configurations correct, but after
+>>>> pulling the latest git, I notice that my mixer has no switch to mute
+>>>> the "front", or external speaker on a macbook pro(ati chipset);
+>>>> other than that the sound sounds really good.
+>>>> (solution I guess: plug-in headphones, and mute headphone option);
+>>>>     
+>>>>         
+>>> Could you run alsa-info.sh with --no-upload option on both old and
+>>> new kernels, and attach the generated files to compare?
+>>> The script is found in
+>>>     http://www.alsa-project.org/alsa-info.sh
+>>>
+>>> You can find some other information regarding HD-audio in
+>>> Documentation/sound/alsa/HD-Audio.txt.
+>>>
+>>>
+>>> thanks,
+>>>
+>>> Takashi
+>>>
+>>>   
+>>>       
+>> After adjusting my .config,
+>> I am getting a speaker option to mute
+>> the external speakers, as well as the headphones.
+>> the options that I added were:
+>>
+>> SND_HRTIMER [=y]
+>> SND_HDA_RECONFIG [=y]
+>> SND_HDA_INPUT_BEEP [=y]
+>>
+>> before adding these, like what I mentioned
+>> there was no "speaker" option(or "front");
+>> As for the sound itself, I'll have to
+>> blast myself with some good tunes,
+>> and see If I hear or experience any anomalies.
+>> (then wakeup the next day unable to hear);
+>> : )
+>>     
+>
+> Good to hear that it works now.
+> Could you check which config was broken exactly?
+> The config items above should be irrelevant with the (first) codec
+> parsing, at least.
+>
+>
+> Takashi
+>
+>   
+After thinking back with what I did,
+I was using 2.6.28-rc9 then(if I recall);
+did a git-pull monday morning.
+In the git log I remember seeing this:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cb10ea549fdc0ab2dd8988adab5bf40b4fa642f3
+then after compiling and rebooting
+I noticed the mixer had changed.(thus seeing the no button for "front").
+then after a few hours I reverted back to 2.6.28-rc9.
+waited a few days and did a git-pull Wednesday morning,changed my .config
+(after sending the original post);
+then noticed that the "front" had changed to "speaker" on the mixer itself.
+(telling myself "man I must be seeing things");
 
-> 100% repeatable.  I haven't had a chance to bisect and track this down yet,
-> though most of the obvious suspects are in either origin.patch or linux-next.patch
-> so a bisect of -mmotm probably won't tell us much.
-> 
-> It makes it *almost* all the way down, and then loses. Oddly enough,
-> 'shutdown -r' seems to work just fine - not sure why that would make a difference.
-> 
-> [   54.525193] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> [   54.566540] sd 0:0:0:0: [sda] Stopping disk
-> [   56.612216] ACPI: Preparing to enter system sleep state S5
-> [   56.652997] Disabling non-boot CPUs ...
-> [   56.692364] BUG: unable to handle kernel <3>hub 2-0:1.0: hub_port_status failed (err = -110)
-> [   56.692388] hub 2-0:1.0: hub_port_status failed (err = -110)
-> [   56.693298] paging request at 000077ff81ab133f
-> [   56.693298] IP: [<ffffffff8024605e>] queue_work_on+0x39/0x4b
-> [   56.693298] PGD 0 
-> [   56.693298] Oops: 0000 [#1] PREEMPT SMP 
-> [   56.693298] last sysfs file: /sys/devices/virtual/block/dm-13/dev
-> [   56.693298] CPU 0 
-> [   56.693298] Modules linked in: sha256_generic aes_x86_64 aes_generic rtc acpi_cpufreq tpm_tis tpm tpm_bios arc4 ecb gspca_spca561 iwl3945 gspca_main v4l2_compat_ioctl32 videodev mac80211 pcmcia snd_hda_codec_idt ohci1394 snd_hda_intel thermal led_class yenta_socket ieee1394 video intel_agp dell_laptop output rsrc_nonstatic iTCO_wdt pcmcia_core lib80211 uhci_hcd iTCO_vendor_support processor snd_hda_codec cfg80211 rfkill dcdbas ac battery button
-> [   56.693298] Pid: 1750, comm: halt Not tainted 2.6.28-mmotm1230 #2
-> [   56.693298] RIP: 0010:[<ffffffff8024605e>]  [<ffffffff8024605e>] queue_work_on+0x39/0x4b
-> [   56.693298] RSP: 0018:ffff88007ca2dd68  EFLAGS: 00010206
-> [   56.693298] RAX: 000077ff81ab133f RBX: 0000000000000000 RCX: ffff88007e54ef40
-> [   56.693298] RDX: 0000000000000000 RSI: ffff88007f22d9c0 RDI: 0000000000000000
-> [   56.693298] RBP: ffff88007ca2dd68 R08: 0000000000000002 R09: ffffffff806f9768
-> [   56.693298] R10: ffff88007ca2dd48 R11: 00000000000003c0 R12: ffffffff80535270
-> [   56.693298] R13: ffff88007ca2dda8 R14: ffffffff806f9768 R15: 0000000000000001
-> [   56.693298] FS:  00007f841a03b6f0(0000) GS:ffffffff806f9400(0000) knlGS:0000000000000000
-> [   56.693298] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> [   56.693298] CR2: 000077ff81ab133f CR3: 000000007ddc2000 CR4: 00000000000006e0
-> [   56.693298] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [   56.693298] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [   56.693298] Process halt (pid: 1750, threadinfo ffff88007ca2c000, task ffff88007e691800)
-> [   56.693298] Stack:
-> [   56.693298]  ffff88007ca2dd98 ffffffff8025f7b2 ffffffff806f9768 0000000000000001
-> [   56.693298]  0000000000000010 00000000ffffffea ffff88007ca2ddf8 ffffffff805353e5
-> [   56.693298]  0000000000000010 0000000000000001 0000000000000003 0000002100000000
-> [   56.693298] Call Trace:
-> [   56.693298]  [<ffffffff8025f7b2>] __stop_machine+0xc6/0x130
-> [   56.693298]  [<ffffffff805353e5>] _cpu_down+0x13d/0x298
-> [   56.693298]  [<ffffffff80236d46>] disable_nonboot_cpus+0x64/0x106
-> [   56.693298]  [<ffffffff8024460a>] kernel_power_off+0x21/0x3b
-> [   56.693298]  [<ffffffff80244872>] sys_reboot+0xe3/0x151
-> [   56.693298]  [<ffffffff8024bda9>] ? hrtimer_cancel+0x14/0x20
-> [   56.693298]  [<ffffffff80549b9d>] ? do_nanosleep+0x6c/0xa7
-> [   56.693298]  [<ffffffff8024bfc0>] ? hrtimer_nanosleep+0x8b/0xfc
-> [   56.693298]  [<ffffffff8024b853>] ? hrtimer_wakeup+0x0/0x21
-> [   56.693298]  [<ffffffff80549b7a>] ? do_nanosleep+0x49/0xa7
-> [   56.693298]  [<ffffffff8054a797>] ? trace_hardirqs_on_thunk+0x3a/0x3c
-> [   56.693298]  [<ffffffff8020b8db>] system_call_fastpath+0x16/0x1b
-> [   56.693298] Code: 00 19 c0 31 d2 85 c0 75 30 48 8d 46 08 48 39 46 08 74 04 0f 0b eb fe 83 79 20 00 48 8b 01 0f 45 3d 28 37 4b 00 48 f7 d0 48 63 d7 <48> 8b 3c d0 e8 45 ff ff ff ba 01 00 00 00 89 d0 c9 c3 55 48 89 
-> [   56.693298] RIP  [<ffffffff8024605e>] queue_work_on+0x39/0x4b
-> [   56.693298]  RSP <ffff88007ca2dd68>
-> [   56.693298] CR2: 000077ff81ab133f
-> 
+As for the .config options you're right, it doesn't make difference.
+As for seeing any commits after sunday that might have fixed this
+(not sure) I see loads of commits,
+I can't keep up with this.
 
-That would be Rustystuff, I expect.  Or perhaps some abuse by the caller.
+I think the best thing for me to do, is to not say anything,
+until after all of this merging is done,(man santa is here!)
+ then asses the situation.
 
-The only thing in -mm which touches workqueue.c is
-http://userweb.kernel.org/~akpm/mmotm/broken-out/workqueues-kill-cpu_singlethread_map-use-get_cpu_mask-instead.patch
+Don't mean to cause any heat.
+
+regards;
+
+Justin P. Mattock
+
+
+
+
