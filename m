@@ -1,66 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbZABKZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757771AbZABK0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757559AbZABKZf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 05:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZABKZ1
+	id S1757771AbZABK0R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbZABK0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 05:25:27 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:54670 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbZABKZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 05:25:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Qhn/ok8cnSD0cHCsPsvhU/XSM/nGQu8utPjF1eybEMnXI9dNeYZRgERkAOJnG6lGvi
-         yC3qR6BONogOWymnyQBz4s1GvEAZp4HDagPJ5G86sY9VItL8I7HA02PDqqqyPIhOlAID
-         nw9y5jr/PePvdVYc2C7uPuA0WTaD0gnrVSUWw=
-Date: Fri, 2 Jan 2009 13:25:22 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [patch 3/3] acpi: check for pxm_to_node_map overflow
-Message-ID: <20090102102522.GA13629@localhost>
-References: <20090102082717.810810508@gmail.com>> <495dd169.0437560a.1cd3.ffffd503@mx.google.com> <20090102092330.GB1975@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090102092330.GB1975@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 2 Jan 2009 05:26:01 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49822 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755540AbZABK0A (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 05:26:00 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.28-mmotm1230 drivers/acpi/hardware/hwsleep.c warning msg
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1230891954_3417P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 02 Jan 2009 05:25:54 -0500
+Message-ID: <28730.1230891954@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Fri, Jan 02, 2009 at 10:23:30AM +0100]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > It is hardly (if ever) possible but in case of broken _PXM
-| > entry we could reach out of pxm_to_node_map array
-| > bounds in acpi_map_pxm_to_node() call. Lets check it
-| > (it's not that expensive and safe).
-| > 
-| > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-| > CC: Len Brown <lenb@kernel.org>
-| > ---
-| >  drivers/acpi/numa.c |    2 +-
-| >  1 file changed, 1 insertion(+), 1 deletion(-)
-| 
-| just curious - how did you find this - code review or some tool help like 
-| Sparse output or a compiler warning?
-| 
-| 	Ingo
-| 
+--==_Exmh_1230891954_3417P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Unfortunately -- by reading the code :( I would prefer
-if gcc or sparse complain about it but we have indirect
-referring which is that hard to trace by any tool I believe
-(until say some emulator but even if we have such kind of
-tool we would need to tell it that 'there we have boundries
-we shouldn't cross)'. But to be fair -- I didn't try sparse
-here maybe it does complain :)
+In mmotm1230 the linux.next patch, most likely via this commit:
 
-		- Cyrill -
+commit ecd196686aee5028f71ee09072c8581c7293a847
+Author: Len Brown <len.brown=40intel.com>
+Date:   Fri Dec 19 03:53:37 2008 -0500
+
+    ACPICA: disable ACPI 2.0 _GTS/_BFS support
+
+added some warning messages:
+
+  CC      drivers/acpi/hardware/hwsleep.o
+drivers/acpi/hardware/hwsleep.c: In function =E2=80=98acpi_enter_sleep_st=
+ate=E2=80=99:
+drivers/acpi/hardware/hwsleep.c:231: warning: unused variable =E2=80=98ar=
+g=E2=80=99
+drivers/acpi/hardware/hwsleep.c:230: warning: unused variable =E2=80=98ar=
+g_list=E2=80=99
+drivers/acpi/hardware/hwsleep.c: In function =E2=80=98acpi_leave_sleep_st=
+ate_prep=E2=80=99:
+drivers/acpi/hardware/hwsleep.c:471: warning: unused variable =E2=80=98ar=
+g=E2=80=99
+drivers/acpi/hardware/hwsleep.c:470: warning: unused variable =E2=80=98ar=
+g_list=E2
+
+If we're going to =23ifdef-wrap the code, let's do the variables involved=
+
+as well, so we don't get warnings.
+
+Signed-off-by: Valdis Kletnieks <valdis.kletnieks=40vt.edu>
+
+--- linux-2.6.28-mmotm1230/drivers/acpi/hardware/hwsleep.c.dist	2009-01-0=
+1 17:22:49.000000000 -0500
++++ linux-2.6.28-mmotm1230/drivers/acpi/hardware/hwsleep.c	2009-01-02 05:=
+19:05.000000000 -0500
+=40=40 -227,8 +227,10 =40=40 acpi_status asmlinkage acpi_enter_sleep_
+ 	struct acpi_bit_register_info *sleep_type_reg_info;
+ 	struct acpi_bit_register_info *sleep_enable_reg_info;
+ 	u32 in_value;
++=23ifdef	ACPI_20_GTS_BFS
+ 	struct acpi_object_list arg_list;
+ 	union acpi_object arg;
++=23endif
+ 	acpi_status status;
+=20
+ 	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state);
+=40=40 -467,8 +469,10 =40=40 ACPI_EXPORT_SYMBOL(acpi_enter_sleep_stat
+  ***********************************************************************=
+*******/
+ acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
+ =7B
++=23ifdef	ACPI_20_GTS_BFS
+ 	struct acpi_object_list arg_list;
+ 	union acpi_object arg;
++=23endif
+ 	acpi_status status;
+ 	struct acpi_bit_register_info *sleep_type_reg_info;
+ 	struct acpi_bit_register_info *sleep_enable_reg_info;
+
+
+--==_Exmh_1230891954_3417P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJXeuycC3lWbTT17ARApQFAJwMxq8mY0/JkIFbbi5+MO2g+Z9nywCeLZCL
+Q56khE1MvzdQ5kdSKnmgnj0=
+=5BXq
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1230891954_3417P--
