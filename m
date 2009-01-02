@@ -1,67 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbZABPuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbZABP74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758592AbZABPuF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 10:50:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbZABPti
+	id S1757594AbZABP74 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 10:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbZABP7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 10:49:38 -0500
-Received: from mail.lang.hm ([64.81.33.126]:56771 "EHLO bifrost.lang.hm"
+	Fri, 2 Jan 2009 10:59:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48474 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757059AbZABPtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 10:49:36 -0500
-Date: Fri, 2 Jan 2009 08:51:28 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Valdis.Kletnieks@vt.edu
-cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Bryan Donlan <bdonlan@gmail.com>,
-       Ingo Brueckl <ib@wupperonline.de>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86 (Linux Tiny): configure out support for some processors
-In-Reply-To: <11444.1230910752@turing-police.cc.vt.edu>
-Message-ID: <alpine.DEB.1.10.0901020849180.20509@asgard.lang.hm>
-References: <495d2974@wupperonline.de> <3e8340490901012119i40971452q9f938702e58d7532@mail.gmail.com> <3f9a31f40901012159l255b95a8he41a341f36ebc54e@mail.gmail.com> <20090102093801.GD1975@elte.hu>            <3f9a31f40901020710h508bbfbch3d7ccd6f4898ea03@mail.gmail.com>
- <11444.1230910752@turing-police.cc.vt.edu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1751839AbZABP7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 10:59:46 -0500
+Date: Fri, 2 Jan 2009 16:59:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: random.c changes for sparse irq_desc are crap
+Message-ID: <20090102155922.GD1180@elte.hu>
+References: <1230748169.19620.132.camel@calx> <495BFB48.8080506@kernel.org> <1230766826.19620.150.camel@calx> <86802c440812311614n4a0ef459u4bb8be65d33994a@mail.gmail.com> <1230802316.3204.4.camel@calx>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1230802316.3204.4.camel@calx>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Jan 2009, Valdis.Kletnieks@vt.edu wrote:
 
-> On Fri, 02 Jan 2009 20:40:16 +0530, Jaswinder Singh Rajput said:
->
->> If I know what is my CPU there is no point for supporting all related
->> CPUs in my kernel.
->
-> EMBEDDED is for a large assortment of things, all of which are of the form:
->
-> General users won't want to change Y, but if I know I don't need Y, there is
-> no point in supporting Y in the kernel.
->
-> Y might be "this kernel doesn't need sysctl"
-> Y might be "support for hot-plug"
-> Y might be "printk"
-> Y might be "support generic CPUs"
->
-> See the pattern?
->
-> Yes, we probably could have come up with a better name than EMBEDDED for
-> that list of optionals.
->
-> CONFIG_TRAINED_TECHNICIANS_ONLY_NO_USER_SERVICABLE_PARTS_INSIDE maybe?
+* Matt Mackall <mpm@selenic.com> wrote:
 
-having things outside of the embedded menu depend on embedded makes it 
-hard for people to figure out what they need to do to disable specific 
-things.
+> On Wed, 2008-12-31 at 16:14 -0800, Yinghai Lu wrote:
+> > On Wed, Dec 31, 2008 at 3:40 PM, Matt Mackall <mpm@selenic.com> wrote:
+> > > On Wed, 2008-12-31 at 15:07 -0800, Yinghai Lu wrote:
+> > >> Matt Mackall wrote:
+> > >> > I just noticed you merged a change that pointlessly converts two
+> > >> > random.c functions into ugly random.h inlines without going through the
+> > >> > maintainer.
+> > >> >
+> > >> > I also don't like the look of the newly-introduced sparse variants of
+> > >> > these functions. Failure to find an irq descriptor in
+> > >> > get_timer_rand_state is a BUG_ON should-never-happen sort of condition,
+> > >> > not something to silently ignore. Letting the code try to dereference
+> > >> > NULL is preferred here: we'll actually be able to find and fix the
+> > >> > broken driver that's throwing around meaningless irq vectors.
+> > >> >
+> > >> > Throwing away the timer_state pointer in the set_timer_rand_state
+> > >> > function is similarly bogus in addition to being a memory leak.
+> > >> >
+> > >> > Please fix this up.
+> > >> >
+> > >>
+> > >> want something like this?
+> > >
+> > > Not quite.
+> > >
+> > > First, please turn these back into normal functions in random.c.
+> > > Inlining functions is generally discouraged these days unless you have a
+> > > good reason and numbers to back it up.
+> > 
+> > Ingo wanted to hide that #ifdef to .h
+> 
+> Ahh. I think that makes sense in some situations, but I'd prefer not to 
+> do that here. Some headers are actually meant to be more readable than 
+> the corresponding .c file. Also, we still end up with an ifdef in the .c 
+> file so we're not actually winning.
 
-namespaces are also required if ! embedded, but namespaces are not (yet at 
-least) something that is commonly used.
+Yinghai - i think Matt is right and there are a number of things we could 
+do to improve cleanliness here. (Matt, sorry about this - we'll quickly 
+fix it.)
 
-if you follow the logic you are providing to it's logical conclusion you 
-may as well put all kernel config options under "I really know what I'm 
-doing" top level lockout
+The most important thing to observe is that the irq_desc->timer_rand_state 
+cleanup you did should be made unconditional, and should not depend on 
+SPARSE_IRQ. That will eliminate most of the #ifdefs, and it makes the 
+random.c and random.h impact rather straightforward.
 
-David Lang
+Another cleanliness detail is that these types of checks:
+
+#ifndef CONFIG_SPARSE_IRQ
+        if (irq >= nr_irqs)
+                return;
+#endif
+
+can go away completely. They were needed from the sparseirq data model 
+that had a dynamic array size - but that is not so anymore, so we can 
+remove these complications.
+
+Agreed?
+
+	Ingo
