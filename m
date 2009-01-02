@@ -1,43 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZABJ6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbZABKAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbZABJ6z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZABJ6r
+	id S1757886AbZABKAw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbZABKAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:58:47 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56570 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755541AbZABJ6r (ORCPT
+	Fri, 2 Jan 2009 05:00:44 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:8703 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755541AbZABKAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:58:47 -0500
-Date: Fri, 2 Jan 2009 04:58:42 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Lachlan McIlroy <lachlan@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] XFS update for 2.6.29
-Message-ID: <20090102095842.GA24652@infradead.org>
-References: <20081230030845.A4F0558AE206@chook.melbourne.sgi.com> <Pine.LNX.4.64.0901011048090.14380@anakin> <20090101170329.GA17892@infradead.org> <Pine.LNX.4.64.0901021056360.14380@anakin>
+	Fri, 2 Jan 2009 05:00:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=RR4c6y/jdVJFOC/S6f1ykj+rZslK1uE1bzEta1uGjFAGTXf7w/XgQqY0tH+syssS0U
+         L5qWUNljf4inMZvecnThHMmpV97hCk61ZqBgrirkV2nBXWYlNlcIoZK9kHbe7PwAOB8f
+         sXSt8eS5ngB8MkmmTBXjqIsVfxvbNwXBi+ehg=
+Message-ID: <2f11576a0901020200t3a6dadf5qa944432cd9fd8873@mail.gmail.com>
+Date: Fri, 2 Jan 2009 19:00:41 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "MinChan Kim" <minchan.kim@gmail.com>
+Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation take2
+Cc: "Mel Gorman" <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "wassim dagash" <wassim.dagash@gmail.com>
+In-Reply-To: <28c262360901020155l3a9260b5h3c79d4b23a213825@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901021056360.14380@anakin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20081231115332.GB20534@csn.ul.ie>
+	 <20081231215934.1296.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090101021240.A057.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <28c262360901020155l3a9260b5h3c79d4b23a213825@mail.gmail.com>
+X-Google-Sender-Auth: 657d5a0cf9778e54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 10:57:43AM +0100, Geert Uytterhoeven wrote:
-> > Hmm, can't reproduce it here with CONFIG_LBD=n on x86, but the following
-> 
-> x86-32 or -64?
-> 
-> It may also depend on the compiler version. I have gcc version 4.1.2 20061115
-> (prerelease) (Debian 4.1.1-21).
+> Hi, kosaki-san.
+>
+> I read the previous threads now. It's rather late :(.
+>
+> I think it's rather awkward that sudden big change of order from 10 to 0.
+>
+> This problem causes zone_water_mark's fail.
+> It mean now this zone's proportional free page per order size is not good.
+> Although order-0 page is very important, Shouldn't we consider other
+> order allocations ?
+>
+> So I want to balance zone's proportional free page.
+> How about following ?
+>
+> if (nr_reclaimed < SWAP_CLUSTER_MAX) {
+>   if (order != 0) {
+>     order -=1;
+>     sc.order -=1;
+>   }
+> }
+>
+> It prevents infinite loop and do best effort to make zone's
+> proportional free page per order size good.
+>
+> It's just my opinion within my knowledge.
+> If it have a problem, pz, explain me :)
 
-32 bit, gcc version 4.3.2 (Debian 4.3.2-1) 
-
+Please read Nick's expalin. it explain very kindly :)
