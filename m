@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbZABQiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbZABQjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbZABQiW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 11:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbZABQiK
+	id S1758649AbZABQjL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 11:39:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbZABQi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 11:38:10 -0500
-Received: from sh.osrg.net ([192.16.179.4]:49785 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754658AbZABQiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 11:38:09 -0500
-Date: Sat, 03 Jan 2009 01:37:55 +0900 (JST)
-Message-Id: <20090103.013755.42849152.ryusuke@osrg.net>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: Re: Btrfs for mainline
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <1230765549.7538.8.camel@think.oraclecorp.com>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-	<20081231104533.abfb1cf9.akpm@linux-foundation.org>
-	<1230765549.7538.8.camel@think.oraclecorp.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 2 Jan 2009 11:38:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:37169 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756542AbZABQiz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 11:38:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UoGojUjciCRGZObg1Gs/i/imcQwV80qrUFkLWp7IIFk0YRvKnA34e8MJPjtDHVNPqZ
+         WKXKC3mdsxSB+EKokjiNBgX0N1y2xnX87avMJJdRVmODTa2aD/+AfdALZRhwBAbvoGlF
+         YfmTa6vONBkzvv0scpwzHFRd40zKIyrqNfuLE=
+Message-ID: <3f9a31f40901020838v333a968dv937a717e031743eb@mail.gmail.com>
+Date: Fri, 2 Jan 2009 22:08:53 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: x86 (Linux Tiny): configure out support for some processors
+Cc: Valdis.Kletnieks@vt.edu, "Bryan Donlan" <bdonlan@gmail.com>,
+       "Ingo Brueckl" <ib@wupperonline.de>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20090102162120.GG1180@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <495d2974@wupperonline.de>
+	 <3e8340490901012119i40971452q9f938702e58d7532@mail.gmail.com>
+	 <3f9a31f40901012159l255b95a8he41a341f36ebc54e@mail.gmail.com>
+	 <20090102093801.GD1975@elte.hu>
+	 <3f9a31f40901020710h508bbfbch3d7ccd6f4898ea03@mail.gmail.com>
+	 <11444.1230910752@turing-police.cc.vt.edu>
+	 <3f9a31f40901020813t136ad2ceif1092f312866a0ce@mail.gmail.com>
+	 <20090102162120.GG1180@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-On Wed, 31 Dec 2008 18:19:09 -0500, Chris Mason <chris.mason@oracle.com> wrote:
-> 
-> This has only btrfs as a module and would be the fastest way to see
-> the .c files.  btrfs doesn't have any changes outside of fs/Makefile and
-> fs/Kconfig
+On Fri, Jan 2, 2009 at 9:51 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> So you want to save kernel size by making less generic kernels tailored to
 
-I found some overlapping (or cloned) functions in
-btrfs-unstable.git/fs/btrfs, for example:
+My intention is to remove unwanted or useless data from kernel.
 
- - Declarations to apply hardware crc32c in fs/btrfs/crc32c.h:
-   The same code is found in arch/x86/crypto/crc32c-intel.c
+> a single box [yours in this case] - basically embedding the kernel on it?
+>
 
- - btrfs_wait_on_page_writeback_range() and btrfs_fdatawrite_range():
-   These are clones of wait_on_page_writeback_range() and
-   __filemap_fdatawrite_range() respectively, and can be removed if they
-   are just exported.
+So you mean choosing x86 is also EMBEDDED ? because it will not gonna
+run on ARM machine.
 
- - Copies of add_to_page_cache_lru() found in compression.c and extent_io.c
-   (can be replaced if it's exported)
+>
+> that is what CONFIG_EMBEDDED=y means in broad terms: "make the kernel more
+> specific [more embedded] to a particular hw/sw combination".
+>
 
-How about including patches to resolve these in the btrfs kernel tree
-(or patchset to be posted) ?
+Choosing drivers is also Embedded ?
 
-In addition, there seem to be well-separated reusable routines such as
-async-thread (enhanced workqueue) and extent_map.  Do you intend to
-move these into lib/ or so?
-
-I also tried scripts/checkpatch.pl against btrfs, and it has detected
-45 ERRORs and 93 WARNINGs.  I think it's a good opportunity to clean
-up these violations.
-
-
-With regards,
-Ryusuke Konishi
+Thanks you,
+JSR
