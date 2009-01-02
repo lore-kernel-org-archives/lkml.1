@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbZABJjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbZABJkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757735AbZABJjV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZABJjN
+	id S1757824AbZABJkH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZABJj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:39:13 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:19206 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZABJjM (ORCPT
+	Fri, 2 Jan 2009 04:39:56 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:33188 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164AbZABJjz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:39:12 -0500
+	Fri, 2 Jan 2009 04:39:55 -0500
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org
-Date: Fri, 02 Jan 2009 13:13:00 +0200
-Message-Id: <20090102111300.3183.45651.sendpatchset@gollum>
-Subject: [GIT PULL] UBI changes for 2.6.29
-X-OriginalArrivalTime: 02 Jan 2009 09:38:49.0929 (UTC) FILETIME=[EAB79B90:01C96CBD]
+       linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Date: Fri, 02 Jan 2009 13:13:58 +0200
+Message-Id: <20090102111358.3186.7431.sendpatchset@gollum>
+Subject: [GIT PULL] UBIFS changes for 2.6.29
+X-OriginalArrivalTime: 02 Jan 2009 09:39:47.0881 (UTC) FILETIME=[0D426190:01C96CBE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,9 +26,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Linus,
 
-please pull from
+please pull UBIFS updates from
 
-git://git.infradead.org/~dedekind/ubi-2.6.git linux-next
+git://git.infradead.org/ubifs-2.6.git linux-next
 
 The following changes since commit f6f7b52e2f6149d2ee365717afff315b05720162:
   Linus Torvalds (1):
@@ -35,31 +36,67 @@ The following changes since commit f6f7b52e2f6149d2ee365717afff315b05720162:
 
 are available:
 
-Artem Bityutskiy (7):
-      UBI: fix warnings when debugging is enabled
-      UBI: fix deadlock
-      UBI: some code re-structuring
-      UBI: fix error path
-      UBI: handle write errors in WL worker
-      UBI: document UBI ioctls
-      UBI: fix checkpatch.pl warnings
+Alexey Dobriyan (1):
+      UBIFS: fix section mismatch
 
-Stefan Roese (1):
-      UBI: return -ENOMEM upon failing vmalloc
+Artem Bityutskiy (31):
+      UBIFS: slight compression optimization
+      UBIFS: use bit-fields to store compression type
+      UBIFS: introduce compression mount options
+      UBIFS: separate debugging fields out
+      UBIFS: add debugfs support
+      UBIFS: run debugging checks only if they are enabled
+      UBIFS: dump stack in LPT check functions
+      UBIFS: introduce LPT dump function
+      UBIFS: use PAGE_CACHE_MASK correctly
+      UBIFS: fix tnc dumping
+      UBIFS: improve budgeting dump
+      UBIFS: various comment improvements and fixes
+      UBIFS: fix available blocks count
+      UBIFS: use nicer 64-bit math
+      UBIFS: re-calculate min_idx_size after the commit
+      UBIFS: avoid unnecessary calculations
+      UBIFS: fix constants initialization
+      UBIFS: fix file-system synchronization
+      UBIFS: always commit in sync_fs
+      UBIFS: use ubi_sync
+      UBIFS: always commit on unmount
+      UBIFS: restore budg_uncommitted_idx
+      UBIFS: do not lie about used blocks
+      UBIFS: simplify make_free_space
+      UBIFS: fix sparse warnings
+      UBIFS: fix checkpatch.pl warnings
+      UBIFS: fix writing uncompressed files
+      UBIFS: allow mounting when short of space
+      UBIFS: fix numerous spelling mistakes
+      UBIFS: print debugging messages properly
+      UBIFS: add more useful debugging prints
 
-Xiaochuan-Xu (2):
-      UBI: prepare for protection tree improvements
-      UBI: simplify PEB protection code
+Kukkonen Mika (1):
+      UBIFS: avoid unnecessary checks
 
- Documentation/ioctl/ioctl-number.txt |    4 +
- drivers/mtd/ubi/build.c              |    5 +-
- drivers/mtd/ubi/cdev.c               |    3 +-
- drivers/mtd/ubi/debug.h              |   10 +-
- drivers/mtd/ubi/eba.c                |   51 +++--
- drivers/mtd/ubi/io.c                 |   28 ++-
- drivers/mtd/ubi/ubi.h                |   45 ++--
- drivers/mtd/ubi/wl.c                 |  489 +++++++++++++++-------------------
- 8 files changed, 305 insertions(+), 330 deletions(-)
+ Documentation/filesystems/ubifs.txt |    3 +
+ fs/ubifs/budget.c                   |  208 +++++++++------------------
+ fs/ubifs/commit.c                   |   25 ++--
+ fs/ubifs/compress.c                 |   18 ++--
+ fs/ubifs/debug.c                    |  265 ++++++++++++++++++++++++++++++----
+ fs/ubifs/debug.h                    |  117 ++++++++++++----
+ fs/ubifs/file.c                     |    8 +-
+ fs/ubifs/ioctl.c                    |    2 +
+ fs/ubifs/journal.c                  |    4 +-
+ fs/ubifs/key.h                      |   32 +++--
+ fs/ubifs/lprops.c                   |   14 +-
+ fs/ubifs/lpt.c                      |   45 +++---
+ fs/ubifs/lpt_commit.c               |  210 +++++++++++++++++++++++-----
+ fs/ubifs/orphan.c                   |    2 +-
+ fs/ubifs/replay.c                   |   15 ++-
+ fs/ubifs/sb.c                       |   20 ++--
+ fs/ubifs/super.c                    |  255 +++++++++++++++++++++++----------
+ fs/ubifs/tnc.c                      |   31 ++--
+ fs/ubifs/tnc_commit.c               |    9 +-
+ fs/ubifs/ubifs-media.h              |    7 +
+ fs/ubifs/ubifs.h                    |  111 +++++++--------
+ 21 files changed, 927 insertions(+), 474 deletions(-)
 
 Thanks,
 Artem.
