@@ -1,28 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbZABKoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZABKoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757814AbZABKoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 05:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbZABKlq
+	id S1758602AbZABKoh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbZABKlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 05:41:46 -0500
-Received: from nelson.telenet-ops.be ([195.130.133.66]:36237 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756668AbZABKlh (ORCPT
+	Fri, 2 Jan 2009 05:41:47 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:34104 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756765AbZABKli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 05:41:37 -0500
+	Fri, 2 Jan 2009 05:41:38 -0500
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] m68k: mac core - kill warn_unused_result warnings
-Date: Fri,  2 Jan 2009 11:41:18 +0100
-Message-Id: <1230892892-25751-6-git-send-email-geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Subject: [PATCH] m68k: atari_scc - kill warn_unused_result warnings
+Date: Fri,  2 Jan 2009 11:41:21 +0100
+Message-Id: <1230892892-25751-9-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1230892892-25751-5-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1230892892-25751-8-git-send-email-geert@linux-m68k.org>
 References: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-2-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-3-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-4-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-5-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-6-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-7-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-8-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -31,187 +35,276 @@ warning: ignoring return value of 'request_irq', declared with attribute
 warn_unused_result
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
 ---
- arch/m68k/mac/baboon.c  |    3 ++-
- arch/m68k/mac/iop.c     |   10 ++++++----
- arch/m68k/mac/macints.c |    5 +++--
- arch/m68k/mac/oss.c     |   25 +++++++++++++++----------
- arch/m68k/mac/psc.c     |   12 ++++++++----
- arch/m68k/mac/via.c     |   33 ++++++++++++++++++++-------------
- 6 files changed, 54 insertions(+), 34 deletions(-)
+ drivers/char/atari_scc.c |  177 +++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 128 insertions(+), 49 deletions(-)
 
-diff --git a/arch/m68k/mac/baboon.c b/arch/m68k/mac/baboon.c
-index 245d16d..2a96beb 100644
---- a/arch/m68k/mac/baboon.c
-+++ b/arch/m68k/mac/baboon.c
-@@ -92,7 +92,8 @@ static irqreturn_t baboon_irq(int irq, void *dev_id)
- void __init baboon_register_interrupts(void)
- {
- 	baboon_disabled = 0;
--	request_irq(IRQ_NUBUS_C, baboon_irq, 0, "baboon", (void *)baboon);
-+	if (request_irq(IRQ_NUBUS_C, baboon_irq, 0, "baboon", (void *)baboon))
-+		pr_err("Couldn't register baboon interrupt\n");
+diff --git a/drivers/char/atari_scc.c b/drivers/char/atari_scc.c
+index e407aa8..5dc59ff 100644
+--- a/drivers/char/atari_scc.c
++++ b/drivers/char/atari_scc.c
+@@ -276,10 +276,99 @@ static void scc_init_portstructs(void)
  }
  
- /*
-diff --git a/arch/m68k/mac/iop.c b/arch/m68k/mac/iop.c
-index 326fb99..1ad4e9d 100644
---- a/arch/m68k/mac/iop.c
-+++ b/arch/m68k/mac/iop.c
-@@ -305,14 +305,16 @@ void __init iop_register_interrupts(void)
+ 
++static int atari_scc_a_request_irqs(struct scc_port *port)
++{
++	int error;
++
++	error = request_irq(IRQ_SCCA_TX, scc_tx_int, IRQ_TYPE_PRIO, "SCC-A TX",
++			    port);
++	if (error)
++		goto fail;
++
++	error = request_irq(IRQ_SCCA_STAT, scc_stat_int, IRQ_TYPE_PRIO,
++			    "SCC-A status", port);
++	if (error)
++		goto fail_free_a_tx;
++
++	error = request_irq(IRQ_SCCA_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-A RX",
++			    port);
++	if (error)
++		goto fail_free_a_stat;
++
++	error = request_irq(IRQ_SCCA_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
++			    "SCC-A special cond", port);
++	if (error)
++		goto fail_free_a_rx;
++
++	return 0;
++
++fail_free_a_rx:
++	free_irq(IRQ_SCCA_RX, port);
++fail_free_a_stat:
++	free_irq(IRQ_SCCA_STAT, port);
++fail_free_a_tx:
++	free_irq(IRQ_SCCA_TX, port);
++fail:
++	return error;
++}
++
++static void atari_scc_a_free_irqs(struct scc_port *port)
++{
++	free_irq(IRQ_SCCA_TX, port);
++	free_irq(IRQ_SCCA_STAT, port);
++	free_irq(IRQ_SCCA_RX, port);
++	free_irq(IRQ_SCCA_SPCOND, port);
++}
++
++static int atari_scc_b_request_irqs(struct scc_port *port)
++{
++	int error;
++
++	error = request_irq(IRQ_SCCB_TX, scc_tx_int, IRQ_TYPE_PRIO, "SCC-B TX",
++			    port);
++	if (error)
++		goto fail;
++
++	error = request_irq(IRQ_SCCB_STAT, scc_stat_int, IRQ_TYPE_PRIO,
++			    "SCC-B status", port);
++	if (error)
++		goto fail_free_b_tx;
++
++	error = request_irq(IRQ_SCCB_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-B RX",
++			    port);
++	if (error)
++		goto fail_free_b_stat;
++
++	error = request_irq(IRQ_SCCB_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
++			    "SCC-B special cond", port);
++	if (error)
++		goto fail_free_b_rx;
++
++	return 0;
++
++fail_free_b_rx:
++	free_irq(IRQ_SCCB_RX, port);
++fail_free_b_stat:
++	free_irq(IRQ_SCCB_STAT, port);
++fail_free_b_tx:
++	free_irq(IRQ_SCCB_TX, port);
++fail:
++	return error;
++}
++
++static void atari_scc_b_free_irqs(struct scc_port *port)
++{
++	free_irq(IRQ_SCCB_TX, port);
++	free_irq(IRQ_SCCB_STAT, port);
++	free_irq(IRQ_SCCB_RX, port);
++	free_irq(IRQ_SCCB_SPCOND, port);
++}
++
+ #ifdef CONFIG_TT_SCC
+ static int atari_tt_scc_init(void)
  {
- 	if (iop_ism_present) {
- 		if (oss_present) {
--			request_irq(OSS_IRQLEV_IOPISM, iop_ism_irq,
-+			if (request_irq(OSS_IRQLEV_IOPISM, iop_ism_irq,
- 					IRQ_FLG_LOCK, "ISM IOP",
--					(void *) IOP_NUM_ISM);
-+					(void *) IOP_NUM_ISM))
-+				pr_err("Couldn't register ISM IOP interrupt\n");
- 			oss_irq_enable(IRQ_MAC_ADB);
- 		} else {
--			request_irq(IRQ_VIA2_0, iop_ism_irq,
-+			if (request_irq(IRQ_VIA2_0, iop_ism_irq,
- 					IRQ_FLG_LOCK|IRQ_FLG_FAST, "ISM IOP",
--					(void *) IOP_NUM_ISM);
-+					(void *) IOP_NUM_ISM))
-+				pr_err("Couldn't register ISM IOP interrupt\n");
+ 	struct scc_port *port;
++	int error;
+ 
+ 	pr_info("SCC: Atari TT Serial Driver\n");
+ 	/* FIXME channel A may be switchable between modem and LAN port */
+@@ -294,12 +383,10 @@ static int atari_tt_scc_init(void)
+ 	port->port_a = &scc_ports[0];
+ 	port->port_b = &scc_ports[1];
+ 	pr_debug("SCC: request channel A irqs, port = %p\n", port);
+-	request_irq(IRQ_SCCA_TX, scc_tx_int, IRQ_TYPE_PRIO, "SCC-A TX", port);
+-	request_irq(IRQ_SCCA_STAT, scc_stat_int, IRQ_TYPE_PRIO,
+-		    "SCC-A status", port);
+-	request_irq(IRQ_SCCA_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-A RX", port);
+-	request_irq(IRQ_SCCA_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
+-		    "SCC-A special cond", port);
++	error = atari_scc_a_request_irqs(port);
++	if (error)
++		return error;
++
+ 	{
+ 		SCC_ACCESS_INIT(port);
+ 		pr_debug("SCC: read SCC status\n");
+@@ -335,14 +422,12 @@ static int atari_tt_scc_init(void)
+ 		port->port_a = &scc_ports[0];
+ 		port->port_b = &scc_ports[1];
+ 		pr_debug("SCC: request channel B irqs, port = %p\n", port);
+-		request_irq(IRQ_SCCB_TX, scc_tx_int, IRQ_TYPE_PRIO,
+-			    "SCC-B TX", port);
+-		request_irq(IRQ_SCCB_STAT, scc_stat_int, IRQ_TYPE_PRIO,
+-			    "SCC-B status", port);
+-		request_irq(IRQ_SCCB_RX, scc_rx_int, IRQ_TYPE_PRIO,
+-			    "SCC-B RX", port);
+-		request_irq(IRQ_SCCB_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
+-			    "SCC-B special cond", port);
++		error = atari_scc_b_request_irqs(port);
++		if (error) {
++			atari_scc_a_free_irqs(port);
++			return error;
++		}
++
+ 		{
+ 			SCC_ACCESS_INIT(port);
+ 
+@@ -351,8 +436,13 @@ static int atari_tt_scc_init(void)
  		}
- 		if (!iop_alive(iop_base[IOP_NUM_ISM])) {
- 			printk("IOP: oh my god, they killed the ISM IOP!\n");
-diff --git a/arch/m68k/mac/macints.c b/arch/m68k/mac/macints.c
-index 7d0cbf3..2371107 100644
---- a/arch/m68k/mac/macints.c
-+++ b/arch/m68k/mac/macints.c
-@@ -250,8 +250,9 @@ void __init mac_init_IRQ(void)
- 	if (baboon_present)
- 		baboon_register_interrupts();
- 	iop_register_interrupts();
--	request_irq(IRQ_AUTO_7, mac_nmi_handler, 0, "NMI",
--			mac_nmi_handler);
-+	if (request_irq(IRQ_AUTO_7, mac_nmi_handler, 0, "NMI",
-+			mac_nmi_handler))
-+		pr_err("Couldn't register NMI\n");
- #ifdef DEBUG_MACINTS
- 	printk("mac_init_IRQ(): Done!\n");
+ /* not implemented yet */
+ #if 0
+-		request_irq(IRQ_TT_MFP_RI, scc_ri_int, IRQ_TYPE_SLOW,
+-			    "TT-MFP ring indicator (modem 2)", port);
++		error = request_irq(IRQ_TT_MFP_RI, scc_ri_int, IRQ_TYPE_SLOW,
++				    "TT-MFP ring indicator (modem 2)", port);
++		if (error) {
++			atari_scc_b_free_irqs(port);
++			atari_scc_a_free_irqs(port);
++			return error;
++		}
  #endif
-diff --git a/arch/m68k/mac/oss.c b/arch/m68k/mac/oss.c
-index 8426501..f3d23d6 100644
---- a/arch/m68k/mac/oss.c
-+++ b/arch/m68k/mac/oss.c
-@@ -66,16 +66,21 @@ void __init oss_init(void)
  
- void __init oss_register_interrupts(void)
- {
--	request_irq(OSS_IRQLEV_SCSI, oss_irq, IRQ_FLG_LOCK,
--			"scsi", (void *) oss);
--	request_irq(OSS_IRQLEV_IOPSCC, mac_scc_dispatch, IRQ_FLG_LOCK,
--			"scc", mac_scc_dispatch);
--	request_irq(OSS_IRQLEV_NUBUS, oss_nubus_irq, IRQ_FLG_LOCK,
--			"nubus", (void *) oss);
--	request_irq(OSS_IRQLEV_SOUND, oss_irq, IRQ_FLG_LOCK,
--			"sound", (void *) oss);
--	request_irq(OSS_IRQLEV_VIA1, via1_irq, IRQ_FLG_LOCK,
--			"via1", (void *) via1);
-+	if (request_irq(OSS_IRQLEV_SCSI, oss_irq, IRQ_FLG_LOCK,
-+			"scsi", (void *) oss))
-+		pr_err("Couldn't register %s interrupt\n", "scsi");
-+	if (request_irq(OSS_IRQLEV_IOPSCC, mac_scc_dispatch, IRQ_FLG_LOCK,
-+			"scc", mac_scc_dispatch))
-+		pr_err("Couldn't register %s interrupt\n", "scc");
-+	if (request_irq(OSS_IRQLEV_NUBUS, oss_nubus_irq, IRQ_FLG_LOCK,
-+			"nubus", (void *) oss))
-+		pr_err("Couldn't register %s interrupt\n", "nubus");
-+	if (request_irq(OSS_IRQLEV_SOUND, oss_irq, IRQ_FLG_LOCK,
-+			"sound", (void *) oss))
-+		pr_err("Couldn't register %s interrupt\n", "sound");
-+	if (request_irq(OSS_IRQLEV_VIA1, via1_irq, IRQ_FLG_LOCK,
-+			"via1", (void *) via1))
-+		pr_err("Couldn't register %s interrupt\n", "via1");
- }
- 
- /*
-diff --git a/arch/m68k/mac/psc.c b/arch/m68k/mac/psc.c
-index f84a4dd..ba6ccab 100644
---- a/arch/m68k/mac/psc.c
-+++ b/arch/m68k/mac/psc.c
-@@ -117,10 +117,14 @@ void __init psc_init(void)
- 
- void __init psc_register_interrupts(void)
- {
--	request_irq(IRQ_AUTO_3, psc_irq, 0, "psc3", (void *) 0x30);
--	request_irq(IRQ_AUTO_4, psc_irq, 0, "psc4", (void *) 0x40);
--	request_irq(IRQ_AUTO_5, psc_irq, 0, "psc5", (void *) 0x50);
--	request_irq(IRQ_AUTO_6, psc_irq, 0, "psc6", (void *) 0x60);
-+	if (request_irq(IRQ_AUTO_3, psc_irq, 0, "psc3", (void *) 0x30))
-+		pr_err("Couldn't register psc%d interrupt\n", 3);
-+	if (request_irq(IRQ_AUTO_4, psc_irq, 0, "psc4", (void *) 0x40))
-+		pr_err("Couldn't register psc%d interrupt\n", 4);
-+	if (request_irq(IRQ_AUTO_5, psc_irq, 0, "psc5", (void *) 0x50))
-+		pr_err("Couldn't register psc%d interrupt\n", 5);
-+	if (request_irq(IRQ_AUTO_6, psc_irq, 0, "psc6", (void *) 0x60))
-+		pr_err("Couldn't register psc%d interrupt\n", 6);
- }
- 
- /*
-diff --git a/arch/m68k/mac/via.c b/arch/m68k/mac/via.c
-index 796c822..11bce3c 100644
---- a/arch/m68k/mac/via.c
-+++ b/arch/m68k/mac/via.c
-@@ -283,7 +283,8 @@ void __init via_init_clock(irq_handler_t func)
- 	via1[vT1CL] = MAC_CLOCK_LOW;
- 	via1[vT1CH] = MAC_CLOCK_HIGH;
- 
--	request_irq(IRQ_MAC_TIMER_1, func, IRQ_FLG_LOCK, "timer", func);
-+	if (request_irq(IRQ_MAC_TIMER_1, func, IRQ_FLG_LOCK, "timer", func))
-+		pr_err("Couldn't register %s interrupt\n", "timer");
- }
- 
- /*
-@@ -293,25 +294,31 @@ void __init via_init_clock(irq_handler_t func)
- void __init via_register_interrupts(void)
- {
- 	if (via_alt_mapping) {
--		request_irq(IRQ_AUTO_1, via1_irq,
-+		if (request_irq(IRQ_AUTO_1, via1_irq,
- 				IRQ_FLG_LOCK|IRQ_FLG_FAST, "software",
--				(void *) via1);
--		request_irq(IRQ_AUTO_6, via1_irq,
-+				(void *) via1))
-+			pr_err("Couldn't register %s interrupt\n", "software");
-+		if (request_irq(IRQ_AUTO_6, via1_irq,
- 				IRQ_FLG_LOCK|IRQ_FLG_FAST, "via1",
--				(void *) via1);
-+				(void *) via1))
-+			pr_err("Couldn't register %s interrupt\n", "via1");
- 	} else {
--		request_irq(IRQ_AUTO_1, via1_irq,
-+		if (request_irq(IRQ_AUTO_1, via1_irq,
- 				IRQ_FLG_LOCK|IRQ_FLG_FAST, "via1",
--				(void *) via1);
-+				(void *) via1))
-+			pr_err("Couldn't register %s interrupt\n", "via1");
  	}
--	request_irq(IRQ_AUTO_2, via2_irq, IRQ_FLG_LOCK|IRQ_FLG_FAST,
--			"via2", (void *) via2);
-+	if (request_irq(IRQ_AUTO_2, via2_irq, IRQ_FLG_LOCK|IRQ_FLG_FAST,
-+			"via2", (void *) via2))
-+		pr_err("Couldn't register %s interrupt\n", "via2");
- 	if (!psc_present) {
--		request_irq(IRQ_AUTO_4, mac_scc_dispatch, IRQ_FLG_LOCK,
--				"scc", mac_scc_dispatch);
-+		if (request_irq(IRQ_AUTO_4, mac_scc_dispatch, IRQ_FLG_LOCK,
-+				"scc", mac_scc_dispatch))
-+			pr_err("Couldn't register %s interrupt\n", "scc");
- 	}
--	request_irq(IRQ_MAC_NUBUS, via_nubus_irq, IRQ_FLG_LOCK|IRQ_FLG_FAST,
--			"nubus", (void *) via2);
-+	if (request_irq(IRQ_MAC_NUBUS, via_nubus_irq,
-+			IRQ_FLG_LOCK|IRQ_FLG_FAST, "nubus", (void *) via2))
-+		pr_err("Couldn't register %s interrupt\n", "nubus");
+@@ -381,6 +471,7 @@ static int atari_tt_scc_init(void)
+ static int atari_falcon_scc_init(void)
+ {
+ 	struct scc_port *port;
++	int error;
+ 
+ 	pr_info("SCC: Atari Falcon Serial Driver\n");
+ 	if (atari_SCC_init_done)
+@@ -393,12 +484,10 @@ static int atari_falcon_scc_init(void)
+ 	port->datap = port->ctrlp + 2;
+ 	port->port_a = &scc_ports[0];
+ 	port->port_b = &scc_ports[1];
+-	request_irq(IRQ_SCCA_TX, scc_tx_int, IRQ_TYPE_PRIO, "SCC-A TX", port);
+-	request_irq(IRQ_SCCA_STAT, scc_stat_int, IRQ_TYPE_PRIO,
+-		    "SCC-A status", port);
+-	request_irq(IRQ_SCCA_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-A RX", port);
+-	request_irq(IRQ_SCCA_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
+-		    "SCC-A special cond", port);
++	error = atari_scc_a_request_irqs(port);
++	if (error)
++		return error;
++
+ 	{
+ 		SCC_ACCESS_INIT(port);
+ 
+@@ -429,12 +518,11 @@ static int atari_falcon_scc_init(void)
+ 	port->datap = port->ctrlp + 2;
+ 	port->port_a = &scc_ports[0];
+ 	port->port_b = &scc_ports[1];
+-	request_irq(IRQ_SCCB_TX, scc_tx_int, IRQ_TYPE_PRIO, "SCC-B TX", port);
+-	request_irq(IRQ_SCCB_STAT, scc_stat_int, IRQ_TYPE_PRIO,
+-		    "SCC-B status", port);
+-	request_irq(IRQ_SCCB_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-B RX", port);
+-	request_irq(IRQ_SCCB_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
+-		    "SCC-B special cond", port);
++	error = atari_scc_b_request_irqs(port);
++	if (error) {
++		atari_scc_a_free_irqs(port);
++		return error;
++	}
+ 
+ 	{
+ 		SCC_ACCESS_INIT(port);	/* Either channel will do */
+@@ -461,6 +549,7 @@ static int atari_st_scc_init(void)
+ {
+ 	struct scc_port *port;
+ 	int escc = ATARIHW_PRESENT(ST_ESCC);
++	int error;
+ 
+ 	pr_info("SCC: Atari MegaST/E Serial Driver\n");
+ 	/* FIXME: ports reversed logic */
+@@ -472,12 +561,10 @@ static int atari_st_scc_init(void)
+ 	port->datap = port->ctrlp + 4;
+ 	port->port_a = &scc_ports[1];
+ 	port->port_b = &scc_ports[0];
+-	request_irq(IRQ_SCCA_TX, scc_tx_int, IRQ_TYPE_PRIO, "SCC-A TX", port);
+-	request_irq(IRQ_SCCA_STAT, scc_stat_int, IRQ_TYPE_PRIO,
+-		    "SCC-A status", port);
+-	request_irq(IRQ_SCCA_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-A RX", port);
+-	request_irq(IRQ_SCCA_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
+-		    "SCC-A special cond", port);
++	error = atari_scc_a_request_irqs(port);
++	if (error)
++		return error;
++
+ 	{
+ 		SCC_ACCESS_INIT(port);
+ 
+@@ -508,12 +595,11 @@ static int atari_st_scc_init(void)
+ 	port->datap = port->ctrlp + 4;
+ 	port->port_a = &scc_ports[0];
+ 	port->port_b = &scc_ports[1];
+-	request_irq(IRQ_SCCB_TX, scc_tx_int, IRQ_TYPE_PRIO, "SCC-B TX", port);
+-	request_irq(IRQ_SCCB_STAT, scc_stat_int, IRQ_TYPE_PRIO,
+-		    "SCC-B status", port);
+-	request_irq(IRQ_SCCB_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-B RX", port);
+-	request_irq(IRQ_SCCB_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
+-		    "SCC-B special cond", port);
++	error = atari_scc_b_request_irqs(port);
++	if (error) {
++		atari_scc_a_free_irqs(port);
++		return error;
++	}
+ 
+ 	{
+ 		SCC_ACCESS_INIT(port);	/* Either channel will do */
+@@ -571,18 +657,11 @@ void atari_scc_cleanup(void)
+ 	tty_unregister_driver(scc_driver);
+ 	port = &scc_ports[0];
+ 	pr_debug("SCC: free channel A irqs, port = %p\n", port);
+-	free_irq(IRQ_SCCA_TX, port);
+-	free_irq(IRQ_SCCA_STAT, port);
+-	free_irq(IRQ_SCCA_RX, port);
+-	free_irq(IRQ_SCCA_SPCOND, port);
++	atari_scc_a_free_irqs(port);
+ 
+ 	port = &scc_ports[1];
+ 	pr_debug("SCC: free channel A irqs, port = %p\n", port);
+-	free_irq(IRQ_SCCB_TX, port);
+-	free_irq(IRQ_SCCB_STAT, port);
+-	free_irq(IRQ_SCCB_RX, port);
+-	free_irq(IRQ_SCCB_SPCOND, port);
+-
++	atari_scc_b_free_irqs(port);
  }
  
- /*
+ module_init(atari_scc_init);
 -- 
 1.5.6.5
 
