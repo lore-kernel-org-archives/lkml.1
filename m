@@ -1,38 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbZABLn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZABLws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbZABLn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 06:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZABLnG
+	id S1757924AbZABLws (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 06:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbZABLwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 06:43:06 -0500
-Received: from ns.suse.de ([195.135.220.2]:57473 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757577AbZABLnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 06:43:05 -0500
-From: Marcus Meissner <meissner@suse.de>
-To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: libusb broken on 2.6.28 x86_64 ?
-In-Reply-To: <20090102082824.GA4212@suse.de.suse.lists.linux.kernel>
-X-Newsgroups: suse.lists.linux.kernel
-User-Agent: tin/1.8.2-20060425 ("Shillay") (UNIX) (Linux/2.6.27.8-1-ppc64 (ppc64))
-Message-Id: <20090102114302.78965304C5@grape.suse.de>
-Date: Fri,  2 Jan 2009 12:43:02 +0100 (CET)
+	Fri, 2 Jan 2009 06:52:40 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48206 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756974AbZABLwj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 06:52:39 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 2 Jan 2009 12:47:13 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: cdev: fix documentation of FW_CDEV_IOC_GET_INFO
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.c7deb6ca39b7041e@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <20090102082824.GA4212@suse.de.suse.lists.linux.kernel> you wrote:
-> 
-> Hm, care to run 'git bisect'?
-> 
-> Or do you have a simple (or complex) test program that I can run here to
-> do the same thing?
+The FW_CDEV_IOC_GET_INFO ioctl looks at client->device->config_rom, not
+at the local node's config ROM.
 
-Greg, the same issue also happens with libgphoto2 / libusb.
+We could fix the implementation or the documentation.  I believe the way
+how it is currently implemented is more useful than the way how it is
+currently documented, hence let's change only the documentation.
 
-I was pointed to this bug + fix:
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ include/linux/firewire-cdev.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-	http://article.gmane.org/gmane.linux.usb.general/13442
-        http://bugzilla.kernel.org/show_bug.cgi?id=12301
+Index: linux/include/linux/firewire-cdev.h
+===================================================================
+--- linux.orig/include/linux/firewire-cdev.h
++++ linux/include/linux/firewire-cdev.h
+@@ -194,21 +194,21 @@ union fw_cdev_event {
+ /**
+  * struct fw_cdev_get_info - General purpose information ioctl
+  * @version:	The version field is just a running serial number.
+  *		We never break backwards compatibility, but may add more
+  *		structs and ioctls in later revisions.
+  * @rom_length:	If @rom is non-zero, at most rom_length bytes of configuration
+  *		ROM will be copied into that user space address.  In either
+  *		case, @rom_length is updated with the actual length of the
+  *		configuration ROM.
+  * @rom:	If non-zero, address of a buffer to be filled by a copy of the
+- *		local node's configuration ROM
++ *		device's configuration ROM
+  * @bus_reset:	If non-zero, address of a buffer to be filled by a
+  *		&struct fw_cdev_event_bus_reset with the current state
+  *		of the bus.  This does not cause a bus reset to happen.
+  * @bus_reset_closure: Value of &closure in this and subsequent bus reset events
+  * @card:	The index of the card this device belongs to
+  */
+ struct fw_cdev_get_info {
+ 	__u32 version;
+ 	__u32 rom_length;
+ 	__u64 rom;
 
-Ciao, Marcus
+-- 
+Stefan Richter
+-=====-==--= ---= ---=-
+http://arcgraph.de/sr/
+
