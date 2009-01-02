@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbZABNCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbZABNC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757660AbZABNCB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 08:02:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbZABNBx
+	id S1758032AbZABNC2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 08:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbZABNCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 08:01:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41250 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755957AbZABNBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 08:01:52 -0500
-Date: Fri, 2 Jan 2009 14:01:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ingo Brueckl <ib@wupperonline.de>
-Cc: Jesper Juhl <jj@chaosbits.net>, Tom Spink <tspink@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] compile time warnings
-Message-ID: <20090102130140.GA30190@elte.hu>
-References: <20090102095727.GH1975@elte.hu> <495e0d52@wupperonline.de>
+	Fri, 2 Jan 2009 08:02:16 -0500
+Received: from ik-out-1112.google.com ([66.249.90.182]:37454 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756148AbZABNCP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 08:02:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=v++j5gGyXPu70+nxcVFfhdPvEJj6yZmtSTT3I2luOgdzAodBFXKu97Y3kDjfqK+CJS
+         4G18EwSsQ5nREVGm0PGKQFpP3kAExTNNqJzm5mS78sv9vsp2EcslZhCmemlMN+z4qhH8
+         J35GLe/SNHNHb71tEbDlJrUMqU7YL/P72fRzw=
+Date: Fri, 2 Jan 2009 13:02:07 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: donash4@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: qdisc requeue stats
+Message-ID: <20090102130206.GA4450@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <495e0d52@wupperonline.de>
+In-Reply-To: <20081226.142923.63754891.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Brueckl <ib@wupperonline.de> wrote:
-
-> Ingo Molnar <mingo@elte.hu> writes:
+On 26-12-2008 23:29, David Miller wrote:
+> From: "Don Ash" <donash4@gmail.com>
+> Date: Sat, 27 Dec 2008 00:14:03 +0200
 > 
->  > Would you mind to send a patch for that that we could push to Linus?
-> 
-> Do you mean something like:
-> 
-> fix compiler warning in arch/x86/mm/init_32.c
+>> Is there a way to see q->qstats.requeues statistics
+>> (dev_requeue_skb()) ? I tried tc tool but it does not
+>> show it...
 
-yes, with a small nit:
-> 
-> +static inline void permanent_kmaps_init(pgd_t *pgd_base)
-> +{
-> +	(void) pgd_base;
+Something like this should work: tc -s qdisc show
+Otherwise more details are needed.
 
-there's no need for this line - this is not a macro, so the function 
-parameter does not have to be 'used'.
-
-	Ingo
+Jarek P.
