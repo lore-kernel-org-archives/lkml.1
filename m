@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbZABRY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbZABRZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758549AbZABRY6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 12:24:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbZABRYu
+	id S1758716AbZABRZi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 12:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757412AbZABRZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 12:24:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34977 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757029AbZABRYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 12:24:49 -0500
-Date: Fri, 2 Jan 2009 18:24:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: nmi.c fix style problems
-Message-ID: <20090102172439.GD6759@elte.hu>
-References: <1230725102.3738.10.camel@jaswinder.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1230725102.3738.10.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 2 Jan 2009 12:25:29 -0500
+Received: from postmen.rb009.by.ded.neolocation.net ([91.149.189.39]:53437
+	"EHLO postmen.neolocation.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757029AbZABRZ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 12:25:29 -0500
+X-Greylist: delayed 2224 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Jan 2009 12:25:28 EST
+Date: Fri, 2 Jan 2009 18:45:22 +0200
+From: Sergei Trofimovich <slyfox@uvaga.by>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] i8k: Add Dell Vostro systems
+Message-ID: <20090102184522.07bc2b86@slyfox.slynet.org>
+In-Reply-To: <20090102161919.18117.51612.stgit@localhost.localdomain>
+References: <20090102161825.18117.98501.stgit@localhost.localdomain>
+	<20090102161919.18117.51612.stgit@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+DomainKey-Status: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 02 Jan 2009 16:19:23 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+Hi! I bet, it does not pass checkpatch (tabs to spaces clash)
+Sorry, can't send fixed patch.
 
-> Impact: cleanup, fix style problems
+> From: Federico Heinz <fheinz@vialibre.org.ar>
 > 
-> Fixes style problems:
-> WARNING: Use #include <linux/smp.h> instead of <asm/smp.h>
-> WARNING: Use #include <linux/nmi.h> instead of <asm/nmi.h>
+> This trivial patch adds support for i8k on the new Dell Vostro models.
+> I tested it on my Vostro 1400, and it works. It does print a warning
+> when loading the module:
 > 
-> total: 0 errors, 2 warnings
+> 	i8k: unable to get SMM BIOS version
 > 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> But I couldn't figure out how to fix that. The module seems to work fine,
+> anyway...
+> 
+> Signed-off-by: Federico Heinz <fheinz@vialibre.org.ar>
+> Signed-off-by: Alan Cox <alan@redhat.com>
 > ---
->  arch/x86/kernel/nmi.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
-> index 8bd1bf9..45a09cc 100644
-> --- a/arch/x86/kernel/nmi.c
-> +++ b/arch/x86/kernel/nmi.c
-> @@ -26,11 +26,10 @@
->  #include <linux/kernel_stat.h>
->  #include <linux/kdebug.h>
->  #include <linux/smp.h>
-> +#include <linux/nmi.h>
->  
->  #include <asm/i8259.h>
->  #include <asm/io_apic.h>
-> -#include <asm/smp.h>
-> -#include <asm/nmi.h>
->  #include <asm/proto.h>
->  #include <asm/timer.h>
+>  drivers/char/i8k.c |    9 ++++++++-
+>  1 files changed, 8 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/drivers/char/i8k.c b/drivers/char/i8k.c
+> index 099fc89..fc8cf7a 100644
+> --- a/drivers/char/i8k.c
+> +++ b/drivers/char/i8k.c
 
-does this build fine on UP + IOAPIC ? asm/smp.h has some side-effects that 
-brings in certain APIC definitions.
+...
+> -	{ }
+^^^^^^
+This one
+vvvvvvv
+> +        { }
+>  };
 
-	Ingo
+-- 
+
+  Sergei
