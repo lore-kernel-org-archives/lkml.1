@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZABQun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbZABQwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbZABQun (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 11:50:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZABQue
+	id S1758690AbZABQwc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 11:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757029AbZABQwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 11:50:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32771 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756667AbZABQud (ORCPT
+	Fri, 2 Jan 2009 11:52:21 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59491 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbZABQwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 11:50:33 -0500
-Date: Fri, 2 Jan 2009 08:49:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       rdreier@cisco.com, ian.campbell@citrix.com,
-       jeremy.fitzhardinge@citrix.com, deller@gmx.de, rusty@rustcorp.com.au,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@mcmartin.ca, randolph@tausq.org, sam@ravnborg.org,
-       dave@hiauly1.hia.nrc.ca
-Subject: Re: [PATCH] kbuild: Disallow GCC 4.1.0 / 4.1.1
-In-Reply-To: <20090102115547.GB3027@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain>
-References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain> <20081231105425.9ccac21d.akpm@linux-foundation.org> <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain> <20081231.141408.60544902.davem@davemloft.net>
- <20090102115547.GB3027@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 2 Jan 2009 11:52:20 -0500
+Date: Fri, 2 Jan 2009 17:52:03 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, avishay@gmail.com, jeff@garzik.org,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       osd-dev@open-osd.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] exofs: osd Swiss army knife
+Message-ID: <20090102165201.GC1555@ucw.cz>
+References: <4947BFAA.4030208@panasas.com> <1229439174-30492-1-git-send-email-bharrosh@panasas.com> <20081229122959.2cb48cf7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081229122959.2cb48cf7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
+> > In this patch are all the osd infrastructure that will be used later
+> > by the file system.
+> > 
+> > Also the declarations of constants, on disk structures, and prototypes.
+> > 
+> > And the Kbuild+Kconfig files needed to build the exofs module.
+> > 
+> >
+> > ...
+> >
+> > +struct exofs_sb_info {
+> > +	struct osd_dev	*s_dev;			/* returned by get_osd_dev    */
+> > +	uint64_t	s_pid;			/* partition ID of file system*/
+> > +	int		s_timeout;		/* timeout for OSD operations */
+> > +	uint32_t	s_nextid;		/* highest object ID used     */
+> > +	uint32_t	s_numfiles;		/* number of files on fs      */
+> > +	spinlock_t	s_next_gen_lock;	/* spinlock for gen # update  */
+> > +	u32		s_next_generation;	/* next gen # to use          */
+> > +	atomic_t	s_curr_pending;		/* number of pending commands */
+> > +	uint8_t		s_cred[OSD_CAP_LEN];	/* all-powerful credential    */
+> > +};
+> > +
+> > +/*
+> > + * our inode flags
+> > + */
+> > +#ifdef ARCH_HAS_ATOMIC_UNSIGNED
+> 
+> This doesn't exist, and it would be fairly bad to introduce it.  Please
+> kill the ifdefs.
+> 
+> > +typedef unsigned exofs_iflags_t;
+> > +#else
+> > +typedef unsigned long exofs_iflags_t;
+> > +#endif
+> 
+> Then please kill the typedef altogether and replace it with `unsigned
+> long' everywhere
 
-On Fri, 2 Jan 2009, Ingo Molnar wrote:
-> --- a/include/linux/compiler.h
-> +++ b/include/linux/compiler.h
-> @@ -36,12 +36,25 @@ extern void __chk_io_ptr(const volatile void __iomem *);
->  
->  #ifdef __KERNEL__
->  
-> -#if __GNUC__ >= 4
-> +/*
-> + * GCC 4.1.0 and 4.1.1 has a bug that can miscompile __weak symbols,
-> + * by inlining __weak functions into same-file call sites - breaking the
-> + * kernel if the __weak symbol is overriden later on.
-> + *
-> + * We have not found a clean way to work around this bug on the source
-> + * code level, so we do not allow these compilers (which are quite
-> + * rare these days, have other bugs and are superceded by the 4.1.2
-> + * bugfix release anyway):
-> + */
-> +#define gcc41_inlining_bug \
-> +	(__GNUC__ == 4 && __GNUC_MINOR__ == 1 && __GNUC_PATCHLEVEL__ <= 1)
-> +
-> +#if __GNUC__ >= 4 && !gcc41_inlining_bug
->  # include <linux/compiler-gcc4.h>
+Hmmm.. .and at a note somewhere that we assume unsigned long to be atomic...?
 
-I think this is wrong.
-
-Just move the check into <linux/compiler-gcc4.h>
-
-It makes no sense to do stuff that is specific to gcc4 in the general gcc 
-header file. It seems you did this just in order to re-use a (bad) generic 
-error case. 
-
-			Linus
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
