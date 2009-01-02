@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759729AbZABWIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbZABWNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759729AbZABWIh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 17:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbZABWI2
+	id S1758926AbZABWNf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 17:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbZABWN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 17:08:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37215 "EHLO mx2.mail.elte.hu"
+	Fri, 2 Jan 2009 17:13:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33115 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755654AbZABWI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 17:08:27 -0500
-Date: Fri, 2 Jan 2009 23:08:18 +0100
+	id S1755654AbZABWNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 17:13:25 -0500
+Date: Fri, 2 Jan 2009 23:13:10 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Indan Zupancic <indan@nul.nu>
-Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix race in ring_buffer_consume(): Replace
-	ring_buffer_consume and ring_buffer_peek with ring_buffer_get_event
-Message-ID: <20090102220818.GD17240@elte.hu>
-References: <54882.124.179.251.206.1230523141.squirrel@secure.greenhost.nl> <1230536044-14847-1-git-send-email-indan@nul.nu> <20081229122449.GG9628@elte.hu> <57128.124.177.22.144.1230786624.squirrel@secure.greenhost.nl>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Rusty Russell <rusty@au1.ibm.com>
+Subject: Re: [PATCH 2/2] futex: correct futex_requeue futex key ref
+	counting in requeue loop
+Message-ID: <20090102221310.GE17240@elte.hu>
+References: <20081229185238.10342.75651.stgit@Aeon> <20081229185402.10342.77396.stgit@Aeon> <495AB065.3080707@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <57128.124.177.22.144.1230786624.squirrel@secure.greenhost.nl>
+In-Reply-To: <495AB065.3080707@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,42 +36,55 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Indan Zupancic <indan@nul.nu> wrote:
+* Darren Hart <dvhltc@us.ibm.com> wrote:
 
-> On Mon, December 29, 2008 13:24, Ingo Molnar wrote:
-> >
-> > * Indan Zupancic <indan@nul.nu> wrote:
-> >
-> >> Original mail was mangled, patch resent via git.
-> >>
-> >> Signed-off-by: Indan Zupancic <indan@nul.nu>
-> >> ---
-> >>  include/linux/ring_buffer.h   |    4 +---
-> >>  kernel/trace/ring_buffer.c    |   39
-> >> ++++++++-------------------------------
-> >>  kernel/trace/trace.c          |   15 ++++++++-------
-> >>  kernel/trace/trace_selftest.c |    2 +-
-> >>  4 files changed, 18 insertions(+), 42 deletions(-)
-> >
-> > there's been a number of updates here - could you please do a patch
-> > against tip/master:
-> >
-> >   http://people.redhat.com/mingo/tip.git/README
-> 
-> Thanks for that readme, now I discovered git remote, which is not
-> mentioned often enough for some reason.
-> 
-> A lot changed indeed, most importantly the race that I hit is
-> fixed in tip by improved locking. Replace ring_buffer_consume()
-> and ring_buffer_peek() with ring_buffer_get_event() or not is
-> just a matter of taste now. Are you still interested in such a
-> patch?
+> Darren Hart wrote:
+>> The requeue loop takes multiple references to key2, but the corresponding
+>> put loop decrements the refs for key1.  This patch corrects the accounting.
+>>
+>> Build and boot tested on an x86_64 system.
+>>
+>> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+>> Cc: Peter Zijlstra <peterz@infradead.org>
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: Rusty Russell <rusty@au1.ibm.com>
+>> ---
+>>
+>>  kernel/futex.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/kernel/futex.c b/kernel/futex.c
+>> index cf363ce..3b66d91 100644
+>> --- a/kernel/futex.c
+>> +++ b/kernel/futex.c
+>> @@ -919,7 +919,7 @@ out_unlock:
+>>
+>>  	/* drop_futex_key_refs() must be called outside the spinlocks. */
+>>  	while (--drop_count >= 0)
+>> -		drop_futex_key_refs(&key1);
+>> +		drop_futex_key_refs(&key2);
+>>
+>>  	put_futex_key(fshared, &key2);
+>>  out_put_key1:
+>>
+>
+> Ugh, so I'm having second thoughts about this patch.  I believe what is  
+> happening here is that the requeue loop requeues each waiter from one  
+> futex (key1) to another (key2).  It rightly takes a reference to the  
+> futex at key2 and then decrements the references to key1 by drop_count  
+> (since the waiters now reference key2, not key1).  The newly taken key2  
+> references will be dropped in futex_wait() when each waiter is woken up  
+> and takes the futex.
+>
+> I apologize for the confusion on this.  Thanks for suggesting I send  
+> this patch out independently from the rest Peter ;-)
+>
+> If we can come to a consensus on this, I suggest pulling this patch from  
+> tip/core/futexes.
 
-the code gets simpler and more readable, so why not? Steve, any 
-objections?
+ok, i zapped it. The patches remaining are:
 
-> (34 EXPORT_SYMBOL_GPLs in ring_buffer.c seems a bit excessive though.)
-
-agreed.
+90621c4: futex: catch certain assymetric (get|put)_futex_key calls
+42d35d4: futex: make futex_(get|put)_key() calls symmetric
 
 	Ingo
