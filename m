@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZABGkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZABHBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbZABGkf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 01:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZABGk0
+	id S1756988AbZABHBg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 02:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZABHBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 01:40:26 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:55023 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbZABGk0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 01:40:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=CWuIFFMvjc/tqJcm3eHun1Xpm6hBWL+TJEJhfIjbhmadqMe0ulJklEedPl7houHPQs
-         OSFttesf4FK0jgDpNH0GbHpm7Mc7Y0h4QfG08C4Vzf2SCglFDsUsLx2LgTYpJWrNLi6R
-         xyGFgwRhIoN6F0yoKr3hkALzgR6xGkmDkwYME=
-Message-ID: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com>
-Date: Fri, 2 Jan 2009 12:05:05 +0530
-From: "Sriram V" <vshrirama@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Power Management with rootfs on SDMMC.
+	Fri, 2 Jan 2009 02:01:25 -0500
+Received: from rtr.ca ([76.10.145.34]:47436 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751127AbZABHBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 02:01:25 -0500
+Message-ID: <495DBBC1.7040202@rtr.ca>
+Date: Fri, 02 Jan 2009 02:01:21 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: libusb broken on 2.6.28 x86_64 ?
+References: <495DB4AC.50602@rtr.ca>
+In-Reply-To: <495DB4AC.50602@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  I am using linux-2.6.27.  I am testing power management after
-booting out of a SD/MMC card.
-  My root file system is on a SD card.
+Mark Lord wrote:
+> I'm trying to use 2.6.28 for the first time on an x86_64 box here
+> with devices controlled by libusb.  The devices work on the first
+> access, but then fail on all subsequent accesses.  Unplugging/replugging
+> causes them to work again for a single subsequent access.
+> 
+> This is with two completely different USB gadgets:
+> a VFD alphanumeric display, and an FTDI serial device in bitbang mode.
+> 
+> Did something break in 2.6.28 for libusb devices ??
+..
 
-  I am issuing the following command to suspend
+Mmm.. broken only for 64-bit userspace, it seems.
 
-      $ echo -n mem > /sys/power/state
+I've recompiled the same app against 32-bit libs,
+and it works just fine on that 64-bit system,
+as well as on 32-bit systems.
 
- What happens is, The kernel hangs and it does not come out of suspend.
- even after i press keypad/generate serial input data.
+But not when compiled for pure 64-bit operation on a 64-bit system.
 
- # echo -n mem > /sys/power/state
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-mmc0: card e624 removed
---- kernel hangs---
+Looks tricky .. must be a change somewhere that assumes
+a pointer/long is 32-bits or something.
 
-The same works, If i boot on NFS and mount a SD card.
-PM works, suspend and resume work fine. This means
-that the PM of SD MMC driver works properly.
-
-However, I have a problem when the rootfs is on SDMMC card.
-Has anyone tried this before?
-
-Am i missing something here?
-
-Regards,
-sriram
+-ml
