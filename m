@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbZABRir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbZABRmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758689AbZABRir (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 12:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbZABRii
+	id S1758686AbZABRmE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 12:42:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbZABRlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 12:38:38 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60194 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757406AbZABRii (ORCPT
+	Fri, 2 Jan 2009 12:41:53 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:40383 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757066AbZABRlw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 12:38:38 -0500
-Date: Fri, 2 Jan 2009 09:38:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       rdreier@cisco.com, ian.campbell@citrix.com,
-       jeremy.fitzhardinge@citrix.com, deller@gmx.de, rusty@rustcorp.com.au,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@mcmartin.ca, randolph@tausq.org, sam@ravnborg.org,
-       dave@hiauly1.hia.nrc.ca
-Subject: Re: [PATCH] kbuild: Disallow GCC 4.1.0 / 4.1.1
-In-Reply-To: <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0901020933370.5086@localhost.localdomain>
-References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain> <20081231105425.9ccac21d.akpm@linux-foundation.org> <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain> <20081231.141408.60544902.davem@davemloft.net> <20090102115547.GB3027@elte.hu>
- <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 2 Jan 2009 12:41:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZO5bgjIzyFgmT9IG7/v5ViXYhMuC0ISEYYhXpu7FhZn+hUBtNOR6FLvWc5HCeooBAm
+         QT8OuziQqAdgaiKswRbucOkg7wYXq8Vw1U9Qpux47LuWhCekrVJbVWYXXku1AyHVV1v7
+         P3YuOylk2wUHb51qLf2ctfQ8BettsVWAJEXj0=
+Date: Fri, 2 Jan 2009 20:24:26 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: david@lang.hm
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20090102172426.GB5372@localhost>
+References: <87k59hur5f.fsf@basil.nowhere.org> <alpine.DEB.1.10.0812301737320.16936@asgard.lang.hm> <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm> <20090101041727.GW496@one.firstfloor.org> <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm> <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[david@lang.hm - Fri, Jan 02, 2009 at 10:21:52AM -0800]
+> On Wed, 31 Dec 2008, david@lang.hm wrote:
+>
+>> On Thu, 1 Jan 2009, Andi Kleen wrote:
+>>
+>>> On Wed, Dec 31, 2008 at 12:59:08PM -0800, david@lang.hm wrote:
+>>>> On Wed, 31 Dec 2008, Andi Kleen wrote:
+>>>>
+>>>>>> on the picture you sent me i noticed the message
+>>>>>> "Your memory is not aligned you need to rebuild your
+>>>>>> kernel with bigger NODEMAP SIZE shift=20" and then
+>>>>>> srat code complains about "No NUMA code hash function found"
+>>>>>> which looks a bit scary. Btw, could you post this picture
+>>>>>> on some public resource so NUMA people could check it?
+>>>>>
+>>>>> This case used to be handled cleanly (NUMA disabled), but perhaps
+>>>>> that has regressed. But still it sounds like something is going wrong,
+>>>>> unless his machine really has a very weird memory map.
+>>>>
+>>>> it shouldn't, it was one of the high-volume servers 4-5 years ago and only
+>>>> has 4G of ram in it
+>>>
+>>> From looking at the screenshot Cyrill sent you seem to have a funny
+>>> SRAT with overlapping areas that is rejected in the end. I suspect the
+>>> fallback code doesn't handle this properly.
+>>>
+>>> Does it work when you boot with numa=noacpi ?
+>>
+>> it gets past the point where the bootmemory_debug messages flow by, but 
+>> I get another oops (snapshot of the screen is at  
+>> http://linux.lang.hm/linux/IMG00031.jpg )
+>
+> oops, I misread your mail, IMG00031.jpg was with numa=off
+>
+> I just posted IMG00033.jpg which is with numa=noacpi and earlyprintk=vga  
+> but not bootmem_debug
+>
+> David Lang
+>
 
+Thanks, David! Trying to understand what is going on :)
 
-On Fri, 2 Jan 2009, Linus Torvalds wrote:
-> 
-> I think this is wrong.
-> 
-> Just move the check into <linux/compiler-gcc4.h>
+Here is a new picture if someone would like to jump into
+the bug handling
 
-In fact, looking at that whole mess, I redid it all. It was disgusting how 
-conditionals in gcc4.h needed to double-check that __GNUC__ really was 4 
-(rather than something bigger), which largely negated the whole nice clean 
-compiler version separation.
+	http://linux.lang.hm/linux/IMG00033.jpg
 
-I pushed out my preferred version, which fixes up the whole thing. The 
-gcc4 header file now only gets included for __GNUC__ == 4, and when we 
-ever see a __GNUC__ of 5, it will automatically DTRT and try to include 
-<linux/compiler-gcc5.h> instead of #4.
-
-And then the check in gcc4.h for 4.1.0 and 4.1.1 is much simplified.  The 
-two patches I pushed out add functionality, but don't actually add any new 
-lines (the first simplification patch removes more lines than it adds, and 
-the second one that adds the __weak bug test adds as mahy lines as the 
-cleanup removed).
-
-And it all looks more logical too, imho.
-
-		Linus
+		- Cyrill -
