@@ -1,47 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbZABSG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbZABSHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759048AbZABSG4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 13:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbZABSGq
+	id S1758662AbZABSHZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 13:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759018AbZABSGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 13:06:46 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43801 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757464AbZABSGp (ORCPT
+	Fri, 2 Jan 2009 13:06:55 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:17928 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758830AbZABSGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 13:06:45 -0500
-Date: Fri, 2 Jan 2009 10:05:47 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       rdreier@cisco.com, ian.campbell@citrix.com,
-       jeremy.fitzhardinge@citrix.com, deller@gmx.de, rusty@rustcorp.com.au,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@mcmartin.ca, randolph@tausq.org, sam@ravnborg.org,
-       dave@hiauly1.hia.nrc.ca
-Subject: Re: [PATCH] kbuild: Disallow GCC 4.1.0 / 4.1.1
-In-Reply-To: <20090102180110.GA7425@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901021004440.5086@localhost.localdomain>
-References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain> <20081231105425.9ccac21d.akpm@linux-foundation.org> <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain> <20081231.141408.60544902.davem@davemloft.net> <20090102115547.GB3027@elte.hu>
- <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain> <alpine.LFD.2.00.0901020933370.5086@localhost.localdomain> <20090102174641.GA27287@elte.hu> <alpine.LFD.2.00.0901020953280.5086@localhost.localdomain> <20090102180110.GA7425@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Jan 2009 13:06:53 -0500
+Subject: Re: Btrfs for mainline
+From: Chris Mason <chris.mason@oracle.com>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-btrfs@vger.kernel.org
+In-Reply-To: <20090103.013755.42849152.ryusuke@osrg.net>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>
+	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>
+	 <1230765549.7538.8.camel@think.oraclecorp.com>
+	 <20090103.013755.42849152.ryusuke@osrg.net>
+Content-Type: text/plain
+Date: Fri, 02 Jan 2009 13:06:24 -0500
+Message-Id: <1230919584.7538.16.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.495E57A7.00CE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 2 Jan 2009, Ingo Molnar wrote:
+On Sat, 2009-01-03 at 01:37 +0900, Ryusuke Konishi wrote:
+> Hi,
+> On Wed, 31 Dec 2008 18:19:09 -0500, Chris Mason <chris.mason@oracle.com> wrote:
+> > 
+> > This has only btrfs as a module and would be the fastest way to see
+> > the .c files.  btrfs doesn't have any changes outside of fs/Makefile and
+> > fs/Kconfig
 > 
-> So what i tried to point out that your patch causes a regression here - 
-> we dont filter out gcc 3.0/3.1 out anymore.
+> I found some overlapping (or cloned) functions in
+> btrfs-unstable.git/fs/btrfs, for example:
+> 
+>  - Declarations to apply hardware crc32c in fs/btrfs/crc32c.h:
+>    The same code is found in arch/x86/crypto/crc32c-intel.c
+> 
 
-What I tried to tell you was that we don't care - nobody can have it 
-anyway. If somebody tried to compile the kernel with it, we've already 
-refused for the last 2+ years. So there are no old users out there. And 
-there certainly aren't any new ones.
+Yes, I can just remove the btrfs version of this for now.
 
-			Linus
+>  - btrfs_wait_on_page_writeback_range() and btrfs_fdatawrite_range():
+>    These are clones of wait_on_page_writeback_range() and
+>    __filemap_fdatawrite_range() respectively, and can be removed if they
+>    are just exported.
+> 
+>  - Copies of add_to_page_cache_lru() found in compression.c and extent_io.c
+>    (can be replaced if it's exported)
+> 
+> How about including patches to resolve these in the btrfs kernel tree
+> (or patchset to be posted) ?
+> 
+
+My plan was to export those after btrfs was actually in.  But on Monday
+I'll send along a patch to export them and make compat functions in
+btrfs.
+
+> In addition, there seem to be well-separated reusable routines such as
+> async-thread (enhanced workqueue) and extent_map.  Do you intend to
+> move these into lib/ or so?
+> 
+> I also tried scripts/checkpatch.pl against btrfs, and it has detected
+> 45 ERRORs and 93 WARNINGs.  I think it's a good opportunity to clean
+> up these violations.
+
+Good point, thanks for looking at the code.
+
+-chris
+
+
