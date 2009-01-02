@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZABHBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbZABHP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbZABHBg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 02:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZABHBZ
+	id S1757051AbZABHP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 02:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZABHPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 02:01:25 -0500
-Received: from rtr.ca ([76.10.145.34]:47436 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751127AbZABHBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 02:01:25 -0500
-Message-ID: <495DBBC1.7040202@rtr.ca>
-Date: Fri, 02 Jan 2009 02:01:21 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Fri, 2 Jan 2009 02:15:08 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:17056 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751127AbZABHPG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 02:15:06 -0500
+Message-ID: <495DBEF0.1040801@panasas.com>
+Date: Fri, 02 Jan 2009 09:14:56 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: libusb broken on 2.6.28 x86_64 ?
-References: <495DB4AC.50602@rtr.ca>
-In-Reply-To: <495DB4AC.50602@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, avishay@gmail.com,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [osd-dev] [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com> <4947CA5C.50104@panasas.com> <20081229121423.efde9d06.akpm@linux-foundation.org> <495B8D90.1090004@panasas.com> <1230739053.3408.74.camel@localhost.localdomain> <495C8B65.4010202@panasas.com> <20090101232637.GC31367@fieldses.org>
+In-Reply-To: <20090101232637.GC31367@fieldses.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Jan 2009 07:14:56.0626 (UTC) FILETIME=[D0DE1D20:01C96CA9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> I'm trying to use 2.6.28 for the first time on an x86_64 box here
-> with devices controlled by libusb.  The devices work on the first
-> access, but then fail on all subsequent accesses.  Unplugging/replugging
-> causes them to work again for a single subsequent access.
+On Jan. 02, 2009, 1:26 +0200, "J. Bruce Fields" <bfields@fieldses.org> wrote:
+> On Thu, Jan 01, 2009 at 11:22:45AM +0200, Benny Halevy wrote:
+>> On Dec. 31, 2008, 17:57 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+>>> I don't like it mainly because it's not truly a useful general framework
+>>> for others to build on.  However, as argued above, there might not
+>>> actually be such a useful framework, so as long as the only two
+>>> consumers (you and Lustre) want an interface like this, I'll put it in.
+>> Not to mention pnfs over objects which is coming up around the corner.
+>> The pnfs-obj layout driver will use the osd initiator library as well
+>> for distributed data I/O access (while the metadata server, to be based
+>> on exofs accesses the OSD for metadata and security ops too)
 > 
-> This is with two completely different USB gadgets:
-> a VFD alphanumeric display, and an FTDI serial device in bitbang mode.
+> What state is that project in right now?
+
+I hope to release the pnfs-obj layout driver in a few weeks,
+after finishing with cleaning up the nfs41 and pnfs patch sets.
+Still, there's more work to be done on the back end side, exporting
+exofs over (p)NFS, and then we'd be able to provide full pnfs
+over objects functionality.
+
+Benny
+
 > 
-> Did something break in 2.6.28 for libusb devices ??
-..
-
-Mmm.. broken only for 64-bit userspace, it seems.
-
-I've recompiled the same app against 32-bit libs,
-and it works just fine on that 64-bit system,
-as well as on 32-bit systems.
-
-But not when compiled for pure 64-bit operation on a 64-bit system.
-
-Looks tricky .. must be a change somewhere that assumes
-a pointer/long is 32-bits or something.
-
--ml
+> --b.
