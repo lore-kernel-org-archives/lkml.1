@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbZABH7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZABIC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757276AbZABH7s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 02:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZABH7h
+	id S1757272AbZABIC6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 03:02:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZABICq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 02:59:37 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44362 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751127AbZABH7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 02:59:37 -0500
-Date: Thu, 1 Jan 2009 23:58:35 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: libusb broken on 2.6.28 x86_64 ?
-Message-ID: <20090102075835.GA3955@suse.de>
-References: <495DB4AC.50602@rtr.ca> <495DBBC1.7040202@rtr.ca> <20090102072436.GA3444@suse.de> <495DC771.9030103@rtr.ca>
-MIME-Version: 1.0
+	Fri, 2 Jan 2009 03:02:46 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:37729 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751988AbZABICq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 03:02:46 -0500
+Date: Fri, 2 Jan 2009 09:04:20 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Bastian Blank <bastian@waldi.eu.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-sparc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparc: Use 64BIT config entry
+Message-ID: <20090102080420.GA2107@uranus.ravnborg.org>
+References: <20090101193504.GA4368@wavehammer.waldi.eu.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <495DC771.9030103@rtr.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090101193504.GA4368@wavehammer.waldi.eu.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 02:51:13AM -0500, Mark Lord wrote:
-> Greg KH wrote:
->> On Fri, Jan 02, 2009 at 02:01:21AM -0500, Mark Lord wrote:
->>> Mark Lord wrote:
-> ..
->>> Mmm.. broken only for 64-bit userspace, it seems.
->>>
->>> I've recompiled the same app against 32-bit libs,
->>> and it works just fine on that 64-bit system,
->>> as well as on 32-bit systems.
->>>
->>> But not when compiled for pure 64-bit operation on a 64-bit system.
-> ..
->> Which version of libusb, a new one was just released a few weeks ago
->> that fixes a lot of problems reported in the older libusb versions, and
->> made things much faster to boot.  You might want to check it out.
-> ..
->
-> This is with libusb-0.1-4, which has been working fine with all prior 
-> kernels,
-> including the 2.6.27.xx series.
->
-> Userspace stuff like this is not supposed to be broken from kernel to 
-> kernel.
+On Thu, Jan 01, 2009 at 08:35:04PM +0100, Bastian Blank wrote:
+> Use 64BIT config entry to distinguish between 32 and 64bit builds
+> instead of relying on the ARCH setting.  Using sparc64 as ARCH still
+> forces 64BIT on.
 
-No it shouldn't, I was thinking this was the first time you had tried
-such a thing (64bit userspace apps.)
+Hi Bastian.
 
-If using 2.6.27 works, then we need to fix this.
+I have tested the patch and it works as expected.
+One small nit below.
 
-thanks,
+	Sam
 
-greg k-h
+> 
+> Inspired by the x86 and s390 configs.
+> 
+> Signed-off-by: Bastian Blank <waldi@debian.org>
+> 
+> -- 
+> You can't evaluate a man by logic alone.
+> 		-- McCoy, "I, Mudd", stardate 4513.3
+
+> diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+> index 0a94d9c..73ddfd9 100644
+> --- a/arch/sparc/Kconfig
+> +++ b/arch/sparc/Kconfig
+> @@ -4,6 +4,13 @@
+>  
+>  mainmenu "Linux/SPARC Kernel Configuration"
+>  
+> +config 64BIT
+> +	bool "64-bit kernel" if ARCH = "sparc"
+> +	default ARCH = "sparc64"
+> +	help
+> +	  Say yes to build a 64-bit kernel - formerly known as sparc64
+> +	  Say no to build a 32-bit kernel - formerly known as sparc
+
+We should update this help escription with something remotely like this:
+
+> +	  SPARC is a family of RISC microprocessors designed and marketed by
+> +	  Sun Microsystems, incorporated.  They are very widely found in Sun
+> +	  workstations and clones.
+
+Just a raw copy from the (always hidden) help text for SPARC32.
+
+	Sam
