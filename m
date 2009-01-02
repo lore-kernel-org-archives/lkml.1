@@ -1,82 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZABDUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbZABDfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbZABDUW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 22:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbZABDUK
+	id S1756917AbZABDfY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 22:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZABDfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 22:20:10 -0500
-Received: from main.gmane.org ([80.91.229.2]:53745 "EHLO ciao.gmane.org"
+	Thu, 1 Jan 2009 22:35:11 -0500
+Received: from thunk.org ([69.25.196.29]:36500 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755729AbZABDUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 22:20:08 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Raja R Harinath <harinath@hurrynot.org>
-Subject: Re: [PATCH for -tip 4/4] irq: for_each_irq_desc() makes simplify
-Date: Thu, 01 Jan 2009 23:35:21 +0530
-Message-ID: <87wsdezyu6.fsf@hariville.hurrynot.org>
-References: <20081226121703.5CA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20081226122830.5CAF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
+	id S1750810AbZABDfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 22:35:10 -0500
+X-Greylist: delayed 1436 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Jan 2009 22:35:10 EST
+Date: Thu, 1 Jan 2009 22:11:10 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andreas Sundstrom <sunkan@zappa.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28 ext4, xen and lvm volume becomes ro after snapshot
+Message-ID: <20090102031110.GF17821@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andreas Sundstrom <sunkan@zappa.cx>, linux-kernel@vger.kernel.org
+References: <4954BAAB.9090108@zappa.cx> <20081226140721.GN9871@mit.edu> <4954FB62.4090306@zappa.cx> <20081226182145.GP9871@mit.edu> <495526F6.9040704@zappa.cx> <20081226193307.GA2138@mit.edu> <495553EB.6030604@zappa.cx> <20081227030632.GA3539@mit.edu> <4955F338.4020509@zappa.cx>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 59.96.115.95
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-Cancel-Lock: sha1:/7QksPgAYijkdPRuwX7uAGx7zcY=
+Content-Disposition: inline
+In-Reply-To: <4955F338.4020509@zappa.cx>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Dec 27, 2008 at 10:19:52AM +0100, Andreas Sundstrom wrote:
+> Theodore Tso wrote:
+> > On Fri, Dec 26, 2008 at 11:00:11PM +0100, Andreas Sundstrom wrote:
+> >> But I enabled debugfs and did
+> >> "echo 3 > /sys/kernel/debug/jbd2/jbd2-debug" and reproduced the problem
+> >> by taking a snapshot while the system was live.
+> >> I hope this had the same effect as your proposed change.
+> > 
+> > Thanks, that was helpful.  Can you try applying this patch, and let me
+> > know whether the printk triggers?
+> 
+> No problem
+> 
 
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
+Hi Andreas,
 
-> Subject: [PATCH] irq: for_each_irq_desc() makes simplify
-> Impact: cleanup
->
-> all for_each_irq_desc() usage point have !desc check.
-> then its check can move into for_each_irq_desc() macro.
-[snip]
-> Index: b/include/linux/irqnr.h
-> ===================================================================
-> --- a/include/linux/irqnr.h
-> +++ b/include/linux/irqnr.h
-> @@ -25,10 +25,14 @@ extern struct irq_desc *irq_to_desc(unsi
->  
->  # define for_each_irq_desc(irq, desc)					\
->  	for (irq = 0, desc = irq_to_desc(irq); irq < nr_irqs;		\
-> -	     irq++, desc = irq_to_desc(irq))
-> +	     irq++, desc = irq_to_desc(irq))				\
-> +		if (desc)
-> +
-> +
->  # define for_each_irq_desc_reverse(irq, desc)				\
->  	for (irq = nr_irqs - 1, desc = irq_to_desc(irq); irq >= 0;	\
-> -	     irq--, desc = irq_to_desc(irq))
-> +	     irq--, desc = irq_to_desc(irq))				\
-> +		if (desc)
+Can you try this patch?  This should (hopefully!) allow you to mount
+ext4 in a Xen guest without needing to explicitly disable barriers.
+If it works, it's what I plan to push to Linus.
 
-I know this has gone in, but isn't this naked 'if' unsafe.  Consider the
-following hypothetical code:
+         	     	       	      	      	 - Ted
 
-  if (safe)
-    for_each_irq_desc(irq, desc) {
-       ...
-    }
-  else
-    panic();
+jbd2: Add barrier not supported test to journal_wait_on_commit_record
 
-With the macro definition above, the loop would panic() each time !desc,
-and _not_ panic() when !safe.  I'd consider this behaviour to be
-unexpected, to say the least :-)
+Xen doesn't report that barriers are not supported until buffer I/O is
+reported as completed, instead of when the buffer I/O is submitted.
+Add a check and a fallback codepath to journal_wait_on_commit_record()
+to detect this case, so that attempts to mount ext4 filesystems on
+LVM/devicemapper devices on Xen guests don't blow up with an "Aborting
+journal on device XXX"; "Remounting filesystem read-only" error.
 
-The fix is to change the
+Thanks to Andreas Sundstrom for reporting this issue.
 
-  if (desc)
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+---
 
-in the macro to
-
-  if (!desc) ; else
-
-- Hari
-
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index bd1fad0..4b87547 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -25,6 +25,7 @@
+ #include <linux/crc32.h>
+ #include <linux/writeback.h>
+ #include <linux/backing-dev.h>
++#include <linux/bio.h>
+ 
+ /*
+  * Default IO end handler for temporary BJ_IO buffer_heads.
+@@ -168,12 +169,34 @@ static int journal_submit_commit_record(journal_t *journal,
+  * This function along with journal_submit_commit_record
+  * allows to write the commit record asynchronously.
+  */
+-static int journal_wait_on_commit_record(struct buffer_head *bh)
++static int journal_wait_on_commit_record(journal_t *journal, 
++					 struct buffer_head *bh)
+ {
+ 	int ret = 0;
+ 
++retry:
+ 	clear_buffer_dirty(bh);
+ 	wait_on_buffer(bh);
++	if (buffer_eopnotsupp(bh) && (journal->j_flags & JBD2_BARRIER)) {
++		printk(KERN_WARNING
++		       "JBD2: wait_on_commit_record: sync failed on %s - "
++		       "disabling barriers\n", journal->j_devname);
++		spin_lock(&journal->j_state_lock);
++		journal->j_flags &= ~JBD2_BARRIER;
++		spin_unlock(&journal->j_state_lock);
++
++		lock_buffer(bh);
++		clear_buffer_dirty(bh);
++		set_buffer_uptodate(bh);
++		bh->b_end_io = journal_end_buffer_io_sync;
++
++		ret = submit_bh(WRITE_SYNC, bh);
++		if (ret) {
++			unlock_buffer(bh);
++			return ret;
++		}
++		goto retry;
++	}
+ 
+ 	if (unlikely(!buffer_uptodate(bh)))
+ 		ret = -EIO;
+@@ -802,7 +825,7 @@ wait_for_iobuf:
+ 			__jbd2_journal_abort_hard(journal);
+ 	}
+ 	if (!err && !is_journal_aborted(journal))
+-		err = journal_wait_on_commit_record(cbh);
++		err = journal_wait_on_commit_record(journal, cbh);
+ 
+ 	if (err)
+ 		jbd2_journal_abort(journal, err);
