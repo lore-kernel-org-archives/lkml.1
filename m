@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbZABKrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759093AbZABKrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758988AbZABKrA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 05:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbZABKl7
+	id S1759093AbZABKrZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbZABKmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 05:41:59 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:47562 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757209AbZABKlk (ORCPT
+	Fri, 2 Jan 2009 05:42:01 -0500
+Received: from winston.telenet-ops.be ([195.130.137.75]:45073 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757204AbZABKlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 05:41:40 -0500
+	Fri, 2 Jan 2009 05:41:39 -0500
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: [PATCH] m68k: atari_scc - kill fake config variables
-Date: Fri,  2 Jan 2009 11:41:32 +0100
-Message-Id: <1230892892-25751-20-git-send-email-geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] m68k: dmasound - kill warn_unused_result warnings
+Date: Fri,  2 Jan 2009 11:41:31 +0100
+Message-Id: <1230892892-25751-19-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1230892892-25751-19-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1230892892-25751-18-git-send-email-geert@linux-m68k.org>
 References: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-2-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-3-git-send-email-geert@linux-m68k.org>
@@ -37,115 +36,77 @@ References: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-16-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-17-git-send-email-geert@linux-m68k.org>
  <1230892892-25751-18-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-19-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename CONFIG_{TT,FALCON,ST}_SCC to SUPPORT_{TT,FALCON,ST}_SCC and reduce ifdef
-clutter
+warning: ignoring return value of 'request_irq', declared with attribute
+warn_unused_result
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
 ---
- drivers/char/atari_scc.c |   39 ++++++++++++++++++++++++---------------
- 1 files changed, 24 insertions(+), 15 deletions(-)
+ sound/oss/dmasound/dmasound_atari.c |    5 +++--
+ sound/oss/dmasound/dmasound_q40.c   |   16 ++++++++++------
+ 2 files changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/char/atari_scc.c b/drivers/char/atari_scc.c
-index 5dc59ff..fefff96 100644
---- a/drivers/char/atari_scc.c
-+++ b/drivers/char/atari_scc.c
-@@ -49,9 +49,9 @@
- 
- #include "scc.h"
- 
--#define CONFIG_TT_SCC     1
--#define CONFIG_FALCON_SCC 1
--#define CONFIG_ST_SCC     1
-+#define SUPPORT_TT_SCC     1
-+#define SUPPORT_FALCON_SCC 1
-+#define SUPPORT_ST_SCC     1
- 
- #define CHANNEL_A	0
- #define CHANNEL_B	1
-@@ -364,7 +364,7 @@ static void atari_scc_b_free_irqs(struct scc_port *port)
- 	free_irq(IRQ_SCCB_SPCOND, port);
- }
- 
--#ifdef CONFIG_TT_SCC
-+#ifdef SUPPORT_TT_SCC
- static int atari_tt_scc_init(void)
+diff --git a/sound/oss/dmasound/dmasound_atari.c b/sound/oss/dmasound/dmasound_atari.c
+index 4d45bd6..57d9f15 100644
+--- a/sound/oss/dmasound/dmasound_atari.c
++++ b/sound/oss/dmasound/dmasound_atari.c
+@@ -851,8 +851,9 @@ static int __init AtaIrqInit(void)
+ 	mfp.tim_dt_a = 1;	/* Cause interrupt after first event. */
+ 	mfp.tim_ct_a = 8;	/* Turn on event counting. */
+ 	/* Register interrupt handler. */
+-	request_irq(IRQ_MFP_TIMA, AtaInterrupt, IRQ_TYPE_SLOW, "DMA sound",
+-		    AtaInterrupt);
++	if (request_irq(IRQ_MFP_TIMA, AtaInterrupt, IRQ_TYPE_SLOW, "DMA sound",
++			AtaInterrupt))
++		return 0;
+ 	mfp.int_en_a |= 0x20;	/* Turn interrupt on. */
+ 	mfp.int_mk_a |= 0x20;
+ 	return 1;
+diff --git a/sound/oss/dmasound/dmasound_q40.c b/sound/oss/dmasound/dmasound_q40.c
+index 1855b14..99bcb21 100644
+--- a/sound/oss/dmasound/dmasound_q40.c
++++ b/sound/oss/dmasound/dmasound_q40.c
+@@ -371,8 +371,9 @@ static void Q40Free(void *ptr, unsigned int size)
+ static int __init Q40IrqInit(void)
  {
- 	struct scc_port *port;
-@@ -464,10 +464,15 @@ static int atari_tt_scc_init(void)
+ 	/* Register interrupt handler. */
+-	request_irq(Q40_IRQ_SAMPLE, Q40StereoInterrupt, 0,
+-		    "DMA sound", Q40Interrupt);
++	if (request_irq(Q40_IRQ_SAMPLE, Q40StereoInterrupt, 0,
++		    "DMA sound", Q40Interrupt))
++		return 0;
  
- 	return 0;
+ 	return(1);
  }
--#endif
-+#else /* !SUPPORT_TT_SCC */
-+static inline int atari_tt_scc_init(void)
-+{
-+	return -ENODEV;
-+}
-+#endif /* !SUPPORT_TT_SCC */
+@@ -401,6 +402,7 @@ static void Q40PlayNextFrame(int index)
+ 	u_char *start;
+ 	u_long size;
+ 	u_char speed;
++	int error;
  
+ 	/* used by Q40Play() if all doubts whether there really is something
+ 	 * to be played are already wiped out.
+@@ -419,11 +421,13 @@ static void Q40PlayNextFrame(int index)
+ 	master_outb( 0,SAMPLE_ENABLE_REG);
+ 	free_irq(Q40_IRQ_SAMPLE, Q40Interrupt);
+ 	if (dmasound.soft.stereo)
+-	  	request_irq(Q40_IRQ_SAMPLE, Q40StereoInterrupt, 0,
+-		    "Q40 sound", Q40Interrupt);
++		error = request_irq(Q40_IRQ_SAMPLE, Q40StereoInterrupt, 0,
++				    "Q40 sound", Q40Interrupt);
+ 	  else
+-	        request_irq(Q40_IRQ_SAMPLE, Q40MonoInterrupt, 0,
+-		    "Q40 sound", Q40Interrupt);
++		error = request_irq(Q40_IRQ_SAMPLE, Q40MonoInterrupt, 0,
++				    "Q40 sound", Q40Interrupt);
++	if (error && printk_ratelimit())
++		pr_err("Couldn't register sound interrupt\n");
  
--#ifdef CONFIG_FALCON_SCC
-+#ifdef SUPPORT_FALCON_SCC
- static int atari_falcon_scc_init(void)
- {
- 	struct scc_port *port;
-@@ -541,10 +546,15 @@ static int atari_falcon_scc_init(void)
- 
- 	return 0;
- }
--#endif
-+#else /* !SUPPORT_FALCON_SCC */
-+static inline int atari_falcon_scc_init(void)
-+{
-+	return -ENODEV;
-+}
-+#endif /* !SUPPORT_FALCON_SCC */
- 
- 
--#ifdef CONFIG_ST_SCC
-+#ifdef SUPPORT_ST_SCC
- static int atari_st_scc_init(void)
- {
- 	struct scc_port *port;
-@@ -618,7 +628,12 @@ static int atari_st_scc_init(void)
- 
- 	return 0;
- }
--#endif
-+#else /* !SUPPORT_ST_SCC */
-+static inline int atari_st_scc_init(void)
-+{
-+	return -ENODEV;
-+}
-+#endif /* !SUPPORT_ST_SCC */
- 
- 
- int atari_scc_init(void)
-@@ -635,18 +650,12 @@ int atari_scc_init(void)
- 
- 	scc_del = &mfp.par_dt_reg;
- 
--#ifdef CONFIG_TT_SCC
- 	if (MACH_IS_TT)
- 		res = atari_tt_scc_init();
--#endif
--#ifdef CONFIG_FALCON_SCC
- 	if (MACH_IS_FALCON)
- 		res = atari_falcon_scc_init();
--#endif
--#ifdef CONFIG_ST_SCC
- 	if (MACH_IS_ST)
- 		res = atari_st_scc_init();
--#endif
- 	return res;
- }
- 
+ 	master_outb( speed, SAMPLE_RATE_REG);
+ 	master_outb( 1,SAMPLE_CLEAR_REG);
 -- 
 1.5.6.5
 
