@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932220AbZABTEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbZABTF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932220AbZABTEf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 14:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758752AbZABTEX
+	id S1759559AbZABTF5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 14:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbZABTFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 14:04:23 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:60752 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758234AbZABTEW (ORCPT
+	Fri, 2 Jan 2009 14:05:49 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:60188 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753072AbZABTFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 14:04:22 -0500
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>
-Subject: Re: Btrfs for mainline
-From: Andi Kleen <andi@firstfloor.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-	<20081231104533.abfb1cf9.akpm@linux-foundation.org>
-	<1230765549.7538.8.camel@think.oraclecorp.com>
-Date: Fri, 02 Jan 2009 20:05:50 +0100
-In-Reply-To: <1230765549.7538.8.camel@think.oraclecorp.com> (Chris Mason's message of "Wed, 31 Dec 2008 18:19:09 -0500")
-Message-ID: <87r63ljzox.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Jan 2009 14:05:47 -0500
+Subject: Re: [PATCH] kbuild: Disallow GCC 4.1.0 / 4.1.1
+From: Detlef Riekenberg <wine.dev@web.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       rdreier@cisco.com, ian.campbell@citrix.com,
+       jeremy.fitzhardinge@citrix.com, deller@gmx.de, rusty@rustcorp.com.au,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kyle@mcmartin.ca, randolph@tausq.org, dave@hiauly1.hia.nrc.ca,
+       Dan Kegel <dank@kegel.com>
+In-Reply-To: <20090102183353.GF10072@elte.hu>
+References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain>
+	 <20081231105425.9ccac21d.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain>
+	 <20081231.141408.60544902.davem@davemloft.net>
+	 <20090102115547.GB3027@elte.hu>
+	 <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain>
+	 <alpine.LFD.2.00.0901020933370.5086@localhost.localdomain>
+	 <20090102175737.GA5818@uranus.ravnborg.org>
+	 <20090102182248.GC10072@elte.hu>
+	 <20090102182915.GA6143@uranus.ravnborg.org>
+	 <20090102183353.GF10072@elte.hu>
+Content-Type: text/plain
+Date: Fri, 02 Jan 2009 20:05:44 +0100
+Message-Id: <1230923144.5811.11.camel@p4.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+g0pcysavmpFnkQrGcIUAXkzGBg+6hUXS58osE
+	SDIXUys8/nOmsSqyMCcbaAD/UZbw6jsBkCiWUm0cpJQlKu8w0Q
+	g/mu+qVBE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason <chris.mason@oracle.com> writes:
+* Ingo Molnar wrote:
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
+ 
+> > > what type of cross-build breakage do they cause?
+> > 
+> > The default gcc made by demo-alpha with crosstool is version 4.1.0:
+> > 
+> >  /opt/crosstool/gcc-4.1.0-glibc-2.3.6/alpha-unknown-linux-gnu/bin/alpha-unknown-linux-gnu-gcc --version
+> > alpha-unknown-linux-gnu-gcc (GCC) 4.1.0
+> > Copyright (C) 2006 Free Software Foundation, Inc.
+> > This is free software; see the source for copying conditions.  There is NO
+> > warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> 
+> ah, ok. I build cross-compilers from scratch, so i have 4.3.3-pre:
+> 
+>  phoenix:~/linux/linux> /opt/crossgcc/cross/bin/alpha-linux-gcc -v
+>  [...]
+>  gcc version 4.3.3 20081123 (prerelease) (GCC) 
+> 
+> 	Ingo
 
-> On Wed, 2008-12-31 at 10:45 -0800, Andrew Morton wrote:
->> On Wed, 31 Dec 2008 06:28:55 -0500 Chris Mason <chris.mason@oracle.com> wrote:
->> 
->> > Hello everyone,
->> 
->> Hi!
->> 
->> > I've done some testing against Linus' git tree from last night and the
->> > current btrfs trees still work well.
->> 
->> what's btrfs?  I think I've heard the name before, but I've never
->> seen the patches :)
->
-> The source is up to around 38k loc, I thought it better to use that http
-> thing for people who were interested in the code.
->
-> There is also a standalone git repo:
->
-> http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable-standalone.git;a=summary
+I forwarded the thread to Dan Kegel to make him aware, that the used gcc
+version in crosstools makes problems.
 
-Some items I remember from my last look at the code that should
-be cleaned up before mainline merge (that wasn't a full in depth review):
-
-- locking.c needs a lot of cleanup.
-If combination spinlocks/mutexes are really a win they should be 
-in the generic mutex framework. And I'm still dubious on the hardcoded 
-numbers.
-- compat.h needs to go
-- there's various copy'n'pasted code from the VFS (like may_create) 
-that needs to be cleaned up.
-- there should be manpages for all the ioctls and other interfaces.
-- ioctl.c was not explicitely root protected. security issues?
-- some code was severly undercommented.
-e.g. each file should at least have a one liner
-describing what it does (ideally at least a paragraph). Bad examples
-are export.c or free-space-cache.c, but also others.
-- ENOMEM checks are still missing all over (e.g. with most of the 
-btrfs_alloc_path callers). If you keep it that way you would need
-at least XFS style "loop for ever" alloc wrappers, but better just
-fix all the callers. Also there used to be a lot of BUG_ON()s on
-memory allocation failure even.
-- In general BUG_ONs need review I think. Lots of externally triggerable
-ones.
-- various checkpath.pl level problems I think (e.g. printk levels) 
-- the printks should all include which file system they refer to
-
-In general I think the whole thing needs more review.
-
--Andi
 
 -- 
-ak@linux.intel.com
+ 
+Bye bye ... Detlef
+
+
+
