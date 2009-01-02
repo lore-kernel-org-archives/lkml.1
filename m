@@ -1,37 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbZABMAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbZABMBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbZABMAd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 07:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbZABMAX
+	id S1758361AbZABMBF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 07:01:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbZABMAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 07:00:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41916 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756974AbZABMAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 07:00:22 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090102051905.GC1073@fieldses.org>
-References: <20090102051905.GC1073@fieldses.org> <20090101235332.GA31840@fieldses.org> <24959.1230694093@redhat.com> <20081230134248.GA30124@lst.de> <21275.1230736542@redhat.com> <29449.1230859152@redhat.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: dhowells@redhat.com, Christoph Hellwig <hch@lst.de>, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] CRED: Fix regression in cap_capable() as shown up by sys_faccessat() [ver #2]
-Date: Fri, 02 Jan 2009 11:59:38 +0000
-Message-ID: <32481.1230897578@redhat.com>
+	Fri, 2 Jan 2009 07:00:52 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:55769
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757301AbZABMAv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 07:00:51 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
+Date: Fri, 2 Jan 2009 06:00:47 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <200901020207.30359.rob@landley.net> <200901020213.30658.rob@landley.net> <20090102090439.GA3057@uranus.ravnborg.org>
+In-Reply-To: <20090102090439.GA3057@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901020600.47847.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields <bfields@fieldses.org> wrote:
+On Friday 02 January 2009 03:04:39 Sam Ravnborg wrote:
+> Hi Rob.
+>
+> On Fri, Jan 02, 2009 at 02:13:30AM -0600, Rob Landley wrote:
+> > From: Rob Landley <rob@landley.net>
+> >
+> > Replace kernel/timeconst.pl with kernel/timeconst.sh.  The new shell
+> > script is much simpler, about 1/4 the size, and runs on Red Hat 9 from
+> > 2003.
+>
+> This part of the changelog is OK except that is fails to
+> address why we want to get away from perl.
 
-> No.  I started bisecting, and it does appear to be a regression from the
-> cred patches, but at some point in the middle there it hangs on boot (a
-> softlockup report blames a spinlock in set_groups).
+You mean "The new shell script is much simpler, about 1/4 the size, runs on 
+Red Hat 9 from 2003, and isn't perl?" :)
 
-Do you remember which patch you were at?
+> Please drop the remining part of the changelog (but not the s-o-b).
 
-David
+ok.
+
+> > Peter Anvin added this perl to 2.6.25.  Before that, the kernel had never
+> > required perl to build.
+> >
+> > Signed-off-by: Rob Landley <rob@landley.net>
+> > ---
+> >
+> >  kernel/Makefile     |    4
+> >  kernel/timeconst.pl |  378 ------------------------------------------
+> >  kernel/timeconst.sh |   91 ++++++++++
+> >  3 files changed, 93 insertions(+), 380 deletions(-)
+> >
+> > diff -r d0c7611dcfd6 kernel/Makefile
+> > --- a/kernel/Makefile	Tue Dec 30 17:48:25 2008 -0800
+> > +++ b/kernel/Makefile	Fri Jan 02 00:10:44 2009 -0600
+> > @@ -115,7 +115,7 @@
+> >  $(obj)/time.o: $(obj)/timeconst.h
+> >
+> >  quiet_cmd_timeconst  = TIMEC   $@
+> > -      cmd_timeconst  = $(PERL) $< $(CONFIG_HZ) > $@
+> > +      cmd_timeconst  = $(CONFIG_SHELL) $< $(CONFIG_HZ) > $@
+> >  targets += timeconst.h
+> > -$(obj)/timeconst.h: $(src)/timeconst.pl FORCE
+> > +$(obj)/timeconst.h: $(src)/timeconst.sh FORCE
+> >  	$(call if_changed,timeconst)
+>
+> OK
+>
+> > --- /dev/null	1969-12-31 00:00:00.000000000 -0600
+> > +++ hg/kernel/timeconst.sh	2009-01-01 23:53:17.000000000 -0600
+> > @@ -0,0 +1,91 @@
+> > +#!/bin/bash
+> > +
+> > +if [ $# -ne 1 ]
+> > +then
+> > +	echo "Usage: timeconst.sh HZ"
+> > +	exit 1
+> > +fi
+>
+> That usage is useless. Either extend it or spend a few lines
+> in the shell script explainign what the shell script is supposed to do.
+
+Do you mean something more like:
+
+echo "Usage: timeconst.sh HZ"
+echo
+echo "Generates a header file of constants for converting between decimal"
+echo "HZ timer ticks and milisecond or microsecond delays"
+
+I'm happy turning it into a comment instead, I just found a quick check that 
+I'd remembered to type an argument useful during debugging. :)
+
+> > +
+> > +HZ=$1
+> > +
+> > +# Sanity test: even the shell in Red Hat 9 (circa 2003) supported 64 bit
+> > math. +
+> > +[ $((1<<32)) -lt 0 ] && exit 1
+> > +
+>
+> If it fails then add an error message explaining why. So if we get reports
+> that this fails then we at least can see something like:
+> "timeconst noticed that the shell did not support 64 bit math - stop"
+
+Ok.
+
+> > +# Output start of header file
+> > +
+> > +cat << EOF
+> > +/* Automatically generated by kernel/timeconst.sh */
+> > +/* Conversion constants for HZ == $HZ */
+> > +
+> > +#ifndef KERNEL_TIMECONST_H
+> > +#define KERNEL_TIMECONST_H
+>
+> Please use __KERNEL_TIMECONST_H. The two underscores are standard.
+
+Sure thing.  (I was just copying the perl there, I'll post an updated patch 
+after I get some sleep.)
+
+> > +
+> > +#include <linux/param.h>
+> > +#include <linux/types.h>
+> > +
+> > +#if HZ != $HZ
+> > +#error "kernel/timeconst.h has the wrong HZ value!"
+> > +#endif
+> > +
+> > +EOF
+> > +
+> > +# For both Miliseconds and Microseconds
+> > +
+> > +for i in "MSEC 1000" "USEC 1000000"
+> > +do
+> > +	NAME=$(echo $i | awk '{print $1}')
+> > +	PERIOD=$(echo $i | awk '{print $2}')
+> > +
+> > +	# Find greatest common denominator (using Euclid's algorithm)
+> > +
+> > +	A=$HZ
+> > +	B=$PERIOD
+> > +
+> > +	while [ $B -ne 0 ]
+> > +	do
+> > +		C=$(($A%$B))
+> > +		A=$B
+> > +		B=$C
+> > +	done
+> > +
+> > +	GCD=$A
+> > +
+> > +	# Do this for each direction (HZ_TO_PERIOD and PERIOD_TO_HZ)
+> > +
+> > +	for DIRECTION in 0 1
+> > +	do
+> > +		if [ $DIRECTION -eq 0 ]
+> > +		then
+> > +			CONVERT="HZ_TO_${NAME}"
+> > +			FROM=$HZ
+> > +			TO=$PERIOD
+> > +		else
+> > +			CONVERT="${NAME}_TO_HZ"
+> > +			FROM=$PERIOD
+> > +			TO=$HZ
+> > +		fi
+> > +
+> > +		# How many shift bits give 32 bits of significant data?
+> > +
+> > +		SHIFT=0
+> > +		while [ $(( (($TO<<$SHIFT)+$FROM-1)/$FROM )) -lt $((1<<31)) ]
+> > +		do
+> > +			SHIFT=$(( $SHIFT+1 ))
+> > +		done
+> > +
+> > +		MUL32=$(( (($TO<<$SHIFT)+$FROM-1)/$FROM ))
+> > +		MUL32=$(printf %x $MUL32)
+> > +		echo "#define ${CONVERT}_MUL32	U64_C(0x$MUL32)"
+> > +		ADJ32=$(($FROM/$GCD))
+> > +		ADJ32=$(( (($ADJ32-1)<<$SHIFT)/$ADJ32 ))
+> > +		ADJ32=$(printf %x $ADJ32)
+> > +		echo "#define ${CONVERT}_ADJ32	U64_C(0x$ADJ32)"
+> > +		echo "#define ${CONVERT}_SHR32	$SHIFT"
+> > +		echo "#define ${CONVERT}_NUM		U64_C($(($TO/$GCD)))"
+> > +		echo "#define ${CONVERT}_DEN		U64_C($(($FROM/$GCD)))"
+> > +	done
+> > +done
+>
+> Is it a shell limitation that all spaces around operators are missing?
+> Makes it hard to read..
+
+No, I was just trying to make sure I didn't go over the 80 char limit.  
+(Several temporary variables are there primarily because the style guide says 
+indentation should be via 8 space tabs.)
+
+I'll add some more spaces on the respin.
+
+>
+> You should use trap in your shell script so we do not end up with a
+> partially generated file.
+> Or you should change the rule in the Makefile to use
+> a temperary file and then rename it.
+>
+> We have similar bugs in other places - but no need to add
+> in more places.
+
+Well, preserve in this case. :)
+
+I can add an "EXIT" trap and then disarm it later, but the output is 
+redirected in the makefile, so generating an error won't remove the output if 
+you run again.  Perhaps the file to create should be fed in as a second 
+argument to the script, so the trap can "rm" the output file if it triggers?
+
+I'll poke at it in the morning.
+
+Thanks for the feedback,
+
+Rob
