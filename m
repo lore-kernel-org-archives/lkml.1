@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbZABUrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932150AbZABUsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbZABUrn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 15:47:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759368AbZABUrb
+	id S932150AbZABUsB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 15:48:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759450AbZABUrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 15:47:31 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42651 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759353AbZABUr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 15:47:29 -0500
-Date: Fri, 2 Jan 2009 22:01:04 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>
-Subject: Re: Btrfs for mainline
-Message-ID: <20090102210104.GC496@one.firstfloor.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <1230924749.7538.35.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1230924749.7538.35.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 2 Jan 2009 15:47:36 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:46301 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759424AbZABUrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 15:47:35 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: [PATCH v2] linux/types.h: always export 64bit aligned defines
+Date: Fri, 2 Jan 2009 15:47:30 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1230885562-11456-1-git-send-email-vapier@gentoo.org> <je4p0hhjko.fsf@sykes.suse.de>
+In-Reply-To: <je4p0hhjko.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart12463973.rz1a83a6NO";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901021547.32666.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 02:32:29PM -0500, Chris Mason wrote:
-> > If combination spinlocks/mutexes are really a win they should be 
-> > in the generic mutex framework. And I'm still dubious on the hardcoded 
-> > numbers.
-> 
-> Sure, I'm happy to use a generic framework there (or help create one).
-> They are definitely a win for btrfs, and show up in most benchmarks.
+--nextPart12463973.rz1a83a6NO
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If they are such a big win then likely they will help other users
-too and should be generic in some form.
+On Friday 02 January 2009 09:24:39 Andreas Schwab wrote:
+> Mike Frysinger <vapier@gentoo.org> writes:
+> > These these defines dont actually conflict with normal userspace / C
+> > library types, there's no reason to hide them behind the
+> > __KERNEL_STRICT_NAMES define.
+>
+> aligned_u64 would pollute the name space, wouldn't it?
 
-> 
-> > - compat.h needs to go
-> 
-> Projects that are out of mainline have a difficult task of making sure
-> development can continue until they are in mainline and being clean
-> enough to merge.  I'd rather get rid of the small amount of compat code
-> that I have left after btrfs is in (compat.h is 32 lines).  
+if by "pollute the name space" you mean "it'll be defined where it normally=
+=20
+wasnt before", then yes.  it's always been in the header, just behind=20
+__KERNEL_STRICT_NAMES.  i also highlight the fact that existing headers tha=
+t=20
+are exported to userspace are already using this type, so they're broken mo=
+st=20
+of the time today.
 
-It's fine for an out of tree variant, but the in tree version
-shouldn't have compat.h. For out of tree you just apply a patch
-that adds the includes. e.g.compat-wireless and lots of other
-projects do it this way. 
+unless you want a completely new patch that deletes aligned_*64 types and=20
+replaces them with __aligned_*64 types ...
+=2Dmike
 
-> 
-> Yes, I tried to mark those as I did them (a very small number of
-> functions).  In general they were copied to avoid adding exports, and
-> that is easily fixed.
-> 
-> > - there should be manpages for all the ioctls and other interfaces.
-> > - ioctl.c was not explicitely root protected. security issues?
-> 
-> Christoph added a CAP_SYS_ADMIN check to the trans start ioctl, but I do
-> need to add one to the device add/remove/balance code as well.
+--nextPart12463973.rz1a83a6NO
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Ok. Didn't see that.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-It still needs to be carefully audited for security holes 
-even with root checks.
+iQIcBAABAgAGBQJJXn1kAAoJEEFjO5/oN/WBqIgQAKH/yivRNdHf1sQoVsfDsJLV
+i9OLK5GTZEOo7MQiUx1wabzpxeIodhc0HneRMEyKDt5hDEoOBnET3PFWiIC+fjLZ
+XNPkuMAbSNiAieMpdNlW/Ini3ANIyzE/ZVBLXbX9SSeTAx2Lk2yJ6mL0gEslrAvp
+t7nKVdeU1UXsHEg9WFPFd8GQgTf2O896eqh+S3iZ80uKrClKYWJDm3A98rQpvvsE
+3/iaFLfmg0Gy9bL6iER4ehGnY7nIjggkQYTsGlgozXv16ou5SYbxlUqqKEmtWwIP
+v9PSEOZB24GIdQc5zAyhlnnMFcVjOHGDNYxGcjHbp0VKLRXez+rgf5SBahvZWvF2
+7ofRorWTGFsIYYY367EndaWHmbLrEc0SkbsACOYdS2fKvDxf8SsLgDEEKvUfjD2Q
+1viowjW3ULuovL2PQlWdJnlhxqoYyhKCcPbkmJrHYeHi4WHe0+bang6AFduzHOIr
+vkV5jMiIqG5kNwGWubKKDaO5U6TTR1CKNFbBaLw0r8c7KsoEnvbg0YCnskf5prDY
+P9Koat4ej/iCHFwMBvVr0A2w1XPjNBbPhjW+VaCzu8IXpKcTPkEb8J34ZsmFCvwG
+jcqhohnf/m5w0rrHAuZ9ycqNHUmkmFsm9IWWvM6ipPuV8Q5B+TNQObl4HEc+0a2u
+ofV56PCek1Rtv0kRBDuj
+=4sC/
+-----END PGP SIGNATURE-----
 
-Another thing is that once auto mounting is enabled each usb stick
-with btrfs on it could be a root hole if you have buffer overflows
-somewhere triggerable by disk data. I guess that would need some
-checking too.
-
-> The subvol/snapshot creation is meant to be user callable (controlled by
-> something similar to quotas later on).
-
-But right now that's not there so it should be root only.
-
-> 
-> >  Also there used to be a lot of BUG_ON()s on
-> > memory allocation failure even.
-> > - In general BUG_ONs need review I think. Lots of externally triggerable
-> > ones.
-> > - various checkpath.pl level problems I think (e.g. printk levels) 
-> > - the printks should all include which file system they refer to
-> > 
-> > In general I think the whole thing needs more review.
-> 
-> I don't disagree, please do keep in mind that I'm not suggesting anyone
-> use this in production yet.
-
-When it's in mainline I suspect people will start using it for that.
-
--Andi
-
--- 
-ak@linux.intel.com
+--nextPart12463973.rz1a83a6NO--
