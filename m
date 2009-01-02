@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZABJUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZABJXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbZABJUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755857AbZABJUW
+	id S1757603AbZABJXy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZABJXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:20:22 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:43787 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752670AbZABJUV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:20:21 -0500
-Subject: Re: [PATCH] asm-s390/posix_types.h: drop __USE_ALL usage
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org
-In-Reply-To: <200901020355.37186.vapier@gentoo.org>
-References: <1230882782-9977-1-git-send-email-vapier@gentoo.org>
-	 <1230886227.5474.0.camel@localhost>  <200901020355.37186.vapier@gentoo.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 02 Jan 2009 10:20:17 +0100
-Message-Id: <1230888017.5474.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Jan 2009 04:23:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47320 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752670AbZABJXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 04:23:45 -0500
+Date: Fri, 2 Jan 2009 10:23:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Cyrill Gorcunov <gorcunov@openvz.org>, Len Brown <lenb@kernel.org>
+Subject: Re: [patch 3/3] acpi: check for pxm_to_node_map overflow
+Message-ID: <20090102092330.GB1975@elte.hu>
+References: <20090102082717.810810508@gmail.com>> <495dd169.0437560a.1cd3.ffffd503@mx.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495dd169.0437560a.1cd3.ffffd503@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-02 at 03:55 -0500, Mike Frysinger wrote:
-> On Friday 02 January 2009 03:50:27 Martin Schwidefsky wrote:
-> > On Fri, 2009-01-02 at 02:53 -0500, Mike Frysinger wrote:
-> > > Bring s390 in line with all the other ports.  Not sure how s390 missed
-> > > this change as all the other arches were being updated ...
-> >
-> > Should I carry the patch via git390?
+
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+
+> It is hardly (if ever) possible but in case of broken _PXM
+> entry we could reach out of pxm_to_node_map array
+> bounds in acpi_map_pxm_to_node() call. Lets check it
+> (it's not that expensive and safe).
 > 
-> i dont know what "git390" is, but it makes no difference to me how it gets 
-> merged.  whatever is easiest for people.
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> CC: Len Brown <lenb@kernel.org>
+> ---
+>  drivers/acpi/numa.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-git390 == git://git390.osdl.marist.edu/pub/scm/linux-2.6.git
+just curious - how did you find this - code review or some tool help like 
+Sparse output or a compiler warning?
 
-I'll add the patch to the queue for the next s390 update.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+	Ingo
