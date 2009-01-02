@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZABIHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZABINr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbZABIHy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 03:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZABIHq
+	id S1757287AbZABINr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 03:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZABINh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 03:07:46 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48679
+	Fri, 2 Jan 2009 03:13:37 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41918
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZABIHp (ORCPT
+	with ESMTP id S1750988AbZABINf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 03:07:45 -0500
+	Fri, 2 Jan 2009 03:13:35 -0500
+X-Greylist: delayed 349 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Jan 2009 03:13:35 EST
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
 To: Embedded Linux mailing list <linux-embedded@vger.kernel.org>
-Subject: PATCH [0/3]: Simplify the kernel build by removing perl.
-Date: Fri, 2 Jan 2009 02:07:28 -0600
+Subject: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
+Date: Fri, 2 Jan 2009 02:13:30 -0600
 User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net>
+In-Reply-To: <200901020207.30359.rob@landley.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
 Content-Disposition: inline
-Message-Id: <200901020207.30359.rob@landley.net>
+Message-Id: <200901020213.30658.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n028EiwM012151
 
-Before 2.6.25 (specifically git bdc807871d58285737d50dc6163d0feb72cb0dc2 ) 
-building a Linux kernel never required perl to be installed on the build 
-system.  (Various development and debugging scripts were written in perl and 
-python and such, but they weren't involved in actually building a kernel.)  
-Building a kernel before 2.6.25 could be done with a minimal system built from 
-gcc, binutils, bash, make, busybox, uClibc, and the Linux kernel, and nothing 
-else.  (Embedded developers creating clean cross compile environments that 
-won't leak bits of the host system into the target, or bootstrapping native 
-development environments to run on target hardware or under emulators, tend to 
-care about this sort of thing.)
-
-The perl checkin for 2.6.25 was the camel's nose under the tent flap, and 
-since then two more instances of perl have shown up in the core kernel build.  
-This patch series removes the three required to build a basic kernel for qemu 
-for the targets I've tested (arm, mips, powerpc, sparc, m68k, sh4, and of 
-course x86 and x86-64), replacing them with shell scripts.
-
-Historically the kernel has gone out of its way to minimize environmental 
-dependencies for the build.  For example, the plethora of *_shipped files mean 
-we don't need lex and yacc to build the kernel.  The kconfig infrastructure 
-once required curses to run "make oldconfig", but that requirement was 
-restricted to just menuconfig so the kernel could build on systems without 
-ncurses.
-
-That was a very nice policy.  Kernel development already requires an in-depth 
-knowledge of C, make, and shell, plus things like the kconfig language.  A 
-similarly in-depth knowledge of perl is bigger than all that combined (even 
-Larry Wall probably doesn't know all of Perl anymore), and then what's the 
-excuse _not_ to add Python to the core build?  And after that why not java, or 
-lua?  Where does it end?  What's the criteria to say "no" here?
-
-This patch series saves time and says no now.
+From: Rob Landley <rob@landley.net>
+Replace kernel/timeconst.pl with kernel/timeconst.sh.  The new shell scriptis much simpler, about 1/4 the size, and runs on Red Hat 9 from 2003.
+Peter Anvin added this perl to 2.6.25.  Before that, the kernel had neverrequired perl to build.
+Signed-off-by: Rob Landley <rob@landley.net>---
+ kernel/Makefile     |    4  kernel/timeconst.pl |  378 ------------------------------------------ kernel/timeconst.sh |   91 ++++++++++ 3 files changed, 93 insertions(+), 380 deletions(-)
+diff -r d0c7611dcfd6 kernel/Makefile--- a/kernel/Makefile	Tue Dec 30 17:48:25 2008 -0800+++ b/kernel/Makefile	Fri Jan 02 00:10:44 2009 -0600@@ -115,7 +115,7 @@ $(obj)/time.o: $(obj)/timeconst.h  quiet_cmd_timeconst  = TIMEC   $@-      cmd_timeconst  = $(PERL) $< $(CONFIG_HZ) > $@+      cmd_timeconst  = $(CONFIG_SHELL) $< $(CONFIG_HZ) > $@ targets += timeconst.h-$(obj)/timeconst.h: $(src)/timeconst.pl FORCE+$(obj)/timeconst.h: $(src)/timeconst.sh FORCE 	$(call if_changed,timeconst)--- /dev/null	1969-12-31 00:00:00.000000000 -0600+++ hg/kernel/timeconst.sh	2009-01-01 23:53:17.000000000 -0600@@ -0,0 +1,91 @@+#!/bin/bash++if [ $# -ne 1 ]+then+	echo "Usage: timeconst.sh HZ"+	exit 1+fi++HZ=$1++# Sanity test: even the shell in Red Hat 9 (circa 2003) supported 64 bit math.++[ $((1<<32)) -lt 0 ] && exit 1++# Output start of header file++cat << EOF+/* Automatically generated by kernel/timeconst.sh */+/* Conversion constants for HZ == $HZ */++#ifndef KERNEL_TIMECONST_H+#define KERNEL_TIMECONST_H++#include <linux/param.h>+#include <linux/types.h>++#if HZ != $HZ+#error "kernel/timeconst.h has the wrong HZ value!"+#endif++EOF++# For both Miliseconds and Microseconds++for i in "MSEC 1000" "USEC 1000000"+do+	NAME=$(echo $i | awk '{print $1}')+	PERIOD=$(echo $i | awk '{print $2}')++	# Find greatest common denominator (using Euclid's algorithm)++	A=$HZ+	B=$PERIOD++	while [ $B -ne 0 ]+	do+		C=$(($A%$B))+		A=$B+		B=$C+	done++	GCD=$A++	# Do this for each direction (HZ_TO_PERIOD and PERIOD_TO_HZ)++	for DIRECTION in 0 1+	do+		if [ $DIRECTION -eq 0 ]+		then+			CONVERT="HZ_TO_${NAME}"+			FROM=$HZ+			TO=$PERIOD+		else+			CONVERT="${NAME}_TO_HZ"+			FROM=$PERIOD+			TO=$HZ+		fi++		# How many shift bits give 32 bits of significant data?++		SHIFT=0+		while [ $(( (($TO<<$SHIFT)+$FROM-1)/$FROM )) -lt $((1<<31)) ]+		do+			SHIFT=$(( $SHIFT+1 ))+		done++		MUL32=$(( (($TO<<$SHIFT)+$FROM-1)/$FROM ))+		MUL32=$(printf %x $MUL32)+		echo "#define ${CONVERT}_MUL32	U64_C(0x$MUL32)"+		ADJ32=$(($FROM/$GCD))+		ADJ32=$(( (($ADJ32-1)<<$SHIFT)/$ADJ32 ))+		ADJ32=$(printf %x $ADJ32)+		echo "#define ${CONVERT}_ADJ32	U64_C(0x$ADJ32)"+		echo "#define ${CONVERT}_SHR32	$SHIFT"+		echo "#define ${CONVERT}_NUM		U64_C($(($TO/$GCD)))"+		echo "#define ${CONVERT}_DEN		U64_C($(($FROM/$GCD)))"+	done+done++echo+echo "#endif /* KERNEL_TIMECHONST_H */"--- hg/kernel/timeconst.pl	2008-11-22 19:09:13.000000000 -0600+++ /dev/null	1969-12-31 00:00:00.000000000 -0600@@ -1,378 +0,0 @@-#!/usr/bin/perl-# ------------------------------------------------------------------------#-#   Copyright 2007-2008 rPath, Inc. - All Rights Reserved-#-#   This file is part of the Linux kernel, and is made available under-#   the terms of the GNU General Public License version 2 or (at your-#   option) any later version; incorporated herein by reference.-#-# ------------------------------------------------------------------------#--#-# Usage: timeconst.pl HZ > timeconst.h-#--# Precomputed values for systems without Math::BigInt-# Generated by:-# timeconst.pl --can 24 32 48 64 100 122 128 200 250 256 300 512 1000 1024 1200-%canned_values = (-	24 => [-		'0xa6aaaaab','0x2aaaaaa',26,-		125,3,-		'0xc49ba5e4','0x1fbe76c8b4',37,-		3,125,-		'0xa2c2aaab','0xaaaa',16,-		125000,3,-		'0xc9539b89','0x7fffbce4217d',47,-		3,125000,-	], 32 => [-		'0xfa000000','0x6000000',27,-		125,4,-		'0x83126e98','0xfdf3b645a',36,-		4,125,-		'0xf4240000','0x0',17,-		31250,1,-		'0x8637bd06','0x3fff79c842fa',46,-		1,31250,-	], 48 => [-		'0xa6aaaaab','0x6aaaaaa',27,-		125,6,-		'0xc49ba5e4','0xfdf3b645a',36,-		6,125,-		'0xa2c2aaab','0x15555',17,-		62500,3,-		'0xc9539b89','0x3fffbce4217d',46,-		3,62500,-	], 64 => [-		'0xfa000000','0xe000000',28,-		125,8,-		'0x83126e98','0x7ef9db22d',35,-		8,125,-		'0xf4240000','0x0',18,-		15625,1,-		'0x8637bd06','0x1fff79c842fa',45,-		1,15625,-	], 100 => [-		'0xa0000000','0x0',28,-		10,1,-		'0xcccccccd','0x733333333',35,-		1,10,-		'0x9c400000','0x0',18,-		10000,1,-		'0xd1b71759','0x1fff2e48e8a7',45,-		1,10000,-	], 122 => [-		'0x8325c53f','0xfbcda3a',28,-		500,61,-		'0xf9db22d1','0x7fbe76c8b',35,-		61,500,-		'0x8012e2a0','0x3ef36',18,-		500000,61,-		'0xffda4053','0x1ffffbce4217',45,-		61,500000,-	], 128 => [-		'0xfa000000','0x1e000000',29,-		125,16,-		'0x83126e98','0x3f7ced916',34,-		16,125,-		'0xf4240000','0x40000',19,-		15625,2,-		'0x8637bd06','0xfffbce4217d',44,-		2,15625,-	], 200 => [-		'0xa0000000','0x0',29,-		5,1,-		'0xcccccccd','0x333333333',34,-		1,5,-		'0x9c400000','0x0',19,-		5000,1,-		'0xd1b71759','0xfff2e48e8a7',44,-		1,5000,-	], 250 => [-		'0x80000000','0x0',29,-		4,1,-		'0x80000000','0x180000000',33,-		1,4,-		'0xfa000000','0x0',20,-		4000,1,-		'0x83126e98','0x7ff7ced9168',43,-		1,4000,-	], 256 => [-		'0xfa000000','0x3e000000',30,-		125,32,-		'0x83126e98','0x1fbe76c8b',33,-		32,125,-		'0xf4240000','0xc0000',20,-		15625,4,-		'0x8637bd06','0x7ffde7210be',43,-		4,15625,-	], 300 => [-		'0xd5555556','0x2aaaaaaa',30,-		10,3,-		'0x9999999a','0x1cccccccc',33,-		3,10,-		'0xd0555556','0xaaaaa',20,-		10000,3,-		'0x9d495183','0x7ffcb923a29',43,-		3,10000,-	], 512 => [-		'0xfa000000','0x7e000000',31,-		125,64,-		'0x83126e98','0xfdf3b645',32,-		64,125,-		'0xf4240000','0x1c0000',21,-		15625,8,-		'0x8637bd06','0x3ffef39085f',42,-		8,15625,-	], 1000 => [-		'0x80000000','0x0',31,-		1,1,-		'0x80000000','0x0',31,-		1,1,-		'0xfa000000','0x0',22,-		1000,1,-		'0x83126e98','0x1ff7ced9168',41,-		1,1000,-	], 1024 => [-		'0xfa000000','0xfe000000',32,-		125,128,-		'0x83126e98','0x7ef9db22',31,-		128,125,-		'0xf4240000','0x3c0000',22,-		15625,16,-		'0x8637bd06','0x1fff79c842f',41,-		16,15625,-	], 1200 => [-		'0xd5555556','0xd5555555',32,-		5,6,-		'0x9999999a','0x66666666',31,-		6,5,-		'0xd0555556','0x2aaaaa',22,-		2500,3,-		'0x9d495183','0x1ffcb923a29',41,-		3,2500,-	]-);--$has_bigint = eval 'use Math::BigInt qw(bgcd); 1;';--sub bint($)-{-	my($x) = @_;-	return Math::BigInt->new($x);-}--#-# Constants for division by reciprocal multiplication.-# (bits, numerator, denominator)-#-sub fmul($$$)-{-	my ($b,$n,$d) = @_;--	$n = bint($n);-	$d = bint($d);--	return scalar (($n << $b)+$d-bint(1))/$d;-}--sub fadj($$$)-{-	my($b,$n,$d) = @_;--	$n = bint($n);-	$d = bint($d);--	$d = $d/bgcd($n, $d);-	return scalar (($d-bint(1)) << $b)/$d;-}--sub fmuls($$$) {-	my($b,$n,$d) = @_;-	my($s,$m);-	my($thres) = bint(1) << ($b-1);--	$n = bint($n);-	$d = bint($d);--	for ($s = 0; 1; $s++) {-		$m = fmul($s,$n,$d);-		return $s if ($m >= $thres);-	}-	return 0;-}--# Generate a hex value if the result fits in 64 bits;-# otherwise skip.-sub bignum_hex($) {-	my($x) = @_;-	my $s = $x->as_hex();--	return (length($s) > 18) ? undef : $s;-}--# Provides mul, adj, and shr factors for a specific-# (bit, time, hz) combination-sub muladj($$$) {-	my($b, $t, $hz) = @_;-	my $s = fmuls($b, $t, $hz);-	my $m = fmul($s, $t, $hz);-	my $a = fadj($s, $t, $hz);-	return (bignum_hex($m), bignum_hex($a), $s);-}--# Provides numerator, denominator values-sub numden($$) {-	my($n, $d) = @_;-	my $g = bgcd($n, $d);-	return ($n/$g, $d/$g);-}--# All values for a specific (time, hz) combo-sub conversions($$) {-	my ($t, $hz) = @_;-	my @val = ();--	# HZ_TO_xx-	push(@val, muladj(32, $t, $hz));-	push(@val, numden($t, $hz));--	# xx_TO_HZ-	push(@val, muladj(32, $hz, $t));-	push(@val, numden($hz, $t));--	return @val;-}--sub compute_values($) {-	my($hz) = @_;-	my @val = ();-	my $s, $m, $a, $g;--	if (!$has_bigint) {-		die "$0: HZ == $hz not canned and ".-		    "Math::BigInt not available\n";-	}--	# MSEC conversions-	push(@val, conversions(1000, $hz));--	# USEC conversions-	push(@val, conversions(1000000, $hz));--	return @val;-}--sub outputval($$)-{-	my($name, $val) = @_;-	my $csuf;--	if (defined($val)) {-	    if ($name !~ /SHR/) {-		$val = "U64_C($val)";-	    }-	    printf "#define %-23s %s\n", $name.$csuf, $val.$csuf;-	}-}--sub output($@)-{-	my($hz, @val) = @_;-	my $pfx, $bit, $suf, $s, $m, $a;--	print "/* Automatically generated by kernel/timeconst.pl */\n";-	print "/* Conversion constants for HZ == $hz */\n";-	print "\n";-	print "#ifndef KERNEL_TIMECONST_H\n";-	print "#define KERNEL_TIMECONST_H\n";-	print "\n";--	print "#include <linux/param.h>\n";-	print "#include <linux/types.h>\n";--	print "\n";-	print "#if HZ != $hz\n";-	print "#error \"kernel/timeconst.h has the wrong HZ value!\"\n";-	print "#endif\n";-	print "\n";--	foreach $pfx ('HZ_TO_MSEC','MSEC_TO_HZ',-		      'HZ_TO_USEC','USEC_TO_HZ') {-		foreach $bit (32) {-			foreach $suf ('MUL', 'ADJ', 'SHR') {-				outputval("${pfx}_$suf$bit", shift(@val));-			}-		}-		foreach $suf ('NUM', 'DEN') {-			outputval("${pfx}_$suf", shift(@val));-		}-	}--	print "\n";-	print "#endif /* KERNEL_TIMECONST_H */\n";-}--# Pretty-print Perl values-sub perlvals(@) {-	my $v;-	my @l = ();--	foreach $v (@_) {-		if (!defined($v)) {-			push(@l, 'undef');-		} elsif ($v =~ /^0x/) {-			push(@l, "\'".$v."\'");-		} else {-			push(@l, $v.'');-		}-	}-	return join(',', @l);-}--($hz) = @ARGV;--# Use this to generate the %canned_values structure-if ($hz eq '--can') {-	shift(@ARGV);-	@hzlist = sort {$a <=> $b} (@ARGV);--	print "# Precomputed values for systems without Math::BigInt\n";-	print "# Generated by:\n";-	print "# timeconst.pl --can ", join(' ', @hzlist), "\n";-	print "\%canned_values = (\n";-	my $pf = "\t";-	foreach $hz (@hzlist) {-		my @values = compute_values($hz);-		print "$pf$hz => [\n";-		while (scalar(@values)) {-			my $bit;-			foreach $bit (32) {-				my $m = shift(@values);-				my $a = shift(@values);-				my $s = shift(@values);-				print "\t\t", perlvals($m,$a,$s), ",\n";-			}-			my $n = shift(@values);-			my $d = shift(@values);-			print "\t\t", perlvals($n,$d), ",\n";-		}-		print "\t]";-		$pf = ', ';-	}-	print "\n);\n";-} else {-	$hz += 0;			# Force to number-	if ($hz < 1) {-		die "Usage: $0 HZ\n";-	}--	@val = @{$canned_values{$hz}};-	if (!defined(@val)) {-		@val = compute_values($hz);-	}-	output($hz, @val);-}-exit 0; ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
