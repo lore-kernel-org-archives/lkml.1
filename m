@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZABCmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZABCyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbZABCmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 21:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZABCmL
+	id S1756901AbZABCyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 21:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZABCyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 21:42:11 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51454 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755550AbZABCmK (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 21:42:10 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2008-12-30-16-05 uploaded
-In-Reply-To: Your message of "Thu, 01 Jan 2009 18:31:57 PST."
-             <20090101183157.dfbe9789.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200812310006.mBV060iV029753@imap1.linux-foundation.org> <22921.1230843108@turing-police.cc.vt.edu>
-            <20090101183157.dfbe9789.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1230864125_3311P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 01 Jan 2009 21:42:05 -0500
-Message-ID: <18080.1230864125@turing-police.cc.vt.edu>
+	Thu, 1 Jan 2009 21:54:05 -0500
+Received: from smtp.tal.de ([81.92.1.5]:34387 "EHLO smtp.tal.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750810AbZABCyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 21:54:04 -0500
+From: ib@wupperonline.de (Ingo Brueckl)
+Date: Fri, 02 Jan 2009 03:48:00 +0100
+Subject: Re: compile time warnings
+X-Mailer: blueMail 1.4 (SlipDoor 2.2)
+Message-ID: <495d7b8d@wupperonline.de>
+In-Reply-To: <495d3100@wupperonline.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1230864125_3311P
-Content-Type: text/plain; charset=us-ascii
+What we have so far:
 
-On Thu, 01 Jan 2009 18:31:57 PST, Andrew Morton said:
-> On Thu, 01 Jan 2009 15:51:48 -0500 Valdis.Kletnieks@vt.edu wrote:
-> 
-> > On Tue, 30 Dec 2008 16:06:00 PST, akpm@linux-foundation.org said:
-> > > The mm-of-the-moment snapshot 2008-12-30-16-05 has been uploaded to
-> > 
-> > 
-> >   CC =5BM=5D  drivers/misc/dell-laptop.o
-> > drivers/misc/dell-laptop.c: In function dell_send_request:
-> > drivers/misc/dell-laptop.c:147: error: implicit declaration of function dcdbas_smi_request
-> > 
-> > Fix: move misc-add-dell-laptop-driver.patch to someplace below
-> > dcdbas-export-functionality-for-use-in-other-drivers.patch in the series file.
-> > 
-> 
-> OK, thanks, done.
-> 
-> Confused.  I assume you were doing a bisection.
+  arch/x86/kernel/setup.c:742: warning: 'dmi_low_memory_corruption'
 
-Yeah, I got a kernel that died very early - no early_printk, no penguin logos,
-nada.  Turned out to be self-inflicted.
+is already fixed in the git tree.
 
---==_Exmh_1230864125_3311P
-Content-Type: application/pgp-signature
+  arch/x86/mm/init_32.c:515: warning: unused variable 'pgd_base'
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+could be fixed with Jespers patch (which I like best).
 
-iD8DBQFJXX79cC3lWbTT17ARAnSyAKCa6wK6YW9wq6eWpyUuCwUa0yIFmQCdH5OA
-5r6eBWj6vRPUOAEESesAzyU=
-=JXRG
------END PGP SIGNATURE-----
+  WARNING: modpost: Found 1 section mismatch(es).
 
---==_Exmh_1230864125_3311P--
+which is (with CONFIG_DEBUG_SECTION_MISMATCH=y):
+
+  WARNING: vmlinux.o(.cpuinit.data+0x0): Section mismatch in reference from
+  the variable initial_code to the function .init.text:i386_start_kernel()
+  The variable __cpuinitdata initial_code references a function __init
+  i386_start_kernel(). If i386_start_kernel is only used by initial_code then
+  annotate i386_start_kernel with a matching annotation.
+
+was already noticed some time ago by linuxtwid...@gmail.com, but is still
+unfixed.
+
+Here is what linuxtwid...@gmail.com suggested:
+
+--- linux-2.6.27.1/arch/x86/kernel/head_32.S	2008-10-16 00:49:00.000000000 -0500
++++ linux-2.6.27.1-test/arch/x86/kernel/head_32.S	2008-10-16 01:45:10.000000000 -0500
+@@ -600,6 +600,7 @@ ignore_int:
+
+ .section .cpuinit.data,"wa"
+ .align 4
++__REFDATA
+ ENTRY(initial_code)
+ 	.long i386_start_kernel
+
+The remaining
+
+  /usr/src/linux/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
+
+is very strange and a mystery to me. (There were already reports on that
+issue which seem to point to a gcc bug.)
