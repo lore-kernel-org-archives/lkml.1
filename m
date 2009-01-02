@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZABI3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbZABIeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbZABI3q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 03:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbZABI3e
+	id S1757486AbZABIeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 03:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZABIdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 03:29:34 -0500
-Received: from mx2.suse.de ([195.135.220.15]:50098 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751335AbZABI3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 03:29:33 -0500
-Date: Fri, 2 Jan 2009 00:28:24 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: libusb broken on 2.6.28 x86_64 ?
-Message-ID: <20090102082824.GA4212@suse.de>
-References: <495DB4AC.50602@rtr.ca> <495DBBC1.7040202@rtr.ca> <20090102072436.GA3444@suse.de> <495DC771.9030103@rtr.ca> <20090102075835.GA3955@suse.de> <495DCD18.8060900@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <495DCD18.8060900@rtr.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 2 Jan 2009 03:33:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:22192 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbZABIdt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 03:33:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:user-agent:date:from:to:cc:subject:content-disposition
+         :message-id;
+        b=TVHP3XdbHXZI3VtvXpIkC4ewticQ2aOIPBZ8/73I6eo9dQnZo4s8S4UYud6mdHV7pg
+         +Do6zUacqUug/AIxrz08ckDpL4vTwCxtU/U317TG1w1BSs87kHh5/ILifny5+QstQHr1
+         Y91uw3UvAK13nR+r/pecbuETIbYpQbJKtN+aA=
+References: <20090102082717.810810508@gmail.com>>
+User-Agent: quilt/0.46-1
+Date: Fri, 02 Jan 2009 11:27:18 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: mingo@elte.hu, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+Cc: gorcunov@gmail.com, Cyrill Gorcunov <gorcunov@openvz.org>
+Subject: [patch 1/3] early_printk - use sizeof instead of hardcoded number
+Content-Disposition: inline; filename=x86-early_printk-buf-sizeof
+Message-ID: <495dd169.1438560a.3444.07f1@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 03:15:20AM -0500, Mark Lord wrote:
-> Greg KH wrote:
->> On Fri, Jan 02, 2009 at 02:51:13AM -0500, Mark Lord wrote:
->>> Greg KH wrote:
->>>> On Fri, Jan 02, 2009 at 02:01:21AM -0500, Mark Lord wrote:
->>>>> Mark Lord wrote:
->>> ..
->>>>> Mmm.. broken only for 64-bit userspace, it seems.
->>>>>
->>>>> I've recompiled the same app against 32-bit libs,
->>>>> and it works just fine on that 64-bit system,
->>>>> as well as on 32-bit systems.
->>>>>
->>>>> But not when compiled for pure 64-bit operation on a 64-bit system.
->>> ..
->>>> Which version of libusb, a new one was just released a few weeks ago
->>>> that fixes a lot of problems reported in the older libusb versions, and
->>>> made things much faster to boot.  You might want to check it out.
->>> ..
->>>
->>> This is with libusb-0.1-4, which has been working fine with all prior 
->>> kernels,
->>> including the 2.6.27.xx series.
->>>
->>> Userspace stuff like this is not supposed to be broken from kernel to 
->>> kernel.
->> No it shouldn't, I was thinking this was the first time you had tried
->> such a thing (64bit userspace apps.)
->> If using 2.6.27 works, then we need to fix this.
-> ..
->
-> Yup.  I don't really see anything likely in kernel from 2.6.27 to 2.6.28,
-> other than perhaps the new "poisoning" code.  I wonder if that could be it?
->
-> Kinda weird that the device works with libusb the first time it is used,
-> but then fails on all subsequent runs of the same app, until replugged.
->
-> But.. I can run the 32-bit compat app after a 64-bit failure,
-> and *that* does work.  There's gotta be a useful clue in there somewhere.
+Impact: cleanup
 
-Hm, care to run 'git bisect'?
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/kernel/early_printk.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Or do you have a simple (or complex) test program that I can run here to
-do the same thing?
+Index: linux-2.6.git/arch/x86/kernel/early_printk.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/early_printk.c
++++ linux-2.6.git/arch/x86/kernel/early_printk.c
+@@ -886,7 +886,7 @@ asmlinkage void early_printk(const char 
+ 	va_list ap;
+ 
+ 	va_start(ap, fmt);
+-	n = vscnprintf(buf, 512, fmt, ap);
++	n = vscnprintf(buf, sizeof(buf), fmt, ap);
+ 	early_console->write(early_console, buf, n);
+ 	va_end(ap);
+ }
 
-thanks,
-
-greg k-h
+-- 
