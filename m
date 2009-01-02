@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbZABJkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZABJru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757824AbZABJkH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:40:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZABJj4
+	id S1757556AbZABJru (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbZABJrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:39:56 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:33188 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbZABJjz (ORCPT
+	Fri, 2 Jan 2009 04:47:39 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48157 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZABJri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:39:55 -0500
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Date: Fri, 02 Jan 2009 13:13:58 +0200
-Message-Id: <20090102111358.3186.7431.sendpatchset@gollum>
-Subject: [GIT PULL] UBIFS changes for 2.6.29
-X-OriginalArrivalTime: 02 Jan 2009 09:39:47.0881 (UTC) FILETIME=[0D426190:01C96CBE]
-X-Nokia-AV: Clean
+	Fri, 2 Jan 2009 04:47:38 -0500
+Date: Fri, 2 Jan 2009 04:47:30 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Takashi Sato <t-sato@yk.jp.nec.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] freeze feature ver 1.14
+Message-ID: <20090102094730.GA17841@infradead.org>
+References: <20081027215811t-sato@mail.jp.nec.com> <495DA488.7080702@sandeen.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495DA488.7080702@sandeen.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Jan 01, 2009 at 11:22:16PM -0600, Eric Sandeen wrote:
+> In lieu of the timeout feature which was originally proposed, how
+> about access to an emergency un-freeze via magic sysrq, maybe
+> piggy-backed on emergency sync... something like this (not
+> tested or even built yet...), would this be a good compromise to
+> help save people from frozen roots?
 
-please pull UBIFS updates from
+Looks sane to me.  But for that we'd need to get the generic freeze bits
+in first.  Andrews, as they are in 2.6.28-rc2 do you plan to send them?
 
-git://git.infradead.org/ubifs-2.6.git linux-next
+Any chance for a general -mm merge plan, btw?
 
-The following changes since commit f6f7b52e2f6149d2ee365717afff315b05720162:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../wim/linux-2.6-watchdog
-
-are available:
-
-Alexey Dobriyan (1):
-      UBIFS: fix section mismatch
-
-Artem Bityutskiy (31):
-      UBIFS: slight compression optimization
-      UBIFS: use bit-fields to store compression type
-      UBIFS: introduce compression mount options
-      UBIFS: separate debugging fields out
-      UBIFS: add debugfs support
-      UBIFS: run debugging checks only if they are enabled
-      UBIFS: dump stack in LPT check functions
-      UBIFS: introduce LPT dump function
-      UBIFS: use PAGE_CACHE_MASK correctly
-      UBIFS: fix tnc dumping
-      UBIFS: improve budgeting dump
-      UBIFS: various comment improvements and fixes
-      UBIFS: fix available blocks count
-      UBIFS: use nicer 64-bit math
-      UBIFS: re-calculate min_idx_size after the commit
-      UBIFS: avoid unnecessary calculations
-      UBIFS: fix constants initialization
-      UBIFS: fix file-system synchronization
-      UBIFS: always commit in sync_fs
-      UBIFS: use ubi_sync
-      UBIFS: always commit on unmount
-      UBIFS: restore budg_uncommitted_idx
-      UBIFS: do not lie about used blocks
-      UBIFS: simplify make_free_space
-      UBIFS: fix sparse warnings
-      UBIFS: fix checkpatch.pl warnings
-      UBIFS: fix writing uncompressed files
-      UBIFS: allow mounting when short of space
-      UBIFS: fix numerous spelling mistakes
-      UBIFS: print debugging messages properly
-      UBIFS: add more useful debugging prints
-
-Kukkonen Mika (1):
-      UBIFS: avoid unnecessary checks
-
- Documentation/filesystems/ubifs.txt |    3 +
- fs/ubifs/budget.c                   |  208 +++++++++------------------
- fs/ubifs/commit.c                   |   25 ++--
- fs/ubifs/compress.c                 |   18 ++--
- fs/ubifs/debug.c                    |  265 ++++++++++++++++++++++++++++++----
- fs/ubifs/debug.h                    |  117 ++++++++++++----
- fs/ubifs/file.c                     |    8 +-
- fs/ubifs/ioctl.c                    |    2 +
- fs/ubifs/journal.c                  |    4 +-
- fs/ubifs/key.h                      |   32 +++--
- fs/ubifs/lprops.c                   |   14 +-
- fs/ubifs/lpt.c                      |   45 +++---
- fs/ubifs/lpt_commit.c               |  210 +++++++++++++++++++++++-----
- fs/ubifs/orphan.c                   |    2 +-
- fs/ubifs/replay.c                   |   15 ++-
- fs/ubifs/sb.c                       |   20 ++--
- fs/ubifs/super.c                    |  255 +++++++++++++++++++++++----------
- fs/ubifs/tnc.c                      |   31 ++--
- fs/ubifs/tnc_commit.c               |    9 +-
- fs/ubifs/ubifs-media.h              |    7 +
- fs/ubifs/ubifs.h                    |  111 +++++++--------
- 21 files changed, 927 insertions(+), 474 deletions(-)
-
-Thanks,
-Artem.
