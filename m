@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZABIC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZABIHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbZABIC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 03:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZABICq
+	id S1757215AbZABIHy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 03:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZABIHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 03:02:46 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:37729 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbZABICq (ORCPT
+	Fri, 2 Jan 2009 03:07:46 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48679
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZABIHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 03:02:46 -0500
-Date: Fri, 2 Jan 2009 09:04:20 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Bastian Blank <bastian@waldi.eu.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-sparc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparc: Use 64BIT config entry
-Message-ID: <20090102080420.GA2107@uranus.ravnborg.org>
-References: <20090101193504.GA4368@wavehammer.waldi.eu.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Jan 2009 03:07:45 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Embedded Linux mailing list <linux-embedded@vger.kernel.org>
+Subject: PATCH [0/3]: Simplify the kernel build by removing perl.
+Date: Fri, 2 Jan 2009 02:07:28 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090101193504.GA4368@wavehammer.waldi.eu.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901020207.30359.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 01, 2009 at 08:35:04PM +0100, Bastian Blank wrote:
-> Use 64BIT config entry to distinguish between 32 and 64bit builds
-> instead of relying on the ARCH setting.  Using sparc64 as ARCH still
-> forces 64BIT on.
+Before 2.6.25 (specifically git bdc807871d58285737d50dc6163d0feb72cb0dc2 ) 
+building a Linux kernel never required perl to be installed on the build 
+system.  (Various development and debugging scripts were written in perl and 
+python and such, but they weren't involved in actually building a kernel.)  
+Building a kernel before 2.6.25 could be done with a minimal system built from 
+gcc, binutils, bash, make, busybox, uClibc, and the Linux kernel, and nothing 
+else.  (Embedded developers creating clean cross compile environments that 
+won't leak bits of the host system into the target, or bootstrapping native 
+development environments to run on target hardware or under emulators, tend to 
+care about this sort of thing.)
 
-Hi Bastian.
+The perl checkin for 2.6.25 was the camel's nose under the tent flap, and 
+since then two more instances of perl have shown up in the core kernel build.  
+This patch series removes the three required to build a basic kernel for qemu 
+for the targets I've tested (arm, mips, powerpc, sparc, m68k, sh4, and of 
+course x86 and x86-64), replacing them with shell scripts.
 
-I have tested the patch and it works as expected.
-One small nit below.
+Historically the kernel has gone out of its way to minimize environmental 
+dependencies for the build.  For example, the plethora of *_shipped files mean 
+we don't need lex and yacc to build the kernel.  The kconfig infrastructure 
+once required curses to run "make oldconfig", but that requirement was 
+restricted to just menuconfig so the kernel could build on systems without 
+ncurses.
 
-	Sam
+That was a very nice policy.  Kernel development already requires an in-depth 
+knowledge of C, make, and shell, plus things like the kconfig language.  A 
+similarly in-depth knowledge of perl is bigger than all that combined (even 
+Larry Wall probably doesn't know all of Perl anymore), and then what's the 
+excuse _not_ to add Python to the core build?  And after that why not java, or 
+lua?  Where does it end?  What's the criteria to say "no" here?
 
-> 
-> Inspired by the x86 and s390 configs.
-> 
-> Signed-off-by: Bastian Blank <waldi@debian.org>
-> 
-> -- 
-> You can't evaluate a man by logic alone.
-> 		-- McCoy, "I, Mudd", stardate 4513.3
-
-> diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-> index 0a94d9c..73ddfd9 100644
-> --- a/arch/sparc/Kconfig
-> +++ b/arch/sparc/Kconfig
-> @@ -4,6 +4,13 @@
->  
->  mainmenu "Linux/SPARC Kernel Configuration"
->  
-> +config 64BIT
-> +	bool "64-bit kernel" if ARCH = "sparc"
-> +	default ARCH = "sparc64"
-> +	help
-> +	  Say yes to build a 64-bit kernel - formerly known as sparc64
-> +	  Say no to build a 32-bit kernel - formerly known as sparc
-
-We should update this help escription with something remotely like this:
-
-> +	  SPARC is a family of RISC microprocessors designed and marketed by
-> +	  Sun Microsystems, incorporated.  They are very widely found in Sun
-> +	  workstations and clones.
-
-Just a raw copy from the (always hidden) help text for SPARC32.
-
-	Sam
+This patch series saves time and says no now.
