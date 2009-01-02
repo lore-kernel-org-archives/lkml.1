@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbZABWex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbZABWff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932120AbZABWex (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 17:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZABWeB
+	id S1759546AbZABWff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 17:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbZABWfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 17:34:01 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:7099 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015AbZABWd4 (ORCPT
+	Fri, 2 Jan 2009 17:35:12 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51521 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756757AbZABWfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 17:33:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=wViQ/cIYLebKwYRtLIcdMlVKYtgZXZR0UXFXN5aB7pKnn18otZfEG4dd5Txp9yKoRZ
-         HSKKvlgx0anEgVlVYLwnfC3UdVeMu4NkuRHRS5we+TCC6VVbxjDe3hk3FvUueBzxnOeg
-         Bq/r9lhR6XEXOuIt0wnyX3jvjI0NpVlX3RGeo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Shane McDonald <mcdonald.shane@gmail.com>
-Subject: Re: [PATCH v5] Resurrect IT8172 IDE controller driver
-Date: Fri, 2 Jan 2009 23:25:04 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-next-20081231-dirty; KDE/4.1.3; i686; ; )
-Cc: alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
-       sshtylyov@ru.mvista.com, linux-kernel@vger.kernel.org
-References: <E1LIkqz-00021S-O5@localhost>
-In-Reply-To: <E1LIkqz-00021S-O5@localhost>
+	Fri, 2 Jan 2009 17:35:11 -0500
+Date: Fri, 2 Jan 2009 17:35:08 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Subject: Re: 2.6.27/2.6.28: irqbalance dies shortly after starting the
+	daemon on x86 but not x86_64, why?
+Message-ID: <20090102223508.GA5181@bombadil.infradead.org>
+References: <alpine.DEB.1.10.0812300706390.11356@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901022325.04782.bzolnier@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0812300706390.11356@p34.internal.lan>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 January 2009, Shane McDonald wrote:
-> Support for the IT8172 IDE controller was removed from the kernel
-> sometime after 2.6.18.  Support for the only boards that used the IT8172
-> was removed from the kernel after 2.6.18, as they had never compiled
-> since 2.6.0.  However, there are a couple of platforms that use this
-> chip: the PMC-Sierra Xiao Hu thin-client computer, which is no longer
-> in production, and the Linksys NSS4000 Network Attached Storage box,
-> which is based on the Xiao Hu board.  I am attempting to add support
-> for the Xiao Hu to the kernel, and this IT8172 IDE controller is the
-> first bit of code in this effort.
-> 
-> This patch resurrects the IT8172 IDE controller code.  I began with
-> the 2.6.18 version of the it8172.c file, and have moved it forward so
-> that it works with the latest version of the kernel.  I have run this
-> driver on a PMC-Sierra Xiao Hu board with the 2.6.28 kernel, and
-> I have had no problems with it in my configuration.  The attached patch
-> applies cleanly against 2.6.28.
-> 
-> Signed-off-by: Shane McDonald <mcdonald.shane@gmail.com>
-> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+On Tue, Dec 30, 2008 at 07:26:30AM -0500, Justin Piszcz wrote:
+> (same on both x86 and x86_64):
+> # cat /etc/default/irqbalance
+> #Configuration for the irqbalance daemon
+>
+> #Should irqbalance be enabled?
+> ENABLED=1
+> #Balance the IRQs only once?
+> ONESHOT="0"
+>
 
-applied, thanks!
+If there is only one cache domain, ie: one physical cpu socket with two
+cores sharing a cache, then irqbalance will return after the initial
+balance since it would be pointless to continue running. (It forces
+itself into oneshot mode.)
+
+regards, Kyle
