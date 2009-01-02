@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbZABWbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbZABWco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758662AbZABWbD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 17:31:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZABWaw
+	id S1758871AbZABWco (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 17:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZABWcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 17:30:52 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37646 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750974AbZABWav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 17:30:51 -0500
-Subject: Re: [PATCH] kbuild: Disallow GCC 4.1.0 / 4.1.1
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, rdreier@cisco.com, ian.campbell@citrix.com,
-       jeremy.fitzhardinge@citrix.com, deller@gmx.de, rusty@rustcorp.com.au,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@mcmartin.ca, randolph@tausq.org, dave@hiauly1.hia.nrc.ca
-In-Reply-To: <20090102175737.GA5818@uranus.ravnborg.org>
-References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain>
-	 <20081231105425.9ccac21d.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain>
-	 <20081231.141408.60544902.davem@davemloft.net>
-	 <20090102115547.GB3027@elte.hu>
-	 <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain>
-	 <alpine.LFD.2.00.0901020933370.5086@localhost.localdomain>
-	 <20090102175737.GA5818@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 03 Jan 2009 09:27:33 +1100
-Message-Id: <1230935253.15389.99.camel@pasglop>
+	Fri, 2 Jan 2009 17:32:35 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:51308 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbZABWce (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 17:32:34 -0500
+Date: Fri, 2 Jan 2009 23:46:12 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [incremental-PATCH-for-Sam's-Review] ACPI: use ccflags-y instead of EXTRA_CFLAGS
+Message-ID: <20090102224612.GE496@one.firstfloor.org>
+References: <1230720725-9376-1-git-send-email-lenb@kernel.org> <526647e1bb69fd3248558fce365bb1fbfb226ccd.1230719795.git.len.brown@intel.com> <20081231133901.GB2388@uranus.ravnborg.org> <87bpusv31n.fsf@basil.nowhere.org> <20081231153441.GA3475@uranus.ravnborg.org> <alpine.LFD.2.00.0901021636050.3590@localhost.localdomain> <20090102215208.GA8494@uranus.ravnborg.org> <alpine.LFD.2.00.0901021709480.3590@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901021709480.3590@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> It appears that the entire kernel is now built with -Os by default,
 
+It's default in defconfig, but not necessarily in all configs people
+are using.
+
+> so it looks like this is now redundant in the default case and will
+> have an effect only when somebody disables CONFIG_CC_OPTIMIZE_FOR_SIZE
+> to build with -O2.
 > 
-> Bugger....
-> Now I cannot do cross compile for: alpha, arm, m68k and sparc.
-> 
-> Not that I actually try to run these beasts but just being able
-> to do cross compile has served me well.
-> 
-> Last I looked (only few days ago) crosstool-ng did not support sparc :-(
+> So I'm willing to delete -Os from the ACPI Makefile
+> in the interest of simplicity.
 
-There are also various variants of 4.1.1 around with the fix for
-that inline bug backported (I think that's the case of the compiler
-that ships with the Cell SDK for example).
+I would keep it. In fact it might make sense to expand explicit -Os
+to more subsystems.
 
-What a f. mess :-(
+-Andi
 
-Cheers,
-Ben.
-
+-- 
+ak@linux.intel.com
