@@ -1,159 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZABMVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbZABMoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZABMVe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 07:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbZABMVZ
+	id S1758075AbZABMoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 07:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbZABMoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 07:21:25 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:34251 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757367AbZABMVZ (ORCPT
+	Fri, 2 Jan 2009 07:44:08 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45297
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757123AbZABMoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 07:21:25 -0500
-Date: Fri, 2 Jan 2009 13:21:22 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Andreas Mohr <andi@lisas.de>, Sriram V <vshrirama@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Power Management with rootfs on SDMMC.
-Message-ID: <20090102122122.GA2097@rhlx01.hs-esslingen.de>
-References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com> <20090102102152.GA26603@rhlx01.hs-esslingen.de> <20090102122148.175cff4a@mjolnir.drzeus.cx>
+	Fri, 2 Jan 2009 07:44:07 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Date: Fri, 2 Jan 2009 06:44:00 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <20090102095023.GA28078@linux-sh.org>
+In-Reply-To: <20090102095023.GA28078@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090102122148.175cff4a@mjolnir.drzeus.cx>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901020644.01201.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 12:21:48PM +0100, Pierre Ossman wrote:
-> On Fri, 2 Jan 2009 11:21:52 +0100
-> Andreas Mohr <andi@lisas.de> wrote:
-> 
-> > 
-> > There have been long threads on mobile phone and netbook related forums about issues
-> > with seemingly "any slightly advanced use whatsoever" of partitions on SD cards.
-> > 
-> 
-> As you may notice, you only get egg on your face when you suspend, so
-> it's really just the single problem. Granted, it's still a big one.
+On Friday 02 January 2009 03:50:23 Paul Mundt wrote:
+> On Fri, Jan 02, 2009 at 02:07:28AM -0600, Rob Landley wrote:
+> > The perl checkin for 2.6.25 was the camel's nose under the tent flap, and
+> > since then two more instances of perl have shown up in the core kernel
+> > build. This patch series removes the three required to build a basic
+> > kernel for qemu for the targets I've tested (arm, mips, powerpc, sparc,
+> > m68k, sh4, and of course x86 and x86-64), replacing them with shell
+> > scripts.
+>
+> Misguided rhetoric aside, what does this actually accomplish? If folks
+> add meaningful tools in to the kernel that require python, and it is
+> generally regarded as being fairly ubiquitous, I can't imagine there
+> being any substantiated objections against it.
 
-The problem being that I (just like many other users) am trying to suspend 
-"all the time" (my God-Given Right ;), with issues popping up "all the time"
-(Intel VC switching, microcode module, ath5k, and SD slots, just to name
-all resume issues - now mostly working - on one single machine recently).
-And I'm just fed up with it, sorry to have to put it that bluntly.
+I think bloat-o-meter is a marvelous tool, and I'm a big fan of python.  But I 
+don't think you shouldn't have to run that to compile a kernel either, largely 
+because not needing it for the first 17 years or so implied living without 
+this requirement could be done, sustainably even.
 
-> > IMHO in this strongly increasingly netbook- and mobile phone-enabled world it's
-> > a bloody shame that:
-> > - we have a hanging suspend/resume on an SD rootfs (often the only way of
-> >   achieving serious Linux use on a mobile phone!)
-> 
-> I take it this is without CONFIG_MMC_UNSAFE_RESUME.
+There's a difference between a development workstation and a dedicated build 
+system.  Requiring you to install X11 plus qt on the headless build server 
+cranking out nightly snapshots in order to run the configure stage of the 
+kernel build would be silly.  But this is not an argument for ripping out 
+"make xconfig" from the kernel.
 
-Indeed (and I admittedly haven't even done any .28 tests yet about the
-previous observations of suspend hangs and resume hangs
-and partition corruption).
+Spot the difference?
 
-But one of my items was that CONFIG_MMC_UNSAFE_RESUME itself seems a
-pretty inflexible and _hard-wired-selectable_ workaround measure anyway.
+> Your main reasons against inclusion of perl seem to be that there is no
+> realistic expectation for target systems that will be self-hosting will
+> have perl included, or the inherent complexity in maintaining a coherent
+> cross compiling environment.
 
-> The fundamental problem is that we have no way of detecting if a card
-> was removed during suspend, meaning we cannot guarantee that we'll
-> return the hardware to the upper layers in the same state it was
-> before the suspend.
-> 
-> There are two improvements that can be made here:
-> 
-> - Don't power down the card during suspend. This eats more power and
->   might not be supported on all systems, but it allows us to detect any
->   removal. This has been on my todo list for ages, but I haven't found
->   any time to implement it (or even test if I have any systems that
->   might support it).
+I'm saying it's a major new environmental dependency that went in fairly 
+recently and largely without comment, and it causes real world headaches for 
+real people, of which I am only one.
 
-While this would improve things, it seems to be the second-best solution only,
-especially since this probably requires properly working removal
-notification for _every_ controller type.
+If you don't think environmental dependencies are a problem, I welcome you to 
+attempt to build open office.  (Even the gentoo guys gave up on that one and 
+just started shipping a prebuilt binary.)
 
-> - Have upper layers handle removal detection. E.g. in the common case
->   of rootfs, the filesystem driver verifies that the storage is in the
->   same state when it resumes as it was when it suspended. This requires
->   a lot of work though as AFAIK there is no suspend functionality in
->   either the block layer or the VFS.
+I think large amounts of complexity start with small amounts of complexity 
+that grow.  Complexity is inevitable, but there should be a _reason_ for 
+increases in it.
 
-To me this seems to be the clearly preferred method.
-(CC'd VFS, already pondered before whether I should do this but decided not to yet)
+> Both of these things are issues with your
+> own environment, and in no way are these representative of the embedded
+> development community at large.
+>
+> Now with that out of the way, this entire series fundamentally fails to
+> convert half of the perl scripts shipped with the kernel today, some that
+> are required for build depending on Kconfig options, and others that are
+> simply useful tools for self-hosted environments.
 
-> > - we lose partition mounts due to full device re-probing instead of re-using the
-> >   same minor device ID after resume
-> 
-> This is a block layer issue, and I don't know if it's fixable.
-> 
-> Basically the problem is that someone is keeping the resources
-> associated with the pre-suspend block device pinned in memory. When the
-> post-suspend block device is created, it cannot reuse the device IDs
-> since they are still in use.
+I didn't say the job was finished.  These are just the ones I've already 
+personally hit, and thus A) needed to rewrite to build the kernel in my build 
+environment, B) have a handy test case for.
 
-I thought so, but someone would need to get to the bottom of this
-and figure out a way to get a nice suspend routines support/workaround.
+> Simply converting a
+> couple of scripts over you find objectionable is certainly fine if there
+> is a real benefit in doing so, but this doesn't actually accomplish your
+> goal of removing the perl dependency.
 
-> > - installing a swap partition on an SD card and then resuming can easily
-> >   go as far as __even completely corrupting__ the entire SD card partitioning
-> >   plus first partition (corrupts first 1kB of the card: both table and partition)
-> >   People then immediately resort to a non-helpful "Don't Do This, Ever" reply
-> >   (using swap partition on SD and suspend, see http://dev.laptop.org/ticket/6532#comment:10),
-> 
-> Hmm... I was under the impression that they got this fixed nice and
-> proper. Perhaps comment 34 should be sent to lkml and/or added to the
-> kernel bugzilla.
+A) It's a start.
 
-Right, #34 seems to describe pretty much what I think should be done
-(keep things powered-down, then resume and compare with existing remembered
-media id and revive old device handle in case it's actually same card).
+B) It works for me, and builds the .configs I've personally needed so far.
 
-("media id" above preferrably being a generic kernel concept of a media id
-mechanism supported for all sorts of different media that a controller
-may allow the kernel to support).
+> Ignoring the compile-time dependencies that you overlooked, what you
+> define as "development and debugging" scripts are still an integral part
+> of the system, unless you are trying to argue that embedded developers
+> have no interest in things like checkstack due to the trouble of trying
+> to get perl built.
 
+Coming up with new patches and modifying the source is a different use for 
+source code than going "./configure; make; make install".  This is true for 
+most open source software, I'd expect.
 
-As a side note, I'm voicing a "me too" of not being too happy
-to see people hard-coding timeouts there to try to "fix" this issue
-instead of directly trying to come up with a synchronized signalling method
-to fix this race there.
+Or are you implying that eclipse or Emacs are such great IDEs that being able 
+to build outside of a GUI isn't interesting?  The ability to build within an 
+IDE should be allowed to preclude the ability to build without one?
 
+> Until you can post a series that converts all of scripts/*.pl in its
+> entirety, you have failed to address the fundamental reason why perl is
+> used in the first place.
 
-Am I right in thinking that if this is fixed properly, it would be the
-CONFIG_MMC_UNSAFE_RESUME way of handling things, just in a sufficiently safe
-manner? (notwithstanding user stupidity, i.e. hard removal of cards)
-(i.e. CONFIG_MMC_UNSAFE_RESUME would then just be made default?)
-Or... hmm... perhaps CONFIG_MMC_UNSAFE_RESUME actually would already
-work for me entirely with my PCIE hotplug controller
-in case its driver already provides reliably timed controller reinit
- / media re-detection after resume...
+Never start anything unless you can finish it all in one go, eh?
 
-Anyway, the general thinking here _has_ to be:
-if a mounted card remains in the slot during suspend, then it _should_ get
-re-assigned properly, and if it has been removed despite not being
-unmounted, then after resume the kernel should actively discard all references
-(and throw a warning or some such).
-And having a special CONFIG_MMC_UNSAFE_RESUME isn't really helpful here AFAICS,
-VFS (and all related layers) should be able to handle this on its own
-in its entirety, and if it's not able to do this
-then it is to be considered very buggy and ought to be fixed.
+Last I heard the kernel guys tend to frown on people who wander off in their 
+own corner for a year and then dump a massive rewrite on them.  They seem to 
+prefer the incremental "trail of breadcrumbs" approach.  Release early, 
+release often, incorporate feedback, keep at it.
 
-But this is all common wisdom anyway I'd think, someone would have to actually
-implement things to correctly work this way.
+Or am I wrong?
 
+> Trying to toss bizarre policy statements around
+> regarding things you personally find objectionable without any coherent
+> technical argument to the contrary is of no constructive use whatsoever.
 
-I actually thought of digging into this myself some time, but as opposed
-to libata UDMA issues or WLAN LED support it's way too problematic
-to tackle for me since it's said to be deep in VFS lands and debugging on
-this measly machine would additionally take ages (2 hours in case one
-needs an entire kernel build), plus limited time.
+Complexity is a cost, environmental dependencies are a form of complexity, if 
+the benefit isn't worth the cost (or you can get the benefit without the cost) 
+then you shouldn't pay the cost.
 
-Thanks for your comments!
+I was unaware this was a controversial attitude?
 
-Andreas Mohr
+> The kernel is and always has been about using the right tool for the job,
+> not a matter of dictating what tools you must use in order to accomplish
+> a task you are interested in.
+
+And yet despite "unifdef" being an existing tool, the kernel developers didn't 
+require you to install it on your host, but instead built their own version 
+from source.  (They didn't even require you to install a version of cpio on 
+the host that understands -H newc, but instead built their own initramfs 
+packer in C.)  More recently, they integrated dtc (the device tree compiler).
+
+In each case, they made a balancing decision, and decided that integrating and 
+maintaining a small C tool was better than having an environmental dependency.
+
+> Common sense does apply here though, so
+> this might be a more daunting task for some than others.
+
+Apparently so.
+
+I don't care if checkstack.pl is written in perl for the same reason I don't 
+care if eclipse is written in java.  They're not build dependencies.
+
+If I had to install gdb as a precondition of compiling the Linux kernel I'd 
+think something was funny with that, which isn't saying I object to the 
+existence of gdb or the ability to hook it up to kgdb or qemu or UML to poke 
+at kernels.  It's two different categories.
+
+It seems clear to _me_, anyway.  But it is coming up on 7am and I haven't 
+gotten to bed yet, so take that for what it's worth...
+
+Rob
