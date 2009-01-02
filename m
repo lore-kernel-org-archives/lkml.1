@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbZABQKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbZABQLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbZABQKk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 11:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758252AbZABQKP
+	id S1758619AbZABQLK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 11:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbZABQKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 11:10:15 -0500
-Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:15356 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758103AbZABQKO (ORCPT
+	Fri, 2 Jan 2009 11:10:55 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:26657 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757131AbZABQKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 11:10:14 -0500
-Date: Fri, 2 Jan 2009 17:10:12 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Tom Spink <tspink@gmail.com>, Ingo Brueckl <ib@wupperonline.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: compile time warnings
-In-Reply-To: <alpine.LNX.2.00.0901021644240.4322@swampdragon.chaosbits.net>
-Message-ID: <alpine.LNX.2.00.0901021709230.4322@swampdragon.chaosbits.net>
-References: <495d3100@wupperonline.de> <alpine.LNX.2.00.0901012312450.11772@swampdragon.chaosbits.net> <7b9198260901011735k42e9298tb1c5dc0e15285eb1@mail.gmail.com> <alpine.LNX.2.00.0901020301230.11772@swampdragon.chaosbits.net> <20090102095727.GH1975@elte.hu>
- <alpine.LNX.2.00.0901021644240.4322@swampdragon.chaosbits.net>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 2 Jan 2009 11:10:55 -0500
+Message-ID: <495E3C7B.50505@oracle.com>
+Date: Fri, 02 Jan 2009 08:10:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Henrik Rydberg <rydberg@euromail.se>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28-mmotm1230 drivers/input/input.c warning msg
+References: <27989.1230891358@turing-police.cc.vt.edu>
+In-Reply-To: <27989.1230891358@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.495E3C7E.01B9:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Jan 2009, Jesper Juhl wrote:
+Valdis.Kletnieks@vt.edu wrote:
+> patch input-allow-certain-ev_abs-events-to-bypass-all-filtering.patch
+> caused a new warning to be added to the compile:
+> 
+>   CC      drivers/input/input.o
+> drivers/input/input.c:1661: warning: function declaration isnâ€™t a prototype
+> 
+> Fix up the declaration so the compiler knows what the prototype is.
+> 
+> Signed-off-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
 
-> On Fri, 2 Jan 2009, Ingo Molnar wrote:
-> > 
-...
-> > Would you mind to send a patch for that that we could push to Linus?
-> >
-> Sure, I'll do that.
+This is the third patch like this that's been posted, so I'll ack this one.  ;)
+
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+> --- linux-2.6.28-mmotm1230/drivers/input/input.c.dist	2009-01-01 17:23:02.000000000 -0500
+> +++ linux-2.6.28-mmotm1230/drivers/input/input.c	2009-01-02 05:09:12.000000000 -0500
+> @@ -1657,7 +1657,7 @@ static const struct file_operations inpu
+>  	.open = input_open_file,
+>  };
 >  
-I see that Mr. Brueckl beat me to it...
+> -static void __init input_init_abs_bypass()
+> +static void __init input_init_abs_bypass(void)
+>  {
+>  	const unsigned int *p;
+>  	for (p = input_abs_bypass_init_data; *p; p++)
+> 
+
 
 -- 
-Jesper Juhl <jj@chaosbits.net>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
-
+~Randy
