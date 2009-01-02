@@ -1,87 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbZABTtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbZABTxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbZABTtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 14:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZABTtE
+	id S1758892AbZABTxj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 14:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbZABTxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 14:49:04 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:57054 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbZABTtB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 14:49:01 -0500
-Date: Fri, 2 Jan 2009 20:50:39 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT] final batch of kbuild updates 
-Message-ID: <20090102195039.GA7343@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Fri, 2 Jan 2009 14:53:30 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:37884 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751573AbZABTx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 14:53:29 -0500
+Date: Fri, 2 Jan 2009 11:53:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Eric Sesterhenn <snakebyte@gmx.de>, linux-kernel@vger.kernel.org,
+       josh@freedesktop.org, dipankar@in.ibm.com
+Subject: Re: [BUG] NULL pointer deref with rcutorture
+Message-ID: <20090102195326.GF6842@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090102111819.GC6088@alice> <20090102175853.GC6842@linux.vnet.ibm.com> <20090102185303.GC5743@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090102185303.GC5743@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+On Sat, Jan 03, 2009 at 12:23:03AM +0530, Kamalesh Babulal wrote:
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [2009-01-02 09:58:53]:
+> 
+> > On Fri, Jan 02, 2009 at 12:18:19PM +0100, Eric Sesterhenn wrote:
+> > > Hi,
+> > > 
+> > > modprobing rcutorture and removing it again gives me the following oops:
+> > 
+> > This looks similar to something that Kamalesh ran into a few weeks ago.
+> > 
+> > Kamalesh, did the fixes for that make it to 2.6.28?
+> > 
+> > 							Thanx, Paul
+> > 
+> 
+> Hi Paul,
+> 
+> 	The fix was available in linux-next from Dec 23 2008 (commit 392ddc32982a5c661dd90dd49a3cb37f1c68b782
+> 'bio: add support for inlining a number of bio_vecs inside the bio') and it has be pushed for merger in 2.6.29.
 
-Here follows the final batch of kbuild updates for the merge window.
+Thank you, Kamalesh!
 
-Highlights:
+Eric, could you please try applying the above commit and see if the
+problem reproduces?
 
-o We no longer let sparse warm about void-valued expressions
-o We have implmented additional checks on out user space headers
-  We do not fail on these yet - there are to much to be fixed.
-o Added some long needed documentation for kconfig and kbuild
-  Always room for more - especially on the kbuild parts.
+							Thanx, Paul
 
-This set includes a fix in the m68k specific Kconfig file - this 
-is acked by Gert.
-
-The kconfig changes is mostly adding comments. The actual changes will
-wait until next merge window.
-
-Please pull from:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-next.git master
-
-	Sam
-
-
-Hannes Eder (1):
-      kbuild: disable sparse warning "returning void-valued expression"
-
-Mike Frysinger (2):
-      headers_check.pl: disallow extern's
-      kbuild: in headers_install autoconvert asm/inline/volatile to __xxx__
-
-Randy Dunlap (1):
-      kbuild: make *config usage docs
-
-Sam Ravnborg (10):
-      m68k: fix recursive dependency in Kconfig
-      kconfig: explain symbol value defaults
-      kconfig: add comments to symbol flags
-      kconfig: struct property commented
-      kconfig: improve error messages for bad source statements
-      kbuild: check for leaked CONFIG_ symbols to userspace
-      kbuild: document environment variables
-      kbuild: drop debugging leftover in tags.sh
-      kbuild: add checks for include of linux/types in userspace headers
-      kbuild: ignore a few files in headers_check
-
- Documentation/kbuild/00-INDEX       |    6 +-
- Documentation/kbuild/kbuild.txt     |  126 +++++++++++++++++++++++
- Documentation/kbuild/kconfig.txt    |  188 +++++++++++++++++++++++++++++++++++
- Makefile                            |    3 +-
- README                              |   32 ++++---
- arch/m68k/Kconfig                   |    1 -
- scripts/headers_check.pl            |   70 +++++++++++++-
- scripts/headers_install.pl          |    3 +
- scripts/kconfig/expr.h              |   82 ++++++++++-----
- scripts/kconfig/lex.zconf.c_shipped |    7 +-
- scripts/kconfig/zconf.l             |    7 +-
- scripts/tags.sh                     |    1 -
- 12 files changed, 476 insertions(+), 50 deletions(-)
+> > > [  122.873859] rcu-torture:--- Start of test: nreaders=2 nfakewriters=4 stat_interval=0 verbose=0 test_no_idle_hz=0 shuffle_interval=3 stutter=5 irqreader=1
+> > > [  162.987060] BUG: unable to handle kernel NULL pointer dereference at 00000000
+> > > [  162.987194] IP: [<00000000>] 0x0
+> > > [  162.987268] *pde = 00000000 
+> > > [  162.987339] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+> > > [  162.987499] last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/resource
+> > > [  162.987534] Modules linked in: [last unloaded: rcutorture]
+> > > [  162.987667] 
+> > > [  162.987699] Pid: 5091, comm: udevd Tainted: G        W  (2.6.28-04980-gb58602a-dirty #154) System Name
+> > > [  162.987732] EIP: 0060:[<00000000>] EFLAGS: 00010246 CPU: 0
+> > > [  162.987761] EIP is at 0x0
+> > > [  162.987849] EAX: d0afcbf0 EBX: 00000000 ECX: c0160f5a EDX: 00000006
+> > > [  162.987880] ESI: d0afcbf0 EDI: 0000001c EBP: c0b01fe0 ESP: c0b01fd4
+> > > [  162.987910]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> > > [  162.987941] Process udevd (pid: 5091, ti=c0b01000 task=c8cc4100 task.ti=c8d20000)
+> > > [  162.988027] Stack:
+> > > [  162.988027]  c0160f61 00000200 00000001 c0b01ff8 c012a723 0000000a c8d20e4c 00000046
+> > > [  162.988027]  c012a6b4 c8d20e5c c01042ce
+> > > [  162.988027] Call Trace:
+> > > [  162.988027]  [<c0160f61>] ? rcu_process_callbacks+0x65/0x79
+> > > [  162.988027]  [<c012a723>] ? __do_softirq+0x6f/0xf6
+> > > [  162.988027]  [<c012a6b4>] ? __do_softirq+0x0/0xf6
+> > > [  162.988027]  <IRQ> <0> [<c012a631>] ? irq_exit+0x40/0x7c
+> > > [  162.988027]  [<c0110b91>] ? smp_apic_timer_interrupt+0x68/0x73
+> > > [  162.988027]  [<c0103521>] ? apic_timer_interrupt+0x2d/0x34
+> > > [  162.988027]  [<c017af71>] ? unmap_vmas+0x308/0x47f
+> > > [  162.988027]  [<c017afa2>] ? unmap_vmas+0x339/0x47f
+> > > [  162.988027]  [<c0143db5>] ? trace_hardirqs_on_caller+0x17/0x15a
+> > > [  162.988027]  [<c017e326>] ? exit_mmap+0x83/0x104
+> > > [  162.988027]  [<c01244b8>] ? mmput+0x39/0x89
+> > > [  162.988027]  [<c01278de>] ? exit_mm+0xc3/0xcb
+> > > [  162.988027]  [<c0128b99>] ? do_exit+0x199/0x6d5
+> > > [  162.988027]  [<c04e56b0>] ? trace_hardirqs_on_thunk+0xc/0x10
+> > > [  162.988027]  [<c0129137>] ? do_group_exit+0x62/0x88
+> > > [  162.988027]  [<c0129171>] ? sys_exit_group+0x14/0x16
+> > > [  162.988027]  [<c0102ea1>] ? sysenter_do_call+0x12/0x31
+> > > [  162.988027] Code:  Bad EIP value.
+> > > [  162.988027] EIP: [<00000000>] 0x0 SS:ESP 0068:c0b01fd4
+> > > [  162.990524] ---[ end trace 4eaa2a86a8e2da22 ]---
+> > > [  162.990555] Kernel panic - not syncing: Fatal exception in interrupt
+> > > 
+> > > 
+> > > Kernel is current -git with a unrelated
+> > > networking patch (http://marc.info/?l=linux-netdev&m=123088641023335&w=2)
+> > > 
+> > > root@whiterabbit:/usr/src/linux# grep RCU .config
+> > > # CONFIG_CLASSIC_RCU is not set
+> > > # CONFIG_TREE_RCU is not set
+> > > CONFIG_PREEMPT_RCU=y
+> > > CONFIG_RCU_TRACE=y
+> > > # CONFIG_TREE_RCU_TRACE is not set
+> > > CONFIG_PREEMPT_RCU_TRACE=y
+> > > CONFIG_RCU_TORTURE_TEST=m
+> > > 
+> > > Greetings, Eric
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> -- 
+> Thanks & Regards,
+> Kamalesh Babulal,
+> Linux Technology Center,
+> IBM, ISTL.
