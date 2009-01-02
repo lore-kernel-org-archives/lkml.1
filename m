@@ -1,130 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbZABUhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbZABUjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758313AbZABUhQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 15:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbZABUgn
+	id S1759203AbZABUjN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 15:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbZABUi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 15:36:43 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:45360 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbZABUgk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 15:36:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=LgM5kbBKtJilBg0KZ1iwB12fJylywyS1wrwuL7orj5ijJRpfbQknHpgQ6XS60ofk4J
-         eBs3dwdAqQ0u0h0K+Ml6mtX+g2ngeNTh5GH3ELbIOhZtGVOXiphMWsVYhXq/3UU70kms
-         rQl5e6QigtSrNXpwv2soo4sEwj4x59g53vIYM=
-Message-ID: <495E7AD2.3000405@gmail.com>
-Date: Fri, 02 Jan 2009 12:36:34 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
+	Fri, 2 Jan 2009 15:38:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36089 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756084AbZABUi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 15:38:57 -0500
+Date: Fri, 2 Jan 2009 21:38:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PULL] cpumask tree
+Message-ID: <20090102203839.GA26850@elte.hu>
+References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain>
 MIME-Version: 1.0
-To: Martin Steigerwald <Martin@Lichtvoll.de>
-CC: tux3@tux3.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Daniel Phillips <phillips@phunq.net>
-Subject: Re: [Tux3] Tux3 report: A Golden Copy
-References: <200812301935.49303.phillips@phunq.net> <200812311109.12635.Martin@lichtvoll.de> <495BAED9.3000305@gmail.com> (sfid-20090102_152147_492889_6D60D0EE) <200901022117.24504.Martin@Lichtvoll.de>
-In-Reply-To: <200901022117.24504.Martin@Lichtvoll.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Steigerwald wrote:
-> Am Mittwoch 31 Dezember 2008 schrieb Justin P. Mattock:
->   
->> Martin Steigerwald wrote:
->>     
->>> Am Mittwoch 31 Dezember 2008 schrieb Justin P. Mattock:
->>>       
->>>> Daniel Phillips wrote:
->>>>         
->>>>> On Tuesday 30 December 2008 23:34, sniper wrote:
->>>>>           
->>>>>> Great, I have mounted tux3 filesystem under UML with stuffs in
->>>>>> this mail, but I still can't debug it with gdb. Anyone gives me
->>>>>> suggestion?
->>>>>>             
->>>>> You just have to give a "cont" command a bunch of times and you
->>>>> will eventually get to a command prompt.  The reason for this is,
->>>>> uml uses the segfault interrupt as part of its machine simulation,
->>>>> and there is no exsiting way for uml and gdb to communicate in such
->>>>> a way that uml can recognize that the interrupt came from its own
->>>>> code and filter it.
->>>>>           
->>> [...]
->>>
->>>       
->>>> Hmm.. seems like a redundancy;
->>>> Anyways I looked at you're site, but am still
->>>> confused at what tux3 is: what is tux3?
->>>>
->>>> (at first I thought it was  a  video game, but was wrong);
->>>> can I use tux3 to secure a linux system or is it for
->>>> something else?
->>>>         
->>> Hmmm, I thought
->>>
->>> ---------------------------------------------------------------------
->>> Tux3 is a write-anywhere, atomic commit, btree-based versioning
->>> filesystem. It is the spiritual and moral successor of Tux2, the most
->>> famous filesystem that was never released. The main purpose of Tux3
->>> is to embody Daniel Phillips's new ideas on storage data versioning.
->>> The secondary goal is to provide a more efficient snapshotting and
->>> replication method for the Zumastor NAS project, and a tertiary goal
->>> is to be better than ZFS.
->>> ---------------------------------------------------------------------
->>> http://tux3.org/
->>>
->>> was pretty clear. What are you missing?
->>>
->>> Ciao,
->>>       
->> I guess this is what is confusing to me:
->> atomic commit, btree-based versioning.
->>     
->
-> Ah, the buzz words. ;)
->
-> The tux3 mailing list contains quite some design notes about these 
-> concepts. I think others can give better answers about these concepts - I 
-> think I understood what it is for, not the implementation details. But 
-> basically "atomic commit" is a strategy to have the filesystem always in 
-> a consistent state and btree-based versioning allows to keep different 
-> versions of a file / directory around. And unlike other filesystem tux3 
-> has this per inode and not for the complete filesystem. At least if I 
-> understand correctly.
->
-> But at least it should clear that tux3 is a filesystem and not a video 
-> game ;).
->
->   
->> irregardless about how it's worded,
->> I'm wondering if I should use this mechanism,
->> or not.
->>     
->
-> Right now its still in heavy development and not of release quality. I.e. 
-> something to play around and test with if you want. 
->
-> Ciao,
->   
-Yeah, my bad for thinking tux3 was a video game
-(don't ask why); I need to get glasses!!
-When I was told it was a filesystem it clicked.
-As for the atomic commit Thanks for explanation.
-(I honestly had no idea what that meant);
-with test and playing around with this, I have
-an old dell inspiron hanging around, when
-I have the time I'll have to give it a try.
-Do I have to wipe out the ext3 partition
-on it, or is that O.K.
 
-regards;
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Justin P. Mattock
+> On Thu, 1 Jan 2009, Rusty Russell wrote:
+> >
+> > OK, this is the bulk of the conversion to the new cpumask operators. 
+> > The x86-specific parts (the most aggressive large-NR_CPUS arch) are 
+> > going via Ingo's tree.
+> 
+> This gets lots of conflicts for me. Some of them look simple enough, but 
+> not all. io_apic.c gets lots of nasty conflicts, and it _looks_ like I 
+> should just pick the version of the file that I already have (because 
+> the only thing that comes in from that is yet another merge commit), but 
+> kernel/sched.c also gets conflicts in areas with FIXME's etc.
+> 
+> Rusty, Ingo, can you work this out? I pushed out my current tree.
 
+yes, we have those conflicts all resolved already in the second phase of 
+the tip/cpus4096 changes: Mike did all those difficult conflict 
+resolutions over the hollidays and i pulled it yesterday.
+ 
+The end result looks nice as a tree but it is not fully cooked yet: since 
+i pulled yesterday i found a couple of build and runtime test failures 
+with Rusty's latest cpumask tree:
+
+ - architectures that have no __fls (8 out of 21) fail to build:
+
+     arch/cris
+     arch/frv
+     arch/h8300
+     arch/m32r
+     arch/m68k
+     arch/mn10300
+     arch/xtensa
+
+ - there's a new circular locking lockdep splat in CPU hotplug tests when
+   the var-cpumask code is enabled. (needs a handful of default-off
+   options enabled in the .config)
+
+So i didnt want to push the second phase to you until those known bugs are 
+sorted out - i think we need some more time for that - a day or two at 
+most.
+
+Linus, would you like to pull that, despite the pending regressions? Can 
+send a pull request right away.
+
+Rusty, would it be fine with you if we did all the remaining bits via 
+tip/cpus4096? It's your tree and your bits and we wanted to send our 
+remaining bits after your tree went to Linus but the conflict resolutions 
+from Mike are valuable so i think we should reconsider the ordering.
+
+All the commits you sent to Linus in this pull request are already 
+included in tip/cpus4096, the conflicts that Linus hit are all non-trivial 
+and Mike resolved them correctly and it merges cleanly with Linus's latest 
+tree:
+
+  earth4:~/tip> git pull   
+  git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask.git master
+  From git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask
+   * branch            master     -> FETCH_HEAD
+  Already up-to-date.
+
+The pending diff is:
+
+  108 files changed, 1442 insertions(+), 979 deletions(-)
+
+which is pretty OK and straightforward.
+
+With that Rusty and Mike has done 99% of the cpumask conversions, so the 
+most difficult phase of the conversion should be dealt with in .29. Cool 
+stuff.
+
+	Ingo
