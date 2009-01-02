@@ -1,101 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbZABLV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZABLWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758122AbZABLV2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 06:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbZABLVS
+	id S1758256AbZABLWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 06:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756840AbZABLWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 06:21:18 -0500
-Received: from doppler.zen.co.uk ([212.23.3.27]:41442 "EHLO doppler.zen.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755803AbZABLVS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 06:21:18 -0500
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-From: Matt Keenan <tank.en.mate@gmail.com>
-To: Mark Miller <mark@mirell.org>
-Cc: Alejandro Mery <amery@opensde.org>, Christoph Hellwig <hch@infradead.org>,
-       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <865953A9-E699-45E1-A726-F3F4EE41A0C9@mirell.org>
-References: <200901020207.30359.rob@landley.net>
-	 <200901021026.37905.a.miskiewicz@gmail.com>
-	 <20090102094934.GB17841@infradead.org> <495DE995.1070002@opensde.org>
-	 <865953A9-E699-45E1-A726-F3F4EE41A0C9@mirell.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 02 Jan 2009 11:18:52 +0000
-Message-Id: <1230895132.1023.4.camel@bazbox>
+	Fri, 2 Jan 2009 06:22:03 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:48704 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755803AbZABLWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 06:22:00 -0500
+Date: Fri, 2 Jan 2009 12:21:48 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Sriram V <vshrirama@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Power Management with rootfs on SDMMC.
+Message-ID: <20090102122148.175cff4a@mjolnir.drzeus.cx>
+In-Reply-To: <20090102102152.GA26603@rhlx01.hs-esslingen.de>
+References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com>
+	<20090102102152.GA26603@rhlx01.hs-esslingen.de>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 8BIT
-X-Originating-Smarthost03-IP: [82.69.27.224]
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-635-1230895318-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-02 at 04:30 -0600, Mark Miller wrote:
-> On Jan 2, 2009, at 4:16 AM, Alejandro Mery wrote:
-> 
-> > Christoph Hellwig escribió:
-> >> On Fri, Jan 02, 2009 at 10:26:37AM +0100, Arkadiusz Miskiewicz wrote:
-> >>
-> >>> On Friday 02 of January 2009, Rob Landley wrote:
-> >>>
-> >>>> Before 2.6.25 (specifically git  
-> >>>> bdc807871d58285737d50dc6163d0feb72cb0dc2 )
-> >>>> building a Linux kernel never required perl to be installed on  
-> >>>> the build
-> >>>> system.  (Various development and debugging scripts were written  
-> >>>> in perl
-> >>>> and python and such, but they weren't involved in actually  
-> >>>> building a
-> >>>> kernel.) Building a kernel before 2.6.25 could be done with a  
-> >>>> minimal
-> >>>> system built from gcc, binutils, bash, make, busybox, uClibc, and  
-> >>>> the Linux
-> >>>> kernel, and nothing else.
-> >>>>
-> >>> And now bash is going to be required... while some distros don't  
-> >>> need/have
-> >>> bash. /bin/sh should be enough.
-> >>>
-> >>
-> >> *nod*  bash is in many ways a worse requirement than perl.  strict  
-> >> posix
-> >> /bin/sh + awk + sed would be nicest, but if that's too much work perl
-> >> seems reasonable.
-> 
-> >>
-> > well, bash is not worse as bash is trivial to cross-compile to run  
-> > on a
-> > constrained sandbox and perl is a nightmare, but I agree bash should  
-> > be
-> > avoided too.
-> >
-> > I think the $(( ... )) bash-ism can be replaced with a simple .c  
-> > helper toy.
-> >
-> > Thank Rob for reopening the topic.
-> >
-> > Alejandro Mery
-> 
-> And actually, one of the things that I just recalled, is that several  
-> of the Perl configure scripts in order to actually build itself, rely  
-> on Bourne shell calls. So the argument to require a strict POSIX+sed 
-> +awk implementation rather than Perl to build the kernel, fails, since  
-> you already require some variant of shell greater than strict POSIX / 
-> bin/sh to build Perl. So this is one less dependency.
-> 
-> Also, attempting to cross-compile Perl, is indeed a nightmare.
-> 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Having cross compiled Perl, on to a Unix with a brain dead third party
-TCP/IP no less, only 4 years after starting to use Unix / Linux I can
-attest that it is not that difficult to cross compile. Heck it even runs
-on those weird Crays that don't know which byte sex they are.
+--=_freyr.drzeus.cx-635-1230895318-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Matt
+On Fri, 2 Jan 2009 11:21:52 +0100
+Andreas Mohr <andi@lisas.de> wrote:
 
+>=20
+> There have been long threads on mobile phone and netbook related forums a=
+bout issues
+> with seemingly "any slightly advanced use whatsoever" of partitions on SD=
+ cards.
+>=20
 
+As you may notice, you only get egg on your face when you suspend, so
+it's really just the single problem. Granted, it's still a big one.
+
+> IMHO in this strongly increasingly netbook- and mobile phone-enabled worl=
+d it's
+> a bloody shame that:
+> - we have a hanging suspend/resume on an SD rootfs (often the only way of
+>   achieving serious Linux use on a mobile phone!)
+
+I take it this is without CONFIG_MMC_UNSAFE_RESUME.
+
+The fundamental problem is that we have no way of detecting if a card
+was removed during suspend, meaning we cannot guarantee that we'll
+return the hardware to the upper layers in the same state it was
+before the suspend.
+
+There are two improvements that can be made here:
+
+- Don't power down the card during suspend. This eats more power and
+  might not be supported on all systems, but it allows us to detect any
+  removal. This has been on my todo list for ages, but I haven't found
+  any time to implement it (or even test if I have any systems that
+  might support it).
+
+- Have upper layers handle removal detection. E.g. in the common case
+  of rootfs, the filesystem driver verifies that the storage is in the
+  same state when it resumes as it was when it suspended. This requires
+  a lot of work though as AFAIK there is no suspend functionality in
+  either the block layer or the VFS.
+
+> - we lose partition mounts due to full device re-probing instead of re-us=
+ing the
+>   same minor device ID after resume
+
+This is a block layer issue, and I don't know if it's fixable.
+
+Basically the problem is that someone is keeping the resources
+associated with the pre-suspend block device pinned in memory. When the
+post-suspend block device is created, it cannot reuse the device IDs
+since they are still in use.
+
+> - installing a swap partition on an SD card and then resuming can easily
+>   go as far as __even completely corrupting__ the entire SD card partitio=
+ning
+>   plus first partition (corrupts first 1kB of the card: both table and pa=
+rtition)
+>   People then immediately resort to a non-helpful "Don't Do This, Ever" r=
+eply
+>   (using swap partition on SD and suspend, see http://dev.laptop.org/tick=
+et/6532#comment:10),
+
+Hmm... I was under the impression that they got this fixed nice and
+proper. Perhaps comment 34 should be sent to lkml and/or added to the
+kernel bugzilla.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-635-1230895318-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkld+NMACgkQ7b8eESbyJLhdNACfW74t9TgKyp+ah5wTKKo7bh+G
+e2QAn1gMjMhXcRMY7LnOtIEvqwS1lYts
+=iiAp
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-635-1230895318-0001-2--
