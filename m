@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZABKl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbZABKmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757822AbZABKl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 05:41:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbZABKlh
+	id S1758002AbZABKmZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:42:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZABKli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 05:41:37 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:47480 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbZABKlf (ORCPT
+	Fri, 2 Jan 2009 05:41:38 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:34087 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752007AbZABKlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 05:41:35 -0500
+	Fri, 2 Jan 2009 05:41:36 -0500
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] m68k: amiga core - kill warn_unused_result warnings
-Date: Fri,  2 Jan 2009 11:41:14 +0100
-Message-Id: <1230892892-25751-2-git-send-email-geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Subject: [PATCH] m68k: Atari SCC support for ST
+Date: Fri,  2 Jan 2009 11:41:13 +0100
+Message-Id: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
-References: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-warning: ignoring return value of 'request_irq', declared with attribute
-warn_unused_result
+Enable support for Atari ST, and fix 2 obvious typos in the ST support code.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
 ---
- arch/m68k/amiga/amiints.c |   12 ++++++++----
- arch/m68k/amiga/cia.c     |    4 +++-
- arch/m68k/amiga/config.c  |    3 ++-
- 3 files changed, 13 insertions(+), 6 deletions(-)
+ drivers/char/atari_scc.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/m68k/amiga/amiints.c b/arch/m68k/amiga/amiints.c
-index 907a553..c5b5212 100644
---- a/arch/m68k/amiga/amiints.c
-+++ b/arch/m68k/amiga/amiints.c
-@@ -72,10 +72,14 @@ static struct irq_controller amiga_irq_controller = {
+diff --git a/drivers/char/atari_scc.c b/drivers/char/atari_scc.c
+index 800193c..e407aa8 100644
+--- a/drivers/char/atari_scc.c
++++ b/drivers/char/atari_scc.c
+@@ -51,6 +51,7 @@
  
- void __init amiga_init_IRQ(void)
- {
--	request_irq(IRQ_AUTO_1, ami_int1, 0, "int1", NULL);
--	request_irq(IRQ_AUTO_3, ami_int3, 0, "int3", NULL);
--	request_irq(IRQ_AUTO_4, ami_int4, 0, "int4", NULL);
--	request_irq(IRQ_AUTO_5, ami_int5, 0, "int5", NULL);
-+	if (request_irq(IRQ_AUTO_1, ami_int1, 0, "int1", NULL))
-+		pr_err("Couldn't register int%d\n", 1);
-+	if (request_irq(IRQ_AUTO_3, ami_int3, 0, "int3", NULL))
-+		pr_err("Couldn't register int%d\n", 3);
-+	if (request_irq(IRQ_AUTO_4, ami_int4, 0, "int4", NULL))
-+		pr_err("Couldn't register int%d\n", 4);
-+	if (request_irq(IRQ_AUTO_5, ami_int5, 0, "int5", NULL))
-+		pr_err("Couldn't register int%d\n", 5);
+ #define CONFIG_TT_SCC     1
+ #define CONFIG_FALCON_SCC 1
++#define CONFIG_ST_SCC     1
  
- 	m68k_setup_irq_controller(&amiga_irq_controller, IRQ_USER, AMI_STD_IRQS);
- 
-diff --git a/arch/m68k/amiga/cia.c b/arch/m68k/amiga/cia.c
-index 343fab4..ecd0f7c 100644
---- a/arch/m68k/amiga/cia.c
-+++ b/arch/m68k/amiga/cia.c
-@@ -176,5 +176,7 @@ void __init cia_init_IRQ(struct ciabase *base)
- 	/* override auto int and install CIA handler */
- 	m68k_setup_irq_controller(&auto_irq_controller, base->handler_irq, 1);
- 	m68k_irq_startup(base->handler_irq);
--	request_irq(base->handler_irq, cia_handler, IRQF_SHARED, base->name, base);
-+	if (request_irq(base->handler_irq, cia_handler, IRQF_SHARED,
-+			base->name, base))
-+		pr_err("Couldn't register %s interrupt\n", base->name);
- }
-diff --git a/arch/m68k/amiga/config.c b/arch/m68k/amiga/config.c
-index 78466f3..71232cd 100644
---- a/arch/m68k/amiga/config.c
-+++ b/arch/m68k/amiga/config.c
-@@ -499,7 +499,8 @@ static void __init amiga_sched_init(irq_handler_t timer_routine)
- 	 * Please don't change this to use ciaa, as it interferes with the
- 	 * SCSI code. We'll have to take a look at this later
- 	 */
--	request_irq(IRQ_AMIGA_CIAB_TA, timer_routine, 0, "timer", NULL);
-+	if (request_irq(IRQ_AMIGA_CIAB_TA, timer_routine, 0, "timer", NULL))
-+		pr_err("Couldn't register timer interrupt\n");
- 	/* start timer */
- 	ciab.cra |= 0x11;
- }
+ #define CHANNEL_A	0
+ #define CHANNEL_B	1
+@@ -475,7 +476,7 @@ static int atari_st_scc_init(void)
+ 	request_irq(IRQ_SCCA_STAT, scc_stat_int, IRQ_TYPE_PRIO,
+ 		    "SCC-A status", port);
+ 	request_irq(IRQ_SCCA_RX, scc_rx_int, IRQ_TYPE_PRIO, "SCC-A RX", port);
+-	request_irq(SCCA_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
++	request_irq(IRQ_SCCA_SPCOND, scc_spcond_int, IRQ_TYPE_PRIO,
+ 		    "SCC-A special cond", port);
+ 	{
+ 		SCC_ACCESS_INIT(port);
+@@ -493,7 +494,7 @@ static int atari_st_scc_init(void)
+ 		/* disable interrupts for this channel */
+ 		SCCwrite(INT_AND_DMA_REG, 0);
+ 		/* Set the interrupt vector */
+-		SCCwrite(INT_VECTOR_REG, BVME_IRQ_SCC_BASE);
++		SCCwrite(INT_VECTOR_REG, 0x60);
+ 		/* Interrupt parameters: vector includes status, status low */
+ 		SCCwrite(MASTER_INT_CTRL, MIC_VEC_INCL_STAT);
+ 		SCCmod(MASTER_INT_CTRL, 0xff, MIC_MASTER_INT_ENAB);
 -- 
 1.5.6.5
 
