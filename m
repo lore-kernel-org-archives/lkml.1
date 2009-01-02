@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbZABPtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbZABPuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758516AbZABPtr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 10:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757115AbZABPtg
+	id S1758592AbZABPuF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 10:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbZABPti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 10:49:36 -0500
-Received: from rtr.ca ([76.10.145.34]:36872 "EHLO mail.rtr.ca"
+	Fri, 2 Jan 2009 10:49:38 -0500
+Received: from mail.lang.hm ([64.81.33.126]:56771 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756611AbZABPtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 10:49:35 -0500
-Message-ID: <495E37E9.80903@rtr.ca>
-Date: Fri, 02 Jan 2009 10:51:05 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	id S1757059AbZABPtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 10:49:36 -0500
+Date: Fri, 2 Jan 2009 08:51:28 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Valdis.Kletnieks@vt.edu
+cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Bryan Donlan <bdonlan@gmail.com>,
+       Ingo Brueckl <ib@wupperonline.de>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86 (Linux Tiny): configure out support for some processors
+In-Reply-To: <11444.1230910752@turing-police.cc.vt.edu>
+Message-ID: <alpine.DEB.1.10.0901020849180.20509@asgard.lang.hm>
+References: <495d2974@wupperonline.de> <3e8340490901012119i40971452q9f938702e58d7532@mail.gmail.com> <3f9a31f40901012159l255b95a8he41a341f36ebc54e@mail.gmail.com> <20090102093801.GD1975@elte.hu>            <3f9a31f40901020710h508bbfbch3d7ccd6f4898ea03@mail.gmail.com>
+ <11444.1230910752@turing-police.cc.vt.edu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, gregkh@suse.de, linux-usb@vger.kernel.org
-Subject: Re: Enable CONFIG_USB_SUSPEND by default or some mobile HD can't
- be unplugged safely
-References: <20090101160343.GA4278@thyme.bj.intel.com> <20090102095643.GB17103@x61> <495E37BC.1040101@rtr.ca>
-In-Reply-To: <495E37BC.1040101@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Tino Keitel wrote:
->> On Fri, Jan 02, 2009 at 00:03:43 +0800, Yan Li wrote:
->>> Hello List,
->>>
->>> By default CONFIG_USB_SUSPEND is not enabled and today I got bite by
->>> this when I got a new WDC My Book hard drive. I have no way to unplug
->>> it safely, according to it's manual, with a kernel that doesn't have
->>> CONFIG_USB_SUSPEND=y.
->>>
->>> On it's manual read "you should unplug and remove the device only when
->>> the light is off." On Linux unmounting it won't turn it's light off
->>> and I can feel it's motor is still running.  The only way to unplug it
->>> properly on a Linux system, as to my knowledge, is to echo `suspend'
->>> to `/sys/bus/usb/devices/$DEV/power/level'. And one has to have
->>> CONFIG_USB_SUSPEND=y to do this.
->>
->> With a WD My Passport drive (2,5"), I need to use sg_start --stop --pc=3
->> to stop the disk before unplugging it. Maybe this works with your
->> drive, too.  This is also required by some Firewire hard disks.  Maybe
->> the eject command should be extended to use this method, as it is used
->> also by HAL to eject hotplug devices.
-> ..
-> 
-> Incidently, the WD Passport drives support SG_IO,
-> so things like hdparm and smartctl can work with them as well.
-..
+On Fri, 2 Jan 2009, Valdis.Kletnieks@vt.edu wrote:
 
-s/SG_IO/SG_IO+SAT/
+> On Fri, 02 Jan 2009 20:40:16 +0530, Jaswinder Singh Rajput said:
+>
+>> If I know what is my CPU there is no point for supporting all related
+>> CPUs in my kernel.
+>
+> EMBEDDED is for a large assortment of things, all of which are of the form:
+>
+> General users won't want to change Y, but if I know I don't need Y, there is
+> no point in supporting Y in the kernel.
+>
+> Y might be "this kernel doesn't need sysctl"
+> Y might be "support for hot-plug"
+> Y might be "printk"
+> Y might be "support generic CPUs"
+>
+> See the pattern?
+>
+> Yes, we probably could have come up with a better name than EMBEDDED for
+> that list of optionals.
+>
+> CONFIG_TRAINED_TECHNICIANS_ONLY_NO_USER_SERVICABLE_PARTS_INSIDE maybe?
+
+having things outside of the embedded menu depend on embedded makes it 
+hard for people to figure out what they need to do to disable specific 
+things.
+
+namespaces are also required if ! embedded, but namespaces are not (yet at 
+least) something that is commonly used.
+
+if you follow the logic you are providing to it's logical conclusion you 
+may as well put all kernel config options under "I really know what I'm 
+doing" top level lockout
+
+David Lang
