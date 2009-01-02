@@ -1,72 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbZABSX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbZABSYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759217AbZABSX0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 13:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757682AbZABSXR
+	id S1759384AbZABSYp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 13:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbZABSYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 13:23:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47692 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757500AbZABSXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 13:23:16 -0500
-Date: Fri, 2 Jan 2009 19:22:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       rdreier@cisco.com, ian.campbell@citrix.com,
-       jeremy.fitzhardinge@citrix.com, deller@gmx.de, rusty@rustcorp.com.au,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@mcmartin.ca, randolph@tausq.org, dave@hiauly1.hia.nrc.ca
-Subject: Re: [PATCH] kbuild: Disallow GCC 4.1.0 / 4.1.1
-Message-ID: <20090102182248.GC10072@elte.hu>
-References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain> <20081231105425.9ccac21d.akpm@linux-foundation.org> <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain> <20081231.141408.60544902.davem@davemloft.net> <20090102115547.GB3027@elte.hu> <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain> <alpine.LFD.2.00.0901020933370.5086@localhost.localdomain> <20090102175737.GA5818@uranus.ravnborg.org>
+	Fri, 2 Jan 2009 13:24:36 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:58598 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751741AbZABSYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 13:24:36 -0500
+Message-ID: <495E5BDF.6030204@sgi.com>
+Date: Fri, 02 Jan 2009 10:24:31 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090102175737.GA5818@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Gautham R Shenoy <ego@in.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Sergio Luis <sergio@larces.uece.br>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Yinghai Lu <Yinghai.Lu@Sun.COM>, LKML <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: git-pull request for tip/cpus4096
+References: <495E4837.8090600@sgi.com> <20090102180942.GB10072@elte.hu>
+In-Reply-To: <20090102180942.GB10072@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> > And it all looks more logical too, imho.
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
-> Bugger....
-> Now I cannot do cross compile for: alpha, arm, m68k and sparc.
+>> Hi Ingo,
+>>
+>> Here's the latest cpumask updates which includes the latest merge from 
+>> Rusty's cpumask tree.
+> 
+> Pulled into tip/cpus4096, thanks Mike.
+> 
+> Rusty already sent the pull request to Linus for his latest cpumask bits - 
+> is it fine if that goes upstream first and we do the second phase of the 
+> cpus4096 tree after that point?
 
-hm, i just did a successful cross-build from x86 to alpha:
+As in the bits included in this pull request, or as in the last set of cpumask
+changes yet to be pushed to you?  (Either is fine with me, just let me know
+what you want me to do.)
 
-  KSYM    .tmp_kallsyms2.S
-  AS      .tmp_kallsyms2.o
-  LD      vmlinux
-  SYSMAP  System.map
-  SYSMAP  .tmp_System.map
+> 
+> Also, while testing tip/master i noticed that a couple of architectures 
+> wouldnt build due to cpumask changes:
+> 
+>    testing 21 architectures.
+>  
+>    testing       cris:  -git:  pass (  28),  -tip:  FAIL (  25)
+>    testing       m32r:  -git:  pass (  21),  -tip:  FAIL (  31)
+>  
+> both build failures go like this:
+>  
+>   /home/mingo/tip/lib/find_last_bit.c: In function 'find_last_bit':
+>   /home/mingo/tip/lib/find_last_bit.c:38: error: implicit declaration of function '__fls'
+>   make[2]: *** [lib/find_last_bit.o] Error 1
+>   make[2]: *** Waiting for unfinished jobs....
+>   make[1]: *** [lib] Error 2
+>  
+> these architectures have no __fls() implementation ...
+>  
+> trouble should be expected on ~8 architectures:
 
-  phoenix:~/linux/linux> head -6 /dev/shm/tip/build/.config 
-  #
-  # Automatically generated make config: don't edit
-  # Linux kernel version: 2.6.28
-  # Fri Jan  2 19:28:14 2009
-  #
-  CONFIG_ALPHA=y
+I'll leave this to Rusty, as it's his baby.  (Is there an echo in here? ;-)
 
-with these commits present:
+Thanks,
+Mike
 
-  f9d1425: Disallow gcc versions 4.1.{0,1}
-  f153b82: Sanitize gcc version header includes
+>  
+>   for N in arch/*; do [ -d $N ] && ( printf "%-20s: " $N; cd $N; dgrep __fls |
+>     wc -l; ); done | sort -t: -n -k +2
+>  
+>  arch/cris           : 0
+>  arch/frv            : 0
+>  arch/h8300          : 0
+>  arch/m32r           : 0
+>  arch/m68k           : 0
+>  arch/mn10300        : 0
+>  arch/um             : 0
+>  arch/xtensa         : 0
+>  arch/arm            : 1
+>  arch/avr32          : 1
+>  arch/blackfin       : 1
+>  arch/ia64           : 1
+>  arch/m68knommu      : 1
+>  arch/parisc         : 1
+>  arch/powerpc        : 1
+>  arch/s390           : 1
+>  arch/sh             : 1
+>  arch/x86            : 1
+>  arch/alpha          : 2
+>  arch/sparc          : 2
+>  arch/mips           : 5
+>  
+>  	Ingo
 
-what type of cross-build breakage do they cause?
-
-	Ingo
