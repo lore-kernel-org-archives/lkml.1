@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbZABRrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZABRuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbZABRrS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 12:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbZABRrG
+	id S1758781AbZABRuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 12:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757435AbZABRuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 12:47:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43986 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754658AbZABRrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 12:47:04 -0500
-Date: Fri, 2 Jan 2009 18:46:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       rdreier@cisco.com, ian.campbell@citrix.com,
-       jeremy.fitzhardinge@citrix.com, deller@gmx.de, rusty@rustcorp.com.au,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@mcmartin.ca, randolph@tausq.org, sam@ravnborg.org,
-       dave@hiauly1.hia.nrc.ca
-Subject: Re: [PATCH] kbuild: Disallow GCC 4.1.0 / 4.1.1
-Message-ID: <20090102174641.GA27287@elte.hu>
-References: <alpine.LFD.2.00.0812310942110.5086@localhost.localdomain> <20081231105425.9ccac21d.akpm@linux-foundation.org> <alpine.LFD.2.00.0812311318420.5086@localhost.localdomain> <20081231.141408.60544902.davem@davemloft.net> <20090102115547.GB3027@elte.hu> <alpine.LFD.2.00.0901020844070.5086@localhost.localdomain> <alpine.LFD.2.00.0901020933370.5086@localhost.localdomain>
+	Fri, 2 Jan 2009 12:50:00 -0500
+Received: from stoneboat.aleph1.co.uk ([80.68.88.63]:3020 "EHLO
+	stoneboat.aleph1.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757118AbZABRt7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 12:49:59 -0500
+X-Greylist: delayed 1424 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Jan 2009 12:49:58 EST
+Date: Fri, 2 Jan 2009 17:25:41 +0000
+From: Wookey <wookey@wookware.org>
+To: Embedded Linux mailing list <linux-embedded@vger.kernel.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Rob Landley <rob@landley.net>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+Message-ID: <20090102172540.GE8858@knossos.aleph1.co.uk>
+Mail-Followup-To: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+	Paul Mundt <lethal@linux-sh.org>, Rob Landley <rob@landley.net>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <20090102095023.GA28078@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901020933370.5086@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090102095023.GA28078@linux-sh.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Aleph_One-MailScanner: Found to be clean
+X-Aleph_One-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-2.6, required 6, autolearn=not spam, BAYES_00 -2.60,
+	NO_RELAYS -0.00)
+X-Aleph_One-MailScanner-From: wookey@wookware.org
+X-SA-Exim-Connect-IP: 213.165.225.113
+X-SA-Exim-Mail-From: wookey@wookware.org
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on stoneboat.aleph1.co.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2009-01-02 18:50 +0900, Paul Mundt wrote:
+> Your main reasons against inclusion of perl seem to be that there is no
+> realistic expectation for target systems that will be self-hosting will
+> have perl included, or the inherent complexity in maintaining a coherent
+> cross compiling environment. Both of these things are issues with your
+> own environment, and in no way are these representative of the embedded
+> development community at large.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+It may well be true that most embedded people cross-build kernels and
+use native perl on a fat build box, but there are plenty of situations
+where being able to build kernels without perl is useful. Given the
+simplicitly of these patches I can't see any reason not to put them
+in, and appreciate Rob's work on this.
 
-> 
-> 
-> On Fri, 2 Jan 2009, Linus Torvalds wrote:
-> > 
-> > I think this is wrong.
-> > 
-> > Just move the check into <linux/compiler-gcc4.h>
-> 
-> In fact, looking at that whole mess, I redid it all. It was disgusting 
-> how conditionals in gcc4.h needed to double-check that __GNUC__ really 
-> was 4 (rather than something bigger), which largely negated the whole 
-> nice clean compiler version separation.
-> 
-> I pushed out my preferred version, which fixes up the whole thing. The 
-> gcc4 header file now only gets included for __GNUC__ == 4, and when we 
-> ever see a __GNUC__ of 5, it will automatically DTRT and try to include 
-> <linux/compiler-gcc5.h> instead of #4.
-> 
-> And then the check in gcc4.h for 4.1.0 and 4.1.1 is much simplified.  
-> The two patches I pushed out add functionality, but don't actually add 
-> any new lines (the first simplification patch removes more lines than it 
-> adds, and the second one that adds the __weak bug test adds as mahy 
-> lines as the cleanup removed).
-> 
-> And it all looks more logical too, imho.
+And if cross-building perl is really easy, as some in this thread
+claim, can someone fix the Debian packages to do it, because that
+would be really useful (it appears to be of similar complexity to
+cross-building gcc, requiring a 2-stage self-referential build). 
 
-yeah, agreed, much cleaner.
-
-The gcc3 check for gcc 3.0 and 3.1 can be pushed into gcc3 as well - not 
-sure whether you fixed that. (i fixed it in the patch i just sent - but i 
-didnt notice the gcc5 mess in gcc4.h that you fixed)
-
-	Ingo
+Wookey
+-- 
+Principal hats:  Balloonz - Toby Churchill - Aleph One - Debian
+http://wookware.org/
