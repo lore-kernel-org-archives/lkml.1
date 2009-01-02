@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbZABUET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932345AbZABUG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932274AbZABUET (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 15:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932183AbZABUDw
+	id S932345AbZABUG6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 15:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZABUGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 15:03:52 -0500
-Received: from main.gmane.org ([80.91.229.2]:45867 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932180AbZABUDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 15:03:50 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: compile time warnings
-Date: Fri, 02 Jan 2009 14:03:36 -0600
-Message-ID: <495E7318.4010904@shaw.ca>
-References: <495d3100@wupperonline.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-In-Reply-To: <495d3100@wupperonline.de>
+	Fri, 2 Jan 2009 15:06:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35585 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751179AbZABUGs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 15:06:48 -0500
+Date: Fri, 2 Jan 2009 12:06:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PULL] cpumask tree
+In-Reply-To: <200901011149.18401.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain>
+References: <200901011149.18401.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Brueckl wrote:
-> Maybe somebody noticed already, with kernel 2.6.28 and gcc 4.3.2 there are a
-> few compile time warnings:
->   drivers/acpi/tables/tbfadt.c: In function 'acpi_tb_create_local_fadt':
->   /usr/src/linux/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
 
-I noticed this as well. This one looks like the compiler's getting a bit 
-confused.
 
-	ACPI_MEMCPY(&acpi_gbl_FADT, table,
-		    ACPI_MIN(length, sizeof(struct acpi_table_fadt)));
+On Thu, 1 Jan 2009, Rusty Russell wrote:
+>
+> OK, this is the bulk of the conversion to the new cpumask operators.
+> The x86-specific parts (the most aggressive large-NR_CPUS arch) are going
+> via Ingo's tree.
 
-and somehow that falls into __constant_memcpy because somehow 
-__builtin_constant_p() on the length parameter returns true. Huh? It's a 
-non-static function where length is passed in, and ACPI_MIN is a simple 
-(((a)<(b))?(a):(b)) expression. How can it think that's a compile time 
-constant I don't know. Maybe it's not and just generating warnings from 
-the code path it's seeing but not using?
+This gets lots of conflicts for me. Some of them look simple enough, but 
+not all. io_apic.c gets lots of nasty conflicts, and it _looks_ like I 
+should just pick the version of the file that I already have (because the 
+only thing that comes in from that is yet another merge commit), but 
+kernel/sched.c also gets conflicts in areas with FIXME's etc.
 
-The cause of the complaint might be the fact that the memcpy may appear 
-to read past the end of the "table" structure which points to struct 
-acpi_table_header. Presumably that memory is bigger than the actual 
-struct acpi_table_header though. The text of the warning itself is 
-bizarre though, as there is no array style access happening, and I don't 
-see how the compiler can know what the actual bounds of the "array" are.
+Rusty, Ingo, can you work this out? I pushed out my current tree.
 
-> 
->   drivers/usb/core/hcd.c: In function 'usb_hcd_poll_rh_status':
->   /usr/src/linux/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
-
-This one makes a little more sense. This is presumably:
-
-			memcpy(urb->transfer_buffer, buffer, length);
-
-where transfer_buffer is a void*, buffer is char[4] and length comes 
-from hcd->driver->hub_status_data(hcd, buffer) which I assume fills in 
-the buffer. It's true the memcpy could read past the end of the buffer 
-array, but only if the hub_status_data could fill in and return a length 
-greater than 4, which it hopefully can't..
-
+		Linus
