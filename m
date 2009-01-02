@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbZABHv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZABHxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757208AbZABHv0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 02:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZABHvQ
+	id S1757245AbZABHxR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 02:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZABHxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 02:51:16 -0500
-Received: from rtr.ca ([76.10.145.34]:48309 "EHLO mail.rtr.ca"
+	Fri, 2 Jan 2009 02:53:01 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:38630 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751841AbZABHvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 02:51:15 -0500
-Message-ID: <495DC771.9030103@rtr.ca>
-Date: Fri, 02 Jan 2009 02:51:13 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: libusb broken on 2.6.28 x86_64 ?
-References: <495DB4AC.50602@rtr.ca> <495DBBC1.7040202@rtr.ca> <20090102072436.GA3444@suse.de>
-In-Reply-To: <20090102072436.GA3444@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751624AbZABHxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 02:53:00 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
+Subject: [PATCH] asm-sh/posix_types_{32,64}.h: drop __GLIBC__/__USE_ALL usage
+Date: Fri,  2 Jan 2009 02:52:57 -0500
+Message-Id: <1230882777-9950-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Fri, Jan 02, 2009 at 02:01:21AM -0500, Mark Lord wrote:
->> Mark Lord wrote:
-..
->> Mmm.. broken only for 64-bit userspace, it seems.
->>
->> I've recompiled the same app against 32-bit libs,
->> and it works just fine on that 64-bit system,
->> as well as on 32-bit systems.
->>
->> But not when compiled for pure 64-bit operation on a 64-bit system.
-..
-> Which version of libusb, a new one was just released a few weeks ago
-> that fixes a lot of problems reported in the older libusb versions, and
-> made things much faster to boot.  You might want to check it out.
-..
+Bring sh in line with all the other ports.  Not sure how sh missed this
+change as all the other arches were being updated ...
 
-This is with libusb-0.1-4, which has been working fine with all prior kernels,
-including the 2.6.27.xx series.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+CC: Paul Mundt <lethal@linux-sh.org>
+CC: linux-sh@vger.kernel.org
+---
+ arch/sh/include/asm/posix_types_32.h |    8 ++------
+ arch/sh/include/asm/posix_types_64.h |    8 ++------
+ 2 files changed, 4 insertions(+), 12 deletions(-)
 
-Userspace stuff like this is not supposed to be broken from kernel to kernel.
+diff --git a/arch/sh/include/asm/posix_types_32.h b/arch/sh/include/asm/posix_types_32.h
+index 0a3d2f5..2172732 100644
+--- a/arch/sh/include/asm/posix_types_32.h
++++ b/arch/sh/include/asm/posix_types_32.h
+@@ -39,14 +39,10 @@ typedef long long	__kernel_loff_t;
+ #endif
+ 
+ typedef struct {
+-#if defined(__KERNEL__) || defined(__USE_ALL)
+ 	int	val[2];
+-#else /* !defined(__KERNEL__) && !defined(__USE_ALL) */
+-	int	__val[2];
+-#endif /* !defined(__KERNEL__) && !defined(__USE_ALL) */
+ } __kernel_fsid_t;
+ 
+-#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
++#if defined(__KERNEL__)
+ 
+ #undef	__FD_SET
+ static __inline__ void __FD_SET(unsigned long __fd, __kernel_fd_set *__fdsetp)
+@@ -117,6 +113,6 @@ static __inline__ void __FD_ZERO(__kernel_fd_set *__p)
+ 	}
+ }
+ 
+-#endif /* defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2) */
++#endif /* defined(__KERNEL__) */
+ 
+ #endif /* __ASM_SH_POSIX_TYPES_H */
+diff --git a/arch/sh/include/asm/posix_types_64.h b/arch/sh/include/asm/posix_types_64.h
+index 0620317..f83e9bd 100644
+--- a/arch/sh/include/asm/posix_types_64.h
++++ b/arch/sh/include/asm/posix_types_64.h
+@@ -48,14 +48,10 @@ typedef long long	__kernel_loff_t;
+ #endif
+ 
+ typedef struct {
+-#if defined(__KERNEL__) || defined(__USE_ALL)
+ 	int	val[2];
+-#else /* !defined(__KERNEL__) && !defined(__USE_ALL) */
+-	int	__val[2];
+-#endif /* !defined(__KERNEL__) && !defined(__USE_ALL) */
+ } __kernel_fsid_t;
+ 
+-#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
++#if defined(__KERNEL__)
+ 
+ #undef	__FD_SET
+ static __inline__ void __FD_SET(unsigned long __fd, __kernel_fd_set *__fdsetp)
+@@ -126,6 +122,6 @@ static __inline__ void __FD_ZERO(__kernel_fd_set *__p)
+ 	}
+ }
+ 
+-#endif /* defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2) */
++#endif /* defined(__KERNEL__) */
+ 
+ #endif /* __ASM_SH64_POSIX_TYPES_H */
+-- 
+1.6.0.6
 
-Cheers
