@@ -1,131 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbZABVfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932281AbZABVoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759624AbZABVfr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 16:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758517AbZABVfg
+	id S932281AbZABVoa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 16:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbZABVoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 16:35:36 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:65169 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758272AbZABVfe (ORCPT
+	Fri, 2 Jan 2009 16:44:19 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:45713 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757482AbZABVoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 16:35:34 -0500
-Subject: Re: Btrfs for mainline
-From: Chris Mason <chris.mason@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>
-In-Reply-To: <20090102210104.GC496@one.firstfloor.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>
-	 <1230765549.7538.8.camel@think.oraclecorp.com>
-	 <87r63ljzox.fsf@basil.nowhere.org>
-	 <1230924749.7538.35.camel@think.oraclecorp.com>
-	 <20090102210104.GC496@one.firstfloor.org>
-Content-Type: text/plain
-Date: Fri, 02 Jan 2009 16:35:12 -0500
-Message-Id: <1230932112.7538.82.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.495E8896.00F7:SCFSTAT928724,ss=1,fgs=0
+	Fri, 2 Jan 2009 16:44:18 -0500
+Date: Fri, 02 Jan 2009 16:44:02 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: [incremental-PATCH-for-Sam's-Review] ACPI: use ccflags-y instead of
+ EXTRA_CFLAGS
+In-reply-to: <20081231153441.GA3475@uranus.ravnborg.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0901021636050.3590@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <1230720725-9376-1-git-send-email-lenb@kernel.org>
+ <526647e1bb69fd3248558fce365bb1fbfb226ccd.1230719795.git.len.brown@intel.com>
+ <20081231133901.GB2388@uranus.ravnborg.org> <87bpusv31n.fsf@basil.nowhere.org>
+ <20081231153441.GA3475@uranus.ravnborg.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-02 at 22:01 +0100, Andi Kleen wrote:
-> On Fri, Jan 02, 2009 at 02:32:29PM -0500, Chris Mason wrote:
-> > > If combination spinlocks/mutexes are really a win they should be 
-> > > in the generic mutex framework. And I'm still dubious on the hardcoded 
-> > > numbers.
-> > 
-> > Sure, I'm happy to use a generic framework there (or help create one).
-> > They are definitely a win for btrfs, and show up in most benchmarks.
-> 
-> If they are such a big win then likely they will help other users
-> too and should be generic in some form.
-> 
+From: Len Brown <len.brown@intel.com>
 
-I don't disagree.  It's about 6 lines of code though, and just hasn't
-been at the top of my list.  I'm sure the generic version will be
-faster, as it could add checks to see if the holder of the lock was
-actually running.
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/acpi/Makefile       |   11 ++---------
+ kernel/acpi/Makefile        |   11 ++---------
+ kernel/acpi/acpica/Makefile |   12 ++----------
+ 3 files changed, 6 insertions(+), 28 deletions(-)
 
-> > 
-> > > - compat.h needs to go
-> > 
-> > Projects that are out of mainline have a difficult task of making sure
-> > development can continue until they are in mainline and being clean
-> > enough to merge.  I'd rather get rid of the small amount of compat code
-> > that I have left after btrfs is in (compat.h is 32 lines).  
-> 
-> It's fine for an out of tree variant, but the in tree version
-> shouldn't have compat.h. For out of tree you just apply a patch
-> that adds the includes. e.g.compat-wireless and lots of other
-> projects do it this way. 
-> 
-
-It helps debugging that my standalone tree is generated from and exactly
-the same as fs/btrfs in the full kernel tree.  I'll switch to a pull and
-merge system for the standalone tree.
-
-> > 
-> > Yes, I tried to mark those as I did them (a very small number of
-> > functions).  In general they were copied to avoid adding exports, and
-> > that is easily fixed.
-> > 
-> > > - there should be manpages for all the ioctls and other interfaces.
-> > > - ioctl.c was not explicitely root protected. security issues?
-> > 
-> > Christoph added a CAP_SYS_ADMIN check to the trans start ioctl, but I do
-> > need to add one to the device add/remove/balance code as well.
-> 
-> Ok. Didn't see that.
-> 
-> It still needs to be carefully audited for security holes 
-> even with root checks.
-
-Yes, the most important one is the device scan ioctl (also missing the
-root check, will fix).
-
-> 
-> Another thing is that once auto mounting is enabled each usb stick
-> with btrfs on it could be a root hole if you have buffer overflows
-> somewhere triggerable by disk data. I guess that would need some
-> checking too.
-> 
-> > The subvol/snapshot creation is meant to be user callable (controlled by
-> > something similar to quotas later on).
-> 
-> But right now that's not there so it should be root only.
-> 
-
-I'll switch to checking against directory permissions for now.
-subvol/snapshot creation are basically mkdir anyway, so this fits well.
-
-> > 
-> > >  Also there used to be a lot of BUG_ON()s on
-> > > memory allocation failure even.
-> > > - In general BUG_ONs need review I think. Lots of externally triggerable
-> > > ones.
-> > > - various checkpath.pl level problems I think (e.g. printk levels) 
-> > > - the printks should all include which file system they refer to
-> > > 
-> > > In general I think the whole thing needs more review.
-> > 
-> > I don't disagree, please do keep in mind that I'm not suggesting anyone
-> > use this in production yet.
-> 
-> When it's in mainline I suspect people will start using it for that.
-
-I think the larger question here is where we want development to happen.
-I'm definitely not pretending that btrfs is perfect, but I strongly
-believe that it will be a better filesystem if the development moves to
-mainline where it will attract more eyeballs and more testers.
-
--chris
-
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index 5f4096d..a4c0582 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -2,15 +2,8 @@
+ # Makefile for the Linux ACPI Drivers
+ #
+ 
+-export ACPI_CFLAGS
+-
+-ACPI_CFLAGS	:= -Os
+-
+-ifdef CONFIG_ACPI_DEBUG
+-  ACPI_CFLAGS	+= -DACPI_DEBUG_OUTPUT
+-endif
+-
+-EXTRA_CFLAGS	+= $(ACPI_CFLAGS)
++ccflags-y			:= -Os
++ccflags-$(CONFIG_ACPI_DEBUG)	+= -DACPI_DEBUG_OUTPUT
+ 
+ #
+ # ACPI Device Drivers
+diff --git a/kernel/acpi/Makefile b/kernel/acpi/Makefile
+index 92a1f94..fd0927d 100644
+--- a/kernel/acpi/Makefile
++++ b/kernel/acpi/Makefile
+@@ -2,15 +2,8 @@
+ # Makefile for the Linux/ACPI
+ #
+ 
+-export ACPI_CFLAGS
+-
+-ACPI_CFLAGS	:= -Os
+-
+-ifdef CONFIG_ACPI_DEBUG
+-  ACPI_CFLAGS	+= -DACPI_DEBUG_OUTPUT
+-endif
+-
+-EXTRA_CFLAGS	+= $(ACPI_CFLAGS)
++ccflags-y			:= -Os
++ccflags-$(CONFIG_ACPI_DEBUG)	+= -DACPI_DEBUG_OUTPUT
+ 
+ obj-y				:= tables.o
+ obj-$(CONFIG_X86)		+= x86/
+diff --git a/kernel/acpi/acpica/Makefile b/kernel/acpi/acpica/Makefile
+index 8d4e018..bad8ad8 100644
+--- a/kernel/acpi/acpica/Makefile
++++ b/kernel/acpi/acpica/Makefile
+@@ -2,16 +2,8 @@
+ # Makefile for ACPICA Core interpreter
+ #
+ 
+-export ACPI_CFLAGS
+-
+-ACPI_CFLAGS	:= -Os
+-
+-ifdef CONFIG_ACPI_DEBUG
+-  ACPI_CFLAGS	+= -DACPI_DEBUG_OUTPUT
+-endif
+-
+-EXTRA_CFLAGS	+= $(ACPI_CFLAGS)
+-
++ccflags-y			:= -Os
++ccflags-$(CONFIG_ACPI_DEBUG)	+= -DACPI_DEBUG_OUTPUT
+ 
+ obj-y := dsfield.o   dsmthdat.o  dsopcode.o  dswexec.o  dswscope.o \
+ 	 dsmethod.o  dsobject.o  dsutils.o   dswload.o  dswstate.o \
+-- 
+1.6.1.35.g3827
 
