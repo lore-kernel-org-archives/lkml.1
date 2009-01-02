@@ -1,91 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbZABK32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbZABKa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757637AbZABK32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 05:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbZABK3U
+	id S1757848AbZABKa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZABKaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 05:29:20 -0500
-Received: from rn-out-0910.google.com ([64.233.170.190]:59013 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756048AbZABK3T (ORCPT
+	Fri, 2 Jan 2009 05:30:17 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:32778 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbZABKaP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 05:29:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=G15nwwHlYF6L86JmNoe8zmVyJYGeoeKZSMhK8RaUcbtCgHwM44ZG5f2PiPswPspgBc
-         Y0m9a+RmQUuEtbF4LBAllIdM65U6y6myOz4EUWdffppRpUHI/nDNrLpb5br/EoHUPIob
-         zCTIlDlfnlkBeuRQleyh8+Rehu3T4ma8mfnNU=
-Message-ID: <28c262360901020229k55d47445yc9a6c9c7aa3e9c66@mail.gmail.com>
-Date: Fri, 2 Jan 2009 19:29:16 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation take2
-Cc: "Mel Gorman" <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "wassim dagash" <wassim.dagash@gmail.com>
-In-Reply-To: <2f11576a0901020200t3a6dadf5qa944432cd9fd8873@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081231115332.GB20534@csn.ul.ie>
-	 <20081231215934.1296.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090101021240.A057.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <28c262360901020155l3a9260b5h3c79d4b23a213825@mail.gmail.com>
-	 <2f11576a0901020200t3a6dadf5qa944432cd9fd8873@mail.gmail.com>
+	Fri, 2 Jan 2009 05:30:15 -0500
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+Message-Id: <865953A9-E699-45E1-A726-F3F4EE41A0C9@mirell.org>
+From: Mark Miller <mark@mirell.org>
+To: Alejandro Mery <amery@opensde.org>
+In-Reply-To: <495DE995.1070002@opensde.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Content-Transfer-Encoding: 8BIT
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Date: Fri, 2 Jan 2009 04:30:06 -0600
+References: <200901020207.30359.rob@landley.net> <200901021026.37905.a.miskiewicz@gmail.com> <20090102094934.GB17841@infradead.org> <495DE995.1070002@opensde.org>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 2, 2009 at 7:00 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> Hi, kosaki-san.
+
+On Jan 2, 2009, at 4:16 AM, Alejandro Mery wrote:
+
+> Christoph Hellwig escribió:
+>> On Fri, Jan 02, 2009 at 10:26:37AM +0100, Arkadiusz Miskiewicz wrote:
 >>
->> I read the previous threads now. It's rather late :(.
+>>> On Friday 02 of January 2009, Rob Landley wrote:
+>>>
+>>>> Before 2.6.25 (specifically git  
+>>>> bdc807871d58285737d50dc6163d0feb72cb0dc2 )
+>>>> building a Linux kernel never required perl to be installed on  
+>>>> the build
+>>>> system.  (Various development and debugging scripts were written  
+>>>> in perl
+>>>> and python and such, but they weren't involved in actually  
+>>>> building a
+>>>> kernel.) Building a kernel before 2.6.25 could be done with a  
+>>>> minimal
+>>>> system built from gcc, binutils, bash, make, busybox, uClibc, and  
+>>>> the Linux
+>>>> kernel, and nothing else.
+>>>>
+>>> And now bash is going to be required... while some distros don't  
+>>> need/have
+>>> bash. /bin/sh should be enough.
+>>>
 >>
->> I think it's rather awkward that sudden big change of order from 10 to 0.
+>> *nod*  bash is in many ways a worse requirement than perl.  strict  
+>> posix
+>> /bin/sh + awk + sed would be nicest, but if that's too much work perl
+>> seems reasonable.
+
 >>
->> This problem causes zone_water_mark's fail.
->> It mean now this zone's proportional free page per order size is not good.
->> Although order-0 page is very important, Shouldn't we consider other
->> order allocations ?
->>
->> So I want to balance zone's proportional free page.
->> How about following ?
->>
->> if (nr_reclaimed < SWAP_CLUSTER_MAX) {
->>   if (order != 0) {
->>     order -=1;
->>     sc.order -=1;
->>   }
->> }
->>
->> It prevents infinite loop and do best effort to make zone's
->> proportional free page per order size good.
->>
->> It's just my opinion within my knowledge.
->> If it have a problem, pz, explain me :)
+> well, bash is not worse as bash is trivial to cross-compile to run  
+> on a
+> constrained sandbox and perl is a nightmare, but I agree bash should  
+> be
+> avoided too.
 >
-> Please read Nick's expalin. it explain very kindly :)
+> I think the $(( ... )) bash-ism can be replaced with a simple .c  
+> helper toy.
+>
+> Thank Rob for reopening the topic.
+>
+> Alejandro Mery
 
-Hm. I read Nick's explain.
-I understand his point.
+And actually, one of the things that I just recalled, is that several  
+of the Perl configure scripts in order to actually build itself, rely  
+on Bourne shell calls. So the argument to require a strict POSIX+sed 
++awk implementation rather than Perl to build the kernel, fails, since  
+you already require some variant of shell greater than strict POSIX / 
+bin/sh to build Perl. So this is one less dependency.
 
-Nick said,
-"A higher kswapd reclaim order shouldn't weaken kswapd
-postcondition for order-0 memory."
+Also, attempting to cross-compile Perl, is indeed a nightmare.
 
-My patch don't prevent order-0 memory reclaim. After all, it will do it.
-It also can do best effort to reclaim other order size.
-
-In this case, others order size reclaim is needless  ?
+--
+Mark Miller
+mark@mirell.org
 
 
--- 
-Kinds regards,
-MinChan Kim
+
+
