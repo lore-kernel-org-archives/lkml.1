@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbZABQE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZABQEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbZABQE0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 11:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZABQEQ
+	id S1758302AbZABQEz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 11:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757286AbZABQEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 11:04:16 -0500
-Received: from co203.xi-lite.net ([149.6.83.203]:39212 "EHLO co203.xi-lite.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757869AbZABQEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 11:04:15 -0500
-Message-ID: <495E3AF8.6000006@parrot.com>
-Date: Fri, 02 Jan 2009 17:04:08 +0100
-From: Matthieu CASTET <matthieu.castet@parrot.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Fri, 2 Jan 2009 11:04:44 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2556 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756050AbZABQEn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 11:04:43 -0500
+Date: Fri, 2 Jan 2009 11:04:40 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Yan Li <elliot.li.tech@gmail.com>
+cc: Tino Keitel <tino.keitel@gmx.de>, <gregkh@suse.de>,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: Enable CONFIG_USB_SUSPEND by default or some mobile HD can't be
+ unplugged safely
+In-Reply-To: <20090102140023.GC4833@thyme.bj.intel.com>
+Message-ID: <Pine.LNX.4.44L0.0901021056120.26494-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-References: <200901020207.30359.rob@landley.net> <200901021026.37905.a.miskiewicz@gmail.com> <200901020513.19593.rob@landley.net>
-In-Reply-To: <200901020513.19593.rob@landley.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 02 Jan 2009 16:05:09.0585 (UTC) FILETIME=[E2DE6C10:01C96CF3]
-X-AV-Checked: No Virus Found
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley a écrit :
-> On Friday 02 January 2009 03:26:37 Arkadiusz Miskiewicz wrote:
->> On Friday 02 of January 2009, Rob Landley wrote:
->>
->> Heh,
-> 
-> I believe all three scripts run under dash and busybox ash.  (The timeconst.sh 
-> one needs 64 bit math which dash only provides on 64 bit hosts, which is a 
-> regression from Red Hat 9 in 2003 by the way.
-With dash 0.5.4-12 (from debian sid), I seems I got the 64 bit math for
-32 bit hosts :
-$ uname -m
-i686
-$ dash -c 'echo $((1<<32))'
-4294967296
+On Fri, 2 Jan 2009, Yan Li wrote:
 
+> Now I know 3 methods supposed can be used to shut the device:
+> 1. (Alan Stern said Windows use this) cut the USB port's power
 
-Matthieu
+I said no such thing!  In fact, I said exactly the opposite: Windows 
+does _not_ cut the port's power.  Instead it disables the port.
+
+> 2. send STOP SCSI command to stop it
+
+Note that this is different.  The START-STOP command is used to spin-up 
+or spin-down a disk.  It does not affect the state of the data link.
+
+> 3. put it into suspend mode
+
+As far as the device is concerned, there is essentially no difference 
+between 1 and 3.  When the device's upstream port is disabled, the 
+device must go into suspend mode.
+
+The best approach is to send a SYNCHRONIZE CACHE command followed by 
+START-STOP (if the device supports it), and then to disable or suspend 
+the port.  In Linux, those two commands will be sent automatically if 
+you unbind the device from usb-storage.  The suspend has to be done 
+manually unless you have set up a udev rule (or something equivalent) 
+to enable autosuspend for the device.  Of course, this requires 
+CONFIG_USB_SUSPEND.
+
+Alan Stern
+
