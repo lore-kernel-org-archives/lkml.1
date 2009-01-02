@@ -1,101 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759216AbZABSzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbZABSz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759216AbZABSzo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 13:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbZABSzf
+	id S1759503AbZABSz7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 13:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759348AbZABSzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 13:55:35 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:54700 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757500AbZABSzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 13:55:35 -0500
-Date: Fri, 2 Jan 2009 10:55:24 -0800
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, travis@sgi.com, stable@kernel.org,
-       shai@scalex86.org
-Subject: Re: [patch] x86: Fix incorrect __read_mostly on _boot_cpu_pda
-Message-ID: <20090102185524.GB6856@localdomain>
-References: <20081231214446.GA6856@localdomain> <20090102160949.GF1180@elte.hu>
+	Fri, 2 Jan 2009 13:55:49 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:34150 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757812AbZABSzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 13:55:47 -0500
+Date: Fri, 2 Jan 2009 10:55:43 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       laijs@cn.fujitsu.com
+Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
+Message-ID: <20090102185543.GE6842@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200901021159.n02BxDLg024728@mail.q-ag.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="p2kqVDKq5asng8Dg"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090102160949.GF1180@elte.hu>
+In-Reply-To: <200901021159.n02BxDLg024728@mail.q-ag.de>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 02, 2009 at 12:25:58PM +0100, Manfred Spraul wrote:
+> Based on the idea from Lai Jiangshan:
+> 
+> There are 23 instances where the rcu callback just does
+> 
+> 	kfree(containerof(rcu_member,struct whatever_struct,head));
+> 
+> The 23 instances exist because there are 23 'struct whatever_struct' with
+> their individual rcu_member.
+> 
+> The attached patch creates a generic kfree_rcu function that removes the need
+> for these 23 helpers: The offset from the container struct to the rcu member
+> is calculated at compile time and stored in head->func instead of the
+> function pointer.
 
---p2kqVDKq5asng8Dg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+OK, these seem to me to avoid Nick Piggin's vfree() question in response
+to a roughly similar posting from Lai Jiangshan on November 18th
+(http://lkml.org/lkml/2008/11/18/83).
 
-On Fri, Jan 02, 2009 at 05:09:51PM +0100, Ingo Molnar wrote:
->
->* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
->
->> The pda rework (commit 3461b0af025251bbc6b3d56c821c6ac2de6f7209)
->> to remove static boot cpu pdas introduced a bug.  _boot_cpu_pda is the
->> actual pda used by the boot cpu and is definitely not "__read_mostly" and
->> ended up polluting the read mostly section with writes.  This bug caused
->> regression of about 8-10% on certain syscall intensive workloads.
->> 
->> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
->
->applied to tip/x86/urgent, with a Cc: stable tag. Thanks,
->
+> Effect on .text: (x86_64)
+> +23 bytes in rcutree.c
+> - 9 bytes in ipc/sem.c
+> 
+> Depending on the number of call_rcu instances in the .config, adding
+> kfree_rcu should save between 100 and 200 bytes in .text.
+> 
+> What do you think?
 
-Thanks!
+I am in favor, given changes noted below.  This is a much nicer way to
+implement some function in the original RCU patch for Linux.
 
-Stable maintainers, please consider this for 2.6.27 stable as well
-(in addition to 28).  (Attaching the tip/x86/urgent commit as reference to
-the patch)
+> Is the interface ok? Incorrect use should generate compile time errors.
+> Is it ok to use IS_ERR(p)?
 
-Thanks,
-Kiran
+I would suggest instead using the bottom bit to differentiate between
+these two cases, especially given that your approach makes it impossible
+for callback processing to notice a NULL function pointer.  In addition,
+this approach would allow different types of allocators to be specified
+should this later prove to be helpful.  You should not have to shift the
+offset because the rcu_head offset should always be a multiple of four
+(or eight on 64-bit architectures).
 
---p2kqVDKq5asng8Dg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=fix_incorrect_readmostly
+And we really are running into bugs that are detected by RCU's seeing a
+null function pointer in the rcu_head structure at callback-invocation
+time.  So, whatever encoding you choose, please leave a function-pointer
+value of zero as an invalid value!
 
-commit 26799a63110dcbe81291ea53178f6b4810d07424
-Author: Ravikiran G Thirumalai <kiran@scalex86.org>
-Date:   Wed Dec 31 13:44:46 2008 -0800
+> And: How many seperate patches should I create?
+> I would propose 24 patches: one with the interface, 23 that
+> replace the individual callbacks.
 
-    x86: fix incorrect __read_mostly on _boot_cpu_pda
-    
-    The pda rework (commit 3461b0af025251bbc6b3d56c821c6ac2de6f7209)
-    to remove static boot cpu pdas introduced a performance bug.
-    
-    _boot_cpu_pda is the actual pda used by the boot cpu and is definitely
-    not "__read_mostly" and ended up polluting the read mostly section with
-    writes.  This bug caused regression of about 8-10% on certain syscall
-    intensive workloads.
-    
-    Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-    Acked-by: Mike Travis <travis@sgi.com>
-    Cc: <stable@kernel.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I defer to the various maintainers on this one.  ;-)
 
-diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-index 388e05a..b9a4d8c 100644
---- a/arch/x86/kernel/head64.c
-+++ b/arch/x86/kernel/head64.c
-@@ -27,7 +27,7 @@
- #include <asm/trampoline.h>
- 
- /* boot cpu pda */
--static struct x8664_pda _boot_cpu_pda __read_mostly;
-+static struct x8664_pda _boot_cpu_pda;
- 
- #ifdef CONFIG_SMP
- /*
+							Thanx, Paul
 
---p2kqVDKq5asng8Dg--
+> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+> ---
+>  include/linux/rcupdate.h |   33 +++++++++++++++++++++++++++++++++
+>  ipc/sem.c                |   10 ++--------
+>  kernel/rcuclassic.c      |    2 +-
+>  kernel/rcupreempt.c      |    2 +-
+>  kernel/rcutree.c         |    2 +-
+>  5 files changed, 38 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> index 1168fbc..d120014 100644
+> --- a/include/linux/rcupdate.h
+> +++ b/include/linux/rcupdate.h
+> @@ -269,6 +269,29 @@ extern void call_rcu(struct rcu_head *head,
+>  extern void call_rcu_bh(struct rcu_head *head,
+>  			void (*func)(struct rcu_head *head));
+> 
+> +/**
+> + * kfree_rcu - kfree after a grace period
+> + * @ptr: pointer to kfree
+> + * @rcu_member: name of the struct rcu_head member.
+> + *
+> + * Many rcu callbacks just call kfree() on the base structure. This helper
+> + * function calls kfree internally. The rcu_head structure must be embedded
+> + * in the to be freed structure.
+> + */
+> +
+> +static inline void __kfree_rcu(void *prcu, unsigned long offset)
+> +{
+> +	void (*pfnc)(struct rcu_head *head) = (void (*)(struct rcu_head *head))offset;
+> +
+> +	BUILD_BUG_ON(!__builtin_constant_p(-offset));
+> +	BUILD_BUG_ON(!IS_ERR(pfnc));
+
+This allows us to drop the above check in favor of something like the
+following above (though a symbolic value in place of 0x1 would be nice):
+
+	void (*pfnc)(struct rcu_head *head) = (void (*)(struct rcu_head *head))(offset | 0x1);
+
+> +	call_rcu(prcu, pfnc);
+> +}
+> +
+> +#define kfree_rcu(pobj, entry) \
+> +	__kfree_rcu(&((pobj)->entry), -offsetof(typeof(*(pobj)), entry))
+> +
+>  /* Exported common interfaces */
+>  extern void synchronize_rcu(void);
+>  extern void rcu_barrier(void);
+> @@ -279,4 +302,14 @@ extern void rcu_barrier_sched(void);
+>  extern void rcu_init(void);
+>  extern int rcu_needs_cpu(int cpu);
+> 
+> +/* helper functions */
+> +static inline void rcu_docallback(struct rcu_head *head)
+> +{
+
+Experience indicates that we should have some sort of WARN_ON() in
+the case of a NULL rcu_head, either here or where this is called.  :-/
+
+> +	if (IS_ERR(head->func)) {
+
+And in this "if" statement, just check the bottom bit.
+
+> +		kfree(((char *)head) + (unsigned long)head->func);
+> +	} else {
+> +		head->func(head);
+> +	}
+> +}
+> +
+>  #endif /* __LINUX_RCUPDATE_H */
+> diff --git a/ipc/sem.c b/ipc/sem.c
+> index 0821224..4a68cf2 100644
+> --- a/ipc/sem.c
+> +++ b/ipc/sem.c
+> @@ -504,12 +504,6 @@ static int count_semzcnt (struct sem_array * sma, ushort semnum)
+>  	return semzcnt;
+>  }
+> 
+> -static void free_un(struct rcu_head *head)
+> -{
+> -	struct sem_undo *un = container_of(head, struct sem_undo, rcu);
+> -	kfree(un);
+> -}
+> -
+>  /* Free a semaphore set. freeary() is called with sem_ids.rw_mutex locked
+>   * as a writer and the spinlock for this semaphore set hold. sem_ids.rw_mutex
+>   * remains locked on exit.
+> @@ -528,7 +522,7 @@ static void freeary(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
+>  		un->semid = -1;
+>  		list_del_rcu(&un->list_proc);
+>  		spin_unlock(&un->ulp->lock);
+> -		call_rcu(&un->rcu, free_un);
+> +		kfree_rcu(un, rcu);
+
+This -is- nice!  Short and sweet!!!
+
+>  	}
+> 
+>  	/* Wake up all pending processes and let them fail with EIDRM. */
+> @@ -1347,7 +1341,7 @@ void exit_sem(struct task_struct *tsk)
+>  		update_queue(sma);
+>  		sem_unlock(sma);
+> 
+> -		call_rcu(&un->rcu, free_un);
+> +		kfree_rcu(un, rcu);
+>  	}
+>  	kfree(ulp);
+>  }
+> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+> index e503a00..b2f97d2 100644
+> --- a/kernel/rcuclassic.c
+> +++ b/kernel/rcuclassic.c
+> @@ -336,7 +336,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
+>  	while (list) {
+>  		next = list->next;
+>  		prefetch(next);
+> -		list->func(list);
+> +		rcu_docallback(list);
+>  		list = next;
+>  		if (++count >= rdp->blimit)
+>  			break;
+> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+> index 0498265..8440dac 100644
+> --- a/kernel/rcupreempt.c
+> +++ b/kernel/rcupreempt.c
+> @@ -1110,7 +1110,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
+>  	spin_unlock_irqrestore(&rdp->lock, flags);
+>  	while (list) {
+>  		next = list->next;
+> -		list->func(list);
+> +		rcu_docallback(list);
+>  		list = next;
+>  		RCU_TRACE_ME(rcupreempt_trace_invoke);
+>  	}
+> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> index a342b03..29c88ce 100644
+> --- a/kernel/rcutree.c
+> +++ b/kernel/rcutree.c
+> @@ -901,7 +901,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
+>  	while (list) {
+>  		next = list->next;
+>  		prefetch(next);
+> -		list->func(list);
+> +		rcu_docallback(list);
+
+Good, you got all three of them!  ;-)
+
+>  		list = next;
+>  		if (++count >= rdp->blimit)
+>  			break;
+> -- 
+> 1.6.0.6
+> 
