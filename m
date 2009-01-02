@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbZABS65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbZABS7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759408AbZABS65 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 13:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758634AbZABS6t
+	id S1759549AbZABS7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 13:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbZABS7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 13:58:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40223 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758537AbZABS6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 13:58:49 -0500
-Date: Fri, 2 Jan 2009 19:58:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>, hpa@kernel.org,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: cpuid.c fix style problems
-Message-ID: <20090102185829.GA14249@elte.hu>
-References: <1230721188.3738.2.camel@jaswinder.satnam> <84144f020812310501w4c64de85r9125cfacccc5ae97@mail.gmail.com>
+	Fri, 2 Jan 2009 13:59:19 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:42696 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755325AbZABS7S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 13:59:18 -0500
+Date: Fri, 2 Jan 2009 19:57:18 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Willy Tarreau <w@1wt.eu>, wtarreau@hera.kernel.org,
+       kernel-testers@vger.kernel.org, netdev@vger.kernel.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: BUG - 2.4.37 fealnx.c NETDEV WATCHDOG: eth0: transmit timed out
+Message-ID: <20090102185718.GB20741@electric-eye.fr.zoreil.com>
+References: <3f9a31f40901020640m4a9a63caq9c96ba84ccd64d88@mail.gmail.com> <20090102144813.GA13757@1wt.eu> <3f9a31f40901020748m242c46djf153fbab90eeca60@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020812310501w4c64de85r9125cfacccc5ae97@mail.gmail.com>
+In-Reply-To: <3f9a31f40901020748m242c46djf153fbab90eeca60@mail.gmail.com>
+X-Organisation: Land of Sunshine Inc.
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-
-> On Wed, Dec 31, 2008 at 12:59 PM, Jaswinder Singh Rajput
-> <jaswinder@infradead.org> wrote:
-> >        cpu = iminor(file->f_path.dentry->d_inode);
-> > -       if (cpu >= NR_CPUS || !cpu_online(cpu)) {
-> > +       if (cpu >= num_possible_cpus() || !cpu_online(cpu)) {
+Jaswinder Singh Rajput <jaswinderlinux@gmail.com> :
+[..]
+> Output of mii-diag -v :
+> eth0: 10 Mbit, half duplex, no link
+>   product info: vendor 00:00:00, model 0 rev 0
+>   basic mode:   10 Mbit, half duplex
+>   basic status: no link
+>   capabilities:
+>   advertising:
 > 
-> How come you didn't convert the first part of the expression to use
-> cpu_possible()?
+> This is the output from very old machine Pentium MMX with Redhat 7.1
 
-i skipped this bit btw., as it got mooted by the cleanups in the cpumask 
-and cpus4096 trees.
+Can you check with 'mii-tool -vv eth0' that the mii registers are not
+all zeroes ?
 
-	Ingo
+-- 
+Ueimor
