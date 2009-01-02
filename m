@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbZABKEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbZABKQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbZABKEs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 05:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbZABKEi
+	id S1757334AbZABKQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZABKQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 05:04:38 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:60656 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757381AbZABKEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 05:04:36 -0500
-Date: Fri, 2 Jan 2009 11:04:33 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
-       schwidefsky@de.ibm.com
-Subject: Re: [BUG] next-20081231 - S390x kernel panics while bootup at
-	init_sched_build_groups()
-Message-ID: <20090102100433.GB4730@osiris.boeblingen.de.ibm.com>
-References: <20090101003258.eaa44700.sfr@canb.auug.org.au> <20081231160329.GC4268@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081231160329.GC4268@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 2 Jan 2009 05:16:09 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:47093 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbZABKQI (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 05:16:08 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Henrik Rydberg <rydberg@euromail.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.28-mmotm1230 drivers/input/input.c warning msg
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1230891358_3417P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 02 Jan 2009 05:15:58 -0500
+Message-ID: <27989.1230891358@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 09:33:29PM +0530, Kamalesh Babulal wrote:
-> 	next-2001231 kernel panic's on S390x box, while boot up
-> cpu: 4 configured CPUs, 0 standby CPUs
-> cpu: Processor 0 started, address 2, identification 20AB8A
-> cpu: Processor 1 started, address 0, identification 00AB8A
-> cpu: Processor 2 started, address 1, identification 10AB8A
-> cpu: Processor 3 started, address 3, identification 30AB8A
-> Brought up 4 CPUs
-> Unable to handle kernel pointer dereference at virtual kernel address 0000000100
-> 3fa000
-> Oops: 003b Ý#1¨ SMP
-> Modules linked in:
-> CPU: 0 Not tainted 2.6.28-next-20081231-autotest #1
-> Process swapper (pid: 1, task: 000000003fe80000, ksp: 000000003fe8ba78)
-> Krnl PSW : 0704000180000000 0000000000035632 (init_sched_build_groups+0xae/0x4a4
-> )
->            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0 EA:3
-> Krnl GPRS: 00000000003c27b0 00000001003fa278 0000000000000000 00000000003c2508
->            0000000000000000 000000000026f818 0000000000000000 0000000000000000
->            0000000000000000 000000003fe8be50 00000000ffffffff 000000003fe8bcf0
-> Krnl Code: 0000000000035626: a7290000           lghi    00: HCPGSP2629I The virt
+--==_Exmh_1230891358_3417P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Seems to be fixed with linux-next from 2nd of January.
+patch input-allow-certain-ev_abs-events-to-bypass-all-filtering.patch
+caused a new warning to be added to the compile:
+
+  CC      drivers/input/input.o
+drivers/input/input.c:1661: warning: function declaration isn=E2=80=99t a=
+ prototype
+
+Fix up the declaration so the compiler knows what the prototype is.
+
+Signed-off-by: Valdis Kletnieks <valdis.kletnieks=40vt.edu>
+
+--- linux-2.6.28-mmotm1230/drivers/input/input.c.dist	2009-01-01 17:23:02=
+.000000000 -0500
++++ linux-2.6.28-mmotm1230/drivers/input/input.c	2009-01-02 05:09:12.0000=
+00000 -0500
+=40=40 -1657,7 +1657,7 =40=40 static const struct file_operations inpu
+ 	.open =3D input_open_file,
+ =7D;
+=20
+-static void __init input_init_abs_bypass()
++static void __init input_init_abs_bypass(void)
+ =7B
+ 	const unsigned int *p;
+ 	for (p =3D input_abs_bypass_init_data; *p; p++)
+
+
+--==_Exmh_1230891358_3417P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJXelecC3lWbTT17ARAnd1AKCMlzIivYPz5GqEQ83E7+NQLvjivgCgnjej
+0pD1pmzNli8xd/7cT42BEvU=
+=7BzT
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1230891358_3417P--
