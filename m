@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbZABWpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932519AbZABWqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbZABWpx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 17:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZABWpl
+	id S932519AbZABWqo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 17:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbZABWqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 17:45:41 -0500
-Received: from phunq.net ([64.81.85.152]:43471 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751168AbZABWpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 17:45:40 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: tux3@tux3.org
-Subject: Re: [Tux3] Tux3 report: A Golden Copy
-User-Agent: KMail/1.9.5
-Cc: Martin Steigerwald <Martin@lichtvoll.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Justin P. Mattock" <justinmattock@gmail.com>
-References: <200812301935.49303.phillips@phunq.net> <495BAED9.3000305@gmail.com> <200901022117.24504.Martin@Lichtvoll.de>
-In-Reply-To: <200901022117.24504.Martin@Lichtvoll.de>
-MIME-Version: 1.0
-Content-Disposition: inline
-Date: Fri, 2 Jan 2009 14:45:36 -0800
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 2 Jan 2009 17:46:33 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:44060 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757436AbZABWqc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 17:46:32 -0500
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, avishay@gmail.com,
+       jeff@garzik.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <495CC612.30800@panasas.com>
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>
+	 <20081229121423.efde9d06.akpm@linux-foundation.org>
+	 <495B8D90.1090004@panasas.com>
+	 <20081231112515.2d790d1c.akpm@linux-foundation.org>
+	 <495CC612.30800@panasas.com>
+Content-Type: text/plain
+Date: Fri, 02 Jan 2009 16:46:26 -0600
+Message-Id: <1230936386.3304.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200901021445.37062.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 January 2009 12:17, Martin Steigerwald wrote:
-> Am Mittwoch 31 Dezember 2008 schrieb Justin P. Mattock:
-> > I guess this is what is confusing to me:
-> > atomic commit, btree-based versioning.
+On Thu, 2009-01-01 at 15:33 +0200, Boaz Harrosh wrote:
+> Andrew Morton wrote:
+> >>> Boaz Harrosh <bharrosh@panasas.com> wrote:
+> >> When, if, all is fixed, through which tree/maintainer can exofs be submitted?
+> > 
+> > I can merge them.  Or you can run a git tree of your own, add it to
+> > linux-next and ask Linus to pull it at the appropriate time.
+> > 
 > 
-> Ah, the buzz words. ;)
+> Hi James
 > 
-> The tux3 mailing list contains quite some design notes about these 
-> concepts. I think others can give better answers about these concepts - I 
-> think I understood what it is for, not the implementation details. But 
-> basically "atomic commit" is a strategy to have the filesystem always in 
-> a consistent state
+> Andrew suggested that maybe I should push exofs file system directly to
+> Linus as it is pretty orthogonal to any other work. Sitting in linux-next
+> will quickly expose any advancements in VFS and will force me to keep
+> the tree uptodate.
+> 
+> If that is so, and is accepted by Linus, would you rather that also the
+> open-osd initiator library will be submitted through the same tree?
+> The conflicts with scsi are very very narrow. The only real dependency
+> is the ULD being a SCSI ULD. I will routinely ask your ACK on any scsi 
+> or ULD related patches. Which are very few. This way it will be easier
+> to manage the dependencies between the OSD work, the OSD pNFS-Objects
+> trees at pNFS project, and the pNFSD+EXOFS export. One less dependency.
+> 
+> [I already have such a public tree at git.open-osd.org for a while now]
 
-Right.  Atomic commit is a term that came from the database world and
-was first applied to filesystems in an LKML message from Victor
-Yodaiken back in 1998 as I dimly recall, and I adopted it to describe
-the tree ased atomic update strategy I was developing for Tux2 at the
-time.  Tux3 uses a new logging variant that is supposed to avoid the
-write-twice behaviour of journalling and the recursive copy behavior of
-WAFL, ZFS and Btrfs, so should be pretty good at synchronous write
-loads and generally reduce write traffic.
+Since it's sitting in SCSI, at least the libosd piece belongs over the
+SCSI mailing list, so I think it makes sense to continue updating it via
+the SCSI tree.
 
-> and btree-based versioning allows to keep different  
-> versions of a file / directory around. And unlike other filesystem tux3  
-> has this per inode and not for the complete filesystem. At least if I 
-> understand correctly.
+What's the status of the major number request from LANANA.  That's patch
+number one, and I haven't heard that they've confirmed the selection of
+260 yet; or is LANANA now dead and it's who gets the major into the tree
+first?
 
-You do.
+James
 
-"Btree-based" and "versioning" are separate buzzwords.  Tux3 is a btree
-of btrees: the inode table is a btree, containing files that are
-btrees.  It was conceived to demonstrate a new method of versioning
-files that puts the versioning information at the btree leaves instead
-of having multiple independently rooted trees sharing subtrees:
 
-   Versioned pointers: a new method of representing snapshots
-   http://lwn.net/Articles/288896/
-
-This approach lends itself to per-object versioning: each data pointer
-and each inode attribute has its own version label.  Making it work
-per file and even per directory is a matter of clever mapping tricks to
-turn global version numbers into per pointer version numbers.
-
-But note that versioning support is still just a nice demo: the focus
-has shifted to Tux3 as general purpose filesystem, with versioning
-seen as a feature to be integrated after the basic Ext3-class
-functionality is solid and reviewed.
-
-> But at least it should clear that tux3 is a filesystem and not a video 
-> game ;).
-
-It's kind of like a video game where you sneak through IRC channels
-trying to frag bugs with your BFG.
-
-Regards,
-
-Daniel
