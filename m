@@ -1,68 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbZABKqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbZABKq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758175AbZABKqD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 05:46:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbZABKly
+	id S1758536AbZABKq2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 05:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757821AbZABKl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 05:41:54 -0500
-Received: from main.gmane.org ([80.91.229.2]:58589 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757381AbZABKln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 05:41:43 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Date: Fri, 02 Jan 2009 10:41:22 +0000
-Message-ID: <yw1x3ag2t2gd.fsf@thrashbarg.mansr.com>
-References: <200901020207.30359.rob@landley.net> <200901021026.37905.a.miskiewicz@gmail.com> <20090102094934.GB17841@infradead.org> <495DE995.1070002@opensde.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: thrashbarg.mansr.com
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (Educational Television, linux)
-Cancel-Lock: sha1:KkdFZ1gOGHtad6wzPau8uuF3Hg0=
-Cc: linux-embedded@vger.kernel.org
+	Fri, 2 Jan 2009 05:41:56 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:34159 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757323AbZABKll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 05:41:41 -0500
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Philip Blundell <philb@gnu.org>
+Subject: [PATCH] m68k: dio - kill warn_unused_result warnings
+Date: Fri,  2 Jan 2009 11:41:27 +0100
+Message-Id: <1230892892-25751-15-git-send-email-geert@linux-m68k.org>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1230892892-25751-14-git-send-email-geert@linux-m68k.org>
+References: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-2-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-3-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-4-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-5-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-6-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-7-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-8-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-9-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-10-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-11-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-12-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-13-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-14-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alejandro Mery <amery@opensde.org> writes:
+warning: ignoring return value of 'device_register', declared with attribute
+warn_unused_result
+warning: ignoring return value of 'device_create_file', declared with
+attribute warn_unused_result
 
-> Christoph Hellwig escribió:
->> On Fri, Jan 02, 2009 at 10:26:37AM +0100, Arkadiusz Miskiewicz wrote:
->>   
->>> On Friday 02 of January 2009, Rob Landley wrote:
->>>     
->>>> Before 2.6.25 (specifically git bdc807871d58285737d50dc6163d0feb72cb0dc2 )
->>>> building a Linux kernel never required perl to be installed on the build
->>>> system.  (Various development and debugging scripts were written in perl
->>>> and python and such, but they weren't involved in actually building a
->>>> kernel.) Building a kernel before 2.6.25 could be done with a minimal
->>>> system built from gcc, binutils, bash, make, busybox, uClibc, and the Linux
->>>> kernel, and nothing else.
->>>>       
->>> And now bash is going to be required... while some distros don't need/have 
->>> bash. /bin/sh should be enough.
->>>     
->>
->> *nod*  bash is in many ways a worse requirement than perl.  strict posix
->> /bin/sh + awk + sed would be nicest, but if that's too much work perl
->> seems reasonable.
-> well, bash is not worse as bash is trivial to cross-compile to run on a
-> constrained sandbox and perl is a nightmare, but I agree bash should be
-> avoided too.
->
-> I think the $(( ... )) bash-ism can be replaced with a simple .c helper toy.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Philip Blundell <philb@gnu.org>
+---
+ drivers/dio/dio-sysfs.c |   16 ++++++++++------
+ drivers/dio/dio.c       |   18 +++++++++++++++---
+ include/linux/dio.h     |    2 +-
+ 3 files changed, 26 insertions(+), 10 deletions(-)
 
-The $(( ... )) construct is standard POSIX shell syntax, see
-http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html#tag_02_06_04
-
-Bash supports $[ ... ] as an alternate syntax for the same thing.
-Perhaps you were thinking of that.
-
+diff --git a/drivers/dio/dio-sysfs.c b/drivers/dio/dio-sysfs.c
+index f464630..91d5f4d 100644
+--- a/drivers/dio/dio-sysfs.c
++++ b/drivers/dio/dio-sysfs.c
+@@ -63,15 +63,19 @@ static ssize_t dio_show_resource(struct device *dev, struct device_attribute *at
+ }
+ static DEVICE_ATTR(resource, S_IRUGO, dio_show_resource, NULL);
+ 
+-void dio_create_sysfs_dev_files(struct dio_dev *d)
++int dio_create_sysfs_dev_files(struct dio_dev *d)
+ {
+ 	struct device *dev = &d->dev;
++	int error;
+ 
+ 	/* current configuration's attributes */
+-	device_create_file(dev, &dev_attr_id);
+-	device_create_file(dev, &dev_attr_ipl);
+-	device_create_file(dev, &dev_attr_secid);
+-	device_create_file(dev, &dev_attr_name);
+-	device_create_file(dev, &dev_attr_resource);
++	if ((error = device_create_file(dev, &dev_attr_id)) ||
++	    (error = device_create_file(dev, &dev_attr_ipl)) ||
++	    (error = device_create_file(dev, &dev_attr_secid)) ||
++	    (error = device_create_file(dev, &dev_attr_name)) ||
++	    (error = device_create_file(dev, &dev_attr_resource)))
++		return error;
++
++	return 0;
+ }
+ 
+diff --git a/drivers/dio/dio.c b/drivers/dio/dio.c
+index 07f274f..10c3c49 100644
+--- a/drivers/dio/dio.c
++++ b/drivers/dio/dio.c
+@@ -173,6 +173,7 @@ static int __init dio_init(void)
+ 	mm_segment_t fs;
+ 	int i;
+ 	struct dio_dev *dev;
++	int error;
+ 
+ 	if (!MACH_IS_HP300)
+ 		return 0;
+@@ -182,7 +183,11 @@ static int __init dio_init(void)
+ 	/* Initialize the DIO bus */ 
+ 	INIT_LIST_HEAD(&dio_bus.devices);
+ 	strcpy(dio_bus.dev.bus_id, "dio");
+-	device_register(&dio_bus.dev);
++	error = device_register(&dio_bus.dev);
++	if (error) {
++		pr_err("DIO: Error registering dio_bus\n");
++		return error;
++	}
+ 
+ 	/* Request all resources */
+ 	dio_bus.num_resources = (hp300_model == HP_320 ? 1 : 2);
+@@ -252,8 +257,15 @@ static int __init dio_init(void)
+ 
+ 		if (scode >= DIOII_SCBASE)
+ 			iounmap(va);
+-		device_register(&dev->dev);
+-		dio_create_sysfs_dev_files(dev);
++		error = device_register(&dev->dev);
++		if (error) {
++			pr_err("DIO: Error registering device %s\n",
++			       dev->name);
++			continue;
++		}
++		error = dio_create_sysfs_dev_files(dev);
++		if (error)
++			dev_err(&dev->dev, "Error creating sysfs files\n");
+         }
+ 	return 0;
+ }
+diff --git a/include/linux/dio.h b/include/linux/dio.h
+index 1e65ebc..b2dd31c 100644
+--- a/include/linux/dio.h
++++ b/include/linux/dio.h
+@@ -241,7 +241,7 @@ struct dio_driver {
+ 
+ extern int dio_find(int deviceid);
+ extern unsigned long dio_scodetophysaddr(int scode);
+-extern void dio_create_sysfs_dev_files(struct dio_dev *);
++extern int dio_create_sysfs_dev_files(struct dio_dev *);
+ 
+ /* New-style probing */
+ extern int dio_register_driver(struct dio_driver *);
 -- 
-Måns Rullgård
-mans@mansr.com
+1.5.6.5
 
