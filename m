@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbZABNXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbZABNXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbZABNXT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 08:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbZABNXI
+	id S1758274AbZABNXe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 08:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbZABNXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 08:23:08 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2499 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756410AbZABNXH (ORCPT
+	Fri, 2 Jan 2009 08:23:13 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43737 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757048AbZABNXL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 08:23:07 -0500
-Date: Fri, 2 Jan 2009 08:23:03 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Mark Lord <lkml@rtr.ca>, Jan Scholz <scholz@fias.uni-frankfurt.de>
-cc: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: libusb broken on 2.6.28 x86_64 ?
-In-Reply-To: <495DE060.8040707@rtr.ca>
-Message-ID: <Pine.LNX.4.44L0.0901020820500.22914-100000@netrider.rowland.org>
+	Fri, 2 Jan 2009 08:23:11 -0500
+Date: Fri, 2 Jan 2009 13:23:08 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Marc Koschewski <marc@osknowledge.org>
+Cc: Linux-LKLM <linux-kernel@vger.kernel.org>
+Subject: Re: reiserfs broken with 2.6.28-17244-gb58602a
+Message-ID: <20090102132308.GE28946@ZenIV.linux.org.uk>
+References: <20090102083645.GA3635@stiffy>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090102083645.GA3635@stiffy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Jan 2009, Mark Lord wrote:
-
-> Greg KH wrote:
-> ..
-> > Hm, care to run 'git bisect'?
-> ..
+On Fri, Jan 02, 2009 at 09:38:11AM +0100, Marc Koschewski wrote:
+> Hi!
 > 
-> No, thanks.  But the number of USB core changes in 2.6.28 is rather small,
-> so I just ended up looking at each of them in more detail.
-> 
-> This patch, below, FIXES it for me, by undoing a change from 2.6.28.
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> 
-> --- old/drivers/usb/core/driver.c	2008-12-24 18:26:37.000000000 -0500
-> +++ linux/drivers/usb/core/driver.c	2009-01-02 04:34:11.000000000 -0500
-> @@ -279,9 +279,7 @@
->  	 * altsetting means creating new endpoint device entries).
->  	 * When either of these happens, defer the Set-Interface.
->  	 */
-> -	if (intf->cur_altsetting->desc.bAlternateSetting == 0)
-> -		;	/* Already in altsetting 0 so skip Set-Interface */
-> -	else if (!error && intf->dev.power.status == DPM_ON)
-> +	if (!error && intf->dev.power.status == DPM_ON)
->  		usb_set_interface(udev, intf->altsetting[0].
->  				desc.bInterfaceNumber, 0);
->  	else
+> I just booted into a 2.6.28-17244-gb58602a kernel that is the currently recent
+> git code. The reiserfs fs has some major probs when booting this kernel. I just
+> --rebuild-tree 4 partitions which are OK now again. When booting my Gentoo box
+> says it cannot create an /etc/mtab~nnnn file and such. When I boot into stock
+> 2.6.28, however, anything is OK. I re-tested that 3 times. Anytime I boot into
+> the git kernel the messages occur and I shutdown the box via acpid (power
+> button) as quick as I can.
 
-For a proper fix, see
+Arrgh.  See if that helps:
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=12301#c13
+now that we use ih.key earlier, we need to do all its setup early enough
 
-A corresponding patch has been posted to linux-usb here:
-
-	http://marc.info/?l=linux-usb&m=123074111001861&w=2
-
-I have no idea what's going on with the 64-bit vs. 32-bit stuff, 
-though.
-
-Alan Stern
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
+index 145c2d3..1306d4f 100644
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -1782,6 +1782,12 @@ int reiserfs_new_inode(struct reiserfs_transaction_handle *th,
+ 		goto out_bad_inode;
+ 	}
+ 	args.objectid = inode->i_ino = le32_to_cpu(ih.ih_key.k_objectid);
++	if (old_format_only(sb))
++		make_le_item_head(&ih, NULL, KEY_FORMAT_3_5, SD_OFFSET,
++				  TYPE_STAT_DATA, SD_V1_SIZE, MAX_US_INT);
++	else
++		make_le_item_head(&ih, NULL, KEY_FORMAT_3_6, SD_OFFSET,
++				  TYPE_STAT_DATA, SD_SIZE, MAX_US_INT);
+ 	memcpy(INODE_PKEY(inode), &(ih.ih_key), KEY_SIZE);
+ 	args.dirid = le32_to_cpu(ih.ih_key.k_dir_id);
+ 	if (insert_inode_locked4(inode, args.objectid,
+@@ -1834,13 +1840,6 @@ int reiserfs_new_inode(struct reiserfs_transaction_handle *th,
+ 	reiserfs_init_acl_default(inode);
+ 	reiserfs_init_xattr_rwsem(inode);
+ 
+-	if (old_format_only(sb))
+-		make_le_item_head(&ih, NULL, KEY_FORMAT_3_5, SD_OFFSET,
+-				  TYPE_STAT_DATA, SD_V1_SIZE, MAX_US_INT);
+-	else
+-		make_le_item_head(&ih, NULL, KEY_FORMAT_3_6, SD_OFFSET,
+-				  TYPE_STAT_DATA, SD_SIZE, MAX_US_INT);
+-
+ 	/* key to search for correct place for new stat data */
+ 	_make_cpu_key(&key, KEY_FORMAT_3_6, le32_to_cpu(ih.ih_key.k_dir_id),
+ 		      le32_to_cpu(ih.ih_key.k_objectid), SD_OFFSET,
