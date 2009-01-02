@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbZABO2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZABOlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758374AbZABO2t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 09:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZABO2h
+	id S1757685AbZABOlN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 09:41:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbZABOky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 09:28:37 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:29326 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758118AbZABO2g (ORCPT
+	Fri, 2 Jan 2009 09:40:54 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:26613 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754930AbZABOkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 09:28:36 -0500
+	Fri, 2 Jan 2009 09:40:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=F6l3UIq0RrUtp/aKjHMrPGoIyd4lf0+k1oIQn1MuPjS9tYA0FUqm22LeohSlCG4Wva
-         NEZwY7sUa+T0Sz7TnH1AZCpbVFWgQKJ5gEh+kT9HR3qOaNnskYq0txp2Rw9Tmua7qkkE
-         1S3IB5vEORjNrN9s4CLA0CS+z/A0wKPqU4xOY=
-Date: Fri, 2 Jan 2009 22:28:28 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Enable CONFIG_USB_SUSPEND by default or some mobile HD can't
-	be unplugged safely
-Message-ID: <20090102142828.GD4833@thyme.bj.intel.com>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de,
-	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090101160343.GA4278@thyme.bj.intel.com> <20090102095643.GB17103@x61> <20090102140023.GC4833@thyme.bj.intel.com>
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=bpvv8Qedw9eQffPF+dcnG9n1eQETv05/TyALu6Hj6/5oqxWqZVQ390ffStYs9gRHX9
+         ujWIY+vIafiy91jWcaJbb4ghBKVJaQHqSlbDBT3EWpQ2Jrse0huaeAoD4oBsNeu4AAs/
+         nTVx8V5dMZflxpNuVacfIymflmsRbuk794MXU=
+Message-ID: <3f9a31f40901020640m4a9a63caq9c96ba84ccd64d88@mail.gmail.com>
+Date: Fri, 2 Jan 2009 20:10:50 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: wtarreau@hera.kernel.org, kernel-testers@vger.kernel.org,
+       netdev@vger.kernel.org, jeff@garzik.org, linux-kernel@vger.kernel.org
+Subject: BUG - 2.4.37 fealnx.c NETDEV WATCHDOG: eth0: transmit timed out
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090102140023.GC4833@thyme.bj.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 10:00:23PM +0800, Yan Li wrote:
-> Now I know 3 methods supposed can be used to shut the device:
-> 1. (Alan Stern said Windows use this) cut the USB port's power
-> 2. send STOP SCSI command to stop it
-> 3. put it into suspend mode
-> 
-> For the 1st method I have no much experience with Windows so I can't
-> verify. But now I doubt it. Since there are many early USB devices
-> that still show light on after you "safely remove" it from Windows. I
-> guess the power is still supplied but the device is send a command to
-> be shutdown or suspended.
+Hello all,
 
-Sorry, Alan have not said `cut the power'. He said `disable the port'.
+Now I tested fealnx driver from 2.4.37 (2.4 git). I am still getting
+"NETDEV WATCHDOG: eth0: transmit timed out". Please let me know how
+can I fix this problem.
 
--- 
-Li, Yan
+fealnx.c:v2.51 Nov-17-2001
+eth0: 100/10M Ethernet PCI Adapter at 0x6200, 00:40:95:78:05:73, IRQ 11.
+
+NETDEV WATCHDOG: eth0: transmit timed out
+eth0: Transmit timed out, status 00000000, resetting...
+  Rx ring c11bf000:  80000000 80000000 80000000 80000000 80000000
+80000000 80000000 80000000 80000000 80000000 80000000 80000000
+  Tx ring c11be000:  80000000 80000000 80000000 80000000 0000 80000000
+NETDEV WATCHDOG: eth0: transmit timed out
+eth0: Transmit timed out, status 00000000, resetting...
+  Rx ring c11bf000:  80000000 80000000 80000000 80000000 80000000
+80000000 80000000 80000000 80000000 80000000 80000000 80000000
+  Tx ring c11be000:  80000000 0000 80000000 80000000 80000000 80000000
+NETDEV WATCHDOG: eth0: transmit timed out
+eth0: Transmit timed out, status 00000000, resetting...
+  Rx ring c11bf000:  80000000 80000000 80000000 80000000 80000000
+80000000 80000000 80000000 80000000 80000000 80000000 80000000
+  Tx ring c11be000:  80000000 80000000 80000000 80000000 80000000 0000
+
+
+00:0a.0 Ethernet controller: MYSON Technology Inc: Unknown device 0803
+	Subsystem: MYSON Technology Inc: Unknown device 0803
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+	Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+	Latency: 32 (8000ns min, 16000ns max), cache line size 08
+	Interrupt: pin A routed to IRQ 11
+	Region 0: I/O ports at 6200 [size=256]
+	Region 1: Memory at e1000000 (32-bit, non-prefetchable) [size=1K]
+	Expansion ROM at <unassigned> [disabled] [size=64K]
+	Capabilities: [88] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=375mA PME(D0-,D1+,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+Thank you,
+JSR
