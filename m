@@ -1,165 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757723AbZABJ4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbZABJ4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757723AbZABJ4A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZABJzv
+	id S1757860AbZABJ4s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbZABJ4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:55:51 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:2759 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755541AbZABJzv (ORCPT
+	Fri, 2 Jan 2009 04:56:38 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:51856 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756048AbZABJ4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:55:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MFm4Z/+rX6lerGE7CGPqs7CkGKIZz8qJ8tmdpwfgL2jWSIg96x8UK7ChfgwLtKuCKw
-         jYKSp1E1z2jHOLzbXFzdPTWQnTmGc7XwpIcwcZkzF8ab2v/PXXTzUttkTGWl+tMZIOvY
-         XuNJJiuJ2y3elGeIjhO9sUbDXixNfaviR/O5Q=
-Message-ID: <28c262360901020155l3a9260b5h3c79d4b23a213825@mail.gmail.com>
-Date: Fri, 2 Jan 2009 18:55:48 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation take2
-Cc: "Mel Gorman" <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "wassim dagash" <wassim.dagash@gmail.com>
-In-Reply-To: <20090101021240.A057.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 2 Jan 2009 04:56:37 -0500
+Date: Fri, 2 Jan 2009 10:56:43 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, linux-usb@vger.kernel.org
+Subject: Re: Enable CONFIG_USB_SUSPEND by default or some mobile HD can't
+	be unplugged safely
+Message-ID: <20090102095643.GB17103@x61>
+Mail-Followup-To: linux-kernel@vger.kernel.org, gregkh@suse.de,
+	linux-usb@vger.kernel.org
+References: <20090101160343.GA4278@thyme.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081231115332.GB20534@csn.ul.ie>
-	 <20081231215934.1296.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090101021240.A057.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20090101160343.GA4278@thyme.bj.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, kosaki-san.
+On Fri, Jan 02, 2009 at 00:03:43 +0800, Yan Li wrote:
+> Hello List,
+> 
+> By default CONFIG_USB_SUSPEND is not enabled and today I got bite by
+> this when I got a new WDC My Book hard drive. I have no way to unplug
+> it safely, according to it's manual, with a kernel that doesn't have
+> CONFIG_USB_SUSPEND=y.
+> 
+> On it's manual read "you should unplug and remove the device only when
+> the light is off." On Linux unmounting it won't turn it's light off
+> and I can feel it's motor is still running.  The only way to unplug it
+> properly on a Linux system, as to my knowledge, is to echo `suspend'
+> to `/sys/bus/usb/devices/$DEV/power/level'. And one has to have
+> CONFIG_USB_SUSPEND=y to do this.
 
-I read the previous threads now. It's rather late :(.
+With a WD My Passport drive (2,5"), I need to use sg_start --stop --pc=3
+to stop the disk before unplugging it. Maybe this works with your
+drive, too.  This is also required by some Firewire hard disks.  Maybe
+the eject command should be extended to use this method, as it is used
+also by HAL to eject hotplug devices.
 
-I think it's rather awkward that sudden big change of order from 10 to 0.
-
-This problem causes zone_water_mark's fail.
-It mean now this zone's proportional free page per order size is not good.
-Although order-0 page is very important, Shouldn't we consider other
-order allocations ?
-
-So I want to balance zone's proportional free page.
-How about following ?
-
-if (nr_reclaimed < SWAP_CLUSTER_MAX) {
-   if (order != 0) {
-     order -=1;
-     sc.order -=1;
-   }
-}
-
-It prevents infinite loop and do best effort to make zone's
-proportional free page per order size good.
-
-It's just my opinion within my knowledge.
-If it have a problem, pz, explain me :)
-
-
-On Thu, Jan 1, 2009 at 11:52 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->
->> >                 /*
->> >                  * Fragmentation may mean that the system cannot be
->> >                  * rebalanced for high-order allocations in all zones.
->> >                  * At this point, if nr_reclaimed < SWAP_CLUSTER_MAX,
->> >                  * it means the zones have been fully scanned and are still
->> >                  * not balanced. For high-order allocations, there is
->> >                  * little point trying all over again as kswapd may
->> >                  * infinite loop.
->> >                  *
->> >                  * Instead, recheck all watermarks at order-0 as they
->> >                  * are the most important. If watermarks are ok, kswapd will go
->> >                  * back to sleep. High-order users can still direct reclaim
->> >                  * if they wish.
->> >                  */
->> >
->> > ?
->>
->> Excellent. I strongly like this and I hope merge it to my patch.
->> I'll resend new patch.
->
-> Done.
->
->
->
-> ==
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
->
-> Wassim Dagash reported following kswapd infinite loop problem.
->
->  kswapd runs in some infinite loop trying to swap until order 10 of zone
->  highmem is OK.... kswapd will continue to try to balance order 10 of zone
->  highmem forever (or until someone release a very large chunk of highmem).
->
-> For non order-0 allocations, the system may never be balanced due to
-> fragmentation but kswapd should not infinitely loop as a result.
->
-> Instead, recheck all watermarks at order-0 as they are the most important.
-> If watermarks are ok, kswapd will go back to sleep.
->
->
-> Reported-by: wassim dagash <wassim.dagash@gmail.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Reviewed-by: Nick Piggin <npiggin@suse.de>
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>,
-> ---
->  mm/vmscan.c |   17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c       2008-12-25 08:26:37.000000000 +0900
-> +++ b/mm/vmscan.c       2009-01-01 01:56:02.000000000 +0900
-> @@ -1872,6 +1872,23 @@ out:
->
->                try_to_freeze();
->
-> +               /*
-> +                * Fragmentation may mean that the system cannot be
-> +                * rebalanced for high-order allocations in all zones.
-> +                * At this point, if nr_reclaimed < SWAP_CLUSTER_MAX,
-> +                * it means the zones have been fully scanned and are still
-> +                * not balanced. For high-order allocations, there is
-> +                * little point trying all over again as kswapd may
-> +                * infinite loop.
-> +                *
-> +                * Instead, recheck all watermarks at order-0 as they
-> +                * are the most important. If watermarks are ok, kswapd will go
-> +                * back to sleep. High-order users can still direct reclaim
-> +                * if they wish.
-> +                */
-> +               if (nr_reclaimed < SWAP_CLUSTER_MAX)
-> +                       order = sc.order = 0;
-> +
->                goto loop_again;
->        }
->
->
->
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
-
-
-
--- 
-Kinds regards,
-MinChan Kim
+Regards,
+Tino
