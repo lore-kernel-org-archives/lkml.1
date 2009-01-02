@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZABAIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbZABAL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbZABAIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Jan 2009 19:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbZABAIG
+	id S1756680AbZABAL2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Jan 2009 19:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZABALT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Jan 2009 19:08:06 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:41403 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbZABAIE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Jan 2009 19:08:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=ZnEPbXJpoU6suQhSZw78chpf7ixywZgxM3C4apca/bP9ML0vyO1WE9HKQJJQzLS/a9
-         ZXCJvWoGfkVK2v+QxJAbTtAy4UZ+YyXbUFylId8cZB0seJ0iQMoDssbLzpHs74cVr6Xi
-         7n/uGJbOPVaACTzqf0Ix2sMVB9k6evBo47slA=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Arjan Opmeer <arjan@opmeer.net>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: 2.6.28 thinks that my PS/2 mouse is a touchpad
-Date: Fri, 2 Jan 2009 01:07:54 +0100
-User-Agent: KMail/1.8.2
-Cc: "Alexander E. Patrakov" <patrakov@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-References: <gj4r8h$okm$1@ger.gmane.org> <20081229185619.GA18394@adopmeer.homeip.net>
-In-Reply-To: <20081229185619.GA18394@adopmeer.homeip.net>
+	Thu, 1 Jan 2009 19:11:19 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:52333 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754006AbZABALS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Jan 2009 19:11:18 -0500
+Date: Thu, 1 Jan 2009 19:11:16 -0500
+To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [Patch] fs/nfs/nfs4proc.c: make nfs4_map_errors() static
+Message-ID: <20090102001116.GB31840@fieldses.org>
+References: <20081225215523.GH3130@hack.private>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200901020107.54740.vda.linux@googlemail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081225215523.GH3130@hack.private>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 December 2008 19:56, Arjan Opmeer wrote:
-> On Sat, Dec 27, 2008 at 02:06:29PM +0500, Alexander E. Patrakov wrote:
-> > 
-> > Linux-2.6.28, as compiled by Arch Linux developers, thinks that my PS/2
-> > mouse (a cheap M-BT58 optical wheel mouse by Logitech) is actually a
-> > touchpad.  This makes it unusable.  Adding the "proto=imps" parameter to
-> > the psmouse module helps.
+On Thu, Dec 25, 2008 at 09:55:23PM +0000, Américo Wang wrote:
 > 
-> > CONFIG_MOUSE_PS2_ELANTECH=y
+> nfs4_map_errors() can become static.
 > 
-> Oh dear. The first victim of this driver... :(
+> Signed-off-by: WANG Cong <wangcong@zeuux.org>
+> Cc: J. Bruce Fields <bfields@fieldses.org>
+
+Thanks, applied for 2.6.29.--b.
+
 > 
-> As we can see below the mouse gets detected as an Elantech touchpad. This
-> means that it reacts to the Elantech magic knock with the exact same
-> response we expect from a real Elantech touchpad.
-
-I am affected too. I am getting:
-
-2009-01-01_23:15:29.11109 kern.info: input: AT Translated Set 2 keyboard as /class/input/input2
-2009-01-01_23:15:29.11113 kern.info: elantech.c: Elantech version query result 0x00, 0x01, 0x64.
-2009-01-01_23:15:29.11118 kern.info: elantech.c: assuming hardware version 1, firmware version 0.100
-2009-01-01_23:15:29.11123 kern.info: elantech.c: Synaptics capabilities query result 0x00, 0x02, 0x64.
-2009-01-01_23:15:29.11128 kern.info: input: ETPS/2 Elantech Touchpad as /class/input/input3
-
-and then on attempts to use the mouse:
-
-...
-2009-01-01_23:16:08.68831 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.70630 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.71730 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.72918 kern.notice: psmouse.c: Touchpad at isa0060/serio1/input0 - driver resynched.
-2009-01-01_23:16:08.74732 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.75832 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.76932 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.78732 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.79832 kern.warn: psmouse.c: Touchpad at isa0060/serio1/input0 lost sync at byte 4
-2009-01-01_23:16:08.79844 kern.notice: psmouse.c: issuing reconnect request
-...
-
-On old kernel it was:
-
-2008-10-30_07:37:01.41484 kern.info: input: ImExPS/2 Logitech Wheel Mouse as /class/input/input3
-
---
-vda
+> ---
+> diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
+> index ea79064..b8fb6a6 100644
+> --- a/fs/nfs/nfs4_fs.h
+> +++ b/fs/nfs/nfs4_fs.h
+> @@ -174,7 +174,6 @@ extern ssize_t nfs4_listxattr(struct dentry *, char *, size_t);
+>  
+>  
+>  /* nfs4proc.c */
+> -extern int nfs4_map_errors(int err);
+>  extern int nfs4_proc_setclientid(struct nfs_client *, u32, unsigned short, struct rpc_cred *);
+>  extern int nfs4_proc_setclientid_confirm(struct nfs_client *, struct rpc_cred *);
+>  extern int nfs4_proc_async_renew(struct nfs_client *, struct rpc_cred *);
+> diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+> index 83e700a..91e46ec 100644
+> --- a/fs/nfs/nfs4proc.c
+> +++ b/fs/nfs/nfs4proc.c
+> @@ -69,7 +69,7 @@ static int _nfs4_proc_lookup(struct inode *dir, const struct qstr *name, struct
+>  static int _nfs4_proc_getattr(struct nfs_server *server, struct nfs_fh *fhandle, struct nfs_fattr *fattr);
+>  
+>  /* Prevent leaks of NFSv4 errors into userland */
+> -int nfs4_map_errors(int err)
+> +static int nfs4_map_errors(int err)
+>  {
+>  	if (err < -1000) {
+>  		dprintk("%s could not handle NFSv4 error %d\n",
+> 
