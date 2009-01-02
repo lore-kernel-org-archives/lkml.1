@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbZABRZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbZABRex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbZABRZi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 12:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757412AbZABRZ3
+	id S1758517AbZABRex (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 12:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbZABReo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 12:25:29 -0500
-Received: from postmen.rb009.by.ded.neolocation.net ([91.149.189.39]:53437
-	"EHLO postmen.neolocation.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757029AbZABRZ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 12:25:29 -0500
-X-Greylist: delayed 2224 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Jan 2009 12:25:28 EST
-Date: Fri, 2 Jan 2009 18:45:22 +0200
-From: Sergei Trofimovich <slyfox@uvaga.by>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] i8k: Add Dell Vostro systems
-Message-ID: <20090102184522.07bc2b86@slyfox.slynet.org>
-In-Reply-To: <20090102161919.18117.51612.stgit@localhost.localdomain>
-References: <20090102161825.18117.98501.stgit@localhost.localdomain>
-	<20090102161919.18117.51612.stgit@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-DomainKey-Status: 
+	Fri, 2 Jan 2009 12:34:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43434 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756936AbZABRen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 12:34:43 -0500
+Date: Fri, 2 Jan 2009 18:34:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Valdis.Kletnieks@vt.edu, Bryan Donlan <bdonlan@gmail.com>,
+       Ingo Brueckl <ib@wupperonline.de>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86 (Linux Tiny): configure out support for some processors
+Message-ID: <20090102173435.GE6759@elte.hu>
+References: <495d2974@wupperonline.de> <3e8340490901012119i40971452q9f938702e58d7532@mail.gmail.com> <3f9a31f40901012159l255b95a8he41a341f36ebc54e@mail.gmail.com> <20090102093801.GD1975@elte.hu> <3f9a31f40901020710h508bbfbch3d7ccd6f4898ea03@mail.gmail.com> <11444.1230910752@turing-police.cc.vt.edu> <3f9a31f40901020813t136ad2ceif1092f312866a0ce@mail.gmail.com> <20090102162120.GG1180@elte.hu> <3f9a31f40901020838v333a968dv937a717e031743eb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f9a31f40901020838v333a968dv937a717e031743eb@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Jan 2009 16:19:23 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Hi! I bet, it does not pass checkpatch (tabs to spaces clash)
-Sorry, can't send fixed patch.
+* Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
 
-> From: Federico Heinz <fheinz@vialibre.org.ar>
+> On Fri, Jan 2, 2009 at 9:51 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > So you want to save kernel size by making less generic kernels tailored to
 > 
-> This trivial patch adds support for i8k on the new Dell Vostro models.
-> I tested it on my Vostro 1400, and it works. It does print a warning
-> when loading the module:
-> 
-> 	i8k: unable to get SMM BIOS version
-> 
-> But I couldn't figure out how to fix that. The module seems to work fine,
-> anyway...
-> 
-> Signed-off-by: Federico Heinz <fheinz@vialibre.org.ar>
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> ---
-> 
->  drivers/char/i8k.c |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/drivers/char/i8k.c b/drivers/char/i8k.c
-> index 099fc89..fc8cf7a 100644
-> --- a/drivers/char/i8k.c
-> +++ b/drivers/char/i8k.c
+> My intention is to remove unwanted or useless data from kernel.
 
-...
-> -	{ }
-^^^^^^
-This one
-vvvvvvv
-> +        { }
->  };
+which is one of the intentions of CONFIG_EMBEDDED too.
 
--- 
+> > a single box [yours in this case] - basically embedding the kernel on 
+> > it?
+> >
+> 
+> So you mean choosing x86 is also EMBEDDED ? because it will not gonna 
+> run on ARM machine.
+> 
+> > that is what CONFIG_EMBEDDED=y means in broad terms: "make the kernel 
+> > more specific [more embedded] to a particular hw/sw combination".
+> 
+> Choosing drivers is also Embedded ?
 
-  Sergei
+if you bring the argument to its logical extreme then yes. (And human 
+history is rich with pointless wars fought over various arguments brought 
+to their logical extreme.)
+
+a more pragmatic approach is that EMBEDDED is the specialization stuff 
+that can break a box easily without the average kernel tester noticing 
+why. Average kernel testers know about drivers and know about the 
+architecture they run on. They might not know what apps rely on 
+CONFIG_FUTEX for example.
+
+They will probably be aware of the basic CPU type they are using - but the 
+whole option brings only marginal benefits (on the order of 10 kilobytes 
+of RAM) and the failure scenario is ugly. I have run into it myself: i 
+booted a bzImage i assumed would work on a box but it wouldnt due to this. 
+It's a subjective category and no amount of talking will bring any 
+solution here.
+
+	Ingo
