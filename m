@@ -1,59 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbZABHP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZABHX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757051AbZABHP0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 02:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZABHPI
+	id S1757118AbZABHX1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 02:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZABHXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 02:15:08 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:17056 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751127AbZABHPG (ORCPT
+	Fri, 2 Jan 2009 02:23:18 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:40818 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbZABHXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 02:15:06 -0500
-Message-ID: <495DBEF0.1040801@panasas.com>
-Date: Fri, 02 Jan 2009 09:14:56 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
-MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       open-osd development <osd-dev@open-osd.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, avishay@gmail.com,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+	Fri, 2 Jan 2009 02:23:17 -0500
+Date: Fri, 2 Jan 2009 12:56:00 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [osd-dev] [PATCH 7/9] exofs: mkexofs
-References: <4947BFAA.4030208@panasas.com> <4947CA5C.50104@panasas.com> <20081229121423.efde9d06.akpm@linux-foundation.org> <495B8D90.1090004@panasas.com> <1230739053.3408.74.camel@localhost.localdomain> <495C8B65.4010202@panasas.com> <20090101232637.GC31367@fieldses.org>
-In-Reply-To: <20090101232637.GC31367@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Jan 2009 07:14:56.0626 (UTC) FILETIME=[D0DE1D20:01C96CA9]
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+Message-ID: <20090102072600.GA13412@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <28c262360812291543ia322a13g6af854a685ce7632@mail.gmail.com> <20081230024819.GA23301@balbir.in.ibm.com> <20081230062139.GA30038@elte.hu> <20081230180722.GA29060@dirshya.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081230180722.GA29060@dirshya.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan. 02, 2009, 1:26 +0200, "J. Bruce Fields" <bfields@fieldses.org> wrote:
-> On Thu, Jan 01, 2009 at 11:22:45AM +0200, Benny Halevy wrote:
->> On Dec. 31, 2008, 17:57 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
->>> I don't like it mainly because it's not truly a useful general framework
->>> for others to build on.  However, as argued above, there might not
->>> actually be such a useful framework, so as long as the only two
->>> consumers (you and Lustre) want an interface like this, I'll put it in.
->> Not to mention pnfs over objects which is coming up around the corner.
->> The pnfs-obj layout driver will use the osd initiator library as well
->> for distributed data I/O access (while the metadata server, to be based
->> on exofs accesses the OSD for metadata and security ops too)
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-30 23:37:22]:
+
+> * Ingo Molnar <mingo@elte.hu> [2008-12-30 07:21:39]:
 > 
-> What state is that project in right now?
-
-I hope to release the pnfs-obj layout driver in a few weeks,
-after finishing with cleaning up the nfs41 and pnfs patch sets.
-Still, there's more work to be done on the back end side, exporting
-exofs over (p)NFS, and then we'd be able to provide full pnfs
-over objects functionality.
-
-Benny
-
+> > 
+> > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > > > KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
+> > > > > package system
+> > > > >
+> > > > > SchedMC Run Time     Package Idle    Energy  Power
+> > > > > 0       81.68        52.83% 54.71%  1.00x J 1.00y W
+> > > > > 1       80.70        36.62% 70.11%  0.95x J 0.96y W
+> > > > > 2       74.95        19.53% 85.92%  0.90x J 0.98y W
+> > 
+> > > > Your result is very interesting.
+> > > > level 2 is more fast and efficient of power.
+> > > > 
+> > > > What's major contributor to use less time in level 2?
+> > > > I think it's cache bounce is less time than old.
+> > > > Is right ?
+> > > 
+> > > Yes, correct
+> > 
+> > yes, i too noticed that runtime improved so dramatically: +7.5% on 
+> > kernbench is a _very_ big deal.
+> > 
+> > So i wanted to ask you to re-test whether this speedup is reproducible, 
+> > and if yes, please check a few other workloads (for example sysbench on 
+> > postgresql / mysqld) and send a patch that changes the 
+> > sched_mc_power_savings default to POWERSAVINGS_BALANCE_WAKEUP (2).
 > 
-> --b.
+> The speedup for kernbench is reproducible.  I will post a more
+> detailed test report on kernbench soon.  The power-performance benefit
+> is for an under-utilised system (nr_cpus/2) run of kernbench which is
+> very ideal to demonstrate the power savings feature.  I will also try
+> sysbench and update results little later.  As Balbir mentioned, I am
+> on vacation and traveling.  I will post more benchmark results as soon
+> as possible.
+
+Hi Ingo,
+
+I ran my kernbench test setup over multiple iterations with several
+thread counts.  The performance will almost max out at 8-10 threads of
+kernbench since the system has total of 8 logical CPUs.
+
+The power saving benefits is expected to be maximum around 30-50%
+system utilisation (3-5 threads).
+
+I have posted the normalised results in various tables below.
+Apparently the sched_mc=2 settings is helping at 8 threads case also
+due to better cache line sharing.  I will work with Balbir to see if
+we can prove this assertion using performance counters.  I will start
+looking at sysbench and try to get benchmark results and power/energy
+data in similar configurations.
+
+--Vaidy
+
+All these tests were done on sched-tip at 
+commit: fe235c6b2a4b9eb11909fe40249abcce67f7d45d 
+uname -a is 2.6.28-rc8-tip-sv-05664-gfe235c6-dirty
+
+Kernbench was run on source 2.6.28 while the previous tests used
+2.6.25 kernel which had far less stuff to compile in defconfig :)
+
+System configuration is x86 quad core dual socket system 
+with 8 logical CPUs
+
+Each result is an average of 5 iterations.
+
+Kernbench threads = 2
+
+SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
+0	217.37	     73.30 76.93	1.00	   1.00
+1	204.68	     50.86 99.91	0.95	   1.01
+2	204.49	     50.69 99.93	0.95	   1.01
+
+Kernbench threads = 4
+
+SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
+0	109.11	     51.99 54.91	1.00	   1.00
+1	109.71	     35.86 71.88	0.96	   0.96
+2	102.95	     25.02 82.47	0.92	   0.97
+
+Kernbench threads = 6
+
+SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
+0	74.77	     35.29 36.37	1.00	   1.00
+1	74.54	     28.83 40.90	0.99	   0.99
+2	73.38	     21.09 47.29	0.98	   1.00
+
+Kernbench threads = 8
+
+SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
+0	63.18	     26.23 28.67	1.00	   1.00
+1	56.89	     19.85 22.38 	0.93	   1.02
+2	55.27	     17.65 19.84	0.91	   1.03
+
+
+Relative measures for sched_mc=1 compared to baseline sched_mc=0
+
+Threads=>	2	4	6	8	10	12
+KernbenchTime	0.94	1.01	1.00	0.90	0.93	0.95
+Energy		0.95	0.96	0.99	0.93	0.95	0.97
+Power		1.01	0.96	0.99	1.02	1.02	1.01
+
+Relative measures for sched_mc=2 compared to baseline sched_mc=0
+
+Threads=>	2	4	6	8	10	12
+KernbenchTime	0.94	0.94	0.98	0.87	0.92	0.94
+Energy		0.95	0.92	0.98	0.91	0.94	0.96
+Power		1.01	0.97	1.00	1.03	1.02	1.02
+
