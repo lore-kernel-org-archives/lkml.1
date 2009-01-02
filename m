@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbZABJ6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZABJ6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757974AbZABJ6A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757596AbZABJ5t
+	id S1757914AbZABJ6z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZABJ6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:57:49 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:41432 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757898AbZABJ5r (ORCPT
+	Fri, 2 Jan 2009 04:58:47 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56570 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755541AbZABJ6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:57:47 -0500
-Date: Fri, 2 Jan 2009 10:57:43 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Lachlan McIlroy <lachlan@sgi.com>,
+	Fri, 2 Jan 2009 04:58:47 -0500
+Date: Fri, 2 Jan 2009 04:58:42 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Lachlan McIlroy <lachlan@sgi.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>,
        xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [GIT PULL] XFS update for 2.6.29
-In-Reply-To: <20090101170329.GA17892@infradead.org>
-Message-ID: <Pine.LNX.4.64.0901021056360.14380@anakin>
-References: <20081230030845.A4F0558AE206@chook.melbourne.sgi.com>
- <Pine.LNX.4.64.0901011048090.14380@anakin> <20090101170329.GA17892@infradead.org>
+Message-ID: <20090102095842.GA24652@infradead.org>
+References: <20081230030845.A4F0558AE206@chook.melbourne.sgi.com> <Pine.LNX.4.64.0901011048090.14380@anakin> <20090101170329.GA17892@infradead.org> <Pine.LNX.4.64.0901021056360.14380@anakin>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0901021056360.14380@anakin>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Jan 2009, Christoph Hellwig wrote:
-> On Thu, Jan 01, 2009 at 10:50:52AM +0100, Geert Uytterhoeven wrote:
-> > | fs/xfs/xfs_btree.c: In function 'xfs_btree_readahead_lblock':
-> > | fs/xfs/xfs_btree.c:736: warning: comparison is always true due to limited range of data type
-> > | fs/xfs/xfs_btree.c:741: warning: comparison is always true due to limited range of data type
-> > 
-> > left/right = xfs_fsblock_t (32 or 64 bit), NULLDFSBNO = xfs_dfsbno_t (64 bit)
+On Fri, Jan 02, 2009 at 10:57:43AM +0100, Geert Uytterhoeven wrote:
+> > Hmm, can't reproduce it here with CONFIG_LBD=n on x86, but the following
 > 
-> Hmm, can't reproduce it here with CONFIG_LBD=n on x86, but the following
+> x86-32 or -64?
+> 
+> It may also depend on the compiler version. I have gcc version 4.1.2 20061115
+> (prerelease) (Debian 4.1.1-21).
 
-x86-32 or -64?
+32 bit, gcc version 4.3.2 (Debian 4.3.2-1) 
 
-It may also depend on the compiler version. I have gcc version 4.1.2 20061115
-(prerelease) (Debian 4.1.1-21).
-
-> patch should fix it:
-
-Yep, the warning is good.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
