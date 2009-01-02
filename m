@@ -1,127 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZABVxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbZABVxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbZABVxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 16:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbZABVxD
+	id S1758792AbZABVxd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 16:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759198AbZABVxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 16:53:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39892 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbZABVxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 16:53:00 -0500
-Date: Fri, 2 Jan 2009 22:52:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       "H. Peter Anvin" <hpa@kernel.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -tip] fix compilation error
-Message-ID: <20090102215239.GA17240@elte.hu>
-References: <495AA87D.9060704@kernel.org> <495ABDF8.2070703@kernel.org> <20081231004722.GA28472@nowhere> <495AC45D.8010102@kernel.org> <20081231014747.GB28472@nowhere> <20081231081458.GB12942@elte.hu> <3f9a31f40812310040y27c39b87v456ae38e46031624@mail.gmail.com> <20081231084420.GA13665@elte.hu> <1230716702.24316.3.camel@jaswinder.satnam> <20081231141248.GA5748@nowhere>
-MIME-Version: 1.0
+	Fri, 2 Jan 2009 16:53:15 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:34905 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759034AbZABVxN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 16:53:13 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArcEAH8YXklMQWTh/2dsb2JhbACBbMhqhXI
+Date: Fri, 2 Jan 2009 16:48:05 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] kmemtrace: Use tracepoints instead of markers.
+Message-ID: <20090102214805.GA26654@Krystal>
+References: <cover.1230622068.git.eduard.munteanu@linux360.ro> <51a70358bfd74d84c844260d9b5b3ad6ac189d7d.1230622069.git.eduard.munteanu@linux360.ro> <20081230124017.GH28520@ghostprotocols.net> <20081230140232.GG10635@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081231141248.GA5748@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081230140232.GG10635@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:33:31 up 1 day, 21:31,  2 users,  load average: 0.05, 0.03,
+	0.00
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Wed, Dec 31, 2008 at 03:15:02PM +0530, Jaswinder Singh Rajput wrote:
-> > On Wed, 2008-12-31 at 09:44 +0100, Ingo Molnar wrote:
-> > > * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Tue, Dec 30, 2008 at 10:40:17AM -0200, Arnaldo Carvalho de Melo wrote:
+> > Em Tue, Dec 30, 2008 at 09:41:28AM +0200, Eduard - Gabriel Munteanu escreveu:
+> > > kmemtrace now uses tracepoints instead of markers. We no longer need to
+> > > use format specifiers. Also dropped kmemtrace_mark_alloc_node(), since
+> > > it's easy to pass -1 as the NUMA node without providing a needless and
+> > > long-named variant of the same function.
 > > > 
-> > > > Hello Ingo,
-> > > > 
-> > > > On Wed, Dec 31, 2008 at 1:44 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > > > >
-> > > > > Could you check whether latest tip/master is still OK? I had these
-> > > > > problems resolved locally (but forgot to push them out), and now i also
-> > > > > had to do a few conflict resolutions with latest -git, hopefully i have
-> > > > > not lost hpa's fixes ...
-> > > > >
-> > > > 
-> > > > With latest/tip, I am still getting error on X86_32 machines :
-> > > > 
-> > > >   CC      mm/slab.o
-> > > > mm/slab.c:105:31: error: tracing/kmemtrace.h: No such file or directory
-> > > > make[1]: *** [mm/slab.o] Error 1
-> > > > make: *** [mm] Error 2
-> > > 
-> > > ok, pushed out a new one - does it build fine now?
-> > > 
+> > > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> > > diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+> > > index 7555ce9..fe3cea2 100644
+> > > --- a/include/linux/slab_def.h
+> > > +++ b/include/linux/slab_def.h
+> > > @@ -76,8 +76,8 @@ found:
+> > >  
+> > >  		ret = kmem_cache_alloc_notrace(cachep, flags);
+> > >  
+> > > -		kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
+> > > -				     size, slab_buffer_size(cachep), flags);
+> > > +		trace_kmalloc(_THIS_IP_, ret,
+> > > +			      size, slab_buffer_size(cachep), flags, -1);
 > > 
-> > Yes, Now it looks better, thanks :-)
+> > Is there a way for a tracepoint to get the caller without having to pass
+> > it explicitely?
 > > 
-> > I think it will be better to move trace/XXX below to linux/XXX to aviod
-> > confusion and some minor cleanup in trace folder, do you thinks this is
-> > useful :
+> > - Arnaldo
 > 
+> It might be possible, but for correctness DEFINE_TRACE() should use
+> __always_inline instead of inline.
 > 
-> I'm not sure. The tracer's headers are small files that are only 
-> included in very few c files. They should be rarely included for general 
-> uses.
 
-yeah - it's also good to have a central repository of all tracepoints in 
-one directory. The header guard fixes look correct nevertheless:
+Yes, we could (and maybe should) use __always_inline there. Hrm, which
+which tree to you work ? You probably mean DECLARE_TRACE() rather than
+DEFINE_TRACE() ?
 
-> > ---
-> >  include/trace/boot.h      |    6 +++---
-> >  include/trace/kmemtrace.h |    6 +++---
-> >  mm/slab.c                 |    2 +-
-> >  3 files changed, 7 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/include/trace/boot.h b/include/trace/boot.h
-> > index 088ea08..21dcce3 100644
-> > --- a/include/trace/boot.h
-> > +++ b/include/trace/boot.h
-> > @@ -1,5 +1,5 @@
-> > -#ifndef _LINUX_TRACE_BOOT_H
-> > -#define _LINUX_TRACE_BOOT_H
-> > +#ifndef _TRACE_BOOT_H
-> > +#define _TRACE_BOOT_H
-> >  
-> >  #include <linux/module.h>
-> >  #include <linux/kallsyms.h>
-> > @@ -57,4 +57,4 @@ static inline void enable_boot_trace(void) { }
-> >  static inline void disable_boot_trace(void) { }
-> >  #endif /* CONFIG_BOOT_TRACER */
-> >  
-> > -#endif /* __LINUX_TRACE_BOOT_H */
-> > +#endif /* _TRACE_BOOT_H */
-> > diff --git a/include/trace/kmemtrace.h b/include/trace/kmemtrace.h
-> > index ad8b785..4ea5300 100644
-> > --- a/include/trace/kmemtrace.h
-> > +++ b/include/trace/kmemtrace.h
-> > @@ -4,8 +4,8 @@
-> >   * This file is released under GPL version 2.
-> >   */
-> >  
-> > -#ifndef _LINUX_KMEMTRACE_H
-> > -#define _LINUX_KMEMTRACE_H
-> > +#ifndef _TRACE_KMEMTRACE_H
-> > +#define _TRACE_KMEMTRACE_H
-> >  
-> >  #ifdef __KERNEL__
-> >  
-> > @@ -71,5 +71,5 @@ static inline void kmemtrace_mark_alloc(enum kmemtrace_type_id type_id,
-> >  
-> >  #endif /* __KERNEL__ */
-> >  
-> > -#endif /* _LINUX_KMEMTRACE_H */
-> > +#endif /* _TRACE_KMEMTRACE_H */
+I just went over your patch again. it uses the old DEFINE_TRACE() API.
+You should get the latest tracepoints which have DECLARE_TRACE() (for
+trace/kmemtrace.h) and then a DEFINE_TRACE() in a .c.  Ah I see, you
+work on 2.6.28. You should work on top of -tip, which has this new API.
+Using the tracepoints present in 2.6.28 will not let you do only a
+single definition of the tracepoint structure and it will lead to waste
+of kernel memory by defining multiple instances of tracepoint structures
+(one for each trace_*() use, so one per kmalloc()). The
+Documentation/tracepoints.txt file is updated accordingly.
 
-	Ingo
+
+> But it is quite pointless. Sometimes we need _RET_IP_, sometimes
+> _THIS_IP_ and sometimes a parameter we've been passed. That's because we
+> want the IP of the caller, so it depends on whether this slab function
+> is __always_inline, non-inlined or deeply nested within other functions
+> (which can be as well __always_inline or non-inlined).
+> 
+
+Hrm ? In the case we just want
+
+  trace_kmalloc(_THIS_IP, ......);
+
+If we have __always_inline for the trace_*() declaration, isn't it the
+same to just do this in the probe ?
+
+void probe_kmalloc(......)
+{
+  ... _RET_IP_ ...;
+
+}
+
+This would remove a parameter from the stack created from the
+instrumentation site, which is always good.
+
+Mathieu
+
+> 
+> 	Eduard
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
