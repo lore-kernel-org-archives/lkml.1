@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932164AbZABTDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932220AbZABTEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932164AbZABTDU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 14:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758033AbZABTDJ
+	id S932220AbZABTEf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 14:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758752AbZABTEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 14:03:09 -0500
-Received: from main.gmane.org ([80.91.229.2]:44598 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757624AbZABTDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 14:03:08 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: Replace CONFIG_EMBEDDED [Was: x86 (Linux Tiny): configure out
- support for some processor]
-Date: Fri, 02 Jan 2009 14:02:48 -0500
-Message-ID: <495E64D8.1030200@tmr.com>
-References: <495d2974@wupperonline.de> <3e8340490901012119i40971452q9f938702e58d7532@mail.gmail.com> <3f9a31f40901012159l255b95a8he41a341f36ebc54e@mail.gmail.com> <20090102093801.GD1975@elte.hu> <3f9a31f40901020710h508bbfbch3d7ccd6f4898ea03@mail.gmail.com> <11444.1230910752@turing-police.cc.vt.edu> <3f9a31f40901020813t136ad2ceif1092f312866a0ce@mail.gmail.com> <20090102162120.GG1180@elte.hu> <3f9a31f40901020838v333a968dv937a717e031743eb@mail.gmail.com> <20090102173435.GE6759@elte.hu> <20090102181345.GB5905@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Valdis.Kletnieks@vt.edu, Bryan Donlan <bdonlan@gmail.com>,
-       Ingo Brueckl <ib@wupperonline.de>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
-In-Reply-To: <20090102181345.GB5905@uranus.ravnborg.org>
+	Fri, 2 Jan 2009 14:04:23 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60752 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758234AbZABTEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 14:04:22 -0500
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>
+Subject: Re: Btrfs for mainline
+From: Andi Kleen <andi@firstfloor.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>
+	<20081231104533.abfb1cf9.akpm@linux-foundation.org>
+	<1230765549.7538.8.camel@think.oraclecorp.com>
+Date: Fri, 02 Jan 2009 20:05:50 +0100
+In-Reply-To: <1230765549.7538.8.camel@think.oraclecorp.com> (Chris Mason's message of "Wed, 31 Dec 2008 18:19:09 -0500")
+Message-ID: <87r63ljzox.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->> It's a subjective category and no amount of talking will bring any 
->> solution here.
-> 
-> It is brought up now and then partly because the use of the
-> term EMBEDDED that is so overloaded that it is not fun.
-> 
-> Someone should kill it and replace it with something saner.
-> 
-> CONFIG_EXPERT_TEXT_SIZE
-> 
-> For stuff that the expert can toy with which mainly
-> has text size impact and some documented performance/functionality impact.
-> The possibility to select a subset of CPU's may belong here.
-> 
-> 
-> CONFIG_EXPERT_DATA_SIZE
-> 
-> Likewise where what we save is more data than TEXT.
-> For example where we lower the size of a hash bucket etc.
-> 
-> CONFIG_EXPERT
-> 
-> For other stuff that no 'ordinary' user will need to change
-> but the expert may find it usefull.
-> 
-> Everything we hide under EMBEDDED today would fit in the
-> categories above.
-> 
-> 
-Don't forget "CONFIG_EXPERT_STACK_SIZE" for 4k x86 stacks.
+Chris Mason <chris.mason@oracle.com> writes:
+
+> On Wed, 2008-12-31 at 10:45 -0800, Andrew Morton wrote:
+>> On Wed, 31 Dec 2008 06:28:55 -0500 Chris Mason <chris.mason@oracle.com> wrote:
+>> 
+>> > Hello everyone,
+>> 
+>> Hi!
+>> 
+>> > I've done some testing against Linus' git tree from last night and the
+>> > current btrfs trees still work well.
+>> 
+>> what's btrfs?  I think I've heard the name before, but I've never
+>> seen the patches :)
+>
+> The source is up to around 38k loc, I thought it better to use that http
+> thing for people who were interested in the code.
+>
+> There is also a standalone git repo:
+>
+> http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable-standalone.git;a=summary
+
+Some items I remember from my last look at the code that should
+be cleaned up before mainline merge (that wasn't a full in depth review):
+
+- locking.c needs a lot of cleanup.
+If combination spinlocks/mutexes are really a win they should be 
+in the generic mutex framework. And I'm still dubious on the hardcoded 
+numbers.
+- compat.h needs to go
+- there's various copy'n'pasted code from the VFS (like may_create) 
+that needs to be cleaned up.
+- there should be manpages for all the ioctls and other interfaces.
+- ioctl.c was not explicitely root protected. security issues?
+- some code was severly undercommented.
+e.g. each file should at least have a one liner
+describing what it does (ideally at least a paragraph). Bad examples
+are export.c or free-space-cache.c, but also others.
+- ENOMEM checks are still missing all over (e.g. with most of the 
+btrfs_alloc_path callers). If you keep it that way you would need
+at least XFS style "loop for ever" alloc wrappers, but better just
+fix all the callers. Also there used to be a lot of BUG_ON()s on
+memory allocation failure even.
+- In general BUG_ONs need review I think. Lots of externally triggerable
+ones.
+- various checkpath.pl level problems I think (e.g. printk levels) 
+- the printks should all include which file system they refer to
+
+In general I think the whole thing needs more review.
+
+-Andi
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+ak@linux.intel.com
