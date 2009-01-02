@@ -1,73 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZABIzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbZABJDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbZABIzs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 03:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbZABIzk
+	id S1757327AbZABJDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZABJDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 03:55:40 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:47169 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752974AbZABIzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 03:55:39 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: schwidefsky@de.ibm.com
-Subject: Re: [PATCH] asm-s390/posix_types.h: drop __USE_ALL usage
-Date: Fri, 2 Jan 2009 03:55:35 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org
-References: <1230882782-9977-1-git-send-email-vapier@gentoo.org> <1230886227.5474.0.camel@localhost>
-In-Reply-To: <1230886227.5474.0.camel@localhost>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2853479.VzoH07x2to";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901020355.37186.vapier@gentoo.org>
+	Fri, 2 Jan 2009 04:03:06 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:58359 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774AbZABJDC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 04:03:02 -0500
+Date: Fri, 2 Jan 2009 10:04:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Rob Landley <rob@landley.net>
+Cc: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
+Message-ID: <20090102090439.GA3057@uranus.ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <200901020213.30658.rob@landley.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901020213.30658.rob@landley.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2853479.VzoH07x2to
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Rob.
 
-On Friday 02 January 2009 03:50:27 Martin Schwidefsky wrote:
-> On Fri, 2009-01-02 at 02:53 -0500, Mike Frysinger wrote:
-> > Bring s390 in line with all the other ports.  Not sure how s390 missed
-> > this change as all the other arches were being updated ...
->
-> Should I carry the patch via git390?
+On Fri, Jan 02, 2009 at 02:13:30AM -0600, Rob Landley wrote:
+> From: Rob Landley <rob@landley.net>
+> 
+> Replace kernel/timeconst.pl with kernel/timeconst.sh.  The new shell script
+> is much simpler, about 1/4 the size, and runs on Red Hat 9 from 2003.
 
-i dont know what "git390" is, but it makes no difference to me how it gets=
-=20
-merged.  whatever is easiest for people.
-=2Dmike
+This part of the changelog is OK except that is fails to
+address why we want to get away from perl.
 
---nextPart2853479.VzoH07x2to
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Please drop the remining part of the changelog (but not the s-o-b).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+> Peter Anvin added this perl to 2.6.25.  Before that, the kernel had never
+> required perl to build.
+> 
+> Signed-off-by: Rob Landley <rob@landley.net>
+> ---
+> 
+>  kernel/Makefile     |    4 
+>  kernel/timeconst.pl |  378 ------------------------------------------
+>  kernel/timeconst.sh |   91 ++++++++++
+>  3 files changed, 93 insertions(+), 380 deletions(-)
+> 
+> diff -r d0c7611dcfd6 kernel/Makefile
+> --- a/kernel/Makefile	Tue Dec 30 17:48:25 2008 -0800
+> +++ b/kernel/Makefile	Fri Jan 02 00:10:44 2009 -0600
+> @@ -115,7 +115,7 @@
+>  $(obj)/time.o: $(obj)/timeconst.h
+>  
+>  quiet_cmd_timeconst  = TIMEC   $@
+> -      cmd_timeconst  = $(PERL) $< $(CONFIG_HZ) > $@
+> +      cmd_timeconst  = $(CONFIG_SHELL) $< $(CONFIG_HZ) > $@
+>  targets += timeconst.h
+> -$(obj)/timeconst.h: $(src)/timeconst.pl FORCE
+> +$(obj)/timeconst.h: $(src)/timeconst.sh FORCE
+>  	$(call if_changed,timeconst)
+OK
 
-iQIcBAABAgAGBQJJXdaJAAoJEEFjO5/oN/WB8CYP/RqpchK2LMKUwxR4HjaqboMN
-CiDMABPcAh5FT8OVdGc0Zwvy8G6XmyC2w1tKoz2ZK8QSoyL4bSar0nUKu2M4dW/h
-39gbDmOaYvJl/1puoDvfuJrUWQR1DpUeBkinIpGRkEtPJLQdzQMtdJ5BHE7rnVWJ
-nikrd5AkjYKci1v/ysGZD4FeLVSVa28EO17gvVIKnzGHThZ6DPtgsjve5zKT6R6X
-xSRhBVcU83TOvrFllFhMiaV5X2WJOClRqtkPsYzaHJaQh0WQAn7OyQiip73ReG2W
-+T5UFwbMboHDiGwYym8H/URnKw8nRdBYG0JwEIWVoqy7rdw60CGKq6r/2zLGIRtX
-GX+ZDxSEP+uERAsmKGtGKrUbgoJyrFp11ztjxWFtGyQUu4GfQ5HSW2qNMUjBMm4o
-O3uzFigyq1TdSLleSGYz8aselS4IjXbZzF8hfh1gA8jNtoWNuDFv89JOeYgCBvH8
-59fNNVIecyhgbThAb43z4hOLu5QGc5HCYNg+glShjLo5L/Stp4yLO77k3dEq2hCm
-JJSuLWabuXBsD9xh4s5oL8AC4KvaJSMVuy+XKmrpWo/6o7FEz29LiBuF1LQKMOo6
-6QsmHXPxc26uPWyrA+uL8BWY4BkoS9GHutrgV1iDSNeXsoKdRVanq/sKvXDHT0Vc
-cxw/R1QllR7xTBWySU1i
-=qAZy
------END PGP SIGNATURE-----
+> --- /dev/null	1969-12-31 00:00:00.000000000 -0600
+> +++ hg/kernel/timeconst.sh	2009-01-01 23:53:17.000000000 -0600
+> @@ -0,0 +1,91 @@
+> +#!/bin/bash
+> +
+> +if [ $# -ne 1 ]
+> +then
+> +	echo "Usage: timeconst.sh HZ"
+> +	exit 1
+> +fi
+That usage is useless. Either extend it or spend a few lines
+in the shell script explainign what the shell script is supposed to do.
 
---nextPart2853479.VzoH07x2to--
+> +
+> +HZ=$1
+> +
+> +# Sanity test: even the shell in Red Hat 9 (circa 2003) supported 64 bit math.
+> +
+> +[ $((1<<32)) -lt 0 ] && exit 1
+> +
+If it fails then add an error message explaining why. So if we get reports that this
+fails then we at least can see something like:
+"timeconst noticed that the shell did not support 64 bit math - stop"
+
+
+> +# Output start of header file
+> +
+> +cat << EOF
+> +/* Automatically generated by kernel/timeconst.sh */
+> +/* Conversion constants for HZ == $HZ */
+> +
+> +#ifndef KERNEL_TIMECONST_H
+> +#define KERNEL_TIMECONST_H
+
+Please use __KERNEL_TIMECONST_H. The two underscores are standard.
+
+> +
+> +#include <linux/param.h>
+> +#include <linux/types.h>
+> +
+> +#if HZ != $HZ
+> +#error "kernel/timeconst.h has the wrong HZ value!"
+> +#endif
+> +
+> +EOF
+> +
+> +# For both Miliseconds and Microseconds
+> +
+> +for i in "MSEC 1000" "USEC 1000000"
+> +do
+> +	NAME=$(echo $i | awk '{print $1}')
+> +	PERIOD=$(echo $i | awk '{print $2}')
+> +
+> +	# Find greatest common denominator (using Euclid's algorithm)
+> +
+> +	A=$HZ
+> +	B=$PERIOD
+> +
+> +	while [ $B -ne 0 ]
+> +	do
+> +		C=$(($A%$B))
+> +		A=$B
+> +		B=$C
+> +	done
+> +
+> +	GCD=$A
+> +
+> +	# Do this for each direction (HZ_TO_PERIOD and PERIOD_TO_HZ)
+> +
+> +	for DIRECTION in 0 1
+> +	do
+> +		if [ $DIRECTION -eq 0 ]
+> +		then
+> +			CONVERT="HZ_TO_${NAME}"
+> +			FROM=$HZ
+> +			TO=$PERIOD
+> +		else
+> +			CONVERT="${NAME}_TO_HZ"
+> +			FROM=$PERIOD
+> +			TO=$HZ
+> +		fi
+> +
+> +		# How many shift bits give 32 bits of significant data?
+> +
+> +		SHIFT=0
+> +		while [ $(( (($TO<<$SHIFT)+$FROM-1)/$FROM )) -lt $((1<<31)) ]
+> +		do
+> +			SHIFT=$(( $SHIFT+1 ))
+> +		done
+> +
+> +		MUL32=$(( (($TO<<$SHIFT)+$FROM-1)/$FROM ))
+> +		MUL32=$(printf %x $MUL32)
+> +		echo "#define ${CONVERT}_MUL32	U64_C(0x$MUL32)"
+> +		ADJ32=$(($FROM/$GCD))
+> +		ADJ32=$(( (($ADJ32-1)<<$SHIFT)/$ADJ32 ))
+> +		ADJ32=$(printf %x $ADJ32)
+> +		echo "#define ${CONVERT}_ADJ32	U64_C(0x$ADJ32)"
+> +		echo "#define ${CONVERT}_SHR32	$SHIFT"
+> +		echo "#define ${CONVERT}_NUM		U64_C($(($TO/$GCD)))"
+> +		echo "#define ${CONVERT}_DEN		U64_C($(($FROM/$GCD)))"
+> +	done
+> +done
+
+Is it a shell limitation that all spaces around operators are missing?
+Makes it hard to read..
+
+You should use trap in your shell script so we do not end up with a
+partially generated file.
+Or you should change the rule in the Makefile to use
+a temperary file and then rename it.
+
+We have similar bugs in other places - but no need to add
+in more places.
+
+
+	Sam
