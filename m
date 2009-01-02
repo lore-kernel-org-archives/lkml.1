@@ -1,89 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZABJw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757723AbZABJ4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbZABJw6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 04:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZABJws
+	id S1757723AbZABJ4A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 04:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZABJzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 04:52:48 -0500
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:59343 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752598AbZABJwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 04:52:47 -0500
-Date: Fri, 2 Jan 2009 18:50:23 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Rob Landley <rob@landley.net>
-Cc: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Message-ID: <20090102095023.GA28078@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Rob Landley <rob@landley.net>,
-	Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-References: <200901020207.30359.rob@landley.net>
+	Fri, 2 Jan 2009 04:55:51 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:2759 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755541AbZABJzv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 04:55:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MFm4Z/+rX6lerGE7CGPqs7CkGKIZz8qJ8tmdpwfgL2jWSIg96x8UK7ChfgwLtKuCKw
+         jYKSp1E1z2jHOLzbXFzdPTWQnTmGc7XwpIcwcZkzF8ab2v/PXXTzUttkTGWl+tMZIOvY
+         XuNJJiuJ2y3elGeIjhO9sUbDXixNfaviR/O5Q=
+Message-ID: <28c262360901020155l3a9260b5h3c79d4b23a213825@mail.gmail.com>
+Date: Fri, 2 Jan 2009 18:55:48 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] mm: stop kswapd's infinite loop at high order allocation take2
+Cc: "Mel Gorman" <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "wassim dagash" <wassim.dagash@gmail.com>
+In-Reply-To: <20090101021240.A057.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200901020207.30359.rob@landley.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20081231115332.GB20534@csn.ul.ie>
+	 <20081231215934.1296.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090101021240.A057.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 02, 2009 at 02:07:28AM -0600, Rob Landley wrote:
-> Before 2.6.25 (specifically git bdc807871d58285737d50dc6163d0feb72cb0dc2 ) 
-> building a Linux kernel never required perl to be installed on the build 
-> system.  (Various development and debugging scripts were written in perl and 
-> python and such, but they weren't involved in actually building a kernel.)  
-> Building a kernel before 2.6.25 could be done with a minimal system built from 
-> gcc, binutils, bash, make, busybox, uClibc, and the Linux kernel, and nothing 
-> else.  (Embedded developers creating clean cross compile environments that 
-> won't leak bits of the host system into the target, or bootstrapping native 
-> development environments to run on target hardware or under emulators, tend to 
-> care about this sort of thing.)
-> 
-> The perl checkin for 2.6.25 was the camel's nose under the tent flap, and 
-> since then two more instances of perl have shown up in the core kernel build.  
-> This patch series removes the three required to build a basic kernel for qemu 
-> for the targets I've tested (arm, mips, powerpc, sparc, m68k, sh4, and of 
-> course x86 and x86-64), replacing them with shell scripts.
+Hi, kosaki-san.
 
-Misguided rhetoric aside, what does this actually accomplish? If folks
-add meaningful tools in to the kernel that require python, and it is
-generally regarded as being fairly ubiquitous, I can't imagine there
-being any substantiated objections against it.
+I read the previous threads now. It's rather late :(.
 
-Your main reasons against inclusion of perl seem to be that there is no
-realistic expectation for target systems that will be self-hosting will
-have perl included, or the inherent complexity in maintaining a coherent
-cross compiling environment. Both of these things are issues with your
-own environment, and in no way are these representative of the embedded
-development community at large.
+I think it's rather awkward that sudden big change of order from 10 to 0.
 
-Now with that out of the way, this entire series fundamentally fails to
-convert half of the perl scripts shipped with the kernel today, some that
-are required for build depending on Kconfig options, and others that are
-simply useful tools for self-hosted environments. Simply converting a
-couple of scripts over you find objectionable is certainly fine if there
-is a real benefit in doing so, but this doesn't actually accomplish your
-goal of removing the perl dependency.
+This problem causes zone_water_mark's fail.
+It mean now this zone's proportional free page per order size is not good.
+Although order-0 page is very important, Shouldn't we consider other
+order allocations ?
 
-Ignoring the compile-time dependencies that you overlooked, what you
-define as "development and debugging" scripts are still an integral part
-of the system, unless you are trying to argue that embedded developers
-have no interest in things like checkstack due to the trouble of trying
-to get perl built.
+So I want to balance zone's proportional free page.
+How about following ?
 
-Until you can post a series that converts all of scripts/*.pl in its
-entirety, you have failed to address the fundamental reason why perl is
-used in the first place. Trying to toss bizarre policy statements around
-regarding things you personally find objectionable without any coherent
-technical argument to the contrary is of no constructive use whatsoever.
+if (nr_reclaimed < SWAP_CLUSTER_MAX) {
+   if (order != 0) {
+     order -=1;
+     sc.order -=1;
+   }
+}
 
-The kernel is and always has been about using the right tool for the job,
-not a matter of dictating what tools you must use in order to accomplish
-a task you are interested in. Common sense does apply here though, so
-this might be a more daunting task for some than others.
+It prevents infinite loop and do best effort to make zone's
+proportional free page per order size good.
+
+It's just my opinion within my knowledge.
+If it have a problem, pz, explain me :)
+
+
+On Thu, Jan 1, 2009 at 11:52 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>
+>> >                 /*
+>> >                  * Fragmentation may mean that the system cannot be
+>> >                  * rebalanced for high-order allocations in all zones.
+>> >                  * At this point, if nr_reclaimed < SWAP_CLUSTER_MAX,
+>> >                  * it means the zones have been fully scanned and are still
+>> >                  * not balanced. For high-order allocations, there is
+>> >                  * little point trying all over again as kswapd may
+>> >                  * infinite loop.
+>> >                  *
+>> >                  * Instead, recheck all watermarks at order-0 as they
+>> >                  * are the most important. If watermarks are ok, kswapd will go
+>> >                  * back to sleep. High-order users can still direct reclaim
+>> >                  * if they wish.
+>> >                  */
+>> >
+>> > ?
+>>
+>> Excellent. I strongly like this and I hope merge it to my patch.
+>> I'll resend new patch.
+>
+> Done.
+>
+>
+>
+> ==
+> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Subject: [PATCH] mm: kswapd stop infinite loop at high order allocation
+>
+> Wassim Dagash reported following kswapd infinite loop problem.
+>
+>  kswapd runs in some infinite loop trying to swap until order 10 of zone
+>  highmem is OK.... kswapd will continue to try to balance order 10 of zone
+>  highmem forever (or until someone release a very large chunk of highmem).
+>
+> For non order-0 allocations, the system may never be balanced due to
+> fragmentation but kswapd should not infinitely loop as a result.
+>
+> Instead, recheck all watermarks at order-0 as they are the most important.
+> If watermarks are ok, kswapd will go back to sleep.
+>
+>
+> Reported-by: wassim dagash <wassim.dagash@gmail.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Reviewed-by: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>,
+> ---
+>  mm/vmscan.c |   17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c       2008-12-25 08:26:37.000000000 +0900
+> +++ b/mm/vmscan.c       2009-01-01 01:56:02.000000000 +0900
+> @@ -1872,6 +1872,23 @@ out:
+>
+>                try_to_freeze();
+>
+> +               /*
+> +                * Fragmentation may mean that the system cannot be
+> +                * rebalanced for high-order allocations in all zones.
+> +                * At this point, if nr_reclaimed < SWAP_CLUSTER_MAX,
+> +                * it means the zones have been fully scanned and are still
+> +                * not balanced. For high-order allocations, there is
+> +                * little point trying all over again as kswapd may
+> +                * infinite loop.
+> +                *
+> +                * Instead, recheck all watermarks at order-0 as they
+> +                * are the most important. If watermarks are ok, kswapd will go
+> +                * back to sleep. High-order users can still direct reclaim
+> +                * if they wish.
+> +                */
+> +               if (nr_reclaimed < SWAP_CLUSTER_MAX)
+> +                       order = sc.order = 0;
+> +
+>                goto loop_again;
+>        }
+>
+>
+>
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
