@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZABRuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZABRwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbZABRuP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 12:50:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757435AbZABRuA
+	id S1758669AbZABRwY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 12:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbZABRwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 12:50:00 -0500
-Received: from stoneboat.aleph1.co.uk ([80.68.88.63]:3020 "EHLO
-	stoneboat.aleph1.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757118AbZABRt7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 12:49:59 -0500
-X-Greylist: delayed 1424 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Jan 2009 12:49:58 EST
-Date: Fri, 2 Jan 2009 17:25:41 +0000
-From: Wookey <wookey@wookware.org>
-To: Embedded Linux mailing list <linux-embedded@vger.kernel.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Rob Landley <rob@landley.net>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-Message-ID: <20090102172540.GE8858@knossos.aleph1.co.uk>
-Mail-Followup-To: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-	Paul Mundt <lethal@linux-sh.org>, Rob Landley <rob@landley.net>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <20090102095023.GA28078@linux-sh.org>
+	Fri, 2 Jan 2009 12:52:16 -0500
+Received: from mail.lang.hm ([64.81.33.126]:38232 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757056AbZABRwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 12:52:15 -0500
+Date: Fri, 2 Jan 2009 10:54:15 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Valdis.Kletnieks@vt.edu
+cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Bryan Donlan <bdonlan@gmail.com>,
+       Ingo Brueckl <ib@wupperonline.de>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86 (Linux Tiny): configure out support for some processors
+In-Reply-To: <14241.1230913598@turing-police.cc.vt.edu>
+Message-ID: <alpine.DEB.1.10.0901021048050.21408@asgard.lang.hm>
+References: <495d2974@wupperonline.de> <3e8340490901012119i40971452q9f938702e58d7532@mail.gmail.com> <3f9a31f40901012159l255b95a8he41a341f36ebc54e@mail.gmail.com> <20090102093801.GD1975@elte.hu> <3f9a31f40901020710h508bbfbch3d7ccd6f4898ea03@mail.gmail.com>
+ <11444.1230910752@turing-police.cc.vt.edu>            <alpine.DEB.1.10.0901020849180.20509@asgard.lang.hm> <14241.1230913598@turing-police.cc.vt.edu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090102095023.GA28078@linux-sh.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Aleph_One-MailScanner: Found to be clean
-X-Aleph_One-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-2.6, required 6, autolearn=not spam, BAYES_00 -2.60,
-	NO_RELAYS -0.00)
-X-Aleph_One-MailScanner-From: wookey@wookware.org
-X-SA-Exim-Connect-IP: 213.165.225.113
-X-SA-Exim-Mail-From: wookey@wookware.org
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on stoneboat.aleph1.co.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-01-02 18:50 +0900, Paul Mundt wrote:
-> Your main reasons against inclusion of perl seem to be that there is no
-> realistic expectation for target systems that will be self-hosting will
-> have perl included, or the inherent complexity in maintaining a coherent
-> cross compiling environment. Both of these things are issues with your
-> own environment, and in no way are these representative of the embedded
-> development community at large.
+On Fri, 2 Jan 2009, Valdis.Kletnieks@vt.edu wrote:
 
-It may well be true that most embedded people cross-build kernels and
-use native perl on a fat build box, but there are plenty of situations
-where being able to build kernels without perl is useful. Given the
-simplicitly of these patches I can't see any reason not to put them
-in, and appreciate Rob's work on this.
+> On Fri, 02 Jan 2009 08:51:28 PST, david@lang.hm said:
+>> having things outside of the embedded menu depend on embedded makes it
+>> hard for people to figure out what they need to do to disable specific
+>> things.
+>
+> Odd, I can do a 'make menuconfig', do a /EARLY_PRINTK, and see:
+>
+> Symbol: EARLY_PRINTK [=y]                                               x
+>  x Prompt: Early printk                                                    x
+>  x   Defined at arch/x86/Kconfig.debug:33                                  x
+>  x   Depends on: EMBEDDED                                                  x
+>  x   Location:                                                             x
+>  x     -> Kernel hacking
+>
+>> if you follow the logic you are providing to it's logical conclusion you
+>> may as well put all kernel config options under "I really know what I'm
+>> doing" top level lockout
+>
+> Hey, I didn't make up that logic. ;)
+>
+> A large percentage of the kernel config options are things that really *could*
+> be one way or the other for any given system.  Maybe you want ext4, maybe you
+> don't.  Maybe you need process accounting, maybe you don't.  So they don't go
+> under EMBEDDED.  But we can be 98% sure that they probably want PRINTK.
 
-And if cross-building perl is really easy, as some in this thread
-claim, can someone fix the Debian packages to do it, because that
-would be really useful (it appears to be of similar complexity to
-cross-building gcc, requiring a 2-stage self-referential build). 
+is there an easy way to pull the list of what symbols depend on EMBEDDED?
 
-Wookey
--- 
-Principal hats:  Balloonz - Toby Churchill - Aleph One - Debian
-http://wookware.org/
+David Lang
