@@ -1,144 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZABHX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbZABH0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbZABHX1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 02:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZABHXS
+	id S1757190AbZABH0o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 02:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZABH0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 02:23:18 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:40818 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbZABHXR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 02:23:17 -0500
-Date: Fri, 2 Jan 2009 12:56:00 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-Message-ID: <20090102072600.GA13412@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <28c262360812291543ia322a13g6af854a685ce7632@mail.gmail.com> <20081230024819.GA23301@balbir.in.ibm.com> <20081230062139.GA30038@elte.hu> <20081230180722.GA29060@dirshya.in.ibm.com>
+	Fri, 2 Jan 2009 02:26:35 -0500
+Received: from ns1.suse.de ([195.135.220.2]:42948 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751127AbZABH0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 02:26:34 -0500
+Date: Thu, 1 Jan 2009 23:24:36 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: libusb broken on 2.6.28 x86_64 ?
+Message-ID: <20090102072436.GA3444@suse.de>
+References: <495DB4AC.50602@rtr.ca> <495DBBC1.7040202@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081230180722.GA29060@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <495DBBC1.7040202@rtr.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-30 23:37:22]:
+On Fri, Jan 02, 2009 at 02:01:21AM -0500, Mark Lord wrote:
+> Mark Lord wrote:
+>> I'm trying to use 2.6.28 for the first time on an x86_64 box here
+>> with devices controlled by libusb.  The devices work on the first
+>> access, but then fail on all subsequent accesses.  Unplugging/replugging
+>> causes them to work again for a single subsequent access.
+>> This is with two completely different USB gadgets:
+>> a VFD alphanumeric display, and an FTDI serial device in bitbang mode.
+>> Did something break in 2.6.28 for libusb devices ??
+> ..
+>
+> Mmm.. broken only for 64-bit userspace, it seems.
+>
+> I've recompiled the same app against 32-bit libs,
+> and it works just fine on that 64-bit system,
+> as well as on 32-bit systems.
+>
+> But not when compiled for pure 64-bit operation on a 64-bit system.
+>
+> Looks tricky .. must be a change somewhere that assumes
+> a pointer/long is 32-bits or something.
 
-> * Ingo Molnar <mingo@elte.hu> [2008-12-30 07:21:39]:
-> 
-> > 
-> > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > > > KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
-> > > > > package system
-> > > > >
-> > > > > SchedMC Run Time     Package Idle    Energy  Power
-> > > > > 0       81.68        52.83% 54.71%  1.00x J 1.00y W
-> > > > > 1       80.70        36.62% 70.11%  0.95x J 0.96y W
-> > > > > 2       74.95        19.53% 85.92%  0.90x J 0.98y W
-> > 
-> > > > Your result is very interesting.
-> > > > level 2 is more fast and efficient of power.
-> > > > 
-> > > > What's major contributor to use less time in level 2?
-> > > > I think it's cache bounce is less time than old.
-> > > > Is right ?
-> > > 
-> > > Yes, correct
-> > 
-> > yes, i too noticed that runtime improved so dramatically: +7.5% on 
-> > kernbench is a _very_ big deal.
-> > 
-> > So i wanted to ask you to re-test whether this speedup is reproducible, 
-> > and if yes, please check a few other workloads (for example sysbench on 
-> > postgresql / mysqld) and send a patch that changes the 
-> > sched_mc_power_savings default to POWERSAVINGS_BALANCE_WAKEUP (2).
-> 
-> The speedup for kernbench is reproducible.  I will post a more
-> detailed test report on kernbench soon.  The power-performance benefit
-> is for an under-utilised system (nr_cpus/2) run of kernbench which is
-> very ideal to demonstrate the power savings feature.  I will also try
-> sysbench and update results little later.  As Balbir mentioned, I am
-> on vacation and traveling.  I will post more benchmark results as soon
-> as possible.
+Which version of libusb, a new one was just released a few weeks ago
+that fixes a lot of problems reported in the older libusb versions, and
+made things much faster to boot.  You might want to check it out.
 
-Hi Ingo,
+Hope this helps,
 
-I ran my kernbench test setup over multiple iterations with several
-thread counts.  The performance will almost max out at 8-10 threads of
-kernbench since the system has total of 8 logical CPUs.
-
-The power saving benefits is expected to be maximum around 30-50%
-system utilisation (3-5 threads).
-
-I have posted the normalised results in various tables below.
-Apparently the sched_mc=2 settings is helping at 8 threads case also
-due to better cache line sharing.  I will work with Balbir to see if
-we can prove this assertion using performance counters.  I will start
-looking at sysbench and try to get benchmark results and power/energy
-data in similar configurations.
-
---Vaidy
-
-All these tests were done on sched-tip at 
-commit: fe235c6b2a4b9eb11909fe40249abcce67f7d45d 
-uname -a is 2.6.28-rc8-tip-sv-05664-gfe235c6-dirty
-
-Kernbench was run on source 2.6.28 while the previous tests used
-2.6.25 kernel which had far less stuff to compile in defconfig :)
-
-System configuration is x86 quad core dual socket system 
-with 8 logical CPUs
-
-Each result is an average of 5 iterations.
-
-Kernbench threads = 2
-
-SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
-0	217.37	     73.30 76.93	1.00	   1.00
-1	204.68	     50.86 99.91	0.95	   1.01
-2	204.49	     50.69 99.93	0.95	   1.01
-
-Kernbench threads = 4
-
-SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
-0	109.11	     51.99 54.91	1.00	   1.00
-1	109.71	     35.86 71.88	0.96	   0.96
-2	102.95	     25.02 82.47	0.92	   0.97
-
-Kernbench threads = 6
-
-SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
-0	74.77	     35.29 36.37	1.00	   1.00
-1	74.54	     28.83 40.90	0.99	   0.99
-2	73.38	     21.09 47.29	0.98	   1.00
-
-Kernbench threads = 8
-
-SchedMC Run Time     Package Idle(%)    Energy(J)  Power(W)
-0	63.18	     26.23 28.67	1.00	   1.00
-1	56.89	     19.85 22.38 	0.93	   1.02
-2	55.27	     17.65 19.84	0.91	   1.03
-
-
-Relative measures for sched_mc=1 compared to baseline sched_mc=0
-
-Threads=>	2	4	6	8	10	12
-KernbenchTime	0.94	1.01	1.00	0.90	0.93	0.95
-Energy		0.95	0.96	0.99	0.93	0.95	0.97
-Power		1.01	0.96	0.99	1.02	1.02	1.01
-
-Relative measures for sched_mc=2 compared to baseline sched_mc=0
-
-Threads=>	2	4	6	8	10	12
-KernbenchTime	0.94	0.94	0.98	0.87	0.92	0.94
-Energy		0.95	0.92	0.98	0.91	0.94	0.96
-Power		1.01	0.97	1.00	1.03	1.02	1.02
-
+greg k-h
