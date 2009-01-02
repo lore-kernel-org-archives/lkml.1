@@ -1,119 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbZABVxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbZABVyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbZABVxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 16:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759198AbZABVxP
+	id S1759684AbZABVyz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 16:54:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbZABVyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 16:53:15 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:34905 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759034AbZABVxN (ORCPT
+	Fri, 2 Jan 2009 16:54:45 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47377 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbZABVyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 16:53:13 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArcEAH8YXklMQWTh/2dsb2JhbACBbMhqhXI
-Date: Fri, 2 Jan 2009 16:48:05 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] kmemtrace: Use tracepoints instead of markers.
-Message-ID: <20090102214805.GA26654@Krystal>
-References: <cover.1230622068.git.eduard.munteanu@linux360.ro> <51a70358bfd74d84c844260d9b5b3ad6ac189d7d.1230622069.git.eduard.munteanu@linux360.ro> <20081230124017.GH28520@ghostprotocols.net> <20081230140232.GG10635@localhost>
-Mime-Version: 1.0
+	Fri, 2 Jan 2009 16:54:45 -0500
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [incremental-PATCH-for-Sam's-Review] ACPI: use ccflags-y instead of EXTRA_CFLAGS
+From: Andi Kleen <andi@firstfloor.org>
+References: <1230720725-9376-1-git-send-email-lenb@kernel.org>
+	<526647e1bb69fd3248558fce365bb1fbfb226ccd.1230719795.git.len.brown@intel.com>
+	<20081231133901.GB2388@uranus.ravnborg.org>
+	<87bpusv31n.fsf@basil.nowhere.org>
+	<20081231153441.GA3475@uranus.ravnborg.org>
+	<alpine.LFD.2.00.0901021636050.3590@localhost.localdomain>
+	<20090102215208.GA8494@uranus.ravnborg.org>
+Date: Fri, 02 Jan 2009 22:56:15 +0100
+In-Reply-To: <20090102215208.GA8494@uranus.ravnborg.org> (Sam Ravnborg's message of "Fri, 2 Jan 2009 22:52:08 +0100")
+Message-ID: <87iqoxjrsw.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20081230140232.GG10635@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:33:31 up 1 day, 21:31,  2 users,  load average: 0.05, 0.03,
-	0.00
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
-> On Tue, Dec 30, 2008 at 10:40:17AM -0200, Arnaldo Carvalho de Melo wrote:
-> > Em Tue, Dec 30, 2008 at 09:41:28AM +0200, Eduard - Gabriel Munteanu escreveu:
-> > > kmemtrace now uses tracepoints instead of markers. We no longer need to
-> > > use format specifiers. Also dropped kmemtrace_mark_alloc_node(), since
-> > > it's easy to pass -1 as the NUMA node without providing a needless and
-> > > long-named variant of the same function.
-> > > 
-> > > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > > diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
-> > > index 7555ce9..fe3cea2 100644
-> > > --- a/include/linux/slab_def.h
-> > > +++ b/include/linux/slab_def.h
-> > > @@ -76,8 +76,8 @@ found:
-> > >  
-> > >  		ret = kmem_cache_alloc_notrace(cachep, flags);
-> > >  
-> > > -		kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
-> > > -				     size, slab_buffer_size(cachep), flags);
-> > > +		trace_kmalloc(_THIS_IP_, ret,
-> > > +			      size, slab_buffer_size(cachep), flags, -1);
-> > 
-> > Is there a way for a tracepoint to get the caller without having to pass
-> > it explicitely?
-> > 
-> > - Arnaldo
-> 
-> It might be possible, but for correctness DEFINE_TRACE() should use
-> __always_inline instead of inline.
-> 
+Sam Ravnborg <sam@ravnborg.org> writes:
+>
+> The conversion from ACPI_CFLAGS to ccflags-y is fine.
+> And if acpi really require -Os then this part is also OK -
+> I just did not get *why* acpi needs -Os
 
-Yes, we could (and maybe should) use __always_inline there. Hrm, which
-which tree to you work ? You probably mean DECLARE_TRACE() rather than
-DEFINE_TRACE() ?
+None of ACPI is performance critical and it's rather large, so it was
+defaulted to -Os long before the rest of the kernel. It's not
+a hard requirement, but a generally good idea.
 
-I just went over your patch again. it uses the old DEFINE_TRACE() API.
-You should get the latest tracepoints which have DECLARE_TRACE() (for
-trace/kmemtrace.h) and then a DEFINE_TRACE() in a .c.  Ah I see, you
-work on 2.6.28. You should work on top of -tip, which has this new API.
-Using the tracepoints present in 2.6.28 will not let you do only a
-single definition of the tracepoint structure and it will lead to waste
-of kernel memory by defining multiple instances of tracepoint structures
-(one for each trace_*() use, so one per kmalloc()). The
-Documentation/tracepoints.txt file is updated accordingly.
-
-
-> But it is quite pointless. Sometimes we need _RET_IP_, sometimes
-> _THIS_IP_ and sometimes a parameter we've been passed. That's because we
-> want the IP of the caller, so it depends on whether this slab function
-> is __always_inline, non-inlined or deeply nested within other functions
-> (which can be as well __always_inline or non-inlined).
-> 
-
-Hrm ? In the case we just want
-
-  trace_kmalloc(_THIS_IP, ......);
-
-If we have __always_inline for the trace_*() declaration, isn't it the
-same to just do this in the probe ?
-
-void probe_kmalloc(......)
-{
-  ... _RET_IP_ ...;
-
-}
-
-This would remove a parameter from the stack created from the
-instrumentation site, which is always good.
-
-Mathieu
-
-> 
-> 	Eduard
-> 
+-Andi
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ak@linux.intel.com
