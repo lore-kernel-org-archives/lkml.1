@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZABHxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbZABH7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbZABHxt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 02:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZABHxK
+	id S1757276AbZABH7s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 02:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZABH7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 02:53:10 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:38653 "EHLO smtp.gentoo.org"
+	Fri, 2 Jan 2009 02:59:37 -0500
+Received: from cantor.suse.de ([195.135.220.2]:44362 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755744AbZABHxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 02:53:09 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: David Howells <dhowells@redhat.com>,
-       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
-       linux-am33-list@redhat.com
-Subject: [PATCH] asm-mn10300/posix_types.h: drop __GLIBC__/__USE_ALL usage
-Date: Fri,  2 Jan 2009 02:53:06 -0500
-Message-Id: <1230882786-10004-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.0.6
+	id S1751127AbZABH7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 02:59:37 -0500
+Date: Thu, 1 Jan 2009 23:58:35 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: libusb broken on 2.6.28 x86_64 ?
+Message-ID: <20090102075835.GA3955@suse.de>
+References: <495DB4AC.50602@rtr.ca> <495DBBC1.7040202@rtr.ca> <20090102072436.GA3444@suse.de> <495DC771.9030103@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495DC771.9030103@rtr.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bring mn10300 in line with all the other ports.  I think mn10300 missed
-this because it was merged while every one else was getting fixed.
+On Fri, Jan 02, 2009 at 02:51:13AM -0500, Mark Lord wrote:
+> Greg KH wrote:
+>> On Fri, Jan 02, 2009 at 02:01:21AM -0500, Mark Lord wrote:
+>>> Mark Lord wrote:
+> ..
+>>> Mmm.. broken only for 64-bit userspace, it seems.
+>>>
+>>> I've recompiled the same app against 32-bit libs,
+>>> and it works just fine on that 64-bit system,
+>>> as well as on 32-bit systems.
+>>>
+>>> But not when compiled for pure 64-bit operation on a 64-bit system.
+> ..
+>> Which version of libusb, a new one was just released a few weeks ago
+>> that fixes a lot of problems reported in the older libusb versions, and
+>> made things much faster to boot.  You might want to check it out.
+> ..
+>
+> This is with libusb-0.1-4, which has been working fine with all prior 
+> kernels,
+> including the 2.6.27.xx series.
+>
+> Userspace stuff like this is not supposed to be broken from kernel to 
+> kernel.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: David Howells <dhowells@redhat.com>
-CC: Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
-CC: linux-am33-list@redhat.com
----
- include/asm-mn10300/posix_types.h |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+No it shouldn't, I was thinking this was the first time you had tried
+such a thing (64bit userspace apps.)
 
-diff --git a/include/asm-mn10300/posix_types.h b/include/asm-mn10300/posix_types.h
-index 077567c..df2b6d9 100644
---- a/include/asm-mn10300/posix_types.h
-+++ b/include/asm-mn10300/posix_types.h
-@@ -49,14 +49,10 @@ typedef long long	__kernel_loff_t;
- #endif
- 
- typedef struct {
--#if defined(__KERNEL__) || defined(__USE_ALL)
- 	int	val[2];
--#else /* !defined(__KERNEL__) && !defined(__USE_ALL) */
--	int	__val[2];
--#endif /* !defined(__KERNEL__) && !defined(__USE_ALL) */
- } __kernel_fsid_t;
- 
--#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
-+#if defined(__KERNEL__)
- 
- #undef	__FD_SET
- static inline void __FD_SET(unsigned long __fd, __kernel_fd_set *__fdsetp)
-@@ -127,6 +123,6 @@ static inline void __FD_ZERO(__kernel_fd_set *__p)
- 	}
- }
- 
--#endif /* defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2) */
-+#endif /* defined(__KERNEL__) */
- 
- #endif /* _ASM_POSIX_TYPES_H */
--- 
-1.6.0.6
+If using 2.6.27 works, then we need to fix this.
 
+thanks,
+
+greg k-h
