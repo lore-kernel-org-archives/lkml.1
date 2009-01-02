@@ -1,73 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbZABNYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZABNbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbZABNYY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 08:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbZABNYJ
+	id S1757562AbZABNbK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 08:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZABNbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 08:24:09 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:36140 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756841AbZABNYF (ORCPT
+	Fri, 2 Jan 2009 08:31:00 -0500
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:33546 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbZABNa7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 08:24:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=xEl94wFnGusuceNmceDtfPyqj4ZsNKb8DOTO1b7Vx3Vf78frS4X4pGYThect7BDDEm
-         sBvS2gMXkri7yapkA65dC4tbgd174LY1cW39naqY9HkfNxKFQa3ITLZDyTMe/IyEqihD
-         Gz5+0bHjPAuswSq6glN3XZdqqfoR4xo6xZUfQ=
-Date: Fri, 2 Jan 2009 21:23:56 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Enable CONFIG_USB_SUSPEND by default or some mobile HD can't
-	be unplugged safely
-Message-ID: <20090102132355.GA4833@thyme.bj.intel.com>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de,
-	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090101160343.GA4278@thyme.bj.intel.com> <Pine.LNX.4.44L0.0901011225400.32126-100000@netrider.rowland.org>
+	Fri, 2 Jan 2009 08:30:59 -0500
+Message-ID: <495E167A.40300@csr.com>
+Date: Fri, 02 Jan 2009 13:28:26 +0000
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0901011225400.32126-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] UWB, WUSB, and WLP subsystems for 2.6.29
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Jan 2009 13:28:26.0588 (UTC) FILETIME=[FE3EF1C0:01C96CDD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 01, 2009 at 12:29:51PM -0500, Alan Stern wrote:
-> On Fri, 2 Jan 2009, Yan Li wrote:
-> > On it's manual read "you should unplug and remove the device only when
-> > the light is off."
-> 
-> It's not clear whether you should believe this.  The manual may have 
-> overstated things.  Still, better to be safe.
+Linus,
 
-Yeah, that maybe true. Better to be safe. And we can't tell users just
-to ignore the warnings on the manual.
+Please pull various updates for the UWB, WUSB and WLP subsystems from
 
-> > On Windows and Mac OS, `safely remove this device' function effectly
-> > turns it into `suspend' mode, and it's light off.
-> 
-> Yes -- but they don't suspend the device; instead they disable its 
-> upstream port.  As far as the device is concerned, there's no 
-> difference.  However the Linux API doesn't include any way to disable a 
-> USB port.  Maybe we should add one...
+git://git.kernel.org/pub/scm/linux/kernel/git/dvrabel/uwb.git for-upstream
 
-Definitely.
+David Vrabel (27):
+      uwb: target reservations shouldn't get streams
+      wusb: release mutex in the error path of whci-hcd's whc_do_gencmd()
+      uwb: reference count reservations
+      wusb: disable verification of the key generation algorithms
+      wusb: do a proper channel stop
+      uwb: order IEs by element ID
+      wusb: reset WUSB devices with SetAddress(0)
+      uwb: don't unbind the radio controller driver when resetting
+      uwb: fix races between events and neh timers
+      uwb: add pal parameter to new reservation callback
+      uwb: add basic radio manager
+      wlp: start/stop radio on network interface up/down
+      uwb: remove unused beacon group join/leave events
+      wusb: whci-hcd shouldn't do ASL/PZL updates while channel is inactive
+      uwb: clean up whci_wait_for() timeout error message
+      uwb: fix oops in debug PAL's reservation callback
+      wusb: add debug files for ASL, PZL and DI to the whci-hcd driver
+      uwb: fix oops when terminating an already terminated reservation
+      wusb: fix oops when terminating a non-existant reservation
+      uwb: fix memory leak in uwb_rc_notif()
+      uwb: use dev_dbg() for debug messages
+      uwb: use print_hex_dump()
+      uwb: remove unused include/linux/uwb/debug.h
 
-> >  I did a
-> > quick search in LKML and haven't found specific oppose to enable USB
-> > suspend by default, and Debian has started shipping a kernel with
-> > it turned on since 2.6.26.
-> > 
-> > Perhaps we should consider turning it on by default?  Thanks!
-> 
-> That is indeed the next step to take.
+Huang Weiyi (2):
+      uwb: remove unused #include <version.h>
+      wusb: remove unused #include <version.h>
 
-Hope to see this happen soon.
+Kay Sievers (1):
+      uwb: struct device - replace bus_id with dev_name(), dev_set_name()
 
+Stefano Panella (5):
+      uwb: infrastructure for handling Relinquish Request IEs
+      uwb: add commands to add/remove IEs to the debug interface
+      uwb: per-radio controller event thread and beacon cache
+      uwb: improved MAS allocator and reservation conflict handling
+      uwb: remove beacon cache entry after calling uwb_notify()
+
+ Documentation/ABI/testing/sysfs-class-uwb_rc |   14 +-
+ Documentation/usb/wusb-cbaf                  |    9 -
+ drivers/usb/host/hwa-hc.c                    |  159 ++----
+ drivers/usb/host/whci/Kbuild                 |    1 +
+ drivers/usb/host/whci/asl.c                  |   46 +-
+ drivers/usb/host/whci/debug.c                |  189 +++++++
+ drivers/usb/host/whci/hcd.c                  |    6 +-
+ drivers/usb/host/whci/hw.c                   |    8 +-
+ drivers/usb/host/whci/int.c                  |    1 -
+ drivers/usb/host/whci/pzl.c                  |   49 +--
+ drivers/usb/host/whci/qset.c                 |   40 --
+ drivers/usb/host/whci/whcd.h                 |   11 +-
+ drivers/usb/host/whci/whci-hc.h              |    2 +
+ drivers/usb/host/whci/wusb.c                 |   43 +--
+ drivers/usb/wusbcore/cbaf.c                  |    1 -
+ drivers/usb/wusbcore/crypto.c                |   79 ++--
+ drivers/usb/wusbcore/dev-sysfs.c             |    4 -
+ drivers/usb/wusbcore/devconnect.c            |  233 +--------
+ drivers/usb/wusbcore/mmc.c                   |  118 ++---
+ drivers/usb/wusbcore/pal.c                   |   16 +-
+ drivers/usb/wusbcore/reservation.c           |   21 +-
+ drivers/usb/wusbcore/rh.c                    |  104 ++---
+ drivers/usb/wusbcore/security.c              |   78 +---
+ drivers/usb/wusbcore/wa-nep.c                |   16 +-
+ drivers/usb/wusbcore/wa-rpipe.c              |   68 +--
+ drivers/usb/wusbcore/wa-xfer.c               |  180 ++-----
+ drivers/usb/wusbcore/wusbhc.h                |   36 +-
+ drivers/uwb/Makefile                         |    3 +
+ drivers/uwb/address.c                        |    2 +-
+ drivers/uwb/allocator.c                      |  386 ++++++++++++++
+ drivers/uwb/beacon.c                         |  134 ++---
+ drivers/uwb/driver.c                         |    4 +-
+ drivers/uwb/drp-avail.c                      |    4 +-
+ drivers/uwb/drp-ie.c                         |  161 +++++--
+ drivers/uwb/drp.c                            |  695
++++++++++++++++++++-------
+ drivers/uwb/est.c                            |   14 +-
+ drivers/uwb/hwa-rc.c                         |   53 ++-
+ drivers/uwb/i1480/dfu/dfu.c                  |   10 +-
+ drivers/uwb/i1480/dfu/mac.c                  |   18 -
+ drivers/uwb/i1480/dfu/usb.c                  |   27 -
+ drivers/uwb/i1480/i1480u-wlp/lc.c            |    5 +-
+ drivers/uwb/i1480/i1480u-wlp/netdev.c        |   53 +--
+ drivers/uwb/i1480/i1480u-wlp/rx.c            |   25 +-
+ drivers/uwb/i1480/i1480u-wlp/sysfs.c         |    3 +-
+ drivers/uwb/i1480/i1480u-wlp/tx.c            |   66 +---
+ drivers/uwb/ie-rcv.c                         |   55 ++
+ drivers/uwb/ie.c                             |  463 ++++++------------
+ drivers/uwb/lc-dev.c                         |   23 +-
+ drivers/uwb/lc-rc.c                          |   62 +--
+ drivers/uwb/neh.c                            |   72 ++--
+ drivers/uwb/pal.c                            |   25 +-
+ drivers/uwb/radio.c                          |  202 ++++++++
+ drivers/uwb/reset.c                          |   47 ++-
+ drivers/uwb/rsv.c                            |  565 ++++++++++++++++-----
+ drivers/uwb/umc-bus.c                        |   62 ++-
+ drivers/uwb/umc-dev.c                        |   11 +-
+ drivers/uwb/uwb-debug.c                      |  151 ++++--
+ drivers/uwb/uwb-internal.h                   |  126 ++++-
+ drivers/uwb/uwbd.c                           |  176 +++----
+ drivers/uwb/whc-rc.c                         |  118 ++---
+ drivers/uwb/whci.c                           |    6 +-
+ drivers/uwb/wlp/eda.c                        |   19 +-
+ drivers/uwb/wlp/messages.c                   |  181 +-------
+ drivers/uwb/wlp/sysfs.c                      |    2 +-
+ drivers/uwb/wlp/txrx.c                       |   37 +--
+ drivers/uwb/wlp/wlp-internal.h               |    4 -
+ drivers/uwb/wlp/wlp-lc.c                     |   80 +--
+ drivers/uwb/wlp/wss-lc.c                     |  130 +----
+ include/linux/usb/wusb-wa.h                  |    1 +
+ include/linux/uwb.h                          |  123 ++++--
+ include/linux/uwb/debug-cmd.h                |   13 +-
+ include/linux/uwb/debug.h                    |   82 ---
+ include/linux/uwb/spec.h                     |   53 ++
+ include/linux/uwb/umc.h                      |    2 +
+ include/linux/wlp.h                          |    3 +-
+ 75 files changed, 3252 insertions(+), 2837 deletions(-)
+ create mode 100644 drivers/usb/host/whci/debug.c
+ create mode 100644 drivers/uwb/allocator.c
+ create mode 100644 drivers/uwb/ie-rcv.c
+ create mode 100644 drivers/uwb/radio.c
+ delete mode 100644 include/linux/uwb/debug.h
+
+David Vrabel
 -- 
-Li, Yan
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
