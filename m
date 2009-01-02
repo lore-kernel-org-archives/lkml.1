@@ -1,229 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbZABMBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbZABMBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758361AbZABMBF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 07:01:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbZABMAw
+	id S1758467AbZABMBj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 07:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbZABMB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 07:00:52 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:55769
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757301AbZABMAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 07:00:51 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
-Date: Fri, 2 Jan 2009 06:00:47 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <200901020207.30359.rob@landley.net> <200901020213.30658.rob@landley.net> <20090102090439.GA3057@uranus.ravnborg.org>
-In-Reply-To: <20090102090439.GA3057@uranus.ravnborg.org>
+	Fri, 2 Jan 2009 07:01:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37491 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757384AbZABMB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 07:01:28 -0500
+Date: Fri, 2 Jan 2009 13:01:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Cc: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, gregkh@suse.de,
+       marcel@holtmann.org
+Subject: Re: [BUG] Regression in v2.6.28 introduced by: 'USB: skip
+	Set-Interface(0) if already in altsetting 0'
+Message-ID: <20090102120109.GC3027@elte.hu>
+References: <87ljtu7yvi.fsf@scholz.fias.uni-frankfurt.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901020600.47847.rob@landley.net>
+In-Reply-To: <87ljtu7yvi.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 January 2009 03:04:39 Sam Ravnborg wrote:
-> Hi Rob.
->
-> On Fri, Jan 02, 2009 at 02:13:30AM -0600, Rob Landley wrote:
-> > From: Rob Landley <rob@landley.net>
+
+* Jan Scholz <scholz@fias.uni-frankfurt.de> wrote:
+
+> Hi,
+> 
+> In v2.6.28 my usb bluetooth device disappears after suspend to ram:
+> 
+> $ hcitool dev
+> Devices:
+> 	hci0	00:0D:93:15:D6:E8
+> $ echo mem > /sys/power/state 
+> $ hcitool dev
+> Devices:
+> $
+> 
+> The problem does not occur with the (older) hci_usb.ko, but only with
+> btusb.ko.
+>  
+> This is the output of lsusb:
+> Bus 001 Device 003: ID 05ac:8203 Apple Computer, Inc. Bluetooth HCI
+> 
+> Bisecting finds commit 24c0996 (USB: skip Set-Interface(0) if already in
+> altsetting 0) as the first bad commit, and indeed if I use 2.6.28 with
+> 24c0996 reverted, the bluetooth device survives suspend to ram.
+> 
+> If you need more information/test/etc please let me know.
+> 
+> Regards,
+> Jan
+> 
+> > commit 24c0996a6b73e2554104961afcc8659534503e0d
+> > Author: Alan Stern <stern@rowland.harvard.edu>
+> > Date:   Mon Dec 1 10:24:41 2008 -0500
 > >
-> > Replace kernel/timeconst.pl with kernel/timeconst.sh.  The new shell
-> > script is much simpler, about 1/4 the size, and runs on Red Hat 9 from
-> > 2003.
->
-> This part of the changelog is OK except that is fails to
-> address why we want to get away from perl.
-
-You mean "The new shell script is much simpler, about 1/4 the size, runs on 
-Red Hat 9 from 2003, and isn't perl?" :)
-
-> Please drop the remining part of the changelog (but not the s-o-b).
-
-ok.
-
-> > Peter Anvin added this perl to 2.6.25.  Before that, the kernel had never
-> > required perl to build.
+> >     USB: skip Set-Interface(0) if already in altsetting 0
 > >
-> > Signed-off-by: Rob Landley <rob@landley.net>
-> > ---
+> >     When a driver unbinds from an interface, usbcore always sends a
+> >     Set-Interface request to reinstall altsetting 0.  Unforunately, quite
+> >     a few devices have buggy firmware that crashes when it receives this
+> >     request.
 > >
-> >  kernel/Makefile     |    4
-> >  kernel/timeconst.pl |  378 ------------------------------------------
-> >  kernel/timeconst.sh |   91 ++++++++++
-> >  3 files changed, 93 insertions(+), 380 deletions(-)
+> >     To avoid such problems, this patch (as1180) arranges to send the
+> >     Set-Interface request only when the interface is not already in
+> >     altsetting 0.
 > >
-> > diff -r d0c7611dcfd6 kernel/Makefile
-> > --- a/kernel/Makefile	Tue Dec 30 17:48:25 2008 -0800
-> > +++ b/kernel/Makefile	Fri Jan 02 00:10:44 2009 -0600
-> > @@ -115,7 +115,7 @@
-> >  $(obj)/time.o: $(obj)/timeconst.h
-> >
-> >  quiet_cmd_timeconst  = TIMEC   $@
-> > -      cmd_timeconst  = $(PERL) $< $(CONFIG_HZ) > $@
-> > +      cmd_timeconst  = $(CONFIG_SHELL) $< $(CONFIG_HZ) > $@
-> >  targets += timeconst.h
-> > -$(obj)/timeconst.h: $(src)/timeconst.pl FORCE
-> > +$(obj)/timeconst.h: $(src)/timeconst.sh FORCE
-> >  	$(call if_changed,timeconst)
->
-> OK
->
-> > --- /dev/null	1969-12-31 00:00:00.000000000 -0600
-> > +++ hg/kernel/timeconst.sh	2009-01-01 23:53:17.000000000 -0600
-> > @@ -0,0 +1,91 @@
-> > +#!/bin/bash
-> > +
-> > +if [ $# -ne 1 ]
-> > +then
-> > +	echo "Usage: timeconst.sh HZ"
-> > +	exit 1
-> > +fi
->
-> That usage is useless. Either extend it or spend a few lines
-> in the shell script explainign what the shell script is supposed to do.
+> >     Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Do you mean something more like:
+here's a fix patch that appears to be dealing with aspects of this commit:
 
-echo "Usage: timeconst.sh HZ"
-echo
-echo "Generates a header file of constants for converting between decimal"
-echo "HZ timer ticks and milisecond or microsecond delays"
+  http://lkml.org/lkml/2009/1/2/47
 
-I'm happy turning it into a comment instead, I just found a quick check that 
-I'd remembered to type an argument useful during debugging. :)
+you might want to give it a try.
 
-> > +
-> > +HZ=$1
-> > +
-> > +# Sanity test: even the shell in Red Hat 9 (circa 2003) supported 64 bit
-> > math. +
-> > +[ $((1<<32)) -lt 0 ] && exit 1
-> > +
->
-> If it fails then add an error message explaining why. So if we get reports
-> that this fails then we at least can see something like:
-> "timeconst noticed that the shell did not support 64 bit math - stop"
-
-Ok.
-
-> > +# Output start of header file
-> > +
-> > +cat << EOF
-> > +/* Automatically generated by kernel/timeconst.sh */
-> > +/* Conversion constants for HZ == $HZ */
-> > +
-> > +#ifndef KERNEL_TIMECONST_H
-> > +#define KERNEL_TIMECONST_H
->
-> Please use __KERNEL_TIMECONST_H. The two underscores are standard.
-
-Sure thing.  (I was just copying the perl there, I'll post an updated patch 
-after I get some sleep.)
-
-> > +
-> > +#include <linux/param.h>
-> > +#include <linux/types.h>
-> > +
-> > +#if HZ != $HZ
-> > +#error "kernel/timeconst.h has the wrong HZ value!"
-> > +#endif
-> > +
-> > +EOF
-> > +
-> > +# For both Miliseconds and Microseconds
-> > +
-> > +for i in "MSEC 1000" "USEC 1000000"
-> > +do
-> > +	NAME=$(echo $i | awk '{print $1}')
-> > +	PERIOD=$(echo $i | awk '{print $2}')
-> > +
-> > +	# Find greatest common denominator (using Euclid's algorithm)
-> > +
-> > +	A=$HZ
-> > +	B=$PERIOD
-> > +
-> > +	while [ $B -ne 0 ]
-> > +	do
-> > +		C=$(($A%$B))
-> > +		A=$B
-> > +		B=$C
-> > +	done
-> > +
-> > +	GCD=$A
-> > +
-> > +	# Do this for each direction (HZ_TO_PERIOD and PERIOD_TO_HZ)
-> > +
-> > +	for DIRECTION in 0 1
-> > +	do
-> > +		if [ $DIRECTION -eq 0 ]
-> > +		then
-> > +			CONVERT="HZ_TO_${NAME}"
-> > +			FROM=$HZ
-> > +			TO=$PERIOD
-> > +		else
-> > +			CONVERT="${NAME}_TO_HZ"
-> > +			FROM=$PERIOD
-> > +			TO=$HZ
-> > +		fi
-> > +
-> > +		# How many shift bits give 32 bits of significant data?
-> > +
-> > +		SHIFT=0
-> > +		while [ $(( (($TO<<$SHIFT)+$FROM-1)/$FROM )) -lt $((1<<31)) ]
-> > +		do
-> > +			SHIFT=$(( $SHIFT+1 ))
-> > +		done
-> > +
-> > +		MUL32=$(( (($TO<<$SHIFT)+$FROM-1)/$FROM ))
-> > +		MUL32=$(printf %x $MUL32)
-> > +		echo "#define ${CONVERT}_MUL32	U64_C(0x$MUL32)"
-> > +		ADJ32=$(($FROM/$GCD))
-> > +		ADJ32=$(( (($ADJ32-1)<<$SHIFT)/$ADJ32 ))
-> > +		ADJ32=$(printf %x $ADJ32)
-> > +		echo "#define ${CONVERT}_ADJ32	U64_C(0x$ADJ32)"
-> > +		echo "#define ${CONVERT}_SHR32	$SHIFT"
-> > +		echo "#define ${CONVERT}_NUM		U64_C($(($TO/$GCD)))"
-> > +		echo "#define ${CONVERT}_DEN		U64_C($(($FROM/$GCD)))"
-> > +	done
-> > +done
->
-> Is it a shell limitation that all spaces around operators are missing?
-> Makes it hard to read..
-
-No, I was just trying to make sure I didn't go over the 80 char limit.  
-(Several temporary variables are there primarily because the style guide says 
-indentation should be via 8 space tabs.)
-
-I'll add some more spaces on the respin.
-
->
-> You should use trap in your shell script so we do not end up with a
-> partially generated file.
-> Or you should change the rule in the Makefile to use
-> a temperary file and then rename it.
->
-> We have similar bugs in other places - but no need to add
-> in more places.
-
-Well, preserve in this case. :)
-
-I can add an "EXIT" trap and then disarm it later, but the output is 
-redirected in the makefile, so generating an error won't remove the output if 
-you run again.  Perhaps the file to create should be fed in as a second 
-argument to the script, so the trap can "rm" the output file if it triggers?
-
-I'll poke at it in the morning.
-
-Thanks for the feedback,
-
-Rob
+	Ingo
