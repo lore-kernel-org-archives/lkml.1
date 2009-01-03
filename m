@@ -1,126 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbZACDkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbZACDp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759674AbZACDkJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 22:40:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758832AbZACDj4
+	id S932560AbZACDp3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 22:45:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809AbZACDpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 22:39:56 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:38518 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758809AbZACDjz (ORCPT
+	Fri, 2 Jan 2009 22:45:20 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:34140 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758806AbZACDpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 22:39:55 -0500
+	Fri, 2 Jan 2009 22:45:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qFODmHwHxudssFVichWd7WNk0DbHOTXoNSISjkgcv9cjsJMoOuzTgW9m+MovS2gGa4
-         lrJjiICYGgm6YZ8ndHdlueIulOwube53KqbZafX3CKxkwbaq9zpAeF0AyhcNcGf9pvI4
-         C1ExLi/Wx0mOhXWwqs5WUb9s4LhedKeL4r+S4=
-Message-ID: <495EDE04.5080703@gmail.com>
-Date: Fri, 02 Jan 2009 19:39:48 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=aMDiq7m76wTYC6mkaLDF8bBsYmua42i7fv56U42j/tHDyv7sl3ZcQOxpN+6WvcdU/0
+         84DZlE3Ocr5SAuPvWi0bLB+Ge13JZuuIFxkF0evTZIZrUh+O6KXW7+kaKZn1Mk8c3O3n
+         zsOvT2VvmLbPeiopSJkunG4Snlrs+qGAYhQgQ=
+Message-ID: <3ae3aa420901021945w3d8f8065p2cd3e4f649849a2e@mail.gmail.com>
+Date: Fri, 2 Jan 2009 21:45:16 -0600
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+Reply-To: linasvepstas@gmail.com
+To: "Duane Griffin" <duaneg@dghda.com>
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
+Cc: "Chris Adams" <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090103022358.GA2454@dastardly.home.dghda.com>
 MIME-Version: 1.0
-To: Daniel Phillips <phillips@phunq.net>
-CC: tux3@tux3.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Tux3] Tux3 report: A Golden Copy
-References: <200812301935.49303.phillips@phunq.net> <200901021719.26680.phillips@phunq.net> <495EC040.2070905@gmail.com> <200901021903.24189.phillips@phunq.net>
-In-Reply-To: <200901021903.24189.phillips@phunq.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
+	 <20090103002114.GA1538533@hiwaay.net>
+	 <20090103022358.GA2454@dastardly.home.dghda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Phillips wrote:
-> On Friday 02 January 2009 17:32, Justin P. Mattock wrote:
->   
->> Daniel Phillips wrote:
->>     
->>> On Friday 02 January 2009 15:11, Justin P. Mattock wrote:
->>>   
->>>       
->>>> The game that came to mind when I first
->>>> heard of tux3(I had to google a bit to find the name)
->>>> was tux racer.  :^)
->>>> quick question:
->>>> what is the state for security file labeling for
->>>> SELinux on this filesystem?
->>>>         
->>> There is a lot of interest in security labels.  You are not the first
->>> to ask.
->>>
->>> Tux3 variable inode attributes are ideal for implementing security 
->>> labels efficiently, way more lightweight than extended attributes.  
->>> Otherwise, we would like to know exactly what people want.
->>>
->>> Regards,
->>>
->>> Daniel
->>>   
->>>       
->> thats probably one of the main areas of
->> interest that I have in filesystems,
->> the ability to run a policy etc..
->> As for what people want, thats tough
->> to say, my guess would be file corruption,
->> then probably security etc..
->>     
+2009/1/2 Duane Griffin <duaneg@dghda.com>:
+> On Fri, Jan 02, 2009 at 06:21:14PM -0600, Chris Adams wrote:
+>> Once upon a time, Linas Vepstas <linasvepstas@gmail.com> said:
+>> > Below follows a summary of the reported crashes. I'm ignoring the
+>> > zillions of "mine didn't crash" reports, or the "you're a paranoid
+>> > conspiracy theorist, its random chance" reports.
+>>
+>> I have reproduced this and got a stack trace (this is with Fedora 8 and
+>> kernel kernel-2.6.26.6-49.fc8.x86_64):
+>>
+>> Basically (to my untrained eye), the leap second code is called from the
+>> timer interrupt handler, which holds xtime_lock.  The leap second code
+>> does a printk to notify about the leap second.  The printk code tries to
+>> wake up klogd (I assume to prioritize kernel messages), and (under some
+>> conditions), the scheduler attempts to get the current time, which tries
+>> to get xtime_lock => deadlock.
 >
-> I meant, what do people specifically want in security.  For SELinux,
-> probably the most important issue is efficient extended attribute
-> support, which Tux3 has a pretty good start on:
->
->    http://lwn.net/Articles/300416/
->    Tux3 gets a high speed atom smasher
->
->   
-Thats some crazy stuff!! and just think most of it is
-simply magnets.(but more complicated than that)
-> One feature we are kicking around to make life easier for SELinux:
-> sometimes the filesystem can run while SELinux is not running, and
-> security labels will be wrong when SELinux re-enters the picture.  We
-> have in mind to provide a persistent log of filesystem events that the
-> security system can attach to on startup and find out what went on in
-> its absence.
->
->   
-That sounds nice:
+> How about just moving the printk out of the lock? I.e. something like
+> this:
 
-find out what went on in
-its absence.
+[...]
 
-> And it might be nice to provide direct access to Tux3's variable inode
-> attributes as I mentioned, letting the security system bypass the
-> heavyweight xattr paths.  My thinking is, the more direct the security
-> path, the more likely it is to be secure, and the less overhead it has,
-> the more likely people are to use it.  Somebody might want to play with
-> this idea and see if it makes a difference.
-That makes sense:
+Sure looks like the right fix to me.  (Although there's more than
+one printk under that lock).  Who's going to write the formal patch?
 
-the more direct the security
-path, the more likely it is to be secure, and the less overhead it has,
-
-> Of course, these features are secondary to base filesystem solidity,
-> which will be the main focus for the next little while, but now is the
-> time to talk about what you want, in case the design can be adjusted to
-> make it more practical.
->
-> More security wishes go here: ->[___________________]<-
->
-> Regards,
->
-> Daniel
->
->   
-
-I guess the most simplest wish would to make sure that tux3
-does support SELinux, this way people have more options,
-to work with.(Then worry about everything else later);
- One of the main problems I have with osx and winxp
-is the missing of such options(I feel naked without SELinux);
-
-regards;
-
-Justin P. Mattock
+--linas
