@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbZACH7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbZACIA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759938AbZACH7T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 02:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZACH7L
+	id S932608AbZACIA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 03:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZACIAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 02:59:11 -0500
-Received: from vps1.tull.net ([66.180.172.116]:37936 "HELO vps1.tull.net"
+	Sat, 3 Jan 2009 03:00:11 -0500
+Received: from vps1.tull.net ([66.180.172.116]:36664 "HELO vps1.tull.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750767AbZACH7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 02:59:10 -0500
+	id S1750767AbZACIAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 03:00:10 -0500
 From: Nick Andrew <nick@nick-andrew.net>
-Subject: [TRIVIAL PATCH 09/11] Fix misspelling of "firmware" in usb.c
+Subject: [TRIVIAL PATCH 10/11] Fix misspelling of "firmware" in powerpc	Makefile
 To: Trivial Kernel Patches <trivial@kernel.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 03 Jan 2009 18:58:37 +1100
-Message-ID: <20090103075827.27466.74555.stgit@marcab.local>
+Date: Sat, 03 Jan 2009 18:59:37 +1100
+Message-ID: <20090103075927.27466.41596.stgit@marcab.local>
 In-Reply-To: <20090103074923.27466.7287.stgit@marcab.local>
 References: <20090103074923.27466.7287.stgit@marcab.local>
 User-Agent: StGIT/0.14.2
@@ -26,28 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix misspelling of "firmware" in usb.c
+Fix misspelling of "firmware" in powerpc Makefile
 
 It's spelled "firmware".
 
 Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 ---
 
- drivers/uwb/i1480/dfu/usb.c |    2 +-
+ arch/powerpc/boot/Makefile |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-diff --git a/drivers/uwb/i1480/dfu/usb.c b/drivers/uwb/i1480/dfu/usb.c
-index 98eeeff..56d2353 100644
---- a/drivers/uwb/i1480/dfu/usb.c
-+++ b/drivers/uwb/i1480/dfu/usb.c
-@@ -414,7 +414,7 @@ int i1480_usb_probe(struct usb_interface *iface, const struct usb_device_id *id)
- 		goto error_create;
- 	}
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 3d3daa6..42b5a2d 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -207,7 +207,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ #
+ # Theses are default targets to build images which embed device tree blobs.
+ # They are only required on boards which do not have FDT support in firmware.
+-# Boards with newish u-boot firmare can use the uImage target above
++# Boards with newish u-boot firmware can use the uImage target above
+ #
  
--	/* setup the fops and upload the firmare */
-+	/* setup the fops and upload the firmware */
- 	i1480->pre_fw_name = "i1480-pre-phy-0.0.bin";
- 	i1480->mac_fw_name = "i1480-usb-0.0.bin";
- 	i1480->mac_fw_name_deprecate = "ptc-0.0.bin";
+ # Board ports in arch/powerpc/platform/40x/Kconfig
 
