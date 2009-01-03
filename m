@@ -1,133 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbZACSLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbZACSN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525AbZACSLr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 13:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759118AbZACSLi
+	id S1759989AbZACSN5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 13:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759127AbZACSNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 13:11:38 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51457 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbZACSLh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 13:11:37 -0500
-Date: Sun, 4 Jan 2009 03:11:05 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Raja R Harinath" <harinath@hurrynot.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH for -tip 4/4] irq: for_each_irq_desc() makes simplify
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <2f11576a0901012156w30a6b162v96aed31d357929e6@mail.gmail.com>
-References: <87wsdezyu6.fsf@hariville.hurrynot.org> <2f11576a0901012156w30a6b162v96aed31d357929e6@mail.gmail.com>
-Message-Id: <20090104030849.069A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 3 Jan 2009 13:13:48 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57720 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758904AbZACSNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 13:13:48 -0500
+Date: Sat, 3 Jan 2009 19:13:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PULL] cpumask tree
+Message-ID: <20090103181333.GA19413@elte.hu>
+References: <20090102203839.GA26850@elte.hu> <200901031751.00076.rusty@rustcorp.com.au> <20090103105208.GA19080@elte.hu> <495F7D27.8020104@sgi.com> <20090103150634.GA28693@elte.hu> <495F84D8.1070404@sgi.com> <20090103154733.GA8111@elte.hu> <20090103160017.GA8920@elte.hu> <495F8DCA.1060905@sgi.com> <20090103174520.GA16704@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090103174520.GA16704@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi
-> 
-> >>  # define for_each_irq_desc(irq, desc)                                        \
-> >>       for (irq = 0, desc = irq_to_desc(irq); irq < nr_irqs;           \
-> >> -          irq++, desc = irq_to_desc(irq))
-> >> +          irq++, desc = irq_to_desc(irq))                            \
-> >> +             if (desc)
-> >> +
-> >> +
-> >>  # define for_each_irq_desc_reverse(irq, desc)                                \
-> >>       for (irq = nr_irqs - 1, desc = irq_to_desc(irq); irq >= 0;      \
-> >> -          irq--, desc = irq_to_desc(irq))
-> >> +          irq--, desc = irq_to_desc(irq))                            \
-> >> +             if (desc)
-> >
-> > I know this has gone in, but isn't this naked 'if' unsafe.  Consider the
-> > following hypothetical code:
-> >
-> >  if (safe)
-> >    for_each_irq_desc(irq, desc) {
-> >       ...
-> >    }
-> >  else
-> >    panic();
-> >
-> > With the macro definition above, the loop would panic() each time !desc,
-> > and _not_ panic() when !safe.  I'd consider this behaviour to be
-> > unexpected, to say the least :-)
-> 
-> Correct.
-> 
-> > The fix is to change the
-> >
-> >  if (desc)
-> >
-> > in the macro to
-> >
-> >  if (!desc) ; else
-> 
-> Ok. I'll do that.
-> Very thanks for good reviewing.
 
-Done.
-Thnaks Raja.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Ingo, could you please apply this patch to -tip tree?
+> Also, while bisecting this window of commits i found that neither would 
+> build successfully due to a typo - and the typo is fixed in 095fb96. So 
+> since we rebase this portion anyway due to excessive amount of bugs, 
+> i'll make it fully bisectable by rebasing right at 095fb96, backmerge 
+> the fixlet from eeff031 and redo the whole series dropping the two bad 
+> patches. Since this portion of the tree has no appreciable testing value 
+> the rebase is the right thing to do here.
 
+okay, i've done this now and pushed out the resulting tree to 
+tip/cpus4096-v2. It is a no-content-changed reshuffle of the tail ~10 
+commits of tip/cpus4096:
 
-===
->From 6f1210e6912afd8ca07518e82f89ba92137302b2 Mon Sep 17 00:00:00 2001
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Sun, 4 Jan 2009 02:37:26 +0900
-Subject: [PATCH] sparseirq: fix for_each_irq_desc() nit
+ $ git diff cpus4096..cpus4096-v2
+ $
 
-Raja reported for_each_irq_desc() has possibility unsafeness.
-if anyone write folliwing code, for_each_irq_desc() doesn't works intetionally.
-(Now, its code doesn't exist at all)
+i dropped the two broken patches i bisected today, and backmerged a fixlet 
+to make it more bisectable, and reordered fixes next to the merge point - 
+and the new changes now come after that.
 
- if (safe)
-   for_each_irq_desc(irq, desc) {
-      ...
-   }
- else
-   panic();
+this finally is something that has no known regressions and looks pushable 
+to Linus. I've started the -tip tests, lets see how well this holds up 
+now.
 
-
-Reported-by: Raja R Harinath <harinath@hurrynot.org>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>
----
- include/linux/irqnr.h |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/irqnr.h b/include/linux/irqnr.h
-index 5504a5c..99b91c6 100644
---- a/include/linux/irqnr.h
-+++ b/include/linux/irqnr.h
-@@ -23,13 +23,17 @@ extern struct irq_desc *irq_to_desc(unsigned int irq);
- # define for_each_irq_desc(irq, desc)					\
- 	for (irq = 0, desc = irq_to_desc(irq); irq < nr_irqs;		\
- 	     irq++, desc = irq_to_desc(irq))				\
--		if (desc)
-+		if (!desc)						\
-+			;						\
-+		else
- 
- 
- # define for_each_irq_desc_reverse(irq, desc)				\
- 	for (irq = nr_irqs - 1, desc = irq_to_desc(irq); irq >= 0;	\
- 	     irq--, desc = irq_to_desc(irq))				\
--		if (desc)
-+		if (!desc)						\
-+			;						\
-+		else
- 
- #endif /* CONFIG_GENERIC_HARDIRQS */
- 
--- 
-1.5.3
-
-
-
-
+	Ingo
