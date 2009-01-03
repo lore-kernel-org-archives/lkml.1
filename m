@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbZACJoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbZACKDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759238AbZACJoc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 04:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZACJoV
+	id S1759272AbZACKDm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 05:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZACKDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 04:44:21 -0500
-Received: from sh.osrg.net ([192.16.179.4]:48138 "EHLO sh.osrg.net"
+	Sat, 3 Jan 2009 05:03:32 -0500
+Received: from ozlabs.org ([203.10.76.45]:55385 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752428AbZACJoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 04:44:19 -0500
-Date: Sat, 03 Jan 2009 18:44:06 +0900 (JST)
-Message-Id: <20090103.184406.54858118.ryusuke@osrg.net>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: Re: Btrfs for mainline
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <1230925087.7538.41.camel@think.oraclecorp.com>
-References: <1230765549.7538.8.camel@think.oraclecorp.com>
-	<20090103.013755.42849152.ryusuke@osrg.net>
-	<1230925087.7538.41.camel@think.oraclecorp.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1753013AbZACKDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 05:03:31 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: git-pull request for tip/cpus4096
+Date: Sat, 3 Jan 2009 20:33:24 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>
+References: <495E4837.8090600@sgi.com> <200901031631.47818.rusty@rustcorp.com.au> <20090103171838.0610d443.sfr@canb.auug.org.au>
+In-Reply-To: <20090103171838.0610d443.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901032033.25087.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Jan 2009 14:38:07 -0500, Chris Mason <chris.mason@oracle.com> wrote:
-> On Sat, 2009-01-03 at 01:37 +0900, Ryusuke Konishi wrote:
-> > In addition, there seem to be well-separated reusable routines such as
-> > async-thread (enhanced workqueue) and extent_map.  Do you intend to
-> > move these into lib/ or so?
+On Saturday 03 January 2009 16:48:38 Stephen Rothwell wrote:
+> Hi Rusty,
 > 
-> Sorry, looks like I hit send too soon that time.  The async-thread code
-> is very self contained, and was intended for generic use.  Pushing that
-> into lib is probably a good idea.
-
-As for async-thread, kernel/ seems to be better place (sorry, I also hit
-send too soon ;)
-
-Anyway, I think it should be reviewed deeply by scheduler people and
-wider range of people.  So, it's a good idea to put it out in order to
-arouse interest.
- 
-> The extent_map and extent_buffer code was also intended for generic use.
-> It needs some love and care (making it work for blocksize != pagesize)
-> before I'd suggest moving it out of fs/btrfs.
+> On Sat, 3 Jan 2009 16:31:46 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> >
+> > >  arch/cris           : 0
+> > >  arch/frv            : 0
+> > >  arch/h8300          : 0
+> > >  arch/m32r           : 0
+> > >  arch/m68k           : 0
+> > >  arch/mn10300        : 0
+> > >  arch/um             : 0
+> > >  arch/xtensa         : 0
+> > 
+> > These are the non-linux-next archs.
 > 
-> -chris
+> linux-next does include (in theory) cris, m68k and xtensa. 
 
-The extent_map itself seemed independent of the problem to me, but I
-understand your plan.
+m68k was actually OK, and xtensa did show the __fls issue (but it seems
+broken by something else as well).
 
-Btrfs seems to have other helpful code including pages/bio compression
-which may become separable, too.  And, this may be the same for
-pages/bio encryption/decryption code which would come next.  (I don't
-mention about the volume management/raid feature here to avoid getting
-off the subject, but it's likewise).
+BTW, do you send mail automagically when something breaks, or does one have
+to check the web page?
 
-I think it's wonderful if they can be well-integrated into sublayers
-or libraries.
-
-Regards,
-Ryusuke
+Thanks,
+Rusty.
