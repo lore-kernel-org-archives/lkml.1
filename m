@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760075AbZACU3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZACUan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760075AbZACU3I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 15:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZACU2z
+	id S932555AbZACUan (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 15:30:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755645AbZACUad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 15:28:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41828 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751571AbZACU2y (ORCPT
+	Sat, 3 Jan 2009 15:30:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51100 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751571AbZACUad (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 15:28:54 -0500
-Date: Sat, 3 Jan 2009 12:28:38 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] cpus4096 tree, part 3
-In-Reply-To: <20090103193859.GB9805@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain>
-References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 3 Jan 2009 15:30:33 -0500
+Date: Sat, 3 Jan 2009 20:30:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: atomics: document that linux expects certain atomic behaviour
+ from unsigned long
+Message-ID: <20090103203044.0166b561@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090103202740.GC1666@elf.ucw.cz>
+References: <20090103124400.GA1572@ucw.cz>
+	<20090103201955.186974bb@lxorguk.ukuu.org.uk>
+	<20090103202740.GC1666@elf.ucw.cz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 3 Jan 2009, Ingo Molnar wrote:
+> If it is okay and linux relies on it, it should be documented.
 > 
-> ok. The pending regressions are all fixed now, and i've just finished my 
-> standard tests on the latest tree and all the tests passed fine.
+> If it is not okay, I guess we should document it, too -- it seems to
+> be common mistake. 
 
-Ok, pulled and pushed out.
-
-Has anybody looked at what the stack size is with MAXSMP set with an 
-allyesconfig? And what areas are still problematic, if any? Are we going 
-to have some code-paths that still essentially have 1kB+ of stack space 
-just because they haven't been converted and still have the cpu mask on 
-stack?
-
-			Linus
+A lot of old code did it knowing it was under the BKL, outside of the BKL
+its a very bad idea. There were lots of them in the tty layer and I don't
+doubt there are some left I missed too 8(
