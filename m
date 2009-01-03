@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbZACDp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932491AbZACDtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbZACDp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 22:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809AbZACDpU
+	id S932491AbZACDtA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 22:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbZACDsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 22:45:20 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:34140 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758806AbZACDpT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 22:45:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=aMDiq7m76wTYC6mkaLDF8bBsYmua42i7fv56U42j/tHDyv7sl3ZcQOxpN+6WvcdU/0
-         84DZlE3Ocr5SAuPvWi0bLB+Ge13JZuuIFxkF0evTZIZrUh+O6KXW7+kaKZn1Mk8c3O3n
-         zsOvT2VvmLbPeiopSJkunG4Snlrs+qGAYhQgQ=
-Message-ID: <3ae3aa420901021945w3d8f8065p2cd3e4f649849a2e@mail.gmail.com>
-Date: Fri, 2 Jan 2009 21:45:16 -0600
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-Reply-To: linasvepstas@gmail.com
-To: "Duane Griffin" <duaneg@dghda.com>
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
-Cc: "Chris Adams" <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090103022358.GA2454@dastardly.home.dghda.com>
+	Fri, 2 Jan 2009 22:48:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59935 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751668AbZACDsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 22:48:51 -0500
+Date: Fri, 2 Jan 2009 22:48:46 -0500
+From: Dave Jones <davej@redhat.com>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ath9k microwave anomaly
+Message-ID: <20090103034846.GB984@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Justin P. Mattock" <justinmattock@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <495ED1C4.8020304@gmail.com> <20090103032134.GA20209@redhat.com> <495EDC10.20605@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
-	 <20090103002114.GA1538533@hiwaay.net>
-	 <20090103022358.GA2454@dastardly.home.dghda.com>
+In-Reply-To: <495EDC10.20605@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/2 Duane Griffin <duaneg@dghda.com>:
-> On Fri, Jan 02, 2009 at 06:21:14PM -0600, Chris Adams wrote:
->> Once upon a time, Linas Vepstas <linasvepstas@gmail.com> said:
->> > Below follows a summary of the reported crashes. I'm ignoring the
->> > zillions of "mine didn't crash" reports, or the "you're a paranoid
->> > conspiracy theorist, its random chance" reports.
->>
->> I have reproduced this and got a stack trace (this is with Fedora 8 and
->> kernel kernel-2.6.26.6-49.fc8.x86_64):
->>
->> Basically (to my untrained eye), the leap second code is called from the
->> timer interrupt handler, which holds xtime_lock.  The leap second code
->> does a printk to notify about the leap second.  The printk code tries to
->> wake up klogd (I assume to prioritize kernel messages), and (under some
->> conditions), the scheduler attempts to get the current time, which tries
->> to get xtime_lock => deadlock.
->
-> How about just moving the printk out of the lock? I.e. something like
-> this:
+On Fri, Jan 02, 2009 at 07:31:28PM -0800, Justin P. Mattock wrote:
 
-[...]
+ > that opened my eyes up to how powerful
+ > a microwave is. makes me wonder if that
+ > grade in the window actually does what is supposed to.
+ > (block gamma rays or whatever the dangerous wave is);
+ 
+Unless you've developed abnormal super powers lately,
+it's likely that it's doing its job.
 
-Sure looks like the right fix to me.  (Although there's more than
-one printk under that lock).  Who's going to write the formal patch?
+Microwaves can't penetrate metal. The grill is keeping
+the radioactive nastyness inside.  RF interference is
+something else entirely. As to whether its harmful or not,
+that's an ongoing debate (see the people who claim
+cellphones fry your brain etc).
 
---linas
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
