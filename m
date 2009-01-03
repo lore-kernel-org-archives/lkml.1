@@ -1,212 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933016AbZACVoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbZACVpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933016AbZACVoo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbZACVod
+	id S1760192AbZACVpH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:45:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759927AbZACVos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:44:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:63048 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbZACVob (ORCPT
+	Sat, 3 Jan 2009 16:44:48 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45745 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933034AbZACVor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:44:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=O3bQ25FfllT2eSzL6z/GsY3VJdl17KmyJvrJAPls/CBfn08BNbK+RCghjFO4bZhl+a
-         KvIOB13k2GybRNApt/pw29ViHm8uJa5GoaHBl/9Y71R2o1kJyvMd+0q5wu/05t/y8O9d
-         KQBdmLYrsNAGj46kuWilWxHrcYyihKG+3FuQs=
-Date: Sat, 3 Jan 2009 22:44:03 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: David Flatz <david@upcs.at>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, stable@kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: PROBLEM: Oops when using emi62 with 2.6.28
-Message-ID: <20090103214359.GA5827@joi>
-References: <20081231145045.GA6648@pornomat.kantstrasse.ch>
+	Sat, 3 Jan 2009 16:44:47 -0500
+Date: Sat, 3 Jan 2009 16:44:43 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Peter Klotz <peter.klotz@aon.at>, Roman Kononov <kernel@kononov.ftml.net>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: BUG: soft lockup - is this XFS problem?
+Message-ID: <20090103214443.GA6612@infradead.org>
+References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081231145045.GA6648@pornomat.kantstrasse.ch>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081230042333.GC27679@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 03:50:45PM +0100, David Flatz wrote:
-> When I plug my Emagic emi 2|6 soundcard into my system usually the emi62
-> module loads the firmware on the card and I can use it as a normal
-> usb-audio device.
+On Tue, Dec 30, 2008 at 05:23:33AM +0100, Nick Piggin wrote:
+> On Tue, Dec 23, 2008 at 12:12:59PM -0500, Christoph Hellwig wrote:
+> > 
+> > Nick, I've seen various reports like this by Roman.  It seems to be
+> > caused by an interaction of the lockless pagecache with the xfs
+> > I/O code.  Any idea what might be wrong here:
 > 
-> With kernel 2.6.28 (and I don't really know which version of the kernel
-> introcudes this since I didn't use the card for quite a while) the
-> firmware gets loaded (the green lights on the card turn on) but the emi62
-> module crashes with an oops and then I can't use any usb device anymore
-> until I reboot.
-> 
-> 
-> Keywords: emi62 soundcard usb firmware oops
-> 
-> 
-> Kernel information:
-> Version: Linux pornomat 2.6.28 #2 SMP Wed Dec 31 15:11:53 CET 2008 i686 Intel(R) Core(TM) Duo CPU L2400 @ 1.66GHz GenuineIntel GNU/Linux
-> .config: see attachment
-> 
-> 
-> I don't know which version of the kernel does not have the bug but I
-> believe it worked with 2.6.27.2.
-> 
-> 
-> Oops:
-> usb 1-1: new full speed USB device using uhci_hcd and address 2
-> usb 1-1: configuration #1 chosen from 1 choice
-> emi26 - firmware loader 1-1:1.0: emi26_probe start
-> usb 1-1: firmware: requesting emi26/loader.fw
-> usb 1-1: firmware: requesting emi26/bitstream.fw
-> usb 1-1: firmware: requesting emi26/firmware.fw
-> usb 1-1: emi26_set_reset - 1
-> usb 1-1: emi26_set_reset - 0
-> BUG: unable to handle kernel NULL pointer dereference at 00000000
-> IP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26]
-> *pde = 00000000 
-> Oops: 0000 [#1] SMP 
-> last sysfs file: /sys/devices/pci0000:00/0000:00:1d.0/usb1/1-1/firmware/1-1/loading
-> Modules linked in: emi26(+) ipv6 cpufreq_ondemand coretemp arc4 ecb iwl3945 irtty_sir sir_dev nsc_ircc ehci_hcd uhci_hcd mac80211 irda usbcore snd_hda_intel thinkpad_acpi rfkill hwmon led_class e1000e snd_pcm cfg80211 snd_timer crc_ccitt snd snd_page_alloc aes_generic
-> 
-> Pid: 5082, comm: modprobe Not tainted (2.6.28 #2) 17023QG
-> EIP: 0060:[<f80dc487>] EFLAGS: 00010206 CPU: 0
-> EIP is at emi26_probe+0x2f7/0x620 [emi26]
-> EAX: 0000015c EBX: 00000000 ECX: c1ffd9c0 EDX: 00000000
-> ESI: 0000015c EDI: f6bb215c EBP: f6bb0400 ESP: f00ebcfc
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process modprobe (pid: 5082, ti=f00ea000 task=f5c7c700 task.ti=f00ea000)
-> Stack:
->  0000015c 000000a5 f6a67cb8 f80dc7e0 c01c6262 fbef2986 f6bb2000 00008fe0
->  0000015c f715f748 f715f740 f715f738 f715f748 f6a67c00 f80dd040 f80dcfc0
->  f6bb0400 fbacb290 f6a67c94 fbae0160 c01c70bf 00000000 f6a67c1c 00000000
-> Call Trace:
->  [<c01c6262>] sysfs_add_one+0x12/0x50
->  [<fbacb290>] usb_probe_interface+0xa0/0x140 [usbcore]
->  [<c01c70bf>] sysfs_create_link+0xf/0x20
->  [<c02dead2>] driver_probe_device+0x82/0x180
->  [<fbac9eeb>] usb_match_id+0x3b/0x50 [usbcore]
->  [<c02dec4e>] __driver_attach+0x7e/0x80
->  [<c02de27a>] bus_for_each_dev+0x3a/0x60
->  [<c02de956>] driver_attach+0x16/0x20
->  [<c02debd0>] __driver_attach+0x0/0x80
->  [<c02de7b1>] bus_add_driver+0x1a1/0x220
->  [<c02dee4d>] driver_register+0x4d/0x120
->  [<c024e622>] idr_get_empty_slot+0xf2/0x290
->  [<fbacab71>] usb_register_driver+0x81/0x100 [usbcore]
->  [<f806c000>] emi26_init+0x0/0x14 [emi26]
->  [<c0101126>] do_one_initcall+0x36/0x1b0
->  [<c01c5e70>] sysfs_ilookup_test+0x0/0x10
->  [<c0197a61>] ifind+0x31/0x90
->  [<c01c6229>] __sysfs_add_one+0x59/0x80
->  [<c01c64e4>] sysfs_addrm_finish+0x14/0x1c0
->  [<c0175ca3>] __vunmap+0xa3/0xd0
->  [<c014b854>] load_module+0x1544/0x1640
->  [<c014b9d7>] sys_init_module+0x87/0x1b0
->  [<c0187f41>] sys_read+0x41/0x70
->  [<c01032a5>] sysenter_do_call+0x12/0x21
->  [<c03d0000>] wait_for_common+0x40/0x110
-> Code: 66 c1 e8 08 66 09 d0 75 a5 31 d2 89 e8 e8 72 fc ff ff 85 c0 0f 88 9a 02 00 00 b8 fa 00 00 00 e8 30 46 05 c8 8b 74 24 28 8b 5e 04 <8b> 03 89 44 24 1c 0f c8 89 44 24 1c 0f b7 4b 04 c7 44 24 20 00 
-> EIP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26] SS:ESP 0068:f00ebcfc
-> ---[ end trace 2eefa13825431230 ]---
+> Hmm, it could get into a loop here if there is a page in the pagecache
+> with a zero refcount, which might be a problem with XFS... other looping
+> conditions might indicate a problem iwth lockless pagecache or radix
+> tree. It would be very helpful to know what condition it is looping on...
 
-Thanks for a report.
-Please check whether appended patch resolves the problem.
-
----
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] emi26: fix oops on load
-
-Fix oops introduced by commit ae93a55bf948753de0bb8e43fa9c027f786abb05
-(emi26: use request_firmware()):
-
-usb 1-1: new full speed USB device using uhci_hcd and address 2
-usb 1-1: configuration #1 chosen from 1 choice
-emi26 - firmware loader 1-1:1.0: emi26_probe start
-usb 1-1: firmware: requesting emi26/loader.fw
-usb 1-1: firmware: requesting emi26/bitstream.fw
-usb 1-1: firmware: requesting emi26/firmware.fw
-usb 1-1: emi26_set_reset - 1
-usb 1-1: emi26_set_reset - 0
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-IP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26]
-*pde = 00000000
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1d.0/usb1/1-1/firmware/1-1/loading
-Modules linked in: emi26(+) ipv6 cpufreq_ondemand coretemp arc4 ecb iwl3945 irtty_sir sir_dev nsc_ircc ehci_hcd uhci_hcd mac80211 irda usbcore snd_hda_intel thinkpad_acpi rfkill hwmon led_class e1000e snd_pcm cfg80211 snd_timer crc_ccitt snd snd_page_alloc aes_generic
-
-Pid: 5082, comm: modprobe Not tainted (2.6.28 #2) 17023QG
-EIP: 0060:[<f80dc487>] EFLAGS: 00010206 CPU: 0
-EIP is at emi26_probe+0x2f7/0x620 [emi26]
-EAX: 0000015c EBX: 00000000 ECX: c1ffd9c0 EDX: 00000000
-ESI: 0000015c EDI: f6bb215c EBP: f6bb0400 ESP: f00ebcfc
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process modprobe (pid: 5082, ti=f00ea000 task=f5c7c700 task.ti=f00ea000)
-Stack:
- 0000015c 000000a5 f6a67cb8 f80dc7e0 c01c6262 fbef2986 f6bb2000 00008fe0
- 0000015c f715f748 f715f740 f715f738 f715f748 f6a67c00 f80dd040 f80dcfc0
- f6bb0400 fbacb290 f6a67c94 fbae0160 c01c70bf 00000000 f6a67c1c 00000000
-Call Trace:
- [<c01c6262>] sysfs_add_one+0x12/0x50
- [<fbacb290>] usb_probe_interface+0xa0/0x140 [usbcore]
- [<c01c70bf>] sysfs_create_link+0xf/0x20
- [<c02dead2>] driver_probe_device+0x82/0x180
- [<fbac9eeb>] usb_match_id+0x3b/0x50 [usbcore]
- [<c02dec4e>] __driver_attach+0x7e/0x80
- [<c02de27a>] bus_for_each_dev+0x3a/0x60
- [<c02de956>] driver_attach+0x16/0x20
- [<c02debd0>] __driver_attach+0x0/0x80
- [<c02de7b1>] bus_add_driver+0x1a1/0x220
- [<c02dee4d>] driver_register+0x4d/0x120
- [<c024e622>] idr_get_empty_slot+0xf2/0x290
- [<fbacab71>] usb_register_driver+0x81/0x100 [usbcore]
- [<f806c000>] emi26_init+0x0/0x14 [emi26]
- [<c0101126>] do_one_initcall+0x36/0x1b0
- [<c01c5e70>] sysfs_ilookup_test+0x0/0x10
- [<c0197a61>] ifind+0x31/0x90
- [<c01c6229>] __sysfs_add_one+0x59/0x80
- [<c01c64e4>] sysfs_addrm_finish+0x14/0x1c0
- [<c0175ca3>] __vunmap+0xa3/0xd0
- [<c014b854>] load_module+0x1544/0x1640
- [<c014b9d7>] sys_init_module+0x87/0x1b0
- [<c0187f41>] sys_read+0x41/0x70
- [<c01032a5>] sysenter_do_call+0x12/0x21
- [<c03d0000>] wait_for_common+0x40/0x110
-Code: 66 c1 e8 08 66 09 d0 75 a5 31 d2 89 e8 e8 72 fc ff ff 85 c0 0f 88 9a 02 00 00 b8 fa 00 00 00 e8 30 46 05 c8 8b 74 24 28 8b 5e 04 <8b> 03 89 44 24 1c 0f c8 89 44 24 1c 0f b7 4b 04 c7 44 24 20 00
-EIP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26] SS:ESP 0068:f00ebcfc
----[ end trace 2eefa13825431230 ]---
-
-After the last "package" of firmware data is sent to the device, we dereference
-NULL pointer (on access to rec->addr). Fix it.
-
-Reported-by: David Flatz <david@upcs.at>
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: stable <stable@kernel.org> [2.6.27, 2.6.28]
----
- drivers/usb/misc/emi26.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/usb/misc/emi26.c b/drivers/usb/misc/emi26.c
-index e762beb..879a980 100644
---- a/drivers/usb/misc/emi26.c
-+++ b/drivers/usb/misc/emi26.c
-@@ -160,7 +160,7 @@ static int emi26_load_firmware (struct usb_device *dev)
- 			err("%s - error loading firmware: error = %d", __func__, err);
- 			goto wraperr;
- 		}
--	} while (i > 0);
-+	} while (rec);
- 
- 	/* Assert reset (stop the CPU in the EMI) */
- 	err = emi26_set_reset(dev,1);
--- 
-1.5.6.4
-
+See http://oss.sgi.com/bugzilla/show_bug.cgi?id=805
