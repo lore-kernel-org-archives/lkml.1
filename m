@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbZACVyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760276AbZACV66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932462AbZACVyH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:54:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760050AbZACVxx
+	id S1760276AbZACV66 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZACV6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:53:53 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37078 "EHLO gate.crashing.org"
+	Sat, 3 Jan 2009 16:58:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56390 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760264AbZACVxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:53:52 -0500
-Subject: Re: [PATCH] printk: Let %pR handle NULL pointers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	id S1752944AbZACV6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 16:58:49 -0500
+Date: Sat, 3 Jan 2009 22:58:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Trent Piepho <xyzzy@speakeasy.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain>
-References: <1230979341-23029-1-git-send-email-xyzzy@speakeasy.org>
-	 <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 04 Jan 2009 08:53:34 +1100
-Message-Id: <1231019614.15389.104.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] cpus4096 tree, part 3
+Message-ID: <20090103215836.GA32106@elte.hu>
+References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu> <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain> <20090103203621.GA2491@elte.hu> <alpine.LFD.2.00.0901031244090.3179@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901031244090.3179@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-03 at 09:10 -0800, Linus Torvalds wrote:
-> 
-> On Sat, 3 Jan 2009, Trent Piepho wrote:
-> >
-> > Have %pR print "[NULL]" for the resource range when passed a NULL pointer.
-> 
-> Wouldn't it be much nicer to just do it for _all_ pointer types?
-> 
-> IOW, a patch more like the appended.
 
-Agreed.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Cheers,
-Ben.
+> And those things (VM, ACPI and PCI) are easily triggered in real use and 
+> don't need odd hardware. So I think they need to be fixed before 2.6.29, 
+> otherwise I'll have to disable MAXSMP and again limit MAX_CPU back to 
+> 128 or something.
 
+agreed.
+
+	Ingo
