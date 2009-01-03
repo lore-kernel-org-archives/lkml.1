@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbZACXOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbZACXYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932806AbZACXOU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 18:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760019AbZACXOK
+	id S932842AbZACXYQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 18:24:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbZACXX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 18:14:10 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41123 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759941AbZACXOI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 18:14:08 -0500
-Date: Sat, 3 Jan 2009 23:14:19 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: atomics: document that linux expects certain atomic behaviour
- from unsigned long
-Message-ID: <20090103231419.197727ba@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090103205628.GE1666@elf.ucw.cz>
-References: <20090103124400.GA1572@ucw.cz>
-	<20090103201955.186974bb@lxorguk.ukuu.org.uk>
-	<20090103202740.GC1666@elf.ucw.cz>
-	<20090103203044.0166b561@lxorguk.ukuu.org.uk>
-	<20090103205628.GE1666@elf.ucw.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Jan 2009 18:23:59 -0500
+Received: from styx.suse.cz ([82.119.242.94]:46200 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760007AbZACXX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 18:23:59 -0500
+Date: Sun, 4 Jan 2009 00:23:56 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Nick Andrew <nick@nick-andrew.net>
+cc: Trivial Kernel Patches <trivial@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [TRIVIAL PATCH 00/11] Fix misspelling of "firmware"
+In-Reply-To: <20090103074923.27466.7287.stgit@marcab.local>
+Message-ID: <alpine.LNX.1.10.0901040023070.5377@jikos.suse.cz>
+References: <20090103074923.27466.7287.stgit@marcab.local>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Is there concrete architecture where it breaks? I'd expect i386/x86-64
-> to be safe, and pretty much everyone to be safe as long as that long
-> is aligned.... or that was the result of arch-maintainers
-> discussion...
+On Sat, 3 Jan 2009, Nick Andrew wrote:
 
-It'll break on x86 if gcc decides to cache the value and you don't have
-explicit barriers. If the long is not aligned it's not safe on x86 at all.
- 
-> I'd really like to document if it is right or not, so that I can point
-> people to documentation...
+> Fix misspellings of "firmware" which I noticed in 2.6.28. All are 
+> comment changes except for the change to drivers/scsi/qla4xxx/ql4_mbx.c 
+> which is in a string argument to dev_info().
+> 
+> Nick.
+> ---
+> 
+> Nick Andrew (11):
+>       Fix misspelling of "firmware" in docs for ncr53c8xx/sym53c8xx
+>       Fix misspelling of "firmware" in powerpc Makefile
+>       Fix misspelling of "firmware" in usb.c
+>       Fix misspelling of "firmware" in qla1280.c
+>       Fix misspelling of "firmware" in a100u2w.c
+>       Fix misspelling of "firmware" in megaraid.c
+>       Fix misspelling of "firmware" in ql4_mbx.c
+>       Fix misspelling of "firmware" in acpi_memhotplug.c
+>       Fix misspelling of "firmware" in ipw2100.c
+>       Fix misspelling of "firmware" in atmel.c
+>       Fix misspelled firmware in Kconfig
+> 
+> 
+>  Documentation/scsi/ChangeLog.ncr53c8xx |    2 +-
+>  Documentation/scsi/ChangeLog.sym53c8xx |    2 +-
+>  arch/powerpc/boot/Makefile             |    2 +-
+>  drivers/acpi/acpi_memhotplug.c         |    2 +-
+>  drivers/base/Kconfig                   |    2 +-
+>  drivers/net/wireless/atmel.c           |    2 +-
+>  drivers/net/wireless/ipw2100.c         |    2 +-
+>  drivers/scsi/a100u2w.c                 |    2 +-
+>  drivers/scsi/megaraid.c                |    4 ++--
+>  drivers/scsi/qla1280.c                 |    4 ++--
+>  drivers/scsi/qla4xxx/ql4_mbx.c         |    2 +-
+>  drivers/uwb/i1480/dfu/usb.c            |    2 +-
+>  12 files changed, 14 insertions(+), 14 deletions(-)
 
-We should always tell people to use atomic/set_bit etc. There *are* cases
-you can get away with it but it is far far better that the default is the
-safe one because most driver writers do not have a detailed knowledge of
-gcc code generation, processor quirks and barriers. If in a specific case
-its a performance hit then its worth optimising that case.
+Thanks Nick, I have queued the patches in the trivial tree.
 
-Alan
+-- 
+Jiri Kosina
+SUSE Labs
