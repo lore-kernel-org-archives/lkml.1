@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbZACVpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbZACVxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760192AbZACVpH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759927AbZACVos
+	id S1760284AbZACVxj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZACVxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:44:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45745 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933034AbZACVor (ORCPT
+	Sat, 3 Jan 2009 16:53:30 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50264 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbZACVx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:44:47 -0500
-Date: Sat, 3 Jan 2009 16:44:43 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Klotz <peter.klotz@aon.at>, Roman Kononov <kernel@kononov.ftml.net>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: BUG: soft lockup - is this XFS problem?
-Message-ID: <20090103214443.GA6612@infradead.org>
-References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081230042333.GC27679@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	Sat, 3 Jan 2009 16:53:29 -0500
+Date: Sat, 3 Jan 2009 13:55:13 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] stackprotector re-enabling patches
+Message-ID: <20090103135513.20f14f1d@infradead.org>
+In-Reply-To: <20090103214353.GA22949@elte.hu>
+References: <20090103214353.GA22949@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 30, 2008 at 05:23:33AM +0100, Nick Piggin wrote:
-> On Tue, Dec 23, 2008 at 12:12:59PM -0500, Christoph Hellwig wrote:
-> > 
-> > Nick, I've seen various reports like this by Roman.  It seems to be
-> > caused by an interaction of the lockless pagecache with the xfs
-> > I/O code.  Any idea what might be wrong here:
-> 
-> Hmm, it could get into a loop here if there is a page in the pagecache
-> with a zero refcount, which might be a problem with XFS... other looping
-> conditions might indicate a problem iwth lockless pagecache or radix
-> tree. It would be very helpful to know what condition it is looping on...
+On Sat, 3 Jan 2009 22:43:53 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+>  
+> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+> index 10d6cc3..28f1114 100644
+> --- a/arch/x86/Kconfig.debug
+> +++ b/arch/x86/Kconfig.debug
+> @@ -117,6 +117,7 @@ config DEBUG_RODATA
+>  config DEBUG_RODATA_TEST
+>  	bool "Testcase for the DEBUG_RODATA feature"
+>  	depends on DEBUG_RODATA
+> +	default y
+>  	help
+>  	  This option enables a testcase for the DEBUG_RODATA
+>  	  feature as well as for the change_page_attr()
 
-See http://oss.sgi.com/bugzilla/show_bug.cgi?id=805
+I think this chunk isn't meant to be there...
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
