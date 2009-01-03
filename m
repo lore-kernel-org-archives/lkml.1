@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbZACKZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbZACK0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759626AbZACKZh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 05:25:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZACKZ3
+	id S1759871AbZACK0V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 05:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZACK0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 05:25:29 -0500
-Received: from proxy2.bredband.net ([195.54.101.72]:51609 "EHLO
-	proxy2.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbZACKZ2 (ORCPT
+	Sat, 3 Jan 2009 05:26:12 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60082 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753013AbZACK0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 05:25:28 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqM4AEPMXklR4F8bPGdsb2JhbACBbJIHAQEBATUBtheFcg
-Message-ID: <495F3D11.4080005@zappa.cx>
-Date: Sat, 03 Jan 2009 11:25:21 +0100
-From: Andreas Sundstrom <sunkan@zappa.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28 ext4, xen and lvm volume becomes ro after snapshot
-References: <20081226140721.GN9871@mit.edu> <4954FB62.4090306@zappa.cx>	<20081226182145.GP9871@mit.edu> <495526F6.9040704@zappa.cx>	<20081226193307.GA2138@mit.edu> <495553EB.6030604@zappa.cx>	<20081227030632.GA3539@mit.edu> <4955F338.4020509@zappa.cx>	<20090102031110.GF17821@mit.edu> <20090102092902.6p7echfdgkos40ss@zappa.cx>	<20090102141014.GB4758@mit.edu>
-In-Reply-To: <20090102141014.GB4758@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 3 Jan 2009 05:26:11 -0500
+Subject: [PATCH -tip 0/7] x86 rename mpc_config_X to mpc_X
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andi Kleen <andi@firstfloor.org>, astarikovskiy@suse.de,
+       jbarnes@sgi.com, pazke@orbita1.ru, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 03 Jan 2009 15:46:33 +0530
+Message-Id: <1230977793.6138.17.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Theodore Tso <tytso@mit.edu>:
+These are first set of patches for cleanup related to mpspec as suggested by Ingo Molnar.
+Once these are approved and applied then I will send next set of patches.
 
-> On Fri, Jan 02, 2009 at 09:29:02AM +0100, Andreas Sundstrom wrote:
->>
->> Well, the patch didn't work when I did "patch -i ext4.patch -p1" but I
->> did it manually and the code compiles and works fine.
->
-> The patch assumed some whitespace cleanups earlier in the ext4 patch
-> queue, which is probably why you had to apply the patch by hand.
-> Thanks for trying it out!!
+The following changes since commit 6ea161d36b1a3615f10a52bd5b19fac41653eea4:
+  Ingo Molnar (1):
+        Merge branch 'linus'
 
-I see.. no problem..
+Jaswinder Singh Rajput (7):
+      x86: rename mp_config_table to mpc_table
+      x86: rename mpc_config_bus to mpc_bus
+      x86: rename mpc_config_processor to mpc_cpu
+      x86: rename mpc_config_ioapic to mpc_ioapic
+      x86: rename mpc_config_intsrc to mpc_intsrc
+      x86: rename mpc_config_lintsrc to mpc_lintsrc
+      x86: rename mpc_config_oemtable to mpc_oemtable
 
->
-> May I add:
->
-> Tested-by: Andreas Sundstrom <sunkan@zappa.cx>
->
-> To the patch commit log?  We've been trying trying to give credit to
-> those people who work with kernel developers to test fixes, but given
-> that it does add peoples' e-mail addresses, it's something I always
-> ask permission to do if that person hasn't agreed to this sort of
-> thing already.
+ arch/x86/include/asm/es7000/mpparse.h            |    3 +-
+ arch/x86/include/asm/genapic_32.h                |    8 +-
+ arch/x86/include/asm/mach-default/mach_mpparse.h |    4 +-
+ arch/x86/include/asm/mach-generic/mach_mpparse.h |    5 +-
+ arch/x86/include/asm/mach-generic/mach_mpspec.h  |    4 +-
+ arch/x86/include/asm/mpspec_def.h                |   14 ++--
+ arch/x86/include/asm/numaq/mpparse.h             |    3 +-
+ arch/x86/include/asm/setup.h                     |   14 ++--
+ arch/x86/include/asm/summit/mpparse.h            |    2 +-
+ arch/x86/kernel/mpparse.c                        |   98 ++++++++++------------
+ arch/x86/kernel/numaq_32.c                       |   11 +--
+ arch/x86/kernel/visws_quirks.c                   |    4 +-
+ arch/x86/mach-generic/es7000.c                   |    8 +-
+ arch/x86/mach-generic/numaq.c                    |    3 +-
+ arch/x86/mach-generic/probe.c                    |    3 +-
+ 15 files changed, 84 insertions(+), 100 deletions(-)
 
-Yes that is ok
+Thank you,
+	JSR
 
-Thank you for looking in to the issue
-
-/Andreas
