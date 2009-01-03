@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbZACWdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbZACWiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760241AbZACWdb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 17:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZACWdW
+	id S1760137AbZACWiN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 17:38:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZACWh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 17:33:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36076 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751872AbZACWdW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 17:33:22 -0500
-Date: Sat, 3 Jan 2009 14:34:55 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Sat, 3 Jan 2009 17:37:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39008 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752934AbZACWh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 17:37:57 -0500
+Date: Sat, 3 Jan 2009 23:37:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       linux-kernel@vger.kernel.org,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] stackprotector re-enabling patches
-Message-ID: <20090103143455.4c23d243@infradead.org>
-In-Reply-To: <20090103135513.20f14f1d@infradead.org>
-References: <20090103214353.GA22949@elte.hu>
-	<20090103135513.20f14f1d@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Subject: Re: [git pull] cpus4096 tree, part 3
+Message-ID: <20090103223723.GA17047@elte.hu>
+References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu> <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain> <20090103203621.GA2491@elte.hu> <20090103213856.GA24138@elte.hu> <alpine.LFD.2.00.0901031347570.3179@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901031347570.3179@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Jan 2009 13:55:13 -0800
-Arjan van de Ven <arjan@infradead.org> wrote:
 
-> On Sat, 3 Jan 2009 22:43:53 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> >  
-> > diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-> > index 10d6cc3..28f1114 100644
-> > --- a/arch/x86/Kconfig.debug
-> > +++ b/arch/x86/Kconfig.debug
-> > @@ -117,6 +117,7 @@ config DEBUG_RODATA
-> >  config DEBUG_RODATA_TEST
-> >  	bool "Testcase for the DEBUG_RODATA feature"
-> >  	depends on DEBUG_RODATA
-> > +	default y
-> >  	help
-> >  	  This option enables a testcase for the DEBUG_RODATA
-> >  	  feature as well as for the change_page_attr()
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> What happened to Nick's cleanup patch to do_page_fault (a month or two 
+> ago? I complained about some of the issues in his first version and 
+> asked for some further cleanups, but I think that whole discussion ended 
+> with him saying "I am going to add those changes that you suggested (in 
+> fact, I already have)".
 > 
-> I think this chunk isn't meant to be there...
+> And then I didn't see anything further. Maybe I just missed the end 
+> result. Or maybe we have it in some -mm branch or something?
 
-actually never mind.
-it does make sense in general (in fact, I'd be tempted to remove the
-KConfig for this one and just always do the check)
+they would have been in tip/x86/mm and would be upstream now had Nick 
+re-sent a v2 series but that never happened. I think they might have 
+fallen victim to a serious attention deficit caused by the SLQB patch ;-)
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
