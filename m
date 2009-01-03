@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932609AbZACWN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbZACWR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932609AbZACWN2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 17:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZACWNU
+	id S1760293AbZACWR3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 17:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759598AbZACWRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 17:13:20 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:54279 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbZACWNU (ORCPT
+	Sat, 3 Jan 2009 17:17:20 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:55372 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979AbZACWRS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 17:13:20 -0500
-Date: Sat, 3 Jan 2009 23:14:55 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Regression] Build failure in current mainline - firmware related
-Message-ID: <20090103221455.GA8312@uranus.ravnborg.org>
-References: <200901031247.14977.rjw@sisk.pl> <20090103204948.GA5388@uranus.ravnborg.org> <20090103205437.GA5499@uranus.ravnborg.org> <200901032243.28684.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 3 Jan 2009 17:17:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qG/GrMJe7mbppIiTEDjIizgDGLB7d2Q30YboKl5vG6ov4Fh9QPfTGrSdB0UJh9+UFJ
+         tTwBqa5IQ1t00qMWjnvecsGgm2o9QOkZhD57BL6sYpgYU1HTiEcm/aylqd3So4Fi92U0
+         UUvAmSzAW9aQKc9l/pqVoP2RRop+++rwjfGow=
+Message-ID: <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com>
+Date: Sat, 3 Jan 2009 22:17:15 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "=?WINDOWS-1252?Q?Martin_MOKREJ=8A?=" 
+	<mmokrejs@ribosome.natur.cuni.cz>
+Subject: Re: document ext3 requirements
+Cc: "Pavel Machek" <pavel@suse.cz>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+In-Reply-To: <495FD5D7.2040907@ribosome.natur.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200901032243.28684.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.1i
+References: <20090103123813.GA1512@ucw.cz>
+	 <495FD5D7.2040907@ribosome.natur.cuni.cz>
+X-Google-Sender-Auth: 870a0672ef963fe4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Well, in the meantime I ran 'make modules_install V=1' and this is the
-> last thing printed (the previous ones are not really interesting):
-> 
-> make -f /home/rafael/src/linux-2.6/scripts/Makefile.fwinst obj=firmware __fw_modinst
->   gcc -Wp,-MD,firmware/.ihex2fw.d -Ifirmware -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o firmware/ihex2fw /home/rafael/src/linux-2.6/firmware/ihex2fw.c
-> /home/rafael/src/linux-2.6/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system
-> compilation terminated.
-> make[3]: *** [firmware/ihex2fw] Error 1
-> make[2]: *** [_modinst_post] Error 2
-> make[1]: *** [sub-make] Error 2
-> make: *** [all] Error 2
-> 
-> It fails because of the attempt to compile ihex2fw .
+[Fixed top-posting]
 
-I recall we had this bug in previous kernel too.
-But it seems noone cared to fix it.
+2009/1/3 Martin MOKREJŠ <mmokrejs@ribosome.natur.cuni.cz>:
+> Pavel Machek wrote:
+>> readonly mount does actually write to the media in some cases. Document that.
+>>
+> Can one avoid replay of the journal then if it would be unclean?
+> Just curious.
 
-Looking at all this firmware stuff makes me sad.
+Nope. If the underlying block device is read-only then mounting the
+filesystem will fail. I tried to fix this some time ago, and have a
+set of patches that almost always work, but "almost always" isn't good
+enough. Unfortunately I never managed to figure out a way to finish it
+off without disgusting hacks or major surgery.
 
-We have a nice distributed way to keep all our
-drivers and suddenly all the firmware are stored in
-a central place.
-So adding a driver requiores changes to a central file,
-and moreso adding a file in a central place far far away from
-the driver itself.
+> M.
 
-I recall a long long thread about this that I never even looked at.
-[I commented on an early version of the implementation but never
-looked at it seriously despite being copied on stuff].
+Cheers,
+Duane.
 
-What we should have done:
-1) all firmware files should be stored with their drivers
-so firmare are kept logically in the same place as the source.
-
-2) we should add firmware information using config options
-rather than a long list in a centeal file.
-
-config MY_DRIVER_FIRMWARE
-	string
-	depends on MY_DRIVER
-	default "drivers/my/driver.bin"
-	
-or something similar.
-
-Then we could post process autoconf.h to have all relevant
-information I think.
-
-This is far away from solving this regression - just my
-initial braindump seeing the implementation of
-the firmware stuff.
-
-	Sam
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
