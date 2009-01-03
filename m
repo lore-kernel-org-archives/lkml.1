@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759682AbZACK04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759664AbZACK11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759682AbZACK04 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 05:26:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932405AbZACK0f
+	id S1759664AbZACK11 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 05:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759942AbZACK0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 05:26:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60105 "EHLO
+	Sat, 3 Jan 2009 05:26:45 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60114 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932387AbZACK0e (ORCPT
+	with ESMTP id S1759937AbZACK0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 05:26:34 -0500
-Subject: [PATCH -tip 2/7] x86: rename mpc_config_bus to mpc_bus
+	Sat, 3 Jan 2009 05:26:44 -0500
+Subject: [PATCH -tip 3/7] x86: rename mpc_config_processor to mpc_cpu
 From: Jaswinder Singh Rajput <jaswinder@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Andi Kleen <andi@firstfloor.org>, astarikovskiy@suse.de,
        jbarnes@sgi.com, pazke@orbita1.ru, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sat, 03 Jan 2009 15:47:32 +0530
-Message-Id: <1230977852.6138.22.camel@jaswinder.satnam>
+Date: Sat, 03 Jan 2009 15:48:52 +0530
+Message-Id: <1230977932.6138.24.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -28,142 +28,147 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup, smaller names, solves 80 columns wrap problem
 
-mpc_config_bus should be renamed to mpc_bus.
+mpc_config_processor should be renamed to mpc_cpu.
 The reason: the 'c' in MPC already means 'config' -
 no need to repeat that in the type name.
+Plus 'processor' is a lot longer than 'cpu' - so we try to use 'cpu' in all
+type names, as much as possible.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
  arch/x86/include/asm/genapic_32.h |    2 +-
  arch/x86/include/asm/mpspec_def.h |    2 +-
- arch/x86/include/asm/setup.h      |    6 +++---
- arch/x86/kernel/mpparse.c         |   12 +++++-------
- arch/x86/kernel/numaq_32.c        |    4 ++--
- 5 files changed, 12 insertions(+), 14 deletions(-)
+ arch/x86/include/asm/setup.h      |    4 ++--
+ arch/x86/kernel/mpparse.c         |   10 ++++------
+ arch/x86/kernel/numaq_32.c        |    2 +-
+ arch/x86/kernel/visws_quirks.c    |    4 ++--
+ 6 files changed, 11 insertions(+), 13 deletions(-)
 
 diff --git a/arch/x86/include/asm/genapic_32.h b/arch/x86/include/asm/genapic_32.h
-index db02be0..057e2c2 100644
+index 057e2c2..2c05b73 100644
 --- a/arch/x86/include/asm/genapic_32.h
 +++ b/arch/x86/include/asm/genapic_32.h
-@@ -15,7 +15,7 @@
-  * Copyright 2003 Andi Kleen, SuSE Labs.
-  */
+@@ -17,7 +17,7 @@
  
--struct mpc_config_bus;
-+struct mpc_bus;
+ struct mpc_bus;
  struct mpc_table;
- struct mpc_config_processor;
+-struct mpc_config_processor;
++struct mpc_cpu;
  
+ struct genapic {
+ 	char *name;
 diff --git a/arch/x86/include/asm/mpspec_def.h b/arch/x86/include/asm/mpspec_def.h
-index e260e65..daa3f4a 100644
+index daa3f4a..7e8ca51 100644
 --- a/arch/x86/include/asm/mpspec_def.h
 +++ b/arch/x86/include/asm/mpspec_def.h
-@@ -80,7 +80,7 @@ struct mpc_config_processor {
- 	unsigned int mpc_reserved[2];
- };
+@@ -70,7 +70,7 @@ struct mpc_table {
+ #define CPU_MODEL_MASK		0x00F0
+ #define CPU_FAMILY_MASK		0x0F00
  
--struct mpc_config_bus {
-+struct mpc_bus {
+-struct mpc_config_processor {
++struct mpc_cpu {
  	unsigned char mpc_type;
- 	unsigned char mpc_busid;
- 	unsigned char mpc_bustype[6];
+ 	unsigned char mpc_apicid;	/* Local APIC number */
+ 	unsigned char mpc_apicver;	/* Its versions */
 diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
-index 4fcd53f..26754ca 100644
+index 26754ca..8cf77ec 100644
 --- a/arch/x86/include/asm/setup.h
 +++ b/arch/x86/include/asm/setup.h
-@@ -26,7 +26,7 @@ extern int wakeup_secondary_cpu_via_init(int apicid, unsigned long start_eip);
+@@ -25,7 +25,7 @@ extern int wakeup_secondary_cpu_via_init(int apicid, unsigned long start_eip);
+ /*
   * Any setup quirks to be performed?
   */
- struct mpc_config_processor;
--struct mpc_config_bus;
-+struct mpc_bus;
+-struct mpc_config_processor;
++struct mpc_cpu;
+ struct mpc_bus;
  struct mp_config_oemtable;
  struct x86_quirks {
- 	int (*arch_pre_time_init)(void);
-@@ -40,8 +40,8 @@ struct x86_quirks {
+@@ -39,7 +39,7 @@ struct x86_quirks {
+ 	int (*mach_find_smp_config)(unsigned int reserve);
  
  	int *mpc_record;
- 	int (*mpc_apic_id)(struct mpc_config_processor *m);
--	void (*mpc_oem_bus_info)(struct mpc_config_bus *m, char *name);
--	void (*mpc_oem_pci_bus)(struct mpc_config_bus *m);
-+	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
-+	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
+-	int (*mpc_apic_id)(struct mpc_config_processor *m);
++	int (*mpc_apic_id)(struct mpc_cpu *m);
+ 	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
+ 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
  	void (*smp_read_mpc_oem)(struct mp_config_oemtable *oemtable,
-                                     unsigned short oemsize);
- 	int (*setup_ioapic_ids)(void);
 diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 154de68..edbd2b1 100644
+index edbd2b1..1ec13bb 100644
 --- a/arch/x86/kernel/mpparse.c
 +++ b/arch/x86/kernel/mpparse.c
-@@ -74,7 +74,7 @@ static void __init MP_processor_info(struct mpc_config_processor *m)
+@@ -49,7 +49,7 @@ static int __init mpf_checksum(unsigned char *mp, int len)
+ 	return sum & 0xFF;
  }
  
- #ifdef CONFIG_X86_IO_APIC
--static void __init MP_bus_info(struct mpc_config_bus *m)
-+static void __init MP_bus_info(struct mpc_bus *m)
+-static void __init MP_processor_info(struct mpc_config_processor *m)
++static void __init MP_processor_info(struct mpc_cpu *m)
  {
- 	char str[7];
- 	memcpy(str, m->mpc_bustype, 6);
-@@ -338,8 +338,7 @@ static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
- 			}
- 		case MP_BUS:
+ 	int apicid;
+ 	char *bootup_cpu = "";
+@@ -327,8 +327,7 @@ static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
+ 		switch (*mpt) {
+ 		case MP_PROCESSOR:
  			{
--				struct mpc_config_bus *m =
--				    (struct mpc_config_bus *)mpt;
-+				struct mpc_bus *m = (struct mpc_bus *)mpt;
- #ifdef CONFIG_X86_IO_APIC
- 				MP_bus_info(m);
- #endif
-@@ -488,7 +487,7 @@ static void __init construct_default_ioirq_mptable(int mpc_default_type)
- static void __init construct_ioapic_table(int mpc_default_type)
+-				struct mpc_config_processor *m =
+-				    (struct mpc_config_processor *)mpt;
++				struct mpc_cpu *m = (struct mpc_cpu *)mpt;
+ 				/* ACPI may have already provided this data */
+ 				if (!acpi_lapic)
+ 					MP_processor_info(m);
+@@ -534,7 +533,7 @@ static inline void __init construct_ioapic_table(int mpc_default_type) { }
+ 
+ static inline void __init construct_default_ISA_mptable(int mpc_default_type)
  {
- 	struct mpc_config_ioapic ioapic;
--	struct mpc_config_bus bus;
-+	struct mpc_bus bus;
- 
- 	bus.mpc_type = MP_BUS;
- 	bus.mpc_busid = 0;
-@@ -656,7 +655,7 @@ static void __init __get_smp_config(unsigned int early)
- 		 * ISA defaults and hope it will work.
- 		 */
- 		if (!mp_irq_entries) {
--			struct mpc_config_bus bus;
-+			struct mpc_bus bus;
- 
- 			printk(KERN_ERR "BIOS bug, no explicit IRQ entries, "
- 			       "using default mptable. "
-@@ -867,8 +866,7 @@ static int  __init replace_intsrc_all(struct mpc_table *mpc,
- 			}
- 		case MP_BUS:
+-	struct mpc_config_processor processor;
++	struct mpc_cpu processor;
+ 	struct mpc_config_lintsrc lintsrc;
+ 	int linttypes[2] = { mp_ExtINT, mp_NMI };
+ 	int i;
+@@ -858,8 +857,7 @@ static int  __init replace_intsrc_all(struct mpc_table *mpc,
+ 		switch (*mpt) {
+ 		case MP_PROCESSOR:
  			{
--				struct mpc_config_bus *m =
--				    (struct mpc_config_bus *)mpt;
-+				struct mpc_bus *m = (struct mpc_bus *)mpt;
+-				struct mpc_config_processor *m =
+-				    (struct mpc_config_processor *)mpt;
++				struct mpc_cpu *m = (struct mpc_cpu *)mpt;
  				mpt += sizeof(*m);
  				count += sizeof(*m);
  				break;
 diff --git a/arch/x86/kernel/numaq_32.c b/arch/x86/kernel/numaq_32.c
-index 454c55b..8135426 100644
+index 8135426..bcc3da1 100644
 --- a/arch/x86/kernel/numaq_32.c
 +++ b/arch/x86/kernel/numaq_32.c
-@@ -135,7 +135,7 @@ int mp_bus_id_to_node[MAX_MP_BUSSES];
- int mp_bus_id_to_local[MAX_MP_BUSSES];
+@@ -117,7 +117,7 @@ static inline int generate_logical_apicid(int quad, int phys_apicid)
+ }
  
  /* x86_quirks member */
--static void mpc_oem_bus_info(struct mpc_config_bus *m, char *name)
-+static void mpc_oem_bus_info(struct mpc_bus *m, char *name)
+-static int mpc_apic_id(struct mpc_config_processor *m)
++static int mpc_apic_id(struct mpc_cpu *m)
  {
  	int quad = translation_table[mpc_record]->trans_quad;
- 	int local = translation_table[mpc_record]->trans_local;
-@@ -149,7 +149,7 @@ static void mpc_oem_bus_info(struct mpc_config_bus *m, char *name)
- int quad_local_to_mp_bus_id [NR_CPUS/4][4];
+ 	int logical_apicid = generate_logical_apicid(quad, m->mpc_apicid);
+diff --git a/arch/x86/kernel/visws_quirks.c b/arch/x86/kernel/visws_quirks.c
+index 0c9667f..ca12afa 100644
+--- a/arch/x86/kernel/visws_quirks.c
++++ b/arch/x86/kernel/visws_quirks.c
+@@ -176,7 +176,7 @@ static int __init visws_get_smp_config(unsigned int early)
+  * No problem for Linux.
+  */
  
- /* x86_quirks member */
--static void mpc_oem_pci_bus(struct mpc_config_bus *m)
-+static void mpc_oem_pci_bus(struct mpc_bus *m)
+-static void __init MP_processor_info(struct mpc_config_processor *m)
++static void __init MP_processor_info(struct mpc_cpu *m)
  {
- 	int quad = translation_table[mpc_record]->trans_quad;
- 	int local = translation_table[mpc_record]->trans_local;
+ 	int ver, logical_apicid;
+ 	physid_mask_t apic_cpus;
+@@ -218,7 +218,7 @@ static void __init MP_processor_info(struct mpc_config_processor *m)
+ 
+ static int __init visws_find_smp_config(unsigned int reserve)
+ {
+-	struct mpc_config_processor *mp = phys_to_virt(CO_CPU_TAB_PHYS);
++	struct mpc_cpu *mp = phys_to_virt(CO_CPU_TAB_PHYS);
+ 	unsigned short ncpus = readw(phys_to_virt(CO_CPU_NUM_PHYS));
+ 
+ 	if (ncpus > CO_CPU_MAX) {
 -- 
 1.5.5.1
 
