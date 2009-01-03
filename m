@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760276AbZACV66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbZACV7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760276AbZACV66 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZACV6u
+	id S932512AbZACV7y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZACV7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:58:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56390 "EHLO mx2.mail.elte.hu"
+	Sat, 3 Jan 2009 16:59:45 -0500
+Received: from mail.lang.hm ([64.81.33.126]:39445 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752944AbZACV6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:58:49 -0500
-Date: Sat, 3 Jan 2009 22:58:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] cpus4096 tree, part 3
-Message-ID: <20090103215836.GA32106@elte.hu>
-References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu> <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain> <20090103203621.GA2491@elte.hu> <alpine.LFD.2.00.0901031244090.3179@localhost.localdomain>
+	id S1752694AbZACV7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 16:59:45 -0500
+Date: Sat, 3 Jan 2009 15:01:48 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@suse.cz>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: atomics: document that linux expects certain atomic behaviour
+ from unsigned long
+In-Reply-To: <20090103205628.GE1666@elf.ucw.cz>
+Message-ID: <alpine.DEB.1.10.0901031459010.23262@asgard.lang.hm>
+References: <20090103124400.GA1572@ucw.cz> <20090103201955.186974bb@lxorguk.ukuu.org.uk> <20090103202740.GC1666@elf.ucw.cz> <20090103203044.0166b561@lxorguk.ukuu.org.uk> <20090103205628.GE1666@elf.ucw.cz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901031244090.3179@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 3 Jan 2009, Pavel Machek wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Sat 2009-01-03 20:30:44, Alan Cox wrote:
+>>> If it is okay and linux relies on it, it should be documented.
+>>>
+>>> If it is not okay, I guess we should document it, too -- it seems to
+>>> be common mistake.
+>>
+>> A lot of old code did it knowing it was under the BKL, outside of the BKL
+>> its a very bad idea. There were lots of them in the tty layer and I don't
+>> doubt there are some left I missed too 8(
+>
+> I have seen this in new code (some LED driver last time), definitely
+> no BKL.
+>
+> Is there concrete architecture where it breaks? I'd expect i386/x86-64
+> to be safe, and pretty much everyone to be safe as long as that long
+> is aligned.... or that was the result of arch-maintainers
+> discussion...
+>
+> I'd really like to document if it is right or not, so that I can point
+> people to documentation...
 
-> And those things (VM, ACPI and PCI) are easily triggered in real use and 
-> don't need odd hardware. So I think they need to be fixed before 2.6.29, 
-> otherwise I'll have to disable MAXSMP and again limit MAX_CPU back to 
-> 128 or something.
+you may want to take a look at the new C/C++/POSIX standards (some just 
+standardized, some still in development), they explicitly address this 
+area.
 
-agreed.
-
-	Ingo
+David Lang
