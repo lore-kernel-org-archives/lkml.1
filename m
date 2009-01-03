@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZACAHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbZACAKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbZACAHc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 19:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758088AbZACAHX
+	id S1759636AbZACAKU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 19:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757605AbZACAKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 19:07:23 -0500
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:46328 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757698AbZACAHW (ORCPT
+	Fri, 2 Jan 2009 19:10:07 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:58747 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757552AbZACAKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 19:07:22 -0500
-Message-ID: <495EAC36.5030706@blueyonder.co.uk>
-Date: Sat, 03 Jan 2009 00:07:18 +0000
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Fri, 2 Jan 2009 19:10:06 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] headers_check.pl: disallow extern's
+Date: Sat, 3 Jan 2009 01:09:57 +0100
+User-Agent: KMail/1.9.9
+Cc: Mike Frysinger <vapier@gentoo.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+References: <1230363816-24097-1-git-send-email-vapier@gentoo.org> <200901030059.18438.arnd@arndb.de> <20090102160525.430c59f9@infradead.org>
+In-Reply-To: <20090102160525.430c59f9@infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28-git forcedeth dead interface and nvidia problems
-References: <495C4CC0.1040006@blueyonder.co.uk> <40555.1230870755@turing-police.cc.vt.edu>
-In-Reply-To: <40555.1230870755@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901030109.58197.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19eVVyUlD+CwWRRtzAuOEEco5Tng3OTxBPBgB9
+ NPlOuAJNI1OD2MUVUQP/l5rJP29uAzpkJ51UBg87CohLIO4u7S
+ rS6H2YNaUGz+08eED2edw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 01 Jan 2009 04:55:28 GMT, Sid Boyce said:
-> 
->> The NVidia driver 180.18 works fine with 2.6.28, but fails with
->> 2.6.28-git. The module builds and installs fine, Xorg.0.log says:-
->> (II) NVIDIA(0): Initialized GPU GART.
->> (II) NVIDIA(0): Setting mode "1280x1024"
->> (EE) NVIDIA(0): Failed to allocate video memory
->> (EE) NVIDIA(0):  *** Aborting ***
->>
->> Fatal server error:
->> AddScreen/ScreenInit failed for driver 0
-> 
-> A posting on the NVidia forums indicates that booting with 'nopat' or
-> building a kernel with CONFIG_X86_PAT=n works.
+On Saturday 03 January 2009, Arjan van de Ven wrote:
+> in addition... what business does the kernel have to provide function
+> prototypes to userspace, other than the system call prototypes?
 
-Thanks, I verified that "nopat" works and I've rebuilt the kernel with
-CONFIG_X86_PAT=n waiting for a reboot.
-Thanks and Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+This is the point I raised in my initial comment: we should warn about
+all of them if possible. Note that the syscalls.h file is not even
+exported. I can't think of a single case where a function protoype
+should be exported from the kernel to user space. 
 
+	Arnd <><
