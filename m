@@ -1,132 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbZACWB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbZACWEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932693AbZACWB7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 17:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbZACWBs
+	id S932560AbZACWEz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 17:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759742AbZACWEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 17:01:48 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44704 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755822AbZACWBr (ORCPT
+	Sat, 3 Jan 2009 17:04:46 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46792 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759634AbZACWEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 17:01:47 -0500
-Date: Sat, 3 Jan 2009 14:03:32 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, x86@kernel.org,
-       netdev@vger.kernel.org, tytso@mit.edu, eric@anholt.net,
-       airlied@redhat.com
-Subject: Bug/Warning report for the week of January 3rd, 2009
-Message-ID: <20090103140332.74f39ade@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 3 Jan 2009 17:04:45 -0500
+Date: Sat, 3 Jan 2009 23:06:38 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       tytso@mit.edu, mtk.manpages@gmail.com, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+Message-ID: <20090103220638.GF1666@elf.ucw.cz>
+References: <20090103123813.GA1512@ucw.cz> <495FD5D7.2040907@ribosome.natur.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <495FD5D7.2040907@ribosome.natur.cuni.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Few high/lowlights this round:
-* One if the used-to-be-hot Intel wireless issues is slowly going away as a result of
-  a firmware update
-* the i9xx GEM code is a high riser compared to the last report
-* in general, networking is relatively high this report
-* the long-fixed ext3 issues seem to still be with us
+On Sat 2009-01-03 22:17:11, Martin MOKREJŠ wrote:
+> Can one avoid replay of the journal then if it would be unclean?
+> Just curious.
 
+Well, mounting unclean filesystem is dangerous but depending on
+circumstances, it may be better than writing to the filesystems.
 
+(You may not be able to read some data and may provoke kernel bugs,
+but at least you don't damage what is on disk. If you are collecting
+evidence -- not writing is very important. If you suspect something is
+very wrong with the drive, not writing is good idea).
 
-This week, a total of 6647 oopses and warnings have been reported,
-compared to 6356 reports in the previous week. Only reports for version 2.6.27
-and later are counted for this report.
+								Pavel
+> 
+> Pavel Machek wrote:
+> > Using ext3 is only safe if storage subsystem meets certain
+> > criteria. Document those.
+> > 
+> > Errors=remount-ro is documented as default, but superblock setting
+> > overrides that and mkfs defaults to errors=continue... so the default
+> > is errors=continue in practice.
+> > 
+> > readonly mount does actually write to the media in some cases. Document that.
+> > 
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > 
+> > diff --git a/Documentation/filesystems/ext3.txt b/Documentation/filesystems/ext3.txt
 
-Per file statistics
-664	external/virtualbox/module
-420	arch/x86/include/asm/mtrr.h
-325	drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-275	drivers/gpu/drm/i915/i915_gem.c
-239	drivers/net/r8169.c
-228	fs/jbd/journal.c
-225	drivers/net/sis900.c
-192	drivers/gpu/drm/radeon/radeon_cp.c
-183	net/rfkill/rfkill.c
-159	net/ipv4/tcp.c
-153	drivers/net/wireless/iwlwifi/iwl-tx.c
-132	drivers/staging/at76_usb/at76_usb.c
-
-
-Rank 1: VBoxDrvLinuxIOCtl (warning)
-	Reported 659 times (4906 total reports)
-	[external] bug in the VirtualBox drivers
-	This warning was last seen in version 2.6.28-rc9, and first seen in 2.6.25.11.
-	More info: http://www.kerneloops.org/searchweek.php?search=VBoxDrvLinuxIOCtl
-
-Rank 2: mtrr_trim_uncached_memory (warning)
-	Reported 420 times (9816 total reports)
-	BIOS bug (often in VMWare) where the MTRR's are set up incorrectly or not at all
-	This warning was last seen in version 2.6.28, and first seen in 2.6.24.
-	More info: http://www.kerneloops.org/searchweek.php?search=mtrr_trim_uncached_memory
-
-Rank 3: rs_get_rate (warning)
-	Reported 325 times (4226 total reports)
-	Bug in the Intel IWL wireless drivers
-	This warning was last seen in version 2.6.28-rc7, and first seen in 2.6.25-rc2-git5.
-	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
-
-Rank 4: dev_watchdog(r8169) (oops)
-	Reported 239 times (3004 total reports)
-	This oops was last seen in version 2.6.28, and first seen in 2.6.26.6.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
-
-Rank 5: journal_update_superblock (warning)
-	Reported 228 times (8546 total reports)
-	Likely caused by the user removing a USB stick while mounted
-	This warning was last seen in version 2.6.29-rc0-git3, and first seen in 2.6.24-rc6-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
-
-Rank 6: dev_watchdog(sis900) (oops)
-	Reported 225 times (2595 total reports)
-	This oops was last seen in version 2.6.28, and first seen in 2.6.26-rc4-git2.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(sis900)
-
-Rank 7: i915_gem_idle (warning)
-	Reported 189 times (646 total reports)
-	Bug in the Intel 9xx 3D driver
-	This warning was last seen in version 2.6.28, and first seen in 2.6.27-rc8-git7.
-	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_idle
-
-Rank 8: rfkill_force_state (oops)
-	Reported 183 times (958 total reports)
-	[fixed] bug in the toshiba ACPI driver; fixed by 23d0a65cf229acd273b6f5a325c34d758a90d592
-	This oops was last seen in version 2.6.28-rc8-git2, and first seen in 2.6.27.4.
-	More info: http://www.kerneloops.org/searchweek.php?search=rfkill_force_state
-
-Rank 9: radeon_cp_init_ring_buffer (oops)
-	Reported 178 times (1209 total reports)
-	drm.git bug in the radeon driver
-	This oops was last seen in version 2.6.28-rc8-git2, and first seen in 2.6.25-rc8-git7.
-	More info: http://www.kerneloops.org/searchweek.php?search=radeon_cp_init_ring_buffer
-
-Rank 10: tcp_recvmsg (warning)
-	Reported 159 times (846 total reports)
-	This warning was last seen in version 2.6.28-rc9-git1, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=tcp_recvmsg
-
-Rank 11: iwl_tx_cmd_complete (warning)
-	Reported 153 times (4477 total reports)
-	This warning was last seen in version 2.6.28, and first seen in 2.6.27-rc9.
-	More info: http://www.kerneloops.org/searchweek.php?search=iwl_tx_cmd_complete
-
-Rank 12: e1000_acquire_swflag_ich8lan (warning)
-	Reported 123 times (544 total reports)
-	Locking issue in the e1000 driver; recursive locking detected.
-	This warning was last seen in version 2.6.28-rc7, and first seen in 2.6.26.5.
-	More info: http://www.kerneloops.org/searchweek.php?search=e1000_acquire_swflag_ich8lan
-
-Rank 13: dev_watchdog(via-rhine) (warning)
-	Reported 118 times (605 total reports)
-	This warning was last seen in version 2.6.28-rc9, and first seen in 2.6.26-rc8.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(via-rhine)
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
