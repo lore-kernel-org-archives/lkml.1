@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbZACKVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbZACKZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbZACKVT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 05:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZACKVH
+	id S1759626AbZACKZh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 05:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZACKZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 05:21:07 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51545 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbZACKVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 05:21:06 -0500
-Date: Sat, 3 Jan 2009 21:20:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: git-pull request for tip/cpus4096
-Message-Id: <20090103212056.93edfc31.sfr@canb.auug.org.au>
-In-Reply-To: <200901032033.25087.rusty@rustcorp.com.au>
-References: <495E4837.8090600@sgi.com>
-	<200901031631.47818.rusty@rustcorp.com.au>
-	<20090103171838.0610d443.sfr@canb.auug.org.au>
-	<200901032033.25087.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+"
+	Sat, 3 Jan 2009 05:25:29 -0500
+Received: from proxy2.bredband.net ([195.54.101.72]:51609 "EHLO
+	proxy2.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbZACKZ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 05:25:28 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqM4AEPMXklR4F8bPGdsb2JhbACBbJIHAQEBATUBtheFcg
+Message-ID: <495F3D11.4080005@zappa.cx>
+Date: Sat, 03 Jan 2009 11:25:21 +0100
+From: Andreas Sundstrom <sunkan@zappa.cx>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28 ext4, xen and lvm volume becomes ro after snapshot
+References: <20081226140721.GN9871@mit.edu> <4954FB62.4090306@zappa.cx>	<20081226182145.GP9871@mit.edu> <495526F6.9040704@zappa.cx>	<20081226193307.GA2138@mit.edu> <495553EB.6030604@zappa.cx>	<20081227030632.GA3539@mit.edu> <4955F338.4020509@zappa.cx>	<20090102031110.GF17821@mit.edu> <20090102092902.6p7echfdgkos40ss@zappa.cx>	<20090102141014.GB4758@mit.edu>
+In-Reply-To: <20090102141014.GB4758@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Quoting Theodore Tso <tytso@mit.edu>:
 
-Hi Rusty,
-
-On Sat, 3 Jan 2009 20:33:24 +1030 Rusty Russell <rusty@rustcorp.com.au> wro=
-te:
+> On Fri, Jan 02, 2009 at 09:29:02AM +0100, Andreas Sundstrom wrote:
+>>
+>> Well, the patch didn't work when I did "patch -i ext4.patch -p1" but I
+>> did it manually and the code compiles and works fine.
 >
-> BTW, do you send mail automagically when something breaks, or does one ha=
-ve
-> to check the web page?
+> The patch assumed some whitespace cleanups earlier in the ext4 patch
+> queue, which is probably why you had to apply the patch by hand.
+> Thanks for trying it out!!
 
-The infrastructure (kissb) doesn't have a notification facility but I
-might suggest it to Michael.  Sometimes (when I have time) I check out
-the results and report anything interesting.  Otherwise, I expect
-interested people will check every now and then.
+I see.. no problem..
 
-Maybe more publicity is needed (though I do mention it in the daily
-release announcements).
+>
+> May I add:
+>
+> Tested-by: Andreas Sundstrom <sunkan@zappa.cx>
+>
+> To the patch commit log?  We've been trying trying to give credit to
+> those people who work with kernel developers to test fixes, but given
+> that it does add peoples' e-mail addresses, it's something I always
+> ask permission to do if that person hasn't agreed to this sort of
+> thing already.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Yes that is ok
 
---Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+
-Content-Type: application/pgp-signature
+Thank you for looking in to the issue
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklfPAgACgkQjjKRsyhoI8y/UQCfXP6tFHzZoRAvLf8V9Wz9fAT1
-F3oAoIEqPbN77dYsLN9hHPAaNEJeRR1f
-=Q99y
------END PGP SIGNATURE-----
-
---Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+--
+/Andreas
