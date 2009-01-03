@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbZACK64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbZACLKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759712AbZACK64 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 05:58:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZACK6s
+	id S1759636AbZACLKo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 06:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbZACLKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 05:58:48 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39919 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752982AbZACK6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 05:58:46 -0500
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX19PjJlVqdNPIKaJ/YPz5cqABSC8yljUzxJRcjKr+E
-	Pwo62uicIdw+FK
-Date: Sat, 3 Jan 2009 11:58:41 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: linux-kernel@vger.kernel.org
-Cc: rml@tech9.net
-Subject: Preemt warning during boot
-Message-ID: <20090103105841.GA17078@alice>
+	Sat, 3 Jan 2009 06:10:32 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:60661 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbZACLKb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 06:10:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=sE0+sqsv0HT9FspRA6IwCyBxwSP3k308MzkbmtpNdMx+tEiF9SdtiBA7EX9Wm0gc82
+         NJWVv+tDs4q3g+8Vx0ginkSndWOzMBNrnKNVIIwNoYu4vyJ3Fl/edT3x8n9m6q/sUzI0
+         tZoGZTFHAr1nf1KjlzHUf1NwK0WRsJukXewNk=
+Message-ID: <3f9a31f40901030310l211e3ca8hd3c7d2b0e7b18adc@mail.gmail.com>
+Date: Sat, 3 Jan 2009 16:40:29 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Francois Romieu" <romieu@fr.zoreil.com>
+Subject: Re: BUG - 2.4.37 fealnx.c NETDEV WATCHDOG: eth0: transmit timed out
+Cc: "Willy Tarreau" <w@1wt.eu>, wtarreau@hera.kernel.org,
+       kernel-testers@vger.kernel.org, netdev@vger.kernel.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090102185718.GB20741@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
-X-Uptime: 11:51:24 up  2:42,  9 users,  load average: 0.10, 0.10, 0.20
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+References: <3f9a31f40901020640m4a9a63caq9c96ba84ccd64d88@mail.gmail.com>
+	 <20090102144813.GA13757@1wt.eu>
+	 <3f9a31f40901020748m242c46djf153fbab90eeca60@mail.gmail.com>
+	 <20090102185718.GB20741@electric-eye.fr.zoreil.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Jan 3, 2009 at 12:27 AM, Francois Romieu <romieu@fr.zoreil.com> wrote:
+> Jaswinder Singh Rajput <jaswinderlinux@gmail.com> :
+> [..]
+>> Output of mii-diag -v :
+>> eth0: 10 Mbit, half duplex, no link
+>>   product info: vendor 00:00:00, model 0 rev 0
+>>   basic mode:   10 Mbit, half duplex
+>>   basic status: no link
+>>   capabilities:
+>>   advertising:
+>>
+>> This is the output from very old machine Pentium MMX with Redhat 7.1
+>
+> Can you check with 'mii-tool -vv eth0' that the mii registers are not
+> all zeroes ?
+>
 
-with todays -git I get the following oops on startup. I also saw this
-with 2.6.28-04980-gb58602a.
+Yes all are zeros :-)
 
-[    0.000999] ODEBUG: selftest passed
-[    0.001064] ------------[ cut here ]------------
-[    0.001172] WARNING: at kernel/sched.c:4398
-sub_preempt_count+0x89/0xe3()
-[    0.001291] Hardware name: System Name
-[    0.001392] Modules linked in:
-[    0.001530] Pid: 0, comm: swapper Not tainted 2.6.28-05356-g6680598
-#156
-[    0.001648] Call Trace:
-[    0.001752]  [<c01266da>] warn_slowpath+0x79/0x8f
-[    0.001877]  [<c014348f>] ? check_usage_forwards+0x62/0x84
-[    0.001993]  [<c0145944>] ? __lock_acquire+0x6cf/0x725
-[    0.001999]  [<c0107200>] ? native_sched_clock+0x41/0x68
-[    0.001999]  [<c01441cf>] ? trace_hardirqs_on+0xb/0xd
-[    0.001999]  [<c07a0989>] ? _spin_unlock_irq+0x27/0x47
-[    0.001999]  [<c0144170>] ? trace_hardirqs_on_caller+0x106/0x15a
-[    0.001999]  [<c07a0994>] ? _spin_unlock_irq+0x32/0x47
-[    0.001999]  [<c07a29f1>] sub_preempt_count+0x89/0xe3
-[    0.001999]  [<c012a723>] _local_bh_enable+0x8f/0x91
-[    0.001999]  [<c012aa32>] __do_softirq+0xee/0xf6
-[    0.001999]  [<c012a944>] ? __do_softirq+0x0/0xf6
-[    0.001999]  <IRQ>  [<c016028b>] ? handle_level_irq+0x0/0xc1
-[    0.001999]  [<c012a8c1>] ? irq_exit+0x40/0x7c
-[    0.001999]  [<c0104409>] ? do_IRQ+0xe1/0xf8
-[    0.001999]  [<c01034ec>] ? common_interrupt+0x2c/0x34
-[    0.001999]  [<c014007b>] ? tick_do_update_jiffies64+0x6c/0x11b
-[    0.001999]  [<c07a0942>] ? _spin_unlock_irqrestore+0x3d/0x5d
-[    0.001999]  [<c015f4b1>] ? __setup_irq+0x177/0x1f3
-[    0.001999]  [<c015f54b>] ? setup_irq+0x1e/0x22
-[    0.001999]  [<c0ab0a95>] ? time_init_hook+0x2b/0x2d
-[    0.001999]  [<c0aa500e>] ? hpet_time_init+0x16/0x18
-[    0.001999]  [<c0a9f980>] ? start_kernel+0x24c/0x2bc
-[    0.001999]  [<c0a9f318>] ? i386_start_kernel+0x83/0x8b
-[    0.001999] ---[ end trace 4eaa2a86a8e2da22 ]---
+eth0: 10 Mbit, half duplex, no link
+  registers for MII PHY 32:
+    0000 0000 0000 0000 0000 0000 0000 0000
+    0000 0000 0000 0000 0000 0000 0000 0000
+    0000 0000 0000 0000 0000 0000 0000 0000
+    0000 0000 0000 0000 0000 0000 0000 0000
+  product info: vendor 00:00:00, model 0 rev 0
+  basic mode:   10 Mbit, half duplex
+  basic status: no link
+  capabilities:
+  advertising:
 
-Greetings, Eric
+Now what is next step.
+
+Thank you,
+JSR
