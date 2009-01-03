@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbZACOyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZACO7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759461AbZACOyF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 09:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbZACOxy
+	id S1759605AbZACO7H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 09:59:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbZACO6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 09:53:54 -0500
-Received: from 1wt.eu ([62.212.114.60]:1083 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751151AbZACOxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 09:53:54 -0500
-Date: Sat, 3 Jan 2009 15:50:24 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: davej@redhat.com, jschopp@austin.ibm.com, apw@uk.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: scripts/checkpatch.pl in 2.4 git
-Message-ID: <20090103145024.GB21058@1wt.eu>
-References: <3f9a31f40901030534v268d315ep4f1241042fafc456@mail.gmail.com> <20090103134558.GA21058@1wt.eu> <3f9a31f40901030624w4501e6f2l19d54a1e5223252c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3f9a31f40901030624w4501e6f2l19d54a1e5223252c@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Sat, 3 Jan 2009 09:58:54 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:50630 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753752AbZACO6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 09:58:54 -0500
+Message-ID: <495F7D27.8020104@sgi.com>
+Date: Sat, 03 Jan 2009 06:58:47 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PULL] cpumask tree
+References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <200901031751.00076.rusty@rustcorp.com.au> <20090103105208.GA19080@elte.hu>
+In-Reply-To: <20090103105208.GA19080@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 03, 2009 at 07:54:34PM +0530, Jaswinder Singh Rajput wrote:
-> On Sat, Jan 3, 2009 at 7:15 PM, Willy Tarreau <w@1wt.eu> wrote:
-> > On Sat, Jan 03, 2009 at 07:04:57PM +0530, Jaswinder Singh Rajput wrote:
-> >> Hello Willy,
-> >>
-> >> Do you have any plans to add scripts/checkpatch.pl in 2.4 git.
-> >
-> > Not particularly planned, though I have nothing against including it if
-> > some people want to use it.
-> >
+Ingo Molnar wrote:
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> Please add it. At least I can use it :-)
-
-OK will do.
-
-> >> Currently, what is the procedure to check patch for 2.4 git.
-> >
-> > Nowadays, 2.4 patches are so small that one's eyes are enough to check
-> > for correctness ;-)
-> >
+>> On Saturday 03 January 2009 07:08:40 Ingo Molnar wrote:
+>>>  - architectures that have no __fls (8 out of 21) fail to build:
+>>>
+>>>      arch/cris
+>>>      arch/frv
+>>>      arch/h8300
+>>>      arch/m32r
+>>>      arch/m68k
+>>>      arch/mn10300
+>>>      arch/xtensa
+>> Fixes pushed, m68k should be OK tho; is this actual compile test?  You have
+>> to look in include/asm-m68k to see __fls.
 > 
-> I ran 2.6 checkpatch.pl on some files and found lot of style problems
-> like white spaces and indent.
-> After fixing these problems code will be more read-able.
-> I have plan to fix these problems on some important files. What you
-> think about this.
+> yeah, i stopped the tests after the first two build failures - the rest is 
+> a grep result from arch/*/, that's why include/asm-m68k/ was left out.
+> 
+>>> Rusty, would it be fine with you if we did all the remaining bits via 
+>>> tip/cpus4096? It's your tree and your bits and we wanted to send our 
+>>> remaining bits after your tree went to Linus but the conflict 
+>>> resolutions from Mike are valuable so i think we should reconsider the 
+>>> ordering.
+>> Yeah, no reason for us to do the merge twice.  As long as it ends 
+>> upstream, I'm a happy camper.
+> 
+> great - lets do it that way then. I have pulled your fixes into the 
+> cpus4096 tree:
+> 
+>  5ece5c5: xtensa: define __fls
+>  5c134da: mn10300: define __fls
+>  16a2062: m32r: define __fls
+>  9ddabc2: h8300: define __fls
+>  ee38e51: frv: define __fls
+>  0999769: cris: define __fls
+> 
+> Once we have figured out the CPU-hotplug lockdep splat (possibly due to 
+> Mike's changes not yours) i'll send it to Linus. Thanks,
+> 
+> 	Ingo
 
-I don't want to merge pure code cleanup patches, because :
-  1) it brings no added value to the final user
-  2) there's always a risk of regression
+Thanks!  Am working on that now.
 
-The only exception I accept to make is when I resync a file with 2.6 in
-order to ease future patches.
-
-However, I welcome cleanups which come with other changes/fixes, provided
-they're not too invasive.
-
-Regards,
-Willy
-
+Mike
