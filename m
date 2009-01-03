@@ -1,75 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZACBU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbZACBYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330AbZACBU4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 20:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbZACBUr
+	id S932581AbZACBYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 20:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbZACBYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 20:20:47 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:47580 "EHLO smtp.gentoo.org"
+	Fri, 2 Jan 2009 20:24:10 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:46752 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758321AbZACBUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 20:20:46 -0500
+	id S1758327AbZACBYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Jan 2009 20:24:09 -0500
 From: Mike Frysinger <vapier@gentoo.org>
 Organization: wh0rd.org
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] headers_check.pl: disallow extern's
-Date: Fri, 2 Jan 2009 20:20:42 -0500
+Subject: Re: [PATCH] headers_install.pl: autoconvert asm/inline/volatile to __xxx__
+Date: Fri, 2 Jan 2009 20:24:06 -0500
 User-Agent: KMail/1.10.3 (Linux/2.6.28; KDE/4.1.3; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-References: <1230363816-24097-1-git-send-email-vapier@gentoo.org> <20090102160525.430c59f9@infradead.org> <200901030109.58197.arnd@arndb.de>
-In-Reply-To: <200901030109.58197.arnd@arndb.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+References: <1230364498-31620-1-git-send-email-vapier@gentoo.org> <200812311734.06124.vapier@gentoo.org> <200901030020.35237.arnd@arndb.de>
+In-Reply-To: <200901030020.35237.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed;
-  boundary="nextPart58629053.nrv1kIuzhF";
+  boundary="nextPart4936377.xWr6igudVu";
   protocol="application/pgp-signature";
   micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200901022020.44200.vapier@gentoo.org>
+Message-Id: <200901022024.07293.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart58629053.nrv1kIuzhF
+--nextPart4936377.xWr6igudVu
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-On Friday 02 January 2009 19:09:57 Arnd Bergmann wrote:
-> On Saturday 03 January 2009, Arjan van de Ven wrote:
-> > in addition... what business does the kernel have to provide function
-> > prototypes to userspace, other than the system call prototypes?
+On Friday 02 January 2009 18:20:34 Arnd Bergmann wrote:
+> On Wednesday 31 December 2008, Mike Frysinger wrote:
+> > On Wednesday 31 December 2008 12:15:07 Arnd Bergmann wrote:
+> > > On Saturday 27 December 2008, Mike Frysinger wrote:
+> > > > Headers in userspace should be using the __xxx__ form of the asm,
+> > > > inline, and volatile keywords. =A0Since people like to revert these
+> > > > things without realizing what's going on, have the headers install
+> > > > step autoconvert these keywords.
+> > >
+> > > The patch looks right, but I would argue that most of the instances of
+> > > any of these should not be exported in the first place. I'm not
+> > > sure whether there is a legitimate use for the byteorder inlines,
+> > > but the others I could find look like they are not meant for use by t=
+he
+> > > kernel.
+> >
+> > maybe, but those threads are going to take quite a while to resolve and
+> > things will constantly leak back out.
 >
-> This is the point I raised in my initial comment: we should warn about
-> all of them if possible. Note that the syscalls.h file is not even
-> exported. I can't think of a single case where a function protoype
-> should be exported from the kernel to user space.
+> I guess I forgot to make my main point, I'm not arguing against your patch
+> at all, but would also like to see another patch to headers_check.pl that
+> warns about all instances of the __asm__, __inline__ and volatile keyword=
+s,
+> possibly with a list of known good cases.
 
-right, and unless people someone can come up with some magic perl code to=20
-detect function prototypes, i suggest we start adding extern keywords ...
+how would you propose maintaining said list ?  attempting to maintain exter=
+nal=20
+to the file in question will just lead to rot (since we dont want to whitel=
+ist=20
+entire files, and we cant track line numbers, and we cant detect where the=
+=20
+keyword is being used in terms of macro/function) ... that leaves two choic=
+es=20
+that i can think of:
+ - a new __asm_userok__ type marker
+ - adding a simple /* userok */ comment we can filter in the perl regex
+
+neither of which sounds entire pleasant either ...
 =2Dmike
 
---nextPart58629053.nrv1kIuzhF
+--nextPart4936377.xWr6igudVu
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.9 (GNU/Linux)
 
-iQIcBAABAgAGBQJJXr1sAAoJEEFjO5/oN/WBYIsP/0M7WrNlTP/uWHlFbTIwZiGf
-cxJAvlJrBvYOT5uTqVhdxYsW5mUnIItT1dBB4M3crZS0V0zux2vAeXL5BnBx78XE
-ltrUBT+M4kuYpfG/l9HaJN3xuAgVvpRxpH7TkmNia083HAWkJ98tlccYFZr+H5GB
-OJFMc/hFiYsYdgpawo4laVrts0E8ZiONoBwqiEMh+GIs4WY/jvJ0bw3J3DvkBCmJ
-IeiZ4NxbAaqGTRmsF6iMrwY+cWFaWX8FtwXo0CTJcszB9xxR31QfO0Ue5eCxFqcp
-F43bKUhNUfz9jQtYs8QM6qSbAKE9/NoP2zhPluGE8vWbmsAvgf26TbvKeIbTgxtf
-hdrBeVstCuR1FDW066gpzIn0yq7ZXWzow531K5UxN8HEa4zUDMOL/91/oui51vcR
-LpEf6YG0ugigBgh7G3Nlh/U/VXijR+HxZ9vvMkuLF2/CbwJicIykWVJKjqLNo4us
-CYpAY3Y87suOtdBTY4+JTsbn4+qJGeLUiteibQNDGuiLH5AjZ6ujqSvhbZEzjrJp
-dnAmVWMfvCK5BPWJC9qxjB1ssp0vR5kuC8KtUMur14oDO19kyQpsFTV1sHJz8ThX
-7g0JDV725gupy4R/8Y2CD4nCqLI17e9xnHyy8O2l2TdCIOuSaccKIvLTx86gU9LY
-8g0+AquX2xE6QmT9WsoZ
-=hn2b
+iQIcBAABAgAGBQJJXr43AAoJEEFjO5/oN/WBry4P/ia9J5NqFMusmeeqgrnr4vMi
+R191Id+O5khWXnz4ZGYjU8sjtEJ3PAcF0uzocqNovQKuxia8fYX+3tqSvYPwyCWP
+EM+II2OXenVRgf6Xdtr6q8zO6V7+4HhUDIyZUpmM8dXlSu4LRvX9Tsqqr+CsyeSO
+VfAKXt5F1h/4P5NYOEJ302TE/yUJn8uWQfsr+XGbVA/2tuZV3Nk8e+yB0BpL1hSm
+jzLfTVon0wQ6zzxA6vtcrQdFH3FrLmtXupbA/ofbp53/B7R/egef7NkhP/WFLaSy
+VbVbrDmjKRWMgHpSRD0f7JSonKX1wj3ftsfAcpWMAVWEsFxyT/0Rn+SJxR3aJ6mK
+QhJjN3HT+WpAeyfX2q5kDaCDAkHt9PX2FN9n8szXWZ/LAb1MBAUx7+38jMYqyLgC
+Mf2cy+peg3zIpN8tTLpmMeI20qvM1Nt1rpMEFu1vfzmaEvFAreQjl406rVcQfY8/
+aF8KxU7UmKqV/oG9tVBXK6ee9X0oFccSlM0ZeNW8G6jyWaCDMlIIQyZCn99axOYK
+cDRsV0AYjSfM6yfoaDUjGrVnbLVf8ZqaWnCaJioclBpGLAZaBKW2bDIz3GdkeZ7R
+NXige5XPKWGun529dBIfH1wj8VW36K6+tbClL1BlZNw9QvHs5nilcGZvL07nIznm
+Jyv5qwY6UNMzNngqnct+
+=Pwtt
 -----END PGP SIGNATURE-----
 
---nextPart58629053.nrv1kIuzhF--
+--nextPart4936377.xWr6igudVu--
