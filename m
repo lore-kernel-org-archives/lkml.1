@@ -1,84 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbZACQwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbZACQx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932417AbZACQwo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 11:52:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbZACQwf
+	id S1760030AbZACQx1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 11:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759261AbZACQxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 11:52:35 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:27062 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758019AbZACQwe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 11:52:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=Mh0CGMovmdKtSgTfbWOsX8jHUkNSvBjwBU8zFJyI4M9lM81RoxhL5CupZetgPYZoql
-         5GkV/xcCn2dqr1cpgFPcG5R3hB9vrTjucrLArQotkWO2FwFaB/niWzc+bY0HgDEKm8Rp
-         D1XmRXy6PmDa/UlZZhv4RiJ22HkuOc9FCVLTc=
-References: <495ED1C4.8020304@gmail.com> <20090103032134.GA20209@redhat.com> <495EDC10.20605@gmail.com> <f488382f0901021949y60b6d60fjeaeb6bb12a851f8@mail.gmail.com> <495EE2A0.2080703@gmail.com> <495EEE1D.8050500@shaw.ca> <20090103073051.GC5038@1wt.eu> <195c7a900901030615i19dc95afyab22390fe867e09d@mail.gmail.com>
-Message-Id: <C1E66375-7D46-4923-96AA-194155D1912E@gmail.com>
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: Bastien ROUCARIES <roucaries.bastien@gmail.com>
-In-Reply-To: <195c7a900901030615i19dc95afyab22390fe867e09d@mail.gmail.com>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5G77)
-Mime-Version: 1.0 (iPhone Mail 5G77)
-Subject: Re: ath9k microwave anomaly
-Date: Sat, 3 Jan 2009 08:52:22 -0800
-Cc: Willy Tarreau <w@1wt.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sat, 3 Jan 2009 11:53:18 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:41866 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758019AbZACQxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 11:53:15 -0500
+Date: Sat, 3 Jan 2009 17:53:10 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/2] drivers/media/video: Use negated usb_endpoint_xfer_control,
+ etc
+Message-ID: <Pine.LNX.4.64.0901031751530.9811@pc-004.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks..
-I'll have to look at that and see.
-In any case, I still am amazed at how that little box was able to  
-cause the
-Wireless to timeout like it did, especially with the distance apart  
-they are. Scary but amazing, and also an answer to one of my problems  
-with wireless I had for a while. :^)
+From: Julia Lawall <julia@diku.dk>
 
-justin P. Mattock
+This patch extends 134179823b3ca9c8b98e0631906459dbb022ff9b by using
+usb_endpoint_xfer_control, usb_endpoint_xfer_isoc, usb_endpoint_xfer_bulk,
+and usb_endpoint_xfer_int in the negated case as well.
 
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
+// <smpl>
+@@ struct usb_endpoint_descriptor *epd; @@
 
-On Jan 3, 2009, at 6:15 AM, "Bastien ROUCARIES" <roucaries.bastien@gmail.com 
- > wrote:
+- (usb_endpoint_type(epd) != \(USB_ENDPOINT_XFER_CONTROL\|0\))
++ !usb_endpoint_xfer_control(epd)
 
->>
->> BTW, having any WiFi stopping working at 30 feet around a microwave  
->> oven
->> makes me think that beast is leaking like mad. I've already ran  
->> experiences
->> with mine in the past, and it could only slightly perturbate the  
->> traffic
->> within one meter (3 ft) which I already considered huge. You may  
->> want to
->> try to put some aluminium foil on the front door, it is possible  
->> that the
->> protection grid is damaged or not properly sealed.
->
-> Likely not the grid. The grid is pretty solid. I will guess it is the
-> wave traps seals arround the microwave door (often they are made
-> rubber part mixed with conductive stuff) that are too old. These seals
-> tend to expand when hot and are therefore more efficient. You could
-> change it for cheap ($10), ask our local general store. As a quick fix
-> (not recommended) you could add some electrical conductive grease but
-> it will further decreade long term abilty of these seals (grease tend
-> to crack rubber), and these kind of grease are not really food
-> compatible.
->
-> Bastien
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+@@ struct usb_endpoint_descriptor *epd; @@
+
+- (usb_endpoint_type(epd) != \(USB_ENDPOINT_XFER_ISOC\|1\))
++ !usb_endpoint_xfer_isoc(epd)
+
+@@ struct usb_endpoint_descriptor *epd; @@
+
+- (usb_endpoint_type(epd) != \(USB_ENDPOINT_XFER_BULK\|2\))
++ !usb_endpoint_xfer_bulk(epd)
+
+@@ struct usb_endpoint_descriptor *epd; @@
+
+- (usb_endpoint_type(epd) != \(USB_ENDPOINT_XFER_INT\|3\))
++ !usb_endpoint_xfer_int(epd)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+diff --git a/drivers/media/video/em28xx/em28xx-cards.c b/drivers/media/video/em28xx/em28xx-cards.c
+index e776699..1fc4e78 100644
+--- a/drivers/media/video/em28xx/em28xx-cards.c
++++ b/drivers/media/video/em28xx/em28xx-cards.c
+@@ -1990,8 +1990,7 @@ static int em28xx_usb_probe(struct usb_interface *interface,
+ 		int check_interface = 1;
+ 		isoc_pipe = 1;
+ 		endpoint = &interface->cur_altsetting->endpoint[1].desc;
+-		if (usb_endpoint_type(endpoint) !=
+-		    USB_ENDPOINT_XFER_ISOC)
++		if (!usb_endpoint_xfer_isoc(endpoint))
+ 			check_interface = 0;
+ 
+ 		if (usb_endpoint_dir_out(endpoint))
+diff --git a/drivers/media/video/usbvideo/ibmcam.c b/drivers/media/video/usbvideo/ibmcam.c
+index f8d85dd..b085496 100644
+--- a/drivers/media/video/usbvideo/ibmcam.c
++++ b/drivers/media/video/usbvideo/ibmcam.c
+@@ -3779,7 +3779,7 @@ static int ibmcam_probe(struct usb_interface *intf, const struct usb_device_id *
+ 			err("Alternate settings have different endpoint addresses!");
+ 			return -ENODEV;
+ 		}
+-		if (usb_endpoint_type(endpoint) != USB_ENDPOINT_XFER_ISOC) {
++		if (!usb_endpoint_xfer_isoc(endpoint)) {
+ 			err("Interface %d. has non-ISO endpoint!", ifnum);
+ 			return -ENODEV;
+ 		}
+diff --git a/drivers/media/video/usbvideo/konicawc.c b/drivers/media/video/usbvideo/konicawc.c
+index 90f0ce6..900ec21 100644
+--- a/drivers/media/video/usbvideo/konicawc.c
++++ b/drivers/media/video/usbvideo/konicawc.c
+@@ -823,7 +823,7 @@ static int konicawc_probe(struct usb_interface *intf, const struct usb_device_id
+ 			err("Alternate settings have different endpoint addresses!");
+ 			return -ENODEV;
+ 		}
+-		if (usb_endpoint_type(endpoint) != USB_ENDPOINT_XFER_ISOC) {
++		if (!usb_endpoint_xfer_isoc(endpoint)) {
+ 			err("Interface %d. has non-ISO endpoint!",
+ 			    interface->desc.bInterfaceNumber);
+ 			return -ENODEV;
+diff --git a/drivers/media/video/usbvideo/ultracam.c b/drivers/media/video/usbvideo/ultracam.c
+index 839a082..fbd1b63 100644
+--- a/drivers/media/video/usbvideo/ultracam.c
++++ b/drivers/media/video/usbvideo/ultracam.c
+@@ -556,7 +556,7 @@ static int ultracam_probe(struct usb_interface *intf, const struct usb_device_id
+ 			err("Alternate settings have different endpoint addresses!");
+ 			return -ENODEV;
+ 		}
+-		if (usb_endpoint_type(endpoint) != USB_ENDPOINT_XFER_ISOC) {
++		if (!usb_endpoint_xfer_isoc(endpoint)) {
+ 			err("Interface %d. has non-ISO endpoint!",
+ 			    interface->desc.bInterfaceNumber);
+ 			return -ENODEV;
+diff --git a/drivers/media/video/usbvision/usbvision-video.c b/drivers/media/video/usbvision/usbvision-video.c
+index 85661b1..70d34b2 100644
+--- a/drivers/media/video/usbvision/usbvision-video.c
++++ b/drivers/media/video/usbvision/usbvision-video.c
+@@ -1679,8 +1679,7 @@ static int __devinit usbvision_probe(struct usb_interface *intf,
+ 		interface = &dev->actconfig->interface[ifnum]->altsetting[0];
+ 	}
+ 	endpoint = &interface->endpoint[1].desc;
+-	if (usb_endpoint_type(endpoint) !=
+-	    USB_ENDPOINT_XFER_ISOC) {
++	if (!usb_endpoint_xfer_isoc(endpoint)) {
+ 		err("%s: interface %d. has non-ISO endpoint!",
+ 		    __func__, ifnum);
+ 		err("%s: Endpoint attributes %d",
