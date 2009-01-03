@@ -1,184 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbZACHQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbZACHQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbZACHQZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 02:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZACHQQ
+	id S932203AbZACHQk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 02:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759546AbZACHQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 02:16:16 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41521 "EHLO
+	Sat, 3 Jan 2009 02:16:26 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41525 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZACHQP (ORCPT
+	with ESMTP id S1759441AbZACHQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 02:16:15 -0500
+	Sat, 3 Jan 2009 02:16:25 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH] remove the rudiment of a.out for sparc
+Subject: [PATCH] sanitize ifdefs in binfmt_aout
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LJ0k1-0006Ou-2B@ZenIV.linux.org.uk>
+Message-Id: <E1LJ0kB-0006PQ-2a@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 03 Jan 2009 07:16:13 +0000
+Date: Sat, 03 Jan 2009 07:16:23 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-it's been used only in sunos compat
+	They are actually alpha vs. i386/arm/m68k i.e. ecoff vs. aout.
+In the only place where we actually tried to handle arm and i386/m68k
+in different ways (START_DATA() in coredump handling), the arm variant
+works for all of them (i386 and m68k have u.start_code set to 0).
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/binfmt_aout.c |   65 +-----------------------------------------------------
- 1 files changed, 1 insertions(+), 64 deletions(-)
+ fs/binfmt_aout.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
 diff --git a/fs/binfmt_aout.c b/fs/binfmt_aout.c
-index f1f3f41..8a3b32f 100644
+index 8a3b32f..b639dcf 100644
 --- a/fs/binfmt_aout.c
 +++ b/fs/binfmt_aout.c
-@@ -99,88 +99,53 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
+@@ -95,12 +95,10 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
+ 	int has_dumped = 0;
+ 	unsigned long dump_start, dump_size;
+ 	struct user dump;
+-#if defined(__alpha__)
++#ifdef __alpha__
  #       define START_DATA(u)	(u.start_data)
- #elif defined(__arm__)
+-#elif defined(__arm__)
++#else
  #	define START_DATA(u)	((u.u_tsize << PAGE_SHIFT) + u.start_code)
--#elif defined(__sparc__)
--#       define START_DATA(u)    (u.u_tsize)
- #elif defined(__i386__) || defined(__mc68000__) || defined(__arch_um__)
- #       define START_DATA(u)	(u.u_tsize << PAGE_SHIFT)
+-#elif defined(__i386__) || defined(__mc68000__) || defined(__arch_um__)
+-#       define START_DATA(u)	(u.u_tsize << PAGE_SHIFT)
  #endif
--#ifdef __sparc__
--#       define START_STACK(u)   ((regs->u_regs[UREG_FP]) & ~(PAGE_SIZE - 1))
--#else
  #       define START_STACK(u)   (u.start_stack)
--#endif
  
- 	fs = get_fs();
- 	set_fs(KERNEL_DS);
- 	has_dumped = 1;
- 	current->flags |= PF_DUMPCORE;
-        	strncpy(dump.u_comm, current->comm, sizeof(dump.u_comm));
--#ifndef __sparc__
- 	dump.u_ar0 = offsetof(struct user, regs);
--#endif
- 	dump.signal = signr;
- 	aout_dump_thread(regs, &dump);
- 
- /* If the size of the dump file exceeds the rlimit, then see what would happen
-    if we wrote the stack, but not the data area.  */
--#ifdef __sparc__
--	if ((dump.u_dsize + dump.u_ssize) > limit)
--		dump.u_dsize = 0;
--#else
- 	if ((dump.u_dsize + dump.u_ssize+1) * PAGE_SIZE > limit)
- 		dump.u_dsize = 0;
--#endif
- 
- /* Make sure we have enough room to write the stack and data areas. */
--#ifdef __sparc__
--	if (dump.u_ssize > limit)
--		dump.u_ssize = 0;
--#else
- 	if ((dump.u_ssize + 1) * PAGE_SIZE > limit)
- 		dump.u_ssize = 0;
--#endif
- 
- /* make sure we actually have a data and stack area to dump */
- 	set_fs(USER_DS);
--#ifdef __sparc__
--	if (!access_ok(VERIFY_READ, (void __user *)START_DATA(dump), dump.u_dsize))
--		dump.u_dsize = 0;
--	if (!access_ok(VERIFY_READ, (void __user *)START_STACK(dump), dump.u_ssize))
--		dump.u_ssize = 0;
--#else
- 	if (!access_ok(VERIFY_READ, (void __user *)START_DATA(dump), dump.u_dsize << PAGE_SHIFT))
- 		dump.u_dsize = 0;
- 	if (!access_ok(VERIFY_READ, (void __user *)START_STACK(dump), dump.u_ssize << PAGE_SHIFT))
- 		dump.u_ssize = 0;
--#endif
- 
- 	set_fs(KERNEL_DS);
- /* struct user */
- 	DUMP_WRITE(&dump,sizeof(dump));
- /* Now dump all of the user data.  Include malloced stuff as well */
--#ifndef __sparc__
- 	DUMP_SEEK(PAGE_SIZE);
--#endif
- /* now we start writing out the user space info */
- 	set_fs(USER_DS);
- /* Dump the data area */
- 	if (dump.u_dsize != 0) {
- 		dump_start = START_DATA(dump);
--#ifdef __sparc__
--		dump_size = dump.u_dsize;
--#else
- 		dump_size = dump.u_dsize << PAGE_SHIFT;
--#endif
- 		DUMP_WRITE(dump_start,dump_size);
- 	}
- /* Now prepare to dump the stack area */
- 	if (dump.u_ssize != 0) {
- 		dump_start = START_STACK(dump);
--#ifdef __sparc__
--		dump_size = dump.u_ssize;
--#else
- 		dump_size = dump.u_ssize << PAGE_SHIFT;
--#endif
- 		DUMP_WRITE(dump_start,dump_size);
- 	}
- /* Finally dump the task struct.  Not be used by gdb, but could be useful */
-@@ -205,11 +170,6 @@ static unsigned long __user *create_aout_tables(char __user *p, struct linux_bin
- 	int envc = bprm->envc;
- 
- 	sp = (void __user *)((-(unsigned long)sizeof(char *)) & (unsigned long) p);
--#ifdef __sparc__
--	/* This imposes the proper stack alignment for a new process. */
--	sp = (void __user *) (((unsigned long) sp) & ~7);
--	if ((envc+argc+3)&1) --sp;
--#endif
- #ifdef __alpha__
- /* whee.. test-programs are so much fun. */
+@@ -176,18 +174,18 @@ static unsigned long __user *create_aout_tables(char __user *p, struct linux_bin
  	put_user(0, --sp);
-@@ -302,11 +262,6 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 	if (bprm->loader) {
+ 		put_user(0, --sp);
+-		put_user(0x3eb, --sp);
++		put_user(1003, --sp);
+ 		put_user(bprm->loader, --sp);
+-		put_user(0x3ea, --sp);
++		put_user(1002, --sp);
+ 	}
+ 	put_user(bprm->exec, --sp);
+-	put_user(0x3e9, --sp);
++	put_user(1001, --sp);
+ #endif
+ 	sp -= envc+1;
+ 	envp = (char __user * __user *) sp;
+ 	sp -= argc+1;
+ 	argv = (char __user * __user *) sp;
+-#if defined(__i386__) || defined(__mc68000__) || defined(__arm__) || defined(__arch_um__)
++#ifndef __alpha__
+ 	put_user((unsigned long) envp,--sp);
+ 	put_user((unsigned long) argv,--sp);
+ #endif
+@@ -260,7 +258,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 		return retval;
+ 
  	/* OK, This is the point of no return */
- #if defined(__alpha__)
+-#if defined(__alpha__)
++#ifdef __alpha__
  	SET_AOUT_PERSONALITY(bprm, ex);
--#elif defined(__sparc__)
--	set_personality(PER_SUNOS);
--#if !defined(__sparc_v9__)
--	memcpy(&current->thread.core_exec, &ex, sizeof(struct exec));
--#endif
  #else
  	set_personality(PER_LINUX);
- #endif
-@@ -322,24 +277,6 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 
- 	install_exec_creds(bprm);
-  	current->flags &= ~PF_FORKNOEXEC;
--#ifdef __sparc__
--	if (N_MAGIC(ex) == NMAGIC) {
--		loff_t pos = fd_offset;
--		/* Fuck me plenty... */
--		/* <AOL></AOL> */
--		down_write(&current->mm->mmap_sem);	
--		error = do_brk(N_TXTADDR(ex), ex.a_text);
--		up_write(&current->mm->mmap_sem);
--		bprm->file->f_op->read(bprm->file, (char *) N_TXTADDR(ex),
--			  ex.a_text, &pos);
--		down_write(&current->mm->mmap_sem);
--		error = do_brk(N_DATADDR(ex), ex.a_data);
--		up_write(&current->mm->mmap_sem);
--		bprm->file->f_op->read(bprm->file, (char *) N_DATADDR(ex),
--			  ex.a_data, &pos);
--		goto beyond_if;
--	}
--#endif
- 
- 	if (N_MAGIC(ex) == OMAGIC) {
- 		unsigned long text_addr, map_size;
-@@ -347,7 +284,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 
- 		text_addr = N_TXTADDR(ex);
- 
--#if defined(__alpha__) || defined(__sparc__)
-+#ifdef __alpha__
- 		pos = fd_offset;
- 		map_size = ex.a_text+ex.a_data + PAGE_SIZE - 1;
- #else
 -- 
 1.5.6.5
 
