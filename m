@@ -1,114 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbZACU6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbZACU7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760266AbZACU6i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 15:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759650AbZACU63
+	id S932295AbZACU7T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 15:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZACU7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 15:58:29 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:50281 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758651AbZACU62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 15:58:28 -0500
-Message-ID: <495FD171.4030502@sgi.com>
-Date: Sat, 03 Jan 2009 12:58:25 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 3 Jan 2009 15:59:00 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:5302 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758651AbZACU67 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 15:58:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QyotrTpae7W6nzfR1iw1TphI+E68IQlFhFpLFZtwYVR02gZyQJeGIg97L97tN+fdvB
+         OAFl/oC1PnhD2Vh4ZZv5OTuilHbTQhaOtyUqlAwZST17UnouLoUUsVOWepdvKaxgTRPI
+         xGjB6cZaV3ed8lbD7Pu51vZAGxCPJ5OqEiFto=
+Message-ID: <495FD18D.7040708@gmail.com>
+Date: Sat, 03 Jan 2009 12:58:53 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>
-Subject: Re: [git pull] cpus4096 tree, part 3
-References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu> <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Folkert van Heusden <folkert@vanheusden.com>
+CC: Willy Tarreau <w@1wt.eu>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel@vger.kernel.org, Steven Noonan <steven@uplinklabs.net>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: ath9k microwave anomaly
+References: <495ED1C4.8020304@gmail.com> <20090103032134.GA20209@redhat.com> <495EDC10.20605@gmail.com> <f488382f0901021949y60b6d60fjeaeb6bb12a851f8@mail.gmail.com> <495EE2A0.2080703@gmail.com> <495EEE1D.8050500@shaw.ca> <20090103073051.GC5038@1wt.eu> <495F1DA3.7060706@gmail.com> <20090103195115.GA31855@vanheusden.com> <495FC75E.3090403@gmail.com> <20090103202052.GC31855@vanheusden.com>
+In-Reply-To: <20090103202052.GC31855@vanheusden.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sat, 3 Jan 2009, Ingo Molnar wrote:
->> ok. The pending regressions are all fixed now, and i've just finished my 
->> standard tests on the latest tree and all the tests passed fine.
-> 
-> Ok, pulled and pushed out.
-> 
-> Has anybody looked at what the stack size is with MAXSMP set with an 
-> allyesconfig? And what areas are still problematic, if any? Are we going 
-> to have some code-paths that still essentially have 1kB+ of stack space 
-> just because they haven't been converted and still have the cpu mask on 
-> stack?
-> 
-> 			Linus
+Folkert van Heusden wrote:
+>>> Since a few months my wifi connections dropped during the day and sometimes
+>>> at nights well. So I took my laptop with the WiSpy dongle and went for a
+>>> walk in the neighbourhood. Found out that outside there's fresh air that
+>>> feels really good to your nose and also that one of my neighbours has a
+>>> wireless security camera which he occasionally switches on during the day.
+>>> (weblog entry: http://vanheusden.com/misc/blog/2008-12-11-wifi.php ).
+>>>   
+>>>       
+>> That device looks interesting.
+>> looked at the article, just one problem
+>> I suck at reading german, or speaking the
+>> language. although I would love to checkout
+>> oldenbourg or ingostadt one of these days.
+>>     
+>
+> That's Dutch.
+>
+> I bought it here: http://www.metageek.net/products/wi-spy
+>
+>
+> Folkert van Heusden
+>
+>   
+See, shows you how much I know(wast ist das).
+besides that, thats a nice tool.
+perfect for wireless issues.
+what about using ath9k itself,
+instead of an external tool?
 
-Hi Linus,
+regards;
 
-Yes, I do periodically collect stats for memory and stack usage.  Here is
-a recent stack summary (not "allyes", but most all trace/debug options
-turned on).  It shows the stack growth from a 128 NR_CPUS config to a
-MAXSMP (4096 NR_CPUS) config.  Most of the changes to correct these "stack
-hogs" have been sitting in a queue until the changes affecting non-x86
-architectures have been accepted (which you just did), though some are
-because of new code from the merge activity.
-
-Rusty has introduced a config option that disables the old cpumask_t
-which really highlights where the offenders still are.  Ultimately,
-that should prevent any new stack hogs from being introduced, but it
-won't be settable until 2.6.30 time frame.
-
-====== Stack (-l 500)
-    1 - 128-defconfig
-    2 - 4k-defconfig
-
-  .1.    .2.    ..final..
-    0  +1640 1640      .  acpi_cpufreq_target
-    0  +1368 1368      .  cpufreq_add_dev
-    0  +1344 1344      .  store_scaling_governor
-    0  +1328 1328      .  store_scaling_min_freq
-    0  +1328 1328      .  store_scaling_max_freq
-    0  +1328 1328      .  cpufreq_update_policy
-    0  +1328 1328      .  cpu_has_cpufreq
-    0  +1048 1048      .  get_cur_val
-    0  +1032 1032      .  local_cpus_show
-    0  +1032 1032      .  local_cpulist_show
-    0  +1024 1024      .  pci_bus_show_cpuaffinity
-    0   +808 808      .  cpuset_write_resmask
-    0   +736 736      .  update_flag
-    0   +648 648      .  init_intel_cacheinfo
-    0   +640 640      .  cpuset_attach
-    0   +584 584      .  shmem_getpage
-    0   +584 584      .  __percpu_alloc_mask
-    0   +552 552      .  smp_call_function_many
-    0   +536 536      .  pci_device_probe
-    0   +536 536      .  native_flush_tlb_others
-    0   +536 536      .  cpuset_common_file_read
-    0   +520 520      .  show_related_cpus
-    0   +520 520      .  show_affected_cpus
-    0   +520 520      .  get_measured_perf
-    0   +520 520      .  flush_tlb_page
-    0   +520 520      .  cpuset_can_attach
-    0   +512 512      .  flush_tlb_mm
-    0   +512 512      .  flush_tlb_current_task
-    0   +512 512      .  find_lowest_rq
-    0   +512 512      .  acpi_processor_ffh_cstate_probe
-
-====== Text/Data ()
-
-Overall memory reservation looks like this:
-
-      .1.       .2.    ..final..
-  5799936     +4096   5804032 +0.07%  TextSize
-  3772416   +139264   3911680 +3.69%  DataSize
-  8822784  +1234944  10057728   +13%  BssSize
-  2445312   +794624   3239936   +32%  InitSize
-  1884160     +4096   1888256 +0.22%  PerCPU
-   143360   +708608    851968  +494%  OtherSize
- 22867968  +2885632  25753600  +112%  Totals
-
-
-I will update these with the latest changes (and use a
-allyesconfig config) and post them again soon.
-
-Thanks,
-Mike
+Justin P. Mattock
