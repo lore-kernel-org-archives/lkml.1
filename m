@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbZACUJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759714AbZACUKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932638AbZACUJf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 15:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbZACUJY
+	id S1759714AbZACUKy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 15:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759127AbZACUKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 15:09:24 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:47345 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbZACUJX (ORCPT
+	Sat, 3 Jan 2009 15:10:44 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50287 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571AbZACUKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 15:09:23 -0500
-Date: Sat, 3 Jan 2009 21:10:59 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Rob Landley <rob@landley.net>
-Cc: Matthieu CASTET <matthieu.castet@parrot.com>,
-       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Message-ID: <20090103201059.GA4875@uranus.ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <200901020513.19593.rob@landley.net> <495E3AF8.6000006@parrot.com> <200901031346.01325.rob@landley.net>
-Mime-Version: 1.0
+	Sat, 3 Jan 2009 15:10:43 -0500
+Date: Sat, 3 Jan 2009 13:44:00 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: atomics: document that linux expects certain atomic behaviour from
+	unsigned long
+Message-ID: <20090103124400.GA1572@ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901031346.01325.rob@landley.net>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> I'll fix this and resubmit, it just wasn't ready last night.  (If the merge 
-> window is closing soon I could resubmit the other two with Sam's suggestions 
-> and resubmit this one next time 'round, but it was only a couple days to write 
-> in the first place, once I finally figured out what the perl version was 
-> trying to _do_...)
+Linux relies on unsigned long to behave like atomic for read/write.
+diff --git a/Documentation/atomic_ops.txt b/Documentation/atomic_ops.txt
+index 4ef2450..0a7d180 100644
+--- a/Documentation/atomic_ops.txt
++++ b/Documentation/atomic_ops.txt
+@@ -21,6 +21,9 @@ local_t is very similar to atomic_t. If the counter is per CPU and only
+ updated by one CPU, local_t is probably more appropriate. Please see
+ Documentation/local_ops.txt for the semantics of local_t.
+ 
++unsigned long can be used instead of atomic_t, if all you
++need is atomic setting and atomic reading.
++
+ The first operations to implement for atomic_t's are the initializers and
+ plain reads.
+ 
 
-For kbuild only fixes and trivial stuff will be merged until next merge window.
-Neither of the three patches fall into that category.
-
-With respect to your three patches the plan is to:
-- add the updated timeconst patch to kbuild-next
-- add the updated cpu-feature patch to kbuild-next
-
-- the patch touching headers_install will not be merged.
-  The way forward for headers_install is to combine the
-  unifdef feature and the header modifications.
-  And this must be in a single program that can process
-  all headers in one go so the install process becomes so fast
-  that we do not worry about if it was done before or not.
-  Then we can avoid all the .* files in the directory
-  where we isntall the headers.
-  The program is a prime candidate for a small C program
-  and I hope someone can take the challenge to write it.
-
-  Migrating from perl to shell does not help us here
-  and the shell version was less readable than the perl version.
-
-	Sam
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
