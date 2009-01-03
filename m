@@ -1,118 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932935AbZACVjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760304AbZACVnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932935AbZACVjg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbZACVj0
+	id S1760304AbZACVnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbZACVnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:39:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40568 "EHLO mx2.mail.elte.hu"
+	Sat, 3 Jan 2009 16:43:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46513 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752709AbZACVj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:39:26 -0500
-Date: Sat, 3 Jan 2009 22:38:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
-       linux-kernel@vger.kernel.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] cpus4096 tree, part 3
-Message-ID: <20090103213856.GA24138@elte.hu>
-References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu> <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain> <20090103203621.GA2491@elte.hu>
+	id S1752386AbZACVnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 16:43:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [Regression] Build failure in current mainline - firmware related
+Date: Sat, 3 Jan 2009 22:43:28 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-tst; KDE/4.1.3; x86_64; ; )
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200901031247.14977.rjw@sisk.pl> <20090103204948.GA5388@uranus.ravnborg.org> <20090103205437.GA5499@uranus.ravnborg.org>
+In-Reply-To: <20090103205437.GA5499@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090103203621.GA2491@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901032243.28684.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> The test is underway with:
+On Saturday 03 January 2009, Sam Ravnborg wrote:
+> On Sat, Jan 03, 2009 at 09:49:48PM +0100, Sam Ravnborg wrote:
+> > On Sat, Jan 03, 2009 at 12:47:14PM +0100, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > I get the following error from 'make modules_install' on my test boxes:
+> > > 
+> > >   HOSTCC  firmware/ihex2fw                                                             
+> > > /home/rafael/src/linux-2.6/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system                                            
+> > > compilation terminated.                                                                
+> > > make[3]: *** [firmware/ihex2fw] Error 1                                                
+> > > make[2]: *** [_modinst_post] Error 2                                                   
+> > > make[1]: *** [sub-make] Error 2                                                        
+> > > make: *** [all] Error 2
+> > > 
+> > > where the configuration is that the kernel is compiled on a build box
+> > > with 'make O=<destdir> -j5' and then <destdir> is mounted over NFS read-only by
+> > > each test box (full path to this directory is the same on the build box and on
+> > > the test boxes).  Then, I cd into <destdir>, run 'make modules_install' and get
+> > > the error above.
+> > > 
+> > > 2.6.28 didn't have this problem.
+> > 
+> > 
+> > Strange...
+> > 1) The string "opening dependency file" does not occur in my freshly pulled kernel
+> > 2) Line 268 is last line of ihex2fw.c
+> > 
+> > Could you try to do a "make modules_install V=1" to see the exact arguments supplied ti ihex2fw.c
+> > 
+> > I gave up on all the firmware stuff long time ago and has
+> > never properly reviewed the implementation so I really
+> > have no clue what is actually happening.
+> > 
+> > Walking through the 179 lines Makefile has not yet benn on my
+> > "fun to do" list - and it most likely take a while before it hits it.
 > 
->  CONFIG_64BIT=y
->  CONFIG_NR_CPUS=4096
->  CONFIG_MAXSMP=y
+> Took a quick peek. The Makefile uses "order only" in three spots.
+> This alone demand make version 3.80 IIRC and Documetnation/Changes
+> says 3.79.1...
+> 
+> The "order only" is so rare that Paul Smith once said that
+> coming up with a good example of usage was not easy.
+> 
+> For the headers_* stuff I recall when I reworked it I could
+> kill the usage of "order only" there but now it crept
+> back - sigh!
 
-the worst-case stack footprint i was able to trigger on an allyesconfig 
-bootup (instrumented via CONFIG_STACK_TRACER=y and the 'stacktrace' boot 
-option) was 5.6K:
+Well, in the meantime I ran 'make modules_install V=1' and this is the
+last thing printed (the previous ones are not really interesting):
 
- # ls -l /debug/tracing/*stack*
- -rw-r--r-- 1 root root 0 2009-01-03 22:42 /debug/tracing/stack_max_size
- -r--r--r-- 1 root root 0 2009-01-03 22:42 /debug/tracing/stack_trace
+make -f /home/rafael/src/linux-2.6/scripts/Makefile.fwinst obj=firmware __fw_modinst
+  gcc -Wp,-MD,firmware/.ihex2fw.d -Ifirmware -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o firmware/ihex2fw /home/rafael/src/linux-2.6/firmware/ihex2fw.c
+/home/rafael/src/linux-2.6/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system
+compilation terminated.
+make[3]: *** [firmware/ihex2fw] Error 1
+make[2]: *** [_modinst_post] Error 2
+make[1]: *** [sub-make] Error 2
+make: *** [all] Error 2
 
- # cat /debug/tracing/*stack*
- 5624
-        Depth   Size      Location    (38 entries)
-        -----   ----      --------
-  0)     5496     232   lookup_address+0x51/0x20e
-  1)     5264     496   __change_page_attr_set_clr+0xa7/0xa15
-  2)     4768     128   kernel_map_pages+0x121/0x140
-  3)     4640     224   get_page_from_freelist+0x4bb/0x6ec
-  4)     4416     160   __alloc_pages_internal+0x150/0x4af
-  5)     4256      48   alloc_pages_current+0xbe/0xc7
-  6)     4208      16   alloc_slab_page+0x1e/0x6e
-  7)     4192      64   new_slab+0x51/0x1e2
-  8)     4128      96   __slab_alloc+0x260/0x3fa
-  9)     4032      80   kmem_cache_alloc+0xa8/0x120
- 10)     3952      48   radix_tree_preload+0x38/0x86
- 11)     3904      64   add_to_page_cache_locked+0x51/0xed
- 12)     3840      32   add_to_page_cache_lru+0x31/0x6b
- 13)     3808      64   find_or_create_page+0x56/0x7d
- 14)     3744      80   __getblk+0x136/0x262
- 15)     3664      32   __bread+0x13/0x82
- 16)     3632      64   ext3_get_branch+0x7b/0xef
- 17)     3568     368   ext3_get_blocks_handle+0xa2/0x907
- 18)     3200      96   ext3_get_block+0xc3/0x101
- 19)     3104     224   do_mpage_readpage+0x1ad/0x4d0
- 20)     2880     240   mpage_readpages+0xb6/0xf9
- 21)     2640      16   ext3_readpages+0x1f/0x21
- 22)     2624     144   __do_page_cache_readahead+0x147/0x1bd
- 23)     2480      48   do_page_cache_readahead+0x5b/0x68
- 24)     2432     112   filemap_fault+0x176/0x34b
- 25)     2320     160   __do_fault+0x58/0x410
- 26)     2160     176   handle_mm_fault+0x4b2/0xa3e
- 27)     1984     800   do_page_fault+0x86d/0xcec
- 28)     1184     208   page_fault+0x25/0x30
- 29)      976      16   clear_user+0x30/0x38
- 30)      960     288   load_elf_binary+0x61c/0x18f0
- 31)      672      80   search_binary_handler+0xd9/0x279
- 32)      592     176   load_script+0x1b3/0x1c8
- 33)      416      80   search_binary_handler+0xd9/0x279
- 34)      336      96   do_execve+0x1df/0x296
- 35)      240      64   sys_execve+0x43/0x5e
- 36)      176     176   stub_execve+0x6a/0xc0
+It fails because of the attempt to compile ihex2fw .
 
-None of the cpumask_t callsites showed up - but i agree that they should 
-be fixed, 512 bytes of cpumask_t on the stack is not good no matter how 
-one looks at it, it will only make an already strained kernel stack 
-footprint situation worse.
-
-This one looks a bit high:
-
-  1)     5264     496   __change_page_attr_set_clr+0xa7/0xa15
-
-(Venki, Suresh and Arjan Cc:-ed)
-
-This one isnt too nice either:
-
- 27)     1984     800   do_page_fault+0x86d/0xcec
-
-not sure why it happens - will investigate tomorrow, it's getting late 
-here.
-
-	Ingo
+Thanks,
+Rafael
