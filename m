@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbZACXzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbZACX6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932966AbZACXzh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 18:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbZACXz2
+	id S932966AbZACX6r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 18:58:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZACX6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 18:55:28 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41709 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752660AbZACXz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 18:55:27 -0500
-Subject: Re: [PATCH] Fix race in ring_buffer_consume(): Replace
-	ring_buffer_consume and ring_buffer_peek with ring_buffer_get_event
-From: Steven Rostedt <srostedt@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Indan Zupancic <indan@nul.nu>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090102220818.GD17240@elte.hu>
-References: <54882.124.179.251.206.1230523141.squirrel@secure.greenhost.nl>
-	 <1230536044-14847-1-git-send-email-indan@nul.nu>
-	 <20081229122449.GG9628@elte.hu>
-	 <57128.124.177.22.144.1230786624.squirrel@secure.greenhost.nl>
-	 <20090102220818.GD17240@elte.hu>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Sat, 03 Jan 2009 18:55:17 -0500
-Message-Id: <1231026917.15476.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Jan 2009 18:58:38 -0500
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:20363 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbZACX6h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 18:58:37 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=N2G1neSFK1Q7JptIix8A:9 a=pqvsJMGwQsr7YhJQNwX6g-oB4yIA:4
+Message-ID: <495FFBA8.10804@shaw.ca>
+Date: Sat, 03 Jan 2009 17:58:32 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.documentation,gmane.linux.kernel
+To: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
+CC: Duane Griffin <duaneg@dghda.com>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+References: <20090103123813.GA1512@ucw.cz>	 <495FD5D7.2040907@ribosome.natur.cuni.cz>	 <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com>	 <20090103222957.GG1666@elf.ucw.cz>	 <495FEE66.9080903@ribosome.natur.cuni.cz> <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com> <495FF9CE.2020908@ribosome.natur.cuni.cz>
+In-Reply-To: <495FF9CE.2020908@ribosome.natur.cuni.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2009-01-02 at 23:08 +0100, Ingo Molnar wrote:
-> * Indan Zupancic <indan@nul.nu> wrote:
+Martin MOKREJŠ wrote:
+> Duane Griffin wrote:
+>> 2009/1/3 Martin MOKREJŠ <mmokrejs@ribosome.natur.cuni.cz>:
+>>> Hmm, so if my dual-boot machine does not shutdown correctly and I boot
+>>> accidentally in M$ Win where I use ext2 IFS driver and modify some
+>>> stuff on the ext3 drive, after a while reboot to linux and the journal
+>>> get re-played ... Mmm ...
+>> You *really* wouldn't want to be doing that.
+>>
+>> The other scenario that people have reported trouble with is
+>> suspending the system, booting a live CD which "read-only" mounts the
+>> filesystem (and replays the journal), then resuming.
 > 
-> > On Mon, December 29, 2008 13:24, Ingo Molnar wrote:
-> > >
-> > > * Indan Zupancic <indan@nul.nu> wrote:
-> > >
-> > >> Original mail was mangled, patch resent via git.
-> > >>
-> > >> Signed-off-by: Indan Zupancic <indan@nul.nu>
-> > >> ---
-> > >>  include/linux/ring_buffer.h   |    4 +---
-> > >>  kernel/trace/ring_buffer.c    |   39
-> > >> ++++++++-------------------------------
-> > >>  kernel/trace/trace.c          |   15 ++++++++-------
-> > >>  kernel/trace/trace_selftest.c |    2 +-
-> > >>  4 files changed, 18 insertions(+), 42 deletions(-)
-> > >
-> > > there's been a number of updates here - could you please do a patch
-> > > against tip/master:
-> > >
-> > >   http://people.redhat.com/mingo/tip.git/README
-> > 
-> > Thanks for that readme, now I discovered git remote, which is not
-> > mentioned often enough for some reason.
-> > 
-> > A lot changed indeed, most importantly the race that I hit is
-> > fixed in tip by improved locking. Replace ring_buffer_consume()
-> > and ring_buffer_peek() with ring_buffer_get_event() or not is
-> > just a matter of taste now. Are you still interested in such a
-> > patch?
-> 
-> the code gets simpler and more readable, so why not? Steve, any 
-> objections?
+> Why does not "mount -ro" die when it would have to replay the journal
+> with a message that user must run fsck.ext3 in order to be able to mount
+> it albeit read-only? Still I would prefer having an extra switch to
 
-I'd like to look closer at this code on Monday.
+That would break typical system bootup in the unclean journal case, 
+normally the root FS is mounted read-only to start with (which replays 
+the journal) and remounted read-write later on - and usually the fsck 
+utilities are located on the root filesystem..
 
-Thanks,
+> force mount RO while not touching the journal for disk forensics.
+> I think that would also prevent the cases when a LiveCD/rescue distribution
+> would not mount+replay it automagically but user would really have to
+> provide the switch to the command. I am really not using the recovery
+> boot cd to touch my partitions in some cases unwillingly.
 
--- Steve
-
-
+I agree, there should be a way to force it to mount "really read only" 
+so it doesn't try to replay the journal. That might require just 
+ignoring the journal content, which may result in the FS appearing 
+corrupt, but for recovery/forensics purposes that seems better than 
+nothing..
