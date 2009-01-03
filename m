@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbZACGht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbZACGmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759321AbZACGht (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 01:37:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZACGhk
+	id S932098AbZACGmT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 01:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZACGmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 01:37:40 -0500
-Received: from rv-out-0506.google.com ([209.85.198.235]:17585 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751802AbZACGhk (ORCPT
+	Sat, 3 Jan 2009 01:42:07 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:64186 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZACGmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 01:37:40 -0500
+	Sat, 3 Jan 2009 01:42:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=G9gcamAxU3TbGc9NCiEvkPE+HcELvVVUHIyXauCLab8BAKeWJqVlDOu4Th3/7sDJJ0
-         YRSQ6lCR5JA9kwAObt2rydhHGMFPaWeEMD4awRVEy13YFJTKXSI9ncy0UShPtKlWnDGs
-         XIRXLViR2Ym3HJloHJaMh16yDQeYI2ccDhbLM=
-Message-ID: <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>
-Date: Sat, 3 Jan 2009 06:37:38 +0000
-From: "Ben Goodger" <goodgerster@gmail.com>
-To: "David Newall" <davidn@davidnewall.com>
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
-Cc: "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       "Travis Crump" <pretzalz@techhouse.org>, burdell@iruntheinter.net
-In-Reply-To: <495F0672.6020708@davidnewall.com>
+        b=D+6LS2/KopMjWe52UKY7X1WQZOEN1Dq70brougnlXiJ/lmUVKBx3KOoR8Gm26cLhwz
+         c8gUbLC/PlpNCCh4DErDge8+3kKpjrnSqxMj08znaCLlUdDVPV+HZZE5xetNfR5L56OL
+         +QGqeslA/T4F1nWtx4KHfk2QIrdg4HKiURkyY=
+Message-ID: <91b13c310901022242y59e05c39ycc9183a5595abd0@mail.gmail.com>
+Date: Sat, 3 Jan 2009 14:42:01 +0800
+From: "=?UTF-8?Q?Cheng_Renquan_(=E7=A8=8B=E4=BB=BB=E5=85=A8)?=" 
+	<crquan@gmail.com>
+To: "Alasdair G Kergon" <agk@redhat.com>
+Subject: Re: [dm-devel] [PATCH 0/3] dm-target: target_type improvements
+Cc: "device-mapper development" <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090102181215.GF11060@agk.fab.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
-	 <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca>
-	 <495F0672.6020708@davidnewall.com>
+References: <1229660385-17153-1-git-send-email-crquan@gmail.com>
+	 <20090102181215.GF11060@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n036gLwM020740
 
-2009/1/3 David Newall <davidn@davidnewall.com>:
-> Robert Hancock wrote:
->> Diego Calleja wrote:
->>> How could I create a test case that reproduces what ntp does? Just add
->>> a second?
->>
->> I'd think that setting the clock to just before midnight on Dec.31 and
->> using the adjtimex syscall to set the TIME_INS state on the clock,
->> then waiting until midnight rolls around would be a reasonable test..
->
-> I don't understand this idea, nor the patch for the problem.  I don't
-> see why adding a leap second would impact the kernel in any way.
-> Shouldn't this be a simple zoneinfo change, whereby the last two seconds
-> of the year (in each timezone) both map to 31dec2008 23:59:59?  That's
-> the way the change has worked in the real world.  Why would ntp or the
-> kernel be involved?
-
-Actually, the change has worked in the real world with the
-introduction of a new second named 23:59:60, or else ignoring the leap
-second entirely and correcting the clock (or not) later...
-
--- 
-Benjamin Goodger
-
------BEGIN GEEK CODE BLOCK-----
-Version: 3.1
-GCS/S/M/B d- s++:-- a18 c++$ UL>+++ P--- L++>+++ E- W+++$ N--- K? w---
-O? M- V? PS+(++) PE-() Y+ PGP+ t 5? X-- R- !tv() b+++>++++ DI+++ D+ G
-e>++++ h! !r*(-) y
-------END GEEK CODE BLOCK------
+On Sat, Jan 3, 2009 at 2:12 AM, Alasdair G Kergon <agk@redhat.com> wrote:> On Fri, Dec 19, 2008 at 12:19:42PM +0800, crquan@gmail.com wrote:>> From: Cheng Renquan <crquan@gmail.com>>> 3. totally remove tt_internal;>> The 3rd patch may be controversial,>> But I still think it's worth it:>> Well now that it's down to just one field for linking items I'm inclined to> agree that it's OK.>> Do you (or anyone else) have any interest in creating and testing similar sets> of patches for the other parts of device-mapper that use the same construction?
+I just came across the device-mapper code and made the patches onemonth ago, I want to know you (dm-dev)'s attitude toward this type ofstruct reconstruction. Now I know it and can do more.
+>> Alasdair> --> agk@redhat.com
+BTW, why you set Reply-to field to my email address? Maybe an accidentof your mail client?
+-- Cheng Renquan (ç¨‹ä»»å…¨), Shenzhen, ChinaGroucho Marx  - "I was married by a judge. I should have asked for a jury."ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
