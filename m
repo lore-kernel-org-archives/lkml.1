@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbZACHVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbZACH3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759613AbZACHVS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 02:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZACHVH
+	id S1759284AbZACH3m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 02:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZACH3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 02:21:07 -0500
-Received: from ozlabs.org ([203.10.76.45]:44230 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZACHVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 02:21:05 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
+	Sat, 3 Jan 2009 02:29:33 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33348 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750767AbZACH3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 02:29:32 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/FdtwFTIzFinMEjaHQtQMFNVHbwcaw74osiILhKv
+	wyiYZMNP7goJ4F
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+From: Mike Galbraith <efault@gmx.de>
 To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PULL] cpumask tree
-Date: Sat, 3 Jan 2009 17:50:59 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org
-References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu>
-In-Reply-To: <20090102203839.GA26850@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090102221630.GF17240@elte.hu>
+References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
+	 <28c262360812291543ia322a13g6af854a685ce7632@mail.gmail.com>
+	 <20081230024819.GA23301@balbir.in.ibm.com> <20081230062139.GA30038@elte.hu>
+	 <20081230180722.GA29060@dirshya.in.ibm.com>
+	 <20090102072600.GA13412@dirshya.in.ibm.com>
+	 <20090102221630.GF17240@elte.hu>
+Content-Type: text/plain
+Date: Sat, 03 Jan 2009 08:29:25 +0100
+Message-Id: <1230967765.5257.6.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901031751.00076.rusty@rustcorp.com.au>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.76
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 January 2009 07:08:40 Ingo Molnar wrote:
->  - architectures that have no __fls (8 out of 21) fail to build:
-> 
->      arch/cris
->      arch/frv
->      arch/h8300
->      arch/m32r
->      arch/m68k
->      arch/mn10300
->      arch/xtensa
+On Fri, 2009-01-02 at 23:16 +0100, Ingo Molnar wrote:
 
-Fixes pushed, m68k should be OK tho; is this actual compile test?  You have
-to look in include/asm-m68k to see __fls.
+> Mike, would you be interesting in having a look at sched_mc=2 as a 
+> kernel-wide default - and give it your blessing if you find it to be a net 
+> improvement for the various performance and interactivity tests you do?
 
-> Rusty, would it be fine with you if we did all the remaining bits via 
-> tip/cpus4096? It's your tree and your bits and we wanted to send our 
-> remaining bits after your tree went to Linus but the conflict resolutions 
-> from Mike are valuable so i think we should reconsider the ordering.
+Sure.
 
-Yeah, no reason for us to do the merge twice.  As long as it ends upstream,
-I'm a happy camper.
+	-Mike
 
-Thanks,
-Rusty.
