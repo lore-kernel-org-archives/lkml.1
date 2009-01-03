@@ -1,71 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932698AbZACWAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbZACWB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932698AbZACWAt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 17:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759454AbZACWAl
+	id S932693AbZACWB7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 17:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbZACWBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 17:00:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56430 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752944AbZACWAk (ORCPT
+	Sat, 3 Jan 2009 17:01:48 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44704 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755822AbZACWBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 17:00:40 -0500
-Date: Sat, 3 Jan 2009 14:00:06 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
-       linux-kernel@vger.kernel.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] cpus4096 tree, part 3
-In-Reply-To: <20090103213856.GA24138@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901031347570.3179@localhost.localdomain>
-References: <200901011149.18401.rusty@rustcorp.com.au> <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu>
- <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain> <20090103203621.GA2491@elte.hu> <20090103213856.GA24138@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 3 Jan 2009 17:01:47 -0500
+Date: Sat, 3 Jan 2009 14:03:32 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, x86@kernel.org,
+       netdev@vger.kernel.org, tytso@mit.edu, eric@anholt.net,
+       airlied@redhat.com
+Subject: Bug/Warning report for the week of January 3rd, 2009
+Message-ID: <20090103140332.74f39ade@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Few high/lowlights this round:
+* One if the used-to-be-hot Intel wireless issues is slowly going away as a result of
+  a firmware update
+* the i9xx GEM code is a high riser compared to the last report
+* in general, networking is relatively high this report
+* the long-fixed ext3 issues seem to still be with us
 
 
-On Sat, 3 Jan 2009, Ingo Molnar wrote:
-> 
-> This one looks a bit high:
-> 
->   1)     5264     496   __change_page_attr_set_clr+0xa7/0xa15
-> 
-> (Venki, Suresh and Arjan Cc:-ed)
-> 
-> This one isnt too nice either:
-> 
->  27)     1984     800   do_page_fault+0x86d/0xcec
-> 
-> not sure why it happens - will investigate tomorrow, it's getting late 
-> here.
 
-The most common case tends to be insane gcc inlining (vmalloc_fault and 
-spurious_fault), and then gcc not re-using stack slots even if they have 
-no overlap in usage. Some people continue to claim that gcc reuses them, 
-but it's definitely not the case in any complex situation, so I suspect 
-the re-use is probably purely for some simple spilling case, not for 
-variables allocated on the stack.
+This week, a total of 6647 oopses and warnings have been reported,
+compared to 6356 reports in the previous week. Only reports for version 2.6.27
+and later are counted for this report.
 
-do_page_fault() in particular has a lot of gunk in it for the special 
-cases.
+Per file statistics
+664	external/virtualbox/module
+420	arch/x86/include/asm/mtrr.h
+325	drivers/net/wireless/iwlwifi/iwl-3945-rs.c
+275	drivers/gpu/drm/i915/i915_gem.c
+239	drivers/net/r8169.c
+228	fs/jbd/journal.c
+225	drivers/net/sis900.c
+192	drivers/gpu/drm/radeon/radeon_cp.c
+183	net/rfkill/rfkill.c
+159	net/ipv4/tcp.c
+153	drivers/net/wireless/iwlwifi/iwl-tx.c
+132	drivers/staging/at76_usb/at76_usb.c
 
-What happened to Nick's cleanup patch to do_page_fault (a month or two 
-ago? I complained about some of the issues in his first version and asked 
-for some further cleanups, but I think that whole discussion ended with 
-him saying "I am going to add those changes that you suggested (in fact, I 
-already have)".
 
-And then I didn't see anything further. Maybe I just missed the end 
-result. Or maybe we have it in some -mm branch or something?
+Rank 1: VBoxDrvLinuxIOCtl (warning)
+	Reported 659 times (4906 total reports)
+	[external] bug in the VirtualBox drivers
+	This warning was last seen in version 2.6.28-rc9, and first seen in 2.6.25.11.
+	More info: http://www.kerneloops.org/searchweek.php?search=VBoxDrvLinuxIOCtl
 
-		Linus
+Rank 2: mtrr_trim_uncached_memory (warning)
+	Reported 420 times (9816 total reports)
+	BIOS bug (often in VMWare) where the MTRR's are set up incorrectly or not at all
+	This warning was last seen in version 2.6.28, and first seen in 2.6.24.
+	More info: http://www.kerneloops.org/searchweek.php?search=mtrr_trim_uncached_memory
+
+Rank 3: rs_get_rate (warning)
+	Reported 325 times (4226 total reports)
+	Bug in the Intel IWL wireless drivers
+	This warning was last seen in version 2.6.28-rc7, and first seen in 2.6.25-rc2-git5.
+	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
+
+Rank 4: dev_watchdog(r8169) (oops)
+	Reported 239 times (3004 total reports)
+	This oops was last seen in version 2.6.28, and first seen in 2.6.26.6.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
+
+Rank 5: journal_update_superblock (warning)
+	Reported 228 times (8546 total reports)
+	Likely caused by the user removing a USB stick while mounted
+	This warning was last seen in version 2.6.29-rc0-git3, and first seen in 2.6.24-rc6-git1.
+	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
+
+Rank 6: dev_watchdog(sis900) (oops)
+	Reported 225 times (2595 total reports)
+	This oops was last seen in version 2.6.28, and first seen in 2.6.26-rc4-git2.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(sis900)
+
+Rank 7: i915_gem_idle (warning)
+	Reported 189 times (646 total reports)
+	Bug in the Intel 9xx 3D driver
+	This warning was last seen in version 2.6.28, and first seen in 2.6.27-rc8-git7.
+	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_idle
+
+Rank 8: rfkill_force_state (oops)
+	Reported 183 times (958 total reports)
+	[fixed] bug in the toshiba ACPI driver; fixed by 23d0a65cf229acd273b6f5a325c34d758a90d592
+	This oops was last seen in version 2.6.28-rc8-git2, and first seen in 2.6.27.4.
+	More info: http://www.kerneloops.org/searchweek.php?search=rfkill_force_state
+
+Rank 9: radeon_cp_init_ring_buffer (oops)
+	Reported 178 times (1209 total reports)
+	drm.git bug in the radeon driver
+	This oops was last seen in version 2.6.28-rc8-git2, and first seen in 2.6.25-rc8-git7.
+	More info: http://www.kerneloops.org/searchweek.php?search=radeon_cp_init_ring_buffer
+
+Rank 10: tcp_recvmsg (warning)
+	Reported 159 times (846 total reports)
+	This warning was last seen in version 2.6.28-rc9-git1, and first seen in 2.6.25.
+	More info: http://www.kerneloops.org/searchweek.php?search=tcp_recvmsg
+
+Rank 11: iwl_tx_cmd_complete (warning)
+	Reported 153 times (4477 total reports)
+	This warning was last seen in version 2.6.28, and first seen in 2.6.27-rc9.
+	More info: http://www.kerneloops.org/searchweek.php?search=iwl_tx_cmd_complete
+
+Rank 12: e1000_acquire_swflag_ich8lan (warning)
+	Reported 123 times (544 total reports)
+	Locking issue in the e1000 driver; recursive locking detected.
+	This warning was last seen in version 2.6.28-rc7, and first seen in 2.6.26.5.
+	More info: http://www.kerneloops.org/searchweek.php?search=e1000_acquire_swflag_ich8lan
+
+Rank 13: dev_watchdog(via-rhine) (warning)
+	Reported 118 times (605 total reports)
+	This warning was last seen in version 2.6.28-rc9, and first seen in 2.6.26-rc8.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(via-rhine)
+
