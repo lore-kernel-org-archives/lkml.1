@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbZACVxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbZACVyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760284AbZACVxj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZACVxa
+	id S932462AbZACVyH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760050AbZACVxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:53:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50264 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbZACVx3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:53:29 -0500
-Date: Sat, 3 Jan 2009 13:55:13 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] stackprotector re-enabling patches
-Message-ID: <20090103135513.20f14f1d@infradead.org>
-In-Reply-To: <20090103214353.GA22949@elte.hu>
-References: <20090103214353.GA22949@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+	Sat, 3 Jan 2009 16:53:53 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37078 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760264AbZACVxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 16:53:52 -0500
+Subject: Re: [PATCH] printk: Let %pR handle NULL pointers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Trent Piepho <xyzzy@speakeasy.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain>
+References: <1230979341-23029-1-git-send-email-xyzzy@speakeasy.org>
+	 <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 04 Jan 2009 08:53:34 +1100
+Message-Id: <1231019614.15389.104.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Jan 2009 22:43:53 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
->  
-> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-> index 10d6cc3..28f1114 100644
-> --- a/arch/x86/Kconfig.debug
-> +++ b/arch/x86/Kconfig.debug
-> @@ -117,6 +117,7 @@ config DEBUG_RODATA
->  config DEBUG_RODATA_TEST
->  	bool "Testcase for the DEBUG_RODATA feature"
->  	depends on DEBUG_RODATA
-> +	default y
->  	help
->  	  This option enables a testcase for the DEBUG_RODATA
->  	  feature as well as for the change_page_attr()
+On Sat, 2009-01-03 at 09:10 -0800, Linus Torvalds wrote:
+> 
+> On Sat, 3 Jan 2009, Trent Piepho wrote:
+> >
+> > Have %pR print "[NULL]" for the resource range when passed a NULL pointer.
+> 
+> Wouldn't it be much nicer to just do it for _all_ pointer types?
+> 
+> IOW, a patch more like the appended.
 
-I think this chunk isn't meant to be there...
+Agreed.
 
+Cheers,
+Ben.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
