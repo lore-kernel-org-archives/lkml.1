@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZACHAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759144AbZACHNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758848AbZACHAo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 02:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZACHAg
+	id S1759144AbZACHNu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 02:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZACHNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 02:00:36 -0500
-Received: from bee.hiwaay.net ([216.180.54.11]:19450 "EHLO bee.hiwaay.net"
+	Sat, 3 Jan 2009 02:13:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:38255 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZACHAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 02:00:35 -0500
-Date: Sat, 3 Jan 2009 01:00:22 -0600
-From: Chris Adams <cmadams@hiwaay.net>
-To: David Newall <davidn@davidnewall.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>,
-       Goodgerster <goodgerster@gmail.com>
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
-Message-ID: <20090103070022.GC1538533@hiwaay.net>
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com> <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca> <495F0672.6020708@davidnewall.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750759AbZACHNl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 02:13:41 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: 2.6.28-mmotm1230 - BUG during 'shutdown -h'
+Date: Sat, 3 Jan 2009 17:43:35 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <4491.1230900738@turing-police.cc.vt.edu>
+In-Reply-To: <4491.1230900738@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <495F0672.6020708@davidnewall.com>
-User-Agent: Mutt/1.4i
+Message-Id: <200901031743.35578.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once upon a time, David Newall <davidn@davidnewall.com> said:
-> I don't understand this idea, nor the patch for the problem.  I don't
-> see why adding a leap second would impact the kernel in any way. 
-> Shouldn't this be a simple zoneinfo change, whereby the last two seconds
-> of the year (in each timezone) both map to 31dec2008 23:59:59?  That's
-> the way the change has worked in the real world.  Why would ntp or the
-> kernel be involved?
+On Friday 02 January 2009 23:22:18 Valdis.Kletnieks@vt.edu wrote:
+> 100% repeatable.  I haven't had a chance to bisect and track this down yet,
+> though most of the obvious suspects are in either origin.patch or linux-next.patch
+> so a bisect of -mmotm probably won't tell us much.
 
-The leap second isn't a simple thing like a time zone.  Zones account
-for an offset from UTC, but a leap second is an extra second inserted
-into (or possibly removed from) UTC itself.  There was actually a 61
-second minute on Dec. 31.  The trouble comes in keeping the "seconds
-since the epoch" counter sane, meaning (seconds % 86400) == 0 at
-00:00:00 UTC.  Since there were 86401 seconds Dec. 31, the kernel had to
-tick the last second twice to keep correct UTC time.
+kernel/workqueue.c: In function ‘wq_cpu_map’:
+kernel/workqueue.c:94: warning: pointer type mismatch in conditional expression
 
-NTP is used to distribute and synchronize time information, including
-leap second info.
+That's a problem for a start.  Looks like a merge bug.  Does removing the &
+from in front of cpu_populated_map help?
 
-See Wikipedia and Google for more information.
--- 
-Chris Adams <cmadams@hiwaay.net>
-Systems and Network Administrator - HiWAAY Internet Services
-I don't speak for anybody but myself - that's enough trouble.
+static const struct cpumask *wq_cpu_map(struct workqueue_struct *wq)
+{
+	return is_wq_single_threaded(wq)
+		 ? get_cpu_mask(singlethread_cpu) : &cpu_populated_map;
+}
+
+Cheers,
+Rusty.
