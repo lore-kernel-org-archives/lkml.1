@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932764AbZACUU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZACUWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932764AbZACUU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 15:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759647AbZACUUU
+	id S932555AbZACUWT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 15:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759647AbZACUWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 15:20:20 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34512 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759614AbZACUUT (ORCPT
+	Sat, 3 Jan 2009 15:22:09 -0500
+Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:3366 "EHLO
+	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759302AbZACUWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 15:20:19 -0500
-Date: Sat, 3 Jan 2009 20:19:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: atomics: document that linux expects certain atomic behaviour
- from unsigned long
-Message-ID: <20090103201955.186974bb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090103124400.GA1572@ucw.cz>
-References: <20090103124400.GA1572@ucw.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Jan 2009 15:22:08 -0500
+Date: Sat, 3 Jan 2009 21:20:53 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: Willy Tarreau <w@1wt.eu>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel@vger.kernel.org, Steven Noonan <steven@uplinklabs.net>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: ath9k microwave anomaly
+Message-ID: <20090103202052.GC31855@vanheusden.com>
+References: <495ED1C4.8020304@gmail.com> <20090103032134.GA20209@redhat.com> <495EDC10.20605@gmail.com> <f488382f0901021949y60b6d60fjeaeb6bb12a851f8@mail.gmail.com> <495EE2A0.2080703@gmail.com> <495EEE1D.8050500@shaw.ca> <20090103073051.GC5038@1wt.eu> <495F1DA3.7060706@gmail.com> <20090103195115.GA31855@vanheusden.com> <495FC75E.3090403@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <495FC75E.3090403@gmail.com>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Reply-By: Thu Dec 25 11:53:05 CET 2008
+X-Message-Flag: MultiTail - tail on steroids
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Jan 2009 13:44:00 +0100
-Pavel Machek <pavel@suse.cz> wrote:
+>> Since a few months my wifi connections dropped during the day and sometimes
+>> at nights well. So I took my laptop with the WiSpy dongle and went for a
+>> walk in the neighbourhood. Found out that outside there's fresh air that
+>> feels really good to your nose and also that one of my neighbours has a
+>> wireless security camera which he occasionally switches on during the day.
+>> (weblog entry: http://vanheusden.com/misc/blog/2008-12-11-wifi.php ).
+>>   
+> That device looks interesting.
+> looked at the article, just one problem
+> I suck at reading german, or speaking the
+> language. although I would love to checkout
+> oldenbourg or ingostadt one of these days.
 
-> Linux relies on unsigned long to behave like atomic for read/write.
+That's Dutch.
 
-Actually it isn't that simple and this advice shouldn't be given IMHO.
+I bought it here: http://www.metageek.net/products/wi-spy
 
-unsigned long is not the same as atomic in several respects including
-ordering and caching of the result.
 
-Alan
+Folkert van Heusden
+
+-- 
+
+Multitail - gibkaja utilita po sledovaniju log-fajlov i vyvoda
+kommand. Fil'trovanie, raskrašivanie, slijanie, vizual'noe sravnenie,
+i t.d.  http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
