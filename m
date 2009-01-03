@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932935AbZACVLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932888AbZACVN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932935AbZACVLV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932395AbZACVLL
+	id S932888AbZACVN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZACVNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:11:11 -0500
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:37275 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932308AbZACVLJ (ORCPT
+	Sat, 3 Jan 2009 16:13:18 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:51469 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756067AbZACVNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:11:09 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <495FD46E.8040208@cam.ac.uk>
-Date: Sat, 03 Jan 2009 21:11:10 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
+	Sat, 3 Jan 2009 16:13:17 -0500
+Date: Sat, 3 Jan 2009 14:12:59 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>
+Subject: Re: Btrfs for mainline
+Message-ID: <20090103211258.GB2002@parisc-linux.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <20090103195034.GA27541@infradead.org>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com
-Subject: [RFC] Regulator: Possibility of passing notifications of non alarm
- events.
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090103195034.GA27541@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All,
+On Sat, Jan 03, 2009 at 02:50:34PM -0500, Christoph Hellwig wrote:
+> On Sat, Jan 03, 2009 at 12:17:06PM -0700, Matthew Wilcox wrote:
+> > It's no worse than XFS (which still has its own implementation of
+> > 'synchronisation variables',
+> 
+> Which are a trivial wrapper around wait queues.  I have patches to kill
+> them, but I'm not entirely sure it's worth it
 
-I am in the process of writing an hwmon driver for the Sensiron SHT15 humidity
-sensor.
+I'm not sure it's worth it either.
 
-In common (I assume) with lots of other devices, the formula for converting
-the outputs of this chip to real units involves the supply voltage.
-Unfortunately the chip doesn't itself have any means of measuring this.
-Obviously this can be supplied via a board config if it is constant.
+> > a (very thin) wrapper around mutexes,
+> 
+> nope.
 
-As I have it connected to a DA9030 pmic I can register it as a consumer
-and hence query what the pmic thinks it is supplying.
+It's down to:
 
-Unfortunately this regulator is shared with a number of other chips and so
-there is no guarantee that this voltage won't be changed (within the bounds
-supported by the SHT15).  I'd like to avoid querying the regulator voltage
-every time I do a conversion.
+typedef struct mutex mutex_t;
 
-As the regulator framework already allows you to register to receive events
-such as under voltage detections, it seems to me that it would also make sense
-to allow registrations of handlers for events that occur during normal
-operation such as voltage changes.
+but it's still there.
 
-What do people think to adding this functionality?
+> > a
+> > (thin) wrapper around rwsems,
+> 
+> Which are needed so we can have asserts about the lock state, which
+> generic rwsems still don't have.  At some pointer Peter looked into
+> it, and once we have that we can kill the wrapper.
 
-Thanks
+Good to know.  Rather like btrfs's wrappers around mutexes then ...
 
---
-Jonathan Cameron
+> > > - compat.h needs to go
+> > 
+> > Later.  It's still there for XFS.
+> 
+> ?
+
+XFS still has 'fs/xfs/linux-2.6'.  It's a little bigger than compat.h,
+for sure, and doesn't contain code for supporting different Linux
+versions, sure.  But it's still a compat layer.
+
+> > > - there should be manpages for all the ioctls and other interfaces.
+> > 
+> > I wonder if Michael Kerrisk has time to help with that.  Cc'd.
+> 
+> Actually a lot of the ioctl API don't just need documentation but
+> a complete redo.  That's true at least for the physical device
+> management and subvolume / snaphot ones.
+
+That's a more important critique than Andi's.  Let's take care of that.
+
+> From painfull experience with a lot of things, including a filesystem
+> you keep on mentioning it's clear that once stuff is upstream there
+> is very little to no incentive to fix these things up.
+
+I don't think that's as true of btrfs as it was of XFS -- for example,
+Chris has no incentive to keep compatibility with IRIX, or continue to
+support CXFS.  I don't think 'getting included in kernel' is Chris'
+goal, so much as it is a step towards making btrfs better.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
