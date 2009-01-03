@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZACUWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbZACUYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932555AbZACUWT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 15:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759647AbZACUWJ
+	id S1760127AbZACUYi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 15:24:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759302AbZACUY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 15:22:09 -0500
-Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:3366 "EHLO
-	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759302AbZACUWI (ORCPT
+	Sat, 3 Jan 2009 15:24:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33276 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753173AbZACUY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 15:22:08 -0500
-Date: Sat, 3 Jan 2009 21:20:53 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Willy Tarreau <w@1wt.eu>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, Steven Noonan <steven@uplinklabs.net>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: ath9k microwave anomaly
-Message-ID: <20090103202052.GC31855@vanheusden.com>
-References: <495ED1C4.8020304@gmail.com> <20090103032134.GA20209@redhat.com> <495EDC10.20605@gmail.com> <f488382f0901021949y60b6d60fjeaeb6bb12a851f8@mail.gmail.com> <495EE2A0.2080703@gmail.com> <495EEE1D.8050500@shaw.ca> <20090103073051.GC5038@1wt.eu> <495F1DA3.7060706@gmail.com> <20090103195115.GA31855@vanheusden.com> <495FC75E.3090403@gmail.com>
+	Sat, 3 Jan 2009 15:24:29 -0500
+Date: Sat, 3 Jan 2009 12:23:39 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Pavel Machek <pavel@suse.cz>
+cc: Andreas Mohr <andi@lisas.de>, Sriram V <vshrirama@gmail.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: Re: Power Management with rootfs on SDMMC.
+In-Reply-To: <20090102172407.GD1555@ucw.cz>
+Message-ID: <alpine.LFD.2.00.0901031217261.3179@localhost.localdomain>
+References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com> <20090102102152.GA26603@rhlx01.hs-esslingen.de> <20090102172407.GD1555@ucw.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <495FC75E.3090403@gmail.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Thu Dec 25 11:53:05 CET 2008
-X-Message-Flag: MultiTail - tail on steroids
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Since a few months my wifi connections dropped during the day and sometimes
->> at nights well. So I took my laptop with the WiSpy dongle and went for a
->> walk in the neighbourhood. Found out that outside there's fresh air that
->> feels really good to your nose and also that one of my neighbours has a
->> wireless security camera which he occasionally switches on during the day.
->> (weblog entry: http://vanheusden.com/misc/blog/2008-12-11-wifi.php ).
->>   
-> That device looks interesting.
-> looked at the article, just one problem
-> I suck at reading german, or speaking the
-> language. although I would love to checkout
-> oldenbourg or ingostadt one of these days.
-
-That's Dutch.
-
-I bought it here: http://www.metageek.net/products/wi-spy
 
 
-Folkert van Heusden
+On Fri, 2 Jan 2009, Pavel Machek wrote:
+> 
+> > (or, slightly reworded: I think it's high time for some kernel God to buy a measly
+> > netbook or some such instead of 16-core mainframes to get a feeling for the
+> > amount of issues that one hits there)
+> 
+> I have one and yes, its full of problems; see my blog post about 'evil
+> little cards'.
 
--- 
+Btw, why do people think that CONFIG_USB_PERSIST got removed, and is now 
+always on? Exactly because of this issue, and because one kernel God (me) 
+wanted to be able to suspend their netbook.
 
-Multitail - gibkaja utilita po sledovaniju log-fajlov i vyvoda
-kommand. Fil'trovanie, raskrašivanie, slijanie, vizual'noe sravnenie,
-i t.d.  http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+That said, right now most flash performance is so incredibly bad that I 
+can't reasonably be expected to use that thing for anything real. They may 
+say 15-20 MB/s, but that's best-case streaming performance. Real life 
+write performance is often in the tens of kB (yes, *kilo* bytes) per 
+second. I hope it will improve, and no, it's not just about ext3 journal 
+behavior, although that certainly makes some of the issues much much 
+worse.
+
+So no, I don't use my netbook very much. But this _is_ largely fixed ont 
+he USB side, even if you may need to do
+
+	echo 1 >/sys/bus/usb/devices/.../power/persist
+
+and I argued that we should default to it for any mounted device. It's 
+hard to do, since the device doesn't even know about whether it's mounted 
+or not.
+
+			Linus
