@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbZACVRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbZACVYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932967AbZACVRk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 16:17:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932462AbZACVR1
+	id S1760348AbZACVYm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 16:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZACVYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 16:17:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44884 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760400AbZACVRZ (ORCPT
+	Sat, 3 Jan 2009 16:24:33 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:57471 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbZACVYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 16:17:25 -0500
-Date: Sat, 3 Jan 2009 13:16:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Pavel Machek <pavel@suse.cz>, Andreas Mohr <andi@lisas.de>,
-       Sriram V <vshrirama@gmail.com>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Power Management with rootfs on SDMMC.
-In-Reply-To: <20090103204535.1a91cbcb@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.00.0901031306150.3179@localhost.localdomain>
-References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com> <20090102102152.GA26603@rhlx01.hs-esslingen.de> <20090102172407.GD1555@ucw.cz> <alpine.LFD.2.00.0901031217261.3179@localhost.localdomain> <20090103204329.GD1666@elf.ucw.cz>
- <20090103204535.1a91cbcb@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 3 Jan 2009 16:24:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=md0fS9sDHyx3zx9uGo+sXfILhRM/m8MtaqfaPWdZvUmKRlEZpC0t9pxDMpTBSGz2ce
+         wSclICdIEetUl60IZDeh4DIyVAd+m6rM7sO+gboNqK+KmRBpzfZRYKdiEAS2wZet6d7q
+         EO7ldQYWwG9oPHQQbEE0dAdoRwegAtSa/trrs=
+Date: Sun, 4 Jan 2009 00:24:26 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: david@lang.hm, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+Message-ID: <20090103212426.GC7367@localhost>
+References: <20090102173441.GC5372@localhost> <alpine.DEB.1.10.0901021044460.21408@asgard.lang.hm> <20090102174845.GD5372@localhost> <20090102175226.GE5372@localhost> <alpine.DEB.1.10.0901021131210.21567@asgard.lang.hm> <20090102203058.GH5372@localhost> <alpine.DEB.1.10.0901030823190.23262@asgard.lang.hm> <20090103161052.GB11093@localhost> <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm> <20090103190316.GB7367@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090103190316.GB7367@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Cyrill Gorcunov - Sat, Jan 03, 2009 at 10:03:16PM +0300]
+| (list restored)
+| 
+| [david@lang.hm - Sat, Jan 03, 2009 at 11:19:00AM -0800]
+| ...
+| >>>
+| >>> two new screenshots at http://linux.lang.hm/linux
+| >>>
+| >>> 36 is a boot with just earlyprintk=vga
+| >>> 37 is a boot with numa=noacpi
+| >>> I also put the vmlinux file there, I'll put the System.map and config
+| >>> there later (I did enable kernel_debug on this build as well)
+| >>>
+| >>> David Lang
+| >>>
+| >>
+| >> David, I can't find vmlinux neither .config?
+| >> Maybe they have hidden attribute?
+| >
+| > oops, they are there now.
+| >
+| > David Lang
+| >
+| 
+| ok, according to failing address we've a BUG_ON
+| triggered
+| 
+| ---
+| (gdb) l *0xffffffff8096452a
+| 0xffffffff8096452a is in alloc_bootmem_core (mm/bootmem.c:442).
+| 437		unsigned long fallback = 0;
+| 438		unsigned long min, max, start, sidx, midx, step;
+| 439	
+| 440		BUG_ON(!size);
+| 441		BUG_ON(align & (align - 1));
+| 442		BUG_ON(limit && goal + size > limit);
+| 443	
+| 444		if (!bdata->node_bootmem_map)
+| 445			return NULL;
+| 446	
+| (gdb) 
+| ---
+| 
+| so we're in attempt to overrun 'limit'.
+| Hmm...
+| 
+| 		- Cyrill -
 
+Hardly possible that we trigger BUG here since I don't
+see BUG: on the photo. Investigating.
 
-On Sat, 3 Jan 2009, Alan Cox wrote:
-
-> > [Now, olympus uses VFAT and probably will not write to the filesystem
-> > unless you take a picture... with mp3 player, I'd expect mtime to be
-> > updated on the playlist files...]
-> 
-> Some of the MP3/OGG players (especially the bigger disk based ones) use
-> the file system to store their own metadata so yes it makes a nasty mess.
-
-Well, it goes both ways. You can make a nasty mess right now by suspending 
-and simply not having a working computer when it comes back - all your 
-work being lost.
-
-At least with cameras and mp3 players you _can_ choose to just unmount 
-them before suspending (and most distros would hopefully mount them with 
-something like automount anyway?). In contrast, if your root (or /home) 
-directory is on a SD card, and that card is over USB rather than some IDE 
-controller, you're basically screwed.
-
-Yes, distros can set the /sys/bus/usb/devices/.../power/persist thing for 
-important filesystems automatically, and I'm sure there are magic udev 
-rules that could be written (and perhaps even exist). The likelihood that 
-they actually get things right is pretty low, though. So I suspect we'd be 
-much better off having sane defaults in the kernel instead.
-
-And yes, the "sane defaults" may well be that FATFS does _not_ make the 
-media be persistent. 
-
-Think "door lock" commands (aka "prevent/allow medium removal"). This is 
-really not that very different. Some filesystems are so important that the 
-user messing with them is deadly anyway - so we should "lock" them and 
-consider them persistent - and if the user does something bad, there was 
-really never any good solution for it. Other filesystems we're better off 
-just letting the user rip out, because we can be reasonably expected to 
-handle it gracefully.
-
-So it boils down to the fact that if you have something like / or /home 
-mounted, we really _cannot_ do any better than "assume the user doesn't 
-screw us up".
-
-A per-filesystem callback to re-verify at resume might be a good idea, but 
-a lot of filesystems cannot reasonably do a lot of verification.
-
-			Linus
+		- Cyrill -
