@@ -1,99 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbZACW5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932699AbZACW7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760418AbZACW5F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 17:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759988AbZACW4y
+	id S932699AbZACW7M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 17:59:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759988AbZACW65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 17:56:54 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:58043 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759967AbZACW4x (ORCPT
+	Sat, 3 Jan 2009 17:58:57 -0500
+Received: from vms046pub.verizon.net ([206.46.252.46]:59217 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753126AbZACW64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 17:56:53 -0500
-X-BigFish: VPS-56(z21eW5edJz1432R98dR1447R1805M936fOzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KCX3PW-04-1QI-01
-Date: Sat, 3 Jan 2009 23:56:27 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Joerg Roedel <joro@8bytes.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
-       avi@redhat.com, mingo@redhat.com, dwmw2@infradead.org,
-       weidong.han@intel.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [GIT PULL] various IOMMU updates for 2.6.29
-Message-ID: <20090103225627.GA21841@amd.com>
-References: <20090103173130.GB6103@amd.com> <20090103220611.GA4389@elte.hu> <20090103221135.GA14298@8bytes.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090103221135.GA14298@8bytes.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 03 Jan 2009 22:56:28.0229 (UTC) FILETIME=[82E66750:01C96DF6]
+	Sat, 3 Jan 2009 17:58:56 -0500
+Date: Sat, 03 Jan 2009 17:58:37 -0500
+From: "Jeffrey J. Kosowsky" <slashdot@kosowsky.org>
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
+ 2008-2009
+In-reply-to: <3ae3aa420901021949m1df64dadh693ad39618476524@mail.gmail.com>
+To: linasvepstas@gmail.com
+Cc: linux-kernel@vger.kernel.org, MentalMooMan <slashdot@jameshallam.info>,
+       "Travis Crump" <pretzalz@techhouse.org>,
+       Goodgerster <goodgerster@gmail.com>, burdell@iruntheinter.net
+Message-id: <18783.60829.412269.442196@consult.pretender>
+MIME-version: 1.0
+X-Mailer: VM 8.0.12 under 22.1.1 (i386-redhat-linux-gnu)
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
+	<3ae3aa420901021949m1df64dadh693ad39618476524@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 03, 2009 at 11:11:35PM +0100, Joerg Roedel wrote:
-> >   drivers/built-in.o: In function `alloc_iommu':
-> >   : undefined reference to `iommu_calculate_agaw'
-> > 
-> 
-> thanks for the report. I will look at it.
-> 
+Linas Vepstas wrote at about 21:49:53 -0600 on Friday, January 2, 2009:
+ > 2009/1/2 Linas Vepstas <linasvepstas@gmail.com>:
+ > > Slashdot reported a story of Linux machines crashing on New years eve.
+ > 
+ > FYI, Looks like the bug has been found, and theres a patch!
+ > 
+ > http://lkml.org/lkml/2009/1/2/389
+ > 
+ > --linas
+ > 
 
-Ok, this patch fixes the build problem. It should be safe but I can't
-test this because I don't have any VT-d hardware. David, is this patch
-ok?
+As the OP, good to know that all those who said "it's just a
+coincidence that your machine that has been rock stable for 6 years
+just happened to crash at midnight GMT when the leap second was
+inserted..." were wrong :)
 
-commit c9740e758a5b024235429461540b7e5aabc21cc6
-Author: Joerg Roedel <joerg.roedel@amd.com>
-Date:   Sat Jan 3 23:46:21 2009 +0100
-
-    intel-iommu: fix build error with INTR_REMAP=y and DMAR=n
-    
-    Impact: build fix (set agaw for iommu only if DMAR enabled)
-    
-    This fix should be safe since iommu->agaw is only used in intel-iommu.c.
-    And this file is only compiled with DMAR=y.
-    
-    Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index f5a662a..2b4162d 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -491,7 +491,7 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
- 	int map_size;
- 	u32 ver;
- 	static int iommu_allocated = 0;
--	int agaw;
-+	int agaw = 0;
- 
- 	iommu = kzalloc(sizeof(*iommu), GFP_KERNEL);
- 	if (!iommu)
-@@ -507,6 +507,7 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
- 	iommu->cap = dmar_readq(iommu->reg + DMAR_CAP_REG);
- 	iommu->ecap = dmar_readq(iommu->reg + DMAR_ECAP_REG);
- 
-+#ifdef CONFIG_DMAR
- 	agaw = iommu_calculate_agaw(iommu);
- 	if (agaw < 0) {
- 		printk(KERN_ERR
-@@ -514,6 +515,7 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
- 			iommu->seq_id);
- 		goto error;
- 	}
-+#endif
- 	iommu->agaw = agaw;
- 
- 	/* the registers might be more than one page */
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Thanks for the good follow-up and detective work.
+Hopefully, it's not too late for Fedora to provide the patch before
+support for Fedora 8 expires on the 7th...
 
