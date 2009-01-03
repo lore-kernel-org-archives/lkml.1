@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbZACOPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932218AbZACOYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759975AbZACOPV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 09:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbZACOPI
+	id S932218AbZACOYq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 09:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbZACOYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 09:15:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:46060 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757988AbZACOPG (ORCPT
+	Sat, 3 Jan 2009 09:24:36 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:10666 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753794AbZACOYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 09:15:06 -0500
+	Sat, 3 Jan 2009 09:24:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=hQ0QEQo8MCVSXEs4q1yCQuPZSTNRM1KgFM2K23BM5WmVajEQkot1GGYdV5U46adAf/
-         OUD2+uDhohU2/1L+wVp+8E/MW1b8d5FHEbVNdnL6NhPgDs0M6HkLAcobj2gsXccX0rAN
-         gwJoXW3DCYS5iB6hwXzWBJdZvEdH6R0Cyrt+c=
-Message-ID: <195c7a900901030615i19dc95afyab22390fe867e09d@mail.gmail.com>
-Date: Sat, 3 Jan 2009 15:15:03 +0100
-From: "Bastien ROUCARIES" <roucaries.bastien@gmail.com>
+        b=RaUWvDSHBOV9MhDPhISNrOkjMjnu2aiYjedXjMnNEg67ro4iIeEKn7HCjYaIBlxX/q
+         rMi87M3XVpxejx3WDDjndHHX7CBe7zLrmtkhYXavbhUbFkvZcC6F7u7Ml72lnVjVCcPZ
+         WCDJKYU3NWgHDOh0oAFrrmqiunvSLPoY8DGjM=
+Message-ID: <3f9a31f40901030624w4501e6f2l19d54a1e5223252c@mail.gmail.com>
+Date: Sat, 3 Jan 2009 19:54:34 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
 To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: ath9k microwave anomaly
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090103073051.GC5038@1wt.eu>
+Subject: Re: scripts/checkpatch.pl in 2.4 git
+Cc: davej@redhat.com, jschopp@austin.ibm.com, apw@uk.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090103134558.GA21058@1wt.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <495ED1C4.8020304@gmail.com> <20090103032134.GA20209@redhat.com>
-	 <495EDC10.20605@gmail.com>
-	 <f488382f0901021949y60b6d60fjeaeb6bb12a851f8@mail.gmail.com>
-	 <495EE2A0.2080703@gmail.com> <495EEE1D.8050500@shaw.ca>
-	 <20090103073051.GC5038@1wt.eu>
+References: <3f9a31f40901030534v268d315ep4f1241042fafc456@mail.gmail.com>
+	 <20090103134558.GA21058@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jan 3, 2009 at 7:15 PM, Willy Tarreau <w@1wt.eu> wrote:
+> On Sat, Jan 03, 2009 at 07:04:57PM +0530, Jaswinder Singh Rajput wrote:
+>> Hello Willy,
+>>
+>> Do you have any plans to add scripts/checkpatch.pl in 2.4 git.
 >
-> BTW, having any WiFi stopping working at 30 feet around a microwave oven
-> makes me think that beast is leaking like mad. I've already ran experiences
-> with mine in the past, and it could only slightly perturbate the traffic
-> within one meter (3 ft) which I already considered huge. You may want to
-> try to put some aluminium foil on the front door, it is possible that the
-> protection grid is damaged or not properly sealed.
+> Not particularly planned, though I have nothing against including it if
+> some people want to use it.
+>
 
-Likely not the grid. The grid is pretty solid. I will guess it is the
-wave traps seals arround the microwave door (often they are made
-rubber part mixed with conductive stuff) that are too old. These seals
-tend to expand when hot and are therefore more efficient. You could
-change it for cheap ($10), ask our local general store. As a quick fix
-(not recommended) you could add some electrical conductive grease but
-it will further decreade long term abilty of these seals (grease tend
-to crack rubber), and these kind of grease are not really food
-compatible.
+Please add it. At least I can use it :-)
 
-Bastien
+>> Currently, what is the procedure to check patch for 2.4 git.
+>
+> Nowadays, 2.4 patches are so small that one's eyes are enough to check
+> for correctness ;-)
+>
+
+I ran 2.6 checkpatch.pl on some files and found lot of style problems
+like white spaces and indent.
+After fixing these problems code will be more read-able.
+I have plan to fix these problems on some important files. What you
+think about this.
+
+Thank you,
+JSR
