@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbZACTNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbZACTRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932512AbZACTNj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 14:13:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbZACTNa
+	id S1760081AbZACTRg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 14:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbZACTRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 14:13:30 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:33622 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757301AbZACTN3 (ORCPT
+	Sat, 3 Jan 2009 14:17:25 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:45160 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759302AbZACTRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 14:13:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FU2p/UGe4ObEq+1q6ChLE7PzU/Qd7rELI/vU2fTfDWqaB4q8GfEWyJWDwibFBrqv8Q
-         iCJuSnVgHTTH+mACfMv9ExBFh9+1ReHlkqaH6mj8Spb+bA8GxKcEnJU5dG0Fl0R3bgRL
-         Bmtt9rKYbL00FeKESyRQhSWb83srow0B+NjSk=
-Date: Sat, 3 Jan 2009 22:03:16 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: david@lang.hm
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-Message-ID: <20090103190316.GB7367@localhost>
-References: <alpine.DEB.1.10.0901021029010.21408@asgard.lang.hm> <20090102173441.GC5372@localhost> <alpine.DEB.1.10.0901021044460.21408@asgard.lang.hm> <20090102174845.GD5372@localhost> <20090102175226.GE5372@localhost> <alpine.DEB.1.10.0901021131210.21567@asgard.lang.hm> <20090102203058.GH5372@localhost> <alpine.DEB.1.10.0901030823190.23262@asgard.lang.hm> <20090103161052.GB11093@localhost> <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm>
+	Sat, 3 Jan 2009 14:17:24 -0500
+Date: Sat, 3 Jan 2009 12:17:06 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>
+Subject: Re: Btrfs for mainline
+Message-ID: <20090103191706.GA2002@parisc-linux.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <87r63ljzox.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(list restored)
+On Fri, Jan 02, 2009 at 08:05:50PM +0100, Andi Kleen wrote:
+> Some items I remember from my last look at the code that should
+> be cleaned up before mainline merge (that wasn't a full in depth review):
+> 
+> - locking.c needs a lot of cleanup.
+> If combination spinlocks/mutexes are really a win they should be 
+> in the generic mutex framework. And I'm still dubious on the hardcoded 
+> numbers.
 
-[david@lang.hm - Sat, Jan 03, 2009 at 11:19:00AM -0800]
-...
->>>
->>> two new screenshots at http://linux.lang.hm/linux
->>>
->>> 36 is a boot with just earlyprintk=vga
->>> 37 is a boot with numa=noacpi
->>> I also put the vmlinux file there, I'll put the System.map and config
->>> there later (I did enable kernel_debug on this build as well)
->>>
->>> David Lang
->>>
->>
->> David, I can't find vmlinux neither .config?
->> Maybe they have hidden attribute?
->
-> oops, they are there now.
->
-> David Lang
->
+I don't think this needs to be cleaned up before merge.  I've spent
+an hour or two looking at it, and while we can do a somewhat better
+job as part of the generic mutex framework, it's quite tricky (due to
+the different <asm/mutex.h> implementations).  It has the potential to
+introduce some hard-to-hit bugs in the generic mutexes, and there's some
+API discussions to have.
 
-ok, according to failing address we've a BUG_ON
-triggered
+It's no worse than XFS (which still has its own implementation of
+'synchronisation variables', a (very thin) wrapper around mutexes, a
+(thin) wrapper around rwsems, and wrappers around kmalloc and kmem_cache.
 
----
-(gdb) l *0xffffffff8096452a
-0xffffffff8096452a is in alloc_bootmem_core (mm/bootmem.c:442).
-437		unsigned long fallback = 0;
-438		unsigned long min, max, start, sidx, midx, step;
-439	
-440		BUG_ON(!size);
-441		BUG_ON(align & (align - 1));
-442		BUG_ON(limit && goal + size > limit);
-443	
-444		if (!bdata->node_bootmem_map)
-445			return NULL;
-446	
-(gdb) 
----
+> - compat.h needs to go
 
-so we're in attempt to overrun 'limit'.
-Hmm...
+Later.  It's still there for XFS.
 
-		- Cyrill -
+> - there's various copy'n'pasted code from the VFS (like may_create) 
+> that needs to be cleaned up.
+
+No urgency here.
+
+> - there should be manpages for all the ioctls and other interfaces.
+
+I wonder if Michael Kerrisk has time to help with that.  Cc'd.
+
+> - ioctl.c was not explicitely root protected. security issues?
+
+This does need auditing.
+
+> - some code was severly undercommented.
+> e.g. each file should at least have a one liner
+> describing what it does (ideally at least a paragraph). Bad examples
+> are export.c or free-space-cache.c, but also others.
+
+Nice to have, but generally not required.
+
+> - ENOMEM checks are still missing all over (e.g. with most of the 
+> btrfs_alloc_path callers). If you keep it that way you would need
+> at least XFS style "loop for ever" alloc wrappers, but better just
+> fix all the callers. Also there used to be a lot of BUG_ON()s on
+> memory allocation failure even.
+> - In general BUG_ONs need review I think. Lots of externally triggerable
+> ones.
+
+Agreed on these two.
+
+> - various checkpath.pl level problems I think (e.g. printk levels) 
+
+Can be fixed up later.
+
+> - the printks should all include which file system they refer to
+
+Ditto.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
