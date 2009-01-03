@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbZACKJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbZACKMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759494AbZACKJJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 05:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZACKI4
+	id S1759626AbZACKMP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 05:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZACKL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 05:08:56 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49883 "EHLO mx2.suse.de"
+	Sat, 3 Jan 2009 05:11:59 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49963 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753013AbZACKIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 05:08:55 -0500
-Date: Sat, 03 Jan 2009 11:08:52 +0100
-Message-ID: <s5hr63kem6j.wl%tiwai@suse.de>
+	id S1753013AbZACKL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 05:11:59 -0500
+Date: Sat, 03 Jan 2009 11:11:57 +0100
+Message-ID: <s5hprj4em1e.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Dieter Ries <clip2@gmx.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: snd-hda-intel no front mute switch
-In-Reply-To: <495E649B.7030006@gmail.com>
-References: <495B31E2.6000801@gmail.com>
-	<s5hvdszpd87.wl%tiwai@suse.de>
-	<495CF3BA.8080403@gmail.com>
-	<s5heizmhti7.wl%tiwai@suse.de>
-	<495E649B.7030006@gmail.com>
+Subject: Re: current git does not shut down
+In-Reply-To: <495EA238.6000802@gmx.de>
+References: <495E632C.6080100@gmx.de>
+	<495EA238.6000802@gmx.de>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -30,96 +27,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 02 Jan 2009 11:01:47 -0800,
-Justin P. Mattock wrote:
+At Sat, 03 Jan 2009 00:24:40 +0100,
+Dieter Ries wrote:
 > 
-> Takashi Iwai wrote:
-> > At Thu, 01 Jan 2009 08:47:54 -0800,
-> > Justin P. Mattock wrote:
-> >   
-> >> Takashi Iwai wrote:
-> >>     
-> >>> At Wed, 31 Dec 2008 00:48:34 -0800,
-> >>> Justin P. Mattock wrote:
-> >>>   
-> >>>       
-> >>>> Not sure if I have my configurations correct, but after
-> >>>> pulling the latest git, I notice that my mixer has no switch to mute
-> >>>> the "front", or external speaker on a macbook pro(ati chipset);
-> >>>> other than that the sound sounds really good.
-> >>>> (solution I guess: plug-in headphones, and mute headphone option);
-> >>>>     
-> >>>>         
-> >>> Could you run alsa-info.sh with --no-upload option on both old and
-> >>> new kernels, and attach the generated files to compare?
-> >>> The script is found in
-> >>>     http://www.alsa-project.org/alsa-info.sh
-> >>>
-> >>> You can find some other information regarding HD-audio in
-> >>> Documentation/sound/alsa/HD-Audio.txt.
-> >>>
-> >>>
-> >>> thanks,
-> >>>
-> >>> Takashi
-> >>>
-> >>>   
-> >>>       
-> >> After adjusting my .config,
-> >> I am getting a speaker option to mute
-> >> the external speakers, as well as the headphones.
-> >> the options that I added were:
-> >>
-> >> SND_HRTIMER [=y]
-> >> SND_HDA_RECONFIG [=y]
-> >> SND_HDA_INPUT_BEEP [=y]
-> >>
-> >> before adding these, like what I mentioned
-> >> there was no "speaker" option(or "front");
-> >> As for the sound itself, I'll have to
-> >> blast myself with some good tunes,
-> >> and see If I hear or experience any anomalies.
-> >> (then wakeup the next day unable to hear);
-> >> : )
-> >>     
-> >
-> > Good to hear that it works now.
-> > Could you check which config was broken exactly?
-> > The config items above should be irrelevant with the (first) codec
-> > parsing, at least.
-> >
-> >
-> > Takashi
-> >
-> >   
-> After thinking back with what I did,
-> I was using 2.6.28-rc9 then(if I recall);
-> did a git-pull monday morning.
-> In the git log I remember seeing this:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cb10ea549fdc0ab2dd8988adab5bf40b4fa642f3
-> then after compiling and rebooting
-> I noticed the mixer had changed.(thus seeing the no button for "front").
-> then after a few hours I reverted back to 2.6.28-rc9.
-> waited a few days and did a git-pull Wednesday morning,changed my .config
-> (after sending the original post);
-> then noticed that the "front" had changed to "speaker" on the mixer itself.
-> (telling myself "man I must be seeing things");
+> Dieter Ries schrieb:
+> > Hi,
+> > 
+> > current git hangs when trying to shutdown or reboot my thinkpad T60,
+> > using gentoo 64bit. Just gets stuck while syncing hw clock, but I think
+> > that is not what the real problem is.
+> > 
+> > It works with 2.6.28 from december 25th, after commit 12a751a
+> > 
+> > I am starting a bisect now, as it is perfectly reproducible it should
+> > work I think.
 > 
-> As for the .config options you're right, it doesn't make difference.
-> As for seeing any commits after sunday that might have fixed this
-> (not sure) I see loads of commits,
-> I can't keep up with this.
+> I have bisected the problem. Result is:
 > 
-> I think the best thing for me to do, is to not say anything,
-> until after all of this merging is done,(man santa is here!)
->  then asses the situation.
+> 1289e9e8b42f973f2ab39e5f4f2239ff826c27e9 is first bad commit
+> commit 1289e9e8b42f973f2ab39e5f4f2239ff826c27e9
+> Author: Takashi Iwai <tiwai@suse.de>
+> Date:   Thu Nov 27 15:47:11 2008 +0100
 > 
-> Don't mean to cause any heat.
+>     ALSA: hda - Modularize HD-audio driver
+> 
+> I tried to revert it, but that failed because of too many files or
+> something.
 
-OK, let's see whether Santa really exists and fixed the things
-magically :)
+It's a problem of alsasound init script on Gentoo, I guess.
+See bug#12321:
+	http://bugzilla.kernel.org/show_bug.cgi?id=12321
 
+It seems to try to remove the modules that are being used at shutdown,
+blocked somehow.
 
-thanks,
 
 Takashi
