@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760444AbZACX3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932917AbZACXcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760444AbZACX3m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 18:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbZACX3e
+	id S932917AbZACXcY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 18:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759941AbZACXcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 18:29:34 -0500
-Received: from styx.suse.cz ([82.119.242.94]:46336 "EHLO mail.suse.cz"
+	Sat, 3 Jan 2009 18:32:15 -0500
+Received: from styx.suse.cz ([82.119.242.94]:46397 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760044AbZACX3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 18:29:34 -0500
-Date: Sun, 4 Jan 2009 00:29:31 +0100 (CET)
+	id S1759805AbZACXcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 18:32:15 -0500
+Date: Sun, 4 Jan 2009 00:32:12 +0100 (CET)
 From: Jiri Kosina <jkosina@suse.cz>
-To: Alberto Bertogli <albertito@blitiri.com.ar>
-cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, trivial@kernel.org,
-       corbet@lwn.net
-Subject: Re: [PATCH] Fix small typo in bio.h's documentation
-In-Reply-To: <1230591376-9001-1-git-send-email-albertito@blitiri.com.ar>
-Message-ID: <alpine.LNX.1.10.0901040028561.5377@jikos.suse.cz>
-References: <1230591376-9001-1-git-send-email-albertito@blitiri.com.ar>
+To: Paul Bolle <pebolle@tiscali.nl>
+cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][TRIVIAL] Add a space (and a comma) to a printk
+In-Reply-To: <1230642403.13647.31.camel@test.thuisdomein>
+Message-ID: <alpine.LNX.1.10.0901040031540.5377@jikos.suse.cz>
+References: <1230642403.13647.31.camel@test.thuisdomein>
 User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,33 +24,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Dec 2008, Alberto Bertogli wrote:
+On Tue, 30 Dec 2008, Paul Bolle wrote:
 
-> Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+> Commit d87a6d9 ("drivers/serial/: remove CVS keywords") removed one
+> space too many in the printk in serial8250_init(). Put it back in (and
+> add a comma for clarity).
+>     
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 > ---
->  include/linux/bio.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/bio.h b/include/linux/bio.h
-> index 6a64209..b29e2b3 100644
-> --- a/include/linux/bio.h
-> +++ b/include/linux/bio.h
-> @@ -135,7 +135,7 @@ struct bio {
->   * bit 1 -- rw-ahead when set
->   * bit 2 -- barrier
->   *	Insert a serialization point in the IO queue, forcing previously
-> - *	submitted IO to be completed before this oen is issued.
-> + *	submitted IO to be completed before this one is issued.
->   * bit 3 -- synchronous I/O hint: the block layer will unplug immediately
->   *	Note that this does NOT indicate that the IO itself is sync, just
->   *	that the block layer will not postpone issue of this IO by plugging.
-> -- 
-> 1.6.1.302.gccd4d
+> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+> index 303272a..31b3c08 100644
+> --- a/drivers/serial/8250.c
+> +++ b/drivers/serial/8250.c
+> @@ -3018,7 +3018,7 @@ static int __init serial8250_init(void)
+>  	if (nr_uarts > UART_NR)
+>  		nr_uarts = UART_NR;
+>  
+> -	printk(KERN_INFO "Serial: 8250/16550 driver"
+> +	printk(KERN_INFO "Serial: 8250/16550 driver, "
+>  		"%d ports, IRQ sharing %sabled\n", nr_uarts,
+>  		share_irqs ? "en" : "dis");
 
-Has anyone merged this patch through his tree (Jens or Documentation 
-people?). If not, I will take it through trivial tree.
-
-Thanks,
+Queued in trivial tree, thanks Paul.
 
 -- 
 Jiri Kosina
