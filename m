@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbZACXM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbZACXOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932658AbZACXM4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 18:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760075AbZACXMp
+	id S932806AbZACXOU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 18:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760019AbZACXOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 18:12:45 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:63018 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759941AbZACXMo convert rfc822-to-8bit (ORCPT
+	Sat, 3 Jan 2009 18:14:10 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41123 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759941AbZACXOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 18:12:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=f+/1ZfmcnAQW1gw0Jz3lXC+aiGR0vLSyYrKynicpZ0GrVIpcBxGPm7Q9711QC5W921
-         RQXVpM6fK/3MFjmQUnBRJTHxjyIQg8F3IM+A20FEBoKRVqYR6fGLw923by0sIOQW32Ky
-         Otedxauo6HXH19hBSJGWVJuZlNvbfSbXxSt2M=
-Message-ID: <e9e943910901031512j62f4eb42j8ff6cf7105683449@mail.gmail.com>
-Date: Sat, 3 Jan 2009 23:12:41 +0000
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: document ext3 requirements
-Cc: "=?WINDOWS-1252?Q?Martin_MOKREJ=8A?=" 
-	<mmokrejs@ribosome.natur.cuni.cz>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-In-Reply-To: <20090103222957.GG1666@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20090103123813.GA1512@ucw.cz>
-	 <495FD5D7.2040907@ribosome.natur.cuni.cz>
-	 <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com>
-	 <20090103222957.GG1666@elf.ucw.cz>
-X-Google-Sender-Auth: 1f0aadf1052aa12a
+	Sat, 3 Jan 2009 18:14:08 -0500
+Date: Sat, 3 Jan 2009 23:14:19 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: atomics: document that linux expects certain atomic behaviour
+ from unsigned long
+Message-ID: <20090103231419.197727ba@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090103205628.GE1666@elf.ucw.cz>
+References: <20090103124400.GA1572@ucw.cz>
+	<20090103201955.186974bb@lxorguk.ukuu.org.uk>
+	<20090103202740.GC1666@elf.ucw.cz>
+	<20090103203044.0166b561@lxorguk.ukuu.org.uk>
+	<20090103205628.GE1666@elf.ucw.cz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/3 Pavel Machek <pavel@suse.cz>:
-> On Sat 2009-01-03 22:17:15, Duane Griffin wrote:
->> [Fixed top-posting]
->>
->> 2009/1/3 Martin MOKREJŠ <mmokrejs@ribosome.natur.cuni.cz>:
->> > Pavel Machek wrote:
->> >> readonly mount does actually write to the media in some cases. Document that.
->> >>
->> > Can one avoid replay of the journal then if it would be unclean?
->> > Just curious.
->>
->> Nope. If the underlying block device is read-only then mounting the
->> filesystem will fail. I tried to fix this some time ago, and have a
->> set of patches that almost always work, but "almost always" isn't good
->> enough. Unfortunately I never managed to figure out a way to finish it
->> off without disgusting hacks or major surgery.
->
-> Uhuh, can you just ignore the journal and mount it anyway?
-> ...basically treating it like an ext2?
+> Is there concrete architecture where it breaks? I'd expect i386/x86-64
+> to be safe, and pretty much everyone to be safe as long as that long
+> is aligned.... or that was the result of arch-maintainers
+> discussion...
 
-I'm afraid not, ext2 won't mount an FS with EXT3_FEATURE_INCOMPAT_RECOVER set.
+It'll break on x86 if gcc decides to cache the value and you don't have
+explicit barriers. If the long is not aligned it's not safe on x86 at all.
+ 
+> I'd really like to document if it is right or not, so that I can point
+> people to documentation...
 
-> ...ok, that will present "old" version of the filesystem to the
-> user... violating fsync() semantics.
->
-> Still handy for recovering badly broken filesystems, I'd say.
->
->                                                                        Pavel
+We should always tell people to use atomic/set_bit etc. There *are* cases
+you can get away with it but it is far far better that the default is the
+safe one because most driver writers do not have a detailed knowledge of
+gcc code generation, processor quirks and barriers. If in a specific case
+its a performance hit then its worth optimising that case.
 
-Cheers,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+Alan
