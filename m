@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbZACXrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbZACXut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760434AbZACXrM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 18:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbZACXq5
+	id S932462AbZACXut (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 18:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759988AbZACXuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 18:46:57 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38883 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbZACXq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 18:46:56 -0500
-Date: Sat, 3 Jan 2009 15:46:37 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       laijs@cn.fujitsu.com
-Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
-Message-ID: <20090103234637.GD6958@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200901021159.n02BxDLg024728@mail.q-ag.de> <20090102185543.GE6842@linux.vnet.ibm.com> <495F7D5C.3060905@colorfullife.com>
+	Sat, 3 Jan 2009 18:50:40 -0500
+Received: from ribosome.natur.cuni.cz ([195.113.57.20]:42816 "EHLO
+	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbZACXuj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 18:50:39 -0500
+Message-ID: <495FF9CE.2020908@ribosome.natur.cuni.cz>
+Date: Sun, 04 Jan 2009 00:50:38 +0100
+From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081227 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <495F7D5C.3060905@colorfullife.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Duane Griffin <duaneg@dghda.com>
+CC: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+References: <20090103123813.GA1512@ucw.cz>	 <495FD5D7.2040907@ribosome.natur.cuni.cz>	 <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com>	 <20090103222957.GG1666@elf.ucw.cz>	 <495FEE66.9080903@ribosome.natur.cuni.cz> <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com>
+In-Reply-To: <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 03, 2009 at 03:59:40PM +0100, Manfred Spraul wrote:
-> Paul E. McKenney wrote:
->> I would suggest instead using the bottom bit to differentiate between
->> these two cases, especially given that your approach makes it impossible
->> for callback processing to notice a NULL function pointer.  In addition,
->> this approach would allow different types of allocators to be specified
->> should this later prove to be helpful.  You should not have to shift the
->> offset because the rcu_head offset should always be a multiple of four
->> (or eight on 64-bit architectures).
->>   
-> We must be careful: rcu_head might be always aligned, but are function 
-> pointers always aligned?
-> The x86 hardware allows arbitrary function pointers, I'm not sure what gcc 
-> would do if '--falign-functions=0' is used.
-> Are there other codepaths that assume that the lowest bit of a function 
-> pointer is never set?
+Duane Griffin wrote:
+> 2009/1/3 Martin MOKREJŠ <mmokrejs@ribosome.natur.cuni.cz>:
+>> Hmm, so if my dual-boot machine does not shutdown correctly and I boot
+>> accidentally in M$ Win where I use ext2 IFS driver and modify some
+>> stuff on the ext3 drive, after a while reboot to linux and the journal
+>> get re-played ... Mmm ...
+> 
+> You *really* wouldn't want to be doing that.
+> 
+> The other scenario that people have reported trouble with is
+> suspending the system, booting a live CD which "read-only" mounts the
+> filesystem (and replays the journal), then resuming.
 
-Good point.  I guess that we will have to worry about expandability when
-and if the need arises.  I see a couple of ways of doing it, but they
-are pretty ugly...
+Why does not "mount -ro" die when it would have to replay the journal
+with a message that user must run fsck.ext3 in order to be able to mount
+it albeit read-only? Still I would prefer having an extra switch to
+force mount RO while not touching the journal for disk forensics.
+I think that would also prevent the cases when a LiveCD/rescue distribution
+would not mount+replay it automagically but user would really have to
+provide the switch to the command. I am really not using the recovery
+boot cd to touch my partitions in some cases unwillingly.
 
->> And we really are running into bugs that are detected by RCU's seeing a
->> null function pointer in the rcu_head structure at callback-invocation
->> time.  So, whatever encoding you choose, please leave a function-pointer
->> value of zero as an invalid value!
->>   
-> Ok.
->
->>> --- a/kernel/rcutree.c
->>> +++ b/kernel/rcutree.c
->>> @@ -901,7 +901,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
->>>  	while (list) {
->>>  		next = list->next;
->>>  		prefetch(next);
->>> -		list->func(list);
->>> +		rcu_docallback(list);
->>>     
->>
->> Good, you got all three of them!  ;-)
->>
->>   
-> The patch was tested against rcutree ;-)
+Sure that does not prevent my case when I let ext2 IFS writing onto
+my ext3 partition. Actually, couldn't the driver at least warn me
+the journal log is non-empty (am just a user, sorry, cannot check
+myself the code at www.fs-driver.org if it could do at least this
+although it does not understand ext3). ;-)
 
-;-)
+Martin
 
-							Thanx, Paul
