@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbZACXkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbZACXrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbZACXkm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 18:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760104AbZACXkb
+	id S1760434AbZACXrM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 18:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbZACXq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 18:40:31 -0500
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:45244 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760060AbZACXka (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 18:40:30 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=j_fXwfwkAAAA:8 a=WCBVr2USdif67LT0x4AA:9 a=xXC5guL6EAfleTNTbWZIkoXBxAUA:4 a=-a-Xhm53yFYA:10 a=cYtf6X6zflwA:10
-Message-ID: <495FF769.3040205@shaw.ca>
-Date: Sat, 03 Jan 2009 17:40:25 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sat, 3 Jan 2009 18:46:57 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:38883 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbZACXq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 18:46:56 -0500
+Date: Sat, 3 Jan 2009 15:46:37 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       laijs@cn.fujitsu.com
+Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
+Message-ID: <20090103234637.GD6958@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200901021159.n02BxDLg024728@mail.q-ag.de> <20090102185543.GE6842@linux.vnet.ibm.com> <495F7D5C.3060905@colorfullife.com>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.network,gmane.linux.kernel
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, x86@kernel.org, netdev@vger.kernel.org,
-       tytso@mit.edu, eric@anholt.net, airlied@redhat.com
-Subject: Re: Bug/Warning report for the week of January 3rd, 2009
-References: <20090103140332.74f39ade@infradead.org>
-In-Reply-To: <20090103140332.74f39ade@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495F7D5C.3060905@colorfullife.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Rank 2: mtrr_trim_uncached_memory (warning)
-> 	Reported 420 times (9816 total reports)
-> 	BIOS bug (often in VMWare) where the MTRR's are set up incorrectly or not at all
-> 	This warning was last seen in version 2.6.28, and first seen in 2.6.24.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=mtrr_trim_uncached_memory
+On Sat, Jan 03, 2009 at 03:59:40PM +0100, Manfred Spraul wrote:
+> Paul E. McKenney wrote:
+>> I would suggest instead using the bottom bit to differentiate between
+>> these two cases, especially given that your approach makes it impossible
+>> for callback processing to notice a NULL function pointer.  In addition,
+>> this approach would allow different types of allocators to be specified
+>> should this later prove to be helpful.  You should not have to shift the
+>> offset because the rcu_head offset should always be a multiple of four
+>> (or eight on 64-bit architectures).
+>>   
+> We must be careful: rcu_head might be always aligned, but are function 
+> pointers always aligned?
+> The x86 hardware allows arbitrary function pointers, I'm not sure what gcc 
+> would do if '--falign-functions=0' is used.
+> Are there other codepaths that assume that the lowest bit of a function 
+> pointer is never set?
 
-It would be useful if this warning dumped out some DMI BIOS information 
-or something, so we could see what systems/boards this was commonly 
-happening with..
+Good point.  I guess that we will have to worry about expandability when
+and if the need arises.  I see a couple of ways of doing it, but they
+are pretty ugly...
+
+>> And we really are running into bugs that are detected by RCU's seeing a
+>> null function pointer in the rcu_head structure at callback-invocation
+>> time.  So, whatever encoding you choose, please leave a function-pointer
+>> value of zero as an invalid value!
+>>   
+> Ok.
+>
+>>> --- a/kernel/rcutree.c
+>>> +++ b/kernel/rcutree.c
+>>> @@ -901,7 +901,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
+>>>  	while (list) {
+>>>  		next = list->next;
+>>>  		prefetch(next);
+>>> -		list->func(list);
+>>> +		rcu_docallback(list);
+>>>     
+>>
+>> Good, you got all three of them!  ;-)
+>>
+>>   
+> The patch was tested against rcutree ;-)
+
+;-)
+
+							Thanx, Paul
