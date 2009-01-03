@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbZACECW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbZACEWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758997AbZACECW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Jan 2009 23:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbZACECO
+	id S1758865AbZACEWW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Jan 2009 23:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZACEWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Jan 2009 23:02:14 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:3506 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752532AbZACECN (ORCPT
+	Fri, 2 Jan 2009 23:22:13 -0500
+Received: from mail-gx0-f13.google.com ([209.85.217.13]:43161 "EHLO
+	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZACEWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Jan 2009 23:02:13 -0500
+	Fri, 2 Jan 2009 23:22:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=s9XRW+HwyhJah1sPx7SsrsIF7+KjMNKezLIsc32V7+hXrODcti4Zj16f35FOHX7QIW
-         e2jk27ftsjXdBIc4MnMRK9P8CH8DACKUQYy47i4w8tKEqAqxv2dG9tSFV4r5MeMn6yiI
-         wVAtx/shypkSvUTZQaOgK67GWc5qTSr4n12vY=
-Message-ID: <8752a8760901022002n7cd269a1k1073df66d0d2b08d@mail.gmail.com>
-Date: Sat, 3 Jan 2009 04:02:11 +0000
-From: "Ben Goodger" <goodgerster@gmail.com>
-To: linasvepstas@gmail.com
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
-Cc: linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       "Travis Crump" <pretzalz@techhouse.org>, burdell@iruntheinter.net
-In-Reply-To: <3ae3aa420901021949m1df64dadh693ad39618476524@mail.gmail.com>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=ZOrTY7yuWwNcT8poJavSkPvJfWKkyv3oPTfvkmwH4uQISUgof0xbyg+3yZtCqsJS6D
+         wGd2et0Nl872KWCeDy6ggmliOvC/gOr49QhZJKleAUxHfkjyopw/50UB3XgltU+1QzJr
+         AAOHHKWeS/qqjR/86sTPkw5FCUOwrDy792R20=
+Message-ID: <73c1f2160901022022r21586980t67e8baf485183ac7@mail.gmail.com>
+Date: Fri, 2 Jan 2009 23:22:09 -0500
+From: "Brian Gerst" <brgerst@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: PDA changes (take 3)
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "the arch/x86 maintainers" <x86@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
-	 <3ae3aa420901021949m1df64dadh693ad39618476524@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/3 Linas Vepstas <linasvepstas@gmail.com>
-> > Slashdot reported a story of Linux machines crashing on New years eve.
+On Fri, Jan 2, 2009 at 3:11 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Brian Gerst wrote:
+>> Here are the PDA patches again.  I changed the first patch so that the PDA is cacheline
+>> aligned.  I dropped the cpunumber patch for now, and added conversions of the TLB state
+>> and IRQ stats to match the 32-bit code.  Stats for defconfig:
+>>
+>>   text    data     bss     dec     hex filename
+>> 7033649 1754476  758508 9546633  91ab89 vmlinux.before
+>> 7029643 1754716  758508 9542867  919cd3 vmlinux.after
+>>
+>> Patches are against 2.6.28.
 >
-> FYI, Looks like the bug has been found, and theres a patch!
+> Hi there,
 >
-> http://lkml.org/lkml/2009/1/2/389
+> I just tried to apply your patchset, but it fails rather dramatically on
+> patch 3.  Could you refresh it against tip:master or current Linus git?
 
-Great. I look forward to not crashing the next time it is 2008-31-31-23:59:59.
-Sarcasm aside, please pass on my thanks to Mr Griffin.
+It was a conflict with commit 915b0d0104b72fd36af088ba4b11b5690bc96a6c
+(x86: hardirq: introduce inc_irq_stat()).  Resending the series
+rebased against current Linus git.
 
 --
-Benjamin Goodger
+Brian Gerst
