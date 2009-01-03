@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbZACKNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbZACKVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbZACKNo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 05:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZACKNf
+	id S1759441AbZACKVT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 05:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZACKVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 05:13:35 -0500
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:39098 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbZACKNe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 05:13:34 -0500
-Date: Sat, 3 Jan 2009 15:46:26 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-Message-ID: <20090103101626.GA4301@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <28c262360812291543ia322a13g6af854a685ce7632@mail.gmail.com> <20081230024819.GA23301@balbir.in.ibm.com> <20081230062139.GA30038@elte.hu> <20081230180722.GA29060@dirshya.in.ibm.com> <20090102072600.GA13412@dirshya.in.ibm.com> <20090102221630.GF17240@elte.hu> <1230967765.5257.6.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1230967765.5257.6.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 3 Jan 2009 05:21:07 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51545 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbZACKVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 05:21:06 -0500
+Date: Sat, 3 Jan 2009 21:20:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: git-pull request for tip/cpus4096
+Message-Id: <20090103212056.93edfc31.sfr@canb.auug.org.au>
+In-Reply-To: <200901032033.25087.rusty@rustcorp.com.au>
+References: <495E4837.8090600@sgi.com>
+	<200901031631.47818.rusty@rustcorp.com.au>
+	<20090103171838.0610d443.sfr@canb.auug.org.au>
+	<200901032033.25087.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mike Galbraith <efault@gmx.de> [2009-01-03 08:29:25]:
+--Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Fri, 2009-01-02 at 23:16 +0100, Ingo Molnar wrote:
-> 
-> > Mike, would you be interesting in having a look at sched_mc=2 as a 
-> > kernel-wide default - and give it your blessing if you find it to be a net 
-> > improvement for the various performance and interactivity tests you do?
-> 
-> Sure.
+Hi Rusty,
 
-Thanks Mike and Ingo.  I will be glad to help with test and benchmarks
-on the platforms that I have access.
+On Sat, 3 Jan 2009 20:33:24 +1030 Rusty Russell <rusty@rustcorp.com.au> wro=
+te:
+>
+> BTW, do you send mail automagically when something breaks, or does one ha=
+ve
+> to check the web page?
 
-I am presently working on sysbench.
+The infrastructure (kissb) doesn't have a notification facility but I
+might suggest it to Michael.  Sometimes (when I have time) I check out
+the results and report anything interesting.  Otherwise, I expect
+interested people will check every now and then.
 
---Vaidy
+Maybe more publicity is needed (though I do mention it in the daily
+release announcements).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklfPAgACgkQjjKRsyhoI8y/UQCfXP6tFHzZoRAvLf8V9Wz9fAT1
+F3oAoIEqPbN77dYsLN9hHPAaNEJeRR1f
+=Q99y
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__3_Jan_2009_21_20_56_+1100_/R/O8d2g7v56/Yw+--
