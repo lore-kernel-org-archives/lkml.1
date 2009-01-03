@@ -1,178 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932598AbZACQsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbZACQvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932598AbZACQsm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 11:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbZACQsb
+	id S1759964AbZACQvW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 11:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZACQvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 11:48:31 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:47693 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759021AbZACQsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 11:48:30 -0500
-Message-ID: <495F96DA.5010601@sgi.com>
-Date: Sat, 03 Jan 2009 08:48:26 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 3 Jan 2009 11:51:14 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34341 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbZACQvN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 11:51:13 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <495F976C.8030105@s5r6.in-berlin.de>
+Date: Sat, 03 Jan 2009 17:50:52 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PULL] cpumask tree
-References: <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <200901031751.00076.rusty@rustcorp.com.au> <20090103105208.GA19080@elte.hu> <495F7D27.8020104@sgi.com> <20090103150634.GA28693@elte.hu> <495F84D8.1070404@sgi.com> <20090103154733.GA8111@elte.hu> <20090103160017.GA8920@elte.hu> <495F8DCA.1060905@sgi.com> <20090103164255.GA20657@elte.hu>
-In-Reply-To: <20090103164255.GA20657@elte.hu>
+To: Bill Fink <billfink@mindspring.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH 2/2] ieee1934: dv1394 interrupt enabling/disabling broken
+ on big-endian
+References: <1229210489.11257.16.camel@brick>	<4944561D.4010608@s5r6.in-berlin.de>	<20081213204137.d150645c.billfink@mindspring.com>	<49446923.5040606@s5r6.in-berlin.de>	<20081223172300.5bd19846.billfink@mindspring.com> <20081225220244.1eacb39d.billfink@mindspring.com>
+In-Reply-To: <20081225220244.1eacb39d.billfink@mindspring.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> * Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>>> i suspect it's:
->>>>
->>>> | commit 2d22bd5e74519854458ad372a89006e65f45e628
->>>> | Author: Mike Travis <travis@sgi.com>
->>>> | Date:   Wed Dec 31 18:08:46 2008 -0800
->>>> |
->>>> |     x86: cleanup remaining cpumask_t code in microcode_core.c
->>>>
->>>> as the microcode is loaded during CPU onlining.
->>> yep, that's the bad one. Should i revert it or do you have a safe fix in 
->>> mind?
->>>
->>> 	Ingo
->> Probably revert for now.  There are a few more following patches that 
->> also use 'work_on_cpu' so a better (more global?) fix should be used.
->>
->> Any thought on using a recursive lock for cpu-hotplug-lock?  (At least 
->> for get_online_cpus()?)
-> 
-> but the problem has nothing to do with self-recursion. Take a look at the 
-> lockdep warning i posted (also below) - the locks are simply taken in the 
-> wrong order.
-> 
-> your change adds this cpu_hotplug.lock usage:
-> 
-> [   43.652000] -> #1 (&cpu_hotplug.lock){--..}:
-> [   43.652000]        [<ffffffff8027a7c0>] __lock_acquire+0xf10/0x1360
-> [   43.652000]        [<ffffffff8027aca9>] lock_acquire+0x99/0xd0
-> [   43.652000]        [<ffffffff809b5e4a>] __mutex_lock_common+0xaa/0x450
-> [   43.652000]        [<ffffffff809b62cf>] mutex_lock_nested+0x3f/0x50
-> [   43.652000]        [<ffffffff802516ba>] get_online_cpus+0x3a/0x50
-> [   43.652000]        [<ffffffff802648dc>] work_on_cpu+0x6c/0xc0
-> [   43.652000]        [<ffffffff8022b2a2>] mc_sysdev_add+0x92/0xa0
-> [   43.652000]        [<ffffffff8050a800>] sysdev_driver_register+0xb0/0x140
-> [   43.652000]        [<ffffffff8163c792>] microcode_init+0xb2/0x13b
-> [   43.652000]        [<ffffffff8020a041>] do_one_initcall+0x41/0x180
-> [   43.652000]        [<ffffffff8162e6cb>] kernel_init+0x145/0x19d
-> [   43.652000]        [<ffffffff802146aa>] child_rip+0xa/0x20
-> [   43.652000]        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> which nests the inside sysdev_drivers_lock - which is wrong 
-> [sysdev_drivers_lock is a pretty lowlevel lock that generally nests inside 
-> the CPU hotplug lock].
-> 
-> If you want to use work_on_cpu() it should be done on a higher level, so 
-> that sysdev_drivers_lock is taken after the hotplug lock.
-> 
-> 	Ingo
+Bill Fink wrote on 2008-12-26:
+> Good news.  I finally got a chance to test the patch on my kernel,
+> and live DV viewing using xine still worked fine.
 
-Ok, thanks, I will look in that direction.
-
-Mike
-
-> 
-> [   43.376051] lockdep: fixing up alternatives.
-> [   43.380007] SMP alternatives: switching to UP code
-> [   43.616014] CPU0 attaching NULL sched-domain.
-> [   43.620068] CPU1 attaching NULL sched-domain.
-> [   43.644482] CPU0 attaching NULL sched-domain.
-> [   43.648264] 
-> [   43.648265] =======================================================
-> [   43.652000] [ INFO: possible circular locking dependency detected ]
-> [   43.652000] 2.6.28-05081-geeff031-dirty #37
-> [   43.652000] -------------------------------------------------------
-> [   43.652000] S99local/1238 is trying to acquire lock:
-> [   43.652000]  (sysdev_drivers_lock){--..}, at: [<ffffffff8050a52d>] sysdev_unregister+0x1d/0x80
-> [   43.652000] 
-> [   43.652000] but task is already holding lock:
-> [   43.652000]  (&cpu_hotplug.lock){--..}, at: [<ffffffff802515d7>] cpu_hotplug_begin+0x27/0x60
-> [   43.652000] 
-> [   43.652000] which lock already depends on the new lock.
-> [   43.652000] 
-> [   43.652000] 
-> [   43.652000] the existing dependency chain (in reverse order) is:
-> [   43.652000] 
-> [   43.652000] -> #1 (&cpu_hotplug.lock){--..}:
-> [   43.652000]        [<ffffffff8027a7c0>] __lock_acquire+0xf10/0x1360
-> [   43.652000]        [<ffffffff8027aca9>] lock_acquire+0x99/0xd0
-> [   43.652000]        [<ffffffff809b5e4a>] __mutex_lock_common+0xaa/0x450
-> [   43.652000]        [<ffffffff809b62cf>] mutex_lock_nested+0x3f/0x50
-> [   43.652000]        [<ffffffff802516ba>] get_online_cpus+0x3a/0x50
-> [   43.652000]        [<ffffffff802648dc>] work_on_cpu+0x6c/0xc0
-> [   43.652000]        [<ffffffff8022b2a2>] mc_sysdev_add+0x92/0xa0
-> [   43.652000]        [<ffffffff8050a800>] sysdev_driver_register+0xb0/0x140
-> [   43.652000]        [<ffffffff8163c792>] microcode_init+0xb2/0x13b
-> [   43.652000]        [<ffffffff8020a041>] do_one_initcall+0x41/0x180
-> [   43.652000]        [<ffffffff8162e6cb>] kernel_init+0x145/0x19d
-> [   43.652000]        [<ffffffff802146aa>] child_rip+0xa/0x20
-> [   43.652000]        [<ffffffffffffffff>] 0xffffffffffffffff
-> [   43.652000] 
-> [   43.652000] -> #0 (sysdev_drivers_lock){--..}:
-> [   43.652000]        [<ffffffff8027a89c>] __lock_acquire+0xfec/0x1360
-> [   43.652000]        [<ffffffff8027aca9>] lock_acquire+0x99/0xd0
-> [   43.652000]        [<ffffffff809b5e4a>] __mutex_lock_common+0xaa/0x450
-> [   43.652000]        [<ffffffff809b62cf>] mutex_lock_nested+0x3f/0x50
-> [   43.652000]        [<ffffffff8050a52d>] sysdev_unregister+0x1d/0x80
-> [   43.652000]        [<ffffffff809af9d1>] mce_cpu_callback+0xce/0x101
-> [   43.652000]        [<ffffffff809bbb75>] notifier_call_chain+0x65/0xa0
-> [   43.652000]        [<ffffffff8026d696>] raw_notifier_call_chain+0x16/0x20
-> [   43.652000]        [<ffffffff80964a00>] _cpu_down+0x240/0x350
-> [   43.652000]        [<ffffffff80964b8b>] cpu_down+0x7b/0xa0
-> [   43.652000]        [<ffffffff80966268>] store_online+0x48/0xa0
-> [   43.652000]        [<ffffffff80509e90>] sysdev_store+0x20/0x30
-> [   43.652000]        [<ffffffff80335ddf>] sysfs_write_file+0xcf/0x140
-> [   43.652000]        [<ffffffff802dc1f7>] vfs_write+0xc7/0x150
-> [   43.652000]        [<ffffffff802dc375>] sys_write+0x55/0x90
-> [   43.652000]        [<ffffffff802133ca>] system_call_fastpath+0x16/0x1b
-> [   43.652000]        [<ffffffffffffffff>] 0xffffffffffffffff
-> [   43.652000] 
-> [   43.652000] other info that might help us debug this:
-> [   43.652000] 
-> [   43.652000] 3 locks held by S99local/1238:
-> [   43.652000]  #0:  (&buffer->mutex){--..}, at: [<ffffffff80335d58>] sysfs_write_file+0x48/0x140
-> [   43.652000]  #1:  (cpu_add_remove_lock){--..}, at: [<ffffffff80964b3f>] cpu_down+0x2f/0xa0
-> [   43.652000]  #2:  (&cpu_hotplug.lock){--..}, at: [<ffffffff802515d7>] cpu_hotplug_begin+0x27/0x60
-> [   43.652000] 
-> [   43.652000] stack backtrace:
-> [   43.652000] Pid: 1238, comm: S99local Not tainted 2.6.28-05081-geeff031-dirty #37
-> [   43.652000] Call Trace:
-> [   43.652000]  [<ffffffff80277f24>] print_circular_bug_tail+0xa4/0x100
-> [   43.652000]  [<ffffffff8027a89c>] __lock_acquire+0xfec/0x1360
-> [   43.652000]  [<ffffffff8027aca9>] lock_acquire+0x99/0xd0
-> [   43.652000]  [<ffffffff8050a52d>] ? sysdev_unregister+0x1d/0x80
-> [   43.652000]  [<ffffffff809b5e4a>] __mutex_lock_common+0xaa/0x450
-> [   43.652000]  [<ffffffff8050a52d>] ? sysdev_unregister+0x1d/0x80
-> [   43.652000]  [<ffffffff8050a52d>] ? sysdev_unregister+0x1d/0x80
-> [   43.652000]  [<ffffffff809b62cf>] mutex_lock_nested+0x3f/0x50
-> [   43.652000]  [<ffffffff8050a52d>] sysdev_unregister+0x1d/0x80
-> [   43.652000]  [<ffffffff809af9d1>] mce_cpu_callback+0xce/0x101
-> [   43.652000]  [<ffffffff809bbb75>] notifier_call_chain+0x65/0xa0
-> [   43.652000]  [<ffffffff8026d696>] raw_notifier_call_chain+0x16/0x20
-> [   43.652000]  [<ffffffff80964a00>] _cpu_down+0x240/0x350
-> [   43.652000]  [<ffffffff809b4763>] ? wait_for_common+0xe3/0x1b0
-> [   43.652000]  [<ffffffff80964b8b>] cpu_down+0x7b/0xa0
-> [   43.652000]  [<ffffffff80966268>] store_online+0x48/0xa0
-> [   43.652000]  [<ffffffff80509e90>] sysdev_store+0x20/0x30
-> [   43.652000]  [<ffffffff80335ddf>] sysfs_write_file+0xcf/0x140
-> [   43.652000]  [<ffffffff802dc1f7>] vfs_write+0xc7/0x150
-> [   43.652000]  [<ffffffff802dc375>] sys_write+0x55/0x90
-> [   43.652000]  [<ffffffff802133ca>] system_call_fastpath+0x16/0x1b
-> [   43.652104] device: 'msr1': device_unregister
-> [   43.656005] PM: Removing info for No Bus:msr1
-
+Thanks a lot.  If you don't mind, I'll add "Tested-by: Bill Fink
+<billfink@mindspring.com>" to the changelog when I enqueue this for
+Linus, and add a note that it actually worked for you before as well as
+after this patch.
+-- 
+Stefan Richter
+-=====-==--= ---= ---==
+http://arcgraph.de/sr/
