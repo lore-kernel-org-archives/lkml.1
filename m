@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760204AbZACUxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932643AbZACUyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760204AbZACUxQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 15:53:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZACUw7
+	id S932643AbZACUyn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 15:54:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbZACUye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 15:52:59 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42178 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbZACUw7 (ORCPT
+	Sat, 3 Jan 2009 15:54:34 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46214 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbZACUyd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 15:52:59 -0500
-Date: Sat, 3 Jan 2009 21:54:37 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Regression] Build failure in current mainline - firmware related
-Message-ID: <20090103205437.GA5499@uranus.ravnborg.org>
-References: <200901031247.14977.rjw@sisk.pl> <20090103204948.GA5388@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Sat, 3 Jan 2009 15:54:33 -0500
+Date: Sat, 3 Jan 2009 21:56:29 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: atomics: document that linux expects certain atomic behaviour
+	from unsigned long
+Message-ID: <20090103205628.GE1666@elf.ucw.cz>
+References: <20090103124400.GA1572@ucw.cz> <20090103201955.186974bb@lxorguk.ukuu.org.uk> <20090103202740.GC1666@elf.ucw.cz> <20090103203044.0166b561@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090103204948.GA5388@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090103203044.0166b561@lxorguk.ukuu.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 03, 2009 at 09:49:48PM +0100, Sam Ravnborg wrote:
-> On Sat, Jan 03, 2009 at 12:47:14PM +0100, Rafael J. Wysocki wrote:
-> > Hi,
+On Sat 2009-01-03 20:30:44, Alan Cox wrote:
+> > If it is okay and linux relies on it, it should be documented.
 > > 
-> > I get the following error from 'make modules_install' on my test boxes:
-> > 
-> >   HOSTCC  firmware/ihex2fw                                                             
-> > /home/rafael/src/linux-2.6/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system                                            
-> > compilation terminated.                                                                
-> > make[3]: *** [firmware/ihex2fw] Error 1                                                
-> > make[2]: *** [_modinst_post] Error 2                                                   
-> > make[1]: *** [sub-make] Error 2                                                        
-> > make: *** [all] Error 2
-> > 
-> > where the configuration is that the kernel is compiled on a build box
-> > with 'make O=<destdir> -j5' and then <destdir> is mounted over NFS read-only by
-> > each test box (full path to this directory is the same on the build box and on
-> > the test boxes).  Then, I cd into <destdir>, run 'make modules_install' and get
-> > the error above.
-> > 
-> > 2.6.28 didn't have this problem.
+> > If it is not okay, I guess we should document it, too -- it seems to
+> > be common mistake. 
 > 
-> 
-> Strange...
-> 1) The string "opening dependency file" does not occur in my freshly pulled kernel
-> 2) Line 268 is last line of ihex2fw.c
-> 
-> Could you try to do a "make modules_install V=1" to see the exact arguments supplied ti ihex2fw.c
-> 
-> I gave up on all the firmware stuff long time ago and has
-> never properly reviewed the implementation so I really
-> have no clue what is actually happening.
-> 
-> Walking through the 179 lines Makefile has not yet benn on my
-> "fun to do" list - and it most likely take a while before it hits it.
+> A lot of old code did it knowing it was under the BKL, outside of the BKL
+> its a very bad idea. There were lots of them in the tty layer and I don't
+> doubt there are some left I missed too 8(
 
-Took a quick peek. The Makefile uses "order only" in three spots.
-This alone demand make version 3.80 IIRC and Documetnation/Changes
-says 3.79.1...
+I have seen this in new code (some LED driver last time), definitely
+no BKL.
 
-The "order only" is so rare that Paul Smith once said that
-coming up with a good example of usage was not easy.
+Is there concrete architecture where it breaks? I'd expect i386/x86-64
+to be safe, and pretty much everyone to be safe as long as that long
+is aligned.... or that was the result of arch-maintainers
+discussion...
 
-For the headers_* stuff I recall when I reworked it I could
-kill the usage of "order only" there but now it crept
-back - sigh!
-
-	Sam
+I'd really like to document if it is right or not, so that I can point
+people to documentation...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
