@@ -1,66 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbZADWsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZADWx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbZADWsz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 17:48:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZADWsq
+	id S1756819AbZADWx7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 17:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZADWxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 17:48:46 -0500
-Received: from gw.goop.org ([64.81.55.164]:57668 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbZADWsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 17:48:46 -0500
-Message-ID: <49613CC4.1000000@goop.org>
-Date: Mon, 05 Jan 2009 09:48:36 +1100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Sun, 4 Jan 2009 17:53:49 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43359 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZADWxs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 17:53:48 -0500
+Date: Sun, 4 Jan 2009 23:55:45 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Rob Landley <rob@landley.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       tytso@mit.edu, mtk.manpages@gmail.com, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+Message-ID: <20090104225545.GF1913@elf.ucw.cz>
+References: <20090103123813.GA1512@ucw.cz> <200901041349.49906.rob@landley.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       beckyb@kernel.crashing.org, jj@chaosbits.net, weiyi.huang@gmail.com,
-       linux-kernel@vger.kernel.org, Ian Campbell <Ian.Campbell@citrix.com>
-Subject: Re: swiotlb: remove duplicated #include
-References: <20090104112541.GA25434@elte.hu> <20090104210420X.fujita.tomonori@lab.ntt.co.jp> <20090104121914.GA30255@elte.hu> <20090104214109A.fujita.tomonori@lab.ntt.co.jp> <20090104130113.GA24506@elte.hu>
-In-Reply-To: <20090104130113.GA24506@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901041349.49906.rob@landley.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
->
->   
->>> In a few days, but wanted to hear back from either Jeremy or Becky 
->>> first about how well they actually work in their usecases.
->>>       
->> Well, you don't need to wait, I think.
->>
->> All Jeremy and Becky need is adding highmem support to swiotlb. How we 
->> support it doesn't matter. We can choose better one.
->>
->> We all (including Jeremy) agreed that Becky's physical address scheme is 
->> better (simpler) than Jeremy's struct page and offset scheme. Surely, 
->> Becky's scheme works for Xen and him (Jeremy said that he tested it 
->> lightly).
->>     
->
-> Jeremy said, when he submitted this series, shortly before Christmas:
->
->  >> Here's a work in progress series [...]
->  >>
->  >> Quick testing showed no problems, but I haven't had the chance to do 
->  >> anything extensive.
->
-> Jeremy, did you have a chance to do more testing with the current 
-> tip/master bits on Xen, so that we can push it to Linus?
->   
+On Sun 2009-01-04 13:49:49, Rob Landley wrote:
+> On Saturday 03 January 2009 06:38:15 Pavel Machek wrote:
+> > +Ext3 expects disk/storage subsystem to behave sanely. On sanely
+> > +behaving disk subsystem, data that have been successfully synced will
+> > +stay on the disk. Sane means:
+> > +
+> > +* writes to media never fail. Even if disk returns error condition during
+> > +  write, ext3 can't handle that correctly, because success on fsync was
+> > already +  returned when data hit the journal.
+> > +
+> > +	   (Fortunately writes failing are very uncommon on disks, as they
+> > +	   have spare sectors they use when write fails.)
+> > +
+> > +* either whole sector is correctly written or nothing is written during
+> > +  powerfail.
+> > +
+> > +	   (Unfortuantely, none of the cheap USB/SD flash cards I seen do behave
+> > +	   like this, and are unsuitable for ext3.
+> 
+> Want to document the granularity issues with flash, while you're at it?
+> 
+> An inherent problem with using flash as a normal block device is that the 
+> flash erase size is bigger than most filesystem sector sizes.  So when you 
+> request a write, it may erase and rewrite the next 64k, 128k, or even a couple 
+> megabytes on the really _big_ ones.
+> 
+> If you lose power in the middle of that, ext3 won't notice that data in the 
+> "sectors" _after_ the one your were trying to write to got trashed.
+> 
+> The flash filesystems take this into account as part of their wear levelling 
+> stuff (they normally copy the entire chunk into a new chunk, leaving the old 
+> one in place until it's no longer needed), but they need to query the device 
+> to get the erase granularity in order to do that, which is why they don't work 
+> on non-flash block devices.
 
-I'm going to be on vacation until the 12th, so I won't have a chance to 
-do anything until then (perhaps Ian will have a chance to poke at them 
-before then).  I'm expecting Becky's patches to work as-is, or if not, 
-be easily fixed with a couple of small bugfix patches.  So I say go 
-ahead if they work for everyone else.
+Is there linux filesystem that can handle that? I know jffs2, but
+that's unsuitable for stuff like USB thumb drives, right?
 
-    J
+Does this sound like a fair summary?
+
+Sector writes are atomic (ATOMIC-SECTORS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Either whole sector is correctly written or nothing is written during
+powerfail.
+
+        Unfortuantely, none of the cheap USB/SD flash cards I seen do
+        behave like this, and are unsuitable for all linux filesystems
+        I know.
+
+                An inherent problem with using flash as a normal block
+                device is that the flash erase size is bigger than
+                most filesystem sector sizes.  So when you request a
+                write, it may erase and rewrite the next 64k, 128k, or
+                even a couple megabytes on the really _big_ ones.
+
+                If you lose power in the middle of that, filesystem
+                won't notice that data in the "sectors" _after_ the
+                one your were trying to write to got trashed.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
