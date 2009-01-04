@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760664AbZADTvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbZADTxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760664AbZADTvk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 14:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbZADTvc
+	id S1758874AbZADTxK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 14:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758697AbZADTwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 14:51:32 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:22635 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758697AbZADTvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 14:51:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Txx+A212MOZK3+N6tlnQJNZKJH24mcS5N1Ax72w+z4m9NYBBrc3lJ9BrKRxY+CrEVi
-         8/beMT0kHUFtHKsNY3L8iMCCd1+QQmsls0j3WFauV2yGNOVUc9tGVp8EF533XRbDz11U
-         Ut6nEA96z11cbxYWpiuU2gLXh/BeaEMf+Pj44=
-Message-ID: <e9e943910901041151x4f251224w63df1e6237ec48cb@mail.gmail.com>
-Date: Sun, 4 Jan 2009 19:51:27 +0000
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Theodore Tso" <tytso@mit.edu>,
-       "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Duane Griffin" <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
-       "=?WINDOWS-1252?Q?Martin_MOKREJ=8A?=" 
-	<mmokrejs@ribosome.natur.cuni.cz>,
-       "Pavel Machek" <pavel@suse.cz>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-In-Reply-To: <20090104193637.GB22958@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 4 Jan 2009 14:52:55 -0500
+Received: from mail.gmx.net ([213.165.64.20]:53227 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755901AbZADTwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 14:52:54 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/N5e0PzvLN4QQ6A2IoddTUlHUQTG3oUjohBBUy2u
+	nBnVZ2GPcHVecC
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+From: Mike Galbraith <efault@gmx.de>
+To: svaidy@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090104181946.GC4301@dirshya.in.ibm.com>
+References: <28c262360812291543ia322a13g6af854a685ce7632@mail.gmail.com>
+	 <20081230024819.GA23301@balbir.in.ibm.com> <20081230062139.GA30038@elte.hu>
+	 <20081230180722.GA29060@dirshya.in.ibm.com>
+	 <20090102072600.GA13412@dirshya.in.ibm.com>
+	 <20090102221630.GF17240@elte.hu> <1230967765.5257.6.camel@marge.simson.net>
+	 <20090103101626.GA4301@dirshya.in.ibm.com>
+	 <1230981761.27180.10.camel@marge.simson.net>
+	 <1231081200.17224.44.camel@marge.simson.net>
+	 <20090104181946.GC4301@dirshya.in.ibm.com>
+Content-Type: text/plain
+Date: Sun, 04 Jan 2009 20:52:49 +0100
+Message-Id: <1231098769.5757.43.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <495FEE66.9080903@ribosome.natur.cuni.cz>
-	 <495FF9CE.2020908@ribosome.natur.cuni.cz>
-	 <e9e943910901031600o1705dfb3j197f90b62d1f75a6@mail.gmail.com>
-	 <495FFECB.5040001@ribosome.natur.cuni.cz>
-	 <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com>
-	 <15786.1231041158@turing-police.cc.vt.edu>
-	 <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com>
-	 <20090104184040.GC17558@mit.edu>
-	 <Pine.LNX.4.64.0901042015230.31141@anakin>
-	 <20090104193637.GB22958@mit.edu>
-X-Google-Sender-Auth: 63b2b15c1ab0800a
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.52
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/4 Theodore Tso <tytso@mit.edu>:
-> On Sun, Jan 04, 2009 at 08:21:06PM +0100, Geert Uytterhoeven wrote:
->> As for mounting the root file system read-only during early boot up, and
->> remounting it read-write later, I guess it's quite complicated to replay the
->> journal (in RAM) on read-only mount, and deferring the replay writeback until
->> remounting read-write?
->
-> It's not *that* hard; if someone would like to cons up a patch, please
-> feel free....  but it's certainly not a high priority for me or most
-> of the other ext3 filesystem developers.
+On Sun, 2009-01-04 at 23:49 +0530, Vaidyanathan Srinivasan wrote:
 
-If anyone is interested I'd be happy to dust off and send them my old
-patches to implement this. There are a couple of issues with it.
-First, I never got around to implementing remount R/W support. Second,
-I had to introduce a rather nasty hack in order to handle un-escaping
-JFS magic numbers.
+> I am new to sysbench.  I just started few OLTP runs with pgsql. In
+> your graph you are plotting and comparing read/write-per-sec and not
+> transactions-per-sec.  Both the parameter vary in a similar manner.
+> Can you please let me know some background on using the
+> read/write-per-sec result for comparison.
 
->                                        - Ted
+It means nothing.  One result is the same as any other.  I prefer low
+level read/write but someone else may prefer higher level transactions.
 
-Cheers,
-Duane.
+> I assume you have run the above tests on Q6600 box that has single
+> quad core package that consist of two dual core CPUs.
 
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+Yes.  I can go down from there, but not up.  Oh darn.
+
+>   Can you please
+> let me know the sched_domain tree that was build by hacking
+> mc_capable().  The effect of sched_mc={1,2} depends on the
+> sched groups that was build and their flags.
+
+Hm.  I don't know what you're asking.  I hacked mc_capable only so I
+could have the tweakable handy in case there was something I didn't know
+about yet (having _just_ jumped in with both feet;)
+
+> As you have mentioned in your data, sched_mc=2 helps recover some
+> performance mainly because of NEWIDLE balance.
+
+Yes, odd.
+
+> You have mentioned clients in the x-axis of the graph, what is their
+> relation to the number of threads?
+
+I have 4 cores, and 2 caches.  Any relationship is all about cache.
+
+Please feel free to point me to any previous discussion on sysbench
+> where the above questions have been discussed.
+
+I haven't seen such.
+
+> Thanks,
+> Vaidy
+
+	Cheers,
+
+	-Mike
+
