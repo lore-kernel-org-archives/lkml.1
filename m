@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZADJDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751426AbZADJEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbZADJDp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 04:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZADJD3
+	id S1751426AbZADJEW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 04:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZADJD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 04:03:29 -0500
-Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:3886 "EHLO
-	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbZADJD1 (ORCPT
+	Sun, 4 Jan 2009 04:03:59 -0500
+Received: from mercury.realtime.net ([205.238.132.86]:34489 "EHLO
+	mercury.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZADJD5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 04:03:27 -0500
-Message-ID: <49607B5B.3070707@shikadi.net>
-Date: Sun, 04 Jan 2009 19:03:23 +1000
-From: Adam Nielsen <a.nielsen@shikadi.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.18) Gecko/20081215 Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: XFS internal error xfs_da_do_buf(1) at line 2015 of file fs/xfs/xfs_da_btree.c
-References: <49600DE6.2080108@shikadi.net> <20090104074659.GA16775@infradead.org>
-In-Reply-To: <20090104074659.GA16775@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 4 Jan 2009 04:03:57 -0500
+X-Greylist: delayed 989 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Jan 2009 04:03:57 EST
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5414eaef99b7392a95f6e3488b81dbf7@bga.com>
 Content-Transfer-Encoding: 7bit
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with !CONFIG_VIOPATH
+Date: Sun, 4 Jan 2009 02:54:15 -0600
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+X-Mailer: Apple Mail (2.624)
+X-Originating-IP: 205.232.218.105
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is a typical result of a power loss scenario with write caches
-> enabled and without barriers.  Given that md can't pass through barriers
-> did you disable the write caches on your disk?
+In-Reply-To: <20090103191359.GA9304@linux.vnet.ibm.com>
 
-No, I didn't realise I had to do that...in fact I didn't even realise SATA 
-disks *had* write caches, I thought the cache was for reading only...
+Kamalesh Babulal wrote:
+>  config SCSI_IBMVSCSI
+>         tristate "IBM Virtual SCSI support"
+> -       depends on PPC_PSERIES || PPC_ISERIES
+> +       depends on (PPC_PSERIES || PPC_ISERIES) && VIOPATH
+>         select SCSI_SRP_ATTRS
+>         help
+>           This is the IBM POWER Virtual SCSI Client
 
-> Run xfs_repair over it to fix up the directory, and make sure to
-> configure your disks properly so that it doesn't happen again..
+As VIOPATH is iSeries code and is only used by the iSeries code, the 
+requirment should be
 
-Will do, thanks for the advice!  Is there any standard way to disable write 
-caching on a SATA disk?  hdparm -W seems to do the trick, but then I can't run 
-that until the system is up and running, leaving a small window of opportunity 
-for something to go wrong.
+depends on PPC_PSERIES || (PPC_ISERIES && VIOPATH)
 
-Thanks again,
-Adam.
+except VIOPATH isn't selectable:
+
+arch/powerpc/platforms/iseries/Kconfig:
+
+  config VIOPATH
+         bool
+         depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
+         default y
+
+so instead we should be adding
+
+select VIOPATH if PPC_ISERIES
+
+to SCSI_IBMVSCSI and just
+
+select VIOPATH
+
+to HVC_ISERIES as it depends on PPC_ISERIES
+
+otherwise you have to enable one driver to get these other drivers.
+
+milton
 
