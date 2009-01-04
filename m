@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbZADRwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbZADRxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758163AbZADRwK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 12:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZADRv4
+	id S1758670AbZADRxl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 12:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZADRxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 12:51:56 -0500
-Received: from atoth.sote.hu ([195.111.75.211]:60285 "EHLO atoth.sote.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbZADRvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 12:51:55 -0500
-X-Greylist: delayed 1044 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Jan 2009 12:51:54 EST
-Message-ID: <213db97b75b3c08d1a7f9af580563b86.squirrel@atoth.sote.hu>
-Date: Sun, 4 Jan 2009 18:34:24 +0100 (CET)
-Subject: Re: Grsecurity is about to be discontinued...
-From: atoth@atoth.sote.hu
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.17
+	Sun, 4 Jan 2009 12:53:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53481 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751369AbZADRxc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 12:53:32 -0500
+Date: Sun, 4 Jan 2009 09:53:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Pavel Machek <pavel@suse.cz>, Andreas Mohr <andi@lisas.de>,
+       Sriram V <vshrirama@gmail.com>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Power Management with rootfs on SDMMC.
+In-Reply-To: <20090104120415.33e32c6b@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.00.0901040946280.3179@localhost.localdomain>
+References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com> <20090102102152.GA26603@rhlx01.hs-esslingen.de> <20090102172407.GD1555@ucw.cz> <alpine.LFD.2.00.0901031217261.3179@localhost.localdomain> <20090103204329.GD1666@elf.ucw.cz>
+ <20090103204535.1a91cbcb@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0901031306150.3179@localhost.localdomain> <20090103231013.3591d027@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0901031854320.3179@localhost.localdomain> <20090104120415.33e32c6b@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-List-Milter: non-list mail
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In Reply to Linus Torvalds on Grsecurity:
 
-These days people out there are running closed-source adobe flash plugin
-to browse pages like ebay.com where one can come across some applets
-causing execution attempts daily. It can be detected using improved
-techniques only.
-I don't care about what code will run on many noobs' machine, but I'd like
-to stay secure. So even if it seems insane, it surely makes sense -
-unfortunately.
-I suspect some of the most important improvements are labeled "annoying"
-by Linus. However some other operating system's board chose to include
-parts of such implementations (I won't list them here). It would be good
-to see as many snippets of PaX/Grsec in the mainline as possible. Please
-take this message as a sign, that Gabor Micsko (trey@hup.hu) is not alone
-with his idea.
 
-Grsecurity proved itself as a viable, valuable solution for combined
-techniques for hardening Linux. I'm using a laptop which has every
-application running regulated by Grsecurity's RBAC system - including
-_all_ GUI apps. Please warn me, when there will be some security policies
-available to convert a targeted SELinux machine into a fully hardened
-SELinux box with GUI.
+On Sun, 4 Jan 2009, Alan Cox wrote:
+> 
+> The distribution question is 'how do you make that decision reliably and
+> correctly ?'. That is closely followed by 'what state should it end up in
+> if the relevant scripts don't run for some reason ?' - which is clearly
+> "not persistent" for safety reasons.
 
-I'm not sure, that putting Grsecurity in the mainline would save the
-project. I rather hope, that some companies using the software will give a
-helping hand to the developers. However the Linux community should turn
-its attention to defensive security solutions, IMHO. As it gets more and
-more abundant, there will be more exploits floating around. Some lessons
-can be learned from those "monkeys" on how to think secure.
+No.
 
-A polished full-featured security system can raise Linux above other
-solutions. The better if there are more possibilities to choose between.
-All features of PaX and Grsecurity can be disabled by default: so an
-ordinary user shouldn't worry about being secure.
+You clearly haven't even read my emails. I quote:
 
-Please consider to think about how secure is your on system and what can
-be done to fix it. If some focused persons provide a specialized solution
-it worth to be investigated.
+  And yes, the "sane defaults" may well be that FATFS does _not_ make the 
+  media be persistent.
 
-Regards,
-Dwokfur
--- 
-dr Tóth Attila, Radiológus
-Attila Toth MD, Radiologist
+however, the sane default remains that things like / and /home _should_ be 
+marked persistent.
 
+
+> I was simply pointing out that
+> 
+> - the general distribution default cannot be one that harms user data on
+> music players
+
+No you were not. You were repeatign that mantra as if it was relevant, 
+when it isn't.
+
+> - that you can fix it more elegantly by quiescing and validating file
+> systems across a suspend/resume
+
+Send me a patch. 
+
+Hint: you can't sanely even validate it without teaching the USB layer 
+_not_ to disconnect and re-connect the damn thing on resume (ie set the 
+"persistent" flag), because that can easily cause totally unrelated 
+changes to cause the device to be re-enumerated. How do you even find it? 
+
+In other words, you're wrong. 
+
+The only sane thing to do is what I already outlined: teach the 
+mount-points (and yes, on a per-mount-point basis) to mark the devices 
+persistent, and make the device drivers honor that.
+
+Then, in _addition_, you can - once the device stays around - you can also 
+add a filesystem callback for suspend/resume, and make the filesystem try 
+to do extra sanity checking. 
+
+But quite frankly, that's very much the secondary stage, since it won't 
+matter in any sane real situation (ie once you've simply said that "we 
+don't cae about FAT being persistent"). And it's a secondary stage also 
+simply because it needs to happen _after_ you've already made the ones you 
+care about persistent, since it simply won't work otherwise.
+
+			Linus
