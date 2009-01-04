@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZADIC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbZADIII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbZADIC2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 03:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZADICT
+	id S1756847AbZADIII (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 03:08:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbZADIHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 03:02:19 -0500
-Received: from ellpspace.math.ualberta.ca ([129.128.207.67]:60508 "EHLO
-	ellpspace.math.ualberta.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750967AbZADICS (ORCPT
+	Sun, 4 Jan 2009 03:07:53 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:56069 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbZADIHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 03:02:18 -0500
-X-Greylist: delayed 2770 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Jan 2009 03:02:18 EST
-Date: Sun, 4 Jan 2009 00:15:55 -0700
-From: Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
+	Sun, 4 Jan 2009 03:07:53 -0500
+Date: Sun, 4 Jan 2009 09:09:31 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Rob Landley <rob@landley.net>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>,
+Cc: Matthieu CASTET <matthieu.castet@parrot.com>,
+       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       linux-kernel@vger.kernel.org,
        Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with
-	kernel/timeconst.sh
-Message-ID: <20090104071555.GA1074@ellpspace.math.ualberta.ca>
-References: <200901020207.30359.rob@landley.net> <200901020213.30658.rob@landley.net> <200901031328.23079.ioe-lkml@rameria.de> <200901031936.04642.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Message-ID: <20090104080931.GA31198@uranus.ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <200901031346.01325.rob@landley.net> <20090103201059.GA4875@uranus.ravnborg.org> <200901031945.35163.rob@landley.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901031936.04642.rob@landley.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200901031945.35163.rob@landley.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 03, 2009 at 07:36:04PM -0600, Rob Landley wrote:
-> On Saturday 03 January 2009 06:28:22 Ingo Oeser wrote:
-> > > +for i in "MSEC 1000" "USEC 1000000"
-> > > +do
-> > > +	NAME=$(echo $i | awk '{print $1}')
+On Sat, Jan 03, 2009 at 07:45:34PM -0600, Rob Landley wrote:
+> > With respect to your three patches the plan is to:
+> > - add the updated timeconst patch to kbuild-next
+> > - add the updated cpu-feature patch to kbuild-next
 > >
-> > cut -d' ' -f1  does the same
-> >
-> > > +	PERIOD=$(echo $i | awk '{print $2}')
-> >
-> > cut -d' ' -f2  does the same
+> > - the patch touching headers_install will not be merged.
+> >   The way forward for headers_install is to combine the
+> >   unifdef feature and the header modifications.
 > 
-> From a standards perspective 
-> http://www.opengroup.org/onlinepubs/9699919799/utilities/cut.html vs 
-> http://www.opengroup.org/onlinepubs/9699919799/utilities/awk.html is probably 
-> a wash, but from a simplicity perspective using the tool that _isn't_ its own 
-> programming language is probably a win. :)
+> Since you're turning down an existing patch in favor of a theoretical patch, I 
+> assume you have plans to do this yourself?
 
-Vagaries of 'cut' aside you can limit yourself here to just shell:
+If noone else beats me I will do so - yes.
+> 
+> >   And this must be in a single program that can process
+> >   all headers in one go so the install process becomes so fast
+> >   that we do not worry about if it was done before or not.
+> >   Then we can avoid all the .* files in the directory
+> >   where we isntall the headers.
+> 
+> What if they run out of disk space halfway through writing a file and thus it 
+> creates a short file (or a 0 length file where the dentry was created but no 
+> blocks could be allocated for the write)?
 
-set_name_period () {
-   NAME=$1 ; PERIOD=$2
-}
-for i in "MSEC 1000" "USEC 1000000"
-do
-   set_name_period $i
-....
-done
+Then they fail and make will know. Then may leave a file or 100
+but it still failed. At next run everything will be done right
+assuming the culprint has been fixed.
 
-or you may skip a shell function and do 'set $i' within a loop plus
-assignments of $1 and $2 to NAME and PERIOD but that overwrites original
-positional parameters (which may be already not important).
+> I can try to make the shell version more readable, and more powerful.  It's 
+> already noticeably faster than the perl version.  I have no objections to 
+> making unifdef do all of this, I just haven't got any interest either.
 
-   Michał
+I have no interest in merging a shell version.
+I clearly expressed above that we need a _single_ program doing
+all of the preparations and we do not need a reimplmentatio of the
+current headers_install.
+I also explained why.
+
+	Sam
