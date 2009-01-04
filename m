@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbZADPnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZADPtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbZADPnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 10:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbZADPnF
+	id S1756089AbZADPtU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 10:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZADPtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 10:43:05 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55695 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbZADPnD convert rfc822-to-8bit (ORCPT
+	Sun, 4 Jan 2009 10:49:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33631 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751273AbZADPtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 10:43:03 -0500
-Date: Sun, 4 Jan 2009 07:44:54 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "=?UTF-8?B?RnLDqWTDqXJpYw==?= Weisbecker" <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, davej@redhat.com
-Subject: Re: [PATCH] bootchart: improve output based on Dave Jones' feedback
-Message-ID: <20090104074454.17c103f9@infradead.org>
-In-Reply-To: <c62985530901040736g5d9c1f20y248d6e6c635bede3@mail.gmail.com>
-References: <20090104071638.64be922a@infradead.org>
-	<c62985530901040736g5d9c1f20y248d6e6c635bede3@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 4 Jan 2009 10:49:09 -0500
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adam Nielsen <a.nielsen@shikadi.net>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>, agk@redhat.com
+Subject: Re: XFS internal error xfs_da_do_buf(1) at line 2015 of file fs/xfs/xfs_da_btree.c
+From: Andi Kleen <andi@firstfloor.org>
+References: <49600DE6.2080108@shikadi.net>
+	<20090104074659.GA16775@infradead.org> <49607B5B.3070707@shikadi.net>
+	<20090104092349.GA26194@infradead.org>
+	<20090104114425.241f6630@lxorguk.ukuu.org.uk>
+	<20090104153401.GA16185@infradead.org>
+Date: Sun, 04 Jan 2009 16:50:24 +0100
+In-Reply-To: <20090104153401.GA16185@infradead.org> (Christoph Hellwig's message of "Sun, 4 Jan 2009 10:34:01 -0500")
+Message-ID: <87aba7jcjj.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Jan 2009 16:36:18 +0100
-"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
+Christoph Hellwig <hch@infradead.org> writes:
+>
+>> Of course certain distributions default to using LVM for all their file
+>> systems which is completely and mindbogglingly bogus. That both messes up
+>> barriers in some cases and takes a good 10-20% off performance when I've
+>> benched it.
+>
+> The thing is that there's no reason for that at all with just a single
+> underlying disk. 
 
-> 
-> BTW, it looks like the async initcall feature has not been merged
-> upstream, even not in tip/master. Was it too
-> risky, not enough tested or something?
+I've submitted patches to do exactly that in DM some time ago. 
+Unfortunately they still didn't make it in (as of 2.6.29 git) for unknown reasons.
 
-Linus didn't quite like how it was done (to put it mildly).
-
-I've redone it this weekend (and am now cleaning the code up for
-posting later today hopefully)... 
-Linus was right (as usual); the new way is much better both in terms
-of code cleanness and in terms of faster boot.
-
-
-
+-Andi
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ak@linux.intel.com
