@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbZADSjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbZADSlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760426AbZADSjr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 13:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZADSiu
+	id S1760133AbZADSlE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 13:41:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZADSkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 13:38:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53425 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbZADSiq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 13:38:46 -0500
-Date: Sun, 4 Jan 2009 10:40:35 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] fastboot: Asynchronous function calls to speed up
- kernel boot
-Message-ID: <20090104104035.43028d8e@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0901041024360.3179@localhost.localdomain>
-References: <20090104092430.7ffd2c41@infradead.org>
-	<20090104092857.5fbf6b2d@infradead.org>
-	<alpine.LFD.2.00.0901041024360.3179@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 4 Jan 2009 13:40:52 -0500
+Received: from thunk.org ([69.25.196.29]:43083 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbZADSku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 13:40:50 -0500
+Date: Sun, 4 Jan 2009 13:40:40 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: Valdis.Kletnieks@vt.edu,
+       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+Message-ID: <20090104184040.GC17558@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
+	Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+	Pavel Machek <pavel@suse.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org
+References: <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com> <20090103222957.GG1666@elf.ucw.cz> <495FEE66.9080903@ribosome.natur.cuni.cz> <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com> <495FF9CE.2020908@ribosome.natur.cuni.cz> <e9e943910901031600o1705dfb3j197f90b62d1f75a6@mail.gmail.com> <495FFECB.5040001@ribosome.natur.cuni.cz> <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com> <15786.1231041158@turing-police.cc.vt.edu> <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Jan 2009 10:33:34 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+On Sun, Jan 04, 2009 at 02:24:43PM +0000, Duane Griffin wrote:
+> > Is there a way using md/dm/lvm etc to make the source partition R/O and
+> > replay the journal onto a CoW snapshop?  Admittedly, not easy to do inside
+> > the 'mount' command itself, but at least it might be workable for LiveCD R/O
+> > mounts and forensics work, where you can *tell* beforehand that's what you
+> > want and can jump through setup games before doing the mount...
 > 
-> 
-> On Sun, 4 Jan 2009, Arjan van de Ven wrote:
-> > +
-> > +typedef u64 async_cookie_t;
-> > +typedef void (async_func_ptr) (void *data, async_cookie_t cookie);
-> > +
-> > +extern void async_schedule(async_func_ptr *ptr, void *data);
-> > +extern void async_synchronize_full(void);
-> > +extern void async_synchronize_cookie(async_cookie_t cookie);
-> 
-> Hmm. The cookie use doesn't seem to make much sense.
-> 
-> Why do you pass in the cookie to the async function, but don't return
-> it to the caller? That seems backwards - you'd normally expect that
-> it is the _caller_ that wants the cookie (to synchronise with a
-> specific async call), not the callee. But now the only one who knows
-> the cookie is the wrong entry - just the callee, not the caller.
+> Yes, something like that is best practice, as I understand it. The
+> LiveCD init scripts could check whether they are about to R/O mount an
+> ext[34] filesystem needing recovery and either refuse with a useful
+> message to the user, or even automatically create and mount a COW
+> snapshot, as you described. They'd still need to warn the user though,
+> since things like remounting R/W wouldn't work as expected.
 
-in fact, either could need it.
-the callee could need it when IT does a global registration (for
-example to get a device number) at the end of its sequence.
-We'd want that registration to happen sequential (it's basically the
-equivalent of a commit/retirement of the instruction in a CPU)
-the caller could need it when it wants to wait for the async function
-it kicked off.
+So what's the use case where people want to be able to mount a
+filesystem needing recovery read/only without running the journal?
 
-so both make total sense to me.
-
-> 
-> Yes, yes, I read the explanation in the comments, and it says that
-> the callee should do it to guarantee its own ordering, and your acpi
-> port thing does that in order to apparently start a sequence that is 
-> asynchronous only wrt the synchronous code, but not wrt itself.
-> That's a _very_ odd model, but whatever works. But wouldn't it still
-> make sense to let the caller wait for individual events too?
-> 
-> IOW, I'd just suggest changing the interface so that
-> "async_schedule()" also returns the cookie. 
-
-I had that originally... (as I described in the first mail).. but had
-no users of it in the places I converted.
-I'm happy to just return it; it does make sense (that's why I did this
-originally)....
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	   	   	    	      	      	      	  - Ted
