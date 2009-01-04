@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZADQQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZADQWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbZADQQU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 11:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZADQQM
+	id S1756760AbZADQWd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 11:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZADQWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 11:16:12 -0500
-Received: from ptb-relay02.plus.net ([212.159.14.146]:37211 "EHLO
-	ptb-relay02.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbZADQQL (ORCPT
+	Sun, 4 Jan 2009 11:22:22 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:44234 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbZADQWV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 11:16:11 -0500
-Message-ID: <4960E0BB.4070500@yahoo.com>
-Date: Sun, 04 Jan 2009 16:15:55 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Sun, 4 Jan 2009 11:22:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=CqyWLUAxILyc+dVgXkdNTWG7tieB/ekjCWwHkLr7X8c5jdbjQ01LqQvuxF72GeBIPV
+         Iprsk7eFWaziaQguXM42xEQLA+j48XFc7hUZrwZGersyHOSk5Ik0lreZRPXdY3+zd9L8
+         7I2P7pGpRFXNtJaOWzfLLBQjm4uywCqjdN8Cs=
+Message-ID: <6784529b0901040822q1a64e2dfi64f0da781f2a8223@mail.gmail.com>
+Date: Sun, 4 Jan 2009 19:22:18 +0300
+From: "Vladimir Dronnikov" <dronnikov@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>, "Rob Landley" <rob@landley.net>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Leon Woestenberg" <leon.woestenberg@gmail.com>,
+       "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+In-Reply-To: <20090104030619.GA21466@linux-sh.org>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: David Newall <davidn@davidnewall.com>, Kyle Moffett <kyle@moffetthome.net>,
-       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, linasvepstas@gmail.com,
-       "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-References: <fa.dw2l5ZM+UL3xoF6IYh5RLMmbYfw@ifi.uio.no> <fa.XOM1F85uBvmj4QzZKaDu36nYBk0@ifi.uio.no> <fa.rviZJBmVqkAE5uxDjhJOpIuKT4g@ifi.uio.no> <fa.OPVERUiJ763jH2/QynTxgBgoKYw@ifi.uio.no> <fa.v3FUjJ43bw2G7KiZGaxqL3tD4xo@ifi.uio.no> <fa.BrNhgY8S+TEOLMiPd27M7YHo9bI@ifi.uio.no>
-In-Reply-To: <fa.BrNhgY8S+TEOLMiPd27M7YHo9bI@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: c983e8f5b81aad574b63d722a1bf12b4
+Content-Disposition: inline
+References: <200901020207.30359.rob@landley.net>
+	 <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com>
+	 <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net>
+	 <20090104030619.GA21466@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> so are you saying that other 'correct' OS's have patches issued every 
-> time a leap second is declared so that they have an in-kernel table of 
-> them to use to calculate the correct time?
+> Let's look at the rationale presented so far in this thread:
+>
+>        1 - Being able to build the kernel natively on a constrained
+>        target is useful, regardless of whether it is being used for
+>        regression/stress testing or for headers installation or whatever
+>        else.
+>
+>        2 - Cross-compiling perl is hard.
+>
+>        3 - Some oddly constrained target distributions manage to ship
+>        with an entire toolchain yet fail to provide any implementation
+>        of perl.
+>
+>        4 - It wasn't required before.
 
-I think the number of other "correct" OSes that actually step the time 
-on leap seconds is not that large (at least doing the announcement via 
-NTP). According to http://www.ntp.org/ntpfaq/NTP-s-algo-real.htm#AEN2499 
-leap seconds are only changed via stepping if you have the right kernel 
-discipline (notes on how to check whether a given OS has the kernel 
-kernel discipline are mentioned on 
-http://www.ntp.org/ntpfaq/NTP-s-algo-kernel.htm#AEN2220 ).
+OK, let's see.
 
-I have a feeling that OSX doesn't do it (there's a mailing list post 
-from 2005 where someone was trying to add FreeBSD's ntp_adjtime to 
-Darwin 
-http://lists.apple.com/archives/Darwin-kernel/2005/Jan/msg00004.html ). 
-Additionally folks I know using ntpd synchronized OSX machines said 
-their machines were off by one second right after the new year.
+> If you have enough space and CPU power and
+> complete build environment to crunch away at the kernel for stress
+> testing natively, you can do the same with building perl and negating
+> point #2.
 
-Windows is also known not to do it without slewing: 
-http://www.meinberg.de/english/info/leap-second.htm#os .
+It seems you meant "If you have enough space ... for stress testing
+natively, you _MUST ALSO_ do the same with building perl  _TO JUST_
+negate point #2". From this point of view your further arguments are
+obvious.
+
+>
+> #2 is another byproduct of your environment and generally a non-issue.
+>
+
+So you put a constraint on environment to build kernel. Not on a
+specific version of shell or gcc. But require SANE environment in
+rhetoric sence. In the absence of clear specification of sane
+environment it _IS_ an issue. Or simply: "sane" now reads "perlful
+enough"?
+
+>
+> If there is anything I missed, feel free to add it to the list.
+>
+
+The rationale of changes being proposed is to keep people able to make
+their choice on how to build and use their environment. If the code,
+which now has to be generated by perl scripts, was shipped with
+linux*.tar.bz2, I'd nullify the majority of my objections. Please, DO
+NOT require this code to be BUILT, and many would again be happy. You
+see, the total question is then reduces to some changes in makefiles
+(eliminating FORCE prerequisites).
+
+Otherwise you just force the number of people to invent and maintain
+"regress" patches, which is counter-progressive in all sences.
+
+Best regards,
+--
+Vladimir V. Dronnikov
