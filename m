@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbZADRVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbZADRXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbZADRVh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 12:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZADRV2
+	id S1758690AbZADRXq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 12:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZADRXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 12:21:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60885 "EHLO mx2.mail.elte.hu"
+	Sun, 4 Jan 2009 12:23:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33013 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753001AbZADRV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 12:21:28 -0500
-Date: Sun, 4 Jan 2009 18:21:14 +0100
+	id S1752846AbZADRXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 12:23:38 -0500
+Date: Sun, 4 Jan 2009 18:23:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: setup.c fix style problems
-Message-ID: <20090104172114.GA32425@elte.hu>
-References: <1231066898.27852.29.camel@jaswinder.satnam>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: mpparse.c fix style problems
+Message-ID: <20090104172319.GA1238@elte.hu>
+References: <1230723533.3738.8.camel@jaswinder.satnam> <20090102172150.GC6759@elte.hu> <3f9a31f40901040917i52df1ef5i7d86ddee05d4d0b1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231066898.27852.29.camel@jaswinder.satnam>
+In-Reply-To: <3f9a31f40901040917i52df1ef5i7d86ddee05d4d0b1@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,24 +36,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+* Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
 
-> Impact: cleanup, fix style problems, more readable
+> Hello Ingo,
 > 
-> Fixes style problems:
-> WARNING: Use #include <linux/smp.h> instead of <asm/smp.h>
-> WARNING: Use #include <linux/percpu.h> instead of <asm/percpu.h>
-> WARNING: Use #include <linux/topology.h> instead of <asm/topology.h>
-> WARNING: externs should be avoided in .c files
-> ERROR: code indent should use tabs where possible
+> On Fri, Jan 2, 2009 at 10:51 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > i think it would be cleaner to rename all the the mpc->mpc_X fields to
+> > mpc->X - that alone would give 4 characters per usage site. (we already
+> > know that it's an 'mpc' entity - no need to duplicate that in the field
+> > too)
+> >
 > 
-> total: 2 errors, 4 warnings
+> I send [PATCH -tip 0/7] x86 rename all fields mpc_X to X based on this.
+> 
+> Currently I rename fields of few mpc_X structures from
+> arch/x86/include/asm/mpspec_def.h. In this file struct
+> intel_mp_floating is still remaining with mpf_X fields, Is this also
+> need to be fixed ? if yes then mpf_intel name is OK ?
+> 
+> Similarly in arch/x86/include/asm/io_apic.h :
+> 1. struct mp_config_ioapic with mp_X fields (what name will be best ?)
+> 2. struct mp_config_intsrc with mp_X fields
+> 
+> These are also used in arch/x86/kernel/mpparse.c
+> 
+> Please let me know should I fix mp_X things first or should I proceed 
+> further in mpparse.c as per your suggestions.
 
-doesnt build on some configs:
-
- arch/x86/kernel/setup.c:943: error: implicit declaration of function 'prefill_possible_map'
-
-the x86-local declarations in smp.h should probably be moved into a 
-separate smp_x86.h file - to avoid such trouble.
+i think those should be standardized to mpc_X too, and the fields should 
+lose their mp_ prefix.
 
 	Ingo
