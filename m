@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZADIld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbZADIn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbZADIld (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 03:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZADIlY
+	id S1755615AbZADIn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 03:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbZADInP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 03:41:24 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:41423 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZADIlX (ORCPT
+	Sun, 4 Jan 2009 03:43:15 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:15575 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750941AbZADInO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 03:41:23 -0500
-Message-ID: <49607626.8010803@davidnewall.com>
-Date: Sun, 04 Jan 2009 19:11:10 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sun, 4 Jan 2009 03:43:14 -0500
+Message-ID: <4960769D.2020509@panasas.com>
+Date: Sun, 04 Jan 2009 10:43:09 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-To: Chris Adams <cmadams@hiwaay.net>
-CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>,
-       Goodgerster <goodgerster@gmail.com>
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com> <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca> <495F0672.6020708@davidnewall.com> <20090103070022.GC1538533@hiwaay.net>
-In-Reply-To: <20090103070022.GC1538533@hiwaay.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Pavel Machek <pavel@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, avishay@gmail.com,
+       jeff@garzik.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       osd-dev@open-osd.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] exofs: osd Swiss army knife
+References: <4947BFAA.4030208@panasas.com> <1229439174-30492-1-git-send-email-bharrosh@panasas.com> <20081229122959.2cb48cf7.akpm@linux-foundation.org> <20090102165201.GC1555@ucw.cz>
+In-Reply-To: <20090102165201.GC1555@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Jan 2009 08:43:07.0812 (UTC) FILETIME=[777C8640:01C96E48]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Adams wrote:
-> The leap second isn't a simple thing like a time zone.  Zones account
-> for an offset from UTC
-Time zones are described that way, but I was wondering why not use
-zoneinfo, which describes the local time after an arbitrary number of
-seconds since the epoch.  The leap second is a textbook case for
-updating zoneinfo.
+Pavel Machek wrote:
+> Hi!
+> 
+>>> In this patch are all the osd infrastructure that will be used later
+>>> by the file system.
+>>>
+>>> Also the declarations of constants, on disk structures, and prototypes.
+>>>
+>>> And the Kbuild+Kconfig files needed to build the exofs module.
+>>>
+>>>
+>>> ...
+>>>
+>>> +struct exofs_sb_info {
+>>> +	struct osd_dev	*s_dev;			/* returned by get_osd_dev    */
+>>> +	uint64_t	s_pid;			/* partition ID of file system*/
+>>> +	int		s_timeout;		/* timeout for OSD operations */
+>>> +	uint32_t	s_nextid;		/* highest object ID used     */
+>>> +	uint32_t	s_numfiles;		/* number of files on fs      */
+>>> +	spinlock_t	s_next_gen_lock;	/* spinlock for gen # update  */
+>>> +	u32		s_next_generation;	/* next gen # to use          */
+>>> +	atomic_t	s_curr_pending;		/* number of pending commands */
+>>> +	uint8_t		s_cred[OSD_CAP_LEN];	/* all-powerful credential    */
+>>> +};
+>>> +
+>>> +/*
+>>> + * our inode flags
+>>> + */
+>>> +#ifdef ARCH_HAS_ATOMIC_UNSIGNED
+>> This doesn't exist, and it would be fairly bad to introduce it.  Please
+>> kill the ifdefs.
+>>
+>>> +typedef unsigned exofs_iflags_t;
+>>> +#else
+>>> +typedef unsigned long exofs_iflags_t;
+>>> +#endif
+>> Then please kill the typedef altogether and replace it with `unsigned
+>> long' everywhere
+> 
+> Hmmm.. .and at a note somewhere that we assume unsigned long to be atomic...?
+> 
 
+I think I'll just use unsigned. It's more then enough I'm not using more then 3
+bits for now. Is unsigned workable for all ARCHs?
 
-> , but a leap second is an extra second inserted
-> into (or possibly removed from) UTC itself.  There was actually a 61
-> second minute on Dec. 31.
-
-
-> The trouble comes in keeping the "seconds
-> since the epoch" counter sane, meaning (seconds % 86400) == 0 at
-> 00:00:00 UTC.
-
-That sounds like an irrelevant quality, and as we've seen, striving for
-it has caused difficulties. Worse, we've now got the situation where the
-number of seconds between midnight starting December 31 and midnight
-starting January 1 is incorrect.  The correct value is 86401, because
-that's how many seconds there were.
-
-> Since there were 86401 seconds Dec. 31, the kernel had to
-> tick the last second twice to keep correct UTC time.
-
-It didn't have to, but apparently, and regrettably, that's what was
-done; leaving an even bigger problem.  How many seconds does the
-computer claim were in 2008?  Probably not enough.
+Thanks
