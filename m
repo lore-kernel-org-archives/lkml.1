@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbZADIdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZADIld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbZADIdu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 03:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbZADIdm
+	id S1753136AbZADIld (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 03:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZADIlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 03:33:42 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55640 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750860AbZADIdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 03:33:41 -0500
-Message-ID: <496073AB.2030400@cn.fujitsu.com>
-Date: Sun, 04 Jan 2009 16:30:35 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sun, 4 Jan 2009 03:41:24 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:41423 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZADIlX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 03:41:23 -0500
+Message-ID: <49607626.8010803@davidnewall.com>
+Date: Sun, 04 Jan 2009 19:11:10 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-CC: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org
-Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
-References: <200901021159.n02BxDLg024728@mail.q-ag.de> <49604BAD.5010405@cn.fujitsu.com> <4960603F.2030002@colorfullife.com>
-In-Reply-To: <4960603F.2030002@colorfullife.com>
-Content-Type: text/plain; charset=UTF-8
+To: Chris Adams <cmadams@hiwaay.net>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
+       MentalMooMan <slashdot@jameshallam.info>,
+       Travis Crump <pretzalz@techhouse.org>,
+       Goodgerster <goodgerster@gmail.com>
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
+ 2008-2009
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com> <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca> <495F0672.6020708@davidnewall.com> <20090103070022.GC1538533@hiwaay.net>
+In-Reply-To: <20090103070022.GC1538533@hiwaay.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manfred Spraul wrote:
-> Lai Jiangshan wrote:
->> Hi, Manfred Spraul,
->>
->> Thanks you for re-propose kfree_rcu().
->> I NAK. this patch.
->>
->> Comparing with my patch(V1), your patch has several improvements.
->> But core idea is the same as my patch.
->> This idea(share offset with function pointer) has some disadvantages.
->> And I had implemented V2 and the patches for using kfree_rcu().
->> The V2 patch has not tested enough, but It will be done in one month.
->>   
-> Did you already post V2, did you cc me?
-> I couldn't find it in my e-mails.
-> 
-
-I have not posted it. -:)
-
-Lai
+Chris Adams wrote:
+> The leap second isn't a simple thing like a time zone.  Zones account
+> for an offset from UTC
+Time zones are described that way, but I was wondering why not use
+zoneinfo, which describes the local time after an arbitrary number of
+seconds since the epoch.  The leap second is a textbook case for
+updating zoneinfo.
 
 
+> , but a leap second is an extra second inserted
+> into (or possibly removed from) UTC itself.  There was actually a 61
+> second minute on Dec. 31.
 
 
+> The trouble comes in keeping the "seconds
+> since the epoch" counter sane, meaning (seconds % 86400) == 0 at
+> 00:00:00 UTC.
+
+That sounds like an irrelevant quality, and as we've seen, striving for
+it has caused difficulties. Worse, we've now got the situation where the
+number of seconds between midnight starting December 31 and midnight
+starting January 1 is incorrect.  The correct value is 86401, because
+that's how many seconds there were.
+
+> Since there were 86401 seconds Dec. 31, the kernel had to
+> tick the last second twice to keep correct UTC time.
+
+It didn't have to, but apparently, and regrettably, that's what was
+done; leaving an even bigger problem.  How many seconds does the
+computer claim were in 2008?  Probably not enough.
