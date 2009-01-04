@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbZADFO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbZADF2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719AbZADFO4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 00:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750698AbZADFOq
+	id S1752171AbZADF2l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 00:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750698AbZADF2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 00:14:46 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:54648 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbZADFOp (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 00:14:45 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH] printk: Let %pR handle NULL pointers
-In-Reply-To: Your message of "Sat, 03 Jan 2009 21:02:15 PST."
-             <Pine.LNX.4.58.0901031827380.25853@shell2.speakeasy.net>
-From: Valdis.Kletnieks@vt.edu
-References: <1230979341-23029-1-git-send-email-xyzzy@speakeasy.org> <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain> <1231019614.15389.104.camel@pasglop>
-            <Pine.LNX.4.58.0901031827380.25853@shell2.speakeasy.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231046074_3941P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 4 Jan 2009 00:28:33 -0500
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:47433 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750696AbZADF2c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 00:28:32 -0500
+Message-ID: <496048F9.1010601@lwfinger.net>
+Date: Sat, 03 Jan 2009 23:28:25 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Juergen Fischer <fischer@norbit.de>
+CC: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] aha152x_cs: Fix regression that keeps driver from using shared
+ interrupts
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sun, 04 Jan 2009 00:14:34 -0500
-Message-ID: <25339.1231046074@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231046074_3941P
-Content-Type: text/plain; charset=us-ascii
+At some point since 2.6.22, the aha152x_cs driver stopped working and
+started erring on load with the following messages:
 
-On Sat, 03 Jan 2009 21:02:15 PST, Trent Piepho said:
-> resource pointer.  Maybe "[]" or "[-]" would be better?  A null MAC address
-> could be ":::::" or "x:x:x:x:x:x".  "N.U.L.L" or "x.x.x.x" for a null IP4
-> address.  And so on.  So the printout looks nicer when a NULL pointer isn't
-> a bug.
+kernel: pcmcia: request for exclusive IRQ could not be fulfilled.
+kernel: pcmcia: the driver needs updating to supported shared IRQ lines.
 
-Have to be careful for IPv6 addresses - '::' is a legal representation of
-an all-zeros address.  Also, N.U.L.L. may give indigestion to logfile parsers
-that are expecting a numeric value in the IP address.  It's however unclear
-whether we should pick something that doesn't have 3 periods in it, so it
-can't match, or whether *that* will give regexp-based logfile readers
-indigestion when they don't pick up an IP address where they expected...
+With the following change, the driver works with shared IRQs.
 
-Do we want the %pI6 format to do the multiple-zeros -> :: compression?
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Stable <stable@kernel.org>		[2.6.28], [2.6.27], [2.6.26]
+---
 
-(Adding netdev to cc: list)
+Juergen,
 
---==_Exmh_1231046074_3941P
-Content-Type: application/pgp-signature
+If you are not the correct person to receive this, please pass it on.
+I originally sent it to Dominik Brodowski, but heard nothing from him.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Thanks,
 
-iD8DBQFJYEW6cC3lWbTT17ARAqHPAKDJd8+pX/d9vaE+upxUnvugZTkChACeKDV2
-9yL+W/e+UCN7EiCsYuetDfU=
-=zor+
------END PGP SIGNATURE-----
+Larry
+---
 
---==_Exmh_1231046074_3941P--
+Index: wireless-testing/drivers/scsi/pcmcia/aha152x_stub.c
+===================================================================
+--- wireless-testing.orig/drivers/scsi/pcmcia/aha152x_stub.c
++++ wireless-testing/drivers/scsi/pcmcia/aha152x_stub.c
+@@ -114,7 +114,7 @@ static int aha152x_probe(struct pcmcia_d
+     link->io.NumPorts1 = 0x20;
+     link->io.Attributes1 = IO_DATA_PATH_WIDTH_AUTO;
+     link->io.IOAddrLines = 10;
+-    link->irq.Attributes = IRQ_TYPE_EXCLUSIVE;
++    link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING;
+     link->irq.IRQInfo1 = IRQ_LEVEL_ID;
+     link->conf.Attributes = CONF_ENABLE_IRQ;
+     link->conf.IntType = INT_MEMORY_AND_IO;
+
