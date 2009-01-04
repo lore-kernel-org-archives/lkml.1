@@ -1,579 +1,453 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZADNV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbZADNWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbZADNV2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 08:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbZADNSR
+	id S1758837AbZADNWK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 08:22:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZADNST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 08:18:17 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:56769 "EHLO relay.sgi.com"
+	Sun, 4 Jan 2009 08:18:19 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:54054 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751463AbZADNSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 08:18:09 -0500
-Message-Id: <20090104131800.445835000@polaris-admin.engr.sgi.com>
+	id S1751688AbZADNSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 08:18:11 -0500
+Message-Id: <20090104131800.836394000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.47-1
-Date: Sun, 04 Jan 2009 05:18:03 -0800
+Date: Sun, 04 Jan 2009 05:18:06 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 04/11] x86: cleanup remaining cpumask_t ops in smpboot code
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>
+Subject: [PATCH 07/11] cpumask: convert struct cpufreq_policy to cpumask_var_t. From: Rusty Russell <rusty@rustcorp.com.au>
 References: <20090104131759.865331000@polaris-admin.engr.sgi.com>
-Content-Disposition: inline; filename=x86:cleanup-cpumasks-in-smpboot
+Content-Disposition: inline; filename=cpumask:convert-drivers_acpi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Reduce memory and stack usage and use new cpumask API.
+Impact: reduce memory usage, use new API.
 
-Allocate the following local cpumasks based on the number of cpus that
-are present.  References will use new cpumask API.  (Currently only
-modified for x86_64, x86_32 continues to use the *_map variants.)
+This is part of an effort to reduce structure sizes for machines
+configured with large NR_CPUS.  cpumask_t gets replaced by
+cpumask_var_t, which is either struct cpumask[1] (small NR_CPUS) or
+struct cpumask * (large NR_CPUS).
 
-    cpu_callin_mask
-    cpu_callout_mask
-    cpu_initialized_mask
-    cpu_sibling_setup_mask
-
-Provide the following accessor functions:
-
-    struct cpumask *cpu_sibling_mask(int cpu)
-    struct cpumask *cpu_core_mask(int cpu)
-
-Other changes are when setting or clearing the cpu online, possible
-or present maps, use the accessor functions.
-
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Len Brown <len.brown@intel.com>
 ---
- arch/x86/include/asm/smp.h     |   32 +++++++++-
- arch/x86/kernel/cpu/common.c   |   26 +++++++-
- arch/x86/kernel/setup_percpu.c |   25 +++++++-
- arch/x86/kernel/smp.c          |   17 +++--
- arch/x86/kernel/smpboot.c      |  128 ++++++++++++++++++++---------------------
- 5 files changed, 152 insertions(+), 76 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c       |   10 ++---
+ arch/x86/kernel/cpu/cpufreq/p4-clockmod.c        |    8 ++--
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c        |    6 +--
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.h        |    2 -
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   14 +++----
+ arch/x86/kernel/cpu/cpufreq/speedstep-ich.c      |   18 ++++-----
+ drivers/cpufreq/cpufreq.c                        |   42 +++++++++++++++--------
+ drivers/cpufreq/cpufreq_conservative.c           |    2 -
+ drivers/cpufreq/cpufreq_ondemand.c               |    4 +-
+ include/linux/cpufreq.h                          |    4 +-
+ 10 files changed, 62 insertions(+), 48 deletions(-)
 
---- linux-2.6-for-ingo.orig/arch/x86/include/asm/smp.h
-+++ linux-2.6-for-ingo/arch/x86/include/asm/smp.h
-@@ -18,9 +18,26 @@
- #include <asm/pda.h>
- #include <asm/thread_info.h>
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -411,7 +411,7 @@ static int acpi_cpufreq_target(struct cp
  
-+#ifdef CONFIG_X86_64
-+
-+extern cpumask_var_t cpu_callin_mask;
-+extern cpumask_var_t cpu_callout_mask;
-+extern cpumask_var_t cpu_initialized_mask;
-+extern cpumask_var_t cpu_sibling_setup_mask;
-+
-+#else /* CONFIG_X86_32 */
-+
-+extern cpumask_t cpu_callin_map;
- extern cpumask_t cpu_callout_map;
- extern cpumask_t cpu_initialized;
--extern cpumask_t cpu_callin_map;
-+extern cpumask_t cpu_sibling_setup_map;
-+
-+#define cpu_callin_mask		((struct cpumask *)&cpu_callin_map)
-+#define cpu_callout_mask	((struct cpumask *)&cpu_callout_map)
-+#define cpu_initialized_mask	((struct cpumask *)&cpu_initialized)
-+#define cpu_sibling_setup_mask	((struct cpumask *)&cpu_sibling_setup_map)
-+
-+#endif /* CONFIG_X86_32 */
- 
- extern void (*mtrr_hook)(void);
- extern void zap_low_mappings(void);
-@@ -29,7 +46,6 @@ extern int __cpuinit get_local_pda(int c
- 
- extern int smp_num_siblings;
- extern unsigned int num_processors;
--extern cpumask_t cpu_initialized;
- 
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
-@@ -38,6 +54,16 @@ DECLARE_PER_CPU(u16, cpu_llc_id);
- DECLARE_PER_CPU(int, cpu_number);
- #endif
- 
-+static inline struct cpumask *cpu_sibling_mask(int cpu)
-+{
-+	return &per_cpu(cpu_sibling_map, cpu);
-+}
-+
-+static inline struct cpumask *cpu_core_mask(int cpu)
-+{
-+	return &per_cpu(cpu_core_map, cpu);
-+}
-+
- DECLARE_EARLY_PER_CPU(u16, x86_cpu_to_apicid);
- DECLARE_EARLY_PER_CPU(u16, x86_bios_cpu_apicid);
- 
-@@ -149,7 +175,7 @@ void smp_store_cpu_info(int id);
- /* We don't mark CPUs online until __cpu_up(), so we need another measure */
- static inline int num_booting_cpus(void)
- {
--	return cpus_weight(cpu_callout_map);
-+	return cpumask_weight(cpu_callout_mask);
- }
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	cpus_and(online_policy_cpus, cpu_online_map, policy->cpus);
++	cpumask_and(&online_policy_cpus, cpu_online_mask, policy->cpus);
  #else
- static inline void prefill_possible_map(void)
---- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/cpu/common.c
-@@ -40,6 +40,26 @@
- 
- #include "cpu.h"
- 
-+#ifdef CONFIG_X86_64
-+
-+/* all of these masks are initialized in setup_cpu_local_masks() */
-+cpumask_var_t cpu_callin_mask;
-+cpumask_var_t cpu_callout_mask;
-+cpumask_var_t cpu_initialized_mask;
-+
-+/* representing cpus for which sibling maps can be computed */
-+cpumask_var_t cpu_sibling_setup_mask;
-+
-+#else /* CONFIG_X86_32 */
-+
-+cpumask_t cpu_callin_map;
-+cpumask_t cpu_callout_map;
-+cpumask_t cpu_initialized;
-+cpumask_t cpu_sibling_setup_map;
-+
-+#endif /* CONFIG_X86_32 */
-+
-+
- static struct cpu_dev *this_cpu __cpuinitdata;
- 
- #ifdef CONFIG_X86_64
-@@ -856,8 +876,6 @@ static __init int setup_disablecpuid(cha
- }
- __setup("clearcpuid=", setup_disablecpuid);
- 
--cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
--
- #ifdef CONFIG_X86_64
- struct x8664_pda **_cpu_pda __read_mostly;
- EXPORT_SYMBOL(_cpu_pda);
-@@ -976,7 +994,7 @@ void __cpuinit cpu_init(void)
- 
- 	me = current;
- 
--	if (cpu_test_and_set(cpu, cpu_initialized))
-+	if (cpumask_test_and_set_cpu(cpu, cpu_initialized_mask))
- 		panic("CPU#%d already initialized!\n", cpu);
- 
- 	printk(KERN_INFO "Initializing CPU#%d\n", cpu);
-@@ -1085,7 +1103,7 @@ void __cpuinit cpu_init(void)
- 	struct tss_struct *t = &per_cpu(init_tss, cpu);
- 	struct thread_struct *thread = &curr->thread;
- 
--	if (cpu_test_and_set(cpu, cpu_initialized)) {
-+	if (cpumask_test_and_set_cpu(cpu, cpu_initialized_mask)) {
- 		printk(KERN_WARNING "CPU#%d already initialized!\n", cpu);
- 		for (;;) local_irq_enable();
- 	}
---- linux-2.6-for-ingo.orig/arch/x86/kernel/setup_percpu.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/setup_percpu.c
-@@ -131,7 +131,27 @@ static void __init setup_cpu_pda_map(voi
- 	/* point to new pointer table */
- 	_cpu_pda = new_cpu_pda;
- }
--#endif
-+
-+#endif /* CONFIG_SMP && CONFIG_X86_64 */
-+
-+#ifdef CONFIG_X86_64
-+
-+/* correctly size the local cpu masks */
-+static void setup_cpu_local_masks(void)
-+{
-+	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
-+	alloc_bootmem_cpumask_var(&cpu_callin_mask);
-+	alloc_bootmem_cpumask_var(&cpu_callout_mask);
-+	alloc_bootmem_cpumask_var(&cpu_sibling_setup_mask);
-+}
-+
-+#else /* CONFIG_X86_32 */
-+
-+static inline void setup_cpu_local_masks(void)
-+{
-+}
-+
-+#endif /* CONFIG_X86_32 */
- 
- /*
-  * Great future plan:
-@@ -187,6 +207,9 @@ void __init setup_per_cpu_areas(void)
- 
- 	/* Setup node to cpumask map */
- 	setup_node_to_cpumask_map();
-+
-+	/* Setup cpu initialized, callin, callout masks */
-+	setup_cpu_local_masks();
- }
- 
+ 	online_policy_cpus = policy->cpus;
  #endif
---- linux-2.6-for-ingo.orig/arch/x86/kernel/smp.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/smp.c
-@@ -128,16 +128,23 @@ void native_send_call_func_single_ipi(in
+@@ -625,15 +625,15 @@ static int acpi_cpufreq_cpu_init(struct 
+ 	 */
+ 	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL ||
+ 	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+-		cpumask_copy(&policy->cpus, perf->shared_cpu_map);
++		cpumask_copy(policy->cpus, perf->shared_cpu_map);
+ 	}
+-	cpumask_copy(&policy->related_cpus, perf->shared_cpu_map);
++	cpumask_copy(policy->related_cpus, perf->shared_cpu_map);
  
- void native_send_call_func_ipi(const struct cpumask *mask)
+ #ifdef CONFIG_SMP
+ 	dmi_check_system(sw_any_bug_dmi_table);
+-	if (bios_with_sw_any_bug && cpus_weight(policy->cpus) == 1) {
++	if (bios_with_sw_any_bug && cpumask_weight(policy->cpus) == 1) {
+ 		policy->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+-		policy->cpus = per_cpu(cpu_core_map, cpu);
++		cpumask_copy(policy->cpus, cpu_core_mask(cpu));
+ 	}
+ #endif
+ 
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+@@ -122,7 +122,7 @@ static int cpufreq_p4_target(struct cpuf
+ 		return 0;
+ 
+ 	/* notifiers */
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 	}
+@@ -130,11 +130,11 @@ static int cpufreq_p4_target(struct cpuf
+ 	/* run on each logical CPU, see section 13.15.3 of IA32 Intel Architecture Software
+ 	 * Developer's Manual, Volume 3
+ 	 */
+-	for_each_cpu_mask_nr(i, policy->cpus)
++	for_each_cpu(i, policy->cpus)
+ 		cpufreq_p4_setdc(i, p4clockmod_table[newstate].index);
+ 
+ 	/* notifiers */
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -200,7 +200,7 @@ static int cpufreq_p4_cpu_init(struct cp
+ 	unsigned int i;
+ 
+ #ifdef CONFIG_SMP
+-	policy->cpus = per_cpu(cpu_sibling_map, policy->cpu);
++	cpumask_copy(policy->cpus, &per_cpu(cpu_sibling_map, policy->cpu));
+ #endif
+ 
+ 	/* Errata workaround */
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1199,10 +1199,10 @@ static int __cpuinit powernowk8_cpu_init
+ 	set_cpus_allowed_ptr(current, &oldmask);
+ 
+ 	if (cpu_family == CPU_HW_PSTATE)
+-		pol->cpus = cpumask_of_cpu(pol->cpu);
++		cpumask_copy(pol->cpus, cpumask_of(pol->cpu));
+ 	else
+-		pol->cpus = per_cpu(cpu_core_map, pol->cpu);
+-	data->available_cores = &(pol->cpus);
++		cpumask_copy(pol->cpus, &per_cpu(cpu_core_map, pol->cpu));
++	data->available_cores = pol->cpus;
+ 
+ 	/* Take a crude guess here.
+ 	 * That guess was in microseconds, so multiply with 1000 */
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+@@ -53,7 +53,7 @@ struct powernow_k8_data {
+ 	/* we need to keep track of associated cores, but let cpufreq
+ 	 * handle hotplug events - so just point at cpufreq pol->cpus
+ 	 * structure */
+-	cpumask_t *available_cores;
++	struct cpumask *available_cores;
+ };
+ 
+ 
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -492,8 +492,8 @@ static int centrino_target (struct cpufr
+ 	}
+ 
+ 	first_cpu = 1;
+-	for_each_cpu_mask_nr(j, policy->cpus) {
+-		const cpumask_t *mask;
++	for_each_cpu(j, policy->cpus) {
++		const struct cpumask *mask;
+ 
+ 		/* cpufreq holds the hotplug lock, so we are safe here */
+ 		if (!cpu_online(j))
+@@ -504,9 +504,9 @@ static int centrino_target (struct cpufr
+ 		 * Make sure we are running on CPU that wants to change freq
+ 		 */
+ 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			mask = &policy->cpus;
++			mask = policy->cpus;
+ 		else
+-			mask = &cpumask_of_cpu(j);
++			mask = cpumask_of(j);
+ 
+ 		set_cpus_allowed_ptr(current, mask);
+ 		preempt_disable();
+@@ -538,7 +538,7 @@ static int centrino_target (struct cpufr
+ 			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
+ 				target_freq, freqs.old, freqs.new, msr);
+ 
+-			for_each_cpu_mask_nr(k, policy->cpus) {
++			for_each_cpu(k, policy->cpus) {
+ 				if (!cpu_online(k))
+ 					continue;
+ 				freqs.cpu = k;
+@@ -563,7 +563,7 @@ static int centrino_target (struct cpufr
+ 		preempt_enable();
+ 	}
+ 
+-	for_each_cpu_mask_nr(k, policy->cpus) {
++	for_each_cpu(k, policy->cpus) {
+ 		if (!cpu_online(k))
+ 			continue;
+ 		freqs.cpu = k;
+@@ -586,7 +586,7 @@ static int centrino_target (struct cpufr
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+ 		freqs.old = tmp;
+-		for_each_cpu_mask_nr(j, policy->cpus) {
++		for_each_cpu(j, policy->cpus) {
+ 			if (!cpu_online(j))
+ 				continue;
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
+@@ -229,7 +229,7 @@ static unsigned int speedstep_detect_chi
+ 	return 0;
+ }
+ 
+-static unsigned int _speedstep_get(const cpumask_t *cpus)
++static unsigned int _speedstep_get(const struct cpumask *cpus)
  {
--	cpumask_t allbutself;
-+	cpumask_var_t allbutself;
+ 	unsigned int speed;
+ 	cpumask_t cpus_allowed;
+@@ -244,7 +244,7 @@ static unsigned int _speedstep_get(const
  
--	allbutself = cpu_online_map;
--	cpu_clear(smp_processor_id(), allbutself);
-+	if (!alloc_cpumask_var(&allbutself, GFP_ATOMIC)) {
-+		send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
-+		return;
+ static unsigned int speedstep_get(unsigned int cpu)
+ {
+-	return _speedstep_get(&cpumask_of_cpu(cpu));
++	return _speedstep_get(cpumask_of(cpu));
+ }
+ 
+ /**
+@@ -267,7 +267,7 @@ static int speedstep_target (struct cpuf
+ 	if (cpufreq_frequency_table_target(policy, &speedstep_freqs[0], target_freq, relation, &newstate))
+ 		return -EINVAL;
+ 
+-	freqs.old = _speedstep_get(&policy->cpus);
++	freqs.old = _speedstep_get(policy->cpus);
+ 	freqs.new = speedstep_freqs[newstate].frequency;
+ 	freqs.cpu = policy->cpu;
+ 
+@@ -279,20 +279,20 @@ static int speedstep_target (struct cpuf
+ 
+ 	cpus_allowed = current->cpus_allowed;
+ 
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 	}
+ 
+ 	/* switch to physical CPU where state is to be changed */
+-	set_cpus_allowed_ptr(current, &policy->cpus);
++	set_cpus_allowed_ptr(current, policy->cpus);
+ 
+ 	speedstep_set_state(newstate);
+ 
+ 	/* allow to be run on all CPUs */
+ 	set_cpus_allowed_ptr(current, &cpus_allowed);
+ 
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -322,11 +322,11 @@ static int speedstep_cpu_init(struct cpu
+ 
+ 	/* only run on CPU to be set, or on its sibling */
+ #ifdef CONFIG_SMP
+-	policy->cpus = per_cpu(cpu_sibling_map, policy->cpu);
++	cpumask_copy(policy->cpus, &per_cpu(cpu_sibling_map, policy->cpu));
+ #endif
+ 
+ 	cpus_allowed = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &policy->cpus);
++	set_cpus_allowed_ptr(current, policy->cpus);
+ 
+ 	/* detect low and high frequency and transition latency */
+ 	result = speedstep_get_freqs(speedstep_processor,
+@@ -339,7 +339,7 @@ static int speedstep_cpu_init(struct cpu
+ 		return result;
+ 
+ 	/* get current speed setting */
+-	speed = _speedstep_get(&policy->cpus);
++	speed = _speedstep_get(policy->cpus);
+ 	if (!speed)
+ 		return -EIO;
+ 
+--- linux-2.6-for-ingo.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6-for-ingo/drivers/cpufreq/cpufreq.c
+@@ -584,12 +584,12 @@ out:
+ 	return i;
+ }
+ 
+-static ssize_t show_cpus(cpumask_t mask, char *buf)
++static ssize_t show_cpus(const struct cpumask *mask, char *buf)
+ {
+ 	ssize_t i = 0;
+ 	unsigned int cpu;
+ 
+-	for_each_cpu_mask_nr(cpu, mask) {
++	for_each_cpu(cpu, mask) {
+ 		if (i)
+ 			i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), " ");
+ 		i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), "%u", cpu);
+@@ -606,7 +606,7 @@ static ssize_t show_cpus(cpumask_t mask,
+  */
+ static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
+ {
+-	if (cpus_empty(policy->related_cpus))
++	if (cpumask_empty(policy->related_cpus))
+ 		return show_cpus(policy->cpus, buf);
+ 	return show_cpus(policy->related_cpus, buf);
+ }
+@@ -801,9 +801,20 @@ static int cpufreq_add_dev(struct sys_de
+ 		ret = -ENOMEM;
+ 		goto nomem_out;
+ 	}
++	if (!alloc_cpumask_var(&policy->cpus, GFP_KERNEL)) {
++		kfree(policy);
++		ret = -ENOMEM;
++		goto nomem_out;
++	}
++	if (!alloc_cpumask_var(&policy->related_cpus, GFP_KERNEL)) {
++		free_cpumask_var(policy->cpus);
++		kfree(policy);
++		ret = -ENOMEM;
++		goto nomem_out;
 +	}
  
--	if (cpus_equal(*mask, allbutself) &&
--	    cpus_equal(cpu_online_map, cpu_callout_map))
-+	cpumask_copy(allbutself, cpu_online_mask);
-+	cpumask_clear_cpu(smp_processor_id(), allbutself);
-+
-+	if (cpumask_equal(mask, allbutself) &&
-+	    cpumask_equal(cpu_online_mask, cpu_callout_mask))
- 		send_IPI_allbutself(CALL_FUNCTION_VECTOR);
- 	else
- 		send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
-+
-+	free_cpumask_var(allbutself);
- }
+ 	policy->cpu = cpu;
+-	policy->cpus = cpumask_of_cpu(cpu);
++	cpumask_copy(policy->cpus, cpumask_of(cpu));
  
- /*
---- linux-2.6-for-ingo.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/smpboot.c
-@@ -102,9 +102,6 @@ EXPORT_SYMBOL(smp_num_siblings);
- /* Last level cache ID of each logical CPU */
- DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
- 
--cpumask_t cpu_callin_map;
--cpumask_t cpu_callout_map;
--
- /* representing HT siblings of each logical CPU */
- DEFINE_PER_CPU(cpumask_t, cpu_sibling_map);
- EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
-@@ -120,9 +117,6 @@ EXPORT_PER_CPU_SYMBOL(cpu_info);
- static atomic_t init_deasserted;
- 
- 
--/* representing cpus for which sibling maps can be computed */
--static cpumask_t cpu_sibling_setup_map;
--
- /* Set if we find a B stepping CPU */
- static int __cpuinitdata smp_b_stepping;
- 
-@@ -140,7 +134,7 @@ EXPORT_SYMBOL(cpu_to_node_map);
- static void map_cpu_to_node(int cpu, int node)
- {
- 	printk(KERN_INFO "Mapping cpu %d to node %d\n", cpu, node);
--	cpu_set(cpu, node_to_cpumask_map[node]);
-+	cpumask_set_cpu(cpu, &node_to_cpumask_map[node]);
- 	cpu_to_node_map[cpu] = node;
- }
- 
-@@ -151,7 +145,7 @@ static void unmap_cpu_to_node(int cpu)
- 
- 	printk(KERN_INFO "Unmapping cpu %d from all nodes\n", cpu);
- 	for (node = 0; node < MAX_NUMNODES; node++)
--		cpu_clear(cpu, node_to_cpumask_map[node]);
-+		cpumask_clear_cpu(cpu, &node_to_cpumask_map[node]);
- 	cpu_to_node_map[cpu] = 0;
- }
- #else /* !(CONFIG_NUMA && CONFIG_X86_32) */
-@@ -209,7 +203,7 @@ static void __cpuinit smp_callin(void)
- 	 */
- 	phys_id = read_apic_id();
- 	cpuid = smp_processor_id();
--	if (cpu_isset(cpuid, cpu_callin_map)) {
-+	if (cpumask_test_cpu(cpuid, cpu_callin_mask)) {
- 		panic("%s: phys CPU#%d, CPU#%d already present??\n", __func__,
- 					phys_id, cpuid);
+ 	/* Initially set CPU itself as the policy_cpu */
+ 	per_cpu(policy_cpu, cpu) = cpu;
+@@ -838,7 +849,7 @@ static int cpufreq_add_dev(struct sys_de
  	}
-@@ -231,7 +225,7 @@ static void __cpuinit smp_callin(void)
- 		/*
- 		 * Has the boot CPU finished it's STARTUP sequence?
- 		 */
--		if (cpu_isset(cpuid, cpu_callout_map))
-+		if (cpumask_test_cpu(cpuid, cpu_callout_mask))
- 			break;
- 		cpu_relax();
- 	}
-@@ -274,7 +268,7 @@ static void __cpuinit smp_callin(void)
- 	/*
- 	 * Allow the master to continue.
- 	 */
--	cpu_set(cpuid, cpu_callin_map);
-+	cpumask_set_cpu(cpuid, cpu_callin_mask);
- }
- 
- static int __cpuinitdata unsafe_smp;
-@@ -332,7 +326,7 @@ notrace static void __cpuinit start_seco
- 	ipi_call_lock();
- 	lock_vector_lock();
- 	__setup_vector_irq(smp_processor_id());
--	cpu_set(smp_processor_id(), cpu_online_map);
-+	set_cpu_online(smp_processor_id(), true);
- 	unlock_vector_lock();
- 	ipi_call_unlock();
- 	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
-@@ -438,50 +432,52 @@ void __cpuinit set_cpu_sibling_map(int c
- 	int i;
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 
--	cpu_set(cpu, cpu_sibling_setup_map);
-+	cpumask_set_cpu(cpu, cpu_sibling_setup_mask);
- 
- 	if (smp_num_siblings > 1) {
--		for_each_cpu_mask_nr(i, cpu_sibling_setup_map) {
--			if (c->phys_proc_id == cpu_data(i).phys_proc_id &&
--			    c->cpu_core_id == cpu_data(i).cpu_core_id) {
--				cpu_set(i, per_cpu(cpu_sibling_map, cpu));
--				cpu_set(cpu, per_cpu(cpu_sibling_map, i));
--				cpu_set(i, per_cpu(cpu_core_map, cpu));
--				cpu_set(cpu, per_cpu(cpu_core_map, i));
--				cpu_set(i, c->llc_shared_map);
--				cpu_set(cpu, cpu_data(i).llc_shared_map);
-+		for_each_cpu(i, cpu_sibling_setup_mask) {
-+			struct cpuinfo_x86 *o = &cpu_data(i);
-+
-+			if (c->phys_proc_id == o->phys_proc_id &&
-+			    c->cpu_core_id == o->cpu_core_id) {
-+				cpumask_set_cpu(i, cpu_sibling_mask(cpu));
-+				cpumask_set_cpu(cpu, cpu_sibling_mask(i));
-+				cpumask_set_cpu(i, cpu_core_mask(cpu));
-+				cpumask_set_cpu(cpu, cpu_core_mask(i));
-+				cpumask_set_cpu(i, &c->llc_shared_map);
-+				cpumask_set_cpu(cpu, &o->llc_shared_map);
- 			}
- 		}
- 	} else {
--		cpu_set(cpu, per_cpu(cpu_sibling_map, cpu));
-+		cpumask_set_cpu(cpu, cpu_sibling_mask(cpu));
- 	}
- 
--	cpu_set(cpu, c->llc_shared_map);
-+	cpumask_set_cpu(cpu, &c->llc_shared_map);
- 
- 	if (current_cpu_data.x86_max_cores == 1) {
--		per_cpu(cpu_core_map, cpu) = per_cpu(cpu_sibling_map, cpu);
-+		cpumask_copy(cpu_core_mask(cpu), cpu_sibling_mask(cpu));
- 		c->booted_cores = 1;
- 		return;
- 	}
- 
--	for_each_cpu_mask_nr(i, cpu_sibling_setup_map) {
-+	for_each_cpu(i, cpu_sibling_setup_mask) {
- 		if (per_cpu(cpu_llc_id, cpu) != BAD_APICID &&
- 		    per_cpu(cpu_llc_id, cpu) == per_cpu(cpu_llc_id, i)) {
--			cpu_set(i, c->llc_shared_map);
--			cpu_set(cpu, cpu_data(i).llc_shared_map);
-+			cpumask_set_cpu(i, &c->llc_shared_map);
-+			cpumask_set_cpu(cpu, &cpu_data(i).llc_shared_map);
- 		}
- 		if (c->phys_proc_id == cpu_data(i).phys_proc_id) {
--			cpu_set(i, per_cpu(cpu_core_map, cpu));
--			cpu_set(cpu, per_cpu(cpu_core_map, i));
-+			cpumask_set_cpu(i, cpu_core_mask(cpu));
-+			cpumask_set_cpu(cpu, cpu_core_mask(i));
- 			/*
- 			 *  Does this new cpu bringup a new core?
- 			 */
--			if (cpus_weight(per_cpu(cpu_sibling_map, cpu)) == 1) {
-+			if (cpumask_weight(cpu_sibling_mask(cpu)) == 1) {
- 				/*
- 				 * for each core in package, increment
- 				 * the booted_cores for this new cpu
- 				 */
--				if (first_cpu(per_cpu(cpu_sibling_map, i)) == i)
-+				if (cpumask_first(cpu_sibling_mask(i)) == i)
- 					c->booted_cores++;
- 				/*
- 				 * increment the core count for all
-@@ -504,7 +500,7 @@ const struct cpumask *cpu_coregroup_mask
- 	 * And for power savings, we return cpu_core_map
- 	 */
- 	if (sched_mc_power_savings || sched_smt_power_savings)
--		return &per_cpu(cpu_core_map, cpu);
-+		return cpu_core_mask(cpu);
- 	else
- 		return &c->llc_shared_map;
- }
-@@ -523,7 +519,7 @@ static void impress_friends(void)
- 	 */
- 	pr_debug("Before bogomips.\n");
- 	for_each_possible_cpu(cpu)
--		if (cpu_isset(cpu, cpu_callout_map))
-+		if (cpumask_test_cpu(cpu, cpu_callout_mask))
- 			bogosum += cpu_data(cpu).loops_per_jiffy;
- 	printk(KERN_INFO
- 		"Total of %d processors activated (%lu.%02lu BogoMIPS).\n",
-@@ -904,19 +900,19 @@ do_rest:
- 		 * allow APs to start initializing.
- 		 */
- 		pr_debug("Before Callout %d.\n", cpu);
--		cpu_set(cpu, cpu_callout_map);
-+		cpumask_set_cpu(cpu, cpu_callout_mask);
- 		pr_debug("After Callout %d.\n", cpu);
- 
- 		/*
- 		 * Wait 5s total for a response
- 		 */
- 		for (timeout = 0; timeout < 50000; timeout++) {
--			if (cpu_isset(cpu, cpu_callin_map))
-+			if (cpumask_test_cpu(cpu, cpu_callin_mask))
- 				break;	/* It has booted */
- 			udelay(100);
- 		}
- 
--		if (cpu_isset(cpu, cpu_callin_map)) {
-+		if (cpumask_test_cpu(cpu, cpu_callin_mask)) {
- 			/* number CPUs logically, starting from 1 (BSP is 0) */
- 			pr_debug("OK.\n");
- 			printk(KERN_INFO "CPU%d: ", cpu);
-@@ -941,9 +937,14 @@ restore_state:
- 	if (boot_error) {
- 		/* Try to put things back the way they were before ... */
- 		numa_remove_cpu(cpu); /* was set by numa_add_cpu */
--		cpu_clear(cpu, cpu_callout_map); /* was set by do_boot_cpu() */
--		cpu_clear(cpu, cpu_initialized); /* was set by cpu_init() */
--		cpu_clear(cpu, cpu_present_map);
-+
-+		/* was set by do_boot_cpu() */
-+		cpumask_clear_cpu(cpu, cpu_callout_mask);
-+
-+		/* was set by cpu_init() */
-+		cpumask_clear_cpu(cpu, cpu_initialized_mask);
-+
-+		set_cpu_present(cpu, false);
- 		per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
- 	}
- 
-@@ -977,7 +978,7 @@ int __cpuinit native_cpu_up(unsigned int
- 	/*
- 	 * Already booted CPU?
- 	 */
--	if (cpu_isset(cpu, cpu_callin_map)) {
-+	if (cpumask_test_cpu(cpu, cpu_callin_mask)) {
- 		pr_debug("do_boot_cpu %d Already started\n", cpu);
- 		return -ENOSYS;
- 	}
-@@ -1032,8 +1033,9 @@ int __cpuinit native_cpu_up(unsigned int
-  */
- static __init void disable_smp(void)
- {
--	cpu_present_map = cpumask_of_cpu(0);
--	cpu_possible_map = cpumask_of_cpu(0);
-+	/* use the read/write pointers to the present and possible maps */
-+	cpumask_copy(&cpu_present_map, cpumask_of(0));
-+	cpumask_copy(&cpu_possible_map, cpumask_of(0));
- 	smpboot_clear_io_apic_irqs();
- 
- 	if (smp_found_config)
-@@ -1041,8 +1043,8 @@ static __init void disable_smp(void)
- 	else
- 		physid_set_mask_of_physid(0, &phys_cpu_present_map);
- 	map_cpu_to_logical_apicid();
--	cpu_set(0, per_cpu(cpu_sibling_map, 0));
--	cpu_set(0, per_cpu(cpu_core_map, 0));
-+	cpumask_set_cpu(0, cpu_sibling_mask(0));
-+	cpumask_set_cpu(0, cpu_core_mask(0));
- }
- 
- /*
-@@ -1064,14 +1066,14 @@ static int __init smp_sanity_check(unsig
- 		nr = 0;
- 		for_each_present_cpu(cpu) {
- 			if (nr >= 8)
--				cpu_clear(cpu, cpu_present_map);
-+				set_cpu_present(cpu, false);
- 			nr++;
- 		}
- 
- 		nr = 0;
- 		for_each_possible_cpu(cpu) {
- 			if (nr >= 8)
--				cpu_clear(cpu, cpu_possible_map);
-+				set_cpu_possible(cpu, false);
- 			nr++;
- 		}
- 
-@@ -1167,7 +1169,7 @@ void __init native_smp_prepare_cpus(unsi
- 	preempt_disable();
- 	smp_cpu_index_default();
- 	current_cpu_data = boot_cpu_data;
--	cpu_callin_map = cpumask_of_cpu(0);
-+	cpumask_copy(cpu_callin_mask, cpumask_of(0));
- 	mb();
- 	/*
- 	 * Setup boot CPU information
-@@ -1242,8 +1244,8 @@ void __init native_smp_prepare_boot_cpu(
- 	init_gdt(me);
  #endif
- 	switch_to_new_gdt();
--	/* already set me in cpu_online_map in boot_cpu_init() */
--	cpu_set(me, cpu_callout_map);
-+	/* already set me in cpu_online_mask in boot_cpu_init() */
-+	cpumask_set_cpu(me, cpu_callout_mask);
- 	per_cpu(cpu_state, me) = CPU_ONLINE;
- }
  
-@@ -1311,7 +1313,7 @@ __init void prefill_possible_map(void)
- 		possible, max_t(int, possible - num_processors, 0));
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		if (cpu == j)
+ 			continue;
  
- 	for (i = 0; i < possible; i++)
--		cpu_set(i, cpu_possible_map);
-+		set_cpu_possible(i, true);
+@@ -856,7 +867,7 @@ static int cpufreq_add_dev(struct sys_de
+ 				goto err_out_driver_exit;
  
- 	nr_cpu_ids = possible;
- }
-@@ -1323,31 +1325,31 @@ static void remove_siblinginfo(int cpu)
- 	int sibling;
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 			spin_lock_irqsave(&cpufreq_driver_lock, flags);
+-			managed_policy->cpus = policy->cpus;
++			cpumask_copy(managed_policy->cpus, policy->cpus);
+ 			per_cpu(cpufreq_cpu_data, cpu) = managed_policy;
+ 			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
  
--	for_each_cpu_mask_nr(sibling, per_cpu(cpu_core_map, cpu)) {
--		cpu_clear(cpu, per_cpu(cpu_core_map, sibling));
-+	for_each_cpu(sibling, cpu_core_mask(cpu)) {
-+		cpumask_clear_cpu(cpu, cpu_core_mask(sibling));
- 		/*/
- 		 * last thread sibling in this cpu core going down
- 		 */
--		if (cpus_weight(per_cpu(cpu_sibling_map, cpu)) == 1)
-+		if (cpumask_weight(cpu_sibling_mask(cpu)) == 1)
- 			cpu_data(sibling).booted_cores--;
+@@ -901,14 +912,14 @@ static int cpufreq_add_dev(struct sys_de
  	}
  
--	for_each_cpu_mask_nr(sibling, per_cpu(cpu_sibling_map, cpu))
--		cpu_clear(cpu, per_cpu(cpu_sibling_map, sibling));
--	cpus_clear(per_cpu(cpu_sibling_map, cpu));
--	cpus_clear(per_cpu(cpu_core_map, cpu));
-+	for_each_cpu(sibling, cpu_sibling_mask(cpu))
-+		cpumask_clear_cpu(cpu, cpu_sibling_mask(sibling));
-+	cpumask_clear(cpu_sibling_mask(cpu));
-+	cpumask_clear(cpu_core_mask(cpu));
- 	c->phys_proc_id = 0;
- 	c->cpu_core_id = 0;
--	cpu_clear(cpu, cpu_sibling_setup_map);
-+	cpumask_clear_cpu(cpu, cpu_sibling_setup_mask);
- }
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		per_cpu(cpufreq_cpu_data, j) = policy;
+ 		per_cpu(policy_cpu, j) = policy->cpu;
+ 	}
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
  
- static void __ref remove_cpu_from_maps(int cpu)
- {
--	cpu_clear(cpu, cpu_online_map);
--	cpu_clear(cpu, cpu_callout_map);
--	cpu_clear(cpu, cpu_callin_map);
-+	set_cpu_online(cpu, false);
-+	cpumask_clear_cpu(cpu, cpu_callout_mask);
-+	cpumask_clear_cpu(cpu, cpu_callin_mask);
- 	/* was set by cpu_init() */
--	cpu_clear(cpu, cpu_initialized);
-+	cpumask_clear_cpu(cpu, cpu_initialized_mask);
- 	numa_remove_cpu(cpu);
- }
+ 	/* symlink affected CPUs */
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		if (j == cpu)
+ 			continue;
+ 		if (!cpu_online(j))
+@@ -948,7 +959,7 @@ static int cpufreq_add_dev(struct sys_de
  
+ err_out_unregister:
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu_mask_nr(j, policy->cpus)
++	for_each_cpu(j, policy->cpus)
+ 		per_cpu(cpufreq_cpu_data, j) = NULL;
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+@@ -1009,7 +1020,7 @@ static int __cpufreq_remove_dev(struct s
+ 	 */
+ 	if (unlikely(cpu != data->cpu)) {
+ 		dprintk("removing link\n");
+-		cpu_clear(cpu, data->cpus);
++		cpumask_clear_cpu(cpu, data->cpus);
+ 		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 		sysfs_remove_link(&sys_dev->kobj, "cpufreq");
+ 		cpufreq_cpu_put(data);
+@@ -1030,8 +1041,8 @@ static int __cpufreq_remove_dev(struct s
+ 	 * per_cpu(cpufreq_cpu_data) while holding the lock, and remove
+ 	 * the sysfs links afterwards.
+ 	 */
+-	if (unlikely(cpus_weight(data->cpus) > 1)) {
+-		for_each_cpu_mask_nr(j, data->cpus) {
++	if (unlikely(cpumask_weight(data->cpus) > 1)) {
++		for_each_cpu(j, data->cpus) {
+ 			if (j == cpu)
+ 				continue;
+ 			per_cpu(cpufreq_cpu_data, j) = NULL;
+@@ -1040,8 +1051,8 @@ static int __cpufreq_remove_dev(struct s
+ 
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+-	if (unlikely(cpus_weight(data->cpus) > 1)) {
+-		for_each_cpu_mask_nr(j, data->cpus) {
++	if (unlikely(cpumask_weight(data->cpus) > 1)) {
++		for_each_cpu(j, data->cpus) {
+ 			if (j == cpu)
+ 				continue;
+ 			dprintk("removing link for cpu %u\n", j);
+@@ -1075,7 +1086,10 @@ static int __cpufreq_remove_dev(struct s
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(data);
+ 
++	free_cpumask_var(data->related_cpus);
++	free_cpumask_var(data->cpus);
+ 	kfree(data);
++	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+ 
+ 	cpufreq_debug_enable_ratelimit();
+ 	return 0;
+--- linux-2.6-for-ingo.orig/drivers/cpufreq/cpufreq_conservative.c
++++ linux-2.6-for-ingo/drivers/cpufreq/cpufreq_conservative.c
+@@ -498,7 +498,7 @@ static int cpufreq_governor_dbs(struct c
+ 			return rc;
+ 		}
+ 
+-		for_each_cpu_mask_nr(j, policy->cpus) {
++		for_each_cpu(j, policy->cpus) {
+ 			struct cpu_dbs_info_s *j_dbs_info;
+ 			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+ 			j_dbs_info->cur_policy = policy;
+--- linux-2.6-for-ingo.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux-2.6-for-ingo/drivers/cpufreq/cpufreq_ondemand.c
+@@ -400,7 +400,7 @@ static void dbs_check_cpu(struct cpu_dbs
+ 	/* Get Absolute Load - in terms of freq */
+ 	max_load_freq = 0;
+ 
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		struct cpu_dbs_info_s *j_dbs_info;
+ 		cputime64_t cur_wall_time, cur_idle_time;
+ 		unsigned int idle_time, wall_time;
+@@ -568,7 +568,7 @@ static int cpufreq_governor_dbs(struct c
+ 			return rc;
+ 		}
+ 
+-		for_each_cpu_mask_nr(j, policy->cpus) {
++		for_each_cpu(j, policy->cpus) {
+ 			struct cpu_dbs_info_s *j_dbs_info;
+ 			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+ 			j_dbs_info->cur_policy = policy;
+--- linux-2.6-for-ingo.orig/include/linux/cpufreq.h
++++ linux-2.6-for-ingo/include/linux/cpufreq.h
+@@ -80,8 +80,8 @@ struct cpufreq_real_policy {
+ };
+ 
+ struct cpufreq_policy {
+-	cpumask_t		cpus;	/* CPUs requiring sw coordination */
+-	cpumask_t		related_cpus; /* CPUs with any coordination */
++	cpumask_var_t		cpus;	/* CPUs requiring sw coordination */
++	cpumask_var_t		related_cpus; /* CPUs with any coordination */
+ 	unsigned int		shared_type; /* ANY or ALL affected CPUs
+ 						should set cpufreq */
+ 	unsigned int		cpu;    /* cpu nr of registered CPU */
 
