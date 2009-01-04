@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbZADL0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZADL2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751641AbZADL0H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 06:26:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbZADLZz
+	id S1757388AbZADL2S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 06:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbZADL2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 06:25:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35298 "EHLO mx3.mail.elte.hu"
+	Sun, 4 Jan 2009 06:28:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52180 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbZADLZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 06:25:54 -0500
-Date: Sun, 4 Jan 2009 12:25:43 +0100
+	id S1751306AbZADL2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 06:28:04 -0500
+Date: Sun, 4 Jan 2009 12:27:26 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: Huang Weiyi <weiyi.huang@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: swiotlb: remove duplicated #include
-Message-ID: <20090104112541.GA25434@elte.hu>
-References: <20090104110951.C9AB.WEIYI.HUANG@gmail.com> <alpine.LNX.2.00.0901041057400.26359@swampdragon.chaosbits.net>
+To: Jaswinder Singh Rajput <jaswinder@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       astarikovskiy@suse.de, jbarnes@sgi.com, pazke@orbita1.ru,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip 0/7] x86 rename mpc_config_X to mpc_X
+Message-ID: <20090104112726.GA1898@elte.hu>
+References: <1230977793.6138.17.camel@jaswinder.satnam> <20090104110725.GA24454@elte.hu> <1231067384.27852.42.camel@jaswinder.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0901041057400.26359@swampdragon.chaosbits.net>
+In-Reply-To: <1231067384.27852.42.camel@jaswinder.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,17 +36,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jesper Juhl <jj@chaosbits.net> wrote:
+* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
 
-> On Sun, 4 Jan 2009, Huang Weiyi wrote:
+> Hello Ingo,
 > 
-> > Removed duplicated #include in lib/swiotlb.c.
-> > 
+> On Sun, 2009-01-04 at 12:07 +0100, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+> > i'm wondering, will you also try the other, more structural cleanups i 
+> > suggested?
 > 
-> This is identical to a patch I already submitted - 
-> http://lkml.org/lkml/2009/1/2/360 - but I don't know if that one has been 
-> merged anywhere yet.
+> Yes, I will do it.
+> 
+> But if you apply this set then it will easier for me. I am just waiting 
+> from you side :-)
 
-i've applied yours to tip/core/urgent, thanks Jesper!
+Yeah - but there's no need to wait for me - the renames are fine.
 
 	Ingo
