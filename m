@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZADCPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZADCS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbZADCPM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 21:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZADCO4
+	id S1755367AbZADCS6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 21:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZADCSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 21:14:56 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38605 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbZADCO4 (ORCPT
+	Sat, 3 Jan 2009 21:18:50 -0500
+Received: from elasmtp-dupuy.atl.sa.earthlink.net ([209.86.89.62]:40905 "EHLO
+	elasmtp-dupuy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751629AbZADCSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 21:14:56 -0500
-Message-ID: <49601B94.3060408@zytor.com>
-Date: Sat, 03 Jan 2009 18:14:44 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Leon Woestenberg <leon.woestenberg@gmail.com>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-References: <200901020207.30359.rob@landley.net> <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com> <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net>
-In-Reply-To: <200901032006.47652.rob@landley.net>
-Content-Type: text/plain; charset=UTF-8
+	Sat, 3 Jan 2009 21:18:49 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=i58eAu42wqVloeM534ud9WSHAVOWPJP6rJSQpboAKl83z+KNB7yOeQrtFzyzU2sO;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Sat, 3 Jan 2009 21:18:43 -0500
+From: Bill Fink <billfink@mindspring.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH 2/2] ieee1934: dv1394 interrupt enabling/disabling
+ broken on big-endian
+Message-Id: <20090103211843.d36d252f.billfink@mindspring.com>
+In-Reply-To: <495F976C.8030105@s5r6.in-berlin.de>
+References: <1229210489.11257.16.camel@brick>
+	<4944561D.4010608@s5r6.in-berlin.de>
+	<20081213204137.d150645c.billfink@mindspring.com>
+	<49446923.5040606@s5r6.in-berlin.de>
+	<20081223172300.5bd19846.billfink@mindspring.com>
+	<20081225220244.1eacb39d.billfink@mindspring.com>
+	<495F976C.8030105@s5r6.in-berlin.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d72e0b50997696b4ac608b606f7988716350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.88
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> 
->> The new patches have *more* environmental
->> dependencies than that ever did.
-> 
-> Could you please be a little more specific?
-> 
+On Sat, 03 Jan 2009, Stefan Richter wrote:
 
-In this case, you're assuming that every version of every shell this is
-going to get involved with is going to do math correctly with the
-requisite precision, which is nowhere guaranteed, I'm pretty sure.
-
->> Third, if someone actually cares to do it right, I have a smallish
->> bignum library at http://git.zytor.com/?p=lib/pbn.git;a=summary that
->> might be a starting point.
+> Bill Fink wrote on 2008-12-26:
+> > Good news.  I finally got a chance to test the patch on my kernel,
+> > and live DV viewing using xine still worked fine.
 > 
-> This doesn't _need_ bignum support.  It maxes out around 72 bits and the 
-> _result_ can't use more than about $SHIFT bits because you're dividing by the 
-> amount you shifted, so just chop off the bottom 32 bits, do a normal 64 bit 
-> division on the top (it has to fit), and then do the same division on the 
-> appropriate shifted remainder, and combine the results.  This is easy because 
-> when the shift _is_ 32 bits or more, the bottom 32 bits all have to be zeroes 
-> so you don't even have to mask and add, just shift the remainder left 32 bits 
-> so you can continue the divide.
-> 
-> Pulling out perl isn't always a good alternative to thinking about the 
-> problem.
-> 
+> Thanks a lot.  If you don't mind, I'll add "Tested-by: Bill Fink
+> <billfink@mindspring.com>" to the changelog when I enqueue this for
+> Linus, and add a note that it actually worked for you before as well as
+> after this patch.
 
-Neither is open-coding a bignum operation instead of relying on an
-existing, validated implementation.
+That's fine.  Although I admit to being mystified how it works both
+before and after the patch, since the cpu_to_le32() calls that were
+added should result in byte swapping on PPC that wasn't being done
+before.  I guess that either the code paths involved aren't actually
+being triggered by my xine DV viewing, or there's some fortuitous
+palindromic setting of bits.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+						-Bill
