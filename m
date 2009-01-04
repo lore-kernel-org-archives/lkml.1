@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbZADPeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZADPgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757399AbZADPeS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 10:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbZADPeI
+	id S1756907AbZADPgb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 10:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZADPgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 10:34:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36708 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbZADPeI (ORCPT
+	Sun, 4 Jan 2009 10:36:23 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:46398 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbZADPgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 10:34:08 -0500
-Date: Sun, 4 Jan 2009 10:34:01 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Adam Nielsen <a.nielsen@shikadi.net>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: XFS internal error xfs_da_do_buf(1) at line 2015 of file
-	fs/xfs/xfs_da_btree.c
-Message-ID: <20090104153401.GA16185@infradead.org>
-References: <49600DE6.2080108@shikadi.net> <20090104074659.GA16775@infradead.org> <49607B5B.3070707@shikadi.net> <20090104092349.GA26194@infradead.org> <20090104114425.241f6630@lxorguk.ukuu.org.uk>
+	Sun, 4 Jan 2009 10:36:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XUK3Z037rCXwH5vnmb6mUV5D0KmCNrKYRIg1QEXppmLgNR8IF7NkgJZjTk9T70cNAG
+         R9OtTX/CBLxi/N7xikLoQe9ZvVLQCyit49kCu+0jz/1MV1mtNWTCLi/e5uwZmhgF8zXx
+         Jq1bfPR+rFjS+rZ3LfLAKv1PZS9OE+ZsBFrpw=
+Message-ID: <c62985530901040736g5d9c1f20y248d6e6c635bede3@mail.gmail.com>
+Date: Sun, 4 Jan 2009 16:36:18 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH] bootchart: improve output based on Dave Jones' feedback
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, davej@redhat.com
+In-Reply-To: <20090104071638.64be922a@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090104114425.241f6630@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20090104071638.64be922a@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 11:44:25AM +0000, Alan Cox wrote:
-> Generally they avoid setting -W0 because it ruins performance and can be
-> very bad for disk lifetime. The barriers code is there for a reason.
+2009/1/4 Arjan van de Ven <arjan@infradead.org>:
+>
+> Subject: bootchart: improve output based on Dave Jones' feedback
+> From: Arjan van de Ven <arjan@linux.intel.com>
+>
+> Dave Jones, in his blog, had some feedback about the bootchart script:
+> Primarily his complaint was that shorter delays weren't visualized.
+>
+> The reason for that was that too small delays will have their labels
+> mixed up in the graph in an unreadable mess.
+>
+> This patch has a fix for this; for one, it makes the output wider,
+> so more will fit.
+> The second part is that smaller delays are now shown with a
+> much smaller font for the label; while this isn't per se
+> readable at a 1:1 zoom, at least you can zoom in with most SVG
+> viewing applications and see what it is you are looking at.
+>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-We've done measurements and for modern NCQ/TCQ disks the performance
-for cache off vs cache on + barriers is close.  For ext3 barriers is
-generally slightly faster, and for XFS it's even or sometimes even cache
-off is faster depending on the workload.
 
-> Of course certain distributions default to using LVM for all their file
-> systems which is completely and mindbogglingly bogus. That both messes up
-> barriers in some cases and takes a good 10-20% off performance when I've
-> benched it.
-
-The thing is that there's no reason for that at all with just a single
-underlying disk.  There is absolutely no reason for not passing through
-barriers, and there's also no reason why it should be any slower than
-our most trivially volume manager, the partition remapping code.  In
-fact there's no reason trivial device mapper tables couldn't be handled
-by the partition remapping code..
-
+BTW, it looks like the async initcall feature has not been merged
+upstream, even not in tip/master. Was it too
+risky, not enough tested or something?
