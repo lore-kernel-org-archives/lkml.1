@@ -1,213 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZADR37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbZADRbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbZADR37 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 12:29:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbZADR3a
+	id S1760037AbZADRbX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 12:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759189AbZADRaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 12:29:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45199 "EHLO
+	Sun, 4 Jan 2009 12:30:22 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54066 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755920AbZADR30 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1759457AbZADRaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 12:29:26 -0500
-Date: Sun, 4 Jan 2009 09:29:40 -0800
+	Sun, 4 Jan 2009 12:30:17 -0500
+Date: Sun, 4 Jan 2009 09:24:30 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@infradead.org>, torvalds@linux-foundation.org,
-       mingo@elte.hu, fweisbec@gmail.com, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 2/4] fastboot: make scsi probes asynchronous
-Message-ID: <20090104092940.11943797@infradead.org>
-In-Reply-To: <20090104092430.7ffd2c41@infradead.org>
-References: <20090104092430.7ffd2c41@infradead.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, fweisbec@gmail.com,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
+Message-ID: <20090104092430.7ffd2c41@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Transfer-Encoding: 7bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 2087b546abddced50fa73ea9a71b5a040ae1026e Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 4 Jan 2009 05:32:28 -0800
-Subject: [PATCH] fastboot: make scsi probes asynchronous
+Hi,
 
-This patch makes part of the scsi probe (which is mostly device spin up and the
-partition scan) asynchronous. Only the part that runs after getting the device
-number allocated is asynchronous, ensuring that device numbering remains stable.
+This patch series is based on Linus' original reaction to some of the
+fastboot patches which introduced an "asynchronous initcall level".
+Linus did not like the initcall level approach much, and wanted a much
+more finegrained kind of thing.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/scsi/scsi_scan.c |    3 +
- drivers/scsi/sd.c        |  109 ++++++++++++++++++++++++++++------------------
- 2 files changed, 70 insertions(+), 42 deletions(-)
+This patch series introduces asynchronous function calls.
+The goal is still the same (boot faster), the method is entirely
+different.
 
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index 18486b5..17914a3 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -32,6 +32,7 @@
- #include <linux/delay.h>
- #include <linux/kthread.h>
- #include <linux/spinlock.h>
-+#include <linux/async.h>
- 
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-@@ -179,6 +180,8 @@ int scsi_complete_async_scans(void)
- 	spin_unlock(&async_scan_lock);
- 
- 	kfree(data);
-+	/* Synchronize async operations globally */
-+	async_synchronize_full();
- 	return 0;
- }
- 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 62b28d5..e035c11 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -48,6 +48,7 @@
- #include <linux/delay.h>
- #include <linux/mutex.h>
- #include <linux/string_helpers.h>
-+#include <linux/async.h>
- #include <asm/uaccess.h>
- 
- #include <scsi/scsi.h>
-@@ -1802,6 +1803,71 @@ static int sd_format_disk_name(char *prefix, int index, char *buf, int buflen)
- 	return 0;
- }
- 
-+/*
-+ * The asynchronous part of sd_probe
-+ */
-+static void sd_probe_async(void *data, async_cookie_t cookie)
-+{
-+	struct scsi_disk *sdkp = data;
-+	struct scsi_device *sdp;
-+	struct gendisk *gd;
-+	u32 index;
-+	struct device *dev;
-+
-+	sdp = sdkp->device;
-+	gd = sdkp->disk;
-+	index = sdkp->index;
-+	dev = &sdp->sdev_gendev;
-+
-+	if (!sdp->request_queue->rq_timeout) {
-+		if (sdp->type != TYPE_MOD)
-+			blk_queue_rq_timeout(sdp->request_queue, SD_TIMEOUT);
-+		else
-+			blk_queue_rq_timeout(sdp->request_queue,
-+					     SD_MOD_TIMEOUT);
-+	}
-+
-+	device_initialize(&sdkp->dev);
-+	sdkp->dev.parent = &sdp->sdev_gendev;
-+	sdkp->dev.class = &sd_disk_class;
-+	strncpy(sdkp->dev.bus_id, sdp->sdev_gendev.bus_id, BUS_ID_SIZE);
-+
-+	if (device_add(&sdkp->dev))
-+		goto out_free_index;
-+
-+	get_device(&sdp->sdev_gendev);
-+
-+	if (index < SD_MAX_DISKS) {
-+		gd->major = sd_major((index & 0xf0) >> 4);
-+		gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
-+		gd->minors = SD_MINORS;
-+	}
-+	gd->fops = &sd_fops;
-+	gd->private_data = &sdkp->driver;
-+	gd->queue = sdkp->device->request_queue;
-+
-+	sd_revalidate_disk(gd);
-+
-+	blk_queue_prep_rq(sdp->request_queue, sd_prep_fn);
-+
-+	gd->driverfs_dev = &sdp->sdev_gendev;
-+	gd->flags = GENHD_FL_EXT_DEVT | GENHD_FL_DRIVERFS;
-+	if (sdp->removable)
-+		gd->flags |= GENHD_FL_REMOVABLE;
-+
-+	dev_set_drvdata(dev, sdkp);
-+	add_disk(gd);
-+	sd_dif_config_host(sdkp);
-+
-+	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
-+		  sdp->removable ? "removable " : "");
-+
-+	return;
-+
-+ out_free_index:
-+	ida_remove(&sd_index_ida, index);
-+}
-+
- /**
-  *	sd_probe - called during driver initialization and whenever a
-  *	new scsi device is attached to the system. It is called once
-@@ -1865,48 +1931,7 @@ static int sd_probe(struct device *dev)
- 	sdkp->openers = 0;
- 	sdkp->previous_state = 1;
- 
--	if (!sdp->request_queue->rq_timeout) {
--		if (sdp->type != TYPE_MOD)
--			blk_queue_rq_timeout(sdp->request_queue, SD_TIMEOUT);
--		else
--			blk_queue_rq_timeout(sdp->request_queue,
--					     SD_MOD_TIMEOUT);
--	}
--
--	device_initialize(&sdkp->dev);
--	sdkp->dev.parent = &sdp->sdev_gendev;
--	sdkp->dev.class = &sd_disk_class;
--	strncpy(sdkp->dev.bus_id, sdp->sdev_gendev.bus_id, BUS_ID_SIZE);
--
--	if (device_add(&sdkp->dev))
--		goto out_free_index;
--
--	get_device(&sdp->sdev_gendev);
--
--	if (index < SD_MAX_DISKS) {
--		gd->major = sd_major((index & 0xf0) >> 4);
--		gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
--		gd->minors = SD_MINORS;
--	}
--	gd->fops = &sd_fops;
--	gd->private_data = &sdkp->driver;
--	gd->queue = sdkp->device->request_queue;
--
--	sd_revalidate_disk(gd);
--
--	blk_queue_prep_rq(sdp->request_queue, sd_prep_fn);
--
--	gd->driverfs_dev = &sdp->sdev_gendev;
--	gd->flags = GENHD_FL_EXT_DEVT | GENHD_FL_DRIVERFS;
--	if (sdp->removable)
--		gd->flags |= GENHD_FL_REMOVABLE;
--
--	dev_set_drvdata(dev, sdkp);
--	add_disk(gd);
--	sd_dif_config_host(sdkp);
--
--	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
--		  sdp->removable ? "removable " : "");
-+	async_schedule(sd_probe_async, sdkp);
- 
- 	return 0;
- 
--- 
-1.6.0.6
+Asynchronous function calls allow drivers and subsystems to do
+operations asynchronously, while providing a mechanism to serialize
+the asynchronous operations at "externally visible" locations, such as
+device number registrations. 
+
+As such, this approach is NOT a "full parallel kernel init".
+For one, it keeps device numbers stable. For another, it's very much
+opt-in for any code using this.
+
+Rather, it is more comparable to an out-of-order cpu, where computations
+are done asynchronously, but are retired in program order.
+
+This series first introduces the infrastructure in patch 1,
+and then adds users of this infrastructure (scsi in patch2, libata in
+patch 3 and acpi in patch 4).
+
+To see this working, I uploaded a "before" and "after" kernel bootchart
+for one of my testboxes at
+
+http://www.fenrus.org/linux/before.svg
+http://www.fenrus.org/linux/after.svg
+
+As you can see with inkscape (or gimp or any other svg viewer), there
+is still room for doing more things in parallel, but the 3 example usage
+patches are a big win already.
 
 
-
+One comment about the API:
+Originally I had functionality in mind where the caller of
+async_schedule() could get back the cookie value of the scheduled task.
+However I had no users of this, so I removed the code to do this. If
+someone finds a place where this is useful we can easily add this back.
 
 -- 
 Arjan van de Ven 	Intel Open Source Technology Centre
