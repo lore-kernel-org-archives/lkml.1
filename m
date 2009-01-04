@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbZADSWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbZADSXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758842AbZADSWn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 13:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZADSWb
+	id S1760121AbZADSXV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 13:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbZADSXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 13:22:31 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56079 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbZADSW3 (ORCPT
+	Sun, 4 Jan 2009 13:23:12 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:36625 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755984AbZADSXL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 13:22:29 -0500
-Subject: Re: Btrfs for mainline
-From: Peter Zijlstra <peterz@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>
-In-Reply-To: <20090103191706.GA2002@parisc-linux.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>
-	 <1230765549.7538.8.camel@think.oraclecorp.com>
-	 <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 04 Jan 2009 19:21:50 +0100
-Message-Id: <1231093310.27690.5.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Sun, 4 Jan 2009 13:23:11 -0500
+Date: Sun, 4 Jan 2009 23:49:46 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+Message-ID: <20090104181946.GC4301@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <28c262360812291543ia322a13g6af854a685ce7632@mail.gmail.com> <20081230024819.GA23301@balbir.in.ibm.com> <20081230062139.GA30038@elte.hu> <20081230180722.GA29060@dirshya.in.ibm.com> <20090102072600.GA13412@dirshya.in.ibm.com> <20090102221630.GF17240@elte.hu> <1230967765.5257.6.camel@marge.simson.net> <20090103101626.GA4301@dirshya.in.ibm.com> <1230981761.27180.10.camel@marge.simson.net> <1231081200.17224.44.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1231081200.17224.44.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-03 at 12:17 -0700, Matthew Wilcox wrote:
-> > - locking.c needs a lot of cleanup.
-> > If combination spinlocks/mutexes are really a win they should be 
-> > in the generic mutex framework. And I'm still dubious on the
-> hardcoded 
-> > numbers.
+* Mike Galbraith <efault@gmx.de> [2009-01-04 16:00:00]:
+
+> On Sat, 2009-01-03 at 12:22 +0100, Mike Galbraith wrote:
+> > On Sat, 2009-01-03 at 15:46 +0530, Vaidyanathan Srinivasan wrote:
+> > > * Mike Galbraith <efault@gmx.de> [2009-01-03 08:29:25]:
+> > > 
+> > > > On Fri, 2009-01-02 at 23:16 +0100, Ingo Molnar wrote:
+> > > > 
+> > > > > Mike, would you be interesting in having a look at sched_mc=2 as a 
+> > > > > kernel-wide default - and give it your blessing if you find it to be a net 
+> > > > > improvement for the various performance and interactivity tests you do?
+> > > > 
+> > > > Sure.
+> > > 
+> > > Thanks Mike and Ingo.  I will be glad to help with test and benchmarks
+> > > on the platforms that I have access.
+> > > 
+> > > I am presently working on sysbench.
+> > 
+> > The testing I can do is rather severely limited since I have only one
+> > Q6600.  I butchered mc_capable() to use what I can though, ie see if
+> > SD_BALANCE_NEWIDLE still harms tbench and mysql+oltp.  I think that's
+> > about all I can do on my wee box.
 > 
-> I don't think this needs to be cleaned up before merge.  I've spent
-> an hour or two looking at it, and while we can do a somewhat better
-> job as part of the generic mutex framework, it's quite tricky (due to
-> the different <asm/mutex.h> implementations).  It has the potential to
-> introduce some hard-to-hit bugs in the generic mutexes, and there's some
-> API discussions to have.
+> I do not see any difference for tbench, results are within jitter.  I do
+> for mysql+oltp, and the test results are fairly strange.
+> 
+> If you take a peek at the attached chart: the 2.6.26.8 data is with
+> scalability backports/fixes.  That's where our 29-to-be should be.
+> Domain tunings in this kernel are identical to 28/29 stock as well.
+> 
+> Note that there is no knee at 8 clients.  If I turn SD_BALANCE_NEWIDLE
+> on in 26+backports, peak drops a tad, and that knee re-appears, just as
+> before we turned the thing off.  Throughput after the knee also drops a
+> tad, nearly to the point where tip+sched_mc=2 now _comes up to_, and it
+> definitely is SD_BALANCE_NEWIDLE making the difference.  IOW, what used
+> to be a loser, and still is a loser in 26+fixes, is now a winner in tip
+> after the knee which should not be there.  Seems something else has
+> changed, re-introducing the knee, and cutting throughput a tad.
+> 
+> (The hefty difference at the very end I knew about.  SD_BALANCE_NEWIDLE
+> helps considerably when mysql is very thoroughly jammed up on itself)
+> 
+> When I look at that chart, it looks almost like SD_BALANCE_NEWIDLE is
+> partially offsetting some other problem.
+> 
+> I haven't done any interactivity testing yet.
 
-I'm really opposed to having this in some filesystem. Please remove it
-before merging it.
+Hi Mike,
 
-The -rt tree has adaptive spin patches for the rtmutex code, its really
-not all that hard to do -- the rtmutex code is way more tricky than the
-regular mutexes due to all the PI fluff.
+Thanks for the detailed test report.
 
-For kernel only locking the simple rule: spin iff the lock holder is
-running proved to be simple enough. Any added heuristics like max spin
-count etc. only made things worse. The whole idea though did make sense
-and certainly improved performance.
+I am new to sysbench.  I just started few OLTP runs with pgsql. In
+your graph you are plotting and comparing read/write-per-sec and not
+transactions-per-sec.  Both the parameter vary in a similar manner.
+Can you please let me know some background on using the
+read/write-per-sec result for comparison.
 
-We've also been looking at doing adaptive spins for futexes, although
-that does get a little more complex, furthermore, we've never gotten
-around to actually doing any code on that.
+I assume you have run the above tests on Q6600 box that has single
+quad core package that consist of two dual core CPUs.  Can you please
+let me know the sched_domain tree that was build by hacking
+mc_capable().  The effect of sched_mc={1,2} depends on the
+sched groups that was build and their flags.
+
+As you have mentioned in your data, sched_mc=2 helps recover some
+performance mainly because of NEWIDLE balance.  
+
+You have mentioned clients in the x-axis of the graph, what is their
+relation to the number of threads?  
+
+Please feel free to point me to any previous discussion on sysbench
+where the above questions have been discussed.
+
+Thanks,
+Vaidy
 
