@@ -1,48 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZADUkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZADUl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbZADUkd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 15:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZADUkX
+	id S1759500AbZADUl3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 15:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZADUlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 15:40:23 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40388 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140AbZADUkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 15:40:22 -0500
-Message-ID: <49611E88.6010204@zytor.com>
-Date: Sun, 04 Jan 2009 12:39:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 4 Jan 2009 15:41:20 -0500
+Received: from mail.gmx.net ([213.165.64.20]:51056 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751373AbZADUlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 15:41:19 -0500
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX18iBHAoBpgidEQEAQ/quSc7s4YgSe33MLkSrRIA7W
+	l0YdrJglgz3Idy
+Date: Sun, 4 Jan 2009 21:41:08 +0100
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       jens.axboe@oracle.com, mingo@elte.hu, andi@firstfloor.org,
+       akpm@linux-foundation.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       rostedt@goodmis.org, tglx@linutronix.de, manfred@colorfullife.com
+Subject: Re: [PATCH] Make treercu safe for suspend and resume
+Message-ID: <20090104204108.GA16467@alice>
+References: <20090104194111.GA16398@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
-References: <200901020207.30359.rob@landley.net> <200901031932.51873.rob@landley.net> <20090104120735.72840fdb@lxorguk.ukuu.org.uk> <200901041303.12687.rob@landley.net>
-In-Reply-To: <200901041303.12687.rob@landley.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090104194111.GA16398@linux.vnet.ibm.com>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
+X-Uptime: 21:38:37 up  8:05,  7 users,  load average: 0.24, 0.30, 0.36
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> Hello!
 > 
-> C) The only calculation which can overflow 64 bits (the ADJ32 one) turns out 
-> not to need arbitrary precision math, just 72 bits, and if it ever uses more 
-> than 32 then bottom 32 are all zero before the divide so you can do it in 
-> three lines.
+> Kudos to both Dhaval Giani and Jens Axboe for finding a bug in treercu
+> that causes warnings after suspend-resume cycles in Dhaval's case and
+> during stress tests in Jens's case.  It would also probably cause failures
+> if heavily stressed.  The solution, ironically enough, is to revert to
+> rcupreempt's code for initializing the dynticks state.  And the patch
+> even results in smaller code -- so what was I thinking???
 > 
+> This is 2.6.29 material, given that people really do suspend and resume
+> Linux these days.  ;-)
 
-... for the current code (32 bits).  When we get an overflow-less 64-bit
-implementation, this code will have to be redone, which is not true for
-a properly done implementation.
+sadly even with this patch i still get this oops when doing
+modprobe rcutorture; sleep 2s; rmmod rcutorture
 
-	-hpa
+[   74.413097] BUG: unable to handle kernel NULL pointer dereference at
+(null)
+[   74.413424] IP: [<(null)>] (null)
+[   74.413651] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+[   74.413956] last sysfs file: /sys/block/ram9/range
+[   74.414039] Modules linked in: [last unloaded: rcutorture]
+[   74.414039] 
+[   74.414039] Pid: 4997, comm: rcu_torture_wri Tainted: G        W
+(2.6.28-05692-g7d3b56b-dirty #167) System Name
+[   74.414039] EIP: 0060:[<00000000>] EFLAGS: 00010246 CPU: 0
+[   74.414039] EIP is at 0x0
+[   74.414039] EAX: d0afd130 EBX: 00000000 ECX: c01612a6 EDX: 00000006
+[   74.414039] ESI: d0afd130 EDI: 0000001c EBP: c0b03fe0 ESP: c0b03fd4
+[   74.414039]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+[   74.414039] Process rcu_torture_wri (pid: 4997, ti=c0b03000
+task=c98bce00 task.ti=c988b000)
+[   74.414039] Stack:
+[   74.414039]  c01612ad 00000200 00000001 c0b03ff8 c012aa97 0000000a
+c988beac 00000046
+[   74.414039]  c012aa28 c988bebc c01042c2
+[   74.414039] Call Trace:
+[   74.414039]  [<c01612ad>] ? rcu_process_callbacks+0x65/0x79
+[   74.414039]  [<c012aa97>] ? __do_softirq+0x6f/0xf6
+[   74.414039]  [<c012aa28>] ? __do_softirq+0x0/0xf6
+[   74.414039]  <IRQ> <0> [<c012a9a5>] ? irq_exit+0x40/0x7c
+[   74.414039]  [<c0110ce1>] ? smp_apic_timer_interrupt+0x68/0x73
+[   74.414039]  [<c0103521>] ? apic_timer_interrupt+0x2d/0x34
+[   74.414039]  [<c01219f7>] ? finish_task_switch+0x4d/0x8b
+[   74.414039]  [<c014007b>] ? tick_check_oneshot_change+0xb1/0xf9
+[   74.414039]  [<c07a091f>] ? _spin_unlock_irq+0x2d/0x47
+[   74.414039]  [<c01219f7>] ? finish_task_switch+0x4d/0x8b
+[   74.414039]  [<c01219aa>] ? finish_task_switch+0x0/0x8b
+[   74.414039]  [<c079e366>] ? schedule+0x404/0x450
+[   74.414039]  [<c079e582>] ? schedule_timeout+0x70/0x95
+[   74.414039]  [<c012e13a>] ? process_timeout+0x0/0xf
+[   74.414039]  [<c079e57d>] ? schedule_timeout+0x6b/0x95
+[   74.414039]  [<c079e5c0>] ?
+schedule_timeout_uninterruptible+0x19/0x1b
+[   74.414039]  [<c0136bcc>] ? kthread+0x3e/0x66
+[   74.414039]  [<c0136b8e>] ? kthread+0x0/0x66
+[   74.414039]  [<c0103643>] ? kernel_thread_helper+0x7/0x10
+[   74.414039] Code:  Bad EIP value.
+[   74.414039] EIP: [<00000000>] 0x0 SS:ESP 0068:c0b03fd4
+[   74.422275] ---[ end trace 4eaa2a86a8e2da22 ]---
+[   74.422406] Kernel panic - not syncing: Fatal exception in interrupt
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Greetings Eric
