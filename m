@@ -1,101 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbZADSRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbZADSTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbZADSRy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 13:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZADSRp
+	id S1759494AbZADSTh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 13:19:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZADST1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 13:17:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56583 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751448AbZADSRn (ORCPT
+	Sun, 4 Jan 2009 13:19:27 -0500
+Received: from mailrelay008.isp.belgacom.be ([195.238.6.174]:57111 "EHLO
+	mailrelay008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751448AbZADST1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 13:17:43 -0500
-Date: Sun, 4 Jan 2009 10:16:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Arjan van de Ven <arjan@infradead.org>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
-In-Reply-To: <20090104092430.7ffd2c41@infradead.org>
-Message-ID: <alpine.LFD.2.00.0901041009060.3179@localhost.localdomain>
-References: <20090104092430.7ffd2c41@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 4 Jan 2009 13:19:27 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgcFAJ6MYElR9cRP/2dsb2JhbACBbMcYhXI
+Date: Sun, 4 Jan 2009 19:19:23 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Julia Lawall <julia@diku.dk>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 13/13] drivers/watchdog: use USB API functions rather than constants
+Message-ID: <20090104181923.GY11454@infomag.infomag.iguana.be>
+References: <Pine.LNX.4.64.0812291123240.9555@pc-004.diku.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812291123240.9555@pc-004.diku.dk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Julia,
 
+> diff --git a/drivers/watchdog/pcwd_usb.c b/drivers/watchdog/pcwd_usb.c
+> index afb0896..b5320a8 100644
+> --- a/drivers/watchdog/pcwd_usb.c
+> +++ b/drivers/watchdog/pcwd_usb.c
+> @@ -609,9 +609,7 @@ static int usb_pcwd_probe(struct usb_interface *interface, const struct usb_devi
+>  	/* check out the endpoint: it has to be Interrupt & IN */
+>  	endpoint = &iface_desc->endpoint[0].desc;
+>  
+> -	if (!((endpoint->bEndpointAddress & USB_DIR_IN) &&
+> -	     ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
+> -				== USB_ENDPOINT_XFER_INT))) {
+> +	if (!usb_endpoint_is_int_in(endpoint)) {
+>  		/* we didn't find a Interrupt endpoint with direction IN */
+>  		printk(KERN_ERR PFX "Couldn't find an INTR & IN endpoint\n");
+>  		return -ENODEV;
 
-On Sun, 4 Jan 2009, Arjan van de Ven wrote:
-> 
-> To see this working, I uploaded a "before" and "after" kernel bootchart
-> for one of my testboxes at
-> 
-> http://www.fenrus.org/linux/before.svg
-> http://www.fenrus.org/linux/after.svg
+Seems OK. I will test it this week and let you know.
 
-Ok, so why does the serial port init take so long? That's a quarter of a 
-second for you, which is ridiculous.
+Kind regards,
+Wim.
 
-I _think_ it's the irq auto-probing, but that's just a guess. The 8250 
-driver does some historical crud, like
-
-	probe_irq_off(probe_irq_on());
-
-to get rid of any pending irq's, but that should be entirely pointless 
-these days. I bet that line basically goes back to pre-history, before we 
-made the auto-probing much stabler.
-
-The irq auto-probing itself also has a few excessive delays, like waiting 
-for 0.1 s just to wait for spurious interrupts to trigger. Doing the extra 
-unnecessary probe makes that doubly expensive.
-
-Does this patch make any difference to you? I'm not at all sure that it's 
-the irq probing, but if it is, then this should make the serial probe go 
-much faster.
-
-		Linus
-
----
- drivers/serial/8250.c  |    1 -
- kernel/irq/autoprobe.c |    4 ++--
- 2 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index daa0056..436372e 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1259,7 +1259,6 @@ static void autoconfig_irq(struct uart_8250_port *up)
- 	}
- 
- 	/* forget possible initially masked and pending IRQ */
--	probe_irq_off(probe_irq_on());
- 	save_mcr = serial_inp(up, UART_MCR);
- 	save_ier = serial_inp(up, UART_IER);
- 	serial_outp(up, UART_MCR, UART_MCR_OUT1 | UART_MCR_OUT2);
-diff --git a/kernel/irq/autoprobe.c b/kernel/irq/autoprobe.c
-index cc0f732..e272784 100644
---- a/kernel/irq/autoprobe.c
-+++ b/kernel/irq/autoprobe.c
-@@ -60,7 +60,7 @@ unsigned long probe_irq_on(void)
- 	}
- 
- 	/* Wait for longstanding interrupts to trigger. */
--	msleep(20);
-+	msleep(10);
- 
- 	/*
- 	 * enable any unassigned irqs
-@@ -80,7 +80,7 @@ unsigned long probe_irq_on(void)
- 	/*
- 	 * Wait for spurious interrupts to trigger
- 	 */
--	msleep(100);
-+	msleep(10);
- 
- 	/*
- 	 * Now filter out any obviously spurious interrupts
