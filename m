@@ -1,66 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZADW4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbZADW7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbZADW4N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 17:56:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZADWz5
+	id S1757972AbZADW7L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 17:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZADW65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 17:55:57 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42777 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751735AbZADWz4 (ORCPT
+	Sun, 4 Jan 2009 17:58:57 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45402 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZADW64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 17:55:56 -0500
-X-Greylist: delayed 798 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Jan 2009 17:55:56 EST
-Date: Mon, 5 Jan 2009 09:42:33 +1100
-From: Bron Gondwana <brong@fastmail.fm>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Theodore Tso <tytso@mit.edu>, Duane Griffin <duaneg@dghda.com>,
-       Valdis.Kletnieks@vt.edu,
-       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-       Pavel Machek <pavel@suse.cz>,
+	Sun, 4 Jan 2009 17:58:56 -0500
+Date: Mon, 5 Jan 2009 00:00:53 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Theodore Tso <tytso@mit.edu>, Rob Landley <rob@landley.net>,
        kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
        rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090104224233.GA9531@brong.net>
-References: <495FEE66.9080903@ribosome.natur.cuni.cz> <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com> <495FF9CE.2020908@ribosome.natur.cuni.cz> <e9e943910901031600o1705dfb3j197f90b62d1f75a6@mail.gmail.com> <495FFECB.5040001@ribosome.natur.cuni.cz> <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com> <15786.1231041158@turing-police.cc.vt.edu> <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com> <20090104184040.GC17558@mit.edu> <Pine.LNX.4.64.0901042015230.31141@anakin>
+Subject: [patch] Re: document ext3 requirements
+Message-ID: <20090104230053.GG1913@elf.ucw.cz>
+References: <20090103123813.GA1512@ucw.cz> <200901041349.49906.rob@landley.net> <20090104220634.GD22958@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901042015230.31141@anakin>
-Organization: brong.net
+In-Reply-To: <20090104220634.GD22958@mit.edu>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 08:21:06PM +0100, Geert Uytterhoeven wrote:
-> On Sun, 4 Jan 2009, Theodore Tso wrote:
-> > On Sun, Jan 04, 2009 at 02:24:43PM +0000, Duane Griffin wrote:
-> > > > Is there a way using md/dm/lvm etc to make the source partition R/O and
-> > > > replay the journal onto a CoW snapshop?  Admittedly, not easy to do inside
-> > > > the 'mount' command itself, but at least it might be workable for LiveCD R/O
-> > > > mounts and forensics work, where you can *tell* beforehand that's what you
-> > > > want and can jump through setup games before doing the mount...
-> > > 
-> > > Yes, something like that is best practice, as I understand it. The
-> > > LiveCD init scripts could check whether they are about to R/O mount an
-> > > ext[34] filesystem needing recovery and either refuse with a useful
-> > > message to the user, or even automatically create and mount a COW
-> > > snapshot, as you described. They'd still need to warn the user though,
-> > > since things like remounting R/W wouldn't work as expected.
+On Sun 2009-01-04 17:06:34, Theodore Tso wrote:
+> On Sun, Jan 04, 2009 at 01:49:49PM -0600, Rob Landley wrote:
 > > 
-> > So what's the use case where people want to be able to mount a
-> > filesystem needing recovery read/only without running the journal?
+> > Want to document the granularity issues with flash, while you're at it?
+> > 
+> > An inherent problem with using flash as a normal block device is that the 
+> > flash erase size is bigger than most filesystem sector sizes.  So when you 
+> > request a write, it may erase and rewrite the next 64k, 128k, or even a couple 
+> > megabytes on the really _big_ ones.
+> > 
+> > If you lose power in the middle of that, ext3 won't notice that data in the 
+> > "sectors" _after_ the one your were trying to write to got trashed.
 > 
-> As mentioned before, suspending a laptop (running from hdd), running a live CD,
-> and expecting everything to work fine when resuming from hdd?
+> True enough, although the newer SSD's will have this problem addressed
+> (although at least initially, they are **far** more costly than the
+> el-cheapo 32GB SD cards you can find at the checkout counter at Fry's
+> alongside battery-powered shavers and trashy ipod speakers).
+> 
+> I will stress again, that most of this doesn't belong in
+> Documentation/filesystems/ext3.txt, as most of this is *not*
+> ext3-specific.
 
-Any particular reason why suspend doesn't run the journal during
-shutdown and leave a clean filesystem?  It shouldn't take that
-long surely.
+Agreed... So what about this one?
 
-I know it doesn't solve the "it really just crashed" problem, but
-you don't tend to unsuspend from a crash anyway.
+---
 
-Bron ( just curious )
+Document linux filesystem expectations. Ext3 can't handle write errors
+of any kind, and can't handle non-atomic sector writes. Other
+filesystems are probably even worse...
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/Documentation/filesystems/expectations.txt b/Documentation/filesystems/expectations.txt
+new file mode 100644
+index 0000000..7817a9c
+--- /dev/null
++++ b/Documentation/filesystems/expectations.txt
+@@ -0,0 +1,44 @@
++Linux filesystems can only work correctly when several conditions are
++met in the block layer and below (disks, flash cards). Some of them
++are obvious ("data on media should not change randomly"), some are
++less so.
++
++Write errors not allowed (NO-WRITE-ERRORS)
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Writes to media never fail. Even if disk returns error condition
++during write, filesystems can't handle that correctly, because success
++on fsync was already returned when data hit the journal.
++
++	Fortunately writes failing are very uncommon on traditional 
++	spinning disks, as they have spare sectors they use when write
++	fails.
++
++Sector writes are atomic (ATOMIC-SECTORS)
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Either whole sector is correctly written or nothing is written during
++powerfail.
++
++	Unfortuantely, none of the cheap USB/SD flash cards I seen do 
++	behave like this, and are unsuitable for all linux filesystems 
++	I know. 
++
++		An inherent problem with using flash as a normal block
++		device is that the flash erase size is bigger than
++		most filesystem sector sizes.  So when you request a
++		write, it may erase and rewrite the next 64k, 128k, or
++		even a couple megabytes on the really _big_ ones.
++
++		If you lose power in the middle of that, filesystem
++		won't notice that data in the "sectors" _after_ the
++		one your were trying to write to got trashed.
++
++	Because RAM tends to fail faster than rest of system during 
++	powerfail, special hw killing DMA transfers may be neccessary;
++	otherwise, disks may write garbage during powerfail.
++	Not sure how common that problem is on generic PC machines.
++
++
++
++
+diff --git a/Documentation/filesystems/ext3.txt b/Documentation/filesystems/ext3.txt
+index 9dd2a3b..8cb64b0 100644
+--- a/Documentation/filesystems/ext3.txt
++++ b/Documentation/filesystems/ext3.txt
+@@ -188,6 +197,25 @@ mke2fs: 	create a ext3 partition with th
+ debugfs: 	ext2 and ext3 file system debugger.
+ ext2online:	online (mounted) ext2 and ext3 filesystem resizer
+ 
++Requirements
++============
++
++Ext3 expects disk/storage subsystem to behave sanely. On sanely
++behaving disk subsystem, data that have been successfully synced will
++stay on the disk. Sane means:
++
++* write errors not allowed
++
++* sector writes are atomic
++
++(see expectations.txt; note that most/all linux filesystems have similar
++expectations)
++
++* either write caching is disabled, or hw can do barriers and they are enabled.
++
++	   (Note that barriers are disabled by default, use "barrier=1"
++	   mount option after making sure hw can support them). 
++
+ 
+ References
+ ==========
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
