@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbZADLEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbZADLGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757757AbZADLEt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 06:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZADLEl
+	id S1757605AbZADLGO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 06:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZADLF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 06:04:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52095 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbZADLEk (ORCPT
+	Sun, 4 Jan 2009 06:05:59 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49604 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbZADLF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 06:04:40 -0500
-Subject: [PATCH -tip] x86: irq_32.c fix style problems
+	Sun, 4 Jan 2009 06:05:58 -0500
+Subject: [PATCH -tip] x86: i8259.c fix style problems
 From: Jaswinder Singh Rajput <jaswinder@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sun, 04 Jan 2009 16:32:36 +0530
-Message-Id: <1231066956.27852.31.camel@jaswinder.satnam>
+Date: Sun, 04 Jan 2009 16:33:52 +0530
+Message-Id: <1231067032.27852.34.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -27,68 +27,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Impact: cleanup, fix style problems, more readable
 
 Fixes style problems:
-WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
-ERROR: "(foo*)" should be "(foo *)"
-ERROR: space required after that ',' (ctx:VxV)
+WARNING: Use #include <linux/acpi.h> instead of <asm/acpi.h>
+WARNING: Use #include <linux/io.h> instead of <asm/io.h>
+WARNING: Use #include <linux/delay.h> instead of <asm/delay.h>
+ERROR: code indent should use tabs where possible
 
-total: 5 errors, 1 warnings
+total: 1 errors, 3 warnings
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/kernel/irq_32.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ arch/x86/kernel/i8259.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
-index 9dc5588..74b9ff7 100644
---- a/arch/x86/kernel/irq_32.c
-+++ b/arch/x86/kernel/irq_32.c
-@@ -15,9 +15,9 @@
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
-+#include <linux/uaccess.h>
+diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
+index 4b8a53d..11d5093 100644
+--- a/arch/x86/kernel/i8259.c
++++ b/arch/x86/kernel/i8259.c
+@@ -11,15 +11,15 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/sysdev.h>
+ #include <linux/bitops.h>
++#include <linux/acpi.h>
++#include <linux/io.h>
++#include <linux/delay.h>
  
+-#include <asm/acpi.h>
+ #include <asm/atomic.h>
+ #include <asm/system.h>
+-#include <asm/io.h>
+ #include <asm/timer.h>
+ #include <asm/hw_irq.h>
+ #include <asm/pgtable.h>
+-#include <asm/delay.h>
+ #include <asm/desc.h>
  #include <asm/apic.h>
--#include <asm/uaccess.h>
+ #include <asm/arch_hooks.h>
+@@ -323,7 +323,7 @@ void init_8259A(int auto_eoi)
+ 	outb_pic(0x11, PIC_MASTER_CMD);	/* ICW1: select 8259A-1 init */
  
- DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- EXPORT_PER_CPU_SYMBOL(irq_stat);
-@@ -93,7 +93,7 @@ execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq)
- 		return 0;
+ 	/* ICW2: 8259A-1 IR0-7 mapped to 0x30-0x37 on x86-64,
+-	                       to 0x20-0x27 on i386 */
++	   to 0x20-0x27 on i386 */
+ 	outb_pic(IRQ0_VECTOR, PIC_MASTER_IMR);
  
- 	/* build the stack frame on the IRQ stack */
--	isp = (u32 *) ((char*)irqctx + sizeof(*irqctx));
-+	isp = (u32 *) ((char *)irqctx + sizeof(*irqctx));
- 	irqctx->tinfo.task = curctx->tinfo.task;
- 	irqctx->tinfo.previous_esp = current_stack_pointer;
- 
-@@ -137,7 +137,7 @@ void __cpuinit irq_ctx_init(int cpu)
- 
- 	hardirq_ctx[cpu] = irqctx;
- 
--	irqctx = (union irq_ctx*) &softirq_stack[cpu*THREAD_SIZE];
-+	irqctx = (union irq_ctx *) &softirq_stack[cpu*THREAD_SIZE];
- 	irqctx->tinfo.task		= NULL;
- 	irqctx->tinfo.exec_domain	= NULL;
- 	irqctx->tinfo.cpu		= cpu;
-@@ -147,7 +147,7 @@ void __cpuinit irq_ctx_init(int cpu)
- 	softirq_ctx[cpu] = irqctx;
- 
- 	printk(KERN_DEBUG "CPU %u irqstacks, hard=%p soft=%p\n",
--	       cpu,hardirq_ctx[cpu],softirq_ctx[cpu]);
-+	       cpu, hardirq_ctx[cpu], softirq_ctx[cpu]);
- }
- 
- void irq_ctx_exit(int cpu)
-@@ -174,7 +174,7 @@ asmlinkage void do_softirq(void)
- 		irqctx->tinfo.previous_esp = current_stack_pointer;
- 
- 		/* build the stack frame on the softirq stack */
--		isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
-+		isp = (u32 *) ((char *)irqctx + sizeof(*irqctx));
- 
- 		call_on_stack(__do_softirq, isp);
- 		/*
+ 	/* 8259A-1 (the master) has a slave on IR2 */
 -- 
 1.5.5.1
 
