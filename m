@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZADWG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbZADWIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZADWG5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 17:06:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbZADWGo
+	id S1758193AbZADWIi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 17:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZADWI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 17:06:44 -0500
-Received: from thunk.org ([69.25.196.29]:55493 "EHLO thunker.thunk.org"
+	Sun, 4 Jan 2009 17:08:29 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49480 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751496AbZADWGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 17:06:43 -0500
-Date: Sun, 4 Jan 2009 17:06:34 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Rob Landley <rob@landley.net>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090104220634.GD22958@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Rob Landley <rob@landley.net>, Pavel Machek <pavel@suse.cz>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org
-References: <20090103123813.GA1512@ucw.cz> <200901041349.49906.rob@landley.net>
+	id S1750883AbZADWI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 17:08:28 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH] x86 PCI: Do not use interrupt links for devices using MSI-X
+Date: Sun, 4 Jan 2009 23:08:42 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-tst; KDE/4.1.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200901041349.49906.rob@landley.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200901042308.42625.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 01:49:49PM -0600, Rob Landley wrote:
-> 
-> Want to document the granularity issues with flash, while you're at it?
-> 
-> An inherent problem with using flash as a normal block device is that the 
-> flash erase size is bigger than most filesystem sector sizes.  So when you 
-> request a write, it may erase and rewrite the next 64k, 128k, or even a couple 
-> megabytes on the really _big_ ones.
-> 
-> If you lose power in the middle of that, ext3 won't notice that data in the 
-> "sectors" _after_ the one your were trying to write to got trashed.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-True enough, although the newer SSD's will have this problem addressed
-(although at least initially, they are **far** more costly than the
-el-cheapo 32GB SD cards you can find at the checkout counter at Fry's
-alongside battery-powered shavers and trashy ipod speakers).
+pcibios_enable_device() and pcibios_disable_device() don't handle
+IRQs for devices that have MSI enabled and it should tread the
+devices with MSI-X enabled in the same way.
 
-I will stress again, that most of this doesn't belong in
-Documentation/filesystems/ext3.txt, as most of this is *not*
-ext3-specific.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/pci/common.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-						- Ted
+Index: linux-2.6/arch/x86/pci/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/common.c
++++ linux-2.6/arch/x86/pci/common.c
+@@ -551,14 +551,14 @@ int pcibios_enable_device(struct pci_dev
+ 	if ((err = pci_enable_resources(dev, mask)) < 0)
+ 		return err;
+ 
+-	if (!dev->msi_enabled)
++	if (!dev->msi_enabled && !dev->msix_enabled)
+ 		return pcibios_enable_irq(dev);
+ 	return 0;
+ }
+ 
+ void pcibios_disable_device (struct pci_dev *dev)
+ {
+-	if (!dev->msi_enabled && pcibios_disable_irq)
++	if (!dev->msi_enabled && !dev->msix_enabled && pcibios_disable_irq)
+ 		pcibios_disable_irq(dev);
+ }
+ 
+
