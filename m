@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbZADTFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbZADTIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760417AbZADTFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 14:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZADTEz
+	id S1760097AbZADTIJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 14:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbZADTHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 14:04:55 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:45148 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755984AbZADTEx (ORCPT
+	Sun, 4 Jan 2009 14:07:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44285 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbZADTHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 14:04:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DB3/C0nYFqSpnatYAqeSyXNHfxkyl4IG4yWXn5gSFnX2QRQFSN6H4mvZmRVlK2fdN4
-         uqjJnoWq8fJLG/42+248+Iq+Yq1rjY0f8wZhDMj8X6r05zEw1GeuSUpFbIu2w34YUgva
-         F3NAt48aSL17RvKqExhlkeY/8cEg6JVCy1zhg=
-Message-ID: <c384c5ea0901041104m31363264qd17d0181865c276@mail.gmail.com>
-Date: Sun, 4 Jan 2009 20:04:49 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Phillip Lougher" <phillip@lougher.demon.co.uk>
-Subject: Re: [PATCH V2 00/16] Squashfs: compressed read-only filesystem
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tim.bird@am.sony.com,
-       linux-next@vger.kernel.org, sfr@canb.auug.org.au
-In-Reply-To: <49606B7C.7050403@lougher.demon.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 4 Jan 2009 14:07:53 -0500
+Date: Sun, 4 Jan 2009 11:09:32 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       fweisbec@gmail.com, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/4] fastboot: Asynchronous function calls to speed up
+ kernel boot
+Message-ID: <20090104110932.6563cc6d@infradead.org>
+In-Reply-To: <87k59aops9.fsf@basil.nowhere.org>
+References: <20090104092430.7ffd2c41@infradead.org>
+	<20090104092857.5fbf6b2d@infradead.org>
+	<87k59aops9.fsf@basil.nowhere.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <E1Kv0C3-0006GU-ES@dylan>
-	 <20081028192919.94def38b.akpm@linux-foundation.org>
-	 <49606B7C.7050403@lougher.demon.co.uk>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sun, 04 Jan 2009 20:05:26 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-On Sun, Jan 4, 2009 at 8:55 AM, Phillip Lougher
-<phillip@lougher.demon.co.uk> wrote:
->> - what are the limitations of squashfs (please add this to the
->>  changelog of patch #1 or something).  Does it support nfsd? (yes, it
->>  does!)  xatrs and acls?  File size limits, entries-per-directory,
->>  etc, etc?
->
-> Xattrs and acls are not supported, this is a todo.
-> Filesize limits are in theory 2^64.  In practice about 2 TiB.
->
-...
->
-> Ok.  I'll re-spin the patches against 2.6.28 tomorrow (Sunday), and I'll
-> prepare a tree for linux-next.
->
+> Surely the thread should die again boot up? On module load
+> synchronisity is usually not a problem.
 
-For use cases such as embedded firmware, the limitations are
-non-interesting, and the compression savings are very interesting.
-Especially where the resulting filesystem has to creep through slow
-wires such as half duplex serial links etc.
+sadly that's not correct in practice based on the fast boot work we've
+done.
 
-Have been using squashfs 2.2 up to 3.4 without problems for years, for
-distribution of Linux based firmwares into embedded devices.
+> 
+> Personally I think it would be better to make this more generic.
+> Various subsystems have thread pool implementations now, 
 
-Many thanks for your continued efforts on mainlining squashfs,
+sort of kinda. If a good one appears I'd be happy to build on top of
+that, assuming it's generic enough.
 
-Regards,
+> and this
+> is just another variant that except for the sequence stuff
+> isn't all that much different. So it would be better to have 
+> a generic worker thread manager that just supports these
+> barriers too.
+
+... or maybe think about seeing this system as exactly that thread
+manager?
+
+
 -- 
-Leon
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
