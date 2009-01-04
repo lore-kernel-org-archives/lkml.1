@@ -1,67 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbZADRei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbZADRmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbZADRei (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 12:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZADReb
+	id S1758865AbZADRmO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 12:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZADRmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 12:34:31 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:62836 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755968AbZADRea (ORCPT
+	Sun, 4 Jan 2009 12:42:04 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:38477 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196AbZADRmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 12:34:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tSSAIYW1ZBsLNGjxLrc4lyOOe2ODq6Vid1LGhJFKG+hiTeLQHFmQB9uMpIHrBnkxfQ
-         vqEQB4xJ7Ua3lnrXmF2OAjxEIQaQbMpWJ9FVhr008LsakpFpenwxoaYCVj+LHy40wuUb
-         TX9yX2Q/z5zsBonFdDZwnUfjrzFiLNqfdKy9c=
-Message-ID: <3f9a31f40901040934g5f48a2e0q332180ace15bedfe@mail.gmail.com>
-Date: Sun, 4 Jan 2009 23:04:28 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: mpparse.c fix style problems
-Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "x86 maintainers" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090104172319.GA1238@elte.hu>
+	Sun, 4 Jan 2009 12:42:01 -0500
+Date: Sun, 4 Jan 2009 23:14:50 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
+Message-ID: <20090104174450.GB4301@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <1230723533.3738.8.camel@jaswinder.satnam>
-	 <20090102172150.GC6759@elte.hu>
-	 <3f9a31f40901040917i52df1ef5i7d86ddee05d4d0b1@mail.gmail.com>
-	 <20090104172319.GA1238@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 4, 2009 at 10:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>
->> Similarly in arch/x86/include/asm/io_apic.h :
->> 1. struct mp_config_ioapic with mp_X fields (what name will be best ?)
->> 2. struct mp_config_intsrc with mp_X fields
->>
->> These are also used in arch/x86/kernel/mpparse.c
->>
->> Please let me know should I fix mp_X things first or should I proceed
->> further in mpparse.c as per your suggestions.
->
-> i think those should be standardized to mpc_X too, and the fields should
-> lose their mp_ prefix.
->
+Hi Ingo,
 
-Earlier we was having 2 sets :-
+Kernbench runs on latest Linux git tree stalled with the following
+lockdep warning.
 
-struct mpc_config_ioapic (mpspec) and mp_config_ioapic (ioapic)
-struct mpc_config_intsrc (mpspec) and mp_config_intsrc (ioapic)
+Lockdep warning and lockup on Jan 3 Linus git tree
+commit 7d3b56ba37a95f1f370f50258ed3954c304c524b
 
-We moved struct mpc_config_X to struct mpc_X
+kernbench run with two threads stalled.  sched_mc was zero.
+x86_64 system with 8 logical CPUs in dual socket quad core
+configuration.
 
-I want to know what should be name for mp_config_ioapic. Is struct
-mp_ioapic is OK ?
+I will post more information as I debug this warning/bug.  
 
-JSR
+--Vaidy
+
+
+ kernel: =============================================
+ kernel: [ INFO: possible recursive locking detected ]
+ kernel: 2.6.28-autotest-sv #1
+ kernel: ---------------------------------------------
+ kernel: autotest/6230 is trying to acquire lock:
+ kernel:  (&rq->lock){++..}, at: [<ffffffff80229240>] task_rq_lock+0x44/0x7e
+ kernel:
+ kernel: but task is already holding lock:
+ kernel:  (&rq->lock){++..}, at: [<ffffffff805d0fd4>] schedule+0x144/0x9d6
+ kernel:
+ kernel: other info that might help us debug this:
+ kernel: 1 lock held by autotest/6230:
+ kernel:  #0:  (&rq->lock){++..}, at: [<ffffffff805d0fd4>] schedule+0x144/0x9d6
+ kernel:
+ kernel: stack backtrace:
+ kernel: Pid: 6230, comm: autotest Not tainted 2.6.28-autotest-sv #1
+ kernel: Call Trace:
+ kernel:  [<ffffffff802560d8>] __lock_acquire+0xe2a/0x15ed
+ kernel:  [<ffffffff80256920>] lock_acquire+0x85/0xa9
+ kernel:  [<ffffffff80229240>] task_rq_lock+0x44/0x7e
+ kernel:  [<ffffffff805d3f4c>] _spin_lock+0x2d/0x5f
+ kernel:  [<ffffffff80229240>] task_rq_lock+0x44/0x7e
+ kernel:  [<ffffffff80229240>] task_rq_lock+0x44/0x7e
+ kernel:  [<ffffffff8022de2e>] try_to_wake_up+0x83/0x26f
+ kernel:  [<ffffffff805d0fd4>] schedule+0x144/0x9d6
+ kernel:  [<ffffffff805d13e8>] schedule+0x558/0x9d6
+ kernel:  [<ffffffff802549c8>] trace_hardirqs_on_caller+0x120/0x14a
+ kernel:  [<ffffffff8024a241>] hrtimer_start_range_ns+0x143/0x156
+ kernel:  [<ffffffff805d2b82>] schedule_hrtimeout_range+0xcc/0xff
+ kernel:  [<ffffffff80249ba0>] hrtimer_wakeup+0x0/0x22
+ kernel:  [<ffffffff805d2b64>] schedule_hrtimeout_range+0xae/0xff
+ kernel:  [<ffffffff802aa6e8>] do_select+0x502/0x55d
+ kernel:  [<ffffffff802aa1e6>] do_select+0x0/0x55d
+ kernel:  [<ffffffff802aac5f>] __pollwait+0x0/0xe5
+ kernel:  [<ffffffff8022e01a>] default_wake_function+0x0/0x9
+ kernel:  [<ffffffff8022e01a>] default_wake_function+0x0/0x9
+ kernel:  [<ffffffff80256882>] __lock_acquire+0x15d4/0x15ed
+ last message repeated 2 times
+ kernel:  [<ffffffff80252913>] lock_release_holdtime+0x1b/0x16c
+ kernel:  [<ffffffff80252913>] lock_release_holdtime+0x1b/0x16c
+ kernel:  [<ffffffff802aa774>] core_sys_select+0x31/0x2b0
+ kernel:  [<ffffffff802aa92f>] core_sys_select+0x1ec/0x2b0
+ kernel:  [<ffffffff802aa774>] core_sys_select+0x31/0x2b0
+ kernel:  [<ffffffff8024785b>] remove_wait_queue+0x12/0x41
+ kernel:  [<ffffffff80252913>] lock_release_holdtime+0x1b/0x16c
+ kernel:  [<ffffffff805d3dc9>] _spin_unlock_irqrestore+0x3e/0x44
+ kernel:  [<ffffffff802549c8>] trace_hardirqs_on_caller+0x120/0x14a
+ kernel:  [<ffffffff80237c6e>] do_wait+0x2a4/0x395
+ kernel:  [<ffffffff8024cc09>] getnstimeofday+0x38/0x92
+ kernel:  [<ffffffff802aac36>] sys_select+0x92/0xbb
+ kernel:  [<ffffffff8020bedb>] system_call_fastpath+0x16/0x1b
+
