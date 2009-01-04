@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932850AbZADART@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932996AbZADASZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932850AbZADART (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 19:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759988AbZADARH
+	id S932996AbZADASZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 19:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760084AbZADASO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 19:17:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41519 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756067AbZADARG (ORCPT
+	Sat, 3 Jan 2009 19:18:14 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36031 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbZADASN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 19:17:06 -0500
-Date: Sun, 4 Jan 2009 01:19:00 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>
-Cc: Duane Griffin <duaneg@dghda.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090104001859.GH1666@elf.ucw.cz>
-References: <20090103123813.GA1512@ucw.cz> <495FD5D7.2040907@ribosome.natur.cuni.cz> <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com> <20090103222957.GG1666@elf.ucw.cz> <495FEE66.9080903@ribosome.natur.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <495FEE66.9080903@ribosome.natur.cuni.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 3 Jan 2009 19:18:13 -0500
+Date: Sat, 3 Jan 2009 16:20:00 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, x86@kernel.org, netdev@vger.kernel.org,
+       tytso@mit.edu, eric@anholt.net, airlied@redhat.com
+Subject: Re: Bug/Warning report for the week of January 3rd, 2009
+Message-ID: <20090103162000.138943b3@infradead.org>
+In-Reply-To: <495FF769.3040205@shaw.ca>
+References: <20090103140332.74f39ade@infradead.org>
+	<495FF769.3040205@shaw.ca>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-01-04 00:01:58, Martin MOKREJŠ wrote:
-> Pavel Machek wrote:
-> > On Sat 2009-01-03 22:17:15, Duane Griffin wrote:
-> >> [Fixed top-posting]
-> >>
-> >> 2009/1/3 Martin MOKREJŠ <mmokrejs@ribosome.natur.cuni.cz>:
-> >>> Pavel Machek wrote:
-> >>>> readonly mount does actually write to the media in some cases. Document that.
-> >>>>
-> >>> Can one avoid replay of the journal then if it would be unclean?
-> >>> Just curious.
-> >> Nope. If the underlying block device is read-only then mounting the
-> >> filesystem will fail. I tried to fix this some time ago, and have a
-> >> set of patches that almost always work, but "almost always" isn't good
-> >> enough. Unfortunately I never managed to figure out a way to finish it
-> >> off without disgusting hacks or major surgery.
-> > 
-> > Uhuh, can you just ignore the journal and mount it anyway?
-> > ...basically treating it like an ext2?
-> > 
-> > ...ok, that will present "old" version of the filesystem to the
-> > user... violating fsync() semantics.
+On Sat, 03 Jan 2009 17:40:25 -0600
+Robert Hancock <hancockr@shaw.ca> wrote:
+
+> Arjan van de Ven wrote:
+> > Rank 2: mtrr_trim_uncached_memory (warning)
+> > 	Reported 420 times (9816 total reports)
+> > 	BIOS bug (often in VMWare) where the MTRR's are set up
+> > incorrectly or not at all This warning was last seen in version
+> > 2.6.28, and first seen in 2.6.24. More info:
+> > http://www.kerneloops.org/searchweek.php?search=mtrr_trim_uncached_memory
 > 
-> Hmm, so if my dual-boot machine does not shutdown correctly and I boot
-> accidentally in M$ Win where I use ext2 IFS driver and modify some
-> stuff on the ext3 drive, after a while reboot to linux and the journal
-> get re-played ... Mmm ...
+> It would be useful if this warning dumped out some DMI BIOS
+> information or something, so we could see what systems/boards this
+> was commonly happening with.. 
 
-ext2 driver should refuse to mount dirty ext3 filesystem. (Linux ext2
-driver does that).
+yes it would; this is why Linus merged a patch to do exactly that for
+2.6.29..........
 
-> > Still handy for recovering badly broken filesystems, I'd say.
-> 
-> Me as well. How about improving you doc patch with some summary of
-> this thread (although it is probably not over yet)? ;-) Definitely,
-> a note that one can mount it as ext2 while read-only would be helpful
-> when doing some forensics on the disk.
 
-No, you can't mount unclean ext3 as an ext2; patch to do that would be
-possible but...
 
-I believe the patch is correct & useful.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
