@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZADNzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbZADOY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbZADNzm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 08:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZADNze
+	id S1752801AbZADOY4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 09:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZADOYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 08:55:34 -0500
-Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:29472 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbZADNze (ORCPT
+	Sun, 4 Jan 2009 09:24:47 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:14090 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZADOYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 08:55:34 -0500
-Date: Sun, 4 Jan 2009 14:55:31 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Baodong Chen <chenbdchenbd@gmail.com>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Subject: [PATCH] Documentation/x86/boot.txt:payload length was
- changed to payload_length
-In-Reply-To: <20090104125713.GD15472@elte.hu>
-Message-ID: <alpine.LNX.2.00.0901041453170.26359@swampdragon.chaosbits.net>
-References: <d204e3110901020024n7d0c1a6dt919f76283d9a8663@mail.gmail.com> <20090102092659.GC1975@elte.hu> <d204e3110901022044l2cf57f54yd52a2d331d69deef@mail.gmail.com> <20090104125713.GD15472@elte.hu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Sun, 4 Jan 2009 09:24:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Ujz49SxU6+jBIwWN03DFCS9GeiVdFHZ+N8bNAun6z4YPpU4KrYj48tvOHRSvYNoys0
+         6PlxncdorwXpl6DRVG68fuB+Hcu+ktf3bPbRjwfuNgSfySUhO086/PvS89JaCzOQMao4
+         lSHVfM+JnH7iMfXgrHFSy5bUqKWyJarE/n/AM=
+Message-ID: <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com>
+Date: Sun, 4 Jan 2009 14:24:43 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: document ext3 requirements
+Cc: "=?WINDOWS-1252?Q?Martin_MOKREJ=8A?=" 
+	<mmokrejs@ribosome.natur.cuni.cz>,
+       "Pavel Machek" <pavel@suse.cz>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+In-Reply-To: <15786.1231041158@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20090103123813.GA1512@ucw.cz>
+	 <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com>
+	 <20090103222957.GG1666@elf.ucw.cz>
+	 <495FEE66.9080903@ribosome.natur.cuni.cz>
+	 <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com>
+	 <495FF9CE.2020908@ribosome.natur.cuni.cz>
+	 <e9e943910901031600o1705dfb3j197f90b62d1f75a6@mail.gmail.com>
+	 <495FFECB.5040001@ribosome.natur.cuni.cz>
+	 <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com>
+	 <15786.1231041158@turing-police.cc.vt.edu>
+X-Google-Sender-Auth: 25b6d5a2effcafbf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Jan 2009, Ingo Molnar wrote:
+2009/1/4  <Valdis.Kletnieks@vt.edu>:
+> On Sun, 04 Jan 2009 00:41:51 GMT, Duane Griffin said:
+>
+>> I agree, it isn't a great situation. Nonetheless, it has always been
+>> thus for ext3, and so far we've muddled along. Unless and until we can
+>> replay the journal in-memory without touching the on-disk data, we are
+>> stuck with it.
+>
+> Is there a way using md/dm/lvm etc to make the source partition R/O and
+> replay the journal onto a CoW snapshop?  Admittedly, not easy to do inside
+> the 'mount' command itself, but at least it might be workable for LiveCD R/O
+> mounts and forensics work, where you can *tell* beforehand that's what you
+> want and can jump through setup games before doing the mount...
 
-> 
-> * Baodong Chen <chenbdchenbd@gmail.com> wrote:
-> 
-> > On Fri, Jan 2, 2009 at 5:26 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > * Baodong Chen <chenbdchenbd@gmail.com> wrote:
-> > >
-> > >>  Documentation/x86/boot.txt:payload length was changed to payload_length
-> > >>
-> > >> Signed-off-by: Baodong Chen <[email]chenbdchenbd@gmail.com[email]>
-> > >>
-> > >> ---
-> > >>  Documentation/x86/boot.txt |    2 +-
-> > >>  1 files changed, 1 insertions(+), 1 deletions(-)
-> > >
-> > > looks good but the patch was whitespace damaged (all tabs were spaces and
-> > > there were linewraps as well), please check
-> > > Documentation/email-clients.txt and resend the patch. Thanks,
-> > >
-> > >        Ingo
-> > 
-> > I referred to Documentation/email-clients.txt:Gmail and resent the 
-> > patch. I am a newbie,if i made any mistake,please do me a favor and help 
-> > me.Thanks!
-> 
-> it's OK, and your resubmission was better - but it still had a linewrap 
-> problem (i was able to fix that up manually).
-> 
-> this bit:
-> 
-> @@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised
-> boot protocol.
->                 and KEEP_SEGMENTS flag in load_flags.
-> 
-> [3 lines]
-> 
-> should have been:
-> 
-> @@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised boot protocol.
->                 and KEEP_SEGMENTS flag in load_flags.
-> 
-> [2 lines]
-> 
-> If you post from gmail it might make sense to send patches as MIME 
-> attachments, we can process them just fine. (as long as you send patches 
-> that go via -tip - other maintainers have different policies regarding 
-> MIME attachments)
-> 
-Or simply don't use Gmails web interface for sending the emails.
-I used to use Gmail in the past, but I used it with Pine or Alpine most 
-of the time. Alpine can be configured to send proper emails and just use 
-Gmails SMTP server for sending them - Mutt also works fine.
+Yes, something like that is best practice, as I understand it. The
+LiveCD init scripts could check whether they are about to R/O mount an
+ext[34] filesystem needing recovery and either refuse with a useful
+message to the user, or even automatically create and mount a COW
+snapshot, as you described. They'd still need to warn the user though,
+since things like remounting R/W wouldn't work as expected.
+
+Cheers,
+Duane.
 
 -- 
-Jesper Juhl <jj@chaosbits.net>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
-
+"I never could learn to drink that blood and call it wine" - Bob Dylan
