@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbZADRbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbZADRei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760037AbZADRbX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 12:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759189AbZADRaW
+	id S1759328AbZADRei (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 12:34:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZADReb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 12:30:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54066 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759457AbZADRaR (ORCPT
+	Sun, 4 Jan 2009 12:34:31 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:62836 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755968AbZADRea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 12:30:17 -0500
-Date: Sun, 4 Jan 2009 09:24:30 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, fweisbec@gmail.com,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
-Message-ID: <20090104092430.7ffd2c41@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 4 Jan 2009 12:34:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=tSSAIYW1ZBsLNGjxLrc4lyOOe2ODq6Vid1LGhJFKG+hiTeLQHFmQB9uMpIHrBnkxfQ
+         vqEQB4xJ7Ua3lnrXmF2OAjxEIQaQbMpWJ9FVhr008LsakpFpenwxoaYCVj+LHy40wuUb
+         TX9yX2Q/z5zsBonFdDZwnUfjrzFiLNqfdKy9c=
+Message-ID: <3f9a31f40901040934g5f48a2e0q332180ace15bedfe@mail.gmail.com>
+Date: Sun, 4 Jan 2009 23:04:28 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: mpparse.c fix style problems
+Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "x86 maintainers" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090104172319.GA1238@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <1230723533.3738.8.camel@jaswinder.satnam>
+	 <20090102172150.GC6759@elte.hu>
+	 <3f9a31f40901040917i52df1ef5i7d86ddee05d4d0b1@mail.gmail.com>
+	 <20090104172319.GA1238@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jan 4, 2009 at 10:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> Similarly in arch/x86/include/asm/io_apic.h :
+>> 1. struct mp_config_ioapic with mp_X fields (what name will be best ?)
+>> 2. struct mp_config_intsrc with mp_X fields
+>>
+>> These are also used in arch/x86/kernel/mpparse.c
+>>
+>> Please let me know should I fix mp_X things first or should I proceed
+>> further in mpparse.c as per your suggestions.
+>
+> i think those should be standardized to mpc_X too, and the fields should
+> lose their mp_ prefix.
+>
 
-This patch series is based on Linus' original reaction to some of the
-fastboot patches which introduced an "asynchronous initcall level".
-Linus did not like the initcall level approach much, and wanted a much
-more finegrained kind of thing.
+Earlier we was having 2 sets :-
 
-This patch series introduces asynchronous function calls.
-The goal is still the same (boot faster), the method is entirely
-different.
+struct mpc_config_ioapic (mpspec) and mp_config_ioapic (ioapic)
+struct mpc_config_intsrc (mpspec) and mp_config_intsrc (ioapic)
 
-Asynchronous function calls allow drivers and subsystems to do
-operations asynchronously, while providing a mechanism to serialize
-the asynchronous operations at "externally visible" locations, such as
-device number registrations. 
+We moved struct mpc_config_X to struct mpc_X
 
-As such, this approach is NOT a "full parallel kernel init".
-For one, it keeps device numbers stable. For another, it's very much
-opt-in for any code using this.
+I want to know what should be name for mp_config_ioapic. Is struct
+mp_ioapic is OK ?
 
-Rather, it is more comparable to an out-of-order cpu, where computations
-are done asynchronously, but are retired in program order.
-
-This series first introduces the infrastructure in patch 1,
-and then adds users of this infrastructure (scsi in patch2, libata in
-patch 3 and acpi in patch 4).
-
-To see this working, I uploaded a "before" and "after" kernel bootchart
-for one of my testboxes at
-
-http://www.fenrus.org/linux/before.svg
-http://www.fenrus.org/linux/after.svg
-
-As you can see with inkscape (or gimp or any other svg viewer), there
-is still room for doing more things in parallel, but the 3 example usage
-patches are a big win already.
-
-
-One comment about the API:
-Originally I had functionality in mind where the caller of
-async_schedule() could get back the cookie value of the scheduled task.
-However I had no users of this, so I removed the code to do this. If
-someone finds a place where this is useful we can easily add this back.
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+JSR
