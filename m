@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZADNyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZADNzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZADNyE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 08:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZADNxy
+	id S1756739AbZADNzm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 08:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZADNze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 08:53:54 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:36401 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbZADNxx (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 08:53:53 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Alexander E. Patrakov" <patrakov@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: document ext3 requirements
-In-Reply-To: Your message of "Sun, 04 Jan 2009 18:35:41 +0500."
-             <4960BB2D.3060000@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090103123813.GA1512@ucw.cz>
-            <4960BB2D.3060000@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231077195_3941P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 04 Jan 2009 08:53:15 -0500
-Message-ID: <129621.1231077195@turing-police.cc.vt.edu>
+	Sun, 4 Jan 2009 08:55:34 -0500
+Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:29472 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbZADNze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 08:55:34 -0500
+Date: Sun, 4 Jan 2009 14:55:31 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Baodong Chen <chenbdchenbd@gmail.com>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Subject: [PATCH] Documentation/x86/boot.txt:payload length was
+ changed to payload_length
+In-Reply-To: <20090104125713.GD15472@elte.hu>
+Message-ID: <alpine.LNX.2.00.0901041453170.26359@swampdragon.chaosbits.net>
+References: <d204e3110901020024n7d0c1a6dt919f76283d9a8663@mail.gmail.com> <20090102092659.GC1975@elte.hu> <d204e3110901022044l2cf57f54yd52a2d331d69deef@mail.gmail.com> <20090104125713.GD15472@elte.hu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231077195_3941P
-Content-Type: text/plain; charset=us-ascii
+On Sun, 4 Jan 2009, Ingo Molnar wrote:
 
-On Sun, 04 Jan 2009 18:35:41 +0500, "Alexander E. Patrakov" said:
+> 
+> * Baodong Chen <chenbdchenbd@gmail.com> wrote:
+> 
+> > On Fri, Jan 2, 2009 at 5:26 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > > * Baodong Chen <chenbdchenbd@gmail.com> wrote:
+> > >
+> > >>  Documentation/x86/boot.txt:payload length was changed to payload_length
+> > >>
+> > >> Signed-off-by: Baodong Chen <[email]chenbdchenbd@gmail.com[email]>
+> > >>
+> > >> ---
+> > >>  Documentation/x86/boot.txt |    2 +-
+> > >>  1 files changed, 1 insertions(+), 1 deletions(-)
+> > >
+> > > looks good but the patch was whitespace damaged (all tabs were spaces and
+> > > there were linewraps as well), please check
+> > > Documentation/email-clients.txt and resend the patch. Thanks,
+> > >
+> > >        Ingo
+> > 
+> > I referred to Documentation/email-clients.txt:Gmail and resent the 
+> > patch. I am a newbie,if i made any mistake,please do me a favor and help 
+> > me.Thanks!
+> 
+> it's OK, and your resubmission was better - but it still had a linewrap 
+> problem (i was able to fix that up manually).
+> 
+> this bit:
+> 
+> @@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised
+> boot protocol.
+>                 and KEEP_SEGMENTS flag in load_flags.
+> 
+> [3 lines]
+> 
+> should have been:
+> 
+> @@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised boot protocol.
+>                 and KEEP_SEGMENTS flag in load_flags.
+> 
+> [2 lines]
+> 
+> If you post from gmail it might make sense to send patches as MIME 
+> attachments, we can process them just fine. (as long as you send patches 
+> that go via -tip - other maintainers have different policies regarding 
+> MIME attachments)
+> 
+Or simply don't use Gmails web interface for sending the emails.
+I used to use Gmail in the past, but I used it with Pine or Alpine most 
+of the time. Alpine can be configured to send proper emails and just use 
+Gmails SMTP server for sending them - Mutt also works fine.
 
-> Ext3 means either hardware that supports barriers (not sure how to 
-> check, and anyway I have to use encryption on the work laptop due to the 
-> corporate policy) or disabling write cache (but, as Alan Cox said, this 
-> shortens the lifespan of the disk).
+-- 
+Jesper Juhl <jj@chaosbits.net>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
 
-False dichotomy.  This isn't an "either/or", as there's a *third* case:
-
-"understand the issues and risks involved if you have a write cache and
-no barrier support, and learn to deal with it".
-
-As you point out, if it's a laptop with a battery, the risk may be *very* low.
-Let's say there's a 1 in 10,000 chance that you'll trash a file system and
-need to restore from backups.
-
-That may be totally acceptable if you've already estimated a 1 in 500 chance
-of the whole damned laptop going walkies while you're not looking, and then
-you *still* need to be able to restore from backups onto a replacement machine.
-
-Yes, for some systems, the whole barriers/write cache thing is in fact very
-important.  But for others, data loss due to spilled coffee is a bigger worry...
-
---==_Exmh_1231077195_3941P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJYL9LcC3lWbTT17ARAnLhAJ9Pl7zOpCpuUaOeCQMBXTL/hDwmSwCgkxwZ
-3HOLjlf3o03v15MEzoNLprY=
-=GNzZ
------END PGP SIGNATURE-----
-
---==_Exmh_1231077195_3941P--
