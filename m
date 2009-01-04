@@ -1,102 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZADUl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbZADUmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759500AbZADUl3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 15:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZADUlU
+	id S1757399AbZADUmL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 15:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZADUl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 15:41:20 -0500
-Received: from mail.gmx.net ([213.165.64.20]:51056 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751373AbZADUlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 15:41:19 -0500
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX18iBHAoBpgidEQEAQ/quSc7s4YgSe33MLkSrRIA7W
-	l0YdrJglgz3Idy
-Date: Sun, 4 Jan 2009 21:41:08 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
-       jens.axboe@oracle.com, mingo@elte.hu, andi@firstfloor.org,
-       akpm@linux-foundation.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       rostedt@goodmis.org, tglx@linutronix.de, manfred@colorfullife.com
-Subject: Re: [PATCH] Make treercu safe for suspend and resume
-Message-ID: <20090104204108.GA16467@alice>
-References: <20090104194111.GA16398@linux.vnet.ibm.com>
+	Sun, 4 Jan 2009 15:41:56 -0500
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:50516 "EHLO
+	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbZADUlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 15:41:55 -0500
+Date: Sun, 4 Jan 2009 12:41:49 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] printk: Let %pR handle NULL pointers
+In-Reply-To: <1231062493.15389.105.camel@pasglop>
+Message-ID: <Pine.LNX.4.58.0901041232460.25853@shell2.speakeasy.net>
+References: <1230979341-23029-1-git-send-email-xyzzy@speakeasy.org> 
+ <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain> 
+ <1231019614.15389.104.camel@pasglop>  <Pine.LNX.4.58.0901031827380.25853@shell2.speakeasy.net>
+ <1231062493.15389.105.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090104194111.GA16398@linux.vnet.ibm.com>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
-X-Uptime: 21:38:37 up  8:05,  7 users,  load average: 0.24, 0.30, 0.36
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> Hello!
-> 
-> Kudos to both Dhaval Giani and Jens Axboe for finding a bug in treercu
-> that causes warnings after suspend-resume cycles in Dhaval's case and
-> during stress tests in Jens's case.  It would also probably cause failures
-> if heavily stressed.  The solution, ironically enough, is to revert to
-> rcupreempt's code for initializing the dynticks state.  And the patch
-> even results in smaller code -- so what was I thinking???
-> 
-> This is 2.6.29 material, given that people really do suspend and resume
-> Linux these days.  ;-)
+On Sun, 4 Jan 2009, Benjamin Herrenschmidt wrote:
+> > I thought of doing that too, but then all the various %pX formats would all
+> > have to print the same for NULL pointers.  For instance a resource prints
+> > out like "[0x1000-0x100f]", so I chose "[NULL]" for printing a null
+> > resource pointer.  Maybe "[]" or "[-]" would be better?  A null MAC address
+> > could be ":::::" or "x:x:x:x:x:x".  "N.U.L.L" or "x.x.x.x" for a null IP4
+> > address.  And so on.  So the printout looks nicer when a NULL pointer isn't
+> > a bug.
+>
+> And how often is that ?
 
-sadly even with this patch i still get this oops when doing
-modprobe rcutorture; sleep 2s; rmmod rcutorture
-
-[   74.413097] BUG: unable to handle kernel NULL pointer dereference at
-(null)
-[   74.413424] IP: [<(null)>] (null)
-[   74.413651] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-[   74.413956] last sysfs file: /sys/block/ram9/range
-[   74.414039] Modules linked in: [last unloaded: rcutorture]
-[   74.414039] 
-[   74.414039] Pid: 4997, comm: rcu_torture_wri Tainted: G        W
-(2.6.28-05692-g7d3b56b-dirty #167) System Name
-[   74.414039] EIP: 0060:[<00000000>] EFLAGS: 00010246 CPU: 0
-[   74.414039] EIP is at 0x0
-[   74.414039] EAX: d0afd130 EBX: 00000000 ECX: c01612a6 EDX: 00000006
-[   74.414039] ESI: d0afd130 EDI: 0000001c EBP: c0b03fe0 ESP: c0b03fd4
-[   74.414039]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-[   74.414039] Process rcu_torture_wri (pid: 4997, ti=c0b03000
-task=c98bce00 task.ti=c988b000)
-[   74.414039] Stack:
-[   74.414039]  c01612ad 00000200 00000001 c0b03ff8 c012aa97 0000000a
-c988beac 00000046
-[   74.414039]  c012aa28 c988bebc c01042c2
-[   74.414039] Call Trace:
-[   74.414039]  [<c01612ad>] ? rcu_process_callbacks+0x65/0x79
-[   74.414039]  [<c012aa97>] ? __do_softirq+0x6f/0xf6
-[   74.414039]  [<c012aa28>] ? __do_softirq+0x0/0xf6
-[   74.414039]  <IRQ> <0> [<c012a9a5>] ? irq_exit+0x40/0x7c
-[   74.414039]  [<c0110ce1>] ? smp_apic_timer_interrupt+0x68/0x73
-[   74.414039]  [<c0103521>] ? apic_timer_interrupt+0x2d/0x34
-[   74.414039]  [<c01219f7>] ? finish_task_switch+0x4d/0x8b
-[   74.414039]  [<c014007b>] ? tick_check_oneshot_change+0xb1/0xf9
-[   74.414039]  [<c07a091f>] ? _spin_unlock_irq+0x2d/0x47
-[   74.414039]  [<c01219f7>] ? finish_task_switch+0x4d/0x8b
-[   74.414039]  [<c01219aa>] ? finish_task_switch+0x0/0x8b
-[   74.414039]  [<c079e366>] ? schedule+0x404/0x450
-[   74.414039]  [<c079e582>] ? schedule_timeout+0x70/0x95
-[   74.414039]  [<c012e13a>] ? process_timeout+0x0/0xf
-[   74.414039]  [<c079e57d>] ? schedule_timeout+0x6b/0x95
-[   74.414039]  [<c079e5c0>] ?
-schedule_timeout_uninterruptible+0x19/0x1b
-[   74.414039]  [<c0136bcc>] ? kthread+0x3e/0x66
-[   74.414039]  [<c0136b8e>] ? kthread+0x0/0x66
-[   74.414039]  [<c0103643>] ? kernel_thread_helper+0x7/0x10
-[   74.414039] Code:  Bad EIP value.
-[   74.414039] EIP: [<00000000>] 0x0 SS:ESP 0068:c0b03fd4
-[   74.422275] ---[ end trace 4eaa2a86a8e2da22 ]---
-[   74.422406] Kernel panic - not syncing: Fatal exception in interrupt
-
-Greetings Eric
+For resource pointers it's not uncommon.  There are many cases when it's perfectly
+ok for a resource pointer to be null, e.g. res->parent is often null, pci devices
+and busses don't usually have all possible ranges, etc.  It nice to get decent info
+printouts without having the check for NULL pointers.
