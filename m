@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZADVzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759079AbZADVzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbZADVzf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 16:55:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZADVz0
+	id S1759079AbZADVzu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 16:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZADVzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 16:55:26 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57744 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751475AbZADVzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 16:55:25 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/V299IfOfV+6mQqyYiVqE135xxTRBZ+o2qGjNYl8
-	fM1pPNNLjnamZ5
-Date: Sun, 4 Jan 2009 22:55:24 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Trilok Soni <soni.trilok@gmail.com>
-cc: linux-kernel@vger.kernel.org,
-       ext Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: videobuf-dma-sg.c: build failure on latest Jan 3,2009 tip
-In-Reply-To: <5d5443650901040234y799c4b0en482954db0f4c65c0@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0901042254300.4288@axis700.grange>
-References: <5d5443650901040234y799c4b0en482954db0f4c65c0@mail.gmail.com>
+	Sun, 4 Jan 2009 16:55:32 -0500
+Received: from thunk.org ([69.25.196.29]:57202 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755152AbZADVza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 16:55:30 -0500
+Date: Sun, 4 Jan 2009 16:55:19 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Valdis.Kletnieks@vt.edu,
+       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+Message-ID: <20090104215519.GC22958@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Duane Griffin <duaneg@dghda.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>, Valdis.Kletnieks@vt.edu,
+	Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+	Pavel Machek <pavel@suse.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org
+References: <495FF9CE.2020908@ribosome.natur.cuni.cz> <e9e943910901031600o1705dfb3j197f90b62d1f75a6@mail.gmail.com> <495FFECB.5040001@ribosome.natur.cuni.cz> <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com> <15786.1231041158@turing-police.cc.vt.edu> <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com> <20090104184040.GC17558@mit.edu> <Pine.LNX.4.64.0901042015230.31141@anakin> <20090104193637.GB22958@mit.edu> <e9e943910901041151x4f251224w63df1e6237ec48cb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9e943910901041151x4f251224w63df1e6237ec48cb@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Jan 2009, Trilok Soni wrote:
-
-> Mauro,
+On Sun, Jan 04, 2009 at 07:51:27PM +0000, Duane Griffin wrote:
 > 
-> Build failure on latest tip of linux-2.6 mainline kernel while doing
-> it for n800 tablet.
-> 
->   CC      drivers/media/video/videobuf-core.o
->   CC      drivers/media/video/videobuf-dma-sg.o
-> drivers/media/video/videobuf-dma-sg.c: In function 'videobuf_vm_fault':
-> drivers/media/video/videobuf-dma-sg.c:391: error: implicit declaration
-> of function 'clear_user_page'
-> make[3]: *** [drivers/media/video/videobuf-dma-sg.o] Error 1
-> make[2]: *** [drivers/media/video] Error 2
-> make[1]: *** [drivers/media] Error 2
-> make: *** [drivers] Error 2
-> 
-> 
-> tip commit id:
-> commit 7d3b56ba37a95f1f370f50258ed3954c304c524b
+> If anyone is interested I'd be happy to dust off and send them my old
+> patches to implement this. There are a couple of issues with it.
+> First, I never got around to implementing remount R/W support. Second,
+> I had to introduce a rather nasty hack in order to handle un-escaping
+> JFS magic numbers.
 
-This
+Can you dust off the patches and send a copy to
+linux-ext4@vger.kernel.org so we have them archived someplace where
+hopefully someone might have time to look at it?
 
-http://marc.info/?l=linux-video&m=123101763514517&w=2
-
-should be the fix for the problem.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+	  	  	     	     	  - Ted
