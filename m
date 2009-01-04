@@ -1,94 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbZADVOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZADVOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759075AbZADVOD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 16:14:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZADVNv
+	id S1759586AbZADVOu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 16:14:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbZADVOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 16:13:51 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59412 "EHLO e4.ny.us.ibm.com"
+	Sun, 4 Jan 2009 16:14:41 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:54800 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752291AbZADVNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 16:13:50 -0500
-Date: Sun, 4 Jan 2009 13:13:49 -0800
+	id S1752291AbZADVOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 16:14:40 -0500
+Date: Sun, 4 Jan 2009 13:14:38 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, josh@freedesktop.org, dipankar@in.ibm.com
-Subject: Re: [BUG] NULL pointer deref with rcutorture
-Message-ID: <20090104211349.GS6958@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       jens.axboe@oracle.com, mingo@elte.hu, andi@firstfloor.org,
+       akpm@linux-foundation.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       rostedt@goodmis.org, tglx@linutronix.de, manfred@colorfullife.com
+Subject: Re: [PATCH] Make treercu safe for suspend and resume
+Message-ID: <20090104211438.GT6958@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090102111819.GC6088@alice> <20090102175853.GC6842@linux.vnet.ibm.com> <20090102185303.GC5743@linux.vnet.ibm.com> <20090102195326.GF6842@linux.vnet.ibm.com> <20090102231239.GA19778@alice> <20090103015748.GL6842@linux.vnet.ibm.com> <20090103094003.GA6149@alice> <20090104013254.GG6958@linux.vnet.ibm.com> <20090104145726.GA14895@alice>
+References: <20090104194111.GA16398@linux.vnet.ibm.com> <20090104204108.GA16467@alice>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090104145726.GA14895@alice>
+In-Reply-To: <20090104204108.GA16467@alice>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 03:57:26PM +0100, Eric Sesterhenn wrote:
+On Sun, Jan 04, 2009 at 09:41:08PM +0100, Eric Sesterhenn wrote:
 > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Sat, Jan 03, 2009 at 10:40:03AM +0100, Eric Sesterhenn wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Sat, Jan 03, 2009 at 12:12:39AM +0100, Eric Sesterhenn wrote:
-> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > 
-> > > > > I tried to apply the patch from
-> > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff_plain;h=392ddc32982a5c661dd90dd49a3cb37f1c68b782;hp=bb799ca0202a360fa74d5f17039b9100caebdde7
-> > > > > but get a message that it is already applied. Seems i already got that
-> > > > > one.
-> > > > 
-> > > > Is your configuration able to support ftrace?
-> > > 
-> > > yes
-> > > 
-> > > > Looks like someone is (wrongly) freeing some memory that was sent to
-> > > > call_rcu(), and ftrace might be one way to locate the problem.
-> > > 
-> > > I set the filter to call_rcu() and call_rcu_sched(), reproduced the
-> > > oops, and got this in the trace file.
+> > Hello!
 > > 
-> > Hmmm...  The only unique ones are _rcu_barrier() used during module
-> > removal by rcutorture and rt_worker_func(), which occurs near the
-> > beginning of the trace.  My next step would be to trace the addresses of
-> > rcu_head structures passed to call_rcu() and friends and to also trace
-> > the addresses of the structures as they are invoked (where the original
-> > NULL-pointer exception occurred).
+> > Kudos to both Dhaval Giani and Jens Axboe for finding a bug in treercu
+> > that causes warnings after suspend-resume cycles in Dhaval's case and
+> > during stress tests in Jens's case.  It would also probably cause failures
+> > if heavily stressed.  The solution, ironically enough, is to revert to
+> > rcupreempt's code for initializing the dynticks state.  And the patch
+> > even results in smaller code -- so what was I thinking???
 > > 
-> > Is this tracing something you would be interested in taking on?  My
-> > test setup is having some trouble, so it would probably be a couple of
-> > days before I got it working.  :-/
+> > This is 2.6.29 material, given that people really do suspend and resume
+> > Linux these days.  ;-)
 > 
-> Just tell me what i need to do, I am not really familiar with ftrace.
-> I am only able to test 2.6.28-04980-gb58602a, since current -git is not
-> able to boot on this box :|
+> sadly even with this patch i still get this oops when doing
+> modprobe rcutorture; sleep 2s; rmmod rcutorture
 
-Very cool!
-
-The idea is to have __call_rcu() in kernel/rcutree.c record the
-address of the callback (argument "head") and the function (argument
-"func").  In rcu_do_batch(), just before invoking list->func(list),
-also record the address of the callback ("list") and the function
-(again, "func").
-
-The new ftrace package has some mechanisms for doing this, but there is
-always the old-fashioned way of using printk(), for example in
-rcu_do_batch():
-
-	prefetch(next);
-	if (rcu_dump_callbacks)
-		printk("rcu_head=%p, func=%p\n", list, func);
-	list->func(list);
-
-Initialize rcu_dump_callbacks to zero, then use a small kernel module
-(or some such) to set it to one just before running your test.
-
-If you would like, I could rough out the code, though as noted earlier,
-I currently have no way of testing it.  (Hopefully will be fixed in a
-few days.)
-
-I was wondering what should be done for ftrace plugins for RCU, I guess
-I now have at least part of the answer.  ;-)
+I would have been extremely surprised had that patch fixed this problem,
+but thank you very much for trying it out!  What can I say, I worked on
+the easy ones first.  ;-)
 
 							Thanx, Paul
+
+> [   74.413097] BUG: unable to handle kernel NULL pointer dereference at
+> (null)
+> [   74.413424] IP: [<(null)>] (null)
+> [   74.413651] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+> [   74.413956] last sysfs file: /sys/block/ram9/range
+> [   74.414039] Modules linked in: [last unloaded: rcutorture]
+> [   74.414039] 
+> [   74.414039] Pid: 4997, comm: rcu_torture_wri Tainted: G        W
+> (2.6.28-05692-g7d3b56b-dirty #167) System Name
+> [   74.414039] EIP: 0060:[<00000000>] EFLAGS: 00010246 CPU: 0
+> [   74.414039] EIP is at 0x0
+> [   74.414039] EAX: d0afd130 EBX: 00000000 ECX: c01612a6 EDX: 00000006
+> [   74.414039] ESI: d0afd130 EDI: 0000001c EBP: c0b03fe0 ESP: c0b03fd4
+> [   74.414039]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> [   74.414039] Process rcu_torture_wri (pid: 4997, ti=c0b03000
+> task=c98bce00 task.ti=c988b000)
+> [   74.414039] Stack:
+> [   74.414039]  c01612ad 00000200 00000001 c0b03ff8 c012aa97 0000000a
+> c988beac 00000046
+> [   74.414039]  c012aa28 c988bebc c01042c2
+> [   74.414039] Call Trace:
+> [   74.414039]  [<c01612ad>] ? rcu_process_callbacks+0x65/0x79
+> [   74.414039]  [<c012aa97>] ? __do_softirq+0x6f/0xf6
+> [   74.414039]  [<c012aa28>] ? __do_softirq+0x0/0xf6
+> [   74.414039]  <IRQ> <0> [<c012a9a5>] ? irq_exit+0x40/0x7c
+> [   74.414039]  [<c0110ce1>] ? smp_apic_timer_interrupt+0x68/0x73
+> [   74.414039]  [<c0103521>] ? apic_timer_interrupt+0x2d/0x34
+> [   74.414039]  [<c01219f7>] ? finish_task_switch+0x4d/0x8b
+> [   74.414039]  [<c014007b>] ? tick_check_oneshot_change+0xb1/0xf9
+> [   74.414039]  [<c07a091f>] ? _spin_unlock_irq+0x2d/0x47
+> [   74.414039]  [<c01219f7>] ? finish_task_switch+0x4d/0x8b
+> [   74.414039]  [<c01219aa>] ? finish_task_switch+0x0/0x8b
+> [   74.414039]  [<c079e366>] ? schedule+0x404/0x450
+> [   74.414039]  [<c079e582>] ? schedule_timeout+0x70/0x95
+> [   74.414039]  [<c012e13a>] ? process_timeout+0x0/0xf
+> [   74.414039]  [<c079e57d>] ? schedule_timeout+0x6b/0x95
+> [   74.414039]  [<c079e5c0>] ?
+> schedule_timeout_uninterruptible+0x19/0x1b
+> [   74.414039]  [<c0136bcc>] ? kthread+0x3e/0x66
+> [   74.414039]  [<c0136b8e>] ? kthread+0x0/0x66
+> [   74.414039]  [<c0103643>] ? kernel_thread_helper+0x7/0x10
+> [   74.414039] Code:  Bad EIP value.
+> [   74.414039] EIP: [<00000000>] 0x0 SS:ESP 0068:c0b03fd4
+> [   74.422275] ---[ end trace 4eaa2a86a8e2da22 ]---
+> [   74.422406] Kernel panic - not syncing: Fatal exception in interrupt
+> 
+> Greetings Eric
