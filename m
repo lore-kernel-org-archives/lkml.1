@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753712AbZADQfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbZADQfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753712AbZADQfN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 11:35:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbZADQez
+	id S1758564AbZADQfq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 11:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbZADQfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 11:34:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35895 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbZADQey (ORCPT
+	Sun, 4 Jan 2009 11:35:09 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53846 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbZADQfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 11:34:54 -0500
-Subject: [PATCH -tip 1/7] x86: rename all fields of mpc_iopic mpc_X to X
+	Sun, 4 Jan 2009 11:35:08 -0500
+Subject: [PATCH -tip 2/7] x86: rename all fields of mpc_lintsrc mpc_X to X
 From: Jaswinder Singh Rajput <jaswinder@infradead.org>
 To: mingo@elte.hu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Andi Kleen <andi@firstfloor.org>, astarikovskiy@suse.de,
        x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sun, 04 Jan 2009 21:54:39 +0530
-Message-Id: <1231086279.5517.17.camel@jaswinder.satnam>
+Date: Sun, 04 Jan 2009 21:55:53 +0530
+Message-Id: <1231086353.5517.20.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -34,81 +34,73 @@ no need to duplicate that in the field too)
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/include/asm/mpspec_def.h |   10 +++++-----
- arch/x86/kernel/mpparse.c         |   26 +++++++++++++-------------
- 2 files changed, 18 insertions(+), 18 deletions(-)
+ arch/x86/include/asm/mpspec_def.h |   14 +++++++-------
+ arch/x86/kernel/mpparse.c         |   19 +++++++++----------
+ 2 files changed, 16 insertions(+), 17 deletions(-)
 
 diff --git a/arch/x86/include/asm/mpspec_def.h b/arch/x86/include/asm/mpspec_def.h
-index ba8ed0c..f805682 100644
+index f805682..c8bbb32 100644
 --- a/arch/x86/include/asm/mpspec_def.h
 +++ b/arch/x86/include/asm/mpspec_def.h
-@@ -109,11 +109,11 @@ struct mpc_bus {
- #define MPC_APIC_USABLE		0x01
+@@ -140,13 +140,13 @@ enum mp_irq_source_types {
+ #define MP_APIC_ALL	0xFF
  
- struct mpc_ioapic {
+ struct mpc_lintsrc {
 -	unsigned char mpc_type;
--	unsigned char mpc_apicid;
--	unsigned char mpc_apicver;
--	unsigned char mpc_flags;
--	unsigned int mpc_apicaddr;
+-	unsigned char mpc_irqtype;
+-	unsigned short mpc_irqflag;
+-	unsigned char mpc_srcbusid;
+-	unsigned char mpc_srcbusirq;
+-	unsigned char mpc_destapic;
+-	unsigned char mpc_destapiclint;
 +	unsigned char type;
-+	unsigned char apicid;
-+	unsigned char apicver;
-+	unsigned char flags;
-+	unsigned int apicaddr;
++	unsigned char irqtype;
++	unsigned short irqflag;
++	unsigned char srcbusid;
++	unsigned char srcbusirq;
++	unsigned char destapic;
++	unsigned char destapiclint;
  };
  
- struct mpc_intsrc {
+ #define MPC_OEM_SIGNATURE "_OEM"
 diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 1ccb253..f36d9da 100644
+index f36d9da..a5c728b 100644
 --- a/arch/x86/kernel/mpparse.c
 +++ b/arch/x86/kernel/mpparse.c
-@@ -135,20 +135,20 @@ static int bad_ioapic(unsigned long address)
- 
- static void __init MP_ioapic_info(struct mpc_ioapic *m)
+@@ -237,9 +237,8 @@ static void __init MP_lintsrc_info(struct mpc_lintsrc *m)
  {
--	if (!(m->mpc_flags & MPC_APIC_USABLE))
-+	if (!(m->flags & MPC_APIC_USABLE))
- 		return;
- 
- 	printk(KERN_INFO "I/O APIC #%d Version %d at 0x%X.\n",
--	       m->mpc_apicid, m->mpc_apicver, m->mpc_apicaddr);
-+	       m->apicid, m->apicver, m->apicaddr);
- 
--	if (bad_ioapic(m->mpc_apicaddr))
-+	if (bad_ioapic(m->apicaddr))
- 		return;
- 
--	mp_ioapics[nr_ioapics].mp_apicaddr = m->mpc_apicaddr;
--	mp_ioapics[nr_ioapics].mp_apicid = m->mpc_apicid;
--	mp_ioapics[nr_ioapics].mp_type = m->mpc_type;
--	mp_ioapics[nr_ioapics].mp_apicver = m->mpc_apicver;
--	mp_ioapics[nr_ioapics].mp_flags = m->mpc_flags;
-+	mp_ioapics[nr_ioapics].mp_apicaddr = m->apicaddr;
-+	mp_ioapics[nr_ioapics].mp_apicid = m->apicid;
-+	mp_ioapics[nr_ioapics].mp_type = m->type;
-+	mp_ioapics[nr_ioapics].mp_apicver = m->apicver;
-+	mp_ioapics[nr_ioapics].mp_flags = m->flags;
- 	nr_ioapics++;
+ 	apic_printk(APIC_VERBOSE, "Lint: type %d, pol %d, trig %d, bus %02x,"
+ 		" IRQ %02x, APIC ID %x, APIC LINT %02x\n",
+-		m->mpc_irqtype, m->mpc_irqflag & 3,
+-		(m->mpc_irqflag >> 2) & 3, m->mpc_srcbusid,
+-		m->mpc_srcbusirq, m->mpc_destapic, m->mpc_destapiclint);
++		m->irqtype, m->irqflag & 3, (m->irqflag >> 2) & 3, m->srcbusid,
++		m->srcbusirq, m->destapic, m->destapiclint);
  }
  
-@@ -513,11 +513,11 @@ static void __init construct_ioapic_table(int mpc_default_type)
- 		MP_bus_info(&bus);
+ /*
+@@ -560,14 +559,14 @@ static inline void __init construct_default_ISA_mptable(int mpc_default_type)
+ 
+ 	construct_ioapic_table(mpc_default_type);
+ 
+-	lintsrc.mpc_type = MP_LINTSRC;
+-	lintsrc.mpc_irqflag = 0;	/* conforming */
+-	lintsrc.mpc_srcbusid = 0;
+-	lintsrc.mpc_srcbusirq = 0;
+-	lintsrc.mpc_destapic = MP_APIC_ALL;
++	lintsrc.type = MP_LINTSRC;
++	lintsrc.irqflag = 0;		/* conforming */
++	lintsrc.srcbusid = 0;
++	lintsrc.srcbusirq = 0;
++	lintsrc.destapic = MP_APIC_ALL;
+ 	for (i = 0; i < 2; i++) {
+-		lintsrc.mpc_irqtype = linttypes[i];
+-		lintsrc.mpc_destapiclint = i;
++		lintsrc.irqtype = linttypes[i];
++		lintsrc.destapiclint = i;
+ 		MP_lintsrc_info(&lintsrc);
  	}
- 
--	ioapic.mpc_type = MP_IOAPIC;
--	ioapic.mpc_apicid = 2;
--	ioapic.mpc_apicver = mpc_default_type > 4 ? 0x10 : 0x01;
--	ioapic.mpc_flags = MPC_APIC_USABLE;
--	ioapic.mpc_apicaddr = 0xFEC00000;
-+	ioapic.type = MP_IOAPIC;
-+	ioapic.apicid = 2;
-+	ioapic.apicver = mpc_default_type > 4 ? 0x10 : 0x01;
-+	ioapic.flags = MPC_APIC_USABLE;
-+	ioapic.apicaddr = 0xFEC00000;
- 	MP_ioapic_info(&ioapic);
- 
- 	/*
+ }
 -- 
 1.5.5.1
 
