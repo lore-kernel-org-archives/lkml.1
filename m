@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZADCS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZADCXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbZADCS6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 21:18:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZADCSu
+	id S1755589AbZADCXU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 21:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZADCXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 21:18:50 -0500
-Received: from elasmtp-dupuy.atl.sa.earthlink.net ([209.86.89.62]:40905 "EHLO
-	elasmtp-dupuy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751629AbZADCSt (ORCPT
+	Sat, 3 Jan 2009 21:23:09 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45108
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbZADCXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 21:18:49 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=i58eAu42wqVloeM534ud9WSHAVOWPJP6rJSQpboAKl83z+KNB7yOeQrtFzyzU2sO;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Sat, 3 Jan 2009 21:18:43 -0500
-From: Bill Fink <billfink@mindspring.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 2/2] ieee1934: dv1394 interrupt enabling/disabling
- broken on big-endian
-Message-Id: <20090103211843.d36d252f.billfink@mindspring.com>
-In-Reply-To: <495F976C.8030105@s5r6.in-berlin.de>
-References: <1229210489.11257.16.camel@brick>
-	<4944561D.4010608@s5r6.in-berlin.de>
-	<20081213204137.d150645c.billfink@mindspring.com>
-	<49446923.5040606@s5r6.in-berlin.de>
-	<20081223172300.5bd19846.billfink@mindspring.com>
-	<20081225220244.1eacb39d.billfink@mindspring.com>
-	<495F976C.8030105@s5r6.in-berlin.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 3 Jan 2009 21:23:08 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Date: Sat, 3 Jan 2009 20:23:04 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <200901020656.32013.rob@landley.net> <20090102140409.GA4758@mit.edu>
+In-Reply-To: <20090102140409.GA4758@mit.edu>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d72e0b50997696b4ac608b606f7988716350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 96.234.158.88
+Message-Id: <200901032023.05001.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Jan 2009, Stefan Richter wrote:
+On Friday 02 January 2009 08:04:09 Theodore Tso wrote:
+> Sounds like though modulo dealing with 64-bit arithmetic, your patches
+> are mostly dash/POSIX.2 comformant, so you're probably mostly good on
+> that front once you address the 32/64-bit issues.  I'd also suggest
+> explicitly add a reminder to the shell scripts' comments to avoid
+> bashisms for maximum portability, to remind developers in the future
+> who might try to change the shell scripts to watch out for portability
+> issues.
 
-> Bill Fink wrote on 2008-12-26:
-> > Good news.  I finally got a chance to test the patch on my kernel,
-> > and live DV viewing using xine still worked fine.
-> 
-> Thanks a lot.  If you don't mind, I'll add "Tested-by: Bill Fink
-> <billfink@mindspring.com>" to the changelog when I enqueue this for
-> Linus, and add a note that it actually worked for you before as well as
-> after this patch.
+I changed the scripts to start with #!/bin/sh and retested under dash.
 
-That's fine.  Although I admit to being mystified how it works both
-before and after the patch, since the cpu_to_le32() calls that were
-added should result in byte swapping on PPC that wasn't being done
-before.  I guess that either the code paths involved aren't actually
-being triggered by my xine DV viewing, or there's some fortuitous
-palindromic setting of bits.
+If scripts say #!/bin/sh when they actually need bash, or say #!/bin/bash when 
+they work with dash, that should probably be fixed.
 
-						-Bill
+Rob
