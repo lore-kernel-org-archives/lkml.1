@@ -1,120 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760534AbZADT1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbZADT1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760534AbZADT1B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 14:27:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbZADT0x
+	id S1760632AbZADT1c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 14:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758687AbZADT1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 14:26:53 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:58217 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756738AbZADT0w (ORCPT
+	Sun, 4 Jan 2009 14:27:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36523 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758346AbZADT1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 14:26:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Ggr3flOdsWcwQe7Mg96NJ1hycpLPAooB8DoI6fM+43sbR8RR0KFbEzTYQ6uopYbtG3
-         TGX5GQPj+pvNl14bH9PQXhaaqdTsatdAMDwZuCuCzJYHcbByqKX0+Zfc3Rq3KB1w2AMY
-         0M6YamnoHPgf9Gal5k71ZA1fzOSHjqK1v2/1o=
-Message-ID: <49610BAA.4060308@googlemail.com>
-Date: Sun, 04 Jan 2009 20:19:06 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081122)
+	Sun, 4 Jan 2009 14:27:19 -0500
+Date: Sun, 4 Jan 2009 11:27:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Arjan van de Ven <arjan@infradead.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
+In-Reply-To: <alpine.LFD.2.00.0901041009060.3179@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0901041118390.3179@localhost.localdomain>
+References: <20090104092430.7ffd2c41@infradead.org> <alpine.LFD.2.00.0901041009060.3179@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Dave Airlie <airlied@linux.ie>
-CC: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Eric Anholt <eric@anholt.net>
-Subject: Re: [git pull] drm
-References: <alpine.DEB.2.00.0812290819020.20427@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.2.00.0812290819020.20427@skynet.skynet.ie>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
-
-Hi Dave ,
-
-...
 
 
- 
-> Please pull the 'drm-next' branch from
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-next
+On Sun, 4 Jan 2009, Linus Torvalds wrote:
 > 
-> Major highlights:
-> Kernel Modesetting (KMS) core code (jbarnes you can go to drinking island 
-> now)
-> Intel i915 support for kernel modesetting
+> Ok, so why does the serial port init take so long? That's a quarter of a 
+> second for you, which is ridiculous.
 
+Hmm. I also note that you don't seem to have the IDE probing configured in 
+at all. It's not _that_ uncommon, afaik, and even if you have no devices 
+behind it (or perhaps _especially_ if you have no devices behind it), the 
+IDE probe is actually pretty expensive. Hmm?
 
-....
+Also, I'm looking at the AHCI vs Marvell thing, and the problem seems to 
+be that you do that libata port scan like this:
 
+        for (i = 0; i < host->n_ports; i++) {
+                struct ata_port *ap = host->ports[i];
 
+                async_schedule(async_port_probe, ap);
+        }
 
-> commit 79e539453b34e35f39299a899d263b0a1f1670bd
-> Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Date:   Fri Nov 7 14:24:08 2008 -0800
-> 
->     DRM: i915: add mode setting support
->     
->     This commit adds i915 driver support for the DRM mode setting APIs.
->     Currently, VGA, LVDS, SDVO DVI & VGA, TV and DVO LVDS outputs are
->     supported.  HDMI, DisplayPort and additional SDVO output support will
->     follow.
->     
->     Support for the mode setting code is controlled by the new 'modeset'
->     module option.  A new config option, CONFIG_DRM_I915_KMS controls the
->     default behavior, and whether a PCI ID list is built into the module for
->     use by user level module utilities.
->     
->     Note that if mode setting is enabled, user level drivers that access
->     display registers directly or that don't use the kernel graphics memory
->     manager will likely corrupt kernel graphics memory, disrupt output
->     configuration (possibly leading to hangs and/or blank displays), and
->     prevent panic/oops messages from appearing.  So use caution when
->     enabling this code; be sure your user level code supports the new
->     interfaces.
->     
->     A new SysRq key, 'g', provides emergency support for switching back to
->     the kernel's framebuffer console; which is useful for testing.
->     
->     Co-authors: Dave Airlie <airlied@linux.ie>, Hong Liu <hong.liu@intel.com>
->     
->     Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
->     Signed-off-by: Eric Anholt <eric@anholt.net>
->     Signed-off-by: Dave Airlie <airlied@redhat.com>
-> 
+	async_synchronize_full();
+        /* probes are done, now scan each port's disk(s) */
+        DPRINTK("host probe begin\n");
+        for (i = 0; i < host->n_ports; i++) {
+                struct ata_port *ap = host->ports[i];
 
+                ata_scsi_scan_host(ap, 1);
+        }
 
-This commit added the following text to drivers/gpu/drm/Kconfig :
+which means that there is a full serialization between each controller.
 
-config DRM_I915_KMS
-       bool "Enable modesetting on intel by default"
-       depends on DRM_I915
-       help
-       Choose this option if you want kernel modesetting enabled by default,
-       and you have a new enough userspace to support this. Running old
-       userspaces with this enabled will cause pain.  Note that this causes
-       the driver to bind to PCI devices, which precludes loading things
-       like intelfb.
+Wouldn't is be possible to move the "ata_scsi_scan_host(ap, 1);" _into_ 
+the async_port_probe(), and just do a
 
+	async_synchronize_cookie(cookie);
 
-I don't think any 'normal' user has a clue what you guys meant by 
-'new and old userspace' . Could someone clarify 'what versions of probably Xorg and libs are
-needed to have that support and which are for sure broken or old' please ?
+before it? Hmm?
 
-Also while testing this with xorg-server 1.4* I found out the 'pain' means an broken X and a broken box since 
-it broke the kernel as well and the only way to get the box to live again was an hard reset. Please clarify the 'pain' part too.
+And then not do any async_synchronize_full() at all, until much later. For 
+example, we clearly do need that full synchronization before we try to 
+mount the root filesystem, but we should have that particular 
+synchronization regardless of any SATA issues.
 
-Thanks for your time.
+I may be missing something obvious, of course. Maybe a simple cookie 
+synchronization isn't sufficient for some reason (most likely reason: 
+other SCSI drivers that don't do it).
 
-Best regards ,
-
-Gabriel C
-
-
+			Linus
