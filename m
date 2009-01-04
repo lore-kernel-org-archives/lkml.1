@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZADLbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbZADLgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbZADLbb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 06:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZADLbX
+	id S1757260AbZADLgQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 06:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZADLgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 06:31:23 -0500
-Received: from b01.ext.isohunt.com ([208.71.112.51]:34496 "EHLO
-	mail.isohunt.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751230AbZADLbW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 06:31:22 -0500
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Jan 2009 06:31:22 EST
-Date: Sun, 4 Jan 2009 03:24:36 -0800
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk, robbat2@gentoo.org
-Subject: reiserfs broken "unknown uniqueness" (commit
-	c1eaa26b671299b3ec01d40c6c71ee19a4f81517)
-Message-ID: <20090104112436.GT32364@curie-int.orbis-terrarum.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2pi4Gp0KyRJpQ5Nw"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 4 Jan 2009 06:36:00 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:59354 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751357AbZADLf7 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 06:35:59 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: David Newall <davidn@davidnewall.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Ben Goodger <goodgerster@gmail.com>,
+       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
+       MentalMooMan <slashdot@jameshallam.info>,
+       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
+In-Reply-To: Your message of "Sun, 04 Jan 2009 20:33:41 +1030."
+             <4960897D.5030603@davidnewall.com>
+From: Valdis.Kletnieks@vt.edu
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com> <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca> <495F0672.6020708@davidnewall.com> <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com> <496076A9.7030907@davidnewall.com> <f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
+            <4960897D.5030603@davidnewall.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1231068940_3941P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sun, 04 Jan 2009 06:35:40 -0500
+Message-ID: <122713.1231068940@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---2pi4Gp0KyRJpQ5Nw
+--==_Exmh_1231068940_3941P
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-(Please CC, not on LKML).
+On Sun, 04 Jan 2009 20:33:41 +1030, David Newall said:
 
-Reiserfs broken recently, git bisect narrows it down to commit
-c1eaa26b671299b3ec01d40c6c71ee19a4f81517.
+> I don't understand why such a simple thing was unnecessarily
+> complicated.  And causing crashes!  Ha ha ha or what?  A simple addition
+> to zoneinfo was (and still is) all that is required.
 
-[   52.365262] ReiserFS: warning: vs-500: unknown uniqueness -30719
-=2E..
-[27630.378732] ReiserFS: warning: vs-500: unknown uniqueness -30720
-(and many more of the same with one of those two numbers on the end).
+Something to keep in mind is that the Posix standard does *NOT* say anything
+about leap seconds - poke around in a 'struct tm' sometime.
+That's why /usr/share/zoneinfo has separate 'posix' and 'right' subdirectories.
 
-Manifests as various file creation operations failing, like:
-(my /usr/src is on reiserfs with tail-packing enabled)
-cd /usr/src && git clone --local file://`pwd`/linux linux.testcase
+The fun starts when software using the 'right' rules tries to interact with
+other software using the Posix rules (quite possibly running on a non-Unixy
+system that doesn't even *use* zoneinfo).
 
-Git fails at creating the .config file in this example.
+Repeat after me: Not all the world is Linux.
 
-I had originally thought that my filesystem was corrupt, but fsck showed me=
- to
-be clean, and a different kernel caused the problem to go away.
 
-I don't know enough of inode internals to understand why it broke like this.
-(Anybody looking to confirm the string, it's from the uniqueness2type funct=
-ion
-defined in "include/linux/reiserfs_fs.h").
-
---=20
-Robin Hugh Johnson
-Gentoo Linux Developer & Infra Guy
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
-
---2pi4Gp0KyRJpQ5Nw
+--==_Exmh_1231068940_3941P
 Content-Type: application/pgp-signature
-Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-iEYEARECAAYFAklgnHMACgkQPpIsIjIzwiwuVgCePC/VnQ+JpZnOnosF9AfaD32A
-hw8AoK9Sbhzhg/xhmqgGrJeLzj2+zND8
-=daNT
+iD8DBQFJYJ8McC3lWbTT17ARAj5EAKDTLX1+/OAyIO3vdFclUMr9mZgecgCggh/f
+mlWIgYFRdaVMVU5j5zmAqNQ=
+=1ZIw
 -----END PGP SIGNATURE-----
 
---2pi4Gp0KyRJpQ5Nw--
+--==_Exmh_1231068940_3941P--
