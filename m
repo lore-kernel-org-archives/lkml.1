@@ -1,108 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbZADG3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZADGnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbZADG3T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 01:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZADG3K
+	id S1752680AbZADGnU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 01:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZADGnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 01:29:10 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:46488
+	Sun, 4 Jan 2009 01:43:13 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40600
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbZADG3I (ORCPT
+	with ESMTP id S1750725AbZADGnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 01:29:08 -0500
+	Sun, 4 Jan 2009 01:43:12 -0500
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Date: Sun, 4 Jan 2009 00:29:02 -0600
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
+Date: Sun, 4 Jan 2009 00:43:08 -0600
 User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: Leon Woestenberg <leon.woestenberg@gmail.com>,
+Cc: Ingo Oeser <ioe-lkml@rameria.de>,
        Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <200901032006.47652.rob@landley.net> <49601B94.3060408@zytor.com>
-In-Reply-To: <49601B94.3060408@zytor.com>
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <200901031936.04642.rob@landley.net> <25035.1231045675@turing-police.cc.vt.edu>
+In-Reply-To: <25035.1231045675@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901040029.03396.rob@landley.net>
+Message-Id: <200901040043.08577.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 January 2009 20:14:44 H. Peter Anvin wrote:
-> Rob Landley wrote:
-> >> The new patches have *more* environmental
-> >> dependencies than that ever did.
-> >
-> > Could you please be a little more specific?
+On Saturday 03 January 2009 23:07:55 Valdis.Kletnieks@vt.edu wrote:
+> On Sat, 03 Jan 2009 19:36:04 CST, Rob Landley said:
+> > On Saturday 03 January 2009 06:28:22 Ingo Oeser wrote:
+> > > > +for i in "MSEC 1000" "USEC 1000000"
+> > > > +do
+> > > > +	NAME=$(echo $i | awk '{print $1}')
+> > >
+> > > cut -d' ' -f1  does the same
+> > >
+> > > > +	PERIOD=$(echo $i | awk '{print $2}')
+> > >
+> > > cut -d' ' -f2  does the same
 >
-> In this case, you're assuming that every version of every shell this is
-> going to get involved with is going to do math correctly with the
-> requisite precision, which is nowhere guaranteed, I'm pretty sure.
+> Close, but no cee-gar.  cut does something counter-intuitive with multiple
+> blanks:
 
-Well, SUSv3 requires that the shell support signed long arithmetic:
-http://www.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_06_04
+Yes, but in this case I'm the one passing in the data so I know there aren't 
+multiple blanks.  (Or tabs instead of spaces.)
 
-And the LP64 standard says that on 64 bit systems, long must be 64 bit:
-http://www.unix.org/whitepapers/64bit.html
-
-Now the potential weakness there is that on 32 bit systems, shells might only 
-support 32 bit math instead of 64 bit math.  (You'll notice I have a test for 
-that.)  However, bash has supported 64 bit math on 32 bit systems since at 
-least 2003.  (I keep a Red Hat 9 test image around because it had 50% market 
-share when it shipped, so the majority of "old" Linux systems still in use 
-_are_ RH9 or similar.  It also has the oldest gcc version the kernel still 
-claims to build under.)  Busybox ash can also support 64 bit math on 32 bit 
-hosts, and I just confirmed that the dash in the 32 bit xubuntu 8.10 supports 
-64 bit math as well.
-
-(It would also be possible to do a similar overflow avoiding trick to do the 
-lot entirely in 32 bit math, but given that the three main shells in use on 
-Linux _do_ support 64 bit math on 32 bit hosts and are _required_ to support 
-it on 64 bit hosts according to SUSv3, the extra complexity really doesn't 
-seem worth it.)
-
-> >> Third, if someone actually cares to do it right, I have a smallish
-> >> bignum library at http://git.zytor.com/?p=lib/pbn.git;a=summary that
-> >> might be a starting point.
-> >
-> > This doesn't _need_ bignum support.  It maxes out around 72 bits and the
-> > _result_ can't use more than about $SHIFT bits because you're dividing by
-> > the amount you shifted, so just chop off the bottom 32 bits, do a normal
-> > 64 bit division on the top (it has to fit), and then do the same division
-> > on the appropriate shifted remainder, and combine the results.  This is
-> > easy because when the shift _is_ 32 bits or more, the bottom 32 bits all
-> > have to be zeroes so you don't even have to mask and add, just shift the
-> > remainder left 32 bits so you can continue the divide.
-> >
-> > Pulling out perl isn't always a good alternative to thinking about the
-> > problem.
->
-> Neither is open-coding a bignum operation instead of relying on an
-> existing, validated implementation.
-
-Implementing something by hand isn't _always_ a good alternative, sure.  That 
-would be the "thinking about the problem" part.  In this instance, avoiding 
-overflow is trivial.  (If 1<<-1 didn't wrap around, it wouldn't even need the 
-if statement.)
-
-I'm curious, would the "existing, validated implementation" in this instance 
-be the perl implementation, or the library you wrote and pointed me to above 
-as a potential replacement for it?
-
-I suppose there's a certain amount of style in accusing me of reinventing the 
-wheel while pointing me at your reinvention of the wheel.  (Are you aiming to 
-replace Gnu's gmplib.org, the perhaps the BSD licensed one in openssh?  
-Dropbear uses Libtommath.  A quick google for C open source big number 
-libraries also found Libimath, MPI, NTL, BigDigits, decNumber, and MPI.  The 
-last time I personally wrote my own arbitrary precision math package from 
-scratch was in 1998, and that was in Java, so I'm a little rusty...)  But I 
-don't personally consider avoiding the need for an arbitrary precision math 
-library to be the same as reimplementing one.
-
-> 	-hpa
+In a private email, Bernd Petrovitsch suggested "set -- $i" and then using 
+NAME=$1; PERIOD=$2.  (I keep getting private email responses to these sort of 
+threads, and then getting dismissed as the only one who cares about the issue.  
+Less so this time around, but still...)  This apparently works all the way 
+back to the bourne shell.  Not worth rolling another patch for, but if I do 
+wind up rolling another patch for other reasons I might switch over to that.  
+Both "cut" and "awk" are susv3, though.
 
 Rob
