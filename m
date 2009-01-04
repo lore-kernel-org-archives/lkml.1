@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbZADSlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760119AbZADSmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbZADSlg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 13:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZADSlY
+	id S1760119AbZADSmt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 13:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZADSmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 13:41:24 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:33020 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbZADSlW (ORCPT
+	Sun, 4 Jan 2009 13:42:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45875 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbZADSmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 13:41:22 -0500
-Date: Sun, 4 Jan 2009 11:41:03 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: Btrfs for mainline
-Message-ID: <20090104184103.GE2002@parisc-linux.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231093310.27690.5.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 4 Jan 2009 13:42:36 -0500
+Date: Sun, 4 Jan 2009 10:44:25 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+Cc: "Matthew Wilcox" <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, mingo@elte.hu, fweisbec@gmail.com,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/4] fastboot: make scsi probes asynchronous
+Message-ID: <20090104104425.4bee0c95@infradead.org>
+In-Reply-To: <3f9a31f40901041038w47493205m9fcd87fe237ec257@mail.gmail.com>
+References: <20090104092430.7ffd2c41@infradead.org>
+	<20090104092940.11943797@infradead.org>
+	<20090104180515.GD2002@parisc-linux.org>
+	<20090104101353.05e8df09@infradead.org>
+	<3f9a31f40901041038w47493205m9fcd87fe237ec257@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 07:21:50PM +0100, Peter Zijlstra wrote:
-> The -rt tree has adaptive spin patches for the rtmutex code, its really
-> not all that hard to do -- the rtmutex code is way more tricky than the
-> regular mutexes due to all the PI fluff.
+On Mon, 5 Jan 2009 00:08:42 +0530
+"Jaswinder Singh Rajput" <jaswinderlinux@gmail.com> wrote:
+
+> On Sun, Jan 4, 2009 at 11:43 PM, Arjan van de Ven
+> <arjan@infradead.org> wrote:
+> >
+> > just checked;
+> > my box has CONFIG_SCSI_SCAN_ASYNC=y set for both cases
+> > it seems to be about 0.1 seconds win still though...
+> > sounds little, but a kernel boot should be less than a second, so
+> > that is still 10%. And it's obviously also disk dependent..
+> > (I used libata connected disks obviously)
+> >
 > 
-> For kernel only locking the simple rule: spin iff the lock holder is
-> running proved to be simple enough. Any added heuristics like max spin
-> count etc. only made things worse. The whole idea though did make sense
-> and certainly improved performance.
+> Do you also have boot time numbers for RAM and/or flash based
+> filesystem (disk-less)
 
-That implies moving
+my laptop with a pretty nice SSD shows a similar kind of behavior
+(bit shorter in time, but there the entire kernel boot is shorter as a
+whole)
 
-        struct thread_info      *owner;
 
-out from under the CONFIG_DEBUG_MUTEXES code.  One of the original
-justifications for mutexes was:
-
- - 'struct mutex' is smaller on most architectures: .e.g on x86,
-   'struct semaphore' is 20 bytes, 'struct mutex' is 16 bytes.
-    A smaller structure size means less RAM footprint, and better
-    CPU-cache utilization.
-
-I'd be reluctant to reverse that decision just for btrfs.
-
-Benchmarking required!  Maybe I can put a patch together that implements
-the simple 'spin if it's running' heuristic and throw it at our
-testing guys on Monday ...
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
