@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZADTit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbZADTlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760628AbZADTit (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 14:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZADTil
+	id S1760561AbZADTlZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 14:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbZADTlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 14:38:41 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:53875 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755676AbZADTil (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 14:38:41 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=L3M69vQ-QNcFUwKxq8AA:9 a=o9mH3Qw3Cr6YsENYV0gA:7 a=OR27naRWr_Iug1xTxDRaPqt9XtkA:4 a=uEg51aum-oIA:10 a=qCKwKjZXkboA:10 a=4yRfZMz16A8A:10
-Message-ID: <4961103D.9040009@shaw.ca>
-Date: Sun, 04 Jan 2009 13:38:37 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 4 Jan 2009 14:41:17 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:35254 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751921AbZADTlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 14:41:16 -0500
+Date: Sun, 4 Jan 2009 11:41:11 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: dhaval@linux.vnet.ibm.com, jens.axboe@oracle.com, mingo@elte.hu,
+       snakebyte@gmx.de, andi@firstfloor.org, akpm@linux-foundation.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com, rostedt@goodmis.org,
+       tglx@linutronix.de, manfred@colorfullife.com
+Subject: [PATCH] Make treercu safe for suspend and resume
+Message-ID: <20090104194111.GA16398@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: atoth@atoth.sote.hu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Grsecurity is about to be discontinued...
-References: <213db97b75b3c08d1a7f9af580563b86.squirrel@atoth.sote.hu>
-In-Reply-To: <213db97b75b3c08d1a7f9af580563b86.squirrel@atoth.sote.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-atoth@atoth.sote.hu wrote:
-> In Reply to Linus Torvalds on Grsecurity:
-> 
-> These days people out there are running closed-source adobe flash plugin
-> to browse pages like ebay.com where one can come across some applets
-> causing execution attempts daily. It can be detected using improved
-> techniques only.
-> I don't care about what code will run on many noobs' machine, but I'd like
-> to stay secure. So even if it seems insane, it surely makes sense -
-> unfortunately.
-> I suspect some of the most important improvements are labeled "annoying"
-> by Linus. However some other operating system's board chose to include
-> parts of such implementations (I won't list them here). It would be good
-> to see as many snippets of PaX/Grsec in the mainline as possible. Please
-> take this message as a sign, that Gabor Micsko (trey@hup.hu) is not alone
-> with his idea.
-> 
-> Grsecurity proved itself as a viable, valuable solution for combined
-> techniques for hardening Linux. I'm using a laptop which has every
-> application running regulated by Grsecurity's RBAC system - including
-> _all_ GUI apps. Please warn me, when there will be some security policies
-> available to convert a targeted SELinux machine into a fully hardened
-> SELinux box with GUI.
-> 
-> I'm not sure, that putting Grsecurity in the mainline would save the
-> project. I rather hope, that some companies using the software will give a
-> helping hand to the developers. However the Linux community should turn
-> its attention to defensive security solutions, IMHO. As it gets more and
-> more abundant, there will be more exploits floating around. Some lessons
-> can be learned from those "monkeys" on how to think secure.
-> 
-> A polished full-featured security system can raise Linux above other
-> solutions. The better if there are more possibilities to choose between.
-> All features of PaX and Grsecurity can be disabled by default: so an
-> ordinary user shouldn't worry about being secure.
-> 
-> Please consider to think about how secure is your on system and what can
-> be done to fix it. If some focused persons provide a specialized solution
-> it worth to be investigated.
+Hello!
 
-This is all very nice, but messages like this are not going to help 
-anything. If those guys want to get code into the mainline kernel then 
-the path for that is the same as for anybody else: concrete, 
-step-by-step improvements (i.e. patches) that do not duplicate 
-functionality that is already present in the kernel, actually belong in 
-the kernel as opposed to userspace, and do not create an undue 
-maintenance burden. If such patches were submitted they would 
-potentially be accepted. Question is why the grsecurity guys haven't 
-done this well before now, as opposed to now when they seem to be in 
-crisis mode.
+Kudos to both Dhaval Giani and Jens Axboe for finding a bug in treercu
+that causes warnings after suspend-resume cycles in Dhaval's case and
+during stress tests in Jens's case.  It would also probably cause failures
+if heavily stressed.  The solution, ironically enough, is to revert to
+rcupreempt's code for initializing the dynticks state.  And the patch
+even results in smaller code -- so what was I thinking???
 
-Saying to the kernel developers "here, throw this huge blob of code into 
-your kernel because otherwise we're taking our ball and going home" is 
-not how it works.
+This is 2.6.29 material, given that people really do suspend and resume
+Linux these days.  ;-)
+
+Located-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Located-by: Jens Axboe <jens.axboe@oracle.com>
+Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Tested-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcutree.c |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index a342b03..e0a347f 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -79,7 +79,10 @@ struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
+ DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
+ 
+ #ifdef CONFIG_NO_HZ
+-DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks);
++DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks) = {
++	.dynticks_nesting = 1,
++	.dynticks = 1,
++};
+ #endif /* #ifdef CONFIG_NO_HZ */
+ 
+ static int blimit = 10;		/* Maximum callbacks per softirq. */
+@@ -1379,13 +1382,6 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
+ 
+ static void __cpuinit rcu_online_cpu(int cpu)
+ {
+-#ifdef CONFIG_NO_HZ
+-	struct rcu_dynticks *rdtp = &per_cpu(rcu_dynticks, cpu);
+-
+-	rdtp->dynticks_nesting = 1;
+-	rdtp->dynticks |= 1; 	/* need consecutive #s even for hotplug. */
+-	rdtp->dynticks_nmi = (rdtp->dynticks_nmi + 1) & ~0x1;
+-#endif /* #ifdef CONFIG_NO_HZ */
+ 	rcu_init_percpu_data(cpu, &rcu_state);
+ 	rcu_init_percpu_data(cpu, &rcu_bh_state);
+ 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
