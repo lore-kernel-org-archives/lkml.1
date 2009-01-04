@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZADGnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZADHHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbZADGnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 01:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZADGnN
+	id S1752908AbZADHHt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 02:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZADHHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 01:43:13 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40600
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZADGnM (ORCPT
+	Sun, 4 Jan 2009 02:07:40 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:43852 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbZADHHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 01:43:12 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
-Date: Sun, 4 Jan 2009 00:43:08 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: Ingo Oeser <ioe-lkml@rameria.de>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <200901031936.04642.rob@landley.net> <25035.1231045675@turing-police.cc.vt.edu>
-In-Reply-To: <25035.1231045675@turing-police.cc.vt.edu>
+	Sun, 4 Jan 2009 02:07:40 -0500
+Message-ID: <4960603F.2030002@colorfullife.com>
+Date: Sun, 04 Jan 2009 08:07:43 +0100
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+CC: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org
+Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
+References: <200901021159.n02BxDLg024728@mail.q-ag.de> <49604BAD.5010405@cn.fujitsu.com>
+In-Reply-To: <49604BAD.5010405@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901040043.08577.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 January 2009 23:07:55 Valdis.Kletnieks@vt.edu wrote:
-> On Sat, 03 Jan 2009 19:36:04 CST, Rob Landley said:
-> > On Saturday 03 January 2009 06:28:22 Ingo Oeser wrote:
-> > > > +for i in "MSEC 1000" "USEC 1000000"
-> > > > +do
-> > > > +	NAME=$(echo $i | awk '{print $1}')
-> > >
-> > > cut -d' ' -f1  does the same
-> > >
-> > > > +	PERIOD=$(echo $i | awk '{print $2}')
-> > >
-> > > cut -d' ' -f2  does the same
+Lai Jiangshan wrote:
+> Hi, Manfred Spraul,
 >
-> Close, but no cee-gar.  cut does something counter-intuitive with multiple
-> blanks:
+> Thanks you for re-propose kfree_rcu().
+> I NAK. this patch.
+>
+> Comparing with my patch(V1), your patch has several improvements.
+> But core idea is the same as my patch.
+> This idea(share offset with function pointer) has some disadvantages.
+> And I had implemented V2 and the patches for using kfree_rcu().
+> The V2 patch has not tested enough, but It will be done in one month.
+>   
+Did you already post V2, did you cc me?
+I couldn't find it in my e-mails.
 
-Yes, but in this case I'm the one passing in the data so I know there aren't 
-multiple blanks.  (Or tabs instead of spaces.)
-
-In a private email, Bernd Petrovitsch suggested "set -- $i" and then using 
-NAME=$1; PERIOD=$2.  (I keep getting private email responses to these sort of 
-threads, and then getting dismissed as the only one who cares about the issue.  
-Less so this time around, but still...)  This apparently works all the way 
-back to the bourne shell.  Not worth rolling another patch for, but if I do 
-wind up rolling another patch for other reasons I might switch over to that.  
-Both "cut" and "awk" are susv3, though.
-
-Rob
+--
+    Manfred
