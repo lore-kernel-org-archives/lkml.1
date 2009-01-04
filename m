@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbZADJtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZADJ72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752801AbZADJtR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 04:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbZADJtD
+	id S1753303AbZADJ72 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 04:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZADJ7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 04:49:03 -0500
-Received: from gate.crashing.org ([63.228.1.57]:35056 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750980AbZADJtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 04:49:01 -0500
-Subject: Re: [PATCH] printk: Let %pR handle NULL pointers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.58.0901031827380.25853@shell2.speakeasy.net>
-References: <1230979341-23029-1-git-send-email-xyzzy@speakeasy.org>
-	 <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain>
-	 <1231019614.15389.104.camel@pasglop>
-	 <Pine.LNX.4.58.0901031827380.25853@shell2.speakeasy.net>
-Content-Type: text/plain
-Date: Sun, 04 Jan 2009 20:48:13 +1100
-Message-Id: <1231062493.15389.105.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Jan 2009 04:59:20 -0500
+Received: from 1010ds2-suoe.0.fullrate.dk ([90.184.90.115]:27759 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbZADJ7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 04:59:20 -0500
+Date: Sun, 4 Jan 2009 10:59:17 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Huang Weiyi <weiyi.huang@gmail.com>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: swiotlb: remove duplicated #include
+In-Reply-To: <20090104110951.C9AB.WEIYI.HUANG@gmail.com>
+Message-ID: <alpine.LNX.2.00.0901041057400.26359@swampdragon.chaosbits.net>
+References: <20090104110951.C9AB.WEIYI.HUANG@gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 4 Jan 2009, Huang Weiyi wrote:
 
-> I thought of doing that too, but then all the various %pX formats would all
-> have to print the same for NULL pointers.  For instance a resource prints
-> out like "[0x1000-0x100f]", so I chose "[NULL]" for printing a null
-> resource pointer.  Maybe "[]" or "[-]" would be better?  A null MAC address
-> could be ":::::" or "x:x:x:x:x:x".  "N.U.L.L" or "x.x.x.x" for a null IP4
-> address.  And so on.  So the printout looks nicer when a NULL pointer isn't
-> a bug.
+> Removed duplicated #include in lib/swiotlb.c.
+> 
 
-And how often is that ?
+This is identical to a patch I already submitted - 
+http://lkml.org/lkml/2009/1/2/360 - but I don't know if that one has been 
+merged anywhere yet.
 
-Seriously... 
-
-Ben.
-
+-- 
+Jesper Juhl <jj@chaosbits.net>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
 
