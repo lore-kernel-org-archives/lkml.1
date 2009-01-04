@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbZADKbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbZADKcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbZADKbb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 05:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZADKbX
+	id S1757211AbZADKcx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 05:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZADKcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 05:31:23 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:57740 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751306AbZADKbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 05:31:22 -0500
-Subject: Re: [RFC] Regulator: Possibility of passing notifications of non
- alarm events.
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, broonie@opensource.wolfsonmicro.com
-In-Reply-To: <495FD46E.8040208@cam.ac.uk>
-References: <495FD46E.8040208@cam.ac.uk>
-Content-Type: text/plain
-Date: Sun, 04 Jan 2009 10:31:18 +0000
-Message-Id: <1231065078.11643.116.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Jan 2009 05:32:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:14543 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbZADKco (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 05:32:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=p0AouZYIY6E7rOgmW5Wur9e50CVt+O91TctsL4LuEZwVgI9FSkldmMj6v9vMt2dsjN
+         fNNwNHU3Kq7jXzxJcVgkbeZ8ebup8TrrrXzMEX4h/84nMUgjXblZO8nvJoLCaPUDrMmr
+         eJbksu6IYHJ4hOS20w97fFJ0Da+uQSxUVVF/U=
+Date: Sun, 4 Jan 2009 13:32:39 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, david@lang.hm,
+       LKML <linux-kernel@vger.kernel.org>, yhlu.kernel@gmail.com
+Subject: Re: early exception error
+Message-ID: <20090104103239.GA7632@localhost>
+References: <20090102175226.GE5372@localhost> <alpine.DEB.1.10.0901021131210.21567@asgard.lang.hm> <20090102203058.GH5372@localhost> <alpine.DEB.1.10.0901030823190.23262@asgard.lang.hm> <20090103161052.GB11093@localhost> <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm> <20090103190316.GB7367@localhost> <20090103212426.GC7367@localhost> <496001A3.1040201@gmail.com> <20090104005904.GQ496@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090104005904.GQ496@one.firstfloor.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-03 at 21:11 +0000, Jonathan Cameron wrote:
-> Dear All,
-> 
-> I am in the process of writing an hwmon driver for the Sensiron SHT15 humidity
-> sensor.
-> 
-> In common (I assume) with lots of other devices, the formula for converting
-> the outputs of this chip to real units involves the supply voltage.
-> Unfortunately the chip doesn't itself have any means of measuring this.
-> Obviously this can be supplied via a board config if it is constant.
-> 
-> As I have it connected to a DA9030 pmic I can register it as a consumer
-> and hence query what the pmic thinks it is supplying.
-> 
-> Unfortunately this regulator is shared with a number of other chips and so
-> there is no guarantee that this voltage won't be changed (within the bounds
-> supported by the SHT15).  I'd like to avoid querying the regulator voltage
-> every time I do a conversion.
-> 
-> As the regulator framework already allows you to register to receive events
-> such as under voltage detections, it seems to me that it would also make sense
-> to allow registrations of handlers for events that occur during normal
-> operation such as voltage changes.
-> 
-> What do people think to adding this functionality?
+[Andi Kleen - Sun, Jan 04, 2009 at 01:59:04AM +0100]
+| > Hint: line 442 in 2.6.28 is
+| > if (!bdata->node_bootmem_map)
+| > ;)
+| > 
+| > It's:
+| > 0xffffffff8096452a <alloc_bootmem_core+69>:     cmpq   $0x0,0x10(%rbp)
+| > and hence cr2 is 10.
+| > 
+| > node_data[nid] is NULL... But both of them are set up. Maybe too high nid (and
+| > pnum in sparse_init)?
+| 
+| I think it's because SRAT parsing failed and the fallback forget
+| to clean some state. Or at least I thought that until numa=noacpi
+| failed too (if it fails the same way that theory is not correct)
+| 
+| -Andi
+| > 
+| 
+| -- 
+| ak@linux.intel.com
+| 
 
-Sounds fine. I assume you have a patch in development ;)
+according to image David's machine fails the same
+way for numa=noacpi (unfortunately).
 
-Thanks
+Actually I found one bug in memory_present -- in
+case of SLAB code being activated (which should
+be later stage of booting so it's not our case
+now) sparse_index_init could fail with -ENOMEM
+and we'll try to deref NULL in further. I'm fixing
+it now but again -- it's not the issue we have now.
 
-Liam
+To Jiri: good catch! :-)
 
-
+		- Cyrill -
