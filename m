@@ -1,96 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932999AbZADAha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbZADAkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932999AbZADAha (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 19:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbZADAhS
+	id S933044AbZADAkh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 19:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759742AbZADAk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 19:37:18 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:56307 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752780AbZADAhQ (ORCPT
+	Sat, 3 Jan 2009 19:40:28 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:57681 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbZADAk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 19:37:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=d5P0FPSCMISXVl2/UWdsuPRQw/AsSfJIxNRbnRkqDmydQzCgQ+nxD3p0JemFt9WQPe
-         oAi9GF3qkxDduM4KqI6g7gL9fF6C4O9xYNEK0PPNg/Hr+6pRa9lAXskkmhoqCxVGhyYh
-         x8CWSQPjL1/hjQXP0LdB14Zxf03scWDrHwCPQ=
-Message-ID: <c384c5ea0901031637k3b571313m934c8881dce1c81@mail.gmail.com>
-Date: Sun, 4 Jan 2009 01:37:12 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Cc: "Rob Landley" <rob@landley.net>,
-       "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-In-Reply-To: <495FEEAF.5020005@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 3 Jan 2009 19:40:27 -0500
+Subject: [PATCH] linux/types.h: Do not depend on __GNUC__ for __le64 and
+	__be64 [synced to git]
+From: Detlef Riekenberg <wine.dev@web.de>
+To: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       trivial@kernel.org
+In-Reply-To: <1230594921.7652.35.camel@p4.lan>
+References: <1230594921.7652.35.camel@p4.lan>
+Content-Type: text/plain
+Date: Sun, 04 Jan 2009 01:40:23 +0100
+Message-Id: <1231029623.7225.10.camel@p4.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200901020207.30359.rob@landley.net>
-	 <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com>
-	 <495FEEAF.5020005@zytor.com>
+X-Provags-ID: V01U2FsdGVkX19xLeRQgwietAn3OgAGu41YMB3GbR9oCk/EfF2U
+	ql/uHuYJj4TAXbxL1UbgMPRsoCg0pwbJkS1SSezHPMDo6DsSB7
+	ChXIdFzkI=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi.
+<linux/cdrom.h> is used in Wine, but failed to compile with pcc.
+(__le64 and __be64 are referenced in <linux/byteorder/little_endian.h>)
 
-On Sun, Jan 4, 2009 at 12:03 AM, H. Peter Anvin <hpa@zytor.com> wrote:
->> Dependencies very quickly become dependency hell. If A requires B,
->> then A also inherits all (future) requirements of B, etc. etc.
->>
->> In my daily software development work with Linux and GNU software in
->> general, 10% of it is spent fighting/removing these extremely "thin"
->> or false depencies, so that it is usuable in embedded devices.
->>
->
-> First of all, I largely consider this a joke.  All real-life embedded
-> kernel builds take place on hosted platforms; anything else seems to be
-> done "just because it can be done", as a kind of show-off art project.
-> Cute, but hardly worth impeding the rest of the kernel community for.
->
-Let me explain why it is not a joke for me, although yes I agree it's
-a funny way of how software engineering works.
+There is no reason to restrict the typedefs with __GNUC__.
+As reference, the typedefs for __u64 and __s64 where fixed
+to be available with pcc on 02. Mai 2008 by H. Peter Anvin
+(commit edfa5cfa3dc5bfa95e6aa82a2b8904e7f6c35ed7)
 
-My argument on thin dependencies indeed mostly holds for run-time
-dependencies (to reduce size) but also for build dependency (to reduce
-complexity)*.
+Wine: http://www.winehq.org
+pcc:  http://pcc.ludd.ltu.se
 
-In general the right version of the right tool is not available on the
-build host.
+This patch is a resync to current git.
 
-If I cross-build 30 packages all of which need a build-host-native
-perl during their build, consider the chance of these packages
-building with the one version of perl that lives on the system. It's
-near 0% for the average mix of packages.
-
-Yes, the host is fat enough so that we can build (say three) different
-versions of perl to accomodate the build.
-
-The truth often is, of the 30 build dependencies 25 of them are thin
-(build) dependencies.
-
-So yes, the say extra 10% of build tool dependency needed to make 0.5%
-of the build system work, can be solved on the fat build platform, but
-I do not always consider it a well engineered solution.
-
-For a (dangerous) metaphor: In mechanical engineering, if there are 30
-joints using nuts and bolts, and a 31st is designed in, it is strongly
-prefered to make it a nut and bolt as well, even if using a screw
-would work equally well or even better. The overall costs (over
-complexity, tool dependency, maintainability) would be lower.
-
-Regards,
+Please CC me personally. Thanks
 -- 
-Leon
+By by ... Detlef
 
-* Since Intel, since recently, pays another team of excellent people
-maintaining a system dealing with the (cross) build tool dependency
-hell, I rest my case. :-)
+
+
+
+>From 83199a23ff35af6f10d16ebcb7ca283b3f5f05e3 Mon Sep 17 00:00:00 2001
+From: Detlef Riekenberg <wine.dev@web.de>
+Date: Thu, 1 Jan 2009 22:55:21 +0100
+Subject: [PATCH] linux/types.h: Do not depend on __GNUC__ for
+__le64/__be64
+
+
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Detlef Riekenberg <wine.dev@web.de>
+
+---
+ include/linux/types.h |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/types.h b/include/linux/types.h
+index 121f349..e2a2788 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -176,10 +176,9 @@ typedef __u16 __bitwise __le16;
+ typedef __u16 __bitwise __be16;
+ typedef __u32 __bitwise __le32;
+ typedef __u32 __bitwise __be32;
+-#if defined(__GNUC__)
+ typedef __u64 __bitwise __le64;
+ typedef __u64 __bitwise __be64;
+-#endif
++
+ typedef __u16 __bitwise __sum16;
+ typedef __u32 __bitwise __wsum;
+ 
+-- 
+1.5.4.3
+
+
+
+ 
+
+
