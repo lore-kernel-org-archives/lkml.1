@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759033AbZADSJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZADSMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759033AbZADSJT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 13:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZADSJJ
+	id S1759304AbZADSMW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 13:12:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZADSMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 13:09:09 -0500
-Received: from viefep14-int.chello.at ([62.179.121.34]:45993 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751921AbZADSJI (ORCPT
+	Sun, 4 Jan 2009 13:12:10 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44217 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751584AbZADSMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 13:09:08 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <20090104174450.GB4301@dirshya.in.ibm.com>
-References: <20090104174450.GB4301@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Sun, 04 Jan 2009 19:08:43 +0100
-Message-Id: <1231092523.29980.4.camel@twins>
+	Sun, 4 Jan 2009 13:12:08 -0500
+Date: Sun, 4 Jan 2009 10:13:53 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       fweisbec@gmail.com, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 2/4] fastboot: make scsi probes asynchronous
+Message-ID: <20090104101353.05e8df09@infradead.org>
+In-Reply-To: <20090104180515.GD2002@parisc-linux.org>
+References: <20090104092430.7ffd2c41@infradead.org>
+	<20090104092940.11943797@infradead.org>
+	<20090104180515.GD2002@parisc-linux.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-04 at 23:14 +0530, Vaidyanathan Srinivasan wrote:
-> Hi Ingo,
-> 
-> Kernbench runs on latest Linux git tree stalled with the following
-> lockdep warning.
-> 
-> Lockdep warning and lockup on Jan 3 Linus git tree
-> commit 7d3b56ba37a95f1f370f50258ed3954c304c524b
-> 
-> kernbench run with two threads stalled.  sched_mc was zero.
-> x86_64 system with 8 logical CPUs in dual socket quad core
-> configuration.
-> 
-> I will post more information as I debug this warning/bug.  
+On Sun, 4 Jan 2009 11:05:15 -0700
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-Its ca109491f612aab5c8152207631c0444f63da97f, I've some ideas on how to
-fix this, just haven't gotten around to actually doing anything --
-seeing how it was holidays and such..
+> On Sun, Jan 04, 2009 at 09:29:40AM -0800, Arjan van de Ven wrote:
+> > >From 2087b546abddced50fa73ea9a71b5a040ae1026e Mon Sep 17 00:00:00
+> > >2001
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > Date: Sun, 4 Jan 2009 05:32:28 -0800
+> > Subject: [PATCH] fastboot: make scsi probes asynchronous
+> > 
+> > This patch makes part of the scsi probe (which is mostly device
+> > spin up and the partition scan) asynchronous. Only the part that
+> > runs after getting the device number allocated is asynchronous,
+> > ensuring that device numbering remains stable.
+> 
+> Is this really a big win?  Were you using the async scsi scan code
+> already? 
 
+just checked;
+my box has CONFIG_SCSI_SCAN_ASYNC=y set for both cases
+it seems to be about 0.1 seconds win still though...
+sounds little, but a kernel boot should be less than a second, so that
+is still 10%. And it's obviously also disk dependent..
+(I used libata connected disks obviously)
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
