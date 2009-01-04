@@ -1,56 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZADNgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbZADNtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbZADNgw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 08:36:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZADNgm
+	id S1755300AbZADNtf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 08:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbZADNt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 08:36:42 -0500
-Received: from ik-out-1112.google.com ([66.249.90.180]:1412 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZADNgl (ORCPT
+	Sun, 4 Jan 2009 08:49:27 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:53834 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751579AbZADNt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 08:36:41 -0500
+	Sun, 4 Jan 2009 08:49:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=WOIQskAoJK0Ftd//o4aodR3nQoxY8qAW04hRfXqbNLlStSk9pjx7N4cbmNg2BUyexP
-         PH7xaRS836MrC+QMb9dxlyJlQSHLmFXbFAS1kTjkwLDjRBt2yAHMFZGIAAfqK3uqGgiI
-         F8DguafPEFd+O6MlCWppw9h+sRx8QcSmr25bM=
-Message-ID: <4960BB2D.3060000@gmail.com>
-Date: Sun, 04 Jan 2009 18:35:41 +0500
-From: "Alexander E. Patrakov" <patrakov@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.1.19) Gecko/20081226 SeaMonkey/1.1.14
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=tX/lox+ePpkmenvFZhgquCQXBh5MrvfCiRcmyeiS0auwUx2aha8wN0CkSyPtHsqrfy
+         ZcZulDMnKTSXHQQj7dIus0ey0baCs2X5HaCrWCavDNOPoEFigpj17f8WEZa4XHggyE8B
+         N0TzTtMOFYyGBaE5eaoqVmA7bx4+/TR72UI08=
+Message-ID: <d204e3110901040549g20273205s1696ae791b04f1ac@mail.gmail.com>
+Date: Sun, 4 Jan 2009 21:49:24 +0800
+From: "Baodong Chen" <chenbdchenbd@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Subject: [PATCH] Documentation/x86/boot.txt:payload length was changed to payload_length
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20090104125713.GD15472@elte.hu>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       tytso@mit.edu, mtk.manpages@gmail.com, rdunlap@xenotime.net,
-       linux-doc@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: document ext3 requirements
-References: <20090103123813.GA1512@ucw.cz>
-In-Reply-To: <20090103123813.GA1512@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d204e3110901020024n7d0c1a6dt919f76283d9a8663@mail.gmail.com>
+	 <20090102092659.GC1975@elte.hu>
+	 <d204e3110901022044l2cf57f54yd52a2d331d69deef@mail.gmail.com>
+	 <20090104125713.GD15472@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-[CC: Alan Cox because of his reply in the "XFS internal error" thread]
-
-> Using ext3 is only safe if storage subsystem meets certain
-> criteria. Document those.
-
-Thanks for this patch. However, after reading this, I have a stupid 
-question: which file system should I use if I had to reinstall my 
-computers from scratch now?
-
-Ext3 means either hardware that supports barriers (not sure how to 
-check, and anyway I have to use encryption on the work laptop due to the 
-corporate policy) or disabling write cache (but, as Alan Cox said, this 
-shortens the lifespan of the disk). Does this requirement apply to other 
-journaling filesystems? Do I need journaling at all, given that I have 
-an UPS on my desktop and a battery in the laptop?
-
--- 
-Alexander E. Patrakov
+On Sun, Jan 4, 2009 at 8:57 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Baodong Chen <chenbdchenbd@gmail.com> wrote:
+>
+>> On Fri, Jan 2, 2009 at 5:26 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>> >
+>> > * Baodong Chen <chenbdchenbd@gmail.com> wrote:
+>> >
+>> >>  Documentation/x86/boot.txt:payload length was changed to payload_length
+>> >>
+>> >> Signed-off-by: Baodong Chen <[email]chenbdchenbd@gmail.com[email]>
+>> >>
+>> >> ---
+>> >>  Documentation/x86/boot.txt |    2 +-
+>> >>  1 files changed, 1 insertions(+), 1 deletions(-)
+>> >
+>> > looks good but the patch was whitespace damaged (all tabs were spaces and
+>> > there were linewraps as well), please check
+>> > Documentation/email-clients.txt and resend the patch. Thanks,
+>> >
+>> >        Ingo
+>>
+>> I referred to Documentation/email-clients.txt:Gmail and resent the
+>> patch. I am a newbie,if i made any mistake,please do me a favor and help
+>> me.Thanks!
+>
+> it's OK, and your resubmission was better - but it still had a linewrap
+> problem (i was able to fix that up manually).
+>
+> this bit:
+>
+> @@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised
+> boot protocol.
+>                and KEEP_SEGMENTS flag in load_flags.
+>
+> [3 lines]
+>
+> should have been:
+>
+> @@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised boot protocol.
+>                and KEEP_SEGMENTS flag in load_flags.
+>
+> [2 lines]
+>
+> If you post from gmail it might make sense to send patches as MIME
+> attachments, we can process them just fine. (as long as you send patches
+> that go via -tip - other maintainers have different policies regarding
+> MIME attachments)
+>
+>        Ingo
+>
+I am sorry for my linewrap problem.i used Gmail GUI with gedit to write
+the mailbody.you meat that if i send path via -tip, i can send my patch
+content as attachment file?got it...
