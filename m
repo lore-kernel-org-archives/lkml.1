@@ -1,133 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbZADNSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZADNSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbZADNSh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 08:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZADNSK
+	id S1758768AbZADNSz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 08:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZADNSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 08:18:10 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:38600 "EHLO relay.sgi.com"
+	Sun, 4 Jan 2009 08:18:11 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:38608 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750889AbZADNSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751225AbZADNSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Jan 2009 08:18:08 -0500
-Message-Id: <20090104131759.865331000@polaris-admin.engr.sgi.com>
+Message-Id: <20090104131801.363451000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.47-1
-Date: Sun, 04 Jan 2009 05:17:59 -0800
+Date: Sun, 04 Jan 2009 05:18:10 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 00/11] x86: cpumask: some more cpumask cleanups
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>
+Subject: [PATCH 11/11] cpumask: use work_on_cpu in acpi-cpufreq.c for read_measured_perf_ctrs
+References: <20090104131759.865331000@polaris-admin.engr.sgi.com>
+Content-Disposition: inline; filename=cpumask:use-work_on_cpu-in-acpi-cpufreq_c-p2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: cleanup, reduce stack usage, use new cpumask API
 
-Here's some more cpumask cleanups.
+Replace the saving of current->cpus_allowed and set_cpus_allowed_ptr() with
+a work_on_cpu function for read_measured_perf_ctrs().
 
-    ia64: cpumask fix for is_affinity_mask_valid()
-    cpumask: update local_cpus_show to use new cpumask API
-    cpumask: update pci_bus_show_cpuaffinity to use new cpumask API
-    x86: cleanup remaining cpumask_t ops in smpboot code
-    x86: clean up speedstep-centrino and reduce cpumask_t usage
-    cpumask: Replace CPUMASK_ALLOC etc with cpumask_var_t.
-    cpumask: convert struct cpufreq_policy to cpumask_var_t.
-    cpumask: use work_on_cpu in acpi/cstate.c
-    cpumask: use cpumask_var_t in acpi-cpufreq.c
-    cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
-    cpumask: use work_on_cpu in acpi-cpufreq.c for read_measured_perf_ctrs
-
-This version basically splits out the changes to make it more
-bisectable, and has been patch-wise compile/boot tested.  Updated
-stats are below.
+Basically splits off the work function from get_measured_perf which is
+run on the designated cpu.  Moves definition of struct perf_cur out of
+function local namespace, and is used as the work function argument.
+References in get_measured_perf use values in the perf_cur struct.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Dave Jones <davej@redhat.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Len Brown <len.brown@intel.com>
-
 ---
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   83 +++++++++++++++--------------
+ 1 file changed, 43 insertions(+), 40 deletions(-)
 
-The number of stack hogs have been significantly reduced:
-
-====== Stack (-l 500)
-    1 - allyesconfig-128
-    2 - allyesconfig-4k
-
-  .1.    .2.    ..final..
-    0  +1032   1032      .  flush_tlb_page
-    0  +1024   1024      .  kvm_reload_remote_mmus
-    0  +1024   1024      .  kvm_flush_remote_tlbs
-    0  +1024   1024      .  flush_tlb_mm
-    0  +1024   1024      .  flush_tlb_current_task
-    0   +824    824      .  efx_pci_probe_main
-    0   +800    800      .  cpuset_write_resmask
-    0   +736    736      .  update_flag
-    0   +696    696      .  init_intel_cacheinfo
-    0   +640    640      .  cpuset_attach
-    0   +600    600      .  shmem_getpage
-    0   +600    600      .  powernowk8_target
-    0   +584    584      .  powernowk8_cpu_init
-    0   +584    584      .  __percpu_alloc_mask
-    0   +552    552      .  xen_flush_tlb_others
-    0   +552    552      .  smp_call_function_many
-    0   +536    536      .  reload_store
-    0   +536    536      .  native_flush_tlb_others
-    0   +536    536      .  cpuset_common_file_read
-    0   +528    528      .  get_cur_freq
-    0   +528    528      .  check_supported_cpu
-    0   +520    520      .  powernowk8_get
-    0   +520    520      .  microcode_write
-    0   +520    520      .  microcode_init_cpu
-    0   +520    520      .  cpuset_can_attach
-    0   +512    512      .  smi_request
-    0   +512    512      .  pci_device_probe
-    0   +512    512      .  find_lowest_rq
-
-
-And the overall memory usage is becoming quite less affected by changing
-NR_CPUS from 128 to 4096:
-
-====== Text/Data ()
-    1 - allyesconfig-128
-    2 - allyesconfig-4k
-
-       .1.       .2.    ..final..
-  32950272    +10240   32960512 +0.03%  TextSize
-  45082624    +77824   45160448 +0.17%  DataSize
-  11436032  +4167680   15603712   +36%  BssSize
-   3514368   +794624    4308992   +22%  InitSize
-   1904640     +4096    1908736 +0.22%  PerCPU
-    360448   +722944    1083392  +200%  OtherSize
-  95248384  +5777408  101025792  +106%  Totals
-
-
-Detailing it by section shows there still are a few areas to examine more
-closely.  Note init.data is "give back" memory, but data.cacheline_aligned
-indicates there are still many lists sized by NR_CPUS.
-
-
-====== Sections (-l 500)
-    1 - allyesconfig-128
-    2 - allyesconfig-4k
-
-        .1.       .2.    ..final..
-  563607471  +6217546   569825017 +1.10%  Total
-  362852723   +357693   363210416 +0.10%  .debug_info
-   43002053    +10004    43012057 +0.02%  .debug_loc
-   32949913    +10464    32960377 +0.03%  .text
-   25793792     +4848    25798640 +0.02%  .debug_ranges
-   22693731    +39360    22733091 +0.17%  .rodata
-   21157048    +33968    21191016 +0.16%  .data
-   19190023      +983    19191006 +0.01%  .debug_line
-   11436936  +4167424    15604360   +36%  .bss
-    7205306    +85021     7290327 +1.18%  .debug_abbrev
-    1904160     +5504     1909664 +0.29%  .data.percpu
-     829999      +709      830708 +0.09%  .init.text
-     595328   +783920     1379248  +131%  .init.data
-     150400     +1456      151856 +0.97%  __param
-     101464   +239632      341096  +236%  .data.read_mostly
-      32384   +475648      508032 +1468%  .data.cacheline_aligned
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -245,6 +245,30 @@ static u32 get_cur_val(const struct cpum
+ 	return cmd.val;
+ }
+ 
++struct perf_cur {
++	union {
++		struct {
++			u32 lo;
++			u32 hi;
++		} split;
++		u64 whole;
++	} aperf_cur, mperf_cur;
++};
++
++
++static long read_measured_perf_ctrs(void *_cur)
++{
++	struct perf_cur *cur = _cur;
++
++	rdmsr(MSR_IA32_APERF, cur->aperf_cur.split.lo, cur->aperf_cur.split.hi);
++	rdmsr(MSR_IA32_MPERF, cur->mperf_cur.split.lo, cur->mperf_cur.split.hi);
++
++	wrmsr(MSR_IA32_APERF, 0, 0);
++	wrmsr(MSR_IA32_MPERF, 0, 0);
++
++	return 0;
++}
++
+ /*
+  * Return the measured active (C0) frequency on this CPU since last call
+  * to this function.
+@@ -261,31 +285,12 @@ static u32 get_cur_val(const struct cpum
+ static unsigned int get_measured_perf(struct cpufreq_policy *policy,
+ 				      unsigned int cpu)
+ {
+-	union {
+-		struct {
+-			u32 lo;
+-			u32 hi;
+-		} split;
+-		u64 whole;
+-	} aperf_cur, mperf_cur;
+-
+-	cpumask_t saved_mask;
++	struct perf_cur cur;
+ 	unsigned int perf_percent;
+ 	unsigned int retval;
+ 
+-	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	if (get_cpu() != cpu) {
+-		/* We were not able to run on requested processor */
+-		put_cpu();
++	if (!work_on_cpu(cpu, read_measured_perf_ctrs, &cur))
+ 		return 0;
+-	}
+-
+-	rdmsr(MSR_IA32_APERF, aperf_cur.split.lo, aperf_cur.split.hi);
+-	rdmsr(MSR_IA32_MPERF, mperf_cur.split.lo, mperf_cur.split.hi);
+-
+-	wrmsr(MSR_IA32_APERF, 0,0);
+-	wrmsr(MSR_IA32_MPERF, 0,0);
+ 
+ #ifdef __i386__
+ 	/*
+@@ -293,37 +298,39 @@ static unsigned int get_measured_perf(st
+ 	 * Get an approximate value. Return failure in case we cannot get
+ 	 * an approximate value.
+ 	 */
+-	if (unlikely(aperf_cur.split.hi || mperf_cur.split.hi)) {
++	if (unlikely(cur.aperf_cur.split.hi || cur.mperf_cur.split.hi)) {
+ 		int shift_count;
+ 		u32 h;
+ 
+-		h = max_t(u32, aperf_cur.split.hi, mperf_cur.split.hi);
++		h = max_t(u32, cur.aperf_cur.split.hi, cur.mperf_cur.split.hi);
+ 		shift_count = fls(h);
+ 
+-		aperf_cur.whole >>= shift_count;
+-		mperf_cur.whole >>= shift_count;
++		cur.aperf_cur.whole >>= shift_count;
++		cur.mperf_cur.whole >>= shift_count;
+ 	}
+ 
+-	if (((unsigned long)(-1) / 100) < aperf_cur.split.lo) {
++	if (((unsigned long)(-1) / 100) < cur.aperf_cur.split.lo) {
+ 		int shift_count = 7;
+-		aperf_cur.split.lo >>= shift_count;
+-		mperf_cur.split.lo >>= shift_count;
++		cur.aperf_cur.split.lo >>= shift_count;
++		cur.mperf_cur.split.lo >>= shift_count;
+ 	}
+ 
+-	if (aperf_cur.split.lo && mperf_cur.split.lo)
+-		perf_percent = (aperf_cur.split.lo * 100) / mperf_cur.split.lo;
++	if (cur.aperf_cur.split.lo && cur.mperf_cur.split.lo)
++		perf_percent = (cur.aperf_cur.split.lo * 100) /
++				cur.mperf_cur.split.lo;
+ 	else
+ 		perf_percent = 0;
+ 
+ #else
+-	if (unlikely(((unsigned long)(-1) / 100) < aperf_cur.whole)) {
++	if (unlikely(((unsigned long)(-1) / 100) < cur.aperf_cur.whole)) {
+ 		int shift_count = 7;
+-		aperf_cur.whole >>= shift_count;
+-		mperf_cur.whole >>= shift_count;
++		cur.aperf_cur.whole >>= shift_count;
++		cur.mperf_cur.whole >>= shift_count;
+ 	}
+ 
+-	if (aperf_cur.whole && mperf_cur.whole)
+-		perf_percent = (aperf_cur.whole * 100) / mperf_cur.whole;
++	if (cur.aperf_cur.whole && cur.mperf_cur.whole)
++		perf_percent = (cur.aperf_cur.whole * 100) /
++				cur.mperf_cur.whole;
+ 	else
+ 		perf_percent = 0;
+ 
+@@ -331,10 +338,6 @@ static unsigned int get_measured_perf(st
+ 
+ 	retval = per_cpu(drv_data, policy->cpu)->max_freq * perf_percent / 100;
+ 
+-	put_cpu();
+-	set_cpus_allowed_ptr(current, &saved_mask);
+-
+-	dprintk("cpu %d: performance percent %d\n", cpu, perf_percent);
+ 	return retval;
+ }
+ 
+@@ -352,7 +355,7 @@ static unsigned int get_cur_freq_on_cpu(
+ 	}
+ 
+ 	cached_freq = data->freq_table[data->acpi_data->state].frequency;
+-	freq = extract_freq(get_cur_val(&cpumask_of_cpu(cpu)), data);
++	freq = extract_freq(get_cur_val(cpumask_of(cpu)), data);
+ 	if (freq != cached_freq) {
+ 		/*
+ 		 * The dreaded BIOS frequency change behind our back.
 
