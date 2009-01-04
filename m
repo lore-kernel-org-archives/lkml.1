@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbZADTlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760480AbZADTq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760561AbZADTlZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 14:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbZADTlR
+	id S1760480AbZADTq6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 14:46:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbZADTqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 14:41:17 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35254 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751921AbZADTlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 14:41:16 -0500
-Date: Sun, 4 Jan 2009 11:41:11 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: dhaval@linux.vnet.ibm.com, jens.axboe@oracle.com, mingo@elte.hu,
-       snakebyte@gmx.de, andi@firstfloor.org, akpm@linux-foundation.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, rostedt@goodmis.org,
-       tglx@linutronix.de, manfred@colorfullife.com
-Subject: [PATCH] Make treercu safe for suspend and resume
-Message-ID: <20090104194111.GA16398@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Sun, 4 Jan 2009 14:46:47 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:47503 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756460AbZADTqp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 14:46:45 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=4FvGMXv74iqyoPLWSh0A:9 a=loeXxdYFbKWX8sPIrYXj-byA6zMA:4 a=jbrJJM5MRmoA:10 a=riUlel2XeQwA:10 a=lKFOVNfFU6IA:10
+Message-ID: <49611220.6010400@shaw.ca>
+Date: Sun, 04 Jan 2009 13:46:40 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Newsgroups: gmane.linux.acpi.devel,gmane.linux.kernel,gmane.linux.scsi,gmane.linux.ide
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, fweisbec@gmail.com, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
+References: <20090104092430.7ffd2c41@infradead.org>	<alpine.LFD.2.00.0901041009060.3179@localhost.localdomain>	<20090104103104.6fdda9f2@infradead.org>	<alpine.LFD.2.00.0901041038570.3179@localhost.localdomain> <87fxjyopie.fsf@basil.nowhere.org>
+In-Reply-To: <87fxjyopie.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Andi Kleen wrote:
+> Linus Torvalds <torvalds@linux-foundation.org> writes:
+> 
+>> That said, I also wonder if we really even need to autoprobe the 
+>> interrupts on any modern hardware. Rather than trying to speed up irq 
+>> probing, maybe we could figure it out some other way..
+> 
+> You'll hate that suggestion, but i8250_pnp should already discover
+> it fine via ACPI on modern systems. ia64 has done it this way 
+> forever. 
+> 
+> It probably won't work on really old system, but one could always
+> use DMI year to distingush (not pretty, but works usually)
 
-Kudos to both Dhaval Giani and Jens Axboe for finding a bug in treercu
-that causes warnings after suspend-resume cycles in Dhaval's case and
-during stress tests in Jens's case.  It would also probably cause failures
-if heavily stressed.  The solution, ironically enough, is to revert to
-rcupreempt's code for initializing the dynticks state.  And the patch
-even results in smaller code -- so what was I thinking???
+Well, we should be able to tell where we got the port information from, 
+if it's somewhere expected to be reliable like PCI configuration, ISAPnP 
+or PnPACPI, or whether we're just probing magical ports and hoping to 
+find something.
 
-This is 2.6.29 material, given that people really do suspend and resume
-Linux these days.  ;-)
-
-Located-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Located-by: Jens Axboe <jens.axboe@oracle.com>
-Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Tested-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcutree.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index a342b03..e0a347f 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -79,7 +79,10 @@ struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
- DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
- 
- #ifdef CONFIG_NO_HZ
--DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks);
-+DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks) = {
-+	.dynticks_nesting = 1,
-+	.dynticks = 1,
-+};
- #endif /* #ifdef CONFIG_NO_HZ */
- 
- static int blimit = 10;		/* Maximum callbacks per softirq. */
-@@ -1379,13 +1382,6 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
- 
- static void __cpuinit rcu_online_cpu(int cpu)
- {
--#ifdef CONFIG_NO_HZ
--	struct rcu_dynticks *rdtp = &per_cpu(rcu_dynticks, cpu);
--
--	rdtp->dynticks_nesting = 1;
--	rdtp->dynticks |= 1; 	/* need consecutive #s even for hotplug. */
--	rdtp->dynticks_nmi = (rdtp->dynticks_nmi + 1) & ~0x1;
--#endif /* #ifdef CONFIG_NO_HZ */
- 	rcu_init_percpu_data(cpu, &rcu_state);
- 	rcu_init_percpu_data(cpu, &rcu_bh_state);
- 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+The only cases on x86 hardware where I would think probing would have to 
+happen would be where the machine was too old to do either ISA Plug & 
+Play or PnPACPI, or if you added in a non-PnP ISA modem or serial card.
