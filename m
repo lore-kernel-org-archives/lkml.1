@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbZADInp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbZADI7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757226AbZADInp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 03:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbZADIne
+	id S1752880AbZADI7W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 03:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZADI7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 03:43:34 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:41433 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbZADInd (ORCPT
+	Sun, 4 Jan 2009 03:59:09 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:11280 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750858AbZADI7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 03:43:33 -0500
-Message-ID: <496076A9.7030907@davidnewall.com>
-Date: Sun, 04 Jan 2009 19:13:21 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sun, 4 Jan 2009 03:59:08 -0500
+Message-ID: <49607A56.2000001@panasas.com>
+Date: Sun, 04 Jan 2009 10:59:02 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-To: Ben Goodger <goodgerster@gmail.com>
-CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>	 <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca>	 <495F0672.6020708@davidnewall.com> <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>
-In-Reply-To: <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: avishay@gmail.com, jeff@garzik.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	 <20081229121423.efde9d06.akpm@linux-foundation.org>	 <495B8D90.1090004@panasas.com>	 <20081231112515.2d790d1c.akpm@linux-foundation.org>	 <495CC612.30800@panasas.com> <1230936386.3304.22.camel@localhost.localdomain>
+In-Reply-To: <1230936386.3304.22.camel@localhost.localdomain>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Jan 2009 08:59:01.0246 (UTC) FILETIME=[AFC701E0:01C96E4A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Goodger wrote:
-> 2009/1/3 David Newall <davidn@davidnewall.com>:
->   
->> Shouldn't this be a simple zoneinfo change, whereby the last two seconds
->> of the year (in each timezone) both map to 31dec2008 23:59:59?  That's
->> the way the change has worked in the real world.  Why would ntp or the
->> kernel be involved?
->>     
->
-> Actually, the change has worked in the real world with the
-> introduction of a new second named 23:59:60
+James Bottomley wrote:
+> On Thu, 2009-01-01 at 15:33 +0200, Boaz Harrosh wrote:
+>> Andrew Morton wrote:
+>>>>> Boaz Harrosh <bharrosh@panasas.com> wrote:
+>>>> When, if, all is fixed, through which tree/maintainer can exofs be submitted?
+>>> I can merge them.  Or you can run a git tree of your own, add it to
+>>> linux-next and ask Linus to pull it at the appropriate time.
+>>>
+>> Hi James
+>>
+>> Andrew suggested that maybe I should push exofs file system directly to
+>> Linus as it is pretty orthogonal to any other work. Sitting in linux-next
+>> will quickly expose any advancements in VFS and will force me to keep
+>> the tree uptodate.
+>>
+>> If that is so, and is accepted by Linus, would you rather that also the
+>> open-osd initiator library will be submitted through the same tree?
+>> The conflicts with scsi are very very narrow. The only real dependency
+>> is the ULD being a SCSI ULD. I will routinely ask your ACK on any scsi 
+>> or ULD related patches. Which are very few. This way it will be easier
+>> to manage the dependencies between the OSD work, the OSD pNFS-Objects
+>> trees at pNFS project, and the pNFSD+EXOFS export. One less dependency.
+>>
+>> [I already have such a public tree at git.open-osd.org for a while now]
+> 
+> Since it's sitting in SCSI, at least the libosd piece belongs over the
+> SCSI mailing list, so I think it makes sense to continue updating it via
+> the SCSI tree.
+> 
+> What's the status of the major number request from LANANA.  That's patch
+> number one, and I haven't heard that they've confirmed the selection of
+> 260 yet; or is LANANA now dead and it's who gets the major into the tree
+> first?
+> 
+> James
+> 
 
-Fine.  However you want to describe that last second is immaterial.  The
-point is that diddling the clock is not a true solution.  Take seconds
-since epoch for January 1 and subtract the seconds since epoch since the
-previous day and if the result isn't 86401 it's wrong.  Is Linux wrong? 
-(I gather it is.)
+LANANA seems dead. I was unable to get any response from any e-mail.
+Andrew?
+
+Thanks James. I will personally prefer if these patches will carry
+your sign-off on them, thous gaining your long acquired instincts.
+That could be really grate.
+
+I will send a new batch tomorrow morning, as Andrew had concerns with
+some members names. Unless you prefer a git tree, drop me a note and
+I'll send you a URL instead.
+
+Thanks
+Boaz
