@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZADPgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbZADPkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbZADPgb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 10:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZADPgX
+	id S1756654AbZADPkV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 10:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZADPkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 10:36:23 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:46398 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750934AbZADPgW (ORCPT
+	Sun, 4 Jan 2009 10:40:05 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58207 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbZADPkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 10:36:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XUK3Z037rCXwH5vnmb6mUV5D0KmCNrKYRIg1QEXppmLgNR8IF7NkgJZjTk9T70cNAG
-         R9OtTX/CBLxi/N7xikLoQe9ZvVLQCyit49kCu+0jz/1MV1mtNWTCLi/e5uwZmhgF8zXx
-         Jq1bfPR+rFjS+rZ3LfLAKv1PZS9OE+ZsBFrpw=
-Message-ID: <c62985530901040736g5d9c1f20y248d6e6c635bede3@mail.gmail.com>
-Date: Sun, 4 Jan 2009 16:36:18 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [PATCH] bootchart: improve output based on Dave Jones' feedback
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, davej@redhat.com
-In-Reply-To: <20090104071638.64be922a@infradead.org>
+	Sun, 4 Jan 2009 10:40:03 -0500
+Date: Sun, 4 Jan 2009 10:38:41 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Benny Halevy <bhalevy@panasas.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Avishay Traeger <avishay@gmail.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+Message-ID: <20090104153841.GA16569@infradead.org>
+References: <4947BFAA.4030208@panasas.com> <4947CA5C.50104@panasas.com> <20081229121423.efde9d06.akpm@linux-foundation.org> <495B8D90.1090004@panasas.com> <1230739053.3408.74.camel@localhost.localdomain> <4960D3CA.2000202@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20090104071638.64be922a@infradead.org>
+In-Reply-To: <4960D3CA.2000202@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/4 Arjan van de Ven <arjan@infradead.org>:
->
-> Subject: bootchart: improve output based on Dave Jones' feedback
-> From: Arjan van de Ven <arjan@linux.intel.com>
->
-> Dave Jones, in his blog, had some feedback about the bootchart script:
-> Primarily his complaint was that shorter delays weren't visualized.
->
-> The reason for that was that too small delays will have their labels
-> mixed up in the graph in an unreadable mess.
->
-> This patch has a fix for this; for one, it makes the output wider,
-> so more will fit.
-> The second part is that smaller delays are now shown with a
-> much smaller font for the label; while this isn't per se
-> readable at a 1:1 zoom, at least you can zoom in with most SVG
-> viewing applications and see what it is you are looking at.
->
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+On Sun, Jan 04, 2009 at 05:20:42PM +0200, Boaz Harrosh wrote:
+> 
+> User-mode Interface is another matter. There are some ideas and some already
+> implemented.
+> [Hosted on open-osd.org
+>  see: http://git.open-osd.org/gitweb.cgi?p=osc-osd/.git;a=summary
+>  look inside the osd-initiator directory]
+> And I have a toy interface that adds no new entries into the Kernel in
+> the form of an OSDVFS module, that will let you access the raw OSD device
+> through the VFS name-space.
+> 
+> The lack of any user-mode API is just the lack of any current need/priority,
+> or that I'm the only one working on OSD. But nothing that could not be solved
+> in two weeks of pragmatic work. Surly it's not a paradigm problem.
 
+For mkfs/repair direct use by databases, etc you want a userspace
+library, too.  The easiest way to get started would to simply take the
+kernel libosd and make it work ontop of SG_IO.
 
-BTW, it looks like the async initcall feature has not been merged
-upstream, even not in tip/master. Was it too
-risky, not enough tested or something?
