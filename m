@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbZADCyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZADDAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbZADCyT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 21:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbZADCyG
+	id S1755804AbZADDAK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 22:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZADC75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 21:54:06 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:46736
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751280AbZADCyF (ORCPT
+	Sat, 3 Jan 2009 21:59:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57374 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751743AbZADC74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 21:54:05 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Date: Sat, 3 Jan 2009 20:53:59 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <495FEEAF.5020005@zytor.com> <c384c5ea0901031637k3b571313m934c8881dce1c81@mail.gmail.com>
-In-Reply-To: <c384c5ea0901031637k3b571313m934c8881dce1c81@mail.gmail.com>
+	Sat, 3 Jan 2009 21:59:56 -0500
+Date: Sat, 3 Jan 2009 18:59:32 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Pavel Machek <pavel@suse.cz>, Andreas Mohr <andi@lisas.de>,
+       Sriram V <vshrirama@gmail.com>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Power Management with rootfs on SDMMC.
+In-Reply-To: <20090103231013.3591d027@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.00.0901031854320.3179@localhost.localdomain>
+References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com> <20090102102152.GA26603@rhlx01.hs-esslingen.de> <20090102172407.GD1555@ucw.cz> <alpine.LFD.2.00.0901031217261.3179@localhost.localdomain> <20090103204329.GD1666@elf.ucw.cz>
+ <20090103204535.1a91cbcb@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0901031306150.3179@localhost.localdomain> <20090103231013.3591d027@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901032054.00018.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 January 2009 18:37:12 Leon Woestenberg wrote:
-> Hello,
->
-> On Sun, Jan 4, 2009 at 12:03 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> >> Dependencies very quickly become dependency hell. If A requires B,
-> >> then A also inherits all (future) requirements of B, etc. etc.
-> >>
-> >> In my daily software development work with Linux and GNU software in
-> >> general, 10% of it is spent fighting/removing these extremely "thin"
-> >> or false depencies, so that it is usuable in embedded devices.
-> >
-> > First of all, I largely consider this a joke.  All real-life embedded
-> > kernel builds take place on hosted platforms; anything else seems to be
-> > done "just because it can be done", as a kind of show-off art project.
-> > Cute, but hardly worth impeding the rest of the kernel community for.
->
-> Let me explain why it is not a joke for me, although yes I agree it's
-> a funny way of how software engineering works.
->
-> My argument on thin dependencies indeed mostly holds for run-time
-> dependencies (to reduce size) but also for build dependency (to reduce
-> complexity)*.
 
-I usually just point to the gnucash 1.6 release as where this sort of thing 
-leads if you ignore it long enough:
-http://lwn.net/2001/0614/
 
-These days, a more modern example is the way that after even the gentoo folks 
-gave up on trying to build openoffice (and shipped prebuilt binaries of it in 
-their "build everything from source code" OS), Open Office's own developers 
-described that project "profoundly sick" and "stagnating" ( 
-http://developers.slashdot.org/article.pl?sid=08/12/28/0124230 ).
+On Sat, 3 Jan 2009, Alan Cox wrote:
+> 
+> I don't believe "auto-destroy my music collection" is a sane default...
 
-Neither project _started_ with an inbred development community that presented 
-a brick wall to new developers.  Complexity grew because they didn't fight 
-against it, and because they didn't have good rules by which they could say 
-"no" to any.
+You are missing the point.
 
-Environmental dependencies in your build environment are a cost, and as with 
-all costs it's ok if you get enough in return for it.  The Linux kernel has 
-historically been extremely lean in this regard, and discarding that strength 
-should at the very least come with commensurate concrete benefits.
+You have one totally made-up example of something that may happen as a 
+result of a default I didn't even advocate (but you didn't read my email). 
 
-Rob
+And you use that as an argument against another case that wasn't even made 
+up, but a real issue where suspend simply didn't work, because the /home 
+partition no longer worked afterwards.
+
+There really was nothing theoretical in my issue. On a certain class of 
+hardware, you absolutely _have_ to make your /home or / partition be 
+behind a USB thing, because nothing else has enough space on it.
+
+And your made-up example wouldn't even trigger if we just made a per-mount 
+decision to mark devices persistent.
+
+So why are you arguing? 
+
+			Linus
