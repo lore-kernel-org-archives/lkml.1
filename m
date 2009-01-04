@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbZADVxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZADVzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbZADVxd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 16:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZADVxZ
+	id S1757174AbZADVzf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 16:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZADVz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 16:53:25 -0500
-Received: from mout-xforward.kundenserver.de ([212.227.17.6]:49623 "EHLO
-	mout-xforward.kundenserver.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751121AbZADVxY convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 16:53:24 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Chris Mason <chris.mason@oracle.com>
-Subject: Re: Btrfs for mainline
-Date: Sun, 4 Jan 2009 22:52:44 +0100
-User-Agent: KMail/1.9.9
-Cc: Christoph Hellwig <hch@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <20090103195034.GA27541@infradead.org> <1231013856.7538.89.camel@think.oraclecorp.com>
-In-Reply-To: <1231013856.7538.89.camel@think.oraclecorp.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?iso-8859-15?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
- =?iso-8859-15?q?Y=2Ea=5E3zb?=)
- =?iso-8859-15?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
- =?iso-8859-15?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sun, 4 Jan 2009 16:55:26 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57744 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751475AbZADVzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 16:55:25 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/V299IfOfV+6mQqyYiVqE135xxTRBZ+o2qGjNYl8
+	fM1pPNNLjnamZ5
+Date: Sun, 4 Jan 2009 22:55:24 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Trilok Soni <soni.trilok@gmail.com>
+cc: linux-kernel@vger.kernel.org,
+       ext Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: videobuf-dma-sg.c: build failure on latest Jan 3,2009 tip
+In-Reply-To: <5d5443650901040234y799c4b0en482954db0f4c65c0@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0901042254300.4288@axis700.grange>
+References: <5d5443650901040234y799c4b0en482954db0f4c65c0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200901042252.45054.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-X-Provags-ID: V01U2FsdGVkX1/9JwqENiLmGkHfP64+cFoXOBHqkH+8cF6Vev1
- 7XpZX2vnsb4brwY5IANBawj5UoSAXekY3K1v2H2lCkF5MCKsI4
- Bs1YKsbT8TlUjXxBkwqkQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 January 2009, Chris Mason wrote:
+On Sun, 4 Jan 2009, Trilok Soni wrote:
+
+> Mauro,
 > 
-> > Actually a lot of the ioctl API don't just need documentation but
-> > a complete redo.  That's true at least for the physical device
-> > management and subvolume / snaphot ones.
-> > 
+> Build failure on latest tip of linux-2.6 mainline kernel while doing
+> it for n800 tablet.
 > 
-> The ioctl interface is definitely not finalized.  Adding more vs
-> replacing the existing ones is an open question.
+>   CC      drivers/media/video/videobuf-core.o
+>   CC      drivers/media/video/videobuf-dma-sg.o
+> drivers/media/video/videobuf-dma-sg.c: In function 'videobuf_vm_fault':
+> drivers/media/video/videobuf-dma-sg.c:391: error: implicit declaration
+> of function 'clear_user_page'
+> make[3]: *** [drivers/media/video/videobuf-dma-sg.o] Error 1
+> make[2]: *** [drivers/media/video] Error 2
+> make[1]: *** [drivers/media] Error 2
+> make: *** [drivers] Error 2
+> 
+> 
+> tip commit id:
+> commit 7d3b56ba37a95f1f370f50258ed3954c304c524b
 
-As long as that's an open question, the ioctl interface shouldn't get
-merged into the kernel, or should get in as btrfsdev, otherwise you
-get stuck with the current ABI forever.
+This
 
-Is it possible to separate out the nonstandard ioctls into a patch
-that can get merged when the interface is final, or will that make
-btrfs unusable?
+http://marc.info/?l=linux-video&m=123101763514517&w=2
 
-	Arnd <><
+should be the fix for the problem.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
