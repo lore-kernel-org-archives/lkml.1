@@ -1,139 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbZADMZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbZADM2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbZADMZz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 07:25:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZADMZq
+	id S1758284AbZADM2m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 07:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbZADM2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 07:25:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:39307 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbZADMZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 07:25:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KOFss49j5FiaOD9ISHSQ17lWA9K6Fi08RoCpyAoJIdPD7aq3T24jc2+h0VOL4yTcUl
-         WUqP7mgilcq2FQ144l6Az/Ij3YSrdV/BffLNHqDuW3KyiazFNQc5ecHDro2+8JvbG/KF
-         I9dPDVy7qPvA2jAHXE3+D/V7yBxrWLZIhXedw=
-Date: Sun, 4 Jan 2009 13:25:13 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: David Woodhouse <dwmw2@infradead.org>, stable <stable@kernel.org>,
-       linux-usb <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Flatz <david@upcs.at>
-Subject: [PATCH] emi26: fix oops on load
-Message-ID: <20090104122510.GA6198@joi>
-References: <20081231145045.GA6648@pornomat.kantstrasse.ch> <20090103214359.GA5827@joi> <20090104092249.GA6678@pornomat>
+	Sun, 4 Jan 2009 07:28:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33709 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750764AbZADM2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 07:28:33 -0500
+Date: Sun, 4 Jan 2009 13:28:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Baodong Chen <chenbdchenbd@gmail.com>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] Documentation/x86/boot.txt:payload length was changed
+	to payload_length
+Message-ID: <20090104122822.GA6485@elte.hu>
+References: <d204e3110901022037i4c0e077ck6cefcf35f6048318@mail.gmail.com> <alpine.LNX.1.10.0901040024560.5377@jikos.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090104092249.GA6678@pornomat>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LNX.1.10.0901040024560.5377@jikos.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 10:23:13AM +0100, David Flatz wrote:
-> Marcin Slusarz wrote:
-> > Thanks for a report.
-> > Please check whether appended patch resolves the problem.
+
+* Jiri Kosina <jkosina@suse.cz> wrote:
+
 > 
-> Hi.
+> [ added Ingo to CC ]
 > 
-> The patch fixes the problem. Thank you.
+> Ingo, I guess you are going to take the patch through x86 tree, so I 
+> wouldn't bother merging it through trivial tree, right?
 
-Greg, please apply this patch:
+yeah - applied it to tip/x86/cleanups, see the commit below. Thanks,
 
+	Ingo
+
+--------------->
+>From 28178cc4f92d7c62889cf5d0d9e709cde04c76ca Mon Sep 17 00:00:00 2001
+From: Baodong Chen <chenbdchenbd@gmail.com>
+Date: Sat, 3 Jan 2009 12:37:06 +0800
+Subject: [PATCH] Documentation/x86/boot.txt: payload length was changed to payload_length
+
+Signed-off-by: Baodong Chen <[email]chenbdchenbd@gmail.com[email]>
+Acked-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] emi26: fix oops on load
-
-Fix oops introduced by commit ae93a55bf948753de0bb8e43fa9c027f786abb05
-(emi26: use request_firmware()):
-
-usb 1-1: new full speed USB device using uhci_hcd and address 2
-usb 1-1: configuration #1 chosen from 1 choice
-emi26 - firmware loader 1-1:1.0: emi26_probe start
-usb 1-1: firmware: requesting emi26/loader.fw
-usb 1-1: firmware: requesting emi26/bitstream.fw
-usb 1-1: firmware: requesting emi26/firmware.fw
-usb 1-1: emi26_set_reset - 1
-usb 1-1: emi26_set_reset - 0
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-IP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26]
-*pde = 00000000
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1d.0/usb1/1-1/firmware/1-1/loading
-Modules linked in: emi26(+) ipv6 cpufreq_ondemand coretemp arc4 ecb iwl3945 irtty_sir sir_dev nsc_ircc ehci_hcd uhci_hcd mac80211 irda usbcore snd_hda_intel thinkpad_acpi rfkill hwmon led_class e1000e snd_pcm cfg80211 snd_timer crc_ccitt snd snd_page_alloc aes_generic
-
-Pid: 5082, comm: modprobe Not tainted (2.6.28 #2) 17023QG
-EIP: 0060:[<f80dc487>] EFLAGS: 00010206 CPU: 0
-EIP is at emi26_probe+0x2f7/0x620 [emi26]
-EAX: 0000015c EBX: 00000000 ECX: c1ffd9c0 EDX: 00000000
-ESI: 0000015c EDI: f6bb215c EBP: f6bb0400 ESP: f00ebcfc
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process modprobe (pid: 5082, ti=f00ea000 task=f5c7c700 task.ti=f00ea000)
-Stack:
- 0000015c 000000a5 f6a67cb8 f80dc7e0 c01c6262 fbef2986 f6bb2000 00008fe0
- 0000015c f715f748 f715f740 f715f738 f715f748 f6a67c00 f80dd040 f80dcfc0
- f6bb0400 fbacb290 f6a67c94 fbae0160 c01c70bf 00000000 f6a67c1c 00000000
-Call Trace:
- [<c01c6262>] sysfs_add_one+0x12/0x50
- [<fbacb290>] usb_probe_interface+0xa0/0x140 [usbcore]
- [<c01c70bf>] sysfs_create_link+0xf/0x20
- [<c02dead2>] driver_probe_device+0x82/0x180
- [<fbac9eeb>] usb_match_id+0x3b/0x50 [usbcore]
- [<c02dec4e>] __driver_attach+0x7e/0x80
- [<c02de27a>] bus_for_each_dev+0x3a/0x60
- [<c02de956>] driver_attach+0x16/0x20
- [<c02debd0>] __driver_attach+0x0/0x80
- [<c02de7b1>] bus_add_driver+0x1a1/0x220
- [<c02dee4d>] driver_register+0x4d/0x120
- [<c024e622>] idr_get_empty_slot+0xf2/0x290
- [<fbacab71>] usb_register_driver+0x81/0x100 [usbcore]
- [<f806c000>] emi26_init+0x0/0x14 [emi26]
- [<c0101126>] do_one_initcall+0x36/0x1b0
- [<c01c5e70>] sysfs_ilookup_test+0x0/0x10
- [<c0197a61>] ifind+0x31/0x90
- [<c01c6229>] __sysfs_add_one+0x59/0x80
- [<c01c64e4>] sysfs_addrm_finish+0x14/0x1c0
- [<c0175ca3>] __vunmap+0xa3/0xd0
- [<c014b854>] load_module+0x1544/0x1640
- [<c014b9d7>] sys_init_module+0x87/0x1b0
- [<c0187f41>] sys_read+0x41/0x70
- [<c01032a5>] sysenter_do_call+0x12/0x21
- [<c03d0000>] wait_for_common+0x40/0x110
-Code: 66 c1 e8 08 66 09 d0 75 a5 31 d2 89 e8 e8 72 fc ff ff 85 c0 0f 88 9a 02 00 00 b8 fa 00 00 00 e8 30 46 05 c8 8b 74 24 28 8b 5e 04 <8b> 03 89 44 24 1c 0f c8 89 44 24 1c 0f b7 4b 04 c7 44 24 20 00
-EIP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26] SS:ESP 0068:f00ebcfc
----[ end trace 2eefa13825431230 ]---
-
-After the last "package" of firmware data is sent to the device, we dereference
-NULL pointer (on access to rec->addr). Fix it.
-
-Reported-and-tested-by: David Flatz <david@upcs.at>
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: stable <stable@kernel.org> [2.6.27, 2.6.28]
----
- drivers/usb/misc/emi26.c |    2 +-
+ Documentation/x86/boot.txt |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/misc/emi26.c b/drivers/usb/misc/emi26.c
-index e762beb..879a980 100644
---- a/drivers/usb/misc/emi26.c
-+++ b/drivers/usb/misc/emi26.c
-@@ -160,7 +160,7 @@ static int emi26_load_firmware (struct usb_device *dev)
- 			err("%s - error loading firmware: error = %d", __func__, err);
- 			goto wraperr;
- 		}
--	} while (i > 0);
-+	} while (rec);
+diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
+index fcdc62b..7b4596a 100644
+--- a/Documentation/x86/boot.txt
++++ b/Documentation/x86/boot.txt
+@@ -44,7 +44,7 @@ Protocol 2.07:	(Kernel 2.6.24) Added paravirtualised boot protocol.
+ 		and KEEP_SEGMENTS flag in load_flags.
  
- 	/* Assert reset (stop the CPU in the EMI) */
- 	err = emi26_set_reset(dev,1);
--- 
-1.5.6.4
-
+ Protocol 2.08:	(Kernel 2.6.26) Added crc32 checksum and ELF format
+-		payload. Introduced payload_offset and payload length
++		payload. Introduced payload_offset and payload_length
+ 		fields to aid in locating the payload.
+ 
+ Protocol 2.09:	(Kernel 2.6.26) Added a field of 64-bit physical
