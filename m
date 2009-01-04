@@ -1,61 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbZADWjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbZADWnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbZADWjK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 17:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbZADWi4
+	id S1756282AbZADWnB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 17:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZADWmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 17:38:56 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58291 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbZADWiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 17:38:55 -0500
-Date: Sun, 4 Jan 2009 23:40:52 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
-       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090104224052.GE1913@elf.ucw.cz>
-References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no> <fa.b62zZFe5e154PhgA+0sdwVXD9F0@ifi.uio.no> <fa.ZTpiSvxEhp3YJDepiUQs+cU0C98@ifi.uio.no> <fa.xvvufQC6zTpU9R6vhDl51DR5V7A@ifi.uio.no> <fa.pkV69eXC76Pb9fnmERdAwXX9OKA@ifi.uio.no> <fa.hQTLXdIllf+hs4yQb092u6fowq0@ifi.uio.no> <49610911.8000204@yahoo.com> <20090104193141.GA22958@mit.edu>
+	Sun, 4 Jan 2009 17:42:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49537 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbZADWmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 17:42:51 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [Regression] Build failure in current mainline - firmware related
+Date: Sun, 4 Jan 2009 23:43:13 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200901031247.14977.rjw@sisk.pl> <200901032243.28684.rjw@sisk.pl> <20090104214406.GA31668@uranus.ravnborg.org>
+In-Reply-To: <20090104214406.GA31668@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090104193141.GA22958@mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901042343.13494.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-01-04 14:31:41, Theodore Tso wrote:
-> On Sun, Jan 04, 2009 at 07:08:01PM +0000, Sitsofe Wheeler wrote:
-> > Theodore Tso wrote:
-> >> So what's the use case where people want to be able to mount a
-> >> filesystem needing recovery read/only without running the journal?
-> >
-> > Corrupted SD card[1] that's been locked to read only for recovery  
-> > purposes without having the FS tear itself apart further?
+On Sunday 04 January 2009, Sam Ravnborg wrote:
+> On Sat, Jan 03, 2009 at 10:43:28PM +0100, Rafael J. Wysocki wrote:
+> > On Saturday 03 January 2009, Sam Ravnborg wrote:
+> > > On Sat, Jan 03, 2009 at 09:49:48PM +0100, Sam Ravnborg wrote:
+> > > > On Sat, Jan 03, 2009 at 12:47:14PM +0100, Rafael J. Wysocki wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > I get the following error from 'make modules_install' on my test boxes:
+> > > > > 
+> > > > >   HOSTCC  firmware/ihex2fw                                                             
+> > > > > /home/rafael/src/linux-2.6/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system                                            
+> > > > > compilation terminated.                                                                
+> > > > > make[3]: *** [firmware/ihex2fw] Error 1                                                
+> > > > > make[2]: *** [_modinst_post] Error 2                                                   
+> > > > > make[1]: *** [sub-make] Error 2                                                        
+> > > > > make: *** [all] Error 2
+> > > > > 
+> > > > > where the configuration is that the kernel is compiled on a build box
+> > > > > with 'make O=<destdir> -j5' and then <destdir> is mounted over NFS read-only by
+> > > > > each test box (full path to this directory is the same on the build box and on
+> > > > > the test boxes).  Then, I cd into <destdir>, run 'make modules_install' and get
+> > > > > the error above.
+> > > > > 
+> > > > > 2.6.28 didn't have this problem.
+> > > > 
+> > > > 
+> > > > Strange...
+> > > > 1) The string "opening dependency file" does not occur in my freshly pulled kernel
+> > > > 2) Line 268 is last line of ihex2fw.c
+> > > > 
+> > > > Could you try to do a "make modules_install V=1" to see the exact arguments supplied ti ihex2fw.c
+> > > > 
+> > > > I gave up on all the firmware stuff long time ago and has
+> > > > never properly reviewed the implementation so I really
+> > > > have no clue what is actually happening.
+> > > > 
+> > > > Walking through the 179 lines Makefile has not yet benn on my
+> > > > "fun to do" list - and it most likely take a while before it hits it.
+> > > 
+> > > Took a quick peek. The Makefile uses "order only" in three spots.
+> > > This alone demand make version 3.80 IIRC and Documetnation/Changes
+> > > says 3.79.1...
+> > > 
+> > > The "order only" is so rare that Paul Smith once said that
+> > > coming up with a good example of usage was not easy.
+> > > 
+> > > For the headers_* stuff I recall when I reworked it I could
+> > > kill the usage of "order only" there but now it crept
+> > > back - sigh!
+> > 
+> > Well, in the meantime I ran 'make modules_install V=1' and this is the
+> > last thing printed (the previous ones are not really interesting):
+> > 
+> > make -f /home/rafael/src/linux-2.6/scripts/Makefile.fwinst obj=firmware __fw_modinst
+> >   gcc -Wp,-MD,firmware/.ihex2fw.d -Ifirmware -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o firmware/ihex2fw /home/rafael/src/linux-2.6/firmware/ihex2fw.c
+> > /home/rafael/src/linux-2.6/firmware/ihex2fw.c:268: fatal error: opening dependency file firmware/.ihex2fw.d: Read-only file system
+> > compilation terminated.
+> > make[3]: *** [firmware/ihex2fw] Error 1
+> > make[2]: *** [_modinst_post] Error 2
+> > make[1]: *** [sub-make] Error 2
+> > make: *** [all] Error 2
+> > 
+> > It fails because of the attempt to compile ihex2fw .
 > 
-> In that case, the right answer is to copy the 32 GB SD card to hard
-> drive, and then operate on the hard drive.....  In general, if the
-> media has started going bad, the *first* thing you want to do is an
-> immediate copy of the media to some place stable.
+> There are at least two obvious ways to fix this.
+> 
+> We could try to rearrange things so we do not trigger
+> the rebuild of ihex2fw in the modules_install case.
+> This would likely involve creating a new file listing
+> all the firmawre files and share it between firmware/Makefile
+> and scripts/Makefile.fwinst
+> 
+> We could also move ihex2fw to scripts so it is build
+> as part of the preparation for a kernel build.
+> 
+> Attched patch does the latter.
+> [I will update the changelog before I eventually commit it].
 
-Not neccessarily.
+The patch helps, thanks a lot.
 
-If I have a bit of precious data and lot of junk on the card, I want
-to copy out the precious data before the card dies. Reading the whole
-media may just take too long.
-
-That's probably very true for rotating harddrives after headcrash...
-
-"ro, noload" seems like very acceptable solution in that case.
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Best,
+Rafael
