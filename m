@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZADEv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZADE6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbZADEv6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 23:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZADEvu
+	id S1756122AbZADE6G (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 23:58:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZADE5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 23:51:50 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:56004 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbZADEvt (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 23:51:49 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Gabor MICSKO <gmicsko@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Grsecurity is about to be discontinued, unless...
-In-Reply-To: Your message of "Sat, 03 Jan 2009 12:16:50 PST."
-             <alpine.LFD.2.00.0901031210260.3179@localhost.localdomain>
-From: Valdis.Kletnieks@vt.edu
-References: <1231013176.6497.20.camel@localhost.localdomain>
-            <alpine.LFD.2.00.0901031210260.3179@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231044704_3941P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sat, 3 Jan 2009 23:57:53 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:60028
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbZADE5w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 23:57:52 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: markus.heidelberg@web.de
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Date: Sat, 3 Jan 2009 22:57:48 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: "Leon Woestenberg" <leon.woestenberg@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <200901032054.00018.rob@landley.net> <200901040438.14610.markus.heidelberg@web.de>
+In-Reply-To: <200901040438.14610.markus.heidelberg@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Sat, 03 Jan 2009 23:51:44 -0500
-Message-ID: <24107.1231044704@turing-police.cc.vt.edu>
+Content-Disposition: inline
+Message-Id: <200901032257.48854.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231044704_3941P
-Content-Type: text/plain; charset=us-ascii
+On Saturday 03 January 2009 21:38:13 Markus Heidelberg wrote:
+> Rob Landley, 04.01.2009:
+> Now that you mention this the second time, I have to ask where you have
+> this information from. Since I use Gentoo, I was always able to compile
+> OpenOffice (version 1, 2 and now 3) myself.
 
-On Sat, 03 Jan 2009 12:16:50 PST, Linus Torvalds said:
-> On Sat, 3 Jan 2009, Gabor MICSKO wrote:
-> > In short, I would like to know what is your answer to this request. And
-> > in the case if you see no chance for the integration, I would like to
-> > know what is the reason behind this decision.
-> 
-> Quite frankly, historically the patches have been a mis-match of
-> 
->  - some sane stuff
+The gentoo panel last OLS.  (Either a BOF or a tutorial, I don't remember 
+which.)  It's still _possible_ to build it from source, but they created a 
+separate "openoffice-bin" package for the sole purpose of _not_ compiling it 
+from source, and it's what they recommend installing.
 
-Probably the best way to proceed would be for the stakeholders to come to some
-agreement on which parts are the "sane stuff" (which could be an interesting
-food fight), split those parts out, and submit them for inclusion as standalone
-separate patches.
+> At the same time, it was always possible to use prebuilt packages as an
+> alternative - the same way as it is possible for a few other packages
+> (Firefox, Thunderbird, Seamonkey, maybe more). But AFAIK compiling from
+> source is still the preferred method.
 
-It's a shame that the grsecurity developers had issues with the LSM architecture,
-as their RBAC would probably be a nice addition to the slowly-growing set of
-LSM modules.
+Apparently not for Open Office.
 
---==_Exmh_1231044704_3941P
-Content-Type: application/pgp-signature
+First hit googling "gentoo openoffice install":
+http://grokdoc.net/index.php/Gentoo-OpenOffice.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+The next two hits are bug tracker entries, and the one after that:
+http://www.linuxforums.org/forum/gentoo-linux-help/71086-installing-
+openoffice-question.html
 
-iD8DBQFJYEBgcC3lWbTT17ARAqwuAKCAID6ARFbr4FqYHu338ALTYAiEowCg1YU8
-Tqm4z69Ha1ZsmKaT0SxscY8=
-=HfcH
------END PGP SIGNATURE-----
+Contains this cut and paste from emerge output:
 
---==_Exmh_1231044704_3941P--
+These are the packages that would be merged, in order:
+
+Calculating dependencies
+!!! All ebuilds that could satisfy "openoffice" have been masked.
+!!! One of the following masked packages is required to complete your request:
+- app-office/openoffice-2.0.4_rc1-r1 (masked by: package.mask, package.mask, 
+~am d64 keyword)
+# 2005/10/24 Simon Stelling <blubb@gentoo.org>
+# Don't even try to compile openoffice-2.x, it won't work.
+
+But not to go too far down this rathole, I'm just using openoffice as an 
+example here.  If you want to talk about it more, take it off list please.
+
+> Markus
+
+Rob
