@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbZADL6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZADMEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757614AbZADL6X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 06:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZADL6N
+	id S1757347AbZADMEU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 07:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZADMEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 06:58:13 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:49582 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbZADL6M (ORCPT
+	Sun, 4 Jan 2009 07:04:12 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33227 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751066AbZADMEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 06:58:12 -0500
-Date: Sun, 4 Jan 2009 12:59:47 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "David S. Miller" <davem@davemloft.net>,
-       sparclinux <sparclinux@vger.kernel.org>, wli@holomorphy.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] MAINTAINERS: update sparc maintainer
-Message-ID: <20090104115947.GA32643@uranus.ravnborg.org>
+	Sun, 4 Jan 2009 07:04:10 -0500
+Date: Sun, 4 Jan 2009 12:04:15 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@suse.cz>, Andreas Mohr <andi@lisas.de>,
+       Sriram V <vshrirama@gmail.com>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Power Management with rootfs on SDMMC.
+Message-ID: <20090104120415.33e32c6b@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.0901031854320.3179@localhost.localdomain>
+References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com>
+	<20090102102152.GA26603@rhlx01.hs-esslingen.de>
+	<20090102172407.GD1555@ucw.cz>
+	<alpine.LFD.2.00.0901031217261.3179@localhost.localdomain>
+	<20090103204329.GD1666@elf.ucw.cz>
+	<20090103204535.1a91cbcb@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0901031306150.3179@localhost.localdomain>
+	<20090103231013.3591d027@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0901031854320.3179@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reflect the current situation where David Miller
-is the sparc maintainer.
+> > I don't believe "auto-destroy my music collection" is a sane default...
+> 
+> You are missing the point.
 
-I have tried to contact Bill on following adresses:
+Nope.
 
-    wli@holomorphy.com
-    wlirwin@us.ibm.com
+> You have one totally made-up example of something that may happen as a 
+> result of a default I didn't even advocate (but you didn't read my email). 
 
-with no success and Bill has not been active on the
-sparclinux mailing list for a long time.
+Actually I went and verified the behaviour of the iRiver iHP20.
 
-As sparc and sparc64 are unified I unified the two entries
-in the MAINTAINERS file too.
+> There really was nothing theoretical in my issue. On a certain class of 
+> hardware, you absolutely _have_ to make your /home or / partition be 
+> behind a USB thing, because nothing else has enough space on it.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
+Yes clearly.
 
-I added Bill to this mail to do a second attempt on the holomorphy address.
+> And your made-up example wouldn't even trigger if we just made a per-mount 
 
-Note: This patch should have an ack from David before it goes in.
+What made up example ?
 
-	Sam
+> decision to mark devices persistent.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index befacf0..141aff6 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4015,10 +4015,12 @@ L:	alsa-devel@alsa-project.org (subscribers-only)
- W:	http://alsa-project.org/main/index.php/ASoC
- S:	Supported
- 
--SPARC (sparc32)
--P:	William L. Irwin
--M:	wli@holomorphy.com
-+SPARC + UltraSPARC (sparc/sparc64)
-+P:	David S. Miller
-+M:	davem@davemloft.net
- L:	sparclinux@vger.kernel.org
-+T:	git kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git
-+T:	git kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git
- S:	Maintained
- 
- SPECIALIX IO8+ MULTIPORT SERIAL CARD DRIVER
-@@ -4302,13 +4304,6 @@ M:	dushistov@mail.ru
- L:	linux-kernel@vger.kernel.org
- S:	Maintained
- 
--UltraSPARC (sparc64)
--P:	David S. Miller
--M:	davem@davemloft.net
--L:	sparclinux@vger.kernel.org
--T:	git kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git
--S:	Maintained
--
- ULTRA-WIDEBAND (UWB) SUBSYSTEM:
- P:	David Vrabel
- M:	david.vrabel@csr.com
+The distribution question is 'how do you make that decision reliably and
+correctly ?'. That is closely followed by 'what state should it end up in
+if the relevant scripts don't run for some reason ?' - which is clearly
+"not persistent" for safety reasons.
+
+> So why are you arguing?
+
+I'm not aware I was. I was simply pointing out that
+
+- the general distribution default cannot be one that harms user data on
+music players
+- that you can fix it more elegantly by quiescing and validating file
+systems across a suspend/resume
+
+neither of which appears to disagree with the point that you want USB (or
+increasingly SD card) to be able to autoresume when it holds file
+systems. It does however make clear which way around any kernel default
+should be.
+
+Alan
