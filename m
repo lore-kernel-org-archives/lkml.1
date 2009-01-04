@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZADX2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZADX3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbZADX2G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 18:28:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbZADX1y
+	id S1758271AbZADX3V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 18:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZADX3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 18:27:54 -0500
-Received: from mail.lang.hm ([64.81.33.126]:48857 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZADX1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 18:27:54 -0500
-Date: Sun, 4 Jan 2009 16:29:40 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: David Newall <davidn@davidnewall.com>
-cc: Kyle Moffett <kyle@moffetthome.net>, Ben Goodger <goodgerster@gmail.com>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-In-Reply-To: <4961432A.80509@davidnewall.com>
-Message-ID: <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>  <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca>  <495F0672.6020708@davidnewall.com>  <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com> 
- <496076A9.7030907@davidnewall.com> <f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com> <4960897D.5030603@davidnewall.com> <alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm> <4961432A.80509@davidnewall.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 4 Jan 2009 18:29:13 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48579 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZADX3N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 18:29:13 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49614639.5090901@s5r6.in-berlin.de>
+Date: Mon, 05 Jan 2009 00:28:57 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: linux1394-devel@lists.sourceforge.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/11] firewire: cdev: proposed ABI extensions
+References: <tkrat.3905b2754a8fc519@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.3905b2754a8fc519@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Jan 2009, David Newall wrote:
+I wrote:
+> These patches apply after several as yet uncommitted firewire patches,
 
-> david@lang.hm wrote:
->> so are you saying that other 'correct' OS's have patches issued every
->> time a leap second is declared so that they have an in-kernel table of
->> them to use to calculate the correct time?
->
-> No.  Exactly the contrary.  I'm saying that through use of zoneinfo, for
-> example, no kernel support is required for leap seconds.  And! this
-> provides correct results for seconds-between two dates.
+I committed the prerequisites to linux1394-2.6.git now, branch: cdev.
+I also committed all the new patches to branch: test, for those who'd
+rather look through git or gitweb at the patches.
 
-then new zoneinfo files need to be sent out every time there is a leap 
-second (which from other posts on this thread is potentially every month)
-
-and if it is something to be fixed in zoneinfo, then complaining to the 
-kernel list and demanding that 'Linux be fixed' is not productive.
-
-David Lang
+The linux1394-2.6.git branches misc, cdev, topology, for-next, and
+master have been rebased onto v2.6.28.
+-- 
+Stefan Richter
+-=====-==--= ---= --=-=
+http://arcgraph.de/sr/
