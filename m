@@ -1,148 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbZADMxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbZADM5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbZADMxk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 07:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZADMxb
+	id S1757622AbZADM5j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 07:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbZADM5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 07:53:31 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:41277 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbZADMxa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 07:53:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=t5aZ+iHsM2TtV9Tfw4GXqI3LXB7DgEf7yaJWhu9TuJsn425+tm9ZBOUL3qUu3U2wW1
-         2ZLNblh9cipr6mLwJ7r7bUOwRTXFIrM1AO8ef8/u6OxcNokLMMFSc4elInfzV0en+/mx
-         fX+KPEF3+H7Ox2C5NNeIZok1JXEgoDPxkawEg=
-Message-ID: <b6a2187b0901040453rd914823kb5574f432c71f9f8@mail.gmail.com>
-Date: Sun, 4 Jan 2009 20:53:29 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-Subject: Re: reiserfs broken "unknown uniqueness" (commit c1eaa26b671299b3ec01d40c6c71ee19a4f81517)
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-In-Reply-To: <20090104112436.GT32364@curie-int.orbis-terrarum.net>
+	Sun, 4 Jan 2009 07:57:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44500 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbZADM5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 07:57:30 -0500
+Date: Sun, 4 Jan 2009 13:57:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Baodong Chen <chenbdchenbd@gmail.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Subject: [PATCH] Documentation/x86/boot.txt:payload length was
+	changed to payload_length
+Message-ID: <20090104125713.GD15472@elte.hu>
+References: <d204e3110901020024n7d0c1a6dt919f76283d9a8663@mail.gmail.com> <20090102092659.GC1975@elte.hu> <d204e3110901022044l2cf57f54yd52a2d331d69deef@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_2938_9720631.1231073609188"
-References: <20090104112436.GT32364@curie-int.orbis-terrarum.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d204e3110901022044l2cf57f54yd52a2d331d69deef@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_2938_9720631.1231073609188
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-It's fixed in the link to this one ...
+* Baodong Chen <chenbdchenbd@gmail.com> wrote:
 
-   reiserfs broken with 2.6.28-17244-gb58602a
+> On Fri, Jan 2, 2009 at 5:26 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Baodong Chen <chenbdchenbd@gmail.com> wrote:
+> >
+> >>  Documentation/x86/boot.txt:payload length was changed to payload_length
+> >>
+> >> Signed-off-by: Baodong Chen <[email]chenbdchenbd@gmail.com[email]>
+> >>
+> >> ---
+> >>  Documentation/x86/boot.txt |    2 +-
+> >>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >
+> > looks good but the patch was whitespace damaged (all tabs were spaces and
+> > there were linewraps as well), please check
+> > Documentation/email-clients.txt and resend the patch. Thanks,
+> >
+> >        Ingo
+> 
+> I referred to Documentation/email-clients.txt:Gmail and resent the 
+> patch. I am a newbie,if i made any mistake,please do me a favor and help 
+> me.Thanks!
 
+it's OK, and your resubmission was better - but it still had a linewrap 
+problem (i was able to fix that up manually).
 
-Jeff.
+this bit:
 
+@@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised
+boot protocol.
+                and KEEP_SEGMENTS flag in load_flags.
 
-On Sun, Jan 4, 2009 at 7:24 PM, Robin H. Johnson
-> Reiserfs broken recently, git bisect narrows it down to commit
-> c1eaa26b671299b3ec01d40c6c71ee19a4f81517.
->
-> [   52.365262] ReiserFS: warning: vs-500: unknown uniqueness -30719
-> ...
-> [27630.378732] ReiserFS: warning: vs-500: unknown uniqueness -30720
-> (and many more of the same with one of those two numbers on the end).
->
+[3 lines]
 
-------=_Part_2938_9720631.1231073609188
-Content-Type: text/plain; name=patch-inode.c
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fpjpeott1
-Content-Disposition: attachment; filename=patch-inode.c
+should have been:
 
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgCkRlbGl2ZXJlZC1UbzogamVmZi5jaHVhLmxpbnV4
-QGdtYWlsLmNvbQpSZWNlaXZlZDogYnkgMTAuMTE0LjE1MC4xNiB3aXRoIFNNVFAgaWQgeDE2Y3Mz
-MjgzNXdhZDsKICAgICAgICBGcmksIDIgSmFuIDIwMDkgMDU6MjQ6MDQgLTA4MDAgKFBTVCkKUmVj
-ZWl2ZWQ6IGJ5IDEwLjIxNC4yNS4zIHdpdGggU01UUCBpZCAzbXIxNDg2MDA2NnFheS4zMzcuMTIz
-MDkwMjY0MzUwMDsKICAgICAgICBGcmksIDAyIEphbiAyMDA5IDA1OjI0OjAzIC0wODAwIChQU1Qp
-ClJldHVybi1QYXRoOiA8bGludXgta2VybmVsLW93bmVyQHZnZXIua2VybmVsLm9yZz4KUmVjZWl2
-ZWQ6IGZyb20gdmdlci5rZXJuZWwub3JnICh2Z2VyLmtlcm5lbC5vcmcgWzIwOS4xMzIuMTc2LjE2
-N10pCiAgICAgICAgYnkgbXguZ29vZ2xlLmNvbSB3aXRoIEVTTVRQIGlkIDMwc2k0ODI4MDM0Nnl4
-ay4zNy4yMDA5LjAxLjAyLjA1LjIzLjM5OwogICAgICAgIEZyaSwgMDIgSmFuIDIwMDkgMDU6MjQ6
-MDMgLTA4MDAgKFBTVCkKUmVjZWl2ZWQtU1BGOiBwYXNzIChnb29nbGUuY29tOiBkb21haW4gb2Yg
-bGludXgta2VybmVsLW93bmVyQHZnZXIua2VybmVsLm9yZyBkZXNpZ25hdGVzIDIwOS4xMzIuMTc2
-LjE2NyBhcyBwZXJtaXR0ZWQgc2VuZGVyKSBjbGllbnQtaXA9MjA5LjEzMi4xNzYuMTY3OwpBdXRo
-ZW50aWNhdGlvbi1SZXN1bHRzOiBteC5nb29nbGUuY29tOyBzcGY9cGFzcyAoZ29vZ2xlLmNvbTog
-ZG9tYWluIG9mIGxpbnV4LWtlcm5lbC1vd25lckB2Z2VyLmtlcm5lbC5vcmcgZGVzaWduYXRlcyAy
-MDkuMTMyLjE3Ni4xNjcgYXMgcGVybWl0dGVkIHNlbmRlcikgc210cC5tYWlsPWxpbnV4LWtlcm5l
-bC1vd25lckB2Z2VyLmtlcm5lbC5vcmcKUmVjZWl2ZWQ6IChtYWpvcmRvbW9Admdlci5rZXJuZWwu
-b3JnKSBieSB2Z2VyLmtlcm5lbC5vcmcgdmlhIGxpc3RleHBhbmQKCWlkIFMxNzU4MTE4QWJaQUJO
-WDAgKE9SQ1BUIDxyZmM4MjI7ZmVkb3JhYmFzc0BnbWFpbC5jb20+CgkrIDQ5IG90aGVycyk7IEZy
-aSwgMiBKYW4gMjAwOSAwODoyMzoyNiAtMDUwMApSZWNlaXZlZDogKG1ham9yZG9tb0B2Z2VyLmtl
-cm5lbC5vcmcpIGJ5IHZnZXIua2VybmVsLm9yZyBpZCBTMTc1NzMwNUFiWkFCTlhOCgkoT1JDUFQg
-PHJmYzgyMjtsaW51eC1rZXJuZWwtb3V0Z29pbmc+KTsKCUZyaSwgMiBKYW4gMjAwOSAwODoyMzox
-MyAtMDUwMApSZWNlaXZlZDogZnJvbSB6ZW5pdi5saW51eC5vcmcudWsgKFsxOTUuOTIuMjUzLjJd
-OjQzNzM3ICJFSExPCglaZW5JVi5saW51eC5vcmcudWsiIHJob3N0LWZsYWdzLU9LLU9LLU9LLU9L
-KSBieSB2Z2VyLmtlcm5lbC5vcmcKCXdpdGggRVNNVFAgaWQgUzE3NTcwNDhBYlpBQk5YTCAoT1JD
-UFQKCTxyZmM4MjI7bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz4pOwoJRnJpLCAyIEphbiAy
-MDA5IDA4OjIzOjExIC0wNTAwClJlY2VpdmVkOiBmcm9tIHZpcm8gYnkgWmVuSVYubGludXgub3Jn
-LnVrIHdpdGggbG9jYWwgKEV4aW0gNC42OCAjMSAoUmVkIEhhdCBMaW51eCkpCglpZCAxTElqelkt
-MDAwNjh0LThMOyBGcmksIDAyIEphbiAyMDA5IDEzOjIzOjA4ICswMDAwCkRhdGU6CUZyaSwgMiBK
-YW4gMjAwOSAxMzoyMzowOCArMDAwMApGcm9tOglBbCBWaXJvIDx2aXJvQFplbklWLmxpbnV4Lm9y
-Zy51az4KVG86CU1hcmMgS29zY2hld3NraSA8bWFyY0Bvc2tub3dsZWRnZS5vcmc+CkNjOglMaW51
-eC1MS0xNIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPgpTdWJqZWN0OiBSZTogcmVpc2Vy
-ZnMgYnJva2VuIHdpdGggMi42LjI4LTE3MjQ0LWdiNTg2MDJhCk1lc3NhZ2UtSUQ6IDwyMDA5MDEw
-MjEzMjMwOC5HRTI4OTQ2QFplbklWLmxpbnV4Lm9yZy51az4KUmVmZXJlbmNlczogPDIwMDkwMTAy
-MDgzNjQ1LkdBMzYzNUBzdGlmZnk+Ck1JTUUtVmVyc2lvbjogMS4wCkNvbnRlbnQtVHlwZTogdGV4
-dC9wbGFpbjsgY2hhcnNldD11cy1hc2NpaQpDb250ZW50LURpc3Bvc2l0aW9uOiBpbmxpbmUKSW4t
-UmVwbHktVG86IDwyMDA5MDEwMjA4MzY0NS5HQTM2MzVAc3RpZmZ5PgpVc2VyLUFnZW50OiBNdXR0
-LzEuNS4xNyAoMjAwNy0xMS0wMSkKU2VuZGVyOglsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJu
-ZWwub3JnClByZWNlZGVuY2U6IGJ1bGsKTGlzdC1JRDogPGxpbnV4LWtlcm5lbC52Z2VyLmtlcm5l
-bC5vcmc+ClgtTWFpbGluZy1MaXN0OglsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnCgpPbiBG
-cmksIEphbiAwMiwgMjAwOSBhdCAwOTozODoxMUFNICswMTAwLCBNYXJjIEtvc2NoZXdza2kgd3Jv
-dGU6Cj4gSGkhCj4gCj4gSSBqdXN0IGJvb3RlZCBpbnRvIGEgMi42LjI4LTE3MjQ0LWdiNTg2MDJh
-IGtlcm5lbCB0aGF0IGlzIHRoZSBjdXJyZW50bHkgcmVjZW50Cj4gZ2l0IGNvZGUuIFRoZSByZWlz
-ZXJmcyBmcyBoYXMgc29tZSBtYWpvciBwcm9icyB3aGVuIGJvb3RpbmcgdGhpcyBrZXJuZWwuIEkg
-anVzdAo+IC0tcmVidWlsZC10cmVlIDQgcGFydGl0aW9ucyB3aGljaCBhcmUgT0sgbm93IGFnYWlu
-LiBXaGVuIGJvb3RpbmcgbXkgR2VudG9vIGJveAo+IHNheXMgaXQgY2Fubm90IGNyZWF0ZSBhbiAv
-ZXRjL210YWJ+bm5ubiBmaWxlIGFuZCBzdWNoLiBXaGVuIEkgYm9vdCBpbnRvIHN0b2NrCj4gMi42
-LjI4LCBob3dldmVyLCBhbnl0aGluZyBpcyBPSy4gSSByZS10ZXN0ZWQgdGhhdCAzIHRpbWVzLiBB
-bnl0aW1lIEkgYm9vdCBpbnRvCj4gdGhlIGdpdCBrZXJuZWwgdGhlIG1lc3NhZ2VzIG9jY3VyIGFu
-ZCBJIHNodXRkb3duIHRoZSBib3ggdmlhIGFjcGlkIChwb3dlcgo+IGJ1dHRvbikgYXMgcXVpY2sg
-YXMgSSBjYW4uCgpBcnJnaC4gIFNlZSBpZiB0aGF0IGhlbHBzOgoKbm93IHRoYXQgd2UgdXNlIGlo
-LmtleSBlYXJsaWVyLCB3ZSBuZWVkIHRvIGRvIGFsbCBpdHMgc2V0dXAgZWFybHkgZW5vdWdoCgpT
-aWduZWQtb2ZmLWJ5OiBBbCBWaXJvIDx2aXJvQHplbml2LmxpbnV4Lm9yZy51az4KLS0tCmRpZmYg
-LS1naXQgYS9mcy9yZWlzZXJmcy9pbm9kZS5jIGIvZnMvcmVpc2VyZnMvaW5vZGUuYwppbmRleCAx
-NDVjMmQzLi4xMzA2ZDRmIDEwMDY0NAotLS0gYS9mcy9yZWlzZXJmcy9pbm9kZS5jCisrKyBiL2Zz
-L3JlaXNlcmZzL2lub2RlLmMKQEAgLTE3ODIsNiArMTc4MiwxMiBAQCBpbnQgcmVpc2VyZnNfbmV3
-X2lub2RlKHN0cnVjdCByZWlzZXJmc190cmFuc2FjdGlvbl9oYW5kbGUgKnRoLAogCQlnb3RvIG91
-dF9iYWRfaW5vZGU7CiAJfQogCWFyZ3Mub2JqZWN0aWQgPSBpbm9kZS0+aV9pbm8gPSBsZTMyX3Rv
-X2NwdShpaC5paF9rZXkua19vYmplY3RpZCk7CisJaWYgKG9sZF9mb3JtYXRfb25seShzYikpCisJ
-CW1ha2VfbGVfaXRlbV9oZWFkKCZpaCwgTlVMTCwgS0VZX0ZPUk1BVF8zXzUsIFNEX09GRlNFVCwK
-KwkJCQkgIFRZUEVfU1RBVF9EQVRBLCBTRF9WMV9TSVpFLCBNQVhfVVNfSU5UKTsKKwllbHNlCisJ
-CW1ha2VfbGVfaXRlbV9oZWFkKCZpaCwgTlVMTCwgS0VZX0ZPUk1BVF8zXzYsIFNEX09GRlNFVCwK
-KwkJCQkgIFRZUEVfU1RBVF9EQVRBLCBTRF9TSVpFLCBNQVhfVVNfSU5UKTsKIAltZW1jcHkoSU5P
-REVfUEtFWShpbm9kZSksICYoaWguaWhfa2V5KSwgS0VZX1NJWkUpOwogCWFyZ3MuZGlyaWQgPSBs
-ZTMyX3RvX2NwdShpaC5paF9rZXkua19kaXJfaWQpOwogCWlmIChpbnNlcnRfaW5vZGVfbG9ja2Vk
-NChpbm9kZSwgYXJncy5vYmplY3RpZCwKQEAgLTE4MzQsMTMgKzE4NDAsNiBAQCBpbnQgcmVpc2Vy
-ZnNfbmV3X2lub2RlKHN0cnVjdCByZWlzZXJmc190cmFuc2FjdGlvbl9oYW5kbGUgKnRoLAogCXJl
-aXNlcmZzX2luaXRfYWNsX2RlZmF1bHQoaW5vZGUpOwogCXJlaXNlcmZzX2luaXRfeGF0dHJfcndz
-ZW0oaW5vZGUpOwogCi0JaWYgKG9sZF9mb3JtYXRfb25seShzYikpCi0JCW1ha2VfbGVfaXRlbV9o
-ZWFkKCZpaCwgTlVMTCwgS0VZX0ZPUk1BVF8zXzUsIFNEX09GRlNFVCwKLQkJCQkgIFRZUEVfU1RB
-VF9EQVRBLCBTRF9WMV9TSVpFLCBNQVhfVVNfSU5UKTsKLQllbHNlCi0JCW1ha2VfbGVfaXRlbV9o
-ZWFkKCZpaCwgTlVMTCwgS0VZX0ZPUk1BVF8zXzYsIFNEX09GRlNFVCwKLQkJCQkgIFRZUEVfU1RB
-VF9EQVRBLCBTRF9TSVpFLCBNQVhfVVNfSU5UKTsKLQogCS8qIGtleSB0byBzZWFyY2ggZm9yIGNv
-cnJlY3QgcGxhY2UgZm9yIG5ldyBzdGF0IGRhdGEgKi8KIAlfbWFrZV9jcHVfa2V5KCZrZXksIEtF
-WV9GT1JNQVRfM182LCBsZTMyX3RvX2NwdShpaC5paF9rZXkua19kaXJfaWQpLAogCQkgICAgICBs
-ZTMyX3RvX2NwdShpaC5paF9rZXkua19vYmplY3RpZCksIFNEX09GRlNFVCwKLS0KVG8gdW5zdWJz
-Y3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWtl
-cm5lbCIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5v
-cmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRv
-bW8taW5mby5odG1sClBsZWFzZSByZWFkIHRoZSBGQVEgYXQgIGh0dHA6Ly93d3cudHV4Lm9yZy9s
-a21sLwo=
-------=_Part_2938_9720631.1231073609188--
+@@ -44,7 +44,7 @@ Protocol 2.07:        (Kernel 2.6.24) Added paravirtualised boot protocol.
+                and KEEP_SEGMENTS flag in load_flags.
+
+[2 lines]
+
+If you post from gmail it might make sense to send patches as MIME 
+attachments, we can process them just fine. (as long as you send patches 
+that go via -tip - other maintainers have different policies regarding 
+MIME attachments)
+
+	Ingo
