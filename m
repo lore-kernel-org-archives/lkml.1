@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZADWcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZADWgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbZADWcq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 17:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZADWcg
+	id S1756543AbZADWgR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 17:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZADWgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 17:32:36 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:32819 "EHLO
+	Sun, 4 Jan 2009 17:36:00 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58240 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751172AbZADWcf (ORCPT
+	with ESMTP id S1750775AbZADWf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 17:32:35 -0500
-Date: Sun, 4 Jan 2009 23:34:33 +0100
+	Sun, 4 Jan 2009 17:35:59 -0500
+Date: Sun, 4 Jan 2009 23:37:56 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, kernel list <linux-kernel@vger.kernel.org>,
+To: Theodore Tso <tytso@mit.edu>, "Alexander E. Patrakov" <patrakov@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: [patch] document ext3 a bit better
-Message-ID: <20090104223433.GC1913@elf.ucw.cz>
-References: <20090103123813.GA1512@ucw.cz> <20090104023211.GJ4758@mit.edu>
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: document ext3 requirements
+Message-ID: <20090104223756.GD1913@elf.ucw.cz>
+References: <20090103123813.GA1512@ucw.cz> <4960BB2D.3060000@gmail.com> <20090104183834.GB17558@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090104023211.GJ4758@mit.edu>
+In-Reply-To: <20090104183834.GB17558@mit.edu>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun 2009-01-04 13:38:34, Theodore Tso wrote:
+> On Sun, Jan 04, 2009 at 06:35:41PM +0500, Alexander E. Patrakov wrote:
+> >
+> > Ext3 means either hardware that supports barriers (not sure how to  
+> > check
+> 
+> Pretty much all modern disk drives supports barriers.  And note that
+> w/o barriers ext3 has worked pretty well.  *If* you have a workload
+> pushes your system into a mode which where it is very low on memory,
+> so it is constantly paging/thrashing and you have a workload which is
+> metadata intensive, and you crash the machine while it is thrashing,
+> it is possible to end up in a situation where your filesystem is
+> corrupted and you have to use e2fsck to correct the filesystem.  In
 
-ext3 has quite unexpected semantics or "ro" and defaults are usually
-not what they are documented to be, due to mkfs override.
+Are you sure you need to have thrashing? AFAICT metadata + fsync heavy
+workload should be enough... and there were scripts to easily repeat
+that.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > Does this requirement apply to other  
+> > journaling filesystems? Do I need journaling at all, given that I have  
+> > an UPS on my desktop and a battery in the laptop?
+> 
+> Which requirement?  Barriers?  Most journaling filesystems simply
+> enable barriers by default.  
+> 
+> And journalling is useful so that if your system crashes, say due to
+> suspend and resume not working out, or the battery runs dry without
+> your noticing it, you can avoid running fsck at boot time.  It's
+> really more about shorting the boot time after a crash more than
+> anything else.
 
-diff --git a/Documentation/filesystems/ext3.txt b/Documentation/filesystems/ext3.txt
-index 9dd2a3b..113db1f 100644
---- a/Documentation/filesystems/ext3.txt
-+++ b/Documentation/filesystems/ext3.txt
-@@ -14,6 +14,11 @@ Options
- When mounting an ext3 filesystem, the following option are accepted:
- (*) == default
- 
-+ro			Mount filesystem read only. Note that ext3 will replay
-+			the journal (and thus write to the partition) even when
-+			mounted "read only". "ro, noload" can be used to prevent
-+			writes to the filesystem.
-+
- journal=update		Update the ext3 file system's journal to the current
- 			format.
- 
-@@ -27,7 +32,9 @@ journal_dev=devnum	When the external jou
- 			identified through its new major/minor numbers encoded
- 			in devnum.
- 
--noload			Don't load the journal on mounting.
-+noload			Don't load the journal on mounting. Note that this forces
-+			mount of inconsistent filesystem, which can lead to
-+			various problems.
- 
- data=journal		All data are committed into the journal prior to being
- 			written into the main file system.
-@@ -95,6 +102,8 @@ debug			Extra debugging information is s
- errors=remount-ro(*)	Remount the filesystem read-only on an error.
- errors=continue		Keep going on a filesystem error.
- errors=panic		Panic and halt the machine if an error occurs.
-+			(Note that default is overriden by superblock
-+			setting on most systems).
- 
- data_err=ignore(*)	Just print an error message if an error occurs
- 			in a file data buffer in ordered mode.
+Actually, journalling with barriers=0 should still be "safe" in case of
+kernel crashes (*), right? Because if just kernel is dead, disk
+firmware will still write the cache back, AFAICT.
+									Pavel
 
+(*) kernel crashes that do not involve writing random garbage to disk.
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
