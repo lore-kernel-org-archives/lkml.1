@@ -1,69 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZADDxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZADEKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbZADDxY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Jan 2009 22:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZADDxQ
+	id S1755970AbZADEKL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Jan 2009 23:10:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZADEJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Jan 2009 22:53:16 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:53414 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbZADDxP (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Jan 2009 22:53:15 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Duane Griffin <duaneg@dghda.com>
-Cc: =?WINDOWS-1252?Q?Martin_MOKREJ=8A?= 
-	<mmokrejs@ribosome.natur.cuni.cz>,
-       Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-In-Reply-To: Your message of "Sun, 04 Jan 2009 00:41:51 GMT."
-             <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090103123813.GA1512@ucw.cz> <495FD5D7.2040907@ribosome.natur.cuni.cz> <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com> <20090103222957.GG1666@elf.ucw.cz> <495FEE66.9080903@ribosome.natur.cuni.cz> <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com> <495FF9CE.2020908@ribosome.natur.cuni.cz> <e9e943910901031600o1705dfb3j197f90b62d1f75a6@mail.gmail.com> <495FFECB.5040001@ribosome.natur.cuni.cz>
-            <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231041158_3941P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 03 Jan 2009 22:52:38 -0500
-Message-ID: <15786.1231041158@turing-police.cc.vt.edu>
+	Sat, 3 Jan 2009 23:09:58 -0500
+Received: from ik-out-1112.google.com ([66.249.90.176]:55094 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbZADEJ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Jan 2009 23:09:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Hvf5t6iKcMIa4IGl1IVU8TVAWQUngdGw8YC26jHo8ROOIOZYv6DxKXAQlrezlPxIZk
+         MntaGVJTLstiOoLpMiJO+2xdEhRzhizJjoSUpPTN8Wlw0NrbFDGRDtGg44XspF45YwbR
+         fuxuIOiu8MlnmyeaLpPzA5hLB9BMKsNtCLB+s=
+Date: Sun, 4 Jan 2009 06:10:18 +0200
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] kmemtrace: Use tracepoints instead of markers.
+Message-ID: <20090104041018.GB5198@localhost>
+References: <cover.1230499486.git.eduard.munteanu@linux360.ro> <0d1bc24fa2c8d9df136cf833a36be2b72340bc8f.1230499486.git.eduard.munteanu@linux360.ro> <20090102205345.GB25473@Krystal> <20090102230116.GB5235@localhost> <20090102234254.GB29623@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090102234254.GB29623@Krystal>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231041158_3941P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jan 02, 2009 at 06:42:54PM -0500, Mathieu Desnoyers wrote:
+> Because whatever slab_buffer_size() does will be done on the fastpath of
+> the instrumented code *even when instrumentation is disabled*, and this
+> is something we need to avoid above all.
 
-On Sun, 04 Jan 2009 00:41:51 GMT, Duane Griffin said:
+I had doubts about this, so I tried it myself. It seems that when using
+-O2 it generates optimal code, without computing a << b unnecessarily.
+It only precomputes it at -O0. Here's how I tested...
 
-> I agree, it isn't a great situation. Nonetheless, it has always been
-> thus for ext3, and so far we've muddled along. Unless and until we can
-> replay the journal in-memory without touching the on-disk data, we are
-> stuck with it.
+#include <stdio.h>
 
-Is there a way using md/dm/lvm etc to make the source partition R/O and
-replay the journal onto a CoW snapshop?  Admittedly, not easy to do insid=
-e
-the 'mount' command itself, but at least it might be workable for LiveCD =
-R/O
-mounts and forensics work, where you can *tell* beforehand that's what yo=
-u
-want and can jump through setup games before doing the mount...
+#define unlikely(x)	__builtin_expect(!!(x), 0)
 
---==_Exmh_1231041158_3941P
-Content-Type: application/pgp-signature
+static int do_something_enabled;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+static void print_that(unsigned long num)
+{
+	printf("input << 5 == %lu\n", num);
+}
 
-iD8DBQFJYDKGcC3lWbTT17ARAgZXAJ9y4dook94ms5ahZ2T3MOAcTXuD2QCggsAV
-gCXJVTkl7wopFPQgbjEwN+Q=
-=YWYg
------END PGP SIGNATURE-----
+static inline void do_something(unsigned long num)
+{
+	if (unlikely(do_something_enabled)) /* Like DEFINE_TRACE does. */
+		print_that(num);
+}
 
---==_Exmh_1231041158_3941P--
+static void call_do_something(unsigned long in)
+{
+	do_something(in << 5);
+}
+
+int main(int argc, char **argv)
+{
+	unsigned long in;
+
+	if (argc != 3) {
+		printf("Wrong number of arguments!\n");
+		return 0;
+	}
+
+	sscanf(argv[1], "%d", &do_something_enabled);
+	sscanf(argv[2], "%lu", &in);
+
+	call_do_something(in);
+
+	return 0;
+}
+
+
+Snippet of objdump output when using -O2:
+
+static inline void do_something(unsigned long num)
+{
+	if (unlikely(do_something_enabled))
+  400635:	85 c0                	test   %eax,%eax
+  400637:	74 be                	je     4005f7 <main+0x17>
+print_that():
+/home/edi/prj/src/inlineargs/inlineargs.c:9
+
+static int do_something_enabled;
+
+static void print_that(unsigned long num)
+{
+	printf("input << 5 == %lu\n", num);
+  400639:	48 c1 e6 05          	shl    $0x5,%rsi
+  40063d:	bf 6e 07 40 00       	mov    $0x40076e,%edi
+  400642:	31 c0                	xor    %eax,%eax
+  400644:	e8 5f fe ff ff       	callq  4004a8 <printf@plt>
+
+
+Snippet of objdump output when using -O0:
+
+static void call_do_something(unsigned long in)
+{
+  4005fd:	55                   	push   %rbp
+  4005fe:	48 89 e5             	mov    %rsp,%rbp
+  400601:	48 83 ec 10          	sub    $0x10,%rsp
+  400605:	48 89 7d f8          	mov    %rdi,-0x8(%rbp)
+/home/edi/prj/src/inlineargs/inlineargs.c:20
+	do_something(in << 5);
+  400609:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+  40060d:	48 89 c7             	mov    %rax,%rdi
+  400610:	48 c1 e7 05          	shl    $0x5,%rdi
+  400614:	e8 02 00 00 00       	callq  40061b <do_something>
+
+
+Look at that shl, it indicates the left-shift (<< 5). In the first case it's
+deferred as much as possible. However, in the second case, it's done
+before calling that inline. Also confirmed with GCC using breakpoints on
+that shl.
+
+Can we take this as general behaviour, i.e. fn(a()), where fn() is inlined
+and a() has no side-effects, will only compute a() when needed, at least on
+GCC and when -O2 is in effect?
+
+It only seems natural to me GCC would do this on a regular basis.
+
+
+	Cheers,
+	Eduard
+
