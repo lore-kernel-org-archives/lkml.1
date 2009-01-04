@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbZADSlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbZADSlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760133AbZADSlE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 13:41:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZADSkw
+	id S1760293AbZADSlg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 13:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZADSlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 13:40:52 -0500
-Received: from thunk.org ([69.25.196.29]:43083 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbZADSku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 13:40:50 -0500
-Date: Sun, 4 Jan 2009 13:40:40 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: Valdis.Kletnieks@vt.edu,
-       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-       Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090104184040.GC17558@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
-	Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-	Pavel Machek <pavel@suse.cz>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org
-References: <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com> <20090103222957.GG1666@elf.ucw.cz> <495FEE66.9080903@ribosome.natur.cuni.cz> <e9e943910901031538m24ff9616na2aaf3a57f161655@mail.gmail.com> <495FF9CE.2020908@ribosome.natur.cuni.cz> <e9e943910901031600o1705dfb3j197f90b62d1f75a6@mail.gmail.com> <495FFECB.5040001@ribosome.natur.cuni.cz> <e9e943910901031641x4c900b6ar5d0f50b648584b7b@mail.gmail.com> <15786.1231041158@turing-police.cc.vt.edu> <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com>
+	Sun, 4 Jan 2009 13:41:24 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:33020 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbZADSlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 13:41:22 -0500
+Date: Sun, 4 Jan 2009 11:41:03 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: Btrfs for mainline
+Message-ID: <20090104184103.GE2002@parisc-linux.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e9e943910901040624y69c01b43p1655c0078b969ea6@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1231093310.27690.5.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 02:24:43PM +0000, Duane Griffin wrote:
-> > Is there a way using md/dm/lvm etc to make the source partition R/O and
-> > replay the journal onto a CoW snapshop?  Admittedly, not easy to do inside
-> > the 'mount' command itself, but at least it might be workable for LiveCD R/O
-> > mounts and forensics work, where you can *tell* beforehand that's what you
-> > want and can jump through setup games before doing the mount...
+On Sun, Jan 04, 2009 at 07:21:50PM +0100, Peter Zijlstra wrote:
+> The -rt tree has adaptive spin patches for the rtmutex code, its really
+> not all that hard to do -- the rtmutex code is way more tricky than the
+> regular mutexes due to all the PI fluff.
 > 
-> Yes, something like that is best practice, as I understand it. The
-> LiveCD init scripts could check whether they are about to R/O mount an
-> ext[34] filesystem needing recovery and either refuse with a useful
-> message to the user, or even automatically create and mount a COW
-> snapshot, as you described. They'd still need to warn the user though,
-> since things like remounting R/W wouldn't work as expected.
+> For kernel only locking the simple rule: spin iff the lock holder is
+> running proved to be simple enough. Any added heuristics like max spin
+> count etc. only made things worse. The whole idea though did make sense
+> and certainly improved performance.
 
-So what's the use case where people want to be able to mount a
-filesystem needing recovery read/only without running the journal?
+That implies moving
 
-	   	   	    	      	      	      	  - Ted
+        struct thread_info      *owner;
+
+out from under the CONFIG_DEBUG_MUTEXES code.  One of the original
+justifications for mutexes was:
+
+ - 'struct mutex' is smaller on most architectures: .e.g on x86,
+   'struct semaphore' is 20 bytes, 'struct mutex' is 16 bytes.
+    A smaller structure size means less RAM footprint, and better
+    CPU-cache utilization.
+
+I'd be reluctant to reverse that decision just for btrfs.
+
+Benchmarking required!  Maybe I can put a patch together that implements
+the simple 'spin if it's running' heuristic and throw it at our
+testing guys on Monday ...
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
