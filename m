@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZADFIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbZADFO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755741AbZADFIV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 00:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZADFIH
+	id S1752719AbZADFO4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 00:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750698AbZADFOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 00:08:07 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55476 "EHLO
+	Sun, 4 Jan 2009 00:14:46 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:54648 "EHLO
 	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbZADFIG (ORCPT
+	with ESMTP id S1750696AbZADFOp (ORCPT
 	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 00:08:06 -0500
+	Sun, 4 Jan 2009 00:14:45 -0500
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rob Landley <rob@landley.net>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
-In-Reply-To: Your message of "Sat, 03 Jan 2009 19:36:04 CST."
-             <200901031936.04642.rob@landley.net>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH] printk: Let %pR handle NULL pointers
+In-Reply-To: Your message of "Sat, 03 Jan 2009 21:02:15 PST."
+             <Pine.LNX.4.58.0901031827380.25853@shell2.speakeasy.net>
 From: Valdis.Kletnieks@vt.edu
-References: <200901020207.30359.rob@landley.net> <200901020213.30658.rob@landley.net> <200901031328.23079.ioe-lkml@rameria.de>
-            <200901031936.04642.rob@landley.net>
+References: <1230979341-23029-1-git-send-email-xyzzy@speakeasy.org> <alpine.LFD.2.00.0901030905140.3179@localhost.localdomain> <1231019614.15389.104.camel@pasglop>
+            <Pine.LNX.4.58.0901031827380.25853@shell2.speakeasy.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231045675_3941P";
+Content-Type: multipart/signed; boundary="==_Exmh_1231046074_3941P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Sun, 04 Jan 2009 00:07:55 -0500
-Message-ID: <25035.1231045675@turing-police.cc.vt.edu>
+Date: Sun, 04 Jan 2009 00:14:34 -0500
+Message-ID: <25339.1231046074@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231045675_3941P
+--==_Exmh_1231046074_3941P
 Content-Type: text/plain; charset=us-ascii
 
-On Sat, 03 Jan 2009 19:36:04 CST, Rob Landley said:
-> On Saturday 03 January 2009 06:28:22 Ingo Oeser wrote:
-> > > +for i in "MSEC 1000" "USEC 1000000"
-> > > +do
-> > > +	NAME=$(echo $i | awk '{print $1}')
-> >
-> > cut -d' ' -f1  does the same
-> >
-> > > +	PERIOD=$(echo $i | awk '{print $2}')
-> >
-> > cut -d' ' -f2  does the same
+On Sat, 03 Jan 2009 21:02:15 PST, Trent Piepho said:
+> resource pointer.  Maybe "[]" or "[-]" would be better?  A null MAC address
+> could be ":::::" or "x:x:x:x:x:x".  "N.U.L.L" or "x.x.x.x" for a null IP4
+> address.  And so on.  So the printout looks nicer when a NULL pointer isn't
+> a bug.
 
-Close, but no cee-gar.  cut does something counter-intuitive with multiple
-blanks:
+Have to be careful for IPv6 addresses - '::' is a legal representation of
+an all-zeros address.  Also, N.U.L.L. may give indigestion to logfile parsers
+that are expecting a numeric value in the IP address.  It's however unclear
+whether we should pick something that doesn't have 3 periods in it, so it
+can't match, or whether *that* will give regexp-based logfile readers
+indigestion when they don't pick up an IP address where they expected...
 
-% echo 'a    b' | awk '{print $2}'
-b
-% echo 'a    b' | cut -d' ' -f2
+Do we want the %pI6 format to do the multiple-zeros -> :: compression?
 
-% echo 'a    b' | sed -r 's/[ ]+/ /g' | cut -d' ' -f2
-b
+(Adding netdev to cc: list)
 
-Unfortunately, 'sed -r' isn't in the opengroup.org list of required options,
-and sed 's/  / /g' doesn't DTRT for 3 or more blanks (as it won't recursively
-apply the change to a *new* double blank formed by the previous change).
-
-
---==_Exmh_1231045675_3941P
+--==_Exmh_1231046074_3941P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFJYEQrcC3lWbTT17ARAjSfAJsFWvd16dO8/vFBSogpBUGHIGVVuQCdGYxs
-DB0Qw6+Ms3XwxrCB1klRqyo=
-=Eg7u
+iD8DBQFJYEW6cC3lWbTT17ARAqHPAKDJd8+pX/d9vaE+upxUnvugZTkChACeKDV2
+9yL+W/e+UCN7EiCsYuetDfU=
+=zor+
 -----END PGP SIGNATURE-----
 
---==_Exmh_1231045675_3941P--
+--==_Exmh_1231046074_3941P--
