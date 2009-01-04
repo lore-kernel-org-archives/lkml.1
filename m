@@ -1,99 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZADQWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZADQeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbZADQWd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 11:22:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZADQWW
+	id S1756738AbZADQeu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 11:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZADQem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 11:22:22 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:44234 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbZADQWV (ORCPT
+	Sun, 4 Jan 2009 11:34:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53835 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbZADQel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 11:22:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=CqyWLUAxILyc+dVgXkdNTWG7tieB/ekjCWwHkLr7X8c5jdbjQ01LqQvuxF72GeBIPV
-         Iprsk7eFWaziaQguXM42xEQLA+j48XFc7hUZrwZGersyHOSk5Ik0lreZRPXdY3+zd9L8
-         7I2P7pGpRFXNtJaOWzfLLBQjm4uywCqjdN8Cs=
-Message-ID: <6784529b0901040822q1a64e2dfi64f0da781f2a8223@mail.gmail.com>
-Date: Sun, 4 Jan 2009 19:22:18 +0300
-From: "Vladimir Dronnikov" <dronnikov@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Rob Landley" <rob@landley.net>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Leon Woestenberg" <leon.woestenberg@gmail.com>,
-       "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-In-Reply-To: <20090104030619.GA21466@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 4 Jan 2009 11:34:41 -0500
+Subject: [PATCH -tip 0/7] x86 rename all fields mpc_X to X
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andi Kleen <andi@firstfloor.org>, astarikovskiy@suse.de,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 04 Jan 2009 21:48:10 +0530
+Message-Id: <1231085890.5517.7.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200901020207.30359.rob@landley.net>
-	 <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com>
-	 <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net>
-	 <20090104030619.GA21466@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Let's look at the rationale presented so far in this thread:
->
->        1 - Being able to build the kernel natively on a constrained
->        target is useful, regardless of whether it is being used for
->        regression/stress testing or for headers installation or whatever
->        else.
->
->        2 - Cross-compiling perl is hard.
->
->        3 - Some oddly constrained target distributions manage to ship
->        with an entire toolchain yet fail to provide any implementation
->        of perl.
->
->        4 - It wasn't required before.
+The following changes since commit 6b03a9912ce53af2d94621e8ac2ef217676db70c:
+  Ingo Molnar (1):
+        Merge branch 'x86/cleanups'
 
-OK, let's see.
+Ingo Molnar (1):
+      Merge branch 'x86/cleanups'
 
-> If you have enough space and CPU power and
-> complete build environment to crunch away at the kernel for stress
-> testing natively, you can do the same with building perl and negating
-> point #2.
+Jaswinder Singh Rajput (7):
+      x86: rename all fields of mpc_ioapic mpc_X to X
+      x86: rename all fields of mpc_lintsrc mpc_X to X
+      x86: rename all fields of mpc_intsrc mpc_X to X
+      x86: rename all fields of mpc_cpu mpc_X to X
+      x86: rename all fields of mpc_bus mpc_X to X
+      x86: rename all fields of mpc_oemtable oem_X to X
+      x86: rename all fields of mpc_table mpc_X to X
 
-It seems you meant "If you have enough space ... for stress testing
-natively, you _MUST ALSO_ do the same with building perl  _TO JUST_
-negate point #2". From this point of view your further arguments are
-obvious.
+Jaswinder Singh Rajput (1):
+      x86: irqinit_64.c init_ISA_irqs should be static
 
->
-> #2 is another byproduct of your environment and generally a non-issue.
->
+ arch/x86/include/asm/mpspec_def.h |   88 +++++++-------
+ arch/x86/kernel/irqinit_64.c      |    2 +-
+ arch/x86/kernel/mpparse.c         |  251 ++++++++++++++++++-------------------
+ arch/x86/kernel/numaq_32.c        |   27 ++--
+ arch/x86/kernel/visws_quirks.c    |   28 ++---
+ arch/x86/mach-generic/es7000.c    |    4 +-
+ 6 files changed, 197 insertions(+), 203 deletions(-)
 
-So you put a constraint on environment to build kernel. Not on a
-specific version of shell or gcc. But require SANE environment in
-rhetoric sence. In the absence of clear specification of sane
-environment it _IS_ an issue. Or simply: "sane" now reads "perlful
-enough"?
 
->
-> If there is anything I missed, feel free to add it to the list.
->
-
-The rationale of changes being proposed is to keep people able to make
-their choice on how to build and use their environment. If the code,
-which now has to be generated by perl scripts, was shipped with
-linux*.tar.bz2, I'd nullify the majority of my objections. Please, DO
-NOT require this code to be BUILT, and many would again be happy. You
-see, the total question is then reduces to some changes in makefiles
-(eliminating FORCE prerequisites).
-
-Otherwise you just force the number of people to invent and maintain
-"regress" patches, which is counter-progressive in all sences.
-
-Best regards,
---
-Vladimir V. Dronnikov
