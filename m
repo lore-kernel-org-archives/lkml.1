@@ -1,119 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbZAEM2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZAEM3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754378AbZAEM2s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 07:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZAEM2k
+	id S1754333AbZAEM3G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 07:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbZAEM2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 07:28:40 -0500
-Received: from ozlabs.org ([203.10.76.45]:60954 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752777AbZAEM2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 07:28:39 -0500
-Subject: Re: Lock-up on PPC64
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: malc <av1474@comtv.ru>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
-	 <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
-	 <20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
-	 <1230165163.7292.32.camel@pasglop>
-	 <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-czymMPXl47JTanyeEGSV"
-Date: Mon, 05 Jan 2009 23:28:36 +1100
-Message-Id: <1231158516.8367.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Mon, 5 Jan 2009 07:28:45 -0500
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:43801 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753911AbZAEM2o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 07:28:44 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Q0PpZAneXBR7UwMQ0dLWUaRe29OkIVT7I9WvpmtAa117BrNPFyYYDY0+ichoPFn8qcrF3W9c5VfQsRIUTabZMn9W8xKMJf2HXp8iDDfe0n+WMPNKYCvFlvojEo0C31FvwFfQAPJ95kjd6c/m/ZMWFT3Iig0H64r8zA2FHdSedHE=  ;
+X-YMail-OSG: QmPyIWQVM1ljRkDZK_CzE8SuJxbDOUbNHBH3wYjh6fcZyp0uboFsKxrj2eLx0gHVhfyetcaQqFzWmYkqfnA4ct2jDKveQ8vKLebpb31AOgQ9JuGegCun5iWbYH_oh05yoyyv6GAiTBkSMCOBqWIk1pwkvydRzjb0A6oVnM_f9jjXEUPHvWJODLPBifzdGUQA2OAhU4Ek979wXk4PiPHvMHv12U5xW5vk
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29 -mm merge plans
+Date: Mon, 5 Jan 2009 23:28:26 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+In-Reply-To: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901052328.26630.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 05 January 2009 19:43:00 Andrew Morton wrote:
+> The individual patches are mostly at
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/
+>
+>
+> mm-remove-the-might_sleep-from-lock_page.patch
+>
+>   Need to think about this.
 
---=-czymMPXl47JTanyeEGSV
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Removing this reduces a lot of might_sleep coverage scope. Page
+lock isn't contended in a lot of cases. Why would you drop a
+good debugging feature?
 
-On Sun, 2008-12-28 at 03:45 +0300, malc wrote:
-> On Thu, 25 Dec 2008, Benjamin Herrenschmidt wrote:
->=20
-> > On Wed, 2008-12-24 at 03:08 +0300, malc@pulsesoft.com wrote:
-> >> Ken Moffat <zarniwhoop@ntlworld.com> writes:
-> >>
-> >>> On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
->=20
-> [..snip..]
->=20
-> >>
-> >> Thanks for the reference, but i'm sure, now more than ever, that bad
-> >> memory has nothing to do with it, all signs are there that kernel is
-> >> confused by the way signals are (mis)used by Mono.
-> >
-> > It shouldn't be but I agree with you, it smells bad. Can you report tha=
-t
-> > again on the linuxppc-dev@ozlabs.org mailing list ? Along with
-> > instructions to d/l, install & run the minimum repro-case ? I'll try to
-> > give it a go on different ppc64 machines as soon as I'm over my upcomin=
-g
-> > xmas hangover :-) If it appears to be ps3 specific, we can work with
-> > Geoff Levand (PS3 maintainer for Sony) to try to identify the root caus=
-e
-> > and fix it.
->=20
-> I've posted a message to linuxppc-dev via gmane, but AFAICS it never made
-> it there. Anyhow, here's another try:
->=20
-> Mono can be obtained from:
-> http://ftp.novell.com/pub/mono/sources/mono/mono-2.0.1.tar.bz2
->=20
-> Although 2.0.1 only supports ppc32 the problem is still reproducible.
->=20
-> Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
-> notice that the problem is gone, bisecting v2.6.27 (which funnily i
-> had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
-> but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
->=20
-> commit ab598b6680f1e74c267d1547ee352f3e1e530f89
-> Author: Paul Mackerras <paulus@samba.org>
-> Date:   Sun Nov 30 11:49:45 2008 +0000
->=20
->      powerpc: Fix system calls on Cell entered with XER.SO=3D1
->=20
-> Now the lock-up is gone, however the code never exercises the path
-> taken during the lock-up so i guess it, at least, deserves a better
-> look by PPC64 care takers.
+> mm-direct-io-starvation-improvement.patch
+> fs-remove-wb_sync_hold.patch
+> fs-sync_sb_inodes-fix.patch
+> fs-sys_sync-fix.patch
+> radix-tree-gang-set-if-tagged-operation.patch
 
-I'm confused. Which code never exercises which path, and so what
-deserves a better look?
+This one is unneeded because you didn't take the fsync livelock avoidance
+patch that makes use of the new function.
 
-AFAICT this fix will help you, and could explain your problem. You're on
-Cell, so you're using the mftb workaround, and ps3_defconfig has
-CONFIG_VIRT_CPU_ACCOUNTING=3Dy.
+> make-sure-nobodys-leaking-resources.patch
+> releasing-resources-with-children.patch
 
-cheers
+Any reason why not to add these upstream?
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+> nr_blockdev_pages-in_interrupt-warning.patch
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Lockdep should catch this, I guess.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+> put_bh-debug.patch
 
---=-czymMPXl47JTanyeEGSV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+This could just be implemented with a VM_BUG_ON (or FS_BUG_ON) like the
+pagecache refcounting. Wouldn't be a bad idea.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> add-a-refcount-check-in-dput.patch
 
-iEYEABECAAYFAklh/PQACgkQdSjSd0sB4dJEBACaAgsVofH00tpEmF6ai5rbWYk8
-4E4AoJGjOw1j3msR/1WuX6jUwLZ/IW95
-=cCb+
------END PGP SIGNATURE-----
-
---=-czymMPXl47JTanyeEGSV--
+Again, why not an FS_BUG_ON for things like this too?
 
