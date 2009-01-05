@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbZAEP3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbZAEPai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386AbZAEP3B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:29:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZAEP2x
+	id S1755592AbZAEPai (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbZAEPa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:28:53 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:29168 "EHLO
+	Mon, 5 Jan 2009 10:30:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:27401 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbZAEP2w (ORCPT
+	with ESMTP id S1753882AbZAEPa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:28:52 -0500
+	Mon, 5 Jan 2009 10:30:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=mM6jHBWIVPB5qtyKBMyByigWxHPjj0siTHGdzuptgsmnDjgZuYUOPO3EcJGPbbzLjo
-         0dJjBpPAW+D2WCHXvfaRmzOkCqk7DlWGAqZMj8pvlrd45AAmhzTSACWKmhjGuruKmyOb
-         KygW4/Ea5YJf9mKaJzgtfne4vD3jGZv3OOfrQ=
-Date: Mon, 5 Jan 2009 18:28:48 +0300
+        b=W7zo5vKwxeVKOdM7qnwN4Om1qkoiagBW8vn0WXMyGsCYOJquIumOKzV+IaCOdf3XSp
+         RBpFX7FpYmQGRqZTK5yHvPaMoBee0jiaidgHaOoJmkbYy0xplFHfoLz4mI6VkDlx0+Vt
+         Zoqn7si0B9fi6eRuDgLDwazwIAttTS505y9/4=
+Date: Mon, 5 Jan 2009 18:30:25 +0300
 From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] mm: __nr_to_section - make it safe against overflow
-Message-ID: <20090105152848.GG7645@localhost>
-References: <20090105094034.GA7645@localhost> <Pine.LNX.4.64.0901050906180.12774@quilx.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Johannes Weiner <hannes@cmpxchg.org>,
+       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: early exception error
+Message-ID: <20090105153025.GH7645@localhost>
+References: <20090101041727.GW496@one.firstfloor.org> <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm> <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm> <20090102172426.GB5372@localhost> <495E7FAD.6020305@shaw.ca> <20090105092619.GA3699@cmpxchg.org> <20090105130836.GN496@one.firstfloor.org> <49621E6E.2010809@gmail.com> <20090105150150.GF7645@localhost> <496223C4.20307@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901050906180.12774@quilx.com>
+In-Reply-To: <496223C4.20307@gmail.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Christoph Lameter - Mon, Jan 05, 2009 at 09:10:57AM -0600]
-| On Mon, 5 Jan 2009, Cyrill Gorcunov wrote:
+[Jiri Slaby - Mon, Jan 05, 2009 at 04:14:12PM +0100]
+| On 01/05/2009 04:01 PM, Cyrill Gorcunov wrote:
+| > [Jiri Slaby - Mon, Jan 05, 2009 at 03:51:26PM +0100]
+| > | On 01/05/2009 02:08 PM, Andi Kleen wrote:
+| > | > +#define EARLY_BUG_ON(x) do { if (unlikely(!(x))) EARLY_BUG(); } while (0)
+| > | 
+| > | I think unintentionally inverted logic.
+| > 
+| > just second ! is missed :)
 | 
-| >  	/*
-| >  	 * This is, logically, a pointer to an array of struct
-| > @@ -980,9 +986,12 @@ extern struct mem_section mem_section[NR
-| >
-| >  static inline struct mem_section *__nr_to_section(unsigned long nr)
-| >  {
-| > -	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
-| > +	unsigned long idx = SECTION_NR_TO_ROOT(nr);
-| > +	WARN_ON_ONCE(idx >= NR_SECTION_ROOTS);
-| > +
-| > +	if (idx >=NR_SECTION_ROOTS || !mem_section[idx])
-| >  		return NULL;
-| > -	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
-| > +	return &mem_section[idx][nr & SECTION_ROOT_MASK];
-| >  }
-| >  extern int __section_nr(struct mem_section* ms);
-| >  extern unsigned long usemap_size(void);
-| 
-| Not that you are adding code to numerous hot code path. Plus this is a
-| frequently used inline. Code size is going to increase if you do this.
+| None is needed, two '!' are added in the macro itself while it passes the
+| parameter to the builtin.
 
-yes, I know, that is why I've changed WARN_ON_ONCE to plain WARN_ON.
+ah, yep :)
 
 | 
-| I would think that the code does not have the tests because of performance
-| and code size concerns. Can we just say that a sane nr must be passed to
-| __nr_section?
+| > | 
+| > | > +#define EARLY_BUG_ON(x) do {} while(0)
+| > | 
+| > | Shouldn't be x referenced here?
+| > |
+| > 
+| > but for what?
+| 
+| I know, core devs are sane, but e.g. for reasons such as
+| 
+| {'a' is used here already}
+| EARLY_BUG_ON(!(a = readl(...)))
+| {use 'a' again}
+| 
+| to stay on the safe side.
 | 
 
-If you mean did I test this patch for speed regresson then to be fair --
-no, I didn't. BUT we have a number of macros wich are self protective
-like present_section which is used havily too. On the other hand --
-bad argument passed to __nr_to_section will be (and it is now) really
-harmfull -- since it would allow to reference a memory outside the
-valid bounds. The second -- SECTION_ROOT_MASK wich is fragile, any
-attempt to modify mem_section structure will silently lead to insane
-referencing, that is why it deserve a comment on top of structure.
-
-Don't know Christoph, if it really that important to not spend a few
-cycles here in a sake of safety -- we could easily drop this patch.
+I wouldn't populate this style Jiri. It become more complicated
+as it should to be, agreed?
 
 		- Cyrill -
