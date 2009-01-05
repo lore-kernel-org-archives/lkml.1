@@ -1,120 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbZAEJ4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbZAEJ46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbZAEJ4E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 04:56:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZAEJzx
+	id S1753877AbZAEJ46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 04:56:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZAEJ4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 04:55:53 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45999 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752101AbZAEJzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 04:55:52 -0500
-Date: Mon, 5 Jan 2009 10:55:50 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [GIT] HID updates for 2.6.29
-In-Reply-To: <alpine.LNX.1.10.0901040115060.5377@jikos.suse.cz>
-Message-ID: <alpine.LNX.1.10.0901051055120.5377@jikos.suse.cz>
-References: <alpine.LNX.1.10.0901040115060.5377@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Mon, 5 Jan 2009 04:56:49 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:51304 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbZAEJ4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 04:56:48 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Daryl Radivojevic" <daryl.rad@gmail.com>
+Subject: Re: OOPS report
+Date: Mon, 5 Jan 2009 11:04:07 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, "linux-usb" <linux-usb@vger.kernel.org>
+References: <dd0bb5c00901020042w6b44e17fu3a4bb46cc4ff7b2e@mail.gmail.com>
+In-Reply-To: <dd0bb5c00901020042w6b44e17fu3a4bb46cc4ff7b2e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901051104.08352.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Freitag, 2. Januar 2009 09:42:43 schrieb Daryl Radivojevic:
+> Here is an OOPS report. This happens frequently. Mainly if I start
+> wvdial from xterm, and then quit X-Windows.
 
-[ Hmm, sorry, forgot to push yesterday ... synced out to kernel.org now ]
+Please use a more descriptive subject next time.
 
-On Sun, 4 Jan 2009, Jiri Kosina wrote:
+> ------------[ cut here ]------------
+> WARNING: at drivers/usb/serial/usb-serial.c:326
 
-> Linus,
-> 
-> could you please pull from 'for-linus' branch of
-> 
->         git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
-> 
-> to receive the following updates of HID code that have been planned for 
-> 2.6.29.
-> 
-> This batch contains mostly added support for new quirky devices and various
-> rather easy fixes all over the code.
-> 
-> Thanks!
-> 
->  drivers/hid/Kconfig             |   70 ++++++++-------
->  drivers/hid/Makefile            |    5 +-
->  drivers/hid/hid-bright.c        |   71 ---------------
->  drivers/hid/hid-core.c          |  120 +++++++++++++++++++++++---
->  drivers/hid/hid-dell.c          |   76 ----------------
->  drivers/hid/hid-dummy.c         |    6 ++
->  drivers/hid/hid-gaff.c          |  185 +++++++++++++++++++++++++++++++++++++++
->  drivers/hid/hid-ids.h           |   21 +++--
->  drivers/hid/hid-lg.c            |    7 --
->  drivers/hid/hid-ntrig.c         |   82 +++++++++++++++++
->  drivers/hid/hid-sony.c          |    2 +-
->  drivers/hid/hid-topseed.c       |   77 ++++++++++++++++
->  drivers/hid/hidraw.c            |   32 ++++++-
->  drivers/hid/usbhid/Kconfig      |    2 +-
->  drivers/hid/usbhid/hid-core.c   |   34 +++++---
->  drivers/hid/usbhid/hid-quirks.c |    1 +
->  drivers/hid/usbhid/hiddev.c     |  135 +++++++++++++++++++++--------
->  drivers/hid/usbhid/usbhid.h     |   10 ++
->  include/linux/hid.h             |   16 ++--
->  include/linux/hidraw.h          |    2 +
->  20 files changed, 685 insertions(+), 269 deletions(-)
-> 
-> Alan Stern (1):
->       HID: automatically call usbhid_set_leds in usbhid driver
-> 
-> Alexey Klimov (1):
->       HID: don't allow DealExtreme usb-radio be handled by usb hid driver
-> 
-> David Brownell (1):
->       HID: switch specialized drivers from "default y" to !EMBEDDED
-> 
-> Hannes Eder (1):
->       HID: avoid sparse warning in HID_COMPAT_LOAD_DRIVER
-> 
-> Jiri Kosina (6):
->       HID: ignore mouse interface for unibody macbooks
->       HID: non-input reports can also be numbered
->       HID: add phys and name ioctls to hidraw
->       HID: set proper dev.parent in hidraw
->       HID: fix default Kconfig setting for TopSpeed driver
->       HID: fix error condition propagation in hid-sony driver
-> 
-> Jiri Slaby (4):
->       HID: move usbhid flags to usbhid.h
->       HID: usbhid, use usb_endpoint_xfer_int
->       HID: use GFP_KERNEL in hid_alloc_buffers
->       HID: add dynids facility
-> 
-> Kay Sievers (1):
->       HID: struct device - replace bus_id with dev_name(), dev_set_name()
-> 
-> Lev Babiev (1):
->       HID: driver for TopSeed Cyberlink quirky remote
-> 
-> Lukasz Lubojanski (1):
->       HID: force feedback driver for GreenAsia 0x12 PID
-> 
-> Matt Helsley (1):
->       HID: add proper support for pensketch 12x9 tablet
-> 
-> Oliver Neukum (2):
->       HID: hiddev cleanup -- handle all error conditions properly
->       HID: fix reference count leak hidraw
-> 
-> Parag Warudkar (1):
->       HID: make boot protocol drivers depend on EMBEDDED
-> 
-> Rafi Rubin (1):
->       HID: add n-trig digitizer support
-> 
-> 
+This means that usb-serial thinks your device is closed yet somebody
+uses it. Quitting X explains the closure part. Please replicate with "debug=1"
+as a module parameter for usb-serial and post dmesg.
 
--- 
-Jiri Kosina
-SUSE Labs
+	Regards
+		Oliver
