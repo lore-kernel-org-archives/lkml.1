@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbZAEAlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbZAEAlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbZAEAlb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 19:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZAEAlU
+	id S1759936AbZAEAlq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 19:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZAEAl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 19:41:20 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:32155 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZAEAlS (ORCPT
+	Sun, 4 Jan 2009 19:41:26 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54679 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751880AbZAEAlU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 19:41:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=e4IO4YMCJego2ygOa4BorUtAnkRpdand9H3Dmev8CQ1R+Wql/g9nJVy+BZVCG3RZVz
-         AlVwJhOtjHh4ga8ZiDefMa/n/Zb/LiYs7fIYXcDFyBptP6tg+wT3iyKPGAdBq3tdcBFT
-         yc1jV6doAFu9RFLY1sL2RPWJgkyZ4zzx3ESSE=
-Message-ID: <2c0942db0901041641v5546a1e2med4ca18fe8d2510f@mail.gmail.com>
-Date: Sun, 4 Jan 2009 16:41:15 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Rob Landley" <rob@landley.net>
-Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
-Cc: "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Sam Ravnborg" <sam@ravnborg.org>
-In-Reply-To: <200901020213.30658.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 4 Jan 2009 19:41:20 -0500
+Date: Mon, 5 Jan 2009 00:41:23 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <davidn@davidnewall.com>
+Cc: Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
+ 2008-2009
+Message-ID: <20090105004123.374709ff@lxorguk.ukuu.org.uk>
+In-Reply-To: <49614DD8.7070707@davidnewall.com>
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
+	<20090102210430.49649261@diego-desktop>
+	<495E7849.4030706@shaw.ca>
+	<495F0672.6020708@davidnewall.com>
+	<8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>
+	<496076A9.7030907@davidnewall.com>
+	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
+	<4960897D.5030603@davidnewall.com>
+	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>
+	<4961432A.80509@davidnewall.com>
+	<20090104232534.GB1297917@hiwaay.net>
+	<49614DD8.7070707@davidnewall.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200901020207.30359.rob@landley.net>
-	 <200901020213.30658.rob@landley.net>
-X-Google-Sender-Auth: 6251af38f077cadb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 2, 2009 at 12:13 AM, Rob Landley <rob@landley.net> wrote:
-> Replace kernel/timeconst.pl with kernel/timeconst.sh.  The new shell script
-> is much simpler, about 1/4 the size, and runs on Red Hat 9 from 2003.
->
-> Peter Anvin added this perl to 2.6.25.  Before that, the kernel had never
-> required perl to build.
+> zoneinfo.  Epoch remains the start of  1978; seconds between any two
+> dates included leap-seconds and no special kernel support is required.
 
-Nice work. As the computations can all be done in 64-bit precision
-now, and there have been concerns expressed about some shells not
-supporting 64 bit integers, is there any reason this can't be done
-using long longs in C?
+Your time() values then disagree with the rest of the universe. See POSIX
+1003.1 Annex B 2.2.2. if you want the whole story,
 
-Other than ruining a good bike shed argument, anyway.
+For any given time based on the 1970 Epoch there is a single correct
+answer for the translation between each value and a UTC time.
+
