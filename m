@@ -1,108 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZAEUT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZAEU1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbZAEUT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 15:19:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZAEUTv
+	id S1754591AbZAEU1t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 15:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZAEU1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 15:19:51 -0500
-Received: from thunk.org ([69.25.196.29]:52209 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752116AbZAEUTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 15:19:49 -0500
-Date: Mon, 5 Jan 2009 15:19:28 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Pavel Machek <pavel@suse.cz>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090105201928.GD8939@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Pavel Machek <pavel@suse.cz>, Rob Landley <rob@landley.net>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org
-References: <20090103123813.GA1512@ucw.cz> <200901041349.49906.rob@landley.net> <20090104225545.GF1913@elf.ucw.cz> <yq1r63i30bv.fsf@sermon.lab.mkp.net> <20090105094504.GB27199@atrey.karlin.mff.cuni.cz> <yq1sknx1s4f.fsf@sermon.lab.mkp.net>
+	Mon, 5 Jan 2009 15:27:39 -0500
+Received: from mail.gmx.net ([213.165.64.20]:51868 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752504AbZAEU1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 15:27:38 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18oevFXd4AoJlXOHF9b8dCh0FpOgkfVeifVU3h29a
+	+WbDl/FmwFAUd0
+Date: Mon, 5 Jan 2009 21:27:35 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Luotao Fu <l.fu@pengutronix.de>
+cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove duplicated defines in pxa_camera.c
+In-Reply-To: <1231175487-3293-1-git-send-email-l.fu@pengutronix.de>
+Message-ID: <Pine.LNX.4.64.0901052125480.8605@axis700.grange>
+References: <1231175487-3293-1-git-send-email-l.fu@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq1sknx1s4f.fsf@sermon.lab.mkp.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 02:15:44PM -0500, Martin K. Petersen wrote:
+On Mon, 5 Jan 2009, Luotao Fu wrote:
+
+> Defines for CIR Registers have been moved to pxa_camera.h. So remove them from
+> pxa_camera.c to avoid compiler warnings.
 > 
-> It works some of the time.  But in reality if you yank power halfway
-> during a write operation the end result is undefined.
+> Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+> ---
+>  drivers/media/video/pxa_camera.c |   13 -------------
+>  1 files changed, 0 insertions(+), 13 deletions(-)
 > 
-> The saving grace for normal users is that the potential corruption is
-> limited to a couple of sectors.
+> diff --git a/drivers/media/video/pxa_camera.c b/drivers/media/video/pxa_camera.c
+> index cb8c5e1..4eda750 100644
+> --- a/drivers/media/video/pxa_camera.c
+> +++ b/drivers/media/video/pxa_camera.c
+> @@ -44,19 +44,6 @@
+>  #define PXA_CAM_VERSION_CODE KERNEL_VERSION(0, 0, 5)
+>  #define PXA_CAM_DRV_NAME "pxa27x-camera"
+>  
+> -/* Camera Interface */
+> -#define CICR0		0x0000
+> -#define CICR1		0x0004
+> -#define CICR2		0x0008
+> -#define CICR3		0x000C
+> -#define CICR4		0x0010
+> -#define CISR		0x0014
+> -#define CIFR		0x0018
+> -#define CITOR		0x001C
+> -#define CIBR0		0x0028
+> -#define CIBR1		0x0030
+> -#define CIBR2		0x0038
+> -
+>  #define CICR0_DMAEN	(1 << 31)	/* DMA request enable */
+>  #define CICR0_PAR_EN	(1 << 30)	/* Parity enable */
+>  #define CICR0_SL_CAP_EN	(1 << 29)	/* Capture enable for slave mode */
+> -- 
+> 1.5.6.5
 
-A few years ago it was asserted to me that the internal block size for
-spinning magnetic media was around 32k.  So if the hard drive doesn't
-have enough of a capacitor or other energy reserve to complete its
-internal read-modify-write cycle, attempts to read the 32k chunk of
-disk could result in hard ECC failures that would cause the blocks in
-question to all return uncorrectiable read errors when they are
-accessed.
+NAK. Please, see an earlier patch from Eric Miao, a correct fix for this 
+is in the queue.
 
-Of course, if the memory goes south first, and you're in the middle of
-streaming a 128k update to the inode the filesystem, and the power
-fails, and the memory start returning garbage during the DMA
-operation, you may have much bigger problems.  :-)
-
-So it's probably more than "a couple of sectors"....
-
-> The current suck of flash SSDs is that the erase block size amplifies
-> this problem by at least one order of magnitude, often two.  I have a
-> couple of SSDs here that will leave my filesystem in shambles every time
-> the machine crashes.  I quickly got tired of reinstalling Fedora several
-> times per week so now my main machine is back to spinning media.
-
-The erase block size is typically 1 to 4 megabytes, from my
-understanding.  So yeah, that's easily 1-2 orders of magnitude.  Worse
-yet, flash's sequential streaming write speeds are much slower than
-hard drive's (anywhere from a factor of 3 to 12 depending on
-cheap/trashy the flash drive happens to be), so that opens the time
-window even further, by possibly as much as another order of magnitude.
-
-I also suspect that HDD manufactures have learned various tricks (due
-to enterprise storage/database vendors leaning on them) to make the
-drives appear more atomic in the face of hard drive errors, and also,
-in Pavel's case, as I recall he was using the card in a laptop where
-the SD card protruded slightly from the laptop case, and it was very
-easy for it to get dislodged, meaning that power failures during
-writes were even more likely than you would expect with a fixed HDD or
-SDD which is secured into place using screws or other more reliable
-mounting hardware.
-
-Put all of this together, given that Pavel's Really Trashy 32GB SD was
-probably the full 3 orders of magnitude worse than traditional HDD,
-and he was having many more failures due to physical mounting issues,
-it's not surprising that most people haven't see problems with
-traditional HDD's, even none of this is guaranteed by the hard drive
-vendors.
-
-> The people that truly and deeply care about this type of write atomicity
-> (i.e. enterprises) deploy disk arrays that will do the right thing in
-> face of an error.  This involves NVRAM, mirrored caches, uninterruptible
-> power supplies, etc.  Brute force if you will.
-
-Don't forget non-cheasy mounting options so an accidental brush
-against the side of the unit doesn't cause the hard drive to become
-disconnected from system and suffer a power drop.  I guess that gets
-filed under "Brute force" as well.  :-)
-
-							- Ted
-
-P.S.  I feel obliged to point out that in my Lenovo X61s, the SD card
-is flush with the laptop case when inserted, and I've never had a
-problem with the SD card prematurely ejected during operaiton.   :-)
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
