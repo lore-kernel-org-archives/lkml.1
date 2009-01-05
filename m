@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZAET2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbZAET3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZAET2s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZAET2i
+	id S1753065AbZAET3E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:29:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZAET2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:28:38 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50192 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbZAET2h (ORCPT
+	Mon, 5 Jan 2009 14:28:39 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:25902 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752825AbZAET2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:28:37 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 5 Jan 2009 20:28:10 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: cdev: shut down iso context before freeing the
- buffer
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.28a059519eb6d782@s5r6.in-berlin.de>
+	Mon, 5 Jan 2009 14:28:38 -0500
+To: Rob Landley <rob@landley.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Pavel Machek <pavel@suse.cz>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
+       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no>
+	<200901042149.27655.rob@landley.net>
+	<20090105111913.47a8d1a5@lxorguk.ukuu.org.uk>
+	<200901051300.09169.rob@landley.net>
+Date: Mon, 05 Jan 2009 14:27:33 -0500
+In-Reply-To: <200901051300.09169.rob@landley.net> (Rob Landley's message of "Mon\, 5 Jan 2009 13\:00\:07 -0600")
+Message-ID: <yq1ocyl1rkq.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010208.49625F2B.0004:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DMA must be halted before we DMA-unmap and free the DMA buffer.  Since
-we cannot rely on the client to stop the context before it closes the
-fd, we have to reorder fw_iso_buffer_destroy vs. fw_iso_context_destroy.
+>>>>> "Rob" == Rob Landley <rob@landley.net> writes:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-cdev.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Rob> On Monday 05 January 2009 05:19:13 Alan Cox wrote:
+>> You could of course just learn to use the functions the kernel
+>> provides.  If you want to recover disk blocks without retrying you
+>> can do that via SG_IO. If you want to adjust the timeout and retry
+>> levels you can do that too via sysfs.
 
-Index: linux/drivers/firewire/fw-cdev.c
-===================================================================
---- linux.orig/drivers/firewire/fw-cdev.c
-+++ linux/drivers/firewire/fw-cdev.c
-@@ -1386,12 +1386,12 @@ static int fw_device_op_release(struct i
- 	list_del(&client->link);
- 	mutex_unlock(&client->device->client_list_mutex);
- 
--	if (client->buffer.pages)
--		fw_iso_buffer_destroy(&client->buffer, client->device->card);
--
- 	if (client->iso_context)
- 		fw_iso_context_destroy(client->iso_context);
- 
-+	if (client->buffer.pages)
-+		fw_iso_buffer_destroy(&client->buffer, client->device->card);
-+
- 	/* Freeze client->resource_idr and client->event_list */
- 	spin_lock_irq(&client->lock);
- 	client->in_shutdown = true;
+Rob> Good to know, but "my laptop hard drive just died" is not the
+Rob> optimal time to learn these sorts of things.
+
+http://www.garloff.de/kurt/linux/ddrescue/
 
 -- 
-Stefan Richter
--=====-==--= ---= --=-=
-http://arcgraph.de/sr/
+Martin K. Petersen	Oracle Linux Engineering
 
