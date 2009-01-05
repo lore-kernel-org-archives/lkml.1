@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbZAEN0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbZAEN0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbZAEN0R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZAEN0F
+	id S1754942AbZAEN0v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZAEN0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:26:05 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54813 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751802AbZAEN0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:26:04 -0500
-Date: Mon, 5 Jan 2009 14:24:07 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, ebiederm@xmission.com,
-       bastian@waldi.eu.org, daniel@hozac.com, xemul@openvz.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6][v5] Protect cinit from unblocked SIG_DFL signals
-Message-ID: <20090105132407.GC3313@redhat.com>
-References: <20081227204658.GA27197@us.ibm.com> <20081227205319.GC27337@us.ibm.com> <20081231001942.F35E2FC278@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081231001942.F35E2FC278@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 5 Jan 2009 08:26:43 -0500
+Received: from mercury.realtime.net ([205.238.132.86]:50667 "EHLO
+	mercury.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbZAEN0m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:26:42 -0500
+In-Reply-To: <20090104182441.GA5086@linux.vnet.ibm.com>
+References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com> <20090104182441.GA5086@linux.vnet.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <98d6aef17cba9d835d7866745f811dc7@bga.com>
+Content-Transfer-Encoding: 7bit
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with !CONFIG_VIOPATH
+Date: Mon, 5 Jan 2009 07:33:32 -0600
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+X-Mailer: Apple Mail (2.624)
+X-Originating-IP: 205.232.218.24
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/30, Roland McGrath wrote:
+On Jan 4, 2009, at 12:24 PM, Kamalesh Babulal wrote:
+
+> Hi Milton,
 >
-> I'd just make the flag a parameter to send_signal() directly.
-> Then you can just change kill_pid_info_as_uid (or its replacement)
-> to call send_signal() with that new flag (and the 'group' flag)
-> directly instead of using the trivial __group_send_sig_info wrapper.
+> 	Thanks for the review comments, I am resending the patch with the
+> changes you have recommended.
+>
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-Ah, good. Can't understand why I didn't think about this before!
+Better, but you didn't include the change log, nor did you respond to 
+Stephen's reply suggesting that all users be converted to select 
+viopath (versus the proposed 2 select and 5 get it via depends and 
+default y).
 
-But, perhaps, it is better to add the new helper, __send_signal()
-or whatever which has the new "from_ancestor_ns" argument. Then,
-
-	static int send_signal(...)
-	{
-		bool from_ancestor_ns = 0;
-
-	#ifdef CONFIG_PID_NS
-		if (!is_si_special(info) && SI_FROMUSER(info)) {
-			from_ancestor_ns = !task_pid_nr_ns(current, task_active_pid_ns(t));
-		}
-	#endif
-
-		return __send_signal(..., from_ancestor_ns);
-	}
-
-but this is cosmetic issue.
-
-Oleg.
+milton
 
