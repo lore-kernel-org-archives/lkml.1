@@ -1,100 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbZAEEks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbZAEEvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753817AbZAEEks (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 23:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZAEEk2
+	id S1753300AbZAEEvT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 23:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZAEEvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 23:40:28 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46581 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752173AbZAEEk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 23:40:27 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18FUG87ws0FnG11BLknzEXWy/rR7VBivft9BWIcnf
-	u3losdRHUS8TX2
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-From: Mike Galbraith <efault@gmx.de>
-To: svaidy@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090105032029.GE4301@dirshya.in.ibm.com>
-References: <20081230062139.GA30038@elte.hu>
-	 <20081230180722.GA29060@dirshya.in.ibm.com>
-	 <20090102072600.GA13412@dirshya.in.ibm.com>
-	 <20090102221630.GF17240@elte.hu> <1230967765.5257.6.camel@marge.simson.net>
-	 <20090103101626.GA4301@dirshya.in.ibm.com>
-	 <1230981761.27180.10.camel@marge.simson.net>
-	 <1231081200.17224.44.camel@marge.simson.net>
-	 <20090104181946.GC4301@dirshya.in.ibm.com>
-	 <1231098769.5757.43.camel@marge.simson.net>
-	 <20090105032029.GE4301@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 05:40:16 +0100
-Message-Id: <1231130416.5479.8.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Sun, 4 Jan 2009 23:51:03 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:42723
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752227AbZAEEvA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 23:51:00 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Bernd Petrovitsch <bernd@firmix.at>
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
+Date: Sun, 4 Jan 2009 22:50:35 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: Jamie Lokier <jamie@shareable.org>, Valdis.Kletnieks@vt.edu,
+       Ingo Oeser <ioe-lkml@rameria.de>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <20090104221356.GA32357@shareable.org> <1231114530.3310.6.camel@gimli.at.home>
+In-Reply-To: <1231114530.3310.6.camel@gimli.at.home>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+Content-Disposition: inline
+Message-Id: <200901042250.36847.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-05 at 08:50 +0530, Vaidyanathan Srinivasan wrote: 
-> When CONFIG_SCHED_DEBUG is enabled, the sched domain tree is dumped
-> (dmesg)
+On Sunday 04 January 2009 18:15:30 Bernd Petrovitsch wrote:
+> On Son, 2009-01-04 at 22:13 +0000, Jamie Lokier wrote:
+> > Rob Landley wrote:
+> > > In a private email, Bernd Petrovitsch suggested "set -- $i" and then
+> > > using NAME=$1; PERIOD=$2.  (I keep getting private email responses
+> > > to these sort of threads, and then getting dismissed as the only one
+> > > who cares about the issue.  Less so this time around, but still...)
+> > > This apparently works all the way back to the bourne shell.
+> >
+> > If you're going "all the way back to the bourne shell", don't use "set
+>
+> "Going back to a Bourne shell" was neither the intention nor makes it
+> sense IMHO.
+> I mentioned it to point out that the `set -- ' (or `set x `) is nothing
+> new or even a bash-ism.
+>
+> > -- $i"; use "set x $i" instead, and don't expect to do any arithmetic
+> > in the shell; use "expr" or "awk" for arithmetic.
+> >
+> > (Not relevant to kernel scripts, imho, since you can always assume
+> > something a bit more modern and not too stripped down).
+>
+> ACK. A bash can IMHO be expected. Even going for `dash` is IMHO somewhat
+> too extreme.
 
-Oh, that.  I'm dense <thwack>
+I have yet to encounter a system that uses dash _without_ bash.  (All ubuntu 
+variants, even jeos, install bash by default.  They moved the /bin/sh symlink 
+but they didn't stop installing bash, and the kernel will preferentially use 
+bash if it finds it.)  People keep telling me they exist.  I suppose you could 
+uninstall bash.  You could also uninstall gcc.  Not sure what that proves. 
+(And nobody's shown me this mythical second implementation of perl that all 
+these perl scripts are supposed to be portable to...)
 
-[    0.476050] CPU0 attaching sched-domain:
-[    0.476052]  domain 0: span 0-1 level MC
-[    0.476054]   groups: 0 1
-[    0.476057]   domain 1: span 0-3 level CPU
-[    0.476058]    groups: 0-1 2-3
-[    0.476062] CPU1 attaching sched-domain:
-[    0.476064]  domain 0: span 0-1 level MC
-[    0.476065]   groups: 1 0
-[    0.476067]   domain 1: span 0-3 level CPU
-[    0.476069]    groups: 0-1 2-3
-[    0.476072] CPU2 attaching sched-domain:
-[    0.476073]  domain 0: span 2-3 level MC
-[    0.476075]   groups: 2 3
-[    0.476077]   domain 1: span 0-3 level CPU
-[    0.476078]    groups: 2-3 0-1
-[    0.476081] CPU3 attaching sched-domain:
-[    0.476083]  domain 0: span 2-3 level MC
-[    0.476084]   groups: 3 2
-[    0.476086]   domain 1: span 0-3 level CPU
-[    0.476088]    groups: 2-3 0-1
+Busybox ash is a more interesting case, but that implements lots of bash 
+extensions.
 
-2.6.26.8
-[    0.524043] CPU0 attaching sched-domain:
-[    0.524045]  domain 0: span 0-1
-[    0.524046]   groups: 0 1
-[    0.524049]   domain 1: span 0-3
-[    0.524051]    groups: 0-1 2-3
-[    0.524054] CPU1 attaching sched-domain:
-[    0.524055]  domain 0: span 0-1
-[    0.524056]   groups: 1 0
-[    0.524059]   domain 1: span 0-3
-[    0.524060]    groups: 0-1 2-3
-[    0.524063] CPU2 attaching sched-domain:
-[    0.524064]  domain 0: span 2-3
-[    0.524065]   groups: 2 3
-[    0.524068]   domain 1: span 0-3
-[    0.524069]    groups: 2-3 0-1
-[    0.524072] CPU3 attaching sched-domain:
-[    0.524073]  domain 0: span 2-3
-[    0.524075]   groups: 3 2
-[    0.524077]   domain 1: span 0-3
-[    0.524078]    groups: 2-3 0-1
+That said, it's easy enough the scripts to work with current versions of dash.  
+The whole shell portability issue mostly seems to be a stand-in for other 
+objections (Peter Anvin didn't change syslinux and klibc to require perl to 
+build this year because of dash), but it's easy enough to just address the 
+proxy objection and move on rather than arguing about it...
 
-> I was actually asking about software threads specified in the sysbench
-> benchmark.  Your have run almost 256 clients on a 4 core box, does
-> that mean sysbench had 256 worker threads?
+> > (I have 850 Linux boxes on my network with a bourne shell which
+> > doesn't do $((...)).  I won't be building kernels on them though :-)
+>
+> Believe it or not, but there are folks out there who build the firmware
+> on ARM 200 MHz NFS-mounted systems natively  (and not simply
+> cross-compile it on a 2GHz PC .....).
 
-Yes.
+Yeah, but according to Changes if they do it with the current kernel they do 
+it with at least gcc 3.2 (August 2002) and make 3.79.1 (June 2000), so trying 
+to make it work on software released pre-Y2K probably isn't that high a 
+priority. :)
 
-	-Mike
+> 	Bernd
 
+Rob
