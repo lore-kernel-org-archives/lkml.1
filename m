@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZAECve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbZAECvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552AbZAECve (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 21:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZAECvN
+	id S1752182AbZAECvt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 21:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZAECva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 21:51:13 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54510 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752270AbZAECvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 21:51:12 -0500
-Message-ID: <496174EB.4030601@cn.fujitsu.com>
-Date: Mon, 05 Jan 2009 10:48:11 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sun, 4 Jan 2009 21:51:30 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:44077
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753152AbZAECv2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 21:51:28 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: document ext3 requirements
+Date: Sun, 4 Jan 2009 20:51:13 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+References: <fa.P4z5CJpM0xT37PWJuOuCHDkO76o@ifi.uio.no> <fa.26o5IHCAC3TQdXupl62CLYwQ+Wk@ifi.uio.no> <49614284.8040201@yahoo.com>
+In-Reply-To: <49614284.8040201@yahoo.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
-References: <200901021159.n02BxDLg024728@mail.q-ag.de> <20090102185543.GE6842@linux.vnet.ibm.com> <49604E19.8040502@cn.fujitsu.com> <20090104194851.GM6958@linux.vnet.ibm.com>
-In-Reply-To: <20090104194851.GM6958@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901042051.14269.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> 
-> In any case, I do apologize -- since I didn't see anything from you I
-> incorrectly assumed that you had given up on this patch.  Please accept
-> my apologies!
-
-It's my fault.
-
-I'm a very low-yield developer.
-
-I have given up on unaccepted cleanup-patches, kfree_rcu() is not a
-cleanup for reducing lines of code, it has some significances for kernel.
-
-> 
-> Would it be possible for you and Manfred to agree on a common patch, and
-> to have one of you submit it with both of you having Signed-off-by on it?
+On Sunday 04 January 2009 17:13:08 Sitsofe Wheeler wrote:
+> Pavel Machek wrote:
+> > Is there linux filesystem that can handle that? I know jffs2, but
+> > that's unsuitable for stuff like USB thumb drives, right?
 >
-All are OK.
+> This raises the question that if nothing can handle it which FS is the
+> least bad? The last I heard people were saying that with cheap SSDs the
+> recommendation was FAT [1] but in the future btrfs, nilfs and logfs
+> would be better.
+>
+> [1] http://lkml.org/lkml/2008/10/14/129
 
-I NAK-ed only for deferring kfree_rcu() being accepted.
+I wonder if the flash filesystems could be told via mount options that they're 
+to use a normal block device as if it was a flash with granularity X?
 
-I'm not concerned about whether I'm patches' Author or I'm in the
-Signed-off-by list.
+They can't explicitly control erase, but writing to any block in a block group 
+will erase and rewrite the whole group so they can just do large write 
+transactions close to each other and the device should aggregate enough for an 
+erase block.  (Plus don't touch anything _outside_ where you guess an erase 
+block to be until you've finished writing the whole block, which they 
+presumably already do.)
 
-Thanks,
+The other question is whether there's any way to guess an erase granularity 
+that's "good enough" for a device of size X, maybe larger than the device 
+actually does but not smaller than any remotely sane manufacturer would 
+implement.  (And just _don't_ partition these suckers, so you don't have to 
+worry about partitions aligning with erase block sizes.) 
 
-Lai.
-
+Rob
