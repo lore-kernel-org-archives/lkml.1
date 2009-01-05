@@ -1,256 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbZAEUc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZAEUcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbZAEUc1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 15:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZAEUcR
+	id S1755484AbZAEUcl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 15:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZAEUcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 15:32:17 -0500
-Received: from mail.gmx.net ([213.165.64.20]:48355 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751768AbZAEUcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 15:32:16 -0500
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/OTNVYiZTOqHzj0Mq7D5+OTJii4LPXdyyGmz4VHj
-	3QXuRtUyJkMtx0
-Date: Mon, 5 Jan 2009 21:31:53 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, josh@freedesktop.org, dipankar@in.ibm.com
-Subject: Re: [BUG] NULL pointer deref with rcutorture
-Message-ID: <20090105203153.GC11244@alice>
-References: <20090104145726.GA14895@alice> <20090104211349.GS6958@linux.vnet.ibm.com> <20090104233855.GA17021@alice> <20090105022827.GA8080@linux.vnet.ibm.com> <20090105121409.GA5783@alice> <20090105180037.GH6959@linux.vnet.ibm.com> <20090105185655.GA11244@alice> <20090105193602.GL6959@linux.vnet.ibm.com> <20090105200012.GB11244@alice> <20090105201631.GO6959@linux.vnet.ibm.com>
+	Mon, 5 Jan 2009 15:32:24 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:34549 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754013AbZAEUcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 15:32:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references
+         :in-reply-to:content-type:content-transfer-encoding:from;
+        b=HuKBljE1F3ZRtlQ/JR1bLFupPrS3CaOQVoGji8FtbAvrsyuCN6hD+IXRK8j5X71Hjk
+         fGwuBTwhwrwpTwTx9twqeDYiNqlPUAkeYfp0Ia1vXlkxWvAFrqWrUylEOQi8FCDCG0df
+         1FE/KVRKE2aHDoPCSynquaMx0EjbsSScnMHpU=
+Message-ID: <49626E4D.3010705@gmail.com>
+Date: Mon, 05 Jan 2009 20:32:13 +0000
+User-Agent: Thunderbird 2.0.0.19 (X11/20090104)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090105201631.GO6959@linux.vnet.ibm.com>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
-X-Uptime: 21:28:32 up 11:25,  9 users,  load average: 1.15, 1.00, 0.63
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.42
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28: warn_slowpath in orinoco receive path
+References: <200901052005.12428.arvidjaar@mail.ru>
+In-Reply-To: <200901052005.12428.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Dave <kilroyd@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Mon, Jan 05, 2009 at 09:01:45PM +0100, Eric Sesterhenn wrote:
-> > hi,
-> > 
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Mon, Jan 05, 2009 at 07:56:55PM +0100, Eric Sesterhenn wrote:
-> > > 
-> > > Wow!!!  Am I reading this correctly?  Does the above "call" instruction
-> > > -really- call one byte into itself?  That is what the hex for the x86
-> > > instruction -looks- like it is doing, but I cannot see what would have
-> > > possessed the compiler to generate this code.
-> > 
-> > Compiler is gcc version 4.2.4 (Ubuntu 4.2.4-1ubuntu3)
+Andrey Borzenkov wrote:
+> I would appreciate explanation which condition triggers this 
+> warn_slowpath. Otherwise does it ring the bell for someone? Network was 
+> dead after it till I reloaded modules (orinoco and hermes).
 > 
-> I am using 4.1.3, for whatever it is worth.  (Ancient, I know!)
-> 
-> > > When I compile on a 32-bit x86 machine, I don't see the above "call"
-> > > instruction.  Other than that, the code I see looks consistent.
-> > > 
-> > > >      9f0:       eb 1d                   jmp    a0f <rcu_stutter_wait+0x27>
-> > > >      9f2:       83 3d 00 00 00 00 00    cmpl   $0x0,0x0
-> > > >      9f9:       b8 01 00 00 00          mov    $0x1,%eax
-> > > >      9fe:       75 0a                   jne    a0a <rcu_stutter_wait+0x22>
-> > > >      a00:       b8 e8 03 00 00          mov    $0x3e8,%eax
-> > > >      a05:       e8 fc ff ff ff          call   a06 <rcu_stutter_wait+0x1e>
-> > > >      a0a:       e8 fc ff ff ff          call   a0b <rcu_stutter_wait+0x23>
-> > > >      a0f:       83 3d 6c 00 00 00 00    cmpl   $0x0,0x6c
-> > > > 			^---------- this line
-> > > 
-> > > This looks like the first test in the "while" loop.
-> > > 
-> > > >      a16:       75 09                   jne    a21 <rcu_stutter_wait+0x39>
-> > > >      a18:       83 3d 00 00 00 00 00    cmpl   $0x0,0x0
-> > > >      a1f:       75 09                   jne    a2a <rcu_stutter_wait+0x42>
-> > > >      a21:       83 3d 50 1a 00 00 00    cmpl   $0x0,0x1a50
-> > > >      a28:       74 c8                   je     9f2 <rcu_stutter_wait+0xa>
-> > > >      a2a:       5d                      pop    %ebp
-> > > >      a2b:       c3                      ret
-> > > 
-> > > The corresponding C code is as follows:
-> > > 
-> > > static void
-> > > rcu_stutter_wait(void)
-> > > {
-> > > 	while ((stutter_pause_test || !rcutorture_runnable) && !fullstop) {
-> > > 		if (rcutorture_runnable)
-> > > 			schedule_timeout_interruptible(1);
-> > > 		else
-> > > 			schedule_timeout_interruptible(round_jiffies_relative(HZ));
-> > > 	}
-> > > }
-> > > 
-> > > I don't see much opportunity for a page fault here...  This is the
-> > > binary I get when I compile it, though not as a module:
-> > > 
-> > > 0000085a <rcu_stutter_wait>:
-> > >      85a:	55                   	push   %ebp
-> > >      85b:	89 e5                	mov    %esp,%ebp
-> > >      85d:	eb 1d                	jmp    87c <rcu_stutter_wait+0x22>
-> > >      85f:	83 3d 00 00 00 00 00 	cmpl   $0x0,0x0
-> > >      866:	b8 01 00 00 00       	mov    $0x1,%eax
-> > >      86b:	75 0a                	jne    877 <rcu_stutter_wait+0x1d>
-> > >      86d:	b8 e8 03 00 00       	mov    $0x3e8,%eax
-> > >      872:	e8 fc ff ff ff       	call   873 <rcu_stutter_wait+0x19>
-> > >      877:	e8 fc ff ff ff       	call   878 <rcu_stutter_wait+0x1e>
-> > >      87c:	83 3d 14 00 00 00 00 	cmpl   $0x0,0x14
-> > >      883:	75 09                	jne    88e <rcu_stutter_wait+0x34>
-> > >      885:	83 3d 00 00 00 00 00 	cmpl   $0x0,0x0
-> > >      88c:	75 09                	jne    897 <rcu_stutter_wait+0x3d>
-> > >      88e:	83 3d 08 1a 00 00 00 	cmpl   $0x0,0x1a08
-> > >      895:	74 c8                	je     85f <rcu_stutter_wait+0x5>
-> > >      897:	5d                   	pop    %ebp
-> > >      898:	c3                   	ret    
-> > > 
-> > > I confess, I am confused!!!
-> > 
-> > on the other box with a different gcc version
-> > 
-> > gcc version 4.3.2 (Ubuntu 4.3.2-1ubuntu11) 
-> > 
-> > d1902e90 is the start of rcu_stutter_wait
-> > 
-> > [  533.391719] d087e000 d1902e90
-> > [  533.392294] rcu-torture:--- Start of test: nreaders=2 nfakewriters=4 stat_interval=0 verbose=0 test_no_idle_hz=0 shuffle_interval=3 stutter=5 irqreader=1
-> > [  541.000139] BUG: unable to handle kernel paging request at d1902efd
-> > [  541.000423] IP: [<d1902efd>] 0xd1902efd
-> > [  541.000660] *pde = 0f08f067 *pte = 00000000 
-> > [  541.000867] Oops: 0000 [#1] DEBUG_PAGEALLOC
-> > [  541.001126] last sysfs file: /sys/block/sda/size
-> > [  541.001246] Modules linked in: nfsd exportfs nfs lockd nfs_acl auth_rpcgss sunrpc ipv6 fuse unix [last unloaded: rcutorture]
-> > [  541.002235] 
-> > [  541.002334] Pid: 5292, comm: rcu_torture_wri Not tainted (2.6.28 #84) 
-> > [  541.002470] EIP: 0060:[<d1902efd>] EFLAGS: 00010296 CPU: 0
-> > [  541.002598] EIP is at 0xd1902efd
-> > [  541.002767] EAX: 00000000 EBX: d19073c0 ECX: 00000000 EDX: 00000000
-> > [  541.002900] ESI: 0000000a EDI: 00000000 EBP: c7b63fb8 ESP: c7b63fb8
-> > [  541.003033]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> > [  541.003160] Process rcu_torture_wri (pid: 5292, ti=c7b63000 task=c7b09710 task.ti=c7b63000)
-> > [  541.003400] Stack:
-> > [  541.003497]  c7b63fd0 d19032c1 00000000 00000000 00000000 d1903200 c7b63fe0 c013d80a
-> > [  541.004022]  c013d7d0 00000000 00000000 c0103cf3 cef6ee70 00000000 00000000 00000000
-> > [  541.004022]  00000201 000004b4
-> > [  541.004022] Call Trace:
-> > [  541.004022]  [<c013d80a>] ? kthread+0x3a/0x70
-> > [  541.004022]  [<c013d7d0>] ? kthread+0x0/0x70
-> > [  541.004022]  [<c0103cf3>] ? kernel_thread_helper+0x7/0x14
-> > [  541.004022] Code:  Bad EIP value.
-> > [  541.004022] EIP: [<d1902efd>] 0xd1902efd SS:ESP 0068:c7b63fb8
-> > [  541.004022] ---[ end trace cb3b10c2bb94b4e3 ]---
-> > 
-> > 
-> > 00000e90 <rcu_stutter_wait>:
-> >      e90:	55                   	push   %ebp
-> >      e91:	89 e5                	mov    %esp,%ebp
-> >      e93:	90                   	nop    
-> >      e94:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-> >      e98:	a1 98 00 00 00       	mov    0x98,%eax
-> >      e9d:	85 c0                	test   %eax,%eax
-> >      e9f:	75 09                	jne    eaa <rcu_stutter_wait+0x1a>
-> >      ea1:	a1 00 00 00 00       	mov    0x0,%eax
-> >      ea6:	85 c0                	test   %eax,%eax
-> >      ea8:	75 36                	jne    ee0 <rcu_stutter_wait+0x50>
-> >      eaa:	a1 88 1a 00 00       	mov    0x1a88,%eax
-> >      eaf:	85 c0                	test   %eax,%eax
-> >      eb1:	75 2d                	jne    ee0 <rcu_stutter_wait+0x50>
-> >      eb3:	8b 15 00 00 00 00    	mov    0x0,%edx
-> >      eb9:	85 d2                	test   %edx,%edx
-> >      ebb:	74 2b                	je     ee8 <rcu_stutter_wait+0x58>
-> >      ebd:	b8 01 00 00 00       	mov    $0x1,%eax
-> >      ec2:	e8 fc ff ff ff       	call   ec3 <rcu_stutter_wait+0x33>
-> >      ec7:	a1 98 00 00 00       	mov    0x98,%eax
-> >      ecc:	85 c0                	test   %eax,%eax
-> >      ece:	74 d1                	je     ea1 <rcu_stutter_wait+0x11>
-> >      ed0:	a1 88 1a 00 00       	mov    0x1a88,%eax
-> >      ed5:	85 c0                	test   %eax,%eax
-> >      ed7:	74 da                	je     eb3 <rcu_stutter_wait+0x23>
-> >      ed9:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-> >      ee0:	5d                   	pop    %ebp
-> >      ee1:	c3                   	ret    
-> >      ee2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-> >      ee8:	b8 fa 00 00 00       	mov    $0xfa,%eax
-> >      eed:	e8 fc ff ff ff       	call   eee <rcu_stutter_wait+0x5e>
-> 
-> Here we are again calling one byte into the current instruction!!!
-> 
-> Or am I misinterpreting this code?
-> 
-> >      ef2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-> >      ef8:	e8 fc ff ff ff       	call   ef9 <rcu_stutter_wait+0x69>
-> >      efd:	8d 76 00             	lea    0x0(%esi),%esi
-> > 			   ^------------- here
-> > 
-> > This one looks more like it can explain a page fault
-> 
-> I don't understand why there are indirections in the assembly given the
-> C code for rcu_stutter_wait().
-> 
-> >      f00:	eb 96                	jmp    e98 <rcu_stutter_wait+0x8>
-> >      f02:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-> >      f09:	8d bc 27 00 00 00 00 	lea    0x0(%edi,%eiz,1),%edi
+> [89479.105038] WARNING: at /home/bor/src/linux-git/lib/list_debug.c:30 
+> __list_add+0x8f/0xa0()
+> [89479.105058] list_add corruption. prev->next should be next 
+> (dddb3568), but was cbc28978. (prev=dddb3568).
+<snip>
+> [89479.106002] Pid: 15746, comm: X Not tainted 2.6.28-1avb #26
+> [89479.106020] Call Trace:
+> [89479.106062]  [<c011d3b0>] warn_slowpath+0x60/0x80
+> [89479.106104]  [<c01073d0>] ? native_sched_clock+0x20/0x70
+> [89479.106194]  [<c013d825>] ? lock_release_holdtime+0x35/0x200
+> [89479.106218]  [<c018d9f0>] ? __slab_alloc+0x550/0x560
+> [89479.106254]  [<c02f9c9d>] ? _spin_unlock+0x1d/0x20
+> [89479.106270]  [<c018d9f0>] ? __slab_alloc+0x550/0x560
+> [89479.106302]  [<c01ff2a7>] ? delay_tsc+0x17/0x24
+> [89479.106319]  [<c01ff221>] ? __const_udelay+0x21/0x30
+> [89479.106376]  [<dfa8b1e2>] ? hermes_bap_seek+0x112/0x1e0 [hermes]
+> [89479.106396]  [<c013d7eb>] ? trace_hardirqs_off+0xb/0x10
+> [89479.106418]  [<c018e307>] ? __kmalloc_track_caller+0xb7/0x110
+> [89479.106448]  [<c028eefc>] ? dev_alloc_skb+0x1c/0x30
+> [89479.106465]  [<c028eefc>] ? dev_alloc_skb+0x1c/0x30
+> [89479.106482]  [<c020e13f>] __list_add+0x8f/0xa0
+> [89479.106551]  [<dfd0fcae>] orinoco_interrupt+0xcae/0x16c0 [orinoco]
+> [89479.106574]  [<c013b0e3>] ? tick_dev_program_event+0x33/0xb0
+> [89479.106594]  [<c01073d0>] ? native_sched_clock+0x20/0x70
+> [89479.106613]  [<c013d825>] ? lock_release_holdtime+0x35/0x200
+> [89479.106662]  [<c013d7eb>] ? trace_hardirqs_off+0xb/0x10
+> [89479.106892]  [<dfe7faa7>] ? usb_hcd_irq+0x97/0xa0 [usbcore]
+> [89479.106926]  [<c015ba79>] handle_IRQ_event+0x29/0x60
+> [89479.106947]  [<c015cf89>] handle_level_irq+0x69/0xe0
+> [89479.106963]  [<c015cf20>] ? handle_level_irq+0x0/0xe0
+> [89479.106977]  <IRQ>  [<c02ca933>] ? tcp_v4_rcv+0x633/0x6e0
+> [89479.107025]  [<c0103f0c>] ? common_interrupt+0x28/0x30
+> [89479.107057]  [<c02a0000>] ? sk_run_filter+0x320/0x7a0
+> [89479.107078]  [<c020e041>] ? list_del+0x21/0x90
+> [89479.107106]  [<dfd0d24e>] ? orinoco_rx_isr_tasklet+0x2ce/0x480 
+> [orinoco]
+> [89479.107131]  [<c01402e0>] ? __lock_acquire+0x160/0x1650
+> [89479.107151]  [<c01073d0>] ? native_sched_clock+0x20/0x70
+> [89479.107169]  [<c013d825>] ? lock_release_holdtime+0x35/0x200
+> [89479.107200]  [<c012249a>] ? irq_enter+0xa/0x60
+> [89479.107217]  [<c0104e52>] ? do_IRQ+0xd2/0x130
+> [89479.107518]  [<c010342c>] ? restore_nocheck_notrace+0x0/0xe
+> [89479.107542]  [<c0122830>] ? __do_softirq+0x0/0x110
+> [89479.107561]  [<c013f7b4>] ? trace_hardirqs_on_caller+0x74/0x140
+> [89479.107583]  [<c01ff678>] ? trace_hardirqs_on_thunk+0xc/0x10
+> [89479.107602]  [<c0122087>] ? tasklet_action+0x27/0x90
+> [89479.107620]  [<c013f7b4>] ? trace_hardirqs_on_caller+0x74/0x140
+> [89479.107638]  [<c01220a3>] ? tasklet_action+0x43/0x90
+> [89479.107655]  [<c012289f>] ? __do_softirq+0x6f/0x110
+> [89479.107674]  [<c0122830>] ? __do_softirq+0x0/0x110
+> [89479.107685]  <IRQ>  [<c015cf20>] ? handle_level_irq+0x0/0xe0
+> [89479.107715]  [<c012246d>] ? irq_exit+0x5d/0x80
+> [89479.107732]  [<c0104e52>] ? do_IRQ+0xd2/0x130
+> [89479.107747]  [<c0103337>] ? sysenter_exit+0xf/0x16
+> [89479.107765]  [<c013f83d>] ? trace_hardirqs_on_caller+0xfd/0x140
+> [89479.107782]  [<c0103f0c>] ? common_interrupt+0x28/0x30
+> [89479.107797] ---[ end trace a1fc0a52df4a729d ]---
 
-ok, after trying to find out if the ubuntu gccs are broken, i stumbled
-upon this:
-http://forum.soft32.com/linux/Strange-problem-disassembling-shared-lib-ftopict439936.html
+Looks like the RX interrupt occurred at an inconvenient point during the
+list_del call in the RX tasklet (orinoco_rx_isr_tasklet).
 
-Seems the difference is that you dont compile it as a module and the
-jump is perfectly normal, it gets overwritten when the stuff is loaded
-objdump -dr gives me
+The call needs to be protected from the RX interrupt.
 
-00000e90 <rcu_stutter_wait>:
-     e90:	55                   	push   %ebp
-     e91:	89 e5                	mov    %esp,%ebp
-     e93:	90                   	nop    
-     e94:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-     e98:	a1 98 00 00 00       	mov    0x98,%eax
-			e99: R_386_32	.bss
-     e9d:	85 c0                	test   %eax,%eax
-     e9f:	75 09                	jne    eaa <rcu_stutter_wait+0x1a>
-     ea1:	a1 00 00 00 00       	mov    0x0,%eax
-			ea2: R_386_32	rcutorture_runnable
-     ea6:	85 c0                	test   %eax,%eax
-     ea8:	75 36                	jne    ee0 <rcu_stutter_wait+0x50>
-     eaa:	a1 88 1a 00 00       	mov    0x1a88,%eax
-			eab: R_386_32	.bss
-     eaf:	85 c0                	test   %eax,%eax
-     eb1:	75 2d                	jne    ee0 <rcu_stutter_wait+0x50>
-     eb3:	8b 15 00 00 00 00    	mov    0x0,%edx
-			eb5: R_386_32	rcutorture_runnable
-     eb9:	85 d2                	test   %edx,%edx
-     ebb:	74 2b                	je     ee8 <rcu_stutter_wait+0x58>
-     ebd:	b8 01 00 00 00       	mov    $0x1,%eax
-     ec2:	e8 fc ff ff ff       	call   ec3 <rcu_stutter_wait+0x33>
-			ec3: R_386_PC32	schedule_timeout_interruptible
-     ec7:	a1 98 00 00 00       	mov    0x98,%eax
-			ec8: R_386_32	.bss
-     ecc:	85 c0                	test   %eax,%eax
-     ece:	74 d1                	je     ea1 <rcu_stutter_wait+0x11>
-     ed0:	a1 88 1a 00 00       	mov    0x1a88,%eax
-			ed1: R_386_32	.bss
-     ed5:	85 c0                	test   %eax,%eax
-     ed7:	74 da                	je     eb3 <rcu_stutter_wait+0x23>
-     ed9:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-     ee0:	5d                   	pop    %ebp
-     ee1:	c3                   	ret    
-     ee2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-     ee8:	b8 fa 00 00 00       	mov    $0xfa,%eax
-     eed:	e8 fc ff ff ff       	call   eee <rcu_stutter_wait+0x5e>
-			eee: R_386_PC32	round_jiffies_relative
-     ef2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-     ef8:	e8 fc ff ff ff       	call   ef9 <rcu_stutter_wait+0x69>
-			ef9: R_386_PC32	schedule_timeout_interruptible
-     efd:	8d 76 00             	lea    0x0(%esi),%esi
+Quick patch included below - I'm not sure that the local_irq_* functions
+are the ones we need, but it compiles and runs.
 
-here is the deref ------------------------^
+I don't suppose you're able to reproduce the error?
 
-     f00:	eb 96                	jmp    e98 <rcu_stutter_wait+0x8>
-     f02:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-     f09:	8d bc 27 00 00 00 00 	lea    0x0(%edi,%eiz,1),%edi
+
+Dave.
+
+---
+diff --git a/drivers/net/wireless/orinoco/orinoco.c
+b/drivers/net/wireless/orinoco/orinoco.c
+index b33e13f..9a2d6be 100644
+--- a/drivers/net/wireless/orinoco/orinoco.c
++++ b/drivers/net/wireless/orinoco/orinoco.c
+@@ -1616,9 +1616,15 @@ static void orinoco_rx_isr_tasklet(unsigned long
+data)
+
+        /* extract desc and skb from queue */
+        list_for_each_entry_safe(rx_data, temp, &priv->rx_list, list) {
++               unsigned long flags;
++
+                desc = rx_data->desc;
+                skb = rx_data->skb;
++
++               local_irq_save(flags);
+                list_del(&rx_data->list);
++               local_irq_restore(flags);
++
+                kfree(rx_data);
+
+                orinoco_rx(dev, desc, skb);
 
