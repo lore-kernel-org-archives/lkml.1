@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZAEPSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZAEPTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbZAEPSr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbZAEPSj
+	id S1756711AbZAEPTI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:19:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZAEPSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:18:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34898 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbZAEPSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:18:38 -0500
-Date: Mon, 5 Jan 2009 16:16:08 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6][v5] Protect cinit from blocked fatal signals
-Message-ID: <20090105151608.GE3313@redhat.com>
-References: <20081227204658.GA27197@us.ibm.com> <20081227205409.GD27337@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081227205409.GD27337@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 5 Jan 2009 10:18:50 -0500
+Received: from mfo11.iij4u.or.jp ([210.138.174.81]:33779 "EHLO
+	mfo11.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755950AbZAEPSt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 10:18:49 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 03/13] add dma_mapping_ops for SWIOTLB and SBA IOMMU
+Date: Mon,  5 Jan 2009 23:36:08 +0900
+Message-Id: <1231166178-20050-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/27, Sukadev Bhattiprolu wrote:
->
-> +		 * Container-init gets no signals it doesn't want from same
-> +		 * container.
->  		 */
-> -		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-> -		    !signal_group_exit(signal))
-> +		if ((signal->flags & SIGNAL_UNKILLABLE) &&
-> +				!sig_kernel_only(signr))
+This is for IA64_HP_ZX1_SWIOTLB.
 
-minor, but why did you remove unlikely() ?
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/ia64/hp/common/hwsw_iommu.c |   17 ++++++++++++++++-
+ 1 files changed, 16 insertions(+), 1 deletions(-)
 
-And could you improve the changelog a bit? Please explain
-that !signal_group_exit() was needed to handle the case
-when the mt init does exit/exec and sends SIGKILL to all
-sub-threads. Now this is covered by sig_kernel_only().
-
-In short, please explain that if SIGNAL_UNKILLABLE task
-sees the sig_kernel_only() signal here, then it was either
-sent by the parent namespace or it was generated internally.
-In both cases we should not drop it.
-
-But your current changelog mostly explains why do we need
-another SIGNAL_UNKILLABLE check in get_signal_to_deliver(),
-this is orthogonal to the change itself.
-
-Oleg.
+diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
+index 2769dbf..a40dcdd 100644
+--- a/arch/ia64/hp/common/hwsw_iommu.c
++++ b/arch/ia64/hp/common/hwsw_iommu.c
+@@ -13,8 +13,8 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/dma-mapping.h>
+ #include <linux/swiotlb.h>
+-
+ #include <asm/machvec.h>
+ 
+ /* swiotlb declarations & definitions: */
+@@ -193,3 +193,18 @@ EXPORT_SYMBOL(hwsw_sync_single_for_cpu);
+ EXPORT_SYMBOL(hwsw_sync_single_for_device);
+ EXPORT_SYMBOL(hwsw_sync_sg_for_cpu);
+ EXPORT_SYMBOL(hwsw_sync_sg_for_device);
++
++struct dma_mapping_ops hwsw_dma_ops = {
++	.alloc_coherent		= hwsw_alloc_coherent,
++	.free_coherent		= hwsw_free_coherent,
++	.map_single_attrs	= hwsw_map_single_attrs,
++	.unmap_single_attrs	= hwsw_unmap_single_attrs,
++	.map_sg_attrs		= hwsw_map_sg_attrs,
++	.unmap_sg_attrs		= hwsw_unmap_sg_attrs,
++	.sync_single_for_cpu	= hwsw_sync_single_for_cpu,
++	.sync_sg_for_cpu	= hwsw_sync_sg_for_cpu,
++	.sync_single_for_device	= hwsw_sync_single_for_device,
++	.sync_sg_for_device	= hwsw_sync_sg_for_device,
++	.dma_supported_op	= hwsw_dma_supported,
++	.mapping_error		= hwsw_dma_mapping_error,
++};
+-- 
+1.6.0.6
 
