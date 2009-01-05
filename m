@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZAEScR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZAESlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbZAEScR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 13:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZAEScB
+	id S1753230AbZAESlv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 13:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZAESlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 13:32:01 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:40821 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZAEScA (ORCPT
+	Mon, 5 Jan 2009 13:41:42 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:49739 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbZAESlm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 13:32:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=DzdUwOWZR3jFSMQeibsR53Vg2NhB7+YS85LiGYPFBuKDgCAAShakjzZ+rFjCE7A0SH
-         h7XuHK5UbRFuhxsuRmGmBR84LrreRliXYd9geLweGzP4FoNcUNEy9092oitOet7nSZAa
-         ZaySg3+bxr01TYRRdR4/tTiski6U4z5Nx5gks=
-Message-ID: <e9c3a7c20901051031y528d0d31r18d44c5096c59e0@mail.gmail.com>
-Date: Mon, 5 Jan 2009 11:31:57 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Atsushi Nemoto" <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer before DMA
-Cc: haavard.skinnemoen@atmel.com, linux-kernel@vger.kernel.org,
-       hskinnemoen@atmel.com, maciej.sosnowski@intel.com, ralf@linux-mips.org
-In-Reply-To: <20081229.025352.01917409.anemo@mba.ocn.ne.jp>
+	Mon, 5 Jan 2009 13:41:42 -0500
+Message-ID: <49625519.4050902@novell.com>
+Date: Mon, 05 Jan 2009 13:44:41 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1230305468-18021-1-git-send-email-anemo@mba.ocn.ne.jp>
-	 <20081227111037.3bd13adc@hskinnemoen-d830>
-	 <20081229.025352.01917409.anemo@mba.ocn.ne.jp>
-X-Google-Sender-Auth: 02a660bb9ad8d8c5
+To: Dimitri Sivanich <sivanich@sgi.com>
+CC: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Greg KH <greg@kroah.com>,
+       Nick Piggin <npiggin@suse.de>, Robin Holt <holt@sgi.com>
+Subject: Re: 2.6.27.8 scheduler bug - threads not being scheduled for long
+ periods
+References: <20090105175641.GA17055@sgi.com>
+In-Reply-To: <20090105175641.GA17055@sgi.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig51930D9271615C24FB92E189"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 28, 2008 at 10:53 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> On Sat, 27 Dec 2008 11:10:37 +0100, Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
->> Atsushi Nemoto wrote:
->> > @@ -226,6 +227,12 @@ static int dmatest_func(void *data)
->> >
->> >             dmatest_init_srcbuf(thread->srcbuf, src_off, len);
->> >             dmatest_init_dstbuf(thread->dstbuf, dst_off, len);
->> > +           /* flush and invalidate caches for whole dstbuf */
->> > +           dma_dest = dma_map_single(chan->device->dev,
->> > +                           thread->dstbuf,
->> > +                           test_buf_size, DMA_BIDIRECTIONAL);
->> > +           dma_unmap_single(chan->device->dev, dma_dest,
->> > +                           test_buf_size, DMA_BIDIRECTIONAL);
->>
->> You're supposed to unmap after the DMA operation is done, not before
->> it's submitted.
->>
->> In this case, the DMA engine framework will do the unmapping for you
->> (probably using the wrong primitive, but they're really all the same in
->> practice, right?) so you can just drop the unmap call.
->
-> Well, let me explain more.
->
-> On nono-coherent MIPS platforms, dma_map_single() for DMA_TO_DEVICE
-> writeback the cache, dma_map_single() for DMA_FROM_DEVICE invalidated
-> (without writeback) the cache.  dma_unmap_simgle() is a nop.
->
-> If dst_off was not cacheline aligned, dma_map_single(...,
-> DMA_FROM_DEVICE) in dma_async_memcpy_buf_to_buf() invalidate whole
-> cachelines including dst_off.  So, for example, the initialized data
-> at dst_off - 1 will be just discarded.  This result mismatch error of
-> course.  Same error can be happen at end of the real DMA area.
->
-> I added dma_map_single/dma_unmap_single to just flush all dstbuf to
-> main memory.
->
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig51930D9271615C24FB92E189
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I am tempted to say this is a bug in the MIPS dma_map_single
-implementation.  It is at least a difference in behavior from ARM
-where partial cachelines are cleaned+invalidated in the
-DMA_FROM_DEVICE case [1].
+Dimitri Sivanich wrote:
+>
+> I'm wondering if anyone else has run into this problem, and whether the=
+y've
+> found a resolution for it?
+>
+>  =20
 
---
-Dan
+Hi Dimitri,
+  I have observed similar problems on my opensuse 11.0 box (2.6.25
+based) when doing kernel builds.  Often times other apps will get
+starved (like firefox, etc).  I was talking to peterz about it and he
+pointed me at a commit that went into 28-rcx that fixes this (the sha
+escapes me at the moment).  I've been meaning to pull the patch into our
+2.6.25 and 2.6.27 trees to verify if it fixes it, but I have fairly high
+confidence it will.  Perhaps Peter can point you at the same patch and
+you can give it a whirl.  For the time being, can you see if 28 is fixed?=
 
-[1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/arm/mm/cache-xsc3l2.c#l82
+
+-Greg
+
+
+--------------enig51930D9271615C24FB92E189
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkliVRkACgkQlOSOBdgZUxlvJACgjdfzbZadhdGdvm2TUWSPm+3M
+cTQAn0DqNxCyRrjiMrINX1KXvdZ6Na+a
+=8PGa
+-----END PGP SIGNATURE-----
+
+--------------enig51930D9271615C24FB92E189--
