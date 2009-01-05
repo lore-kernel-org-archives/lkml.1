@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbZAERsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZAERsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbZAERsZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 12:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZAERsR
+	id S1754418AbZAERsk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 12:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZAERs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 12:48:17 -0500
-Received: from outbound-mail-315.bluehost.com ([67.222.54.8]:43557 "HELO
-	outbound-mail-315.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751949AbZAERsQ (ORCPT
+	Mon, 5 Jan 2009 12:48:28 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:5368 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753996AbZAERs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 12:48:16 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=bRS+fAFw+vGU791aMP1n51KZLgpvnZ95tPor8IstzqYdwLjCw6JE+2fe3BOTGDg13u/15U3iOdI1wKlxFCGGs/yRok1so5HKnypUkwim3N5m4l6sxBIjnzGe6kJAk4hJ;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression] X server doesn't start on MSI Wind w/ current mainline
-Date: Mon, 5 Jan 2009 09:48:13 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@gmail.com>
-References: <200901031328.40574.rjw@sisk.pl> <200901050011.32974.rjw@sisk.pl>
-In-Reply-To: <200901050011.32974.rjw@sisk.pl>
+	Mon, 5 Jan 2009 12:48:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wlpQO2vmH7ZHuWxH8TYl/l8VFrYSgZn9NvTTxtzvyA9z5lWLUZ/3SOld/JSZOSmu15
+         yuC+uHZGQw9ZN0u3ibUQqD/G3s0X0eVT6skNjeCjw3BspBebCR1TEPsetWnC0xJi4dvz
+         OgOHDdENCNqzZSDllsBHcUQmQq1ZLwePzqbc8=
+Message-ID: <3f9a31f40901050948t6040a2d5nc612f0c1195d1df@mail.gmail.com>
+Date: Mon, 5 Jan 2009 23:18:25 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] firmware: Arrange WHENCE in alphabetical order to avoid conflicts
+Cc: "Jaswinder Singh" <jaswinder@infradead.org>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1229861579.22786.32.camel@macbook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901050948.14352.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+References: <1229860427.6846.3.camel@jaswinder.satnam>
+	 <1229861579.22786.32.camel@macbook.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, January 4, 2009 3:11 pm Rafael J. Wysocki wrote:
-> On Saturday 03 January 2009, Rafael J. Wysocki wrote:
-> > Hi,
-> >
-> > With the current mainline and the linux-next branch of your pci-2.6 tree
-> > on top, the X server doesn't start any more on MSI Wind (Intel hardware)
-> > w/ openSUSE 11.1 .
-> >
-> > I also tested the linux-next branch of the pci-2.6 tree on top of 2.6.28
-> > and it doesn't cause any problem with the X server to happen.
+Hello Linus,
+
+On Sun, Dec 21, 2008 at 5:42 PM, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Sun, 2008-12-21 at 17:23 +0530, Jaswinder Singh wrote:
+>>
+>> We are facing problems while we prepare patch for firmware as we add
+>> new stuff at the end.
+>> As per David Woodhouse suggestion, I am arranging WHENCE to
+>> aplhabetical order by driver name to avoid conflicts.
+>> Thanks to my son Gurchet Singh to help me in arranging driver names in
+>> alphabetical order.
+>>
+>> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 >
-> Well, I pulled the mainline from today, unsetted DRM_I915_KMS and it works
-> again.
+> Acked-by: David Woodhouse <David.Woodhouse@intel.com>
 >
-> BTW, what user land is necessary for the KMS to work?
+> Now we're trying to push the remaining conversions to request_firmware()
+> via the driver authors, putting it into alphabetical order should help
+> to avoid the conflicts.
+>
+> If we could have this in before 2.6.28 (since it's purely cosmetic) or
+> immediately thereafter, that would be great.
+>
 
-Ah yeah defaulting to KMS enabled will probably get you undesirable results at 
-this point.  You'll need a bleeding edge 2D driver (from xf86-video-intel git) 
-and libdrm 2.4.3 to make this all work.  Be sure to pass "--enable-kms" when 
-you configure your 2D driver.
+Do you think this patch can merge now or should I wait for merging window.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
-
+Thanks
+--
+JSR
