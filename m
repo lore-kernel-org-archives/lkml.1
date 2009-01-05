@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZAET1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZAET2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbZAET1T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZAET1H
+	id S1754747AbZAET2s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZAET2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:27:07 -0500
-Received: from outbound-mail-316.bluehost.com ([67.222.54.9]:51782 "HELO
-	outbound-mail-316.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752647AbZAET1G (ORCPT
+	Mon, 5 Jan 2009 14:28:38 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50192 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752798AbZAET2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:27:06 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=EMld3Y1YhSTCdWDUHkbcz4Gfn+ZUw8GRpYUJgRn24Q3m2aDuOLnEZbUYaRnBX3exzf5F40Dz5ZB/xWd4j7rGPhUi7R5O23JchRSVV7VD08CVPb+UYXkW+OUwwS20ahvu;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 03/11] cpumask: update pci_bus_show_cpuaffinity to use new cpumask API
-Date: Mon, 5 Jan 2009 11:27:03 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-References: <20090104131759.865331000@polaris-admin.engr.sgi.com> <20090104131800.317064000@polaris-admin.engr.sgi.com>
-In-Reply-To: <20090104131800.317064000@polaris-admin.engr.sgi.com>
+	Mon, 5 Jan 2009 14:28:37 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 5 Jan 2009 20:28:10 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: cdev: shut down iso context before freeing the
+ buffer
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.28a059519eb6d782@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901051127.03598.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, January 4, 2009 5:18 am Mike Travis wrote:
-> Impact: cleanup, reduce stack usage, use new cpumask API.
->
-> Replace the local cpumask_t variable with a pointer to the
-> const cpumask that needs to be printed.
->
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+DMA must be halted before we DMA-unmap and free the DMA buffer.  Since
+we cannot rely on the client to stop the context before it closes the
+fd, we have to reorder fw_iso_buffer_destroy vs. fw_iso_context_destroy.
 
-Can you resend these two against my linux-next branch?
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-cdev.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Thanks,
+Index: linux/drivers/firewire/fw-cdev.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-cdev.c
++++ linux/drivers/firewire/fw-cdev.c
+@@ -1386,12 +1386,12 @@ static int fw_device_op_release(struct i
+ 	list_del(&client->link);
+ 	mutex_unlock(&client->device->client_list_mutex);
+ 
+-	if (client->buffer.pages)
+-		fw_iso_buffer_destroy(&client->buffer, client->device->card);
+-
+ 	if (client->iso_context)
+ 		fw_iso_context_destroy(client->iso_context);
+ 
++	if (client->buffer.pages)
++		fw_iso_buffer_destroy(&client->buffer, client->device->card);
++
+ 	/* Freeze client->resource_idr and client->event_list */
+ 	spin_lock_irq(&client->lock);
+ 	client->in_shutdown = true;
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Stefan Richter
+-=====-==--= ---= --=-=
+http://arcgraph.de/sr/
 
