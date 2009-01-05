@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZAETnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZAETnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbZAETnd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZAETnP
+	id S1755341AbZAETnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZAETnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:43:15 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:3992 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbZAETnO (ORCPT
+	Mon, 5 Jan 2009 14:43:45 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50372 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbZAETno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:43:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=U2r8HinZEiEXWROcFhLrR9yRWNgtox4KFYhtGiyReAi9TVpWUTYKs1FnEQ/DQAYZ+j
-         XWwyc1N6fruJhNLmh19YlZCqR6AptrHlNz9aXYe6wd+51uEPZa6I3xNSWDecViLUMSaI
-         lJoPkCwxFc1AT0JYixKmeS7aSWSmNRuO6HfIQ=
-Message-ID: <e9c3a7c20901051143m37c0d7c0x5779475ddc7c5dc2@mail.gmail.com>
-Date: Mon, 5 Jan 2009 12:43:13 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, "Sascha Hauer" <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       "Geert Uytterhoeven" <geert@linux-m68k.org>
-In-Reply-To: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
+	Mon, 5 Jan 2009 14:43:44 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 5 Jan 2009 20:43:23 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: ohci: change "context_stop: still active" log
+ message
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.dda855ac47bf11cc@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
-X-Google-Sender-Auth: 724e40bb9382a3c9
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 26, 2008 at 10:11 AM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Hi,
->
-> This is version 6 of dmaengine and framebuffer drivers for i.MX31.
->
+The present message is mostly just noise.  We only need to be notified
+if the "active" flag does not go off before the retry loop terminates.
 
-Tha drivers/dma/ bits look ok to me minus the new warnings:
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-ohci.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_fn':
-drivers/dma/ipu/ipu_irq.c:328: warning: 'irq' may be used
-uninitialized in this function
-drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_err':
-drivers/dma/ipu/ipu_irq.c:290: warning: 'irq' may be used
-uninitialized in this function
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -892,11 +892,11 @@ static void context_stop(struct context 
+ 	for (i = 0; i < 10; i++) {
+ 		reg = reg_read(ctx->ohci, CONTROL_SET(ctx->regs));
+ 		if ((reg & CONTEXT_ACTIVE) == 0)
+-			break;
++			return;
+ 
+-		fw_notify("context_stop: still active (0x%08x)\n", reg);
+ 		mdelay(1);
+ 	}
++	fw_error("Error: DMA context still active (0x%08x)\n", reg);
+ }
+ 
+ struct driver_data {
 
-I can take patches 1 and 2 through the async_tx tree, or if you would
-rather, add my Acked-by to those and take 1-4 through the MXC tree.
-I'll be sending the async_tx pull request for 2.6.29 in the next few
-days.
+-- 
+Stefan Richter
+-=====-==--= ---= --=-=
+http://arcgraph.de/sr/
 
-Thanks,
-Dan
