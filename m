@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbZAEUN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZAEUOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbZAEUN0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 15:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbZAEUNL
+	id S1755257AbZAEUOl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 15:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZAEUOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 15:13:11 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:47876 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755529AbZAEUNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 15:13:09 -0500
-Date: Mon, 5 Jan 2009 12:12:58 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Klotz <peter.klotz@aon.at>,
-       stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roman Kononov <kernel@kononov.ftml.net>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] mm: fix lockless pagecache reordering bug (was Re:
-	BUG: soft lockup - is this XFS problem?)
-Message-ID: <20090105201258.GN6959@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de> <20090105041959.GC367@wotan.suse.de> <20090105064838.GA5209@wotan.suse.de> <49623384.2070801@aon.at> <20090105164135.GC32675@wotan.suse.de> <alpine.LFD.2.00.0901050859430.3057@localhost.localdomain> <20090105180008.GE32675@wotan.suse.de> <alpine.LFD.2.00.0901051027011.3057@localhost.localdomain>
+	Mon, 5 Jan 2009 15:14:33 -0500
+Received: from mail.die-tessuns.de ([83.125.40.159]:43924 "EHLO
+	chewie.lokal.die-tessuns.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752621AbZAEUOc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 15:14:32 -0500
+X-Greylist: delayed 530 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Jan 2009 15:14:32 EST
+X-Spam-score: -4.0
+Message-ID: <4962680E.1030306@die-tessuns.de>
+Date: Mon, 05 Jan 2009 21:05:34 +0100
+From: Martin Tessun <martin.tessun@die-tessuns.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901051027011.3057@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: linux-kernel@vger.kernel.org
+Subject: Re: A SuSE riddle
+References: <20090105185225.GH6165@tatooine.rebelbase.local>
+In-Reply-To: <20090105185225.GH6165@tatooine.rebelbase.local>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 10:44:27AM -0800, Linus Torvalds wrote:
-> On Mon, 5 Jan 2009, Nick Piggin wrote:
-> > On Mon, Jan 05, 2009 at 09:30:55AM -0800, Linus Torvalds wrote:
-> > Putting an rcu_dereference there might work, but I think it misses a 
-> > subtlety of this code.
+markus reichelt schrieb:
+> Hi,
 > 
-> No, _you_ miss the subtlety of something that can change under you.
+> this goes out to the SusE folks in here: 
 > 
-> Look at radix_tree_deref_slot(), and realize that without the 
-> rcu_dereference(), the compiler would actually be allowed to think that it 
-> can re-load anything from *pslot several times. So without my one-liner 
-> patch, the compiler can actually do this:
+> What the heck is needed to get one's hands on the contents of
 > 
-> 	register = load_from_memory(pslot)
-> 	if (radix_tree_is_indirect_ptr(register))
-> 		goto fail:
-> 	return load_from_memory(pslot);
+> kernel-source-2.6.27.7-9.1.i586.rpm
 > 
->    fail:
-> 	return RADIX_TREE_RETRY;
+> The usual tools fail.
+> 
+> Downloaded from http://ftp.uni-bayreuth.de/linux/opensuse/distribution/11.1/repo/oss/suse/i586/
+> 
+> 
+> And why not provide a .CAB for it? Seems to work better anyway.
+> 
 
-My guess is that Nick believes that the value in *pslot cannot change
-in such as way as to cause radix_tree_is_indirect_ptr()'s return value
-to change within a given RCU grace period, and that Linus disagrees.
+I don't see your problem:
 
-Whatever the answer, I would argue for -at- -least- a comment explaining
-why it is safe.  I am not seeing the objection to rcu_dereference(), but
-I must confess that it has been awhile since I have looked closely at
-the radix_tree code.  :-/
+S | Name          | Typ   | Version      | Arch   | Repository
+--+---------------+-------+--------------+--------+-----------------------
+i | kernel-source | Paket | 2.6.27.7-9.1 | x86_64 | Haupt-Repository (OSS)
+v | kernel-source | Paket | 2.6.27.7-9.1 | i586   | Haupt-Repository (OSS)
 
-							Thanx, Paul
+12 | repo_1                           | Haupt-Repository (OSS)
+       | Ja        | Ja            | 99        | yast2  |
+http://download.opensuse.org/distribution/11.1/repo/oss/       |
+
+
+So there are the kenels for both Architectures available.
+
+Regards,
+Martin
+
+BTW.: I think zypper *is* the standard-tool for SuSE-Updates and you
+should go to the SuSE-Kernel-Mailing-List with that problem.
