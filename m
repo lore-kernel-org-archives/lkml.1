@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbZAEJkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZAEJkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbZAEJkU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 04:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZAEJkH
+	id S1752875AbZAEJkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 04:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZAEJkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 04:40:07 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:35584 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbZAEJkF (ORCPT
+	Mon, 5 Jan 2009 04:40:42 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:16038 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752140AbZAEJkk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 04:40:05 -0500
+	Mon, 5 Jan 2009 04:40:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=hZahHUYubyTxbc6mboo1hO1wxIsOBotvfmhMBqDzu+5rESb2LPWVmkfHHvSuIjOEOH
-         3dnRl00M4YQLZ3CY+DDjGWO2jDLYvSdlB+FcsayQB5rbAARryKrHLhFfgTqHm7eEF/2b
-         vMVffzp1m/JR4+2fDr8mOJarOhvZHbChLwIfM=
-Message-ID: <c4a7c9420901050140u23697729pc55966110d68452b@mail.gmail.com>
-Date: Mon, 5 Jan 2009 18:40:04 +0900
-From: "Ryusuke Konishi" <konishi.ryusuke@lab.ntt.co.jp>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.29 -mm merge plans
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=RRAcH11hb+Yw5sBxPn1kiqQCKaVcZcLr3wnAC4Be7ScNFEimRDnEHVQDBF7xmsuvTb
+         bTQbSWiGbgUxO1m/H34gZ9n6OKHexEzuhsmwFwxnTK6981WYQw54gSd9BOtpLiN12W65
+         K3Yyp8E3dRVXkIRy+GUx3xuPP43hnOcaJSG9g=
+Date: Mon, 5 Jan 2009 12:40:34 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] mm: __nr_to_section - make it safe against overflow
+Message-ID: <20090105094034.GA7645@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 815caecd82c4a57e
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/5 Andrew Morton <akpm@linux-foundation.org>:
-> nilfs2-add-document.patch
-> nilfs2-disk-format-and-userland-interface.patch
-> nilfs2-add-inode-and-other-major-structures.patch
-> nilfs2-integrated-block-mapping.patch
-> nilfs2-b-tree-based-block-mapping.patch
-> nilfs2-direct-block-mapping.patch
-> nilfs2-b-tree-node-cache.patch
-> nilfs2-buffer-and-page-operations.patch
-> nilfs2-meta-data-file.patch
-> nilfs2-persistent-object-allocator.patch
-> nilfs2-disk-address-translator.patch
-> nilfs2-inode-map-file.patch
-> nilfs2-checkpoint-file.patch
-> nilfs2-segment-usage-file.patch
-> nilfs2-inode-operations.patch
-> nilfs2-inode-operations-fix.patch
-> nilfs2-file-operations.patch
-> nilfs2-directory-entry-operations.patch
-> nilfs2-pathname-operations.patch
-> nilfs2-pathname-operations-fix.patch
-> nilfs2-operations-for-the_nilfs-core-object.patch
-> nilfs2-super-block-operations.patch
-> nilfs2-super-block-operations-fix.patch
-> nilfs2-segment-buffer.patch
-> nilfs2-segment-constructor.patch
-> nilfs2-recovery-functions.patch
-> nilfs2-another-dat-for-garbage-collection.patch
-> nilfs2-block-cache-for-garbage-collection.patch
-> nilfs2-ioctl-operations.patch
-> nilfs2-update-makefile-and-kconfig.patch
-> #
-> nilfs2-fix-problems-of-memory-allocation-in-ioctl.patch
-> nilfs2-cleanup-nilfs_clear_inode.patch
-> nilfs2-avoid-double-error-caused-by-nilfs_transaction_end.patch
-> nilfs2-insert-explanations-in-gcinode-file.patch
-> nilfs2-add-maintainer.patch
-> nilfs2-fix-gc-failure-on-volumes-keeping-numerous-snapshots.patch
->
->  Dunno.   Has this been reviewed enough?
->
+__nr_to_section should check for array bound overflow.
+We should better get NULL dereference then silently
+pass some memory snippet out of bounds to a caller.
 
-I'm now working to follow some comments from Chris, and
-I think nilfs should be reviewed more widely.
+Also add a comment about mem_section structure.
 
-I'll aim for the next merge window or so.
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
 
-Ryusuke Konishi
+Please review. Some __nr_to_section callers don't check
+for NULL returned so this patch could be a bit dangerous
+but should reveal the problems eventually.
+
+ include/linux/mmzone.h |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.git/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.git.orig/include/linux/mmzone.h
++++ linux-2.6.git/include/linux/mmzone.h
+@@ -935,6 +935,12 @@ static inline unsigned long early_pfn_to
+ 
+ struct page;
+ struct page_cgroup;
++
++/*
++ * NOTE: sizeof(struct mem_section) _must_ be power of 2
++ * otherwise SECTION_ROOT_MASK will be broken so be
++ * really cautious while modifying this structure
++ */
+ struct mem_section {
+ 	/*
+ 	 * This is, logically, a pointer to an array of struct
+@@ -980,9 +986,12 @@ extern struct mem_section mem_section[NR
+ 
+ static inline struct mem_section *__nr_to_section(unsigned long nr)
+ {
+-	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
++	unsigned long idx = SECTION_NR_TO_ROOT(nr);
++	WARN_ON_ONCE(idx >= NR_SECTION_ROOTS);
++
++	if (idx >=NR_SECTION_ROOTS || !mem_section[idx])
+ 		return NULL;
+-	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
++	return &mem_section[idx][nr & SECTION_ROOT_MASK];
+ }
+ extern int __section_nr(struct mem_section* ms);
+ extern unsigned long usemap_size(void);
