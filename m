@@ -1,66 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZAEPO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZAEPPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZAEPO0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZAEPOR
+	id S1755503AbZAEPPm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZAEPPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:14:17 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:49336 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZAEPOR (ORCPT
+	Mon, 5 Jan 2009 10:15:33 -0500
+Received: from mfo10.iij4u.or.jp ([210.138.174.80]:38237 "EHLO
+	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbZAEPPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:14:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=e6A2CO7CoQEOuqwTAgodt4RvOfJGH+fyB8AYCv32vg81FYiIeZ8VdqEMekcGnpkCpr
-         g8+EPDuHuixQMsxaCmUTYnZ7KfhKE5a9Px892PPklTgUtXW93SatTTajZA+PBouan1q6
-         O+CrIWTULLCUZ2nBut55EqRDUF5ioYLcrWV1Q=
-Message-ID: <496223C4.20307@gmail.com>
-Date: Mon, 05 Jan 2009 16:14:12 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Andi Kleen <andi@firstfloor.org>, Johannes Weiner <hannes@cmpxchg.org>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: early exception error
-References: <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm> <20090101041727.GW496@one.firstfloor.org> <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm> <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm> <20090102172426.GB5372@localhost> <495E7FAD.6020305@shaw.ca> <20090105092619.GA3699@cmpxchg.org> <20090105130836.GN496@one.firstfloor.org> <49621E6E.2010809@gmail.com> <20090105150150.GF7645@localhost>
-In-Reply-To: <20090105150150.GF7645@localhost>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 10:15:32 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 10/13] make sn DMA mapping functions static
+Date: Mon,  5 Jan 2009 23:36:15 +0900
+Message-Id: <1231166178-20050-11-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1231166178-20050-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/2009 04:01 PM, Cyrill Gorcunov wrote:
-> [Jiri Slaby - Mon, Jan 05, 2009 at 03:51:26PM +0100]
-> | On 01/05/2009 02:08 PM, Andi Kleen wrote:
-> | > +#define EARLY_BUG_ON(x) do { if (unlikely(!(x))) EARLY_BUG(); } while (0)
-> | 
-> | I think unintentionally inverted logic.
-> 
-> just second ! is missed :)
+Now we don't need to export sn DMA mapping functions.
 
-None is needed, two '!' are added in the macro itself while it passes the
-parameter to the builtin.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/ia64/sn/pci/pci_dma.c |   64 ++++++++++++++++++--------------------------
+ 1 files changed, 26 insertions(+), 38 deletions(-)
 
-> | 
-> | > +#define EARLY_BUG_ON(x) do {} while(0)
-> | 
-> | Shouldn't be x referenced here?
-> |
-> 
-> but for what?
+diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
+index 174a74e..efdd694 100644
+--- a/arch/ia64/sn/pci/pci_dma.c
++++ b/arch/ia64/sn/pci/pci_dma.c
+@@ -32,7 +32,7 @@
+  * this function.  Of course, SN only supports devices that have 32 or more
+  * address bits when using the PMU.
+  */
+-int sn_dma_supported(struct device *dev, u64 mask)
++static int sn_dma_supported(struct device *dev, u64 mask)
+ {
+ 	BUG_ON(dev->bus != &pci_bus_type);
+ 
+@@ -40,7 +40,6 @@ int sn_dma_supported(struct device *dev, u64 mask)
+ 		return 0;
+ 	return 1;
+ }
+-EXPORT_SYMBOL(sn_dma_supported);
+ 
+ /**
+  * sn_dma_set_mask - set the DMA mask
+@@ -76,8 +75,8 @@ EXPORT_SYMBOL(sn_dma_set_mask);
+  * queue for a SCSI controller).  See Documentation/DMA-API.txt for
+  * more information.
+  */
+-void *sn_dma_alloc_coherent(struct device *dev, size_t size,
+-			    dma_addr_t * dma_handle, gfp_t flags)
++static void *sn_dma_alloc_coherent(struct device *dev, size_t size,
++				   dma_addr_t * dma_handle, gfp_t flags)
+ {
+ 	void *cpuaddr;
+ 	unsigned long phys_addr;
+@@ -125,7 +124,6 @@ void *sn_dma_alloc_coherent(struct device *dev, size_t size,
+ 
+ 	return cpuaddr;
+ }
+-EXPORT_SYMBOL(sn_dma_alloc_coherent);
+ 
+ /**
+  * sn_pci_free_coherent - free memory associated with coherent DMAable region
+@@ -137,8 +135,8 @@ EXPORT_SYMBOL(sn_dma_alloc_coherent);
+  * Frees the memory allocated by dma_alloc_coherent(), potentially unmapping
+  * any associated IOMMU mappings.
+  */
+-void sn_dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
+-			  dma_addr_t dma_handle)
++static void sn_dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
++				 dma_addr_t dma_handle)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
+@@ -148,7 +146,6 @@ void sn_dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
+ 	provider->dma_unmap(pdev, dma_handle, 0);
+ 	free_pages((unsigned long)cpu_addr, get_order(size));
+ }
+-EXPORT_SYMBOL(sn_dma_free_coherent);
+ 
+ /**
+  * sn_dma_map_single_attrs - map a single page for DMA
+@@ -174,9 +171,9 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
+  * TODO: simplify our interface;
+  *       figure out how to save dmamap handle so can use two step.
+  */
+-dma_addr_t sn_dma_map_single_attrs(struct device *dev, void *cpu_addr,
+-				   size_t size, int direction,
+-				   struct dma_attrs *attrs)
++static dma_addr_t sn_dma_map_single_attrs(struct device *dev, void *cpu_addr,
++					  size_t size, int direction,
++					  struct dma_attrs *attrs)
+ {
+ 	dma_addr_t dma_addr;
+ 	unsigned long phys_addr;
+@@ -202,7 +199,6 @@ dma_addr_t sn_dma_map_single_attrs(struct device *dev, void *cpu_addr,
+ 	}
+ 	return dma_addr;
+ }
+-EXPORT_SYMBOL(sn_dma_map_single_attrs);
+ 
+ /**
+  * sn_dma_unmap_single_attrs - unamp a DMA mapped page
+@@ -216,9 +212,9 @@ EXPORT_SYMBOL(sn_dma_map_single_attrs);
+  * by @dma_handle into the coherence domain.  On SN, we're always cache
+  * coherent, so we just need to free any ATEs associated with this mapping.
+  */
+-void sn_dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
+-			       size_t size, int direction,
+-			       struct dma_attrs *attrs)
++static void sn_dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
++				      size_t size, int direction,
++				      struct dma_attrs *attrs)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
+@@ -227,7 +223,6 @@ void sn_dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
+ 
+ 	provider->dma_unmap(pdev, dma_addr, direction);
+ }
+-EXPORT_SYMBOL(sn_dma_unmap_single_attrs);
+ 
+ /**
+  * sn_dma_unmap_sg_attrs - unmap a DMA scatterlist
+@@ -239,9 +234,9 @@ EXPORT_SYMBOL(sn_dma_unmap_single_attrs);
+  *
+  * Unmap a set of streaming mode DMA translations.
+  */
+-void sn_dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl,
+-			   int nhwentries, int direction,
+-			   struct dma_attrs *attrs)
++static void sn_dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl,
++				  int nhwentries, int direction,
++				  struct dma_attrs *attrs)
+ {
+ 	int i;
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+@@ -256,7 +251,6 @@ void sn_dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl,
+ 		sg->dma_length = 0;
+ 	}
+ }
+-EXPORT_SYMBOL(sn_dma_unmap_sg_attrs);
+ 
+ /**
+  * sn_dma_map_sg_attrs - map a scatterlist for DMA
+@@ -273,8 +267,8 @@ EXPORT_SYMBOL(sn_dma_unmap_sg_attrs);
+  *
+  * Maps each entry of @sg for DMA.
+  */
+-int sn_dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
+-			int nhwentries, int direction, struct dma_attrs *attrs)
++static int sn_dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
++			       int nhwentries, int direction, struct dma_attrs *attrs)
+ {
+ 	unsigned long phys_addr;
+ 	struct scatterlist *saved_sg = sgl, *sg;
+@@ -321,41 +315,35 @@ int sn_dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
+ 
+ 	return nhwentries;
+ }
+-EXPORT_SYMBOL(sn_dma_map_sg_attrs);
+ 
+-void sn_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
+-				size_t size, int direction)
++static void sn_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
++				       size_t size, int direction)
+ {
+ 	BUG_ON(dev->bus != &pci_bus_type);
+ }
+-EXPORT_SYMBOL(sn_dma_sync_single_for_cpu);
+ 
+-void sn_dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
+-				   size_t size, int direction)
++static void sn_dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
++					  size_t size, int direction)
+ {
+ 	BUG_ON(dev->bus != &pci_bus_type);
+ }
+-EXPORT_SYMBOL(sn_dma_sync_single_for_device);
+ 
+-void sn_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
+-			    int nelems, int direction)
++static void sn_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
++				   int nelems, int direction)
+ {
+ 	BUG_ON(dev->bus != &pci_bus_type);
+ }
+-EXPORT_SYMBOL(sn_dma_sync_sg_for_cpu);
+ 
+-void sn_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+-			       int nelems, int direction)
++static void sn_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
++				      int nelems, int direction)
+ {
+ 	BUG_ON(dev->bus != &pci_bus_type);
+ }
+-EXPORT_SYMBOL(sn_dma_sync_sg_for_device);
+ 
+-int sn_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
++static int sn_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ {
+ 	return 0;
+ }
+-EXPORT_SYMBOL(sn_dma_mapping_error);
+ 
+ char *sn_pci_get_legacy_mem(struct pci_bus *bus)
+ {
+@@ -467,7 +455,7 @@ int sn_pci_legacy_write(struct pci_bus *bus, u16 port, u32 val, u8 size)
+ 	return ret;
+ }
+ 
+-struct dma_mapping_ops sn_dma_ops = {
++static struct dma_mapping_ops sn_dma_ops = {
+ 	.alloc_coherent		= sn_dma_alloc_coherent,
+ 	.free_coherent		= sn_dma_free_coherent,
+ 	.map_single_attrs	= sn_dma_map_single_attrs,
+-- 
+1.6.0.6
 
-I know, core devs are sane, but e.g. for reasons such as
-
-{'a' is used here already}
-EARLY_BUG_ON(!(a = readl(...)))
-{use 'a' again}
-
-to stay on the safe side.
