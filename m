@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbZAEQdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZAEQep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752739AbZAEQdb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 11:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZAEQdV
+	id S1754118AbZAEQep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 11:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZAEQeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 11:33:21 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:32794 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbZAEQdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 11:33:20 -0500
-Date: Mon, 5 Jan 2009 11:33:12 -0500
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Chris Samuel <chris@csamuel.org>, linux-btrfs@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Btrfs for mainline
-Message-ID: <20090105163312.GA16883@fieldses.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <1230924749.7538.35.camel@think.oraclecorp.com> <20090102210104.GC496@one.firstfloor.org> <200901052107.43341.chris@csamuel.org> <1231161538.4290.12.camel@think.oraclecorp.com>
+	Mon, 5 Jan 2009 11:34:37 -0500
+Received: from fe02x03-cgp.akado.ru ([77.232.31.165]:63689 "EHLO akado.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751893AbZAEQeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 11:34:36 -0500
+Date: Mon, 5 Jan 2009 19:34:36 +0300 (MSK)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Michael Ellerman <michael@ellerman.id.au>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Lock-up on PPC64
+In-Reply-To: <1231158516.8367.3.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru> 
+ <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru> 
+ <20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru> 
+ <1230165163.7292.32.camel@pasglop>  <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+ <1231158516.8367.3.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231161538.4290.12.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 08:18:58AM -0500, Chris Mason wrote:
-> On Mon, 2009-01-05 at 21:07 +1100, Chris Samuel wrote:
-> > On Sat, 3 Jan 2009 8:01:04 am Andi Kleen wrote:
-> > 
-> > > When it's in mainline I suspect people will start using it for that.
-> > 
-> > Some people don't even wait for that. ;-)
-> > 
-> > Seriously though, if that is a concern can I suggest taking the btrfsdev route 
-> > and, if you want a real belt and braces approach, perhaps require it to have a 
-> > mandatory mount option specified to successfully mount, maybe "eat_my_data" ?
-> 
-> I think ext4dev made more sense for ext4 because people generally expect
-> ext* to be stable.  Btrfs doesn't quite have the reputation for
-> stability yet, so I don't feel we need a special -dev name for it.
+On Mon, 5 Jan 2009, Michael Ellerman wrote:
 
-Old kernel versions may still get booted after brtfs has gotten a
-reputation for stability.  E.g. if I move my / to brtfs in 2.6.34, then
-one day need to boot back to 2.6.30 to track down some regression, the
-reminder that I'm moving back to some sort of brtfs dark-ages might be
-welcome.
+> On Sun, 2008-12-28 at 03:45 +0300, malc wrote:
+>> On Thu, 25 Dec 2008, Benjamin Herrenschmidt wrote:
+>>
+>>> On Wed, 2008-12-24 at 03:08 +0300, malc@pulsesoft.com wrote:
+>>>> Ken Moffat <zarniwhoop@ntlworld.com> writes:
+>>>>
+>>>>> On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
+>>
+>> [..snip..]
+>>
+[..snip..]
 
-(Not that I have particularly strong feelings about this.)
+>>
+>> Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
+>> notice that the problem is gone, bisecting v2.6.27 (which funnily i
+>> had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
+>> but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
+>>
+>> commit ab598b6680f1e74c267d1547ee352f3e1e530f89
+>> Author: Paul Mackerras <paulus@samba.org>
+>> Date:   Sun Nov 30 11:49:45 2008 +0000
+>>
+>>      powerpc: Fix system calls on Cell entered with XER.SO=1
+>>
+>> Now the lock-up is gone, however the code never exercises the path
+>> taken during the lock-up so i guess it, at least, deserves a better
+>> look by PPC64 care takers.
+>
+> I'm confused. Which code never exercises which path, and so what
+> deserves a better look?
 
---b.
+Before this change (atleast) mono_handle_native_sigsegv was executed
+(before machine locks-up hard) after the change this code path is
+never touched.
 
-> 
-> But, if Andrew/Linus prefer that unstable filesystems are tagged with
-> -dev, I'm happy to do it.
-> 
-> -chris
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+The fact that machine locks up hard and not even magic sysrq works
+is what deserves a better look.
+
+[..snip..]
+
+-- 
+mailto:av1474@comtv.ru
