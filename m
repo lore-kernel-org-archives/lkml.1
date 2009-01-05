@@ -1,99 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbZAETqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZAETqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbZAETqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbZAETqW
+	id S1755251AbZAETqt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZAETq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:46:22 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38863 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbZAETqV (ORCPT
+	Mon, 5 Jan 2009 14:46:28 -0500
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:46919 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753419AbZAETq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:46:21 -0500
-Date: Mon, 5 Jan 2009 14:46:19 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       sparclinux <sparclinux@vger.kernel.org>
-Subject: Re: [PATCH] sparc: make proces_ver_nack a bit more readable
-In-Reply-To: <alpine.DEB.1.10.0901051437490.27085@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0901051443100.27085@gandalf.stny.rr.com>
-References: <20090105181922.GA25622@uranus.ravnborg.org> <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com> <alpine.DEB.1.10.0901051437490.27085@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 Jan 2009 14:46:27 -0500
+MIME-version: 1.0
+X-IronPort-AV: E=Sophos;i="4.36,333,1228086000";   d="scan'208";a="95512409"
+Date: Mon, 05 Jan 2009 20:46:24 +0100
+From: markus reichelt <ml@mareichelt.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: A SuSE riddle
+Message-id: <20090105194624.GJ6165@tatooine.rebelbase.local>
+Mail-followup-to: linux-kernel@vger.kernel.org
+References: <20090105185225.GH6165@tatooine.rebelbase.local>
+ <4962594F.7090501@baywinds.org>
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=a7XSrSxqzVsaECgU
+Content-disposition: inline
+In-reply-to: <4962594F.7090501@baywinds.org>
+Organization: still stuck in reorganization mode
+X-PGP-Key: 0xC2A3FEE4
+X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
+X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 5 Jan 2009, Steven Rostedt wrote:
+--a7XSrSxqzVsaECgU
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Impact: clean up
-> 
-> The code in process_ver_nack is a little obfuscated. This change
-> makes it a bit more readable by humans. It removes the complex
-> if statement and replaces it with a cleaner flow of control.
+* Bruce Ferrell <bferrell@baywinds.org> wrote:
 
-Note, I do not have a sparc compiler at my disposal, so I was not
-able to compile (or boot) test this change.
+> markus reichelt wrote:
+> >Hi,
+> >
+> >this goes out to the SusE folks in here:=20
+> >
+> >What the heck is needed to get one's hands on the contents of
+> >
+> >kernel-source-2.6.27.7-9.1.i586.rpm
+> >
+> >The usual tools fail.
+> >
+> >Downloaded from=20
+> >http://ftp.uni-bayreuth.de/linux/opensuse/distribution/11.1/repo/oss/sus=
+e/i586/
+> >
+> >
+> >And why not provide a .CAB for it? Seems to work better anyway.
+> >
+>=20
+> 1.) Try kernel-source-2.6.27.7-9.1.src.rpm instead
 
-Here's the original code:
-
-static int process_ver_nack(struct ldc_channel *lp, struct ldc_version 
-*vp)
-{
-        struct ldc_version *vap;
-
-        if ((vp->major == 0 && vp->minor == 0) ||
-            !(vap = find_by_major(vp->major))) {
-                return ldc_abort(lp);
-        } else {
-                struct ldc_packet *p;
-                unsigned long new_tail;
-
-                p = handshake_compose_ctrl(lp, LDC_INFO, LDC_VERS,
-                                           vap, sizeof(*vap),
-                                           &new_tail);
-                if (p)
-                        return send_tx_packet(lp, p, new_tail);
-                else
-                        return ldc_abort(lp);
-        }
-}
+Oh well, SuSE. Placing their eggs in different places...
 
 
-And the new code:
+> 2.) Because CAB files are for windows silly trid  :)
 
-static int process_ver_nack(struct ldc_channel *lp, struct ldc_version 
-*vp)
-{
-        struct ldc_version *vap;
-        struct ldc_packet *p;
-        unsigned long new_tail;
+A .CAB wouldn't need a .src.CAB, a .CAB would just frakking work :)
 
-        if (vp->major == 0 && vp->minor == 0)
-                return ldc_abort(lp);
+--=20
+left blank, right bald
 
-        vap = find_by_major(vp->major);
-        if (!vap)
-                return ldc_abort(lp);
+--a7XSrSxqzVsaECgU
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-        p = handshake_compose_ctrl(lp, LDC_INFO, LDC_VERS,
-                                           vap, sizeof(*vap),
-                                           &new_tail);
-        if (!p)
-                return ldc_abort(lp);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-        return send_tx_packet(lp, p, new_tail);
-}
+iD8DBQFJYmOQLMyTO8Kj/uQRAq0UAJ4kWaSP+/UWYD+kZ7h0CVSR6+6+PACfWVPA
+CLFOQrlEFZaNQjf5tK5F8Lk=
+=C5rh
+-----END PGP SIGNATURE-----
 
-This should be binary the same. But as I said, I do not have a sparc 
-compiler to test.
-
-Thanks,
-
--- Steve
+--a7XSrSxqzVsaECgU--
