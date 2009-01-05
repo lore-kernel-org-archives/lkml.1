@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbZAEOq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbZAEOqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755633AbZAEOq1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 09:46:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbZAEOqL
+	id S1756492AbZAEOqo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 09:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZAEOqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 09:46:11 -0500
-Received: from mfo10.iij4u.or.jp ([210.138.174.80]:38070 "EHLO
+	Mon, 5 Jan 2009 09:46:14 -0500
+Received: from mfo10.iij4u.or.jp ([210.138.174.80]:38071 "EHLO
 	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755317AbZAEOqH (ORCPT
+	with ESMTP id S1754650AbZAEOqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 Jan 2009 09:46:07 -0500
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: tony.luck@intel.com
 Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 07/13] set up dma_ops appropriately
-Date: Mon,  5 Jan 2009 23:36:12 +0900
-Message-Id: <1231166178-20050-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 09/13] remove dma operations in struct ia64_machine_vector
+Date: Mon,  5 Jan 2009 23:36:14 +0900
+Message-Id: <1231166178-20050-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1231166178-20050-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1231166178-20050-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
@@ -26,236 +26,344 @@ References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces a global pointer, dma_ops, which points to an
-appropriate dma_mapping_ops that the kernel should use. This is a
-common way to handle multiple dma_mapping_ops (X86, POWER, and SPARC).
-
-dma_ops is set in platform_dma_init. We also set it by hand where
-machvec_init is callev via subsys_initcall.
-
-- IA64_DIG_VTD uses vtd_dma_ops.
-- IA64_HP_ZX1 uses sba_dma_ops.
-- IA64_HP_ZX1_SWIOTLB uses hwsw_dma_ops.
-- IA64_SGI_SN2 uses sn_dma_ops.
-- The rest use swiotlb_dma_ops.
+We don't need dma operation hooks in struct ia64_machine_vector
+now. This also removes unused ia64_mv_dma_* typedefs.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/ia64/hp/common/hwsw_iommu.c      |    3 +++
- arch/ia64/hp/common/sba_iommu.c       |    9 +++++++++
- arch/ia64/include/asm/machvec.h       |    4 +++-
- arch/ia64/include/asm/machvec_hpzx1.h |    3 ++-
- arch/ia64/include/asm/machvec_sn2.h   |    3 ++-
- arch/ia64/kernel/Makefile             |    2 +-
- arch/ia64/kernel/dma-mapping.c        |    4 ++++
- arch/ia64/kernel/pci-dma.c            |    6 +++---
- arch/ia64/kernel/pci-swiotlb.c        |    6 ++++++
- arch/ia64/sn/pci/pci_dma.c            |    5 +++++
- 10 files changed, 38 insertions(+), 7 deletions(-)
- create mode 100644 arch/ia64/kernel/dma-mapping.c
+ arch/ia64/hp/common/hwsw_iommu.c              |   20 ++++--
+ arch/ia64/include/asm/machvec.h               |   89 -------------------------
+ arch/ia64/include/asm/machvec_dig_vtd.h       |   20 ------
+ arch/ia64/include/asm/machvec_hpzx1.h         |   20 ------
+ arch/ia64/include/asm/machvec_hpzx1_swiotlb.h |   25 -------
+ arch/ia64/include/asm/machvec_sn2.h           |   24 -------
+ 6 files changed, 12 insertions(+), 186 deletions(-)
 
 diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
-index a40dcdd..22145de 100644
+index 22145de..5cf750e 100644
 --- a/arch/ia64/hp/common/hwsw_iommu.c
 +++ b/arch/ia64/hp/common/hwsw_iommu.c
-@@ -56,9 +56,12 @@ use_swiotlb (struct device *dev)
- 	return dev && dev->dma_mask && !hwiommu_dma_supported(dev, *dev->dma_mask);
- }
+@@ -22,14 +22,18 @@ extern int swiotlb_late_init_with_default_size (size_t size);
  
-+struct dma_mapping_ops hwsw_dma_ops;
-+
- void __init
- hwsw_init (void)
- {
-+	dma_ops = &hwsw_dma_ops;
- 	/* default to a smallish 2MB sw I/O TLB */
- 	if (swiotlb_late_init_with_default_size (2 * (1<<20)) != 0) {
- #ifdef CONFIG_IA64_GENERIC
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 655b9a1..e82870a 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -2065,6 +2065,8 @@ static struct acpi_driver acpi_sba_ioc_driver = {
- 	},
- };
+ /* hwiommu declarations & definitions: */
  
-+extern struct dma_mapping_ops swiotlb_dma_ops;
-+
- static int __init
- sba_init(void)
- {
-@@ -2078,6 +2080,7 @@ sba_init(void)
- 	 * a successful kdump kernel boot is to use the swiotlb.
- 	 */
- 	if (is_kdump_kernel()) {
-+		dma_ops = &swiotlb_dma_ops;
- 		if (swiotlb_late_init_with_default_size(64 * (1<<20)) != 0)
- 			panic("Unable to initialize software I/O TLB:"
- 				  " Try machvec=dig boot option");
-@@ -2093,6 +2096,7 @@ sba_init(void)
- 		 * If we didn't find something sba_iommu can claim, we
- 		 * need to setup the swiotlb and switch to the dig machvec.
- 		 */
-+		dma_ops = &swiotlb_dma_ops;
- 		if (swiotlb_late_init_with_default_size(64 * (1<<20)) != 0)
- 			panic("Unable to find SBA IOMMU or initialize "
- 			      "software I/O TLB: Try machvec=dig boot option");
-@@ -2196,3 +2200,8 @@ struct dma_mapping_ops sba_dma_ops = {
- 	.dma_supported_op	= sba_dma_supported,
- 	.mapping_error		= sba_dma_mapping_error,
- };
-+
-+void sba_dma_init(void)
-+{
-+	dma_ops = &sba_dma_ops;
-+}
+-extern ia64_mv_dma_alloc_coherent	sba_alloc_coherent;
+-extern ia64_mv_dma_free_coherent	sba_free_coherent;
+-extern ia64_mv_dma_map_single_attrs	sba_map_single_attrs;
+-extern ia64_mv_dma_unmap_single_attrs	sba_unmap_single_attrs;
+-extern ia64_mv_dma_map_sg_attrs		sba_map_sg_attrs;
+-extern ia64_mv_dma_unmap_sg_attrs	sba_unmap_sg_attrs;
+-extern ia64_mv_dma_supported		sba_dma_supported;
+-extern ia64_mv_dma_mapping_error	sba_dma_mapping_error;
++extern void *sba_alloc_coherent(struct device *, size_t, dma_addr_t *, gfp_t);
++extern void sba_free_coherent (struct device *, size_t, void *, dma_addr_t);
++extern dma_addr_t sba_map_single_attrs(struct device *, void *, size_t, int,
++				       struct dma_attrs *);
++extern void sba_unmap_single_attrs(struct device *, dma_addr_t, size_t, int,
++				   struct dma_attrs *);
++extern int sba_map_sg_attrs(struct device *, struct scatterlist *, int, int,
++			    struct dma_attrs *);
++extern void sba_unmap_sg_attrs(struct device *, struct scatterlist *, int, int,
++			       struct dma_attrs *);
++extern int sba_dma_supported (struct device *, u64);
++extern int sba_dma_mapping_error(struct device *, dma_addr_t);
+ 
+ #define hwiommu_alloc_coherent		sba_alloc_coherent
+ #define hwiommu_free_coherent		sba_free_coherent
 diff --git a/arch/ia64/include/asm/machvec.h b/arch/ia64/include/asm/machvec.h
-index 59c17e4..d40722c 100644
+index d40722c..6be3010 100644
 --- a/arch/ia64/include/asm/machvec.h
 +++ b/arch/ia64/include/asm/machvec.h
-@@ -298,6 +298,8 @@ extern void machvec_init_from_cmdline(const char *cmdline);
- #  error Unknown configuration.  Update arch/ia64/include/asm/machvec.h.
- # endif /* CONFIG_IA64_GENERIC */
+@@ -45,23 +45,6 @@ typedef void ia64_mv_kernel_launch_event_t(void);
  
-+extern void swiotlb_dma_init(void);
-+
+ /* DMA-mapping interface: */
+ typedef void ia64_mv_dma_init (void);
+-typedef void *ia64_mv_dma_alloc_coherent (struct device *, size_t, dma_addr_t *, gfp_t);
+-typedef void ia64_mv_dma_free_coherent (struct device *, size_t, void *, dma_addr_t);
+-typedef dma_addr_t ia64_mv_dma_map_single (struct device *, void *, size_t, int);
+-typedef void ia64_mv_dma_unmap_single (struct device *, dma_addr_t, size_t, int);
+-typedef int ia64_mv_dma_map_sg (struct device *, struct scatterlist *, int, int);
+-typedef void ia64_mv_dma_unmap_sg (struct device *, struct scatterlist *, int, int);
+-typedef void ia64_mv_dma_sync_single_for_cpu (struct device *, dma_addr_t, size_t, int);
+-typedef void ia64_mv_dma_sync_sg_for_cpu (struct device *, struct scatterlist *, int, int);
+-typedef void ia64_mv_dma_sync_single_for_device (struct device *, dma_addr_t, size_t, int);
+-typedef void ia64_mv_dma_sync_sg_for_device (struct device *, struct scatterlist *, int, int);
+-typedef int ia64_mv_dma_mapping_error(struct device *, dma_addr_t dma_addr);
+-typedef int ia64_mv_dma_supported (struct device *, u64);
+-
+-typedef dma_addr_t ia64_mv_dma_map_single_attrs (struct device *, void *, size_t, int, struct dma_attrs *);
+-typedef void ia64_mv_dma_unmap_single_attrs (struct device *, dma_addr_t, size_t, int, struct dma_attrs *);
+-typedef int ia64_mv_dma_map_sg_attrs (struct device *, struct scatterlist *, int, int, struct dma_attrs *);
+-typedef void ia64_mv_dma_unmap_sg_attrs (struct device *, struct scatterlist *, int, int, struct dma_attrs *);
+ 
  /*
-  * Define default versions so we can extend machvec for new platforms without having
-  * to update the machvec files for all existing platforms.
-@@ -328,7 +330,7 @@ extern void machvec_init_from_cmdline(const char *cmdline);
- # define platform_kernel_launch_event	machvec_noop
- #endif
+  * WARNING: The legacy I/O space is _architected_.  Platforms are
+@@ -147,18 +130,6 @@ extern void machvec_tlb_migrate_finish (struct mm_struct *);
+ #  define platform_global_tlb_purge	ia64_mv.global_tlb_purge
+ #  define platform_tlb_migrate_finish	ia64_mv.tlb_migrate_finish
+ #  define platform_dma_init		ia64_mv.dma_init
+-#  define platform_dma_alloc_coherent	ia64_mv.dma_alloc_coherent
+-#  define platform_dma_free_coherent	ia64_mv.dma_free_coherent
+-#  define platform_dma_map_single_attrs	ia64_mv.dma_map_single_attrs
+-#  define platform_dma_unmap_single_attrs	ia64_mv.dma_unmap_single_attrs
+-#  define platform_dma_map_sg_attrs	ia64_mv.dma_map_sg_attrs
+-#  define platform_dma_unmap_sg_attrs	ia64_mv.dma_unmap_sg_attrs
+-#  define platform_dma_sync_single_for_cpu ia64_mv.dma_sync_single_for_cpu
+-#  define platform_dma_sync_sg_for_cpu	ia64_mv.dma_sync_sg_for_cpu
+-#  define platform_dma_sync_single_for_device ia64_mv.dma_sync_single_for_device
+-#  define platform_dma_sync_sg_for_device ia64_mv.dma_sync_sg_for_device
+-#  define platform_dma_mapping_error		ia64_mv.dma_mapping_error
+-#  define platform_dma_supported	ia64_mv.dma_supported
+ #  define platform_irq_to_vector	ia64_mv.irq_to_vector
+ #  define platform_local_vector_to_irq	ia64_mv.local_vector_to_irq
+ #  define platform_pci_get_legacy_mem	ia64_mv.pci_get_legacy_mem
+@@ -201,18 +172,6 @@ struct ia64_machine_vector {
+ 	ia64_mv_global_tlb_purge_t *global_tlb_purge;
+ 	ia64_mv_tlb_migrate_finish_t *tlb_migrate_finish;
+ 	ia64_mv_dma_init *dma_init;
+-	ia64_mv_dma_alloc_coherent *dma_alloc_coherent;
+-	ia64_mv_dma_free_coherent *dma_free_coherent;
+-	ia64_mv_dma_map_single_attrs *dma_map_single_attrs;
+-	ia64_mv_dma_unmap_single_attrs *dma_unmap_single_attrs;
+-	ia64_mv_dma_map_sg_attrs *dma_map_sg_attrs;
+-	ia64_mv_dma_unmap_sg_attrs *dma_unmap_sg_attrs;
+-	ia64_mv_dma_sync_single_for_cpu *dma_sync_single_for_cpu;
+-	ia64_mv_dma_sync_sg_for_cpu *dma_sync_sg_for_cpu;
+-	ia64_mv_dma_sync_single_for_device *dma_sync_single_for_device;
+-	ia64_mv_dma_sync_sg_for_device *dma_sync_sg_for_device;
+-	ia64_mv_dma_mapping_error *dma_mapping_error;
+-	ia64_mv_dma_supported *dma_supported;
+ 	ia64_mv_irq_to_vector *irq_to_vector;
+ 	ia64_mv_local_vector_to_irq *local_vector_to_irq;
+ 	ia64_mv_pci_get_legacy_mem_t *pci_get_legacy_mem;
+@@ -251,18 +210,6 @@ struct ia64_machine_vector {
+ 	platform_global_tlb_purge,		\
+ 	platform_tlb_migrate_finish,		\
+ 	platform_dma_init,			\
+-	platform_dma_alloc_coherent,		\
+-	platform_dma_free_coherent,		\
+-	platform_dma_map_single_attrs,		\
+-	platform_dma_unmap_single_attrs,	\
+-	platform_dma_map_sg_attrs,		\
+-	platform_dma_unmap_sg_attrs,		\
+-	platform_dma_sync_single_for_cpu,	\
+-	platform_dma_sync_sg_for_cpu,		\
+-	platform_dma_sync_single_for_device,	\
+-	platform_dma_sync_sg_for_device,	\
+-	platform_dma_mapping_error,			\
+-	platform_dma_supported,			\
+ 	platform_irq_to_vector,			\
+ 	platform_local_vector_to_irq,		\
+ 	platform_pci_get_legacy_mem,		\
+@@ -332,42 +279,6 @@ extern void swiotlb_dma_init(void);
  #ifndef platform_dma_init
--# define platform_dma_init		swiotlb_init
-+# define platform_dma_init		swiotlb_dma_init
+ # define platform_dma_init		swiotlb_dma_init
  #endif
- #ifndef platform_dma_alloc_coherent
- # define platform_dma_alloc_coherent	swiotlb_alloc_coherent
-diff --git a/arch/ia64/include/asm/machvec_hpzx1.h b/arch/ia64/include/asm/machvec_hpzx1.h
-index 2f57f51..dd4140b 100644
---- a/arch/ia64/include/asm/machvec_hpzx1.h
-+++ b/arch/ia64/include/asm/machvec_hpzx1.h
-@@ -2,6 +2,7 @@
- #define _ASM_IA64_MACHVEC_HPZX1_h
+-#ifndef platform_dma_alloc_coherent
+-# define platform_dma_alloc_coherent	swiotlb_alloc_coherent
+-#endif
+-#ifndef platform_dma_free_coherent
+-# define platform_dma_free_coherent	swiotlb_free_coherent
+-#endif
+-#ifndef platform_dma_map_single_attrs
+-# define platform_dma_map_single_attrs	swiotlb_map_single_attrs
+-#endif
+-#ifndef platform_dma_unmap_single_attrs
+-# define platform_dma_unmap_single_attrs	swiotlb_unmap_single_attrs
+-#endif
+-#ifndef platform_dma_map_sg_attrs
+-# define platform_dma_map_sg_attrs	swiotlb_map_sg_attrs
+-#endif
+-#ifndef platform_dma_unmap_sg_attrs
+-# define platform_dma_unmap_sg_attrs	swiotlb_unmap_sg_attrs
+-#endif
+-#ifndef platform_dma_sync_single_for_cpu
+-# define platform_dma_sync_single_for_cpu	swiotlb_sync_single_for_cpu
+-#endif
+-#ifndef platform_dma_sync_sg_for_cpu
+-# define platform_dma_sync_sg_for_cpu		swiotlb_sync_sg_for_cpu
+-#endif
+-#ifndef platform_dma_sync_single_for_device
+-# define platform_dma_sync_single_for_device	swiotlb_sync_single_for_device
+-#endif
+-#ifndef platform_dma_sync_sg_for_device
+-# define platform_dma_sync_sg_for_device	swiotlb_sync_sg_for_device
+-#endif
+-#ifndef platform_dma_mapping_error
+-# define platform_dma_mapping_error		swiotlb_dma_mapping_error
+-#endif
+-#ifndef platform_dma_supported
+-# define  platform_dma_supported	swiotlb_dma_supported
+-#endif
+ #ifndef platform_irq_to_vector
+ # define platform_irq_to_vector		__ia64_irq_to_vector
+ #endif
+diff --git a/arch/ia64/include/asm/machvec_dig_vtd.h b/arch/ia64/include/asm/machvec_dig_vtd.h
+index 3400b56..6ab1de5 100644
+--- a/arch/ia64/include/asm/machvec_dig_vtd.h
++++ b/arch/ia64/include/asm/machvec_dig_vtd.h
+@@ -2,14 +2,6 @@
+ #define _ASM_IA64_MACHVEC_DIG_VTD_h
  
  extern ia64_mv_setup_t			dig_setup;
-+extern ia64_mv_dma_init			sba_dma_init;
- extern ia64_mv_dma_alloc_coherent	sba_alloc_coherent;
- extern ia64_mv_dma_free_coherent	sba_free_coherent;
- extern ia64_mv_dma_map_single_attrs	sba_map_single_attrs;
-@@ -20,7 +21,7 @@ extern ia64_mv_dma_mapping_error	sba_dma_mapping_error;
-  */
+-extern ia64_mv_dma_alloc_coherent	vtd_alloc_coherent;
+-extern ia64_mv_dma_free_coherent	vtd_free_coherent;
+-extern ia64_mv_dma_map_single_attrs	vtd_map_single_attrs;
+-extern ia64_mv_dma_unmap_single_attrs	vtd_unmap_single_attrs;
+-extern ia64_mv_dma_map_sg_attrs		vtd_map_sg_attrs;
+-extern ia64_mv_dma_unmap_sg_attrs	vtd_unmap_sg_attrs;
+-extern ia64_mv_dma_supported		iommu_dma_supported;
+-extern ia64_mv_dma_mapping_error	vtd_dma_mapping_error;
+ extern ia64_mv_dma_init			pci_iommu_alloc;
+ 
+ /*
+@@ -22,17 +14,5 @@ extern ia64_mv_dma_init			pci_iommu_alloc;
+ #define platform_name				"dig_vtd"
+ #define platform_setup				dig_setup
+ #define platform_dma_init			pci_iommu_alloc
+-#define platform_dma_alloc_coherent		vtd_alloc_coherent
+-#define platform_dma_free_coherent		vtd_free_coherent
+-#define platform_dma_map_single_attrs		vtd_map_single_attrs
+-#define platform_dma_unmap_single_attrs		vtd_unmap_single_attrs
+-#define platform_dma_map_sg_attrs		vtd_map_sg_attrs
+-#define platform_dma_unmap_sg_attrs		vtd_unmap_sg_attrs
+-#define platform_dma_sync_single_for_cpu	machvec_dma_sync_single
+-#define platform_dma_sync_sg_for_cpu		machvec_dma_sync_sg
+-#define platform_dma_sync_single_for_device	machvec_dma_sync_single
+-#define platform_dma_sync_sg_for_device		machvec_dma_sync_sg
+-#define platform_dma_supported			iommu_dma_supported
+-#define platform_dma_mapping_error		vtd_dma_mapping_error
+ 
+ #endif /* _ASM_IA64_MACHVEC_DIG_VTD_h */
+diff --git a/arch/ia64/include/asm/machvec_hpzx1.h b/arch/ia64/include/asm/machvec_hpzx1.h
+index dd4140b..3bd83d7 100644
+--- a/arch/ia64/include/asm/machvec_hpzx1.h
++++ b/arch/ia64/include/asm/machvec_hpzx1.h
+@@ -3,14 +3,6 @@
+ 
+ extern ia64_mv_setup_t			dig_setup;
+ extern ia64_mv_dma_init			sba_dma_init;
+-extern ia64_mv_dma_alloc_coherent	sba_alloc_coherent;
+-extern ia64_mv_dma_free_coherent	sba_free_coherent;
+-extern ia64_mv_dma_map_single_attrs	sba_map_single_attrs;
+-extern ia64_mv_dma_unmap_single_attrs	sba_unmap_single_attrs;
+-extern ia64_mv_dma_map_sg_attrs		sba_map_sg_attrs;
+-extern ia64_mv_dma_unmap_sg_attrs	sba_unmap_sg_attrs;
+-extern ia64_mv_dma_supported		sba_dma_supported;
+-extern ia64_mv_dma_mapping_error	sba_dma_mapping_error;
+ 
+ /*
+  * This stuff has dual use!
+@@ -22,17 +14,5 @@ extern ia64_mv_dma_mapping_error	sba_dma_mapping_error;
  #define platform_name				"hpzx1"
  #define platform_setup				dig_setup
--#define platform_dma_init			machvec_noop
-+#define platform_dma_init			sba_dma_init
- #define platform_dma_alloc_coherent		sba_alloc_coherent
- #define platform_dma_free_coherent		sba_free_coherent
- #define platform_dma_map_single_attrs		sba_map_single_attrs
+ #define platform_dma_init			sba_dma_init
+-#define platform_dma_alloc_coherent		sba_alloc_coherent
+-#define platform_dma_free_coherent		sba_free_coherent
+-#define platform_dma_map_single_attrs		sba_map_single_attrs
+-#define platform_dma_unmap_single_attrs		sba_unmap_single_attrs
+-#define platform_dma_map_sg_attrs		sba_map_sg_attrs
+-#define platform_dma_unmap_sg_attrs		sba_unmap_sg_attrs
+-#define platform_dma_sync_single_for_cpu	machvec_dma_sync_single
+-#define platform_dma_sync_sg_for_cpu		machvec_dma_sync_sg
+-#define platform_dma_sync_single_for_device	machvec_dma_sync_single
+-#define platform_dma_sync_sg_for_device		machvec_dma_sync_sg
+-#define platform_dma_supported			sba_dma_supported
+-#define platform_dma_mapping_error		sba_dma_mapping_error
+ 
+ #endif /* _ASM_IA64_MACHVEC_HPZX1_h */
+diff --git a/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h b/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h
+index a842cdd..48c3a35 100644
+--- a/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h
++++ b/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h
+@@ -2,18 +2,6 @@
+ #define _ASM_IA64_MACHVEC_HPZX1_SWIOTLB_h
+ 
+ extern ia64_mv_setup_t				dig_setup;
+-extern ia64_mv_dma_alloc_coherent		hwsw_alloc_coherent;
+-extern ia64_mv_dma_free_coherent		hwsw_free_coherent;
+-extern ia64_mv_dma_map_single_attrs		hwsw_map_single_attrs;
+-extern ia64_mv_dma_unmap_single_attrs		hwsw_unmap_single_attrs;
+-extern ia64_mv_dma_map_sg_attrs			hwsw_map_sg_attrs;
+-extern ia64_mv_dma_unmap_sg_attrs		hwsw_unmap_sg_attrs;
+-extern ia64_mv_dma_supported			hwsw_dma_supported;
+-extern ia64_mv_dma_mapping_error		hwsw_dma_mapping_error;
+-extern ia64_mv_dma_sync_single_for_cpu		hwsw_sync_single_for_cpu;
+-extern ia64_mv_dma_sync_sg_for_cpu		hwsw_sync_sg_for_cpu;
+-extern ia64_mv_dma_sync_single_for_device	hwsw_sync_single_for_device;
+-extern ia64_mv_dma_sync_sg_for_device		hwsw_sync_sg_for_device;
+ 
+ /*
+  * This stuff has dual use!
+@@ -23,20 +11,7 @@ extern ia64_mv_dma_sync_sg_for_device		hwsw_sync_sg_for_device;
+  * the macros are used directly.
+  */
+ #define platform_name				"hpzx1_swiotlb"
+-
+ #define platform_setup				dig_setup
+ #define platform_dma_init			machvec_noop
+-#define platform_dma_alloc_coherent		hwsw_alloc_coherent
+-#define platform_dma_free_coherent		hwsw_free_coherent
+-#define platform_dma_map_single_attrs		hwsw_map_single_attrs
+-#define platform_dma_unmap_single_attrs		hwsw_unmap_single_attrs
+-#define platform_dma_map_sg_attrs		hwsw_map_sg_attrs
+-#define platform_dma_unmap_sg_attrs		hwsw_unmap_sg_attrs
+-#define platform_dma_supported			hwsw_dma_supported
+-#define platform_dma_mapping_error		hwsw_dma_mapping_error
+-#define platform_dma_sync_single_for_cpu	hwsw_sync_single_for_cpu
+-#define platform_dma_sync_sg_for_cpu		hwsw_sync_sg_for_cpu
+-#define platform_dma_sync_single_for_device	hwsw_sync_single_for_device
+-#define platform_dma_sync_sg_for_device		hwsw_sync_sg_for_device
+ 
+ #endif /* _ASM_IA64_MACHVEC_HPZX1_SWIOTLB_h */
 diff --git a/arch/ia64/include/asm/machvec_sn2.h b/arch/ia64/include/asm/machvec_sn2.h
-index 781308e..c1f6f87 100644
+index c1f6f87..afd029b 100644
 --- a/arch/ia64/include/asm/machvec_sn2.h
 +++ b/arch/ia64/include/asm/machvec_sn2.h
-@@ -55,6 +55,7 @@ extern ia64_mv_readb_t __sn_readb_relaxed;
- extern ia64_mv_readw_t __sn_readw_relaxed;
+@@ -56,18 +56,6 @@ extern ia64_mv_readw_t __sn_readw_relaxed;
  extern ia64_mv_readl_t __sn_readl_relaxed;
  extern ia64_mv_readq_t __sn_readq_relaxed;
-+extern ia64_mv_dma_init			sn_dma_init;
- extern ia64_mv_dma_alloc_coherent	sn_dma_alloc_coherent;
- extern ia64_mv_dma_free_coherent	sn_dma_free_coherent;
- extern ia64_mv_dma_map_single_attrs	sn_dma_map_single_attrs;
-@@ -110,7 +111,7 @@ extern ia64_mv_pci_fixup_bus_t		sn_pci_fixup_bus;
- #define platform_pci_get_legacy_mem	sn_pci_get_legacy_mem
+ extern ia64_mv_dma_init			sn_dma_init;
+-extern ia64_mv_dma_alloc_coherent	sn_dma_alloc_coherent;
+-extern ia64_mv_dma_free_coherent	sn_dma_free_coherent;
+-extern ia64_mv_dma_map_single_attrs	sn_dma_map_single_attrs;
+-extern ia64_mv_dma_unmap_single_attrs	sn_dma_unmap_single_attrs;
+-extern ia64_mv_dma_map_sg_attrs		sn_dma_map_sg_attrs;
+-extern ia64_mv_dma_unmap_sg_attrs	sn_dma_unmap_sg_attrs;
+-extern ia64_mv_dma_sync_single_for_cpu	sn_dma_sync_single_for_cpu;
+-extern ia64_mv_dma_sync_sg_for_cpu	sn_dma_sync_sg_for_cpu;
+-extern ia64_mv_dma_sync_single_for_device sn_dma_sync_single_for_device;
+-extern ia64_mv_dma_sync_sg_for_device	sn_dma_sync_sg_for_device;
+-extern ia64_mv_dma_mapping_error	sn_dma_mapping_error;
+-extern ia64_mv_dma_supported		sn_dma_supported;
+ extern ia64_mv_migrate_t		sn_migrate;
+ extern ia64_mv_kernel_launch_event_t	sn_kernel_launch_event;
+ extern ia64_mv_setup_msi_irq_t		sn_setup_msi_irq;
+@@ -112,18 +100,6 @@ extern ia64_mv_pci_fixup_bus_t		sn_pci_fixup_bus;
  #define platform_pci_legacy_read	sn_pci_legacy_read
  #define platform_pci_legacy_write	sn_pci_legacy_write
--#define platform_dma_init		machvec_noop
-+#define platform_dma_init		sn_dma_init
- #define platform_dma_alloc_coherent	sn_dma_alloc_coherent
- #define platform_dma_free_coherent	sn_dma_free_coherent
- #define platform_dma_map_single_attrs	sn_dma_map_single_attrs
-diff --git a/arch/ia64/kernel/Makefile b/arch/ia64/kernel/Makefile
-index bc1f62a..f2778f2 100644
---- a/arch/ia64/kernel/Makefile
-+++ b/arch/ia64/kernel/Makefile
-@@ -7,7 +7,7 @@ extra-y	:= head.o init_task.o vmlinux.lds
- obj-y := acpi.o entry.o efi.o efi_stub.o gate-data.o fsys.o ia64_ksyms.o irq.o irq_ia64.o	\
- 	 irq_lsapic.o ivt.o machvec.o pal.o patch.o process.o perfmon.o ptrace.o sal.o		\
- 	 salinfo.o setup.o signal.o sys_ia64.o time.o traps.o unaligned.o \
--	 unwind.o mca.o mca_asm.o topology.o
-+	 unwind.o mca.o mca_asm.o topology.o dma-mapping.o
- 
- obj-$(CONFIG_IA64_BRL_EMU)	+= brl_emu.o
- obj-$(CONFIG_IA64_GENERIC)	+= acpi-ext.o
-diff --git a/arch/ia64/kernel/dma-mapping.c b/arch/ia64/kernel/dma-mapping.c
-new file mode 100644
-index 0000000..876665a
---- /dev/null
-+++ b/arch/ia64/kernel/dma-mapping.c
-@@ -0,0 +1,4 @@
-+#include <linux/dma-mapping.h>
-+
-+struct dma_mapping_ops *dma_ops;
-+EXPORT_SYMBOL(dma_ops);
-diff --git a/arch/ia64/kernel/pci-dma.c b/arch/ia64/kernel/pci-dma.c
-index f8c38bd..1c1224b 100644
---- a/arch/ia64/kernel/pci-dma.c
-+++ b/arch/ia64/kernel/pci-dma.c
-@@ -41,8 +41,11 @@ struct device fallback_dev = {
- 	.dma_mask = &fallback_dev.coherent_dma_mask,
- };
- 
-+extern struct dma_mapping_ops vtd_dma_ops;
-+
- void __init pci_iommu_alloc(void)
- {
-+	dma_ops = &vtd_dma_ops;
- 	/*
- 	 * The order of these functions is important for
- 	 * fall-back/fail-over reasons
-@@ -76,9 +79,6 @@ iommu_dma_init(void)
- 	return;
- }
- 
--struct dma_mapping_ops *dma_ops;
--EXPORT_SYMBOL(dma_ops);
--
- int iommu_dma_supported(struct device *dev, u64 mask)
- {
- 	struct dma_mapping_ops *ops = get_dma_ops(dev);
-diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-index b62fb93..9f172c8 100644
---- a/arch/ia64/kernel/pci-swiotlb.c
-+++ b/arch/ia64/kernel/pci-swiotlb.c
-@@ -37,6 +37,12 @@ struct dma_mapping_ops swiotlb_dma_ops = {
- 	.mapping_error = swiotlb_dma_mapping_error,
- };
- 
-+void swiotlb_dma_init(void)
-+{
-+	dma_ops = &swiotlb_dma_ops;
-+	swiotlb_init();
-+}
-+
- void __init pci_swiotlb_init(void)
- {
- 	if (!iommu_detected) {
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index 4ad13ff..174a74e 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -481,3 +481,8 @@ struct dma_mapping_ops sn_dma_ops = {
- 	.mapping_error		= sn_dma_mapping_error,
- 	.dma_supported_op	= sn_dma_supported,
- };
-+
-+void sn_dma_init(void)
-+{
-+	dma_ops = &sn_dma_ops;
-+}
+ #define platform_dma_init		sn_dma_init
+-#define platform_dma_alloc_coherent	sn_dma_alloc_coherent
+-#define platform_dma_free_coherent	sn_dma_free_coherent
+-#define platform_dma_map_single_attrs	sn_dma_map_single_attrs
+-#define platform_dma_unmap_single_attrs	sn_dma_unmap_single_attrs
+-#define platform_dma_map_sg_attrs	sn_dma_map_sg_attrs
+-#define platform_dma_unmap_sg_attrs	sn_dma_unmap_sg_attrs
+-#define platform_dma_sync_single_for_cpu sn_dma_sync_single_for_cpu
+-#define platform_dma_sync_sg_for_cpu	sn_dma_sync_sg_for_cpu
+-#define platform_dma_sync_single_for_device sn_dma_sync_single_for_device
+-#define platform_dma_sync_sg_for_device	sn_dma_sync_sg_for_device
+-#define platform_dma_mapping_error		sn_dma_mapping_error
+-#define platform_dma_supported		sn_dma_supported
+ #define platform_migrate		sn_migrate
+ #define platform_kernel_launch_event    sn_kernel_launch_event
+ #ifdef CONFIG_PCI_MSI
 -- 
 1.6.0.6
 
