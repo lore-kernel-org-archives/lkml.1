@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751803AbZAEAog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbZAEBAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751803AbZAEAog (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 19:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZAEAo1
+	id S1758583AbZAEBAU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 20:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZAEBAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 19:44:27 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54691 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751973AbZAEAo0 (ORCPT
+	Sun, 4 Jan 2009 20:00:04 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56352
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752375AbZAEBAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 19:44:26 -0500
-Date: Mon, 5 Jan 2009 00:44:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: david@lang.hm
-Cc: David Newall <davidn@davidnewall.com>, Kyle Moffett <kyle@moffetthome.net>,
-       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, linasvepstas@gmail.com,
-       "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-Message-ID: <20090105004405.2607b506@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.1.10.0901041702540.25545@asgard.lang.hm>
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
-	<20090102210430.49649261@diego-desktop>
-	<495E7849.4030706@shaw.ca>
-	<495F0672.6020708@davidnewall.com>
-	<8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>
-	<496076A9.7030907@davidnewall.com>
-	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
-	<4960897D.5030603@davidnewall.com>
-	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>
-	<4961432A.80509@davidnewall.com>
-	<alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
-	<49614835.7000505@davidnewall.com>
-	<alpine.DEB.1.10.0901041702540.25545@asgard.lang.hm>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 4 Jan 2009 20:00:01 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
+Date: Sun, 4 Jan 2009 18:59:56 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <200901020207.30359.rob@landley.net> <200901041303.12687.rob@landley.net> <49611E88.6010204@zytor.com>
+In-Reply-To: <49611E88.6010204@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901041859.57645.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> another poster said that NTP packets include information about this 
-> month's leap second, so that implies that they could change monthly.
+On Sunday 04 January 2009 14:39:36 H. Peter Anvin wrote:
+> Rob Landley wrote:
+> > C) The only calculation which can overflow 64 bits (the ADJ32 one) turns
+> > out not to need arbitrary precision math, just 72 bits, and if it ever
+> > uses more than 32 then bottom 32 are all zero before the divide so you
+> > can do it in three lines.
+>
+> ... for the current code (32 bits).  When we get an overflow-less 64-bit
+> implementation, this code will have to be redone, which is not true for
+> a properly done implementation.
 
-The current rules don't permit this but any rule could be change. However
-its unlikely. Current the earth rotation people do this twice a year if
-neccessary. It is also too complex to predict significantly (ie years) in
-advance when it will be neccessary because the complexity of the tidal
-forces involved is beyond simulation.
+One extra mask and add is a strange definition of "redone", but I can add it 
+now if you like.  (I'd personally prefer to wait for something to actually 
+need it, but...)
+
+> 	-hpa
+
+Rob
