@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbZAEAVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZAEA2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbZAEAVW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 19:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZAEAVK
+	id S1753870AbZAEA2X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 19:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbZAEA2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 19:21:10 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:16894 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbZAEAVJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 19:21:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sy/FPizomo6mqKpYk8rHzsz1mcsbjfZcoOwkxcbhe69Hg7RPq+QJFQaOAqanMscNX2
-         RM5uQ4+zrjuNDIVItH4xN857h3i0jJSLwGMOapk37uKII6gPzUGSdnfsnuRSGg4ay8k+
-         zfTwlPP2PaYUc1c+X8PEEpHiy8Um7H0VkiPYU=
-Message-ID: <8752a8760901041621o51380e91x9ef8414b22c40ffc@mail.gmail.com>
-Date: Mon, 5 Jan 2009 00:21:06 +0000
-From: "Ben Goodger" <goodgerster@gmail.com>
-To: "David Newall" <davidn@davidnewall.com>
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
-Cc: david@lang.hm, "Kyle Moffett" <kyle@moffetthome.net>,
-       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       "Travis Crump" <pretzalz@techhouse.org>, burdell@iruntheinter.net
-In-Reply-To: <496150DF.2070501@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 4 Jan 2009 19:28:13 -0500
+Received: from ns.firmix.at ([62.141.48.66]:3511 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751524AbZAEA2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 19:28:12 -0500
+X-Greylist: delayed 686 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Jan 2009 19:28:11 EST
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with
+	kernel/timeconst.sh
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Rob Landley <rob@landley.net>, Valdis.Kletnieks@vt.edu,
+       Ingo Oeser <ioe-lkml@rameria.de>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20090104221356.GA32357@shareable.org>
+References: <200901020207.30359.rob@landley.net>
+	 <200901031936.04642.rob@landley.net>
+	 <25035.1231045675@turing-police.cc.vt.edu>
+	 <200901040043.08577.rob@landley.net> <20090104221356.GA32357@shareable.org>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Mon, 05 Jan 2009 01:15:30 +0100
+Message-Id: <1231114530.3310.6.camel@gimli.at.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -1.106 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-1.106 required=5
+X-Spam-Score: -1.106 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
-	 <496076A9.7030907@davidnewall.com>
-	 <f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
-	 <4960897D.5030603@davidnewall.com>
-	 <alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>
-	 <4961432A.80509@davidnewall.com>
-	 <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
-	 <49614835.7000505@davidnewall.com>
-	 <alpine.DEB.1.10.0901041702540.25545@asgard.lang.hm>
-	 <496150DF.2070501@davidnewall.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/5 David Newall <davidn@davidnewall.com>:
->> another poster said that NTP packets include information about this
->> month's leap second, so that implies that they could change monthly.
->
-> Not "could change monthly" rather, "could change at any month".
->
-> The frequency of zoneinfo updates would therefore be: every time the
-> zones you care about change; and every time there's a leap second.  No
-> big effort.
+On Son, 2009-01-04 at 22:13 +0000, Jamie Lokier wrote:
+> Rob Landley wrote:
+> > In a private email, Bernd Petrovitsch suggested "set -- $i" and then
+> > using NAME=$1; PERIOD=$2.  (I keep getting private email responses
+> > to these sort of threads, and then getting dismissed as the only one
+> > who cares about the issue.  Less so this time around, but still...)
+> > This apparently works all the way back to the bourne shell.
+> 
+> If you're going "all the way back to the bourne shell", don't use "set
 
-Unfortunately, as has been pointed out, timezones are completely
-unrelated to leap seconds.
-NB. Leap seconds, positive or negative, potentially occur every six
-months (June 30 or Dec 31), but since their introduction this
-frequency has happened only once (in 1972); historically they have
-been inserted on average every 1.5 years, but there have been only two
-since 2000.
+"Going back to a Bourne shell" was neither the intention nor makes it
+sense IMHO.
+I mentioned it to point out that the `set -- ' (or `set x `) is nothing
+new or even a bash-ism.
 
+> -- $i"; use "set x $i" instead, and don't expect to do any arithmetic
+> in the shell; use "expr" or "awk" for arithmetic.
+> 
+> (Not relevant to kernel scripts, imho, since you can always assume
+> something a bit more modern and not too stripped down).
+
+ACK. A bash can IMHO be expected. Even going for `dash` is IMHO somewhat
+too extreme.
+
+> (I have 850 Linux boxes on my network with a bourne shell which
+> doesn't do $((...)).  I won't be building kernels on them though :-)
+
+Believe it or not, but there are folks out there who build the firmware
+on ARM 200 MHz NFS-mounted systems natively  (and not simply
+cross-compile it on a 2GHz PC .....).
+
+	Bernd
 -- 
-Benjamin Goodger
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
------BEGIN GEEK CODE BLOCK-----
-Version: 3.1
-GCS/S/M/B d- s++:-- a18 c++$ UL>+++ P--- L++>+++ E- W+++$ N--- K? w---
-O? M- V? PS+(++) PE-() Y+ PGP+ t 5? X-- R- !tv() b+++>++++ DI+++ D+ G
-e>++++ h! !r*(-) y
-------END GEEK CODE BLOCK------
