@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZAEPMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZAEPO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbZAEPMF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:12:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZAEPLz
+	id S1755267AbZAEPO0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZAEPOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:11:55 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:47424 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbZAEPLy (ORCPT
+	Mon, 5 Jan 2009 10:14:17 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:49336 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZAEPOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:11:54 -0500
-Date: Mon, 5 Jan 2009 09:10:57 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] mm: __nr_to_section - make it safe against overflow
-In-Reply-To: <20090105094034.GA7645@localhost>
-Message-ID: <Pine.LNX.4.64.0901050906180.12774@quilx.com>
-References: <20090105094034.GA7645@localhost>
+	Mon, 5 Jan 2009 10:14:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=e6A2CO7CoQEOuqwTAgodt4RvOfJGH+fyB8AYCv32vg81FYiIeZ8VdqEMekcGnpkCpr
+         g8+EPDuHuixQMsxaCmUTYnZ7KfhKE5a9Px892PPklTgUtXW93SatTTajZA+PBouan1q6
+         O+CrIWTULLCUZ2nBut55EqRDUF5ioYLcrWV1Q=
+Message-ID: <496223C4.20307@gmail.com>
+Date: Mon, 05 Jan 2009 16:14:12 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Andi Kleen <andi@firstfloor.org>, Johannes Weiner <hannes@cmpxchg.org>,
+       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: early exception error
+References: <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm> <20090101041727.GW496@one.firstfloor.org> <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm> <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm> <20090102172426.GB5372@localhost> <495E7FAD.6020305@shaw.ca> <20090105092619.GA3699@cmpxchg.org> <20090105130836.GN496@one.firstfloor.org> <49621E6E.2010809@gmail.com> <20090105150150.GF7645@localhost>
+In-Reply-To: <20090105150150.GF7645@localhost>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Jan 2009, Cyrill Gorcunov wrote:
+On 01/05/2009 04:01 PM, Cyrill Gorcunov wrote:
+> [Jiri Slaby - Mon, Jan 05, 2009 at 03:51:26PM +0100]
+> | On 01/05/2009 02:08 PM, Andi Kleen wrote:
+> | > +#define EARLY_BUG_ON(x) do { if (unlikely(!(x))) EARLY_BUG(); } while (0)
+> | 
+> | I think unintentionally inverted logic.
+> 
+> just second ! is missed :)
 
->  	/*
->  	 * This is, logically, a pointer to an array of struct
-> @@ -980,9 +986,12 @@ extern struct mem_section mem_section[NR
->
->  static inline struct mem_section *__nr_to_section(unsigned long nr)
->  {
-> -	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
-> +	unsigned long idx = SECTION_NR_TO_ROOT(nr);
-> +	WARN_ON_ONCE(idx >= NR_SECTION_ROOTS);
-> +
-> +	if (idx >=NR_SECTION_ROOTS || !mem_section[idx])
->  		return NULL;
-> -	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
-> +	return &mem_section[idx][nr & SECTION_ROOT_MASK];
->  }
->  extern int __section_nr(struct mem_section* ms);
->  extern unsigned long usemap_size(void);
+None is needed, two '!' are added in the macro itself while it passes the
+parameter to the builtin.
 
-Not that you are adding code to numerous hot code path. Plus this is a
-frequently used inline. Code size is going to increase if you do this.
+> | 
+> | > +#define EARLY_BUG_ON(x) do {} while(0)
+> | 
+> | Shouldn't be x referenced here?
+> |
+> 
+> but for what?
 
-I would think that the code does not have the tests because of performance
-and code size concerns. Can we just say that a sane nr must be passed to
-__nr_section?
+I know, core devs are sane, but e.g. for reasons such as
 
+{'a' is used here already}
+EARLY_BUG_ON(!(a = readl(...)))
+{use 'a' again}
+
+to stay on the safe side.
