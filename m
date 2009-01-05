@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZAENWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZAENWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbZAENWU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZAENWF
+	id S1755057AbZAENWw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZAENWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:22:05 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:50320 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbZAENWB (ORCPT
+	Mon, 5 Jan 2009 08:22:41 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:48601 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbZAENWk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:22:01 -0500
-Subject: Re: Btrfs for mainline
-From: Chris Mason <chris.mason@oracle.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-In-Reply-To: <200901052132.22620.nickpiggin@yahoo.com.au>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-	 <20090103.013755.42849152.ryusuke@osrg.net>
-	 <1230925087.7538.41.camel@think.oraclecorp.com>
-	 <200901052132.22620.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 08:21:43 -0500
-Message-Id: <1231161703.4290.14.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 5 Jan 2009 08:22:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VwO+G+0If/PTAicw+TquCQfhh46pReJpzGGZ5k3Usm5hJaJoqzhm9DXOpFz9hkk1QT
+         o97Fd9kY8QhyJPxeKB1oURgeUyIg0g5o8J/dkB08yjn+gAStzc57IamvkMI6xR66GPtE
+         NVRqOUsTcp5WE01LoTPaCC6ogh91DDg20wfno=
+Message-ID: <3f9a31f40901050522h4389894w69e41fa9645ce8c@mail.gmail.com>
+Date: Mon, 5 Jan 2009 18:52:38 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH -tip] x86: setup.c fix style problems
+Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
+       "x86 maintainers" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090105131521.GC6014@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4962096A.0193:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+References: <1231066898.27852.29.camel@jaswinder.satnam>
+	 <20090104172114.GA32425@elte.hu>
+	 <3f9a31f40901040957g5a391408u5cda93c4acb66e9d@mail.gmail.com>
+	 <20090104203433.GC1132@elte.hu>
+	 <1231131855.16019.2.camel@jaswinder.satnam>
+	 <20090105131521.GC6014@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-05 at 21:32 +1100, Nick Piggin wrote:
-> On Saturday 03 January 2009 06:38:07 Chris Mason wrote:
-
-> > The extent_map and extent_buffer code was also intended for generic use.
-> > It needs some love and care (making it work for blocksize != pagesize)
-> > before I'd suggest moving it out of fs/btrfs.
-> 
-> I'm yet to be convinced it is a good idea to use extents for this. Been a
-> long time since we visited the issue, but when you converted ext2 to use
-> the extent mapping stuff, it actually went slower, and complexity went up
-> a lot (IIRC possibly required allocations in the writeback path).
-> 
+On Mon, Jan 5, 2009 at 6:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> So I think it is a fine idea to live in btrfs until it is more proven and
-> found useful elsewhere.
+> * Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+>
+>> On Sun, 2009-01-04 at 21:34 +0100, Ingo Molnar wrote:
+>> > yeah - i mentioned it to you before that there are such cases.
+>> >
+>>
+>> OK, so here is new patch excluding smp.h:
+>
+> Could you please instead fix the smp.h assumption so that we dont hit this
+> in the future? Then we can apply your original patch.
 
-It has gotten faster since then, but it makes sense to wait on moving
-extent_* code.
+Sure, I will do it.
 
--chris
+> [ Do you need the
+> specific .config that hits this? Can dig it out if necessary. ]
 
+If you provide me that .config file then it will be very helpful for
+cross-checking.
+
+JSR
