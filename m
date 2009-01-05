@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZAETxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZAETx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbZAETxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbZAETxO
+	id S1755489AbZAETx4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbZAETxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:53:14 -0500
-Received: from outbound-mail-142.bluehost.com ([67.222.38.32]:50877 "HELO
-	outbound-mail-142.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752956AbZAETxN (ORCPT
+	Mon, 5 Jan 2009 14:53:46 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:55108 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752943AbZAETxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:53:13 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=qHQEEkduFWzn5KFxmKM2178CVf5fsAZofd3gL7b4uWqccEiEtuFjjZurWXeL8wNuvLf+0oHOSkqPb5AagG2yLSaLOQEOTKRuxOfTHUUgMjkHS4zA2HBmB+cM0WFsWOq9;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 PCI: Do not use interrupt links for devices using MSI-X
-Date: Mon, 5 Jan 2009 11:53:07 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200901042308.42625.rjw@sisk.pl> <20090105130439.GA6014@elte.hu>
-In-Reply-To: <20090105130439.GA6014@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 14:53:45 -0500
+Date: Mon, 5 Jan 2009 20:55:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>, Jan Beulich <jbeulich@novell.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
+       "David S. Miller" <davem@davemloft.net>,
+       sparclinux <sparclinux@vger.kernel.org>
+Subject: Re: ftrace breaks sparc64 build
+Message-ID: <20090105195523.GB6204@uranus.ravnborg.org>
+References: <20090105181922.GA25622@uranus.ravnborg.org> <20090105194844.GR28946@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901051153.07860.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20090105194844.GR28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, January 5, 2009 5:04 am Ingo Molnar wrote:
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > pcibios_enable_device() and pcibios_disable_device() don't handle
-> > IRQs for devices that have MSI enabled and it should tread the
->
-> s/tread/treat
->
-> > devices with MSI-X enabled in the same way.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  arch/x86/pci/common.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> looks good - Jesse, what do you think?
+Added Jan.
 
-Yeah, seems obviously correct, I'll queue it up.
+And yes - I see the same but with a slightly different error message.
 
-> Rafael, i'm curious is this in response to some regression/bug? Did some
-> box or driver get confused by us enabling/disabling the GSI? Some IRQ
-> flood perhaps?
->
-> btw., there's a small observation:
-> > +     if (!dev->msi_enabled && !dev->msix_enabled)
->
-> maybe a "pci_has_gsi_irq()" wrapper would make these checks cleaner and
-> would make things more robust, should there be any new IRQ delivery method
-> be introduced in the future?
+	Sam
 
-pci_has_msi_irq surely?  Otherwise we'll catch pretty much everything?  Or did 
-you mean !pci_has_gsi_irq() here instead?
-
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
-
+On Mon, Jan 05, 2009 at 07:48:44PM +0000, Al Viro wrote:
+> On Mon, Jan 05, 2009 at 07:19:22PM +0100, Sam Ravnborg wrote:
+> > With an allmodconfig build on sparc and sparc64 I started
+> > to see warnings that become propagated to errors by -Werror.
+> 
+> While we are at it, sparc32 allmodconfig is broken by
+> commit 9bb482476c6c9d1ae033306440c51ceac93ea80c
+> Author: Jan Beulich <jbeulich@novell.com>
+> Date:   Tue Dec 16 11:30:08 2008 +0000
+> 
+>     allow stripping of generated symbols under CONFIG_KALLSYMS_ALL
+> 
+> Results in
+> sparc-linux-objcopy: not stripping symbol `__ksymtab_strings' because it is named in a relocation
+> sparc-linux-objcopy: not stripping symbol `__crc_per_cpu__softirq_work_list' because it is named in a relocation
+> sparc-linux-objcopy: not stripping symbol `__initcall_end' because it is named in a relocation
+> sparc-linux-objcopy: not stripping symbol `__setup_end' because it is named in a relocation
+> sparc-linux-objcopy: not stripping symbol `__setup_start' because it is named in a relocation
+> sparc-linux-objcopy: not stripping symbol `__initcall_start' because it is named in a relocation
+> make: *** [.tmp_vmlinux1.stripped] Error 1
