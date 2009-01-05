@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZAEMzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbZAENFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbZAEMzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 07:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZAEMzE
+	id S1754083AbZAENFB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:05:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbZAENEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 07:55:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47683 "EHLO mx3.mail.elte.hu"
+	Mon, 5 Jan 2009 08:04:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41445 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754151AbZAEMzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 07:55:01 -0500
-Date: Mon, 5 Jan 2009 13:54:50 +0100
+	id S1750906AbZAENEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:04:50 -0500
+Date: Mon, 5 Jan 2009 14:04:39 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] [RESEND] sched: mark
-	sched_create_sysfs_power_savings_entries() as __init
-Message-ID: <20090105125450.GB1023@elte.hu>
-References: <4961E98D.3050305@cn.fujitsu.com> <4961EC6A.8010008@cn.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86 PCI: Do not use interrupt links for devices using
+	MSI-X
+Message-ID: <20090105130439.GA6014@elte.hu>
+References: <200901042308.42625.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4961EC6A.8010008@cn.fujitsu.com>
+In-Reply-To: <200901042308.42625.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,21 +38,34 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> Impact: cleanup
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> The only caller is cpu_dev_init() which is marked as __init.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
-> 
-> resend with SOB added
-> 
-> ---
->  kernel/sched.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> pcibios_enable_device() and pcibios_disable_device() don't handle
+> IRQs for devices that have MSI enabled and it should tread the
 
-applied to tip/sched/urgent, thanks!
+s/tread/treat
+
+> devices with MSI-X enabled in the same way.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  arch/x86/pci/common.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+
+looks good - Jesse, what do you think?
+
+Rafael, i'm curious is this in response to some regression/bug? Did some 
+box or driver get confused by us enabling/disabling the GSI? Some IRQ 
+flood perhaps?
+
+btw., there's a small observation:
+
+> +     if (!dev->msi_enabled && !dev->msix_enabled)
+
+maybe a "pci_has_gsi_irq()" wrapper would make these checks cleaner and 
+would make things more robust, should there be any new IRQ delivery method 
+be introduced in the future?
 
 	Ingo
