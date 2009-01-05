@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbZAECHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbZAECJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752495AbZAECHp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 21:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZAECHg
+	id S1752640AbZAECJS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 21:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZAECJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 21:07:36 -0500
-Received: from tundra.namei.org ([65.99.196.166]:2857 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105AbZAECHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 21:07:35 -0500
-Date: Mon, 5 Jan 2009 13:07:00 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: David Howells <dhowells@redhat.com>
-cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>,
-       linux-security-module@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] CRED: Fix regression in cap_capable() as shown up by
- sys_faccessat() [ver #2]
-In-Reply-To: <21275.1230736542@redhat.com>
-Message-ID: <alpine.LRH.1.10.0901051301590.14359@tundra.namei.org>
-References: <24959.1230694093@redhat.com> <20081230134248.GA30124@lst.de> <21275.1230736542@redhat.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Sun, 4 Jan 2009 21:09:05 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51794 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751342AbZAECJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 21:09:04 -0500
+Message-ID: <49616B0B.5000102@cn.fujitsu.com>
+Date: Mon, 05 Jan 2009 10:06:03 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] ftrace: infrastructure for supporting binary record
+References: <495ADF45.2030203@cn.fujitsu.com> <20081231045956.GC28472@nowhere> <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com>
+In-Reply-To: <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008, David Howells wrote:
 
+>>
+>> Just for curiosity. Why do you need such a binary tracing?
+>> Do you need it because a string output is really too slow for your needs?
+
+Hi, Frederic Weisbecker,
+
+We have 
+1) lots of kinds events source(FUNCTION trace, TRACE_CTX, tracepoint, markers ...)
+2) a generic and mature events log buffer - trace/ringbuffer.c
+3) a generic and mature trace framework - trace/trace.c trace_ouput.c
+
+But we don't have a generic events log format, we record different
+events with different record formats: TRACE_FN, TRACE_CTX, TRACE_GRAPH_RET,
+TRACE_SPECIAL, ... We use different struct for recording different
+formats.
+
+Too many kinds different formats, so we need a generic events log format.
+This patch provide generic events log format.
+
+Actually, We can use:
+__ftrace_bprintk(0, "# %ld %ld %ld\n", arg1, arg2, arg3)
+instead of TRACE_SPECIAL.
+(maybe I should remove the "unsigned long ip" arg for __ftrace_bprintk()
+and trace_vbprintk(), users need know the call_addr, just use "%pS")
+
+And binary record is a little slower than string output.
+
+Lai.
+
+
+Arnaldo Carvalho de Melo wrote:
 > 
-> Here's an improved patch.  It differentiates the use of objective and
-> subjective capabilities by making capable() only check current's subjective
-> caps, but making has_capability() check only the objective caps of whatever
-> process is specified.
+> warning: I haven't looked at the patch details
 > 
-> It's a bit more involved, but I think it's the right thing to do.
-
-I think it's the right approach, too, and the patch seems ok to me.  I've 
-applied it to 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
-
-and expect to push it to Linus in the next day or so.  It's not a trivial 
-change, and could do with more review (Serge?).
-
-It seems that more testing should be done in linux-next vs. waiting for 
-the merge window.
+> But I would love to use something like this to provide the exact
+> contents the userspace blktrace utilities want.
+> 
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
