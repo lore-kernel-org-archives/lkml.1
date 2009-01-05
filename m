@@ -1,95 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbZAEWab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbZAEWbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbZAEWab (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 17:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbZAEWaX
+	id S1755738AbZAEWbQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 17:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbZAEWa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 17:30:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38907 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750926AbZAEWaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 17:30:22 -0500
-Message-ID: <496289E3.6010407@kernel.org>
-Date: Mon, 05 Jan 2009 14:29:55 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Mon, 5 Jan 2009 17:30:59 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:50075 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbZAEWa6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 17:30:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=D56Fe2qN18Nrlux/8Hd2pamMdmz8b9DpQDH4SdsyvDO1Dc+Lx3YxyhABNJZxJ+igdg
+         REMVwxC4bxqMLRd//+vqOtReSweUuQZ9wSl1dtJtln6Y5I1vmO+N+3zWQHz1M0vUTgym
+         8EbOEuQCArY8Ba253FyYjlJ00f7oU3NRNK7eU=
+Message-ID: <49628A1E.9080003@gmail.com>
+Date: Mon, 05 Jan 2009 23:30:54 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Ingo Molnar <mingo@elte.hu>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-References: <20090102174845.GD5372@localhost> <20090102203058.GH5372@localhost>  <alpine.DEB.1.10.0901030823190.23262@asgard.lang.hm>  <20090103161052.GB11093@localhost>  <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm>  <20090103190316.GB7367@localhost> <20090103212426.GC7367@localhost>  <496001A3.1040201@gmail.com> <20090104112919.GC7632@localhost>  <alpine.DEB.1.10.0901051420030.27641@asgard.lang.hm> <86802c440901051355o60bef5bai2a33ea5f7e4dc5f7@mail.gmail.com> <alpine.DEB.1.10.0901051516060.27641@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0901051516060.27641@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+CC: mm-commits@vger.kernel.org, weidong.han@intel.com
+Subject: Re: mmotm 2009-01-05-12-50 uploaded
+References: <200901052050.n05Kox9j012519@imap1.linux-foundation.org>
+In-Reply-To: <200901052050.n05Kox9j012519@imap1.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Mon, 5 Jan 2009, Yinghai Lu wrote:
-> 
->> Can you send out boot log with working kernel before 2.6.28?
->>
->> need to look at the e820 table.
-> 
-> 
-> here is the 32 bit kernel I'm running now (from dmesg )
-> 
-> Linux version 2.6.25.14 (root@dlang) (gcc version 3.3.6) #1 SMP PREEMPT
-> Mon Aug 4 18:22:50 PDT 2008
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
->  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 000000004cff0000 (usable)
->  BIOS-e820: 000000004cff0000 - 000000004cfff000 (ACPI data)
->  BIOS-e820: 000000004cfff000 - 000000004d000000 (ACPI NVS)
->  BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
->  BIOS-e820: 0000000100000000 - 0000000180000000 (usable)
-> Warning only 4GB will be used.
-> Use a HIGHMEM64G enabled kernel.
-> 3200MB HIGHMEM available.
-> 896MB LOWMEM available.
-> Scan SMP from c0000000 for 1024 bytes.
-> Scan SMP from c009fc00 for 1024 bytes.
-> Scan SMP from c00f0000 for 65536 bytes.
-> found SMP MP-table at [c00ff780] 000ff780
-> Entering add_active_range(0, 0, 1048576) 0 entries of 256 used
-> Zone PFN ranges:
->   DMA             0 ->     4096
->   Normal       4096 ->   229376
->   HighMem    229376 ->  1048576
-> Movable zone start PFN for each node
-> early_node_map[1] active PFN ranges
->     0:        0 ->  1048576
-> On node 0 totalpages: 1048576
->   DMA zone: 32 pages used for memmap
->   DMA zone: 0 pages reserved
->   DMA zone: 4064 pages, LIFO batch:0
->   Normal zone: 1760 pages used for memmap
->   Normal zone: 223520 pages, LIFO batch:31
->   HighMem zone: 6400 pages used for memmap
->   HighMem zone: 812800 pages, LIFO batch:31
->   Movable zone: 0 pages used for memmap
+On 01/05/2009 09:50 PM, akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2009-01-05-12-50 has been uploaded
 
+Hi,
 
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000004cff0000 (usable)
- BIOS-e820: 000000004cff0000 - 000000004cfff000 (ACPI data)
- BIOS-e820: 000000004cfff000 - 000000004d000000 (ACPI NVS)
- BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 0000000180000000 (usable)
+it fails to build here due to this link error:
+drivers/built-in.o: In function `alloc_iommu':
+(.text+0xf1bf): undefined reference to `iommu_calculate_agaw'
 
-and for pci mem route: node0 [0, 2g), node1 is [4g, 6g)
+CONFIG_INTR_REMAP "depends" now on CONFIG_DMAR. Could you fix it, Weidong Han?
 
-and e820 said only 3g can be used... [0, 1g), and [4g, 6g)
-
-please check if you can change HW memhole setup to 3g instead 2g.
-
-YH
-
+regards,
+--js
