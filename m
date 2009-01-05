@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbZAEPtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbZAEPvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbZAEPtP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZAEPs7
+	id S1755715AbZAEPvX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbZAEPvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:48:59 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:63286 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751573AbZAEPs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:48:59 -0500
-Date: Mon, 5 Jan 2009 16:48:47 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-kernel@vger.kernel.org, maciej.sosnowski@intel.com,
-       dan.j.williams@intel.com
-Subject: Re: dw_dmac driver questions
-Message-ID: <20090105164847.6fbca375@hskinnemoen-d830>
-In-Reply-To: <20090106.003558.115932572.anemo@mba.ocn.ne.jp>
-References: <20081229.233932.25909762.anemo@mba.ocn.ne.jp>
-	<20090105153024.179c9f29@hskinnemoen-d830>
-	<20090106.003558.115932572.anemo@mba.ocn.ne.jp>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+	Mon, 5 Jan 2009 10:51:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52185 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754136AbZAEPvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 10:51:15 -0500
+Date: Mon, 5 Jan 2009 10:36:29 -0600
+From: David Teigland <teigland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] dlm updates for 2.6.29
+Message-ID: <20090105163629.GA3880@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atsushi Nemoto wrote:
-> On Mon, 5 Jan 2009 15:30:24 +0100, Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> 
-> > > 1. map/unmap DMA buffers for slave transfer
-> > > 
-> > > For slave-DMA, it seems dmac driver is responsible for mapping DMA
-> > > buffers, and client is responsible for unmapping them.  Is it right?  
-> > 
-> > No, it's the other way around, unless DMA_COMPL_SKIP_*_UNMAP is set.
-> > But I think the dw_dmac driver wrongly maps the buffers before queuing
-> > them.  
-> 
-> Well, I'm confused...  I reference atmel-mci for client and dw_dmac
-> for dma engine.  Currently, dw_dmac calls dma_map_sg() and atmel-mci
-> calls dma_unmap_sg().  Do you mean atmel-mci will be changed to call
-> dma_map_sg()?
+Linus,
 
-Yes, I think it should.
+Please pull dlm updates for 2.6.29 from:
 
-Preferably, I'd like the client to do both mapping and unmapping in all
-cases since it knows best what's actually needed. For example, some
-drivers may be using DMA-coherent buffers, which don't need to be
-mapped at all.
+ git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
 
-> > > 4. This is a comment on head of dwc_handle_error().
-> > > 
-> > > 	/*
-> > > 	 * The descriptor currently at the head of the active list is
-> > > 	 * borked. Since we don't have any way to report errors, we'll
-> > > 	 * just have to scream loudly and try to carry on.
-> > > 	 */
-> > > 
-> > > But, the bad descriptor can be at any place of the active list, no ?
-> > > For example, if the active list contained two descriptor and latter
-> > > was broken and tasklet was delayed by some reason, the head of the
-> > > list should be good.  
-> > 
-> > Since dwc_scan_descriptors() was just called, all descriptors that were
-> > completed successfully have been removed from the active list. So the
-> > first entry must be the broken one.  
-> 
-> But the removal from the active list is done in tasklet too.  If the
-> CPU was slow and DMA engine was fast enough, DMA engine will process
-> multiple descriptors before the tasklet called, no ?
+Most have been in linux-next for quite a while.  They are minor cleanups,
+and some additions to debugfs dumps to help with debugging.
+Thanks,
+Dave
 
-The DMA engine stops if it encounters a bad address.
+Andrew Morton (1):
+     dlm: fs/dlm/ast.c: fix warning
 
-Haavard
+David Teigland (5):
+     dlm: remove extra blocking callback check
+     dlm: improve how bast mode handling
+     dlm: change lock time stamping
+     dlm: add time stamp of blocking callback
+     dlm: add new debugfs entry
+
+Harvey Harrison (1):
+     dlm: trivial annotation of be16 value
+
+Steven Whitehouse (3):
+     dlm: fix up memory allocation flags
+     dlm: remove kmap/kunmap
+     dlm: replace schedule with cond_resched
+
+ fs/dlm/ast.c          |   56 ++++-----
+ fs/dlm/ast.h          |    4 +-
+ fs/dlm/debug_fs.c     |  310 ++++++++++++++++++++++++++++++++++++++++---------
+ fs/dlm/dir.c          |   18 ++--
+ fs/dlm/dlm_internal.h |    4 +-
+ fs/dlm/lock.c         |   31 +++---
+ fs/dlm/lowcomms.c     |    8 +-
+ fs/dlm/memory.c       |    6 +-
+ fs/dlm/midcomms.c     |    2 +-
+ fs/dlm/netlink.c      |    1 -
+ fs/dlm/user.c         |    4 +-
+ fs/dlm/user.h         |    2 +-
+ 12 files changed, 316 insertions(+), 130 deletions(-)
+
