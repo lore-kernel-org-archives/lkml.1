@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZAEOI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZAEOMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbZAEOI5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 09:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZAEOIs
+	id S1754978AbZAEOMw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 09:12:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbZAEOMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 09:08:48 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:46890 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753755AbZAEOIr (ORCPT
+	Mon, 5 Jan 2009 09:12:41 -0500
+Received: from rv-out-0506.google.com ([209.85.198.230]:55131 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754111AbZAEOMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 09:08:47 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH 1/1] scripts: allow docproc invocation from external
-Date: Mon,  5 Jan 2009 15:08:30 +0100
-Message-Id: <1231164510-14355-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.6
+	Mon, 5 Jan 2009 09:12:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gPhVXl8frs43ATj5u5Utov/0ePoga6AWBuj703DrQ8bej6GqEJcSmonOHWD4396y64
+         ULhGT2j14MM8TwyS5BCwD6F6AwvNGrak2zJ+2O2ypuFYl9T285Jfg1BTMaLZUP4xCCZq
+         jxuRbWgU/ldoRShDi640D1zbuQqAuDhsS6uRg=
+Message-ID: <3f9a31f40901050612v700d2542r1e3e400bf0fe3d33@mail.gmail.com>
+Date: Mon, 5 Jan 2009 19:42:37 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Oliver Hartkopp" <oliver@hartkopp.net>,
+       "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: [PATCH -net-next 3/4] firmware: convert tg3 driver to request_firmware()
+Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>, davem@redhat.com,
+       jgarzik@redhat.com, netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       mchan@broadcom.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <49620AFE.6040409@hartkopp.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1230626497.24796.26.camel@jaswinder.satnam>
+	 <49620AFE.6040409@hartkopp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- getcwd returns path without slash at the end, add the slash
-- add KERNSRCTREE env, so that we can specify path for kernel
-  (for knowing where to find scripts/kernel-doc) and SRCTREE
-  (for searching files referenced in .tmpl) separately
+On Mon, Jan 5, 2009 at 6:58 PM, Oliver Hartkopp <oliver@hartkopp.net> wrote:
+> 077f849de42e58172e25ccb24df4c1a13e82420c ("firmware: convert tg3 driver to
+> request_firmware()")
+>
+> and i discovered that
+>
+> 1. I needed to compile the tg3 driver as *module* now as it was not able to
+> read the firmware when built-in.
+>
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/basic/docproc.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+Please compile it as build in.
 
-diff --git a/scripts/basic/docproc.c b/scripts/basic/docproc.c
-index 35bdc68..c716ae8 100644
---- a/scripts/basic/docproc.c
-+++ b/scripts/basic/docproc.c
-@@ -69,7 +69,7 @@ FILELINE * docsection;
- #define NOFUNCTION    "-nofunction"
- #define NODOCSECTIONS "-no-doc-sections"
- 
--char *srctree;
-+static char *srctree, *kernsrctree;
- 
- void usage (void)
- {
-@@ -77,7 +77,8 @@ void usage (void)
- 	fprintf(stderr, "Input is read from file.tmpl. Output is sent to stdout\n");
- 	fprintf(stderr, "doc: frontend when generating kernel documentation\n");
- 	fprintf(stderr, "depend: generate list of files referenced within file\n");
--	fprintf(stderr, "Environment variable SRCTREE: absolute path to kernel source tree.\n");
-+	fprintf(stderr, "Environment variable SRCTREE: absolute path to sources.\n");
-+	fprintf(stderr, "                     KERNSRCTREE: absolute path to kernel source tree.\n");
- }
- 
- /*
-@@ -96,8 +97,8 @@ void exec_kernel_doc(char **svec)
- 			exit(1);
- 		case  0:
- 			memset(real_filename, 0, sizeof(real_filename));
--			strncat(real_filename, srctree, PATH_MAX);
--			strncat(real_filename, KERNELDOCPATH KERNELDOC,
-+			strncat(real_filename, kernsrctree, PATH_MAX);
-+			strncat(real_filename, "/" KERNELDOCPATH KERNELDOC,
- 					PATH_MAX - strlen(real_filename));
- 			execvp(real_filename, svec);
- 			fprintf(stderr, "exec ");
-@@ -178,6 +179,7 @@ void find_export_symbols(char * filename)
- 		char real_filename[PATH_MAX + 1];
- 		memset(real_filename, 0, sizeof(real_filename));
- 		strncat(real_filename, srctree, PATH_MAX);
-+		strncat(real_filename, "/", PATH_MAX - strlen(real_filename));
- 		strncat(real_filename, filename,
- 				PATH_MAX - strlen(real_filename));
- 		sym = add_new_file(filename);
-@@ -382,6 +384,9 @@ int main(int argc, char *argv[])
- 	srctree = getenv("SRCTREE");
- 	if (!srctree)
- 		srctree = getcwd(NULL, 0);
-+	kernsrctree = getenv("KERNSRCTREE");
-+	if (!kernsrctree)
-+		kernsrctree = srctree;
- 	if (argc != 3) {
- 		usage();
- 		exit(1);
--- 
-1.6.0.6
+David Woodhouse: Do you have any plans to support firmware by using modules.
 
+Thanks,
+JSR.
