@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbZAEVSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbZAEVVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbZAEVSb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 16:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZAEVSW
+	id S1754568AbZAEVVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 16:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZAEVVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 16:18:22 -0500
-Received: from mail.lang.hm ([64.81.33.126]:54543 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbZAEVSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 16:18:22 -0500
-Date: Mon, 5 Jan 2009 14:20:42 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>, yhlu.kernel@gmail.com
-Subject: Re: early exception error
-In-Reply-To: <20090104112919.GC7632@localhost>
-Message-ID: <alpine.DEB.1.10.0901051420030.27641@asgard.lang.hm>
-References: <20090102174845.GD5372@localhost> <20090102175226.GE5372@localhost> <alpine.DEB.1.10.0901021131210.21567@asgard.lang.hm> <20090102203058.GH5372@localhost> <alpine.DEB.1.10.0901030823190.23262@asgard.lang.hm> <20090103161052.GB11093@localhost>
- <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm> <20090103190316.GB7367@localhost> <20090103212426.GC7367@localhost> <496001A3.1040201@gmail.com> <20090104112919.GC7632@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 5 Jan 2009 16:21:01 -0500
+Received: from h155.mvista.com ([63.81.120.155]:64610 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751871AbZAEVVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 16:21:00 -0500
+Message-ID: <496279B6.5080802@ru.mvista.com>
+Date: Tue, 06 Jan 2009 00:20:54 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] ide: can't use SSD/non-rotational queue flag for all
+ CFA devices
+References: <200901051951.29692.bzolnier@gmail.com>
+In-Reply-To: <200901051951.29692.bzolnier@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Jan 2009, Cyrill Gorcunov wrote:
+Hello.
 
-I assume you want this instead of the prior patches. I will test this 
-shortly.
+Bartlomiej Zolnierkiewicz wrote:
 
-David Lang
-
-> ---
-> include/linux/mmzone.h |    1 +
-> 1 file changed, 1 insertion(+)
+> Some rotating disks also present themselves as CFA devices.
 >
-> Index: linux-2.6.git/include/linux/mmzone.h
+> Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>   
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+> Index: b/drivers/ide/ide-disk.c
 > ===================================================================
-> --- linux-2.6.git.orig/include/linux/mmzone.h
-> +++ linux-2.6.git/include/linux/mmzone.h
-> @@ -980,6 +980,7 @@ extern struct mem_section mem_section[NR
->
-> static inline struct mem_section *__nr_to_section(unsigned long nr)
-> {
-> +	BUG_ON(SECTION_NR_TO_ROOT(nr) >= NR_SECTION_ROOTS);
-> 	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
-> 		return NULL;
-> 	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
->
+> --- a/drivers/ide/ide-disk.c
+> +++ b/drivers/ide/ide-disk.c
+> @@ -633,7 +633,7 @@ static void ide_disk_setup(ide_drive_t *
+>  	printk(KERN_INFO "%s: max request size: %dKiB\n", drive->name,
+>  		q->max_sectors / 2);
+>  
+> -	if (ata_id_is_ssd(id) || ata_id_is_cfa(id))
+> +	if (ata_id_is_ssd(id))
+>  		queue_flag_set_unlocked(QUEUE_FLAG_NONROT, q);
+>  
+>  	/* calculate drive capacity, and select LBA if possible */
+> N‹§²æìr¸›yúèšØb²X¬¶Ç§vØ^–)Şº{.nÇ+‰·¥Š{±‰×¢Ø^n‡r¡ö¦zËëh™¨è­Ú&¢ø®G«éh®(­éšŠİ¢j"ú¶m§ÿïêäz¹Ş–Šàşf£¢·hšˆ§~ˆmml==
+
+Hm, why your Kmail base64-encodes plain English messages and adds this 
+kind of binary crap?
+
+MBR, Sergei
+
+
