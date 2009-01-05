@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZAENWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbZAEN0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbZAENWw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZAENWl
+	id S1754509AbZAEN0R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZAEN0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:22:41 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:48601 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140AbZAENWk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:22:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=VwO+G+0If/PTAicw+TquCQfhh46pReJpzGGZ5k3Usm5hJaJoqzhm9DXOpFz9hkk1QT
-         o97Fd9kY8QhyJPxeKB1oURgeUyIg0g5o8J/dkB08yjn+gAStzc57IamvkMI6xR66GPtE
-         NVRqOUsTcp5WE01LoTPaCC6ogh91DDg20wfno=
-Message-ID: <3f9a31f40901050522h4389894w69e41fa9645ce8c@mail.gmail.com>
-Date: Mon, 5 Jan 2009 18:52:38 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH -tip] x86: setup.c fix style problems
-Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
-       "x86 maintainers" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090105131521.GC6014@elte.hu>
+	Mon, 5 Jan 2009 08:26:05 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54813 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751802AbZAEN0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:26:04 -0500
+Date: Mon, 5 Jan 2009 14:24:07 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, ebiederm@xmission.com,
+       bastian@waldi.eu.org, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/6][v5] Protect cinit from unblocked SIG_DFL signals
+Message-ID: <20090105132407.GC3313@redhat.com>
+References: <20081227204658.GA27197@us.ibm.com> <20081227205319.GC27337@us.ibm.com> <20081231001942.F35E2FC278@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1231066898.27852.29.camel@jaswinder.satnam>
-	 <20090104172114.GA32425@elte.hu>
-	 <3f9a31f40901040957g5a391408u5cda93c4acb66e9d@mail.gmail.com>
-	 <20090104203433.GC1132@elte.hu>
-	 <1231131855.16019.2.camel@jaswinder.satnam>
-	 <20090105131521.GC6014@elte.hu>
+In-Reply-To: <20081231001942.F35E2FC278@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 5, 2009 at 6:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
+On 12/30, Roland McGrath wrote:
 >
-> * Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
->
->> On Sun, 2009-01-04 at 21:34 +0100, Ingo Molnar wrote:
->> > yeah - i mentioned it to you before that there are such cases.
->> >
->>
->> OK, so here is new patch excluding smp.h:
->
-> Could you please instead fix the smp.h assumption so that we dont hit this
-> in the future? Then we can apply your original patch.
+> I'd just make the flag a parameter to send_signal() directly.
+> Then you can just change kill_pid_info_as_uid (or its replacement)
+> to call send_signal() with that new flag (and the 'group' flag)
+> directly instead of using the trivial __group_send_sig_info wrapper.
 
-Sure, I will do it.
+Ah, good. Can't understand why I didn't think about this before!
 
-> [ Do you need the
-> specific .config that hits this? Can dig it out if necessary. ]
+But, perhaps, it is better to add the new helper, __send_signal()
+or whatever which has the new "from_ancestor_ns" argument. Then,
 
-If you provide me that .config file then it will be very helpful for
-cross-checking.
+	static int send_signal(...)
+	{
+		bool from_ancestor_ns = 0;
 
-JSR
+	#ifdef CONFIG_PID_NS
+		if (!is_si_special(info) && SI_FROMUSER(info)) {
+			from_ancestor_ns = !task_pid_nr_ns(current, task_active_pid_ns(t));
+		}
+	#endif
+
+		return __send_signal(..., from_ancestor_ns);
+	}
+
+but this is cosmetic issue.
+
+Oleg.
+
