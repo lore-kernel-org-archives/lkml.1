@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbZAEGGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZAEGWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbZAEGGZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 01:06:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbZAEGGR
+	id S1753299AbZAEGWu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 01:22:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZAEGWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 01:06:17 -0500
-Received: from ozlabs.org ([203.10.76.45]:52398 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751209AbZAEGGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 01:06:16 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: 2.6.28-mmotm1230 - BUG during 'shutdown -h'
-Date: Mon, 5 Jan 2009 16:36:12 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <4491.1230900738@turing-police.cc.vt.edu> <200901031743.35578.rusty@rustcorp.com.au> <3543.1231000591@turing-police.cc.vt.edu>
-In-Reply-To: <3543.1231000591@turing-police.cc.vt.edu>
+	Mon, 5 Jan 2009 01:22:41 -0500
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:61223 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbZAEGWk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 01:22:40 -0500
+Message-ID: <4961A729.8060406@freemail.hu>
+Date: Mon, 05 Jan 2009 07:22:33 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901051636.12708.rusty@rustcorp.com.au>
+To: Zhang Rui <rui.zhang@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>
+Subject: Re: AE_ERROR, ACPI thermal trip point state changed
+References: <47CF96E2.9020302@freemail.hu>	 <1204757373.10256.179.camel@acpi-hp-zz.sh.intel.com>	 <823A93EED437D048963A3697DB0E35DE0129BB78@pdsmsx414.ccr.corp.intel.com>	 <47D0E694.5050102@freemail.hu>	 <1204874686.10256.185.camel@acpi-hp-zz.sh.intel.com>	 <47D24341.5070908@freemail.hu>	 <1205113940.10256.191.camel@acpi-hp-zz.sh.intel.com>	 <48ABDF1E.3010101@freemail.hu> <8763pwypf5.fsf@basil.nowhere.org>	 <49249121.6050304@freemail.hu> <20081119232224.GR6703@one.firstfloor.org>	 <493CB8DB.8070105@freemail.hu> <1228718909.7929.133.camel@rzhang-dt> <493CC5CC.70309@freemail.hu>
+In-Reply-To: <493CC5CC.70309@freemail.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32722; Body=5 Fuz1=5
+	Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 January 2009 03:06:31 Valdis.Kletnieks@vt.edu wrote:
-> On Sat, 03 Jan 2009 17:43:35 +1030, Rusty Russell said:
-> > On Friday 02 January 2009 23:22:18 Valdis.Kletnieks@vt.edu wrote:
-> > > 100% repeatable.  I haven't had a chance to bisect and track this down yet,
-> > > though most of the obvious suspects are in either origin.patch or linux-next.patch
-> > > so a bisect of -mmotm probably won't tell us much.
-> > 
-> > kernel/workqueue.c: In function 'wq_cpu_map':
-> > kernel/workqueue.c:94: warning: pointer type mismatch in conditional expression
-> > 
-> > That's a problem for a start.  Looks like a merge bug.  Does removing the &
-> > from in front of cpu_populated_map help?
+Németh Márton írta:
+> Zhang Rui wrote:
+>> On Mon, 2008-12-08 at 14:04 +0800, Németh Márton wrote:
+>>> Andi Kleen wrote:
+>>>> On Wed, Nov 19, 2008 at 11:20:17PM +0100, Németh Márton wrote:
+>>>>> Hi,
+>>>>>
+>>>>> Andi Kleen wrote:
+>>>>>> Németh Márton <nm127@freemail.hu> writes:
+>>>>>>> As of 2.6.27-rc3 the patch is still not included in the mainstream. I
+>>>>>>> hope that this patch was not forgotten completely.
+>>>>>> It's already in Linus' tree, will be in rc4.
+>>>>> I compiled and tried 2.6.28-rc5. In the dmesg I get the following message:
+>>>>>
+>>>>> [   63.589603] ACPI Exception (thermal-0538): AE_ERROR, ACPI thermal trip point state changed
+>>>>> [   63.589669] Please send acpidump to linux-acpi@vger.kernel.org
+>>>>> [   63.589805]  [20080926]
+>>>>>
+>>>>> The original patch still applies for 2.6.28-rc5 (with some offsets). This patch
+>>>>> is not included in 2.6.28-rc5, yet. The "AE_ERROR..." message does not appear
+>>>>> any more if I apply the patch. I attached this original patch for easier reference.
+>>>> Hmm sorry I must have confused it with some other patch back then.
+>>>> Anyways Len Brown is handling ACPI again now, so he'll have to sort
+>>>> it out. cc'ed (the original patch is on linux-acpi)
+>>> This is just a status report about 2.6.28-rc7, nothing more. The AE_ERROR
+>>> message is still in the dmesg. The patch still solves the problem.
+>>>
+>> do you mean this patch:
+>> http://marc.info/?l=linux-acpi&m=120522267418715&w=2
 > 
-> Fixing that did fix the compiler warning.  However, it didn't fix the
-> blowup during shutdown.  I'll dig into it more later this weekend.
+> Yes, exactly.
 
-Linus has just merged the cpumask tree, so if it did cause this problem,
-Linus' tree should show it.
+Status report: the mentioned patch is not yet included in 2.6.28.
 
-Cheers,
-Rusty.
+Regards,
+
+	Márton Németh
