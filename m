@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZAESz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbZAES4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754315AbZAESz7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 13:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZAESzo
+	id S1754183AbZAES4r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 13:56:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZAES4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 13:55:44 -0500
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:50557 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753399AbZAESzm (ORCPT
+	Mon, 5 Jan 2009 13:56:38 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:40834 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZAES4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 13:55:42 -0500
-Message-ID: <4962579E.9080901@euromail.se>
-Date: Mon, 05 Jan 2009 19:55:26 +0100
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Mon, 5 Jan 2009 13:56:38 -0500
+Message-ID: <49625894.3090706@novell.com>
+Date: Mon, 05 Jan 2009 13:59:32 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: Peter Hutterer <peter.hutterer@who-t.net>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       jg@laptop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] input: Add a detailed multi-touch finger data	report
-  protocol (rev2)
-References: <495804B1.10300@euromail.se> <20090105035758.GA28664@dingo.redhat.com>
-In-Reply-To: <20090105035758.GA28664@dingo.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.192.132
-X-Scan-Result: No virus found in message 1LJubz-00011c-7w.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1LJubz-00011c-7w 1ea8f0ca5572aeb29674d6c4c6d5c54b
+To: Dimitri Sivanich <sivanich@sgi.com>
+CC: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Greg KH <greg@kroah.com>,
+       Nick Piggin <npiggin@suse.de>, Robin Holt <holt@sgi.com>
+Subject: Re: 2.6.27.8 scheduler bug - threads not being scheduled for long
+ periods
+References: <20090105175641.GA17055@sgi.com> <49625519.4050902@novell.com> <20090105185111.GA18084@sgi.com>
+In-Reply-To: <20090105185111.GA18084@sgi.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig917924AC7E1705BDB96C250A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Hutterer wrote:
-[...]
-> 
-> To clarify: the MT_TOUCH_MAJOR is to track a touchpoint over time, and the
-> BLOB_ID to compile a arbitrarily shaped touchpoint within the same event?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig917924AC7E1705BDB96C250A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-MT_TOUCH_MAJOR is the major size of the touching object, or "pressure" in
-case the size of the approaching object (MT_WIDTH_MAJOR) is not available
-to compare the size to. The touch and position packets are sent to the
-multitouch X driver, where the actual finger tracking takes place. Thanks
-for the chance to clarify this.
+Dimitri Sivanich wrote:
+> Hi Greg,
+>
+> On Mon, Jan 05, 2009 at 01:44:41PM -0500, Gregory Haskins wrote:
+>  =20
+>> Dimitri Sivanich wrote:
+>>    =20
+>>> I'm wondering if anyone else has run into this problem, and whether t=
+hey've
+>>> found a resolution for it?
+>>>
+>>>  =20
+>>>      =20
+>> Hi Dimitri,
+>>   I have observed similar problems on my opensuse 11.0 box (2.6.25
+>> based) when doing kernel builds.  Often times other apps will get
+>> starved (like firefox, etc).  I was talking to peterz about it and he
+>> pointed me at a commit that went into 28-rcx that fixes this (the sha
+>> escapes me at the moment).  I've been meaning to pull the patch into o=
+ur
+>> 2.6.25 and 2.6.27 trees to verify if it fixes it, but I have fairly hi=
+gh
+>> confidence it will.  Perhaps Peter can point you at the same patch and=
+
+>> you can give it a whirl.  For the time being, can you see if 28 is fix=
+ed?
+>>
+>>    =20
+>
+> 2.6.28 appears to be a little bit worse, actually:
+>  =20
+
+Ugg...ok, well thanks for verifying.  I will defer to Peter and Ingo on
+this one.
+
+Please keep me in the loop on any new findings here, as the problem
+(assuming its the same bug) has been annoying me for months (but
+obviously not enough for me to do something about it ;)
+
+-Greg
 
 
-> Would it make sense to allow specification of a blob as bit/bytemask? There
-> are a few devices that can do detection of multi-color non-rectangular
-> touchpoints, especially camera-based systems. Limiting these to a sequence of
-> rectangles means dropping information that may be useful for certain tasks
-> (e.g. fingerprint detection).
-> OTOH, a rectangle as bounding box with an accompanying (optional) bytemask can
-> pass this data on to prospective clients.
 
-Very interesting idea, although I believe it is beyond the scope of the
-current patch.
+--------------enig917924AC7E1705BDB96C250A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkliWJQACgkQlOSOBdgZUxm3nQCgh4S2iRHgJy4H/3C+QzZ8guxM
+u4MAnAtJcav+zbPKrHDLIZLc2TD61/tZ
+=Fjwp
+-----END PGP SIGNATURE-----
+
+--------------enig917924AC7E1705BDB96C250A--
