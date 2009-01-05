@@ -1,101 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbZAEQMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbZAEQTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753161AbZAEQMy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 11:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZAEQMq
+	id S1752424AbZAEQTZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 11:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZAEQTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 11:12:46 -0500
-Received: from mail-bw0-f29.google.com ([209.85.218.29]:46683 "EHLO
-	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbZAEQMp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 11:12:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ts+SBqOR4/dg5cizcZFelKleMAcOu4OmsayHqnNa3gu2X6C2IOz+A0AJcJpRNJju5O
-         ic4qNUOABVyRFLla/BxJ8uwVw0NJ33pZ7AIKQJsZDkaWyTqbzSVV2cwYZGIAoXCRVkPr
-         S6Iq7P3PdsQT9HSrT70tE4aItFGVb1l4K6N3M=
-Date: Mon, 5 Jan 2009 19:12:41 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] mm: __nr_to_section - make it safe against overflow
-Message-ID: <20090105161241.GJ7645@localhost>
-References: <20090105094034.GA7645@localhost> <Pine.LNX.4.64.0901050906180.12774@quilx.com> <20090105152848.GG7645@localhost> <20090105153406.GB32675@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Jan 2009 11:19:13 -0500
+Received: from ns.firmix.at ([62.141.48.66]:5467 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750975AbZAEQTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 11:19:12 -0500
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with
+	kernel/timeconst.sh
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Rob Landley <rob@landley.net>, Valdis.Kletnieks@vt.edu,
+       Ingo Oeser <ioe-lkml@rameria.de>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20090105150156.GD14503@shareable.org>
+References: <200901020207.30359.rob@landley.net>
+	 <200901031936.04642.rob@landley.net>
+	 <25035.1231045675@turing-police.cc.vt.edu>
+	 <200901040043.08577.rob@landley.net> <20090104221356.GA32357@shareable.org>
+	 <1231114530.3310.6.camel@gimli.at.home>
+	 <20090105022349.GB1345@shareable.org>
+	 <1231152378.3326.14.camel@gimli.at.home>
+	 <20090105150156.GD14503@shareable.org>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Mon, 05 Jan 2009 17:18:00 +0100
+Message-Id: <1231172280.3326.138.camel@gimli.at.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -1.1 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-1.1 required=5
+X-Spam-Score: -1.1 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20090105153406.GB32675@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Nick Piggin - Mon, Jan 05, 2009 at 04:34:06PM +0100]
-| On Mon, Jan 05, 2009 at 06:28:48PM +0300, Cyrill Gorcunov wrote:
-| > [Christoph Lameter - Mon, Jan 05, 2009 at 09:10:57AM -0600]
-| > | On Mon, 5 Jan 2009, Cyrill Gorcunov wrote:
-| > | 
-| > | >  	/*
-| > | >  	 * This is, logically, a pointer to an array of struct
-| > | > @@ -980,9 +986,12 @@ extern struct mem_section mem_section[NR
-| > | >
-| > | >  static inline struct mem_section *__nr_to_section(unsigned long nr)
-| > | >  {
-| > | > -	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
-| > | > +	unsigned long idx = SECTION_NR_TO_ROOT(nr);
-| > | > +	WARN_ON_ONCE(idx >= NR_SECTION_ROOTS);
-| > | > +
-| > | > +	if (idx >=NR_SECTION_ROOTS || !mem_section[idx])
-| > | >  		return NULL;
-| > | > -	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
-| > | > +	return &mem_section[idx][nr & SECTION_ROOT_MASK];
-| > | >  }
-| > | >  extern int __section_nr(struct mem_section* ms);
-| > | >  extern unsigned long usemap_size(void);
-| > | 
-| > | Not that you are adding code to numerous hot code path. Plus this is a
-| > | frequently used inline. Code size is going to increase if you do this.
-| > 
-| > yes, I know, that is why I've changed WARN_ON_ONCE to plain WARN_ON.
-| 
-| Still costs. Putting it under a config option would be nice.
-| 
-| 
-| > | I would think that the code does not have the tests because of performance
-| > | and code size concerns. Can we just say that a sane nr must be passed to
-| > | __nr_section?
-| > | 
-| > 
-| > If you mean did I test this patch for speed regresson then to be fair --
-| > no, I didn't. BUT we have a number of macros wich are self protective
-| > like present_section which is used havily too. On the other hand --
-| > bad argument passed to __nr_to_section will be (and it is now) really
-| > harmfull -- since it would allow to reference a memory outside the
-| > valid bounds. The second -- SECTION_ROOT_MASK wich is fragile, any
-| > attempt to modify mem_section structure will silently lead to insane
-| > referencing, that is why it deserve a comment on top of structure.
-| > 
-| > Don't know Christoph, if it really that important to not spend a few
-| > cycles here in a sake of safety -- we could easily drop this patch.
-| 
-| The problem with testing every little slowdown for a speed regression
-| is that they are just going to be in the noise. But we *know* it will
-| go slower. The problem is that they add up. We just have to be sensible
-| about it.
-| 
-| Has there ever been a problem here before? Has it been a problem during
-| development? (in which case putting it in a .config option might make
-| sense).
-| 
+On Mon, 2009-01-05 at 15:01 +0000, Jamie Lokier wrote:
+> Bernd Petrovitsch wrote:
+> > I assume that the NFS-mounted root filesystem is a real distribution.
+> 
+> Not unless you call uClinux (MMU-less) a real distribution, no.
 
-After checking all 'for' and 'against' -- I think I just overzealous
-about it. Please drop it. (the case I was concerning to actually protected
-by present_section macro anyway). Sorry for noise.
+Not really.
 
-		- Cyrill -
+> > > (* - No MMU on some ARMs, but I'm working on ARM FDPIC-ELF to add
+> > >      proper shared libs.  Feel free to fund this :-)
+> > 
+> > The above mentioned ARMs have a MMU. Without MMU, it would be truly
+> > insane IMHO.
+> 
+> We have similar cross-build issues without MMUs... I.e. that a lot of
+
+Of course.
+
+> useful packages don't cross-build properly (including many which use
+> Autoconf), and it might be easier to make a native build environment
+
+Tell me about it - AC_TRY_RUN() is the culprit.
+And `pkg-config` supports cross-compilation only since 18 months or so.
+Before one had to rewrite the generated .pc files.
+
+[...]
+> You mentioned ARM Debian.  According to
+> http://wiki.debian.org/ArmEabiPort one recommended method of
+> bootstrapping it is building natively on an emulated ARM, because
+> cross-building is fragile.
+
+That's of course the other solution - if qemu supports your
+$EMBEDDED_CPU good enough.
+
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
