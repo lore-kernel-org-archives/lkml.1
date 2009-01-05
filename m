@@ -1,47 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbZAEN0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZAEN12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbZAEN0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZAEN0n
+	id S1755150AbZAEN12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:27:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZAEN1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:26:43 -0500
-Received: from mercury.realtime.net ([205.238.132.86]:50667 "EHLO
-	mercury.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbZAEN0m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:26:42 -0500
-In-Reply-To: <20090104182441.GA5086@linux.vnet.ibm.com>
-References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com> <20090104182441.GA5086@linux.vnet.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <98d6aef17cba9d835d7866745f811dc7@bga.com>
-Content-Transfer-Encoding: 7bit
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with !CONFIG_VIOPATH
-Date: Mon, 5 Jan 2009 07:33:32 -0600
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-X-Mailer: Apple Mail (2.624)
-X-Originating-IP: 205.232.218.24
+	Mon, 5 Jan 2009 08:27:19 -0500
+Received: from styx.suse.cz ([82.119.242.94]:59160 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753873AbZAEN1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:27:18 -0500
+Date: Mon, 5 Jan 2009 14:27:15 +0100
+From: Jan Kara <jack@suse.cz>
+To: Mark Fasheh <mfasheh@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com, jack@suse.cz
+Subject: Re: [Ocfs2-devel] [PATCH 19/56] mm: Export pdflush_operation()
+Message-ID: <20090105132714.GA22366@duck.suse.cz>
+References: <1229982517-3455-1-git-send-email-mfasheh@suse.com> <1229982517-3455-20-git-send-email-mfasheh@suse.com> <20081222160104.6633cd77.akpm@linux-foundation.org> <20081225010544.GB17410@wotan.suse.de> <20081231192854.GK17410@wotan.suse.de> <20081231221723.GA14548@mail.oracle.com> <20081231230949.GL17410@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081231230949.GL17410@wotan.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 4, 2009, at 12:24 PM, Kamalesh Babulal wrote:
+On Wed 31-12-08 15:09:49, Mark Fasheh wrote:
+> From: Mark Fasheh <mfasheh@suse.com>
+> 
+> ocfs2/quota: Use workqueue for periodic syncing instead of pdflush()
+> 
+> Using pdflush_operation() for this was potentially buggy - we could get into
+> a situation where the work function never gets run. Instead, just create a
+> workqueue, 'o2quota' and just constantly queue a delayed work item. The
+> impact of this should be pretty minimal.
+> 
+> Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+  The patch looks fine. You can add 'Acked-by: Jan Kara <jack@suse.cz>'
 
-> Hi Milton,
->
-> 	Thanks for the review comments, I am resending the patch with the
-> changes you have recommended.
->
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-
-Better, but you didn't include the change log, nor did you respond to 
-Stephen's reply suggesting that all users be converted to select 
-viopath (versus the proposed 2 select and 5 get it via depends and 
-default y).
-
-milton
-
+										Honza
+> ---
+>  fs/ocfs2/quota.h        |    5 +++-
+>  fs/ocfs2/quota_global.c |   48 ++++++++++++++++++++++++++++++----------------
+>  fs/ocfs2/quota_local.c  |    2 +-
+>  fs/ocfs2/super.c        |    7 ++++++
+>  4 files changed, 43 insertions(+), 19 deletions(-)
+> 
+> diff --git a/fs/ocfs2/quota.h b/fs/ocfs2/quota.h
+> index abf6941..6d190c0 100644
+> --- a/fs/ocfs2/quota.h
+> +++ b/fs/ocfs2/quota.h
+> @@ -60,7 +60,7 @@ struct ocfs2_mem_dqinfo {
+>  	struct buffer_head *dqi_lqi_bh;	/* Buffer head with local quota file inode */
+>  	struct buffer_head *dqi_ibh;	/* Buffer with information header */
+>  	struct qtree_mem_dqinfo dqi_gi;	/* Info about global file */
+> -	struct timer_list dqi_sync_timer;	/* Timer for syncing dquots */
+> +	struct delayed_work dqi_sync_work;	/* Work for syncing dquots */
+>  	struct ocfs2_quota_recovery *dqi_rec;	/* Pointer to recovery
+>  						 * information, in case we
+>  						 * enable quotas on file
+> @@ -114,4 +114,7 @@ int ocfs2_read_quota_block(struct inode *inode, u64 v_block,
+>  extern struct dquot_operations ocfs2_quota_operations;
+>  extern struct quota_format_type ocfs2_quota_format;
+>  
+> +int ocfs2_quota_setup(void);
+> +void ocfs2_quota_shutdown(void);
+> +
+>  #endif /* _OCFS2_QUOTA_H */
+> diff --git a/fs/ocfs2/quota_global.c b/fs/ocfs2/quota_global.c
+> index 9184953..6aff8f2 100644
+> --- a/fs/ocfs2/quota_global.c
+> +++ b/fs/ocfs2/quota_global.c
+> @@ -7,8 +7,8 @@
+>  #include <linux/quotaops.h>
+>  #include <linux/dqblk_qtree.h>
+>  #include <linux/jiffies.h>
+> -#include <linux/timer.h>
+>  #include <linux/writeback.h>
+> +#include <linux/workqueue.h>
+>  
+>  #define MLOG_MASK_PREFIX ML_QUOTA
+>  #include <cluster/masklog.h>
+> @@ -25,7 +25,9 @@
+>  #include "uptodate.h"
+>  #include "quota.h"
+>  
+> -static void qsync_timer_fn(unsigned long oinfo_ptr);
+> +static struct workqueue_struct *ocfs2_quota_wq = NULL;
+> +
+> +static void qsync_work_fn(struct work_struct *work);
+>  
+>  static void ocfs2_global_disk2memdqb(struct dquot *dquot, void *dp)
+>  {
+> @@ -348,10 +350,10 @@ int ocfs2_global_read_info(struct super_block *sb, int type)
+>  	oinfo->dqi_gi.dqi_usable_bs = sb->s_blocksize -
+>  						OCFS2_QBLK_RESERVED_SPACE;
+>  	oinfo->dqi_gi.dqi_qtree_depth = qtree_depth(&oinfo->dqi_gi);
+> -	setup_timer(&oinfo->dqi_sync_timer, qsync_timer_fn,
+> -		    (unsigned long)oinfo);
+> -	mod_timer(&oinfo->dqi_sync_timer,
+> -		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
+> +	INIT_DELAYED_WORK(&oinfo->dqi_sync_work, qsync_work_fn);
+> +	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
+> +			   oinfo->dqi_syncjiff);
+> +
+>  out_err:
+>  	mlog_exit(status);
+>  	return status;
+> @@ -594,21 +596,16 @@ out:
+>  	return status;
+>  }
+>  
+> -static void ocfs2_do_qsync(unsigned long oinfo_ptr)
+> +static void qsync_work_fn(struct work_struct *work)
+>  {
+> -	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
+> +	struct ocfs2_mem_dqinfo *oinfo = container_of(work,
+> +						      struct ocfs2_mem_dqinfo,
+> +						      dqi_sync_work.work);
+>  	struct super_block *sb = oinfo->dqi_gqinode->i_sb;
+>  
+>  	dquot_scan_active(sb, ocfs2_sync_dquot_helper, oinfo->dqi_type);
+> -}
+> -
+> -static void qsync_timer_fn(unsigned long oinfo_ptr)
+> -{
+> -	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
+> -
+> -	pdflush_operation(ocfs2_do_qsync, oinfo_ptr);
+> -	mod_timer(&oinfo->dqi_sync_timer,
+> -		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
+> +	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
+> +			   oinfo->dqi_syncjiff);
+>  }
+>  
+>  /*
+> @@ -1009,3 +1006,20 @@ struct dquot_operations ocfs2_quota_operations = {
+>  	.alloc_dquot	= ocfs2_alloc_dquot,
+>  	.destroy_dquot	= ocfs2_destroy_dquot,
+>  };
+> +
+> +int ocfs2_quota_setup(void)
+> +{
+> +	ocfs2_quota_wq = create_workqueue("o2quot");
+> +	if (!ocfs2_quota_wq)
+> +		return -ENOMEM;
+> +	return 0;
+> +}
+> +
+> +void ocfs2_quota_shutdown(void)
+> +{
+> +	if (ocfs2_quota_wq) {
+> +		flush_workqueue(ocfs2_quota_wq);
+> +		destroy_workqueue(ocfs2_quota_wq);
+> +		ocfs2_quota_wq = NULL;
+> +	}
+> +}
+> diff --git a/fs/ocfs2/quota_local.c b/fs/ocfs2/quota_local.c
+> index a5f6e2a..07deec5 100644
+> --- a/fs/ocfs2/quota_local.c
+> +++ b/fs/ocfs2/quota_local.c
+> @@ -780,7 +780,7 @@ static int ocfs2_local_free_info(struct super_block *sb, int type)
+>  	/* At this point we know there are no more dquots and thus
+>  	 * even if there's some sync in the pdflush queue, it won't
+>  	 * find any dquots and return without doing anything */
+> -	del_timer_sync(&oinfo->dqi_sync_timer);
+> +	cancel_delayed_work_sync(&oinfo->dqi_sync_work);
+>  	iput(oinfo->dqi_gqinode);
+>  	ocfs2_simple_drop_lockres(OCFS2_SB(sb), &oinfo->dqi_gqlock);
+>  	ocfs2_lock_res_free(&oinfo->dqi_gqlock);
+> diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+> index a79e67b..43ed113 100644
+> --- a/fs/ocfs2/super.c
+> +++ b/fs/ocfs2/super.c
+> @@ -1326,11 +1326,16 @@ static int __init ocfs2_init(void)
+>  		mlog(ML_ERROR, "Unable to create ocfs2 debugfs root.\n");
+>  	}
+>  
+> +	status = ocfs2_quota_setup();
+> +	if (status)
+> +		goto leave;
+> +
+>  	ocfs2_set_locking_protocol();
+>  
+>  	status = register_quota_format(&ocfs2_quota_format);
+>  leave:
+>  	if (status < 0) {
+> +		ocfs2_quota_shutdown();
+>  		ocfs2_free_mem_caches();
+>  		exit_ocfs2_uptodate_cache();
+>  	}
+> @@ -1347,6 +1352,8 @@ static void __exit ocfs2_exit(void)
+>  {
+>  	mlog_entry_void();
+>  
+> +	ocfs2_quota_shutdown();
+> +
+>  	if (ocfs2_wq) {
+>  		flush_workqueue(ocfs2_wq);
+>  		destroy_workqueue(ocfs2_wq);
+> -- 
+> 1.5.6
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
