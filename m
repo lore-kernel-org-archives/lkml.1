@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZAEO7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbZAEO76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbZAEO7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 09:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbZAEO7V
+	id S1756785AbZAEO76 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 09:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZAEO7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 09:59:21 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:56764 "EHLO slimlogic.co.uk"
+	Mon, 5 Jan 2009 09:59:45 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:54721 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754914AbZAEO7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 09:59:20 -0500
-Subject: [git pull] voltage regulator updates
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 14:59:15 +0000
-Message-Id: <1231167555.11643.155.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	id S1755088AbZAEO7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 09:59:44 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: tony.luck@intel.com, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: [PATCH 0/3] unifying ways to handle multiple sets of dma mapping ops
+Date: Mon,  5 Jan 2009 23:59:00 +0900
+Message-Id: <1231167543-20259-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Assorted core updates for improved error checks, ref counting, code
-size, documentation and registration. Minor fixes for the DA903x PMIC.  
+This patchset is the final (third) part of the unification of ways to
+handle multiple sets of dma mapping API. The whole work consists of
+three patchset. This depends on IA64 and X86 preparation patchset:
 
-The following changes since commit fe0bdec68b77020281dc814805edfe594ae89e0f:
-  Linus Torvalds (1):
-        Merge branch 'audit.b61' of git://git.kernel.org/.../viro/audit-current
+The patchset for IA64:
 
-are available in the git repository at:
+http://marc.info/?l=linux-kernel&m=123116676006794&w=2
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
+The patchset for X86:
 
-David Brownell (6):
-      regulator: enable/disable refcounting
-      regulator: improved mode error checks
-      regulator: code shrink (v2)
-      regulator: sysfs attribute reduction (v2)
-      regulator: init/link earlier
-      regulator: catch some registration errors
+http://marc.info/?l=linux-kernel&m=123116708307468&w=2
 
-Kay Sievers (1):
-      regulator: struct device - replace bus_id with dev_name(), dev_set_name()
+This adds struct dma_map_ops include/linux/dma-mapping.h and coverts
+IA64 and X86 to use it (and removes lots of duplication and
+workarounds). I use 'dma_map_ops' name instead dma_mapping_ops to just
+avoid breaking POWER build. I have no preference.
 
-Mark Brown (5):
-      regulator: Remove extraneous kerneldoc annotations
-      regulator: Clean up kerneldoc warnings
-      regulator: Add missing kerneldoc
-      regulator: Fix some kerneldoc rendering issues
-      regulator: Add basic DocBook manual
+The second patch converts IA64 and X86 to use struct dma_map_ops.
+It's a bit large but pretty boring. The major change for X86 is
+converting 'int dir' to 'enum dma_data_direction dir' in DMA mapping
+operations. The major changes for IA64 is using map_page and
+unmap_page instead of map_single and unmap_single.
 
-Mike Rapoport (3):
-      regulator: da903x: add '\n' to error messages
-      regulator: da903x: make da903x_is_enabled return 0 or 1
-      regulator: move set_machine_constraints after regulator device initialization
+=
+ arch/ia64/dig/Makefile                        |    4 +-
+ arch/ia64/dig/dig_vtd_iommu.c                 |   59 --------
+ arch/ia64/hp/common/hwsw_iommu.c              |  165 ++--------------------
+ arch/ia64/hp/common/sba_iommu.c               |   79 ++++++++---
+ arch/ia64/include/asm/dma-mapping.h           |  189 ++++++++++++++-----------
+ arch/ia64/include/asm/machvec.h               |  107 ++------------
+ arch/ia64/include/asm/machvec_dig_vtd.h       |   20 ---
+ arch/ia64/include/asm/machvec_hpzx1.h         |   23 +---
+ arch/ia64/include/asm/machvec_hpzx1_swiotlb.h |   27 +----
+ arch/ia64/include/asm/machvec_sn2.h           |   27 +----
+ arch/ia64/kernel/Makefile                     |    4 +-
+ arch/ia64/kernel/dma-mapping.c                |   10 ++
+ arch/ia64/kernel/machvec.c                    |    8 +-
+ arch/ia64/kernel/pci-dma.c                    |   52 ++++---
+ arch/ia64/kernel/pci-swiotlb.c                |   23 ++-
+ arch/ia64/sn/pci/pci_dma.c                    |   99 +++++++------
+ arch/x86/include/asm/device.h                 |    2 +-
+ arch/x86/include/asm/dma-mapping.h            |  149 ++++++++------------
+ arch/x86/include/asm/iommu.h                  |    2 +-
+ arch/x86/kernel/amd_iommu.c                   |   24 ++--
+ arch/x86/kernel/pci-calgary_64.c              |   38 +++---
+ arch/x86/kernel/pci-dma.c                     |    4 +-
+ arch/x86/kernel/pci-gart_64.c                 |   34 +++--
+ arch/x86/kernel/pci-nommu.c                   |   21 ++--
+ arch/x86/kernel/pci-swiotlb_64.c              |   17 +--
+ drivers/pci/intel-iommu.c                     |   31 +++-
+ include/linux/dma-mapping.h                   |   48 +++++++
+ include/linux/intel-iommu.h                   |    6 +-
+ include/linux/swiotlb.h                       |   39 +++---
+ lib/swiotlb.c                                 |   66 ++++-----
+ 30 files changed, 569 insertions(+), 808 deletions(-)
 
- Documentation/ABI/testing/sysfs-class-regulator |  136 +++----
- Documentation/DocBook/Makefile                  |    2 +-
- Documentation/DocBook/regulator.tmpl            |  304 +++++++++++++++
- drivers/Makefile                                |    4 +-
- drivers/regulator/core.c                        |  474 ++++++++++++++---------
- drivers/regulator/da903x.c                      |   12 +-
- include/linux/regulator/consumer.h              |    8 +-
- include/linux/regulator/driver.h                |   40 ++-
- include/linux/regulator/machine.h               |   41 ++
- 9 files changed, 749 insertions(+), 272 deletions(-)
- create mode 100644 Documentation/DocBook/regulator.tmpl
 
 
