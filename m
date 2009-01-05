@@ -1,108 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbZAEJCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZAEJC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbZAEJCc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 04:02:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZAEJCJ
+	id S1753432AbZAEJC4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 04:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZAEJC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 04:02:09 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:20040 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751317AbZAEJCG (ORCPT
+	Mon, 5 Jan 2009 04:02:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56431 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752550AbZAEJC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 04:02:06 -0500
-Message-ID: <4961CC87.4030903@panasas.com>
-Date: Mon, 05 Jan 2009 11:01:59 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, avishay@gmail.com,
-       jeff@garzik.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       osd-dev@open-osd.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] exofs: osd Swiss army knife
-References: <4947BFAA.4030208@panasas.com> <1229439174-30492-1-git-send-email-bharrosh@panasas.com> <20081229122959.2cb48cf7.akpm@linux-foundation.org> <20090102165201.GC1555@ucw.cz> <4960769D.2020509@panasas.com> <20090104200318.GA20375@elf.ucw.cz>
-In-Reply-To: <20090104200318.GA20375@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 5 Jan 2009 04:02:26 -0500
+Date: Mon, 5 Jan 2009 01:01:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Mike Travis <travis@sgi.com>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/6] cpuset: convert cpuset_attach() to use
+ cpumask_var_t
+Message-Id: <20090105010147.bc42b655.akpm@linux-foundation.org>
+In-Reply-To: <4961C919.6040404@cn.fujitsu.com>
+References: <495B2EA6.7010808@cn.fujitsu.com>
+	<495B2EC2.9090305@cn.fujitsu.com>
+	<495B2EE7.4040406@cn.fujitsu.com>
+	<495B2EFB.302@cn.fujitsu.com>
+	<20090104233856.8c72eb58.akpm@linux-foundation.org>
+	<4961C919.6040404@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Jan 2009 09:01:58.0816 (UTC) FILETIME=[4407CA00:01C96F14]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Sun 2009-01-04 10:43:09, Boaz Harrosh wrote:
->> Pavel Machek wrote:
->>> Hi!
->>>
->>>>> +#ifdef ARCH_HAS_ATOMIC_UNSIGNED
->>>> This doesn't exist, and it would be fairly bad to introduce it.  Please
->>>> kill the ifdefs.
->>>>
->>>>> +typedef unsigned exofs_iflags_t;
->>>>> +#else
->>>>> +typedef unsigned long exofs_iflags_t;
->>>>> +#endif
->>>> Then please kill the typedef altogether and replace it with `unsigned
->>>> long' everywhere
->>> Hmmm.. .and at a note somewhere that we assume unsigned long to be atomic...?
->>>
->> I think I'll just use unsigned. It's more then enough I'm not using more then 3
->> bits for now. Is unsigned workable for all ARCHs?
+On Mon, 05 Jan 2009 16:47:21 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-<added>
-> /*
->  * our extension to the in-memory inode
->  */
-> struct exofs_i_info {
-> 	unsigned long  i_flags;            /* various atomic flags            */
-<snip>
+> Allocate a global cpumask_var_t at boot, and use it in cpuset_attach(), so
+> we won't fail cpuset_attach().
 > 
-> /*
->  * our inode flags
->  */
-> #define OBJ_2BCREATED	0	/* object will be created soon*/
-> #define OBJ_CREATED	1	/* object has been created on the osd*/
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Acked-by: Mike Travis <travis@sgi.com>
+> ---
+>  kernel/cpuset.c |   14 +++++++++-----
+>  1 files changed, 9 insertions(+), 5 deletions(-)
 > 
-> static inline int obj_2bcreated(struct exofs_i_info *oi)
-> {
-> 	return test_bit(OBJ_2BCREATED, &(oi->i_flags));
-> }
-> 
-> static inline void set_obj_2bcreated(struct exofs_i_info *oi)
-> {
-> 	set_bit(OBJ_2BCREATED, &(oi->i_flags));
-> }
-> 
-> static inline int obj_created(struct exofs_i_info *oi)
-> {
-> 	return test_bit(OBJ_CREATED, &(oi->i_flags));
-> }
-> 
-> static inline void set_obj_created(struct exofs_i_info *oi)
-> {
-> 	set_bit(OBJ_CREATED, &(oi->i_flags));
-> }
-</added>
+> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+> index afa29cf..1e32e6b 100644
+> --- a/kernel/cpuset.c
+> +++ b/kernel/cpuset.c
+> @@ -1306,6 +1306,9 @@ static int fmeter_getrate(struct fmeter *fmp)
+>  	return val;
+>  }
+>  
+> +/* Protected by cgroup_lock */
+> +static cpumask_var_t cpus_attach;
+> +
+>  /* Called by cgroups to determine if a cpuset is usable; cgroup_mutex held */
+>  static int cpuset_can_attach(struct cgroup_subsys *ss,
+>  			     struct cgroup *cont, struct task_struct *tsk)
+> @@ -1330,7 +1333,6 @@ static void cpuset_attach(struct cgroup_subsys *ss,
+>  			  struct cgroup *cont, struct cgroup *oldcont,
+>  			  struct task_struct *tsk)
+>  {
+> -	cpumask_t cpus;
+>  	nodemask_t from, to;
+>  	struct mm_struct *mm;
+>  	struct cpuset *cs = cgroup_cs(cont);
+> @@ -1338,13 +1340,13 @@ static void cpuset_attach(struct cgroup_subsys *ss,
+>  	int err;
+>  
+>  	if (cs == &top_cpuset) {
+> -		cpus = cpu_possible_map;
+> +		cpumask_copy(cpus_attach, cpu_possible_mask);
+>  	} else {
+>  		mutex_lock(&callback_mutex);
+> -		guarantee_online_cpus(cs, &cpus);
+> +		guarantee_online_cpus(cs, cpus_attach);
+>  		mutex_unlock(&callback_mutex);
+>  	}
+> -	err = set_cpus_allowed_ptr(tsk, &cpus);
+> +	err = set_cpus_allowed_ptr(tsk, cpus_attach);
+>  	if (err)
+>  		return;
+>  
+> @@ -1357,7 +1359,6 @@ static void cpuset_attach(struct cgroup_subsys *ss,
+>  			cpuset_migrate_mm(mm, &from, &to);
+>  		mmput(mm);
+>  	}
+> -
+>  }
+>  
+>  /* The various types of files and directories in a cpuset file system */
+> @@ -1838,6 +1839,9 @@ int __init cpuset_init(void)
+>  	if (err < 0)
+>  		return err;
+>  
+> +	if (!alloc_cpumask_var(&cpus_attach, GFP_KERNEL))
+> +		BUG();
+> +
+>  	number_of_cpusets = 1;
+>  	return 0;
+>  }
 
-> 
-> Please just use atomic_t.
-> 
-> (see "atomics: document that linux expects certain atomic behaviour"
-> thread for discussion)
-> 									Pavel
+OK, that works.
 
-I have a problem with this. The context of i_flags is to be used with
-set_bit() and test_bit(). In some ARCHs like x86_64 they take an 
-"unsigned long *" in most others they take a "void *" and cast internally
-to a "u32 *". (for x86_64 I must use "unsigned long", anything else warns)
+Do we need to dynamically allocate cpus_attach?  Can we just do
 
-I think if I declare "unsigned long" but only use 32 bits flags then
-I should be in the clear with ALL archs, I'll see if that works once
-this code sits in linux-next. (That's real ugly I think)
+static cpumask_t cpus_attach;
 
-Is set_bit() and test_bit() should only be used from arch/ code? What 
-can regular kernel code use?
-
-Thanks
-Boaz
- 
+?
