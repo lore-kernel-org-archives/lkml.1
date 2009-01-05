@@ -1,104 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZAECOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZAECUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbZAECOU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 21:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZAECOJ
+	id S1753487AbZAECUj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 21:20:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZAECU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 21:14:09 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:52123 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbZAECOI (ORCPT
+	Sun, 4 Jan 2009 21:20:28 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:30158 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751969AbZAECU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 21:14:08 -0500
-Date: Mon, 5 Jan 2009 02:13:58 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: tux3@tux3.org, Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
-       "Justin P. Mattock" <justinmattock@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Tux3] Tux3 report: A Golden Copy
-Message-ID: <20090105021357.GA1345@shareable.org>
-References: <200812301935.49303.phillips@phunq.net> <20090104031733.GB20929@shareable.org> <20090104130446.GA17558@mit.edu> <200901041710.12435.phillips@phunq.net>
+	Sun, 4 Jan 2009 21:20:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=p+qfHg3NnCf32BFmP4pM2LQN+oIKqzrkQK1F3NHIdQUrrQ0777d+gDtOkmKO1z6PHm
+         3nsWWeTG0pnRqKfGAIDZJ4jmzYYC9Xn8WLjobD54JNzh9HdV8FXyhsWl0Mp5c0ErsYJG
+         w9yxk4i3WgBInc85z3jIBPmMMrD8AOxQvJTSQ=
+Message-ID: <9929d2390901041820h4cf51e2h3612108c516b6869@mail.gmail.com>
+Date: Sun, 4 Jan 2009 18:20:24 -0800
+From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH -net-next 1/4] firmware: convert e100 driver to request_firmware()
+Cc: jaswinder@infradead.org, linux.nics@intel.com,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
+In-Reply-To: <20090104.160611.252248503.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200901041710.12435.phillips@phunq.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1230626401.24796.22.camel@jaswinder.satnam>
+	 <9929d2390812301433pae01ea4g5bfdef6d4d4c7a9c@mail.gmail.com>
+	 <20090104.160611.252248503.davem@davemloft.net>
+X-Google-Sender-Auth: da56912955cf331a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Phillips wrote:
-> > Arguably you want to do this in the VFS layer, not in the low-level
-> > filesystem level if you want most applications to adopt it.
-> 
-> It has to be generic all right, but the VFS is not able to do the job
-> on its own.  To be useful for indexing, the reported events must
-> already be persistently recorded, and the VFS has no idea about when
-> that happens.  The filesystem is the expert on that subject, and it
-> must generate the events.  I can't imagine a reasonable VFS-level
-> emulation, or what value the VFS would add by acting as middleman for
-> a stream of filesystem events.
+On Sun, Jan 4, 2009 at 4:06 PM, David Miller <davem@davemloft.net> wrote:
+> From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+> Date: Tue, 30 Dec 2008 14:33:36 -0800
+>
+>> Please hold off on committing, until we have had ample time to do some
+>> regression testing.  While this patch may have been in linux-next,
+>> this is the first we have seen of it.
+>>
+>> I am concerned that IPMI traffic will be adversely affected by this patch.
+>
+> Status please?
+> --
+>
 
-The VFS does have a some helpful generic support for quotas, although
-it also requires filesystem-specific help.  This is quite similar.
+The only testing left to do is to make sure that ICH devices still
+work and to make sure the IPMI traffic is not affected by this patch.
+All other testing looks good.  I am sorry that I have been slow to
+give status, the holiday's have put a strain on available resources.
 
-I see what you mean about knowing when an event reaches _persistent_
-storage.  To be accurate, the event log must be folded into the
-filesystem's transaction/commit model (including right use of barriers
-etc.), and during journal/equivalent recovery, and fsck repair, the
-event log must err on the side of too many rather than too few events.
-(Or have a "rescan everything needed" event.)
-
-An event log does not have to be _entirely_ accurate to be useful for
-things like security scanning and indexing.  It is enough that it errs
-on the side of recording a few too many, causing a few more app level
-checks.
-
-On the other hand, when used for an audit trail, you never want extra
-events to be logged.
-
-It seems to me whatever transaction/commit support is needed for event
-logging is similarly needed for accurate quotas.
-
-I've read that sometimes quotas get out of sync with the real amount
-of user data stored on some filesystems, and then need to be
-recalculated with a filesystem scan.  If true, this is unfortunate.
-
-> The natural way to do this is for the filesystem to stream events
-> directly to the monitoring application over a pipe-like fd.  Maybe a
-> library for event delivery could be shared by filesystems, to impose
-> a standard format.  The role of the VFS would be simply to set up the
-> event connection, or to report that it is not supported.
-
-There was an extension to inotify posted a few months ago to do this.
-Additional events when something becomes persistent.
-
-> An event stream accurate enough to support indexing is a considerably
-> harder problem, I think.
-
-No really.  It's enough if an indexer can efficiently find all changed
-files since it was last running.  That doesn't have to be an accurate
-event stream.  For example, simply having xattrs
-"user.scanned.indexer_app_name" automatically deleted whenever the
-file is modified, and recursively doing the same to parent
-directories, would be enough in most cases.  Not for hard links,
-obviously, but indexers can treat those separately and detect them by
-link count.
-
-There's one other application which needs *really accurate* event
-notification delivery.  That is, anything which caches the result of
-reading one or more files (such as for example compiling a script and
-its dependencies to an internal representation in memory or into
-another disk file), but where the caching must be *absolutely*
-reliably invalidated at the time it's checked so that the behaviour is
-guaranteed identical to not caching.
-
-That kind of app needs to be able to say "are there any change events
-pending since I last looked?" efficiently for many files (e.g. inotify
-is ok, 1 syscall for many files), but with the guarantee that when the
-answer is "no change events", calling read() and stat() on all the
-files really would see no changes.  Networked inotify does not
-guarantee this, because event reception is delayed.
-
--- Jamie
+-- 
+Cheers,
+Jeff
