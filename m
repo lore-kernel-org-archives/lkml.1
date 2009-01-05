@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZAEM3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZAEMa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754333AbZAEM3G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 07:29:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbZAEM2p
+	id S1754583AbZAEMa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 07:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZAEMaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 07:28:45 -0500
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:43801 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753911AbZAEM2o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 07:28:44 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Q0PpZAneXBR7UwMQ0dLWUaRe29OkIVT7I9WvpmtAa117BrNPFyYYDY0+ichoPFn8qcrF3W9c5VfQsRIUTabZMn9W8xKMJf2HXp8iDDfe0n+WMPNKYCvFlvojEo0C31FvwFfQAPJ95kjd6c/m/ZMWFT3Iig0H64r8zA2FHdSedHE=  ;
-X-YMail-OSG: QmPyIWQVM1ljRkDZK_CzE8SuJxbDOUbNHBH3wYjh6fcZyp0uboFsKxrj2eLx0gHVhfyetcaQqFzWmYkqfnA4ct2jDKveQ8vKLebpb31AOgQ9JuGegCun5iWbYH_oh05yoyyv6GAiTBkSMCOBqWIk1pwkvydRzjb0A6oVnM_f9jjXEUPHvWJODLPBifzdGUQA2OAhU4Ek979wXk4PiPHvMHv12U5xW5vk
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29 -mm merge plans
-Date: Mon, 5 Jan 2009 23:28:26 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-In-Reply-To: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 5 Jan 2009 07:30:20 -0500
+Received: from ns.firmix.at ([62.141.48.66]:4892 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752728AbZAEMaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 07:30:18 -0500
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with
+	kernel/timeconst.sh
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Rob Landley <rob@landley.net>
+Cc: Jamie Lokier <jamie@shareable.org>, Valdis.Kletnieks@vt.edu,
+       Ingo Oeser <ioe-lkml@rameria.de>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <200901042250.36847.rob@landley.net>
+References: <200901020207.30359.rob@landley.net>
+	 <20090104221356.GA32357@shareable.org>
+	 <1231114530.3310.6.camel@gimli.at.home>
+	 <200901042250.36847.rob@landley.net>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Mon, 05 Jan 2009 13:29:11 +0100
+Message-Id: <1231158551.3326.82.camel@gimli.at.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -1.102 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-1.102 required=5
+X-Spam-Score: -1.102 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-Message-Id: <200901052328.26630.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009 19:43:00 Andrew Morton wrote:
-> The individual patches are mostly at
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/
->
->
-> mm-remove-the-might_sleep-from-lock_page.patch
->
->   Need to think about this.
+On Son, 2009-01-04 at 22:50 -0600, Rob Landley wrote:
+> On Sunday 04 January 2009 18:15:30 Bernd Petrovitsch wrote:
+[...]
+> > ACK. A bash can IMHO be expected. Even going for `dash` is IMHO somewhat
+> > too extreme.
+> 
+> I have yet to encounter a system that uses dash _without_ bash.  (All ubuntu 
 
-Removing this reduces a lot of might_sleep coverage scope. Page
-lock isn't contended in a lot of cases. Why would you drop a
-good debugging feature?
+Hmm, should be doable with a chroot environment quite cheap and simple.
 
-> mm-direct-io-starvation-improvement.patch
-> fs-remove-wb_sync_hold.patch
-> fs-sync_sb_inodes-fix.patch
-> fs-sys_sync-fix.patch
-> radix-tree-gang-set-if-tagged-operation.patch
+> variants, even jeos, install bash by default.  They moved the /bin/sh symlink 
 
-This one is unneeded because you didn't take the fsync livelock avoidance
-patch that makes use of the new function.
+Yes, I know (small) embedded systems that have a bash (and not "only"
+one of busybox shells). It eases writing somewhat fast shell scripts
+without the need for lots of fork()s+exec()s too .....
 
-> make-sure-nobodys-leaking-resources.patch
-> releasing-resources-with-children.patch
-
-Any reason why not to add these upstream?
-
-> nr_blockdev_pages-in_interrupt-warning.patch
-
-Lockdep should catch this, I guess.
-
-> put_bh-debug.patch
-
-This could just be implemented with a VM_BUG_ON (or FS_BUG_ON) like the
-pagecache refcounting. Wouldn't be a bad idea.
-
-> add-a-refcount-check-in-dput.patch
-
-Again, why not an FS_BUG_ON for things like this too?
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
