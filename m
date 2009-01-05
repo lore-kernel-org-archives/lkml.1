@@ -1,99 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbZAEVgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbZAEVll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbZAEVgL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 16:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbZAEVf5
+	id S1754663AbZAEVll (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 16:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZAEVld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 16:35:57 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:15581 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbZAEVf4 (ORCPT
+	Mon, 5 Jan 2009 16:41:33 -0500
+Received: from wilson.telenet-ops.be ([195.130.132.42]:33401 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178AbZAEVlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 16:35:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=xpe30inGj8HTg8KYLt6S75nknQFdP3B9jXeXHBLeN5xVoqjTzgnFPBdGcNhjdrCTI+
-         ws7W5Gtki5CcqBl2K9SIQxlA8YMPZpIV7Tgeha5YTnf2RUhoJMsHF6DaTWZWgFkykEoZ
-         XRmdnbkfvRH2Ve+TJrYrrAzy/M/A9WfY+7jUs=
-Message-ID: <e9c3a7c20901051335h6f311d02off6700b54f2d1c24@mail.gmail.com>
-Date: Mon, 5 Jan 2009 14:35:55 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, "Sascha Hauer" <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       "Geert Uytterhoeven" <geert@linux-m68k.org>
-In-Reply-To: <Pine.LNX.4.64.0901052139400.8605@axis700.grange>
+	Mon, 5 Jan 2009 16:41:31 -0500
+Date: Mon, 5 Jan 2009 22:41:28 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Milan Broz <mbroz@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: dm_attr_{name,uuid}_show buffer overflow? (was: Re: linux-next: Tree
+ for January 5)
+In-Reply-To: <20090105173517.deeff918.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0901052225400.5451@anakin>
+References: <20090105173517.deeff918.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
-	 <e9c3a7c20901051143m37c0d7c0x5779475ddc7c5dc2@mail.gmail.com>
-	 <Pine.LNX.4.64.0901052139400.8605@axis700.grange>
-X-Google-Sender-Auth: 19a932e41b048d00
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 5, 2009 at 2:02 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> On Mon, 5 Jan 2009, Dan Williams wrote:
->
->> On Fri, Dec 26, 2008 at 10:11 AM, Guennadi Liakhovetski
->> <g.liakhovetski@gmx.de> wrote:
->> > Hi,
->> >
->> > This is version 6 of dmaengine and framebuffer drivers for i.MX31.
->> >
->>
->> Tha drivers/dma/ bits look ok to me minus the new warnings:
->>
->> drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_fn':
->> drivers/dma/ipu/ipu_irq.c:328: warning: 'irq' may be used
->> uninitialized in this function
->> drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_err':
->> drivers/dma/ipu/ipu_irq.c:290: warning: 'irq' may be used
->> uninitialized in this function
->
-> Wow... with what gcc version? My 4.1.2 correctly recognises, that it
-> _doesn't_ get used uninitialised.
+On Mon, 5 Jan 2009, Stephen Rothwell wrote:
+> Status of my local build tests will be at
+> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+> advice about cross compilers/configs that work, we are always open to add
+> more builds.
 
-hmm... this was with:
-$ arm-none-linux-gnueabi-gcc --version
-arm-none-linux-gnueabi-gcc (CodeSourcery Sourcery G++ Lite 2007q1-21)
-4.2.0 20070413 (prerelease)
+On m68k, you get http://kisskb.ellerman.id.au/kisskb/buildresult/65466/:
 
-...and also with:
-$ arm-none-linux-gnueabi-gcc --version
-arm-none-linux-gnueabi-gcc (Sourcery G++ Lite 2008q3-72) 4.3.2
+| ERROR: "strlen" [drivers/md/dm-mod.ko] undefined!
 
->> I can take patches 1 and 2 through the async_tx tree, or if you would
->> rather, add my Acked-by to those and take 1-4 through the MXC tree.
->> I'll be sending the async_tx pull request for 2.6.29 in the next few
->> days.
->
-> Thanks, great! Don't know what's better, let's see what Sascha says. But
-> there's one small problem with the patch 2/4: it breaks compilation on
-> i.MX31 if IPU is _not_ set, so, default imx31 configs would break:-( The
-> problem is, that I use CONFIG_MX3_IPU_IRQS unconditionally in calculation
-> of NR_IRQ. The easiest for me is to fix it in mx31.h like
->
-> #ifdef CONFIG_MX3_IPU_IRQS
-> #define MX3_IPU_IRQS CONFIG_MX3_IPU_IRQS
-> #else
-> #define MX3_IPU_IRQS 0
-> #endif
->
-> but that's less than elegant:-) A probably better solution would be to fix
-> this in Kconfig, best would be to show
+which triggered my attention.
 
-I think the header file is the proper place for this... the Kconfig
-trickery ends up being just another way to say !CONFIG_MX3_IPU_IRQS.
+drivers/md/dm-sysfs.c:
 
-Regards,
-Dan
+| static ssize_t dm_attr_name_show(struct mapped_device *md, char *buf)
+| {
+|         if (dm_copy_name_and_uuid(md, buf, NULL))
+|                 return -EIO;
+| 
+|         strncat(buf, "\n", DM_NAME_LEN);
+|         return strnlen(buf, DM_NAME_LEN);
+| }
+
+is turned into:
+
+|         .type   dm_attr_name_show, @function
+| dm_attr_name_show:
+|         move.l %a3,-(%sp)
+|         move.l 12(%sp),%a3      | buf, buf
+|         clr.l -(%sp)    |
+|         move.l %a3,-(%sp)       | buf,
+|         move.l 16(%sp),-(%sp)   | md,
+|         jbsr dm_copy_name_and_uuid      |
+|         lea (12,%sp),%sp        |,
+|         tst.l %d0       |
+|         jeq .L23        |
+|         move.w #-5,%a0  |, D.21217
+|         jbra .L25       |
+| .L23:
+|         move.l %a3,-(%sp)       | buf,
+|         jbsr strlen     |
+|         addq.l #4,%sp   |,
+|         move.w #2560,(%a3,%d0.l)        |,* buf
+|         moveq #127,%d0  |, tmp43
+|         not.b %d0       | tmp43
+|         move.l %a3,%a0  | buf, sc.399
+| #APP
+| 
+| 1:     subq.l  #1,%d0   | count
+|        jcs     2f
+|        tst.b   (%a0)+   | sc.399
+|        jne     1b
+|        subq.l  #1,%a0   | sc.399
+| 2:
+| #NO_APP
+|         sub.l %a3,%a0   | buf, D.21217
+| .L25:
+|         move.l %a0,%d0  | D.21217, <result>
+|         move.l (%sp)+,%a3
+|         rts
+|         .size   dm_attr_name_show, .-dm_attr_name_show
+
+So gcc (version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21) in my case) is
+smart and turns the strncat into a strlen() (without obeying our override of
+strlen() in <{linux,asm}/string.h>) followed by an _unconditional_ store.
+
+And I think that's the real bug: `strncat(buf, "\n", DM_NAME_LEN);' copies at
+most DM_NAME_LEN characters from source "\n", which has the known size 2,
+which is always smaller than DM_NAME_LEN. Hence the check is optimized away,
+and the "\n" is _always_ appended!
+
+Probably the intention was to limit the string in _buf_ (not the source string
+"\n") to DM_NAME_LEN? If yes, this may cause a buffer overflow.
+
+The same bug is present in dm_attr_uuid_show().
+
+Fixing it will probably get rid of the undefined reference, too (I hope :-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
