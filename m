@@ -1,74 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZAEOpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZAEOqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZAEOpo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 09:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbZAEOpN
+	id S1755467AbZAEOqB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 09:46:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZAEOpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 09:45:13 -0500
-Received: from mfo10.iij4u.or.jp ([210.138.174.80]:38062 "EHLO
+	Mon, 5 Jan 2009 09:45:20 -0500
+Received: from mfo10.iij4u.or.jp ([210.138.174.80]:38063 "EHLO
 	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755763AbZAEOpL (ORCPT
+	with ESMTP id S1755271AbZAEOpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 09:45:11 -0500
+	Mon, 5 Jan 2009 09:45:14 -0500
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: tony.luck@intel.com
 Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH 0/13] IA64: unifying ways to handle multiple sets of dma mapping ops
-Date: Mon,  5 Jan 2009 23:36:05 +0900
-Message-Id: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 08/13] convert the DMA API to use dma_ops
+Date: Mon,  5 Jan 2009 23:36:13 +0900
+Message-Id: <1231166178-20050-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1231166178-20050-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset is the first part of the unification of ways to handle
-multiple sets of dma mapping API. The whole work consists of three
-patchset. This is for IA64 and can be applied independently.
+This writes asm/dma-mapping.h to convert the DMA API to use dma_ops.
 
-dma_mapping_ops (or dma_ops) struct is used to handle multiple sets of
-dma mapping API by X86, SPARC, and POWER. IA64 also handle multiple
-sets of dma mapping API but in a very different way (some define
-magic).
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/ia64/include/asm/dma-mapping.h |  113 ++++++++++++++++++++++++-----------
+ 1 files changed, 77 insertions(+), 36 deletions(-)
 
-X86 and IA64 share VT-d and SWIOTLB code. We need several workarounds
-for it because of the deference of ways to handle multiple sets of dma
-mapping API (e.g., X86 people can't freely change struct
-dma_mapping_ops in x86's dma-mapping.h now because it could break
-IA64).  Seems POWER will use SWIOTLB code soon. I think that it's time
-to unify ways to handle multiple sets of dma mapping API. After
-applying the whole work, we have struct dma_map_ops
-include/linux/dma-mapping.h (I also dream of changing all the archs to
-use SWIOTLB in order to remove the bounce code in the block and
-network stacks...).
-
-This patchset changes IA64 to handle multiple sets of dma mapping API
-in the common way (as X86, SPARC, and POWER do):
-
-- removing dma operation hooks in struct ia64_machine_vector.
-
-- adding a global pointer to struct dma_mapping_ops, which point to an
-appropriate set of dma mapping API (VT-d, SBA, SN2, SWIOTLB, or HWSW).
-
-
-I can access to a HP IA64 box and tested this patch with CONFIG
-IA64_GENERIC, IA64_HP_ZX1, and IA64_HP_ZX1_SWIOTLB.
-
-=
- arch/ia64/dig/dig_vtd_iommu.c                 |   18 +++
- arch/ia64/hp/common/hwsw_iommu.c              |  165 ++----------------------
- arch/ia64/hp/common/sba_iommu.c               |   57 ++++++---
- arch/ia64/include/asm/dma-mapping.h           |  144 +++++++++++++++------
- arch/ia64/include/asm/machvec.h               |   99 ++-------------
- arch/ia64/include/asm/machvec_dig_vtd.h       |   20 ---
- arch/ia64/include/asm/machvec_hpzx1.h         |   23 +---
- arch/ia64/include/asm/machvec_hpzx1_swiotlb.h |   27 +----
- arch/ia64/include/asm/machvec_sn2.h           |   27 +----
- arch/ia64/kernel/Makefile                     |    4 +-
- arch/ia64/kernel/dma-mapping.c                |   10 ++
- arch/ia64/kernel/pci-dma.c                    |   11 +-
- arch/ia64/kernel/pci-swiotlb.c                |   15 ++-
- arch/ia64/sn/pci/pci_dma.c                    |   83 +++++++------
- 14 files changed, 262 insertions(+), 441 deletions(-)
-
+diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+index eeb2aa3..5298f40 100644
+--- a/arch/ia64/include/asm/dma-mapping.h
++++ b/arch/ia64/include/asm/dma-mapping.h
+@@ -65,52 +65,92 @@ extern struct dma_mapping_ops *dma_ops;
+ extern struct ia64_machine_vector ia64_mv;
+ extern void set_iommu_machvec(void);
+ 
+-#define dma_alloc_coherent(dev, size, handle, gfp)	\
+-	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
++static inline void *dma_alloc_coherent(struct device *dev, size_t size,
++				       dma_addr_t *daddr, gfp_t gfp)
++{
++	return dma_ops->alloc_coherent(dev, size, daddr, gfp | GFP_DMA);
++}
+ 
+-/* coherent mem. is cheap */
+-static inline void *
+-dma_alloc_noncoherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
+-		      gfp_t flag)
++static inline void dma_free_coherent(struct device *dev, size_t size,
++				     void *caddr, dma_addr_t daddr)
+ {
+-	return dma_alloc_coherent(dev, size, dma_handle, flag);
++	dma_ops->free_coherent(dev, size, caddr, daddr);
+ }
+-#define dma_free_coherent	platform_dma_free_coherent
+-static inline void
+-dma_free_noncoherent(struct device *dev, size_t size, void *cpu_addr,
+-		     dma_addr_t dma_handle)
++
++#define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
++#define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
++
++static inline dma_addr_t dma_map_single_attrs(struct device *dev,
++					      void *caddr, size_t size,
++					      enum dma_data_direction dir,
++					      struct dma_attrs *attrs)
++{
++	return dma_ops->map_single_attrs(dev, caddr, size, dir, attrs);
++}
++
++static inline void dma_unmap_single_attrs(struct device *dev, dma_addr_t daddr,
++					  size_t size,
++					  enum dma_data_direction dir,
++					  struct dma_attrs *attrs)
+ {
+-	dma_free_coherent(dev, size, cpu_addr, dma_handle);
++	dma_ops->unmap_single_attrs(dev, daddr, size, dir, attrs);
+ }
+-#define dma_map_single_attrs	platform_dma_map_single_attrs
+-static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
+-					size_t size, int dir)
++
++#define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a, s, r, NULL)
++#define dma_unmap_single(d, a, s, r) dma_unmap_single_attrs(d, a, s, r, NULL)
++
++static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
++				   int nents, enum dma_data_direction dir,
++				   struct dma_attrs *attrs)
+ {
+-	return dma_map_single_attrs(dev, cpu_addr, size, dir, NULL);
++	return dma_ops->map_sg_attrs(dev, sgl, nents, dir, attrs);
+ }
+-#define dma_map_sg_attrs	platform_dma_map_sg_attrs
+-static inline int dma_map_sg(struct device *dev, struct scatterlist *sgl,
+-			     int nents, int dir)
++
++static inline void dma_unmap_sg_attrs(struct device *dev,
++				      struct scatterlist *sgl, int nents,
++				      enum dma_data_direction dir,
++				      struct dma_attrs *attrs)
+ {
+-	return dma_map_sg_attrs(dev, sgl, nents, dir, NULL);
++	dma_ops->unmap_sg_attrs(dev, sgl, nents, dir, attrs);
+ }
+-#define dma_unmap_single_attrs	platform_dma_unmap_single_attrs
+-static inline void dma_unmap_single(struct device *dev, dma_addr_t cpu_addr,
+-				    size_t size, int dir)
++
++#define dma_map_sg(d, s, n, r) dma_map_sg_attrs(d, s, n, r, NULL)
++#define dma_unmap_sg(d, s, n, r) dma_unmap_sg_attrs(d, s, n, r, NULL)
++
++static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t daddr,
++					   size_t size,
++					   enum dma_data_direction dir)
+ {
+-	return dma_unmap_single_attrs(dev, cpu_addr, size, dir, NULL);
++	dma_ops->sync_single_for_cpu(dev, daddr, size, dir);
+ }
+-#define dma_unmap_sg_attrs	platform_dma_unmap_sg_attrs
+-static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sgl,
+-				int nents, int dir)
++
++static inline void dma_sync_sg_for_cpu(struct device *dev,
++				       struct scatterlist *sgl,
++				       int nents, enum dma_data_direction dir)
+ {
+-	return dma_unmap_sg_attrs(dev, sgl, nents, dir, NULL);
++	dma_ops->sync_sg_for_cpu(dev, sgl, nents, dir);
++}
++
++static inline void dma_sync_single_for_device(struct device *dev,
++					      dma_addr_t daddr,
++					      size_t size,
++					      enum dma_data_direction dir)
++{
++	dma_ops->sync_single_for_device(dev, daddr, size, dir);
++}
++
++static inline void dma_sync_sg_for_device(struct device *dev,
++					  struct scatterlist *sgl,
++					  int nents,
++					  enum dma_data_direction dir)
++{
++	dma_ops->sync_sg_for_device(dev, sgl, nents, dir);
++}
++
++static inline int dma_mapping_error(struct device *dev, dma_addr_t daddr)
++{
++	return dma_ops->mapping_error(dev, daddr);
+ }
+-#define dma_sync_single_for_cpu	platform_dma_sync_single_for_cpu
+-#define dma_sync_sg_for_cpu	platform_dma_sync_sg_for_cpu
+-#define dma_sync_single_for_device platform_dma_sync_single_for_device
+-#define dma_sync_sg_for_device	platform_dma_sync_sg_for_device
+-#define dma_mapping_error	platform_dma_mapping_error
+ 
+ #define dma_map_page(dev, pg, off, size, dir)				\
+ 	dma_map_single(dev, page_address(pg) + (off), (size), (dir))
+@@ -127,7 +167,10 @@ static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sgl,
+ #define dma_sync_single_range_for_device(dev, dma_handle, offset, size, dir)	\
+ 	dma_sync_single_for_device(dev, dma_handle, size, dir)
+ 
+-#define dma_supported		platform_dma_supported
++static inline int dma_supported(struct device *dev, u64 mask)
++{
++	return dma_ops->dma_supported_op(dev, mask);
++}
+ 
+ static inline int
+ dma_set_mask (struct device *dev, u64 mask)
+@@ -158,6 +201,4 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
+ 	return dma_ops;
+ }
+ 
+-
+-
+ #endif /* _ASM_IA64_DMA_MAPPING_H */
+-- 
+1.6.0.6
 
