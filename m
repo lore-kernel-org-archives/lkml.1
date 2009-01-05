@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbZAEVKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbZAEVMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbZAEVKY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 16:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZAEVKK
+	id S1754319AbZAEVMV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 16:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZAEVME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 16:10:10 -0500
-Received: from outbound-mail-125.bluehost.com ([67.222.38.25]:48503 "HELO
-	outbound-mail-125.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752592AbZAEVKJ (ORCPT
+	Mon, 5 Jan 2009 16:12:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59883 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbZAEVMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 16:10:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=ez5+cxC2F7VIGTplhnfYhuJiGFYQTG2y58r8O0spDsjdvwo6L8pSxjawvQdEuAT1hq3ezTrPr5ZL7LrezVAM2UujVi2xMl3PSi5zqaG32hb/yDyovK7fYXZa2Wmr9W0w;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 1/2] cpumask: update local_cpus_show to use new cpumask API
-Date: Mon, 5 Jan 2009 13:10:06 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-References: <20090105203351.785422000@polaris-admin.engr.sgi.com> <20090105203351.959649000@polaris-admin.engr.sgi.com>
-In-Reply-To: <20090105203351.959649000@polaris-admin.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 5 Jan 2009 16:12:01 -0500
+Date: Mon, 5 Jan 2009 13:13:50 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
+Message-ID: <20090105131350.66408a4f@infradead.org>
+In-Reply-To: <20090105162125.093b4adf@lxorguk.ukuu.org.uk>
+References: <20090104092430.7ffd2c41@infradead.org>
+	<alpine.LFD.2.00.0901041009060.3179@localhost.localdomain>
+	<20090104103104.6fdda9f2@infradead.org>
+	<alpine.LFD.2.00.0901041038570.3179@localhost.localdomain>
+	<20090104110559.306186c4@infradead.org>
+	<20090105162125.093b4adf@lxorguk.ukuu.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901051310.07147.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, January 5, 2009 12:33 pm Mike Travis wrote:
-> Impact: cleanup, reduce stack usage, use new cpumask API.
->
-> Replace the local cpumask_t variable with a pointer to the
-> const cpumask that needs to be printed.
->
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> ---
->  drivers/pci/pci-sysfs.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+On Mon, 5 Jan 2009 16:21:25 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Hm, clearly there are other patches in Ingo's tree that this depends on, since 
-this patch assumes the presence of cpumask_of_pcibus and has slightly 
-different cpumask_scnprintf context.  I'll just let Ingo push the whole thing.
+> > Right now I don't think I have time for it (this is going to take
+> > time.. there's so many weird things with serial ports that it's
+> > bound to break stuff in the beginning etc)
+> 
+> I can't duplicate this. Can you check you don't have
+> 
+> config SERIAL_8250_DETECT_IRQ
+>         bool "Autodetect IRQ on standard ports (unsafe)"
+>         depends on SERIAL_8250_EXTENDED
+>         help
+>           Say Y here if you want the kernel to try to guess which IRQ
+>           to use for your serial port.
+> 
+>           This is considered unsafe; it is far better to configure the
+> IRQ in a boot script using the setserial command.
+> 
+>           If unsure, say N.
+> 
+> 
+> enabled
+> 
+ok I had that enabled somehow....
+retesting now
+
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
