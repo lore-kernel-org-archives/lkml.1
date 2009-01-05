@@ -1,134 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbZAEI0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752363AbZAEIeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752654AbZAEI0A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 03:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZAEIZw
+	id S1752363AbZAEIeo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 03:34:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZAEIee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 03:25:52 -0500
-Received: from tundra.namei.org ([65.99.196.166]:2138 "EHLO tundra.namei.org"
+	Mon, 5 Jan 2009 03:34:34 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:42372 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbZAEIZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 03:25:51 -0500
-Date: Mon, 5 Jan 2009 19:25:06 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [TOMOYO #14 (mmotm 2008-12-30-16-05) 01/10] Add in_execve flag
- into task_struct.
-In-Reply-To: <20090101050938.558328702@I-love.SAKURA.ne.jp>
-Message-ID: <alpine.LRH.1.10.0901051924140.16049@tundra.namei.org>
-References: <20090101050741.372438529@I-love.SAKURA.ne.jp> <20090101050938.558328702@I-love.SAKURA.ne.jp>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1751464AbZAEIee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 03:34:34 -0500
+Message-ID: <4961C60E.9030506@garzik.org>
+Date: Mon, 05 Jan 2009 03:34:22 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tejun Heo <tj@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata hibernation fixes
+References: <20081104062734.GA4420@havoc.gtf.org> <495D7DC9.8070101@kernel.org>
+In-Reply-To: <495D7DC9.8070101@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Jan 2009, Tetsuo Handa wrote:
-
-> This patch allows LSM modules to determine whether current process is in an
-> execve operation or not so that they can behave differently while an execve
-> operation is in progress.
+Tejun Heo wrote:
+> Jeff Garzik wrote:
+>> This adds code at a late stage (heading towards -rc4), but does
+>> eliminate a particular spin-up overcycling behavior associated with
+>> hibernation.
+>>
+>> Rafael's extended description below...  Separated to make it easier to
+>> pull-or-not, separate from the other libata fixes.  There shouldn't be
+>> any merge trouble between the two.
+>>
+>> SATA: Blacklist systems that spin off disks during ACPI power off
 > 
-> This allows TOMOYO to dispense with a readability check on a file to be
-> executed under the process's current credentials, and to do it instead under
-> the proposed credentials.
-> 
-> This is required with the new COW credentials because TOMOYO is no longer
-> allowed to mark the state temporarily in the security struct attached to the
-> task_struct.
+> Jeff, I think this should be merged into 2.6.29 unless Linus still
+> objects.  Linus, as discussed in this thread, this is workaround for a
+> hardware / firmware problem and vanilla windows also suffers the
+> problem, so as ugly as it is, we need this to prevent double spin down
+> on the machine.
 
-Serge previously queried this flag:
+(Just returned from New Year's holiday)
 
-http://article.gmane.org/gmane.linux.kernel.lsm/7611
+Yes, I definitely want to put it in as well.
 
-The issue does not appear to have been resolved.
+	Jeff
 
 
-> 
-> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
->  fs/compat.c           |    3 +++
->  fs/exec.c             |    3 +++
->  include/linux/sched.h |    2 ++
->  3 files changed, 8 insertions(+)
-> 
-> --- linux-2.6.28-mm1.orig/fs/compat.c
-> +++ linux-2.6.28-mm1/fs/compat.c
-> @@ -1402,6 +1402,7 @@ int compat_do_execve(char * filename,
->  	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
->  	if (retval < 0)
->  		goto out_free;
-> +	current->in_execve = 1;
->  
->  	retval = -ENOMEM;
->  	bprm->cred = prepare_exec_creds();
-> @@ -1454,6 +1455,7 @@ int compat_do_execve(char * filename,
->  		goto out;
->  
->  	/* execve succeeded */
-> +	current->in_execve = 0;
->  	mutex_unlock(&current->cred_exec_mutex);
->  	acct_update_integrals(current);
->  	free_bprm(bprm);
-> @@ -1470,6 +1472,7 @@ out_file:
->  	}
->  
->  out_unlock:
-> +	current->in_execve = 0;
->  	mutex_unlock(&current->cred_exec_mutex);
->  
->  out_free:
-> --- linux-2.6.28-mm1.orig/fs/exec.c
-> +++ linux-2.6.28-mm1/fs/exec.c
-> @@ -1306,6 +1306,7 @@ int do_execve(char * filename,
->  	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
->  	if (retval < 0)
->  		goto out_free;
-> +	current->in_execve = 1;
->  
->  	retval = -ENOMEM;
->  	bprm->cred = prepare_exec_creds();
-> @@ -1359,6 +1360,7 @@ int do_execve(char * filename,
->  		goto out;
->  
->  	/* execve succeeded */
-> +	current->in_execve = 0;
->  	mutex_unlock(&current->cred_exec_mutex);
->  	acct_update_integrals(current);
->  	free_bprm(bprm);
-> @@ -1377,6 +1379,7 @@ out_file:
->  	}
->  
->  out_unlock:
-> +	current->in_execve = 0;
->  	mutex_unlock(&current->cred_exec_mutex);
->  
->  out_free:
-> --- linux-2.6.28-mm1.orig/include/linux/sched.h
-> +++ linux-2.6.28-mm1/include/linux/sched.h
-> @@ -1155,6 +1155,8 @@ struct task_struct {
->  	/* ??? */
->  	unsigned int personality;
->  	unsigned did_exec:1;
-> +	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
-> +				 * execve */
->  	pid_t pid;
->  	pid_t tgid;
->  
-> 
-> -- 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
 
--- 
-James Morris
-<jmorris@namei.org>
