@@ -1,84 +1,384 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbZAEL33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZAELbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007AbZAEL33 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 06:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZAEL3U
+	id S1754651AbZAELbT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 06:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZAELbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 06:29:20 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:23306 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZAEL3T (ORCPT
+	Mon, 5 Jan 2009 06:31:07 -0500
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:57349 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751637AbZAELbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 06:29:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=f/TO+FMZ6wLfyrArotwIeSFEVEY0xKIYDD4diYUrgYyS1fa3OD7x2xeb9b1FxYSq3q
-         2GCmLw0/9zyyLvUM3tpvsrJWx9cS7el1m2xD6GUFoRgaToAudhSxf2XdyfoWGjjjj3ON
-         Xsp/QFI+tKeg2rdk/HPF2qW18YOlW4BWMh2NU=
-Message-ID: <f7848160901050329pfecace2g536869d605b7c277@mail.gmail.com>
-Date: Mon, 5 Jan 2009 06:29:17 -0500
-From: "Parag Warudkar" <parag.lkml@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: Lock up - probably ALSA related
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5h1vvi9jg4.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f7848160901041858n5c6ac1ddvd7ed0db90a677835@mail.gmail.com>
-	 <s5h1vvi9jg4.wl%tiwai@suse.de>
+	Mon, 5 Jan 2009 06:31:06 -0500
+To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com, sfr@canb.auug.org.au
+Subject: [PATCH V3 01/17] Squashfs: inode operations
+Message-Id: <E1LJnJn-0002L2-GZ@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Mon, 05 Jan 2009 11:08:23 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 5, 2009 at 4:43 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Sun, 4 Jan 2009 21:58:21 -0500,
-> Parag Warudkar wrote:
->>
->> After installing today's git my laptop has started to partially lock
->> up while listening to audio.  This laptop was previously running
->> distro kernel 2.6 (2.6.27.9-159.fc10.i686) without any trouble.
->
-> Which audio hardware?  Does it happen with 2.6.28 kernel, too?
->
 
-Hello,
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/inode.c |  346 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 346 insertions(+), 0 deletions(-)
 
-Hardware is snd-hda-intel. This is a second generation Macbook Pro, no
-special options in use.
+diff --git a/fs/squashfs/inode.c b/fs/squashfs/inode.c
+new file mode 100644
+index 0000000..7a63398
+--- /dev/null
++++ b/fs/squashfs/inode.c
+@@ -0,0 +1,346 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * inode.c
++ */
++
++/*
++ * This file implements code to create and read inodes from disk.
++ *
++ * Inodes in Squashfs are identified by a 48-bit inode which encodes the
++ * location of the compressed metadata block containing the inode, and the byte
++ * offset into that block where the inode is placed (<block, offset>).
++ *
++ * To maximise compression there are different inodes for each file type
++ * (regular file, directory, device, etc.), the inode contents and length
++ * varying with the type.
++ *
++ * To further maximise compression, two types of regular file inode and
++ * directory inode are defined: inodes optimised for frequently occurring
++ * regular files and directories, and extended types where extra
++ * information has to be stored.
++ */
++
++#include <linux/fs.h>
++#include <linux/vfs.h>
++#include <linux/zlib.h>
++
++#include "squashfs_fs.h"
++#include "squashfs_fs_sb.h"
++#include "squashfs_fs_i.h"
++#include "squashfs.h"
++
++/*
++ * Initialise VFS inode with the base inode information common to all
++ * Squashfs inode types.  Sqsh_ino contains the unswapped base inode
++ * off disk.
++ */
++static int squashfs_new_inode(struct super_block *sb, struct inode *inode,
++				struct squashfs_base_inode *sqsh_ino)
++{
++	int err;
++
++	err = squashfs_get_id(sb, le16_to_cpu(sqsh_ino->uid), &inode->i_uid);
++	if (err)
++		return err;
++
++	err = squashfs_get_id(sb, le16_to_cpu(sqsh_ino->guid), &inode->i_gid);
++	if (err)
++		return err;
++
++	inode->i_ino = le32_to_cpu(sqsh_ino->inode_number);
++	inode->i_mtime.tv_sec = le32_to_cpu(sqsh_ino->mtime);
++	inode->i_atime.tv_sec = inode->i_mtime.tv_sec;
++	inode->i_ctime.tv_sec = inode->i_mtime.tv_sec;
++	inode->i_mode = le16_to_cpu(sqsh_ino->mode);
++	inode->i_size = 0;
++
++	return err;
++}
++
++
++struct inode *squashfs_iget(struct super_block *sb, long long ino,
++				unsigned int ino_number)
++{
++	struct inode *inode = iget_locked(sb, ino_number);
++	int err;
++
++	TRACE("Entered squashfs_iget\n");
++
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++	if (!(inode->i_state & I_NEW))
++		return inode;
++
++	err = squashfs_read_inode(inode, ino);
++	if (err) {
++		iget_failed(inode);
++		return ERR_PTR(err);
++	}
++
++	unlock_new_inode(inode);
++	return inode;
++}
++
++
++/*
++ * Initialise VFS inode by reading inode from inode table (compressed
++ * metadata).  The format and amount of data read depends on type.
++ */
++int squashfs_read_inode(struct inode *inode, long long ino)
++{
++	struct super_block *sb = inode->i_sb;
++	struct squashfs_sb_info *msblk = sb->s_fs_info;
++	u64 block = SQUASHFS_INODE_BLK(ino) + msblk->inode_table;
++	int err, type, offset = SQUASHFS_INODE_OFFSET(ino);
++	union squashfs_inode squashfs_ino;
++	struct squashfs_base_inode *sqshb_ino = &squashfs_ino.base;
++
++	TRACE("Entered squashfs_read_inode\n");
++
++	/*
++	 * Read inode base common to all inode types.
++	 */
++	err = squashfs_read_metadata(sb, sqshb_ino, &block,
++				&offset, sizeof(*sqshb_ino));
++	if (err < 0)
++		goto failed_read;
++
++	err = squashfs_new_inode(sb, inode, sqshb_ino);
++	if (err)
++		goto failed_read;
++
++	block = SQUASHFS_INODE_BLK(ino) + msblk->inode_table;
++	offset = SQUASHFS_INODE_OFFSET(ino);
++
++	type = le16_to_cpu(sqshb_ino->inode_type);
++	switch (type) {
++	case SQUASHFS_REG_TYPE: {
++		unsigned int frag_offset, frag_size, frag;
++		u64 frag_blk;
++		struct squashfs_reg_inode *sqsh_ino = &squashfs_ino.reg;
++
++		err = squashfs_read_metadata(sb, sqsh_ino, &block, &offset,
++							sizeof(*sqsh_ino));
++		if (err < 0)
++			goto failed_read;
++
++		frag = le32_to_cpu(sqsh_ino->fragment);
++		if (frag != SQUASHFS_INVALID_FRAG) {
++			frag_offset = le32_to_cpu(sqsh_ino->offset);
++			frag_size = squashfs_frag_lookup(sb, frag, &frag_blk);
++			if (frag_size < 0) {
++				err = frag_size;
++				goto failed_read;
++			}
++		} else {
++			frag_blk = SQUASHFS_INVALID_BLK;
++			frag_size = 0;
++			frag_offset = 0;
++		}
++
++		inode->i_nlink = 1;
++		inode->i_size = le32_to_cpu(sqsh_ino->file_size);
++		inode->i_fop = &generic_ro_fops;
++		inode->i_mode |= S_IFREG;
++		inode->i_blocks = ((inode->i_size - 1) >> 9) + 1;
++		squashfs_i(inode)->fragment_block = frag_blk;
++		squashfs_i(inode)->fragment_size = frag_size;
++		squashfs_i(inode)->fragment_offset = frag_offset;
++		squashfs_i(inode)->start = le32_to_cpu(sqsh_ino->start_block);
++		squashfs_i(inode)->block_list_start = block;
++		squashfs_i(inode)->offset = offset;
++		inode->i_data.a_ops = &squashfs_aops;
++
++		TRACE("File inode %x:%x, start_block %llx, block_list_start "
++			"%llx, offset %x\n", SQUASHFS_INODE_BLK(ino),
++			offset, squashfs_i(inode)->start, block, offset);
++		break;
++	}
++	case SQUASHFS_LREG_TYPE: {
++		unsigned int frag_offset, frag_size, frag;
++		u64 frag_blk;
++		struct squashfs_lreg_inode *sqsh_ino = &squashfs_ino.lreg;
++
++		err = squashfs_read_metadata(sb, sqsh_ino, &block, &offset,
++							sizeof(*sqsh_ino));
++		if (err < 0)
++			goto failed_read;
++
++		frag = le32_to_cpu(sqsh_ino->fragment);
++		if (frag != SQUASHFS_INVALID_FRAG) {
++			frag_offset = le32_to_cpu(sqsh_ino->offset);
++			frag_size = squashfs_frag_lookup(sb, frag, &frag_blk);
++			if (frag_size < 0) {
++				err = frag_size;
++				goto failed_read;
++			}
++		} else {
++			frag_blk = SQUASHFS_INVALID_BLK;
++			frag_size = 0;
++			frag_offset = 0;
++		}
++
++		inode->i_nlink = le32_to_cpu(sqsh_ino->nlink);
++		inode->i_size = le64_to_cpu(sqsh_ino->file_size);
++		inode->i_fop = &generic_ro_fops;
++		inode->i_mode |= S_IFREG;
++		inode->i_blocks = ((inode->i_size -
++				le64_to_cpu(sqsh_ino->sparse) - 1) >> 9) + 1;
++
++		squashfs_i(inode)->fragment_block = frag_blk;
++		squashfs_i(inode)->fragment_size = frag_size;
++		squashfs_i(inode)->fragment_offset = frag_offset;
++		squashfs_i(inode)->start = le64_to_cpu(sqsh_ino->start_block);
++		squashfs_i(inode)->block_list_start = block;
++		squashfs_i(inode)->offset = offset;
++		inode->i_data.a_ops = &squashfs_aops;
++
++		TRACE("File inode %x:%x, start_block %llx, block_list_start "
++			"%llx, offset %x\n", SQUASHFS_INODE_BLK(ino),
++			offset, squashfs_i(inode)->start, block, offset);
++		break;
++	}
++	case SQUASHFS_DIR_TYPE: {
++		struct squashfs_dir_inode *sqsh_ino = &squashfs_ino.dir;
++
++		err = squashfs_read_metadata(sb, sqsh_ino, &block, &offset,
++				sizeof(*sqsh_ino));
++		if (err < 0)
++			goto failed_read;
++
++		inode->i_nlink = le32_to_cpu(sqsh_ino->nlink);
++		inode->i_size = le16_to_cpu(sqsh_ino->file_size);
++		inode->i_op = &squashfs_dir_inode_ops;
++		inode->i_fop = &squashfs_dir_ops;
++		inode->i_mode |= S_IFDIR;
++		squashfs_i(inode)->start = le32_to_cpu(sqsh_ino->start_block);
++		squashfs_i(inode)->offset = le16_to_cpu(sqsh_ino->offset);
++		squashfs_i(inode)->dir_idx_cnt = 0;
++		squashfs_i(inode)->parent = le32_to_cpu(sqsh_ino->parent_inode);
++
++		TRACE("Directory inode %x:%x, start_block %llx, offset %x\n",
++				SQUASHFS_INODE_BLK(ino), offset,
++				squashfs_i(inode)->start,
++				le16_to_cpu(sqsh_ino->offset));
++		break;
++	}
++	case SQUASHFS_LDIR_TYPE: {
++		struct squashfs_ldir_inode *sqsh_ino = &squashfs_ino.ldir;
++
++		err = squashfs_read_metadata(sb, sqsh_ino, &block, &offset,
++				sizeof(*sqsh_ino));
++		if (err < 0)
++			goto failed_read;
++
++		inode->i_nlink = le32_to_cpu(sqsh_ino->nlink);
++		inode->i_size = le32_to_cpu(sqsh_ino->file_size);
++		inode->i_op = &squashfs_dir_inode_ops;
++		inode->i_fop = &squashfs_dir_ops;
++		inode->i_mode |= S_IFDIR;
++		squashfs_i(inode)->start = le32_to_cpu(sqsh_ino->start_block);
++		squashfs_i(inode)->offset = le16_to_cpu(sqsh_ino->offset);
++		squashfs_i(inode)->dir_idx_start = block;
++		squashfs_i(inode)->dir_idx_offset = offset;
++		squashfs_i(inode)->dir_idx_cnt = le16_to_cpu(sqsh_ino->i_count);
++		squashfs_i(inode)->parent = le32_to_cpu(sqsh_ino->parent_inode);
++
++		TRACE("Long directory inode %x:%x, start_block %llx, offset "
++				"%x\n", SQUASHFS_INODE_BLK(ino), offset,
++				squashfs_i(inode)->start,
++				le16_to_cpu(sqsh_ino->offset));
++		break;
++	}
++	case SQUASHFS_SYMLINK_TYPE:
++	case SQUASHFS_LSYMLINK_TYPE: {
++		struct squashfs_symlink_inode *sqsh_ino = &squashfs_ino.symlink;
++
++		err = squashfs_read_metadata(sb, sqsh_ino, &block, &offset,
++				sizeof(*sqsh_ino));
++		if (err < 0)
++			goto failed_read;
++
++		inode->i_nlink = le32_to_cpu(sqsh_ino->nlink);
++		inode->i_size = le32_to_cpu(sqsh_ino->symlink_size);
++		inode->i_op = &page_symlink_inode_operations;
++		inode->i_data.a_ops = &squashfs_symlink_aops;
++		inode->i_mode |= S_IFLNK;
++		squashfs_i(inode)->start = block;
++		squashfs_i(inode)->offset = offset;
++
++		TRACE("Symbolic link inode %x:%x, start_block %llx, offset "
++				"%x\n", SQUASHFS_INODE_BLK(ino), offset,
++				block, offset);
++		break;
++	}
++	case SQUASHFS_BLKDEV_TYPE:
++	case SQUASHFS_CHRDEV_TYPE:
++	case SQUASHFS_LBLKDEV_TYPE:
++	case SQUASHFS_LCHRDEV_TYPE: {
++		struct squashfs_dev_inode *sqsh_ino = &squashfs_ino.dev;
++		unsigned int rdev;
++
++		err = squashfs_read_metadata(sb, sqsh_ino, &block, &offset,
++				sizeof(*sqsh_ino));
++		if (err < 0)
++			goto failed_read;
++
++		if (type == SQUASHFS_CHRDEV_TYPE)
++			inode->i_mode |= S_IFCHR;
++		else
++			inode->i_mode |= S_IFBLK;
++		inode->i_nlink = le32_to_cpu(sqsh_ino->nlink);
++		rdev = le32_to_cpu(sqsh_ino->rdev);
++		init_special_inode(inode, inode->i_mode, new_decode_dev(rdev));
++
++		TRACE("Device inode %x:%x, rdev %x\n",
++				SQUASHFS_INODE_BLK(ino), offset, rdev);
++		break;
++	}
++	case SQUASHFS_FIFO_TYPE:
++	case SQUASHFS_SOCKET_TYPE:
++	case SQUASHFS_LFIFO_TYPE:
++	case SQUASHFS_LSOCKET_TYPE: {
++		struct squashfs_ipc_inode *sqsh_ino = &squashfs_ino.ipc;
++
++		err = squashfs_read_metadata(sb, sqsh_ino, &block, &offset,
++				sizeof(*sqsh_ino));
++		if (err < 0)
++			goto failed_read;
++
++		if (type == SQUASHFS_FIFO_TYPE)
++			inode->i_mode |= S_IFIFO;
++		else
++			inode->i_mode |= S_IFSOCK;
++		inode->i_nlink = le32_to_cpu(sqsh_ino->nlink);
++		init_special_inode(inode, inode->i_mode, 0);
++		break;
++	}
++	default:
++		ERROR("Unknown inode type %d in squashfs_iget!\n", type);
++		return -EINVAL;
++	}
++
++	return 0;
++
++failed_read:
++	ERROR("Unable to read inode 0x%llx\n", ino);
++	return err;
++}
+-- 
+1.5.6.3
 
-[parag@fedora ~]$ dmesg|grep ALSA
-ALSA sound/pci/hda/hda_codec.c:3419: autoconfig: line_outs=1
-(0xc/0x0/0x0/0x0/0x0)
-ALSA sound/pci/hda/hda_codec.c:3423:    speaker_outs=0 (0x0/0x0/0x0/0x0/0x0)
-ALSA sound/pci/hda/hda_codec.c:3427:    hp_outs=1 (0xa/0x0/0x0/0x0/0x0)
-ALSA sound/pci/hda/hda_codec.c:3428:    mono: mono_out=0x0
-ALSA sound/pci/hda/hda_codec.c:3436:    inputs: mic=0xb, fmic=0x0,
-line=0xf, fline=0x0, cd=0x0, aux=0x0
-ALSA sound/pci/hda/patch_sigmatel.c:2908: stac92xx: dac_nids=1
-(0x3/0x0/0x0/0x0/0x0)
-
-[parag@fedora ~]$ cat /proc/asound/devices
-  2:        : timer
-  3:        : sequencer
-  4: [ 0- 1]: digital audio playback
-  5: [ 0- 1]: digital audio capture
-  6: [ 0- 0]: digital audio playback
-  7: [ 0- 0]: digital audio capture
-  8: [ 0- 0]: hardware dependent
-  9: [ 0]   : control
-
-[parag@fedora ~]$ cat /proc/asound/cards
- 0 [Intel          ]: HDA-Intel - HDA Intel
-                      HDA Intel at 0xd8400000 irq 22
-
-I think if I remember correctly it happened on 2.6.28 - but I need to
-test out once again to make sure.
-
-Thanks
-
-Parag
