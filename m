@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZAEPCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZAEPHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZAEPCQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbZAEPBz
+	id S1755666AbZAEPHG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:07:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZAEPGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:01:55 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:27410 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754476AbZAEPBy (ORCPT
+	Mon, 5 Jan 2009 10:06:51 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:40388 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbZAEPGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:01:54 -0500
+	Mon, 5 Jan 2009 10:06:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JK8rzBGGzz8cRuiC9B7L3EBVsei0FQjfgrjI+6rtsz6W22ndqN/2B4Qm5vRxlehVcE
-         9/oQOCZSJc3M7N9z6s7x/y+oIQDbxIL2PZLNE0PYQU0Y3MjSf6dwl72tCBE5SdApWF0B
-         kcYU3QrYtmKlGg3nKLCmIEaG9rBFE0W1zCQGI=
-Date: Mon, 5 Jan 2009 18:01:50 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Johannes Weiner <hannes@cmpxchg.org>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: early exception error
-Message-ID: <20090105150150.GF7645@localhost>
-References: <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm> <20090101041727.GW496@one.firstfloor.org> <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm> <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm> <20090102172426.GB5372@localhost> <495E7FAD.6020305@shaw.ca> <20090105092619.GA3699@cmpxchg.org> <20090105130836.GN496@one.firstfloor.org> <49621E6E.2010809@gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IUGsAV3UpuoYlLGpEtcfYKzl9897wYfwFNJg5j1KdqX6L/9/ez1qwzIvBmasGywFrS
+         rsdGB56HSEwwZlMT9kwrX0Nv+9QXkMqIzcSH1aGeQdCPImLmh+EK2ke4GqvDHBdM4vT3
+         JVut184OzhS2M+9XWEjEcYfSMmZ74Aa++hcBY=
+Message-ID: <3f9a31f40901050706r3d01fbfen351c1728b5a9095b@mail.gmail.com>
+Date: Mon, 5 Jan 2009 20:36:47 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Oliver Hartkopp" <oliver@hartkopp.net>
+Subject: Re: [PATCH -net-next 3/4] firmware: convert tg3 driver to request_firmware()
+Cc: "David Woodhouse" <dwmw2@infradead.org>,
+       "Jaswinder Singh Rajput" <jaswinder@infradead.org>, davem@redhat.com,
+       jgarzik@redhat.com, netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       mchan@broadcom.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <49622011.4080203@hartkopp.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49621E6E.2010809@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1230626497.24796.26.camel@jaswinder.satnam>
+	 <49620AFE.6040409@hartkopp.net>
+	 <3f9a31f40901050612v700d2542r1e3e400bf0fe3d33@mail.gmail.com>
+	 <49622011.4080203@hartkopp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jiri Slaby - Mon, Jan 05, 2009 at 03:51:26PM +0100]
-| On 01/05/2009 02:08 PM, Andi Kleen wrote:
-| > +#define EARLY_BUG_ON(x) do { if (unlikely(!(x))) EARLY_BUG(); } while (0)
-| 
-| I think unintentionally inverted logic.
+On Mon, Jan 5, 2009 at 8:28 PM, Oliver Hartkopp <oliver@hartkopp.net> wrote:
+>
+> The firmware, right?!
+>
+> When compiling tg3 as module the request_firmware() worked fine, as the fs
+> is available then.
+>
+> Now i went back to compiling tg3 as built-in driver and i also defined
+> CONFIG_FIRMWARE_IN_KERNEL which is also working properly. Thanks for the
+> advise.
+>
 
-just second ! is missed :)
+Yes, Good.
 
-| 
-| > +#define EARLY_BUG_ON(x) do {} while(0)
-| 
-| Shouldn't be x referenced here?
-|
+> Btw. the locking issue is still there:
 
-but for what?
- 
-		- Cyrill -
+David Miller and Jeff are right person to answer this question.
+
+Thanks,
+--
+JSR
