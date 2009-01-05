@@ -1,103 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751610AbZAEFGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752295AbZAEFIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751610AbZAEFGk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 00:06:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742AbZAEFGc
+	id S1752295AbZAEFIu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 00:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbZAEFIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 00:06:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33110 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbZAEFGb (ORCPT
+	Mon, 5 Jan 2009 00:08:40 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49982
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750742AbZAEFIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 00:06:31 -0500
-Subject: Re: [PATCH -tip] x86: setup.c fix style problems
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090104203433.GC1132@elte.hu>
-References: <1231066898.27852.29.camel@jaswinder.satnam>
-	 <20090104172114.GA32425@elte.hu>
-	 <3f9a31f40901040957g5a391408u5cda93c4acb66e9d@mail.gmail.com>
-	 <20090104203433.GC1132@elte.hu>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 10:34:15 +0530
-Message-Id: <1231131855.16019.2.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 5 Jan 2009 00:08:39 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with kernel/timeconst.sh
+Date: Sun, 4 Jan 2009 23:08:26 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Sam Ravnborg" <sam@ravnborg.org>
+References: <200901020207.30359.rob@landley.net> <200901020213.30658.rob@landley.net> <2c0942db0901041641v5546a1e2med4ca18fe8d2510f@mail.gmail.com>
+In-Reply-To: <2c0942db0901041641v5546a1e2med4ca18fe8d2510f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901042308.27275.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-04 at 21:34 +0100, Ingo Molnar wrote:
-> yeah - i mentioned it to you before that there are such cases.
-> 
+On Sunday 04 January 2009 18:41:15 Ray Lee wrote:
+> On Fri, Jan 2, 2009 at 12:13 AM, Rob Landley <rob@landley.net> wrote:
+> > Replace kernel/timeconst.pl with kernel/timeconst.sh.  The new shell
+> > script is much simpler, about 1/4 the size, and runs on Red Hat 9 from
+> > 2003.
+> >
+> > Peter Anvin added this perl to 2.6.25.  Before that, the kernel had never
+> > required perl to build.
+>
+> Nice work.
 
-OK, so here is new patch excluding smp.h:
+Thanks.  You'll definitely want to look at the _second_ version of that patch 
+rather than the first, though. :)
 
-[PATCH]  x86: setup.c fix style problems
+> As the computations can all be done in 64-bit precision
+> now, and there have been concerns expressed about some shells not
+> supporting 64 bit integers, is there any reason this can't be done
+> using long longs in C?
 
-Impact: cleanup
+Nope.  Any of this could be done in C.  (And that's the approach Sam Ravnborg 
+prefers to take for the second patch in the series, upgrading unifdef.c to do 
+everything itself.)
 
-Fix:
+I tend to lean towards scripts that create header files rather than programs 
+that create header files, but as long as you remember to use HOSTCC it's 
+fairly straightforward. :)
 
-WARNING: Use #include <linux/percpu.h> instead of <asm/percpu.h>
-WARNING: Use #include <linux/topology.h> instead of <asm/topology.h>
-WARNING: externs should be avoided in .c files
-ERROR: code indent should use tabs where possible
+> Other than ruining a good bike shed argument, anyway.
 
-total: 2 errors, 3 warnings
+Oh pile on.  It beats being dismissed as the only one on the planet who cares 
+about the issue (again). :)
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/setup.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index ae0d804..57e76ca 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -66,6 +66,7 @@
- 
- #include <linux/percpu.h>
- #include <linux/crash_dump.h>
-+#include <linux/topology.h>
- 
- #include <video/edid.h>
- 
-@@ -101,8 +102,6 @@
- #include <asm/paravirt.h>
- #include <asm/hypervisor.h>
- 
--#include <asm/percpu.h>
--#include <asm/topology.h>
- #include <asm/apicdef.h>
- #ifdef CONFIG_X86_64
- #include <asm/numa_64.h>
-@@ -216,8 +215,6 @@ EXPORT_SYMBOL(screen_info);
- struct edid_info edid_info;
- EXPORT_SYMBOL_GPL(edid_info);
- 
--extern int root_mountflags;
--
- unsigned long saved_video_mode;
- 
- #define RAMDISK_IMAGE_START_MASK	0x07FF
-@@ -823,8 +820,8 @@ void __init setup_arch(char **cmdline_p)
- #else
- 	num_physpages = max_pfn;
- 
-- 	if (cpu_has_x2apic)
-- 		check_x2apic();
-+	if (cpu_has_x2apic)
-+		check_x2apic();
- 
- 	/* How many end-of-memory variables you have, grandma! */
- 	/* need this before calling reserve_initrd */
--- 
-1.5.6.6
-
-
-
-
+Rob
