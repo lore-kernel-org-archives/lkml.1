@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbZAERqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbZAERsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbZAERqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 12:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZAERqL
+	id S1753825AbZAERsZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 12:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZAERsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 12:46:11 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:26051 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752436AbZAERqJ (ORCPT
+	Mon, 5 Jan 2009 12:48:17 -0500
+Received: from outbound-mail-315.bluehost.com ([67.222.54.8]:43557 "HELO
+	outbound-mail-315.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751949AbZAERsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 12:46:09 -0500
-Date: Mon, 5 Jan 2009 09:45:37 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, dm-devel@redhat.com
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for January 5 (dm-target)
-Message-Id: <20090105094537.0718183d.randy.dunlap@oracle.com>
-In-Reply-To: <20090105173517.deeff918.sfr@canb.auug.org.au>
-References: <20090105173517.deeff918.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Jan 2009 12:48:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=bRS+fAFw+vGU791aMP1n51KZLgpvnZ95tPor8IstzqYdwLjCw6JE+2fe3BOTGDg13u/15U3iOdI1wKlxFCGGs/yRok1so5HKnypUkwim3N5m4l6sxBIjnzGe6kJAk4hJ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Regression] X server doesn't start on MSI Wind w/ current mainline
+Date: Mon, 5 Jan 2009 09:48:13 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@gmail.com>
+References: <200901031328.40574.rjw@sisk.pl> <200901050011.32974.rjw@sisk.pl>
+In-Reply-To: <200901050011.32974.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.49624746.00B6:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200901050948.14352.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Jan 2009 17:35:17 +1100 Stephen Rothwell wrote:
+On Sunday, January 4, 2009 3:11 pm Rafael J. Wysocki wrote:
+> On Saturday 03 January 2009, Rafael J. Wysocki wrote:
+> > Hi,
+> >
+> > With the current mainline and the linux-next branch of your pci-2.6 tree
+> > on top, the X server doesn't start any more on MSI Wind (Intel hardware)
+> > w/ openSUSE 11.1 .
+> >
+> > I also tested the linux-next branch of the pci-2.6 tree on top of 2.6.28
+> > and it doesn't cause any problem with the X server to happen.
+>
+> Well, I pulled the mainline from today, unsetted DRM_I915_KMS and it works
+> again.
+>
+> BTW, what user land is necessary for the KMS to work?
 
-> Hi all,
-> 
-> This tree will not build a powerpc ppc4xx_defconfig due to a kvm problem.
-> 
-> Changes since 20090102:
-> 
-> Removed tree:
-> 	rr_cpumask (served it purpose)
-> 
-> Undropped tree:
-> 	driver-core
-> 	kvm
-> 
-> Dropped trees (temporarily):
-> 	usb (build problem)
-> 	rr (complex conflicts)
-> 	semaphore-removal (due to unfixed conflicts against Linus' tree)
-> 	cpu_alloc (build problem)
-> 	audit (difficult conflicts)
-> 	staging (depends on usb)
-> 
-> The device-mapper tree lost its conflict.
+Ah yeah defaulting to KMS enabled will probably get you undesirable results at 
+this point.  You'll need a bleeding edge 2D driver (from xf86-video-intel git) 
+and libdrm 2.4.3 to make this all work.  Be sure to pass "--enable-kms" when 
+you configure your 2D driver.
 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
-When CONFIG_MODULE_UNLOAD=n (or CONFIG_MODULES=n):
-
-linux-next-20090105/drivers/md/dm-target.c:106: error: implicit declaration of function 'module_refcount'
-
-
-
----
-~Randy
