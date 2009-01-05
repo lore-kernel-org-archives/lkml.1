@@ -1,254 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbZAESOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZAESO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753927AbZAESOl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 13:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZAESO3
+	id S1754776AbZAESO4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 13:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZAESOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 13:14:29 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:37700 "EHLO
-	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbZAESO2 (ORCPT
+	Mon, 5 Jan 2009 13:14:44 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:51431 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754572AbZAESOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 13:14:28 -0500
-Subject: [PATCH V3 3/7] mfd: PCF50633 gpio support
-To: linux-kernel@vger.kernel.org
-From: Balaji Rao <balajirrao@openmoko.org>
-Cc: Samuel Ortiz <sameo@openedhand.com>, Andy Green <andy@openmoko.com>
-Date: Mon, 05 Jan 2009 23:44:04 +0530
-Message-ID: <20090105181404.7559.69327.stgit@fedora.yogi>
-In-Reply-To: <20090105181242.7559.30087.stgit@fedora.yogi>
-References: <20090105181242.7559.30087.stgit@fedora.yogi>
-User-Agent: StGit/0.14.3.292.gb975.dirty
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 5 Jan 2009 13:14:42 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArMEAAPcYUlMQWjN/2dsb2JhbACBbMwphXI
+Date: Mon, 5 Jan 2009 13:09:33 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] kmemtrace: Use tracepoints instead of markers.
+Message-ID: <20090105180933.GB10366@Krystal>
+References: <cover.1230499486.git.eduard.munteanu@linux360.ro> <0d1bc24fa2c8d9df136cf833a36be2b72340bc8f.1230499486.git.eduard.munteanu@linux360.ro> <20090102205345.GB25473@Krystal> <20090102230116.GB5235@localhost> <20090102234254.GB29623@Krystal> <20090104041018.GB5198@localhost> <20090105160534.GA7708@Krystal> <20090105175750.GB5196@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090105175750.GB5196@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:07:42 up 4 days, 18:05,  2 users,  load average: 0.04, 0.08,
+	0.08
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What the PCF05633 calls as a 'GPIO' is much more than the GPIO in the linux
-sense and there are only 4 of them - which means, the gpiolib is not used
-here.
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Mon, Jan 05, 2009 at 11:05:34AM -0500, Mathieu Desnoyers wrote:
+> > Hopefully it does, especially when there are no side-effects. Can you
+> > also try with -Os ?
+> > 
+> > Mathieu
+> 
+> Here's the disassembled code when using -Os. It seems it's optimised, as
+> with -O2. My GCC's version is 4.3.2 (Gentoo Linux).
+> 
+> If you want to test yourself, the output was generated with 'objdump -d
+> -S -a'.
+> 
+> What do you think?
+> 
+> static void print_that(unsigned long num)
+> {
+> 	printf("input << 5 == %lu\n", num);
+>   40062d:	48 c1 e6 05          	shl    $0x5,%rsi
+>   400631:	bf 5e 07 40 00       	mov    $0x40075e,%edi
+>   400636:	31 c0                	xor    %eax,%eax
+>   400638:	e8 6b fe ff ff       	callq  4004a8 <printf@plt>
+> 	sscanf(argv[2], "%lu", &in);
+> 
+> 	call_do_something(in);
+> 
+> 	return 0;
+> }
+>   40063d:	5a                   	pop    %rdx
+>   40063e:	59                   	pop    %rcx
+>   40063f:	31 c0                	xor    %eax,%eax
+>   400641:	5b                   	pop    %rbx
+>   400642:	c3                   	retq   
+> 
+> 
+> 	Eduard
+> 
 
-Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-Cc: Andy Green <andy@openmoko.com>
-Cc: Samuel Ortiz <sameo@openedhand.com>
----
- drivers/mfd/Kconfig               |    7 ++
- drivers/mfd/Makefile              |    1 
- drivers/mfd/pcf50633-gpio.c       |  118 +++++++++++++++++++++++++++++++++++++
- include/linux/mfd/pcf50633/gpio.h |   52 ++++++++++++++++
- 4 files changed, 178 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mfd/pcf50633-gpio.c
- create mode 100644 include/linux/mfd/pcf50633/gpio.h
+It looks good. Although I wonder if gcc will still optimize this in more
+complicated functions. Just to be 100% sure, I would recommend testing
+it in larger functions like schedule() in the kernel tree. But so far it
+looks like it does not hurt much to leave a small supplementary operation
+in the unlikely() branch.
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 3af4cd1..8d8c8df 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -169,6 +169,13 @@ config PCF50633_ADC
- 	 Say yes here if you want to include support for ADC in the
- 	 NXP PCF50633 chip.
- 
-+config PCF50633_GPIO
-+	tristate "Support for NXP PCF50633 GPIO"
-+	depends on MFD_PCF50633
-+	help
-+	 Say yes here if you want to include support GPIO for pins on
-+	 the PCF50633 chip.
-+
- endmenu
- 
- menu "Multimedia Capabilities Port drivers"
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 7a12b09..5bc7c9f 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -35,3 +35,4 @@ obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
- 
- obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
- obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
-+obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
-diff --git a/drivers/mfd/pcf50633-gpio.c b/drivers/mfd/pcf50633-gpio.c
-new file mode 100644
-index 0000000..2fa2eca
---- /dev/null
-+++ b/drivers/mfd/pcf50633-gpio.c
-@@ -0,0 +1,118 @@
-+/* NXP PCF50633 GPIO Driver
-+ *
-+ * (C) 2006-2008 by Openmoko, Inc.
-+ * Author: Balaji Rao <balajirrao@openmoko.org>
-+ * All rights reserved.
-+ *
-+ * Broken down from monstrous PCF50633 driver mainly by
-+ * Harald Welte, Andy Green and Werner Almesberger
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+
-+#include <linux/mfd/pcf50633/core.h>
-+#include <linux/mfd/pcf50633/gpio.h>
-+
-+enum pcf50633_regulator_id {
-+	PCF50633_REGULATOR_AUTO,
-+	PCF50633_REGULATOR_DOWN1,
-+	PCF50633_REGULATOR_DOWN2,
-+	PCF50633_REGULATOR_LDO1,
-+	PCF50633_REGULATOR_LDO2,
-+	PCF50633_REGULATOR_LDO3,
-+	PCF50633_REGULATOR_LDO4,
-+	PCF50633_REGULATOR_LDO5,
-+	PCF50633_REGULATOR_LDO6,
-+	PCF50633_REGULATOR_HCLDO,
-+	PCF50633_REGULATOR_MEMLDO,
-+};
-+
-+#define PCF50633_REG_AUTOOUT	0x1a
-+#define PCF50633_REG_DOWN1OUT	0x1e
-+#define PCF50633_REG_DOWN2OUT	0x22
-+#define PCF50633_REG_MEMLDOOUT	0x26
-+#define PCF50633_REG_LDO1OUT	0x2d
-+#define PCF50633_REG_LDO2OUT	0x2f
-+#define PCF50633_REG_LDO3OUT	0x31
-+#define PCF50633_REG_LDO4OUT	0x33
-+#define PCF50633_REG_LDO5OUT	0x35
-+#define PCF50633_REG_LDO6OUT	0x37
-+#define PCF50633_REG_HCLDOOUT	0x39
-+
-+static const u8 pcf50633_regulator_registers[PCF50633_NUM_REGULATORS] = {
-+	[PCF50633_REGULATOR_AUTO]	= PCF50633_REG_AUTOOUT,
-+	[PCF50633_REGULATOR_DOWN1]	= PCF50633_REG_DOWN1OUT,
-+	[PCF50633_REGULATOR_DOWN2]	= PCF50633_REG_DOWN2OUT,
-+	[PCF50633_REGULATOR_MEMLDO]	= PCF50633_REG_MEMLDOOUT,
-+	[PCF50633_REGULATOR_LDO1]	= PCF50633_REG_LDO1OUT,
-+	[PCF50633_REGULATOR_LDO2]	= PCF50633_REG_LDO2OUT,
-+	[PCF50633_REGULATOR_LDO3]	= PCF50633_REG_LDO3OUT,
-+	[PCF50633_REGULATOR_LDO4]	= PCF50633_REG_LDO4OUT,
-+	[PCF50633_REGULATOR_LDO5]	= PCF50633_REG_LDO5OUT,
-+	[PCF50633_REGULATOR_LDO6]	= PCF50633_REG_LDO6OUT,
-+	[PCF50633_REGULATOR_HCLDO]	= PCF50633_REG_HCLDOOUT,
-+};
-+
-+int pcf50633_gpio_set(struct pcf50633 *pcf, int gpio, u8 val)
-+{
-+	u8 reg;
-+
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
-+
-+	return pcf50633_reg_set_bit_mask(pcf, reg, 0x07, val);
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_set);
-+
-+u8 pcf50633_gpio_get(struct pcf50633 *pcf, int gpio)
-+{
-+	u8 reg, val;
-+
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
-+	val = pcf50633_reg_read(pcf, reg) & 0x07;
-+
-+	return val;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_get);
-+
-+int pcf50633_gpio_invert_set(struct pcf50633 *pcf, int gpio, int invert)
-+{
-+	u8 val, reg;
-+
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
-+	val = !!invert << 3;
-+
-+	return pcf50633_reg_set_bit_mask(pcf, reg, 1 << 3, val);
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_invert_set);
-+
-+int pcf50633_gpio_invert_get(struct pcf50633 *pcf, int gpio)
-+{
-+	u8 reg, val;
-+
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
-+	val = pcf50633_reg_read(pcf, reg);
-+
-+	return val & (1 << 3);
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_invert_get);
-+
-+int pcf50633_gpio_power_supply_set(struct pcf50633 *pcf,
-+					int gpio, int regulator, int on)
-+{
-+	u8 reg, val, mask;
-+
-+	/* the *ENA register is always one after the *OUT register */
-+	reg = pcf50633_regulator_registers[regulator] + 1;
-+
-+	val = !!on << (gpio - PCF50633_GPIO1);
-+	mask = 1 << (gpio - PCF50633_GPIO1);
-+
-+	return pcf50633_reg_set_bit_mask(pcf, reg, mask, val);
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_power_supply_set);
-diff --git a/include/linux/mfd/pcf50633/gpio.h b/include/linux/mfd/pcf50633/gpio.h
-new file mode 100644
-index 0000000..a42b845
---- /dev/null
-+++ b/include/linux/mfd/pcf50633/gpio.h
-@@ -0,0 +1,52 @@
-+/*
-+ * gpio.h -- GPIO driver for NXP PCF50633
-+ *
-+ * (C) 2006-2008 by Openmoko, Inc.
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#ifndef __LINUX_MFD_PCF50633_GPIO_H
-+#define __LINUX_MFD_PCF50633_GPIO_H
-+
-+#include <linux/mfd/pcf50633/core.h>
-+
-+#define PCF50633_GPIO1		1
-+#define PCF50633_GPIO2		2
-+#define PCF50633_GPIO3		3
-+#define PCF50633_GPO		4
-+
-+#define PCF50633_REG_GPIO1CFG	0x14
-+#define PCF50633_REG_GPIO2CFG	0x15
-+#define PCF50633_REG_GPIO3CFG	0x16
-+#define PCF50633_REG_GPOCFG 	0x17
-+
-+#define PCF50633_GPOCFG_GPOSEL_MASK	0x07
-+
-+enum pcf50633_reg_gpocfg {
-+	PCF50633_GPOCFG_GPOSEL_0	= 0x00,
-+	PCF50633_GPOCFG_GPOSEL_LED_NFET	= 0x01,
-+	PCF50633_GPOCFG_GPOSEL_SYSxOK	= 0x02,
-+	PCF50633_GPOCFG_GPOSEL_CLK32K	= 0x03,
-+	PCF50633_GPOCFG_GPOSEL_ADAPUSB	= 0x04,
-+	PCF50633_GPOCFG_GPOSEL_USBxOK	= 0x05,
-+	PCF50633_GPOCFG_GPOSEL_ACTPH4	= 0x06,
-+	PCF50633_GPOCFG_GPOSEL_1	= 0x07,
-+	PCF50633_GPOCFG_GPOSEL_INVERSE	= 0x08,
-+};
-+
-+int pcf50633_gpio_set(struct pcf50633 *pcf, int gpio, u8 val);
-+u8 pcf50633_gpio_get(struct pcf50633 *pcf, int gpio);
-+
-+int pcf50633_gpio_invert_set(struct pcf50633 *, int gpio, int invert);
-+int pcf50633_gpio_invert_get(struct pcf50633 *pcf, int gpio);
-+
-+int pcf50633_gpio_power_supply_set(struct pcf50633 *,
-+					int gpio, int regulator, int on);
-+#endif /* __LINUX_MFD_PCF50633_GPIO_H */
-+
-+
+Mathieu
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
