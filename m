@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZAEHVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752390AbZAEHkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbZAEHVw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 02:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZAEHVo
+	id S1752390AbZAEHkM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 02:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZAEHj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 02:21:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56213 "EHLO
+	Mon, 5 Jan 2009 02:39:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45547 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751384AbZAEHVn (ORCPT
+	by vger.kernel.org with ESMTP id S1750703AbZAEHj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 02:21:43 -0500
-Date: Sun, 4 Jan 2009 23:20:57 -0800
+	Mon, 5 Jan 2009 02:39:58 -0500
+Date: Sun, 4 Jan 2009 23:38:56 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       video4linux-list@redhat.com
-Subject: Re: 2.6.28-mmotm1230 - include/media/v4l2-ioctl.h prototype
- mismatch
-Message-Id: <20090104232057.c91b1452.akpm@linux-foundation.org>
-In-Reply-To: <33812.1230893486@turing-police.cc.vt.edu>
-References: <33812.1230893486@turing-police.cc.vt.edu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Mike Travis <travis@sgi.com>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/6] cpuset: convert cpuset_attach() to use
+ cpumask_var_t
+Message-Id: <20090104233856.8c72eb58.akpm@linux-foundation.org>
+In-Reply-To: <495B2EFB.302@cn.fujitsu.com>
+References: <495B2EA6.7010808@cn.fujitsu.com>
+	<495B2EC2.9090305@cn.fujitsu.com>
+	<495B2EE7.4040406@cn.fujitsu.com>
+	<495B2EFB.302@cn.fujitsu.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,46 +32,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Jan 2009 05:51:26 -0500 Valdis.Kletnieks@vt.edu wrote:
+On Wed, 31 Dec 2008 16:36:11 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> I'm seeing the following warning message during a kernel build:
+> Impact: reduce stack usage
 > 
->   CC [M]  drivers/media/video/gspca/gspca.o
-> drivers/media/video/gspca/gspca.c:1811: warning: initialization from incompatible pointer type
+> Allocate a cpumask_var_t in cpuset_can_attach() and then use it in
+> cpuset_attach(), so we won't fail cpuset_attach().
 > 
-> The root cause appears to be a missed prototype change in a conversion from
-> ioctl to unlocked_ioctl - in struct file_operations, the former is an int,
-> but the latter is a long.  So we clean it up.
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/cpuset.c |   31 +++++++++++++++++++++++++------
+>  1 files changed, 25 insertions(+), 6 deletions(-)
 > 
-> I have to admit not having checked deeply for second-order effects, but the
-> kernel builds without warnings and the result works for me.  The only other
-> use of __video_ioctl2 I can see is in drivers/media/video/ivtv/ivtv-ioctl.c,
-> and there it's used as a return value from a function already defined to return
-> a long, so we save an int->long cast...
-> 
-> Signed-off-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
-> 
-> --- linux-2.6.28-mmotm1230/include/media/v4l2-ioctl.h.dist	2009-01-01 17:23:00.000000000 -0500
-> +++ linux-2.6.28-mmotm1230/include/media/v4l2-ioctl.h	2009-01-02 05:40:45.000000000 -0500
-> @@ -297,7 +297,7 @@ extern int video_usercopy(struct file *f
->  /* Standard handlers for V4L ioctl's */
->  
->  /* This prototype is used on fops.unlocked_ioctl */
-> -extern int __video_ioctl2(struct file *file,
-> +extern long __video_ioctl2(struct file *file,
->  			unsigned int cmd, unsigned long arg);
->  
->  /* This prototype is used on fops.ioctl
-> --- linux-2.6.28-mmotm1230/drivers/media/video/v4l2-ioctl.c.dist	2009-01-01 17:22:50.000000000 -0500
-> +++ linux-2.6.28-mmotm1230/drivers/media/video/v4l2-ioctl.c	2009-01-02 05:45:39.000000000 -0500
-> @@ -1852,7 +1852,7 @@ static int __video_do_ioctl(struct file 
->  	return ret;
+> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+> index afa29cf..b4c36d5 100644
+> --- a/kernel/cpuset.c
+> +++ b/kernel/cpuset.c
+> @@ -1306,6 +1306,14 @@ static int fmeter_getrate(struct fmeter *fmp)
+>  	return val;
 >  }
 >  
-> -int __video_ioctl2(struct file *file,
-> +long __video_ioctl2(struct file *file,
->  	       unsigned int cmd, unsigned long arg)
->  {
->  	char	sbuf[128];
+> +/*
+> + * Since cpuset_attach() can't fail, we allocate a cpumask_var_t in
+> + * cpuset_can_attach() and then use it in cpuset_attach().
+> + *
+> + * Protected by cgroup_lock.
 
-That code seems to have magically disappeared from linux-next.
+OK, but it's a bit fragile.
+
+How are we to ensure that all calls to cpuset_can_attach() are followed
+by a call to cpuset_attach(), and how are we to ensure that both calls
+are protected by the same taking of the lock?  For all time?
+
+In fact, it's broken right now, isn't it?  If cgroup_attach_task()'s
+call to find_css_set() fails, we leak the result of cpuset_can_attach()'s
+alloc_cpumask_var()?
+
