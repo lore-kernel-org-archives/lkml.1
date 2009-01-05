@@ -1,126 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZAESSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZAES0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbZAESSG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 13:18:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZAESRs
+	id S1753468AbZAES0A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 13:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZAESZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 13:17:48 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:48210 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbZAESRr (ORCPT
+	Mon, 5 Jan 2009 13:25:51 -0500
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:27126 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751871AbZAESZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 13:17:47 -0500
-Date: Mon, 5 Jan 2009 19:19:22 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
-       "David S. Miller" <davem@davemloft.net>,
-       sparclinux <sparclinux@vger.kernel.org>
-Subject: ftrace breaks sparc64 build
-Message-ID: <20090105181922.GA25622@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Jan 2009 13:25:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=p6s6bQn1Zm6uQtqymxjoihR234DvjGNO2Z0exQwT8nTKPcUeXycLlfzFlqRSHpNR89/2Wku2HhZGlYT+6Du1xunccWw59EHh7IlkfXHjCnHPY9vfJiI8QdIiPA68ugkxLqjPWsmCl55iOOWJwsJU0tcKB4Qg0ews5DBBCJAGpVM=  ;
+X-YMail-OSG: FQkT9b4VM1m0dvg0LWT0naDAgYrAo.iLe3B13NSOjCjL3fbExUNgbTrvG.1cS.F.HkW3AzOdPZmNpkFBjt09iVrbWwb80_W7j9EOkoj2gon2gegTuXaHitmJ6lUZO5T0gLHf9Y9sa7P36M4m0HakRkwHBLgWJRvCG3qdc5lm_oEkB1qgti7nDryKHxVhsfvRZf6l57BWsKkYI4IfUgCDDnYJcY4q
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: atomics: document that linux expects certain atomic behaviour from unsigned long
+Date: Tue, 6 Jan 2009 05:25:30 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       segher@kernel.crashing.org, rth@gcc.gnu.org
+References: <20090103124400.GA1572@ucw.cz> <200901060325.13362.nickpiggin@yahoo.com.au> <20090105173004.GG6959@linux.vnet.ibm.com>
+In-Reply-To: <20090105173004.GG6959@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901060525.31472.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With an allmodconfig build on sparc and sparc64 I started
-to see warnings that become propagated to errors by -Werror.
+On Tuesday 06 January 2009 04:30:04 Paul E. McKenney wrote:
+> On Tue, Jan 06, 2009 at 03:25:12AM +1100, Nick Piggin wrote:
+> > On Tuesday 06 January 2009 03:05:01 Paul E. McKenney wrote:
+> > > On Mon, Jan 05, 2009 at 11:00:24PM +1100, Nick Piggin wrote:
+> > > > On Monday 05 January 2009 22:23:50 Alan Cox wrote:
+> > > > > > Pretty much everywhere that uses RCU for example does so using
+> > > > > > atomic pointer loads and stores. The nastiest issue IMO actually
+> > > > > > is reloading the value through the pointer even if it isn't
+> > > > > > explicitly dereferenced. RCU gets this right with ACCESS_ONCE.
+> > > > > > Probably a lot of code using basic types does not. x86
+> > > > > > atomic_read maybe should be using ACCESS_ONCE too...
+> > > > >
+> > > > > I'm pretty sure it should. gcc makes no guarantees about not being
+> > > > > clever with accesses.
+> > > >
+> > > > Arguably it should. I don't know what the concurrent C standard looks
+> > > > like, but prohibiting reloads of potentially concurrently modified
+> > > > memory when there is no explicit pointer dereference is the natural
+> > > > complement to prohibiting stores to potentially concurrently read
+> > > > memory when there is no explicit store (which I think is begrudgingly
+> > > > agreed to be a problem).
+> > > >
+> > > > http://lkml.org/lkml/2007/10/24/673
+> > > >
+> > > > I think I would like to see multiple reloads to local variables
+> > > > prohibited, to avoid potential really subtle problems... But if
+> > > > ACCESS_ONCE is here to stay, then I do think that atomic_read etc
+> > > > should use it.
+> > >
+> > > The concurrency stuff in c++0x still permits the compiler to have its
+> > > way with loads and stores to normal variables, but provides an "atomic"
+> > > type that must be loaded and stored as specified in the program.
+> >
+> > So:
+> > if (trylock())
+> >   locked = 1;
+> > ...
+> > if (locked)
+> >   *var = blah;
+> > ...
+> > if (locked)
+> >   unlock();
+> >
+> > So the second part can still be transformed into a predicated calculation
+> > of blah, then an unconditional store to *var?
+>
+> Assuming that "var" is an ordinary variable...
+>
+> If you are asking whether the compiler guys believe that they are within
+> their rights to do a store to *var and then store the old value to *var
+> if !locked, the unfortunate answer is "yes".  Hence ACCESS_ONCE().
 
-Example:
-  CC      arch/sparc/kernel/ldc.o
-arch/sparc/kernel/ldc.c: In function `process_control_frame':
-arch/sparc/kernel/ldc.c:627: warning: 'vap' might be used uninitialized in this function
+Right. Part of the problem is that it might not be so clear. Each part of
+the above sequence might be somewhat hidden by different call chains, gotos,
+etc. *var = blah may not be that simple in form but actually be a call to
+some helper function (which ends up being inlined, etc).
 
+if (!trylock())
+  return;
 
-The code in question looks like this:
-static int process_ver_nack(struct ldc_channel *lp, struct ldc_version *vp)
-{
-        struct ldc_version *vap;
+*var = blah;
 
-        if ((vp->major == 0 && vp->minor == 0) ||
-            !(vap = find_by_major(vp->major))) {
-                return ldc_abort(lp);
-        } else {
-                struct ldc_packet *p;
-                unsigned long new_tail;
+unlock();
 
-                p = handshake_compose_ctrl(lp, LDC_INFO, LDC_VERS,
-                                           vap, sizeof(*vap),
-                                           &new_tail);
-                if (p)
-                        return send_tx_packet(lp, p, new_tail);
-                else
-                        return ldc_abort(lp);
-        }
-}
-
-The else part will never be executed whitout assigning vap,
-and this code do not emit warnings in the normal case.
-[I am well aware that we recommend to move the assignment
-out of the if () - but this code worked as is before].
-
-This code gets expanded to:
-
-static int process_ver_nack(struct ldc_channel *lp, struct ldc_version *vp)
-{
-	struct ldc_version *vap;
-
-	if (__builtin_constant_p(((vp->major == 0 && vp->minor == 0) || !(vap = find_by_major(vp->major)))) ? 
-	!!((vp->major == 0 && vp->minor == 0) || !(vap = find_by_major(vp->major))) : 
-	({
-		int ______r;
-		static struct ftrace_branch_data  ______f = { .func = __func__, .file = "arch/sparc/kernel/ldc.c", .line = 630, };
-		______r = !!((vp->major == 0 && vp->minor == 0) || !(vap = find_by_major(vp->major)));
-		if (______r)
-			______f.hit++;
-		else
-			______f.miss++; ______r;
-	})) {
-
-		return ldc_abort(lp);
-	} else {
-		struct ldc_packet *p;
-		unsigned long new_tail;
-
-		p = handshake_compose_ctrl(lp, 0x01, 0x01, vap, sizeof(*vap), &new_tail);
-		if (__builtin_constant_p((p)) ? !!(p) : ({
-			int ______r;
-			static struct ftrace_branch_data ______f = { .func = __func__, .file = "arch/sparc/kernel/ldc.c", .line = 639, };
-			______r = !!(p);
-			if (______r)
-				______f.hit++;
-			else ______f.miss++;
-				______r;
-		}))
-	 		return send_tx_packet(lp, p, new_tail);
-		else
-			return ldc_abort(lp);
-	}
-}
-I have inserted newlines + tabs and removed a few __attribute__()
-to keep line lengths to a sensible level.
-
-My head started to spin with a dangerous speed trying to figure out
-the code snippet above.
-
-On top of this some inlining occurs which is why gcc point at another
-function name.
+This is basically the same sequence, isn't it? var definitely doesn't need
+to be atomic. It actually shouldn't have to be subject to any compiler
+constraints within the critical section in order for the compiler to
+generate an optimal critical section.
 
 
-This is with following gcc version:
+> > > The issue with ACCESS_ONCE() is that gcc doesn't do any optimizations
+> > > on volatile accesses, even the obvious ones.  Speaking of which, the
+> > > gcc guys kicked out my bug 33102, which was complaining about this
+> > > situation.  :-/
+> >
+> > Hmm. It's still quite annoying even to have to switch everything to the
+> > atomic type. I guarantee there will be bugs in Linux caused by the
+> > compiler reloading pointers/longs/ints to access local variables...
+>
+> Another approach would be to change ACCESS_ONCE() to use the atomic
+> types.  Then we have a bigger hammer with which to beat the gcc guys
+> about optimizations.  We can hope, anyway...
 
-sparc64-unknown-linux-gnu-gcc (GCC) 3.4.5
-Copyright (C) 2004 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Well... I'm less concerned about performance as correctness and difficulty
+of programming this model.
 
-Build using crosstool.
-
-Is this a known issue?
-
-Any recommendations?
-
-	Sam
