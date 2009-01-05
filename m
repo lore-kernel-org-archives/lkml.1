@@ -1,238 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZAEPPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZAEPQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbZAEPPm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZAEPPd
+	id S1756053AbZAEPQT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZAEPQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:15:33 -0500
-Received: from mfo10.iij4u.or.jp ([210.138.174.80]:38237 "EHLO
-	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbZAEPPc (ORCPT
+	Mon, 5 Jan 2009 10:16:04 -0500
+Received: from mfo11.iij4u.or.jp ([210.138.174.81]:33776 "EHLO
+	mfo11.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751308AbZAEPQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:15:32 -0500
+	Mon, 5 Jan 2009 10:16:03 -0500
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: tony.luck@intel.com
 Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 10/13] make sn DMA mapping functions static
-Date: Mon,  5 Jan 2009 23:36:15 +0900
-Message-Id: <1231166178-20050-11-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 06/13] add dma_mapping_ops for SWIOTLB
+Date: Mon,  5 Jan 2009 23:36:11 +0900
+Message-Id: <1231166178-20050-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1231166178-20050-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1231166178-20050-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1231166178-20050-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now we don't need to export sn DMA mapping functions.
+There is already dma_mapping_ops for SWIOTLB but there are some
+missing hooks.
+
+This is for IA64_DIG_VTD, IA64_HP_ZX1_SWIOTLB, IA64_SGI_UV,
+IA64_HP_SIM, IA64_XEN_GUEST and IA64_GENERIC.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/ia64/sn/pci/pci_dma.c |   64 ++++++++++++++++++--------------------------
- 1 files changed, 26 insertions(+), 38 deletions(-)
+ arch/ia64/kernel/Makefile      |    2 --
+ arch/ia64/kernel/pci-dma.c     |    3 ---
+ arch/ia64/kernel/pci-swiotlb.c |    9 ++++++++-
+ 3 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index 174a74e..efdd694 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -32,7 +32,7 @@
-  * this function.  Of course, SN only supports devices that have 32 or more
-  * address bits when using the PMU.
-  */
--int sn_dma_supported(struct device *dev, u64 mask)
-+static int sn_dma_supported(struct device *dev, u64 mask)
- {
- 	BUG_ON(dev->bus != &pci_bus_type);
+diff --git a/arch/ia64/kernel/Makefile b/arch/ia64/kernel/Makefile
+index c381ea9..bc1f62a 100644
+--- a/arch/ia64/kernel/Makefile
++++ b/arch/ia64/kernel/Makefile
+@@ -43,9 +43,7 @@ ifneq ($(CONFIG_IA64_ESI),)
+ obj-y				+= esi_stub.o	# must be in kernel proper
+ endif
+ obj-$(CONFIG_DMAR)		+= pci-dma.o
+-ifeq ($(CONFIG_DMAR), y)
+ obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb.o
+-endif
  
-@@ -40,7 +40,6 @@ int sn_dma_supported(struct device *dev, u64 mask)
- 		return 0;
- 	return 1;
- }
--EXPORT_SYMBOL(sn_dma_supported);
+ # The gate DSO image is built using a special linker script.
+ targets += gate.so gate-syms.o
+diff --git a/arch/ia64/kernel/pci-dma.c b/arch/ia64/kernel/pci-dma.c
+index 2a92f63..f8c38bd 100644
+--- a/arch/ia64/kernel/pci-dma.c
++++ b/arch/ia64/kernel/pci-dma.c
+@@ -32,9 +32,6 @@ int force_iommu __read_mostly = 1;
+ int force_iommu __read_mostly;
+ #endif
  
- /**
-  * sn_dma_set_mask - set the DMA mask
-@@ -76,8 +75,8 @@ EXPORT_SYMBOL(sn_dma_set_mask);
-  * queue for a SCSI controller).  See Documentation/DMA-API.txt for
-  * more information.
-  */
--void *sn_dma_alloc_coherent(struct device *dev, size_t size,
--			    dma_addr_t * dma_handle, gfp_t flags)
-+static void *sn_dma_alloc_coherent(struct device *dev, size_t size,
-+				   dma_addr_t * dma_handle, gfp_t flags)
- {
- 	void *cpuaddr;
- 	unsigned long phys_addr;
-@@ -125,7 +124,6 @@ void *sn_dma_alloc_coherent(struct device *dev, size_t size,
+-/* Set this to 1 if there is a HW IOMMU in the system */
+-int iommu_detected __read_mostly;
+-
+ /* Dummy device used for NULL arguments (normally ISA). Better would
+    be probably a smaller DMA mask, but this is bug-to-bug compatible
+    to i386. */
+diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
+index 16c5051..b62fb93 100644
+--- a/arch/ia64/kernel/pci-swiotlb.c
++++ b/arch/ia64/kernel/pci-swiotlb.c
+@@ -13,12 +13,18 @@
+ int swiotlb __read_mostly;
+ EXPORT_SYMBOL(swiotlb);
  
- 	return cpuaddr;
- }
--EXPORT_SYMBOL(sn_dma_alloc_coherent);
++/* Set this to 1 if there is a HW IOMMU in the system */
++int iommu_detected __read_mostly;
++
+ struct dma_mapping_ops swiotlb_dma_ops = {
+-	.mapping_error = swiotlb_dma_mapping_error,
+ 	.alloc_coherent = swiotlb_alloc_coherent,
+ 	.free_coherent = swiotlb_free_coherent,
+ 	.map_single = swiotlb_map_single,
+ 	.unmap_single = swiotlb_unmap_single,
++	.map_single_attrs = swiotlb_map_single_attrs,
++	.unmap_single_attrs = swiotlb_unmap_single_attrs,
++	.map_sg_attrs = swiotlb_map_sg_attrs,
++	.unmap_sg_attrs	= swiotlb_unmap_sg_attrs,
+ 	.sync_single_for_cpu = swiotlb_sync_single_for_cpu,
+ 	.sync_single_for_device = swiotlb_sync_single_for_device,
+ 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
+@@ -28,6 +34,7 @@ struct dma_mapping_ops swiotlb_dma_ops = {
+ 	.map_sg = swiotlb_map_sg,
+ 	.unmap_sg = swiotlb_unmap_sg,
+ 	.dma_supported_op = swiotlb_dma_supported,
++	.mapping_error = swiotlb_dma_mapping_error,
+ };
  
- /**
-  * sn_pci_free_coherent - free memory associated with coherent DMAable region
-@@ -137,8 +135,8 @@ EXPORT_SYMBOL(sn_dma_alloc_coherent);
-  * Frees the memory allocated by dma_alloc_coherent(), potentially unmapping
-  * any associated IOMMU mappings.
-  */
--void sn_dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
--			  dma_addr_t dma_handle)
-+static void sn_dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
-+				 dma_addr_t dma_handle)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-@@ -148,7 +146,6 @@ void sn_dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
- 	provider->dma_unmap(pdev, dma_handle, 0);
- 	free_pages((unsigned long)cpu_addr, get_order(size));
- }
--EXPORT_SYMBOL(sn_dma_free_coherent);
- 
- /**
-  * sn_dma_map_single_attrs - map a single page for DMA
-@@ -174,9 +171,9 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
-  * TODO: simplify our interface;
-  *       figure out how to save dmamap handle so can use two step.
-  */
--dma_addr_t sn_dma_map_single_attrs(struct device *dev, void *cpu_addr,
--				   size_t size, int direction,
--				   struct dma_attrs *attrs)
-+static dma_addr_t sn_dma_map_single_attrs(struct device *dev, void *cpu_addr,
-+					  size_t size, int direction,
-+					  struct dma_attrs *attrs)
- {
- 	dma_addr_t dma_addr;
- 	unsigned long phys_addr;
-@@ -202,7 +199,6 @@ dma_addr_t sn_dma_map_single_attrs(struct device *dev, void *cpu_addr,
- 	}
- 	return dma_addr;
- }
--EXPORT_SYMBOL(sn_dma_map_single_attrs);
- 
- /**
-  * sn_dma_unmap_single_attrs - unamp a DMA mapped page
-@@ -216,9 +212,9 @@ EXPORT_SYMBOL(sn_dma_map_single_attrs);
-  * by @dma_handle into the coherence domain.  On SN, we're always cache
-  * coherent, so we just need to free any ATEs associated with this mapping.
-  */
--void sn_dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
--			       size_t size, int direction,
--			       struct dma_attrs *attrs)
-+static void sn_dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
-+				      size_t size, int direction,
-+				      struct dma_attrs *attrs)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-@@ -227,7 +223,6 @@ void sn_dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
- 
- 	provider->dma_unmap(pdev, dma_addr, direction);
- }
--EXPORT_SYMBOL(sn_dma_unmap_single_attrs);
- 
- /**
-  * sn_dma_unmap_sg_attrs - unmap a DMA scatterlist
-@@ -239,9 +234,9 @@ EXPORT_SYMBOL(sn_dma_unmap_single_attrs);
-  *
-  * Unmap a set of streaming mode DMA translations.
-  */
--void sn_dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl,
--			   int nhwentries, int direction,
--			   struct dma_attrs *attrs)
-+static void sn_dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl,
-+				  int nhwentries, int direction,
-+				  struct dma_attrs *attrs)
- {
- 	int i;
- 	struct pci_dev *pdev = to_pci_dev(dev);
-@@ -256,7 +251,6 @@ void sn_dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl,
- 		sg->dma_length = 0;
- 	}
- }
--EXPORT_SYMBOL(sn_dma_unmap_sg_attrs);
- 
- /**
-  * sn_dma_map_sg_attrs - map a scatterlist for DMA
-@@ -273,8 +267,8 @@ EXPORT_SYMBOL(sn_dma_unmap_sg_attrs);
-  *
-  * Maps each entry of @sg for DMA.
-  */
--int sn_dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
--			int nhwentries, int direction, struct dma_attrs *attrs)
-+static int sn_dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
-+			       int nhwentries, int direction, struct dma_attrs *attrs)
- {
- 	unsigned long phys_addr;
- 	struct scatterlist *saved_sg = sgl, *sg;
-@@ -321,41 +315,35 @@ int sn_dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
- 
- 	return nhwentries;
- }
--EXPORT_SYMBOL(sn_dma_map_sg_attrs);
- 
--void sn_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
--				size_t size, int direction)
-+static void sn_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+				       size_t size, int direction)
- {
- 	BUG_ON(dev->bus != &pci_bus_type);
- }
--EXPORT_SYMBOL(sn_dma_sync_single_for_cpu);
- 
--void sn_dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
--				   size_t size, int direction)
-+static void sn_dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
-+					  size_t size, int direction)
- {
- 	BUG_ON(dev->bus != &pci_bus_type);
- }
--EXPORT_SYMBOL(sn_dma_sync_single_for_device);
- 
--void sn_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
--			    int nelems, int direction)
-+static void sn_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
-+				   int nelems, int direction)
- {
- 	BUG_ON(dev->bus != &pci_bus_type);
- }
--EXPORT_SYMBOL(sn_dma_sync_sg_for_cpu);
- 
--void sn_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
--			       int nelems, int direction)
-+static void sn_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
-+				      int nelems, int direction)
- {
- 	BUG_ON(dev->bus != &pci_bus_type);
- }
--EXPORT_SYMBOL(sn_dma_sync_sg_for_device);
- 
--int sn_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
-+static int sn_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- {
- 	return 0;
- }
--EXPORT_SYMBOL(sn_dma_mapping_error);
- 
- char *sn_pci_get_legacy_mem(struct pci_bus *bus)
- {
-@@ -467,7 +455,7 @@ int sn_pci_legacy_write(struct pci_bus *bus, u16 port, u32 val, u8 size)
- 	return ret;
- }
- 
--struct dma_mapping_ops sn_dma_ops = {
-+static struct dma_mapping_ops sn_dma_ops = {
- 	.alloc_coherent		= sn_dma_alloc_coherent,
- 	.free_coherent		= sn_dma_free_coherent,
- 	.map_single_attrs	= sn_dma_map_single_attrs,
+ void __init pci_swiotlb_init(void)
 -- 
 1.6.0.6
 
