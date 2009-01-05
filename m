@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZAEFkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZAEFsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752770AbZAEFkj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 00:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZAEFkb
+	id S1753229AbZAEFsm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 00:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZAEFse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 00:40:31 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:38743 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbZAEFkb (ORCPT
+	Mon, 5 Jan 2009 00:48:34 -0500
+Received: from rn-out-0910.google.com ([64.233.170.190]:26564 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbZAEFsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 00:40:31 -0500
-Date: Mon, 5 Jan 2009 06:42:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alain Knaff <alain@knaff.lu>, the arch/x86 maintainers <x86@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-Message-ID: <20090105054206.GA14687@uranus.ravnborg.org>
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <20090105030348.GA13303@uranus.ravnborg.org> <49619601.9010900@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Jan 2009 00:48:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=Y7Tnl1nQ2/0/G8fXnQi8raN5kvFwsjoGzGvNyjkAO7Yh4nAz60dgonAnW7DDJCRqVl
+         MEDEN4UkmXljD/FCjllscGoGhE/e2yBGNBpPqjw/H47WiROs5iYCcxp2UI/SlZyxW71I
+         HjHgeHUC1/3FOBqgLqi7WCQwI9t5ORMpz3WuY=
+Message-ID: <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>
+Date: Sun, 4 Jan 2009 23:48:31 -0600
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+Reply-To: linasvepstas@gmail.com
+To: "David Newall" <davidn@davidnewall.com>
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
+Cc: david@lang.hm, "Kyle Moffett" <kyle@moffetthome.net>,
+       "Ben Goodger" <goodgerster@gmail.com>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
+       MentalMooMan <slashdot@jameshallam.info>,
+       "Travis Crump" <pretzalz@techhouse.org>, burdell@iruntheinter.net
+In-Reply-To: <49614835.7000505@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49619601.9010900@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
+	 <495F0672.6020708@davidnewall.com>
+	 <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>
+	 <496076A9.7030907@davidnewall.com>
+	 <f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
+	 <4960897D.5030603@davidnewall.com>
+	 <alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>
+	 <4961432A.80509@davidnewall.com>
+	 <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
+	 <49614835.7000505@davidnewall.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 09:09:21PM -0800, H. Peter Anvin wrote:
-> Sam Ravnborg wrote:
-> > On Sun, Jan 04, 2009 at 03:58:23PM -0800, H. Peter Anvin wrote:
-> >> I have pulled the x86 parts of the bzip2/lzma patchset into
-> >> tip:x86/setup-lzma.  I would appreciate it if you could look at it and
-> >> make sure it looks sane.  I have not added the ARM portions (patch 4),
-> >> since those should go via the ARM tree, nor the capstone patch 5, which
-> >> can only be added after the old code is removed from *all* remaining
-> >> architectures.
-> >>
-> >> Ingo: this *will* break your randconfig testing if you have machines
-> >> where the lzma(1) utility isn't installed!
-> >>
-> >> The shortlog looks like:
-> >>
-> >> Alain Knaff (3):
-> >>       bzip2/lzma: library support for gzip, bzip2 and lzma decompression
-> >>       bzip2/lzma: config and initramfs support for bzip2/lzma 	decompression
-> >>       bzip2/lzma: x86 kernel compression support
-> >>
-> >> H. Peter Anvin (3):
-> >>       bzip2/lzma: use a table to search for initramfs compression formats
-> >>       bzip2/lzma: handle failures from bzip2 and lzma correctly
-> >>       bzip2/lzma: make config machinery an arch configurable
-> > 
-> > Can you post this last patch.
-> > 
-> > Thanks,
-> > 	Sam
-> 
-> Here it is.
+2009/1/4 David Newall <davidn@davidnewall.com>:
+> david@lang.hm wrote:
+>> then new zoneinfo files need to be sent out every time there is a leap
+>> second (which from other posts on this thread is potentially every month)
+>
+> Not every few months, for goodness sake!  Leap seconds aren't that
+> common!
 
-Looks good.
-You can add a:
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+But they could be.  Appearenly, there was a very long,
+multi-year lull, where no leap-seconds were required.
+Its not fully understood why, as they used to be common.
+Maybe its the melting glaciers :-)
 
-if you like.
+There *was* talk of eliminating them forever (so as to
+avoid this kind of bug, which affects banks, satellites,
+telecom equipment, etc.) but I guess they didn't do it.
 
-	Sam
+--linas
