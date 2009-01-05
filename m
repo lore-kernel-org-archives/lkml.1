@@ -1,302 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZAEL03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZAEL1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZAEL03 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 06:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZAEL0M
+	id S1754706AbZAEL1N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 06:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbZAEL04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 06:26:12 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33637 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754638AbZAEL0J (ORCPT
+	Mon, 5 Jan 2009 06:26:56 -0500
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:62091 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751932AbZAEL04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 06:26:09 -0500
-Date: Mon, 5 Jan 2009 12:26:07 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [RFC][PATCH 9/10] PCI PM: Run default PM callbacks for all devices using new framework
-Message-ID: <20090105112607.GM27199@atrey.karlin.mff.cuni.cz>
-References: <200812190049.34343.rjw@sisk.pl> <200812281607.28007.rjw@sisk.pl> <200812302333.45560.rjw@sisk.pl> <200812302347.37164.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812302347.37164.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 5 Jan 2009 06:26:56 -0500
+To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com, sfr@canb.auug.org.au
+Subject: [PATCH V3 09/17] Squashfs: uid/gid lookup operations
+Message-Id: <E1LJnJn-0002Lh-TS@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Mon, 05 Jan 2009 11:08:23 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> It should be quite clear that it generally makes sense to execute
-> the default PM callbacks (ie. the callbacks used for handling
-> suspend, hibernation and resume of PCI devices without drivers) for
-> all devices.  Of course, the drivers that provide legacy PCI PM
-> support (ie. the ->suspend, ->suspend_late, ->resume_early
-> or ->resume hooks in the pci_driver structure), carry out these
-> operations too, so we can't do it for devices with such drivers.
-> Still, we can make the default PM callbacks run for devices with
-> drivers using the new framework (ie. implement the pm object), since
-> there are no such drivers at the moment.
-> 
-> This also simplifies the code and reduces its size.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Acked-by: Pavel Machek <Pavel@suse.cz>
-> ---
->  drivers/pci/pci-driver.c |  135 ++++++++++++++++++-----------------------------
->  1 file changed, 53 insertions(+), 82 deletions(-)
-> 
-> Index: linux-2.6/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci-driver.c
-> +++ linux-2.6/drivers/pci/pci-driver.c
-> @@ -472,6 +472,8 @@ static void pci_pm_default_suspend(struc
->  
->  	if (!pci_is_bridge(pci_dev))
->  		pci_prepare_to_sleep(pci_dev);
-> +
-> +	pci_fixup_device(pci_fixup_suspend, pci_dev);
->  }
->  
->  static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
-> @@ -514,16 +516,13 @@ static int pci_pm_suspend(struct device 
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_suspend(dev, PMSG_SUSPEND);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->suspend) {
-> -			error = drv->pm->suspend(dev);
-> -			suspend_report_result(drv->pm->suspend, error);
-> -		}
-> -	} else {
-> -		pci_pm_default_suspend(pci_dev);
-> +	if (drv && drv->pm && drv->pm->suspend) {
-> +		error = drv->pm->suspend(dev);
-> +		suspend_report_result(drv->pm->suspend, error);
->  	}
->  
-> -	pci_fixup_device(pci_fixup_suspend, pci_dev);
-> +	if (!error)
-> +		pci_pm_default_suspend(pci_dev);
->  
->  	return error;
->  }
-> @@ -537,15 +536,14 @@ static int pci_pm_suspend_noirq(struct d
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->suspend_noirq) {
-> -			error = drv->pm->suspend_noirq(dev);
-> -			suspend_report_result(drv->pm->suspend_noirq, error);
-> -		}
-> -	} else {
-> -		pci_pm_set_unknown_state(pci_dev);
-> +	if (drv && drv->pm && drv->pm->suspend_noirq) {
-> +		error = drv->pm->suspend_noirq(dev);
-> +		suspend_report_result(drv->pm->suspend_noirq, error);
->  	}
->  
-> +	if (!error)
-> +		pci_pm_set_unknown_state(pci_dev);
-> +
->  	return error;
->  }
->  
-> @@ -558,14 +556,10 @@ static int pci_pm_resume(struct device *
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume(dev);
->  
-> -	if (drv && drv->pm) {
-> -		pci_fixup_device(pci_fixup_resume, pci_dev);
-> +	error = pci_pm_default_resume(pci_dev);
->  
-> -		if (drv->pm->resume)
-> -			error = drv->pm->resume(dev);
-> -	} else {
-> -		error = pci_pm_default_resume(pci_dev);
-> -	}
-> +	if (!error && drv && drv->pm && drv->pm->resume)
-> +		error = drv->pm->resume(dev);
->  
->  	return error;
->  }
-> @@ -579,14 +573,10 @@ static int pci_pm_resume_noirq(struct de
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
->  
-> -	if (drv && drv->pm) {
-> -		pci_fixup_device(pci_fixup_resume_early, pci_dev);
-> +	pci_pm_default_resume_noirq(pci_dev);
->  
-> -		if (drv->pm->resume_noirq)
-> -			error = drv->pm->resume_noirq(dev);
-> -	} else {
-> -		pci_pm_default_resume_noirq(pci_dev);
-> -	}
-> +	if (drv && drv->pm && drv->pm->resume_noirq)
-> +		error = drv->pm->resume_noirq(dev);
->  
->  	return error;
->  }
-> @@ -611,15 +601,14 @@ static int pci_pm_freeze(struct device *
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_suspend(dev, PMSG_FREEZE);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->freeze) {
-> -			error = drv->pm->freeze(dev);
-> -			suspend_report_result(drv->pm->freeze, error);
-> -		}
-> -	} else {
-> -		pci_pm_default_suspend_generic(pci_dev);
-> +	if (drv && drv->pm && drv->pm->freeze) {
-> +		error = drv->pm->freeze(dev);
-> +		suspend_report_result(drv->pm->freeze, error);
->  	}
->  
-> +	if (!error)
-> +		pci_pm_default_suspend_generic(pci_dev);
-> +
->  	return error;
->  }
->  
-> @@ -632,15 +621,14 @@ static int pci_pm_freeze_noirq(struct de
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_suspend_late(dev, PMSG_FREEZE);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->freeze_noirq) {
-> -			error = drv->pm->freeze_noirq(dev);
-> -			suspend_report_result(drv->pm->freeze_noirq, error);
-> -		}
-> -	} else {
-> -		pci_pm_set_unknown_state(pci_dev);
-> +	if (drv && drv->pm && drv->pm->freeze_noirq) {
-> +		error = drv->pm->freeze_noirq(dev);
-> +		suspend_report_result(drv->pm->freeze_noirq, error);
->  	}
->  
-> +	if (!error)
-> +		pci_pm_set_unknown_state(pci_dev);
-> +
->  	return error;
->  }
->  
-> @@ -653,12 +641,10 @@ static int pci_pm_thaw(struct device *de
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume(dev);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->thaw)
-> -			error =  drv->pm->thaw(dev);
-> -	} else {
-> -		pci_pm_reenable_device(pci_dev);
-> -	}
-> +	pci_pm_reenable_device(pci_dev);
-> +
-> +	if (drv && drv->pm && drv->pm->thaw)
-> +		error =  drv->pm->thaw(dev);
->  
->  	return error;
->  }
-> @@ -672,12 +658,10 @@ static int pci_pm_thaw_noirq(struct devi
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->thaw_noirq)
-> -			error = drv->pm->thaw_noirq(dev);
-> -	} else {
-> -		pci_update_current_state(pci_dev, PCI_D0);
-> -	}
-> +	pci_update_current_state(pci_dev, PCI_D0);
-> +
-> +	if (drv && drv->pm && drv->pm->thaw_noirq)
-> +		error = drv->pm->thaw_noirq(dev);
->  
->  	return error;
->  }
-> @@ -691,16 +675,13 @@ static int pci_pm_poweroff(struct device
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->poweroff) {
-> -			error = drv->pm->poweroff(dev);
-> -			suspend_report_result(drv->pm->poweroff, error);
-> -		}
-> -	} else {
-> -		pci_pm_default_suspend(pci_dev);
-> +	if (drv && drv->pm && drv->pm->poweroff) {
-> +		error = drv->pm->poweroff(dev);
-> +		suspend_report_result(drv->pm->poweroff, error);
->  	}
->  
-> -	pci_fixup_device(pci_fixup_suspend, pci_dev);
-> +	if (!error)
-> +		pci_pm_default_suspend(pci_dev);
->  
->  	return error;
->  }
-> @@ -713,11 +694,9 @@ static int pci_pm_poweroff_noirq(struct 
->  	if (pci_has_legacy_pm_support(to_pci_dev(dev)))
->  		return pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
->  
-> -	if (drv && drv->pm) {
-> -		if (drv->pm->poweroff_noirq) {
-> -			error = drv->pm->poweroff_noirq(dev);
-> -			suspend_report_result(drv->pm->poweroff_noirq, error);
-> -		}
-> +	if (drv && drv->pm && drv->pm->poweroff_noirq) {
-> +		error = drv->pm->poweroff_noirq(dev);
-> +		suspend_report_result(drv->pm->poweroff_noirq, error);
->  	}
->  
->  	return error;
-> @@ -732,14 +711,10 @@ static int pci_pm_restore(struct device 
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume(dev);
->  
-> -	if (drv && drv->pm) {
-> -		pci_fixup_device(pci_fixup_resume, pci_dev);
-> +	error = pci_pm_default_resume(pci_dev);
->  
-> -		if (drv->pm->restore)
-> -			error = drv->pm->restore(dev);
-> -	} else {
-> -		error = pci_pm_default_resume(pci_dev);
-> -	}
-> +	if (!error && drv && drv->pm && drv->pm->restore)
-> +		error = drv->pm->restore(dev);
->  
->  	return error;
->  }
-> @@ -753,14 +728,10 @@ static int pci_pm_restore_noirq(struct d
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
->  
-> -	if (drv && drv->pm) {
-> -		pci_fixup_device(pci_fixup_resume_early, pci_dev);
-> +	pci_pm_default_resume_noirq(pci_dev);
->  
-> -		if (drv->pm->restore_noirq)
-> -			error = drv->pm->restore_noirq(dev);
-> -	} else {
-> -		pci_pm_default_resume_noirq(pci_dev);
-> -	}
-> +	if (drv && drv->pm && drv->pm->restore_noirq)
-> +		error = drv->pm->restore_noirq(dev);
->  
->  	return error;
->  }
-> 
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/id.c |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 94 insertions(+), 0 deletions(-)
 
+diff --git a/fs/squashfs/id.c b/fs/squashfs/id.c
+new file mode 100644
+index 0000000..3795b83
+--- /dev/null
++++ b/fs/squashfs/id.c
+@@ -0,0 +1,94 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * id.c
++ */
++
++/*
++ * This file implements code to handle uids and gids.
++ *
++ * For space efficiency regular files store uid and gid indexes, which are
++ * converted to 32-bit uids/gids using an id look up table.  This table is
++ * stored compressed into metadata blocks.  A second index table is used to
++ * locate these.  This second index table for speed of access (and because it
++ * is small) is read at mount time and cached in memory.
++ */
++
++#include <linux/fs.h>
++#include <linux/vfs.h>
++#include <linux/slab.h>
++#include <linux/zlib.h>
++
++#include "squashfs_fs.h"
++#include "squashfs_fs_sb.h"
++#include "squashfs_fs_i.h"
++#include "squashfs.h"
++
++/*
++ * Map uid/gid index into real 32-bit uid/gid using the id look up table
++ */
++int squashfs_get_id(struct super_block *sb, unsigned int index,
++					unsigned int *id)
++{
++	struct squashfs_sb_info *msblk = sb->s_fs_info;
++	int block = SQUASHFS_ID_BLOCK(index);
++	int offset = SQUASHFS_ID_BLOCK_OFFSET(index);
++	u64 start_block = le64_to_cpu(msblk->id_table[block]);
++	__le32 disk_id;
++	int err;
++
++	err = squashfs_read_metadata(sb, &disk_id, &start_block, &offset,
++							sizeof(disk_id));
++	if (err < 0)
++		return err;
++
++	*id = le32_to_cpu(disk_id);
++	return 0;
++}
++
++
++/*
++ * Read uncompressed id lookup table indexes from disk into memory
++ */
++__le64 *squashfs_read_id_index_table(struct super_block *sb,
++			u64 id_table_start, unsigned short no_ids)
++{
++	unsigned int length = SQUASHFS_ID_BLOCK_BYTES(no_ids);
++	__le64 *id_table;
++	int err;
++
++	TRACE("In read_id_index_table, length %d\n", length);
++
++	/* Allocate id lookup table indexes */
++	id_table = kmalloc(length, GFP_KERNEL);
++	if (id_table == NULL) {
++		ERROR("Failed to allocate id index table\n");
++		return ERR_PTR(-ENOMEM);
++	}
++
++	err = squashfs_read_table(sb, id_table, id_table_start, length);
++	if (err < 0) {
++		ERROR("unable to read id index table\n");
++		kfree(id_table);
++		return ERR_PTR(err);
++	}
++
++	return id_table;
++}
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.6.3
+
