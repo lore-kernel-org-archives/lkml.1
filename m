@@ -1,119 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbZAEBsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbZAEBu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757494AbZAEBsf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 20:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZAEBs0
+	id S1759637AbZAEBu1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 20:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZAEBuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 20:48:26 -0500
-Received: from mx1.suse.de ([195.135.220.2]:43641 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbZAEBs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 20:48:26 -0500
-Date: Mon, 5 Jan 2009 02:48:21 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Klotz <peter.klotz@aon.at>, Roman Kononov <kernel@kononov.ftml.net>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: BUG: soft lockup - is this XFS problem?
-Message-ID: <20090105014821.GA367@wotan.suse.de>
-References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 4 Jan 2009 20:50:17 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43806
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbZAEBuQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 20:50:16 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: document ext3 requirements
+Date: Sun, 4 Jan 2009 19:50:11 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       tytso@mit.edu, mtk.manpages@gmail.com, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org
+References: <20090103123813.GA1512@ucw.cz> <200901041349.49906.rob@landley.net> <20090104225545.GF1913@elf.ucw.cz>
+In-Reply-To: <20090104225545.GF1913@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090103214443.GA6612@infradead.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200901041950.12331.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 03, 2009 at 04:44:43PM -0500, Christoph Hellwig wrote:
-> On Tue, Dec 30, 2008 at 05:23:33AM +0100, Nick Piggin wrote:
-> > On Tue, Dec 23, 2008 at 12:12:59PM -0500, Christoph Hellwig wrote:
-> > > 
-> > > Nick, I've seen various reports like this by Roman.  It seems to be
-> > > caused by an interaction of the lockless pagecache with the xfs
-> > > I/O code.  Any idea what might be wrong here:
-> > 
-> > Hmm, it could get into a loop here if there is a page in the pagecache
-> > with a zero refcount, which might be a problem with XFS... other looping
-> > conditions might indicate a problem iwth lockless pagecache or radix
-> > tree. It would be very helpful to know what condition it is looping on...
-> 
-> See http://oss.sgi.com/bugzilla/show_bug.cgi?id=805
+On Sunday 04 January 2009 16:55:45 Pavel Machek wrote:
+> On Sun 2009-01-04 13:49:49, Rob Landley wrote:
+> > On Saturday 03 January 2009 06:38:15 Pavel Machek wrote:
+> > > +Ext3 expects disk/storage subsystem to behave sanely. On sanely
+> > > +behaving disk subsystem, data that have been successfully synced will
+> > > +stay on the disk. Sane means:
+> > > +
+> > > +* writes to media never fail. Even if disk returns error condition
+> > > during +  write, ext3 can't handle that correctly, because success on
+> > > fsync was already +  returned when data hit the journal.
+> > > +
+> > > +	   (Fortunately writes failing are very uncommon on disks, as they
+> > > +	   have spare sectors they use when write fails.)
+> > > +
+> > > +* either whole sector is correctly written or nothing is written
+> > > during +  powerfail.
+> > > +
+> > > +	   (Unfortuantely, none of the cheap USB/SD flash cards I seen do
+> > > behave +	   like this, and are unsuitable for ext3.
+> >
+> > Want to document the granularity issues with flash, while you're at it?
+> >
+> > An inherent problem with using flash as a normal block device is that the
+> > flash erase size is bigger than most filesystem sector sizes.  So when
+> > you request a write, it may erase and rewrite the next 64k, 128k, or even
+> > a couple megabytes on the really _big_ ones.
+> >
+> > If you lose power in the middle of that, ext3 won't notice that data in
+> > the "sectors" _after_ the one your were trying to write to got trashed.
+> >
+> > The flash filesystems take this into account as part of their wear
+> > levelling stuff (they normally copy the entire chunk into a new chunk,
+> > leaving the old one in place until it's no longer needed), but they need
+> > to query the device to get the erase granularity in order to do that,
+> > which is why they don't work on non-flash block devices.
+>
+> Is there linux filesystem that can handle that? I know jffs2, but
+> that's unsuitable for stuff like USB thumb drives, right?
 
-OK.. Hmm, well here is a modification to your patch which might help further.
-I'll see if I can reproduce it here meanwhile.
+Any of the flash filesystems should handle that.  The main problem with jffs2 
+is it doesn't scale well to large device sizes.  UBIFS is supposed to scale 
+much better, but I haven't played with it yet.
 
----
- mm/filemap.c |   29 +++++++++++++++++++++++++----
- 1 file changed, 25 insertions(+), 4 deletions(-)
+And the thing about USB thumb drives is they present as a normal block device, 
+_not_ as flash, so you can't _query_ their erase granularity.  (It's like 
+those hardware raid cards that wouldn't tell you they were striping and such 
+so you had to figure out a well-performing layout all by yourself.)   They do 
+it magically behind the scenes, and if the power goes out (or you yank the 
+device out unexpectedly) if they haven't got a built-in capacitor or battery 
+to have enough power to complete their pending transaction, you're screwed.
 
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -770,11 +770,13 @@ EXPORT_SYMBOL(find_or_create_page);
-  * find_get_pages() returns the number of pages which were found.
-  */
- unsigned find_get_pages(struct address_space *mapping, pgoff_t start,
--			    unsigned int nr_pages, struct page **pages)
-+			    unsigned int nr_pages,
-+			    struct page **pages)
- {
- 	unsigned int i;
- 	unsigned int ret;
- 	unsigned int nr_found;
-+	int locked = 0;
- 
- 	rcu_read_lock();
- restart:
-@@ -785,27 +787,46 @@ restart:
- 		struct page *page;
- repeat:
- 		page = radix_tree_deref_slot((void **)pages[i]);
--		if (unlikely(!page))
-+		if (unlikely(!page)) {
-+			if (printk_ratelimit())
-+				printk(KERN_INFO "unable to deref page\n");
- 			continue;
-+		}
-+
- 		/*
- 		 * this can only trigger if nr_found == 1, making livelock
- 		 * a non issue.
- 		 */
--		if (unlikely(page == RADIX_TREE_RETRY))
-+		if (unlikely(page == RADIX_TREE_RETRY)) {
-+			printk(KERN_INFO "got RADIX_TREE_RETRY\n");
- 			goto restart;
-+		}
- 
--		if (!page_cache_get_speculative(page))
-+		if (!page_cache_get_speculative(page)) {
-+			/* If the page is in the radix-tree, and the radix-tree
-+			 * is locked, the page must have a non-zero refcount */
-+			BUG_ON(locked);
-+			printk(KERN_INFO "page_cache_get failed\n");
-+			spin_lock_irq(&mapping->tree_lock);
-+			locked = 1;
- 			goto repeat;
-+		}
- 
- 		/* Has the page moved? */
- 		if (unlikely(page != *((void **)pages[i]))) {
-+			BUG_ON(locked);
-+			printk(KERN_INFO "page moved\n");
- 			page_cache_release(page);
-+			spin_lock_irq(&mapping->tree_lock);
-+			locked = 1;
- 			goto repeat;
- 		}
- 
- 		pages[ret] = page;
- 		ret++;
- 	}
-+	if (locked)
-+		spin_unlock_irq(&mapping->tree_lock);
- 	rcu_read_unlock();
- 	return ret;
- }
+Plus they do horrible wear levelling, the lot of 'em.  Read Val Henson's 
+livejournal entry about it: http://valhenson.livejournal.com/25228.html
+
+There was also a marvelous thread Linus participated in on some hardware 
+industry web message board, but I have no idea where it's gone...
+
+> Does this sound like a fair summary?
+
+See Ted's comment.  The summary's fine, the question is where to put this sort 
+of thing...
+
+>                 If you lose power in the middle of that, filesystem
+>                 won't notice that data in the "sectors" _after_ the
+>                 one your were trying to write to got trashed.
+
+Well, the journal won't notice.  An e2fsck will notice huge swaths of missing 
+metadata, but won't be able to do anything about it.  (And if what got zapped 
+was file _contents_ rather than metadata, you're on your own finding it.  Fun, 
+isn't it?)
+
+> 									Pavel
+
+Rob
