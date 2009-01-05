@@ -1,282 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZAEPRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZAEPSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbZAEPRt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbZAEPRc
+	id S1755716AbZAEPSr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbZAEPSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:17:32 -0500
-Received: from mfo10.iij4u.or.jp ([210.138.174.80]:38247 "EHLO
-	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755044AbZAEPRa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:17:30 -0500
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: tony.luck@intel.com
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 12/13] remove hwsw_dma_ops
-Date: Mon,  5 Jan 2009 23:36:17 +0900
-Message-Id: <1231166178-20050-13-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1231166178-20050-12-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-11-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1231166178-20050-12-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	Mon, 5 Jan 2009 10:18:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34898 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbZAEPSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 10:18:38 -0500
+Date: Mon, 5 Jan 2009 16:16:08 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
+       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6][v5] Protect cinit from blocked fatal signals
+Message-ID: <20090105151608.GE3313@redhat.com>
+References: <20081227204658.GA27197@us.ibm.com> <20081227205409.GD27337@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081227205409.GD27337@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes remove hwsw_dma_ops (and hwsw_*
-functions). hwsw_dma_get_ops can select swiotlb_dma_ops and
-sba_dma_ops appropriately.
+On 12/27, Sukadev Bhattiprolu wrote:
+>
+> +		 * Container-init gets no signals it doesn't want from same
+> +		 * container.
+>  		 */
+> -		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+> -		    !signal_group_exit(signal))
+> +		if ((signal->flags & SIGNAL_UNKILLABLE) &&
+> +				!sig_kernel_only(signr))
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/ia64/hp/common/hwsw_iommu.c              |  183 ++-----------------------
- arch/ia64/include/asm/machvec_hpzx1_swiotlb.h |    2 +
- 2 files changed, 14 insertions(+), 171 deletions(-)
+minor, but why did you remove unlikely() ?
 
-diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
-index 5cf750e..e5bbeba 100644
---- a/arch/ia64/hp/common/hwsw_iommu.c
-+++ b/arch/ia64/hp/common/hwsw_iommu.c
-@@ -17,55 +17,33 @@
- #include <linux/swiotlb.h>
- #include <asm/machvec.h>
- 
-+extern struct dma_mapping_ops sba_dma_ops, swiotlb_dma_ops;
-+
- /* swiotlb declarations & definitions: */
- extern int swiotlb_late_init_with_default_size (size_t size);
- 
--/* hwiommu declarations & definitions: */
--
--extern void *sba_alloc_coherent(struct device *, size_t, dma_addr_t *, gfp_t);
--extern void sba_free_coherent (struct device *, size_t, void *, dma_addr_t);
--extern dma_addr_t sba_map_single_attrs(struct device *, void *, size_t, int,
--				       struct dma_attrs *);
--extern void sba_unmap_single_attrs(struct device *, dma_addr_t, size_t, int,
--				   struct dma_attrs *);
--extern int sba_map_sg_attrs(struct device *, struct scatterlist *, int, int,
--			    struct dma_attrs *);
--extern void sba_unmap_sg_attrs(struct device *, struct scatterlist *, int, int,
--			       struct dma_attrs *);
--extern int sba_dma_supported (struct device *, u64);
--extern int sba_dma_mapping_error(struct device *, dma_addr_t);
--
--#define hwiommu_alloc_coherent		sba_alloc_coherent
--#define hwiommu_free_coherent		sba_free_coherent
--#define hwiommu_map_single_attrs	sba_map_single_attrs
--#define hwiommu_unmap_single_attrs	sba_unmap_single_attrs
--#define hwiommu_map_sg_attrs		sba_map_sg_attrs
--#define hwiommu_unmap_sg_attrs		sba_unmap_sg_attrs
--#define hwiommu_dma_supported		sba_dma_supported
--#define hwiommu_dma_mapping_error	sba_dma_mapping_error
--#define hwiommu_sync_single_for_cpu	machvec_dma_sync_single
--#define hwiommu_sync_sg_for_cpu		machvec_dma_sync_sg
--#define hwiommu_sync_single_for_device	machvec_dma_sync_single
--#define hwiommu_sync_sg_for_device	machvec_dma_sync_sg
--
--
- /*
-  * Note: we need to make the determination of whether or not to use
-  * the sw I/O TLB based purely on the device structure.  Anything else
-  * would be unreliable or would be too intrusive.
-  */
--static inline int
--use_swiotlb (struct device *dev)
-+static inline int use_swiotlb(struct device *dev)
- {
--	return dev && dev->dma_mask && !hwiommu_dma_supported(dev, *dev->dma_mask);
-+	return dev && dev->dma_mask &&
-+		!sba_dma_ops.dma_supported_op(dev, *dev->dma_mask);
- }
- 
--struct dma_mapping_ops hwsw_dma_ops;
-+struct dma_mapping_ops *hwsw_dma_get_ops(struct device *dev)
-+{
-+	if (use_swiotlb(dev))
-+		return &swiotlb_dma_ops;
-+	return &sba_dma_ops;
-+}
-+EXPORT_SYMBOL(hwsw_dma_get_ops);
- 
- void __init
- hwsw_init (void)
- {
--	dma_ops = &hwsw_dma_ops;
- 	/* default to a smallish 2MB sw I/O TLB */
- 	if (swiotlb_late_init_with_default_size (2 * (1<<20)) != 0) {
- #ifdef CONFIG_IA64_GENERIC
-@@ -78,140 +56,3 @@ hwsw_init (void)
- #endif
- 	}
- }
--
--void *
--hwsw_alloc_coherent (struct device *dev, size_t size, dma_addr_t *dma_handle, gfp_t flags)
--{
--	if (use_swiotlb(dev))
--		return swiotlb_alloc_coherent(dev, size, dma_handle, flags);
--	else
--		return hwiommu_alloc_coherent(dev, size, dma_handle, flags);
--}
--
--void
--hwsw_free_coherent (struct device *dev, size_t size, void *vaddr, dma_addr_t dma_handle)
--{
--	if (use_swiotlb(dev))
--		swiotlb_free_coherent(dev, size, vaddr, dma_handle);
--	else
--		hwiommu_free_coherent(dev, size, vaddr, dma_handle);
--}
--
--dma_addr_t
--hwsw_map_single_attrs(struct device *dev, void *addr, size_t size, int dir,
--		       struct dma_attrs *attrs)
--{
--	if (use_swiotlb(dev))
--		return swiotlb_map_single_attrs(dev, addr, size, dir, attrs);
--	else
--		return hwiommu_map_single_attrs(dev, addr, size, dir, attrs);
--}
--EXPORT_SYMBOL(hwsw_map_single_attrs);
--
--void
--hwsw_unmap_single_attrs(struct device *dev, dma_addr_t iova, size_t size,
--			 int dir, struct dma_attrs *attrs)
--{
--	if (use_swiotlb(dev))
--		return swiotlb_unmap_single_attrs(dev, iova, size, dir, attrs);
--	else
--		return hwiommu_unmap_single_attrs(dev, iova, size, dir, attrs);
--}
--EXPORT_SYMBOL(hwsw_unmap_single_attrs);
--
--int
--hwsw_map_sg_attrs(struct device *dev, struct scatterlist *sglist, int nents,
--		   int dir, struct dma_attrs *attrs)
--{
--	if (use_swiotlb(dev))
--		return swiotlb_map_sg_attrs(dev, sglist, nents, dir, attrs);
--	else
--		return hwiommu_map_sg_attrs(dev, sglist, nents, dir, attrs);
--}
--EXPORT_SYMBOL(hwsw_map_sg_attrs);
--
--void
--hwsw_unmap_sg_attrs(struct device *dev, struct scatterlist *sglist, int nents,
--		     int dir, struct dma_attrs *attrs)
--{
--	if (use_swiotlb(dev))
--		return swiotlb_unmap_sg_attrs(dev, sglist, nents, dir, attrs);
--	else
--		return hwiommu_unmap_sg_attrs(dev, sglist, nents, dir, attrs);
--}
--EXPORT_SYMBOL(hwsw_unmap_sg_attrs);
--
--void
--hwsw_sync_single_for_cpu (struct device *dev, dma_addr_t addr, size_t size, int dir)
--{
--	if (use_swiotlb(dev))
--		swiotlb_sync_single_for_cpu(dev, addr, size, dir);
--	else
--		hwiommu_sync_single_for_cpu(dev, addr, size, dir);
--}
--
--void
--hwsw_sync_sg_for_cpu (struct device *dev, struct scatterlist *sg, int nelems, int dir)
--{
--	if (use_swiotlb(dev))
--		swiotlb_sync_sg_for_cpu(dev, sg, nelems, dir);
--	else
--		hwiommu_sync_sg_for_cpu(dev, sg, nelems, dir);
--}
--
--void
--hwsw_sync_single_for_device (struct device *dev, dma_addr_t addr, size_t size, int dir)
--{
--	if (use_swiotlb(dev))
--		swiotlb_sync_single_for_device(dev, addr, size, dir);
--	else
--		hwiommu_sync_single_for_device(dev, addr, size, dir);
--}
--
--void
--hwsw_sync_sg_for_device (struct device *dev, struct scatterlist *sg, int nelems, int dir)
--{
--	if (use_swiotlb(dev))
--		swiotlb_sync_sg_for_device(dev, sg, nelems, dir);
--	else
--		hwiommu_sync_sg_for_device(dev, sg, nelems, dir);
--}
--
--int
--hwsw_dma_supported (struct device *dev, u64 mask)
--{
--	if (hwiommu_dma_supported(dev, mask))
--		return 1;
--	return swiotlb_dma_supported(dev, mask);
--}
--
--int
--hwsw_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
--{
--	return hwiommu_dma_mapping_error(dev, dma_addr) ||
--		swiotlb_dma_mapping_error(dev, dma_addr);
--}
--
--EXPORT_SYMBOL(hwsw_dma_mapping_error);
--EXPORT_SYMBOL(hwsw_dma_supported);
--EXPORT_SYMBOL(hwsw_alloc_coherent);
--EXPORT_SYMBOL(hwsw_free_coherent);
--EXPORT_SYMBOL(hwsw_sync_single_for_cpu);
--EXPORT_SYMBOL(hwsw_sync_single_for_device);
--EXPORT_SYMBOL(hwsw_sync_sg_for_cpu);
--EXPORT_SYMBOL(hwsw_sync_sg_for_device);
--
--struct dma_mapping_ops hwsw_dma_ops = {
--	.alloc_coherent		= hwsw_alloc_coherent,
--	.free_coherent		= hwsw_free_coherent,
--	.map_single_attrs	= hwsw_map_single_attrs,
--	.unmap_single_attrs	= hwsw_unmap_single_attrs,
--	.map_sg_attrs		= hwsw_map_sg_attrs,
--	.unmap_sg_attrs		= hwsw_unmap_sg_attrs,
--	.sync_single_for_cpu	= hwsw_sync_single_for_cpu,
--	.sync_sg_for_cpu	= hwsw_sync_sg_for_cpu,
--	.sync_single_for_device	= hwsw_sync_single_for_device,
--	.sync_sg_for_device	= hwsw_sync_sg_for_device,
--	.dma_supported_op	= hwsw_dma_supported,
--	.mapping_error		= hwsw_dma_mapping_error,
--};
-diff --git a/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h b/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h
-index 48c3a35..1091ac3 100644
---- a/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h
-+++ b/arch/ia64/include/asm/machvec_hpzx1_swiotlb.h
-@@ -2,6 +2,7 @@
- #define _ASM_IA64_MACHVEC_HPZX1_SWIOTLB_h
- 
- extern ia64_mv_setup_t				dig_setup;
-+extern ia64_mv_dma_get_ops			hwsw_dma_get_ops;
- 
- /*
-  * This stuff has dual use!
-@@ -13,5 +14,6 @@ extern ia64_mv_setup_t				dig_setup;
- #define platform_name				"hpzx1_swiotlb"
- #define platform_setup				dig_setup
- #define platform_dma_init			machvec_noop
-+#define platform_dma_get_ops			hwsw_dma_get_ops
- 
- #endif /* _ASM_IA64_MACHVEC_HPZX1_SWIOTLB_h */
--- 
-1.6.0.6
+And could you improve the changelog a bit? Please explain
+that !signal_group_exit() was needed to handle the case
+when the mt init does exit/exec and sends SIGKILL to all
+sub-threads. Now this is covered by sig_kernel_only().
+
+In short, please explain that if SIGNAL_UNKILLABLE task
+sees the sig_kernel_only() signal here, then it was either
+sent by the parent namespace or it was generated internally.
+In both cases we should not drop it.
+
+But your current changelog mostly explains why do we need
+another SIGNAL_UNKILLABLE check in get_signal_to_deliver(),
+this is orthogonal to the change itself.
+
+Oleg.
 
