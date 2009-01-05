@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbZAEWSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZAEWSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbZAEWSZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 17:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZAEWSF
+	id S1755833AbZAEWSp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 17:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZAEWSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 17:18:05 -0500
-Received: from pih-relay05.plus.net ([212.159.14.18]:51872 "EHLO
-	pih-relay05.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755934AbZAEWSC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 17:18:02 -0500
-Message-ID: <49628720.6050101@yahoo.com>
-Date: Mon, 05 Jan 2009 22:18:08 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Mon, 5 Jan 2009 17:18:31 -0500
+Received: from mail.lang.hm ([64.81.33.126]:40808 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753366AbZAEWSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 17:18:30 -0500
+Date: Mon, 5 Jan 2009 15:20:35 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: early exception error
+In-Reply-To: <86802c440901051407ib7e69fey527dcce77cd2a461@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0901051520210.27641@asgard.lang.hm>
+References: <20090102174845.GD5372@localhost>  <alpine.DEB.1.10.0901030823190.23262@asgard.lang.hm>  <20090103161052.GB11093@localhost>  <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm>  <20090103190316.GB7367@localhost> <20090103212426.GC7367@localhost>
+  <496001A3.1040201@gmail.com> <20090104112919.GC7632@localhost>  <alpine.DEB.1.10.0901051420030.27641@asgard.lang.hm>  <86802c440901051355o60bef5bai2a33ea5f7e4dc5f7@mail.gmail.com> <86802c440901051407ib7e69fey527dcce77cd2a461@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
-References: <fa.+H1UnEqOmFht/vMPmVy8ellbQi0@ifi.uio.no> <fa.RLz5WOGorLui5GRkc963Ww1kXqg@ifi.uio.no> <fa.x4ejZ7Kj7ZZRu88Sond1Cap6XxY@ifi.uio.no>
-In-Reply-To: <fa.x4ejZ7Kj7ZZRu88Sond1Cap6XxY@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: d90d0679bb52e32f9d7b70816a57c6f7
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Mon, Jan 5, 2009 at 19:54, Jens Axboe <jens.axboe@oracle.com> wrote:
->> On Mon, Jan 05 2009, Bartlomiej Zolnierkiewicz wrote:
-> 
->>> +static struct queue_sysfs_entry queue_nonrot_entry = {
->>> +     .attr = {.name = "nonrot", .mode = S_IRUGO | S_IWUSR },
->>> +     .show = queue_nonrot_show,
->>> +     .store = queue_nonrot_store,
->>> +};
->>> +
->> Lets please use a better name for export reasons, non-rotational is a
->> lot better. Nobody will know what nonrot means :-)
-> 
-> What's that negation good for? Can't we just have "rotational", like
-> we have "removable" and not "non-removable"? :)
+On Mon, 5 Jan 2009, Yinghai Lu wrote:
 
-How about cheapseek? fastrandom? flash? ssd? However the internal flag 
-is called QUEUE_FLAG_NONROT so it kind of makes sense just to leave it 
-as nonrot...
+> can you make sure X86_64_APCI_NUMA is set?
+>
+> # CONFIG_X86_64_ACPI_NUMA is not set
+
+will do, recompiling...
+
+David Lang
