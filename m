@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZAEFeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZAEFkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbZAEFeT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 00:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZAEFd7
+	id S1752770AbZAEFkj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 00:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZAEFkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 00:33:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47270
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750841AbZAEFd6 (ORCPT
+	Mon, 5 Jan 2009 00:40:31 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:38743 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbZAEFkb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 00:33:58 -0500
-Date: Sun, 04 Jan 2009 21:34:02 -0800 (PST)
-Message-Id: <20090104.213402.12464178.davem@davemloft.net>
-To: jeffrey.t.kirsher@intel.com
-Cc: jaswinder@infradead.org, linux.nics@intel.com,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-Subject: Re: [PATCH -net-next 1/4] firmware: convert e100 driver to
- request_firmware()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9929d2390901041820h4cf51e2h3612108c516b6869@mail.gmail.com>
-References: <9929d2390812301433pae01ea4g5bfdef6d4d4c7a9c@mail.gmail.com>
-	<20090104.160611.252248503.davem@davemloft.net>
-	<9929d2390901041820h4cf51e2h3612108c516b6869@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 5 Jan 2009 00:40:31 -0500
+Date: Mon, 5 Jan 2009 06:42:06 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alain Knaff <alain@knaff.lu>, the arch/x86 maintainers <x86@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
+Message-ID: <20090105054206.GA14687@uranus.ravnborg.org>
+References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <20090105030348.GA13303@uranus.ravnborg.org> <49619601.9010900@zytor.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49619601.9010900@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-Date: Sun, 4 Jan 2009 18:20:24 -0800
-
-> On Sun, Jan 4, 2009 at 4:06 PM, David Miller <davem@davemloft.net> wrote:
-> > From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-> > Date: Tue, 30 Dec 2008 14:33:36 -0800
-> >
-> >> Please hold off on committing, until we have had ample time to do some
-> >> regression testing.  While this patch may have been in linux-next,
-> >> this is the first we have seen of it.
+On Sun, Jan 04, 2009 at 09:09:21PM -0800, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> > On Sun, Jan 04, 2009 at 03:58:23PM -0800, H. Peter Anvin wrote:
+> >> I have pulled the x86 parts of the bzip2/lzma patchset into
+> >> tip:x86/setup-lzma.  I would appreciate it if you could look at it and
+> >> make sure it looks sane.  I have not added the ARM portions (patch 4),
+> >> since those should go via the ARM tree, nor the capstone patch 5, which
+> >> can only be added after the old code is removed from *all* remaining
+> >> architectures.
 > >>
-> >> I am concerned that IPMI traffic will be adversely affected by this patch.
-> >
-> > Status please?
-> > --
+> >> Ingo: this *will* break your randconfig testing if you have machines
+> >> where the lzma(1) utility isn't installed!
+> >>
+> >> The shortlog looks like:
+> >>
+> >> Alain Knaff (3):
+> >>       bzip2/lzma: library support for gzip, bzip2 and lzma decompression
+> >>       bzip2/lzma: config and initramfs support for bzip2/lzma 	decompression
+> >>       bzip2/lzma: x86 kernel compression support
+> >>
+> >> H. Peter Anvin (3):
+> >>       bzip2/lzma: use a table to search for initramfs compression formats
+> >>       bzip2/lzma: handle failures from bzip2 and lzma correctly
+> >>       bzip2/lzma: make config machinery an arch configurable
+> > 
+> > Can you post this last patch.
+> > 
+> > Thanks,
+> > 	Sam
 > 
-> The only testing left to do is to make sure that ICH devices still
-> work and to make sure the IPMI traffic is not affected by this patch.
-> All other testing looks good.  I am sorry that I have been slow to
-> give status, the holiday's have put a strain on available resources.
+> Here it is.
 
-Ok, thanks for the update.
+Looks good.
+You can add a:
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+
+if you like.
+
+	Sam
