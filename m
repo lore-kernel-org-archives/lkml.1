@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZAEAKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZAEALw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbZAEAKe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 19:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZAEAKX
+	id S1757842AbZAEALw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 19:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZAEALl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 19:10:23 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41364
+	Sun, 4 Jan 2009 19:11:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58642
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751586AbZAEAKW (ORCPT
+	by vger.kernel.org with ESMTP id S1751688AbZAEALk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 19:10:22 -0500
-Date: Sun, 04 Jan 2009 16:10:25 -0800 (PST)
-Message-Id: <20090104.161025.50402227.davem@davemloft.net>
+	Sun, 4 Jan 2009 19:11:40 -0500
+Date: Sun, 04 Jan 2009 16:11:44 -0800 (PST)
+Message-Id: <20090104.161144.119147757.davem@davemloft.net>
 To: jaswinder@infradead.org
-Cc: netdev@vger.kernel.org, jes@sgi.com, linux-kernel@vger.kernel.org,
+Cc: jgarzik@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-next@vger.kernel.org
-Subject: Re: [PATCH -net-next 2/4] firmware: convert acenic driver to
- request_firmware() -- without firmware data
+Subject: Re: [PATCH -net-next 3/4] firmware: convert tg3 driver to
+ request_firmware()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1230635694.10603.20.camel@jaswinder.satnam>
-References: <1230635694.10603.20.camel@jaswinder.satnam>
+In-Reply-To: <1230626497.24796.26.camel@jaswinder.satnam>
+References: <1230626497.24796.26.camel@jaswinder.satnam>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,18 +29,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-Date: Tue, 30 Dec 2008 16:44:54 +0530
+Date: Tue, 30 Dec 2008 14:11:37 +0530
 
-> firmware: convert acenic driver to request_firmware()
-> 
-> We store the firmware in its native big-endian form now, so the loop in
-> ace_copy() is modified to use be32_to_cpup() when writing it out.
-> 
-> We can forget the BSS,SBSS sections of the firmware, since we were
-> clearing all the device's RAM anyway. And the text,rodata,data sections
-> can all be loaded as a single chunk since they're contiguous (give or
-> take a few dozen bytes in between).
+> Firmware blob looks like this...
+>         u8 firmware_major
+>         u8 firmware_minor
+>         u8 firmware_fix
+>         u8 pad
+>         __be32 start_address
+>         __be32 length (total, including BSS sections to be zeroed)
+>         data... (in __be32 words, which is native for the firmware)
 > 
 > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Applied.
+I'm simply tired of fighting this, so applied.
