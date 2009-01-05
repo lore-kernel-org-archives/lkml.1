@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbZAEENX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbZAEEUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753064AbZAEENX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 23:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZAEENP
+	id S1753494AbZAEEUT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 23:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZAEEUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 23:13:15 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:50455 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbZAEENO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 23:13:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=eTwmWLK8eLpa5Uw7kiNrv8+m9Nt+M3WY9gLWtpTcrCGfxjrZXlg0Fr1oC2eN5RPcvK
-         Z+mbirKpkid7+leUsCUV8MZCJNk71nCFJ1HJyCPHHpvxwzSbhHYggKV7USCFLvdoDWif
-         hPhWOXOwcvL7BfwVLNg0iZWk5Y7eK0rZzycjQ=
-Message-ID: <b6a2187b0901042013o2bc295b6r8e7ab92f29528d30@mail.gmail.com>
-Date: Mon, 5 Jan 2009 12:13:12 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: iwl4965 cannot use "ap auto" on latest 2.6.28/29?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Jan 2009 23:20:05 -0500
+Received: from ns2.suse.de ([195.135.220.15]:51316 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752157AbZAEEUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 23:20:03 -0500
+Date: Mon, 5 Jan 2009 05:19:59 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Peter Klotz <peter.klotz@aon.at>, Roman Kononov <kernel@kononov.ftml.net>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: BUG: soft lockup - is this XFS problem?
+Message-ID: <20090105041959.GC367@wotan.suse.de>
+References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090105014821.GA367@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm using latest linux git 2.6.28/29? and it seems the iwl4965 can't
-use "iwconfig ap auto" to associate with the hidden AP. On
-2.6.28-stable, it's working fine.
+On Mon, Jan 05, 2009 at 02:48:21AM +0100, Nick Piggin wrote:
+> On Sat, Jan 03, 2009 at 04:44:43PM -0500, Christoph Hellwig wrote:
+> > On Tue, Dec 30, 2008 at 05:23:33AM +0100, Nick Piggin wrote:
+> > > On Tue, Dec 23, 2008 at 12:12:59PM -0500, Christoph Hellwig wrote:
+> > > > 
+> > > > Nick, I've seen various reports like this by Roman.  It seems to be
+> > > > caused by an interaction of the lockless pagecache with the xfs
+> > > > I/O code.  Any idea what might be wrong here:
+> > > 
+> > > Hmm, it could get into a loop here if there is a page in the pagecache
+> > > with a zero refcount, which might be a problem with XFS... other looping
+> > > conditions might indicate a problem iwth lockless pagecache or radix
+> > > tree. It would be very helpful to know what condition it is looping on...
+> > 
+> > See http://oss.sgi.com/bugzilla/show_bug.cgi?id=805
+> 
+> OK.. Hmm, well here is a modification to your patch which might help further.
+> I'll see if I can reproduce it here meanwhile.
 
-Linus, it is possible for you bump up the SUBLEVEL or EXTRAVERSION to
-differentiate from the 2.6.28-stable version.
+I have reproduced it. It seems like it might be a livelock condition
+because the system ended up recovering after I terminated the dd (and
+did so before I collected any real info, oops, hopefully I can
+reproduce it again).
 
-Thanks,
-Jeff
+This would fit with the problem going away when the debugging patch
+was applied. Timing changes...
