@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbZAEVnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZAEVrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755012AbZAEVnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 16:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZAEVnH
+	id S1754667AbZAEVrd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 16:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZAEVrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 16:43:07 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:60200 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753052AbZAEVnG (ORCPT
+	Mon, 5 Jan 2009 16:47:24 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:28569 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbZAEVrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 16:43:06 -0500
-Message-ID: <49627E79.3070205@oracle.com>
-Date: Mon, 05 Jan 2009 13:41:13 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Mon, 5 Jan 2009 16:47:23 -0500
+Message-ID: <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com>
+Date: Mon, 5 Jan 2009 22:47:22 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
+Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090105185428.GS32491@kernel.dk>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: akpm <akpm@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Eric Paris <eparis@redhat.com>
-Subject: [PATCH] auditsc: fix kernel-doc notation
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010201.49627E83.00F4:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+References: <200901051952.58029.bzolnier@gmail.com>
+	 <20090105185428.GS32491@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, Jan 5, 2009 at 19:54, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Jan 05 2009, Bartlomiej Zolnierkiewicz wrote:
 
-Fix auditsc kernel-doc notation:
+>> +static struct queue_sysfs_entry queue_nonrot_entry = {
+>> +     .attr = {.name = "nonrot", .mode = S_IRUGO | S_IWUSR },
+>> +     .show = queue_nonrot_show,
+>> +     .store = queue_nonrot_store,
+>> +};
+>> +
+>
+> Lets please use a better name for export reasons, non-rotational is a
+> lot better. Nobody will know what nonrot means :-)
 
-Warning(linux-2.6.28-git7//kernel/auditsc.c:2156): No description found for parameter 'attr'
-Warning(linux-2.6.28-git7//kernel/auditsc.c:2156): Excess function parameter 'u_attr' description in '__audit_mq_open'
-Warning(linux-2.6.28-git7//kernel/auditsc.c:2204): No description found for parameter 'notification'
-Warning(linux-2.6.28-git7//kernel/auditsc.c:2204): Excess function parameter 'u_notification' description in '__audit_mq_notify'
+What's that negation good for? Can't we just have "rotational", like
+we have "removable" and not "non-removable"? :)
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc:	Al Viro <viro@zeniv.linux.org.uk>
-cc:	Eric Paris <eparis@redhat.com>
----
- kernel/auditsc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux-2.6.28-git7.orig/kernel/auditsc.c
-+++ linux-2.6.28-git7/kernel/auditsc.c
-@@ -2149,7 +2149,7 @@ int audit_set_loginuid(struct task_struc
-  * __audit_mq_open - record audit data for a POSIX MQ open
-  * @oflag: open flag
-  * @mode: mode bits
-- * @u_attr: queue attributes
-+ * @attr: queue attributes
-  *
-  */
- void __audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr)
-@@ -2196,7 +2196,7 @@ void __audit_mq_sendrecv(mqd_t mqdes, si
- /**
-  * __audit_mq_notify - record audit data for a POSIX MQ notify
-  * @mqdes: MQ descriptor
-- * @u_notification: Notification event
-+ * @notification: Notification event
-  *
-  */
- 
+Thanks?
+Kay
