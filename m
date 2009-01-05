@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbZAELGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbZAELHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbZAELGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 06:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZAELGI
+	id S1753124AbZAELHM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 06:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZAELG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 06:06:08 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:60931 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZAELGH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 06:06:07 -0500
-Date: Mon, 5 Jan 2009 11:05:56 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Tino Keitel <tino.keitel@gmx.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       trenn@suse.de, jbarnes@virtuousgeek.org
-Subject: Re: 2.6.28 regression: xbacklight broken on ThinkPad X61s
-Message-ID: <20090105110556.GA28245@srcf.ucam.org>
-References: <20090105083911.GA3694@x61> <1231146375.32473.52.camel@rzhang-dt>
+	Mon, 5 Jan 2009 06:06:59 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56205 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751778AbZAELG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 06:06:58 -0500
+Message-ID: <4961E98D.3050305@cn.fujitsu.com>
+Date: Mon, 05 Jan 2009 19:05:49 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231146375.32473.52.camel@rzhang-dt>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] sched: mark sched_create_sysfs_power_savings_entries() as
+ __init
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 05:06:15PM +0800, Zhang Rui wrote:
+Impact: cleanup
 
-> hmm, this regression is caused by commit 
-> 22c13f9d8179f4c9caecfcb60a95214562b9addc
-> 
-> but the real problem is that the IGD OpRegion doesn't work well on this
-> laptop.
+The only caller is cpu_dev_init() which is marked as __init.
 
-I suspect that the issue is actually that the opregion code works fine 
-but i915 interrupts are failing to work properly, which we've seen a 
-couple of cases of. Jesse?
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 545c6fc..9a8e296 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8060,7 +8060,7 @@ static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644,
+ 		   sched_smt_power_savings_store);
+ #endif
+ 
+-int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
++int __init sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
+ {
+ 	int err = 0;
+ 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.5.4.rc3
+
