@@ -1,273 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZAELkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbZAELnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbZAELkr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 06:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZAELkg
+	id S1754494AbZAELnJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 06:43:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZAELmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 06:40:36 -0500
-Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:51897 "EHLO
-	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752326AbZAELkf (ORCPT
+	Mon, 5 Jan 2009 06:42:55 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48336 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbZAELmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 06:40:35 -0500
-To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com, sfr@canb.auug.org.au
-Subject: [PATCH V3 03/17] Squashfs: directory readdir operations
-Message-Id: <E1LJnJn-0002LC-JX@dylan.lougher.demon.co.uk>
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Mon, 05 Jan 2009 11:08:23 +0000
+	Mon, 5 Jan 2009 06:42:54 -0500
+Message-Id: <20090105103136.284066660@chello.nl>
+References: <20090105102818.829119334@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Mon, 05 Jan 2009 11:28:21 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 3/5] hrtimer: simplify hotplug migration
+Content-Disposition: inline; filename=hrtimers-simplify-migration.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+No need for a smp function call, which is likely to run on the same
+CPU anyway. We can just call hrtimers_peek_ahead() in the interrupts
+disabled section of migrate_hrtimers().
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
 ---
- fs/squashfs/dir.c |  235 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 235 insertions(+), 0 deletions(-)
+ kernel/hrtimer.c |   25 ++++++++++---------------
+ 1 file changed, 10 insertions(+), 15 deletions(-)
 
-diff --git a/fs/squashfs/dir.c b/fs/squashfs/dir.c
-new file mode 100644
-index 0000000..566b0ea
---- /dev/null
-+++ b/fs/squashfs/dir.c
-@@ -0,0 +1,235 @@
-+/*
-+ * Squashfs - a compressed read only filesystem for Linux
-+ *
-+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
-+ * Phillip Lougher <phillip@lougher.demon.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2,
-+ * or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-+ *
-+ * dir.c
-+ */
+Index: linux-2.6-tip/kernel/hrtimer.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/hrtimer.c
++++ linux-2.6-tip/kernel/hrtimer.c
+@@ -1505,11 +1505,6 @@ static void __cpuinit init_hrtimers_cpu(
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 
+-static void tickle_timers(void *arg)
+-{
+-	hrtimer_peek_ahead_timers();
+-}
+-
+ static void migrate_hrtimer_list(struct hrtimer_clock_base *old_base,
+ 				struct hrtimer_clock_base *new_base)
+ {
+@@ -1548,20 +1543,19 @@ static void migrate_hrtimer_list(struct 
+ static void migrate_hrtimers(int scpu)
+ {
+ 	struct hrtimer_cpu_base *old_base, *new_base;
+-	int dcpu, i;
++	int i;
+ 
+ 	BUG_ON(cpu_online(scpu));
+-	old_base = &per_cpu(hrtimer_bases, scpu);
+-	new_base = &get_cpu_var(hrtimer_bases);
+-
+-	dcpu = smp_processor_id();
+-
+ 	tick_cancel_sched_timer(scpu);
 +
-+/*
-+ * This file implements code to read directories from disk.
-+ *
-+ * See namei.c for a description of directory organisation on disk.
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/vfs.h>
-+#include <linux/slab.h>
-+#include <linux/zlib.h>
-+
-+#include "squashfs_fs.h"
-+#include "squashfs_fs_sb.h"
-+#include "squashfs_fs_i.h"
-+#include "squashfs.h"
-+
-+static const unsigned char squashfs_filetype_table[] = {
-+	DT_UNKNOWN, DT_DIR, DT_REG, DT_LNK, DT_BLK, DT_CHR, DT_FIFO, DT_SOCK
-+};
-+
-+/*
-+ * Lookup offset (f_pos) in the directory index, returning the
-+ * metadata block containing it.
-+ *
-+ * If we get an error reading the index then return the part of the index
-+ * (if any) we have managed to read - the index isn't essential, just
-+ * quicker.
-+ */
-+static int get_dir_index_using_offset(struct super_block *sb,
-+	u64 *next_block, int *next_offset, u64 index_start, int index_offset,
-+	int i_count, u64 f_pos)
-+{
-+	struct squashfs_sb_info *msblk = sb->s_fs_info;
-+	int err, i, index, length = 0;
-+	struct squashfs_dir_index dir_index;
-+
-+	TRACE("Entered get_dir_index_using_offset, i_count %d, f_pos %lld\n",
-+					i_count, f_pos);
-+
-+	/*
-+	 * Translate from external f_pos to the internal f_pos.  This
-+	 * is offset by 3 because we invent "." and ".." entries which are
-+	 * not actually stored in the directory.
-+	 */
-+	if (f_pos < 3)
-+		return f_pos;
-+	f_pos -= 3;
-+
-+	for (i = 0; i < i_count; i++) {
-+		err = squashfs_read_metadata(sb, &dir_index, &index_start,
-+				&index_offset, sizeof(dir_index));
-+		if (err < 0)
-+			break;
-+
-+		index = le32_to_cpu(dir_index.index);
-+		if (index > f_pos)
-+			/*
-+			 * Found the index we're looking for.
-+			 */
-+			break;
-+
-+		err = squashfs_read_metadata(sb, NULL, &index_start,
-+				&index_offset, le32_to_cpu(dir_index.size) + 1);
-+		if (err < 0)
-+			break;
-+
-+		length = index;
-+		*next_block = le32_to_cpu(dir_index.start_block) +
-+					msblk->directory_table;
-+	}
-+
-+	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
-+
-+	/*
-+	 * Translate back from internal f_pos to external f_pos.
-+	 */
-+	return length + 3;
-+}
-+
-+
-+static int squashfs_readdir(struct file *file, void *dirent, filldir_t filldir)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct squashfs_sb_info *msblk = inode->i_sb->s_fs_info;
-+	u64 block = squashfs_i(inode)->start + msblk->directory_table;
-+	int offset = squashfs_i(inode)->offset, length = 0, dir_count, size,
-+				type, err;
-+	unsigned int inode_number;
-+	struct squashfs_dir_header dirh;
-+	struct squashfs_dir_entry *dire;
-+
-+	TRACE("Entered squashfs_readdir [%llx:%x]\n", block, offset);
-+
-+	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
-+	if (dire == NULL) {
-+		ERROR("Failed to allocate squashfs_dir_entry\n");
-+		goto finish;
-+	}
-+
-+	/*
-+	 * Return "." and  ".." entries as the first two filenames in the
-+	 * directory.  To maximise compression these two entries are not
-+	 * stored in the directory, and so we invent them here.
-+	 *
-+	 * It also means that the external f_pos is offset by 3 from the
-+	 * on-disk directory f_pos.
-+	 */
-+	while (file->f_pos < 3) {
-+		char *name;
-+		int i_ino;
-+
-+		if (file->f_pos == 0) {
-+			name = ".";
-+			size = 1;
-+			i_ino = inode->i_ino;
-+		} else {
-+			name = "..";
-+			size = 2;
-+			i_ino = squashfs_i(inode)->parent;
-+		}
-+
-+		TRACE("Calling filldir(%p, %s, %d, %lld, %d, %d)\n",
-+				dirent, name, size, file->f_pos, i_ino,
-+				squashfs_filetype_table[1]);
-+
-+		if (filldir(dirent, name, size, file->f_pos, i_ino,
-+				squashfs_filetype_table[1]) < 0) {
-+				TRACE("Filldir returned less than 0\n");
-+			goto finish;
-+		}
-+
-+		file->f_pos += size;
-+	}
-+
-+	length = get_dir_index_using_offset(inode->i_sb, &block, &offset,
-+				squashfs_i(inode)->dir_idx_start,
-+				squashfs_i(inode)->dir_idx_offset,
-+				squashfs_i(inode)->dir_idx_cnt,
-+				file->f_pos);
-+
-+	while (length < i_size_read(inode)) {
-+		/*
-+		 * Read directory header
-+		 */
-+		err = squashfs_read_metadata(inode->i_sb, &dirh, &block,
-+					&offset, sizeof(dirh));
-+		if (err < 0)
-+			goto failed_read;
-+
-+		length += sizeof(dirh);
-+
-+		dir_count = le32_to_cpu(dirh.count) + 1;
-+		while (dir_count--) {
-+			/*
-+			 * Read directory entry.
-+			 */
-+			err = squashfs_read_metadata(inode->i_sb, dire, &block,
-+					&offset, sizeof(*dire));
-+			if (err < 0)
-+				goto failed_read;
-+
-+			size = le16_to_cpu(dire->size) + 1;
-+
-+			err = squashfs_read_metadata(inode->i_sb, dire->name,
-+					&block, &offset, size);
-+			if (err < 0)
-+				goto failed_read;
-+
-+			length += sizeof(*dire) + size;
-+
-+			if (file->f_pos >= length)
-+				continue;
-+
-+			dire->name[size] = '\0';
-+			inode_number = le32_to_cpu(dirh.inode_number) +
-+				((short) le16_to_cpu(dire->inode_number));
-+			type = le16_to_cpu(dire->type);
-+
-+			TRACE("Calling filldir(%p, %s, %d, %lld, %x:%x, %d, %d)"
-+					"\n", dirent, dire->name, size,
-+					file->f_pos,
-+					le32_to_cpu(dirh.start_block),
-+					le16_to_cpu(dire->offset),
-+					inode_number,
-+					squashfs_filetype_table[type]);
-+
-+			if (filldir(dirent, dire->name, size, file->f_pos,
-+					inode_number,
-+					squashfs_filetype_table[type]) < 0) {
-+				TRACE("Filldir returned less than 0\n");
-+				goto finish;
-+			}
-+
-+			file->f_pos = length;
-+		}
-+	}
-+
-+finish:
-+	kfree(dire);
-+	return 0;
-+
-+failed_read:
-+	ERROR("Unable to read directory block [%llx:%x]\n", block, offset);
-+	kfree(dire);
-+	return 0;
-+}
-+
-+
-+const struct file_operations squashfs_dir_ops = {
-+	.read = generic_read_dir,
-+	.readdir = squashfs_readdir
-+};
++	local_irq_disable();
++	old_base = &per_cpu(hrtimer_bases, scpu);
++	new_base = &__get_cpu_var(hrtimer_bases);
+ 	/*
+ 	 * The caller is globally serialized and nobody else
+ 	 * takes two locks at once, deadlock is not possible.
+ 	 */
+-	spin_lock_irq(&new_base->lock);
++	spin_lock(&new_base->lock);
+ 	spin_lock_nested(&old_base->lock, SINGLE_DEPTH_NESTING);
+ 
+ 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
+@@ -1570,10 +1564,11 @@ static void migrate_hrtimers(int scpu)
+ 	}
+ 
+ 	spin_unlock(&old_base->lock);
+-	spin_unlock_irq(&new_base->lock);
+-	put_cpu_var(hrtimer_bases);
++	spin_unlock(&new_base->lock);
+ 
+-	smp_call_function_single(dcpu, tickle_timers, NULL, 0);
++	/* Check, if we got expired work to do */
++	__hrtimer_peek_ahead_timers();
++	local_irq_enable();
+ }
+ 
+ #endif /* CONFIG_HOTPLUG_CPU */
+
 -- 
-1.5.6.3
 
