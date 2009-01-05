@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZAEKt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbZAEKvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbZAEKt7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 05:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZAEKtu
+	id S1753848AbZAEKvX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 05:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZAEKvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 05:49:50 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40871 "EHLO
+	Mon, 5 Jan 2009 05:51:10 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40899 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZAEKtt (ORCPT
+	with ESMTP id S1751294AbZAEKvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 05:49:49 -0500
-Date: Mon, 5 Jan 2009 11:49:47 +0100
+	Mon, 5 Jan 2009 05:51:08 -0500
+Date: Mon, 5 Jan 2009 11:51:05 +0100
 From: Pavel Machek <pavel@suse.cz>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
@@ -18,53 +18,27 @@ Cc: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Matthew Wilcox <matthew@wil.cx>, "H. Peter Anvin" <hpa@zytor.com>,
        LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
        Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/10] PCI PM: Add suspend counterpart of pci_reenable_device
-Message-ID: <20090105104946.GE27199@atrey.karlin.mff.cuni.cz>
-References: <200812190049.34343.rjw@sisk.pl> <200812281607.28007.rjw@sisk.pl> <200812302333.45560.rjw@sisk.pl> <200812302337.10257.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 3/10] PCI PM: Power-manage devices without drivers during suspend-resume
+Message-ID: <20090105105105.GF27199@atrey.karlin.mff.cuni.cz>
+References: <200812190049.34343.rjw@sisk.pl> <200812281607.28007.rjw@sisk.pl> <200812302333.45560.rjw@sisk.pl> <200812302338.42915.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812302337.10257.rjw@sisk.pl>
+In-Reply-To: <200812302338.42915.rjw@sisk.pl>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> PCI devices without drivers are not disabled during suspend and
-> hibernation, but they are enabled during resume, with the help of
-> pci_reenable_device(), so there is an unbalanced execution of
-> pcibios_enable_device() in the resume code path.
 > 
-> To correct this introduce function pci_disable_enabled_device()
-> that will disable the argument device, if it is enabled when the
-> function is being run, without updating the device's pci_dev
-> structure and use it in the suspend code path to balance the
-> pci_reenable_device() executed during resume.
-
-> +/**
-> + * pci_disable_enabled_device - Disable device without updating enable_cnt
-> + * @dev: PCI device to disable
-> + *
-> + * NOTE: This function is a backend of PCI power management routines and is
-> + * not supposed to be called drivers.
-
-"by drivers"?
-
-> @@ -441,7 +455,10 @@ static int pci_pm_suspend(struct device 
->  		}
->  	} else if (pci_has_legacy_pm_support(pci_dev)) {
->  		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
-> +	} else {
-> +		pci_default_pm_suspend_early(pci_dev);
->  	}
-> +
->  	pci_fixup_device(pci_fixup_suspend, pci_dev);
->  
->  	return error;
-
-So tre fixup runs on the disabled device?
+> PCI devices without drivers can be put into low power states during
+> suspend with the help of pci_prepare_to_sleep() and prevented from
+> generating wake-up events during resume with the help of
+> pci_enable_wake().  However, it's better not to put bridges into
+> low power states during suspend, because that might result in entire
+> bus segments being powered off.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
 Acked-by: Pavel Machek <Pavel@suse.cz>
 
