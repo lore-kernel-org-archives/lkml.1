@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbZAEAJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZAEAKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759851AbZAEAJT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 19:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbZAEAJE
+	id S1759586AbZAEAKe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 19:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZAEAKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 19:09:04 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:41574 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbZAEAJD (ORCPT
+	Sun, 4 Jan 2009 19:10:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41364
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751586AbZAEAKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 19:09:03 -0500
-Message-ID: <49614F90.2020904@davidnewall.com>
-Date: Mon, 05 Jan 2009 10:38:48 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Kyle Moffett <kyle@moffetthome.net>, Ben Goodger <goodgerster@gmail.com>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       linasvepstas@gmail.com, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com> <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca> <495F0672.6020708@davidnewall.com> <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com> <496076A9.7030907@davidnewall.com> <f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>            <4960897D.5030603@davidnewall.com> <122713.1231068940@turing-police.cc.vt.edu>
-In-Reply-To: <122713.1231068940@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 4 Jan 2009 19:10:22 -0500
+Date: Sun, 04 Jan 2009 16:10:25 -0800 (PST)
+Message-Id: <20090104.161025.50402227.davem@davemloft.net>
+To: jaswinder@infradead.org
+Cc: netdev@vger.kernel.org, jes@sgi.com, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH -net-next 2/4] firmware: convert acenic driver to
+ request_firmware() -- without firmware data
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1230635694.10603.20.camel@jaswinder.satnam>
+References: <1230635694.10603.20.camel@jaswinder.satnam>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Sun, 04 Jan 2009 20:33:41 +1030, David Newall said:
->
->   
->> I don't understand why such a simple thing was unnecessarily
->> complicated.  And causing crashes!  Ha ha ha or what?  A simple addition
->> to zoneinfo was (and still is) all that is required.
->>     
->
-> Something to keep in mind is that the Posix standard does *NOT* say anything
-> about leap seconds - poke around in a 'struct tm' sometime.
->   
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+Date: Tue, 30 Dec 2008 16:44:54 +0530
 
-I have poked, decades ago.  There's nothing in struct tm that's a problem.
+> firmware: convert acenic driver to request_firmware()
+> 
+> We store the firmware in its native big-endian form now, so the loop in
+> ace_copy() is modified to use be32_to_cpup() when writing it out.
+> 
+> We can forget the BSS,SBSS sections of the firmware, since we were
+> clearing all the device's RAM anyway. And the text,rodata,data sections
+> can all be loaded as a single chunk since they're contiguous (give or
+> take a few dozen bytes in between).
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-> That's why /usr/share/zoneinfo has separate 'posix' and 'right' subdirectories.
->
-> The fun starts when software using the 'right' rules tries to interact with
-> other software using the Posix rules (quite possibly running on a non-Unixy
-> system that doesn't even *use* zoneinfo).
->
-> Repeat after me: Not all the world is Linux.
-
-But Linux is; and that's what we're discussing.
+Applied.
