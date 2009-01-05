@@ -1,45 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbZAEWMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZAEWNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822AbZAEWMp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 17:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZAEWMg
+	id S1755597AbZAEWNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 17:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbZAEWNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 17:12:36 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:42267 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992AbZAEWMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 17:12:36 -0500
-Message-ID: <496285C8.7050503@knaff.lu>
-Date: Mon, 05 Jan 2009 23:12:24 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <49615136.9080900@knaff.lu> <4961580A.1020301@zytor.com> <4961A816.40302@knaff.lu> <4961A997.10108@zytor.com> <4961ADC5.6030108@knaff.lu> <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu> <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu> <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu> <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu> <4962858F.20207@zytor.com>
-In-Reply-To: <4962858F.20207@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 5 Jan 2009 17:13:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33323 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752992AbZAEWNi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 17:13:38 -0500
+Date: Mon, 5 Jan 2009 14:13:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, oleg@redhat.com,
+       linux-kernel@vger.kernel.org, hugh@veritas.com, linux-mm@kvack.org
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+Message-Id: <20090105141313.a4abd475.akpm@linux-foundation.org>
+In-Reply-To: <20090105163204.3ec9ff10@psychotron.englab.brq.redhat.com>
+References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081231110816.5f80e265@psychotron.englab.brq.redhat.com>
+	<20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090103175913.GA21180@redhat.com>
+	<2f11576a0901031313u791d7dcex94b927cc56026e40@mail.gmail.com>
+	<20090105163204.3ec9ff10@psychotron.englab.brq.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> I'm thinking that with "preferred" we might just use the first one in
-> the priority list "lzma, bzip2, gzip, uncompressed" depending on what is
-> installed in the kernel.
-> 
-> Using the kernel method may definitely not work, especially on
-> architectures which don't do this style of kernel compression.
-> 
->     -hpa
+On Mon, 5 Jan 2009 16:32:04 +0100
+Jiri Pirko <jpirko@redhat.com> wrote:
 
-Ok. For the new change, may I do a diff against the current
-x86/lzma-setup , or should I do the whole 5-part dance again?
+> Changelog
+> v2 -> v3
+>   - in k_getrusage() use (inherited) sig->maxrss value in case of
+>     RUSAGE_THREAD
 
-Thx,
+The patch which you sent was mysteriously truncated - the kernel/sys.c hunk
+is partly missing.  So I took that bit from the earlier version of the patch.
 
-Alain
+Please check that the below is still identical to your version 3.
+
+
+diff -puN fs/exec.c~getrusage-fill-ru_maxrss-value fs/exec.c
+--- a/fs/exec.c~getrusage-fill-ru_maxrss-value
++++ a/fs/exec.c
+@@ -864,6 +864,13 @@ static int de_thread(struct task_struct 
+ 	sig->notify_count = 0;
+ 
+ no_thread_group:
++	if (current->mm) {
++		unsigned long hiwater_rss = get_mm_hiwater_rss(current->mm);
++
++		if (sig->maxrss < hiwater_rss)
++			sig->maxrss = hiwater_rss;
++	}
++
+ 	exit_itimers(sig);
+ 	flush_itimer_signals();
+ 
+diff -puN include/linux/sched.h~getrusage-fill-ru_maxrss-value include/linux/sched.h
+--- a/include/linux/sched.h~getrusage-fill-ru_maxrss-value
++++ a/include/linux/sched.h
+@@ -560,6 +560,7 @@ struct signal_struct {
+ 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
+ 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+ 	unsigned long inblock, oublock, cinblock, coublock;
++	unsigned long maxrss, cmaxrss;
+ 	struct task_io_accounting ioac;
+ 
+ 	/*
+diff -puN kernel/exit.c~getrusage-fill-ru_maxrss-value kernel/exit.c
+--- a/kernel/exit.c~getrusage-fill-ru_maxrss-value
++++ a/kernel/exit.c
+@@ -1053,6 +1053,12 @@ NORET_TYPE void do_exit(long code)
+ 	if (group_dead) {
+ 		hrtimer_cancel(&tsk->signal->real_timer);
+ 		exit_itimers(tsk->signal);
++		if (tsk->mm) {
++			unsigned long hiwater_rss = get_mm_hiwater_rss(tsk->mm);
++
++			if (tsk->signal->maxrss < hiwater_rss)
++				tsk->signal->maxrss = hiwater_rss;
++		}
+ 	}
+ 	acct_collect(code, group_dead);
+ 	if (group_dead)
+@@ -1296,6 +1302,7 @@ static int wait_task_zombie(struct task_
+ 		struct signal_struct *psig;
+ 		struct signal_struct *sig;
+ 		struct task_cputime cputime;
++		unsigned long maxrss;
+ 
+ 		/*
+ 		 * The resource counters for the group leader are in its
+@@ -1347,6 +1354,9 @@ static int wait_task_zombie(struct task_
+ 		psig->coublock +=
+ 			task_io_get_oublock(p) +
+ 			sig->oublock + sig->coublock;
++		maxrss = max(sig->maxrss, sig->cmaxrss);
++		if (psig->cmaxrss < maxrss)
++			psig->cmaxrss = maxrss;
+ 		task_io_accounting_add(&psig->ioac, &p->ioac);
+ 		task_io_accounting_add(&psig->ioac, &sig->ioac);
+ 		spin_unlock_irq(&p->parent->sighand->siglock);
+diff -puN kernel/fork.c~getrusage-fill-ru_maxrss-value kernel/fork.c
+--- a/kernel/fork.c~getrusage-fill-ru_maxrss-value
++++ a/kernel/fork.c
+@@ -851,6 +851,7 @@ static int copy_signal(unsigned long clo
+ 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
+ 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+ 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
++	sig->maxrss = sig->cmaxrss = 0;
+ 	task_io_accounting_init(&sig->ioac);
+ 	taskstats_tgid_init(sig);
+ 
+diff -puN kernel/sys.c~getrusage-fill-ru_maxrss-value kernel/sys.c
+--- a/kernel/sys.c~getrusage-fill-ru_maxrss-value
++++ a/kernel/sys.c
+@@ -1676,6 +1676,18 @@ static void k_getrusage(struct task_stru
+ out:
+ 	cputime_to_timeval(utime, &r->ru_utime);
+ 	cputime_to_timeval(stime, &r->ru_stime);
++
++	if (who != RUSAGE_CHILDREN) {
++		struct mm_struct *mm = get_task_mm(p);
++		if (mm) {
++			unsigned long hiwater_rss = get_mm_hiwater_rss(mm);
++
++			if (maxrss < hiwater_rss)
++				maxrss = hiwater_rss;
++			mmput(mm);
++		}
++	}
++	r->ru_maxrss <<= PAGE_SHIFT - 10;
+ }
+ 
+ int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
+_
+
