@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZAETsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbZAETt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbZAETsz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:48:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZAETsq
+	id S1755065AbZAETt6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:49:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZAETtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:48:46 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59737 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752197AbZAETsp (ORCPT
+	Mon, 5 Jan 2009 14:49:50 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:42120 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbZAETtt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:48:45 -0500
-Date: Mon, 5 Jan 2009 19:48:44 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
-       "David S. Miller" <davem@davemloft.net>,
-       sparclinux <sparclinux@vger.kernel.org>
-Subject: Re: ftrace breaks sparc64 build
-Message-ID: <20090105194844.GR28946@ZenIV.linux.org.uk>
-References: <20090105181922.GA25622@uranus.ravnborg.org>
+	Mon, 5 Jan 2009 14:49:49 -0500
+Message-ID: <f488382f0901051149r1d164f23uf7d876fa6c7017a2@mail.gmail.com>
+Date: Mon, 5 Jan 2009 11:49:48 -0800
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: A SuSE riddle
+In-Reply-To: <20090105194624.GJ6165@tatooine.rebelbase.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090105181922.GA25622@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20090105185225.GH6165@tatooine.rebelbase.local>
+	 <4962594F.7090501@baywinds.org>
+	 <20090105194624.GJ6165@tatooine.rebelbase.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 07:19:22PM +0100, Sam Ravnborg wrote:
-> With an allmodconfig build on sparc and sparc64 I started
-> to see warnings that become propagated to errors by -Werror.
+On Mon, Jan 5, 2009 at 11:46 AM, markus reichelt <ml@mareichelt.de> wrote:
+>> 2.) Because CAB files are for windows silly trid  :)
+>
+> A .CAB wouldn't need a .src.CAB, a .CAB would just frakking work :)
+>
 
-While we are at it, sparc32 allmodconfig is broken by
-commit 9bb482476c6c9d1ae033306440c51ceac93ea80c
-Author: Jan Beulich <jbeulich@novell.com>
-Date:   Tue Dec 16 11:30:08 2008 +0000
+I don't think .CAB has ever been a standard distribution system for
+any Linux, BSD, or UNIX operating system. I can understand the need
+for a .tar.gz or .tar.bz2, but .cab?
 
-    allow stripping of generated symbols under CONFIG_KALLSYMS_ALL
+And you can grab such .tar.{gz,bz2} files from here:
+http://www.kernel.org/pub/linux/kernel/v2.6/
 
-Results in
-sparc-linux-objcopy: not stripping symbol `__ksymtab_strings' because it is named in a relocation
-sparc-linux-objcopy: not stripping symbol `__crc_per_cpu__softirq_work_list' because it is named in a relocation
-sparc-linux-objcopy: not stripping symbol `__initcall_end' because it is named in a relocation
-sparc-linux-objcopy: not stripping symbol `__setup_end' because it is named in a relocation
-sparc-linux-objcopy: not stripping symbol `__setup_start' because it is named in a relocation
-sparc-linux-objcopy: not stripping symbol `__initcall_start' because it is named in a relocation
-make: *** [.tmp_vmlinux1.stripped] Error 1
+- Steven
