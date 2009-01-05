@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZAEJRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbZAEJSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753730AbZAEJRu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 04:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZAEJRe
+	id S1753504AbZAEJSl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 04:18:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZAEJS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 04:17:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60474
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751285AbZAEJRd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 04:17:33 -0500
-Date: Mon, 05 Jan 2009 01:17:33 -0800 (PST)
-Message-Id: <20090105.011733.225349838.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 -mm merge plans
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090105011202.835e75ec.akpm@linux-foundation.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	<20090105090239.GB17530@uranus.ravnborg.org>
-	<20090105011202.835e75ec.akpm@linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 04:18:27 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:26300 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751821AbZAEJS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 04:18:26 -0500
+Date: Mon, 5 Jan 2009 10:17:22 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Alberto Bertogli <albertito@blitiri.com.ar>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, corbet@lwn.net
+Subject: Re: [PATCH] Fix small typo in bio.h's documentation
+Message-ID: <20090105091722.GG32491@kernel.dk>
+References: <1230591376-9001-1-git-send-email-albertito@blitiri.com.ar> <alpine.LNX.1.10.0901040028561.5377@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0901040028561.5377@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 5 Jan 2009 01:12:02 -0800
-
-> On Mon, 5 Jan 2009 10:02:39 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
+On Sun, Jan 04 2009, Jiri Kosina wrote:
+> On Mon, 29 Dec 2008, Alberto Bertogli wrote:
 > 
-> > Hi Andrew.
+> > Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+> > ---
+> >  include/linux/bio.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
 > > 
-> > > sparc64-use-unsigned-long-long-for-u64.patch
-> > > sparc64-fix-unsigned-long-long-warnings-in-drivers.patch
-> > 
-> > Please drop these two.
+> > diff --git a/include/linux/bio.h b/include/linux/bio.h
+> > index 6a64209..b29e2b3 100644
+> > --- a/include/linux/bio.h
+> > +++ b/include/linux/bio.h
+> > @@ -135,7 +135,7 @@ struct bio {
+> >   * bit 1 -- rw-ahead when set
+> >   * bit 2 -- barrier
+> >   *	Insert a serialization point in the IO queue, forcing previously
+> > - *	submitted IO to be completed before this oen is issued.
+> > + *	submitted IO to be completed before this one is issued.
+> >   * bit 3 -- synchronous I/O hint: the block layer will unplug immediately
+> >   *	Note that this does NOT indicate that the IO itself is sync, just
+> >   *	that the block layer will not postpone issue of this IO by plugging.
+> > -- 
+> > 1.6.1.302.gccd4d
 > 
-> Might, if they break my build.
+> Has anyone merged this patch through his tree (Jens or Documentation 
+> people?). If not, I will take it through trivial tree.
 
-They don't build, I tested them when I tried integrated Sam's
-patches.
+I'll throw it in, thanks Alberto!
 
-Please toss these, Sam and I will make sure it gets added once we sort
-out the build failures.
+-- 
+Jens Axboe
 
-> I tend to hang onto things I like, even if they aren't right yet.
-> 
-> We really really need to push ahead with fixing this stuff.
-
-If we are working on making the patches actually work, and they are
-known to break the build, you should just toss let us take care of it.
-
-At least in cases like this one. :-)
