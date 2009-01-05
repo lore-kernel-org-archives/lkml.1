@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751017AbZAENLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbZAENOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751017AbZAENLk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZAENLa
+	id S1754403AbZAENOF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbZAENNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:11:30 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51554 "EHLO mx2.redhat.com"
+	Mon, 5 Jan 2009 08:13:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58407 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbZAENL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:11:29 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090103184921.GB20166@fieldses.org>
-References: <20090103184921.GB20166@fieldses.org> <20090102051905.GC1073@fieldses.org> <20090101235332.GA31840@fieldses.org> <24959.1230694093@redhat.com> <20081230134248.GA30124@lst.de> <21275.1230736542@redhat.com> <29449.1230859152@redhat.com> <32481.1230897578@redhat.com> <20090102164505.GA10465@fieldses.org> 
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: dhowells@redhat.com, Christoph Hellwig <hch@lst.de>, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] CRED: Fix regression in cap_capable() as shown up by sys_faccessat() [ver #2]
-Date: Mon, 05 Jan 2009 13:11:01 +0000
-Message-ID: <18074.1231161061@redhat.com>
+	id S1751191AbZAENNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:13:53 -0500
+Date: Mon, 5 Jan 2009 14:13:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [PATCH] hrtimer: splitout peek ahead functionality, fix
+Message-ID: <20090105131334.GA11254@elte.hu>
+References: <20090105102818.829119334@chello.nl> <20090105121505.GA13969@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090105121505.GA13969@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields <bfields@fieldses.org> wrote:
 
-> > > > No.  I started bisecting, and it does appear to be a regression from the
-> > > > cred patches, but at some point in the middle there it hangs on boot (a
-> > > > softlockup report blames a spinlock in set_groups).
-> > > 
-> > > Do you remember which patch you were at?
+* Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> More precisely:
-> 	- The last working commit is b6dff3ec... "CRED: Separate task
-> 	  security context from task_struct".
-> 	- The first commit exhibiting the permissions problem is
-> 	  a6f76f2... "CRED: Make execve() take advantage of
-> 	  copy-on-write credentials".
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > Please consider for .29.
+> 
+> picked them up into tip/timers/urgent:
+> 
+>  e3f1d88: hrtimer: fixup comments
+>  a6037b6: hrtimer: fix recursion deadlock by re-introducing the softirq
+>  731a55b: hrtimer: simplify hotplug migration
+>  d5fd43c: hrtimer: fix HOTPLUG_CPU=n compile warning
+>  8bdec95: hrtimer: splitout peek ahead functionality
 
-I presume by 'first' you mean 'latest'.
+i needed the small fixlet below, for !HIGH_RES_TIMERS.
 
-> 	- The 9 commits in between (from f1752eec to d84f4f9) result in
-> 	  a soft lookup on boot.
+	Ingo
 
-I think the problem may be that f1752eec removes the lock initialisation for
-init_cred from the INIT_CRED() macro:
+-------------->
+>From 82c5b7b527ccc4b5d3cf832437e842f9d2920a79 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 5 Jan 2009 14:11:10 +0100
+Subject: [PATCH] hrtimer: splitout peek ahead functionality, fix
 
-	-	.lock			= __SPIN_LOCK_UNLOCKED(p.lock),	\
+Impact: build fix on !CONFIG_HIGH_RES_TIMERS
 
-but doesn't add it to the out of line init_cred:
+Fix:
 
-	+struct cred init_cred = {
-	+	.usage			= ATOMIC_INIT(3),
-	+	.securebits		= SECUREBITS_DEFAULT,
-	+	.cap_inheritable	= CAP_INIT_INH_SET,
-	+	.cap_permitted		= CAP_FULL_SET,
-	+	.cap_effective		= CAP_INIT_EFF_SET,
-	+	.cap_bset		= CAP_INIT_BSET,
-	+	.user			= INIT_USER,
-	+	.group_info		= &init_groups,
-	+};
+  kernel/hrtimer.c:1586: error: implicit declaration of function '__hrtimer_peek_ahead_timers'
 
-Can you try adding:
+Signen-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/hrtimer.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-		.lock			= __SPIN_LOCK_UNLOCKED(init_cred.lock),
-
-to that and also add:
-
-		spin_lock_init(&pcred->lock);
-
-into copy_creds() see if the problem goes away?
-
-I'm a bit surprised that lockdep doesn't bark at this one - I thought it
-checked for lock initialisation.
-
-David
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index aa024f2..1455b76 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1268,7 +1268,11 @@ static void run_hrtimer_softirq(struct softirq_action *h)
+ 	hrtimer_peek_ahead_timers();
+ }
+ 
+-#endif	/* CONFIG_HIGH_RES_TIMERS */
++#else /* CONFIG_HIGH_RES_TIMERS */
++
++static inline void __hrtimer_peek_ahead_timers(void) { }
++
++#endif	/* !CONFIG_HIGH_RES_TIMERS */
+ 
+ /*
+  * Called from timer softirq every jiffy, expire hrtimers:
