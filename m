@@ -1,151 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544AbZAEGsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931AbZAEHAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752544AbZAEGsw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 01:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbZAEGsn
+	id S1752931AbZAEHAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 02:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZAEHAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 01:48:43 -0500
-Received: from ns1.suse.de ([195.135.220.2]:56803 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbZAEGsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 01:48:42 -0500
-Date: Mon, 5 Jan 2009 07:48:38 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Klotz <peter.klotz@aon.at>, Roman Kononov <kernel@kononov.ftml.net>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: BUG: soft lockup - is this XFS problem?
-Message-ID: <20090105064838.GA5209@wotan.suse.de>
-References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de> <20090105041959.GC367@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090105041959.GC367@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	Mon, 5 Jan 2009 02:00:06 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57822 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbZAEHAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 02:00:04 -0500
+Message-ID: <4961AFE3.3080102@jp.fujitsu.com>
+Date: Mon, 05 Jan 2009 15:59:47 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] posix-cpu-timers: clock_gettime(CLOCK_*_CPUTIME_ID)	goes
+ backward
+References: <49547320.9010302@jp.fujitsu.com> <20081226084320.GC755@elte.hu> <1230282171.9487.278.camel@twins> <20081226090758.GB27747@elte.hu>
+In-Reply-To: <20081226090758.GB27747@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 05:19:59AM +0100, Nick Piggin wrote:
-> On Mon, Jan 05, 2009 at 02:48:21AM +0100, Nick Piggin wrote:
-> > 
-> > OK.. Hmm, well here is a modification to your patch which might help further.
-> > I'll see if I can reproduce it here meanwhile.
-> 
-> I have reproduced it. It seems like it might be a livelock condition
-> because the system ended up recovering after I terminated the dd (and
-> did so before I collected any real info, oops, hopefully I can
-> reproduce it again).
-> 
-> This would fit with the problem going away when the debugging patch
-> was applied. Timing changes...
+OK, this patch will follow to Peter's "remove the per-cpu-ish-ness"
+patch.  How about this?
 
-No, I was wrong. The problem goes away with the patch applied because
-a function call == a compiler barrier. The problem randomly recovered
-for me because of something more subtle.
+Thanks,
+H.Seto
 
-I believe this patch should solve it. Please test and confirm before
-I send it upstream.
 
+posix-cpu-timers, clock_gettime(CLOCK_THREAD_CPUTIME_ID) and
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID) occasionally go backward.
+
+>From user land (@HZ=250), it looks like:
+	prev call       current call    diff
+        (0.191195713) > (0.191200456) : 4743
+        (0.191200456) > (0.191205198) : 4742
+        (0.191205198) > (0.187213693) : -3991505
+        (0.187213693) > (0.191218688) : 4004995
+        (0.191218688) > (0.191223436) : 4748
+
+The reasons are:
+
+ - Timer tick (and task_tick) can interrups between getting
+   sum_exec_runtime and task_delta_exec(p).  Since task's runtime
+   is updated in the tick, it makes the value of cpu->sched about
+   a tick less than what it should be.
+   So, interrupts should be disabled while sampling runtime and
+   delta.
+
+ - Queueing task also updates runtime of task running on the rq
+   which a task is going to be enqueued/dequeued.
+   So, runqueue should be locked while sampling runtime and delta.
+
+For thread timer (CLOCK_THREAD_CPUTIME_ID), it is easy to solve
+by making a function do all in a block locked by task_rq_lock().
+
+ # clock_gettime(CLOCK_THREAD_CPUTIME_ID)
+   before:
+	cpu->sched = p->se.sum_exec_runtime + task_delta_exec(p);
+   after:
+	cpu->sched = task_total_exec(p);
+
+For process timer (CLOCK_PROCESS_CPUTIME_ID), proposed fix here
+is moving thread_group_cputime() from include/linux/sched.h to
+kernel/sched.c, and let it use rq-related operations.
+
+ # clock_gettime(CLOCK_PROCESS_CPUTIME_ID)
+   before:
+	thread_group_cputime(p,&cputime); /* returns total */
+	cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
+   after:
+	thread_group_cputime(p,&cputime); /* total + local delta */
+	cpu->sched = cputime.sum_exec_runtime;
+
+[Note]: According to the current code, process timer returns
+"((total runtime of thread group) + (delta of current thread))."
+The former total is total of "banked runtime" in signal structure,
+therefore technically speaking the latter delta should be sum of
+delta of all running thread in the group.  However requesting delta
+for all cpu is quite heavy and nonsense, so I took a realistic
+approach - keep it as is, as return banked total plus local delta.
+In othe words, be careful that accuracy of process timer is not
+so good (while clock_getres() returns a resolution of 1ns), it
+can stale about tick*(max(NR_CPUS, num_thread)-1).
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
+ include/linux/kernel_stat.h |    2 +-
+ include/linux/sched.h       |   11 +----------
+ kernel/posix-cpu-timers.c   |    4 ++--
+ kernel/sched.c              |   29 +++++++++++++++++++++++++++--
+ 4 files changed, 31 insertions(+), 15 deletions(-)
 
-An XFS workload showed up a bug in the lockless pagecache patch. Basically it
-would go into an "infinite" loop, although it would sometimes be able to break
-out of the loop! The reason is a missing compiler barrier in the "increment
-reference count unless it was zero" case of the lockless pagecache protocol in
-the gang lookup functions.
-
-This would cause the compiler to use a cached value of struct page pointer to
-retry the operation with, rather than reload it. So the page might have been
-removed from pagecache and freed (refcount==0) but the lookup would not correctly
-notice the page is no longer in pagecache, and keep attempting to increment the
-refcount and failing, until the page gets reallocated for something else. This
-isn't a data corruption because the condition will be detected if the page has
-been reallocated. However it can result in a lockup. 
-
-Add a the required compiler barrier and comment to fix this.
-
-Assembly snippet from find_get_pages, before:
-.L220:
-        movq    (%rbx), %rax    #* ivtmp.1162, tmp82
-        movq    (%rax), %rdi    #, prephitmp.1149
-.L218:
-        testb   $1, %dil        #, prephitmp.1149
-        jne     .L217   #,
-        testq   %rdi, %rdi      # prephitmp.1149
-        je      .L203   #,
-        cmpq    $-1, %rdi       #, prephitmp.1149
-        je      .L217   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L218   #,
-
-after:
-.L212:
-        movq    (%rbx), %rax    #* ivtmp.1109, tmp81
-        movq    (%rax), %rdi    #, ret
-        testb   $1, %dil        #, ret
-        jne     .L211   #,
-        testq   %rdi, %rdi      # ret
-        je      .L197   #,
-        cmpq    $-1, %rdi       #, ret
-        je      .L211   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L212   #,
-
-(notice the obvious infinite loop in the first example, if page->count remains 0)
-
-
----
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2009-01-05 17:22:57.000000000 +1100
-+++ linux-2.6/mm/filemap.c	2009-01-05 17:28:40.000000000 +1100
-@@ -794,8 +794,19 @@ repeat:
- 		if (unlikely(page == RADIX_TREE_RETRY))
- 			goto restart;
+diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
+index 570d204..50fabb3 100644
+--- a/include/linux/kernel_stat.h
++++ b/include/linux/kernel_stat.h
+@@ -78,7 +78,7 @@ static inline unsigned int kstat_irqs(unsigned int irq)
+ 	return sum;
+ }
  
--		if (!page_cache_get_speculative(page))
-+		if (!page_cache_get_speculative(page)) {
-+			/*
-+			 * A failed page_cache_get_speculative operation does
-+			 * not imply any barriers (Documentation/atomic_ops.txt),
-+			 * and as such, we must force the compiler to deref the
-+			 * radix-tree slot again rather than using the cached
-+			 * value (because we need to give up if the page has been
-+			 * removed from the radix-tree, rather than looping until
-+			 * it gets reused for something else).
-+			 */
-+			barrier();
- 			goto repeat;
-+		}
+-extern unsigned long long task_delta_exec(struct task_struct *);
++extern unsigned long long task_total_exec(struct task_struct *);
+ extern void account_user_time(struct task_struct *, cputime_t, cputime_t);
+ extern void account_system_time(struct task_struct *, int, cputime_t, cputime_t);
+ extern void account_steal_time(cputime_t);
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 29c4b8d..c6a07bf 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2179,16 +2179,7 @@ static inline int spin_needbreak(spinlock_t *lock)
+  * Thread group CPU time accounting.
+  */
  
- 		/* Has the page moved? */
- 		if (unlikely(page != *((void **)pages[i]))) {
-@@ -850,8 +861,11 @@ repeat:
- 		if (page->mapping == NULL || page->index != index)
- 			break;
+-static inline
+-void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
+-{
+-	struct task_cputime *totals = &tsk->signal->cputime.totals;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&totals->lock, flags);
+-	*times = *totals;
+-	spin_unlock_irqrestore(&totals->lock, flags);
+-}
++extern void thread_group_cputime(struct task_struct *, struct task_cputime *);
  
--		if (!page_cache_get_speculative(page))
-+		if (!page_cache_get_speculative(page)) {
-+			/* barrier: see find_get_pages() */
-+			barrier();
- 			goto repeat;
-+		}
+ static inline void thread_group_cputime_init(struct signal_struct *sig)
+ {
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index fa07da9..56c91b9 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -224,7 +224,7 @@ static int cpu_clock_sample(const clockid_t which_clock, struct task_struct *p,
+ 		cpu->cpu = virt_ticks(p);
+ 		break;
+ 	case CPUCLOCK_SCHED:
+-		cpu->sched = p->se.sum_exec_runtime + task_delta_exec(p);
++		cpu->sched = task_total_exec(p);
+ 		break;
+ 	}
+ 	return 0;
+@@ -251,7 +251,7 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
+ 		cpu->cpu = cputime.utime;
+ 		break;
+ 	case CPUCLOCK_SCHED:
+-		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
++		cpu->sched = cputime.sum_exec_runtime;
+ 		break;
+ 	}
+ 	return 0;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 545c6fc..8315cd5 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4121,10 +4121,10 @@ DEFINE_PER_CPU(struct kernel_stat, kstat);
+ EXPORT_PER_CPU_SYMBOL(kstat);
  
- 		/* Has the page moved? */
- 		if (unlikely(page != *((void **)pages[i]))) {
-@@ -904,8 +918,11 @@ repeat:
- 		if (unlikely(page == RADIX_TREE_RETRY))
- 			goto restart;
+ /*
+- * Return any ns on the sched_clock that have not yet been banked in
++ * Return total of runtime which already banked and which not yet
+  * @p in case that task is currently running.
+  */
+-unsigned long long task_delta_exec(struct task_struct *p)
++unsigned long long task_total_exec(struct task_struct *p)
+ {
+ 	unsigned long flags;
+ 	struct rq *rq;
+@@ -4140,12 +4140,37 @@ unsigned long long task_delta_exec(struct task_struct *p)
+ 		if ((s64)delta_exec > 0)
+ 			ns = delta_exec;
+ 	}
++	ns += p->se.sum_exec_runtime;
  
--		if (!page_cache_get_speculative(page))
-+		if (!page_cache_get_speculative(page)) {
-+			/* barrier: see find_get_pages() */
-+			barrier();
- 			goto repeat;
-+		}
+ 	task_rq_unlock(rq, &flags);
  
- 		/* Has the page moved? */
- 		if (unlikely(page != *((void **)pages[i]))) {
+ 	return ns;
+ }
+ 
++void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
++{
++	struct task_cputime *totals = &tsk->signal->cputime.totals;
++	unsigned long flags;
++	struct rq *rq;
++	u64 delta_exec = 0;
++
++	rq = task_rq_lock(tsk, &flags);
++
++	spin_lock(&totals->lock);
++	*times = *totals;
++	spin_unlock(&totals->lock);
++
++	if (task_current(rq, tsk)) {
++		update_rq_clock(rq);
++		delta_exec = rq->clock - tsk->se.exec_start;
++		if ((s64)delta_exec < 0)
++			delta_exec = 0;
++	}
++	times->sum_exec_runtime += delta_exec;
++
++	task_rq_unlock(rq, &flags);
++}
++
+ /*
+  * Account user cpu time to a process.
+  * @p: the process that the cpu time gets accounted to
+-- 
+1.6.1
+
