@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbZAEEUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbZAEEaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbZAEEUT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 23:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZAEEUF
+	id S1753115AbZAEEaZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 23:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZAEEaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 23:20:05 -0500
-Received: from ns2.suse.de ([195.135.220.15]:51316 "EHLO mx2.suse.de"
+	Sun, 4 Jan 2009 23:30:13 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:34520 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752157AbZAEEUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 23:20:03 -0500
-Date: Mon, 5 Jan 2009 05:19:59 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Klotz <peter.klotz@aon.at>, Roman Kononov <kernel@kononov.ftml.net>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: BUG: soft lockup - is this XFS problem?
-Message-ID: <20090105041959.GC367@wotan.suse.de>
-References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de>
-Mime-Version: 1.0
+	id S1752114AbZAEEaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 23:30:11 -0500
+Date: Sun, 4 Jan 2009 20:30:06 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, andi@firstfloor.org, snakebyte@gmx.de,
+       akpm@linux-foundation.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       manfred@colorfullife.com, laijs@cn.fujitsu.com
+Subject: [PATCH] Fix rcutree grace-period-latency bug on small systems
+Message-ID: <20090105043006.GA22049@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090105014821.GA367@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 02:48:21AM +0100, Nick Piggin wrote:
-> On Sat, Jan 03, 2009 at 04:44:43PM -0500, Christoph Hellwig wrote:
-> > On Tue, Dec 30, 2008 at 05:23:33AM +0100, Nick Piggin wrote:
-> > > On Tue, Dec 23, 2008 at 12:12:59PM -0500, Christoph Hellwig wrote:
-> > > > 
-> > > > Nick, I've seen various reports like this by Roman.  It seems to be
-> > > > caused by an interaction of the lockless pagecache with the xfs
-> > > > I/O code.  Any idea what might be wrong here:
-> > > 
-> > > Hmm, it could get into a loop here if there is a page in the pagecache
-> > > with a zero refcount, which might be a problem with XFS... other looping
-> > > conditions might indicate a problem iwth lockless pagecache or radix
-> > > tree. It would be very helpful to know what condition it is looping on...
-> > 
-> > See http://oss.sgi.com/bugzilla/show_bug.cgi?id=805
-> 
-> OK.. Hmm, well here is a modification to your patch which might help further.
-> I'll see if I can reproduce it here meanwhile.
+Kudos to Andi Kleen for finding a grace-period-latency problem!  The
+problem was that the special-case code for small machines never updated
+the ->signaled field to indicate that grace-period initialization had
+completed, which prevented force_quiescent_state() from ever expediting
+grace periods.  This problem resulted in grace periods extending for more
+than 20 seconds.  Not subtle.  I introduced this bug during my inspection
+process when I fixed a race between grace-period initialization and
+force_quiescent_state() execution.
 
-I have reproduced it. It seems like it might be a livelock condition
-because the system ended up recovering after I terminated the dd (and
-did so before I collected any real info, oops, hopefully I can
-reproduce it again).
+The following patch properly updates the ->signaled field for the
+"small"-system case (no more than 32 CPUs for 32-bit kernels and no more
+than 64 CPUs for 64-bit kernels).
 
-This would fit with the problem going away when the debugging patch
-was applied. Timing changes...
+I believe that this patch should be included for 2.6.29.
+
+Located-by: Andi Kleen <andi@firstfloor.org>
+Tested-by: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcutree.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index a342b03..88d921c 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -572,6 +572,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 	/* Special-case the common single-level case. */
+ 	if (NUM_RCU_NODES == 1) {
+ 		rnp->qsmask = rnp->qsmaskinit;
++		rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state OK. */
+ 		spin_unlock_irqrestore(&rnp->lock, flags);
+ 		return;
+ 	}
+
