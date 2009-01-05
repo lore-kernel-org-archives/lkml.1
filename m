@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZAETvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZAETww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbZAETvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZAETvK
+	id S1754759AbZAETww (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZAETwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:51:10 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56644 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752439AbZAETvJ convert rfc822-to-8bit (ORCPT
+	Mon, 5 Jan 2009 14:52:43 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:54616 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbZAETwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:51:09 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Cheng Renquan (=?utf-8?q?=E7=A8=8B=E4=BB=BB=E5=85=A8?=)" 
-	<crquan@gmail.com>
-Subject: Re: KPROBE linking error (who's the maintainer of kernel/power/) ?
-Date: Mon, 5 Jan 2009 20:51:29 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-tst; KDE/4.1.3; x86_64; ; )
-Cc: "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Matt Helsley" <matthltc@us.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       mhiramat@redhat.com, linux-kernel@vger.kernel.org,
-       "Pavel Machek" <pavel@suse.cz>, linux-pm@lists.linux-foundation.org
-References: <91b13c310901042312o44afa166t66b23e8ad10d104f@mail.gmail.com> <200901051416.04816.rjw@sisk.pl> <91b13c310901050855y7cdee2c2yc8a03c4e1a4ac109@mail.gmail.com>
-In-Reply-To: <91b13c310901050855y7cdee2c2yc8a03c4e1a4ac109@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Mon, 5 Jan 2009 14:52:42 -0500
+Date: Mon, 5 Jan 2009 20:54:15 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       sparclinux <sparclinux@vger.kernel.org>
+Subject: Re: ftrace breaks sparc64 build
+Message-ID: <20090105195415.GA6204@uranus.ravnborg.org>
+References: <20090105181922.GA25622@uranus.ravnborg.org> <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901052051.30256.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009, Cheng Renquan (程任全) wrote:
-> On Mon, Jan 5, 2009 at 9:16 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> Furthermore, there seems no entry for maintainers of "kernel/power/",
-> >> who maintain that subdir please add your name to the MAINTAINERS file?
-> >> I just grab some latest touchers of kernel/power/ and kernel/kprobes.c
-> >> as the recipients here.
-> >
-> > I'm one of the maintainers.
+Hi Steven.
+
 > 
-> I found that linux-pm@lists.linux-foundation.org by searching your
-> email in the MAINTAINERS file, in the section of "SUSPEND TO RAM" and
-> "HIBERNATION", both not very apparently related to kernel/power/,
-> maybe my careless, maybe we can improve it?
+> Honestly, that code is a little obfuscated, and would be better to write 
+> it as:
+> 
+> 	if (vp->major == 0 && vp->minor=0)
+> 		return ldc_abort(lp);
+> 
+> 	vap = find_by_major(vp->major);
+> 	if (!vap)
+> 		return ldc_abort(lp);
+> 
+> 	[...]
+> 
+> This is much easier to read and we can remove the else statement 
+> altogether. And I bet the warning will go away if we did it this way.
 
-Well, kernel/power is mostly about hibernation and suspend to RAM, the freezer
-is the only "other" thing.  It used to be suspend/hibernation-specific, though.
+Fully ageed on the readability.
+I happen to trigger this as an error in the sparc code.
+But I see the same warning also in generic code.
 
-Thanks,
-Rafael
+>From kernel/module.c:
+        /* Suck in entire file: we'll want most of it. */
+        /* vmalloc barfs on "unusual" numbers.  Check here */
+        if (len > 64 * 1024 * 1024 || (hdr = vmalloc(len)) == NULL)
+                return ERR_PTR(-ENOMEM);
+
+
+This gives following warning:
+kernel/module.c: In function `load_module':
+kernel/module.c:1842: warning: 'hdr' might be used uninitialized in this function
+
+So this is not a pattern we seen only in sparc code and I wonder if this is
+the first time it is brought up?
+
+I can fix up the cases in sparc - no problem.
+But it was a suprise to me _why_ these warnings started to creep
+up and then it break my build.
+
+
+	Sam
