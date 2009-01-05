@@ -1,92 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZAEHr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZAEHyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbZAEHr3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 02:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZAEHrU
+	id S1753106AbZAEHyh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 02:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZAEHy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 02:47:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40620 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750772AbZAEHrT (ORCPT
+	Mon, 5 Jan 2009 02:54:28 -0500
+Received: from viefep13-int.chello.at ([62.179.121.33]:45611 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750836AbZAEHy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 02:47:19 -0500
-Date: Sun, 4 Jan 2009 23:46:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Mike Travis <travis@sgi.com>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/6] cpuset: don't allocate trial cpuset on stack
-Message-Id: <20090104234659.19e62245.akpm@linux-foundation.org>
-In-Reply-To: <495B2F19.7040806@cn.fujitsu.com>
-References: <495B2EA6.7010808@cn.fujitsu.com>
-	<495B2EC2.9090305@cn.fujitsu.com>
-	<495B2EE7.4040406@cn.fujitsu.com>
-	<495B2EFB.302@cn.fujitsu.com>
-	<495B2F19.7040806@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 5 Jan 2009 02:54:27 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [patch] Re: problem with "sched: revert back to per-rq
+ vruntime"?
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jayson King <dev@jaysonking.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+In-Reply-To: <1230895002.5747.46.camel@marge.simson.net>
+References: <495948E0.8040502@jaysonking.com>
+	 <495A788B.3010001@jaysonking.com>
+	 <1230740773.6412.21.camel@marge.simson.net>
+	 <495BD346.9040408@jaysonking.com>
+	 <1230795963.5892.14.camel@marge.simson.net>
+	 <495D5C70.4090804@jaysonking.com>
+	 <1230895002.5747.46.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Mon, 05 Jan 2009 08:54:04 +0100
+Message-Id: <1231142044.30237.0.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Dec 2008 16:36:41 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> Impact: cleanups, reduce stack usage
+On Fri, 2009-01-02 at 12:16 +0100, Mike Galbraith wrote:
+> On Thu, 2009-01-01 at 18:14 -0600, Jayson King wrote:
 > 
-> This patch prepares for the next patch. When we convert cpuset.cpus_allowed
-> to cpumask_var_t, (trialcs = *cs) no longer works.
+> > Still works OK for me. You may add, if you like:
+> > 
+> > Tested-By: Jayson King <dev@jaysonking.com>
 > 
-> Another result of this patch is reducing stack usage of trialcs. sizeof(*cs)
-> can be as large as 148 bytes on x86_64, so it's really not good to have it
-> on stack.
+> Actually, I prefer the below.  Everything in one spot and obvious.
 > 
+> Impact: bug fixlet.
+> 
+> Fix sched_slice() to emit a sane result whether a task is currently enqueued or not.
+> 
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
 
-err, what?
+Looks good, thanks Mike!!
 
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -415,6 +415,24 @@ static int is_cpuset_subset(const struct cpuset *p, const struct cpuset *q)
->  		is_mem_exclusive(p) <= is_mem_exclusive(q);
+>  kernel/sched_fair.c |   30 ++++++++++++------------------
+>  1 files changed, 12 insertions(+), 18 deletions(-)
+> 
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 5ad4440..1a35bad 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -386,20 +386,6 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
+>  #endif
+>  
+>  /*
+> - * delta *= P[w / rw]
+> - */
+> -static inline unsigned long
+> -calc_delta_weight(unsigned long delta, struct sched_entity *se)
+> -{
+> -	for_each_sched_entity(se) {
+> -		delta = calc_delta_mine(delta,
+> -				se->load.weight, &cfs_rq_of(se)->load);
+> -	}
+> -
+> -	return delta;
+> -}
+> -
+> -/*
+>   * delta /= w
+>   */
+>  static inline unsigned long
+> @@ -440,12 +426,20 @@ static u64 __sched_period(unsigned long nr_running)
+>   */
+>  static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>  {
+> -	unsigned long nr_running = cfs_rq->nr_running;
+> +	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
+> +	
+> +	for_each_sched_entity(se) {
+> +		struct load_weight *load = &cfs_rq->load;
+>  
+> -	if (unlikely(!se->on_rq))
+> -		nr_running++;
+> +		if (unlikely(!se->on_rq)) {
+> +			struct load_weight lw = cfs_rq->load;
+>  
+> -	return calc_delta_weight(__sched_period(nr_running), se);
+> +			update_load_add(&lw, se->load.weight);
+> +			load = &lw;
+> +		}
+> +		slice = calc_delta_mine(slice, se->load.weight, load);
+> +	}
+> +	return slice;
 >  }
 >  
-> +/**
-> + * alloc_trial_cpuset - allocate a trial cpuset
-> + * @cs: the cpuset that the trial cpuset duplicates
-> + */
-> +static struct cpuset *alloc_trial_cpuset(const struct cpuset *cs)
-> +{
-> +	return kmemdup(cs, sizeof(*cs), GFP_KERNEL);
-> +}
-
-We copy a cpuset by value?
-
-> -static int update_cpumask(struct cpuset *cs, const char *buf)
-> +static int update_cpumask(struct cpuset *cs, struct cpuset *trialcs,
-> +			  const char *buf)
->  {
->  	struct ptr_heap heap;
-> -	struct cpuset trialcs;
->  	int retval;
->  	int is_load_balanced;
->  
-> @@ -891,8 +909,6 @@ static int update_cpumask(struct cpuset *cs, const char *buf)
->  	if (cs == &top_cpuset)
->  		return -EACCES;
->  
-> -	trialcs = *cs;
-
-Yes, we already do.
-
-That thing contains spinlocks and list_heads (at least), which cannot
-be copied in this way.
-
-Seems that we're doing this gross thing because it just so happens that
-we only use the cpus_allowed and mems_allowed fields, and because
-several of the called functions require a cpuset*, but only needed a
-cpumask_t.
-
-How perfectly beastly.
+>  /*
+> 
+> 
 
