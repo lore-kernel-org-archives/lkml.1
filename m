@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZAELiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbZAELjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZAELiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 06:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZAELip
+	id S1753499AbZAELjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 06:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbZAELiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 06:38:45 -0500
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:33748 "EHLO
+	Mon, 5 Jan 2009 06:38:52 -0500
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:33833 "EHLO
 	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750846AbZAELip (ORCPT
+	by vger.kernel.org with ESMTP id S1753922AbZAELiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 06:38:45 -0500
+	Mon, 5 Jan 2009 06:38:51 -0500
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com, sfr@canb.auug.org.au
-Subject: [PATCH V3 16/17] Squashfs: documentation
-Message-Id: <E1LJnJo-0002MM-B4@dylan.lougher.demon.co.uk>
+Subject: [PATCH V3 02/17] Squashfs: directory lookup operations
+Message-Id: <E1LJnJn-0002L7-I8@dylan.lougher.demon.co.uk>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Mon, 05 Jan 2009 11:08:24 +0000
+Date: Mon, 05 Jan 2009 11:08:23 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -24,240 +24,257 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- Documentation/filesystems/squashfs.txt |  225 ++++++++++++++++++++++++++++++++
- 1 files changed, 225 insertions(+), 0 deletions(-)
+ fs/squashfs/namei.c |  242 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 242 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/squashfs.txt b/Documentation/filesystems/squashfs.txt
+diff --git a/fs/squashfs/namei.c b/fs/squashfs/namei.c
 new file mode 100644
-index 0000000..3e79e4a
+index 0000000..9e39865
 --- /dev/null
-+++ b/Documentation/filesystems/squashfs.txt
-@@ -0,0 +1,225 @@
-+SQUASHFS 4.0 FILESYSTEM
-+=======================
++++ b/fs/squashfs/namei.c
+@@ -0,0 +1,242 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * namei.c
++ */
 +
-+Squashfs is a compressed read-only filesystem for Linux.
-+It uses zlib compression to compress files, inodes and directories.
-+Inodes in the system are very small and all blocks are packed to minimise
-+data overhead. Block sizes greater than 4K are supported up to a maximum
-+of 1Mbytes (default block size 128K).
++/*
++ * This file implements code to do filename lookup in directories.
++ *
++ * Like inodes, directories are packed into compressed metadata blocks, stored
++ * in a directory table.  Directories are accessed using the start address of
++ * the metablock containing the directory and the offset into the
++ * decompressed block (<block, offset>).
++ *
++ * Directories are organised in a slightly complex way, and are not simply
++ * a list of file names.  The organisation takes advantage of the
++ * fact that (in most cases) the inodes of the files will be in the same
++ * compressed metadata block, and therefore, can share the start block.
++ * Directories are therefore organised in a two level list, a directory
++ * header containing the shared start block value, and a sequence of directory
++ * entries, each of which share the shared start block.  A new directory header
++ * is written once/if the inode start block changes.  The directory
++ * header/directory entry list is repeated as many times as necessary.
++ *
++ * Directories are sorted, and can contain a directory index to speed up
++ * file lookup.  Directory indexes store one entry per metablock, each entry
++ * storing the index/filename mapping to the first directory header
++ * in each metadata block.  Directories are sorted in alphabetical order,
++ * and at lookup the index is scanned linearly looking for the first filename
++ * alphabetically larger than the filename being looked up.  At this point the
++ * location of the metadata block the filename is in has been found.
++ * The general idea of the index is ensure only one metadata block needs to be
++ * decompressed to do a lookup irrespective of the length of the directory.
++ * This scheme has the advantage that it doesn't require extra memory overhead
++ * and doesn't require much extra storage on disk.
++ */
 +
-+Squashfs is intended for general read-only filesystem use, for archival
-+use (i.e. in cases where a .tar.gz file may be used), and in constrained
-+block device/memory systems (e.g. embedded systems) where low overhead is
-+needed.
++#include <linux/fs.h>
++#include <linux/vfs.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/dcache.h>
++#include <linux/zlib.h>
 +
-+Mailing list: squashfs-devel@lists.sourceforge.net
-+Web site: www.squashfs.org
++#include "squashfs_fs.h"
++#include "squashfs_fs_sb.h"
++#include "squashfs_fs_i.h"
++#include "squashfs.h"
 +
-+1. FILESYSTEM FEATURES
-+----------------------
++/*
++ * Lookup name in the directory index, returning the location of the metadata
++ * block containing it, and the directory index this represents.
++ *
++ * If we get an error reading the index then return the part of the index
++ * (if any) we have managed to read - the index isn't essential, just
++ * quicker.
++ */
++static int get_dir_index_using_name(struct super_block *sb,
++			u64 *next_block, int *next_offset, u64 index_start,
++			int index_offset, int i_count, const char *name,
++			int len)
++{
++	struct squashfs_sb_info *msblk = sb->s_fs_info;
++	int i, size, length = 0, err;
++	struct squashfs_dir_index *index;
++	char *str;
 +
-+Squashfs filesystem features versus Cramfs:
++	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
 +
-+				Squashfs		Cramfs
++	index = kmalloc(sizeof(*index) + SQUASHFS_NAME_LEN * 2 + 2, GFP_KERNEL);
++	if (index == NULL) {
++		ERROR("Failed to allocate squashfs_dir_index\n");
++		goto out;
++	}
 +
-+Max filesystem size:		2^64			16 MiB
-+Max file size:			~ 2 TiB			16 MiB
-+Max files:			unlimited		unlimited
-+Max directories:		unlimited		unlimited
-+Max entries per directory:	unlimited		unlimited
-+Max block size:			1 MiB			4 KiB
-+Metadata compression:		yes			no
-+Directory indexes:		yes			no
-+Sparse file support:		yes			no
-+Tail-end packing (fragments):	yes			no
-+Exportable (NFS etc.):		yes			no
-+Hard link support:		yes			no
-+"." and ".." in readdir:	yes			no
-+Real inode numbers:		yes			no
-+32-bit uids/gids:		yes			no
-+File creation time:		yes			no
-+Xattr and ACL support:		no			no
++	str = &index->name[SQUASHFS_NAME_LEN + 1];
++	strncpy(str, name, len);
++	str[len] = '\0';
 +
-+Squashfs compresses data, inodes and directories.  In addition, inode and
-+directory data are highly compacted, and packed on byte boundaries.  Each
-+compressed inode is on average 8 bytes in length (the exact length varies on
-+file type, i.e. regular file, directory, symbolic link, and block/char device
-+inodes have different sizes).
-+
-+2. USING SQUASHFS
-+-----------------
-+
-+As squashfs is a read-only filesystem, the mksquashfs program must be used to
-+create populated squashfs filesystems.  This and other squashfs utilities
-+can be obtained from http://www.squashfs.org.  Usage instructions can be
-+obtained from this site also.
-+
-+
-+3. SQUASHFS FILESYSTEM DESIGN
-+-----------------------------
-+
-+A squashfs filesystem consists of seven parts, packed together on a byte
-+alignment:
-+
-+	 ---------------
-+	|  superblock 	|
-+	|---------------|
-+	|  datablocks   |
-+	|  & fragments  |
-+	|---------------|
-+	|  inode table	|
-+	|---------------|
-+	|   directory	|
-+	|     table     |
-+	|---------------|
-+	|   fragment	|
-+	|    table      |
-+	|---------------|
-+	|    export     |
-+	|    table      |
-+	|---------------|
-+	|    uid/gid	|
-+	|  lookup table	|
-+	 ---------------
-+
-+Compressed data blocks are written to the filesystem as files are read from
-+the source directory, and checked for duplicates.  Once all file data has been
-+written the completed inode, directory, fragment, export and uid/gid lookup
-+tables are written.
-+
-+3.1 Inodes
-+----------
-+
-+Metadata (inodes and directories) are compressed in 8Kbyte blocks.  Each
-+compressed block is prefixed by a two byte length, the top bit is set if the
-+block is uncompressed.  A block will be uncompressed if the -noI option is set,
-+or if the compressed block was larger than the uncompressed block.
-+
-+Inodes are packed into the metadata blocks, and are not aligned to block
-+boundaries, therefore inodes overlap compressed blocks.  Inodes are identified
-+by a 48-bit number which encodes the location of the compressed metadata block
-+containing the inode, and the byte offset into that block where the inode is
-+placed (<block, offset>).
-+
-+To maximise compression there are different inodes for each file type
-+(regular file, directory, device, etc.), the inode contents and length
-+varying with the type.
-+
-+To further maximise compression, two types of regular file inode and
-+directory inode are defined: inodes optimised for frequently occurring
-+regular files and directories, and extended types where extra
-+information has to be stored.
-+
-+3.2 Directories
-+---------------
-+
-+Like inodes, directories are packed into compressed metadata blocks, stored
-+in a directory table.  Directories are accessed using the start address of
-+the metablock containing the directory and the offset into the
-+decompressed block (<block, offset>).
-+
-+Directories are organised in a slightly complex way, and are not simply
-+a list of file names.  The organisation takes advantage of the
-+fact that (in most cases) the inodes of the files will be in the same
-+compressed metadata block, and therefore, can share the start block.
-+Directories are therefore organised in a two level list, a directory
-+header containing the shared start block value, and a sequence of directory
-+entries, each of which share the shared start block.  A new directory header
-+is written once/if the inode start block changes.  The directory
-+header/directory entry list is repeated as many times as necessary.
-+
-+Directories are sorted, and can contain a directory index to speed up
-+file lookup.  Directory indexes store one entry per metablock, each entry
-+storing the index/filename mapping to the first directory header
-+in each metadata block.  Directories are sorted in alphabetical order,
-+and at lookup the index is scanned linearly looking for the first filename
-+alphabetically larger than the filename being looked up.  At this point the
-+location of the metadata block the filename is in has been found.
-+The general idea of the index is ensure only one metadata block needs to be
-+decompressed to do a lookup irrespective of the length of the directory.
-+This scheme has the advantage that it doesn't require extra memory overhead
-+and doesn't require much extra storage on disk.
-+
-+3.3 File data
-+-------------
-+
-+Regular files consist of a sequence of contiguous compressed blocks, and/or a
-+compressed fragment block (tail-end packed block).   The compressed size
-+of each datablock is stored in a block list contained within the
-+file inode.
-+
-+To speed up access to datablocks when reading 'large' files (256 Mbytes or
-+larger), the code implements an index cache that caches the mapping from
-+block index to datablock location on disk.
-+
-+The index cache allows Squashfs to handle large files (up to 1.75 TiB) while
-+retaining a simple and space-efficient block list on disk.  The cache
-+is split into slots, caching up to eight 224 GiB files (128 KiB blocks).
-+Larger files use multiple slots, with 1.75 TiB files using all 8 slots.
-+The index cache is designed to be memory efficient, and by default uses
-+16 KiB.
-+
-+3.4 Fragment lookup table
-+-------------------------
-+
-+Regular files can contain a fragment index which is mapped to a fragment
-+location on disk and compressed size using a fragment lookup table.  This
-+fragment lookup table is itself stored compressed into metadata blocks.
-+A second index table is used to locate these.  This second index table for
-+speed of access (and because it is small) is read at mount time and cached
-+in memory.
-+
-+3.5 Uid/gid lookup table
-+------------------------
-+
-+For space efficiency regular files store uid and gid indexes, which are
-+converted to 32-bit uids/gids using an id look up table.  This table is
-+stored compressed into metadata blocks.  A second index table is used to
-+locate these.  This second index table for speed of access (and because it
-+is small) is read at mount time and cached in memory.
-+
-+3.6 Export table
-+----------------
-+
-+To enable Squashfs filesystems to be exportable (via NFS etc.) filesystems
-+can optionally (disabled with the -no-exports Mksquashfs option) contain
-+an inode number to inode disk location lookup table.  This is required to
-+enable Squashfs to map inode numbers passed in filehandles to the inode
-+location on disk, which is necessary when the export code reinstantiates
-+expired/flushed inodes.
-+
-+This table is stored compressed into metadata blocks.  A second index table is
-+used to locate these.  This second index table for speed of access (and because
-+it is small) is read at mount time and cached in memory.
++	for (i = 0; i < i_count; i++) {
++		err = squashfs_read_metadata(sb, index, &index_start,
++					&index_offset, sizeof(*index));
++		if (err < 0)
++			break;
 +
 +
-+4. TODOS AND OUTSTANDING ISSUES
-+-------------------------------
++		size = le32_to_cpu(index->size) + 1;
 +
-+4.1 Todo list
-+-------------
++		err = squashfs_read_metadata(sb, index->name, &index_start,
++					&index_offset, size);
++		if (err < 0)
++			break;
 +
-+Implement Xattr and ACL support.  The Squashfs 4.0 filesystem layout has hooks
-+for these but the code has not been written.  Once the code has been written
-+the existing layout should not require modification.
++		index->name[size] = '\0';
 +
-+4.2 Squashfs internal cache
-+---------------------------
++		if (strcmp(index->name, str) > 0)
++			break;
 +
-+Blocks in Squashfs are compressed.  To avoid repeatedly decompressing
-+recently accessed data Squashfs uses two small metadata and fragment caches.
++		length = le32_to_cpu(index->index);
++		*next_block = le32_to_cpu(index->start_block) +
++					msblk->directory_table;
++	}
 +
-+The cache is not used for file datablocks, these are decompressed and cached in
-+the page-cache in the normal way.  The cache is used to temporarily cache
-+fragment and metadata blocks which have been read as a result of a metadata
-+(i.e. inode or directory) or fragment access.  Because metadata and fragments
-+are packed together into blocks (to gain greater compression) the read of a
-+particular piece of metadata or fragment will retrieve other metadata/fragments
-+which have been packed with it, these because of locality-of-reference may be
-+read in the near future. Temporarily caching them ensures they are available
-+for near future access without requiring an additional read and decompress.
++	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
++	kfree(index);
 +
-+In the future this internal cache may be replaced with an implementation which
-+uses the kernel page cache.  Because the page cache operates on page sized
-+units this may introduce additional complexity in terms of locking and
-+associated race conditions.
++out:
++	/*
++	 * Return index (f_pos) of the looked up metadata block.  Translate
++	 * from internal f_pos to external f_pos which is offset by 3 because
++	 * we invent "." and ".." entries which are not actually stored in the
++	 * directory.
++	 */
++	return length + 3;
++}
++
++
++static struct dentry *squashfs_lookup(struct inode *dir, struct dentry *dentry,
++				 struct nameidata *nd)
++{
++	const unsigned char *name = dentry->d_name.name;
++	int len = dentry->d_name.len;
++	struct inode *inode = NULL;
++	struct squashfs_sb_info *msblk = dir->i_sb->s_fs_info;
++	struct squashfs_dir_header dirh;
++	struct squashfs_dir_entry *dire;
++	u64 block = squashfs_i(dir)->start + msblk->directory_table;
++	int offset = squashfs_i(dir)->offset;
++	int err, length = 0, dir_count, size;
++
++	TRACE("Entered squashfs_lookup [%llx:%x]\n", block, offset);
++
++	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
++	if (dire == NULL) {
++		ERROR("Failed to allocate squashfs_dir_entry\n");
++		return ERR_PTR(-ENOMEM);
++	}
++
++	if (len > SQUASHFS_NAME_LEN) {
++		err = -ENAMETOOLONG;
++		goto failed;
++	}
++
++	length = get_dir_index_using_name(dir->i_sb, &block, &offset,
++				squashfs_i(dir)->dir_idx_start,
++				squashfs_i(dir)->dir_idx_offset,
++				squashfs_i(dir)->dir_idx_cnt, name, len);
++
++	while (length < i_size_read(dir)) {
++		/*
++		 * Read directory header.
++		 */
++		err = squashfs_read_metadata(dir->i_sb, &dirh, &block,
++				&offset, sizeof(dirh));
++		if (err < 0)
++			goto read_failure;
++
++		length += sizeof(dirh);
++
++		dir_count = le32_to_cpu(dirh.count) + 1;
++		while (dir_count--) {
++			/*
++			 * Read directory entry.
++			 */
++			err = squashfs_read_metadata(dir->i_sb, dire, &block,
++					&offset, sizeof(*dire));
++			if (err < 0)
++				goto read_failure;
++
++			size = le16_to_cpu(dire->size) + 1;
++
++			err = squashfs_read_metadata(dir->i_sb, dire->name,
++					&block, &offset, size);
++			if (err < 0)
++				goto read_failure;
++
++			length += sizeof(*dire) + size;
++
++			if (name[0] < dire->name[0])
++				goto exit_lookup;
++
++			if (len == size && !strncmp(name, dire->name, len)) {
++				unsigned int blk, off, ino_num;
++				long long ino;
++				blk = le32_to_cpu(dirh.start_block);
++				off = le16_to_cpu(dire->offset);
++				ino_num = le32_to_cpu(dirh.inode_number) +
++					(short) le16_to_cpu(dire->inode_number);
++				ino = SQUASHFS_MKINODE(blk, off);
++
++				TRACE("calling squashfs_iget for directory "
++					"entry %s, inode  %x:%x, %d\n", name,
++					blk, off, ino_num);
++
++				inode = squashfs_iget(dir->i_sb, ino, ino_num);
++				if (IS_ERR(inode)) {
++					err = PTR_ERR(inode);
++					goto failed;
++				}
++
++				goto exit_lookup;
++			}
++		}
++	}
++
++exit_lookup:
++	kfree(dire);
++	if (inode)
++		return d_splice_alias(inode, dentry);
++	d_add(dentry, inode);
++	return ERR_PTR(0);
++
++read_failure:
++	ERROR("Unable to read directory block [%llx:%x]\n",
++		squashfs_i(dir)->start + msblk->directory_table,
++		squashfs_i(dir)->offset);
++failed:
++	kfree(dire);
++	return ERR_PTR(err);
++}
++
++
++const struct inode_operations squashfs_dir_inode_ops = {
++	.lookup = squashfs_lookup
++};
 -- 
 1.5.6.3
 
