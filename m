@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZAEMa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZAEMce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbZAEMa3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 07:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZAEMaU
+	id S1754674AbZAEMce (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 07:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbZAEMc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 07:30:20 -0500
-Received: from ns.firmix.at ([62.141.48.66]:4892 "EHLO ns.firmix.at"
+	Mon, 5 Jan 2009 07:32:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60541 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752728AbZAEMaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 07:30:18 -0500
-Subject: Re: [PATCH 1/3]: Replace kernel/timeconst.pl with
-	kernel/timeconst.sh
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Rob Landley <rob@landley.net>
-Cc: Jamie Lokier <jamie@shareable.org>, Valdis.Kletnieks@vt.edu,
-       Ingo Oeser <ioe-lkml@rameria.de>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <200901042250.36847.rob@landley.net>
-References: <200901020207.30359.rob@landley.net>
-	 <20090104221356.GA32357@shareable.org>
-	 <1231114530.3310.6.camel@gimli.at.home>
-	 <200901042250.36847.rob@landley.net>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Mon, 05 Jan 2009 13:29:11 +0100
-Message-Id: <1231158551.3326.82.camel@gimli.at.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.102 () AWL,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-1.102 required=5
-X-Spam-Score: -1.102 () AWL,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+	id S1752875AbZAEMcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 07:32:25 -0500
+Date: Mon, 5 Jan 2009 13:32:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: sam@ravnborg.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 -mm merge plans
+Message-ID: <20090105123202.GB29758@elte.hu>
+References: <20090105092110.GA11941@elte.hu> <20090105093931.GA17944@uranus.ravnborg.org> <20090105101006.GA2059@elte.hu> <20090105.023654.61507348.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090105.023654.61507348.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Son, 2009-01-04 at 22:50 -0600, Rob Landley wrote:
-> On Sunday 04 January 2009 18:15:30 Bernd Petrovitsch wrote:
-[...]
-> > ACK. A bash can IMHO be expected. Even going for `dash` is IMHO somewhat
-> > too extreme.
+
+* David Miller <davem@davemloft.net> wrote:
+
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Mon, 5 Jan 2009 11:10:06 +0100
 > 
-> I have yet to encounter a system that uses dash _without_ bash.  (All ubuntu 
+> > That is quite backwards, no matter how i look at it. Why doesnt Sparc do 
+> > the obvious and turn off -Werror until it has gotten around to fix those 
+> > few remaining warnings?
+> 
+> Are you kidding me?
+> 
+> -Werror has been on for 5+ years under arch/sparc, and the tree in those 
+> subdirectories always built warning free.
+> 
+> For crying out loud, Sam and I are asking for a few days to freshen up 
+> these patches so they build properly.  What is the big deal?
+>
+> The changes will go in, probably within the next week, just give us a 
+> chance to fix them up.
+> 
+> I really can't believe what a big stink is being made in response to an 
+> arch maintainer and one of his helpers wanting to clean up a patch 
+> before it gets integrated.
 
-Hmm, should be doable with a chroot environment quite cheap and simple.
+I'm glad that things are accelerating that it will only take a few days 
+now. Your earlier reaction of asking Andrew to remove it from -mm gave me 
+the opposite impression - your reactions made it seem as if you saw it the 
+duty of Sam to fix any problems with this patch.
 
-> variants, even jeos, install bash by default.  They moved the /bin/sh symlink 
+Thanks,
 
-Yes, I know (small) embedded systems that have a bash (and not "only"
-one of busybox shells). It eases writing somewhat fast shell scripts
-without the need for lots of fork()s+exec()s too .....
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+	Ingo
