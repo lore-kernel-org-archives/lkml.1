@@ -1,142 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZAENQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZAENRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753016AbZAENQD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:16:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbZAENPo
+	id S1754682AbZAENRO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZAENQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:15:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54338 "EHLO ogre.sisk.pl"
+	Mon, 5 Jan 2009 08:16:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54355 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753811AbZAENPn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:15:43 -0500
+	id S1750725AbZAENQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:16:56 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Cheng Renquan (=?utf-8?q?=E7=A8=8B=E4=BB=BB=E5=85=A8?=)" 
-	<crquan@gmail.com>
-Subject: Re: KPROBE linking error (who's the maintainer of kernel/power/) ?
-Date: Mon, 5 Jan 2009 14:16:03 +0100
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: [RFC][PATCH 2/10] PCI PM: Add suspend counterpart of pci_reenable_device
+Date: Mon, 5 Jan 2009 14:17:34 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Matt Helsley" <matthltc@us.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       mhiramat@redhat.com, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@suse.cz>
-References: <91b13c310901042312o44afa166t66b23e8ad10d104f@mail.gmail.com>
-In-Reply-To: <91b13c310901042312o44afa166t66b23e8ad10d104f@mail.gmail.com>
+Cc: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <200812190049.34343.rjw@sisk.pl> <200812302337.10257.rjw@sisk.pl> <20090105104946.GE27199@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20090105104946.GE27199@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901051416.04816.rjw@sisk.pl>
+Message-Id: <200901051417.35080.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Monday 05 January 2009, Cheng Renquan (程任全) wrote:
-> with this .config
+On Monday 05 January 2009, Pavel Machek wrote:
+> Hi!
 > 
-> CONFIG_CGROUPS=y
-> CONFIG_CGROUP_FREEZER=y
-> CONFIG_MODULES=y
-> CONFIG_FREEZER=y
-> CONFIG_PM=y
-> CONFIG_PM_SLEEP=n
+> > PCI devices without drivers are not disabled during suspend and
+> > hibernation, but they are enabled during resume, with the help of
+> > pci_reenable_device(), so there is an unbalanced execution of
+> > pcibios_enable_device() in the resume code path.
+> > 
+> > To correct this introduce function pci_disable_enabled_device()
+> > that will disable the argument device, if it is enabled when the
+> > function is being run, without updating the device's pci_dev
+> > structure and use it in the suspend code path to balance the
+> > pci_reenable_device() executed during resume.
 > 
-> the kernel will end compiling with error:
+> > +/**
+> > + * pci_disable_enabled_device - Disable device without updating enable_cnt
+> > + * @dev: PCI device to disable
+> > + *
+> > + * NOTE: This function is a backend of PCI power management routines and is
+> > + * not supposed to be called drivers.
 > 
-> kernel/built-in.o: In function `check_safety':
-> /usr/src/linux-2.6.28/kernel/kprobes.c:126: undefined reference to
-> `freeze_processes'
-> /usr/src/linux-2.6.28/kernel/kprobes.c:139: undefined reference to
-> `thaw_processes'
-> /usr/src/linux-2.6.28/kernel/kprobes.c:139: undefined reference to
-> `thaw_processes'
-> make: *** [.tmp_vmlinux1] Error 1
+> "by drivers"?
 
-So there is a bug, thanks for the report.
+Yes, thanks.
 
-> By read kernel/kprobes.c, I found there maybe a bug:
+> > @@ -441,7 +455,10 @@ static int pci_pm_suspend(struct device 
+> >  		}
+> >  	} else if (pci_has_legacy_pm_support(pci_dev)) {
+> >  		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
+> > +	} else {
+> > +		pci_default_pm_suspend_early(pci_dev);
+> >  	}
+> > +
+> >  	pci_fixup_device(pci_fixup_suspend, pci_dev);
+> >  
+> >  	return error;
 > 
-> 1. "check_safety" in "kernel/kprobes.c" call thaw_processes if both
-> CONFIG_PREEMPT and CONFIG_PM defined,
-> 2. "thaw_processes" function is implemented in "kernel/power/process.c",
-> 3. but it is only used if CONFIG_FREEZER defined, from <linux/freezer.h>,
-> 4. else (CONFIG_FREEZER undefined) it's a null macro defined in
-> <linux/freezer.h>,
-> 5. but process.o only get compile if CONFIG_PM_SLEEP defined, from
-> "kernel/power/Makefile",
-> 
-> Now I'm confused on how to resolve this?
+> So tre fixup runs on the disabled device?
 
-I'd make process.o depend on CONFIG_FREEZER (patch below).
-
-> What's the relation of PM, PM_SLEEP, and FREEZER?
-
-PM_SLEEP depends on PM and FREEZER is defined in kernel/Kconfig.freezer as
-
-config FREEZER
-        def_bool PM_SLEEP || CGROUP_FREEZER
-
-> Which modification of the following will be better?
-> 1. modify kernel/Kconfig, let KPROBES depends more?
-> 2. modify kernel/kprobes.c, let the conditional compile depends more?
-> 3. modify include/linux/freezer.h, move thaw_processes to include/linux/pm.h?
-> 4. modify kernel/power/Makefile, let kernel/power/process.c compile on
-> less condition?
-> 
-> Furthermore, there seems no entry for maintainers of "kernel/power/",
-> who maintain that subdir please add your name to the MAINTAINERS file?
-> I just grab some latest touchers of kernel/power/ and kernel/kprobes.c
-> as the recipients here.
-
-I'm one of the maintainers.
+Yes, but the device's config space is still available at this point.
+ 
+> Acked-by: Pavel Machek <Pavel@suse.cz>
 
 Thanks,
 Rafael
-
----
-Subject: PM: Fix freezer compilation if PM_SLEEP is unset
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Freezer fails to compile if with the following configuration
-settings:
-
-CONFIG_CGROUPS=y
-CONFIG_CGROUP_FREEZER=y
-CONFIG_MODULES=y
-CONFIG_FREEZER=y
-CONFIG_PM=y
-CONFIG_PM_SLEEP=n
-
-Fix this by making process.o compilation depend on CONFIG_FREEZER.
-
-Reported-by: Cheng Renquan <crquan@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/Makefile |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/kernel/power/Makefile
-===================================================================
---- linux-2.6.orig/kernel/power/Makefile
-+++ linux-2.6/kernel/power/Makefile
-@@ -4,7 +4,8 @@ EXTRA_CFLAGS	+=	-DDEBUG
- endif
- 
- obj-y				:= main.o
--obj-$(CONFIG_PM_SLEEP)		+= process.o console.o
-+obj-$(CONFIG_PM_SLEEP)		+= console.o
-+obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
- 
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-
-
