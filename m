@@ -1,69 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbZAEV3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZAEV3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbZAEV3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 16:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZAEV3R
+	id S1753708AbZAEV3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 16:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZAEV3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 16:29:17 -0500
-Received: from outbound-mail-125.bluehost.com ([67.222.38.25]:50837 "HELO
-	outbound-mail-125.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753106AbZAEV3Q (ORCPT
+	Mon, 5 Jan 2009 16:29:30 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:43911 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755174AbZAEV32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 16:29:16 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=tGJGnQF2IveHgXYP7lels3OLjn5ti54Zx9oVXeKzcV2UUoEw33aDqD2p7X0/iQu6cuM3TWCjw4qkBvwwvAaJzHT2nGcfaSK85qxHR6WTrSFJxGhM/i5FNtb+0azd9kPA;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH] aerdrv: fix sanity check in report_resume
-Date: Mon, 5 Jan 2009 13:23:32 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: linux-pci@vger.kernel.org, tom.l.nguyen@intel.com, yanmin.zhang@intel.com,
-       linux-kernel@vger.kernel.org
-References: <493392BA.50906@jp.fujitsu.com> <200901051303.19749.jbarnes@virtuousgeek.org>
-In-Reply-To: <200901051303.19749.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 16:29:28 -0500
+Date: Mon, 5 Jan 2009 22:31:07 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       sparclinux <sparclinux@vger.kernel.org>
+Subject: Re: ftrace breaks sparc64 build
+Message-ID: <20090105213107.GA27293@uranus.ravnborg.org>
+References: <20090105181922.GA25622@uranus.ravnborg.org> <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com> <20090105195415.GA6204@uranus.ravnborg.org> <alpine.DEB.1.10.0901051458460.25066@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901051323.32341.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <alpine.DEB.1.10.0901051458460.25066@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, January 5, 2009 1:03 pm Jesse Barnes wrote:
-> On Sunday, November 30, 2008 11:31 pm Hidetoshi Seto wrote:
-> > What we have to check here before calling it is err_handler->resume.
-> > It seems that this block have been copy&pasted from report_slot_reset.
-> >
-> > Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> > ---
-> >  drivers/pci/pcie/aer/aerdrv_core.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/pci/pcie/aer/aerdrv_core.c
-> > b/drivers/pci/pcie/aer/aerdrv_core.c index dfc63d0..aac7006 100644
-> > --- a/drivers/pci/pcie/aer/aerdrv_core.c
-> > +++ b/drivers/pci/pcie/aer/aerdrv_core.c
-> > @@ -252,7 +252,7 @@ static void report_resume(struct pci_dev *dev, void
-> > *data)
-> >
-> >  	if (!dev->driver ||
-> >  		!dev->driver->err_handler ||
-> > -		!dev->driver->err_handler->slot_reset)
-> > +		!dev->driver->err_handler->resume)
-> >  		return;
-> >
-> >  	err_handler = dev->driver->err_handler;
->
-> Applied (again).  Hope it doesn't get lost again between now & when I send
-> the pull.  Sorry about that.
+> 
+> Probably the same issue. The problem is that the first use of a variable 
+> is in the OR section of an if statement that does a return.
+> 
+> 	if (x || !(y = init_me())
+> 		return;
+> 
+> 	use_me(y);
+> 
 
-Ah nm, I see it went through my for-linus branch, so it appears to be upstream 
-already.... Phew.  I'm still lossy but not as lossy as I thought I was. :)
+More warnings:
+fs/partitions/check.c: In function `rescan_partitions':
+fs/partitions/check.c:511: warning: 'state' might be used uninitialized in this function
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+=> follow same pattern
 
+fs/compat_ioctl.c: In function `ppp_sock_fprog_ioctl_trans':
+fs/compat_ioctl.c:859: warning: 'fptr32' might be used uninitialized in this function
+fs/compat_ioctl.c: In function `do_fontx_ioctl':
+fs/compat_ioctl.c:1082: warning: 'data' might be used uninitialized in this function
+fs/compat_ioctl.c: In function `do_atmif_sioc':
+fs/compat_ioctl.c:1302: warning: 'data' might be used uninitialized in this function
+fs/compat_ioctl.c: In function `do_atm_ioctl':
+fs/compat_ioctl.c:1272: warning: 'data' might be used uninitialized in this function
+fs/compat_ioctl.c: In function `mtd_rw_oob':
+fs/compat_ioctl.c:1421: warning: 'data' might be used uninitialized in this function
+fs/compat_ioctl.c: In function `do_usbdevfs_discsignal':
+fs/compat_ioctl.c:1650: warning: 'uctx' might be used uninitialized in this function
+
+This is:
+        if (get_user(flen, &u_fprog32->len) ||
+            get_user(fptr32, &u_fprog32->filter))
+                return -EFAULT;
+
+
+which is a common pattern. I have at least one in sparc64 code too.
+I did not come up with a nice solution on this one.
+
+drivers/char/vt_ioctl.c: In function `vt_ioctl':
+drivers/char/vt_ioctl.c:945: warning: 'cc' might be used uninitialized in this function
+
+get_user() || get_user() again.
+
+net/core/skbuff.c: In function `___pskb_trim':
+net/core/skbuff.c:1041: warning: 'err' might be used uninitialized in this function
+
+if (xxx && err = foo())
+
+net/core/dev.c: In function `skb_gso_segment':
+net/core/dev.c:1537: warning: 'err' might be used uninitialized in this function
+net/core/dev.c: In function `netif_receive_skb':
+net/core/dev.c:2075: warning: 'port' might be used uninitialized in this function
+
+if (xx && err = ...)
+if (xx || port = ...)
+
+net/core/neighbour.c: In function `neigh_resolve_output':
+net/core/neighbour.c:1188: warning: 'neigh' might be used uninitialized in this function
+net/core/neighbour.c: In function `neigh_create':
+net/core/neighbour.c:411: warning: 'error' might be used uninitialized in this function
+
+if (xx || neigh = ...)
+
+net/ipv4/ip_output.c: In function `ip_append_data':
+net/ipv4/ip_output.c:1006: warning: 'left' might be used uninitialized in this function
+
+
+net/ipv4/tcp.c: In function `tcp_sendpage':
+net/ipv4/tcp.c:687: warning: 'copy' might be used uninitialized in this function
+net/ipv4/tcp.c: In function `tcp_sendmsg':
+net/ipv4/tcp.c:862: warning: 'copy' might be used uninitialized in this function
+net/ipv4/tcp.c: In function `tcp_recvmsg':
+net/ipv4/tcp.c:1598: warning: 'chunk' might be used uninitialized in this function
+
+
+net/ipv4/tcp_ipv4.c: In function `listening_get_next':
+net/ipv4/tcp_ipv4.c:1874: warning: 'node' might be used uninitialized in this function
+net/ipv4/tcp_ipv4.c: In function `established_get_next':
+net/ipv4/tcp_ipv4.c:2012: warning: 'node' might be used uninitialized in this function
+
+net/ipv4/raw.c: In function `__raw_v4_lookup':
+net/ipv4/raw.c:113: warning: 'node' might be used uninitialized in this function
+
+net/ipv4/udp.c: In function `__udp4_lib_rcv':
+net/ipv4/udp.c:325: warning: 'node' might be used uninitialized in this function
+net/ipv4/udp.c:325: warning: 'node' might be used uninitialized in this function
+
+net/ipv4/devinet.c: In function `inet_gifconf':
+net/ipv4/devinet.c:821: warning: 'ifa' might be used uninitialized in this function
+
+net/ipv4/ipmr.c: In function `ipmr_get_route':
+net/ipv4/ipmr.c:1629: warning: 'vif' might be used uninitialized in this function
+
+net/ipv4/syncookies.c: In function `cookie_v4_check':
+net/ipv4/syncookies.c:263: warning: 'mss' might be used uninitialized in this function
+
+
+I have two warnings in sparc code I will deal with.
+One of them is the get_user() || get_user() pattern
+so I dunno how to fix it atm.
+
+The above is from a:
+make ARCH=sparc64 allmodconfig
+make ARCH=sparc64 vmlinux
+
+I did not try to build modules...
+
+	Sam
