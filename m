@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZAEKMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbZAEKSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbZAEKMF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 05:12:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbZAEKLy
+	id S1753499AbZAEKSb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 05:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZAEKSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 05:11:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32849 "EHLO mx3.mail.elte.hu"
+	Mon, 5 Jan 2009 05:18:20 -0500
+Received: from csamuel.org ([207.210.213.14]:40211 "EHLO csamuel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752707AbZAEKLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 05:11:54 -0500
-Date: Mon, 5 Jan 2009 11:11:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 -mm merge plans
-Message-ID: <20090105101136.GB2059@elte.hu>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090105090239.GB17530@uranus.ravnborg.org> <20090105011202.835e75ec.akpm@linux-foundation.org>
+	id S1752094AbZAEKSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 05:18:20 -0500
+X-Greylist: delayed 628 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Jan 2009 05:18:20 EST
+From: Chris Samuel <chris@csamuel.org>
+To: linux-btrfs@vger.kernel.org
+Subject: Re: Btrfs for mainline
+Date: Mon, 5 Jan 2009 21:07:42 +1100
+User-Agent: KMail/1.10.1 (Linux/2.6.28-cs1; KDE/4.1.2; x86_64; ; )
+Cc: Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <1230924749.7538.35.camel@think.oraclecorp.com> <20090102210104.GC496@one.firstfloor.org>
+In-Reply-To: <20090102210104.GC496@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090105011202.835e75ec.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart1260423.C1VZNbUi7i";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901052107.43341.chris@csamuel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1260423.C1VZNbUi7i
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat, 3 Jan 2009 8:01:04 am Andi Kleen wrote:
 
-> Maybe we should just do the switch, send best-effort fixup patches at 
-> the arch maintainers and move on.
+> When it's in mainline I suspect people will start using it for that.
 
-agreed - we should have done that 5 years ago. This is really an arch 
-problem and i'm willing to help this effort and fix any new sparc64 
-warnings in any sparc64 config that davem sends me.
+Some people don't even wait for that. ;-)
 
-	Ingo
+Seriously though, if that is a concern can I suggest taking the btrfsdev ro=
+ute=20
+and, if you want a real belt and braces approach, perhaps require it to hav=
+e a=20
+mandatory mount option specified to successfully mount, maybe "eat_my_data"=
+ ?
+
+cheers,
+Chris
+=2D-=20
+ Chris Samuel  :  http://www.csamuel.org/  :  Melbourne, VIC
+
+This email may come with a PGP signature as a file. Do not panic.
+=46or more info see: http://en.wikipedia.org/wiki/OpenPGP
+
+
+--nextPart1260423.C1VZNbUi7i
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iQEVAwUASWHb741yjaOTJg85AQLAgAf/Q9wPoQUchI+pjfjeD7f8/lXUwRQluHtS
+owDr54kNMh1lqxlGtmsMyDa0Y1PCenruq9eeGdjXRNuG0hqYxFaIhXwDQYYGsBj2
+BjtghpaihuUppF92AenyW+alad11NeESylABUXyVttEHo7UiHraOdFW33xqjZ/WW
+gdEBGkOyNGRdYttlecJkr+wTAzo8HMMAS3Z5WzPSuPxX3pME9I1g0xBKVQihwCnu
+PaVlhYGejR+M8X2vkoCfN3Xd9NfY6cFlZVbxycbPzM0YxKXG0pCGjDNuoSoWIKqf
+cipylgYpAn/6iTrGL8unISPWZ5HFw5GjRDc7SIqa1Ggk0CJQyAcjdw==
+=5JFs
+-----END PGP SIGNATURE-----
+
+--nextPart1260423.C1VZNbUi7i--
