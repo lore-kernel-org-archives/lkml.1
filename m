@@ -1,116 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZAETTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbZAETTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbZAETTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZAETTH
+	id S1755316AbZAETTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbZAETTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:19:07 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38308 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752779AbZAETTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:19:06 -0500
-Date: Mon, 5 Jan 2009 19:18:24 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Jonathan Brassow <jbrassow@redhat.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Andi Kleen <ak@suse.de>, Cheng Renquan <crquan@gmail.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, Takahiro Yasui <tyasui@redhat.com>
-Subject: [git pull] device-mapper patches for 2.6.29
-Message-ID: <20090105191824.GP5098@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Jonathan Brassow <jbrassow@redhat.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Milan Broz <mbroz@redhat.com>, Andi Kleen <ak@suse.de>,
-	Cheng Renquan <crquan@gmail.com>,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
-	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-	Takahiro Yasui <tyasui@redhat.com>
-References: <20081010125159.GK5098@agk.fab.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Jan 2009 14:19:25 -0500
+Received: from outbound-mail-124.bluehost.com ([67.222.38.24]:50757 "HELO
+	outbound-mail-124.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755058AbZAETTY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 14:19:24 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=CRYWtcNgIGDHozQy3Hr2GzQcGtV9rlOoqVvMo/9+l1HaRUY8yDdeXijwEpEZJLuxsBmrDv3hLbvMy/aH1gYEmer8ez7ocONY+YW8pXB803oMgeqOdRY4H0DhZAbF7r24;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] pci-quirks: HP hides SMBus controller in Compaq nx9500 laptops
+Date: Mon, 5 Jan 2009 11:19:20 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: "Micha? Miros?aw" <mirq-linux@rere.qmqm.pl>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <20081223215407.GB32525@rere.qmqm.pl> <19700101064603.GA1406@ucw.cz>
+In-Reply-To: <19700101064603.GA1406@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081010125159.GK5098@agk.fab.redhat.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Message-Id: <200901051119.20684.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Wednesday, December 31, 1969 10:46 pm Pavel Machek wrote:
+> On Tue 2008-12-23 22:54:07, Micha? Miros?aw wrote:
+> > I found no references to SMBus in ACPI DSDT disassembly on my laptop
+> > so this should be safe.
+> >
+> > Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+>
+> Well, it could still be used by smm bios traps...
 
-  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
+Also, the changelog doesn't include a description of what this patch fixes, if 
+anything.  Care to resend with an explanation Michal?
 
-to get the following device-mapper patches for 2.6.29:
- 
-Alasdair G Kergon (2):
-      dm mpath: move trigger_event to system workqueue
-      dm snapshot: split out exception store implementations
-
-Andi Kleen (1):
-      dm: support barriers on simple devices
-
-Cheng Renquan (2):
-      dm target: use module refcount directly
-      dm target: remove struct tt_internal
-
-Jonathan Brassow (4):
-      dm raid1: fix error count
-      dm snapshot: separate out exception store interface
-      dm snapshot: rename struct exception_store
-      dm snapshot: extend exception store functions
-
-Kiyoshi Ueda (2):
-      dm request: add caches
-      dm request: extend target interface
-
-Mikulas Patocka (4):
-      dm table: drop reference at unbind
-      dm snapshot: change yield to msleep
-      dm: consolidate target deregistration error handling
-      dm table: rework reference counting
-
-Milan Broz (4):
-      dm log: move region_size validation
-      dm log: ensure log bitmap fits on log device
-      dm ioctl: allow dm_copy_name_and_uuid to return only one field
-      dm: add name and uuid to sysfs
-
-Takahiro Yasui (2):
-      dm log: fix dm_io_client leak on error paths
-      dm log: avoid reinitialising io_req on every operation
-
- drivers/md/Makefile             |    5 +-
- drivers/md/dm-crypt.c           |    6 +-
- drivers/md/dm-delay.c           |    6 +-
- drivers/md/dm-exception-store.c |  749 +--------------------------------------
- drivers/md/dm-exception-store.h |  148 ++++++++
- drivers/md/dm-ioctl.c           |   16 +-
- drivers/md/dm-linear.c          |    6 +-
- drivers/md/dm-log.c             |   40 ++-
- drivers/md/dm-mpath.c           |   14 +-
- drivers/md/dm-raid1.c           |   24 +-
- drivers/md/dm-snap-persistent.c |  704 ++++++++++++++++++++++++++++++++++++
- drivers/md/dm-snap-transient.c  |   98 +++++
- drivers/md/dm-snap.c            |   48 ++-
- drivers/md/dm-snap.h            |  129 +-------
- drivers/md/dm-stripe.c          |    4 +-
- drivers/md/dm-sysfs.c           |   99 +++++
- drivers/md/dm-table.c           |   47 +++-
- drivers/md/dm-target.c          |  111 ++----
- drivers/md/dm-zero.c            |    5 +-
- drivers/md/dm.c                 |  101 ++++--
- drivers/md/dm.h                 |   12 +-
- include/linux/device-mapper.h   |   31 ++-
- 22 files changed, 1352 insertions(+), 1051 deletions(-)
- create mode 100644 drivers/md/dm-exception-store.h
- create mode 100644 drivers/md/dm-snap-persistent.c
- create mode 100644 drivers/md/dm-snap-transient.c
- create mode 100644 drivers/md/dm-sysfs.c
-
-Alasdair
+Thanks,
 -- 
-agk@redhat.com
+Jesse Barnes, Intel Open Source Technology Center
+
