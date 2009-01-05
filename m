@@ -1,715 +1,1224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbZAEBQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbZAEBTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757580AbZAEBQq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 20:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbZAEBQg
+	id S1757277AbZAEBTQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 20:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZAEBTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 20:16:36 -0500
-Received: from ns1.suse.de ([195.135.220.2]:42116 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbZAEBQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 20:16:34 -0500
-Date: Mon, 5 Jan 2009 02:16:30 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>, linux-arch@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
-       linux-kernel@vger.kernel.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] cpus4096 tree, part 3
-Message-ID: <20090105011630.GI32239@wotan.suse.de>
-References: <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu> <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain> <20090103203621.GA2491@elte.hu> <20090103213856.GA24138@elte.hu> <alpine.LFD.2.00.0901031347570.3179@localhost.localdomain> <20090103223723.GA17047@elte.hu> <20090105011416.GG32239@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 4 Jan 2009 20:19:00 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:60415 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbZAEBS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 20:18:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=dZ2IxbzOnFzmc2vZ0CiFfSaqLCROhVpvBdYje8BcTpXesihC+cf3nG0IQIOXsd9Slp
+         YdTWyL6Q+6+dGuIvMLaHrlvd8HkQhaT1/++T/VeIHEty63mGgIdW/kvXkG9QyZpf37p1
+         qFPGozO4zm+Ee2k8QfggoUoP13dTEYfCf7zps=
+Message-ID: <57afda040901041718g1415e210hfd0991270dfdd72d@mail.gmail.com>
+Date: Mon, 5 Jan 2009 10:18:54 +0900
+From: "unsik Kim" <donari75@gmail.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] mflash linux support
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090105011416.GG32239@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Really cc linux-arch this time
+Hello, all?
 
-On Mon, Jan 05, 2009 at 02:14:16AM +0100, Nick Piggin wrote:
-> On Sat, Jan 03, 2009 at 11:37:23PM +0100, Ingo Molnar wrote:
-> > 
-> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > > What happened to Nick's cleanup patch to do_page_fault (a month or two 
-> > > ago? I complained about some of the issues in his first version and 
-> > > asked for some further cleanups, but I think that whole discussion ended 
-> > > with him saying "I am going to add those changes that you suggested (in 
-> > > fact, I already have)".
-> > > 
-> > > And then I didn't see anything further. Maybe I just missed the end 
-> > > result. Or maybe we have it in some -mm branch or something?
-> > 
-> > they would have been in tip/x86/mm and would be upstream now had Nick 
-> > re-sent a v2 series but that never happened. I think they might have 
-> > fallen victim to a serious attention deficit caused by the SLQB patch ;-)
-> 
-> Well, I already added Linus's suggestions but didn't submit it because
-> there was a bit of work going on in that file as far as I could see, both
-> in the x86 tree and in -mm:
-> 
-> (http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.28-rc2/2.6.28-rc2-mm1/broken-out/mm-invoke-oom-killer-from-page-fault.patch)
-> 
-> It isn't a big deal to resolve either way, but I don't want to make Andrew's
-> life harder.
-> 
-> [Yes OK now I'm the guilty one of pushing in an x86 patch not via the
-> x86 tree ;) This one is easy to break in pieces, but I didn't want
-> to create a dependency between the trees]
-> 
-> I didn't really consider it to be urgent, so I was waiting for that patch
-> to go in, but I was still hoping to get this into 2.6.29... This is what
-> it looks like now with your suggestions, and just merged it to your current
-> tree (untested).
-> 
-> I'll cc the linux-arch list here too, because it might be nice to keep these
-> things as structurally similar as possible (and they'll all want to look at
-> the -mm patch above, although I'll probably end up having to write the
-> patches!).
+I'm happy to release mflash IO mode block device driver to linux
+kernel community.
 
+Brief desciption of mflash is following.
+
+mflash is fusion memory device mainly targeted consumer eletronic and
+mobile phone.
+Internally, it have nand flash and other hardware logics and supports
+some different operation (ATA, IO, XIP) modes.
+
+ATA mode doesn't need any new driver and currently works well under
+standard IDE subsystem. Actually it's one chip SSD.
+
+IO mode is custom mode for the host that doesn't have IDE interface.
+(many mobile targeted SoC doesn't have IDE bus)
+
+This driver support mflash IO mode.
+
+Followings are brief descriptions about IO mode.
+
+1. IO mode based on ATA protocol and uses some custom command. (read
+confirm, write confirm)
+2. IO mode uses SRAM bus interface.
+3. IO mode driver uses noop IO schedular.
+
+I think modifing IDE subsystem isn't a good thing, because that is
+very common, important subsystem and focused on high performance of
+standard IDE.
+So, I seperate this driver.
+
+Currently, I couldn't find appropriate MAINTAINER for this driver.
+
+This driver heavily based on legacy hd.c and also tested some ARM
+platform. (pxa270, s3c2440, ...)
+
+
+Signed-off-by: unsik Kim <donari75@gmail.com>
 ---
-Optimise x86's do_page_fault (C entry point for the page fault path).
+ drivers/block/Kconfig   |    6 +
+ drivers/block/Makefile  |    2 +
+ drivers/block/mg_disk.c |  909 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mg_disk.h |  174 +++++++++
+ 4 files changed, 1091 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/block/mg_disk.c
+ create mode 100644 include/linux/mg_disk.h
 
-gcc isn't _all_ that smart about spilling registers to stack or reusing
-stack slots, even with branch annotations. do_page_fault contained a lot
-of functionality, so split unlikely paths into their own functions, and
-mark them as noinline just to be sure. I consider this actually to be
-somewhat of a cleanup too: the main function now contains about half
-the number of lines.
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index 0344a8a..cad48c8 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -403,6 +403,12 @@ config ATA_OVER_ETH
+ 	This driver provides Support for ATA over Ethernet block
+ 	devices like the Coraid EtherDrive (R) Storage Blade.
 
-Also, ensure the order of arguments to functions is always the same: regs,
-addr, error_code. This can reduce code size a tiny bit, and just looks neater
-too.
++config MG_DISK
++	tristate "mGine mflash, gflash support"
++	depends on ARM
++	help
++	  mGine mFlash(gFlash) block device driver
++
+ config SUNVDC
+ 	tristate "Sun Virtual Disk Client support"
+ 	depends on SUN_LDOMS
+diff --git a/drivers/block/Makefile b/drivers/block/Makefile
+index 204332b..1694d45 100644
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -32,3 +32,5 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ obj-$(CONFIG_BLK_DEV_HD)	+= hd.o
 
-Add a couple of branch annotations.
-
-One real behavioural difference this makes is that the OOM-init-task case
-will no longer loop around the page fault handler, but will return to
-userspace and presumably retry the fault. Effectively the same macro-behaviour,
-but it is a notable difference. Such change in behaviour should disappear after
-the "call oom killer from page fault" patch.
-
-Before:
-  do_page_fault:
-          subq    $360, %rsp      #,
-
-After:
-  do_page_fault:
-          subq    $56, %rsp       #,
-
-bloat-o-meter:
-  add/remove: 8/0 grow/shrink: 0/1 up/down: 2222/-1680 (542)
-  function                                     old     new   delta
-  __bad_area_nosemaphore                         -     506    +506
-  no_context                                     -     474    +474
-  vmalloc_fault                                  -     424    +424
-  spurious_fault                                 -     358    +358
-  mm_fault_error                                 -     272    +272
-  bad_area_access_error                          -      89     +89
-  bad_area                                       -      89     +89
-  bad_area_nosemaphore                           -      10     +10
-  do_page_fault                               2464     784   -1680
-
-Yes, the total size increases by 542 bytes, due to the extra function calls.
-But these will very rarely be called (except for vmalloc_fault) in a normal
-workload. Importantly, do_page_fault is less than 1/3rd it's original size.
-Existing gotos and branch hints did move a lot of the infrequently used text
-out of the fastpath, but that's even further improved after this patch.
-
----
- arch/x86/mm/fault.c |  458 ++++++++++++++++++++++++++++++----------------------
- 1 file changed, 265 insertions(+), 193 deletions(-)
-
-Index: linux-2.6/arch/x86/mm/fault.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/fault.c
-+++ linux-2.6/arch/x86/mm/fault.c
-@@ -91,8 +91,8 @@ static inline int notify_page_fault(stru
-  *
-  * Opcode checker based on code by Richard Brunner
-  */
--static int is_prefetch(struct pt_regs *regs, unsigned long addr,
--		       unsigned long error_code)
-+static int is_prefetch(struct pt_regs *regs, unsigned long error_code,
-+			unsigned long addr)
- {
- 	unsigned char *instr;
- 	int scan_more = 1;
-@@ -409,15 +409,15 @@ static void show_fault_oops(struct pt_re
- }
- 
- #ifdef CONFIG_X86_64
--static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
--				 unsigned long error_code)
-+static noinline void pgtable_bad(struct pt_regs *regs,
-+			 unsigned long error_code, unsigned long address)
- {
- 	unsigned long flags = oops_begin();
- 	int sig = SIGKILL;
--	struct task_struct *tsk;
-+	struct task_struct *tsk = current;
- 
- 	printk(KERN_ALERT "%s: Corrupted page table at address %lx\n",
--	       current->comm, address);
-+	       tsk->comm, address);
- 	dump_pagetable(address);
- 	tsk = current;
- 	tsk->thread.cr2 = address;
-@@ -429,6 +429,200 @@ static noinline void pgtable_bad(unsigne
- }
- #endif
- 
-+static noinline void no_context(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
++
++obj-$(CONFIG_MG_DISK)	+= mg_disk.o
+diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
+new file mode 100644
+index 0000000..b0a869b
+--- /dev/null
++++ b/drivers/block/mg_disk.c
+@@ -0,0 +1,909 @@
++/*
++ *  drivers/block/mg_disk.c
++ *
++ *  Support for the mGine m[g]flash IO mode.
++ *  Based on legacy hd.c
++ *
++ * (c) 2008 mGine Co.,LTD
++ * (c) 2008 unsik Kim <donari75@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/blkdev.h>
++#include <linux/hdreg.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
++#include <linux/mg_disk.h>
++
++static void mg_request(struct request_queue *);
++
++static void mg_dump_status(const char *msg, unsigned int stat, struct
+mg_host *host)
 +{
-+	struct task_struct *tsk = current;
-+#ifdef CONFIG_X86_64
-+	unsigned long flags;
-+	int sig;
-+#endif
++	char *name = MG_DISK_NAME"?";
++	struct request *req;
 +
-+	/* Are we prepared to handle this kernel fault?  */
-+	if (fixup_exception(regs))
-+		return;
++	if (host->breq) {
++		req = elv_next_request(host->breq);
++		if (req)
++			name = req->rq_disk->disk_name;
++	}
 +
-+	/*
-+	 * X86_32
-+	 * Valid to do another page fault here, because if this fault
-+	 * had been triggered by is_prefetch fixup_exception would have
-+	 * handled it.
-+	 *
-+	 * X86_64
-+	 * Hall of shame of CPU/BIOS bugs.
-+	 */
-+	if (is_prefetch(regs, error_code, address))
-+		return;
++	printk("%s: %s: status=0x%02x { ", name, msg, stat & 0xff);
++	if (stat & MG_REG_STATUS_BIT_BUSY)
++		printk("Busy ");
++	if (stat & MG_REG_STATUS_BIT_READY)
++		printk("DriveReady ");
++	if (stat & MG_REG_STATUS_BIT_WRITE_FAULT)
++		printk("WriteFault ");
++	if (stat & MG_REG_STATUS_BIT_SEEK_DONE)
++		printk("SeekComplete ");
++	if (stat & MG_REG_STATUS_BIT_DATA_REQ)
++		printk("DataRequest ");
++	if (stat & MG_REG_STATUS_BIT_CORRECTED_ERROR)
++		printk("CorrectedError ");
++	if (stat & MG_REG_STATUS_BIT_ERROR)
++		printk("Error ");
++	printk("}\n");
++	if ((stat & MG_REG_STATUS_BIT_ERROR) == 0) {
++		host->error = 0;
++	} else {
++		host->error = inb(host->dev_base + MG_REG_ERROR);
++		printk("%s: %s: error=0x%02x { ", name, msg, host->error & 0xff);
++		if (host->error & MG_REG_ERR_BBK)
++			printk("BadSector ");
++		if (host->error & MG_REG_ERR_UNC)
++			printk("UncorrectableError ");
++		if (host->error & MG_REG_ERR_IDNF)
++			printk("SectorIdNotFound ");
++		if (host->error & MG_REG_ERR_ABRT)
++			printk("DriveStatusError ");
++		if (host->error & MG_REG_ERR_AMNF)
++			printk("AddrMarkNotFound ");
++		printk("}");
++		if (host->error &
++		    (MG_REG_ERR_BBK | MG_REG_ERR_UNC | MG_REG_ERR_IDNF | MG_REG_ERR_AMNF)) {
++			if (host->breq) {
++				req = elv_next_request(host->breq);
++				if (req)
++					printk(", sector=%ld", req->sector);
++			}
 +
-+	if (is_errata93(regs, address))
-+		return;
++		}
++		printk("\n");
++	}
++}
 +
-+	/*
-+	 * Oops. The kernel tried to access some bad page. We'll have to
-+	 * terminate things with extreme prejudice.
-+	 */
-+#ifdef CONFIG_X86_32
-+	bust_spinlocks(1);
-+#else
-+	flags = oops_begin();
-+#endif
++static unsigned int mg_wait(struct mg_host *host, u32 expect, u32 msec)
++{
++	u8 status;
++	u64 expire, cur_jiffies;
 +
-+	show_fault_oops(regs, error_code, address);
++	host->error = MG_ERR_NONE;
++	expire = get_jiffies_64() + msecs_to_jiffies(msec);
 +
-+	tsk->thread.cr2 = address;
-+	tsk->thread.trap_no = 14;
-+	tsk->thread.error_code = error_code;
++	status = inb(host->dev_base + MG_REG_STATUS);
++	do {
++		cur_jiffies = get_jiffies_64();
++		if (status & MG_REG_STATUS_BIT_BUSY) {
++			if (expect == MG_REG_STATUS_BIT_BUSY)
++				break;
++		} else {
++			/* Check the error condition! */
++			if (status & MG_REG_STATUS_BIT_ERROR) {
++				mg_dump_status("mg_wait", status, host);
++				break;
++			}
 +
-+#ifdef CONFIG_X86_32
-+	die("Oops", regs, error_code);
-+	bust_spinlocks(0);
-+	do_exit(SIGKILL);
-+#else
-+	sig = SIGKILL;
-+	if (__die("Oops", regs, error_code))
-+		sig = 0;
-+	/* Executive summary in case the body of the oops scrolled away */
-+	printk(KERN_EMERG "CR2: %016lx\n", address);
-+	oops_end(flags, regs, sig);
++			if (expect == MG_STAT_READY) {
++				if (MG_READY_OK(status))
++					break;
++			}
++
++			if (expect == MG_REG_STATUS_BIT_DATA_REQ) {
++				if (status & MG_REG_STATUS_BIT_DATA_REQ) {
++					break;
++				}
++			}
++		}
++		status = inb(host->dev_base + MG_REG_STATUS);
++	} while (cur_jiffies < expire);
++
++	if (cur_jiffies >= expire) {
++		host->error = MG_ERR_TIMEOUT;
++	}
++
++	return host->error;
++}
++
++static void mg_unexpected_intr(struct mg_host *host)
++{
++	u32 status = inb(host->dev_base + MG_REG_STATUS);
++
++	mg_dump_status("mg_unexpected_intr", status, host);
++}
++
++static irqreturn_t mg_irq(int irq, void *dev_id)
++{
++	struct mg_host *host = dev_id;
++	void (*handler)(struct mg_host *) = host->mg_do_intr;
++
++	host->mg_do_intr = 0;
++	del_timer(&host->timer);
++	if (!handler)
++		handler = mg_unexpected_intr;
++	handler(host);
++	return IRQ_HANDLED;
++}
++
++static void mg_fix_disk_id(u16 *id)
++{
++#ifndef __LITTLE_ENDIAN
++# ifdef __BIG_ENDIAN
++	int i;
++
++	for (i = 0; i < 256; i++)
++		id[i] = __le16_to_cpu(id[i]);
++# else
++#  error "Please fix <asm/byteorder.h>"
++# endif
 +#endif
 +}
 +
-+static void __bad_area_nosemaphore(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address,
-+			int si_code)
++static void mg_ide_fixstring(u8 *s, const int bytecount, const int byteswap)
 +{
-+	struct task_struct *tsk = current;
++	u8 *p, *end = &s[bytecount & ~1]; /* bytecount must be even */
 +
-+	/* User mode accesses just cause a SIGSEGV */
-+	if (error_code & PF_USER) {
-+		/*
-+		 * It's possible to have interrupts off here.
-+		 */
-+		local_irq_enable();
++	if (byteswap) {
++		/* convert from big-endian to host byte order */
++		for (p = s ; p != end ; p += 2)
++			be16_to_cpus((u16 *) p);
++	}
 +
-+		/*
-+		 * Valid to do another page fault here because this one came
-+		 * from user space.
-+		 */
-+		if (is_prefetch(regs, error_code, address))
++	/* strip leading blanks */
++	p = s;
++	while (s != end && *s == ' ')
++		++s;
++	/* compress internal blanks and strip trailing blanks */
++	while (s != end && *s) {
++		if (*s++ != ' ' || (s != end && *s && *s != ' '))
++			*p++ = *(s-1);
++	}
++	/* wipe out trailing garbage */
++	while (p != end)
++		*p++ = '\0';
++}
++
++static int mg_get_disk_id(struct mg_host *host)
++{
++	u32 i;
++	s32 err;
++	u16 *id = (u16 *)&host->id_data;
++	struct mg_drv_data *prv_data = host->dev->platform_data;
++
++	if (!prv_data->use_polling) {
++		outb(MG_REG_CTRL_INTR_DISABLE, host->dev_base + MG_REG_DRV_CTRL);
++	}
++
++	outb(MG_CMD_ID, host->dev_base + MG_REG_COMMAND);
++	err = mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000);
++	if (!err) {
++		for (i = 0; i < (MG_SECTOR_SIZE >> 1); i++)
++			id[i] = inw(host->dev_base + MG_BUFF_OFFSET + i * 2);
++
++		outb(MG_CMD_RD_CONF, host->dev_base + MG_REG_COMMAND);
++		err = mg_wait(host, MG_STAT_READY, 3000);
++		if (!err) {
++			mg_fix_disk_id(id);
++			if ((host->id_data.field_valid & 1) == 0) {
++				err = MG_ERR_TRANSLATION;
++			} else {
++#ifdef __BIG_ENDIAN
++				host->id_data.lba_capacity = (host->id_data.lba_capacity << 16) |
+(host->id_data.lba_capacity >> 16);
++#endif /* __BIG_ENDIAN */
++				host->tot_sectors = host->id_data.lba_capacity;
++				mg_ide_fixstring(host->id_data.model, sizeof(host->id_data.model), 1);
++				mg_ide_fixstring(host->id_data.serial_no,
+sizeof(host->id_data.serial_no), 1);
++				mg_ide_fixstring(host->id_data.fw_rev, sizeof(host->id_data.fw_rev), 1);
++				printk(KERN_INFO "mg_disk: model: %s\n", host->id_data.model);
++				printk(KERN_INFO "mg_disk: firm: %.8s\n", host->id_data.fw_rev);
++				printk(KERN_INFO "mg_disk: serial: %s\n", host->id_data.serial_no);
++				printk(KERN_INFO "mg_disk: %d sectors\n", host->tot_sectors);
++			}
++		}
++	}
++
++	if (!prv_data->use_polling) {
++		outb(MG_REG_CTRL_INTR_ENABLE, host->dev_base + MG_REG_DRV_CTRL);
++	}
++
++	return err;
++}
++
++
++static int mg_disk_init(struct mg_host *host)
++{
++	struct mg_drv_data *prv_data = host->dev->platform_data;
++	s32 err;
++	u8 init_status;
++
++	/* init ctrl pin */
++	if (prv_data->mg_ctrl_pin_init)
++		prv_data->mg_ctrl_pin_init();
++
++	if (!prv_data->mg_hdrst_pin)
++		return MG_ERR_CTRL_RST;
++
++	/* hdd rst low */
++	prv_data->mg_hdrst_pin(0);
++	err = mg_wait(host, MG_REG_STATUS_BIT_BUSY, 300);
++	if (err)
++		return err;
++
++	/* hdd rst high */
++	prv_data->mg_hdrst_pin(1);
++	err = mg_wait(host, MG_STAT_READY, 3000);
++	if (err)
++		return err;
++
++	/* soft reset on */
++	outb(MG_REG_CTRL_RESET |
++		(prv_data->use_polling ? MG_REG_CTRL_INTR_DISABLE : MG_REG_CTRL_INTR_ENABLE),
++		host->dev_base + MG_REG_DRV_CTRL);
++	err = mg_wait(host, MG_REG_STATUS_BIT_BUSY, 3000);
++	if (err)
++		return err;
++
++	/* soft reset off */
++	outb(prv_data->use_polling ? MG_REG_CTRL_INTR_DISABLE :
+MG_REG_CTRL_INTR_ENABLE,
++		host->dev_base + MG_REG_DRV_CTRL);
++	err = mg_wait(host, MG_STAT_READY, 3000);
++	if (err)
++		return err;
++
++	init_status = inb(host->dev_base + MG_REG_STATUS) & 0xf;
++
++	if (init_status == 0xf)
++		return MG_ERR_INIT_STAT;
++
++	if (prv_data->op_mode & (MG_OP_CASCADE_SYNC_RD | MG_OP_CASCADE_SYNC_WR)) {
++		outb(prv_data->burst_latcy | prv_data->burst_len, host->dev_base +
+MG_REG_BURST_CTRL);
++	}
++
++	return err;
++}
++
++static void mg_bad_rw_intr(struct mg_host *host)
++{
++	struct request *req = elv_next_request(host->breq);
++	if (req != NULL) {
++		if (++req->errors >= MG_MAX_ERRORS) {
++			end_request(req, 0);
++		} else if (req->errors % MG_RESET_FREQ == 0 || host->error ==
+MG_ERR_TIMEOUT) {
++			host->reset = 1;
++		}
++		/* Otherwise just retry */
++	}
++}
++
++static unsigned int mg_out(struct mg_host *host,
++			unsigned int sect_num,
++			unsigned int sect_cnt,
++			unsigned int cmd,
++			void (*intr_addr)(struct mg_host *))
++{
++	struct mg_drv_data *prv_data = host->dev->platform_data;
++
++	if (mg_wait(host, MG_STAT_READY, 3000)) {
++		return host->error;
++	}
++
++	if (!prv_data->use_polling) {
++		host->mg_do_intr = intr_addr;
++		mod_timer(&host->timer, jiffies + 3 * HZ);
++	}
++	outb((u8)sect_cnt, host->dev_base + MG_REG_SECT_CNT);
++	outb((u8)sect_num, host->dev_base + MG_REG_SECT_NUM);
++	outb((u8)(sect_num >> 8), host->dev_base + MG_REG_CYL_LOW);
++	outb((u8)(sect_num >> 16), host->dev_base + MG_REG_CYL_HIGH);
++	outb((u8)((sect_num >> 24) | MG_REG_HEAD_LBA_MODE), host->dev_base +
+MG_REG_DRV_HEAD);
++	outb(cmd, host->dev_base + MG_REG_COMMAND);
++	return MG_ERR_NONE;
++}
++
++static void mg_read(struct request *req)
++{
++	u32 remains, j;
++	struct mg_host *host = req->rq_disk->private_data;
++
++	remains = req->nr_sectors;
++
++	if (host->reset) {
++		if (mg_disk_init(host)) {
++			end_request(req, 0);
 +			return;
++		}
++		host->reset = 0;
++	}
 +
-+		if (is_errata100(regs, address))
++	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_RD, 0) != MG_ERR_NONE) {
++		mg_bad_rw_intr(host);
++	}
++
++	MG_DBG("requested %d sects (from %ld), buffer=0x%p\n", remains,
+req->sector, req->buffer);
++
++	while (remains) {
++		if (mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000) != MG_ERR_NONE) {
++			mg_bad_rw_intr(host);
 +			return;
-+
-+		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
-+		    printk_ratelimit()) {
-+			printk(
-+			"%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
-+			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
-+			tsk->comm, task_pid_nr(tsk), address,
-+			(void *) regs->ip, (void *) regs->sp, error_code);
-+			print_vma_addr(" in ", regs->ip);
-+			printk("\n");
++		}
++		for (j = 0; j < MG_SECTOR_SIZE >> 1; j++) {
++			*(u16 *)req->buffer = inw(host->dev_base + MG_BUFF_OFFSET + (j << 1));
++			req->buffer += 2;
 +		}
 +
-+		tsk->thread.cr2 = address;
-+		/* Kernel addresses are always protection faults */
-+		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
-+		tsk->thread.trap_no = 14;
-+		force_sig_info_fault(SIGSEGV, si_code, address, tsk);
++		req->sector++;
++		req->errors = 0;
++		remains = --req->nr_sectors;
++		--req->current_nr_sectors;
++
++		if (req->current_nr_sectors <= 0) {
++			MG_DBG("remain : %d sects\n", remains);
++			end_request(req, 1);
++			if (remains > 0) {
++				req = elv_next_request(host->breq);
++			}
++		}
++
++		outb(MG_CMD_RD_CONF, host->dev_base + MG_REG_COMMAND);
++	}
++}
++
++static void mg_write(struct request *req)
++{
++	u32 remains, j;
++	struct mg_host *host = req->rq_disk->private_data;
++
++	remains = req->nr_sectors;
++
++	if (host->reset) {
++		if (mg_disk_init(host)) {
++			end_request(req, 0);
++			return;
++		}
++		host->reset = 0;
++	}
++
++	if (mg_out(host, req->sector, req->nr_sectors, MG_CMD_WR, 0) != MG_ERR_NONE) {
++		mg_bad_rw_intr(host);
 +		return;
 +	}
 +
-+	if (is_f00f_bug(regs, address))
-+		return;
 +
-+	no_context(regs, error_code, address);
++	MG_DBG("requested %d sects (from %ld), buffer=0x%p\n", remains,
+req->sector, req->buffer);
++	while (remains) {
++		if (mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000) != MG_ERR_NONE) {
++			mg_bad_rw_intr(host);
++			return;
++		}
++		for (j = 0; j < MG_SECTOR_SIZE >> 1; j++) {
++			outw(*(u16 *)req->buffer, host->dev_base + MG_BUFF_OFFSET + (j << 1));
++			req->buffer += 2;
++		}
++		req->sector++;
++		remains = --req->nr_sectors;
++		--req->current_nr_sectors;
++
++		if (req->current_nr_sectors <= 0) {
++			MG_DBG("remain : %d sects\n", remains);
++			end_request(req, 1);
++			if (remains > 0) {
++				req = elv_next_request(host->breq);
++			}
++		}
++
++		outb(MG_CMD_WR_CONF, host->dev_base + MG_REG_COMMAND);
++	}
 +}
 +
-+static noinline void bad_area_nosemaphore(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
++static void mg_read_intr(struct mg_host *host)
 +{
-+	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR);
-+}
++	u32 i;
++	struct request *req;
 +
-+static void __bad_area(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address,
-+			int si_code)
-+{
-+	struct mm_struct *mm = current->mm;
++	/* check status */
++	do {
++		i = inb(host->dev_base + MG_REG_STATUS);
++		if (i & MG_REG_STATUS_BIT_BUSY)
++			break;
++		if (!MG_READY_OK(i))
++			break;
++		if (i & MG_REG_STATUS_BIT_DATA_REQ)
++			goto ok_to_read;
++	} while (0);
++	mg_dump_status("mg_read_intr", i, host);
++	mg_bad_rw_intr(host);
++	mg_request(host->breq);
++	return;
 +
-+	/*
-+	 * Something tried to access memory that isn't in our memory map..
-+	 * Fix it, but check if it's kernel or user first..
-+	 */
-+	up_read(&mm->mmap_sem);
++ok_to_read:
++	/* get current segment of request */
++	req = elv_next_request(host->breq);
 +
-+	__bad_area_nosemaphore(regs, error_code, address, si_code);
-+}
-+
-+static noinline void bad_area(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	__bad_area(regs, error_code, address, SEGV_MAPERR);
-+}
-+
-+static noinline void bad_area_access_error(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	__bad_area(regs, error_code, address, SEGV_ACCERR);
-+}
-+
-+/* TODO: fixup for "mm-invoke-oom-killer-from-page-fault.patch" */
-+static void out_of_memory(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	struct task_struct *tsk = current;
-+	struct mm_struct *mm = tsk->mm;
-+	/*
-+	 * We ran out of memory, or some other thing happened to us that made
-+	 * us unable to handle the page fault gracefully.
-+	 */
-+	up_read(&mm->mmap_sem);
-+	if (is_global_init(tsk)) {
-+		yield();
-+		return;
++	/* read 1 sector */
++	for (i = 0; i < MG_SECTOR_SIZE >> 1; i++) {
++		*(u16 *)req->buffer = inw(host->dev_base + MG_BUFF_OFFSET + (i << 1));
++		req->buffer += 2;
 +	}
 +
-+	printk("VM: killing process %s\n", tsk->comm);
-+	if (error_code & PF_USER)
-+		do_group_exit(SIGKILL);
-+	no_context(regs, error_code, address);
-+}
++	/* manipulate request */
++	MG_DBG("sector %ld, remaining=%ld, buffer=0x%p\n", req->sector,
+req->nr_sectors - 1, req->buffer);
 +
-+static void do_sigbus(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	struct task_struct *tsk = current;
-+	struct mm_struct *mm = tsk->mm;
++	req->sector++;
++	req->errors = 0;
++	i = --req->nr_sectors;
++	--req->current_nr_sectors;
 +
-+	up_read(&mm->mmap_sem);
++	/* let know if current segment done */
++	if (req->current_nr_sectors <= 0)
++		end_request(req, 1);
 +
-+	/* Kernel mode? Handle exceptions or die */
-+	if (!(error_code & PF_USER))
-+		no_context(regs, error_code, address);
-+#ifdef CONFIG_X86_32
-+	/* User space => ok to do another page fault */
-+	if (is_prefetch(regs, error_code, address))
-+		return;
-+#endif
-+	tsk->thread.cr2 = address;
-+	tsk->thread.error_code = error_code;
-+	tsk->thread.trap_no = 14;
-+	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
-+}
-+
-+static noinline void mm_fault_error(struct pt_regs *regs,
-+		unsigned long error_code, unsigned long address, unsigned int fault)
-+{
-+	if (fault & VM_FAULT_OOM)
-+		out_of_memory(regs, error_code, address);
-+	else if (fault & VM_FAULT_SIGBUS)
-+		do_sigbus(regs, error_code, address);
-+	else
-+		BUG();
-+}
-+
- static int spurious_fault_check(unsigned long error_code, pte_t *pte)
- {
- 	if ((error_code & PF_WRITE) && !pte_write(*pte))
-@@ -448,8 +642,8 @@ static int spurious_fault_check(unsigned
-  * There are no security implications to leaving a stale TLB when
-  * increasing the permissions on a page.
-  */
--static int spurious_fault(unsigned long address,
--			  unsigned long error_code)
-+static noinline int spurious_fault(unsigned long error_code,
-+				unsigned long address)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
-@@ -494,7 +688,7 @@ static int spurious_fault(unsigned long
-  *
-  * This assumes no large pages in there.
-  */
--static int vmalloc_fault(unsigned long address)
-+static noinline int vmalloc_fault(unsigned long address)
- {
- #ifdef CONFIG_X86_32
- 	unsigned long pgd_paddr;
-@@ -573,6 +767,25 @@ static int vmalloc_fault(unsigned long a
- 
- int show_unhandled_signals = 1;
- 
-+static inline int access_error(unsigned long error_code, int write,
-+				struct vm_area_struct *vma)
-+{
-+	if (write) {
-+		/* write, present and write, not present */
-+		if (unlikely(!(vma->vm_flags & VM_WRITE)))
-+			return 1;
-+	} else if (unlikely(error_code & PF_PROT)) {
-+		/* read, present */
-+		return 1;
-+	} else {
-+		/* read, not present */
-+		if (unlikely(!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE))))
-+			return 1;
++	/* set handler if read remains */
++	if (i > 0) {
++		host->mg_do_intr = mg_read_intr;
++		mod_timer(&host->timer, jiffies + 3 * HZ);
 +	}
 +
++	/* send read confirm */
++	outb(MG_CMD_RD_CONF, host->dev_base + MG_REG_COMMAND);
++
++	/* goto next request */
++	if (!i) {
++		mg_request(host->breq);
++	}
++}
++
++static void mg_write_intr(struct mg_host *host)
++{
++	u32 i, j;
++	u16 *buff;
++	struct request *req;
++
++	/* get current segment of request */
++	req = elv_next_request(host->breq);
++
++	/* check status */
++	do {
++		i = inb(host->dev_base + MG_REG_STATUS);
++		if (i & MG_REG_STATUS_BIT_BUSY)
++			break;
++		if (!MG_READY_OK(i))
++			break;
++		if ((req->nr_sectors <= 1) || (i & MG_REG_STATUS_BIT_DATA_REQ))
++			goto ok_to_write;
++	} while (0);
++	mg_dump_status("mg_write_intr", i, host);
++	mg_bad_rw_intr(host);
++	mg_request(host->breq);
++	return;
++
++ok_to_write:
++	/* manipulate request */
++	req->sector++;
++	i = --req->nr_sectors;
++	--req->current_nr_sectors;
++	req->buffer += MG_SECTOR_SIZE;
++
++	/* let know if current segment or all done */
++	if (!i || (req->bio && req->current_nr_sectors <= 0))
++		end_request(req, 1);
++
++	/* write 1 sector and set handler if remains */
++	if (i > 0) {
++		buff = (u16 *)req->buffer;
++		for (j = 0; j < MG_STORAGE_BUFFER_SIZE >> 1; j++) {
++			outw(*buff, host->dev_base + MG_BUFF_OFFSET + (j << 1));
++			buff++;
++		}
++		MG_DBG("sector %ld, remaining=%ld, buffer=0x%p\n", req->sector,
+req->nr_sectors, req->buffer);
++		host->mg_do_intr = mg_write_intr;
++		mod_timer(&host->timer, jiffies + 3 * HZ);
++	}
++
++	/* send write confirm */
++	outb(MG_CMD_WR_CONF, host->dev_base + MG_REG_COMMAND);
++
++	if (!i) {
++		mg_request(host->breq);
++	}
++}
++
++void mg_times_out(unsigned long data)
++{
++	struct mg_host *host = (struct mg_host *)data;
++	char *name;
++	struct request *req;
++
++	req = elv_next_request(host->breq);
++	if (!req)
++		return;
++
++	host->mg_do_intr = NULL;
++
++	name = req->rq_disk->disk_name;
++	printk("%s: timeout\n", name);
++
++	host->error = MG_ERR_TIMEOUT;
++	mg_bad_rw_intr(host);
++
++	mg_request(host->breq);
++}
++
++static void mg_request_poll(struct request_queue *q)
++{
++	struct request *req;
++	struct mg_host *host;
++
++	while ((req = elv_next_request(q)) != NULL) {
++
++		host = req->rq_disk->private_data;
++
++		if (blk_fs_request(req)) {
++			switch (rq_data_dir(req)) {
++			case READ:
++				mg_read(req);
++				break;
++			case WRITE:
++				mg_write(req);
++				break;
++			default:
++				printk(KERN_WARNING "%s:%d unknown command\n", __func__, __LINE__);
++				end_request(req, 0);
++				break;
++			}
++		}
++	}
++}
++
++/* This function also called from IRQ context */
++static void mg_request(struct request_queue *q)
++{
++	struct request *req;
++	struct mg_host *host;
++	u32 sect_num, sect_cnt, i;
++	u16 *buff;
++
++repeat:
++	req = elv_next_request(q);
++	if (!req)
++		return;
++
++	host = req->rq_disk->private_data;
++
++	/* check unwanted request call */
++	if (host->mg_do_intr)
++		return;
++
++	del_timer(&host->timer);
++
++	if (host->reset) {
++		if (mg_disk_init(host)) {
++			end_request(req, 0);
++			return;
++		}
++		host->reset = 0;
++	}
++
++	sect_num = req->sector;
++	/* deal whole segments */
++	sect_cnt = req->nr_sectors;
++
++	/* sanity check */
++	if (sect_num >= get_capacity(req->rq_disk) ||
++	    ((sect_num + sect_cnt) > get_capacity(req->rq_disk))) {
++		printk(KERN_WARNING "%s: bad access: sector=%d, count=%d\n",
++			 req->rq_disk->disk_name, sect_num, sect_cnt);
++		end_request(req, 0);
++		goto repeat;
++	}
++
++	if (blk_fs_request(req)) {
++		switch (rq_data_dir(req)) {
++		case READ:
++			if (mg_out(host, sect_num, sect_cnt, MG_CMD_RD, &mg_read_intr) !=
+MG_ERR_NONE) {
++				mg_bad_rw_intr(host);
++				goto repeat;
++			}
++			break;
++		case WRITE:
++			/* TODO : handler */
++			outb(MG_REG_CTRL_INTR_DISABLE, host->dev_base + MG_REG_DRV_CTRL);
++			if (mg_out(host, sect_num, sect_cnt, MG_CMD_WR, &mg_write_intr) !=
+MG_ERR_NONE) {
++				mg_bad_rw_intr(host);
++				goto repeat;
++			}
++			del_timer(&host->timer);
++			mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000);
++			outb(MG_REG_CTRL_INTR_ENABLE, host->dev_base + MG_REG_DRV_CTRL);
++			if (host->error) {
++				mg_bad_rw_intr(host);
++				goto repeat;
++			}
++			buff = (u16 *)req->buffer;
++			for (i = 0; i < MG_SECTOR_SIZE >> 1; i++) {
++				outw(*buff, host->dev_base + MG_BUFF_OFFSET + (i << 1));
++				buff++;
++			}
++			mod_timer(&host->timer, jiffies + 3 * HZ);
++			outb(MG_CMD_WR_CONF, host->dev_base + MG_REG_COMMAND);
++			break;
++		default:
++			printk(KERN_WARNING "%s:%d unknown command\n", __func__, __LINE__);
++			end_request(req, 0);
++			break;
++		}
++	}
++}
++
++static int mg_ioctl(struct block_device *bdev, fmode_t fmode,
+unsigned cmd, unsigned long arg)
++{
++	struct hd_geometry geo;
++	struct mg_host *host = bdev->bd_disk->private_data;
++
++	switch (cmd) {
++	case HDIO_GETGEO:
++		if (!access_ok(VERIFY_WRITE, arg, sizeof(geo))) {
++			return -EFAULT;
++		}
++
++		geo.cylinders = host->id_data.cyls;
++		geo.heads = host->id_data.heads;
++		geo.sectors = host->id_data.sectors;
++		geo.start = get_start_sect(bdev);
++
++		if (copy_to_user((void *)arg, &geo, sizeof(geo)))
++			return -EFAULT;
++
++		return 0;
++	}
++
++	return -ENOTTY;
++}
++
++static int mg_open(struct block_device *bd, fmode_t fmode)
++{
 +	return 0;
 +}
 +
- /*
-  * This routine handles page faults.  It determines the address,
-  * and the problem, and then passes it off to one of the appropriate
-@@ -583,16 +796,12 @@ asmlinkage
- #endif
- void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- {
-+	unsigned long address;
- 	struct task_struct *tsk;
- 	struct mm_struct *mm;
- 	struct vm_area_struct *vma;
--	unsigned long address;
--	int write, si_code;
-+	int write;
- 	int fault;
--#ifdef CONFIG_X86_64
--	unsigned long flags;
--	int sig;
--#endif
- 
- 	tsk = current;
- 	mm = tsk->mm;
-@@ -601,9 +810,7 @@ void __kprobes do_page_fault(struct pt_r
- 	/* get the address */
- 	address = read_cr2();
- 
--	si_code = SEGV_MAPERR;
--
--	if (notify_page_fault(regs))
-+	if (unlikely(notify_page_fault(regs)))
- 		return;
- 	if (unlikely(kmmio_fault(regs, address)))
- 		return;
-@@ -638,10 +845,10 @@ void __kprobes do_page_fault(struct pt_r
- 		 * Don't take the mm semaphore here. If we fixup a prefetch
- 		 * fault we could otherwise deadlock.
- 		 */
--		goto bad_area_nosemaphore;
-+		bad_area_nosemaphore(regs, error_code, address);
-+		return;
- 	}
- 
--
- 	/*
- 	 * It's safe to allow irq's after cr2 has been saved and the
- 	 * vmalloc fault has been handled.
-@@ -657,17 +864,18 @@ void __kprobes do_page_fault(struct pt_r
- 
- #ifdef CONFIG_X86_64
- 	if (unlikely(error_code & PF_RSVD))
--		pgtable_bad(address, regs, error_code);
-+		pgtable_bad(regs, error_code, address);
- #endif
- 
- 	/*
- 	 * If we're in an interrupt, have no user context or are running in an
- 	 * atomic region then we must not take the fault.
- 	 */
--	if (unlikely(in_atomic() || !mm))
--		goto bad_area_nosemaphore;
-+	if (unlikely(in_atomic() || !mm)) {
-+		bad_area_nosemaphore(regs, error_code, address);
-+		return;
-+	}
- 
--again:
- 	/*
- 	 * When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
-@@ -684,20 +892,26 @@ again:
- 	 * source.  If this is invalid we can skip the address space check,
- 	 * thus avoiding the deadlock.
- 	 */
--	if (!down_read_trylock(&mm->mmap_sem)) {
-+	if (unlikely(!down_read_trylock(&mm->mmap_sem))) {
- 		if ((error_code & PF_USER) == 0 &&
--		    !search_exception_tables(regs->ip))
--			goto bad_area_nosemaphore;
-+		    !search_exception_tables(regs->ip)) {
-+			bad_area_nosemaphore(regs, error_code, address);
-+			return;
-+		}
- 		down_read(&mm->mmap_sem);
- 	}
- 
- 	vma = find_vma(mm, address);
--	if (!vma)
--		goto bad_area;
--	if (vma->vm_start <= address)
-+	if (unlikely(!vma)) {
-+		bad_area(regs, error_code, address);
-+		return;
-+	}
-+	if (likely(vma->vm_start <= address))
- 		goto good_area;
--	if (!(vma->vm_flags & VM_GROWSDOWN))
--		goto bad_area;
-+	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {
-+		bad_area(regs, error_code, address);
-+		return;
-+	}
- 	if (error_code & PF_USER) {
- 		/*
- 		 * Accessing the stack below %sp is always a bug.
-@@ -705,31 +919,25 @@ again:
- 		 * and pusha to work.  ("enter $65535,$31" pushes
- 		 * 32 pointers and then decrements %sp by 65535.)
- 		 */
--		if (address + 65536 + 32 * sizeof(unsigned long) < regs->sp)
--			goto bad_area;
-+		if (unlikely(address + 65536 + 32 * sizeof(unsigned long) < regs->sp)) {
-+			bad_area(regs, error_code, address);
-+			return;
-+		}
- 	}
--	if (expand_stack(vma, address))
--		goto bad_area;
--/*
-- * Ok, we have a good vm_area for this memory access, so
-- * we can handle it..
-- */
-+	if (unlikely(expand_stack(vma, address))) {
-+		bad_area(regs, error_code, address);
-+		return;
++static int mg_release(struct gendisk *gendisk, fmode_t fmode)
++{
++	return 0;
++}
++
++static struct block_device_operations mg_disk_ops = {
++	.owner = THIS_MODULE,
++	.open = mg_open,
++	.release = mg_release,
++	.ioctl = mg_ioctl
++};
++
++static int mg_probe(struct platform_device *plat_dev)
++{
++	struct mg_host *host;
++	struct resource *rsc;
++	struct mg_drv_data *prv_data = plat_dev->dev.platform_data;
++	int err = 0;
++
++	if (!prv_data) {
++		printk(KERN_ERR "%s:%d fail (no driver_data)\n", __func__, __LINE__);
++		err = -EINVAL;
++		goto probe_err;
 +	}
 +
-+	/*
-+	 * Ok, we have a good vm_area for this memory access, so
-+	 * we can handle it..
-+	 */
- good_area:
--	si_code = SEGV_ACCERR;
--	write = 0;
--	switch (error_code & (PF_PROT|PF_WRITE)) {
--	default:	/* 3: write, present */
--		/* fall through */
--	case PF_WRITE:		/* write, not present */
--		if (!(vma->vm_flags & VM_WRITE))
--			goto bad_area;
--		write++;
--		break;
--	case PF_PROT:		/* read, present */
--		goto bad_area;
--	case 0:			/* read, not present */
--		if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))
--			goto bad_area;
-+	write = error_code & PF_WRITE;
-+	if (unlikely(access_error(error_code, write, vma))) {
-+		bad_area_access_error(regs, error_code, address);
-+		return;
- 	}
- 
- 	/*
-@@ -739,11 +947,8 @@ good_area:
- 	 */
- 	fault = handle_mm_fault(mm, vma, address, write);
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
--		if (fault & VM_FAULT_OOM)
--			goto out_of_memory;
--		else if (fault & VM_FAULT_SIGBUS)
--			goto do_sigbus;
--		BUG();
-+		mm_fault_error(regs, error_code, address, fault);
-+		return;
- 	}
- 	if (fault & VM_FAULT_MAJOR)
- 		tsk->maj_flt++;
-@@ -761,139 +966,6 @@ good_area:
- 	}
- #endif
- 	up_read(&mm->mmap_sem);
--	return;
--
--/*
-- * Something tried to access memory that isn't in our memory map..
-- * Fix it, but check if it's kernel or user first..
-- */
--bad_area:
--	up_read(&mm->mmap_sem);
--
--bad_area_nosemaphore:
--	/* User mode accesses just cause a SIGSEGV */
--	if (error_code & PF_USER) {
--		/*
--		 * It's possible to have interrupts off here.
--		 */
--		local_irq_enable();
--
--		/*
--		 * Valid to do another page fault here because this one came
--		 * from user space.
--		 */
--		if (is_prefetch(regs, address, error_code))
--			return;
--
--		if (is_errata100(regs, address))
--			return;
--
--		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
--		    printk_ratelimit()) {
--			printk(
--			"%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
--			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
--			tsk->comm, task_pid_nr(tsk), address,
--			(void *) regs->ip, (void *) regs->sp, error_code);
--			print_vma_addr(" in ", regs->ip);
--			printk("\n");
--		}
--
--		tsk->thread.cr2 = address;
--		/* Kernel addresses are always protection faults */
--		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
--		tsk->thread.trap_no = 14;
--		force_sig_info_fault(SIGSEGV, si_code, address, tsk);
--		return;
--	}
--
--	if (is_f00f_bug(regs, address))
--		return;
--
--no_context:
--	/* Are we prepared to handle this kernel fault?  */
--	if (fixup_exception(regs))
--		return;
--
--	/*
--	 * X86_32
--	 * Valid to do another page fault here, because if this fault
--	 * had been triggered by is_prefetch fixup_exception would have
--	 * handled it.
--	 *
--	 * X86_64
--	 * Hall of shame of CPU/BIOS bugs.
--	 */
--	if (is_prefetch(regs, address, error_code))
--		return;
--
--	if (is_errata93(regs, address))
--		return;
--
--/*
-- * Oops. The kernel tried to access some bad page. We'll have to
-- * terminate things with extreme prejudice.
-- */
--#ifdef CONFIG_X86_32
--	bust_spinlocks(1);
--#else
--	flags = oops_begin();
--#endif
--
--	show_fault_oops(regs, error_code, address);
--
--	tsk->thread.cr2 = address;
--	tsk->thread.trap_no = 14;
--	tsk->thread.error_code = error_code;
--
--#ifdef CONFIG_X86_32
--	die("Oops", regs, error_code);
--	bust_spinlocks(0);
--	do_exit(SIGKILL);
--#else
--	sig = SIGKILL;
--	if (__die("Oops", regs, error_code))
--		sig = 0;
--	/* Executive summary in case the body of the oops scrolled away */
--	printk(KERN_EMERG "CR2: %016lx\n", address);
--	oops_end(flags, regs, sig);
--#endif
--
--/*
-- * We ran out of memory, or some other thing happened to us that made
-- * us unable to handle the page fault gracefully.
-- */
--out_of_memory:
--	up_read(&mm->mmap_sem);
--	if (is_global_init(tsk)) {
--		yield();
--		/*
--		 * Re-lookup the vma - in theory the vma tree might
--		 * have changed:
--		 */
--		goto again;
--	}
--
--	printk("VM: killing process %s\n", tsk->comm);
--	if (error_code & PF_USER)
--		do_group_exit(SIGKILL);
--	goto no_context;
--
--do_sigbus:
--	up_read(&mm->mmap_sem);
--
--	/* Kernel mode? Handle exceptions or die */
--	if (!(error_code & PF_USER))
--		goto no_context;
--#ifdef CONFIG_X86_32
--	/* User space => ok to do another page fault */
--	if (is_prefetch(regs, address, error_code))
--		return;
--#endif
--	tsk->thread.cr2 = address;
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = 14;
--	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
- }
- 
- DEFINE_SPINLOCK(pgd_lock);
++	/* alloc mg_host */
++	host = kmalloc(sizeof(struct mg_host), GFP_KERNEL);
++	if (!host) {
++		printk(KERN_ERR "%s:%d fail (no memory for mg_host)\n", __func__, __LINE__);
++		err = -ENOMEM;
++		goto probe_err;
++	}
++	memset(host, 0, sizeof(struct mg_host));
++	host->major = MG_DISK_MAJ;
++
++	/* link each other */
++	prv_data->host = host;
++	host->dev = &plat_dev->dev;
++
++	/* io remap */
++	rsc = platform_get_resource(plat_dev, IORESOURCE_MEM, 0);
++	if (!rsc) {
++		printk(KERN_ERR "%s:%d platform_get_resource fail\n", __func__, __LINE__);
++		err = -EINVAL;
++		goto probe_err_2;
++	}
++	host->dev_base = ioremap(rsc->start , rsc->end + 1);
++	if (!host->dev_base) {
++		printk(KERN_ERR "%s:%d ioremap fail\n", __func__, __LINE__);
++		err = -EIO;
++		goto probe_err_2;
++	}
++	MG_DBG("dev_base = 0x%x\n", (u32)host->dev_base);
++
++	/* disk init */
++	err = mg_disk_init(host);
++	if (err) {
++		printk(KERN_ERR "%s:%d fail (err code : %d)\n", __func__, __LINE__, err);
++		err = -EIO;
++		goto probe_err_3;
++	}
++
++	/* get irq resource */
++	if (!prv_data->use_polling) {
++		host->irq = platform_get_irq(plat_dev, 0);
++		if (host->irq == -ENXIO) {
++			err = host->irq;
++			goto probe_err_3;
++		}
++		err = request_irq(host->irq, mg_irq, IRQF_DISABLED |
+IRQF_TRIGGER_RISING, MG_DEV_NAME, host);
++		if (err) {
++			printk(KERN_ERR "%s:%d fail (request_irq err=%d)\n", __func__,
+__LINE__, err);
++			goto probe_err_3;
++		}
++
++	}
++
++	/* get disk id */
++	err = mg_get_disk_id(host);
++	if (err) {
++		printk(KERN_ERR "%s:%d fail (err code : %d)\n", __func__, __LINE__, err);
++		err = -EIO;
++		goto probe_err_4;
++	}
++
++	err = register_blkdev(host->major, MG_DISK_NAME);
++	if (err < 0) {
++		printk(KERN_ERR "%s:%d (register_blkdev) fail (err code : %d)\n",
+__func__, __LINE__, err);
++		goto probe_err_4;
++	}
++	err = 0;
++	if (!host->major)
++		host->major = err;
++
++	spin_lock_init(&host->lock);
++
++	if (prv_data->use_polling) {
++		host->breq = blk_init_queue(mg_request_poll, &host->lock);
++	} else {
++		host->breq = blk_init_queue(mg_request, &host->lock);
++	}
++
++	if (!host->breq) {
++		err = -ENOMEM;
++		printk(KERN_ERR "%s:%d (blk_init_queue) fail\n", __func__, __LINE__);
++		goto probe_err_5;
++	}
++
++	/* mflash is random device, thanx for the noop */
++	elevator_exit(host->breq->elevator);
++	err = elevator_init(host->breq, "noop");
++	if (err) {
++		printk(KERN_ERR "%s:%d (elevator_init) fail\n", __func__, __LINE__);
++		goto probe_err_6;
++	}
++	blk_queue_max_sectors(host->breq, MG_MAX_SECTS);
++	blk_queue_hardsect_size(host->breq, MG_SECTOR_SIZE);
++
++	init_timer(&host->timer);
++	host->timer.function = mg_times_out;
++	host->timer.data = (unsigned long)host;
++
++	host->gd = alloc_disk(MG_DISK_MAX_PART);
++	if (!host->gd) {
++		printk(KERN_ERR "%s:%d (alloc_disk) fail\n", __func__, __LINE__);
++		err = -ENOMEM;
++		goto probe_err_7;
++	}
++	host->gd->major = MG_DISK_MAJ;
++	host->gd->first_minor = 0;
++	host->gd->fops = &mg_disk_ops;
++	host->gd->queue = host->breq;
++	host->gd->private_data = host;
++	sprintf(host->gd->disk_name, MG_DISK_NAME"a");
++
++	set_capacity(host->gd, host->tot_sectors);
++
++	add_disk(host->gd);
++
++	return err;
++
++probe_err_7:
++	del_timer_sync(&host->timer);
++probe_err_6:
++	blk_cleanup_queue(host->breq);
++probe_err_5:
++	unregister_blkdev(MG_DISK_MAJ, MG_DISK_NAME);
++probe_err_4:
++	if (!prv_data->use_polling)
++		free_irq(host->irq, host);
++probe_err_3:
++	iounmap(host->dev_base);
++probe_err_2:
++	kfree(host);
++probe_err:
++	return err;
++}
++
++static int mg_remove(struct platform_device *plat_dev)
++{
++	struct mg_drv_data *prv_data = plat_dev->dev.platform_data;
++	struct mg_host *host = prv_data->host;
++	int err = 0;
++
++	/* delete timer */
++	del_timer_sync(&host->timer);
++
++	/* remove disk */
++	if (host->gd) {
++		del_gendisk(host->gd);
++		put_disk(host->gd);
++	}
++	/* remove queue */
++	if (host->breq)
++		blk_cleanup_queue(host->breq);
++
++	/* unregister blk device */
++	unregister_blkdev(host->major, MG_DISK_NAME);
++
++	/* free irq */
++	if (!prv_data->use_polling)
++		free_irq(host->irq, host);
++
++	/* unmap io */
++	if (host->dev_base)
++		iounmap(host->dev_base);
++
++	/* free mg_host */
++	if (host)
++		kfree(host);
++
++	return err;
++}
++
++static struct platform_driver mg_disk_driver = {
++	.probe = mg_probe,
++	.remove = mg_remove,
++	.driver = {
++		.name = MG_DEV_NAME,
++		.owner = THIS_MODULE,
++	}
++};
++
++/****************************************************************************
++ *
++ * Module stuff
++ *
++ ****************************************************************************/
++
++static int __init mg_init(void)
++{
++	printk(KERN_INFO "mGine mflash driver, (c) 2008 mGine Co.\n");
++	return platform_driver_register(&mg_disk_driver);
++}
++
++static void __exit mg_exit(void)
++{
++	printk(KERN_INFO "mflash driver : bye bye\n");
++	platform_driver_unregister(&mg_disk_driver);
++}
++
++module_init(mg_init);
++module_exit(mg_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("unsik Kim <donari75@gmail.com>");
++MODULE_DESCRIPTION("mGine m[g]flash device driver");
+diff --git a/include/linux/mg_disk.h b/include/linux/mg_disk.h
+new file mode 100644
+index 0000000..4e5701a
+--- /dev/null
++++ b/include/linux/mg_disk.h
+@@ -0,0 +1,174 @@
++/*
++ *  include/linux/mg_disk.c
++ *
++ *  Support for the mGine m[g]flash IO mode.
++ *  Based on legacy hd.c
++ *
++ * (c) 2008 mGine Co.,LTD
++ * (c) 2008 unsik Kim <donari75@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
++
++#ifndef __MG_DISK_H__
++#define __MG_DISK_H__
++
++#include <linux/blkdev.h>
++#include <linux/hdreg.h>
++
++/* name for block device */
++#define MG_DISK_NAME "mgd"
++/* name for platform device */
++#define MG_DEV_NAME "mg_disk"
++
++#define MG_DISK_MAJ 240
++#define MG_DISK_MAX_PART 16
++#define MG_SECTOR_SIZE 512
++#define MG_MAX_SECTS 256
++
++/* Register offsets */
++#define MG_BUFF_OFFSET			0x8000
++#define MG_STORAGE_BUFFER_SIZE	0x200
++#define MG_REG_OFFSET			0xC000
++#define MG_REG_FEATURE			(MG_REG_OFFSET + 2)	/* write case */
++#define MG_REG_ERROR			(MG_REG_OFFSET + 2)	/* read case */
++#define MG_REG_SECT_CNT			(MG_REG_OFFSET + 4)
++#define MG_REG_SECT_NUM			(MG_REG_OFFSET + 6)
++#define MG_REG_CYL_LOW			(MG_REG_OFFSET + 8)
++#define MG_REG_CYL_HIGH			(MG_REG_OFFSET + 0xA)
++#define MG_REG_DRV_HEAD			(MG_REG_OFFSET + 0xC)
++#define MG_REG_COMMAND			(MG_REG_OFFSET + 0xE)	/* write case */
++#define MG_REG_STATUS			(MG_REG_OFFSET + 0xE)	/* read  case */
++#define MG_REG_DRV_CTRL			(MG_REG_OFFSET + 0x10)
++#define MG_REG_BURST_CTRL		(MG_REG_OFFSET + 0x12)
++
++/* "Drive Select/Head Register" bit values */
++#define MG_REG_HEAD_MUST_BE_ON	0xA0 /* These 2 bits are always on */
++#define MG_REG_HEAD_DRIVE_MASTER	(0x00 | MG_REG_HEAD_MUST_BE_ON)
++#define MG_REG_HEAD_DRIVE_SLAVE	(0x10 | MG_REG_HEAD_MUST_BE_ON)
++#define MG_REG_HEAD_LBA_MODE		(0x40 | MG_REG_HEAD_MUST_BE_ON)
++
++
++/* "Device Control Register" bit values */
++#define MG_REG_CTRL_INTR_ENABLE		0x0
++#define MG_REG_CTRL_INTR_DISABLE		(0x1<<1)
++#define MG_REG_CTRL_RESET			(0x1<<2)
++#define MG_REG_CTRL_INTR_POLA_ACTIVE_HIGH	0x0
++#define MG_REG_CTRL_INTR_POLA_ACTIVE_LOW	(0x1<<4)
++#define MG_REG_CTRL_DPD_POLA_ACTIVE_LOW	0x0
++#define MG_REG_CTRL_DPD_POLA_ACTIVE_HIGH	(0x1<<5)
++#define MG_REG_CTRL_DPD_DISABLE		0x0
++#define MG_REG_CTRL_DPD_ENABLE		(0x1<<6)
++
++/* Status register bit */
++#define MG_REG_STATUS_BIT_ERROR			0x01 /* error bit in status register */
++#define MG_REG_STATUS_BIT_CORRECTED_ERROR		0x04 /* corrected error in
+status register */
++#define MG_REG_STATUS_BIT_DATA_REQ			0x08 /* data request bit in
+status register */
++#define MG_REG_STATUS_BIT_SEEK_DONE			0x10 /* DSC - Drive Seek Complete */
++#define MG_REG_STATUS_BIT_WRITE_FAULT		0x20 /* DWF - Drive Write Fault */
++#define MG_REG_STATUS_BIT_READY			0x40
++#define MG_REG_STATUS_BIT_BUSY			0x80
++
++/* handy status */
++#define MG_STAT_READY		(MG_REG_STATUS_BIT_READY | MG_REG_STATUS_BIT_SEEK_DONE)
++#define MG_READY_OK(s)		(((s) & (MG_STAT_READY | \
++					(MG_REG_STATUS_BIT_BUSY | MG_REG_STATUS_BIT_WRITE_FAULT |
+MG_REG_STATUS_BIT_ERROR))) \
++					== MG_STAT_READY)
++
++/* Error register */
++#define MG_REG_ERR_AMNF		0x01
++#define MG_REG_ERR_ABRT		0x04
++#define MG_REG_ERR_IDNF		0x10
++#define MG_REG_ERR_UNC		0x40
++#define MG_REG_ERR_BBK		0x80
++
++/* error code for others */
++#define MG_ERR_NONE 0
++#define MG_ERR_TIMEOUT 0x100
++#define MG_ERR_INIT_STAT 0x101
++#define MG_ERR_TRANSLATION 0x102
++#define MG_ERR_CTRL_RST 0x103
++
++#define MG_MAX_ERRORS	16	/* Max read/write errors/sector */
++#define MG_RESET_FREQ	4	/* Reset controller every 4th retry */
++
++/* command */
++#define MG_CMD_RD 0x20
++#define MG_CMD_WR 0x30
++#define MG_CMD_SLEEP 0x99
++#define MG_CMD_WAKEUP 0xC3
++#define MG_CMD_ID 0xEC
++#define MG_CMD_WR_CONF 0x3C
++#define MG_CMD_RD_CONF 0x40
++
++/* private driver data */
++struct mg_drv_data {
++	/* disk resource */
++	u32 nr_chips;
++	u32 op_mode;
++#define MG_OP_CASCADE (1 << 0)
++#define MG_OP_CASCADE_SYNC_RD (1 << 1)
++#define MG_OP_CASCADE_SYNC_WR (1 << 2)
++#define MG_OP_INTERLEAVE (1 << 3)
++
++	u32 use_polling;
++
++	/* synchronous mode */
++	u16	burst_latcy;
++#define MG_BURST_LAT_4 (3 << 4)
++#define MG_BURST_LAT_5 (4 << 4)
++#define MG_BURST_LAT_6 (5 << 4)
++#define MG_BURST_LAT_7 (6 << 4)
++#define MG_BURST_LAT_8 (7 << 4)
++	u16	burst_len;
++#define MG_BURST_LEN_4 (1 << 1)
++#define MG_BURST_LEN_8 (2 << 1)
++#define MG_BURST_LEN_16 (3 << 1)
++#define MG_BURST_LEN_32 (4 << 1)
++#define MG_BURST_LEN_CONT (0 << 1)
++
++	/* control pin resource */
++	int (*mg_ctrl_pin_init) (void); /* initialize hdrst, wd, dpd pin to
+GPIO and output high */
++	void (*mg_hdrst_pin) (u8 level);
++	void (*mg_wp_pin) (u8 level);
++	void (*mg_dpd_pin) (u8 level);
++
++	/* internally used */
++	struct mg_host *host;
++};
++
++/* main structure for mflash driver */
++struct mg_host {
++	struct device *dev;
++
++	struct request_queue *breq;
++	spinlock_t lock;
++	struct gendisk *gd;
++
++	struct timer_list timer;
++	void (*mg_do_intr) (struct mg_host *);
++
++	struct hd_driveid id_data;
++	u32 tot_sectors;
++
++	void __iomem *dev_base;
++	unsigned int irq;
++
++	u32 major;
++	u32 error;
++	u32 reset;
++};
++
++/*
++ * Debugging macro and defines
++ */
++#undef DO_MG_DEBUG
++#ifdef DO_MG_DEBUG
++#  define MG_DBG(fmt, args...) printk(KERN_DEBUG "%s:%d "fmt,
+__func__, __LINE__, ##args)
++#else /* CONFIG_MG_DEBUG */
++#  define MG_DBG(fmt, args...) do { } while (0)
++#endif /* CONFIG_MG_DEBUG */
++
++#endif
