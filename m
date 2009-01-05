@@ -1,148 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZAEQlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZAEQne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZAEQlu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 11:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZAEQlj
+	id S1754155AbZAEQne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 11:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZAEQnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 11:41:39 -0500
-Received: from mail.suse.de ([195.135.220.2]:40526 "EHLO mx1.suse.de"
+	Mon, 5 Jan 2009 11:43:22 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39280 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbZAEQlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 11:41:39 -0500
-Date: Mon, 5 Jan 2009 17:41:35 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Klotz <peter.klotz@aon.at>,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Roman Kononov <kernel@kononov.ftml.net>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch] mm: fix lockless pagecache reordering bug (was Re: BUG: soft lockup - is this XFS problem?)
-Message-ID: <20090105164135.GC32675@wotan.suse.de>
-References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de> <20090105041959.GC367@wotan.suse.de> <20090105064838.GA5209@wotan.suse.de> <49623384.2070801@aon.at>
+	id S1750926AbZAEQnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 11:43:21 -0500
+Date: Tue, 06 Jan 2009 01:43:08 +0900 (JST)
+Message-Id: <20090106.014308.37731373.ryusuke@osrg.net>
+To: chris.mason@oracle.com
+Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Btrfs for mainline
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1231164896.4290.19.camel@think.oraclecorp.com>
+References: <1230925087.7538.41.camel@think.oraclecorp.com>
+	<20090103.184406.54858118.ryusuke@osrg.net>
+	<1231164896.4290.19.camel@think.oraclecorp.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49623384.2070801@aon.at>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 05 Jan 2009 09:14:56 -0500, Chris Mason <chris.mason@oracle.com> wrote:
+> On Sat, 2009-01-03 at 18:44 +0900, Ryusuke Konishi wrote:
+> > On Fri, 02 Jan 2009 14:38:07 -0500, Chris Mason 
+> >
+> > Btrfs seems to have other helpful code including pages/bio compression
+> > which may become separable, too.  And, this may be the same for
+> > pages/bio encryption/decryption code which would come next.  (I don't
+> > mention about the volume management/raid feature here to avoid getting
+> > off the subject, but it's likewise).
+> > 
+> 
+> The compression code is somewhat tied to the btrfs internals, but it
+> could be pulled out without too much trouble.  The big question there is
+> if other filesystems are interested in transparent compression support.
 
-This patch should be applied to 2.6.29 and 27/28 stable kernels, please.
---
+It was so attractive to me ;)
+though I don't know if it's applicable.
 
-Peter Klotz and Roman Kononov both reported a bug where in XFS workloads where
-they were seeing softlockups in find_get_pages
-(http://oss.sgi.com/bugzilla/show_bug.cgi?id=805).
+Anyway, making this common can be said to be the exercise of someone
+who try to reuse it, and I don't adhere to it in order not to get off
+the subject.  Just I wanted to add presence of other candicates.
 
-Basically it would go into an "infinite" loop, although it would sometimes be
-able to break out of the loop depending on the phase of the moon.
+> But, at the end of the day, most of the work is still done by the zlib
+> code.  The btrfs bits just organize pages to send down to zlib.
+> 
+> -chris
 
-This turns out to be a bug in the lockless pagecache patch. There is a missing
-compiler barrier in the "increment reference count unless it was zero" failure
-case of the lockless pagecache protocol in the gang lookup functions.
+Yes, but that's the interesting point; it provides ways to apply
+compression through array of pages, or bio - I like it.
 
-This would cause the compiler to use a cached value of struct page pointer to
-retry the operation with, rather than reload it. So the page might have been
-removed from pagecache and freed (refcount==0) but the lookup would not correctly
-notice the page is no longer in pagecache, and keep attempting to increment the
-refcount and failing, until the page gets reallocated for something else. This
-isn't a data corruption because the condition will be properly handled if the
-page does get reallocated. However it can result in a lockup. 
-
-Add a the required compiler barrier and comment to fix this.
-
-Assembly snippet from find_get_pages, before:
-.L220:
-        movq    (%rbx), %rax    #* ivtmp.1162, tmp82
-        movq    (%rax), %rdi    #, prephitmp.1149
-.L218:
-        testb   $1, %dil        #, prephitmp.1149
-        jne     .L217   #,
-        testq   %rdi, %rdi      # prephitmp.1149
-        je      .L203   #,
-        cmpq    $-1, %rdi       #, prephitmp.1149
-        je      .L217   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L218   #,
-
-after:
-.L212:
-        movq    (%rbx), %rax    #* ivtmp.1109, tmp81
-        movq    (%rax), %rdi    #, ret
-        testb   $1, %dil        #, ret
-        jne     .L211   #,
-        testq   %rdi, %rdi      # ret
-        je      .L197   #,
-        cmpq    $-1, %rdi       #, ret
-        je      .L211   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L212   #,
-
-(notice the obvious infinite loop in the first example, if page->count remains 0)
-
-The problem was noticed and resolved on 2.6.27 stable kernels, and also applies
-upstream (where I was able to reproduce it and verify the fix).
-
-Reported-by: Peter Klotz <peter.klotz@aon.at>
-Reported-by: Roman Kononov <kononov@ftml.net>
-Tested-by: Peter Klotz <peter.klotz@aon.at>
-Tested-by: Roman Kononov <kononov@ftml.net>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2009-01-05 17:22:57.000000000 +1100
-+++ linux-2.6/mm/filemap.c	2009-01-05 17:28:40.000000000 +1100
-@@ -794,8 +794,19 @@ repeat:
- 		if (unlikely(page == RADIX_TREE_RETRY))
- 			goto restart;
- 
--		if (!page_cache_get_speculative(page))
-+		if (!page_cache_get_speculative(page)) {
-+			/*
-+			 * A failed page_cache_get_speculative operation does
-+			 * not imply any barriers (Documentation/atomic_ops.txt),
-+			 * and as such, we must force the compiler to deref the
-+			 * radix-tree slot again rather than using the cached
-+			 * value (because we need to give up if the page has been
-+			 * removed from the radix-tree, rather than looping until
-+			 * it gets reused for something else).
-+			 */
-+			barrier();
- 			goto repeat;
-+		}
- 
- 		/* Has the page moved? */
- 		if (unlikely(page != *((void **)pages[i]))) {
-@@ -850,8 +861,11 @@ repeat:
- 		if (page->mapping == NULL || page->index != index)
- 			break;
- 
--		if (!page_cache_get_speculative(page))
-+		if (!page_cache_get_speculative(page)) {
-+			/* barrier: see find_get_pages() */
-+			barrier();
- 			goto repeat;
-+		}
- 
- 		/* Has the page moved? */
- 		if (unlikely(page != *((void **)pages[i]))) {
-@@ -904,8 +918,11 @@ repeat:
- 		if (unlikely(page == RADIX_TREE_RETRY))
- 			goto restart;
- 
--		if (!page_cache_get_speculative(page))
-+		if (!page_cache_get_speculative(page)) {
-+			/* barrier: see find_get_pages() */
-+			barrier();
- 			goto repeat;
-+		}
- 
- 		/* Has the page moved? */
- 		if (unlikely(page != *((void **)pages[i]))) {
+Ryusuke
