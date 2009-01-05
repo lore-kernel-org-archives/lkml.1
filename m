@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZAEOlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZAEOn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbZAEOlQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 09:41:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbZAEOk6
+	id S1755361AbZAEOn3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 09:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZAEOnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 09:40:58 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:55598 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755289AbZAEOk4 (ORCPT
+	Mon, 5 Jan 2009 09:43:20 -0500
+Received: from mfo11.iij4u.or.jp ([210.138.174.81]:33563 "EHLO
+	mfo11.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754279AbZAEOnT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 09:40:56 -0500
-X-Greylist: delayed 947 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Jan 2009 09:40:56 EST
-X-Sasl-enc: p0ii0BFEGz/E6Rn57sv60RAT2mRzZiv49Ak2u5vYfUMt 1231165507
-Message-ID: <49621841.7040108@ftml.net>
-Date: Mon, 05 Jan 2009 08:25:05 -0600
-From: Roman Kononov <kononov@ftml.net>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Christoph Hellwig <hch@infradead.org>, Peter Klotz <peter.klotz@aon.at>,
-       Roman Kononov <kernel@kononov.ftml.net>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: BUG: soft lockup - is this XFS problem?
-References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de> <20090105041959.GC367@wotan.suse.de> <20090105064838.GA5209@wotan.suse.de>
-In-Reply-To: <20090105064838.GA5209@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 09:43:19 -0500
+X-Greylist: delayed 309 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Jan 2009 09:43:19 EST
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 04/13] add dma_mapping_ops for intel-iommu
+Date: Mon,  5 Jan 2009 23:36:09 +0900
+Message-Id: <1231166178-20050-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1231166178-20050-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1231166178-20050-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-01-05 00:48 Nick Piggin said the following:
-> I believe this patch should solve it. Please test and confirm before
-> I send it upstream.
+This is for IA64_DIG_VTD.
 
-3 systems with 2.6.27.10 have worked overnight with dd running 
-continuously. They all failed within 20 minutes without the patch.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/ia64/dig/dig_vtd_iommu.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-Thank you,
+diff --git a/arch/ia64/dig/dig_vtd_iommu.c b/arch/ia64/dig/dig_vtd_iommu.c
+index 1c8a079..fdb8ba9 100644
+--- a/arch/ia64/dig/dig_vtd_iommu.c
++++ b/arch/ia64/dig/dig_vtd_iommu.c
+@@ -1,6 +1,7 @@
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/dma-mapping.h>
+ #include <linux/intel-iommu.h>
+ 
+ void *
+@@ -57,3 +58,20 @@ vtd_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(vtd_dma_mapping_error);
++
++extern int iommu_dma_supported(struct device *dev, u64 mask);
++
++struct dma_mapping_ops vtd_dma_ops = {
++	.alloc_coherent		= vtd_alloc_coherent,
++	.free_coherent		= vtd_free_coherent,
++	.map_single_attrs	= vtd_map_single_attrs,
++	.unmap_single_attrs	= vtd_unmap_single_attrs,
++	.map_sg_attrs		= vtd_map_sg_attrs,
++	.unmap_sg_attrs		= vtd_unmap_sg_attrs,
++	.sync_single_for_cpu	= machvec_dma_sync_single,
++	.sync_sg_for_cpu	= machvec_dma_sync_sg,
++	.sync_single_for_device	= machvec_dma_sync_single,
++	.sync_sg_for_device	= machvec_dma_sync_sg,
++	.dma_supported_op	= iommu_dma_supported,
++	.mapping_error		= vtd_dma_mapping_error,
++};
+-- 
+1.6.0.6
 
-Roman
