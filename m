@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbZADX65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZAEABt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759545AbZADX65 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 18:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZADX6i
+	id S1758027AbZAEABt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 19:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZAEABl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 18:58:38 -0500
-Received: from thunk.org ([69.25.196.29]:41526 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752547AbZADX6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 18:58:36 -0500
-Date: Sun, 4 Jan 2009 18:58:27 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "Alexander E. Patrakov" <patrakov@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: document ext3 requirements
-Message-ID: <20090104235827.GH22958@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Pavel Machek <pavel@suse.cz>,
-	"Alexander E. Patrakov" <patrakov@gmail.com>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20090103123813.GA1512@ucw.cz> <4960BB2D.3060000@gmail.com> <20090104183834.GB17558@mit.edu> <20090104223756.GD1913@elf.ucw.cz>
+	Sun, 4 Jan 2009 19:01:41 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:41571 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbZAEABl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 19:01:41 -0500
+Message-ID: <49614DD8.7070707@davidnewall.com>
+Date: Mon, 05 Jan 2009 10:31:28 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090104223756.GD1913@elf.ucw.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Chris Adams <cmadams@hiwaay.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
+ 2008-2009
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com> <20090102210430.49649261@diego-desktop> <495E7849.4030706@shaw.ca> <495F0672.6020708@davidnewall.com> <8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com> <496076A9.7030907@davidnewall.com> <f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com> <4960897D.5030603@davidnewall.com> <alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm> <4961432A.80509@davidnewall.com> <20090104232534.GB1297917@hiwaay.net>
+In-Reply-To: <20090104232534.GB1297917@hiwaay.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 04, 2009 at 11:37:56PM +0100, Pavel Machek wrote:
-> 
-> Are you sure you need to have thrashing? AFAICT metadata + fsync heavy
-> workload should be enough... and there were scripts to easily repeat
-> that.
+Chris Adams wrote:
+> Once upon a time, David Newall <davidn@davidnewall.com> said:
+>   
+>> No.  Exactly the contrary.  I'm saying that through use of zoneinfo, for
+>> example, no kernel support is required for leap seconds.  And! this
+>> provides correct results for seconds-between two dates.
+>>     
+>
+> Again: zoneinfo provides offset from UTC.  Leap seconds are changes in
+> UTC itself, not time zones, so zoneinfo can't handle that.
+>   
 
-The memory pressure is needed to force disk buffers out to disk sooner
-than fsync() would normally force buffers out.  The scripts which I've
-seen induced memory pressure.  If the disk is *super* aggressive at
-reordering writes, I suppose a heavy fsync workload might be enough on
-its own, but in practice, it's generally not enough.
+Yes, but zoneinfo ALSO provides support for leap seconds.  Do read man
+zic for specific details.
 
-							- Ted
+> Please go read Google, Wikipedia, and NTP lists.
+
+I think you particularly mean NTP.  I think your reasoning is that
+because NTP's timestamp doesn't include leap seconds, and because we all
+like to use NTP to synchronise our clocks, Linux has to make up the
+difference.  But there is an alternative; which is for the NTP client to
+insert those missing leap seconds, which number it can get from
+zoneinfo.  Epoch remains the start of  1978; seconds between any two
+dates included leap-seconds and no special kernel support is required.
