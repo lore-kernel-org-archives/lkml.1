@@ -1,131 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZAENux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZAENzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbZAENux (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZAENu1
+	id S1754741AbZAENzf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZAENz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:50:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54814 "EHLO ogre.sisk.pl"
+	Mon, 5 Jan 2009 08:55:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46151 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbZAENuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:50:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 PCI: Do not use interrupt links for devices using MSI-X
-Date: Mon, 5 Jan 2009 14:50:27 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-tst; KDE/4.1.3; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	id S1753349AbZAENzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:55:25 -0500
+Date: Mon, 5 Jan 2009 14:55:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>
-References: <200901042308.42625.rjw@sisk.pl> <20090105130439.GA6014@elte.hu>
-In-Reply-To: <20090105130439.GA6014@elte.hu>
+Subject: Re: irqnr fallout in gpiolib on sparc32
+Message-ID: <20090105135508.GB4190@elte.hu>
+References: <20090105132916.GA10545@uranus.ravnborg.org> <20090105133819.GE6014@elte.hu> <20090105134832.GA14460@uranus.ravnborg.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901051450.28310.rjw@sisk.pl>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090105134832.GA14460@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> > > I did a simple:
+> > > #include <linux/irqnr.h> but that did not help.
 > > 
-> > pcibios_enable_device() and pcibios_disable_device() don't handle
-> > IRQs for devices that have MSI enabled and it should tread the
+> > yeah. Does the patch below do the trick?
 > 
-> s/tread/treat
-
-Ah, thanks.
-
-> > devices with MSI-X enabled in the same way.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  arch/x86/pci/common.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> Needed a small fix - see below.
 > 
-> looks good - Jesse, what do you think?
+> > btw., i'm curious, does the unification of the sparc architectures 
+> > mean that sparc32 will be using genirq too some time in the future?
 > 
-> Rafael, i'm curious is this in response to some regression/bug? Did some 
-> box or driver get confused by us enabling/disabling the GSI? Some IRQ 
-> flood perhaps?
+> Dave has mentioned this but we are not working actively on it yet.
 
-Well, I don't have any MSI-X capable boxes around. :-)
+would be cool to do it - i think sparc32 is one of the last major physical 
+architectures to not be on genirq - if we did this conversion we could do 
+a good number of nice cleanups by eliminating all the genirq/non-genirq 
+differences.
 
-I was just reviewing the code and spotted this.
-
-> btw., there's a small observation:
+> > +#define nr_irqs			NR_IRQS
+> > +#define irq_to_desc(irq)	irq_desc[irq]
 > 
-> > +     if (!dev->msi_enabled && !dev->msix_enabled)
+> irq_to_desc(irq) return a pointer to a struct irq_desc
+> so we need to take the address.
 > 
-> maybe a "pci_has_gsi_irq()" wrapper would make these checks cleaner and 
-> would make things more robust, should there be any new IRQ delivery method 
-> be introduced in the future?
+> > +#define irq_to_desc(irq)	&irq_desc[irq]
+>                                 ^
+> With this small fix the build continues.
 
-Well, perhaps something like the patch below?
+oops, indeed. I fixed it, added your Tested-by and pushed it into 
+tip/irq/urgent. Thanks Sam!
 
-Thanks,
-Rafael
-
----
-Subject: x86 PCI: Do not use interrupt links for devices using MSI-X (rev. 2)
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-pcibios_enable_device() and pcibios_disable_device() don't handle
-IRQs for devices that have MSI enabled and it should treat the
-devices with MSI-X enabled in the same way.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/pci/common.c |    4 ++--
- include/linux/pci.h   |    9 +++++++++
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/pci/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/common.c
-+++ linux-2.6/arch/x86/pci/common.c
-@@ -551,14 +551,14 @@ int pcibios_enable_device(struct pci_dev
- 	if ((err = pci_enable_resources(dev, mask)) < 0)
- 		return err;
- 
--	if (!dev->msi_enabled)
-+	if (!pci_msi_enabled(dev))
- 		return pcibios_enable_irq(dev);
- 	return 0;
- }
- 
- void pcibios_disable_device (struct pci_dev *dev)
- {
--	if (!dev->msi_enabled && pcibios_disable_irq)
-+	if (!pci_msi_enabled(dev) && pcibios_disable_irq)
- 		pcibios_disable_irq(dev);
- }
- 
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -274,6 +274,15 @@ static inline void pci_add_saved_cap(str
- 	hlist_add_head(&new_cap->next, &pci_dev->saved_cap_space);
- }
- 
-+#ifdef CONFIG_PCI_MSI
-+static inline bool pci_msi_enabled(struct pci_dev *pci_dev)
-+{
-+	return dev->msi_enabled || dev->msix_enabled;
-+}
-+#else
-+static inline bool pci_msi_enabled(struct pci_dev *pci_dev) { return false; }
-+#endif
-+
- /*
-  *  For PCI devices, the region numbers are assigned this way:
-  *
-
+	Ingo
