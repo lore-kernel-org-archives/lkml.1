@@ -1,53 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbZAETSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZAETTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752951AbZAETSQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZAETRr
+	id S1754974AbZAETTV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZAETTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:17:47 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:43000 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755039AbZAETRq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:17:46 -0500
-Message-ID: <4961C83A.6020009@davidnewall.com>
-Date: Mon, 05 Jan 2009 19:13:38 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>	<20090102210430.49649261@diego-desktop>	<495E7849.4030706@shaw.ca>	<495F0672.6020708@davidnewall.com>	<8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>	<496076A9.7030907@davidnewall.com>	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>	<4960897D.5030603@davidnewall.com>	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>	<4961432A.80509@davidnewall.com>	<20090104232534.GB1297917@hiwaay.net>	<49614DD8.7070707@davidnewall.com> <20090105004123.374709ff@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090105004123.374709ff@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 14:19:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38308 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752779AbZAETTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 14:19:06 -0500
+Date: Mon, 5 Jan 2009 19:18:24 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Jonathan Brassow <jbrassow@redhat.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
+       Andi Kleen <ak@suse.de>, Cheng Renquan <crquan@gmail.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, Takahiro Yasui <tyasui@redhat.com>
+Subject: [git pull] device-mapper patches for 2.6.29
+Message-ID: <20090105191824.GP5098@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Jonathan Brassow <jbrassow@redhat.com>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Milan Broz <mbroz@redhat.com>, Andi Kleen <ak@suse.de>,
+	Cheng Renquan <crquan@gmail.com>,
+	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
+	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+	Takahiro Yasui <tyasui@redhat.com>
+References: <20081010125159.GK5098@agk.fab.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081010125159.GK5098@agk.fab.redhat.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> zoneinfo.  Epoch remains the start of  1978; seconds between any two
->> dates included leap-seconds and no special kernel support is required.
->>     
->
-> Your time() values then disagree with the rest of the universe. See POSIX
-> 1003.1 Annex B 2.2.2. if you want the whole story,
->   
+Please pull from:
 
-I can't find this, except possibly (but maybe not) at a cost from ieee,
-and I'm not inclined to pay.  If you could post a sentence from this
-annex it might help me to find it.
+  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
 
+to get the following device-mapper patches for 2.6.29:
+ 
+Alasdair G Kergon (2):
+      dm mpath: move trigger_event to system workqueue
+      dm snapshot: split out exception store implementations
 
-> For any given time based on the 1970 Epoch there is a single correct
-> answer for the translation between each value and a UTC time.
+Andi Kleen (1):
+      dm: support barriers on simple devices
 
-This confused me because the sense that I've got from this thread
-suggests otherwise.  Unless I've misunderstood, the time() value for the
-first second of 2009 is one greater than the value for the second to
-last second of 2008 (i.e. 23:59:59), which means that there is no
-translation for the last second.  Put another way, my understanding of
-what's been said is that the epoch is effectively increased by one
-second for each leap second.  Have I got this wrong?
+Cheng Renquan (2):
+      dm target: use module refcount directly
+      dm target: remove struct tt_internal
+
+Jonathan Brassow (4):
+      dm raid1: fix error count
+      dm snapshot: separate out exception store interface
+      dm snapshot: rename struct exception_store
+      dm snapshot: extend exception store functions
+
+Kiyoshi Ueda (2):
+      dm request: add caches
+      dm request: extend target interface
+
+Mikulas Patocka (4):
+      dm table: drop reference at unbind
+      dm snapshot: change yield to msleep
+      dm: consolidate target deregistration error handling
+      dm table: rework reference counting
+
+Milan Broz (4):
+      dm log: move region_size validation
+      dm log: ensure log bitmap fits on log device
+      dm ioctl: allow dm_copy_name_and_uuid to return only one field
+      dm: add name and uuid to sysfs
+
+Takahiro Yasui (2):
+      dm log: fix dm_io_client leak on error paths
+      dm log: avoid reinitialising io_req on every operation
+
+ drivers/md/Makefile             |    5 +-
+ drivers/md/dm-crypt.c           |    6 +-
+ drivers/md/dm-delay.c           |    6 +-
+ drivers/md/dm-exception-store.c |  749 +--------------------------------------
+ drivers/md/dm-exception-store.h |  148 ++++++++
+ drivers/md/dm-ioctl.c           |   16 +-
+ drivers/md/dm-linear.c          |    6 +-
+ drivers/md/dm-log.c             |   40 ++-
+ drivers/md/dm-mpath.c           |   14 +-
+ drivers/md/dm-raid1.c           |   24 +-
+ drivers/md/dm-snap-persistent.c |  704 ++++++++++++++++++++++++++++++++++++
+ drivers/md/dm-snap-transient.c  |   98 +++++
+ drivers/md/dm-snap.c            |   48 ++-
+ drivers/md/dm-snap.h            |  129 +-------
+ drivers/md/dm-stripe.c          |    4 +-
+ drivers/md/dm-sysfs.c           |   99 +++++
+ drivers/md/dm-table.c           |   47 +++-
+ drivers/md/dm-target.c          |  111 ++----
+ drivers/md/dm-zero.c            |    5 +-
+ drivers/md/dm.c                 |  101 ++++--
+ drivers/md/dm.h                 |   12 +-
+ include/linux/device-mapper.h   |   31 ++-
+ 22 files changed, 1352 insertions(+), 1051 deletions(-)
+ create mode 100644 drivers/md/dm-exception-store.h
+ create mode 100644 drivers/md/dm-snap-persistent.c
+ create mode 100644 drivers/md/dm-snap-transient.c
+ create mode 100644 drivers/md/dm-sysfs.c
+
+Alasdair
+-- 
+agk@redhat.com
