@@ -1,41 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZAEWUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZAEWXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbZAEWUG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 17:20:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbZAEWTy
+	id S1754559AbZAEWXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 17:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZAEWXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 17:19:54 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:53863 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750889AbZAEWTx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 17:19:53 -0500
-Date: Mon, 5 Jan 2009 23:19:50 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: No suspend to RAM possible with 2.6.28
-Message-ID: <20090105221949.GA2443@x61>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Mon, 5 Jan 2009 17:23:03 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34682 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751172AbZAEWXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 17:23:01 -0500
+Message-ID: <49628849.1000706@redhat.com>
+Date: Mon, 05 Jan 2009 17:23:05 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [PATCH][bugfix] kprobes: fix module compilation error with CONFIG_KPROBES=n
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Define kprobes related data structures even if CONFIG_KPROBES is not set.
+This fixes compilation errors which occur if CONFIG_KPROBES is not set, in
+kprobe using modules.
 
-on my ThinkPad X61s, I can not use suspend to RAM anymore. It works
-with 2.6.27.
+Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
+ include/linux/kprobes.h |   45 +++++++++++++++++++++++----------------------
+ 1 file changed, 23 insertions(+), 22 deletions(-)
 
-This is what happens:
+Index: 2.6.28/include/linux/kprobes.h
+===================================================================
+--- 2.6.28.orig/include/linux/kprobes.h
++++ 2.6.28/include/linux/kprobes.h
+@@ -37,9 +37,9 @@
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
+ #include <linux/mutex.h>
++#include <asm/kprobes.h>
 
-$ cat /sys/power/state 
-mem disk
-$ echo mem > /sys/power/state
-bash: echo: write error: Device or resource busy
-$
+ #ifdef CONFIG_KPROBES
+-#include <asm/kprobes.h>
 
-Regards,
-Tino
+ /* kprobe_status settings */
+ #define KPROBE_HIT_ACTIVE	0x00000001
+@@ -49,6 +49,9 @@
+
+ /* Attach to insert probes on any functions which should be ignored*/
+ #define __kprobes	__attribute__((__section__(".kprobes.text"))) notrace
++#else /* CONFIG_KPROBES */
++#define __kprobes	notrace
++#endif /* CONFIG_KPROBES */
+
+ struct kprobe;
+ struct pt_regs;
+@@ -131,23 +134,6 @@ struct jprobe {
+ /* For backward compatibility with old code using JPROBE_ENTRY() */
+ #define JPROBE_ENTRY(handler)	(handler)
+
+-DECLARE_PER_CPU(struct kprobe *, current_kprobe);
+-DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+-
+-#ifdef CONFIG_KRETPROBES
+-extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
+-				   struct pt_regs *regs);
+-extern int arch_trampoline_kprobe(struct kprobe *p);
+-#else /* CONFIG_KRETPROBES */
+-static inline void arch_prepare_kretprobe(struct kretprobe *rp,
+-					struct pt_regs *regs)
+-{
+-}
+-static inline int arch_trampoline_kprobe(struct kprobe *p)
+-{
+-	return 0;
+-}
+-#endif /* CONFIG_KRETPROBES */
+ /*
+  * Function-return probe -
+  * Note:
+@@ -188,6 +174,25 @@ struct kprobe_blackpoint {
+ 	unsigned long range;
+ };
+
++#ifdef CONFIG_KPROBES
++DECLARE_PER_CPU(struct kprobe *, current_kprobe);
++DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
++
++#ifdef CONFIG_KRETPROBES
++extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
++				   struct pt_regs *regs);
++extern int arch_trampoline_kprobe(struct kprobe *p);
++#else /* CONFIG_KRETPROBES */
++static inline void arch_prepare_kretprobe(struct kretprobe *rp,
++					struct pt_regs *regs)
++{
++}
++static inline int arch_trampoline_kprobe(struct kprobe *p)
++{
++	return 0;
++}
++#endif /* CONFIG_KRETPROBES */
++
+ extern struct kretprobe_blackpoint kretprobe_blacklist[];
+
+ static inline void kretprobe_assert(struct kretprobe_instance *ri,
+@@ -264,10 +269,6 @@ void recycle_rp_inst(struct kretprobe_in
+
+ #else /* CONFIG_KPROBES */
+
+-#define __kprobes	notrace
+-struct jprobe;
+-struct kretprobe;
+-
+ static inline struct kprobe *get_kprobe(void *addr)
+ {
+ 	return NULL;
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
