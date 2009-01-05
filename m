@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbZAECvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZAECve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752821AbZAECvS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Jan 2009 21:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZAECvI
+	id S1752552AbZAECve (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Jan 2009 21:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZAECvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Jan 2009 21:51:08 -0500
-Received: from 219-87-157-155.static.tfn.net.tw ([219.87.157.155]:51129 "EHLO
-	ironport.rdc.com.tw" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752005AbZAECvH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Jan 2009 21:51:07 -0500
-X-Greylist: delayed 656 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Jan 2009 21:51:06 EST
-Content-class: urn:content-classes:message
+	Sun, 4 Jan 2009 21:51:13 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54510 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752270AbZAECvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Jan 2009 21:51:12 -0500
+Message-ID: <496174EB.4030601@cn.fujitsu.com>
+Date: Mon, 05 Jan 2009 10:48:11 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
-Content-Transfer-Encoding: 8BIT
-Subject: Re: [Fwd: [PATCH] it821x: Add ultra_mask quirk for Vortex86SX]
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Mon, 5 Jan 2009 10:40:37 +0800
-Message-ID: <07905E0D268758488D76D7D747F21BB6027C02FE@rdc8.rdc>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: [Fwd: [PATCH] it821x: Add ultra_mask quirk for Vortex86SX]
-thread-index: Aclu3v1y5zkq8ZnFSBC85THkTpPBZw==
-From: =?big5?B?Sm9lIENob3UgKKlQqHy9bik=?= <Joe.Chou@rdc.com.tw>
-To: <linux-kernel@vger.kernel.org>
+To: paulmck@linux.vnet.ibm.com
+CC: Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
+References: <200901021159.n02BxDLg024728@mail.q-ag.de> <20090102185543.GE6842@linux.vnet.ibm.com> <49604E19.8040502@cn.fujitsu.com> <20090104194851.GM6958@linux.vnet.ibm.com>
+In-Reply-To: <20090104194851.GM6958@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On 15:44 Tue 09 Dec 2008, Daniel Gimpelevich wrote:
-> On Tue, 2008-12-09 at 21:12 +0100, Florian Fainelli wrote:
-> > Which PHY is connected to the R6040 MAC ? It could be related to 
-> > some wrong settings of the PHY in the driver initialization. 
-> > Currently we are assuming that etiher we are attached to an ICplus 
-> > IP175C switch or another PHY.
+Paul E. McKenney wrote:
 > 
-> Additionally, the 2.6 mainline version had a stupid race condition in 
-> its initialization for a long time, and without looking at current 
-> mainline, I am assuming it's still there. The r6040.c in the current 
-> SVN trunk of OpenWRT is an improvement over that:
-> https://svn.openwrt.org/openwrt/trunk/target/linux/rdc/files/drivers/n
-> et/r6040.c
+> In any case, I do apologize -- since I didn't see anything from you I
+> incorrectly assumed that you had given up on this patch.  Please accept
+> my apologies!
+
+It's my fault.
+
+I'm a very low-yield developer.
+
+I have given up on unaccepted cleanup-patches, kfree_rcu() is not a
+cleanup for reducing lines of code, it has some significances for kernel.
+
+> 
+> Would it be possible for you and Manfred to agree on a common patch, and
+> to have one of you submit it with both of you having Signed-off-by on it?
+>
+All are OK.
+
+I NAK-ed only for deferring kfree_rcu() being accepted.
+
+I'm not concerned about whether I'm patches' Author or I'm in the
+Signed-off-by list.
+
+Thanks,
+
+Lai.
+
