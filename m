@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbZAETRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZAETRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458AbZAETRT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZAETRG
+	id S1754934AbZAETRf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:17:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZAETRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:17:06 -0500
-Received: from outbound-mail-316.bluehost.com ([67.222.54.9]:41890 "HELO
-	outbound-mail-316.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752507AbZAETRE (ORCPT
+	Mon, 5 Jan 2009 14:17:16 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:56877 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbZAETRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:17:04 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=g92QkDmV/UEFAt3GBelBO7dcnWjYq1ylI9ZemtfFqotWzYETh3vpVrKAh0ZW4JAuELMEMOtDeyiO6kNRl0Szxf69lX8aNanxtSBfCu5bGTf0Y6nzq5ii4U4TdSk8aalN;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+	Mon, 5 Jan 2009 14:17:15 -0500
+X-Greylist: delayed 56552 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Jan 2009 14:17:14 EST
 To: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] ASPM: Use msleep instead of cpu_relax during link retraining
-Date: Mon, 5 Jan 2009 11:17:00 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Andrew Patterson <andrew.patterson@hp.com>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       shaohua.li@intel.com
-References: <20081222221156.29645.95982.stgit@bluto> <20081225232427.GJ19967@parisc-linux.org> <20081226182702.GA1528@ucw.cz>
-In-Reply-To: <20081226182702.GA1528@ucw.cz>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, tytso@mit.edu, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <20090103123813.GA1512@ucw.cz>
+	<200901041349.49906.rob@landley.net>
+	<20090104225545.GF1913@elf.ucw.cz>
+	<yq1r63i30bv.fsf@sermon.lab.mkp.net>
+	<20090105094504.GB27199@atrey.karlin.mff.cuni.cz>
+Date: Mon, 05 Jan 2009 14:15:44 -0500
+In-Reply-To: <20090105094504.GB27199@atrey.karlin.mff.cuni.cz> (Pavel Machek's message of "Mon\, 5 Jan 2009 10\:45\:04 +0100")
+Message-ID: <yq1sknx1s4f.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901051117.00683.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.49625C67.01F1:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, December 26, 2008 10:27 am Pavel Machek wrote:
-> On Thu 2008-12-25 16:24:27, Matthew Wilcox wrote:
-> > On Thu, Dec 25, 2008 at 08:01:29PM +0100, Pavel Machek wrote:
-> > > On Mon 2008-12-22 15:11:57, Andrew Patterson wrote:
-> > > > ASPM: Use msleep instead of cpu_relax during link retraining
-> > > >
-> > > > The cpu_relax() function can be a noop on certain architectures
-> > > > like IA-64 when CPU threads are disabled, so use msleep instead
-> > > > during link retraining busy/wait loop.
-> > >
-> > > Author clearly wanted to do a busy loop... why do you think 10msec
-> > > delay here is acceptable?
-> >
-> > 10ms?  I see a 1ms sleep.
->
-> Yes... IIRC msleep will sleep for up-to 1/HZ on non-highres systems.
->
-> > Yes, the subsequent test should be of reg16 instead of jiffies.
+>>>>> "Pavel" == Pavel Machek <pavel@suse.cz> writes:
 
-Andrew, care to send an updated patch which includes fixes for the issues 
-caught by Pavel & Matthew?
+>> It is mostly true on SCSI class devices because various UNIX, RAID
+>> array and database vendors have spent many years leaning very hard on
+>> the drive manufacturers to make it so.
+>> 
+>> But it's not a hard guarantee, you can't get it in writing, and it's
+>> not in any of the standards.  Hybrid drives with flash had potential
+>> to close that particular loophole but those appear to be dead in the
+>> water.
 
-Thanks,
+Pavel> So "in practice it works but vendors will not guarantee that"?
+
+It works some of the time.  But in reality if you yank power halfway
+during a write operation the end result is undefined.
+
+The saving grace for normal users is that the potential corruption is
+limited to a couple of sectors.
+
+The current suck of flash SSDs is that the erase block size amplifies
+this problem by at least one order of magnitude, often two.  I have a
+couple of SSDs here that will leave my filesystem in shambles every time
+the machine crashes.  I quickly got tired of reinstalling Fedora several
+times per week so now my main machine is back to spinning media.
+
+The people that truly and deeply care about this type of write atomicity
+(i.e. enterprises) deploy disk arrays that will do the right thing in
+face of an error.  This involves NVRAM, mirrored caches, uninterruptible
+power supplies, etc.  Brute force if you will.
+
+High-end arrays even give you atomicity at a bigger granularity such as
+filesystem or database blocks.  On some storage you can say "this LUN is
+used for an Oracle database that always writes in multiples of 8KB" and
+the array will guarantee that each 8KB block of the I/O is written in
+its entirety or not at all.  Some arrays even allow you to verify Oracle
+logical block checksums to ensure that the I/O is intact and internally
+consistent.
+
+I have been bugging storage vendors about a per-I/O write atomicity
+setting for a while.  But it really messes up their pipelining so they
+aren't keen on the idea.  We may be able to get some of it fixed as a
+side-effect of the DIF bits vs. the impending switch to 4KB sectors,
+though.
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
-
+Martin K. Petersen	Oracle Linux Engineering
