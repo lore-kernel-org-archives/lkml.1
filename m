@@ -1,117 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZAERb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZAERgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbZAERb3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 12:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbZAERbV
+	id S1753152AbZAERgf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 12:36:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZAERg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 12:31:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41958 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751903AbZAERbU (ORCPT
+	Mon, 5 Jan 2009 12:36:27 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:43980 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751757AbZAERg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 12:31:20 -0500
-Date: Mon, 5 Jan 2009 09:30:55 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nick Piggin <npiggin@suse.de>
-cc: Peter Klotz <peter.klotz@aon.at>, stable@kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roman Kononov <kernel@kononov.ftml.net>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] mm: fix lockless pagecache reordering bug (was Re: BUG:
- soft lockup - is this XFS problem?)
-In-Reply-To: <20090105164135.GC32675@wotan.suse.de>
-Message-ID: <alpine.LFD.2.00.0901050859430.3057@localhost.localdomain>
-References: <gifgp1$8ic$1@ger.gmane.org> <20081223171259.GA11945@infradead.org> <20081230042333.GC27679@wotan.suse.de> <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de> <20090105041959.GC367@wotan.suse.de> <20090105064838.GA5209@wotan.suse.de>
- <49623384.2070801@aon.at> <20090105164135.GC32675@wotan.suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 Jan 2009 12:36:26 -0500
+Subject: [PATCH] rtc-ds1307: True SMBus compatibility
+From: Ed Swierk <eswierk@aristanetworks.com>
+To: i2c@lm-sensors.org, David Brownell <david-b@pacbell.net>,
+       Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       BARRE Sebastien <sbarre@sdelcc.com>
+Content-Type: multipart/mixed; boundary="=-cOYz/OUrg0gjixdfQ6ie"
+Date: Mon, 05 Jan 2009 09:36:19 -0800
+Message-Id: <1231176979.13443.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-cOYz/OUrg0gjixdfQ6ie
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Mon, 5 Jan 2009, Nick Piggin wrote:
-> 
-> This patch should be applied to 2.6.29 and 27/28 stable kernels, please.
+Following up to Sebastien Barre's recent patch, here I go one step
+further, replacing i2c block transfers with SMBus byte transfers.
+Sticking to pure SMBus makes the driver work on our board, which has an
+nVidia SMBus controller driving a DS1339; nforce2 controllers
+unfortunately don't support any flavor of i2c block transfer.
 
-No. I think this patch is utter crap. But please feel free to educate me 
-on why that is not the case.
+Reading or writing registers repeatedly until they stick is rather
+nauseating but I'm aiming for correctness if not elegance.  I would
+appreciate any suggestions for improvement.
 
-Here's my explanation:
+Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
 
-Not only is it ugly (which is already sufficient ground to suspect it is 
-wrong or could at least be done better), but reading the comment, it makes 
-no sense at all. You only put the barrier in the "goto repeat" case, but 
-the thing is, if you worry about radix tree slot not being reloaded in the 
-repeat case, then you damn well should worry about it not being reloaded 
-in the non-repeat case too!
 
-The code is immediately followed by a test to see that the page is still 
-the same in the slot, ie this:
+--=-cOYz/OUrg0gjixdfQ6ie
+Content-Disposition: attachment; filename="rtc-ds1307-pure-smbus-compatibility.patch"
+Content-Type: text/x-patch; name="rtc-ds1307-pure-smbus-compatibility.patch"; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-                /*
-                 * Has the page moved?
-                 * This is part of the lockless pagecache protocol. See
-                 * include/linux/pagemap.h for details.
-                 */
-                if (unlikely(page != *pagep)) {
+Index: linux-2.6.27.4/drivers/rtc/rtc-ds1307.c
+===================================================================
+--- linux-2.6.27.4.orig/drivers/rtc/rtc-ds1307.c
++++ linux-2.6.27.4/drivers/rtc/rtc-ds1307.c
+@@ -132,6 +132,64 @@ MODULE_DEVICE_TABLE(i2c, ds1307_id);
+ 
+ /*----------------------------------------------------------------------*/
+ 
++static s32 ds1307_read_block_data_once(struct i2c_client *client, u8 command,
++				  u8 length, u8 *values)
++{
++	s32 i, data;
++	for (i = 0; i < length; i++) {
++		data = i2c_smbus_read_byte_data(client, command + i);
++		if (data < 0)
++			return data;
++		*(values + i) = data;
++	}
++	return i;
++}
++
++static s32 ds1307_read_block_data(struct i2c_client *client, u8 command,
++				  u8 length, u8 *values)
++{
++	u8 oldvalues[I2C_SMBUS_BLOCK_MAX];
++	s32 ret;
++	pr_debug("ds1307_read_block_data (length=%d)\n", length);
++	ret = ds1307_read_block_data_once(client, command, length, values);
++	if (ret < 0)
++		return ret;
++	do {
++		s32 ret;
++		memcpy(oldvalues, values, length);
++		ret = ds1307_read_block_data_once(client, command, length, values);
++		if (ret < 0)
++			return ret;
++	} while (memcmp(oldvalues, values, length));
++	return length;
++}
++
++static s32 ds1307_write_block_data(struct i2c_client *client, u8 command,
++				   u8 length, const u8 *values)
++{
++	u8 currvalues[I2C_SMBUS_BLOCK_MAX];
++	s32 ret;
++	pr_debug("ds1307_write_block_data (length=%d)\n", length);
++	ret = ds1307_read_block_data_once(client, command, length, currvalues);
++	if (ret < 0)
++		return ret;
++	do {
++		s32 i, ret;
++		for (i = 0; i < length; i++) {
++			ret = i2c_smbus_write_byte_data(client, command + i,
++							*(values + i));
++			if (ret < 0)
++				return ret;
++		}
++		ret = ds1307_read_block_data_once(client, command, length, currvalues);
++		if (ret < 0)
++			return ret;
++	} while (memcmp(currvalues, values, length));
++	return length;
++}
++
++/*----------------------------------------------------------------------*/
++
+ /*
+  * The IRQ logic includes a "real" handler running in IRQ context just
+  * long enough to schedule this workqueue entry.   We need a task context
+@@ -202,7 +266,7 @@ static int ds1307_get_time(struct device
+ 	int		tmp;
+ 
+ 	/* read the RTC date and time registers all at once */
+-	tmp = i2c_smbus_read_i2c_block_data(ds1307->client,
++	tmp = ds1307_read_block_data(ds1307->client,
+ 		DS1307_REG_SECS, 7, ds1307->regs);
+ 	if (tmp != 7) {
+ 		dev_err(dev, "%s error %d\n", "read", tmp);
+@@ -279,7 +343,7 @@ static int ds1307_set_time(struct device
+ 		"write", buf[0], buf[1], buf[2], buf[3],
+ 		buf[4], buf[5], buf[6]);
+ 
+-	result = i2c_smbus_write_i2c_block_data(ds1307->client, 0, 7, buf);
++	result = ds1307_write_block_data(ds1307->client, 0, 7, buf);
+ 	if (result < 0) {
+ 		dev_err(dev, "%s error %d\n", "write", result);
+ 		return result;
+@@ -297,7 +361,7 @@ static int ds1307_read_alarm(struct devi
+ 		return -EINVAL;
+ 
+ 	/* read all ALARM1, ALARM2, and status registers at once */
+-	ret = i2c_smbus_read_i2c_block_data(client,
++	ret = ds1307_read_block_data(client,
+ 			DS1339_REG_ALARM1_SECS, 9, ds1307->regs);
+ 	if (ret != 9) {
+ 		dev_err(dev, "%s error %d\n", "alarm read", ret);
+@@ -356,7 +420,7 @@ static int ds1307_set_alarm(struct devic
+ 		t->enabled, t->pending);
+ 
+ 	/* read current status of both alarms and the chip */
+-	ret = i2c_smbus_read_i2c_block_data(client,
++	ret = ds1307_read_block_data(client,
+ 			DS1339_REG_ALARM1_SECS, 9, buf);
+ 	if (ret != 9) {
+ 		dev_err(dev, "%s error %d\n", "alarm write", ret);
+@@ -391,7 +455,7 @@ static int ds1307_set_alarm(struct devic
+ 	}
+ 	buf[8] = status & ~(DS1337_BIT_A1I | DS1337_BIT_A2I);
+ 
+-	ret = i2c_smbus_write_i2c_block_data(client,
++	ret = ds1307_write_block_data(client,
+ 			DS1339_REG_ALARM1_SECS, 9, buf);
+ 	if (ret < 0) {
+ 		dev_err(dev, "can't set alarm time\n");
+@@ -479,7 +543,7 @@ ds1307_nvram_read(struct kobject *kobj, 
+ 	if (unlikely(!count))
+ 		return count;
+ 
+-	result = i2c_smbus_read_i2c_block_data(client, 8 + off, count, buf);
++	result = ds1307_read_block_data(client, 8 + off, count, buf);
+ 	if (result < 0)
+ 		dev_err(&client->dev, "%s error %d\n", "nvram read", result);
+ 	return result;
+@@ -501,7 +565,7 @@ ds1307_nvram_write(struct kobject *kobj,
+ 	if (unlikely(!count))
+ 		return count;
+ 
+-	result = i2c_smbus_write_i2c_block_data(client, 8 + off, count, buf);
++	result = ds1307_write_block_data(client, 8 + off, count, buf);
+ 	if (result < 0) {
+ 		dev_err(&client->dev, "%s error %d\n", "nvram write", result);
+ 		return result;
+@@ -537,8 +601,7 @@ static int __devinit ds1307_probe(struct
+ 	unsigned char		*buf;
+ 
+ 	if (!i2c_check_functionality(adapter,
+-			I2C_FUNC_SMBUS_WRITE_BYTE_DATA |
+-			I2C_FUNC_SMBUS_I2C_BLOCK))
++			I2C_FUNC_SMBUS_BYTE_DATA))
+ 		return -EIO;
+ 
+ 	if (!(ds1307 = kzalloc(sizeof(struct ds1307), GFP_KERNEL)))
+@@ -558,7 +621,7 @@ static int __devinit ds1307_probe(struct
+ 			want_irq = true;
+ 		}
+ 		/* get registers that the "rtc" read below won't read... */
+-		tmp = i2c_smbus_read_i2c_block_data(ds1307->client,
++		tmp = ds1307_read_block_data(ds1307->client,
+ 				DS1337_REG_CONTROL, 2, buf);
+ 		if (tmp != 2) {
+ 			pr_debug("read error %d\n", tmp);
+@@ -596,7 +659,7 @@ static int __devinit ds1307_probe(struct
+ 
+ read_rtc:
+ 	/* read RTC registers */
+-	tmp = i2c_smbus_read_i2c_block_data(ds1307->client, 0, 8, buf);
++	tmp = ds1307_read_block_data(ds1307->client, 0, 8, buf);
+ 	if (tmp != 8) {
+ 		pr_debug("read error %d\n", tmp);
+ 		err = -EIO;
 
-and if you need a barrier for the repeat case, you need one for this case 
-too.
+--=-cOYz/OUrg0gjixdfQ6ie--
 
-In other words, it looks like you fixed the symptom, but not the real 
-cause! That's now how we work in the kernel.
-
-The real cause, btw, appears to be that radix_tree_deref_slot() is a piece 
-of slimy sh*t, and has not been correctly updated to RCU. The proper fix 
-doesn't require any barriers that I can see - I think the proper fix is 
-this simple one-liner.
-
-If you use RCU to protect a data structure, then any data loaded from that 
-data structure that can change due to RCU should be loaded with 
-"rcu_dereference()". 
-
-Now, I can't test this, because it makes absolutely no difference for me 
-(the diff isn't empty, but the asm changes seem to be all due to just gcc 
-variable numbering changing). I can't seem to see the buggy code. Maybe it 
-needs a specific compiler version, or some specific config option to 
-trigger?
-
-So because I can't see the issue, I also obviously can't verify that it's 
-the only possible case. Maybe there is some other memory access that 
-should also be done with the proper rcu accessors?
-
-Of course, it's also possible that we should just put a barrier in 
-page_cache_get_speculative(). That doesn't seem to make a whole lot of 
-conceptual sense, though (the same way that your barrier() didn't make any 
-sense - I don't see that the barrier has absolutely _anything_ to do with 
-whether the speculative getting of the page fails or not!)
-
-In general, I'd like fewer "band-aid" patches, and more "deep thinking" 
-patches. I'm not saying mine is very deep either, but I think it's at 
-least scrathing the surface of the real problem rather than just trying to 
-cover it up.
-
-		Linus
-
----
- include/linux/radix-tree.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/radix-tree.h b/include/linux/radix-tree.h
-index a916c66..355f6e8 100644
---- a/include/linux/radix-tree.h
-+++ b/include/linux/radix-tree.h
-@@ -136,7 +136,7 @@ do {									\
-  */
- static inline void *radix_tree_deref_slot(void **pslot)
- {
--	void *ret = *pslot;
-+	void *ret = rcu_dereference(*pslot);
- 	if (unlikely(radix_tree_is_indirect_ptr(ret)))
- 		ret = RADIX_TREE_RETRY;
- 	return ret;
