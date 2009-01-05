@@ -1,70 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZAEGWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbZAEGfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbZAEGWu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 01:22:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZAEGWl
+	id S1753341AbZAEGfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 01:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZAEGf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 01:22:41 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:61223 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbZAEGWk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 01:22:40 -0500
-Message-ID: <4961A729.8060406@freemail.hu>
-Date: Mon, 05 Jan 2009 07:22:33 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Zhang Rui <rui.zhang@intel.com>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>
-Subject: Re: AE_ERROR, ACPI thermal trip point state changed
-References: <47CF96E2.9020302@freemail.hu>	 <1204757373.10256.179.camel@acpi-hp-zz.sh.intel.com>	 <823A93EED437D048963A3697DB0E35DE0129BB78@pdsmsx414.ccr.corp.intel.com>	 <47D0E694.5050102@freemail.hu>	 <1204874686.10256.185.camel@acpi-hp-zz.sh.intel.com>	 <47D24341.5070908@freemail.hu>	 <1205113940.10256.191.camel@acpi-hp-zz.sh.intel.com>	 <48ABDF1E.3010101@freemail.hu> <8763pwypf5.fsf@basil.nowhere.org>	 <49249121.6050304@freemail.hu> <20081119232224.GR6703@one.firstfloor.org>	 <493CB8DB.8070105@freemail.hu> <1228718909.7929.133.camel@rzhang-dt> <493CC5CC.70309@freemail.hu>
-In-Reply-To: <493CC5CC.70309@freemail.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32722; Body=5 Fuz1=5
-	Fuz2=5
+	Mon, 5 Jan 2009 01:35:29 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:52022 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750878AbZAEGf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 01:35:28 -0500
+Date: Mon, 5 Jan 2009 17:35:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 5
+Message-Id: <20090105173517.deeff918.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__5_Jan_2009_17_35_17_+1100_XaF1=QEooNuBERE7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Németh Márton írta:
-> Zhang Rui wrote:
->> On Mon, 2008-12-08 at 14:04 +0800, Németh Márton wrote:
->>> Andi Kleen wrote:
->>>> On Wed, Nov 19, 2008 at 11:20:17PM +0100, Németh Márton wrote:
->>>>> Hi,
->>>>>
->>>>> Andi Kleen wrote:
->>>>>> Németh Márton <nm127@freemail.hu> writes:
->>>>>>> As of 2.6.27-rc3 the patch is still not included in the mainstream. I
->>>>>>> hope that this patch was not forgotten completely.
->>>>>> It's already in Linus' tree, will be in rc4.
->>>>> I compiled and tried 2.6.28-rc5. In the dmesg I get the following message:
->>>>>
->>>>> [   63.589603] ACPI Exception (thermal-0538): AE_ERROR, ACPI thermal trip point state changed
->>>>> [   63.589669] Please send acpidump to linux-acpi@vger.kernel.org
->>>>> [   63.589805]  [20080926]
->>>>>
->>>>> The original patch still applies for 2.6.28-rc5 (with some offsets). This patch
->>>>> is not included in 2.6.28-rc5, yet. The "AE_ERROR..." message does not appear
->>>>> any more if I apply the patch. I attached this original patch for easier reference.
->>>> Hmm sorry I must have confused it with some other patch back then.
->>>> Anyways Len Brown is handling ACPI again now, so he'll have to sort
->>>> it out. cc'ed (the original patch is on linux-acpi)
->>> This is just a status report about 2.6.28-rc7, nothing more. The AE_ERROR
->>> message is still in the dmesg. The patch still solves the problem.
->>>
->> do you mean this patch:
->> http://marc.info/?l=linux-acpi&m=120522267418715&w=2
-> 
-> Yes, exactly.
+--Signature=_Mon__5_Jan_2009_17_35_17_+1100_XaF1=QEooNuBERE7
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Status report: the mentioned patch is not yet included in 2.6.28.
+Hi all,
 
-Regards,
+This tree will not build a powerpc ppc4xx_defconfig due to a kvm problem.
 
-	Márton Németh
+Changes since 20090102:
+
+Removed tree:
+	rr_cpumask (served it purpose)
+
+Undropped tree:
+	driver-core
+	kvm
+
+Dropped trees (temporarily):
+	usb (build problem)
+	rr (complex conflicts)
+	semaphore-removal (due to unfixed conflicts against Linus' tree)
+	cpu_alloc (build problem)
+	audit (difficult conflicts)
+	staging (depends on usb)
+
+The device-mapper tree lost its conflict.
+
+The kvm tree is back but it won't build for ppc4xx_deconfig.
+
+The ext4 tree gained a conflict against Linus' tree.
+
+The rr tree gained several conflicts and was dropped.
+
+The ttydev tree lost its conflict.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 130 trees (counting Linus' and 15 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/85xx/mpc85xx_m=
+ds.c
+CONFLICT (content): Merge conflict in drivers/virtio/virtio_pci.c
+Merging quilt/usb
+CONFLICT (content): Merge conflict in Documentation/DocBook/networking.tmpl
+CONFLICT (content): Merge conflict in drivers/usb/wusbcore/rh.c
+$ git reset --hard HEAD^
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in kernel/rcuclassic.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+CONFLICT (content): Merge conflict in kernel/time/tick-common.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+CONFLICT (content): Merge conflict in drivers/scsi/scsi_ioctl.c
+Merging ocfs2/linux-next
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/ialloc.c
+Merging async_tx/next
+Applying: net: async_tx merge fix
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+CONFLICT (content): Merge conflict in arch/arm/mach-pxa/corgi.c
+CONFLICT (content): Merge conflict in arch/arm/mach-pxa/poodle.c
+CONFLICT (content): Merge conflict in arch/arm/mach-pxa/spitz.c
+CONFLICT (content): Merge conflict in drivers/mtd/devices/m25p80.c
+CONFLICT (content): Merge conflict in drivers/mtd/devices/mtd_dataflash.c
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/include/asm/percpu.h
+CONFLICT (content): Merge conflict in include/asm-generic/percpu.h
+CONFLICT (content): Merge conflict in include/linux/percpu.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in kernel/module.c
+$ git reset --hard
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging bkl-removal/bkl-removal
+CONFLICT (content): Merge conflict in fs/ioctl.c
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/net/tg3.c
+CONFLICT (content): Merge conflict in firmware/Makefile
+CONFLICT (content): Merge conflict in firmware/WHENCE
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging trivial/for-next
+Merging quilt/staging
+CONFLICT (content): Merge conflict in Documentation/DocBook/networking.tmpl
+CONFLICT (content): Merge conflict in drivers/i2c/chips/Kconfig
+CONFLICT (content): Merge conflict in drivers/i2c/chips/Makefile
+CONFLICT (delete/modify): drivers/staging/winbond/linux/wbusb.c deleted in =
+quilt/staging and modified in HEAD. Version HEAD of drivers/staging/winbond=
+/linux/wbusb.c left in tree.
+CONFLICT (content): Merge conflict in drivers/staging/wlan-ng/p80211netdev.c
+CONFLICT (content): Merge conflict in drivers/staging/wlan-ng/p80211wext.c
+CONFLICT (content): Merge conflict in drivers/usb/wusbcore/rh.c
+$ git reset --hard
+
+--Signature=_Mon__5_Jan_2009_17_35_17_+1100_XaF1=QEooNuBERE7
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklhqiUACgkQjjKRsyhoI8wl8gCfYUbhvNhYAJbIxWXhomTTZQgq
+iKkAmwdKE3WxoOKSH61qO74ECbEsh/Wf
+=7/Vj
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__5_Jan_2009_17_35_17_+1100_XaF1=QEooNuBERE7--
