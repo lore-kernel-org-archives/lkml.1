@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbZAEGhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZAEGmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbZAEGhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 01:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZAEGhF
+	id S1753684AbZAEGmx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 01:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZAEGmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 01:37:05 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38978 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751296AbZAEGhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 01:37:02 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18u4O0wJtAuCDYhvCHia5RspICNs4T33FMgV6plP6
-	Z1kg8KN/Vemk0r
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-From: Mike Galbraith <efault@gmx.de>
-To: svaidy@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1231130416.5479.8.camel@marge.simson.net>
-References: <20081230062139.GA30038@elte.hu>
-	 <20081230180722.GA29060@dirshya.in.ibm.com>
-	 <20090102072600.GA13412@dirshya.in.ibm.com>
-	 <20090102221630.GF17240@elte.hu> <1230967765.5257.6.camel@marge.simson.net>
-	 <20090103101626.GA4301@dirshya.in.ibm.com>
-	 <1230981761.27180.10.camel@marge.simson.net>
-	 <1231081200.17224.44.camel@marge.simson.net>
-	 <20090104181946.GC4301@dirshya.in.ibm.com>
-	 <1231098769.5757.43.camel@marge.simson.net>
-	 <20090105032029.GE4301@dirshya.in.ibm.com>
-	 <1231130416.5479.8.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 07:36:53 +0100
-Message-Id: <1231137413.10471.23.camel@marge.simson.net>
+	Mon, 5 Jan 2009 01:42:40 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44005
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751028AbZAEGmj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 01:42:39 -0500
+Date: Sun, 04 Jan 2009 22:42:39 -0800 (PST)
+Message-Id: <20090104.224239.64637126.davem@davemloft.net>
+To: roel.kluin@gmail.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: fix SONIC_READ definition
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <495FB1CC.5090506@gmail.com>
+References: <495FB1CC.5090506@gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.74
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Virgin 28 does not have a knee, but grows one when NEWIDLE is enabled.
-The throughput curve is essentially the mc=2 curve with the knee
-smoothed away, and a higher peak.  The very end is considerably lower.
-ie it only helps the extremely contested end, and not nearly as much.
-The whole curve is roughly a point under the 26.8 curve (which could
-easily be config differences etc, but the shape is right).
+From: Roel Kluin <roel.kluin@gmail.com>
+Date: Sat, 03 Jan 2009 19:43:24 +0100
 
-I'll rummage around.
+> drivers/net/jazzsonic.c:56:
+> #define SONIC_READ(reg) (*((volatile unsigned int *)dev->base_addr+reg))
+> 
+> drivers/net/sonic.h:53:
+> #define SONIC_CAP0             0x24
+> 
+> so drivers/net/jazzsonic.c:143:
+> val = SONIC_READ(SONIC_CAP0-i);
+> 
+> becomes
+> 
+> val = (*((volatile unsigned int *)dev->base_addr+0x24-i));
+> 
+> That is wrong, isn't it?
 
-	-Mike
+The expression, both with and without the parentheses around "reg",
+evaluate to the same final pointer value.
 
+Compile a test program and look at the assembler output if you
+don't believe me :-)
