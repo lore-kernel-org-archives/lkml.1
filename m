@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZAEOeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbZAEOfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZAEOeL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 09:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbZAEOdn
+	id S1755288AbZAEOfs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 09:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbZAEOfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 09:33:43 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:58308 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbZAEOdm (ORCPT
+	Mon, 5 Jan 2009 09:35:38 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:36610 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754381AbZAEOfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 09:33:42 -0500
-Date: Mon, 5 Jan 2009 14:33:38 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jike Song <albcamus@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] 2.6.28 hates my RTC clock - with PM_TRACE set
-Message-ID: <20090105143338.GA32337@srcf.ucam.org>
-References: <df9815e70901050619v6c60e8d4w6868759bb3c36bdb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <df9815e70901050619v6c60e8d4w6868759bb3c36bdb@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Mon, 5 Jan 2009 09:35:36 -0500
+Subject: Re: Btrfs for mainline
+From: Chris Mason <chris.mason@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>
+In-Reply-To: <1231093310.27690.5.camel@twins>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>
+	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>
+	 <1230765549.7538.8.camel@think.oraclecorp.com>
+	 <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>
+	 <1231093310.27690.5.camel@twins>
+Content-Type: text/plain
+Date: Mon, 05 Jan 2009 09:34:23 -0500
+Message-Id: <1231166063.4290.37.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.49621A75.0062:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 10:19:22PM +0800, Jike Song wrote:
-
-> As usually, it suspended to RAM successfully.  But after I press the
-> power button, it won't come back, giving me nothing but a black
-> screen.  So I hold the power button done for about 5 seconds, then the
-> computer halted(it's only a hardware feature of the southbridge,
-> right? ;-), silently, without any output on the always-black screen.
+On Sun, 2009-01-04 at 19:21 +0100, Peter Zijlstra wrote:
+> On Sat, 2009-01-03 at 12:17 -0700, Matthew Wilcox wrote:
+> > > - locking.c needs a lot of cleanup.
+> > > If combination spinlocks/mutexes are really a win they should be 
+> > > in the generic mutex framework. And I'm still dubious on the
+> > hardcoded 
+> > > numbers.
+> > 
+> > I don't think this needs to be cleaned up before merge.  I've spent
+> > an hour or two looking at it, and while we can do a somewhat better
+> > job as part of the generic mutex framework, it's quite tricky (due to
+> > the different <asm/mutex.h> implementations).  It has the potential to
+> > introduce some hard-to-hit bugs in the generic mutexes, and there's some
+> > API discussions to have.
 > 
-> So the PM_TRACE code was broken, right?
+> I'm really opposed to having this in some filesystem. Please remove it
+> before merging it.
+> 
 
-Why do you say that?
+It is 5 lines in a single function that is local to btrfs.  I'll be
+happy to take it out when a clear path to a replacement is in.
 
-> After rebooting the computer, I found I was in the year 1988!  And I
-> do the suspend-hold_power_button-reboot once again, now it is 2040
-> years A.D.
+I know people have been doing work in this area for -rt, and do not want
+to start a parallel effort to change things.
 
-PM_TRACE uses the clock registers to store information about which 
-device the kernel was attempting to resume when it hung. It's expected 
-that your clock will be wrong afterwards.
+I'm not trying to jump into the design discussions because there are
+people already working on it who know the issues much better than I do. 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+But, if anyone working on adaptive mutexes is looking for a coder,
+tester, use case, or benchmark for their locking scheme, my hand is up.
+
+Until then, this is my for loop, there are many like it, but this one is
+mine.
+
+-chris
+
+
