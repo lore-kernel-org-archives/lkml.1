@@ -1,72 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZAENG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbZAENJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbZAENG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbZAENGr
+	id S1754342AbZAENJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbZAENJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:06:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55584 "EHLO mx3.mail.elte.hu"
+	Mon, 5 Jan 2009 08:09:28 -0500
+Received: from corega.com.ru ([195.178.208.66]:58077 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751156AbZAENGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:06:46 -0500
-Date: Mon, 5 Jan 2009 14:06:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
-Message-ID: <20090105130638.GB6014@elte.hu>
-References: <20090104174450.GB4301@dirshya.in.ibm.com> <1231092523.29980.4.camel@twins> <20090105040635.GF4301@dirshya.in.ibm.com>
+	id S1751452AbZAENJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:09:27 -0500
+Date: Mon, 5 Jan 2009 16:09:23 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com, sfr@canb.auug.org.au
+Subject: Re: [PATCH V3 02/17] Squashfs: directory lookup operations
+Message-ID: <20090105130923.GA14147@ioremap.net>
+References: <E1LJnJn-0002L7-I8@dylan.lougher.demon.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090105040635.GF4301@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <E1LJnJn-0002L7-I8@dylan.lougher.demon.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Phillip.
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+One possible 'show-stopper' below and couple trivials.
 
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-04 19:08:43]:
-> 
-> > On Sun, 2009-01-04 at 23:14 +0530, Vaidyanathan Srinivasan wrote:
-> > > Hi Ingo,
-> > > 
-> > > Kernbench runs on latest Linux git tree stalled with the following
-> > > lockdep warning.
-> > > 
-> > > Lockdep warning and lockup on Jan 3 Linus git tree
-> > > commit 7d3b56ba37a95f1f370f50258ed3954c304c524b
-> > > 
-> > > kernbench run with two threads stalled.  sched_mc was zero.
-> > > x86_64 system with 8 logical CPUs in dual socket quad core
-> > > configuration.
-> > > 
-> > > I will post more information as I debug this warning/bug.  
-> > 
-> > Its ca109491f612aab5c8152207631c0444f63da97f, I've some ideas on how to
-> > fix this, just haven't gotten around to actually doing anything --
-> > seeing how it was holidays and such..
-> 
-> Hi Peter,
-> 
-> I can definitely test your fix when you have them.  I have an
-> autotest job that hits this bug.
+On Mon, Jan 05, 2009 at 11:08:23AM +0000, Phillip Lougher (phillip@lougher.demon.co.uk) wrote:
+> +static int get_dir_index_using_name(struct super_block *sb,
+> +			u64 *next_block, int *next_offset, u64 index_start,
+> +			int index_offset, int i_count, const char *name,
+> +			int len)
+> +{
+> +	struct squashfs_sb_info *msblk = sb->s_fs_info;
+> +	int i, size, length = 0, err;
+> +	struct squashfs_dir_index *index;
+> +	char *str;
+> +
+> +	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
+> +
+> +	index = kmalloc(sizeof(*index) + SQUASHFS_NAME_LEN * 2 + 2, GFP_KERNEL);
+> +	if (index == NULL) {
+> +		ERROR("Failed to allocate squashfs_dir_index\n");
+> +		goto out;
+> +	}
+> +
+> +	str = &index->name[SQUASHFS_NAME_LEN + 1];
+> +	strncpy(str, name, len);
+> +	str[len] = '\0';
+> +
+> +	for (i = 0; i < i_count; i++) {
+> +		err = squashfs_read_metadata(sb, index, &index_start,
+> +					&index_offset, sizeof(*index));
+> +		if (err < 0)
+> +			break;
+> +
+> +
 
-could you check latest tip/master, it has Peter's and Thomas's hrtimer 
-fixes.
+Double new line. Code-style purists will scream when see this.
+This was a show-stopper.
 
-	Ingo
+> +		size = le32_to_cpu(index->size) + 1;
+> +
+> +		err = squashfs_read_metadata(sb, index->name, &index_start,
+> +					&index_offset, size);
+> +		if (err < 0)
+> +			break;
+> +
+> +		index->name[size] = '\0';
+> +
+> +		if (strcmp(index->name, str) > 0)
+> +			break;
+> +
+> +		length = le32_to_cpu(index->index);
+> +		*next_block = le32_to_cpu(index->start_block) +
+> +					msblk->directory_table;
+> +	}
+> +
+> +	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
+> +	kfree(index);
+> +
+> +out:
+> +	/*
+> +	 * Return index (f_pos) of the looked up metadata block.  Translate
+> +	 * from internal f_pos to external f_pos which is offset by 3 because
+> +	 * we invent "." and ".." entries which are not actually stored in the
+> +	 * directory.
+> +	 */
+> +	return length + 3;
+> +}
+> +
+> +
+
+Another double new-line show-stopper.
+
+> +static struct dentry *squashfs_lookup(struct inode *dir, struct dentry *dentry,
+> +				 struct nameidata *nd)
+> +{
+> +	const unsigned char *name = dentry->d_name.name;
+> +	int len = dentry->d_name.len;
+> +	struct inode *inode = NULL;
+> +	struct squashfs_sb_info *msblk = dir->i_sb->s_fs_info;
+> +	struct squashfs_dir_header dirh;
+> +	struct squashfs_dir_entry *dire;
+> +	u64 block = squashfs_i(dir)->start + msblk->directory_table;
+> +	int offset = squashfs_i(dir)->offset;
+> +	int err, length = 0, dir_count, size;
+> +
+> +	TRACE("Entered squashfs_lookup [%llx:%x]\n", block, offset);
+> +
+> +	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
+> +	if (dire == NULL) {
+> +		ERROR("Failed to allocate squashfs_dir_entry\n");
+> +		return ERR_PTR(-ENOMEM);
+> +	}
+> +
+> +	if (len > SQUASHFS_NAME_LEN) {
+> +		err = -ENAMETOOLONG;
+> +		goto failed;
+> +	}
+> +
+> +	length = get_dir_index_using_name(dir->i_sb, &block, &offset,
+> +				squashfs_i(dir)->dir_idx_start,
+> +				squashfs_i(dir)->dir_idx_offset,
+> +				squashfs_i(dir)->dir_idx_cnt, name, len);
+> +
+
+You do not check the return value here.
+Plus dir entry allocation can be done after above len check.
+This one is trivial.
+
+-- 
+	Evgeniy Polyakov
