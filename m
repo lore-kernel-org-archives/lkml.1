@@ -1,95 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZAET0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZAET1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbZAET0i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZAET03
+	id S1755000AbZAET1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZAET1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:26:29 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:3757 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752134AbZAET02 (ORCPT
+	Mon, 5 Jan 2009 14:27:07 -0500
+Received: from outbound-mail-316.bluehost.com ([67.222.54.9]:51782 "HELO
+	outbound-mail-316.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752647AbZAET1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:26:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=jcG+dXSq+77+zrJu3pDnDQOvIT+kvEOwf6cL1jN0PryPBfV0wkM+TtuJv0+7SfyVRH
-         LU0Q/gk+ZGLUxSojin92qKTXgHX47br/caLL1maUozrP3BG7eIkwy7EE2Blg5BdaXo3n
-         8Rv4CelJwgshDOK6U9QvTmnCuYZ1AJ0XzlfS8=
-Subject: [PATCH] mflash: remove small byteswapping function
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: unsik Kim <donari75@gmail.com>
-Cc: Heikki Orsila <shdl@zakalwe.fi>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090105111321.7d210c01@lxorguk.ukuu.org.uk>
-References: <57afda040901041718g1415e210hfd0991270dfdd72d@mail.gmail.com>
-	 <20090105023346.GE6115@zakalwe.fi>
-	 <20090105111321.7d210c01@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 11:26:25 -0800
-Message-Id: <1231183585.11902.6.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 5 Jan 2009 14:27:06 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=EMld3Y1YhSTCdWDUHkbcz4Gfn+ZUw8GRpYUJgRn24Q3m2aDuOLnEZbUYaRnBX3exzf5F40Dz5ZB/xWd4j7rGPhUi7R5O23JchRSVV7VD08CVPb+UYXkW+OUwwS20ahvu;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH 03/11] cpumask: update pci_bus_show_cpuaffinity to use new cpumask API
+Date: Mon, 5 Jan 2009 11:27:03 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.9-73.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+References: <20090104131759.865331000@polaris-admin.engr.sgi.com> <20090104131800.317064000@polaris-admin.engr.sgi.com>
+In-Reply-To: <20090104131800.317064000@polaris-admin.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901051127.03598.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Byteswap as we read in the data rather than having a
-byteswap in place function that is only used once.
+On Sunday, January 4, 2009 5:18 am Mike Travis wrote:
+> Impact: cleanup, reduce stack usage, use new cpumask API.
+>
+> Replace the local cpumask_t variable with a pointer to the
+> const cpumask that needs to be printed.
+>
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-MG_SECTOR_SIZE >> 1 == 256 so this should be a no-op.
+Can you resend these two against my linux-next branch?
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Also, you always call mg_ide_fixstring with byteswap == 1,
-I'd suggest removing that parameter and doing it unconditionally.
-
- drivers/block/mg_disk.c |   17 +----------------
- 1 files changed, 1 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
-index 24edc9a..116f2a3 100644
---- a/drivers/block/mg_disk.c
-+++ b/drivers/block/mg_disk.c
-@@ -141,20 +141,6 @@ static irqreturn_t mg_irq(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static void mg_fix_disk_id(u16 *id)
--{
--#ifndef __LITTLE_ENDIAN
--# ifdef __BIG_ENDIAN
--	int i;
--
--	for (i = 0; i < 256; i++)
--		id[i] = __le16_to_cpu(id[i]);
--# else
--#  error "Please fix <asm/byteorder.h>"
--# endif
--#endif
--}
--
- static void mg_ide_fixstring(u8 *s, const int bytecount, const int byteswap)
- {
- 	u8 *p, *end = &s[bytecount & ~1]; /* bytecount must be even */
-@@ -194,12 +180,11 @@ static int mg_get_disk_id(struct mg_host *host)
- 	err = mg_wait(host, MG_REG_STATUS_BIT_DATA_REQ, 3000);
- 	if (!err) {
- 		for (i = 0; i < (MG_SECTOR_SIZE >> 1); i++)
--			id[i] = inw(host->dev_base + MG_BUFF_OFFSET + i * 2);
-+			id[i] = le16_to_cpu(inw(host->dev_base + MG_BUFF_OFFSET + i * 2));
- 
- 		outb(MG_CMD_RD_CONF, host->dev_base + MG_REG_COMMAND);
- 		err = mg_wait(host, MG_STAT_READY, 3000);
- 		if (!err) {
--			mg_fix_disk_id(id);
- 			if ((host->id_data.field_valid & 1) == 0) {
- 				err = MG_ERR_TRANSLATION;
- 			} else {
+Thanks,
 -- 
-1.6.1.71.gd5e04
-
-
+Jesse Barnes, Intel Open Source Technology Center
 
