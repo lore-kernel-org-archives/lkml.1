@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZAEJW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbZAEJ0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753808AbZAEJW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 04:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZAEJWS
+	id S1753324AbZAEJ0q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 04:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZAEJ0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 04:22:18 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58349 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751756AbZAEJWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 04:22:17 -0500
-Message-ID: <4961D10B.5040106@cn.fujitsu.com>
-Date: Mon, 05 Jan 2009 17:21:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Mike Travis <travis@sgi.com>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/6] cpuset: convert cpuset_attach() to use cpumask_var_t
-References: <495B2EA6.7010808@cn.fujitsu.com>	<495B2EC2.9090305@cn.fujitsu.com>	<495B2EE7.4040406@cn.fujitsu.com>	<495B2EFB.302@cn.fujitsu.com>	<20090104233856.8c72eb58.akpm@linux-foundation.org>	<4961C919.6040404@cn.fujitsu.com>	<20090105010147.bc42b655.akpm@linux-foundation.org>	<4961CD36.7070507@cn.fujitsu.com> <20090105011414.176a5ee3.akpm@linux-foundation.org>
-In-Reply-To: <20090105011414.176a5ee3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 04:26:38 -0500
+Received: from cmpxchg.org ([85.214.51.133]:52446 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751907AbZAEJ0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 04:26:37 -0500
+Date: Mon, 5 Jan 2009 10:26:19 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel@vger.kernel.org, david@lang.hm,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: early exception error
+Message-ID: <20090105092619.GA3699@cmpxchg.org>
+References: <20081231093803.GA20882@localhost> <alpine.DEB.1.10.0812311110320.18334@asgard.lang.hm> <20081231183039.GE20882@localhost> <20081231195005.GT496@one.firstfloor.org> <alpine.DEB.1.10.0812311257060.18334@asgard.lang.hm> <20090101041727.GW496@one.firstfloor.org> <alpine.DEB.1.10.0812312212460.15026@asgard.lang.hm> <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm> <20090102172426.GB5372@localhost> <495E7FAD.6020305@shaw.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495E7FAD.6020305@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> OK, that works.
->>>
->>> Do we need to dynamically allocate cpus_attach?  Can we just do
->>>
->>> static cpumask_t cpus_attach;
->>>
->>> ?
->>>
->> Yes, it's used by cpuset_attach() only, and cpuset_attach() is called with
->> cgroup_lock() held, so it won't happen that 2 threads access cpus_attach
->> concurrently.
+On Fri, Jan 02, 2009 at 02:57:17PM -0600, Robert Hancock wrote:
+> Cyrill Gorcunov wrote:
+> >
+> >Here is a new picture if someone would like to jump into
+> >the bug handling
+> >
+> >	http://linux.lang.hm/linux/IMG00033.jpg
 > 
-> You misunderstand my question.  I think.
+> alloc_bootmem_core is a reasonably big function, it would be useful if 
+> we could track down what line it's blowing up on.. Can you try to find 
+> out what line that fault address (ffffffff8096452a in this crash) is on 
+> as described in Documentation/BUG-HUNTING, i.e. build with 
+> CONFIG_DEBUG_INFO enabled, run gdb on vmlinux and do:
 > 
-> Can we allocate cpus_attach at compile time?  Completely, not
-> partially.  By doing
-> 
-> static cpumask_t cpus_attach;
-> 
-> instead of
-> 
-> static cpumask_var_t cpus_attach;
-> ...
-> 	alloc_cpumask_var(&cpus_attach, GFP_KERNEL);
-> 
-> ?
+> l *0xffffffff8096452a
 
-Ah, I misunderstood. Yes a static cpumask_t works, but what Mike Travis and
-Rusty is doing is to remove cpumask_t completely, and replace cpumask_t
-with cpumask_var_t wherever possible.
+He has booted with bootmem debugging output.  Given that the bdebug()
+describing the request wasn't hit yet, it must be one of the BUG_ON()s
+(or bdata is NULL).
 
+If you can find out the line with gdb, this would be great.
+
+Besides that it might be useful to move the bdebug() before the
+BUG_ON()s.  With the line info available, the expressions that trigger
+a bug are pretty unambiguous, but since we would print the parameters
+anyway we can as well do so before a possible panic to quickly deduce
+what went wrong without decoding.
+
+	Hannes
+
+---
+Subject: bootmem: print request details before BUG_ON(them)
+
+Moving the request details print-out before the sanity checks that
+might panic() enables us to analyse invalid requests without having
+access to the line information of the stack dump.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index ac5a891..51a0ccf 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -435,6 +435,10 @@ static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
+ 	unsigned long fallback = 0;
+ 	unsigned long min, max, start, sidx, midx, step;
+ 
++	bdebug("nid=%td size=%lx [%lu pages] align=%lx goal=%lx limit=%lx\n",
++		bdata - bootmem_node_data, size, PAGE_ALIGN(size) >> PAGE_SHIFT,
++		align, goal, limit);
++
+ 	BUG_ON(!size);
+ 	BUG_ON(align & (align - 1));
+ 	BUG_ON(limit && goal + size > limit);
+@@ -442,10 +446,6 @@ static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
+ 	if (!bdata->node_bootmem_map)
+ 		return NULL;
+ 
+-	bdebug("nid=%td size=%lx [%lu pages] align=%lx goal=%lx limit=%lx\n",
+-		bdata - bootmem_node_data, size, PAGE_ALIGN(size) >> PAGE_SHIFT,
+-		align, goal, limit);
+-
+ 	min = bdata->node_min_pfn;
+ 	max = bdata->node_low_pfn;
+ 
