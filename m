@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZAERSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbZAERTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbZAERSy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 12:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZAERSq
+	id S1752264AbZAERTQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 12:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZAERSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 12:18:46 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36603 "EHLO
+	Mon, 5 Jan 2009 12:18:55 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36607 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbZAERSp (ORCPT
+	with ESMTP id S1753343AbZAERSy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 12:18:45 -0500
+	Mon, 5 Jan 2009 12:18:54 -0500
 To: torvalds@linux-foundation.org
-Subject: get rid of the last symlink in uml build
+Subject: uml got broken by commit 30742d5c2277c325fb0e9d2d817d55a19995fe8f
 Cc: jdike@addtoit.com, linux-kernel@vger.kernel.org
-Message-Id: <E1LJt6A-0003SJ-SY@ZenIV.linux.org.uk>
+Message-Id: <E1LJt6K-0003T4-TN@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Mon, 05 Jan 2009 17:18:42 +0000
+Date: Mon, 05 Jan 2009 17:18:52 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-We need to make asm-offsets.h contents visible for objects built
-with userland headers.  Instead of creating a symlink, just have the
-file with equivalent include (relative to location of header) created
-once.  That kills the last symlink used in arch/um builds.
-
-Additionally, both generated headers can become dependencies of
-archprepare now, killing the misuse of prepare.
+... if you revert a commit, revert the fixups elsewhere that had been
+triggered by it.  Such as 8c56250f48347750c82ab18d98d647dcf99ca674
+(lockdep, UML: fix compilation when CONFIG_TRACE_IRQFLAGS_SUPPORT is not set).
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/um/Makefile |   25 +++++++++++--------------
- 1 files changed, 11 insertions(+), 14 deletions(-)
+ arch/um/include/asm/system.h |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/um/Makefile b/arch/um/Makefile
-index d944c34..0728def 100644
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -22,10 +22,11 @@ MODE_INCLUDE	+= -I$(srctree)/$(ARCH_DIR)/include/shared/skas
+diff --git a/arch/um/include/asm/system.h b/arch/um/include/asm/system.h
+index ae5f94d..753346e 100644
+--- a/arch/um/include/asm/system.h
++++ b/arch/um/include/asm/system.h
+@@ -11,21 +11,21 @@ extern int get_signals(void);
+ extern void block_signals(void);
+ extern void unblock_signals(void);
  
- include $(srctree)/$(ARCH_DIR)/Makefile-skas
+-#define raw_local_save_flags(flags) do { typecheck(unsigned long, flags); \
++#define local_save_flags(flags) do { typecheck(unsigned long, flags); \
+ 				     (flags) = get_signals(); } while(0)
+-#define raw_local_irq_restore(flags) do { typecheck(unsigned long, flags); \
++#define local_irq_restore(flags) do { typecheck(unsigned long, flags); \
+ 				      set_signals(flags); } while(0)
  
--ARCH_INCLUDE	:= -I$(srctree)/$(ARCH_DIR)/include/shared
-+SHARED_HEADERS	:= $(ARCH_DIR)/include/shared
-+ARCH_INCLUDE	:= -I$(srctree)/$(SHARED_HEADERS)
- ARCH_INCLUDE	+= -I$(srctree)/$(ARCH_DIR)/sys-$(SUBARCH)/shared
- ifneq ($(KBUILD_SRC),)
--ARCH_INCLUDE	+= -I$(ARCH_DIR)/include/shared # for two generated files
-+ARCH_INCLUDE	+= -I$(SHARED_HEADERS)
- endif
- KBUILD_CPPFLAGS += -I$(srctree)/$(ARCH_DIR)/sys-$(SUBARCH)
+-#define raw_local_irq_save(flags) do { raw_local_save_flags(flags); \
+-                                   raw_local_irq_disable(); } while(0)
++#define local_irq_save(flags) do { local_save_flags(flags); \
++                                   local_irq_disable(); } while(0)
  
-@@ -85,8 +86,8 @@ endef
+-#define raw_local_irq_enable() unblock_signals()
+-#define raw_local_irq_disable() block_signals()
++#define local_irq_enable() unblock_signals()
++#define local_irq_disable() block_signals()
  
- KBUILD_KCONFIG := arch/um/Kconfig.$(HEADER_ARCH)
+ #define irqs_disabled()                 \
+ ({                                      \
+         unsigned long flags;            \
+-        raw_local_save_flags(flags);        \
++        local_save_flags(flags);        \
+         (flags == 0);                   \
+ })
  
--archprepare: $(ARCH_DIR)/include/shared/user_constants.h
--prepare: $(ARCH_DIR)/include/shared/kern_constants.h
-+archprepare: $(SHARED_HEADERS)/user_constants.h
-+archprepare: $(SHARED_HEADERS)/kern_constants.h
- 
- LINK-$(CONFIG_LD_SCRIPT_STATIC) += -static
- LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib
-@@ -119,17 +120,13 @@ endef
- # When cleaning we don't include .config, so we don't include
- # TT or skas makefiles and don't clean skas_ptregs.h.
- CLEAN_FILES += linux x.i gmon.out \
--	$(ARCH_DIR)/include/shared/user_constants.h \
--	$(ARCH_DIR)/include/shared/kern_constants.h
-+	$(SHARED_HEADERS)/user_constants.h \
-+	$(SHARED_HEADERS)/kern_constants.h
- 
- archclean:
- 	@find . \( -name '*.bb' -o -name '*.bbg' -o -name '*.da' \
- 		-o -name '*.gcov' \) -type f -print | xargs rm -f
- 
--$(objtree)/$(ARCH_DIR)/include/shared:
--	@echo '  MKDIR $@'
--	$(Q)mkdir -p $@
--
- # Generated files
- 
- $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s: FORCE
-@@ -148,11 +145,11 @@ define filechk_gen-asm-offsets
-          echo ""; )
- endef
- 
--$(ARCH_DIR)/include/shared/user_constants.h: $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s
-+$(SHARED_HEADERS)/user_constants.h: $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s
- 	$(call filechk,gen-asm-offsets)
- 
--$(ARCH_DIR)/include/shared/kern_constants.h: $(objtree)/$(ARCH_DIR)/include/shared
--	@echo '  SYMLINK $@'
--	$(Q)ln -sf ../../../../include/asm/asm-offsets.h $@
-+$(SHARED_HEADERS)/kern_constants.h:
-+	$(Q)mkdir -p $(dir $@)
-+	$(Q)echo '#include "../../../../include/asm/asm-offsets.h"' >$@
- 
- export SUBARCH USER_CFLAGS CFLAGS_NO_HARDENING OS HEADER_ARCH DEV_NULL_PATH
 -- 
 1.5.6.5
+
 
