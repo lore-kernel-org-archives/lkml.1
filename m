@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZAELS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZAELTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZAELS1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 06:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZAELSQ
+	id S1753537AbZAELTU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 06:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZAELTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 06:18:16 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:55155 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751594AbZAELSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 06:18:15 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
-From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
-Reply-To: ncunningham-lkml@crca.org.au
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       fweisbec@gmail.com, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20090105025300.3afbec23@infradead.org>
-References: <20090104092430.7ffd2c41@infradead.org>
-	 <1231135294.8179.45.camel@nigel-laptop>
-	 <20090105025300.3afbec23@infradead.org>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 22:18:25 +1100
-Message-Id: <1231154305.8179.148.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Mon, 5 Jan 2009 06:19:10 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62383 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752083AbZAELTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 06:19:07 -0500
+Message-ID: <4961EC6A.8010008@cn.fujitsu.com>
+Date: Mon, 05 Jan 2009 19:18:02 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] [RESEND] sched: mark sched_create_sysfs_power_savings_entries()
+ as __init
+References: <4961E98D.3050305@cn.fujitsu.com>
+In-Reply-To: <4961E98D.3050305@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Impact: cleanup
 
-On Mon, 2009-01-05 at 02:53 -0800, Arjan van de Ven wrote:
-> On Mon, 05 Jan 2009 17:01:34 +1100
-> Nigel Cunningham <ncunningham-lkml@crca.org.au> wrote:
-> 
-> > Hi Arjan.
-> > 
-> > Great work, and valuable too. I'm just wondering if the header file
-> > name "async.h" is a little too generic? Something like async_init.h
-> > perhaps?
-> > 
-> 
-> while the users I have in mind are during init, the concept and
-> infrastructure of asynchronous function calls is by no means limited to
-> that use case... I hope there are many other uses for this :)
+The only caller is cpu_dev_init() which is marked as __init.
 
-Okee doke. How about async_fn or something like that then? It's just
-that there's async I/O and no doubt other async stuff I haven't thought
-of. Still, it's a relatively minor point.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
-Night!
+resend with SOB added
 
-Nigel
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 545c6fc..9a8e296 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8060,7 +8060,7 @@ static SYSDEV_CLASS_ATTR(sched_smt_power_savings, 0644,
+ 		   sched_smt_power_savings_store);
+ #endif
+ 
+-int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
++int __init sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
+ {
+ 	int err = 0;
+ 
+-- 1.5.4.rc3
