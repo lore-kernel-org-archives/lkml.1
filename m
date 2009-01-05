@@ -1,110 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZAEHyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbZAEI0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbZAEHyh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 02:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZAEHy2
+	id S1752654AbZAEI0A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 03:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZAEIZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 02:54:28 -0500
-Received: from viefep13-int.chello.at ([62.179.121.33]:45611 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750836AbZAEHy1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 02:54:27 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [patch] Re: problem with "sched: revert back to per-rq
- vruntime"?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Jayson King <dev@jaysonking.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-In-Reply-To: <1230895002.5747.46.camel@marge.simson.net>
-References: <495948E0.8040502@jaysonking.com>
-	 <495A788B.3010001@jaysonking.com>
-	 <1230740773.6412.21.camel@marge.simson.net>
-	 <495BD346.9040408@jaysonking.com>
-	 <1230795963.5892.14.camel@marge.simson.net>
-	 <495D5C70.4090804@jaysonking.com>
-	 <1230895002.5747.46.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 08:54:04 +0100
-Message-Id: <1231142044.30237.0.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 03:25:52 -0500
+Received: from tundra.namei.org ([65.99.196.166]:2138 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbZAEIZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 03:25:51 -0500
+Date: Mon, 5 Jan 2009 19:25:06 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [TOMOYO #14 (mmotm 2008-12-30-16-05) 01/10] Add in_execve flag
+ into task_struct.
+In-Reply-To: <20090101050938.558328702@I-love.SAKURA.ne.jp>
+Message-ID: <alpine.LRH.1.10.0901051924140.16049@tundra.namei.org>
+References: <20090101050741.372438529@I-love.SAKURA.ne.jp> <20090101050938.558328702@I-love.SAKURA.ne.jp>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-02 at 12:16 +0100, Mike Galbraith wrote:
-> On Thu, 2009-01-01 at 18:14 -0600, Jayson King wrote:
-> 
-> > Still works OK for me. You may add, if you like:
-> > 
-> > Tested-By: Jayson King <dev@jaysonking.com>
-> 
-> Actually, I prefer the below.  Everything in one spot and obvious.
-> 
-> Impact: bug fixlet.
-> 
-> Fix sched_slice() to emit a sane result whether a task is currently enqueued or not.
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
+On Thu, 1 Jan 2009, Tetsuo Handa wrote:
 
-Looks good, thanks Mike!!
+> This patch allows LSM modules to determine whether current process is in an
+> execve operation or not so that they can behave differently while an execve
+> operation is in progress.
+> 
+> This allows TOMOYO to dispense with a readability check on a file to be
+> executed under the process's current credentials, and to do it instead under
+> the proposed credentials.
+> 
+> This is required with the new COW credentials because TOMOYO is no longer
+> allowed to mark the state temporarily in the security struct attached to the
+> task_struct.
 
->  kernel/sched_fair.c |   30 ++++++++++++------------------
->  1 files changed, 12 insertions(+), 18 deletions(-)
+Serge previously queried this flag:
+
+http://article.gmane.org/gmane.linux.kernel.lsm/7611
+
+The issue does not appear to have been resolved.
+
+
 > 
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index 5ad4440..1a35bad 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -386,20 +386,6 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
->  #endif
->  
->  /*
-> - * delta *= P[w / rw]
-> - */
-> -static inline unsigned long
-> -calc_delta_weight(unsigned long delta, struct sched_entity *se)
-> -{
-> -	for_each_sched_entity(se) {
-> -		delta = calc_delta_mine(delta,
-> -				se->load.weight, &cfs_rq_of(se)->load);
-> -	}
-> -
-> -	return delta;
-> -}
-> -
-> -/*
->   * delta /= w
->   */
->  static inline unsigned long
-> @@ -440,12 +426,20 @@ static u64 __sched_period(unsigned long nr_running)
->   */
->  static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
->  {
-> -	unsigned long nr_running = cfs_rq->nr_running;
-> +	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
-> +	
-> +	for_each_sched_entity(se) {
-> +		struct load_weight *load = &cfs_rq->load;
->  
-> -	if (unlikely(!se->on_rq))
-> -		nr_running++;
-> +		if (unlikely(!se->on_rq)) {
-> +			struct load_weight lw = cfs_rq->load;
->  
-> -	return calc_delta_weight(__sched_period(nr_running), se);
-> +			update_load_add(&lw, se->load.weight);
-> +			load = &lw;
-> +		}
-> +		slice = calc_delta_mine(slice, se->load.weight, load);
-> +	}
-> +	return slice;
->  }
->  
->  /*
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+>  fs/compat.c           |    3 +++
+>  fs/exec.c             |    3 +++
+>  include/linux/sched.h |    2 ++
+>  3 files changed, 8 insertions(+)
 > 
+> --- linux-2.6.28-mm1.orig/fs/compat.c
+> +++ linux-2.6.28-mm1/fs/compat.c
+> @@ -1402,6 +1402,7 @@ int compat_do_execve(char * filename,
+>  	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+>  	if (retval < 0)
+>  		goto out_free;
+> +	current->in_execve = 1;
+>  
+>  	retval = -ENOMEM;
+>  	bprm->cred = prepare_exec_creds();
+> @@ -1454,6 +1455,7 @@ int compat_do_execve(char * filename,
+>  		goto out;
+>  
+>  	/* execve succeeded */
+> +	current->in_execve = 0;
+>  	mutex_unlock(&current->cred_exec_mutex);
+>  	acct_update_integrals(current);
+>  	free_bprm(bprm);
+> @@ -1470,6 +1472,7 @@ out_file:
+>  	}
+>  
+>  out_unlock:
+> +	current->in_execve = 0;
+>  	mutex_unlock(&current->cred_exec_mutex);
+>  
+>  out_free:
+> --- linux-2.6.28-mm1.orig/fs/exec.c
+> +++ linux-2.6.28-mm1/fs/exec.c
+> @@ -1306,6 +1306,7 @@ int do_execve(char * filename,
+>  	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+>  	if (retval < 0)
+>  		goto out_free;
+> +	current->in_execve = 1;
+>  
+>  	retval = -ENOMEM;
+>  	bprm->cred = prepare_exec_creds();
+> @@ -1359,6 +1360,7 @@ int do_execve(char * filename,
+>  		goto out;
+>  
+>  	/* execve succeeded */
+> +	current->in_execve = 0;
+>  	mutex_unlock(&current->cred_exec_mutex);
+>  	acct_update_integrals(current);
+>  	free_bprm(bprm);
+> @@ -1377,6 +1379,7 @@ out_file:
+>  	}
+>  
+>  out_unlock:
+> +	current->in_execve = 0;
+>  	mutex_unlock(&current->cred_exec_mutex);
+>  
+>  out_free:
+> --- linux-2.6.28-mm1.orig/include/linux/sched.h
+> +++ linux-2.6.28-mm1/include/linux/sched.h
+> @@ -1155,6 +1155,8 @@ struct task_struct {
+>  	/* ??? */
+>  	unsigned int personality;
+>  	unsigned did_exec:1;
+> +	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
+> +				 * execve */
+>  	pid_t pid;
+>  	pid_t tgid;
+>  
+> 
+> -- 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
 
+-- 
+James Morris
+<jmorris@namei.org>
