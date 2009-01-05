@@ -1,97 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752058AbZAEXVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbZAEX1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752058AbZAEXVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 18:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZAEXVI
+	id S1752076AbZAEX1y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 18:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZAEX1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 18:21:08 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:6489 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbZAEXVI (ORCPT
+	Mon, 5 Jan 2009 18:27:44 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:18776 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbZAEX1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 18:21:08 -0500
-From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH v3] ASPM: Use msleep instead of cpu_relax during link
-	retraining
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Cc: andrew.patterson@hp.com, matthew@wil.cx, pavel@suse.cz,
-       akpm@linux-foundation.org, shaohua.li@intel.com
-Date: Mon, 05 Jan 2009 16:21:04 -0700
-Message-ID: <20090105232104.17335.17054.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
+	Mon, 5 Jan 2009 18:27:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Zw5Jsd30ucd7UePkSZRYzC3Gee+jtHBrpWpgT1lURjfWd2NZcBZoipM57HJYNpcLvH
+         vDUUUo0KMRvbiqoyGcNF8aUjxD8SLETOl83Ep1+/eSvpczkU+JbAWG32FaKdV9KCiuyg
+         t7HDvEflHR8nVAtAHF1sR055YIo0FPZcIsINE=
+Date: Tue, 6 Jan 2009 02:32:41 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: ebiederm@xmission.com, viro@zeniv.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, sds@tycho.nsa.gov,
+       jmorris@namei.org
+Subject: [PATCH 1/6] proc: implement support for automounts in task
+	directories
+Message-ID: <20090105233241.GA3924@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ASPM: Use msleep instead of cpu_relax during link retraining
+This is current version of /proc/net as separate file system patchset,
+rebased, etc. I'll put it into -next again when merge window closes.
 
-The cpu_relax() function can be a noop on certain architectures
-like IA-64 when CPU threads are disabled, so use msleep instead
-during link retraining busy/wait loop.
+Please, review.
+----------------------------------------------------------------------
+>From a934c391e19837e760592536c4cdd1b4f2432caa Mon Sep 17 00:00:00 2001
+From: Eric W. Biederman <ebiederm@xmission.com>
+Date: Wed, 19 Nov 2008 03:57:02 +0300
+Subject: [PATCH 1/6] proc: implement support for automounts in task directories
 
-Introduce define LINK_RETRAIN_TIMEOUT instead of hard-coding
-timeout in pcie_aspm_configure_common_clock.
+This is a general mechanism that is capable of removing any unused mounts on
+/proc in any directory.  As we flush the mounts when a processes dies this
+mechanism is tailored for flushing mounts in the per task and per task group
+directories.
 
-Use time_after() to avoid jiffy wraparound when checking for expired
-timeout.
-
-After timeout expires, recheck link status register link training bit
-instead of checking for expired timeout to avoid possible false positive.
-
-Note that Matthew Wilcox came up with the first rough version of
-this patch.
-
-Fixed an incorrect usage of time_after() in the 2nd version of this patch.
-
-Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
+ fs/proc/Makefile        |    1 +
+ fs/proc/automount.c     |   28 ++++++++++++++++++++++++++++
+ fs/proc/internal.h      |    2 ++
+ include/linux/proc_fs.h |    5 +++++
+ kernel/exit.c           |    2 +-
+ 5 files changed, 37 insertions(+), 1 deletions(-)
+ create mode 100644 fs/proc/automount.c
 
-diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
-index 4d8e2c7..586b6f7 100644
---- a/drivers/pci/pcie/aspm.c
-+++ b/drivers/pci/pcie/aspm.c
-@@ -17,6 +17,7 @@
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/jiffies.h>
-+#include <linux/delay.h>
- #include <linux/pci-aspm.h>
- #include "../pci.h"
+diff --git a/fs/proc/Makefile b/fs/proc/Makefile
+index 63d9651..757f7c1 100644
+--- a/fs/proc/Makefile
++++ b/fs/proc/Makefile
+@@ -9,6 +9,7 @@ proc-$(CONFIG_MMU)	:= mmu.o task_mmu.o
  
-@@ -75,6 +76,8 @@ static const char *policy_str[] = {
- 	[POLICY_POWERSAVE] = "powersave"
- };
- 
-+#define LINK_RETRAIN_TIMEOUT HZ
+ proc-y       += inode.o root.o base.o generic.o array.o \
+ 		proc_tty.o
++proc-y	+= automount.o
+ proc-y	+= cmdline.o
+ proc-y	+= cpuinfo.o
+ proc-y	+= devices.o
+diff --git a/fs/proc/automount.c b/fs/proc/automount.c
+new file mode 100644
+index 0000000..5d22b5a
+--- /dev/null
++++ b/fs/proc/automount.c
+@@ -0,0 +1,28 @@
++#include <linux/list.h>
++#include <linux/mount.h>
++#include <linux/workqueue.h>
++#include "internal.h"
 +
- static int policy_to_aspm_state(struct pci_dev *pdev)
- {
- 	struct pcie_link_state *link_state = pdev->link_state;
-@@ -238,16 +241,18 @@ static void pcie_aspm_configure_common_clock(struct pci_dev *pdev)
- 	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
++LIST_HEAD(proc_automounts);
++
++static void proc_expire_automounts(struct work_struct *work);
++
++static DECLARE_DELAYED_WORK(proc_automount_task, proc_expire_automounts);
++static int proc_automount_timeout = 500 * HZ;
++
++void proc_shrink_automounts(void)
++{
++	struct list_head *list = &proc_automounts;
++
++	mark_mounts_for_expiry(list);
++	mark_mounts_for_expiry(list);
++	if (list_empty(list))
++		return;
++
++	schedule_delayed_work(&proc_automount_task, proc_automount_timeout);
++}
++
++static void proc_expire_automounts(struct work_struct *work)
++{
++	proc_shrink_automounts();
++}
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 3e8aeb8..314c0d3 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -93,3 +93,5 @@ struct pde_opener {
+ 	int (*release)(struct inode *, struct file *);
+ 	struct list_head lh;
+ };
++
++extern struct list_head proc_automounts;
+diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
+index b8bdb96..768e627 100644
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -101,6 +101,7 @@ extern spinlock_t proc_subdir_lock;
  
- 	/* Wait for link training end */
--	/* break out after waiting for 1 second */
-+	/* break out after waiting for timeout */
- 	start_jiffies = jiffies;
--	while ((jiffies - start_jiffies) < HZ) {
-+	for (;;) {
- 		pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
- 		if (!(reg16 & PCI_EXP_LNKSTA_LT))
- 			break;
--		cpu_relax();
-+		if (time_after(jiffies, start_jiffies + LINK_RETRAIN_TIMEOUT))
-+			break;
-+		msleep(1);
- 	}
- 	/* training failed -> recover */
--	if ((jiffies - start_jiffies) >= HZ) {
-+	if (reg16 & PCI_EXP_LNKSTA_LT) {
- 		dev_printk (KERN_ERR, &pdev->dev, "ASPM: Could not configure"
- 			    " common clock\n");
- 		i = 0;
+ extern void proc_root_init(void);
+ 
++void proc_shrink_automounts(void);
+ void proc_flush_task(struct task_struct *task);
+ struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *);
+ int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir);
+@@ -207,6 +208,10 @@ static inline void proc_flush_task(struct task_struct *task)
+ {
+ }
+ 
++static inline void proc_shrink_automounts(void)
++{
++}
++
+ static inline struct proc_dir_entry *create_proc_entry(const char *name,
+ 	mode_t mode, struct proc_dir_entry *parent) { return NULL; }
+ static inline struct proc_dir_entry *proc_create(const char *name,
+diff --git a/kernel/exit.c b/kernel/exit.c
+index c9e5a1c..640b3bb 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -173,7 +173,7 @@ repeat:
+ 	/* don't need to get the RCU readlock here - the process is dead and
+ 	 * can't be modifying its own credentials */
+ 	atomic_dec(&__task_cred(p)->user->processes);
+-
++	proc_shrink_automounts();
+ 	proc_flush_task(p);
+ 	write_lock_irq(&tasklist_lock);
+ 	tracehook_finish_release_task(p);
+-- 
+1.5.6.5
 
