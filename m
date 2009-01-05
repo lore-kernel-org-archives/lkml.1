@@ -1,208 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZAEN12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZAEN1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbZAEN12 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZAEN1T
+	id S1755248AbZAEN1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbZAEN1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:27:19 -0500
-Received: from styx.suse.cz ([82.119.242.94]:59160 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753873AbZAEN1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:27:18 -0500
-Date: Mon, 5 Jan 2009 14:27:15 +0100
-From: Jan Kara <jack@suse.cz>
-To: Mark Fasheh <mfasheh@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com, jack@suse.cz
-Subject: Re: [Ocfs2-devel] [PATCH 19/56] mm: Export pdflush_operation()
-Message-ID: <20090105132714.GA22366@duck.suse.cz>
-References: <1229982517-3455-1-git-send-email-mfasheh@suse.com> <1229982517-3455-20-git-send-email-mfasheh@suse.com> <20081222160104.6633cd77.akpm@linux-foundation.org> <20081225010544.GB17410@wotan.suse.de> <20081231192854.GK17410@wotan.suse.de> <20081231221723.GA14548@mail.oracle.com> <20081231230949.GL17410@wotan.suse.de>
+	Mon, 5 Jan 2009 08:27:30 -0500
+Received: from netgear.net.ru ([195.178.208.66]:53014 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755147AbZAEN12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 08:27:28 -0500
+Date: Mon, 5 Jan 2009 16:27:25 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com, sfr@canb.auug.org.au
+Subject: Re: [PATCH V3 00/17] Squashfs: compressed read-only filesystem
+Message-ID: <20090105132725.GC14147@ioremap.net>
+References: <E1LJnJn-0002Kx-Dd@dylan.lougher.demon.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081231230949.GL17410@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <E1LJnJn-0002Kx-Dd@dylan.lougher.demon.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 31-12-08 15:09:49, Mark Fasheh wrote:
-> From: Mark Fasheh <mfasheh@suse.com>
-> 
-> ocfs2/quota: Use workqueue for periodic syncing instead of pdflush()
-> 
-> Using pdflush_operation() for this was potentially buggy - we could get into
-> a situation where the work function never gets run. Instead, just create a
-> workqueue, 'o2quota' and just constantly queue a delayed work item. The
-> impact of this should be pretty minimal.
-> 
-> Signed-off-by: Mark Fasheh <mfasheh@suse.com>
-  The patch looks fine. You can add 'Acked-by: Jan Kara <jack@suse.cz>'
+Hi Phillip.
 
-										Honza
-> ---
->  fs/ocfs2/quota.h        |    5 +++-
->  fs/ocfs2/quota_global.c |   48 ++++++++++++++++++++++++++++++----------------
->  fs/ocfs2/quota_local.c  |    2 +-
->  fs/ocfs2/super.c        |    7 ++++++
->  4 files changed, 43 insertions(+), 19 deletions(-)
+On Mon, Jan 05, 2009 at 11:08:23AM +0000, Phillip Lougher (phillip@lougher.demon.co.uk) wrote:
+> This a second respin of the Squashfs patches incorporating the review comments
+> received.  Thanks to everyone who have sent comments.
 > 
-> diff --git a/fs/ocfs2/quota.h b/fs/ocfs2/quota.h
-> index abf6941..6d190c0 100644
-> --- a/fs/ocfs2/quota.h
-> +++ b/fs/ocfs2/quota.h
-> @@ -60,7 +60,7 @@ struct ocfs2_mem_dqinfo {
->  	struct buffer_head *dqi_lqi_bh;	/* Buffer head with local quota file inode */
->  	struct buffer_head *dqi_ibh;	/* Buffer with information header */
->  	struct qtree_mem_dqinfo dqi_gi;	/* Info about global file */
-> -	struct timer_list dqi_sync_timer;	/* Timer for syncing dquots */
-> +	struct delayed_work dqi_sync_work;	/* Work for syncing dquots */
->  	struct ocfs2_quota_recovery *dqi_rec;	/* Pointer to recovery
->  						 * information, in case we
->  						 * enable quotas on file
-> @@ -114,4 +114,7 @@ int ocfs2_read_quota_block(struct inode *inode, u64 v_block,
->  extern struct dquot_operations ocfs2_quota_operations;
->  extern struct quota_format_type ocfs2_quota_format;
->  
-> +int ocfs2_quota_setup(void);
-> +void ocfs2_quota_shutdown(void);
-> +
->  #endif /* _OCFS2_QUOTA_H */
-> diff --git a/fs/ocfs2/quota_global.c b/fs/ocfs2/quota_global.c
-> index 9184953..6aff8f2 100644
-> --- a/fs/ocfs2/quota_global.c
-> +++ b/fs/ocfs2/quota_global.c
-> @@ -7,8 +7,8 @@
->  #include <linux/quotaops.h>
->  #include <linux/dqblk_qtree.h>
->  #include <linux/jiffies.h>
-> -#include <linux/timer.h>
->  #include <linux/writeback.h>
-> +#include <linux/workqueue.h>
->  
->  #define MLOG_MASK_PREFIX ML_QUOTA
->  #include <cluster/masklog.h>
-> @@ -25,7 +25,9 @@
->  #include "uptodate.h"
->  #include "quota.h"
->  
-> -static void qsync_timer_fn(unsigned long oinfo_ptr);
-> +static struct workqueue_struct *ocfs2_quota_wq = NULL;
-> +
-> +static void qsync_work_fn(struct work_struct *work);
->  
->  static void ocfs2_global_disk2memdqb(struct dquot *dquot, void *dp)
->  {
-> @@ -348,10 +350,10 @@ int ocfs2_global_read_info(struct super_block *sb, int type)
->  	oinfo->dqi_gi.dqi_usable_bs = sb->s_blocksize -
->  						OCFS2_QBLK_RESERVED_SPACE;
->  	oinfo->dqi_gi.dqi_qtree_depth = qtree_depth(&oinfo->dqi_gi);
-> -	setup_timer(&oinfo->dqi_sync_timer, qsync_timer_fn,
-> -		    (unsigned long)oinfo);
-> -	mod_timer(&oinfo->dqi_sync_timer,
-> -		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
-> +	INIT_DELAYED_WORK(&oinfo->dqi_sync_work, qsync_work_fn);
-> +	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
-> +			   oinfo->dqi_syncjiff);
-> +
->  out_err:
->  	mlog_exit(status);
->  	return status;
-> @@ -594,21 +596,16 @@ out:
->  	return status;
->  }
->  
-> -static void ocfs2_do_qsync(unsigned long oinfo_ptr)
-> +static void qsync_work_fn(struct work_struct *work)
->  {
-> -	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
-> +	struct ocfs2_mem_dqinfo *oinfo = container_of(work,
-> +						      struct ocfs2_mem_dqinfo,
-> +						      dqi_sync_work.work);
->  	struct super_block *sb = oinfo->dqi_gqinode->i_sb;
->  
->  	dquot_scan_active(sb, ocfs2_sync_dquot_helper, oinfo->dqi_type);
-> -}
-> -
-> -static void qsync_timer_fn(unsigned long oinfo_ptr)
-> -{
-> -	struct ocfs2_mem_dqinfo *oinfo = (struct ocfs2_mem_dqinfo *)oinfo_ptr;
-> -
-> -	pdflush_operation(ocfs2_do_qsync, oinfo_ptr);
-> -	mod_timer(&oinfo->dqi_sync_timer,
-> -		  round_jiffies(jiffies + oinfo->dqi_syncjiff));
-> +	queue_delayed_work(ocfs2_quota_wq, &oinfo->dqi_sync_work,
-> +			   oinfo->dqi_syncjiff);
->  }
->  
->  /*
-> @@ -1009,3 +1006,20 @@ struct dquot_operations ocfs2_quota_operations = {
->  	.alloc_dquot	= ocfs2_alloc_dquot,
->  	.destroy_dquot	= ocfs2_destroy_dquot,
->  };
-> +
-> +int ocfs2_quota_setup(void)
-> +{
-> +	ocfs2_quota_wq = create_workqueue("o2quot");
-> +	if (!ocfs2_quota_wq)
-> +		return -ENOMEM;
-> +	return 0;
-> +}
-> +
-> +void ocfs2_quota_shutdown(void)
-> +{
-> +	if (ocfs2_quota_wq) {
-> +		flush_workqueue(ocfs2_quota_wq);
-> +		destroy_workqueue(ocfs2_quota_wq);
-> +		ocfs2_quota_wq = NULL;
-> +	}
-> +}
-> diff --git a/fs/ocfs2/quota_local.c b/fs/ocfs2/quota_local.c
-> index a5f6e2a..07deec5 100644
-> --- a/fs/ocfs2/quota_local.c
-> +++ b/fs/ocfs2/quota_local.c
-> @@ -780,7 +780,7 @@ static int ocfs2_local_free_info(struct super_block *sb, int type)
->  	/* At this point we know there are no more dquots and thus
->  	 * even if there's some sync in the pdflush queue, it won't
->  	 * find any dquots and return without doing anything */
-> -	del_timer_sync(&oinfo->dqi_sync_timer);
-> +	cancel_delayed_work_sync(&oinfo->dqi_sync_work);
->  	iput(oinfo->dqi_gqinode);
->  	ocfs2_simple_drop_lockres(OCFS2_SB(sb), &oinfo->dqi_gqlock);
->  	ocfs2_lock_res_free(&oinfo->dqi_gqlock);
-> diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-> index a79e67b..43ed113 100644
-> --- a/fs/ocfs2/super.c
-> +++ b/fs/ocfs2/super.c
-> @@ -1326,11 +1326,16 @@ static int __init ocfs2_init(void)
->  		mlog(ML_ERROR, "Unable to create ocfs2 debugfs root.\n");
->  	}
->  
-> +	status = ocfs2_quota_setup();
-> +	if (status)
-> +		goto leave;
-> +
->  	ocfs2_set_locking_protocol();
->  
->  	status = register_quota_format(&ocfs2_quota_format);
->  leave:
->  	if (status < 0) {
-> +		ocfs2_quota_shutdown();
->  		ocfs2_free_mem_caches();
->  		exit_ocfs2_uptodate_cache();
->  	}
-> @@ -1347,6 +1352,8 @@ static void __exit ocfs2_exit(void)
->  {
->  	mlog_entry_void();
->  
-> +	ocfs2_quota_shutdown();
-> +
->  	if (ocfs2_wq) {
->  		flush_workqueue(ocfs2_wq);
->  		destroy_workqueue(ocfs2_wq);
-> -- 
-> 1.5.6
+> Summary of changes in patch respin:
 > 
+> 1. Vmalloc removed, smaller PAGE_CACHE_SIZE buffers are now allocated
+> 2. Renamed some global functions, prefixing with squashfs_
+> 3. brelse changed to put_bh
+> 4. cache->lock coverage extended in squashfs_put_cache() and
+>    squashfs_cache_get()
+> 5. New squashfs.txt file in Documentation/filesystems
+> 6. Changed 'long long' usage to u64 for variables referring to 64-bit
+>    filesystem locations
+> 7. SQUASHFS_I() renamed to squashfs_i()
+> 8. Renamed locked variable to refcount to clarify usage
+> 9. Renamed waiting variable to num_waiters, making it clear it is a count
+>    rather than a boolean
+> 10. Made pending and error fields int rather than char
+
+
+Looks good.
+You can also update the year in the copyright string in the files :)
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+	Evgeniy Polyakov
