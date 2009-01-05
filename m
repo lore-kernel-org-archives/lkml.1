@@ -1,43 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZAEJAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZAEJBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752611AbZAEJAr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 04:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZAEJAi
+	id S1753226AbZAEJBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 04:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZAEJBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 04:00:38 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39960 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbZAEJAi (ORCPT
+	Mon, 5 Jan 2009 04:01:03 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:44598 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbZAEJBB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 04:00:38 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+	Mon, 5 Jan 2009 04:01:01 -0500
+Date: Mon, 5 Jan 2009 10:02:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: 2.6.29 -mm merge plans
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+Message-ID: <20090105090239.GB17530@uranus.ravnborg.org>
 References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-Message-Id: <20090105175433.D875.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon,  5 Jan 2009 18:00:33 +0900 (JST)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> #
-> page_fault-retry-with-nopage_retry.patch
-> page_fault-retry-with-nopage_retry-fix.patch
-> page_fault-retry-with-nopage_retry-fix-fix.patch
+Hi Andrew.
 
-I oppose this.
+> sparc64-use-unsigned-long-long-for-u64.patch
+> sparc64-fix-unsigned-long-long-warnings-in-drivers.patch
 
-Valdis.Kletnieks@vt.edu reported this patch has bug in
-"28-rc9-mmotm1219 page_fault-retry-with-nopage_retry.patch hoses xmms"
-thread.
+Please drop these two.
+They are not complete (break build on certain configurations).
+I will get back to them when I get my sparc64 setup functional.
 
-Nobody answer his question yet.
-
-
-
+	Sam
