@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZAEPm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZAEPrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZAEPm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 10:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbZAEPmU
+	id S1755119AbZAEPrR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 10:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbZAEPrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 10:42:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:39875 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753523AbZAEPmT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 10:42:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=psHX3liLw5K93SONwUrrDGh8d/28CyY8G58suuIIUpcuxf5AGN6SfUy6nWiJQHYBoa
-         wVGDNooN5YQZeWZiQwN0cUMBMf5L0/Ry4aO+H8IfxZUf7ADH39wHm1VwivVvUI9LsI7K
-         gQYnihO1KjkhCGNNQ2UhZAD8BsNVbU/3ozQYA=
-Date: Mon, 5 Jan 2009 18:42:15 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Johannes Weiner <hannes@cmpxchg.org>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: early exception error
-Message-ID: <20090105154215.GI7645@localhost>
-References: <alpine.DEB.1.10.0901021014030.21408@asgard.lang.hm> <20090102172426.GB5372@localhost> <495E7FAD.6020305@shaw.ca> <20090105092619.GA3699@cmpxchg.org> <20090105130836.GN496@one.firstfloor.org> <49621E6E.2010809@gmail.com> <20090105150150.GF7645@localhost> <496223C4.20307@gmail.com> <20090105153025.GH7645@localhost> <4962299B.6030108@gmail.com>
+	Mon, 5 Jan 2009 10:47:01 -0500
+Received: from mout-xforward.kundenserver.de ([212.227.17.5]:64873 "EHLO
+	mout-xforward.kundenserver.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750814AbZAEPrA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 10:47:00 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Lock-up on PPC64
+Date: Mon, 5 Jan 2009 16:46:02 +0100
+User-Agent: KMail/1.9.9
+Cc: malc <av1474@comtv.ru>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru> <1230165163.7292.32.camel@pasglop> <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+In-Reply-To: <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4962299B.6030108@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200901051646.03654.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+j6u0NdWJv97hahDTvVzw/yeGQPhMHV27Yru6
+ aq5G8YfGwVCg56ONnACyJfAQ//caa6w/JD80Y9MvPC/RLgBu68
+ e/WGRkmHitrHcMgpl3n/w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jiri Slaby - Mon, Jan 05, 2009 at 04:39:07PM +0100]
-...
-| > | I know, core devs are sane, but e.g. for reasons such as
-| > | 
-| > | {'a' is used here already}
-| > | EARLY_BUG_ON(!(a = readl(...)))
-| > | {use 'a' again}
-| > | 
-| > | to stay on the safe side.
-| > 
-| > I wouldn't populate this style Jiri. It become more complicated
-| > as it should to be, agreed?
-| 
-| No, I tend to disagree. Macros should evaluate argument(s) the same no matter
-| what is in .config.
-| 
+On Sunday 28 December 2008, malc wrote:
+> Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
+> notice that the problem is gone, bisecting v2.6.27 (which funnily i
+> had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
+> but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
+> 
+> commit ab598b6680f1e74c267d1547ee352f3e1e530f89
+> Author: Paul Mackerras <paulus@samba.org>
+> Date:   Sun Nov 30 11:49:45 2008 +0000
+> 
+>      powerpc: Fix system calls on Cell entered with XER.SO=1
+> 
+> Now the lock-up is gone, however the code never exercises the path
+> taken during the lock-up so i guess it, at least, deserves a better
+> look by PPC64 care takers.
 
-I see what you mean (now) -- and you're right!
 
-		- Cyrill -
+Yes, this change was suspected to help with Mono as well, not just
+Java, because both of them use their own syscall path rather than
+going through glibc. The reason why you see the lock-up in a different
+place is because the bug manifested in getting incorrect syscall
+return codes, which probably made mono go into a normally unused
+error handling case.
+
+	Arnd <><
