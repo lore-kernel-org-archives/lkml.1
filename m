@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZAEKDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbZAEKKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbZAEKDb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 05:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZAEKDX
+	id S1753612AbZAEKKg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 05:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZAEKK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 05:03:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:31169 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbZAEKDX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 05:03:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=u104wPh5zWfxjzrWWW5M2Nh9jfLspFYt08C0ag+9klhg6g+sOh17SpkvQ1300CpFzz
-         ZsJTWSLpFalngFL9j1KmgFue9IJVUaWG5nEID6PqwtkKf/waI++MKgpVKgRcwH2VcuEP
-         Qydkv1Yix7Ozz3Fx7eb4mqQp5Rr4jEVhzYPc4=
-Date: Mon, 5 Jan 2009 13:03:18 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] mm: __nr_to_section - make it safe against overflow
-Message-ID: <20090105100318.GC7645@localhost>
-References: <20090105094034.GA7645@localhost> <84144f020901050200h3fd6ce71qacd5e2dff282a9@mail.gmail.com>
+	Mon, 5 Jan 2009 05:10:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60787 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752164AbZAEKK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 05:10:26 -0500
+Date: Mon, 5 Jan 2009 11:10:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 -mm merge plans
+Message-ID: <20090105101006.GA2059@elte.hu>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090105090239.GB17530@uranus.ravnborg.org> <20090105011202.835e75ec.akpm@linux-foundation.org> <20090105.011733.225349838.davem@davemloft.net> <20090105092110.GA11941@elte.hu> <20090105093931.GA17944@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020901050200h3fd6ce71qacd5e2dff282a9@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090105093931.GA17944@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Pekka Enberg - Mon, Jan 05, 2009 at 12:00:58PM +0200]
-| Hi Cyrill,
-| 
-| On Mon, Jan 5, 2009 at 11:40 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > @@ -980,9 +986,12 @@ extern struct mem_section mem_section[NR
-| >
-| >  static inline struct mem_section *__nr_to_section(unsigned long nr)
-| >  {
-| > -       if (!mem_section[SECTION_NR_TO_ROOT(nr)])
-| > +       unsigned long idx = SECTION_NR_TO_ROOT(nr);
-| > +       WARN_ON_ONCE(idx >= NR_SECTION_ROOTS);
-| > +
-| > +       if (idx >=NR_SECTION_ROOTS || !mem_section[idx])
-| >                return NULL;
-| 
-| Looks good to me but I have minor nitpick. You might want to write the
-| above like this:
-| 
-|     if (WARN_ON_ONCE(idx >= NR_SECTION_ROOTS))
-|             return NULL;
-| 
-| to separate the error condition from the normal case where we don't
-| have a mem section.
-| 
-| > -       return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
-| > +       return &mem_section[idx][nr & SECTION_ROOT_MASK];
-| >  }
-| 
 
-Hi Pekka,
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-thanks, indeed! I forget that WARN_.. do return a value :)
-Will fix shortly.
+> On Mon, Jan 05, 2009 at 10:21:10AM +0100, Ingo Molnar wrote:
+> > 
+> > * David Miller <davem@davemloft.net> wrote:
+> > 
+> > > From: Andrew Morton <akpm@linux-foundation.org>
+> > > Date: Mon, 5 Jan 2009 01:12:02 -0800
+> > > 
+> > > > On Mon, 5 Jan 2009 10:02:39 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > > 
+> > > > > Hi Andrew.
+> > > > > 
+> > > > > > sparc64-use-unsigned-long-long-for-u64.patch
+> > > > > > sparc64-fix-unsigned-long-long-warnings-in-drivers.patch
+> > > > > 
+> > > > > Please drop these two.
+> > > > 
+> > > > Might, if they break my build.
+> > > 
+> > > They don't build, I tested them when I tried integrated Sam's patches.
+> > 
+> > do they break due to some warnings caught by -Werror?
+> 
+> Yup.
 
-		- Cyrill -
+So your patches "dont build" because some Sparc configs produce new 
+(presumably harmless) warnings?
+
+And the solution is to not do your patch and export other warnings to the 
+core kerne, which then get reported as bugs there and which result in 
+fugly fixes? (and which resulted in a crapload of ugly fixes in the past 
+10 years)
+
+That is quite backwards, no matter how i look at it. Why doesnt Sparc do 
+the obvious and turn off -Werror until it has gotten around to fix those 
+few remaining warnings? It took me 30 minutes to fix up PowerPC defconfig 
+with a similar change, it cannot be that much harder on Sparc either 
+(powerpc arch code is a lot larger in fact). I'd be surprised if it took 
+more than 10 minutes of davem's time.
+
+	Ingo
