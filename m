@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZAEHP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZAEHVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbZAEHP6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 02:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbZAEHPu
+	id S1753402AbZAEHVw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 02:21:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZAEHVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 02:15:50 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:49770 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751287AbZAEHPt (ORCPT
+	Mon, 5 Jan 2009 02:21:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56213 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751384AbZAEHVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 02:15:49 -0500
-Message-ID: <4961B3A1.3070009@colorfullife.com>
-Date: Mon, 05 Jan 2009 08:15:45 +0100
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC, PATCH] kernel/rcu: add kfree_rcu
-References: <200901021159.n02BxDLg024728@mail.q-ag.de> <20090102185543.GE6842@linux.vnet.ibm.com> <49604E19.8040502@cn.fujitsu.com> <20090104194851.GM6958@linux.vnet.ibm.com>
-In-Reply-To: <20090104194851.GM6958@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 5 Jan 2009 02:21:43 -0500
+Date: Sun, 4 Jan 2009 23:20:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com
+Subject: Re: 2.6.28-mmotm1230 - include/media/v4l2-ioctl.h prototype
+ mismatch
+Message-Id: <20090104232057.c91b1452.akpm@linux-foundation.org>
+In-Reply-To: <33812.1230893486@turing-police.cc.vt.edu>
+References: <33812.1230893486@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
->
->> I think these two are different questions.
->> vfree() still can not be called from softirq context now.
->> And I proposed vfree_atomic() for RCU, but it can not be accepted.
->>     
->
-> And one would indeed either need to have a vfree_atomic() or have some
-> mechanism that sent the vfree() to a workqueue or some such.
->   
-ipc/util.c uses a workqueue (ipc_schedule_free):
-The semaphore array structure can be large (documented with SEMMSL=8000 
-around 16 kB, but there is no  hard limit), thus vmalloc is used.
+On Fri, 02 Jan 2009 05:51:26 -0500 Valdis.Kletnieks@vt.edu wrote:
 
-But as long as there are just one or two users, I doubt that a generic 
-system is worth the effort.
+> I'm seeing the following warning message during a kernel build:
+> 
+>   CC [M]  drivers/media/video/gspca/gspca.o
+> drivers/media/video/gspca/gspca.c:1811: warning: initialization from incompatible pointer type
+> 
+> The root cause appears to be a missed prototype change in a conversion from
+> ioctl to unlocked_ioctl - in struct file_operations, the former is an int,
+> but the latter is a long.  So we clean it up.
+> 
+> I have to admit not having checked deeply for second-order effects, but the
+> kernel builds without warnings and the result works for me.  The only other
+> use of __video_ioctl2 I can see is in drivers/media/video/ivtv/ivtv-ioctl.c,
+> and there it's used as a return value from a function already defined to return
+> a long, so we save an int->long cast...
+> 
+> Signed-off-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+> 
+> --- linux-2.6.28-mmotm1230/include/media/v4l2-ioctl.h.dist	2009-01-01 17:23:00.000000000 -0500
+> +++ linux-2.6.28-mmotm1230/include/media/v4l2-ioctl.h	2009-01-02 05:40:45.000000000 -0500
+> @@ -297,7 +297,7 @@ extern int video_usercopy(struct file *f
+>  /* Standard handlers for V4L ioctl's */
+>  
+>  /* This prototype is used on fops.unlocked_ioctl */
+> -extern int __video_ioctl2(struct file *file,
+> +extern long __video_ioctl2(struct file *file,
+>  			unsigned int cmd, unsigned long arg);
+>  
+>  /* This prototype is used on fops.ioctl
+> --- linux-2.6.28-mmotm1230/drivers/media/video/v4l2-ioctl.c.dist	2009-01-01 17:22:50.000000000 -0500
+> +++ linux-2.6.28-mmotm1230/drivers/media/video/v4l2-ioctl.c	2009-01-02 05:45:39.000000000 -0500
+> @@ -1852,7 +1852,7 @@ static int __video_do_ioctl(struct file 
+>  	return ret;
+>  }
+>  
+> -int __video_ioctl2(struct file *file,
+> +long __video_ioctl2(struct file *file,
+>  	       unsigned int cmd, unsigned long arg)
+>  {
+>  	char	sbuf[128];
 
---
-    Manfred
-
+That code seems to have magically disappeared from linux-next.
