@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZAETqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZAETre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbZAETqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 14:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZAETq2
+	id S1755259AbZAETre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 14:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZAETrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 14:46:28 -0500
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:46919 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753419AbZAETq1 (ORCPT
+	Mon, 5 Jan 2009 14:47:25 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58521 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752652AbZAETrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 14:46:27 -0500
-MIME-version: 1.0
-X-IronPort-AV: E=Sophos;i="4.36,333,1228086000";   d="scan'208";a="95512409"
-Date: Mon, 05 Jan 2009 20:46:24 +0100
-From: markus reichelt <ml@mareichelt.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: A SuSE riddle
-Message-id: <20090105194624.GJ6165@tatooine.rebelbase.local>
-Mail-followup-to: linux-kernel@vger.kernel.org
-References: <20090105185225.GH6165@tatooine.rebelbase.local>
- <4962594F.7090501@baywinds.org>
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=a7XSrSxqzVsaECgU
-Content-disposition: inline
-In-reply-to: <4962594F.7090501@baywinds.org>
-Organization: still stuck in reorganization mode
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 5 Jan 2009 14:47:24 -0500
+Date: Mon, 5 Jan 2009 19:47:20 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <davidn@davidnewall.com>
+Cc: Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
+ 2008-2009
+Message-ID: <20090105194720.58406f8a@lxorguk.ukuu.org.uk>
+In-Reply-To: <4961C83A.6020009@davidnewall.com>
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
+	<20090102210430.49649261@diego-desktop>
+	<495E7849.4030706@shaw.ca>
+	<495F0672.6020708@davidnewall.com>
+	<8752a8760901022237r75d408b3i74c703c8ac2d4597@mail.gmail.com>
+	<496076A9.7030907@davidnewall.com>
+	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
+	<4960897D.5030603@davidnewall.com>
+	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>
+	<4961432A.80509@davidnewall.com>
+	<20090104232534.GB1297917@hiwaay.net>
+	<49614DD8.7070707@davidnewall.com>
+	<20090105004123.374709ff@lxorguk.ukuu.org.uk>
+	<4961C83A.6020009@davidnewall.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > For any given time based on the 1970 Epoch there is a single correct
+> > answer for the translation between each value and a UTC time.
+> 
+> This confused me because the sense that I've got from this thread
+> suggests otherwise.  Unless I've misunderstood, the time() value for the
+> first second of 2009 is one greater than the value for the second to
+> last second of 2008 (i.e. 23:59:59), which means that there is no
+> translation for the last second.  Put another way, my understanding of
+> what's been said is that the epoch is effectively increased by one
+> second for each leap second.  Have I got this wrong?
 
---a7XSrSxqzVsaECgU
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No I should have said from a UTC time to a value, the reverse is slightly
+ambiguous - as you say leap seconds cannot be distinguished (well unless
+you are using floating point but thats a whole can of worms)
 
-* Bruce Ferrell <bferrell@baywinds.org> wrote:
+Glibc has /usr/share/zoneinfo/right as well as posix zones which I guess
+is Ulrich's vote on the subject.
 
-> markus reichelt wrote:
-> >Hi,
-> >
-> >this goes out to the SusE folks in here:=20
-> >
-> >What the heck is needed to get one's hands on the contents of
-> >
-> >kernel-source-2.6.27.7-9.1.i586.rpm
-> >
-> >The usual tools fail.
-> >
-> >Downloaded from=20
-> >http://ftp.uni-bayreuth.de/linux/opensuse/distribution/11.1/repo/oss/sus=
-e/i586/
-> >
-> >
-> >And why not provide a .CAB for it? Seems to work better anyway.
-> >
->=20
-> 1.) Try kernel-source-2.6.27.7-9.1.src.rpm instead
+In a strictly posix environment then for 1003.1 post 2001 the definition
+is non-leap seconds since (a notional) 1/1/70 UTC 00:00:00. Including
+leap seconds in the definition would have caused problems with existing
+date stamps moving them by about half a minute.
 
-Oh well, SuSE. Placing their eggs in different places...
+The kernel doesn't give a brass monkeys about interpretation on the whole
+with one main exception - the CMOS RTC time conversion is done without
+factoring in leap seconds.
 
-
-> 2.) Because CAB files are for windows silly trid  :)
-
-A .CAB wouldn't need a .src.CAB, a .CAB would just frakking work :)
-
---=20
-left blank, right bald
-
---a7XSrSxqzVsaECgU
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFJYmOQLMyTO8Kj/uQRAq0UAJ4kWaSP+/UWYD+kZ7h0CVSR6+6+PACfWVPA
-CLFOQrlEFZaNQjf5tK5F8Lk=
-=C5rh
------END PGP SIGNATURE-----
-
---a7XSrSxqzVsaECgU--
+Alan
