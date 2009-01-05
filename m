@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZAEUMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZAEUNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbZAEUMk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 15:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZAEUMb
+	id S1753561AbZAEUNH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 15:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZAEUMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 15:12:31 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:13045 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752608AbZAEUMa (ORCPT
+	Mon, 5 Jan 2009 15:12:49 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:51895 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753335AbZAEUMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 15:12:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cEnaeSfEablCqWu2VSAbD/hO/G6AWfTssn8Mb/k9IkTvbjTg/pLnSZV+qp8a94VN+5
-         InpfVgQM2pVSqK6Q3zish71xTRoLoYI6UCrLELKO/5FuJVC0GxSRnoljYEuEq9jf5H5O
-         t9Eka8KBESGQ7tM1xeH7f5pFfcNioXjhBXTKs=
-Date: Mon, 5 Jan 2009 22:12:53 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: mingo@elte.hu
-Cc: penberg@cs.helsinki.fi, rostedt@goodmis.org, fweisbec@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemtrace: Remove the relay version of kmemtrace.
-Message-ID: <20090105201252.GD5196@localhost>
-References: <20090105191330.GA1498@elte.hu> <1231186198-15437-1-git-send-email-eduard.munteanu@linux360.ro>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231186198-15437-1-git-send-email-eduard.munteanu@linux360.ro>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 5 Jan 2009 15:12:47 -0500
+Date: Mon, 5 Jan 2009 12:11:58 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: [PATCH -next] jbd2: fix printk format warning
+Message-Id: <20090105121158.94d990c3.randy.dunlap@oracle.com>
+In-Reply-To: <20090105173517.deeff918.sfr@canb.auug.org.au>
+References: <20090105173517.deeff918.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.49626991.00FD:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 10:09:58PM +0200, Eduard - Gabriel Munteanu wrote:
-> kmemtrace now uses ftrace. This patch removes the relay version.
-> 
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I still have to port kmemtrace+ftrace to tracepoints, I'll get back to
-you soon.
+Fix jbd2 printk format:
 
+fs/jbd2/journal.c:848: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'uint32_t'
 
-	Cheers,
-	Eduard
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ fs/jbd2/journal.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+--- linux-next-20090105.orig/fs/jbd2/journal.c
++++ linux-next-20090105/fs/jbd2/journal.c
+@@ -845,7 +845,8 @@ static int jbd2_seq_info_show(struct seq
+ 	seq_printf(seq, "  %ums logging transaction\n",
+ 	    jiffies_to_msecs(s->stats->u.run.rs_logging / s->stats->ts_tid));
+ 	seq_printf(seq, "  %luus average transaction commit time\n",
+-		   do_div(s->journal->j_average_commit_time, 1000));
++		   (unsigned long)do_div(s->journal->j_average_commit_time,
++					1000));
+ 	seq_printf(seq, "  %lu handles per transaction\n",
+ 	    s->stats->u.run.rs_handle_count / s->stats->ts_tid);
+ 	seq_printf(seq, "  %lu blocks per transaction\n",
