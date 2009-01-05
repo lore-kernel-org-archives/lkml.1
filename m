@@ -1,134 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZAEWXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZAEWXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbZAEWXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 17:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZAEWXD
+	id S1755489AbZAEWXm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 17:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZAEWXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 17:23:03 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34682 "EHLO mx2.redhat.com"
+	Mon, 5 Jan 2009 17:23:31 -0500
+Received: from tundra.namei.org ([65.99.196.166]:4439 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172AbZAEWXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 17:23:01 -0500
-Message-ID: <49628849.1000706@redhat.com>
-Date: Mon, 05 Jan 2009 17:23:05 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1751280AbZAEWXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 17:23:30 -0500
+Date: Tue, 6 Jan 2009 09:22:42 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: David Howells <dhowells@redhat.com>
+cc: bfields@fieldses.org, hch@lst.de, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] CRED: Fix NFSD regression
+In-Reply-To: <20090105171937.4463.98583.stgit@warthog.procyon.org.uk>
+Message-ID: <alpine.LRH.1.10.0901060922210.20738@tundra.namei.org>
+References: <806.1231174132@redhat.com> <20090105171937.4463.98583.stgit@warthog.procyon.org.uk>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: [PATCH][bugfix] kprobes: fix module compilation error with CONFIG_KPROBES=n
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define kprobes related data structures even if CONFIG_KPROBES is not set.
-This fixes compilation errors which occur if CONFIG_KPROBES is not set, in
-kprobe using modules.
+On Mon, 5 Jan 2009, David Howells wrote:
 
-Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
- include/linux/kprobes.h |   45 +++++++++++++++++++++++----------------------
- 1 file changed, 23 insertions(+), 22 deletions(-)
+> Fix a regression in NFSD's permission checking introduced by the credentials
+> patches.  There are two parts to the problem, both in nfsd_setuser():
+> 
+>  (1) The return value of set_groups() is -ve if in error, not 0, and should be
+>      checked appropriately.  0 indicates success.
+> 
+>  (2) The UID to use for fs accesses is in new->fsuid, not new->uid (which is
+>      0).  This causes CAP_DAC_OVERRIDE to always be set, rather than being
+>      cleared if the UID is anything other than 0 after squashing.
+> 
+> Reported-by: J. Bruce Fields <bfields@fieldses.org>
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Index: 2.6.28/include/linux/kprobes.h
-===================================================================
---- 2.6.28.orig/include/linux/kprobes.h
-+++ 2.6.28/include/linux/kprobes.h
-@@ -37,9 +37,9 @@
- #include <linux/spinlock.h>
- #include <linux/rcupdate.h>
- #include <linux/mutex.h>
-+#include <asm/kprobes.h>
+Acked-by: James Morris <jmorris@namei.org>
 
- #ifdef CONFIG_KPROBES
--#include <asm/kprobes.h>
 
- /* kprobe_status settings */
- #define KPROBE_HIT_ACTIVE	0x00000001
-@@ -49,6 +49,9 @@
-
- /* Attach to insert probes on any functions which should be ignored*/
- #define __kprobes	__attribute__((__section__(".kprobes.text"))) notrace
-+#else /* CONFIG_KPROBES */
-+#define __kprobes	notrace
-+#endif /* CONFIG_KPROBES */
-
- struct kprobe;
- struct pt_regs;
-@@ -131,23 +134,6 @@ struct jprobe {
- /* For backward compatibility with old code using JPROBE_ENTRY() */
- #define JPROBE_ENTRY(handler)	(handler)
-
--DECLARE_PER_CPU(struct kprobe *, current_kprobe);
--DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
--
--#ifdef CONFIG_KRETPROBES
--extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
--				   struct pt_regs *regs);
--extern int arch_trampoline_kprobe(struct kprobe *p);
--#else /* CONFIG_KRETPROBES */
--static inline void arch_prepare_kretprobe(struct kretprobe *rp,
--					struct pt_regs *regs)
--{
--}
--static inline int arch_trampoline_kprobe(struct kprobe *p)
--{
--	return 0;
--}
--#endif /* CONFIG_KRETPROBES */
- /*
-  * Function-return probe -
-  * Note:
-@@ -188,6 +174,25 @@ struct kprobe_blackpoint {
- 	unsigned long range;
- };
-
-+#ifdef CONFIG_KPROBES
-+DECLARE_PER_CPU(struct kprobe *, current_kprobe);
-+DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
-+
-+#ifdef CONFIG_KRETPROBES
-+extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
-+				   struct pt_regs *regs);
-+extern int arch_trampoline_kprobe(struct kprobe *p);
-+#else /* CONFIG_KRETPROBES */
-+static inline void arch_prepare_kretprobe(struct kretprobe *rp,
-+					struct pt_regs *regs)
-+{
-+}
-+static inline int arch_trampoline_kprobe(struct kprobe *p)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_KRETPROBES */
-+
- extern struct kretprobe_blackpoint kretprobe_blacklist[];
-
- static inline void kretprobe_assert(struct kretprobe_instance *ri,
-@@ -264,10 +269,6 @@ void recycle_rp_inst(struct kretprobe_in
-
- #else /* CONFIG_KPROBES */
-
--#define __kprobes	notrace
--struct jprobe;
--struct kretprobe;
--
- static inline struct kprobe *get_kprobe(void *addr)
- {
- 	return NULL;
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+James Morris
+<jmorris@namei.org>
