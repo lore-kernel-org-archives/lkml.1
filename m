@@ -1,112 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZAEJC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZAEJEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZAEJC4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 04:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZAEJC3
+	id S1753236AbZAEJEP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 04:04:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZAEJD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 04:02:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56431 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752550AbZAEJC0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 04:02:26 -0500
-Date: Mon, 5 Jan 2009 01:01:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Mike Travis <travis@sgi.com>, Paul Menage <menage@google.com>,
+	Mon, 5 Jan 2009 04:03:58 -0500
+Received: from mga14.intel.com ([143.182.124.37]:13711 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbZAEJD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 04:03:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,331,1228118400"; 
+   d="scan'208";a="96414759"
+Date: Mon, 5 Jan 2009 17:03:39 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Andreas Mohr <andi@lisas.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/6] cpuset: convert cpuset_attach() to use
- cpumask_var_t
-Message-Id: <20090105010147.bc42b655.akpm@linux-foundation.org>
-In-Reply-To: <4961C919.6040404@cn.fujitsu.com>
-References: <495B2EA6.7010808@cn.fujitsu.com>
-	<495B2EC2.9090305@cn.fujitsu.com>
-	<495B2EE7.4040406@cn.fujitsu.com>
-	<495B2EFB.302@cn.fujitsu.com>
-	<20090104233856.8c72eb58.akpm@linux-foundation.org>
-	<4961C919.6040404@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: cannot reliably detect USB device
+Message-ID: <20090105090339.GA25753@localhost>
+References: <20081225104753.GB15733@localhost> <20090101174453.GA3805@rhlx01.hs-esslingen.de> <ac3eb2510901031407m68230817u9a491d982026a5fe@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510901031407m68230817u9a491d982026a5fe@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Jan 2009 16:47:21 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> Allocate a global cpumask_var_t at boot, and use it in cpuset_attach(), so
-> we won't fail cpuset_attach().
+On Sun, Jan 04, 2009 at 12:07:46AM +0200, Kay Sievers wrote:
+> On Thu, Jan 1, 2009 at 18:44, Andreas Mohr <andi@lisas.de> wrote:
+> >> > > I have a pl2303 USB-RS232 converter that cannot be reliably
+> >> > > detected.
+> >> >
+> >> > Faulty hardware?  Flaky cables?  Bad connections?  If this is
+> >> > reproducable for the same device on multiple machines, I'd just go buy
+> >> > a
+> >> > new device :)
+> >>
+> >> I decided to give it a last try before planning a replacement - then I
+> >> find that /dev/ttyUSB0 could be created if I enlarge the retry times.
+> >>
+> >> It could take 10 seconds to get a valid response. It must go crazy.
+> >
+> > Detected _instantly_ on 2.6.28 here:
+> >
+> > [59750.560209] usb 1-1: USB disconnect, address 5
+> > [59750.561888] pl2303 ttyUSB0: pl2303 converter now disconnected from ttyUSB0
+> > [59750.561970] pl2303 1-1:1.0: device disconnected
+> > [59752.904108] usb 1-1: new full speed USB device using uhci_hcd and address 6
+> > [59753.059546] usb 1-1: configuration #1 chosen from 1 choice
+> > [59753.061460] pl2303 1-1:1.0: pl2303 converter detected
+> > [59753.114738] usb 1-1: pl2303 converter now attached to ttyUSB0
+> >
+> > (the 3-second delay basically was me waiting before reinserting)
+> >
+> >
+> > Bus 001 Device 006: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
+> >
+> > Label: "GMUS-03 USB Serial Adapter"
+> >
+> > Detection test only, _not_ used for actual serial communication currently...
+> >
+> >
+> > But there are more PL2303 adapters than flies on this planet,
+> > thus someone else also has some input on this?
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> Acked-by: Mike Travis <travis@sgi.com>
-> ---
->  kernel/cpuset.c |   14 +++++++++-----
->  1 files changed, 9 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> index afa29cf..1e32e6b 100644
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -1306,6 +1306,9 @@ static int fmeter_getrate(struct fmeter *fmp)
->  	return val;
->  }
->  
-> +/* Protected by cgroup_lock */
-> +static cpumask_var_t cpus_attach;
-> +
->  /* Called by cgroups to determine if a cpuset is usable; cgroup_mutex held */
->  static int cpuset_can_attach(struct cgroup_subsys *ss,
->  			     struct cgroup *cont, struct task_struct *tsk)
-> @@ -1330,7 +1333,6 @@ static void cpuset_attach(struct cgroup_subsys *ss,
->  			  struct cgroup *cont, struct cgroup *oldcont,
->  			  struct task_struct *tsk)
->  {
-> -	cpumask_t cpus;
->  	nodemask_t from, to;
->  	struct mm_struct *mm;
->  	struct cpuset *cs = cgroup_cs(cont);
-> @@ -1338,13 +1340,13 @@ static void cpuset_attach(struct cgroup_subsys *ss,
->  	int err;
->  
->  	if (cs == &top_cpuset) {
-> -		cpus = cpu_possible_map;
-> +		cpumask_copy(cpus_attach, cpu_possible_mask);
->  	} else {
->  		mutex_lock(&callback_mutex);
-> -		guarantee_online_cpus(cs, &cpus);
-> +		guarantee_online_cpus(cs, cpus_attach);
->  		mutex_unlock(&callback_mutex);
->  	}
-> -	err = set_cpus_allowed_ptr(tsk, &cpus);
-> +	err = set_cpus_allowed_ptr(tsk, cpus_attach);
->  	if (err)
->  		return;
->  
-> @@ -1357,7 +1359,6 @@ static void cpuset_attach(struct cgroup_subsys *ss,
->  			cpuset_migrate_mm(mm, &from, &to);
->  		mmput(mm);
->  	}
-> -
->  }
->  
->  /* The various types of files and directories in a cpuset file system */
-> @@ -1838,6 +1839,9 @@ int __init cpuset_init(void)
->  	if (err < 0)
->  		return err;
->  
-> +	if (!alloc_cpumask_var(&cpus_attach, GFP_KERNEL))
-> +		BUG();
-> +
->  	number_of_cpusets = 1;
->  	return 0;
->  }
+> Mine works fine with today's Linux git tree:
+>   usb 1-2.2: new full speed USB device using uhci_hcd and address 11
+>   usb 1-2.2: configuration #1 chosen from 1 choice
+>   pl2303 1-2.2:1.0: pl2303 converter detected
+>   usb 1-2.2: pl2303 converter now attached to ttyUSB0
 
-OK, that works.
+Experiments show that my old pl2303 can only be detected in
+one particular USB port of HP 6910p, but no luck for lenovo T61.
 
-Do we need to dynamically allocate cpus_attach?  Can we just do
+Till now I have tried one new pl2303 device and two more ch341
+devices, and all of them can be detected happily :-)
 
-static cpumask_t cpus_attach;
+[27492.928651] usb 3-2: new full speed USB device using uhci_hcd and address 8
+[27493.084947] usb 3-2: configuration #1 chosen from 1 choice
+[27493.087322] pl2303 3-2:1.0: pl2303 converter detected
+[27493.099552] usb 3-2: pl2303 converter now attached to ttyUSB0
+[27493.100171] drivers/usb/core/inode.c: creating file '008'
+[27493.100440] usb 3-2: New USB device found, idVendor=067b, idProduct=2303
+[27493.100447] usb 3-2: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+[28481.464217] usb 3-2: USB disconnect, address 8
+[28481.465219] usb 3-2: pl2303_write_bulk_callback - failed resubmitting write urb, error -19
+[28481.465229] pl2303 ttyUSB0: pl2303_send - failed submitting write urb, error -19
+[28481.468514] pl2303 3-2:1.0: device disconnected
+[28481.570055] pl2303 ttyUSB0: pl2303 converter now disconnected from ttyUSB0
 
-?
+[28487.656159] usb 3-2: new full speed USB device using uhci_hcd and address 9
+[28487.816708] usb 3-2: configuration #1 chosen from 1 choice
+[28487.819107] drivers/usb/core/inode.c: creating file '009'
+[28487.819439] usb 3-2: New USB device found, idVendor=4348, idProduct=5523
+[28487.819447] usb 3-2: New USB device strings: Mfr=0, Product=2, SerialNumber=0
+[28487.819453] usb 3-2: Product: USB-SER!
+[28487.879918] USB Serial support registered for ch341-uart
+[28487.880045] ch341 3-2:1.0: ch341-uart converter detected
+[28487.892767] usb 3-2: ch341-uart converter now attached to ttyUSB0
+[28487.892856] usbcore: registered new interface driver ch341
+[28489.400229] usb 3-2: USB disconnect, address 9
+[28489.406187] ch341-uart ttyUSB0: ch341-uart converter now disconnected from ttyUSB0
+[28489.406273] ch341 3-2:1.0: device disconnected
+
+[28494.105148] usb 3-2: new full speed USB device using uhci_hcd and address 10
+[28494.269692] usb 3-2: configuration #1 chosen from 1 choice
+[28494.271475] ch341 3-2:1.0: ch341-uart converter detected
+[28494.284668] usb 3-2: ch341-uart converter now attached to ttyUSB0
+[28494.285594] drivers/usb/core/inode.c: creating file '010'
+[28494.285862] usb 3-2: New USB device found, idVendor=4348, idProduct=5523
+[28494.285870] usb 3-2: New USB device strings: Mfr=0, Product=2, SerialNumber=0
+[28494.285877] usb 3-2: Product: USB-SER!
+[28496.344254] usb 3-2: USB disconnect, address 10
+[28496.347735] ch341-uart ttyUSB0: ch341-uart converter now disconnected from ttyUSB0
+[28496.347819] ch341 3-2:1.0: device disconnected
+
+Thanks,
+Fengguang
+
