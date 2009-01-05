@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZAENVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZAENWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbZAENVS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 08:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZAENVI
+	id S1754818AbZAENWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 08:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZAENWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 08:21:08 -0500
-Received: from phoenix.clifford.at ([88.198.7.52]:39114 "EHLO
-	phoenix.clifford.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZAENVH (ORCPT
+	Mon, 5 Jan 2009 08:22:05 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:50320 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbZAENWB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 08:21:07 -0500
-Date: Mon, 5 Jan 2009 14:21:02 +0100
-From: Clifford Wolf <clifford@clifford.at>
-To: linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
-       akpm@linux-foundation.org, khali@linux-fr.org, adrian@humboldt.co.uk
-Subject: [PATCH] Incremental i2c-mpc driver fix for multi-master i2c busses.
-Message-ID: <20090105132102.GA27855@clifford.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 5 Jan 2009 08:22:01 -0500
+Subject: Re: Btrfs for mainline
+From: Chris Mason <chris.mason@oracle.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+In-Reply-To: <200901052132.22620.nickpiggin@yahoo.com.au>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>
+	 <20090103.013755.42849152.ryusuke@osrg.net>
+	 <1230925087.7538.41.camel@think.oraclecorp.com>
+	 <200901052132.22620.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Mon, 05 Jan 2009 08:21:43 -0500
+Message-Id: <1231161703.4290.14.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4962096A.0193:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Incremental i2c-mpc driver fix for multi-master i2c busses.
+On Mon, 2009-01-05 at 21:32 +1100, Nick Piggin wrote:
+> On Saturday 03 January 2009 06:38:07 Chris Mason wrote:
 
-This is an incremental bugfix for the i2c-mpc driver. It is based
-on the bugfix I've sent on 2008-12-22:
+> > The extent_map and extent_buffer code was also intended for generic use.
+> > It needs some love and care (making it work for blocksize != pagesize)
+> > before I'd suggest moving it out of fs/btrfs.
+> 
+> I'm yet to be convinced it is a good idea to use extents for this. Been a
+> long time since we visited the issue, but when you converted ext2 to use
+> the extent mapping stuff, it actually went slower, and complexity went up
+> a lot (IIRC possibly required allocations in the writeback path).
+> 
+>
+> So I think it is a fine idea to live in btrfs until it is more proven and
+> found useful elsewhere.
 
-	http://lkml.org/lkml/2008/12/22/99
+It has gotten faster since then, but it makes sense to wait on moving
+extent_* code.
 
-There still was a remaining problem with multi-master i2c busses
-when an i2c bus access is interrupted by a unix signal while
-waiting for bus arbitration.
+-chris
 
-This is an extreamly rare case but I managed to stumble over it in
-multi master i2c performance tests.
-
-Tested with a freescale MPC8349E host cpu.
-
-Signed-off-by: Clifford Wolf <clifford@clifford.at>
-
---- drivers/i2c/busses/i2c-mpc.c	(revision 2216)
-+++ drivers/i2c/busses/i2c-mpc.c	(working copy)
-@@ -105,7 +105,7 @@
- 			schedule();
- 			if (time_after(jiffies, orig_jiffies + timeout)) {
- 				pr_debug("I2C: timeout\n");
--				writeccr(i2c, 0);
-+				writeccr(i2c, CCR_MEN);
- 				result = -EIO;
- 				break;
- 			}
-@@ -119,10 +119,10 @@
- 
- 		if (unlikely(result < 0)) {
- 			pr_debug("I2C: wait interrupted\n");
--			writeccr(i2c, 0);
-+			writeccr(i2c, CCR_MEN);
- 		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
- 			pr_debug("I2C: wait timeout\n");
--			writeccr(i2c, 0);
-+			writeccr(i2c, CCR_MEN);
- 			result = -ETIMEDOUT;
- 		}
- 
-@@ -267,7 +267,7 @@
- 	while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
- 		if (signal_pending(current)) {
- 			pr_debug("I2C: Interrupted\n");
--			writeccr(i2c, 0);
-+			writeccr(i2c, CCR_MEN);
- 			return -EINTR;
- 		}
- 		if (time_after(jiffies, orig_jiffies + HZ)) {
-@@ -369,6 +369,15 @@
- 		goto fail_add;
- 	}
- 
-+	/* Make sure the adapter is already in master mode some time before
-+	 * the first xfer to make sure arbitration control had enough time
-+	 * to monitor the bus. The CCR_MEN flag should never be cleared without
-+	 * makeing sure there is some delay between setting it again and
-+	 * starting the first transfer..
-+	 */
-+	writeccr(i2c, CCR_MEN);
-+	udelay(100);
-+
- 	return result;
- 
-       fail_add:
-
--- 
-The great thing about Object Oriented code is that it can make small,
-simple problems look like large, complex ones.
