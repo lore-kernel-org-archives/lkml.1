@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbZAFKVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZAFKVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752079AbZAFKVK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbZAFKUx
+	id S1752780AbZAFKVj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 05:21:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZAFKVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:20:53 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35674 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750806AbZAFKUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:20:53 -0500
-Message-ID: <49633005.5080305@redhat.com>
-Date: Tue, 06 Jan 2009 11:18:45 +0100
-From: Zdenek Kabelac <zkabelac@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Tue, 6 Jan 2009 05:21:30 -0500
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:40159 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750899AbZAFKV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 05:21:29 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=6p43HlRCboBc4Jb9Tksr3oGOLdnLDIKJ/R+aWZhajr3cvPBs70Wg2OB8B4KRM+O7S/Oe2B80NGDVH9kfap2/FV3GTnakmBEKPJdtApV7ybuj8ZPnHs3UMpeJGnTWaUycidVQc5e7Owfz4WIkpy6znqFh5mVKEG2Cih4JuWBXVxY=  ;
+X-YMail-OSG: hoGKXFUVM1kmXCFVoYFlrYfHO7H_lJ3o4jjaOyD38v84WJfJQoZp_HoXYGaOLPW7Ug05Ej0lXZ25f3cWcayveP2zkQSciQYtSI2Uy.KtrBmU_7fmVEs7c6iwLp9STzGbSh8RdyA1EkmQzvhmuhAc2vWa
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+Reply-To: dbrownell@users.sourceforge.net
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.28-rc7] regulator: catch some registration errors
+Date: Tue, 6 Jan 2009 02:21:26 -0800
+User-Agent: KMail/1.9.10
+Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
+References: <200812011335.43551.david-b@pacbell.net> <200901051545.04912.david-b@pacbell.net> <20090106101050.GB6783@sirena.org.uk>
+In-Reply-To: <20090106101050.GB6783@sirena.org.uk>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [BUG] INFO: inconsistent lock state
-References: <4962C322.8000201@cn.fujitsu.com>
-In-Reply-To: <4962C322.8000201@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901060221.26614.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan napsal(a):
-> I am using Linus' tree, and the top commit is:
+On Tuesday 06 January 2009, Mark Brown wrote:
+> On Mon, Jan 05, 2009 at 03:45:04PM -0800, David Brownell wrote:
 > 
-> commit fe0bdec68b77020281dc814805edfe594ae89e0f
-> Merge: 099e657... 5af75d8...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Sun Jan 4 16:32:11 2009 -0800
+> > When someone writes a cpufreq driver that uses the
+> > regulator framework, they can arrange to provide the
+> > relevant "struct device *" to make that work neatly.
 > 
->     Merge branch 'audit.b61' of git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
+> I'm fairly sure it's been mentioned before but there's some already, for
+> example:
 > 
-> don't know how I triggered this, and not sure whom to CC, network related?
-> 
+>	[ Long URL for your i.MX3 cpufreq driver elided ] 
 
-I've got the similar one too: http://lkml.org/lkml/2009/1/3/55
+Right, and what's keeping you from providing a "struct device *"
+for that to use?
 
-Zdenek
