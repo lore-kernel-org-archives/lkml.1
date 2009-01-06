@@ -1,63 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbZAFQ4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZAFQ7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754035AbZAFQ4t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 11:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZAFQ4j
+	id S1753930AbZAFQ7Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 11:59:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZAFQ7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 11:56:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52684 "EHLO mx3.mail.elte.hu"
+	Tue, 6 Jan 2009 11:59:00 -0500
+Received: from sh.osrg.net ([192.16.179.4]:51614 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbZAFQ4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 11:56:38 -0500
-Date: Tue, 6 Jan 2009 17:56:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-Message-ID: <20090106165615.GA5168@elte.hu>
-References: <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu> <alpine.LFD.2.00.0901060750410.3057@localhost.localdomain> <alpine.LFD.2.00.0901060808260.3057@localhost.localdomain> <alpine.LFD.2.00.0901060833060.3057@localhost.localdomain> <20090106165409.GA32608@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106165409.GA32608@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751397AbZAFQ67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 11:58:59 -0500
+Date: Wed, 7 Jan 2009 01:58:29 +0900
+To: travis@sgi.com
+Cc: mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, rusty@rustcorp.com.au
+Subject: Re: tip: IA64 build error
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49637A72.3020600@sgi.com>
+References: <20090106233758L.fujita.tomonori@lab.ntt.co.jp>
+	<20090106152111.GA11114@elte.hu>
+	<49637A72.3020600@sgi.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090107013420F.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 06 Jan 2009 07:36:18 -0800
+Mike Travis <travis@sgi.com> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> Ingo Molnar wrote:
+> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > 
+> >> I got the followings with tip/master:
+> >>
+> >> drivers/pci/probe.c: In function 'pci_bus_show_cpuaffinity':
+> >> drivers/pci/probe.c:56: error: implicit declaration of function 'cpumask_from_node'
+> >> drivers/pci/probe.c:56: warning: pointer/integer type mismatch in conditional expression
+> >> make[3]: *** [drivers/pci/probe.o] Error 1
+> >> make[2]: *** [drivers/pci] Error 2
+> >>
+> >>
+> >> it's due to the typo in arch/ia64/include/asm/topology.h, I guess.
+> > 
+> > yeah. Does the patch below fix it for you?
+> > 
+> > 	Ingo
 
-> One thought:
+Yeah, I've used the same patch but I was not sure if it's the correct
+fix.
+
+
+> > ---------------->
+> >>From 36c401a44abcc389a00f9cd14892c9cf9bf0780d Mon Sep 17 00:00:00 2001
+> > From: Ingo Molnar <mingo@elte.hu>
+> > Date: Tue, 6 Jan 2009 16:19:22 +0100
+> > Subject: [PATCH] [IA64] fix typo in cpumask_of_pcibus()
+> > 
+> > Impact: build fix
+> > 
+> > Fujita Tomonori reported:
+> > 
+> >  drivers/pci/probe.c: In function 'pci_bus_show_cpuaffinity':
+> >  drivers/pci/probe.c:56: error: implicit declaration of function 'cpumask_from_node'
+> >  drivers/pci/probe.c:56: warning: pointer/integer type mismatch in conditional expression
+> >  make[3]: *** [drivers/pci/probe.o] Error 1
+> >  make[2]: *** [drivers/pci] Error 2
+> > 
+> > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> >  arch/ia64/include/asm/topology.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/ia64/include/asm/topology.h b/arch/ia64/include/asm/topology.h
+> > index 76a33a9..32f3af1 100644
+> > --- a/arch/ia64/include/asm/topology.h
+> > +++ b/arch/ia64/include/asm/topology.h
+> > @@ -124,7 +124,7 @@ extern void arch_fix_phys_package_id(int num, u32 slot);
+> >  
+> >  #define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
+> >  				 cpu_all_mask :				\
+> > -				 cpumask_from_node(pcibus_to_node(bus)))
+> > +				 cpumask_of_node(pcibus_to_node(bus)))
+> >  
+> >  #include <asm-generic/topology.h>
+> >  
 > 
-> BUG_ON()'s do_exit() shows a slightly misleading failure pattern to 
-> users: instead of a 'hanging' task, we'd get a misbehaving app due to 
-> one of its tasks exiting spuriously. It can even go completely unnoticed 
-> [users dont look at kernel logs normally] - while a hanging task 
-> generally does get noticed. (because there's no progress in processing)
+> Did I do that?  I could have sworn I test-built on ia64.  But here's the commit,
+> and I merged it.
+
+Well, I was too lazy to check who did this. :)
+
+I sent you simply because I thought that you know the correct way to
+fix this.
+
+
+Thanks,
+
+
+> Sorry about that.
 > 
-> So instead of the BUG_ON() we could emit a WARN_ONCE() perhaps, plus not 
-> do any spinning and just block - resulting in an uninterruptible task 
-> (that the user will probably notice) and a scary message in the syslog? 
-> [all in the slowpath]
-
-And we'd strictly do an uninterruptible sleep here, unconditionally: even 
-if this is within mutex_lock_interruptible() - we dont want a Ctrl-C or a 
-SIGKILL to allow to 'break out' the app from the deadlock.
-
-	Ingo
+> Mike
+> 
+> --commit fbb776c3ca4501d5a2821bf1e9bceefcaec7ae47
+> Author: Rusty Russell <rusty@rustcorp.com.au>
+> Date:   Fri Dec 26 22:23:40 2008 +1030
+> 
+>     cpumask: IA64: Introduce cpumask_of_{node,pcibus} to replace {node,pcibus}_to_cpumask
+> 
+> ...
+> +#define cpumask_of_pcibus(bus) (pcibus_to_node(bus) == -1 ?            \
+> +                                cpu_all_mask :                         \
+> +                                cpumask_from_node(pcibus_to_node(bus)))
+> +
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
