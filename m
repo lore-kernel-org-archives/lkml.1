@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbZAFKJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896AbZAFKLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754972AbZAFKJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZAFKJV
+	id S1752896AbZAFKLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 05:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbZAFKK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:09:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44387 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbZAFKJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:09:20 -0500
-Date: Tue, 6 Jan 2009 11:09:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC -tip 0/4] x86: reduce fixup of uaccess
-Message-ID: <20090106100906.GA14185@elte.hu>
-References: <4962CAAE.6090300@ct.jp.nec.com>
+	Tue, 6 Jan 2009 05:10:58 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1116 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZAFKK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 05:10:58 -0500
+Date: Tue, 6 Jan 2009 10:10:51 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
+Message-ID: <20090106101050.GB6783@sirena.org.uk>
+References: <200812011335.43551.david-b@pacbell.net> <200812012150.36342.david-b@pacbell.net> <20081202133228.GD7940@sirena.org.uk> <200901051545.04912.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4962CAAE.6090300@ct.jp.nec.com>
+In-Reply-To: <200901051545.04912.david-b@pacbell.net>
+X-Cookie: The Ranger isn't gonna like it, Yogi.
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [patch 2.6.28-rc7] regulator: catch some registration errors
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 05, 2009 at 03:45:04PM -0800, David Brownell wrote:
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> When someone writes a cpufreq driver that uses the
+> regulator framework, they can arrange to provide the
+> relevant "struct device *" to make that work neatly.
 
-> This is my second try to reduce fixup code size for exceptions of uaccess.
-> 
-> This patch series reduces fixup code for exceptions of uaccess in signal.
-> 
-> I gave up to make direct jump to end of function when an exception occurs.
-> However, I thought fixup code could be reduced. The concept is that to add
-> uaccess_err in thread_info and set it to -EFAULT on exception, finally check
-> this value on the last of function.
-> 
-> Is this good to reduce code size?
-> 
-> The code size reductions are below;
-> $ size *signal*.o.*
->    text	   data	    bss	    dec	    hex	filename
->    4741	      0	      0	   4741	   1285	ia32_signal.o.new
->    6006	      0	      0	   6006	   1776	ia32_signal.o.old
->    3577	      0	      0	   3577	    df9	signal.o.new
->    4540	      0	      0	   4540	   11bc	signal.o.old
->    3855	      0	      0	   3855	    f0f	signal32.o.new
->    4876	      0	      0	   4876	   130c	signal32.o.old
+I'm fairly sure it's been mentioned before but there's some already, for
+example:
 
-looks very nice! Since kernel execution is i-cache-cold in the typical 
-case, this will probably transform into a performance improvement as well.
+http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=arch/arm/mach-mx3/cpufreq.c;h=7a2d5154ada5fb58aeb49b261e6f08cb591b96b2;hb=refs/heads/imx31
 
-	Ingo
+Actually, I have some updates to that I should push, needs to be
+disentangled from some other stuff first.
