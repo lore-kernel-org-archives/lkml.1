@@ -1,322 +1,511 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751845AbZAFA3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbZAFAav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751845AbZAFA3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 19:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbZAFA3Q
+	id S1752221AbZAFAav (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 19:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbZAFAan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 19:29:16 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:45772 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbZAFA3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 19:29:14 -0500
-Date: Mon, 5 Jan 2009 16:29:12 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, josh@freedesktop.org, dipankar@in.ibm.com
-Subject: Re: [BUG] NULL pointer deref with rcutorture
-Message-ID: <20090106002912.GA21071@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090104233855.GA17021@alice> <20090105022827.GA8080@linux.vnet.ibm.com> <20090105121409.GA5783@alice> <20090105180037.GH6959@linux.vnet.ibm.com> <20090105185655.GA11244@alice> <20090105193602.GL6959@linux.vnet.ibm.com> <20090105200012.GB11244@alice> <20090105201631.GO6959@linux.vnet.ibm.com> <20090105203153.GC11244@alice> <20090105221836.GT6959@linux.vnet.ibm.com>
+	Mon, 5 Jan 2009 19:30:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:25268 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbZAFAam (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 19:30:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UeOjVUuj/pYPfF2AMZqN17Ub1M/AlLp997KAzZKY5th+IOJX2IHVwzzAeDqPMjIk1e
+         zrm8MGC3Bgca3sBSPoAq0O6TBqfA2QEwSpucBRkyUkmHcCo67+BzhOsAQnqrgPIAGjQO
+         +FwZXGpylhWQMaMPUQs0xIKfOXgvv57i5nQzY=
+Date: Tue, 6 Jan 2009 01:30:36 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH 1/2] tracing/ftrace: handle more than one stat file per
+	tracer
+Message-ID: <20090106003035.GD6531@nowhere>
+References: <495b9305.0405560a.0ec4.29c0@mx.google.com> <alpine.DEB.1.10.0901051546450.25066@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090105221836.GT6959@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <alpine.DEB.1.10.0901051546450.25066@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 02:18:36PM -0800, Paul E. McKenney wrote:
-> On Mon, Jan 05, 2009 at 09:31:53PM +0100, Eric Sesterhenn wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Mon, Jan 05, 2009 at 09:01:45PM +0100, Eric Sesterhenn wrote:
-> > > > hi,
-> > > > 
-> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > On Mon, Jan 05, 2009 at 07:56:55PM +0100, Eric Sesterhenn wrote:
-> > > > > 
-> > > > > Wow!!!  Am I reading this correctly?  Does the above "call" instruction
-> > > > > -really- call one byte into itself?  That is what the hex for the x86
-> > > > > instruction -looks- like it is doing, but I cannot see what would have
-> > > > > possessed the compiler to generate this code.
-> > > > 
-> > > > Compiler is gcc version 4.2.4 (Ubuntu 4.2.4-1ubuntu3)
-> > > 
-> > > I am using 4.1.3, for whatever it is worth.  (Ancient, I know!)
-> > > 
-> > > > > When I compile on a 32-bit x86 machine, I don't see the above "call"
-> > > > > instruction.  Other than that, the code I see looks consistent.
-> > > > > 
-> > > > > >      9f0:       eb 1d                   jmp    a0f <rcu_stutter_wait+0x27>
-> > > > > >      9f2:       83 3d 00 00 00 00 00    cmpl   $0x0,0x0
-> > > > > >      9f9:       b8 01 00 00 00          mov    $0x1,%eax
-> > > > > >      9fe:       75 0a                   jne    a0a <rcu_stutter_wait+0x22>
-> > > > > >      a00:       b8 e8 03 00 00          mov    $0x3e8,%eax
-> > > > > >      a05:       e8 fc ff ff ff          call   a06 <rcu_stutter_wait+0x1e>
-> > > > > >      a0a:       e8 fc ff ff ff          call   a0b <rcu_stutter_wait+0x23>
-> > > > > >      a0f:       83 3d 6c 00 00 00 00    cmpl   $0x0,0x6c
-> > > > > > 			^---------- this line
-> > > > > 
-> > > > > This looks like the first test in the "while" loop.
-> > > > > 
-> > > > > >      a16:       75 09                   jne    a21 <rcu_stutter_wait+0x39>
-> > > > > >      a18:       83 3d 00 00 00 00 00    cmpl   $0x0,0x0
-> > > > > >      a1f:       75 09                   jne    a2a <rcu_stutter_wait+0x42>
-> > > > > >      a21:       83 3d 50 1a 00 00 00    cmpl   $0x0,0x1a50
-> > > > > >      a28:       74 c8                   je     9f2 <rcu_stutter_wait+0xa>
-> > > > > >      a2a:       5d                      pop    %ebp
-> > > > > >      a2b:       c3                      ret
-> > > > > 
-> > > > > The corresponding C code is as follows:
-> > > > > 
-> > > > > static void
-> > > > > rcu_stutter_wait(void)
-> > > > > {
-> > > > > 	while ((stutter_pause_test || !rcutorture_runnable) && !fullstop) {
-> > > > > 		if (rcutorture_runnable)
-> > > > > 			schedule_timeout_interruptible(1);
-> > > > > 		else
-> > > > > 			schedule_timeout_interruptible(round_jiffies_relative(HZ));
-> > > > > 	}
-> > > > > }
-> > > > > 
-> > > > > I don't see much opportunity for a page fault here...  This is the
-> > > > > binary I get when I compile it, though not as a module:
-> > > > > 
-> > > > > 0000085a <rcu_stutter_wait>:
-> > > > >      85a:	55                   	push   %ebp
-> > > > >      85b:	89 e5                	mov    %esp,%ebp
-> > > > >      85d:	eb 1d                	jmp    87c <rcu_stutter_wait+0x22>
-> > > > >      85f:	83 3d 00 00 00 00 00 	cmpl   $0x0,0x0
-> > > > >      866:	b8 01 00 00 00       	mov    $0x1,%eax
-> > > > >      86b:	75 0a                	jne    877 <rcu_stutter_wait+0x1d>
-> > > > >      86d:	b8 e8 03 00 00       	mov    $0x3e8,%eax
-> > > > >      872:	e8 fc ff ff ff       	call   873 <rcu_stutter_wait+0x19>
-> > > > >      877:	e8 fc ff ff ff       	call   878 <rcu_stutter_wait+0x1e>
-> > > > >      87c:	83 3d 14 00 00 00 00 	cmpl   $0x0,0x14
-> > > > >      883:	75 09                	jne    88e <rcu_stutter_wait+0x34>
-> > > > >      885:	83 3d 00 00 00 00 00 	cmpl   $0x0,0x0
-> > > > >      88c:	75 09                	jne    897 <rcu_stutter_wait+0x3d>
-> > > > >      88e:	83 3d 08 1a 00 00 00 	cmpl   $0x0,0x1a08
-> > > > >      895:	74 c8                	je     85f <rcu_stutter_wait+0x5>
-> > > > >      897:	5d                   	pop    %ebp
-> > > > >      898:	c3                   	ret    
-> > > > > 
-> > > > > I confess, I am confused!!!
-> > > > 
-> > > > on the other box with a different gcc version
-> > > > 
-> > > > gcc version 4.3.2 (Ubuntu 4.3.2-1ubuntu11) 
-> > > > 
-> > > > d1902e90 is the start of rcu_stutter_wait
-> > > > 
-> > > > [  533.391719] d087e000 d1902e90
-> > > > [  533.392294] rcu-torture:--- Start of test: nreaders=2 nfakewriters=4 stat_interval=0 verbose=0 test_no_idle_hz=0 shuffle_interval=3 stutter=5 irqreader=1
-> > > > [  541.000139] BUG: unable to handle kernel paging request at d1902efd
-> > > > [  541.000423] IP: [<d1902efd>] 0xd1902efd
-> > > > [  541.000660] *pde = 0f08f067 *pte = 00000000 
-> > > > [  541.000867] Oops: 0000 [#1] DEBUG_PAGEALLOC
-> > > > [  541.001126] last sysfs file: /sys/block/sda/size
-> > > > [  541.001246] Modules linked in: nfsd exportfs nfs lockd nfs_acl auth_rpcgss sunrpc ipv6 fuse unix [last unloaded: rcutorture]
-> > > > [  541.002235] 
-> > > > [  541.002334] Pid: 5292, comm: rcu_torture_wri Not tainted (2.6.28 #84) 
-> > > > [  541.002470] EIP: 0060:[<d1902efd>] EFLAGS: 00010296 CPU: 0
-> > > > [  541.002598] EIP is at 0xd1902efd
-> > > > [  541.002767] EAX: 00000000 EBX: d19073c0 ECX: 00000000 EDX: 00000000
-> > > > [  541.002900] ESI: 0000000a EDI: 00000000 EBP: c7b63fb8 ESP: c7b63fb8
-> > > > [  541.003033]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> > > > [  541.003160] Process rcu_torture_wri (pid: 5292, ti=c7b63000 task=c7b09710 task.ti=c7b63000)
-> > > > [  541.003400] Stack:
-> > > > [  541.003497]  c7b63fd0 d19032c1 00000000 00000000 00000000 d1903200 c7b63fe0 c013d80a
-> > > > [  541.004022]  c013d7d0 00000000 00000000 c0103cf3 cef6ee70 00000000 00000000 00000000
-> > > > [  541.004022]  00000201 000004b4
-> > > > [  541.004022] Call Trace:
-> > > > [  541.004022]  [<c013d80a>] ? kthread+0x3a/0x70
-> > > > [  541.004022]  [<c013d7d0>] ? kthread+0x0/0x70
-> > > > [  541.004022]  [<c0103cf3>] ? kernel_thread_helper+0x7/0x14
-> > > > [  541.004022] Code:  Bad EIP value.
-> > > > [  541.004022] EIP: [<d1902efd>] 0xd1902efd SS:ESP 0068:c7b63fb8
-> > > > [  541.004022] ---[ end trace cb3b10c2bb94b4e3 ]---
-> > > > 
-> > > > 
-> > > > 00000e90 <rcu_stutter_wait>:
-> > > >      e90:	55                   	push   %ebp
-> > > >      e91:	89 e5                	mov    %esp,%ebp
-> > > >      e93:	90                   	nop    
-> > > >      e94:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-> > > >      e98:	a1 98 00 00 00       	mov    0x98,%eax
-> > > >      e9d:	85 c0                	test   %eax,%eax
-> > > >      e9f:	75 09                	jne    eaa <rcu_stutter_wait+0x1a>
-> > > >      ea1:	a1 00 00 00 00       	mov    0x0,%eax
-> > > >      ea6:	85 c0                	test   %eax,%eax
-> > > >      ea8:	75 36                	jne    ee0 <rcu_stutter_wait+0x50>
-> > > >      eaa:	a1 88 1a 00 00       	mov    0x1a88,%eax
-> > > >      eaf:	85 c0                	test   %eax,%eax
-> > > >      eb1:	75 2d                	jne    ee0 <rcu_stutter_wait+0x50>
-> > > >      eb3:	8b 15 00 00 00 00    	mov    0x0,%edx
-> > > >      eb9:	85 d2                	test   %edx,%edx
-> > > >      ebb:	74 2b                	je     ee8 <rcu_stutter_wait+0x58>
-> > > >      ebd:	b8 01 00 00 00       	mov    $0x1,%eax
-> > > >      ec2:	e8 fc ff ff ff       	call   ec3 <rcu_stutter_wait+0x33>
-> > > >      ec7:	a1 98 00 00 00       	mov    0x98,%eax
-> > > >      ecc:	85 c0                	test   %eax,%eax
-> > > >      ece:	74 d1                	je     ea1 <rcu_stutter_wait+0x11>
-> > > >      ed0:	a1 88 1a 00 00       	mov    0x1a88,%eax
-> > > >      ed5:	85 c0                	test   %eax,%eax
-> > > >      ed7:	74 da                	je     eb3 <rcu_stutter_wait+0x23>
-> > > >      ed9:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-> > > >      ee0:	5d                   	pop    %ebp
-> > > >      ee1:	c3                   	ret    
-> > > >      ee2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-> > > >      ee8:	b8 fa 00 00 00       	mov    $0xfa,%eax
-> > > >      eed:	e8 fc ff ff ff       	call   eee <rcu_stutter_wait+0x5e>
-> > > 
-> > > Here we are again calling one byte into the current instruction!!!
-> > > 
-> > > Or am I misinterpreting this code?
-> > > 
-> > > >      ef2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-> > > >      ef8:	e8 fc ff ff ff       	call   ef9 <rcu_stutter_wait+0x69>
-> > > >      efd:	8d 76 00             	lea    0x0(%esi),%esi
-> > > > 			   ^------------- here
-> > > > 
-> > > > This one looks more like it can explain a page fault
-> > > 
-> > > I don't understand why there are indirections in the assembly given the
-> > > C code for rcu_stutter_wait().
-> > > 
-> > > >      f00:	eb 96                	jmp    e98 <rcu_stutter_wait+0x8>
-> > > >      f02:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-> > > >      f09:	8d bc 27 00 00 00 00 	lea    0x0(%edi,%eiz,1),%edi
-> > 
-> > ok, after trying to find out if the ubuntu gccs are broken, i stumbled
-> > upon this:
-> > http://forum.soft32.com/linux/Strange-problem-disassembling-shared-lib-ftopict439936.html
-> > 
-> > Seems the difference is that you dont compile it as a module and the
-> > jump is perfectly normal, it gets overwritten when the stuff is loaded
-> > objdump -dr gives me
-> > 
-> > 00000e90 <rcu_stutter_wait>:
-> >      e90:	55                   	push   %ebp
-> >      e91:	89 e5                	mov    %esp,%ebp
-> >      e93:	90                   	nop    
-> >      e94:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-> >      e98:	a1 98 00 00 00       	mov    0x98,%eax
-> > 			e99: R_386_32	.bss
-> >      e9d:	85 c0                	test   %eax,%eax
-> >      e9f:	75 09                	jne    eaa <rcu_stutter_wait+0x1a>
-> >      ea1:	a1 00 00 00 00       	mov    0x0,%eax
-> > 			ea2: R_386_32	rcutorture_runnable
-> >      ea6:	85 c0                	test   %eax,%eax
-> >      ea8:	75 36                	jne    ee0 <rcu_stutter_wait+0x50>
-> >      eaa:	a1 88 1a 00 00       	mov    0x1a88,%eax
-> > 			eab: R_386_32	.bss
-> >      eaf:	85 c0                	test   %eax,%eax
-> >      eb1:	75 2d                	jne    ee0 <rcu_stutter_wait+0x50>
-> >      eb3:	8b 15 00 00 00 00    	mov    0x0,%edx
-> > 			eb5: R_386_32	rcutorture_runnable
-> >      eb9:	85 d2                	test   %edx,%edx
-> >      ebb:	74 2b                	je     ee8 <rcu_stutter_wait+0x58>
-> >      ebd:	b8 01 00 00 00       	mov    $0x1,%eax
-> >      ec2:	e8 fc ff ff ff       	call   ec3 <rcu_stutter_wait+0x33>
-> > 			ec3: R_386_PC32	schedule_timeout_interruptible
-> >      ec7:	a1 98 00 00 00       	mov    0x98,%eax
-> > 			ec8: R_386_32	.bss
-> >      ecc:	85 c0                	test   %eax,%eax
-> >      ece:	74 d1                	je     ea1 <rcu_stutter_wait+0x11>
-> >      ed0:	a1 88 1a 00 00       	mov    0x1a88,%eax
-> > 			ed1: R_386_32	.bss
-> >      ed5:	85 c0                	test   %eax,%eax
-> >      ed7:	74 da                	je     eb3 <rcu_stutter_wait+0x23>
-> >      ed9:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-> >      ee0:	5d                   	pop    %ebp
-> >      ee1:	c3                   	ret    
-> >      ee2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-> >      ee8:	b8 fa 00 00 00       	mov    $0xfa,%eax
-> >      eed:	e8 fc ff ff ff       	call   eee <rcu_stutter_wait+0x5e>
-> > 			eee: R_386_PC32	round_jiffies_relative
-> >      ef2:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-> >      ef8:	e8 fc ff ff ff       	call   ef9 <rcu_stutter_wait+0x69>
-> > 			ef9: R_386_PC32	schedule_timeout_interruptible
-> >      efd:	8d 76 00             	lea    0x0(%esi),%esi
-> > 
-> > here is the deref ------------------------^
+On Mon, Jan 05, 2009 at 03:53:38PM -0500, Steven Rostedt wrote:
 > 
-> Ah!!!  We are getting a page fault while cleaning up the stack frame?
+> On Wed, 31 Dec 2008, Frederic Weisbecker wrote:
 > 
-> Ouch!
+> > Impact: new API for tracers
+> > 
+> > Make the stat tracing API reentrant. And also provide the new directory
+> > /debugfs/tracing/trace_stat which will contain all the stat files for the
+> > current active tracer.
+> > 
+> > Now a tracer will, if desired, want to provide a zero terminated array of
+> > tracer_stat structures.
+> > Each one contains the callbacks necessary for one stat file.
+> > It have to provide at least a name for its stat file, an iterator with
+> > stat_start/start_next callback and an output callback for one stat entry.
+> > 
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > ---
+> > diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> > index 46677ea..b093f36 100644
+> > --- a/kernel/trace/trace.h
+> > +++ b/kernel/trace/trace.h
+> > @@ -335,6 +335,25 @@ struct tracer_flags {
+> >  #define TRACER_OPT(s, b)	.name = #s, .bit = b
+> >  
+> >  /*
+> > + * If you want to provide a stat file (one-shot statistics), fill
+> > + * an iterator with stat_start/stat_next and a stat_show callbacks.
+> > + * The others callbacks are optional.
+> > + */
+> > +struct tracer_stat {
+> > +	/* The name of your stat file */
+> > +	const char		*name;
+> > +	/* Iteration over statistic entries */
+> > +	void			*(*stat_start)(void);
+> > +	void			*(*stat_next)(void *prev, int idx);
+> > +	/* Compare two entries for sorting (optional) for stats */
+> > +	int			(*stat_cmp)(void *p1, void *p2);
+> > +	/* Print a stat entry */
+> > +	int			(*stat_show)(struct seq_file *s, void *p);
+> > +	/* Print the headers of your stat entries */
+> > +	int			(*stat_headers)(struct seq_file *s);
+> > +};
+> > +
+> > +/*
+> >   * A specific tracer, represented by methods that operate on a trace array:
+> >   */
+> >  struct tracer {
+> > @@ -361,21 +380,7 @@ struct tracer {
+> >  	struct tracer		*next;
+> >  	int			print_max;
+> >  	struct tracer_flags 	*flags;
+> > -
+> > -	/*
+> > -	 * If you change one of the following on tracing runtime, recall
+> > -	 * init_tracer_stat()
+> > -	 */
+> > -
+> > -	/* Iteration over statistic entries */
+> > -	void			*(*stat_start)(void);
+> > -	void			*(*stat_next)(void *prev, int idx);
+> > -	/* Compare two entries for sorting (optional) for stats */
+> > -	int			(*stat_cmp)(void *p1, void *p2);
+> > -	/* Print a stat entry */
+> > -	int			(*stat_show)(struct seq_file *s, void *p);
+> > -	/* Print the headers of your stat entries */
+> > -	int			(*stat_headers)(struct seq_file *s);
+> > +	struct tracer_stat	*stats;
+> >  };
+> >  
+> >  struct trace_seq {
+> > diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+> > index 6f194a3..293be1c 100644
+> > --- a/kernel/trace/trace_stat.c
+> > +++ b/kernel/trace/trace_stat.c
+> > @@ -21,31 +21,29 @@ struct trace_stat_list {
+> >  	void *stat;
+> >  };
+> >  
+> > -static struct trace_stat_list stat_list;
+> > +/* A stat session is the stats output in one file */
+> > +struct tracer_stat_session {
+> > +	struct tracer_stat *ts;
+> > +	struct trace_stat_list	stat_list;
+> > +	struct mutex stat_mutex;
+> > +};
+> >  
+> > -/*
+> > - * This is a copy of the current tracer to avoid racy
+> > - * and dangerous output while the current tracer is
+> > - * switched.
+> > - */
+> > -static struct tracer current_tracer;
+> > -
+> > -/*
+> > - * Protect both the current tracer and the global
+> > - * stat list.
+> > - */
+> > -static DEFINE_MUTEX(stat_list_mutex);
+> > +/* All of the sessions currently in use. Each stat file embeed one session */
+> > +static struct tracer_stat_session **all_stat_sessions;
+> > +static int nb_sessions;
+> > +static struct dentry *stat_dir, **stat_files;
+> >  
+> >  
+> > -static void reset_stat_list(void)
+> > +static void reset_stat_session(struct tracer_stat_session *session)
+> >  {
+> > +	struct trace_stat_list *root = &session->stat_list;
+> >  	struct trace_stat_list *node;
+> >  	struct list_head *next;
+> >  
+> > -	if (list_empty(&stat_list.list))
+> > +	if (list_empty(&root->list))
+> >  		return;
+> >  
+> > -	node = list_entry(stat_list.list.next, struct trace_stat_list, list);
+> > +	node = list_entry(root->list.next, struct trace_stat_list, list);
+> >  	next = node->list.next;
+> >  
+> >  	while (&node->list != next) {
+> > @@ -54,14 +52,65 @@ static void reset_stat_list(void)
+> >  	}
+> >  	kfree(node);
+> >  
+> > -	INIT_LIST_HEAD(&stat_list.list);
+> > +	INIT_LIST_HEAD(&root->list);
+> >  }
+> >  
+> > -void init_tracer_stat(struct tracer *trace)
+> > +/* Called when a tracer is initialized */
+> > +static int init_all_sessions(int nb, struct tracer_stat *ts)
+> > +{
+> > +	int i, j;
+> > +	struct tracer_stat_session *session;
+> > +
+> > +	if (all_stat_sessions) {
+> > +		for (i = 0; i < nb_sessions; i++) {
+> > +			session = all_stat_sessions[i];
+> > +			reset_stat_session(session);
+> > +			mutex_destroy(&session->stat_mutex);
+> > +			kfree(session);
+> > +		}
+> > +	}
+> > +	all_stat_sessions = kmalloc(sizeof(struct tracer_stat_session *) * nb,
+> > +				    GFP_KERNEL);
 > 
-> >      f00:	eb 96                	jmp    e98 <rcu_stutter_wait+0x8>
-> >      f02:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-> >      f09:	8d bc 27 00 00 00 00 	lea    0x0(%edi,%eiz,1),%edi
-
-And now I can run this.  gcc v3.4.4 gives yet a different error:
-
-divide error: 0000 [#1] PREEMPT SMP 
-
-last sysfs file: /sys/devices/pci0000:00/0000:00:0a.0/0000:02:04.0/host0/target0:0:6/0:0:6:0/type
-
-CPU 1 
-
-Modules linked in: [last unloaded: rcutorture]
-
-Pid: 3369, comm: rcu_torture_rea Not tainted 2.6.28-autokern1 #1
-
-RIP: 0010:[<ffffffffa0000142>]  [<ffffffffa0000142>] 0xffffffffa0000142
-
-RSP: 0000:ffff88007f0afeb0  EFLAGS: 00010246
-
-RAX: 00000000def36d6a RBX: ffffffffa0006850 RCX: 0000000000000000
-
-RDX: 0000000000000000 RSI: ffff88007ecf1600 RDI: ffff88007f0afef0
-
-RBP: 0000000000000dd4 R08: ffff88007f0ae000 R09: ffffffff8037c7d9
-
-R10: 0000000000000000 R11: ffffffff8037c7d9 R12: 0000000000000000
-
-R13: 000000000000000a R14: 0000000000000000 R15: 0000000000000000
-
-FS:  0000000000000000(0000) GS:ffff8800e3801c00(0000) knlGS:00000000f7f3ab80
-
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-
-CR2: 00000000080dc87c CR3: 0000000000201000 CR4: 00000000000006e0
-
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-
-Process rcu_torture_rea (pid: 3369, threadinfo ffff88007f0ae000, task ffff88007ecf5d80)
-
-Stack:
-
- ffffffff8037c7d9 ffffffffa000090d ffff88007ecfdec0 ffff88007ec17eb0
-
- 0000000000000001 ffffffffa00006e6 0000000000000000 ffff8800e3488000
-
- c744ca136d6adef3 0000000000000256 0000000000000000 ffffffffa0000807
-
-Call Trace:
-
- [<ffffffff8037c7d9>] ? delay_tsc+0x0/0x99
-
- [<ffffffff80245b94>] ? kthread+0x3d/0x63
-
- [<ffffffff8020c3ea>] ? child_rip+0xa/0x20
-
- [<ffffffff80245b57>] ? kthread+0x0/0x63
-
- [<ffffffff8020c3e0>] ? child_rip+0x0/0x20
-
-Code: 58 c3 56 bf 01 00 00 00 e8 88 bd 22 e0 59 31 c0 c3 41 51 e8 69 ff ff ff 48 63 15 0a 58 00 00 48 69 d2 90 01 00 00 48 89 d1 31 d2 <48> f7 f1 48 85 d2 75 0c 41 58 bf 78 1b 0d 00 e9 32 c7 37 e0 5f 
-
-RIP  [<ffffffffa0000142>] 0xffffffffa0000142
-
- RSP <ffff88007f0afeb0>
+> You want this to be kzalloc.
+> 
+> > +	if (!all_stat_sessions)
+> > +		return -ENOMEM;
+> > +
+> > +	for (i = 0; i < nb; i++) {
+> > +		session = kmalloc(sizeof(struct tracer_stat_session) * nb,
+> > +				  GFP_KERNEL);
+> 
+> Not so important, but you probably want to do it here too.
+> 
+> > +		if (!session)
+> > +			goto free_sessions;
+> > +
+> > +		INIT_LIST_HEAD(&session->stat_list.list);
+> > +		mutex_init(&session->stat_mutex);
+> > +		session->ts = &ts[i];
+> > +		all_stat_sessions[i] = session;
+> > +	}
+> > +	nb_sessions = nb;
+> > +	return 0;
+> > +
+> > +free_sessions:
+> > +
+> > +	for (j = 0; j < i; j++)
+> > +		kfree(all_stat_sessions[i]);
+> 
+> With out the kzalloc above, this may crash the kernel, because
+> all_stat_sessions[i] might not be NULL when they were not initialized.
 
 
-I will see what I can find from this.
+I'm not sure. j will not go through indexes of rooms that weren't allocated.
 
-							Thanx, Paul
+ 
+> > +
+> > +	kfree(all_stat_sessions);
+> > +	all_stat_sessions = NULL;
+> > +
+> > +	return -ENOMEM;
+> > +}
+> > +
+> > +static int basic_tracer_stat_checks(struct tracer_stat *ts)
+> >  {
+> > -	mutex_lock(&stat_list_mutex);
+> > -	current_tracer = *trace;
+> > -	mutex_unlock(&stat_list_mutex);
+> > +	int i;
+> > +
+> > +	if (!ts)
+> > +		return 0;
+> > +
+> > +	for (i = 0; ts[i].name; i++) {
+> > +		if (!ts[i].stat_start || !ts[i].stat_next || !ts[i].stat_show)
+> > +			return -EBUSY;
+> > +	}
+> > +	return i;
+> >  }
+> >  
+> >  /*
+> > @@ -79,22 +128,19 @@ static int dummy_cmp(void *p1, void *p2)
+> >   * All of these copies and sorting are required on all opening
+> >   * since the stats could have changed between two file sessions.
+> >   */
+> > -static int stat_seq_init(void)
+> > +static int stat_seq_init(struct tracer_stat_session *session)
+> >  {
+> > -	struct trace_stat_list *iter_entry, *new_entry;
+> > +	struct trace_stat_list *iter_entry, *new_entry, *root;
+> > +	struct tracer_stat *ts = session->ts;
+> >  	void *prev_stat;
+> >  	int ret = 0;
+> >  	int i;
+> >  
+> > -	mutex_lock(&stat_list_mutex);
+> > -	reset_stat_list();
+> > -
+> > -	if (!current_tracer.stat_start || !current_tracer.stat_next ||
+> > -					!current_tracer.stat_show)
+> > -		goto exit;
+> > +	mutex_lock(&session->stat_mutex);
+> > +	reset_stat_session(session);
+> >  
+> > -	if (!current_tracer.stat_cmp)
+> > -		current_tracer.stat_cmp = dummy_cmp;
+> > +	if (!ts->stat_cmp)
+> > +		ts->stat_cmp = dummy_cmp;
+> >  
+> >  	/*
+> >  	 * The first entry. Actually this is the second, but the first
+> > @@ -107,8 +153,9 @@ static int stat_seq_init(void)
+> >  	}
+> >  
+> >  	INIT_LIST_HEAD(&new_entry->list);
+> > -	list_add(&new_entry->list, &stat_list.list);
+> > -	new_entry->stat = current_tracer.stat_start();
+> > +	root = &session->stat_list;
+> > +	list_add(&new_entry->list, &root->list);
+> > +	new_entry->stat = ts->stat_start();
+> >  
+> >  	prev_stat = new_entry->stat;
+> >  
+> > @@ -124,15 +171,15 @@ static int stat_seq_init(void)
+> >  		}
+> >  
+> >  		INIT_LIST_HEAD(&new_entry->list);
+> > -		new_entry->stat = current_tracer.stat_next(prev_stat, i);
+> > +		new_entry->stat = ts->stat_next(prev_stat, i);
+> >  
+> >  		/* End of insertion */
+> >  		if (!new_entry->stat)
+> >  			break;
+> >  
+> > -		list_for_each_entry(iter_entry, &stat_list.list, list) {
+> > +		list_for_each_entry(iter_entry, &root->list, list) {
+> >  			/* Insertion with a descendent sorting */
+> > -			if (current_tracer.stat_cmp(new_entry->stat,
+> > +			if (ts->stat_cmp(new_entry->stat,
+> >  						iter_entry->stat) > 0) {
+> >  
+> >  				list_add_tail(&new_entry->list,
+> > @@ -141,7 +188,7 @@ static int stat_seq_init(void)
+> >  
+> >  			/* The current smaller value */
+> >  			} else if (list_is_last(&iter_entry->list,
+> > -						&stat_list.list)) {
+> > +						&root->list)) {
+> >  				list_add(&new_entry->list, &iter_entry->list);
+> >  				break;
+> >  			}
+> > @@ -150,46 +197,49 @@ static int stat_seq_init(void)
+> >  		prev_stat = new_entry->stat;
+> >  	}
+> >  exit:
+> > -	mutex_unlock(&stat_list_mutex);
+> > +	mutex_unlock(&session->stat_mutex);
+> >  	return ret;
+> >  
+> >  exit_free_list:
+> > -	reset_stat_list();
+> > -	mutex_unlock(&stat_list_mutex);
+> > +	reset_stat_session(session);
+> > +	mutex_unlock(&session->stat_mutex);
+> >  	return ret;
+> >  }
+> >  
+> >  
+> >  static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+> >  {
+> > -	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
+> > +	struct tracer_stat_session *session = s->private;
+> >  
+> >  	/* Prevent from tracer switch or stat_list modification */
+> > -	mutex_lock(&stat_list_mutex);
+> > +	mutex_lock(&session->stat_mutex);
+> >  
+> >  	/* If we are in the beginning of the file, print the headers */
+> > -	if (!*pos && current_tracer.stat_headers)
+> > -		current_tracer.stat_headers(s);
+> > +	if (!*pos && session->ts->stat_headers)
+> 
+> Hmm, looks like you do need the kzalloc for both allocs above.
+> 
+> -- Steve
+
+
+There is no check about -ENOMEM before creating the debugfs file.
+So yes, I should check it before dereferencing a session, or more likely
+not create the debugfs files in this case. But I don't know why kzalloc...
+
+
+
+> 
+> > +		session->ts->stat_headers(s);
+> >  
+> > -	return seq_list_start(&l->list, *pos);
+> > +	return seq_list_start(&session->stat_list.list, *pos);
+> >  }
+> >  
+> >  static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
+> >  {
+> > -	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
+> > +	struct tracer_stat_session *session = s->private;
+> >  
+> > -	return seq_list_next(p, &l->list, pos);
+> > +	return seq_list_next(p, &session->stat_list.list, pos);
+> >  }
+> >  
+> > -static void stat_seq_stop(struct seq_file *m, void *p)
+> > +static void stat_seq_stop(struct seq_file *s, void *p)
+> >  {
+> > -	mutex_unlock(&stat_list_mutex);
+> > +	struct tracer_stat_session *session = s->private;
+> > +	mutex_unlock(&session->stat_mutex);
+> >  }
+> >  
+> >  static int stat_seq_show(struct seq_file *s, void *v)
+> >  {
+> > +	struct tracer_stat_session *session = s->private;
+> >  	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
+> > -	return current_tracer.stat_show(s, l->stat);
+> > +
+> > +	return session->ts->stat_show(s, l->stat);
+> >  }
+> >  
+> >  static const struct seq_operations trace_stat_seq_ops = {
+> > @@ -199,15 +249,18 @@ static const struct seq_operations trace_stat_seq_ops = {
+> >  	.show = stat_seq_show
+> >  };
+> >  
+> > +/* The session stat is refilled and resorted at each stat file opening */
+> >  static int tracing_stat_open(struct inode *inode, struct file *file)
+> >  {
+> >  	int ret;
+> >  
+> > +	struct tracer_stat_session *session = inode->i_private;
+> > +
+> >  	ret = seq_open(file, &trace_stat_seq_ops);
+> >  	if (!ret) {
+> >  		struct seq_file *m = file->private_data;
+> > -		m->private = &stat_list;
+> > -		ret = stat_seq_init();
+> > +		m->private = session;
+> > +		ret = stat_seq_init(session);
+> >  	}
+> >  
+> >  	return ret;
+> > @@ -219,9 +272,11 @@ static int tracing_stat_open(struct inode *inode, struct file *file)
+> >   */
+> >  static int tracing_stat_release(struct inode *i, struct file *f)
+> >  {
+> > -	mutex_lock(&stat_list_mutex);
+> > -	reset_stat_list();
+> > -	mutex_unlock(&stat_list_mutex);
+> > +	struct tracer_stat_session *session = i->i_private;
+> > +
+> > +	mutex_lock(&session->stat_mutex);
+> > +	reset_stat_session(session);
+> > +	mutex_unlock(&session->stat_mutex);
+> >  	return 0;
+> >  }
+> >  
+> > @@ -232,18 +287,70 @@ static const struct file_operations tracing_stat_fops = {
+> >  	.release	= tracing_stat_release
+> >  };
+> >  
+> > +
+> > +static void destroy_trace_stat_files(void)
+> > +{
+> > +	int i;
+> > +
+> > +	if (stat_files) {
+> > +		for (i = 0; i < nb_sessions; i++)
+> > +			debugfs_remove(stat_files[i]);
+> > +		kfree(stat_files);
+> > +		stat_files = NULL;
+> > +	}
+> > +}
+> > +
+> > +static void init_trace_stat_files(void)
+> > +{
+> > +	int i;
+> > +
+> > +	if (!stat_dir || !nb_sessions)
+> > +		return;
+> > +
+> > +	stat_files = kmalloc(sizeof(struct dentry *) * nb_sessions, GFP_KERNEL);
+> > +
+> > +	if (!stat_files) {
+> > +		pr_warning("trace stat: not enough memory\n");
+> > +		return;
+> > +	}
+> > +
+> > +	for (i = 0; i < nb_sessions; i++) {
+> > +		struct tracer_stat_session *session = all_stat_sessions[i];
+> > +		stat_files[i] = debugfs_create_file(session->ts->name, 0644,
+> > +						stat_dir,
+> > +						session, &tracing_stat_fops);
+> > +		if (!stat_files[i])
+> > +			pr_warning("cannot create %s entry\n",
+> > +				   session->ts->name);
+> > +	}
+> > +}
+> > +
+> > +void init_tracer_stat(struct tracer *trace)
+> > +{
+> > +	int nb = basic_tracer_stat_checks(trace->stats);
+> > +
+> > +	destroy_trace_stat_files();
+> > +
+> > +	if (nb < 0) {
+> > +		pr_warning("stat tracing: missing stat callback on %s\n",
+> > +			   trace->name);
+> > +		return;
+> > +	}
+> > +	if (!nb)
+> > +		return;
+> > +
+> > +	init_all_sessions(nb, trace->stats);
+> > +	init_trace_stat_files();
+> > +}
+> > +
+> >  static int __init tracing_stat_init(void)
+> >  {
+> >  	struct dentry *d_tracing;
+> > -	struct dentry *entry;
+> >  
+> > -	INIT_LIST_HEAD(&stat_list.list);
+> >  	d_tracing = tracing_init_dentry();
+> >  
+> > -	entry = debugfs_create_file("trace_stat", 0444, d_tracing,
+> > -					NULL,
+> > -				    &tracing_stat_fops);
+> > -	if (!entry)
+> > +	stat_dir = debugfs_create_dir("trace_stat", d_tracing);
+> > +	if (!stat_dir)
+> >  		pr_warning("Could not create debugfs "
+> >  			   "'trace_stat' entry\n");
+> >  	return 0;
+> > -- 
+> > 1.6.0.4
+> > 
+> > 
+> > 
+> > 
+
