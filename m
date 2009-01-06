@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZAFQOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbZAFQQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZAFQOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 11:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZAFQOJ
+	id S1753860AbZAFQQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 11:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZAFQQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 11:14:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48177 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751200AbZAFQOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 11:14:08 -0500
-Date: Tue, 6 Jan 2009 17:13:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [git pull] irq fixes
-Message-ID: <20090106161355.GA17098@elte.hu>
+	Tue, 6 Jan 2009 11:16:29 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:54132 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbZAFQQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 11:16:29 -0500
+Date: Tue, 6 Jan 2009 09:58:29 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add in_execve flag into task_struct.
+Message-ID: <20090106155829.GA9773@us.ibm.com>
+References: <200901060514.n065E462074929@www262.sakura.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200901060514.n065E462074929@www262.sakura.ne.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
+> Serge,
+> 
+> James is now reviewing TOMOYO Linux patch and he is caring about
+> your comment below.
+> 
+> Serge E. Hallyn wrote:
+> > I don't like the 'in_exec' bit in the task_struct, but adding LSM hooks
+> > to let just TOMOYO mark whether you're in exec seems even uglier.
+> 
+> Let me (once again) ask your comment on 'in_exec' approach
+> originally suggested by David Howells ( http://lkml.org/lkml/2008/10/2/127 ).
 
-Please pull the latest irq-fixes-for-linus git tree from:
+I still don't like it.  Now I gather the reason for this is that you
+want to allow a less trusted domain to execute a file (in a new domain)
+without giving it the right to read it?  I'd be interested in hearing
+whether others think that's a worthy goal.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (1):
-      genirq: provide irq_to_desc() to non-genirq architectures too
-
-
- include/linux/irqnr.h |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/irqnr.h b/include/linux/irqnr.h
-index 5504a5c..86af92e 100644
---- a/include/linux/irqnr.h
-+++ b/include/linux/irqnr.h
-@@ -8,7 +8,12 @@
- 
- #ifndef CONFIG_GENERIC_HARDIRQS
- #include <asm/irq.h>
--# define nr_irqs		NR_IRQS
-+
-+/*
-+ * Wrappers for non-genirq architectures:
-+ */
-+#define nr_irqs			NR_IRQS
-+#define irq_to_desc(irq)	(&irq_desc[irq])
- 
- # define for_each_irq_desc(irq, desc)		\
- 	for (irq = 0; irq < nr_irqs; irq++)
+-serge
