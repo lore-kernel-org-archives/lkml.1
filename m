@@ -1,124 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZAFGJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753377AbZAFGUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbZAFGJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 01:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZAFGJH
+	id S1753377AbZAFGUu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 01:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZAFGUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 01:09:07 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:3133 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbZAFGJE (ORCPT
+	Tue, 6 Jan 2009 01:20:42 -0500
+Received: from bureau63.ns.utoronto.ca ([128.100.132.160]:56560 "EHLO
+	bureau63.ns.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbZAFGUl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 01:09:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:references:x-google-sender-auth;
-        b=aBr8d4hhJscyZnxUdzUgzta562WBHg8Ui9xfGVlH1YK0FD3BXauS7LhPYAl6bvYynR
-         V3Hbv2Rm5BbvmRr/fNoO+VmMN9csu9F5ha+xtWhnzYsH/JLHci1KTff9Oq7rqC81ab0s
-         VAqu6r0xKKdg/iwunUkoBRruZLxrClDpYC0k0=
-Message-ID: <86802c440901052209k6785a2f6i755a758d087892f@mail.gmail.com>
-Date: Mon, 5 Jan 2009 22:09:03 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: david@lang.hm
-Subject: Re: early exception error
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Cyrill Gorcunov" <gorcunov@gmail.com>,
-       "Jiri Slaby" <jirislaby@gmail.com>, "Andi Kleen" <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0901052126360.27565@asgard.lang.hm>
+	Tue, 6 Jan 2009 01:20:41 -0500
+X-Greylist: delayed 2372 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Jan 2009 01:20:41 EST
+Message-ID: <20090106004107.rb5znb3l44ss0gg4@webmail.utoronto.ca>
+Date: Tue, 06 Jan 2009 00:41:07 -0500
+X-ID: zhaoyuto
+From: yutong.zhao@utoronto.ca
+To: linux-kernel@vger.kernel.org
+Subject: kexec unable to load crash kernel in X
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_74637_3362945.1231222143888"
-References: <20090102174845.GD5372@localhost>
-	 <alpine.DEB.1.10.0901051520210.27641@asgard.lang.hm>
-	 <alpine.DEB.1.10.0901051649250.28400@asgard.lang.hm>
-	 <alpine.DEB.1.10.0901051653290.28400@asgard.lang.hm>
-	 <49629FAF.6060709@kernel.org>
-	 <alpine.DEB.1.10.0901051717440.28514@asgard.lang.hm>
-	 <4962A4F0.7030201@kernel.org>
-	 <alpine.DEB.1.10.0901051802320.28514@asgard.lang.hm>
-	 <4962AE82.6050905@kernel.org>
-	 <alpine.DEB.1.10.0901052126360.27565@asgard.lang.hm>
-X-Google-Sender-Auth: 9a14ca6a7f9225b8
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2009.1.6.52830
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_74637_3362945.1231222143888
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi linux-kernel,
 
-On Mon, Jan 5, 2009 at 9:29 PM,  <david@lang.hm> wrote:
-> On Mon, 5 Jan 2009, Yinghai Lu wrote:
->
->> david@lang.hm wrote:
->>>
->>> On Mon, 5 Jan 2009, Yinghai Lu wrote:
->>>
->>>> david@lang.hm wrote:
->>>>>
->>>>> On Mon, 5 Jan 2009, Yinghai Lu wrote:
->>>>>
->>>>>
->>>>> this motherboard is a Tyan Thunder K8S Pro S2882
->>>>>
->>>>> I just uploaded some snapshots of the bios screens
->>>>
->>>> please try to update the BIOS. the installed BIOS seems has problem...
->>>>
->>>> http://tyan.com/support_download_bios.aspx?model=S.S2882
->>>
->>> what problems are you seeing (i.e. what did I miss seeing that would
->>> have pointed me in this direction without eating everyone's time)
->>>
->>
->> you should get 4g ram instead of 3g according to e820.
->>
->> BIOS should set ram routing correctly according to iommu (gart) and
->> memhole etc.
->
-> this seems to have solved the problem
+I've been trying to track a hard lock kernel panic since 2.6.24, and  
+it persists in 2.6.28. I've set up kexec as per the instructions in  
+/Documentation/kdump/kdump.txt. I've enabled sysrq in both the kernel,  
+AND, in /etc/sysctl.conf
 
-can you post boot log and lspci -vvxxx ?
+The system responds to sysrq-C when I'm in the console and before  
+startx. Thus, properly loading the dump kernel and allowing me access  
+to /proc/vmcore
 
->
-> I do have another of these systems if there is any desire to do any more
-> troubleshooting (it would be really nice if things died with a better error
-> message for example)
+However, when I'm in X (after startx), sysrq-c does NOT load up the  
+crash kernel, and instead hangs system (no blinking capslock though).  
+I see some flashing hard drive activity, yet nothing changes on the  
+screen as it still shows a frozen snapshot of X. This is true with  
+both nv (with proper modprobe -r nvidia), and nvidia modules.
 
-good,
-0. setup serial cable between your two system. use minicom in your
-first system to capture serial message from second system
-1. apply attached patch
-2. we need full boot log of your second system. please boot with "
-debug console=uart8250,io,0x3f8,115200n8 pci=earlydump"
+I'm on a Thinkpad T61P Intel Core 2 Duo, 2.5GHZ, x86_64, 2GB Memory,  
+NVIDIA QUADRO FX 570M, and note that my CONFIG_PHYSICAL_START is  
+0x200000, NOT 0x100000, (I wasn't sure if this should be changed as  
+the default was 0x200000, possibly due to Core 2?). But this shouldn't  
+matter because the kernel is RELOCATABLE(=y).. right?
 
-YH
+I've attached my:
 
-------=_Part_74637_3362945.1231222143888
-Content-Type: text/x-patch; name=mminit_loglevel_2.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fpm5qy850
-Content-Disposition: attachment; filename=mminit_loglevel_2.patch
+.config : http://dpaste.com/105844/
+lspci : http://dpaste.com/105846/
+lsmod : http://dpaste.com/105848/
+dmesg : http://dpaste.com/105849/
+grub.conf : http://dpaste.com/105850/, most relevant boot config  
+system kernel is "kernel /boot/kernel-2.6.28-gentoo-custom  
+root=/dev/sda3 pci=nommconfig idle=poll crashkernel=128M@16M" note  
+that /boot/kernel-2.6.28-gentoo-custom corresponds to the bzImage used  
+in kexec.
 
-RnJvbTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgpTdWJqZWN0OiBbUEFUQ0hd
-IG1tOiBwcmludCBvdXQgaW5mbyBhYm91dCBhZGRpbmcvcmVtb3ZpbmcgYWN0aXZlIHJlZ2lvbgoK
-U2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKLS0tCiBt
-bS9wYWdlX2FsbG9jLmMgfCAgICA1ICsrLS0tCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25z
-KCspLCAzIGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9tbS9wYWdlX2FsbG9jLmMKPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvbW0vcGFnZV9hbGxvYy5jCisrKyBsaW51eC0yLjYv
-bW0vcGFnZV9hbGxvYy5jCkBAIC0zNjI2LDggKzM2MjYsNyBAQCB2b2lkIF9faW5pdCBhZGRfYWN0
-aXZlX3JhbmdlKHVuc2lnbmVkIGluCiB7CiAJaW50IGk7CiAKLQltbWluaXRfZHByaW50ayhNTUlO
-SVRfVFJBQ0UsICJtZW1vcnlfcmVnaXN0ZXIiLAotCQkJIkVudGVyaW5nIGFkZF9hY3RpdmVfcmFu
-Z2UoJWQsICUjbHgsICUjbHgpICIKKwlwcmludGsoS0VSTl9ERUJVRyAiQWRkaW5nIGFjdGl2ZSBy
-YW5nZSAoJWQsICUjbHgsICUjbHgpICIKIAkJCSIlZCBlbnRyaWVzIG9mICVkIHVzZWRcbiIsCiAJ
-CQluaWQsIHN0YXJ0X3BmbiwgZW5kX3BmbiwKIAkJCW5yX25vZGVtYXBfZW50cmllcywgTUFYX0FD
-VElWRV9SRUdJT05TKTsKQEAgLTM2ODksNyArMzY4OCw3IEBAIHZvaWQgX19pbml0IHJlbW92ZV9h
-Y3RpdmVfcmFuZ2UodW5zaWduZWQKIAlpbnQgaSwgajsKIAlpbnQgcmVtb3ZlZCA9IDA7CiAKLQlw
-cmludGsoS0VSTl9ERUJVRyAicmVtb3ZlX2FjdGl2ZV9yYW5nZSAoJWQsICVsdSwgJWx1KVxuIiwK
-KwlwcmludGsoS0VSTl9ERUJVRyAiUmVtb3ZpbmcgYWN0aXZlIHJhbmdlICglZCwgJSNseCwgJSNs
-eClcbiIsCiAJCQkgIG5pZCwgc3RhcnRfcGZuLCBlbmRfcGZuKTsKIAogCS8qIEZpbmQgdGhlIG9s
-ZCBhY3RpdmUgcmVnaW9uIGVuZCBhbmQgc2hyaW5rICovCg==
-------=_Part_74637_3362945.1231222143888--
+my kexec command is "sudo kexec -p  
+/usr/src/linux-2.6.28-gentoo/arch/x86/boot/bzImage  
+--append=root=/dev/sda3 1 irqpoll maxcpus=1 reset_devices"
+
+Please assist and CC me in all messages/comments/answers.
+
+
+-Yutong Zhao
+
