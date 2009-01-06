@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbZAFKrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbZAFKv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752219AbZAFKrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbZAFKrH
+	id S1752488AbZAFKv6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 05:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZAFKvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:47:07 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48820 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbZAFKrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:47:06 -0500
-Message-ID: <496336A4.4020109@redhat.com>
-Date: Tue, 06 Jan 2009 11:47:00 +0100
-From: Zdenek Kabelac <zkabelac@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Tue, 6 Jan 2009 05:51:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:14131 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751265AbZAFKvt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 05:51:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ZrDcIV7VODvGe8tn43fob2ZA0a7+KkR6QqcXd9jz/REEhlXTUO44c1zKILVZQm2B12
+         lRr4NuqisOKy4pBalK8I5VEVXNGz6OR4uIryqDKmbBGomP0nzroNSXQ1RRaBYMkzG/66
+         X97BpjZV/B78oz1lg9hjNtwW+hCVmIqo1crkc=
+Message-ID: <84144f020901060251l697052b9udd92a4a04f830ea7@mail.gmail.com>
+Date: Tue, 6 Jan 2009 12:51:47 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mm: __nr_to_section - make it safe against overflow v2
+Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>, npiggin@suse.de, riel@redhat.com,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com
+In-Reply-To: <20090105163742.08777d73.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [BUG] INFO: inconsistent lock state
-References: <4962C322.8000201@cn.fujitsu.com> <49633005.5080305@redhat.com> <4963319D.8040204@cn.fujitsu.com>
-In-Reply-To: <4963319D.8040204@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20090105103132.GD7645@localhost>
+	 <20090105163742.08777d73.akpm@linux-foundation.org>
+X-Google-Sender-Auth: e481dbd8e4ba1f20
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan napsal(a):
-> Zdenek Kabelac wrote:
->> Li Zefan napsal(a):
->>> I am using Linus' tree, and the top commit is:
->>>
->>> commit fe0bdec68b77020281dc814805edfe594ae89e0f
->>> Merge: 099e657... 5af75d8...
->>> Author: Linus Torvalds <torvalds@linux-foundation.org>
->>> Date:   Sun Jan 4 16:32:11 2009 -0800
->>>
->>>     Merge branch 'audit.b61' of
->>> git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
->>>
->>> don't know how I triggered this, and not sure whom to CC, network
->>> related?
->>>
->> I've got the similar one too: http://lkml.org/lkml/2009/1/3/55
+Hi Andrew,
+
+On Tue, Jan 6, 2009 at 2:37 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Mon, 5 Jan 2009 13:31:32 +0300
+> Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>
+>> __nr_to_section should check for array bound overflow.
+>> We should better get NULL dereference then silently
+>> pass some memory snippet out of bounds to a caller.
 >>
-> 
-> So your box freezed and can do nothing but reset ?
-> 
-> I was much luckier that this bug didn't do any harm to my box. :)
+>
+> Are there actually any known problems here?
+>
+>>
+>> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+>> ---
+>>  include/linux/mmzone.h |   15 +++++++++++++--
+>>  1 file changed, 13 insertions(+), 2 deletions(-)
+>>
+>> Index: linux-2.6.git/include/linux/mmzone.h
+>> ===================================================================
+>> --- linux-2.6.git.orig/include/linux/mmzone.h
+>> +++ linux-2.6.git/include/linux/mmzone.h
+>> @@ -935,6 +935,12 @@ static inline unsigned long early_pfn_to
+>>
+>>  struct page;
+>>  struct page_cgroup;
+>> +
+>> +/*
+>> + * NOTE: sizeof(struct mem_section) _must_ be power of 2
+>> + * otherwise SECTION_ROOT_MASK will be broken so be
+>> + * really cautious while modifying this structure
+>> + */
+>>  struct mem_section {
+>>       /*
+>>        * This is, logically, a pointer to an array of struct
+>> @@ -980,9 +986,14 @@ extern struct mem_section mem_section[NR
+>>
+>>  static inline struct mem_section *__nr_to_section(unsigned long nr)
+>>  {
+>> -     if (!mem_section[SECTION_NR_TO_ROOT(nr)])
+>> +     unsigned long idx = SECTION_NR_TO_ROOT(nr);
+>> +
+>> +     if (WARN_ON(idx >= NR_SECTION_ROOTS))
+>> +             return NULL;
+>> +
+>> +     if (!mem_section[idx])
+>>               return NULL;
+>> -     return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
+>> +     return &mem_section[idx][nr & SECTION_ROOT_MASK];
+>>  }
+>
+> The patch adds nearly 300 bytes of stuff to mm/sparse.o, and for what??
 
-Well the problem was that at the same time it has probably crashed my Xorg 
-server (with some recent rawhide version) and this might have been the reason 
-of hard crash as well - I'm not sure what was the exact order.
+I was thinking of things like commit
+bead9a3abd15710b0bdfd418daef606722d86282 ("mm: sparsemem
+memory_present() fix") and such but missed the fact that
+__nr_to_section() inlined all over the place. So yeah, it's not worth
+it.
 
-Zdenek
-
+                                            Pekka
