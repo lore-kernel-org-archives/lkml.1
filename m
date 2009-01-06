@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbZAFWUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbZAFWUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbZAFWUd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbZAFWNi
+	id S1758120AbZAFWUv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbZAFWNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:13:38 -0500
-Received: from kroah.org ([198.145.64.141]:51225 "EHLO coco.kroah.org"
+	Tue, 6 Jan 2009 17:13:40 -0500
+Received: from kroah.org ([198.145.64.141]:51228 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755183AbZAFWNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:13:37 -0500
+	id S1755307AbZAFWNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:13:38 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Mark McLoughlin <markmc@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 20/60] driver core: add root_device_register()
-Date: Tue,  6 Jan 2009 14:11:39 -0800
-Message-Id: <1231279939-32728-20-git-send-email-gregkh@suse.de>
+Cc: Mark McLoughlin <markmc@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 21/60] virtio: do not statically allocate root device
+Date: Tue,  6 Jan 2009 14:11:40 -0800
+Message-Id: <1231279939-32728-21-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <20090106221123.GA32689@kroah.com>
 References: <20090106221123.GA32689@kroah.com>
@@ -24,147 +25,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mark McLoughlin <markmc@redhat.com>
 
-Add support for allocating root device objects which group
-device objects under /sys/devices directories.
+We shouldn't be statically allocating the root device object,
+so dynamically allocate it using root_device_register()
+instead.
 
-Also add a sysfs 'module' symlink which points to the owner
-of the root device object. This symlink will be used in virtio
-to allow userspace to determine which virtio bus implementation
-a given device is associated with.
+Also avoids this warning from 'rmmod virtio_pci':
 
-[Includes suggestions from Cornelia Huck]
+  Device 'virtio-pci' does not have a release() function, it is broken and must be fixed
 
 Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+Cc: Anthony Liguori <aliguori@us.ibm.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c    |   91 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/device.h |   11 ++++++
- 2 files changed, 102 insertions(+), 0 deletions(-)
+ drivers/virtio/virtio_pci.c |   17 +++++++----------
+ 1 files changed, 7 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index ee555d7..61df508 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1217,6 +1217,97 @@ EXPORT_SYMBOL_GPL(put_device);
- EXPORT_SYMBOL_GPL(device_create_file);
- EXPORT_SYMBOL_GPL(device_remove_file);
+diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
+index 265fdf2..bef6b45 100644
+--- a/drivers/virtio/virtio_pci.c
++++ b/drivers/virtio/virtio_pci.c
+@@ -73,10 +73,7 @@ MODULE_DEVICE_TABLE(pci, virtio_pci_id_table);
+ /* A PCI device has it's own struct device and so does a virtio device so
+  * we create a place for the virtio devices to show up in sysfs.  I think it
+  * would make more sense for virtio to not insist on having it's own device. */
+-static struct device virtio_pci_root = {
+-	.parent		= NULL,
+-	.init_name	= "virtio-pci",
+-};
++static struct device *virtio_pci_root;
  
-+struct root_device
-+{
-+	struct device dev;
-+	struct module *owner;
-+};
-+
-+#define to_root_device(dev) container_of(dev, struct root_device, dev)
-+
-+static void root_device_release(struct device *dev)
-+{
-+	kfree(to_root_device(dev));
-+}
-+
-+/**
-+ * __root_device_register - allocate and register a root device
-+ * @name: root device name
-+ * @owner: owner module of the root device, usually THIS_MODULE
-+ *
-+ * This function allocates a root device and registers it
-+ * using device_register(). In order to free the returned
-+ * device, use root_device_unregister().
-+ *
-+ * Root devices are dummy devices which allow other devices
-+ * to be grouped under /sys/devices. Use this function to
-+ * allocate a root device and then use it as the parent of
-+ * any device which should appear under /sys/devices/{name}
-+ *
-+ * The /sys/devices/{name} directory will also contain a
-+ * 'module' symlink which points to the @owner directory
-+ * in sysfs.
-+ *
-+ * Note: You probably want to use root_device_register().
-+ */
-+struct device *__root_device_register(const char *name, struct module *owner)
-+{
-+	struct root_device *root;
-+	int err = -ENOMEM;
-+
-+	root = kzalloc(sizeof(struct root_device), GFP_KERNEL);
-+	if (!root)
-+		return ERR_PTR(err);
-+
-+	err = dev_set_name(&root->dev, name);
-+	if (err) {
-+		kfree(root);
-+		return ERR_PTR(err);
-+	}
-+
-+	root->dev.release = root_device_release;
-+
-+	err = device_register(&root->dev);
-+	if (err) {
-+		put_device(&root->dev);
-+		return ERR_PTR(err);
-+	}
-+
-+#ifdef CONFIG_MODULE	/* gotta find a "cleaner" way to do this */
-+	if (owner) {
-+		struct module_kobject *mk = &owner->mkobj;
-+
-+		err = sysfs_create_link(&root->dev.kobj, &mk->kobj, "module");
-+		if (err) {
-+			device_unregister(&root->dev);
-+			return ERR_PTR(err);
-+		}
-+		root->owner = owner;
-+	}
-+#endif
-+
-+	return &root->dev;
-+}
-+EXPORT_SYMBOL_GPL(__root_device_register);
-+
-+/**
-+ * root_device_unregister - unregister and free a root device
-+ * @root: device going away.
-+ *
-+ * This function unregisters and cleans up a device that was created by
-+ * root_device_register().
-+ */
-+void root_device_unregister(struct device *dev)
-+{
-+	struct root_device *root = to_root_device(dev);
-+
-+	if (root->owner)
-+		sysfs_remove_link(&root->dev.kobj, "module");
-+
-+	device_unregister(dev);
-+}
-+EXPORT_SYMBOL_GPL(root_device_unregister);
-+
+ /* Convert a generic virtio device to our structure */
+ static struct virtio_pci_device *to_vp_device(struct virtio_device *vdev)
+@@ -343,7 +340,7 @@ static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
+ 	if (vp_dev == NULL)
+ 		return -ENOMEM;
  
- static void device_create_release(struct device *dev)
+-	vp_dev->vdev.dev.parent = &virtio_pci_root;
++	vp_dev->vdev.dev.parent = virtio_pci_root;
+ 	vp_dev->vdev.dev.release = virtio_pci_release_dev;
+ 	vp_dev->vdev.config = &virtio_pci_config_ops;
+ 	vp_dev->pci_dev = pci_dev;
+@@ -437,13 +434,13 @@ static int __init virtio_pci_init(void)
  {
-diff --git a/include/linux/device.h b/include/linux/device.h
-index b97a0cf..7d9da4b 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -483,6 +483,17 @@ extern int device_rename(struct device *dev, char *new_name);
- extern int device_move(struct device *dev, struct device *new_parent);
+ 	int err;
  
- /*
-+ * Root device objects for grouping under /sys/devices
-+ */
-+extern struct device *__root_device_register(const char *name,
-+					     struct module *owner);
-+static inline struct device *root_device_register(const char *name)
-+{
-+	return __root_device_register(name, THIS_MODULE);
-+}
-+extern void root_device_unregister(struct device *root);
-+
-+/*
-  * Manual binding of a device to driver. See drivers/base/bus.c
-  * for information on use.
-  */
+-	err = device_register(&virtio_pci_root);
+-	if (err)
+-		return err;
++	virtio_pci_root = root_device_register("virtio-pci");
++	if (IS_ERR(virtio_pci_root))
++		return PTR_ERR(virtio_pci_root);
+ 
+ 	err = pci_register_driver(&virtio_pci_driver);
+ 	if (err)
+-		device_unregister(&virtio_pci_root);
++		device_unregister(virtio_pci_root);
+ 
+ 	return err;
+ }
+@@ -452,8 +449,8 @@ module_init(virtio_pci_init);
+ 
+ static void __exit virtio_pci_exit(void)
+ {
+-	device_unregister(&virtio_pci_root);
+ 	pci_unregister_driver(&virtio_pci_driver);
++	root_device_unregister(virtio_pci_root);
+ }
+ 
+ module_exit(virtio_pci_exit);
 -- 
 1.6.0.4
 
