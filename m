@@ -1,436 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZAFVj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbZAFVk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbZAFVj6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZAFVcm
+	id S1756079AbZAFVk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbZAFVeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:32:42 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:9249 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754514AbZAFVci (ORCPT
+	Tue, 6 Jan 2009 16:34:07 -0500
+Received: from mail.hauppauge.com ([167.206.143.4]:1258 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbZAFVeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:32:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=J+M0zXEdlH64tZv8pTg7rRsq7/WDPQ9tSt/PZFEKyfRlMHGBTSr5YlvfiuQqsjKsr0
-         BTb/8abdYpFkbYhv1iACDmE5ZoIhFHSa8dNO2ogEdp1P1CVKXp/Lie93U0N7Po1UUvXU
-         xaMeS0XE0b9SMO7op4gVEIemBH8O0lwRifSXw=
-Subject: [PATCH 23/23] byteorder: remove the now unused byteorder.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 13:30:58 -0800
-Message-Id: <1231277458.964.282.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 6 Jan 2009 16:34:05 -0500
+X-Greylist: delayed 924 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Jan 2009 16:34:05 EST
+Message-ID: <4963CA95.9080607@linuxtv.org>
+Date: Tue, 06 Jan 2009 16:18:13 -0500
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Mark Lord <lkml@rtr.ca>
+CC: linux-dvb@linuxtv.org, v4l-dvb-maintainer@linuxtv.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] 2.6.28: Oops at acpi_ds_exec_end_op+0x1b:
+ kills machine
+References: <4963C93A.1060708@rtr.ca>
+In-Reply-To: <4963C93A.1060708@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implementation caused problems in userspace which can, and does
-define _both_ __LITTLE_ENDIAN and __BIG_ENDIAN.
+Mark Lord wrote:
+> This happened on our Mythtv box at startup this morning:
+> The Oops happened once only, at system startup, on initial device probe.
+> Not reproduceable, so probably a rare race of some kind.
+> The xc5000 module was loaded with "init_fw=1" to force f/w load on modprobe.
+>
+> 2.6.28 kernel, SMP, x86_64, two CPUs (Core2duo 1.86GHz), 2GB RAM.
+>
+> Oops text typed in by hand from screen photos
+> ( original photos: http://rtr.ca/xc5000_lockup )
+> ...
+> xc5000: firmware read 12332 bytes.
+> xc5000: firmware upload
+> BUG kernel NULL pointer dereference at 000000000000000c
+> IP: [<ffffffff8038fbcf>] acpi_ds_exec_end_op+0x1b/0x3c4
+> PGD 7c8cd067 PUD 7d411067 PMD 0
+> Oops: 0000 [#1] PREEMPT SMP
+> last sysfs file: /sys/class/firmware/i2c-2/loading
+> CPU 0
+> ...
+> Modules linked in: xc5000 au8522 tea5767 tda9887 tda8290 tea5761 fuse au0828(+)
+> dvd_core usbhid tuner_simple tuner_types snd_hda_intel msp3400 ... nvidia(P) ...
+> ...
+> Pid: 2383, comm: modprobe Tainted: P A 2.6.28 #9  
+> RIP: 0010:[<ffffffff8038fbcf>]  [<ffffffff8038fbcf>] acpi_ds_exec_end_op+0x1b/0x3c4
+> RSP: 0018:ffff88007a095ad8  EFLAGS: 00010296
+> RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+> RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88007f8588f0
+> R10: ffff88007f8a4d40 R11: ffff8800000bf9e0 R12: 0000000000000000
+> R13: ffff88007e43bc10 R14: ffff88007a0ac000 R15: ffff88007e43bc10
+> FS:  00007f844d5666e0(0000) GS:ffffffff8060f540(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> ...
+> Process modprobe (pid: 2383, threadinfo ffff88007a094000, task ffff88007fa043d0)
+> Stack:
+>  ffff88007a085380 0000000000000000 ffff88007a085380 ffffffffa09cfb28
+>  ffff88007e43bc10 ffffffffa09f263f ffff88007a095b18 ffff88007a085380
+>  ffffc200109e6000 ffff88007a085380 000000000000f9f9 00000000000094d7
+> Call Trace:
+> xc_load_fw_and_init_tuner+0x14b/0x29c [xc5000]
+> i2c_transfer+0x8a/0x94
+> xc5000_init+0x3d/0x6f [xc5000]
+> xc5000_attach+0x22c/0x256 [xc5000]
+> __symbol_get+0x2c/0xd3
+> au0828+dvb_register+0x2ec/x5cb [au0828]
+> au0828_usb_probe+0x10c/0x140 [au0828]
+> usb_match_id+0x32/0x58 [usbcore]
+> usb_probe_interface+0xfb/0x132 [usbcore]
+> driver_probe_device+0xb5/0x159
+> __driver_attach+0x59/0x80
+> __driver_attach+0x0/0x80
+> bus_for_each_dev+0x44/0x78
+> bus_add_driver+0xac/0x1f2
+> driver_register+0xa2/0x11f
+> usb_register_driver+0x7e/0xe0 [usbcore]
+> au0828_init+0x0/0xbb [au0828]
+> au0828_init+0xa1/0xbb [au0828]
+> _stext+0x56/0x14f
+> vma_link+0x90/0xa2
+> update_curr+0x49/0xf0
+> enqueue_task_fair+0x14c/0x161
+> check_preempt_wakeup+0xf4/0x124
+> try_to_wake_up+0x16a/0x17c
+> sys_init_module+0xa0/0x1a9
+> system_call_fastpath+0x16/0x1b
+> Code: 00 66 c7 40 0c c0 00 89 d8 48 83 c4 18 5b 5d c3 41 55 41 54 55 48 89
+>  48 83 ec 08 48 8b 87 08 03 00 00 4c 8b a7 00 03 00 00 <8a> 50 0c 8a 40 0?
+>  c8 83 f9 0a 75 25 41 0f b7 4c 24 0a 48
+> RIP  [<ffffffff8038fbcf>] acpi_ds_exec_end_op+0x1b/0x3c4
+>  RSP <ffff88007a095ad8>
+> CR2: 000000000000000c
+> ---[ end trace c23df576c022eb7e ]---
+>
+> Could someone perhaps explain how acpi_ds_exec_end_op even enters the
+> picture here?  I'm confused by that.
+>
+> The driver was doing/completing an i2c firmware transfer at the time of
+> the oops.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/linux/Kbuild      |    1 -
- include/linux/byteorder.h |  372 ---------------------------------------------
- 2 files changed, 0 insertions(+), 373 deletions(-)
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 39da666..a3323f3 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -179,7 +179,6 @@ unifdef-y += auto_fs.h
- unifdef-y += auxvec.h
- unifdef-y += binfmts.h
- unifdef-y += blktrace_api.h
--unifdef-y += byteorder.h
- unifdef-y += capability.h
- unifdef-y += capi.h
- unifdef-y += cciss_ioctl.h
-diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
-deleted file mode 100644
-index 29f002d..0000000
---- a/include/linux/byteorder.h
-+++ /dev/null
-@@ -1,372 +0,0 @@
--#ifndef _LINUX_BYTEORDER_H
--#define _LINUX_BYTEORDER_H
--
--#include <linux/types.h>
--#include <linux/swab.h>
--
--#if defined(__LITTLE_ENDIAN) && defined(__BIG_ENDIAN)
--# error Fix asm/byteorder.h to define one endianness
--#endif
--
--#if !defined(__LITTLE_ENDIAN) && !defined(__BIG_ENDIAN)
--# error Fix asm/byteorder.h to define arch endianness
--#endif
--
--#ifdef __LITTLE_ENDIAN
--# undef __LITTLE_ENDIAN
--# define __LITTLE_ENDIAN 1234
--#endif
--
--#ifdef __BIG_ENDIAN
--# undef __BIG_ENDIAN
--# define __BIG_ENDIAN 4321
--#endif
--
--#if defined(__LITTLE_ENDIAN) && !defined(__LITTLE_ENDIAN_BITFIELD)
--# define __LITTLE_ENDIAN_BITFIELD
--#endif
--
--#if defined(__BIG_ENDIAN) && !defined(__BIG_ENDIAN_BITFIELD)
--# define __BIG_ENDIAN_BITFIELD
--#endif
--
--#ifdef __LITTLE_ENDIAN
--# define __le16_to_cpu(x) ((__force __u16)(__le16)(x))
--# define __le32_to_cpu(x) ((__force __u32)(__le32)(x))
--# define __le64_to_cpu(x) ((__force __u64)(__le64)(x))
--# define __cpu_to_le16(x) ((__force __le16)(__u16)(x))
--# define __cpu_to_le32(x) ((__force __le32)(__u32)(x))
--# define __cpu_to_le64(x) ((__force __le64)(__u64)(x))
--
--# define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
--# define __be32_to_cpu(x) __swab32((__force __u32)(__be32)(x))
--# define __be64_to_cpu(x) __swab64((__force __u64)(__be64)(x))
--# define __cpu_to_be16(x) ((__force __be16)__swab16(x))
--# define __cpu_to_be32(x) ((__force __be32)__swab32(x))
--# define __cpu_to_be64(x) ((__force __be64)__swab64(x))
--#endif
--
--#ifdef __BIG_ENDIAN
--# define __be16_to_cpu(x) ((__force __u16)(__be16)(x))
--# define __be32_to_cpu(x) ((__force __u32)(__be32)(x))
--# define __be64_to_cpu(x) ((__force __u64)(__be64)(x))
--# define __cpu_to_be16(x) ((__force __be16)(__u16)(x))
--# define __cpu_to_be32(x) ((__force __be32)(__u32)(x))
--# define __cpu_to_be64(x) ((__force __be64)(__u64)(x))
--
--# define __le16_to_cpu(x) __swab16((__force __u16)(__le16)(x))
--# define __le32_to_cpu(x) __swab32((__force __u32)(__le32)(x))
--# define __le64_to_cpu(x) __swab64((__force __u64)(__le64)(x))
--# define __cpu_to_le16(x) ((__force __le16)__swab16(x))
--# define __cpu_to_le32(x) ((__force __le32)__swab32(x))
--# define __cpu_to_le64(x) ((__force __le64)__swab64(x))
--#endif
--
--/*
-- * These helpers could be phased out over time as the base version
-- * handles constant folding.
-- */
--#define __constant_htonl(x) __cpu_to_be32(x)
--#define __constant_ntohl(x) __be32_to_cpu(x)
--#define __constant_htons(x) __cpu_to_be16(x)
--#define __constant_ntohs(x) __be16_to_cpu(x)
--
--#define __constant_le16_to_cpu(x) __le16_to_cpu(x)
--#define __constant_le32_to_cpu(x) __le32_to_cpu(x)
--#define __constant_le64_to_cpu(x) __le64_to_cpu(x)
--#define __constant_be16_to_cpu(x) __be16_to_cpu(x)
--#define __constant_be32_to_cpu(x) __be32_to_cpu(x)
--#define __constant_be64_to_cpu(x) __be64_to_cpu(x)
--
--#define __constant_cpu_to_le16(x) __cpu_to_le16(x)
--#define __constant_cpu_to_le32(x) __cpu_to_le32(x)
--#define __constant_cpu_to_le64(x) __cpu_to_le64(x)
--#define __constant_cpu_to_be16(x) __cpu_to_be16(x)
--#define __constant_cpu_to_be32(x) __cpu_to_be32(x)
--#define __constant_cpu_to_be64(x) __cpu_to_be64(x)
--
--static inline void __le16_to_cpus(__u16 *p)
--{
--#ifdef __BIG_ENDIAN
--	__swab16s(p);
--#endif
--}
--
--static inline void __cpu_to_le16s(__u16 *p)
--{
--#ifdef __BIG_ENDIAN
--	__swab16s(p);
--#endif
--}
--
--static inline void __le32_to_cpus(__u32 *p)
--{
--#ifdef __BIG_ENDIAN
--	__swab32s(p);
--#endif
--}
--
--static inline void __cpu_to_le32s(__u32 *p)
--{
--#ifdef __BIG_ENDIAN
--	__swab32s(p);
--#endif
--}
--
--static inline void __le64_to_cpus(__u64 *p)
--{
--#ifdef __BIG_ENDIAN
--	__swab64s(p);
--#endif
--}
--
--static inline void __cpu_to_le64s(__u64 *p)
--{
--#ifdef __BIG_ENDIAN
--	__swab64s(p);
--#endif
--}
--
--static inline void __be16_to_cpus(__u16 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	__swab16s(p);
--#endif
--}
--
--static inline void __cpu_to_be16s(__u16 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	__swab16s(p);
--#endif
--}
--
--static inline void __be32_to_cpus(__u32 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	__swab32s(p);
--#endif
--}
--
--static inline void __cpu_to_be32s(__u32 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	__swab32s(p);
--#endif
--}
--
--static inline void __be64_to_cpus(__u64 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	__swab64s(p);
--#endif
--}
--
--static inline void __cpu_to_be64s(__u64 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	__swab64s(p);
--#endif
--}
--
--static inline __u16 __le16_to_cpup(const __le16 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	return (__force __u16)*p;
--#else
--	return __swab16p((__force __u16 *)p);
--#endif
--}
--
--static inline __u32 __le32_to_cpup(const __le32 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	return (__force __u32)*p;
--#else
--	return __swab32p((__force __u32 *)p);
--#endif
--}
--
--static inline __u64 __le64_to_cpup(const __le64 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	return (__force __u64)*p;
--#else
--	return __swab64p((__force __u64 *)p);
--#endif
--}
--
--static inline __le16 __cpu_to_le16p(const __u16 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	return (__force __le16)*p;
--#else
--	return (__force __le16)__swab16p(p);
--#endif
--}
--
--static inline __le32 __cpu_to_le32p(const __u32 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	return (__force __le32)*p;
--#else
--	return (__force __le32)__swab32p(p);
--#endif
--}
--
--static inline __le64 __cpu_to_le64p(const __u64 *p)
--{
--#ifdef __LITTLE_ENDIAN
--	return (__force __le64)*p;
--#else
--	return (__force __le64)__swab64p(p);
--#endif
--}
--
--static inline __u16 __be16_to_cpup(const __be16 *p)
--{
--#ifdef __BIG_ENDIAN
--	return (__force __u16)*p;
--#else
--	return __swab16p((__force __u16 *)p);
--#endif
--}
--
--static inline __u32 __be32_to_cpup(const __be32 *p)
--{
--#ifdef __BIG_ENDIAN
--	return (__force __u32)*p;
--#else
--	return __swab32p((__force __u32 *)p);
--#endif
--}
--
--static inline __u64 __be64_to_cpup(const __be64 *p)
--{
--#ifdef __BIG_ENDIAN
--	return (__force __u64)*p;
--#else
--	return __swab64p((__force __u64 *)p);
--#endif
--}
--
--static inline __be16 __cpu_to_be16p(const __u16 *p)
--{
--#ifdef __BIG_ENDIAN
--	return (__force __be16)*p;
--#else
--	return (__force __be16)__swab16p(p);
--#endif
--}
--
--static inline __be32 __cpu_to_be32p(const __u32 *p)
--{
--#ifdef __BIG_ENDIAN
--	return (__force __be32)*p;
--#else
--	return (__force __be32)__swab32p(p);
--#endif
--}
--
--static inline __be64 __cpu_to_be64p(const __u64 *p)
--{
--#ifdef __BIG_ENDIAN
--	return (__force __be64)*p;
--#else
--	return (__force __be64)__swab64p(p);
--#endif
--}
--
--#ifdef __KERNEL__
--
--# define le16_to_cpu __le16_to_cpu
--# define le32_to_cpu __le32_to_cpu
--# define le64_to_cpu __le64_to_cpu
--# define be16_to_cpu __be16_to_cpu
--# define be32_to_cpu __be32_to_cpu
--# define be64_to_cpu __be64_to_cpu
--# define cpu_to_le16 __cpu_to_le16
--# define cpu_to_le32 __cpu_to_le32
--# define cpu_to_le64 __cpu_to_le64
--# define cpu_to_be16 __cpu_to_be16
--# define cpu_to_be32 __cpu_to_be32
--# define cpu_to_be64 __cpu_to_be64
--
--# define le16_to_cpup __le16_to_cpup
--# define le32_to_cpup __le32_to_cpup
--# define le64_to_cpup __le64_to_cpup
--# define be16_to_cpup __be16_to_cpup
--# define be32_to_cpup __be32_to_cpup
--# define be64_to_cpup __be64_to_cpup
--# define cpu_to_le16p __cpu_to_le16p
--# define cpu_to_le32p __cpu_to_le32p
--# define cpu_to_le64p __cpu_to_le64p
--# define cpu_to_be16p __cpu_to_be16p
--# define cpu_to_be32p __cpu_to_be32p
--# define cpu_to_be64p __cpu_to_be64p
--
--# define le16_to_cpus __le16_to_cpus
--# define le32_to_cpus __le32_to_cpus
--# define le64_to_cpus __le64_to_cpus
--# define be16_to_cpus __be16_to_cpus
--# define be32_to_cpus __be32_to_cpus
--# define be64_to_cpus __be64_to_cpus
--# define cpu_to_le16s __cpu_to_le16s
--# define cpu_to_le32s __cpu_to_le32s
--# define cpu_to_le64s __cpu_to_le64s
--# define cpu_to_be16s __cpu_to_be16s
--# define cpu_to_be32s __cpu_to_be32s
--# define cpu_to_be64s __cpu_to_be64s
--
--/*
-- * They have to be macros in order to do the constant folding
-- * correctly - if the argument passed into a inline function
-- * it is no longer constant according to gcc..
-- */
--# undef ntohl
--# undef ntohs
--# undef htonl
--# undef htons
--
--# define ___htonl(x) __cpu_to_be32(x)
--# define ___htons(x) __cpu_to_be16(x)
--# define ___ntohl(x) __be32_to_cpu(x)
--# define ___ntohs(x) __be16_to_cpu(x)
--
--# define htonl(x) ___htonl(x)
--# define ntohl(x) ___ntohl(x)
--# define htons(x) ___htons(x)
--# define ntohs(x) ___ntohs(x)
--
--static inline void le16_add_cpu(__le16 *var, u16 val)
--{
--	*var = cpu_to_le16(le16_to_cpup(var) + val);
--}
--
--static inline void le32_add_cpu(__le32 *var, u32 val)
--{
--	*var = cpu_to_le32(le32_to_cpup(var) + val);
--}
--
--static inline void le64_add_cpu(__le64 *var, u64 val)
--{
--	*var = cpu_to_le64(le64_to_cpup(var) + val);
--}
--
--static inline void be16_add_cpu(__be16 *var, u16 val)
--{
--	*var = cpu_to_be16(be16_to_cpup(var) + val);
--}
--
--static inline void be32_add_cpu(__be32 *var, u32 val)
--{
--	*var = cpu_to_be32(be32_to_cpup(var) + val);
--}
--
--static inline void be64_add_cpu(__be64 *var, u64 val)
--{
--	*var = cpu_to_be64(be64_to_cpup(var) + val);
--}
--
--#endif /* __KERNEL__ */
--#endif /* _LINUX_BYTEORDER_H */
--- 
-1.6.1.94.g9388
+We removed the "init_fw" module option from the xc5000 module.  It is no 
+longer necessary, and prevents us from taking advantage of power saving 
+capabilities.
 
+So, the OOPS itself is moot.  How did acpi_ds_exec_end_op enter the 
+picture???  That I have no idea.  Can you try to reproduce that will a 
+clean (not tainted) kernel?
+
+Regards,
+
+Mike
