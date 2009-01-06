@@ -1,174 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbZAFDWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbZAFDdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754231AbZAFDWe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 22:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZAFDWX
+	id S1753754AbZAFDdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 22:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbZAFDcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 22:22:23 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:55639 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbZAFDWW (ORCPT
+	Mon, 5 Jan 2009 22:32:54 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:2641 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbZAFDcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 22:22:22 -0500
-Message-Id: <200901060322.n063MBOt046756@www262.sakura.ne.jp>
-Subject: [PATCH] Introduce d_realpath().
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: viro@ZenIV.linux.org.uk, hch@lst.de
-Cc: linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Mon, 5 Jan 2009 22:32:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=A/f2B4sMwOCuwFslNi5HOlweDdj1ezniubqXIoPzC5YH3g2ygNnE2vg/qHK2Os72OJ
+         bvCgQeZ6Ti33+tVqGZ1nG8t14iZQ9hCL/KWJsGhk7RubVKCVE+Jx+8iyW2DHrS/eSn0R
+         7awDO/wUlPn9swr5C4isLeHUB2a+7TnZ6gC1E=
+Message-ID: <91b13c310901051932p1343f9eei1db5534e6e10d238@mail.gmail.com>
+Date: Tue, 6 Jan 2009 11:32:51 +0800
+From: "=?UTF-8?Q?Cheng_Renquan_(=E7=A8=8B=E4=BB=BB=E5=85=A8)?=" 
+	<crquan@gmail.com>
+To: "Alasdair G Kergon" <agk@redhat.com>
+Subject: Re: [git pull] device-mapper patches for 2.6.29
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, "Jonathan Brassow" <jbrassow@redhat.com>,
+       "Mikulas Patocka" <mpatocka@redhat.com>,
+       "Milan Broz" <mbroz@redhat.com>, "Andi Kleen" <ak@suse.de>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>,
+       "Takahiro Yasui" <tyasui@redhat.com>
+In-Reply-To: <20090106032118.GC3512@agk.fab.redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Tue, 06 Jan 2009 12:22:11 +0900
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 06012009 #1404747, status: clean
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <20081010125159.GK5098@agk.fab.redhat.com>
+	 <20090105191824.GP5098@agk.fab.redhat.com>
+	 <alpine.LFD.2.00.0901051843570.3057@localhost.localdomain>
+	 <91b13c310901051915i38e05125tb89b3335922d274e@mail.gmail.com>
+	 <20090106032118.GC3512@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n063XAwM023602
 
-Al, thank you very much for processing security_path_*() patch.
-Now James is reviewing our patch and he suggested
-following parts need your acknowledgments.
-Will you review and ACK for introducing a variant of d_path()?
-
---------------------
-Subject: Introduce d_realpath().
-
-To remove factors that make pathname based access control difficult
-(e.g. symbolic links, "..", "//", chroot() etc.), a variant of d_path()
-which traverses up to the root of the namespace is needed.
-
-This patch introduces d_realpath(), a variant of d_path().
-While d_path() stops traversing at current->fs->root,
-d_realpath() doesn't stop traversiong at current->fs->root.
-
-Three differences compared to d_path().
-(1) Ignores current process's root directory.
-(2) Trailing '/' is added if the pathname refers to a directory.
-(3) /proc/PID/ is represented as /proc/self/ if PID equals current->tgid.
-
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
----
- fs/dcache.c            |   84 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/dcache.h |    1 
- 2 files changed, 85 insertions(+)
-
---- linux-2.6.28-mm1.orig/fs/dcache.c
-+++ linux-2.6.28-mm1/fs/dcache.c
-@@ -32,6 +32,7 @@
- #include <linux/seqlock.h>
- #include <linux/swap.h>
- #include <linux/bootmem.h>
-+#include <linux/magic.h>
- #include "internal.h"
- 
- 
-@@ -1978,6 +1979,89 @@ Elong:
- }
- 
- /**
-+ * d_realpath - Get the realpath of a dentry.
-+ *
-+ * @path: Pointer to "struct path".
-+ * @buffer: Pointer to buffer to return value in.
-+ * @buflen: Sizeof @buffer.
-+ *
-+ * Returns pointer to the realpath on success, an error code othersize.
-+ *
-+ * If @path is a directory, trailing '/' is appended.
-+ * /proc/PID/ is replaced by /proc/self/ if PID == task_tgid_nr_ns(current).
-+ */
-+char *d_realpath(struct path *path, char *buffer, int buflen)
-+{
-+	struct dentry *dentry = path->dentry;
-+	struct vfsmount *vfsmnt = path->mnt;
-+	char *end = buffer + buflen;
-+
-+	spin_lock(&dcache_lock);
-+	spin_lock(&vfsmount_lock);
-+	if (buflen < 1 || prepend(&end, &buflen, "", 1))
-+		goto Elong;
-+	/*
-+	 * Exception: Add trailing '/' for directory.
-+	 */
-+	if (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode) &&
-+	    prepend(&end, &buflen, "/", 1))
-+		goto Elong;
-+	for (;;) {
-+		struct dentry *parent;
-+		const char *name;
-+		int name_len;
-+		unsigned long pid;
-+
-+		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
-+			/* Global root? */
-+			if (vfsmnt->mnt_parent == vfsmnt)
-+				break;
-+			dentry = vfsmnt->mnt_mountpoint;
-+			vfsmnt = vfsmnt->mnt_parent;
-+			continue;
-+		}
-+		parent = dentry->d_parent;
-+		prefetch(parent);
-+		/*
-+		 * Exception: Use /proc/self/ rather than /proc/PID/
-+		 * for current process.
-+		 */
-+		name = dentry->d_name.name;
-+		name_len = dentry->d_name.len;
-+		if (IS_ROOT(parent) &&
-+		    parent->d_sb->s_magic == PROC_SUPER_MAGIC &&
-+		    !strict_strtoul(name, 10, &pid)) {
-+			const pid_t tgid
-+				= task_tgid_nr_ns(current,
-+						  dentry->d_sb->s_fs_info);
-+			if (tgid && (pid_t) pid == tgid) {
-+				name = "self";
-+				name_len = 4;
-+			}
-+		}
-+		if (prepend(&end, &buflen, name, name_len))
-+			goto Elong;
-+		if (prepend(&end, &buflen, "/", 1))
-+			goto Elong;
-+		dentry = parent;
-+	}
-+	if (*end == '/') {
-+		/* hit the slash */
-+		buflen++;
-+		end++;
-+	}
-+	if (prepend_name(&end, &buflen, &dentry->d_name))
-+		goto Elong;
-+ out:
-+	spin_unlock(&vfsmount_lock);
-+	spin_unlock(&dcache_lock);
-+	return end;
-+ Elong:
-+	end = ERR_PTR(-ENAMETOOLONG);
-+	goto out;
-+}
-+
-+/**
-  * d_path - return the path of a dentry
-  * @path: path to report
-  * @buf: buffer to return value in
---- linux-2.6.28-mm1.orig/include/linux/dcache.h
-+++ linux-2.6.28-mm1/include/linux/dcache.h
-@@ -305,6 +305,7 @@ extern char *dynamic_dname(struct dentry
- extern char *__d_path(const struct path *path, struct path *root, char *, int);
- extern char *d_path(const struct path *, char *, int);
- extern char *dentry_path(struct dentry *, char *, int);
-+extern char *d_realpath(struct path *, char *, int);
- 
- /* Allocation counts.. */
- 
---------------------
-
-Andrew Morton suggested me to save "parent->d_sb" and
-avoid "->s_magic == PROC_SUPER_MAGIC" comparison.
-But I think it is difficult because "parent->d_sb" is not
-single-valued. http://lkml.org/lkml/2008/11/17/18
-
-Regards.
+On Tue, Jan 6, 2009 at 11:21 AM, Alasdair G Kergon <agk@redhat.com> wrote:> On Tue, Jan 06, 2009 at 11:15:58AM +0800, Cheng Renquan (ç¨‹ä»»å…¨) wrote:>> So now maybe we can add a null macro to module_refcount if>> CONFIG_MODULE_UNLOAD undefined?>> Do we even need the test at all?
+So you mean add "#ifdef CONFIG_MODULE_UNLOAD ..." to dm-target.c? Ican do that, but I really don't know a better solution withoutconditional compiling?
+>> Alasdair> --> agk@redhat.com
+-- Cheng Renquan, Shenzhen, ChinaEddie Izzard  - "I grew up in Europe, where the history comes from."ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
