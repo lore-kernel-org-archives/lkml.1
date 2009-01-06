@@ -1,86 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZAFJhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZAFJjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbZAFJhi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZAFJh2
+	id S1754136AbZAFJjJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:39:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZAFJiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:37:28 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:63700 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbZAFJh0 (ORCPT
+	Tue, 6 Jan 2009 04:38:55 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:53427 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbZAFJiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:37:26 -0500
-Date: Tue, 6 Jan 2009 10:36:24 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       sparclinux <sparclinux@vger.kernel.org>
-Subject: Re: ftrace breaks sparc64 build
-Message-ID: <20090106093624.GA5061@osiris.boeblingen.de.ibm.com>
-References: <20090105181922.GA25622@uranus.ravnborg.org> <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com> <20090105195415.GA6204@uranus.ravnborg.org> <alpine.DEB.1.10.0901051458460.25066@gandalf.stny.rr.com> <20090105213107.GA27293@uranus.ravnborg.org> <alpine.DEB.1.10.0901051649240.25066@gandalf.stny.rr.com> <20090105220156.GC8592@uranus.ravnborg.org> <alpine.DEB.1.10.0901051710450.25066@gandalf.stny.rr.com> <20090105231136.GA5073@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0901052104400.16409@gandalf.stny.rr.com>
+	Tue, 6 Jan 2009 04:38:54 -0500
+Date: Tue, 6 Jan 2009 15:08:47 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Milton Miller <miltonm@bga.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
+	!CONFIG_VIOPATH
+Message-ID: <20090106093847.GB5066@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com> <20090104182441.GA5086@linux.vnet.ibm.com> <98d6aef17cba9d835d7866745f811dc7@bga.com> <20090106072549.GA5066@linux.vnet.ibm.com> <20090106073149.GA12371@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901052104400.16409@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090106073149.GA12371@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 09:07:05PM -0500, Steven Rostedt wrote:
-> On Tue, 6 Jan 2009, Heiko Carstens wrote:
-> > On Mon, Jan 05, 2009 at 05:14:22PM -0500, Steven Rostedt wrote:
-> > > On Mon, 5 Jan 2009, Sam Ravnborg wrote:
-> > > 
-> > > > > Is this all sparc cross compiler?  I'm trying to reproduce it on x86 with 
-> > > > > no avail :-(
-> > > > > 
-> > > > > I would like to test other ways to change the macro, but to do so, I need 
-> > > > > to get a compiler that will produce the warnings that you see. What 
-> > > > > version of gcc are you using?
-> > > > 
-> > > > I used crosstool to build a 3.4.5 gcc:
-> > > 
-> > > Hmm, that's a pretty old compiler. I wonder if it wouldn't just help
-> > > if we just make the branch tracer dependent on the compiler used. That is.
-> > > 
-> > > #if defined(CONFIG_PROFILE_ALL_BRANCHES) && (__GNUC__ >= 4)
-> > > #define if(cond) ...
-> > > 
-> > > Or something :-/
-> > 
-> > FWIW, on s390 with gcc 4.3.2 and an allyesconfig I get these:
-> > 
-> >   CC      arch/s390/mm/extmem.o
-> > arch/s390/mm/extmem.c: In function 'segment_modify_shared':
-> > arch/s390/mm/extmem.c:572: warning: 'end_addr' may be used uninitialized in this function
-> > arch/s390/mm/extmem.c:572: warning: 'start_addr' may be used uninitialized in this function
-> > arch/s390/mm/extmem.c: In function 'query_segment_type':
-> > arch/s390/mm/extmem.c:259: warning: 'vmrc' may be used uninitialized in this function
-> > 
-> > Switching off PROFILE_ALL_BRANCHES makes the warnings go away again.
-> 
-> Now that is really interesting. Because end_addr and start_addr are 
-> initialized via functions:
-> 
-> 	if (x)
-> 		init_me(a, &y);
-> 	else
-> 		init_me(b, &y);
-> 
-> Which actually does not make sense why turning off PROFILE_ALL_BRANCHES 
-> would affect this :-/
+* Sam Ravnborg <sam@ravnborg.org> [2009-01-06 08:31:49]:
 
-They are not necessarily initialized via 'initme'. Only if it returns with
-a return value >= 0. So it's a bit more complex:
+> > 
+> > 	Sorry for resending the patch before taking care of the response. Resending 
+> > the patch with changes made to other three drivers also.
+> > 
+> > Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
+> > 
+> > iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
+> > Removing the dependency of VIOPATH by selecting it, when the drivers
+> > dependent on iSeries code.
+> > 
+> > 
+> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/platforms/iseries/Kconfig |    5 ++++-
+> >  drivers/char/Kconfig                   |    1 +
+> >  drivers/scsi/Kconfig                   |    1 +
+> >  3 files changed, 6 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+> > index ed3753d..5cb2320 100644
+> > --- a/arch/powerpc/platforms/iseries/Kconfig
+> > +++ b/arch/powerpc/platforms/iseries/Kconfig
+> > @@ -10,18 +10,21 @@ menu "iSeries device drivers"
+> >  config VIODASD
 
-	if (x)
-		rc = init_me(a, &y);
-	else
-		rc = init_me(b, &y);
-	if (rc < 0)
-		/* y unitialized */
-		return;
-	use(y);
+
+<snip>
+
+> 
+> VIOPATH is set using select so the "depends on" is effectively ignored.
+> If you think you need the "depends on" then you need to revisit the
+> symbol that will select VIOPATH and make sure _they_ have this dependency.
+> 
+> 	Sam
+
+Hi Sam,
+
+	VIOPATH is used only by the PPC_ISERIES code. The symbols selecting
+the VIOPATH are also dependent on the PPC_ISERIES. Should we make the 
+config VIOPATH as default n, because it being selected the dependent
+drivers.
+
+Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
+
+iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
+Removing the dependency of VIOPATH by selecting it, when the drivers
+dependent on iSeries code.
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/iseries/Kconfig |    6 ++++--
+ drivers/char/Kconfig                   |    1 +
+ drivers/scsi/Kconfig                   |    1 +
+ 3 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+index ed3753d..fd524cd 100644
+--- a/arch/powerpc/platforms/iseries/Kconfig
++++ b/arch/powerpc/platforms/iseries/Kconfig
+@@ -10,18 +10,21 @@ menu "iSeries device drivers"
+ config VIODASD
+ 	tristate "iSeries Virtual I/O disk support"
+ 	depends on BLOCK
++	select VIOPATH
+ 	help
+ 	  If you are running on an iSeries system and you want to use
+ 	  virtual disks created and managed by OS/400, say Y.
+ 
+ config VIOCD
+ 	tristate "iSeries Virtual I/O CD support"
++	select VIOPATH
+ 	help
+ 	  If you are running Linux on an IBM iSeries system and you want to
+ 	  read a CD drive owned by OS/400, say Y here.
+ 
+ config VIOTAPE
+ 	tristate "iSeries Virtual Tape Support"
++	select VIOPATH
+ 	help
+ 	  If you are running Linux on an iSeries system and you want Linux
+ 	  to read and/or write a tape drive owned by OS/400, say Y here.
+@@ -30,5 +33,4 @@ endmenu
+ 
+ config VIOPATH
+ 	bool
+-	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
+-	default y
++	default n
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 1697043..b8da09a 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -616,6 +616,7 @@ config HVC_ISERIES
+ 	default y
+ 	select HVC_DRIVER
+ 	select HVC_IRQ
++	select VIOPATH
+ 	help
+ 	  iSeries machines support a hypervisor virtual console.
+ 
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index b732297..256c7be 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -884,6 +884,7 @@ config SCSI_IBMVSCSI
+ 	tristate "IBM Virtual SCSI support"
+ 	depends on PPC_PSERIES || PPC_ISERIES
+ 	select SCSI_SRP_ATTRS
++	select VIOPATH if PPC_ISERIES
+ 	help
+ 	  This is the IBM POWER Virtual SCSI Client
+ 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
