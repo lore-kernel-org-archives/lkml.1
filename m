@@ -1,185 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbZAFXQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbZAFXQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755025AbZAFXQU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbZAFXPv
+	id S1757181AbZAFXQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbZAFXQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:15:51 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51371 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753649AbZAFXPu (ORCPT
+	Tue, 6 Jan 2009 18:16:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44126 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755715AbZAFXP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:15:50 -0500
-Date: Tue, 6 Jan 2009 23:14:53 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 14/23] arm: introduce asm/swab.h
-Message-ID: <20090106231453.GA3568@flint.arm.linux.org.uk>
-References: <1231277452.964.271.camel@brick> <20090106231235.GB20623@flint.arm.linux.org.uk>
+	Tue, 6 Jan 2009 18:15:59 -0500
+Date: Tue, 6 Jan 2009 15:15:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Michael Halcrow <mhalcrow@us.ibm.com>,
+       ecryptfs-devel@lists.launchpad.net
+Subject: Re: 2.6.29 -mm merge plans
+Message-Id: <20090106151534.9e9205bc.akpm@linux-foundation.org>
+In-Reply-To: <20090106225744.GA10553@infradead.org>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+	<20090106225744.GA10553@infradead.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106231235.GB20623@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 11:12:35PM +0000, Russell King wrote:
-> Thanks for bypassing me.
-> 
-> We've had this patch in the kernel before, then it got reverted.
+(cc's added)
 
-Correction - we've had something similar to this before.
+On Tue, 6 Jan 2009 17:57:44 -0500
+Christoph Hellwig <hch@infradead.org> wrote:
 
-> Application: ae82cbfc8beaa69007aa09966d3983ac938c3577
-> Reversion: b35de672e74ceea6482b4f690ad053aec8465c5d
+> On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
 > 
->     Revert "[ARM] use the new byteorder headers"
->     
->     This reverts commit ae82cbfc8beaa69007aa09966d3983ac938c3577. It
->     needs the new byteorder headers to be exported to userspace, and
->     they aren't yet -- and probably shouldn't be, at this point in the
->     2.6.27 release cycle (or ever, for that matter).
->     
->     Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
->     Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> > ecryptfs-filename-encryption-tag-70-packets.patch
+> > ecryptfs-filename-encryption-header-updates.patch
+> > ecryptfs-filename-encryption-encoding-and-encryption-functions.patch
+> > ecryptfs-filename-encryption-filldir-lookup-and-readlink.patch
+> > ecryptfs-filename-encryption-mount-option.patch
+> > ecryptfs-replace-%z-with-%z.patch
+> > ecryptfs-fix-data-types-int-size_t.patch
+> > ecryptfs-kerneldoc-for-ecryptfs_parse_tag_70_packet.patch
+> > ecryptfs-clean-up-ecryptfs_decode_from_filename.patch
+> > fs-ecryptfs-inodec-cleanup-kerneldoc.patch
 > 
-> Please explain what's changed to make this acceptable now.
-> 
-> On Tue, Jan 06, 2009 at 01:30:52PM -0800, Harvey Harrison wrote:
-> > Convert to the new-style arch overrides as well.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> >  arch/arm/include/asm/Kbuild      |    1 +
-> >  arch/arm/include/asm/byteorder.h |   33 +------------------------
-> >  arch/arm/include/asm/swab.h      |   50 ++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 52 insertions(+), 32 deletions(-)
-> > 
-> > diff --git a/arch/arm/include/asm/Kbuild b/arch/arm/include/asm/Kbuild
-> > index 73237bd..43b0b2b 100644
-> > --- a/arch/arm/include/asm/Kbuild
-> > +++ b/arch/arm/include/asm/Kbuild
-> > @@ -1,3 +1,4 @@
-> >  include include/asm-generic/Kbuild.asm
-> >  
-> >  unifdef-y += hwcap.h
-> > +unifdef-y += swab.h
-> > diff --git a/arch/arm/include/asm/byteorder.h b/arch/arm/include/asm/byteorder.h
-> > index 4fbfb22..c02b6fc 100644
-> > --- a/arch/arm/include/asm/byteorder.h
-> > +++ b/arch/arm/include/asm/byteorder.h
-> > @@ -15,38 +15,7 @@
-> >  #ifndef __ASM_ARM_BYTEORDER_H
-> >  #define __ASM_ARM_BYTEORDER_H
-> >  
-> > -#include <linux/compiler.h>
-> > -#include <asm/types.h>
-> > -
-> > -static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
-> > -{
-> > -	__u32 t;
-> > -
-> > -#ifndef __thumb__
-> > -	if (!__builtin_constant_p(x)) {
-> > -		/*
-> > -		 * The compiler needs a bit of a hint here to always do the
-> > -		 * right thing and not screw it up to different degrees
-> > -		 * depending on the gcc version.
-> > -		 */
-> > -		asm ("eor\t%0, %1, %1, ror #16" : "=r" (t) : "r" (x));
-> > -	} else
-> > -#endif
-> > -		t = x ^ ((x << 16) | (x >> 16)); /* eor r1,r0,r0,ror #16 */
-> > -
-> > -	x = (x << 24) | (x >> 8);		/* mov r0,r0,ror #8      */
-> > -	t &= ~0x00FF0000;			/* bic r1,r1,#0x00FF0000 */
-> > -	x ^= (t >> 8);				/* eor r0,r0,r1,lsr #8   */
-> > -
-> > -	return x;
-> > -}
-> > -
-> > -#define __arch__swab32(x) ___arch__swab32(x)
-> > -
-> > -#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-> > -#  define __BYTEORDER_HAS_U64__
-> > -#  define __SWAB_64_THRU_32__
-> > -#endif
-> > +#include <asm/swab.h>
-> >  
-> >  #ifdef __ARMEB__
-> >  #include <linux/byteorder/big_endian.h>
-> > diff --git a/arch/arm/include/asm/swab.h b/arch/arm/include/asm/swab.h
-> > new file mode 100644
-> > index 0000000..27a689b
-> > --- /dev/null
-> > +++ b/arch/arm/include/asm/swab.h
-> > @@ -0,0 +1,50 @@
-> > +/*
-> > + *  arch/arm/include/asm/byteorder.h
-> > + *
-> > + * ARM Endian-ness.  In little endian mode, the data bus is connected such
-> > + * that byte accesses appear as:
-> > + *  0 = d0...d7, 1 = d8...d15, 2 = d16...d23, 3 = d24...d31
-> > + * and word accesses (data or instruction) appear as:
-> > + *  d0...d31
-> > + *
-> > + * When in big endian mode, byte accesses appear as:
-> > + *  0 = d24...d31, 1 = d16...d23, 2 = d8...d15, 3 = d0...d7
-> > + * and word accesses (data or instruction) appear as:
-> > + *  d0...d31
-> > + */
-> > +#ifndef __ASM_ARM_SWAB_H
-> > +#define __ASM_ARM_SWAB_H
-> > +
-> > +#include <linux/compiler.h>
-> > +#include <asm/types.h>
-> > +
-> > +#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-> > +#  define __SWAB_64_THRU_32__
-> > +#endif
-> > +
-> > +static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
-> > +{
-> > +	__u32 t;
-> > +
-> > +#ifndef __thumb__
-> > +	if (!__builtin_constant_p(x)) {
-> > +		/*
-> > +		 * The compiler needs a bit of a hint here to always do the
-> > +		 * right thing and not screw it up to different degrees
-> > +		 * depending on the gcc version.
-> > +		 */
-> > +		asm ("eor\t%0, %1, %1, ror #16" : "=r" (t) : "r" (x));
-> > +	} else
-> > +#endif
-> > +		t = x ^ ((x << 16) | (x >> 16)); /* eor r1,r0,r0,ror #16 */
-> > +
-> > +	x = (x << 24) | (x >> 8);		/* mov r0,r0,ror #8      */
-> > +	t &= ~0x00FF0000;			/* bic r1,r1,#0x00FF0000 */
-> > +	x ^= (t >> 8);				/* eor r0,r0,r1,lsr #8   */
-> > +
-> > +	return x;
-> > +}
-> > +#define __arch_swab32 __arch_swab32
-> > +
-> > +#endif
-> > +
-> > -- 
-> > 1.6.1.94.g9388
-> > 
-> > 
-> 
-> -- 
-> Russell King
->  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
->  maintainer of:
+> By using lookup_one_len on an arbitrary underlying filesystem this
+> breaks the assumption that a nameidata is always available.  Please
+> redo to use proper lookup helpers.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+It that a nack, or do we think we can address this in the next week or
+three?
+
+>  Also whole code feels rather
+> fragile from a 10000 feet view, but beeing plsit in so many
+> patches it's almost impossible to properly review it anywya.
+> 
+
+Yes, it made my brain hurt.
+
