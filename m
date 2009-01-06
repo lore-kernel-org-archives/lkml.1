@@ -1,76 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZAFW5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbZAFW57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756021AbZAFW5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZAFW5N
+	id S1757280AbZAFW57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:57:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZAFW5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:57:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46590 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751017AbZAFW5L (ORCPT
+	Tue, 6 Jan 2009 17:57:46 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39059 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbZAFW5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:57:11 -0500
-Date: Tue, 6 Jan 2009 14:56:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-nfs@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>
-Subject: nfsd stuckage
-Message-Id: <20090106145612.d4d9948d.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Jan 2009 17:57:45 -0500
+Date: Tue, 6 Jan 2009 17:57:44 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 -mm merge plans
+Message-ID: <20090106225744.GA10553@infradead.org>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
+> mm-invoke-oom-killer-from-page-fault.patch
+> mm-invoke-oom-killer-from-page-fault-fix.patch
+> mm-invoke-oom-killer-from-page-fault-fix-fix-2.patch
 
-I just built current mainline plus the just-sent 266 -mm patches.
+Just implementing this behaviour for x86 and uml is extremly
+counter-productive.  Please fix up all architectures as this
+behaviour needs to be the same on all ports (at least those
+with a MMU)
 
-The machine failed to power off when hit with `halt -pfn'.  dmesg output:
 
-[   37.087037] calling  rfcomm_init+0x0/0xb6 [rfcomm] @ 3946
-[   37.087294] initcall rfcomm_init+0x0/0xb6 [rfcomm] returned 0 after 72 usecs
-[   37.505855] calling  hidp_init+0x0/0x5e [hidp] @ 4046
-[   37.506072] initcall hidp_init+0x0/0x5e [hidp] returned 0 after 28 usecs
-[   37.636638] calling  init_autofs4_fs+0x0/0x23 [autofs4] @ 4081
-[   37.636990] initcall init_autofs4_fs+0x0/0x23 [autofs4] returned 0 after 54 usecs
-[   39.630075] calling  init_nlm+0x0/0x22 [lockd] @ 4264
-[   39.630321] initcall init_nlm+0x0/0x22 [lockd] returned 0 after 59 usecs
-[   39.690077] calling  init_rpcsec_gss+0x0/0x4a [auth_rpcgss] @ 4264
-[   39.690281] initcall init_rpcsec_gss+0x0/0x4a [auth_rpcgss] returned 0 after 12 usecs
-[   39.834034] calling  init_nfsd+0x0/0xe2 [nfsd] @ 4302
-[   39.834471] initcall init_nfsd+0x0/0xe2 [nfsd] returned 0 after 236 usecs
-[   39.924213] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
-[  672.162677] INFO: task nfsd4:4324 blocked for more than 480 seconds.
-[  672.162706] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[  672.162725]  ffff880251df1d60 0000000000000046 ffff88025e1c0580 ffff8802488013d8
-[  672.162753]  ffff880251df1d20 ffff88024c49a7a0 ffff88025e088760 ffff88024c49ab18
-[  672.162834]  000000002807ee00 00000000ffff59ec ffff880251df1d50 0000000000000282
-[  672.162865] Call Trace:
-[  672.162880]  [<ffffffff8052a1d8>] __mutex_lock_slowpath+0x6a/0xac
-[  672.162895]  [<ffffffff8052a0c5>] mutex_lock+0x2c/0x30
-[  672.162908]  [<ffffffff802c4747>] vfs_fsync+0x63/0xa9
-[  672.162933]  [<ffffffffa048c74c>] nfsd_sync_dir+0x10/0x12 [nfsd]
-[  672.162960]  [<ffffffffa04a5427>] nfsd4_sync_rec_dir+0x27/0x40 [nfsd]
-[  672.162984]  [<ffffffffa04a592a>] nfsd4_recdir_purge_old+0x3d/0x6a [nfsd]
-[  672.163023]  [<ffffffffa04a1745>] laundromat_main+0x62/0x225 [nfsd]
-[  672.163049]  [<ffffffffa04a16e3>] ? laundromat_main+0x0/0x225 [nfsd]
-[  672.163064]  [<ffffffff8024b4a7>] run_workqueue+0x8d/0x124
-[  672.163076]  [<ffffffff8024b5e0>] ? worker_thread+0x0/0xe5
-[  672.163089]  [<ffffffff8024b6b8>] worker_thread+0xd8/0xe5
-[  672.163102]  [<ffffffff8024e8cc>] ? autoremove_wake_function+0x0/0x36
-[  672.163115]  [<ffffffff8024b5e0>] ? worker_thread+0x0/0xe5
-[  672.163127]  [<ffffffff8024e5e0>] kthread+0x44/0x6b
-[  672.163140]  [<ffffffff8020cfba>] child_rip+0xa/0x20
-[  672.163151]  [<ffffffff8024e59c>] ? kthread+0x0/0x6b
-[  672.163162]  [<ffffffff8020cfb0>] ? child_rip+0x0/0x20
-[ 1204.739381] INFO: task nfsd4:4324 blocked for more than 480 seconds.
-[ 1204.739415] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[ 1204.739436]  ffff880251df1d60 0000000000000046 ffff88025e1c0580 ffff8802488013d8
-[ 1204.739523]  ffff880251df1d20 ffff88024c49a7a0 ffff88025e088760 ffff88024c49ab18
-[ 1204.739551]  000000002807ee00 00000000ffff59ec ffff880251df1d50 0000000000000282
-[ 1204.739579] Call Trace:
+> fs-truncate-blocks-outside-i_size-after-o_direct-write-error.patch
+> fs-truncate-blocks-outside-i_size-after-o_direct-write-error-fix.patch
 
-This didn't happen in linux-next a week or so ago.
+Btw, this code is still not quite right.  We really need to call
+->setattr instead of vmtruncate here.  Complex filesystem need
+transaction to properly free blocks, and those transactions are in
+->setattr not inside vmtruncate where ->truncate doesn't even have
+a chance to get the handle to the transaction passed.
+
+As these patches don't make it worse this is not a NACK, but more of
+a heads up.
+
+> fs-sys_sync-fix.patch
+
+I'm not sure this is a good idea.  Concurrent syncs are a bad idea
+to start with and we should just synchronyze do_sync completely.
+sync_filesystems as one of the main components of do_sync already
+is synchronized in that way, and taking that to a higher level would
+get rid of all the worries about concurrent syncs.
+
+> softirq-introduce-statistics-for-softirq.patch
+> proc-export-statistics-for-softirq-to-proc.patch
+> proc-update-document-for-proc-softirqs-and-proc-stat.patch
+
+Why is this in procfs?
+
+> ecryptfs-filename-encryption-tag-70-packets.patch
+> ecryptfs-filename-encryption-header-updates.patch
+> ecryptfs-filename-encryption-encoding-and-encryption-functions.patch
+> ecryptfs-filename-encryption-filldir-lookup-and-readlink.patch
+> ecryptfs-filename-encryption-mount-option.patch
+> ecryptfs-replace-%z-with-%z.patch
+> ecryptfs-fix-data-types-int-size_t.patch
+> ecryptfs-kerneldoc-for-ecryptfs_parse_tag_70_packet.patch
+> ecryptfs-clean-up-ecryptfs_decode_from_filename.patch
+> fs-ecryptfs-inodec-cleanup-kerneldoc.patch
+
+By using lookup_one_len on an arbitrary underlying filesystem this
+breaks the assumption that a nameidata is always available.  Please
+redo to use proper lookup helpers.  Also whole code feels rather
+fragile from a 10000 feet view, but beeing plsit in so many
+patches it's almost impossible to properly review it anywya.
+
+
+> hfs-add-basic-export-support.patch
+
+I'm pretty sure we already had a version better than that in your
+tree on the list.  But I've lost track and we should just restart
+the review cycle on -fsdevel.
+
+> linuxpps-core-support.patch
+
+looks generally good, but the comments should get a little loving.
+Please remove the stupid filenames that always get out of sync in
+the top of file comments, and make the documentation of exported
+symbols kernel-doc instead of it's weird own format.
+
+Does checkpatch.pl still not catch these things?
+
+Also the ioctl certainly should be an unlocked_ioctl and not the
+old BKL-locked variant. The !uarg checks in the ioctls can go,
+copy_to/from_users does this automatically.
+
+pps.h shoulkd be split into one header only defining the
+kernel<->userspace ABI, and a kernel-internal one.  That way
+also the conditional includes can go away.
+
+> pps-documentation-programs-and-examples.patch
+
+Once again this stuff is in and utterly wrong place where it can't
+easily be package for distros.  ppsfind belongs into util-linux and
+needs a proper mangage, ppsldisc is not nessecary but ldattach in
+util-linux needs to grow support for N_PPS instead, and ppstest
+should probably go into util-linux in a more polished version, too.
+
+> pps-userland-header-file-for-pps-api.patch
+
+This one is utterly wrong.  It provides what should be a userspace
+library as inlines in a kernel header. 
+
+Please do a proper libpps library package.
+> generic-swap-sparc-rename-swap-to-swap_ulong.patch
+> generic-swap-iphase-rename-swap-to-swap_byte_order.patch
+> generic-swap-lib-sortc-rename-swap-to-swap_func.patch
+> generic-swap-introduce-global-macro-swapa-b.patch
+> generic-swap-ext3-remove-local-swap-macro.patch
+> generic-swap-ext4-remove-local-swap-macro.patch
+> generic-swap-sched-remove-local-swap-macro.patch
+> generic-swap-dcache-use-swap-instead-of-private-do_switch.patch
+> 
+>   Add a kernel-wide swap() macro, use it.  Merge.
+
+Hmm, must have missed this when it went to lkml.  Having this helper
+generic is a good idea, but swap is far too generic for something
+in kernel.h as indicated by the various renaming patches. How about
+swap_vars?
+
+
+> nilfs2-add-document.patch
+> nilfs2-disk-format-and-userland-interface.patch
+> nilfs2-add-inode-and-other-major-structures.patch
+> nilfs2-integrated-block-mapping.patch
+> nilfs2-b-tree-based-block-mapping.patch
+> nilfs2-direct-block-mapping.patch
+> nilfs2-b-tree-node-cache.patch
+> nilfs2-buffer-and-page-operations.patch
+> nilfs2-meta-data-file.patch
+> nilfs2-persistent-object-allocator.patch
+> nilfs2-disk-address-translator.patch
+> nilfs2-inode-map-file.patch
+> nilfs2-checkpoint-file.patch
+> nilfs2-segment-usage-file.patch
+> nilfs2-inode-operations.patch
+> nilfs2-inode-operations-fix.patch
+> nilfs2-file-operations.patch
+> nilfs2-directory-entry-operations.patch
+> nilfs2-pathname-operations.patch
+> nilfs2-pathname-operations-fix.patch
+> nilfs2-operations-for-the_nilfs-core-object.patch
+> nilfs2-super-block-operations.patch
+> nilfs2-super-block-operations-fix.patch
+> nilfs2-segment-buffer.patch
+> nilfs2-segment-constructor.patch
+> nilfs2-recovery-functions.patch
+> nilfs2-another-dat-for-garbage-collection.patch
+> nilfs2-block-cache-for-garbage-collection.patch
+> nilfs2-ioctl-operations.patch
+> nilfs2-update-makefile-and-kconfig.patch
+> #
+> nilfs2-fix-problems-of-memory-allocation-in-ioctl.patch
+> nilfs2-cleanup-nilfs_clear_inode.patch
+> nilfs2-avoid-double-error-caused-by-nilfs_transaction_end.patch
+> nilfs2-insert-explanations-in-gcinode-file.patch
+> nilfs2-add-maintainer.patch
+> nilfs2-fix-gc-failure-on-volumes-keeping-numerous-snapshots.patch
+> 
+>   Dunno.   Has this been reviewed enough?
+
+No.  I might eventually take a look, but looking into btrfs has a little
+higher priority right now, and split into gazillions of
+non-selfcontained patches certainly doesn't help reviewing it.
+
+BTW, the current influx of higher-complexity filesystems certainly worries
+me a little.
