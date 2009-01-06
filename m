@@ -1,99 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZAFX3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZAFXax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbZAFX3Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZAFX3A
+	id S1755274AbZAFXax (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZAFXak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:29:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58347 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750980AbZAFX27 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:28:59 -0500
-Date: Tue, 6 Jan 2009 15:28:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: Re: 2.6.29 -mm merge plans
-Message-Id: <20090106152829.43dab4a0.akpm@linux-foundation.org>
-In-Reply-To: <20090106225744.GA10553@infradead.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	<20090106225744.GA10553@infradead.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 6 Jan 2009 18:30:40 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38899 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751580AbZAFXaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 18:30:39 -0500
+Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
+From: Matt Helsley <matthltc@us.ibm.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-nfs@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Chuck Lever <chuck.lever@oracle.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Cedric Le Goater <clg@fr.ibm.com>
+In-Reply-To: <20090106202046.GF5901@fieldses.org>
+References: <20090106011314.534653345@us.ibm.com>
+	 <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
+	 <20090106202046.GF5901@fieldses.org>
+Content-Type: text/plain
+Date: Tue, 06 Jan 2009 14:43:47 -0800
+Message-Id: <1231281827.14345.106.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc added)
-
-On Tue, 6 Jan 2009 17:57:44 -0500
-Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
-> 
-> > nilfs2-add-document.patch
-> > nilfs2-disk-format-and-userland-interface.patch
-> > nilfs2-add-inode-and-other-major-structures.patch
-> > nilfs2-integrated-block-mapping.patch
-> > nilfs2-b-tree-based-block-mapping.patch
-> > nilfs2-direct-block-mapping.patch
-> > nilfs2-b-tree-node-cache.patch
-> > nilfs2-buffer-and-page-operations.patch
-> > nilfs2-meta-data-file.patch
-> > nilfs2-persistent-object-allocator.patch
-> > nilfs2-disk-address-translator.patch
-> > nilfs2-inode-map-file.patch
-> > nilfs2-checkpoint-file.patch
-> > nilfs2-segment-usage-file.patch
-> > nilfs2-inode-operations.patch
-> > nilfs2-inode-operations-fix.patch
-> > nilfs2-file-operations.patch
-> > nilfs2-directory-entry-operations.patch
-> > nilfs2-pathname-operations.patch
-> > nilfs2-pathname-operations-fix.patch
-> > nilfs2-operations-for-the_nilfs-core-object.patch
-> > nilfs2-super-block-operations.patch
-> > nilfs2-super-block-operations-fix.patch
-> > nilfs2-segment-buffer.patch
-> > nilfs2-segment-constructor.patch
-> > nilfs2-recovery-functions.patch
-> > nilfs2-another-dat-for-garbage-collection.patch
-> > nilfs2-block-cache-for-garbage-collection.patch
-> > nilfs2-ioctl-operations.patch
-> > nilfs2-update-makefile-and-kconfig.patch
-> > #
-> > nilfs2-fix-problems-of-memory-allocation-in-ioctl.patch
-> > nilfs2-cleanup-nilfs_clear_inode.patch
-> > nilfs2-avoid-double-error-caused-by-nilfs_transaction_end.patch
-> > nilfs2-insert-explanations-in-gcinode-file.patch
-> > nilfs2-add-maintainer.patch
-> > nilfs2-fix-gc-failure-on-volumes-keeping-numerous-snapshots.patch
+On Tue, 2009-01-06 at 15:20 -0500, J. Bruce Fields wrote:
+> On Tue, Jan 06, 2009 at 02:02:29PM -0600, Serge E. Hallyn wrote:
+> > Quoting Matt Helsley (matthltc@us.ibm.com):
+> > > We can often specify the UTS namespace to use when starting an RPC client.
+> > > However sometimes no UTS namespace is available (specifically during system
+> > > shutdown as the last NFS mount in a container is unmounted) so fall
+> > > back to the initial UTS namespace.
 > > 
-> >   Dunno.   Has this been reviewed enough?
+> > So what happens if we take this patch and do nothing else?
+> > 
+> > The only potential problem situation will be rpc requests
+> > made on behalf of a container in which the last task has
+> > exited, right?  So let's say a container did an nfs mount
+> > and then exits, causing an nfs umount request.
+> > 
+> > That umount request will now be sent with the wrong nodename.
+> > Does that actually cause problems, will the server use the
+> > nodename to try and determine the client sending the request?
 > 
-> No.  I might eventually take a look, but looking into btrfs has a little
-> higher priority right now, and split into gazillions of
-> non-selfcontained patches certainly doesn't help reviewing it.
+> This is just the machine name in the auth_unix credential?  The linux
+> server ignores that completely (for the purpose of auth_unix
+> authenication, it identifies clients only by source ip address).  I
+> suspect other servers also ignore it, but I don't know.
+> 
+> --b.
 
-nilfs will remain under development for a couple of months and we'll
-take a look at a 2.6.20 merge.  Can you please find time to take a
-closer look during this cycle?
+I was wondering about this because I kept coming back to the question of
+how the server could trust the name the client supplies (seems it
+can't). This is very useful information -- it certainly suggests that
+this patch would be sufficient.
 
-> BTW, the current influx of higher-complexity filesystems certainly worries
-> me a little.
+Thanks!
 
-Well yes.  Each new filesystem (complex or not) is an additional
-boatanchor on development of core kernel: block, vfs, MM, etc.  So each
-filesystem should be justified on the basis that it adds sufficient
-benefit to justify that cost.  (And I got mau-muaed for pointing this
-out in the omfs context, I might add).
+Cheers,
+	-Matt Helsley
 
-Will nilfs bring enough value to justify it's cost?  Hard call.  What
-do you think?
+> > 
+> > thanks,
+> > -serge
+> > 
+> > > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> > > Cc: Cedric Le Goater <clg@fr.ibm.com>
+> > > Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> > > Cc: linux-nfs@vger.kernel.org
+> > > Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+> > > Cc: Chuck Lever <chuck.lever@oracle.com>
+> > > Cc: Eric W. Biederman <ebiederm@xmission.com>
+> > > Cc: Linux Containers <containers@lists.osdl.org>
+> > > 
+> > > ---
+> > >  net/sunrpc/clnt.c |    7 +++++--
+> > >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > > 
+> > > Index: linux-2.6.28/net/sunrpc/clnt.c
+> > > ===================================================================
+> > > --- linux-2.6.28.orig/net/sunrpc/clnt.c
+> > > +++ linux-2.6.28/net/sunrpc/clnt.c
+> > > @@ -128,6 +128,7 @@ static struct rpc_clnt * rpc_new_client(
+> > >  	struct rpc_version	*version;
+> > >  	struct rpc_clnt		*clnt = NULL;
+> > >  	struct rpc_auth		*auth;
+> > > +	struct new_utsname	*uts_ns = init_utsname();
+> > >  	int err;
+> > >  	size_t len;
+> > > 
+> > > @@ -213,10 +214,12 @@ static struct rpc_clnt * rpc_new_client(
+> > >  	}
+> > > 
+> > >  	/* save the nodename */
+> > > -	clnt->cl_nodelen = strlen(init_utsname()->nodename);
+> > > +	if (current->nsproxy != NULL)
+> > > +		uts_ns = utsname();
+> > > +	clnt->cl_nodelen = strlen(uts_ns->nodename);
+> > >  	if (clnt->cl_nodelen > UNX_MAXNODENAME)
+> > >  		clnt->cl_nodelen = UNX_MAXNODENAME;
+> > > -	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt->cl_nodelen);
+> > > +	memcpy(clnt->cl_nodename, uts_ns->nodename, clnt->cl_nodelen);
+> > >  	rpc_register_client(clnt);
+> > >  	return clnt;
+> > > 
+> > > 
+> > > -- 
+> > > _______________________________________________
+> > > Containers mailing list
+> > > Containers@lists.linux-foundation.org
+> > > https://lists.linux-foundation.org/mailman/listinfo/containers
 
-(otoh, we could probably randomly delete ten old filesystems and
-practically nobody would notice)
