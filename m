@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZAFVgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZAFVgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbZAFVgz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZAFVc2
+	id S1756028AbZAFVgj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZAFVc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:32:28 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:9512 "EHLO
+	Tue, 6 Jan 2009 16:32:26 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:9249 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbZAFVcZ (ORCPT
+	with ESMTP id S1753384AbZAFVcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:32:25 -0500
+	Tue, 6 Jan 2009 16:32:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=bfTK1u/HbX2LYPEuVxf2FJG7vuxwqaqboa/gOrYl5lgrc8Q3lxo4eOsCqV8yZ1LsP5
-         owo1KJOVqIfHNZ3OMBDkMJUgdFwSyuE27Cf1fFLJH0m414mwoE8vmPnTZ5xBYxJV0Dsi
-         F7S+tLeeVNVSYin9r5ZeVJHhBf27+MvrPiPB8=
-Subject: [PATCH 14/23] arm: introduce asm/swab.h
+        b=fJThmUOPXAAKfziGO/FEPE+h4ZERDDIfP1NoD+hSwxp4AJLVyuELa4j2XOjjOPtOK3
+         EOcRHbTT8ZZ/cAMtrdOpqLSq0NxpwNDIlZvUD7GjUh226vXGvg3VIPuIt+3PccYYbomO
+         jwUehRg41rb9HlqjwajcETQ4XPI+7pPuuXlfA=
+Subject: [PATCH 13/23] alpha: introduce asm/swab.h
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Russell King <rmk@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "rth@twiddle.net" <rth@twiddle.net>
 Content-Type: text/plain
 Date: Tue, 06 Jan 2009 13:30:52 -0800
-Message-Id: <1231277452.964.271.camel@brick>
+Message-Id: <1231277452.964.270.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -37,120 +37,121 @@ Convert to the new-style arch overrides as well.
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/arm/include/asm/Kbuild      |    1 +
- arch/arm/include/asm/byteorder.h |   33 +------------------------
- arch/arm/include/asm/swab.h      |   50 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 52 insertions(+), 32 deletions(-)
+ arch/alpha/include/asm/Kbuild      |    1 +
+ arch/alpha/include/asm/byteorder.h |   42 +-----------------------------------
+ arch/alpha/include/asm/swab.h      |   42 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+), 41 deletions(-)
 
-diff --git a/arch/arm/include/asm/Kbuild b/arch/arm/include/asm/Kbuild
-index 73237bd..43b0b2b 100644
---- a/arch/arm/include/asm/Kbuild
-+++ b/arch/arm/include/asm/Kbuild
-@@ -1,3 +1,4 @@
- include include/asm-generic/Kbuild.asm
- 
- unifdef-y += hwcap.h
+diff --git a/arch/alpha/include/asm/Kbuild b/arch/alpha/include/asm/Kbuild
+index b7c8f18..4dad273 100644
+--- a/arch/alpha/include/asm/Kbuild
++++ b/arch/alpha/include/asm/Kbuild
+@@ -9,3 +9,4 @@ unifdef-y += console.h
+ unifdef-y += fpu.h
+ unifdef-y += sysinfo.h
+ unifdef-y += compiler.h
 +unifdef-y += swab.h
-diff --git a/arch/arm/include/asm/byteorder.h b/arch/arm/include/asm/byteorder.h
-index 4fbfb22..c02b6fc 100644
---- a/arch/arm/include/asm/byteorder.h
-+++ b/arch/arm/include/asm/byteorder.h
-@@ -15,38 +15,7 @@
- #ifndef __ASM_ARM_BYTEORDER_H
- #define __ASM_ARM_BYTEORDER_H
+diff --git a/arch/alpha/include/asm/byteorder.h b/arch/alpha/include/asm/byteorder.h
+index 58e958f..6772f31 100644
+--- a/arch/alpha/include/asm/byteorder.h
++++ b/arch/alpha/include/asm/byteorder.h
+@@ -1,47 +1,7 @@
+ #ifndef _ALPHA_BYTEORDER_H
+ #define _ALPHA_BYTEORDER_H
  
--#include <linux/compiler.h>
 -#include <asm/types.h>
+-#include <linux/compiler.h>
+-#include <asm/compiler.h>
 -
--static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+-#ifdef __GNUC__
+-
+-static inline __attribute_const__ __u32 __arch__swab32(__u32 x)
 -{
--	__u32 t;
+-	/*
+-	 * Unfortunately, we can't use the 6 instruction sequence
+-	 * on ev6 since the latency of the UNPKBW is 3, which is
+-	 * pretty hard to hide.  Just in case a future implementation
+-	 * has a lower latency, here's the sequence (also by Mike Burrows)
+-	 *
+-	 * UNPKBW a0, v0       v0: 00AA00BB00CC00DD
+-	 * SLL v0, 24, a0      a0: BB00CC00DD000000
+-	 * BIS v0, a0, a0      a0: BBAACCBBDDCC00DD
+-	 * EXTWL a0, 6, v0     v0: 000000000000BBAA
+-	 * ZAP a0, 0xf3, a0    a0: 00000000DDCC0000
+-	 * ADDL a0, v0, v0     v0: ssssssssDDCCBBAA
+-	 */
 -
--#ifndef __thumb__
--	if (!__builtin_constant_p(x)) {
--		/*
--		 * The compiler needs a bit of a hint here to always do the
--		 * right thing and not screw it up to different degrees
--		 * depending on the gcc version.
--		 */
--		asm ("eor\t%0, %1, %1, ror #16" : "=r" (t) : "r" (x));
--	} else
--#endif
--		t = x ^ ((x << 16) | (x >> 16)); /* eor r1,r0,r0,ror #16 */
+-	__u64 t0, t1, t2, t3;
 -
--	x = (x << 24) | (x >> 8);		/* mov r0,r0,ror #8      */
--	t &= ~0x00FF0000;			/* bic r1,r1,#0x00FF0000 */
--	x ^= (t >> 8);				/* eor r0,r0,r1,lsr #8   */
+-	t0 = __kernel_inslh(x, 7);	/* t0 : 0000000000AABBCC */
+-	t1 = __kernel_inswl(x, 3);	/* t1 : 000000CCDD000000 */
+-	t1 |= t0;			/* t1 : 000000CCDDAABBCC */
+-	t2 = t1 >> 16;			/* t2 : 0000000000CCDDAA */
+-	t0 = t1 & 0xFF00FF00;		/* t0 : 00000000DD00BB00 */
+-	t3 = t2 & 0x00FF00FF;		/* t3 : 0000000000CC00AA */
+-	t1 = t0 + t3;			/* t1 : ssssssssDDCCBBAA */
 -
--	return x;
+-	return t1;
 -}
 -
--#define __arch__swab32(x) ___arch__swab32(x)
+-#define __arch__swab32 __arch__swab32
 -
--#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
--#  define __BYTEORDER_HAS_U64__
--#  define __SWAB_64_THRU_32__
--#endif
+-#endif /* __GNUC__ */
+-
+-#define __BYTEORDER_HAS_U64__
+-
 +#include <asm/swab.h>
+ #include <linux/byteorder/little_endian.h>
  
- #ifdef __ARMEB__
- #include <linux/byteorder/big_endian.h>
-diff --git a/arch/arm/include/asm/swab.h b/arch/arm/include/asm/swab.h
+ #endif /* _ALPHA_BYTEORDER_H */
+diff --git a/arch/alpha/include/asm/swab.h b/arch/alpha/include/asm/swab.h
 new file mode 100644
-index 0000000..27a689b
+index 0000000..68e7089
 --- /dev/null
-+++ b/arch/arm/include/asm/swab.h
-@@ -0,0 +1,50 @@
-+/*
-+ *  arch/arm/include/asm/byteorder.h
-+ *
-+ * ARM Endian-ness.  In little endian mode, the data bus is connected such
-+ * that byte accesses appear as:
-+ *  0 = d0...d7, 1 = d8...d15, 2 = d16...d23, 3 = d24...d31
-+ * and word accesses (data or instruction) appear as:
-+ *  d0...d31
-+ *
-+ * When in big endian mode, byte accesses appear as:
-+ *  0 = d24...d31, 1 = d16...d23, 2 = d8...d15, 3 = d0...d7
-+ * and word accesses (data or instruction) appear as:
-+ *  d0...d31
-+ */
-+#ifndef __ASM_ARM_SWAB_H
-+#define __ASM_ARM_SWAB_H
++++ b/arch/alpha/include/asm/swab.h
+@@ -0,0 +1,42 @@
++#ifndef _ALPHA_SWAB_H
++#define _ALPHA_SWAB_H
 +
-+#include <linux/compiler.h>
 +#include <asm/types.h>
++#include <linux/compiler.h>
++#include <asm/compiler.h>
 +
-+#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-+#  define __SWAB_64_THRU_32__
-+#endif
++#ifdef __GNUC__
 +
 +static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
 +{
-+	__u32 t;
++	/*
++	 * Unfortunately, we can't use the 6 instruction sequence
++	 * on ev6 since the latency of the UNPKBW is 3, which is
++	 * pretty hard to hide.  Just in case a future implementation
++	 * has a lower latency, here's the sequence (also by Mike Burrows)
++	 *
++	 * UNPKBW a0, v0       v0: 00AA00BB00CC00DD
++	 * SLL v0, 24, a0      a0: BB00CC00DD000000
++	 * BIS v0, a0, a0      a0: BBAACCBBDDCC00DD
++	 * EXTWL a0, 6, v0     v0: 000000000000BBAA
++	 * ZAP a0, 0xf3, a0    a0: 00000000DDCC0000
++	 * ADDL a0, v0, v0     v0: ssssssssDDCCBBAA
++	 */
 +
-+#ifndef __thumb__
-+	if (!__builtin_constant_p(x)) {
-+		/*
-+		 * The compiler needs a bit of a hint here to always do the
-+		 * right thing and not screw it up to different degrees
-+		 * depending on the gcc version.
-+		 */
-+		asm ("eor\t%0, %1, %1, ror #16" : "=r" (t) : "r" (x));
-+	} else
-+#endif
-+		t = x ^ ((x << 16) | (x >> 16)); /* eor r1,r0,r0,ror #16 */
++	__u64 t0, t1, t2, t3;
 +
-+	x = (x << 24) | (x >> 8);		/* mov r0,r0,ror #8      */
-+	t &= ~0x00FF0000;			/* bic r1,r1,#0x00FF0000 */
-+	x ^= (t >> 8);				/* eor r0,r0,r1,lsr #8   */
++	t0 = __kernel_inslh(x, 7);	/* t0 : 0000000000AABBCC */
++	t1 = __kernel_inswl(x, 3);	/* t1 : 000000CCDD000000 */
++	t1 |= t0;			/* t1 : 000000CCDDAABBCC */
++	t2 = t1 >> 16;			/* t2 : 0000000000CCDDAA */
++	t0 = t1 & 0xFF00FF00;		/* t0 : 00000000DD00BB00 */
++	t3 = t2 & 0x00FF00FF;		/* t3 : 0000000000CC00AA */
++	t1 = t0 + t3;			/* t1 : ssssssssDDCCBBAA */
 +
-+	return x;
++	return t1;
 +}
 +#define __arch_swab32 __arch_swab32
 +
-+#endif
++#endif /* __GNUC__ */
 +
++#endif /* _ALPHA_SWAB_H */
 -- 
 1.6.1.94.g9388
 
