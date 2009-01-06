@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZAFVuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZAFVwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbZAFVuz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZAFVuj
+	id S1754381AbZAFVwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZAFVwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:50:39 -0500
-Received: from mga11.intel.com ([192.55.52.93]:58046 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753349AbZAFVui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:50:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,221,1231142400"; 
-   d="scan'208";a="420184455"
-From: =?utf-8?q?I=C3=B1aky_P=C3=A9rez-Gonz=C3=A1lez?= 
-	<inaky.perez-gonzalez@intel.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: Tree for January 6 (wimax errs)
-Date: Tue, 6 Jan 2009 13:50:02 -0800
-User-Agent: KMail/1.9.9
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-wimax@intel.com,
-       wimax@linuxwimax.org
-References: <20090106182311.525e4b14.sfr@canb.auug.org.au> <20090106132321.8a330942.randy.dunlap@oracle.com>
-In-Reply-To: <20090106132321.8a330942.randy.dunlap@oracle.com>
+	Tue, 6 Jan 2009 16:52:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751403AbZAFVwI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 16:52:08 -0500
+Date: Tue, 6 Jan 2009 13:50:54 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+In-Reply-To: <1231278275.11687.111.camel@twins>
+Message-ID: <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com> <1231278275.11687.111.camel@twins>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901061350.02562.inaky.perez-gonzalez@intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 January 2009, Randy Dunlap wrote:
-> On Tue, 6 Jan 2009 18:23:11 +1100 Stephen Rothwell wrote:
-> > Hi all,
-> >
-> > This tree will not build a powerpc ppc4xx_defconfig due to a kvm problem.
-> >
-> > Changes since 20090105:
->
-> wimax build fails when CONFIG_INPUT=n:
 
-Ops -- my fault -- working on a fix.
 
-> Also, this warning needs to be fixed:
->
-> linux-next-20090106/net/wimax/id-table.c:133: warning: ISO C90 forbids
-> mixed declarations and code
+On Tue, 6 Jan 2009, Peter Zijlstra wrote:
+> 
+> With Linus' mutex_spin_or_schedule() function the whole - keeping
+> owner's task_struct alive issue goes away,.. now if only the thing would
+> boot...
 
-Will fix too.
+Can you post the patch, so that we can see if we can find some silly error 
+that we can ridicule you over?
 
-Thanks Randy,
+		Linus "always willing to 'help'" Torvalds
