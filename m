@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZAFXAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbZAFXCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752188AbZAFXAW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:00:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZAFXAH
+	id S1755219AbZAFXCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZAFXCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:00:07 -0500
-Received: from mail-bw0-f29.google.com ([209.85.218.29]:51951 "EHLO
-	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbZAFXAD (ORCPT
+	Tue, 6 Jan 2009 18:02:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34992 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750711AbZAFXB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:00:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc
-         :disposition-notification-to:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=ceuQ4v4I+toF+MmyM1D4exUJ/JAQMpes54kfe6I1WR35LG0hEubwluh90GKCNwTEl1
-         viAUkP8C0os4OXEplHDyldIravlkjfjzqfgAKJVCa1xd/J8Q6beshi6khD6K5YWSyGVp
-         9kePsZEBuFA/BT65qcJCH2iJ8IUMvfFDm3lr8=
-From: Leonardo Potenza <lpotenza@inwind.it>
-To: kernel-janitors@vger.kernel.org
-Subject: [PATCH] x86: fix section mismatch warnings in mcheck/mce_amd_64.c
-Date: Tue, 6 Jan 2009 23:58:29 +0100
-User-Agent: KMail/1.9.9
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+	Tue, 6 Jan 2009 18:01:58 -0500
+Date: Tue, 6 Jan 2009 15:00:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+In-Reply-To: <1231281801.11687.125.camel@twins>
+Message-ID: <alpine.LFD.2.00.0901061456280.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
+ <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain> <1231281801.11687.125.camel@twins>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901062358.29954.lpotenza@inwind.it>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Leonardo Potenza <lpotenza@inwind.it>
 
-The function local_allocate_threshold_blocks() has been marked __cpuinit, in order to remove the following section mismatch messages:
 
-WARNING: arch/x86/kernel/cpu/mcheck/built-in.o(.text+0x1363): Section mismatch in reference from the function local_allocate_threshold_blocks() to the function .cpuinit.text:allocate_threshold_blocks()
-The function local_allocate_threshold_blocks() references
-the function __cpuinit allocate_threshold_blocks().
-This is often because local_allocate_threshold_blocks lacks a __cpuinit 
-annotation or the annotation of allocate_threshold_blocks is wrong.
+On Tue, 6 Jan 2009, Peter Zijlstra wrote:
+> 
+> Indeed, the below does boot -- which means I get to sleep now ;-)
 
-WARNING: arch/x86/kernel/cpu/built-in.o(.text+0x1def): Section mismatch in reference from the function local_allocate_threshold_blocks() to the function .cpuinit.text:allocate_threshold_blocks()
-The function local_allocate_threshold_blocks() references
-the function __cpuinit allocate_threshold_blocks().
-This is often because local_allocate_threshold_blocks lacks a __cpuinit 
-annotation or the annotation of allocate_threshold_blocks is wrong.
+Well, if you didn't go to sleep, a few more questions..
 
-WARNING: arch/x86/kernel/built-in.o(.text+0xef2b): Section mismatch in reference from the function local_allocate_threshold_blocks() to the function .cpuinit.text:allocate_threshold_blocks()
-The function local_allocate_threshold_blocks() references
-the function __cpuinit allocate_threshold_blocks().
-This is often because local_allocate_threshold_blocks lacks a __cpuinit 
-annotation or the annotation of allocate_threshold_blocks is wrong.
+>  int __sched
+>  mutex_lock_killable_nested(struct mutex *lock, unsigned int subclass)
+>  {
+> +	int ret;
+> +
+>  	might_sleep();
+> -	return __mutex_lock_common(lock, TASK_KILLABLE, subclass, _RET_IP_);
+> +	ret =  __mutex_lock_common(lock, TASK_KILLABLE, subclass, _RET_IP_);
+> +	if (!ret)
+> +		lock->owner = current;
+> +
+> +	return ret;
 
-Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
----
-Index: linux-2.6/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c	2009-01-06 23:03:19.000000000 +0100
-+++ linux-2.6/arch/x86/kernel/cpu/mcheck/mce_amd_64.c	2009-01-06 23:07:00.000000000 +0100
-@@ -462,7 +462,7 @@ out_free:
- 	return err;
- }
- 
--static long local_allocate_threshold_blocks(void *_bank)
-+static __cpuinit long local_allocate_threshold_blocks(void *_bank)
- {
- 	unsigned int *bank = _bank;
- 
+This looks ugly. Why doesn't __mutex_lock_common() just set the lock 
+owner? Hate seeing it done in the caller that has to re-compute common 
+(yeah, yeah, it's cheap) and just looks ugly.
+
+IOW, why didn't this just get done with something like
+
+	--- a/kernel/mutex.c
+	+++ b/kernel/mutex.c
+	@@ -186,6 +186,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
+	 done:
+	 	lock_acquired(&lock->dep_map, ip);
+	 	/* got the lock - rejoice! */
+	+	lock->owner = task;
+	 	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
+	 	debug_mutex_set_owner(lock, task_thread_info(task));
+
+instead?  That takes care of all callers, including the conditional thing 
+(since the error case is a totally different path).
+
+		Linus
