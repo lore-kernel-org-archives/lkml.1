@@ -1,154 +1,207 @@
 Return-Path: <hjk@linutronix.de>
 X-Sieve: CMU Sieve 2.2
-X-Spam-Score: -1.185
-Date: Wed, 7 Jan 2009 00:12:37 +0100
+X-Spam-Score: -2.11
+Date: Wed, 7 Jan 2009 00:15:39 +0100
 From: "Hans J. Koch" <hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org,
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@strlen.de>,
-	Magnus Damm <damm@igel.co.jp>
-Subject: [PATCH RESEND] UIO: Add missing documentation of features added
-	recently
-Message-ID: <20090106231236.GC3057@local>
+	Benedikt Spranger <b.spranger@linutronix.de>
+Subject: [PATCH RESEND] UIO: Add name attributes for mappings and port
+	regions
+Message-ID: <20090106231539.GD3057@local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg, did you miss this one, or is it still being reviewed?
+Greg, did you miss this one or is it still being reviewed?
 
-Magnus, could you add your Acked-by or Signed-off-by as well?
-Uwe did that for the uio_pdrv part.
 
-The following features were added to the UIO framework in the near past:
+If a UIO device has several memory mappings, it can be difficult for userspace
+to find the right one. The situation becomes even worse if the UIO driver can
+handle different versions of a card that have different numbers of mappings.
+Benedikt Spranger has such cards and pointed this out to me. Thanks, Bene!
 
-* Generic drivers for platform devices (uio_pdrv, uio_pdrv_genirq)
-* an "offset" sysfs attribute for memory mappings
+To address this problem, this patch adds "name" sysfs attributes for each
+mapping. Userspace can use these to clearly identify each mapping. The name
+string is optional. If a driver doesn't set it, an empty string will be
+returned, so this patch won't break existing drivers.
 
-Unfortunately, all this went in without documentation (won't happen again...)
-
-This patch updates UIO documentation.
+The same problem exists for port region information, so a "name" attribute is
+added there, too.
 
 Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-Acked-by: Uwe Kleine-König <ukleinek@strlen.de>
 
 ---
- Documentation/DocBook/uio-howto.tmpl |   88 +++++++++++++++++++++++++++++++++++
- 1 file changed, 88 insertions(+)
+ Documentation/DocBook/uio-howto.tmpl |   29 +++++++++++++++++++++++++----
+ drivers/uio/uio.c                    |   22 ++++++++++++++++++++++
+ include/linux/uio_driver.h           |    4 ++++
+ 3 files changed, 51 insertions(+), 4 deletions(-)
 
+Index: linux-2.6.28-rc/drivers/uio/uio.c
+===================================================================
+--- linux-2.6.28-rc.orig/drivers/uio/uio.c	2008-12-24 22:46:52.000000000 +0100
++++ linux-2.6.28-rc/drivers/uio/uio.c	2008-12-25 01:03:34.000000000 +0100
+@@ -61,6 +61,14 @@
+ };
+ #define to_map(map) container_of(map, struct uio_map, kobj)
+ 
++static ssize_t map_name_show(struct uio_mem *mem, char *buf)
++{
++	if (unlikely(!mem->name))
++		mem->name = "";
++
++	return sprintf(buf, "%s\n", mem->name);
++}
++
+ static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
+ {
+ 	return sprintf(buf, "0x%lx\n", mem->addr);
+@@ -82,6 +90,8 @@
+ 	ssize_t (*store)(struct uio_mem *, const char *, size_t);
+ };
+ 
++static struct map_sysfs_entry name_attribute =
++	__ATTR(name, S_IRUGO, map_name_show, NULL);
+ static struct map_sysfs_entry addr_attribute =
+ 	__ATTR(addr, S_IRUGO, map_addr_show, NULL);
+ static struct map_sysfs_entry size_attribute =
+@@ -90,6 +100,7 @@
+ 	__ATTR(offset, S_IRUGO, map_offset_show, NULL);
+ 
+ static struct attribute *attrs[] = {
++	&name_attribute.attr,
+ 	&addr_attribute.attr,
+ 	&size_attribute.attr,
+ 	&offset_attribute.attr,
+@@ -133,6 +144,14 @@
+ };
+ #define to_portio(portio) container_of(portio, struct uio_portio, kobj)
+ 
++static ssize_t portio_name_show(struct uio_port *port, char *buf)
++{
++	if (unlikely(!port->name))
++		port->name = "";
++
++	return sprintf(buf, "%s\n", port->name);
++}
++
+ static ssize_t portio_start_show(struct uio_port *port, char *buf)
+ {
+ 	return sprintf(buf, "0x%lx\n", port->start);
+@@ -159,6 +178,8 @@
+ 	ssize_t (*store)(struct uio_port *, const char *, size_t);
+ };
+ 
++static struct portio_sysfs_entry portio_name_attribute =
++	__ATTR(name, S_IRUGO, portio_name_show, NULL);
+ static struct portio_sysfs_entry portio_start_attribute =
+ 	__ATTR(start, S_IRUGO, portio_start_show, NULL);
+ static struct portio_sysfs_entry portio_size_attribute =
+@@ -167,6 +188,7 @@
+ 	__ATTR(porttype, S_IRUGO, portio_porttype_show, NULL);
+ 
+ static struct attribute *portio_attrs[] = {
++	&portio_name_attribute.attr,
+ 	&portio_start_attribute.attr,
+ 	&portio_size_attribute.attr,
+ 	&portio_porttype_attribute.attr,
+Index: linux-2.6.28-rc/include/linux/uio_driver.h
+===================================================================
+--- linux-2.6.28-rc.orig/include/linux/uio_driver.h	2008-12-24 22:47:07.000000000 +0100
++++ linux-2.6.28-rc/include/linux/uio_driver.h	2008-12-24 22:59:57.000000000 +0100
+@@ -22,6 +22,7 @@
+ 
+ /**
+  * struct uio_mem - description of a UIO memory region
++ * @name:		name of the memory region for identification
+  * @addr:		address of the device's memory
+  * @size:		size of IO
+  * @memtype:		type of memory addr points to
+@@ -29,6 +30,7 @@
+  * @map:		for use by the UIO core only.
+  */
+ struct uio_mem {
++	const char		*name;
+ 	unsigned long		addr;
+ 	unsigned long		size;
+ 	int			memtype;
+@@ -42,12 +44,14 @@
+ 
+ /**
+  * struct uio_port - description of a UIO port region
++ * @name:		name of the port region for identification
+  * @start:		start of port region
+  * @size:		size of port region
+  * @porttype:		type of port (see UIO_PORT_* below)
+  * @portio:		for use by the UIO core only.
+  */
+ struct uio_port {
++	const char		*name;
+ 	unsigned long		start;
+ 	unsigned long		size;
+ 	int			porttype;
 Index: linux-2.6.28-rc/Documentation/DocBook/uio-howto.tmpl
 ===================================================================
---- linux-2.6.28-rc.orig/Documentation/DocBook/uio-howto.tmpl	2008-12-24 01:15:17.000000000 +0100
-+++ linux-2.6.28-rc/Documentation/DocBook/uio-howto.tmpl	2008-12-24 03:29:37.000000000 +0100
-@@ -42,6 +42,12 @@
+--- linux-2.6.28-rc.orig/Documentation/DocBook/uio-howto.tmpl	2008-12-25 01:17:08.000000000 +0100
++++ linux-2.6.28-rc/Documentation/DocBook/uio-howto.tmpl	2008-12-25 01:28:06.000000000 +0100
+@@ -42,6 +42,13 @@
  
  <revhistory>
  	<revision>
-+	<revnumber>0.7</revnumber>
-+	<date>2008-12-23</date>
++	<revnumber>0.8</revnumber>
++	<date>2008-12-24</date>
 +	<authorinitials>hjk</authorinitials>
-+	<revremark>Added generic platform drivers and offset attribute.</revremark>
++	<revremark>Added name attributes in mem and portio sysfs directories.
++		</revremark>
 +	</revision>
 +	<revision>
- 	<revnumber>0.6</revnumber>
- 	<date>2008-12-05</date>
+ 	<revnumber>0.7</revnumber>
+ 	<date>2008-12-23</date>
  	<authorinitials>hjk</authorinitials>
-@@ -312,6 +318,16 @@
- 	pointed to by addr.
- 	</para>
- </listitem>
-+<listitem>
-+	<para>
-+	<filename>offset</filename>: The offset, in bytes, that has to be
-+	added to the pointer returned by <function>mmap()</function> to get
-+	to the actual device memory. This is important if the device's memory
-+	is not page aligned. Remember that pointers returned by
-+	<function>mmap()</function> are always page aligned, so it is good
-+	style to always add this offset.
+@@ -303,12 +310,19 @@
+ 	appear if the size of the mapping is not 0.
+ </para>
+ <para>
+-	Each <filename>mapX/</filename> directory contains two read-only files
+-	that show start address and size of the memory:
++	Each <filename>mapX/</filename> directory contains four read-only files
++	that show attributes of the memory:
+ </para>
+ <itemizedlist>
+ <listitem>
+ 	<para>
++	<filename>name</filename>: A string identifier for this mapping. This
++	is optional, the string can be empty. Drivers can set this to make it
++	easier for userspace to find the correct mapping.
 +	</para>
 +</listitem>
- </itemizedlist>
- 
- <para>
-@@ -594,6 +610,78 @@
++<listitem>
++	<para>
+ 	<filename>addr</filename>: The address of memory that can be mapped.
  	</para>
- </sect1>
- 
-+<sect1 id="using_uio_pdrv">
-+<title>Using uio_pdrv for platform devices</title>
-+	<para>
-+	In many cases, UIO drivers for platform devices can be handled in a
-+	generic way. In the same place where you define your
-+	<varname>struct platform_device</varname>, you simply also implement
-+	your interrupt handler and fill your
-+	<varname>struct uio_info</varname>. A pointer to this
-+	<varname>struct uio_info</varname> is then used as
-+	<varname>platform_data</varname> for your platform device.
+ </listitem>
+@@ -366,12 +380,19 @@
+ 	<filename>/sys/class/uio/uioX/portio/</filename>.
+ </para>
+ <para>
+-	Each <filename>portX/</filename> directory contains three read-only
+-	files that show start, size, and type of the port region:
++	Each <filename>portX/</filename> directory contains four read-only
++	files that show name, start, size, and type of the port region:
+ </para>
+ <itemizedlist>
+ <listitem>
+ 	<para>
++	<filename>name</filename>: A string identifier for this port region.
++	The string is optional and can be empty. Drivers can set it to make it
++	easier for userspace to find a certain port region.
 +	</para>
++</listitem>
++<listitem>
 +	<para>
-+	You also need to set up an array of <varname>struct resource</varname>
-+	containing addresses and sizes of your memory mappings. This
-+	information is passed to the driver using the
-+	<varname>.resource</varname> and <varname>.num_resources</varname>
-+	elements of <varname>struct platform_device</varname>.
-+	</para>
-+	<para>
-+	You now have to set the <varname>.name</varname> element of
-+	<varname>struct platform_device</varname> to
-+	<varname>"uio_pdrv"</varname> to use the generic UIO platform device
-+	driver. This driver will fill the <varname>mem[]</varname> array
-+	according to the resources given, and register the device.
-+	</para>
-+	<para>
-+	The advantage of this approach is that you only have to edit a file
-+	you need to edit anyway. You do not have to create an extra driver.
-+	</para>
-+</sect1>
-+
-+<sect1 id="using_uio_pdrv_genirq">
-+<title>Using uio_pdrv_genirq for platform devices</title>
-+	<para>
-+	Especially in embedded devices, you frequently find chips where the
-+	irq pin is tied to its own dedicated interrupt line. In such cases,
-+	where you can be really sure the interrupt is not shared, we can take
-+	the concept of <varname>uio_pdrv</varname> one step further and use a
-+	generic interrupt handler. That's what
-+	<varname>uio_pdrv_genirq</varname> does.
-+	</para>
-+	<para>
-+	The setup for this driver is the same as described above for
-+	<varname>uio_pdrv</varname>, except that you do not implement an
-+	interrupt handler. The <varname>.handler</varname> element of
-+	<varname>struct uio_info</varname> must remain
-+	<varname>NULL</varname>. The  <varname>.irq_flags</varname> element
-+	must not contain <varname>IRQF_SHARED</varname>.
-+	</para>
-+	<para>
-+	You will set the <varname>.name</varname> element of
-+	<varname>struct platform_device</varname> to
-+	<varname>"uio_pdrv_genirq"</varname> to use this driver.
-+	</para>
-+	<para>
-+	The generic interrupt handler of <varname>uio_pdrv_genirq</varname>
-+	will simply disable the interrupt line using
-+	<function>disable_irq_nosync()</function>. After doing its work,
-+	userspace can reenable the interrupt by writing 0x00000001 to the UIO
-+	device file. The driver already implements an
-+	<function>irq_control()</function> to make this possible, you must not
-+	implement your own.
-+	</para>
-+	<para>
-+	Using <varname>uio_pdrv_genirq</varname> not only saves a few lines of
-+	interrupt handler code. You also do not need to know anything about
-+	the chip's internal registers to create the kernel part of the driver.
-+	All you need to know is the irq number of the pin the chip is
-+	connected to.
-+	</para>
-+</sect1>
-+
- </chapter>
- 
- <chapter id="userspace_driver" xreflabel="Writing a driver in user space">
+ 	<filename>start</filename>: The first port of this region.
+ 	</para>
+ </listitem>
