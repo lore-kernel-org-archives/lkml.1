@@ -1,92 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbZAFGeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbZAFGfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753890AbZAFGeQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 01:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbZAFGeA
+	id S1754014AbZAFGfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 01:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbZAFGfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 01:34:00 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41200 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbZAFGd7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 01:33:59 -0500
-Subject: Re: [PATCH 04/11] x86: cleanup remaining cpumask_t ops in smpboot
-	code
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1231222512.3235.6.camel@jaswinder.satnam>
-References: <1231222512.3235.6.camel@jaswinder.satnam>
-Content-Type: text/plain; charset=utf8
-Date: Tue, 06 Jan 2009 12:01:20 +0530
-Message-Id: <1231223480.3235.22.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 6 Jan 2009 01:35:09 -0500
+Received: from thunk.org ([69.25.196.29]:56219 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751421AbZAFGfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 01:35:08 -0500
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New ext4 patchset: 2.6.28-ext4-2
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1LK5Ws-00076Z-7D@closure.thunk.org>
+Date: Tue, 06 Jan 2009 01:35:06 -0500
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Mike,
 
-On Sun, Jan 4, 2009 at 6:48 PM, Mike Travis <travis@sgi.com> wrote:
-> ﻿--- linux-2.6-for-ingo.orig/arch/x86/include/asm/smp.h
-> +++ linux-2.6-for-ingo/arch/x86/include/asm/smp.h
-> @@ -18,9 +18,26 @@
->  #include <asm/pda.h>
->  #include <asm/thread_info.h>
->  
-> +#ifdef CONFIG_X86_64
-> +
-> +extern cpumask_var_t cpu_callin_mask;
-> +extern cpumask_var_t cpu_callout_mask;
-> +extern cpumask_var_t cpu_initialized_mask;
-> +extern cpumask_var_t cpu_sibling_setup_mask;
-> +
-> +#else /* CONFIG_X86_32 */
-> +
-> +extern cpumask_t cpu_callin_map;
+This is an update of the draft set of patches which I hope to be able to
+push to Linus shortly, after a tad bit more testing.
 
+These patches fix a few cosmetic issues, add stable@kernel.org markings
+for patches that should be attached to the stable tree, and fix a few
+bugs in the "allow-ext4-to-run-without-a-journal" patch as well as fix a
+potential deadlock in the blkdev-releasepage patches.
 
-I am not able to understand, why you choose asm/smp.h
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.28-ext4-2
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.28-ext
+4-2
 
-You know that asm/smp.h should only be included for CONFIG_SMP
+As a patchset:
 
------ linux/smp.h -----
-#ifdef CONFIG_SMP
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.28-ext4-2
 
-#include <asm/smp.h>
+                                                        - Ted
 
-#endif /* !SMP */
+(*) Patches that will *NOT* be pushed to Linus
 
------------------------
+Alexander Beregalov (1):
+      ext4: fix printk format warning
 
-If someday this will happen:
+Aneesh Kumar K.V (21):
+      ext4: Fix the delalloc writepages to allocate blocks at the right offset.
+      ext4: avoid ext4_error when mounting a fs with a single bg
+      ext4: Don't overwrite allocation_context ac_status
+      ext4: sparse fixes
+      ext4: Add blocks added during resize to bitmap
+      ext4: Use EXT4_GROUP_INFO_NEED_INIT_BIT during resize
+      ext4: cleanup mballoc header files
+      jbd2: Call journal commit callback without holding j_list_lock
+      ext4: don't use blocks freed but not yet committed in buddy cache init
+      ext4: Fix lockdep recursive locking warning
+      ext4: fix BUG when calling ext4_error with locked block group
+      ext4: Fix race between read_block_bitmap() and mark_diskspace_used()
+      ext4: Use high 16 bits of the block group descriptor's free counts fields
+      ext4: code cleanup
+      ext4: Fix the race between read_inode_bitmap() and ext4_new_inode()
+      ext4: Use new buffer_head flag to check uninit group bitmaps initialization
+      ext4: mark the blocks/inode bitmap beyond end of group as used
+      ext4: Don't allow new groups to be added during block allocation
+      ext4: Init the complete page while building buddy cache
+      ext4: Fix s_dirty_blocks_counter if block allocation failed with nodelalloc
+  (*) ext4: undo the stable boundary patch changes
 
-﻿----- asm/smp.h -----
-#ifndef _ASM_X86_SMP_H
-#define _ASM_X86_SMP_H
-#ifndef __ASSEMBLY__
-#ifdef CONFIG_SMP
-...
-#else /* CONFIG_SMP */
-#error "Including wrong file, why you need smp.h for uniprocesor"
-#endif /* CONFIG_SMP */
-#endif /* __ASSEMBLY__ */
-#endif /* _ASM_X86_SMP_H */
+David Howells (1):
+      CRED: Wrap task credential accesses in the Ext4 filesystem
 
------------------------
+Frank Mayhar (1):
+      ext4: Allow ext4 to run without a journal
 
-Then ;-)
+Josef Bacik (1):
+      jbd2: improve jbd2 fsync batching
 
-Are you planning to make some new file for this or you think some other file will be suitable for this.
+Mark Fasheh (1):
+      jbd2: Add BH_JBDPrivateStart
 
-If you have some future plans, please let me know.
+Roel Kluin (1):
+      ext4: Use simple_strtol() instead of simple_strtoul() in ext4_ui_proc_open
 
-Thanks
---
-JSR
+Solofo.Ramangalahy@bull.net (1):
+      ext4: When resizing set the EXT4_BG_INODE_ZEROED flag for new block groups
+
+Theodore Ts'o (28):
+      ext3: Add support for non-native signed/unsigned htree hash algorithms
+      ext4: Add support for non-native signed/unsigned htree hash algorithms
+      ext3/4: Fix loop index in do_split() so it is signed
+      Update Documentation/filesystems/ext4.txt
+      ext4: remove ext4_new_blocks() and call ext4_mb_new_blocks() directly
+      ext4: remove ext4_new_meta_block()
+      ext4: remove do_blk_alloc()
+      ext4: tone down ext4_da_writepages warnings
+      jbd2: Add barrier not supported test to journal_wait_on_commit_record
+      ext4: remove extraneous newlines from calls to ext4_error() and ext4_warning()
+      ext4: display average commit time
+      ext4: add fsync batch tuning knobs
+      ext4: Remove i_ext_generation from ext4_inode_info structure
+      ext4: Make ext4_group_t be an unsigned int
+      ext4: Change unsigned long to unsigned int
+      jbd2: Remove a large array of bh's from the stack of the checkpoint routine
+      add releasepage hooks to block devices which can be used by file systems
+      ext4: Remove code to create the journal inode
+      ext4: Add markers for better debuggability
+      jbd2: Add pid and journal device name to the "kjournald2 starting" message
+      jbd2: Submit writes to the journal using WRITE_SYNC
+      ext4: Add mount option to set kjournald's I/O priority
+      ext4: Add sanity checks for the superblock before mounting the filesystem
+      ext4: Make printk's consistently prefixed with "EXT4-fs: "
+  (*) ext4: Stable/Unstable boundary
+  (*) Add a ioctl which dumps out all of the in-use buffer heads for a block device
+  (*) ext4: Add a delayed allocation debugging ioctl
+  (*) ext4: akpm's locking hack to fix locking delays
+
+Toshiyuki Okajima (2):
+      ext3: provide function to release metadata pages under memory pressure
+      ext4: provide function to release metadata pages under memory pressure
+
+Wu Fengguang (1):
+      ext4: fix build warning
+
+Yasunori Goto (1):
+      ext4: Widen type of ext4_sb_info.s_mb_maxs[]
 
