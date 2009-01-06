@@ -1,89 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbZAFUR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZAFUUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbZAFUR3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 15:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZAFUQa
+	id S1754731AbZAFUUE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 15:20:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZAFUTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 15:16:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37720 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753371AbZAFUQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 15:16:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of CONFIG_PM
-Date: Tue, 6 Jan 2009 21:15:32 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Cheng Renquan <crquan@gmail.com>
-References: <200901062112.29227.rjw@sisk.pl>
-In-Reply-To: <200901062112.29227.rjw@sisk.pl>
+	Tue, 6 Jan 2009 15:19:53 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:50658 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751535AbZAFUTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 15:19:52 -0500
+Date: Tue, 6 Jan 2009 14:19:50 -0600
+From: Robin Holt <holt@sgi.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Dimitri Sivanich <sivanich@sgi.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
+       Tony Luck <tony.luck@gmail.com>, Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+Message-ID: <20090106201950.GA3850@sgi.com>
+References: <20090106162741.GA7991@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901062115.33286.rjw@sisk.pl>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Masami Hiramatsu <mhiramat@redhat.com>
+On Tue, Jan 06, 2009 at 12:15:34PM -0800, Luck, Tony wrote:
+> > Turn on CONFIG_HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN.
+> >
+> > SGI Altix has unsynchronized itc clocks.  This results in rq->clock
+> > occasionally being set to a time in the past by a remote cpu.
+> 
+> SGI Altix is definitely the worst offender here. On heterogeneneous
+> systems with different model cpus across nodes the itc rate may differ
+> by hundreds of megahertz.  Even when all cpus are at the same rated
+> speed, different nodes are driven from different crystals, so the itc
+> values will slowly drift apart (Linux discovers this from SAL and so
+> doesn't bother to synchronize them).
+> 
+> > Note that it is possible that this problem may exist for other ia64
+> > machines as well, based on the following comment for sched_clock() in
+> > arch/ia64/kernel/head.S:
+> >
+> > * Return a CPU-local timestamp in nano-seconds.  This timestamp is
+> > * NOT synchronized across CPUs its return value must never be
+> > * compared against the values returned on another CPU.  The usage in
+> > * kernel/sched.c ensures that.
+> 
+> When sched_clock() was first created this was part of its definition.
+> It meant that sched_clock could be simple & fast because it didn't
+> need to be synchronized across cpus.
+> 
+> It seems that new uses have grown for it that no longer allow that
+> flexibility.
+> 
+> All ia64 systems are potentially affected ... but perhaps you might
+> never see the problem on most because the itc clocks are synced as close
+> as s/w can get them when cpus are brought on line.
 
-Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
-depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+Do you want Dimitri to resubmit with this set for all IA64 or leave it
+as is?
 
-This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
-and CONFIG_FREEZER=n.
-
-Reported-by: Cheng Renquan <crquan@gmail.com>
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/ia64/kernel/kprobes.c |    2 +-
- arch/x86/kernel/kprobes.c  |    2 +-
- kernel/kprobes.c           |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/arch/ia64/kernel/kprobes.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/kprobes.c
-+++ linux-2.6/arch/ia64/kernel/kprobes.c
-@@ -868,7 +868,7 @@ static int __kprobes pre_kprobes_handler
- 		return 1;
- 
- ss_probe:
--#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
-+#if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
- 	if (p->ainsn.inst_flag == INST_FLAG_BOOSTABLE && !p->post_handler) {
- 		/* Boost up -- we can execute copied instructions directly */
- 		ia64_psr(regs)->ri = p->ainsn.slot;
-Index: linux-2.6/arch/x86/kernel/kprobes.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/kprobes.c
-+++ linux-2.6/arch/x86/kernel/kprobes.c
-@@ -445,7 +445,7 @@ void __kprobes arch_prepare_kretprobe(st
- static void __kprobes setup_singlestep(struct kprobe *p, struct pt_regs *regs,
- 				       struct kprobe_ctlblk *kcb)
- {
--#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
-+#if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
- 	if (p->ainsn.boostable == 1 && !p->post_handler) {
- 		/* Boost up -- we can execute copied instructions directly */
- 		reset_current_kprobe();
-Index: linux-2.6/kernel/kprobes.c
-===================================================================
---- linux-2.6.orig/kernel/kprobes.c
-+++ linux-2.6/kernel/kprobes.c
-@@ -122,7 +122,7 @@ static int collect_garbage_slots(void);
- static int __kprobes check_safety(void)
- {
- 	int ret = 0;
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_PM)
-+#if defined(CONFIG_PREEMPT) && defined(CONFIG_FREEZER)
- 	ret = freeze_processes();
- 	if (ret == 0) {
- 		struct task_struct *p, *q;
-
+Thanks,
+Robin
