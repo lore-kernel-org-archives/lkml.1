@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZAFXMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZAFXNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZAFXMG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZAFXLz
+	id S1756072AbZAFXNU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbZAFXNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:11:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60979 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750924AbZAFXLy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:11:54 -0500
-Date: Tue, 6 Jan 2009 15:11:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
-Subject: Re: 2.6.29 -mm merge plans
-Message-Id: <20090106151131.b6c4ff0b.akpm@linux-foundation.org>
-In-Reply-To: <20090106225744.GA10553@infradead.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	<20090106225744.GA10553@infradead.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Jan 2009 18:13:11 -0500
+Received: from ns1.suse.de ([195.135.220.2]:50554 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751934AbZAFXNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 18:13:10 -0500
+Date: Tue, 6 Jan 2009 15:11:59 -0800
+From: Greg KH <gregkh@suse.de>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: debugfs & vfs file permission issue?
+Message-ID: <20090106231158.GA1388@suse.de>
+References: <200901052157.07306.rgetz@blackfin.uclinux.org> <8bd0f97a0901052232l22b60386pbcd9438cc752638f@mail.gmail.com> <200901060705.33294.rgetz@blackfin.uclinux.org> <200901061012.38888.rgetz@blackfin.uclinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901061012.38888.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc added)
-
-On Tue, 6 Jan 2009 17:57:44 -0500
-Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
-> > fs-sys_sync-fix.patch
+On Tue, Jan 06, 2009 at 10:12:38AM -0500, Robin Getz wrote:
+> On Tue 6 Jan 2009 07:05, Robin Getz suggested:
+> >
+> > adding a readonly, and writeonly, and ensuring that when you call 
+> > debugfs_create_*, the mode is checked, and the "correct" fops are set 
+> > doesn't seem like it would be a bad idea? This would enforce the
+> > kernel programmer's view on the world, and not allow pesky root users
+> > to override things....
+> > 
+> > Greg - would you take something like that?
 > 
-> I'm not sure this is a good idea.  Concurrent syncs are a bad idea
-> to start with and we should just synchronyze do_sync completely.
-> sync_filesystems as one of the main components of do_sync already
-> is synchronized in that way, and taking that to a higher level would
-> get rid of all the worries about concurrent syncs.
+> How about this?
+> 
+> Feel free to nak it - we can do the same thing where we are calling the
+> debugfs_create_* functions - this just makes it cleaner in my opinion.
 
-Yes, single-threading sys_sync() would fix the problem which that patch
-addresses.
+I like it, want me to queue it up?
 
-However there are a lot of performance and correctness issues around
-sys_sync()-versus-fsync(), etc for which such a simple fix won't be
-acceptable.
+thanks,
 
+greg k-h
