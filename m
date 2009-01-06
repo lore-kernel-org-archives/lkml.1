@@ -1,99 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZAFBJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbZAFBNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbZAFBJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 20:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZAFBJr
+	id S1752655AbZAFBNd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 20:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZAFBNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 20:09:47 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:53631 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751126AbZAFBJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 20:09:46 -0500
-Message-ID: <4962AF55.9060704@sgi.com>
-Date: Mon, 05 Jan 2009 17:09:41 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <Yinghai.Lu@Sun.COM>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix x86_32 builds for summit and es7000 arch's
-References: <49629225.1030104@sun.com> <4962A756.2070507@sgi.com>
-In-Reply-To: <4962A756.2070507@sgi.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 5 Jan 2009 20:13:21 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:41013 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbZAFBNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 20:13:20 -0500
+Message-Id: <20090106011314.534653345@us.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 05 Jan 2009 17:13:14 -0800
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Linux Containers <containers@lists.linux-foundation.org>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org, Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Chuck Lever <chuck.lever@oracle.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [RFC][PATCH 0/4] utsns: RPC/NFS bug rework
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Yinghai Lu wrote:
->> In file included from arch/x86/mach-generic/summit.c:16:
->> /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:
->> In function Ã¢â‚¬Ëœcpu_mask_to_apicid_andÃ¢â‚¬â„¢:
->> /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:179:
->> error: Ã¢â‚¬ËœGFP_ATOMICÃ¢â‚¬â„¢ undeclared (first use in this function)
->> /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:179:
->> error: (Each undeclared identifier is reported only once
->> /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:179:
->> error: for each function it appears in.)
->>
->> YH
->>
-> 
-> Hi Yinghai,
-> 
-> Thanks for catching this, I'm looking at it now.  We had a bit of a power
-> problem here and have been down for a while.
-> 
-> Thanks,
-> Mike
+This series replaces the workaround for a bug reported by Cedric Le Goater 
+<clg@fr.ibm.com> back in September:
 
-Subject: x86: fix x86_32 builds for summit and es7000 arch's
+> On a system with nfs mounts, if a task unshares its mount namespace,
+> a oops can occur when the system is rebooted if the task is the last
+> to unreference the nfs mount. It will try to create a rpc request
+> using utsname() which has been invalidated by free_nsproxy().
 
-Impact: fix build errors on x86_32
+Cedric worked around this bug by always using the initial uts namespace's
+nodename (see commit: 63ffc23d307c9534c732edd87895e37b223004a3).
 
-Fix the following build errors reported by Yinghai Lu:
+This is a non-ideal solution because uts namespace nodenames are reported
+as the hostname during RPC authentication. Consider a machine configured
+to export directories via NFS from a parent container to designated "trusted"
+child containers. It would be unable to rely on the hostname during RPC
+authentication -- forcing the administration of more advanced authentication
+systems than might otherwise be necessary.
 
-| In file included from arch/x86/mach-generic/summit.c:16:
-| /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:
-| In function Ã¢â?¬Ë?cpu_mask_to_apicid_andÃ¢â?¬â?¢:
-| /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:179:
-| error: Ã¢â?¬Ë?GFP_ATOMICÃ¢â?¬â?¢ undeclared (first use in this function)
-| /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:179:
-| error: (Each undeclared identifier is reported only once
-| /home/yhlu/xx/xx/kernel/tip/linux-2.6/arch/x86/include/asm/summit/apic.h:179:
-| error: for each function it appears in.)
-| 
-| YH
+The goal of this series is to report a namespace's UTS nodename rather than 
+the initial UTS namespace's nodename during RPC-call authentication -- much as
+before Cedric's workaround. By changing the way that the nodename is cached and
+fetched we can simultaneously avoid the NULL dereference during shutdown and
+ensure that amalgamated RPC services (such as statd, lockd, mountd for NFS) see
+a consistent nodename.
 
-Note: tested build only.
+Cheers,
+	-Matt Helsley
 
-Based on tip/cpus4096: v2.6.28-5703-g1d1a70e
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/include/asm/es7000/apic.h |    2 ++
- arch/x86/include/asm/summit/apic.h |    1 +
- 2 files changed, 3 insertions(+)
-
---- linux-2.6-for-ingo.orig/arch/x86/include/asm/es7000/apic.h
-+++ linux-2.6-for-ingo/arch/x86/include/asm/es7000/apic.h
-@@ -1,6 +1,8 @@
- #ifndef __ASM_ES7000_APIC_H
- #define __ASM_ES7000_APIC_H
- 
-+#include <linux/gfp.h>
-+
- #define xapic_phys_to_log_apicid(cpu) per_cpu(x86_bios_cpu_apicid, cpu)
- #define esr_disable (1)
- 
---- linux-2.6-for-ingo.orig/arch/x86/include/asm/summit/apic.h
-+++ linux-2.6-for-ingo/arch/x86/include/asm/summit/apic.h
-@@ -2,6 +2,7 @@
- #define __ASM_SUMMIT_APIC_H
- 
- #include <asm/smp.h>
-+#include <linux/gfp.h>
- 
- #define esr_disable (1)
- #define NO_BALANCE_IRQ (0)
+-- 
