@@ -1,135 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZAFSU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZAFSXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbZAFSU6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:20:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbZAFSUr
+	id S1752884AbZAFSXm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZAFSXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:20:47 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60520 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbZAFSUq (ORCPT
+	Tue, 6 Jan 2009 13:23:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54832
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751002AbZAFSXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:20:46 -0500
-Date: Tue, 6 Jan 2009 13:20:44 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-In-Reply-To: <alpine.LFD.2.00.0901060948220.3057@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0901061314310.10871@gandalf.stny.rr.com>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>  <20081231104533.abfb1cf9.akpm@linux-foundation.org>  <1230765549.7538.8.camel@think.oraclecorp.com>  <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>  <1231093310.27690.5.camel@twins>
-  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <alpine.LFD.2.00.0901060948220.3057@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Jan 2009 13:23:32 -0500
+Date: Tue, 06 Jan 2009 10:23:33 -0800 (PST)
+Message-Id: <20090106.102333.261099461.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org, srostedt@redhat.com,
+       mingo@elte.hu, sparclinux@vger.kernel.org
+Subject: Re: [PATCH] sparc: make proces_ver_nack a bit more readable
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090105200848.GD6204@uranus.ravnborg.org>
+References: <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0901051437490.27085@gandalf.stny.rr.com>
+	<20090105200848.GD6204@uranus.ravnborg.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Mon, 5 Jan 2009 21:08:48 +0100
 
-On Tue, 6 Jan 2009, Linus Torvalds wrote:
-
+> On Mon, Jan 05, 2009 at 02:42:59PM -0500, Steven Rostedt wrote:
+> > 
+> > Impact: clean up
+> > 
+> > The code in process_ver_nack is a little obfuscated. This change
+> > makes it a bit more readable by humans. It removes the complex
+> > if statement and replaces it with a cleaner flow of control.
+> > 
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 > 
-> Ok, last comment, I promise.
-> 
-> On Tue, 6 Jan 2009, Peter Zijlstra wrote:
-> > @@ -175,11 +199,19 @@ __mutex_lock_common(struct mutex *lock, 
-> >  			debug_mutex_free_waiter(&waiter);
-> >  			return -EINTR;
-> >  		}
-> > -		__set_task_state(task, state);
-> >  
-> > -		/* didnt get the lock, go to sleep: */
-> > +		owner = lock->owner;
-> > +		get_task_struct(owner);
-> >  		spin_unlock_mutex(&lock->wait_lock, flags);
-> > -		schedule();
-> > +
-> > +		if (adaptive_wait(&waiter, owner, state)) {
-> > +			put_task_struct(owner);
-> > +			__set_task_state(task, state);
-> > +			/* didnt get the lock, go to sleep: */
-> > +			schedule();
-> > +		} else
-> > +			put_task_struct(owner);
-> > +
-> >  		spin_lock_mutex(&lock->wait_lock, flags);
-> 
-> So I really dislike the whole get_task_struct/put_task_struct thing. It 
-> seems very annoying. And as far as I can tell, it's there _only_ to 
-> protect "task->rq" and nothing else (ie to make sure that the task 
-> doesn't exit and get freed and the pointer now points to la-la-land).
+> And I can confirm the warning has dismissed with this patch.
 
-Yeah, that was not one of the things that we liked either. We tried
-other ways to get around the get_task_struct but, ended up with
-the get_task_struct in the end anyway.
-
-> 
-> Wouldn't it be much nicer to just cache the rq pointer (take it while 
-> still holding the spinlock), and then pass it in to adaptive_wait()?
-> 
-> Then, adaptive_wait() can just do
-> 
-> 	if (lock->owner != owner)
-> 		return 0;
-> 
-> 	if (rq->task != owner)
-> 		return 1;
-> 
-> Sure - the owner may have rescheduled to another CPU, but if it did that, 
-> then we really might as well sleep. So we really don't need to dereference 
-> that (possibly stale) owner task_struct at all - because we don't care. 
-> All we care about is whether the owner is still busy on that other CPU 
-> that it was on. 
-> 
-> Hmm? So it looks to me that we don't really need that annoying "try to 
-> protect the task pointer" crud. We can do the sufficient (and limited) 
-> sanity checking without the task even existing, as long as we originally 
-> load the ->rq pointer at a point where it was stable (ie inside the 
-> spinlock, when we know that the task must be still alive since it owns the 
-> lock).
-
-Caching the rq is an interesting idea. But since the rq struct is local to 
-sched.c, what would be a good API to do this?
-
-in mutex.c:
-
-	void *rq;
-
-	[...]
-
-	rq = get_task_rq(owner);
-	spin_unlock(&lock->wait_lock);
-
-	[...]
-
-	if (!task_running_on_rq(rq, owner))
-
-
-in sched.c:
-
-
-	void *get_task_rq(struct task_struct *p)
-	{
-		return task_rq(p);
-	}
-
-	int task_running_on_rq(void *r, struct task_sturct *p)
-	{
-		struct rq *rq = r;
-
-		return rq->curr == p;
-	}
-
-??
-
--- Steve
-
-
+Applied, thanks everyone.
