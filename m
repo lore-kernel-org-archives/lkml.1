@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZAFKMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZAFKOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZAFKMV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbZAFKMM
+	id S1752161AbZAFKOY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 05:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZAFKOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:12:12 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55116 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbZAFKML (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:12:11 -0500
-Date: Tue, 6 Jan 2009 11:14:15 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Daniel Troeder <daniel@admin-box.com>, deller@gmx.de,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: LED (leds_hp_disk) causes BUG: scheduling while atomic
-Message-ID: <20090106101415.GA13972@elf.ucw.cz>
-References: <1231156352.9735.6.camel@maya.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231156352.9735.6.camel@maya.local>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 6 Jan 2009 05:14:15 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:59463 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750792AbZAFKOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 05:14:14 -0500
+Date: Tue, 6 Jan 2009 11:14:03 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: anemo@mba.ocn.ne.jp, linux-kernel@vger.kernel.org,
+       maciej.sosnowski@intel.com, dan.j.williams@intel.com
+Subject: Re: dw_dmac driver questions
+Message-ID: <20090106111403.2bdc0f83@hskinnemoen-d830>
+In-Reply-To: <20090106.103344.134344452.nemoto@toshiba-tops.co.jp>
+References: <20090105153024.179c9f29@hskinnemoen-d830>
+	<20090106.003558.115932572.anemo@mba.ocn.ne.jp>
+	<20090105164847.6fbca375@hskinnemoen-d830>
+	<20090106.103344.134344452.nemoto@toshiba-tops.co.jp>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> I'm not sure if I should send this email to LKML, because it doesn't
-> seem to important, and the traffic there seems high. If you are not the
-> correct maintainer, or if I should send it there anyway, please tell me.
+Atsushi Nemoto wrote:
+> > > > Since dwc_scan_descriptors() was just called, all descriptors that were
+> > > > completed successfully have been removed from the active list. So the
+> > > > first entry must be the broken one.    
+> > > 
+> > > But the removal from the active list is done in tasklet too.  If the
+> > > CPU was slow and DMA engine was fast enough, DMA engine will process
+> > > multiple descriptors before the tasklet called, no ?  
+> > 
+> > The DMA engine stops if it encounters a bad address.  
 > 
-> Update: I sent this letter first to Helge Deller <deller@gmx.de>, he
-> told me to mail to you.
-
-Yep, that's right, I'm responsible. LKML is indeed right thing to Cc:.
-
-> I have a HP Compaq nc2400 notebook, and having recently installed 2.6.28
-> (gentoo patchset, self configured), I have observed the following:
+> Yes.  And it does not mean the bad descriptor is at head of the active
+> queue.
 > 
-> When {I manually, udev automatically} load the leds_hp_disk module, my
-> disk-led flashes regularly _without_ disk activity. When I look at my
-> dmesg I see the following:
+> 1) driver enqueue desc A to active list and start DMA engine
+> 2) driver enqueue desc B to queue list
+> 3) driver enqueue desc C to queue list  (desc C contains bad address)
+> 4) DMA engine finish desc A and raise interrupt
+> 5) tasklet remove desc A from active list and move desc B and C to active list
+> 6) DMA engine finish desc B and raise interrupt
+> 7) DMA engine abort desc C and raise interrupt
+> 8) tasklet detect error
+> 
+> The point is the order of (7) and (8) cannot be expected.  If (7)
+> comes first, the head of the active list contains desc B at (8) and
+> that is not a bad descriptor.
 
-Yes, that's a (mis-feature).
+The tasklet won't detect any errors unless the DMA controller flags it,
+so (7) must happen before (8). That does not necessarily mean that the
+interrupts from (6) and (7) get handled before (8), but I don't think
+it matters because dwc_handle_error() calls dwc_scan_descriptors(),
+which will remove desc B from the active list if it is finished. And it
+must be finished if desc C has failed, so the failed descriptor will
+always be at the head of the queue after dwc_scan_descriptors() returns.
 
-> [  724.376881] BUG: scheduling while atomic: swapper/0/0x10000100
-> [  724.376886] Modules linked in: leds_hp_disk i915 drm snd_pcm_oss
-
-And that's a bug. I know what causes it, but i don't have right fix
-yet.
-
-If you are interested, take latest -mm (mmotm from userweb) and apply
-this manually:
-
---- linux-mm/drivers/hwmon/hp_accel.c   2009-01-06 10:54:40.000000000
-+0100
-+++ linux/drivers/hwmon/hp_accel.c      2008-12-10 09:36:21.000000000
-+0100
-@@ -174,11 +174,35 @@
- }
- 
- static struct led_classdev hpled_led = {
--       .name                   = "hp:red:hddprotection",
--       .default_trigger        = "heartbeat",
-+       .name                   = "hp:red:hddprotect",
-+       .default_trigger        = "none",
-        .brightness_set         = hpled_set,
- };
-
-
-...led will stop blinking, and messages will be gone. (But note that
-if you turn on heartbeat or similar trigger, you'll still get the
-"scheduling in interrupt" nastyness...)
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Haavard
