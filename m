@@ -1,71 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761917AbZAFWkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbZAFWlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761917AbZAFWkt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:40:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbZAFWeM
+	id S1761971AbZAFWlO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbZAFWeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:34:12 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61169 "EHLO
+	Tue, 6 Jan 2009 17:34:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47212 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759867AbZAFWeI (ORCPT
+	with ESMTP id S1760092AbZAFWeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Jan 2009 17:34:08 -0500
-Message-Id: <20090106223405.302758015@goodmis.org>
+Message-Id: <20090106223405.703770821@goodmis.org>
 References: <20090106223337.677427397@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Jan 2009 17:33:38 -0500
+Date: Tue, 06 Jan 2009 17:33:40 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Roel Kluin <roel.kluin@gmail.com>, Pekka Paalanen <pq@iki.fi>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/3] ftrace: convert unsigned index to signed
-Content-Disposition: inline; filename=0001-ftrace-convert-unsigned-index-to-signed.patch
+Subject: [PATCH 3/3] tracing/ftrace: fix a memory leak in stat tracing
+Content-Disposition: inline; filename=0003-tracing-ftrace-fix-a-memory-leak-in-stat-tracing.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
 
-Impact: fix to unsigned compared to less than zero
+Impact: fix memory leak
 
-Roel Kluin pointed out that there is a compare of an unsigned number
-to less than zero. A previous clean up had the unsigned index set
-to -1 for certain cases, but never converted it to signed.
+This patch fixes a memory leak inside reset_stat_list(). The freeing
+loop iterated only once.
 
-Frederic Weisbecker noticed that another index is used to compare
-the above index to and it also needs to be converted to signed.
+Also turn the stat_list into a simple struct list_head, which
+simplify the code and avoid an unused static pointer.
 
-Reported-by: Roel Kluin <roel.kluin@gmail.com>
-Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
+Reported-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ftrace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/trace/trace_stat.c |   39 +++++++++++++++------------------------
+ 1 files changed, 15 insertions(+), 24 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 2f32969..3576707 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -289,7 +289,7 @@ static DEFINE_MUTEX(ftrace_regex_lock);
- 
- struct ftrace_page {
- 	struct ftrace_page	*next;
--	unsigned long		index;
-+	long			index;
- 	struct dyn_ftrace	records[];
+diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+index 6f194a3..4cb4ff2 100644
+--- a/kernel/trace/trace_stat.c
++++ b/kernel/trace/trace_stat.c
+@@ -21,7 +21,7 @@ struct trace_stat_list {
+ 	void *stat;
  };
  
-@@ -786,7 +786,7 @@ enum {
+-static struct trace_stat_list stat_list;
++static LIST_HEAD(stat_list);
  
- struct ftrace_iterator {
- 	struct ftrace_page	*pg;
--	unsigned		idx;
-+	int			idx;
- 	unsigned		flags;
- 	unsigned char		buffer[FTRACE_BUFF_MAX+1];
- 	unsigned		buffer_idx;
+ /*
+  * This is a copy of the current tracer to avoid racy
+@@ -39,22 +39,12 @@ static DEFINE_MUTEX(stat_list_mutex);
+ 
+ static void reset_stat_list(void)
+ {
+-	struct trace_stat_list *node;
+-	struct list_head *next;
++	struct trace_stat_list *node, *next;
+ 
+-	if (list_empty(&stat_list.list))
+-		return;
+-
+-	node = list_entry(stat_list.list.next, struct trace_stat_list, list);
+-	next = node->list.next;
+-
+-	while (&node->list != next) {
++	list_for_each_entry_safe(node, next, &stat_list, list)
+ 		kfree(node);
+-		node = list_entry(next, struct trace_stat_list, list);
+-	}
+-	kfree(node);
+ 
+-	INIT_LIST_HEAD(&stat_list.list);
++	INIT_LIST_HEAD(&stat_list);
+ }
+ 
+ void init_tracer_stat(struct tracer *trace)
+@@ -107,7 +97,7 @@ static int stat_seq_init(void)
+ 	}
+ 
+ 	INIT_LIST_HEAD(&new_entry->list);
+-	list_add(&new_entry->list, &stat_list.list);
++	list_add(&new_entry->list, &stat_list);
+ 	new_entry->stat = current_tracer.stat_start();
+ 
+ 	prev_stat = new_entry->stat;
+@@ -130,7 +120,7 @@ static int stat_seq_init(void)
+ 		if (!new_entry->stat)
+ 			break;
+ 
+-		list_for_each_entry(iter_entry, &stat_list.list, list) {
++		list_for_each_entry(iter_entry, &stat_list, list) {
+ 			/* Insertion with a descendent sorting */
+ 			if (current_tracer.stat_cmp(new_entry->stat,
+ 						iter_entry->stat) > 0) {
+@@ -141,7 +131,7 @@ static int stat_seq_init(void)
+ 
+ 			/* The current smaller value */
+ 			} else if (list_is_last(&iter_entry->list,
+-						&stat_list.list)) {
++						&stat_list)) {
+ 				list_add(&new_entry->list, &iter_entry->list);
+ 				break;
+ 			}
+@@ -162,7 +152,7 @@ exit_free_list:
+ 
+ static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+ {
+-	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
++	struct list_head *l = (struct list_head *)s->private;
+ 
+ 	/* Prevent from tracer switch or stat_list modification */
+ 	mutex_lock(&stat_list_mutex);
+@@ -171,14 +161,14 @@ static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+ 	if (!*pos && current_tracer.stat_headers)
+ 		current_tracer.stat_headers(s);
+ 
+-	return seq_list_start(&l->list, *pos);
++	return seq_list_start(l, *pos);
+ }
+ 
+ static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
+ {
+-	struct trace_stat_list *l = (struct trace_stat_list *)s->private;
++	struct list_head *l = (struct list_head *)s->private;
+ 
+-	return seq_list_next(p, &l->list, pos);
++	return seq_list_next(p, l, pos);
+ }
+ 
+ static void stat_seq_stop(struct seq_file *m, void *p)
+@@ -188,8 +178,10 @@ static void stat_seq_stop(struct seq_file *m, void *p)
+ 
+ static int stat_seq_show(struct seq_file *s, void *v)
+ {
+-	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
+-	return current_tracer.stat_show(s, l->stat);
++	struct trace_stat_list *entry =
++		list_entry(v, struct trace_stat_list, list);
++
++	return current_tracer.stat_show(s, entry->stat);
+ }
+ 
+ static const struct seq_operations trace_stat_seq_ops = {
+@@ -237,7 +229,6 @@ static int __init tracing_stat_init(void)
+ 	struct dentry *d_tracing;
+ 	struct dentry *entry;
+ 
+-	INIT_LIST_HEAD(&stat_list.list);
+ 	d_tracing = tracing_init_dentry();
+ 
+ 	entry = debugfs_create_file("trace_stat", 0444, d_tracing,
 -- 
 1.5.6.5
 
