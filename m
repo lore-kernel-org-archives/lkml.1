@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZAFWRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZAFWR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbZAFWRl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:17:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZAFWNb
+	id S1757329AbZAFWR4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZAFWNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:13:31 -0500
-Received: from kroah.org ([198.145.64.141]:51199 "EHLO coco.kroah.org"
+	Tue, 6 Jan 2009 17:13:32 -0500
+Received: from kroah.org ([198.145.64.141]:51203 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755290AbZAFWN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:13:29 -0500
+	id S1755324AbZAFWNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:13:30 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 12/60] dynamic_printk: reduce one level of indentation
-Date: Tue,  6 Jan 2009 14:11:31 -0800
-Message-Id: <1231279939-32728-12-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 13/60] driver core: create a private portion of struct device
+Date: Tue,  6 Jan 2009 14:11:32 -0800
+Message-Id: <1231279939-32728-13-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <20090106221123.GA32689@kroah.com>
 References: <20090106221123.GA32689@kroah.com>
@@ -24,89 +22,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Fengguang <fengguang.wu@intel.com>
+This is to be used to move things out of struct device that no code
+outside of the driver core should ever touch.
 
-Cleanup pr_debug_write() to reduce one level of indentation.
-
-Cc: Marcel Holtmann <marcel@holtmann.org>
-Acked-by: Jason Baron <jbaron@redhat.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/dynamic_printk.c |   58 ++++++++++++++++++++++---------------------------
- 1 files changed, 26 insertions(+), 32 deletions(-)
+ drivers/base/base.h    |   12 ++++++++++++
+ drivers/base/core.c    |    8 ++++++++
+ include/linux/device.h |    3 +++
+ 3 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/lib/dynamic_printk.c b/lib/dynamic_printk.c
-index 8e30295..165a197 100644
---- a/lib/dynamic_printk.c
-+++ b/lib/dynamic_printk.c
-@@ -277,40 +277,34 @@ static ssize_t pr_debug_write(struct file *file, const char __user *buf,
- 				dynamic_enabled = DYNAMIC_ENABLED_NONE;
- 			}
- 			err = 0;
--		} else {
--			if (elem) {
--				if (value && (elem->enable == 0)) {
--					dynamic_printk_enabled |=
--							(1LL << elem->hash1);
--					dynamic_printk_enabled2 |=
--							(1LL << elem->hash2);
--					elem->enable = 1;
--					num_enabled++;
--					dynamic_enabled = DYNAMIC_ENABLED_SOME;
--					err = 0;
--					printk(KERN_DEBUG
--					       "debugging enabled for module %s\n",
--					       elem->name);
--				} else if (!value && (elem->enable == 1)) {
--					elem->enable = 0;
--					num_enabled--;
--					if (disabled_hash(elem->hash1, true))
--						dynamic_printk_enabled &=
-+		} else if (elem) {
-+			if (value && (elem->enable == 0)) {
-+				dynamic_printk_enabled |= (1LL << elem->hash1);
-+				dynamic_printk_enabled2 |= (1LL << elem->hash2);
-+				elem->enable = 1;
-+				num_enabled++;
-+				dynamic_enabled = DYNAMIC_ENABLED_SOME;
-+				err = 0;
-+				printk(KERN_DEBUG
-+					"debugging enabled for module %s\n",
-+					elem->name);
-+			} else if (!value && (elem->enable == 1)) {
-+				elem->enable = 0;
-+				num_enabled--;
-+				if (disabled_hash(elem->hash1, true))
-+					dynamic_printk_enabled &=
- 							~(1LL << elem->hash1);
--					if (disabled_hash(elem->hash2, false))
--						dynamic_printk_enabled2 &=
-+				if (disabled_hash(elem->hash2, false))
-+					dynamic_printk_enabled2 &=
- 							~(1LL << elem->hash2);
--					if (num_enabled)
--						dynamic_enabled =
--							DYNAMIC_ENABLED_SOME;
--					else
--						dynamic_enabled =
--							DYNAMIC_ENABLED_NONE;
--					err = 0;
--					printk(KERN_DEBUG
--					       "debugging disabled for module "
--					       "%s\n", elem->name);
--				}
-+				if (num_enabled)
-+					dynamic_enabled = DYNAMIC_ENABLED_SOME;
-+				else
-+					dynamic_enabled = DYNAMIC_ENABLED_NONE;
-+				err = 0;
-+				printk(KERN_DEBUG
-+					"debugging disabled for module %s\n",
-+					elem->name);
- 			}
- 		}
- 	}
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index 0a5f055..6b20809 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -63,6 +63,18 @@ struct class_private {
+ #define to_class(obj)	\
+ 	container_of(obj, struct class_private, class_subsys.kobj)
+ 
++/**
++ * struct device_private - structure to hold the private to the driver core portions of the device structure.
++ *
++ * @device - pointer back to the struct class that this structure is
++ * associated with.
++ *
++ * Nothing outside of the driver core should ever touch these fields.
++ */
++struct device_private {
++	struct device *device;
++};
++
+ /* initialisation functions */
+ extern int devices_init(void);
+ extern int buses_init(void);
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 14aa2b6..6657787 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -109,6 +109,7 @@ static struct sysfs_ops dev_sysfs_ops = {
+ static void device_release(struct kobject *kobj)
+ {
+ 	struct device *dev = to_dev(kobj);
++	struct device_private *p = dev->p;
+ 
+ 	if (dev->release)
+ 		dev->release(dev);
+@@ -120,6 +121,7 @@ static void device_release(struct kobject *kobj)
+ 		WARN(1, KERN_ERR "Device '%s' does not have a release() "
+ 			"function, it is broken and must be fixed.\n",
+ 			dev_name(dev));
++	kfree(p);
+ }
+ 
+ static struct kobj_type device_ktype = {
+@@ -536,6 +538,12 @@ static void klist_children_put(struct klist_node *n)
+  */
+ void device_initialize(struct device *dev)
+ {
++	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
++	if (!dev->p) {
++		WARN_ON(1);
++		return;
++	}
++	dev->p->device = dev;
+ 	dev->kobj.kset = devices_kset;
+ 	kobject_init(&dev->kobj, &device_ktype);
+ 	klist_init(&dev->klist_children, klist_children_get,
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 4e14fad..d6d3408 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -28,6 +28,7 @@
+ #define BUS_ID_SIZE		20
+ 
+ struct device;
++struct device_private;
+ struct device_driver;
+ struct driver_private;
+ struct class;
+@@ -371,6 +372,8 @@ struct device {
+ 	struct klist_node	knode_bus;
+ 	struct device		*parent;
+ 
++	struct device_private	*p;
++
+ 	struct kobject kobj;
+ 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
+ 	unsigned		uevent_suppress:1;
 -- 
 1.6.0.4
 
