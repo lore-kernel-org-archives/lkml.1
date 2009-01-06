@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbZAFBfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZAFBq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244AbZAFBfz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 20:35:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZAFBfr
+	id S1752770AbZAFBq4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 20:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZAFBqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 20:35:47 -0500
-Received: from fwtops.0.225.230.202.in-addr.arpa ([202.230.225.126]:12486 "EHLO
-	topsms.toshiba-tops.co.jp" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751199AbZAFBfq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 20:35:46 -0500
-Date: Tue, 06 Jan 2009 10:14:25 +0900 (JST)
-Message-Id: <20090106.101425.109407744.nemoto@toshiba-tops.co.jp>
-To: dan.j.williams@intel.com
-Cc: anemo@mba.ocn.ne.jp, haavard.skinnemoen@atmel.com,
-       linux-kernel@vger.kernel.org, hskinnemoen@atmel.com,
-       maciej.sosnowski@intel.com, ralf@linux-mips.org
-Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer
- before DMA
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <e9c3a7c20901051031y528d0d31r18d44c5096c59e0@mail.gmail.com>
-References: <20081227111037.3bd13adc@hskinnemoen-d830>
-	<20081229.025352.01917409.anemo@mba.ocn.ne.jp>
-	<e9c3a7c20901051031y528d0d31r18d44c5096c59e0@mail.gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 20:46:47 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:50545 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751293AbZAFBqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 20:46:46 -0500
+Date: Tue, 6 Jan 2009 02:46:39 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: markus reichelt <ml@mareichelt.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: A SuSE riddle
+In-Reply-To: <20090105185225.GH6165@tatooine.rebelbase.local>
+Message-ID: <alpine.LRH.1.10.0901060245180.24105@twin.jikos.cz>
+References: <20090105185225.GH6165@tatooine.rebelbase.local>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Jan 2009 11:31:57 -0700, "Dan Williams" <dan.j.williams@intel.com> wrote:
-> > On nono-coherent MIPS platforms, dma_map_single() for DMA_TO_DEVICE
-> > writeback the cache, dma_map_single() for DMA_FROM_DEVICE invalidated
-> > (without writeback) the cache.  dma_unmap_simgle() is a nop.
-> >
-> > If dst_off was not cacheline aligned, dma_map_single(...,
-> > DMA_FROM_DEVICE) in dma_async_memcpy_buf_to_buf() invalidate whole
-> > cachelines including dst_off.  So, for example, the initialized data
-> > at dst_off - 1 will be just discarded.  This result mismatch error of
-> > course.  Same error can be happen at end of the real DMA area.
-> >
-> > I added dma_map_single/dma_unmap_single to just flush all dstbuf to
-> > main memory.
-> 
-> I am tempted to say this is a bug in the MIPS dma_map_single
-> implementation.  It is at least a difference in behavior from ARM
-> where partial cachelines are cleaned+invalidated in the
-> DMA_FROM_DEVICE case [1].
+On Mon, 5 Jan 2009, markus reichelt wrote:
 
-Yes, MIPS and ARM do different thing on partial cache line.  But I
-suppose this belongs to "implementation dependent" area of DMA API so
-users of the API should not depend on it.  (Well, maybe I'm biased to
-MIPS ;-))
+> this goes out to the SusE folks in here: 
+> What the heck is needed to get one's hands on the contents of
+> kernel-source-2.6.27.7-9.1.i586.rpm
+> The usual tools fail.
+> Downloaded from http://ftp.uni-bayreuth.de/linux/opensuse/distribution/11.1/repo/oss/suse/i586/
 
-In general, drivers must not put normal data and DMA buffer on same
-cacheline anyway to avoid unexpected writeback and data loss.  So this
-ambiguity is not a problem.  IMHO writeback of the partial line for
-DMA_FROM_DEVICE just _hides_ abusing of the DMA API and potential data
-loss.
+This is definitely not a question that should be raised on LKML. Please 
+use opensuse-kernel@opensuse.org for opensuse kernel related issues.
 
----
-Atsushi Nemoto
+-- 
+Jiri Kosina
+SUSE Labs
+
