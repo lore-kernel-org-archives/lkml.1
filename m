@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZAFSuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751230AbZAFSvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbZAFSuw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbZAFSuZ
+	id S1751230AbZAFSvy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:51:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbZAFSvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:50:25 -0500
-Received: from 1wt.eu ([62.212.114.60]:1138 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbZAFSuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:50:23 -0500
-Date: Tue, 6 Jan 2009 19:50:12 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090106185012.GA30322@1wt.eu>
-References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106183223.GA11964@ioremap.net>
-User-Agent: Mutt/1.5.11
+	Tue, 6 Jan 2009 13:51:43 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51573 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbZAFSvn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 13:51:43 -0500
+Message-ID: <4963A859.6030406@zytor.com>
+Date: Tue, 06 Jan 2009 10:52:09 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Alexey Fisher <bug-track@fisher-privat.net>
+CC: kernel-testers-owner@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [regression] glx performance drop with: "x86: PAT: implement
+ track/untrack of pfnmap regions for x86 - v3"
+References: <4963A71C.2020107@fisher-privat.net>
+In-Reply-To: <4963A71C.2020107@fisher-privat.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Evgeniy,
-
-On Tue, Jan 06, 2009 at 09:32:23PM +0300, Evgeniy Polyakov wrote:
-> Hi Willy.
+Alexey Fisher wrote:
+> glx perfomance regression after this patch.
+> goot kernel: glxgears = 1400 fps
+> bad kernel: glxgears = 300 fps ( same speed with disabled drm module )
 > 
-> Unfortunately I can not work on this problem right now, but will do if
-> things are not resolved after Jan 11 (long vacations will be finished in
-> Russia and I will return to my test machines :) But right now I have
-> one quesstion: I read several times your mail but still can not figure
-> out if receiving or sending side is broken?
+> kernel log:
+> glxgears:5775 map pfn expected mapping type write-back for
+> d1000000-d1c80000, got uncached-minus
+> glxgears:5775 freeing invalid memtype d1000000-d1c80000
 > 
-> I.e. can you splice from socket into the file, check the file, and then
-> splice to the another socket and check received data to find out which
-> side is broken? Or did I just missed that in the problem description?
 
-Maybe I wasn't very clear. It's only when splicing from a socket to another
-socket that it breaks. Splicing from a file to a socket is OK (sendfile is
-OK too BTW). Splicing from a socket to a file is OK.
+Have we caught a case of actual overlap, i.e. a driver bug here?
 
-And BTW, the receiving side must be on a real interface, not loopback. Here
-are my observations :
-  - splice data from lo to lo     => no corruption at all
-  - splice data from lo to eth0   => no corruption at all
-  - splice data from eth0 to lo   => occasional corruption
-  - splice data from eth0 to eth0 => massive corruption
-
-I think this may ring a bell for someone.
-
-> Thanks a lot for the test application, it will greatly help to resolve
-> this issue.
-
-I figured it was an absolute necessity. The original code in my proxy is in
-an experimental state and far too hard to debug for these purposes. It was
-enough to detect the problem, but I could run a lot more tests with this
-small test app ! An who know, maybe it will serve as an example for
-non-blocking splice ;-)
-
-Cheers,
-Willy
-
+	-hpa
