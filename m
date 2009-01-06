@@ -1,84 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbZAFWsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbZAFWsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbZAFWsg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZAFWs0
+	id S1756555AbZAFWsv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZAFWs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:48:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46775 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750980AbZAFWsZ (ORCPT
+	Tue, 6 Jan 2009 17:48:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56721 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884AbZAFWs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:48:25 -0500
-Date: Tue, 6 Jan 2009 14:47:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       roel.kluin@gmail.com, pq@iki.fi, srostedt@redhat.com
-Subject: Re: [PATCH 2/3] ring-buffer: rename debugfs file tracing_on to
- writing_enabled
-Message-Id: <20090106144740.686c3f33.akpm@linux-foundation.org>
-In-Reply-To: <20090106223405.512131804@goodmis.org>
-References: <20090106223337.677427397@goodmis.org>
-	<20090106223405.512131804@goodmis.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 Jan 2009 17:48:28 -0500
+Message-ID: <4963DFD5.9070204@zytor.com>
+Date: Tue, 06 Jan 2009 14:48:53 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Alain Knaff <alain@knaff.lu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [bzip2/lzma] fix for built-in initramfs issue
+References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <49615136.9080900@knaff.lu> <4961580A.1020301@zytor.com> <4961A816.40302@knaff.lu> <4961A997.10108@zytor.com> <4961ADC5.6030108@knaff.lu> <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu> <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu> <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu> <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu> <4962858F.20207@zytor.com> <496285C8.7050503@knaff.lu> <496290E0.3020603@zytor.com> <4963D3C3.9090503@knaff.lu>
+In-Reply-To: <4963D3C3.9090503@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 Jan 2009 17:33:39 -0500
-Steven Rostedt <rostedt@goodmis.org> wrote:
+Alain Knaff wrote:
+> It also restores the select ZLIB_INFLATE in drivers/block/Kconfig
+> which somehow came missing. This is needed to activate compilation of
+> the stuff in zlib_deflate.
 
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> Impact: clean up
-> 
-> The debugfs file name tracing_on is confusing since there is also
-> a tracing_enabled. When a tracer is added to current_tracer and
-> tracing_enabled is set to 1, then the tracer will start tracing.
-> The current file tracing_on, if set to 1, will allow writing to
-> the ring buffers. If tracing_on is set to 0 then the ring buffers
-> are read only, and any attempt by the tracers to write to the
-> ring buffers will fail.
-> 
-> But the name tracing_on confuses both developers and users.
-> This patch renames it to 'writing_enabled'.  This is exactly what
-> the file does. When set to 1, the ring buffers have writing enabled
-> and when set to 0, the ring buffers can not be written to.
-> 
-> The tracers do not get any call backs called or other notification
-> that the ring buffers have been set to read only, except when they
-> attempt to write to the ring buffers, that write will fail.
-> 
-> Note: it is a requirement that any tracer that uses the ring buffers
-> must handle a failure to write to the ring buffers, since the ring buffers
-> may be disabled for any number of reasons.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/ring_buffer.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index a9d9760..dba6876 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -2514,10 +2514,11 @@ static __init int rb_init_debugfs(void)
->  
->  	d_tracer = tracing_init_dentry();
->  
-> -	entry = debugfs_create_file("tracing_on", 0644, d_tracer,
-> +	entry = debugfs_create_file("writing_enabled", 0644, d_tracer,
->  				    &ring_buffer_flags, &rb_simple_fops);
->  	if (!entry)
-> -		pr_warning("Could not create debugfs 'tracing_on' entry\n");
-> +		pr_warning("Could not create debugfs"
-> +			   " 'writing_enabled' entry\n");
->  
->  	return 0;
->  }
+It's not missing.  It is (or at least should be) included via the 
+dependency chain DECOMPRESS_GZIP -> ZLIB_INFLATE.
 
-There's no corresponding documentation update needed?
+	-hpa
+
