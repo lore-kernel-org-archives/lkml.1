@@ -1,103 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZAFPgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZAFPkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZAFPgb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbZAFPgW
+	id S1752728AbZAFPkr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZAFPki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:36:22 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:45365 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750742AbZAFPgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:36:22 -0500
-Message-ID: <49637A72.3020600@sgi.com>
-Date: Tue, 06 Jan 2009 07:36:18 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 6 Jan 2009 10:40:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:51783 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750950AbZAFPkh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 10:40:37 -0500
+To: Theodore Tso <tytso@mit.edu>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
+       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+From: Andi Kleen <andi@firstfloor.org>
+References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no>
+	<200901042149.27655.rob@landley.net>
+	<20090105111913.47a8d1a5@lxorguk.ukuu.org.uk>
+	<200901051300.09169.rob@landley.net>
+	<yq1ocyl1rkq.fsf@sermon.lab.mkp.net>
+	<20090106104146.GD6700@merlin.emma.line.org>
+	<20090106153020.GB13086__11022.1833143898$1231255950$gmane$org@mit.edu>
+Date: Tue, 06 Jan 2009 16:40:33 +0100
+In-Reply-To: <20090106153020.GB13086__11022.1833143898$1231255950$gmane$org@mit.edu> (Theodore Tso's message of "Tue, 6 Jan 2009 10:30:20 -0500")
+Message-ID: <87k5984f4e.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, mingo@redhat.com,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: tip: IA64 build error
-References: <20090106233758L.fujita.tomonori@lab.ntt.co.jp> <20090106152111.GA11114@elte.hu>
-In-Reply-To: <20090106152111.GA11114@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
->> I got the followings with tip/master:
->>
->> drivers/pci/probe.c: In function 'pci_bus_show_cpuaffinity':
->> drivers/pci/probe.c:56: error: implicit declaration of function 'cpumask_from_node'
->> drivers/pci/probe.c:56: warning: pointer/integer type mismatch in conditional expression
->> make[3]: *** [drivers/pci/probe.o] Error 1
->> make[2]: *** [drivers/pci] Error 2
->>
->>
->> it's due to the typo in arch/ia64/include/asm/topology.h, I guess.
-> 
-> yeah. Does the patch below fix it for you?
-> 
-> 	Ingo
-> 
-> ---------------->
->>From 36c401a44abcc389a00f9cd14892c9cf9bf0780d Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 6 Jan 2009 16:19:22 +0100
-> Subject: [PATCH] [IA64] fix typo in cpumask_of_pcibus()
-> 
-> Impact: build fix
-> 
-> Fujita Tomonori reported:
-> 
->  drivers/pci/probe.c: In function 'pci_bus_show_cpuaffinity':
->  drivers/pci/probe.c:56: error: implicit declaration of function 'cpumask_from_node'
->  drivers/pci/probe.c:56: warning: pointer/integer type mismatch in conditional expression
->  make[3]: *** [drivers/pci/probe.o] Error 1
->  make[2]: *** [drivers/pci] Error 2
-> 
-> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/ia64/include/asm/topology.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/ia64/include/asm/topology.h b/arch/ia64/include/asm/topology.h
-> index 76a33a9..32f3af1 100644
-> --- a/arch/ia64/include/asm/topology.h
-> +++ b/arch/ia64/include/asm/topology.h
-> @@ -124,7 +124,7 @@ extern void arch_fix_phys_package_id(int num, u32 slot);
->  
->  #define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
->  				 cpu_all_mask :				\
-> -				 cpumask_from_node(pcibus_to_node(bus)))
-> +				 cpumask_of_node(pcibus_to_node(bus)))
->  
->  #include <asm-generic/topology.h>
->  
+Theodore Tso <tytso@mit.edu> writes:
 
-Did I do that?  I could have sworn I test-built on ia64.  But here's the commit,
-and I merged it.
+> On Tue, Jan 06, 2009 at 11:41:46AM +0100, Matthias Andree wrote:
+>> > Rob> Good to know, but "my laptop hard drive just died" is not the
+>> > Rob> optimal time to learn these sorts of things.
+>> > 
+>> > http://www.garloff.de/kurt/linux/ddrescue/
+>> 
+>> While nice, it does not reconfigure the block layer to reduce retries;
+>> at least not in a manner I see at a glance; no sysctl or SG_IO or ioctl
+>> or fcntl anywhere.
+>
+> Well, Kurt Garloff wrote that program years and years ago.  I'm sure
+> if someone created patches he'd probably accept them, though.  It's
+> still the best program I've found for doing image backups in
+> catastrophic situations.
 
-Sorry about that.
+Better would be just to incorporate the functionality as an option
+into standard GNU dd. Then everyone would easily have access to it.
 
-Mike
+-Andi
 
---commit fbb776c3ca4501d5a2821bf1e9bceefcaec7ae47
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Fri Dec 26 22:23:40 2008 +1030
-
-    cpumask: IA64: Introduce cpumask_of_{node,pcibus} to replace {node,pcibus}_to_cpumask
-
-...
-+#define cpumask_of_pcibus(bus) (pcibus_to_node(bus) == -1 ?            \
-+                                cpu_all_mask :                         \
-+                                cpumask_from_node(pcibus_to_node(bus)))
-+
-
-
+-- 
+ak@linux.intel.com
