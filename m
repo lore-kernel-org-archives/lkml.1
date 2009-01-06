@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZAFWSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbZAFWTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbZAFWSo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:18:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZAFWNe
+	id S1757596AbZAFWTA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZAFWNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:13:34 -0500
-Received: from kroah.org ([198.145.64.141]:51208 "EHLO coco.kroah.org"
+	Tue, 6 Jan 2009 17:13:35 -0500
+Received: from kroah.org ([198.145.64.141]:51212 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751565AbZAFWNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:13:32 -0500
+	id S1755481AbZAFWNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:13:33 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 15/60] driver core: move knode_driver into private structure
-Date: Tue,  6 Jan 2009 14:11:34 -0800
-Message-Id: <1231279939-32728-15-git-send-email-gregkh@suse.de>
+Subject: [PATCH 16/60] driver core: move knode_bus into private structure
+Date: Tue,  6 Jan 2009 14:11:35 -0800
+Message-Id: <1231279939-32728-16-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <20090106221123.GA32689@kroah.com>
 References: <20090106221123.GA32689@kroah.com>
@@ -22,146 +22,178 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing outside of the driver core should ever touch knode_driver, so
+Nothing outside of the driver core should ever touch knode_bus, so
 move it out of the public eye.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
  drivers/base/base.h    |    4 ++++
- drivers/base/dd.c      |   13 ++++++++-----
- drivers/base/driver.c  |   13 ++++++++++---
+ drivers/base/bus.c     |   40 +++++++++++++++++++++++++++-------------
  include/linux/device.h |    1 -
- 4 files changed, 22 insertions(+), 9 deletions(-)
+ 3 files changed, 31 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/base/base.h b/drivers/base/base.h
-index f5cf31c..8af0bb2 100644
+index 8af0bb2..b676f8f 100644
 --- a/drivers/base/base.h
 +++ b/drivers/base/base.h
-@@ -68,6 +68,7 @@ struct class_private {
-  *
+@@ -69,6 +69,7 @@ struct class_private {
   * @klist_children - klist containing all children of this device
   * @knode_parent - node in sibling list
-+ * @knode_driver - node in driver list
+  * @knode_driver - node in driver list
++ * @knode_bus - node in bus list
   * @device - pointer back to the struct class that this structure is
   * associated with.
   *
-@@ -76,10 +77,13 @@ struct class_private {
- struct device_private {
+@@ -78,12 +79,15 @@ struct device_private {
  	struct klist klist_children;
  	struct klist_node knode_parent;
-+	struct klist_node knode_driver;
+ 	struct klist_node knode_driver;
++	struct klist_node knode_bus;
  	struct device *device;
  };
  #define to_device_private_parent(obj)	\
  	container_of(obj, struct device_private, knode_parent)
-+#define to_device_private_driver(obj)	\
-+	container_of(obj, struct device_private, knode_driver)
+ #define to_device_private_driver(obj)	\
+ 	container_of(obj, struct device_private, knode_driver)
++#define to_device_private_bus(obj)	\
++	container_of(obj, struct device_private, knode_bus)
  
  /* initialisation functions */
  extern int devices_init(void);
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 17a8e45..bb5f1eb 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -28,7 +28,7 @@
- 
- static void driver_bound(struct device *dev)
- {
--	if (klist_node_attached(&dev->knode_driver)) {
-+	if (klist_node_attached(&dev->p->knode_driver)) {
- 		printk(KERN_WARNING "%s: device %s already bound\n",
- 			__func__, kobject_name(&dev->kobj));
- 		return;
-@@ -41,7 +41,7 @@ static void driver_bound(struct device *dev)
- 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 					     BUS_NOTIFY_BOUND_DRIVER, dev);
- 
--	klist_add_tail(&dev->knode_driver, &dev->driver->p->klist_devices);
-+	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
- }
- 
- static int driver_sysfs_add(struct device *dev)
-@@ -311,7 +311,7 @@ static void __device_release_driver(struct device *dev)
- 			drv->remove(dev);
- 		devres_release_all(dev);
- 		dev->driver = NULL;
--		klist_remove(&dev->knode_driver);
-+		klist_remove(&dev->p->knode_driver);
- 	}
- }
- 
-@@ -341,6 +341,7 @@ EXPORT_SYMBOL_GPL(device_release_driver);
-  */
- void driver_detach(struct device_driver *drv)
- {
-+	struct device_private *dev_prv;
- 	struct device *dev;
- 
- 	for (;;) {
-@@ -349,8 +350,10 @@ void driver_detach(struct device_driver *drv)
- 			spin_unlock(&drv->p->klist_devices.k_lock);
- 			break;
- 		}
--		dev = list_entry(drv->p->klist_devices.k_list.prev,
--				struct device, knode_driver.n_node);
-+		dev_prv = list_entry(drv->p->klist_devices.k_list.prev,
-+				     struct device_private,
-+				     knode_driver.n_node);
-+		dev = dev_prv->device;
- 		get_device(dev);
- 		spin_unlock(&drv->p->klist_devices.k_lock);
- 
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index 1e2bda7..b76cc69 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -19,7 +19,14 @@
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 83f32b8..0f0a504 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -253,7 +253,14 @@ static ssize_t store_drivers_probe(struct bus_type *bus,
  static struct device *next_device(struct klist_iter *i)
  {
  	struct klist_node *n = klist_next(i);
--	return n ? container_of(n, struct device, knode_driver) : NULL;
+-	return n ? container_of(n, struct device, knode_bus) : NULL;
 +	struct device *dev = NULL;
 +	struct device_private *dev_prv;
 +
 +	if (n) {
-+		dev_prv = to_device_private_driver(n);
++		dev_prv = to_device_private_bus(n);
 +		dev = dev_prv->device;
 +	}
 +	return dev;
  }
  
  /**
-@@ -42,7 +49,7 @@ int driver_for_each_device(struct device_driver *drv, struct device *start,
+@@ -286,7 +293,7 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
  		return -EINVAL;
  
- 	klist_iter_init_node(&drv->p->klist_devices, &i,
--			     start ? &start->knode_driver : NULL);
-+			     start ? &start->p->knode_driver : NULL);
+ 	klist_iter_init_node(&bus->p->klist_devices, &i,
+-			     (start ? &start->knode_bus : NULL));
++			     (start ? &start->p->knode_bus : NULL));
  	while ((dev = next_device(&i)) && !error)
  		error = fn(dev, data);
  	klist_iter_exit(&i);
-@@ -76,7 +83,7 @@ struct device *driver_find_device(struct device_driver *drv,
+@@ -320,7 +327,7 @@ struct device *bus_find_device(struct bus_type *bus,
  		return NULL;
  
- 	klist_iter_init_node(&drv->p->klist_devices, &i,
--			     (start ? &start->knode_driver : NULL));
-+			     (start ? &start->p->knode_driver : NULL));
+ 	klist_iter_init_node(&bus->p->klist_devices, &i,
+-			     (start ? &start->knode_bus : NULL));
++			     (start ? &start->p->knode_bus : NULL));
  	while ((dev = next_device(&i)))
  		if (match(dev, data) && get_device(dev))
  			break;
+@@ -507,7 +514,8 @@ void bus_attach_device(struct device *dev)
+ 			ret = device_attach(dev);
+ 		WARN_ON(ret < 0);
+ 		if (ret >= 0)
+-			klist_add_tail(&dev->knode_bus, &bus->p->klist_devices);
++			klist_add_tail(&dev->p->knode_bus,
++				       &bus->p->klist_devices);
+ 	}
+ }
+ 
+@@ -528,8 +536,8 @@ void bus_remove_device(struct device *dev)
+ 		sysfs_remove_link(&dev->bus->p->devices_kset->kobj,
+ 				  dev_name(dev));
+ 		device_remove_attrs(dev->bus, dev);
+-		if (klist_node_attached(&dev->knode_bus))
+-			klist_del(&dev->knode_bus);
++		if (klist_node_attached(&dev->p->knode_bus))
++			klist_del(&dev->p->knode_bus);
+ 
+ 		pr_debug("bus: '%s': remove device %s\n",
+ 			 dev->bus->name, dev_name(dev));
+@@ -831,14 +839,16 @@ static void bus_remove_attrs(struct bus_type *bus)
+ 
+ static void klist_devices_get(struct klist_node *n)
+ {
+-	struct device *dev = container_of(n, struct device, knode_bus);
++	struct device_private *dev_prv = to_device_private_bus(n);
++	struct device *dev = dev_prv->device;
+ 
+ 	get_device(dev);
+ }
+ 
+ static void klist_devices_put(struct klist_node *n)
+ {
+-	struct device *dev = container_of(n, struct device, knode_bus);
++	struct device_private *dev_prv = to_device_private_bus(n);
++	struct device *dev = dev_prv->device;
+ 
+ 	put_device(dev);
+ }
+@@ -993,18 +1003,20 @@ static void device_insertion_sort_klist(struct device *a, struct list_head *list
+ {
+ 	struct list_head *pos;
+ 	struct klist_node *n;
++	struct device_private *dev_prv;
+ 	struct device *b;
+ 
+ 	list_for_each(pos, list) {
+ 		n = container_of(pos, struct klist_node, n_node);
+-		b = container_of(n, struct device, knode_bus);
++		dev_prv = to_device_private_bus(n);
++		b = dev_prv->device;
+ 		if (compare(a, b) <= 0) {
+-			list_move_tail(&a->knode_bus.n_node,
+-				       &b->knode_bus.n_node);
++			list_move_tail(&a->p->knode_bus.n_node,
++				       &b->p->knode_bus.n_node);
+ 			return;
+ 		}
+ 	}
+-	list_move_tail(&a->knode_bus.n_node, list);
++	list_move_tail(&a->p->knode_bus.n_node, list);
+ }
+ 
+ void bus_sort_breadthfirst(struct bus_type *bus,
+@@ -1014,6 +1026,7 @@ void bus_sort_breadthfirst(struct bus_type *bus,
+ 	LIST_HEAD(sorted_devices);
+ 	struct list_head *pos, *tmp;
+ 	struct klist_node *n;
++	struct device_private *dev_prv;
+ 	struct device *dev;
+ 	struct klist *device_klist;
+ 
+@@ -1022,7 +1035,8 @@ void bus_sort_breadthfirst(struct bus_type *bus,
+ 	spin_lock(&device_klist->k_lock);
+ 	list_for_each_safe(pos, tmp, &device_klist->k_list) {
+ 		n = container_of(pos, struct klist_node, n_node);
+-		dev = container_of(n, struct device, knode_bus);
++		dev_prv = to_device_private_bus(n);
++		dev = dev_prv->device;
+ 		device_insertion_sort_klist(dev, &sorted_devices, compare);
+ 	}
+ 	list_splice(&sorted_devices, &device_klist->k_list);
 diff --git a/include/linux/device.h b/include/linux/device.h
-index 60423e6..e363022 100644
+index e363022..e21b5d6 100644
 --- a/include/linux/device.h
 +++ b/include/linux/device.h
 @@ -366,7 +366,6 @@ struct device_dma_parameters {
  };
  
  struct device {
--	struct klist_node	knode_driver;
- 	struct klist_node	knode_bus;
+-	struct klist_node	knode_bus;
  	struct device		*parent;
  
+ 	struct device_private	*p;
 -- 
 1.6.0.4
 
