@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbZAFW6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbZAFW6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758337AbZAFW6Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbZAFW5t
+	id S1758831AbZAFW6l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757730AbZAFW6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:57:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59194 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756071AbZAFW5r (ORCPT
+	Tue, 6 Jan 2009 17:58:08 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54480 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757605AbZAFW6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:57:47 -0500
-Date: Tue, 6 Jan 2009 14:56:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-In-Reply-To: <1231281801.11687.125.camel@twins>
-Message-ID: <alpine.LFD.2.00.0901061451200.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
- <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain> <1231281801.11687.125.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 6 Jan 2009 17:58:06 -0500
+Message-ID: <4963E216.8020008@zytor.com>
+Date: Tue, 06 Jan 2009 14:58:30 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alain Knaff <alain@knaff.lu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [bzip2/lzma] fix for built-in initramfs issue
+References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <49615136.9080900@knaff.lu> <4961580A.1020301@zytor.com> <4961A816.40302@knaff.lu> <4961A997.10108@zytor.com> <4961ADC5.6030108@knaff.lu> <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu> <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu> <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu> <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu> <4962858F.20207@zytor.com> <496285C8.7050503@knaff.lu> <496290E0.3020603@zytor.com> <4963D3C3.9090503@knaff.lu> <4963DFD5.9070204@zytor.com> <4963E020.7000304@knaff.lu>
+In-Reply-To: <4963E020.7000304@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 Jan 2009, Peter Zijlstra wrote:
-> > 
-> > In fact, I suspect that's the real bug you're hitting: you're enabling 
-> > preemption while holding a spinlock. That is NOT a good idea.
+Alain Knaff wrote:
+> H. Peter Anvin wrote:
+>> Alain Knaff wrote:
+>>> It also restores the select ZLIB_INFLATE in drivers/block/Kconfig
+>>> which somehow came missing. This is needed to activate compilation of
+>>> the stuff in zlib_deflate.
+>> It's not missing.  It is (or at least should be) included via the
+>> dependency chain DECOMPRESS_GZIP -> ZLIB_INFLATE.
+>>
+>>     -hpa
 > 
-> spinlocks also fiddle with preempt_count, that should all work out -
-> although granted, it does look funny.
+> Well, that didn't work when I tried it here...
+> 
 
-It most certainly doesn't always work out.
+OK, let's fix the dependency chain then.  I'll mess with it.
 
-For example, the irq-disabling ones do *not* fiddle with preempt_count, 
-because they disable preemption by just disabling interrupts. So doing 
-preempt_enable() inside such a spinlock is almost guaranteed to lock up: 
-because the preempt_enable() will now potentially call the scheduler with 
-a spinlock held and with interrupts disabled.
-
-That, in turn, can cause any number of problems - deadlocks with other 
-processes that then try to take the spinlock that didn't get released, but 
-also deadlocks with interrupts, since the scheduler will enable interrupts 
-again.
-
-So mixing preemption and spinlocks is almost always a bug. Yes, _some_ 
-cases work out ok, but I'd call those the odd ones.
-
-			Linus
+	-hpa
