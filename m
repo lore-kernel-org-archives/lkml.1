@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbZAFRRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZAFRR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbZAFRRm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 12:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZAFRRd
+	id S1754783AbZAFRR5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 12:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbZAFRRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 12:17:33 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:43108 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751569AbZAFRRc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 12:17:32 -0500
-Date: Tue, 6 Jan 2009 18:31:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
-       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090106173127.GE496@one.firstfloor.org>
-References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no> <200901042149.27655.rob@landley.net> <20090105111913.47a8d1a5@lxorguk.ukuu.org.uk> <200901051300.09169.rob@landley.net> <yq1ocyl1rkq.fsf@sermon.lab.mkp.net> <20090106104146.GD6700@merlin.emma.line.org> <20090106153020.GB13086__11022.1833143898$1231255950$gmane$org@mit.edu> <87k5984f4e.fsf@basil.nowhere.org> <20090106155729.GA10034@mit.edu>
-Mime-Version: 1.0
+	Tue, 6 Jan 2009 12:17:37 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:48305 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752210AbZAFRRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 12:17:36 -0500
+Date: Tue, 6 Jan 2009 09:17:16 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Peter Klotz <peter.klotz@aon.at>,
+       stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Roman Kononov <kernel@kononov.ftml.net>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] mm: fix lockless pagecache reordering bug (was Re:
+	BUG: soft lockup - is this XFS problem?)
+Message-ID: <20090106171716.GB6969@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de> <20090105041959.GC367@wotan.suse.de> <20090105064838.GA5209@wotan.suse.de> <49623384.2070801@aon.at> <20090105164135.GC32675@wotan.suse.de> <alpine.LFD.2.00.0901050859430.3057@localhost.localdomain> <20090105180008.GE32675@wotan.suse.de> <alpine.LFD.2.00.0901051027011.3057@localhost.localdomain> <alpine.LFD.2.00.0901051131090.3057@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090106155729.GA10034@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <alpine.LFD.2.00.0901051131090.3057@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Of course, the right answer is to pursue both paths, although my
-> experiences getting changes into the core/file/shell-utils has been
-> frustrating and unpleasant, although granted that was over ten years
+On Mon, Jan 05, 2009 at 11:39:29AM -0800, Linus Torvalds wrote:
+> On Mon, 5 Jan 2009, Linus Torvalds wrote:
+> > Either the value can change, or it can not. It's that simple.
+> > 
+> > If it cannot change, then we can load it just once, or we can load it 
+> > multiple times, and it won't matter. Barriers won't do anything but screw 
+> > up the code.
+> > 
+> > If it can change from under us, you need to use rcu_dereference(), or 
+> > open-code it with an ACCESS_ONCE() or put in barriers. But your placement 
+> > of a barrier was NONSENSICAL. Your barrier didn't protect anything else - 
+> > like the test for the RADIX_TREE_INDIRECT_PTR bit.
+> > 
+> > And that was the fundamental problem.
+> 
+> Btw, this is the real issue with anything that does "locking vs 
+> optimistic" accesses.
+> 
+> If you use locking, then by definition (if you did things right), the 
+> values you are working with do not change. As a result, it doesn't matter 
+> if the compiler re-orders accesses, splits them up, or coalesces them. 
+> It's why normal code should never need barriers, because it doesn't matter 
+> whether some access gets optimized away or gets done multiple times.
+> 
+> But whenever you use an optimistic algorithm, and the data may change 
+> under you, you need to use barriers or other things to limit the things 
+> the CPU and/or compiler does.
+> 
+> And yes, "rcu_dereference()" is one such thing - it's not a barrier in the 
+> sense that it doesn't necessarily affect ordering of accesses to other 
+> variables around it (although the read_barrier_depends() obviously _is_ a 
+> very special kind of ordering wrt the pointer itself on alpha). But it 
+> does make sure that the compiler at least does not coalesce - or split - 
+> that _one_ particular access.
+> 
+> It's true that it has "rcu" in its name, and it's also true that that may 
+> be a bit misleading in that it's very much useful not just for rcu, but 
+> for _any_ algorithm that depends on rcu-like behavior - ie optimistic 
+> accesses to data that may change underneath it. RCU is just the most 
+> commonly used (and perhaps best codified) variant of that kind of code.
 
-I submitted a change to coreutils some time ago and the maintainer
-(Jim Meyering) was easy to work with in my experience.
+The codification is quite important -- otherwise RCU would be a knife
+without a handle.  And some would no doubt argue that RCU is -still-
+a knife without a handle, but so it goes.  It does still need more work.
+And I hope that additional codification of other optimistic concurrency
+algorithms will make them more usable as well.
 
--Andi
--- 
-ak@linux.intel.com
+							Thanx, Paul
