@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbZAFWix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbZAFWjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760678AbZAFWix (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758890AbZAFWb4
+	id S1759610AbZAFWjZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbZAFWd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:31:56 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36491 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760566AbZAFWbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:31:53 -0500
-Date: Tue, 6 Jan 2009 14:31:50 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-Message-ID: <20090106223150.GF6741@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com> <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins> <49636799.1010109@novell.com> <20090106214229.GD6741@linux.vnet.ibm.com> <1231278275.11687.111.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231278275.11687.111.camel@twins>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 6 Jan 2009 17:33:59 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:20061 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760906AbZAFWd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:33:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=rR89smeCuCBnWUZPZI/wFJjiEWnlqZNiLiPs1+CYtFWlReZhnSLwOpqADQLyoIs3Af
+         fh+S5btSVQoou1y7mFPOs8+EzCre8OHwtttvcw+umLQ3CvOQPiav0XS/eNXO2ft6APoT
+         e1SqZdbhu5qZCcBBYG7m1b7Vn/0c+2vqV8w0k=
+Subject: Re: [PATCH 03/23] cris: introduce asm/swab.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesper Nilsson <jesper.nilsson@axis.com>
+In-Reply-To: <alpine.LFD.2.00.0901061409270.3057@localhost.localdomain>
+References: <1231277446.964.260.camel@brick>
+	 <alpine.LFD.2.00.0901061357150.3057@localhost.localdomain>
+	 <1231279452.25147.1.camel@brick>
+	 <alpine.LFD.2.00.0901061409270.3057@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 06 Jan 2009 14:21:52 -0800
+Message-Id: <1231280512.25147.7.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 10:44:35PM +0100, Peter Zijlstra wrote:
-> On Tue, 2009-01-06 at 13:42 -0800, Paul E. McKenney wrote:
-> > Preemptable RCU needs to be faster.  Got it -- and might have a way
-> > to do it by eliminating the irq disabling and cutting way back on the
-> > number of operations that must be performed.  It would probably still
-> > be necessary to access the task structure.
-> > 
-> > Or is something other than the raw performance of rcu_read_lock() and
-> > rcu_read_unlock() at issue here?
+On Tue, 2009-01-06 at 14:11 -0800, Linus Torvalds wrote:
 > 
-> With Linus' mutex_spin_or_schedule() function the whole - keeping
-> owner's task_struct alive issue goes away,.. now if only the thing would
-> boot...
+> On Tue, 6 Jan 2009, Harvey Harrison wrote:
+> > 
+> > Sure, I sent regular patches as a courtesy to Andrew in case he slurped
+> > it up, but I can resend with -M -B if you're going to take it directly,
+> > should I wait until I see the remaining 4 arches hit your tree, or will
+> > you worry about the timing?
+> 
+> I'm not sure worrying about the timing makes much sense, since the bigger 
+> worry is wanting to merge things in time for -rc1 - and that means having 
+> a few days to catch any gotcha's. If parisc/xtensa/cris is broken for a 
+> day or two, I don't consider that a problem.
 
-Cool!  And I can relate to the "if only the thing would boot" part.  ;-)
 
-							Thanx, Paul
+I've seen the sparc pull request go by and will assume it will be in
+your tree.
+
+I will not send cris, xtensa, parisc and the removal patches (22-23) so these
+arches don't get broken even for a few days and will send those three and the removal
+patch as soon as they merged.
+
+Cheers,
+
+Harvey
+
