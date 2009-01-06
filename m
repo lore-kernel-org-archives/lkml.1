@@ -1,151 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZAFJjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbZAFJj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136AbZAFJjJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZAFJiz
+	id S1752166AbZAFJj1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:39:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZAFJjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:38:55 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:53427 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbZAFJiy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:38:54 -0500
-Date: Tue, 6 Jan 2009 15:08:47 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Milton Miller <miltonm@bga.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
-	!CONFIG_VIOPATH
-Message-ID: <20090106093847.GB5066@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com> <20090104182441.GA5086@linux.vnet.ibm.com> <98d6aef17cba9d835d7866745f811dc7@bga.com> <20090106072549.GA5066@linux.vnet.ibm.com> <20090106073149.GA12371@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090106073149.GA12371@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 6 Jan 2009 04:39:11 -0500
+Received: from nn7.de ([85.214.94.156]:46451 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754002AbZAFJjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 04:39:08 -0500
+Subject: Re: Intel e1000e: eth0: Detected Tx Unit Hang
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net
+In-Reply-To: <1231227283.7107.27.camel@localhost>
+References: <1230839773.8319.12.camel@localhost>
+	 <4807377b0901051638r7b31ac62r2165bbe589c04a50@mail.gmail.com>
+	 <1231227283.7107.27.camel@localhost>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 06 Jan 2009 10:39:01 +0100
+Message-Id: <1231234741.7107.43.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg <sam@ravnborg.org> [2009-01-06 08:31:49]:
-
-> > 
-> > 	Sorry for resending the patch before taking care of the response. Resending 
-> > the patch with changes made to other three drivers also.
-> > 
-> > Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
-> > 
-> > iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
-> > Removing the dependency of VIOPATH by selecting it, when the drivers
-> > dependent on iSeries code.
-> > 
-> > 
-> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/platforms/iseries/Kconfig |    5 ++++-
-> >  drivers/char/Kconfig                   |    1 +
-> >  drivers/scsi/Kconfig                   |    1 +
-> >  3 files changed, 6 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
-> > index ed3753d..5cb2320 100644
-> > --- a/arch/powerpc/platforms/iseries/Kconfig
-> > +++ b/arch/powerpc/platforms/iseries/Kconfig
-> > @@ -10,18 +10,21 @@ menu "iSeries device drivers"
-> >  config VIODASD
-
-
-<snip>
-
+On Tue, 2009-01-06 at 08:34 +0100, Soeren Sonnenburg wrote:
+> On Mon, 2009-01-05 at 16:38 -0800, Jesse Brandeburg wrote:
+> > On Thu, Jan 1, 2009 at 11:56 AM, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> > > Dear list,
+[...]
+> > also, please double check you're running the latest BIOS for your motherboard.
 > 
-> VIOPATH is set using select so the "depends on" is effectively ignored.
-> If you think you need the "depends on" then you need to revisit the
-> symbol that will select VIOPATH and make sure _they_ have this dependency.
+> indeed there seems to be an update to version 1.06 for this mainboard
+> (DP45SG), so hopefully this goes away
 > 
-> 	Sam
+> $ dmesg | grep -i calg
+> 
+> Calgary: detecting Calgary via BIOS EBDA area
+> Calgary: Unable to locate Rio Grande table in EBDA - bailing!
+> 
+> $ dmesg | grep -i bug
+> pci 0000:00:1a.7: EHCI: BIOS handoff failed (BIOS bug?) 01010001
+> pci 0000:00:1d.7: EHCI: BIOS handoff failed (BIOS bug?) 01010001
+> 
+> even though I don't find any insight in the changelog:
+> 
+> http://downloadmirror.intel.com/17218/eng/SG_0106_ReleaseNotes.pdf
 
-Hi Sam,
+Nope, same error messages in dmesg with the latest bios.
 
-	VIOPATH is used only by the PPC_ISERIES code. The symbols selecting
-the VIOPATH are also dependent on the PPC_ISERIES. Should we make the 
-config VIOPATH as default n, because it being selected the dependent
-drivers.
-
-Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
-
-iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
-Removing the dependency of VIOPATH by selecting it, when the drivers
-dependent on iSeries code.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/iseries/Kconfig |    6 ++++--
- drivers/char/Kconfig                   |    1 +
- drivers/scsi/Kconfig                   |    1 +
- 3 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
-index ed3753d..fd524cd 100644
---- a/arch/powerpc/platforms/iseries/Kconfig
-+++ b/arch/powerpc/platforms/iseries/Kconfig
-@@ -10,18 +10,21 @@ menu "iSeries device drivers"
- config VIODASD
- 	tristate "iSeries Virtual I/O disk support"
- 	depends on BLOCK
-+	select VIOPATH
- 	help
- 	  If you are running on an iSeries system and you want to use
- 	  virtual disks created and managed by OS/400, say Y.
- 
- config VIOCD
- 	tristate "iSeries Virtual I/O CD support"
-+	select VIOPATH
- 	help
- 	  If you are running Linux on an IBM iSeries system and you want to
- 	  read a CD drive owned by OS/400, say Y here.
- 
- config VIOTAPE
- 	tristate "iSeries Virtual Tape Support"
-+	select VIOPATH
- 	help
- 	  If you are running Linux on an iSeries system and you want Linux
- 	  to read and/or write a tape drive owned by OS/400, say Y here.
-@@ -30,5 +33,4 @@ endmenu
- 
- config VIOPATH
- 	bool
--	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
--	default y
-+	default n
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 1697043..b8da09a 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -616,6 +616,7 @@ config HVC_ISERIES
- 	default y
- 	select HVC_DRIVER
- 	select HVC_IRQ
-+	select VIOPATH
- 	help
- 	  iSeries machines support a hypervisor virtual console.
- 
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index b732297..256c7be 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -884,6 +884,7 @@ config SCSI_IBMVSCSI
- 	tristate "IBM Virtual SCSI support"
- 	depends on PPC_PSERIES || PPC_ISERIES
- 	select SCSI_SRP_ATTRS
-+	select VIOPATH if PPC_ISERIES
- 	help
- 	  This is the IBM POWER Virtual SCSI Client
- 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Soeren.
