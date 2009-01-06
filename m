@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZAFPVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752129AbZAFPXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbZAFPVi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZAFPV0
+	id S1752129AbZAFPXs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZAFPXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:21:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56737 "EHLO mx3.mail.elte.hu"
+	Tue, 6 Jan 2009 10:23:40 -0500
+Received: from THUNK.ORG ([69.25.196.29]:39911 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbZAFPVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:21:25 -0500
-Date: Tue, 6 Jan 2009 16:21:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, travis@sgi.com
-Subject: Re: tip: IA64 build error
-Message-ID: <20090106152111.GA11114@elte.hu>
-References: <20090106233758L.fujita.tomonori@lab.ntt.co.jp>
+	id S1750803AbZAFPXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 10:23:39 -0500
+Date: Tue, 6 Jan 2009 10:23:36 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+       Duane Griffin <duaneg@dghda.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: document ext3 requirements
+Message-ID: <20090106152336.GA13086@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+	Duane Griffin <duaneg@dghda.com>,
+	kernel list <linux-kernel@vger.kernel.org>
+References: <20090103123813.GA1512@ucw.cz> <495FD5D7.2040907@ribosome.natur.cuni.cz> <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com> <20090103222957.GG1666@elf.ucw.cz> <495FEE66.9080903@ribosome.natur.cuni.cz> <20090106100810.GB6700@merlin.emma.line.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090106233758L.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090106100810.GB6700@merlin.emma.line.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-
-> I got the followings with tip/master:
+On Tue, Jan 06, 2009 at 11:08:10AM +0100, Matthias Andree wrote:
+> On Sun, 04 Jan 2009, Martin MOKREJŠ wrote:
+> > Hmm, so if my dual-boot machine does not shutdown correctly and I boot
+> > accidentally in M$ Win where I use ext2 IFS driver and modify some
+> > stuff on the ext3 drive, after a while reboot to linux and the journal
+> > get re-played ... Mmm ...
 > 
-> drivers/pci/probe.c: In function 'pci_bus_show_cpuaffinity':
-> drivers/pci/probe.c:56: error: implicit declaration of function 'cpumask_from_node'
-> drivers/pci/probe.c:56: warning: pointer/integer type mismatch in conditional expression
-> make[3]: *** [drivers/pci/probe.o] Error 1
-> make[2]: *** [drivers/pci] Error 2
-> 
-> 
-> it's due to the typo in arch/ia64/include/asm/topology.h, I guess.
+> If the ext2 IFS driver mounts an ext3 file system that needs journal
+> replay, the IFS driver is broken (unless it can replay the journal, of
+> course - I stopped using that driver long ago, being unhappy with it).
 
-yeah. Does the patch below fix it for you?
+Indeed; that's why there is a INCOMPAT NEEDS_RECOVERY feature flag to
+prevent compliant ext2 implementations from mounting an ext3
+filesystem that needs recovery.  We've thought about most of these
+issues, almost a decade ago...
 
-	Ingo
-
----------------->
->From 36c401a44abcc389a00f9cd14892c9cf9bf0780d Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 6 Jan 2009 16:19:22 +0100
-Subject: [PATCH] [IA64] fix typo in cpumask_of_pcibus()
-
-Impact: build fix
-
-Fujita Tomonori reported:
-
- drivers/pci/probe.c: In function 'pci_bus_show_cpuaffinity':
- drivers/pci/probe.c:56: error: implicit declaration of function 'cpumask_from_node'
- drivers/pci/probe.c:56: warning: pointer/integer type mismatch in conditional expression
- make[3]: *** [drivers/pci/probe.o] Error 1
- make[2]: *** [drivers/pci] Error 2
-
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/ia64/include/asm/topology.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/ia64/include/asm/topology.h b/arch/ia64/include/asm/topology.h
-index 76a33a9..32f3af1 100644
---- a/arch/ia64/include/asm/topology.h
-+++ b/arch/ia64/include/asm/topology.h
-@@ -124,7 +124,7 @@ extern void arch_fix_phys_package_id(int num, u32 slot);
- 
- #define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ?		\
- 				 cpu_all_mask :				\
--				 cpumask_from_node(pcibus_to_node(bus)))
-+				 cpumask_of_node(pcibus_to_node(bus)))
- 
- #include <asm-generic/topology.h>
- 
+							- Ted
