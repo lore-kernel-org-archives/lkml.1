@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZAFRwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbZAFRwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZAFRwB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 12:52:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZAFRvw
+	id S1754859AbZAFRwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 12:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbZAFRwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 12:51:52 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:60132 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751047AbZAFRvw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 12:51:52 -0500
-Date: Tue, 6 Jan 2009 18:53:33 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, ccache@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
-Message-ID: <20090106175333.GB16365@uranus.ravnborg.org>
-References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <496386EF.76E4.0078.0@novell.com>
-Mime-Version: 1.0
+	Tue, 6 Jan 2009 12:52:05 -0500
+Received: from kroah.org ([198.145.64.141]:54995 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754078AbZAFRwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 12:52:03 -0500
+Date: Tue, 6 Jan 2009 09:12:13 -0800
+From: Greg KH <greg@kroah.com>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-ia64@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
+       Tony Luck <tony.luck@gmail.com>, Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+Message-ID: <20090106171213.GA21880@kroah.com>
+References: <20090106162741.GA7991@sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496386EF.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090106162741.GA7991@sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 03:29:35PM +0000, Jan Beulich wrote:
-> >>> "Theodore Ts'o" <tytso@mit.edu> 06.01.09 16:15 >>>
-> >In the short term, though, it would be nice if we could get back a
-> >simple way of making a kernel  object file using just cc, so that ccache
-> >and distcc could be functional again.   Does that seem reasonable?
+On Tue, Jan 06, 2009 at 10:27:41AM -0600, Dimitri Sivanich wrote:
+> Turn on CONFIG_HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN.
 > 
-> Making the new logic dependent on a config option would seem reasonable
-> to me - of course at the expense of the respective Makefile becoming
-> even less readable.
-We need to do this I think - sigh..
+> SGI Altix has unsynchronized itc clocks.  This results in rq->clock
+> occasionally being set to a time in the past by a remote cpu.
+> 
+> Note that it is possible that this problem may exist for other ia64
+> machines as well, based on the following comment for sched_clock() in
+> arch/ia64/kernel/head.S:
+> 
+>  * Return a CPU-local timestamp in nano-seconds.  This timestamp is
+>  * NOT synchronized across CPUs its return value must never be
+>  * compared against the values returned on another CPU.  The usage in
+>  * kernel/sched.c ensures that.
+> 
+> 
+> Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+> 
+> ---
+> 
+> Greg, if everyone is OK with this patch, this should also be applied
+> to all stable trees starting with 2.6.26.
 
-The Makefile.build bits should be easiest.
-Maybe I should revisit the patch to move vmlinux link to a shell script
-to make the toplevel Makefile simpler??
+That's fine (but 2.6.26 is no longer getting -stable releases).
 
-	Sam
+Just let stable@kernel.org know when this patch is applied in Linus's
+tree.  You can do this automatically by adding a:
+	Cc: stable <stable@kernel.org>
+to the signed-off-by: area of the patch, and the stable team will be
+automatically notified when it goes into Linus's tree.
+
+thanks,
+
+greg k-h
