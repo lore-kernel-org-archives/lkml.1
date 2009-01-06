@@ -1,101 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZAFMGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZAFMLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbZAFMGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 07:06:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZAFMGV
+	id S1752565AbZAFMLe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 07:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZAFMLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 07:06:21 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:39852 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752788AbZAFMGU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 07:06:20 -0500
-X-IronPort-AV: E=Sophos;i="4.36,338,1228107600"; 
-   d="scan'208";a="64827913"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: debugfs & vfs file permission issue?
-Date: Tue, 6 Jan 2009 07:05:33 -0500
-User-Agent: KMail/1.9.5
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-References: <200901052157.07306.rgetz@blackfin.uclinux.org> <20090106061946.GA10026@suse.de> <8bd0f97a0901052232l22b60386pbcd9438cc752638f@mail.gmail.com>
-In-Reply-To: <8bd0f97a0901052232l22b60386pbcd9438cc752638f@mail.gmail.com>
+	Tue, 6 Jan 2009 07:11:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51804 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750905AbZAFMLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 07:11:21 -0500
+Date: Tue, 6 Jan 2009 13:10:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+Message-ID: <20090106121052.GA27232@elte.hu>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901060705.33294.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 06 Jan 2009 12:05:22.0045 (UTC) FILETIME=[0CE10AD0:01C96FF7]
+In-Reply-To: <1231242031.11687.97.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 6 Jan 2009 01:32, Mike Frysinger pondered:
-> On Tue, Jan 6, 2009 at 01:19, Greg KH wrote:
-> > On Tue, Jan 06, 2009 at 12:54:58AM -0500, Mike Frysinger wrote:
-> >> On Tue, Jan 6, 2009 at 00:48, Greg KH wrote:
-> >> > On Mon, Jan 05, 2009 at 09:57:07PM -0500, Robin Getz wrote:
-> >> >> On 2.6.28-rc2, If I create a debugfs file with
-> >> >>
-> >> >>     debugfs_create_x16("SPORT1_TX", 0200 , parent, 0xFFC00910);
-> >> >
-> >> > Um, are you are passing in a pointer to a known memory location
-> >> > properly?  Why would it be ok for the kernel to directly read that
-> >> > location?
-> >>
-> >> it's a nommu system and the 0xffc00000+ addresses are always available
-> >
-> > Writable but not readable?  Isn't hardware fun :)
-> 
-> yeah and we have some readable but not writable addresses too :/
-> 
-> >> >> Although the file shows up as write only (no read):
-> >> >>
-> >> >> root:/> ls -l /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
-> >> >> --w-------    1 root     root            0 Jan  1
-> >> >> 2007 /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
-> >> >>
-> >> >> root:/> cat /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
-> >> >>
-> >> >> Still works - and causes the read to occur, which crashes :(
-> >> >
-> >> > You're root, you can do anything :)
-> >>
-> >> any thoughts on how to declare debugfs files that are read or write
-> >> only ?  we'll have to add new helper functions or have it be a
-> >> parameter or declare our own debugfs file ?
-> >
-> > Just use debugfs_create_file() and use your own read/write functions to
-> > prevent a read or write from happening no matter what.  No new debugfs
-> > infrastructure should be needed.
-> 
-> would it be useful for this to be a common function ?  probably not so
-> much considering (i'm assuming) no one else has asked so far for such
-> a beast ...
 
-Today there is:
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-file.c:DEFINE_SIMPLE_ATTRIBUTE(fops_u8, debugfs_u8_get, debugfs_u8_set, "%llu\n");
-file.c:DEFINE_SIMPLE_ATTRIBUTE(fops_u16, debugfs_u16_get, debugfs_u16_set, "%llu\n");
-file.c:DEFINE_SIMPLE_ATTRIBUTE(fops_u32, debugfs_u32_get, debugfs_u32_set, "%llu\n");
-file.c:DEFINE_SIMPLE_ATTRIBUTE(fops_u64, debugfs_u64_get, debugfs_u64_set, "%llu\n");
-file.c:DEFINE_SIMPLE_ATTRIBUTE(fops_x8, debugfs_u8_get, debugfs_u8_set, "0x%02llx\n");
-file.c:DEFINE_SIMPLE_ATTRIBUTE(fops_x16, debugfs_u16_get, debugfs_u16_set, "0x%04llx\n");
-file.c:DEFINE_SIMPLE_ATTRIBUTE(fops_x32, debugfs_u32_get, debugfs_u32_set, "0x%08llx\n");
+> +++ linux-2.6/kernel/mutex.c
+> @@ -46,6 +46,7 @@ __mutex_init(struct mutex *lock, const c
+>  	atomic_set(&lock->count, 1);
+>  	spin_lock_init(&lock->wait_lock);
+>  	INIT_LIST_HEAD(&lock->wait_list);
+> +	lock->owner = NULL;
+>  
+>  	debug_mutex_init(lock, name, key);
+>  }
+> @@ -120,6 +121,28 @@ void __sched mutex_unlock(struct mutex *
+>  
+>  EXPORT_SYMBOL(mutex_unlock);
+>  
+> +#ifdef CONFIG_SMP
+> +static int adaptive_wait(struct mutex_waiter *waiter,
+> +			 struct task_struct *owner, long state)
+> +{
+> +	for (;;) {
+> +		if (signal_pending_state(state, waiter->task))
+> +			return 0;
+> +		if (waiter->lock->owner != owner)
+> +			return 0;
+> +		if (!task_is_current(owner))
+> +			return 1;
+> +		cpu_relax();
+> +	}
+> +}
+> +#else
 
-adding a readonly, and writeonly, and ensuring that when you call 
-debugfs_create_*, the mode is checked, and the "correct" fops are set 
-doesn't seem like it would be a bad idea? This would enforce the
-kernel programmer's view on the world, and not allow pesky root users
-to override things....
+Linus, what do you think about this particular approach of spin-mutexes? 
+It's not the typical spin-mutex i think.
 
-Greg - would you take something like that?
+The thing i like most about Peter's patch (compared to most other adaptive 
+spinning approaches i've seen, which all sucked as they included various 
+ugly heuristics complicating the whole thing) is that it solves the "how 
+long should we spin" question elegantly: we spin until the owner runs on a 
+CPU.
 
-Or do you just want us to it as you suggested previously? and don't use the 
-existing debugfs_create_* functions directly on wonky hardware registers?
+So on shortly held locks we degenerate to spinlock behavior, and only 
+long-held blocking locks [with little CPU time spent while holding the 
+lock - say we wait for IO] we degenerate to classic mutex behavior.
 
-Thanks
--Robin
+There's no time or spin-rate based heuristics in this at all (i.e. these 
+mutexes are not 'adaptive' at all!), and it degenerates to our primary and 
+well-known locking behavior in the important boundary situations.
+
+A couple of other properties i like about it:
+
+ - A spinlock user can be changed to a mutex with no runtime impact. (no 
+   increase in scheduling) This might enable us to convert/standardize 
+   some of the uglier locking constructs within ext2/3/4?
+
+ - This mutex modification would probably be a win for workloads where
+   mutexes are held briefly - we'd never schedule.
+
+ - If the owner is preempted, we fall back to proper blocking behavior. 
+   This might reduce the cost of preemptive kernels in general.
+
+The flip side:
+
+ - The slight increase in the hotpath - we now maintain the 'owner' field.
+   That's cached in a register on most platforms anyway so it's not a too
+   big deal - if the general win justifies it.
+
+   ( This reminds me: why not flip over all the task_struct uses in 
+     mutex.c to thread_info? thread_info is faster to access [on x86] 
+     than current. )
+
+ - The extra mutex->owner pointer data overhead.
+
+ - It could possibly increase spinning overhead (and waste CPU time) on
+   workloads where locks are held and contended for. OTOH, such cases are
+   probably a prime target for improvements anyway. It would probably be 
+   near-zero-impact for workloads where mutexes are held for a very long 
+   time and where most of the time is spent blocking.
+
+It's hard to tell how it would impact inbetween workloads - i guess it 
+needs to be measured on a couple of workloads.
+
+	Ingo
