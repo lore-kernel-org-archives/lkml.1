@@ -1,110 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZAFUVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZAFUVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbZAFUVJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 15:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZAFUUz
+	id S1755274AbZAFUVc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 15:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbZAFUVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 15:20:55 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:45972 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751869AbZAFUUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 15:20:54 -0500
-Date: Tue, 6 Jan 2009 15:20:46 -0500
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-Message-ID: <20090106202046.GF5901@fieldses.org>
-References: <20090106011314.534653345@us.ibm.com> <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
+	Tue, 6 Jan 2009 15:21:21 -0500
+Received: from outbound-mail-309.bluehost.com ([67.222.54.2]:60825 "HELO
+	outbound-mail-309.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753588AbZAFUVU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 15:21:20 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=c0jnZjEllDT6lCv/AQ2TYLLxE4rTRjzLjid4JeqhOOaDGLwgApOV+YB7HonJe3WceosRkXmR3FnNIkTscRJxh8rTr27TIsqYI2Yd+4dG+zSjyHqzQPWRwIexxd/Dp9TP;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH 2.6.28 1/3] PCI-quirks: Unhide MCH5/6 memory controller configuration device
+Date: Tue, 6 Jan 2009 12:21:18 -0800
+User-Agent: KMail/1.9.10
+Cc: =?iso-8859-2?q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       bluesmoke-devel@lists.sourceforge.net
+References: <20081223215030.GA32525@rere.qmqm.pl> <20090105203006.GC26115@rere.qmqm.pl> <200901061202.04321.bjorn.helgaas@hp.com>
+In-Reply-To: <200901061202.04321.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090106200229.GA17031@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200901061221.18512.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 02:02:29PM -0600, Serge E. Hallyn wrote:
-> Quoting Matt Helsley (matthltc@us.ibm.com):
-> > We can often specify the UTS namespace to use when starting an RPC client.
-> > However sometimes no UTS namespace is available (specifically during system
-> > shutdown as the last NFS mount in a container is unmounted) so fall
-> > back to the initial UTS namespace.
-> 
-> So what happens if we take this patch and do nothing else?
-> 
-> The only potential problem situation will be rpc requests
-> made on behalf of a container in which the last task has
-> exited, right?  So let's say a container did an nfs mount
-> and then exits, causing an nfs umount request.
-> 
-> That umount request will now be sent with the wrong nodename.
-> Does that actually cause problems, will the server use the
-> nodename to try and determine the client sending the request?
+On Tuesday, January 6, 2009 11:02 am Bjorn Helgaas wrote:
+> On Monday 05 January 2009 01:30:06 pm Micha³ Miros³aw wrote:
+> > Some BIOSes hide 'overflow' device (dev #6) for i82875P/PE chipsets.
+> > The same happens for i82865P/PE. Add a quirk to enable this device.
+> > This allows i82875 EDAC driver to bind to chipset's dev #6 and not
+> > dev #0 as the latter is used by AGP driver.
+> >
+> > After testing this patch for couple of days on my laptop (i82856P)
+> > it looks like something is resetting device 0 (MCH) config register
+> > 0xF4 to zero and effectively disabling the device again. The delay
+> > looks random to me.
+>
+> The BIOS left the device hidden.  When you enable it with the quirk,
+> the fact that it mysteriously gets disabled later seems like a pretty
+> clear indication that something else we don't know about is using the
+> device.  Since there's no synchronization between the "something else"
+> and the i82875p_edac.c driver, it seems like you're introducing the
+> possibility for problems.
+>
+> I don't know anything about the EDAC driver.  Is the value it provides
+> really worth the possible problems with this approach?  Maybe it is,
+> but I don't want to be the one to debug a random interaction that
+> causes a problem.
 
-This is just the machine name in the auth_unix credential?  The linux
-server ignores that completely (for the purpose of auth_unix
-authenication, it identifies clients only by source ip address).  I
-suspect other servers also ignore it, but I don't know.
+Yeah, there's some uncertainty there for sure so I've dropped the patch.  If 
+it really provides a compelling feature we can always add it again with a 
+config option or runtime option to enable it.
 
---b.
-
-> 
-> thanks,
-> -serge
-> 
-> > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> > Cc: Cedric Le Goater <clg@fr.ibm.com>
-> > Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> > Cc: linux-nfs@vger.kernel.org
-> > Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-> > Cc: Chuck Lever <chuck.lever@oracle.com>
-> > Cc: Eric W. Biederman <ebiederm@xmission.com>
-> > Cc: Linux Containers <containers@lists.osdl.org>
-> > 
-> > ---
-> >  net/sunrpc/clnt.c |    7 +++++--
-> >  1 file changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux-2.6.28/net/sunrpc/clnt.c
-> > ===================================================================
-> > --- linux-2.6.28.orig/net/sunrpc/clnt.c
-> > +++ linux-2.6.28/net/sunrpc/clnt.c
-> > @@ -128,6 +128,7 @@ static struct rpc_clnt * rpc_new_client(
-> >  	struct rpc_version	*version;
-> >  	struct rpc_clnt		*clnt = NULL;
-> >  	struct rpc_auth		*auth;
-> > +	struct new_utsname	*uts_ns = init_utsname();
-> >  	int err;
-> >  	size_t len;
-> > 
-> > @@ -213,10 +214,12 @@ static struct rpc_clnt * rpc_new_client(
-> >  	}
-> > 
-> >  	/* save the nodename */
-> > -	clnt->cl_nodelen = strlen(init_utsname()->nodename);
-> > +	if (current->nsproxy != NULL)
-> > +		uts_ns = utsname();
-> > +	clnt->cl_nodelen = strlen(uts_ns->nodename);
-> >  	if (clnt->cl_nodelen > UNX_MAXNODENAME)
-> >  		clnt->cl_nodelen = UNX_MAXNODENAME;
-> > -	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt->cl_nodelen);
-> > +	memcpy(clnt->cl_nodename, uts_ns->nodename, clnt->cl_nodelen);
-> >  	rpc_register_client(clnt);
-> >  	return clnt;
-> > 
-> > 
-> > -- 
-> > _______________________________________________
-> > Containers mailing list
-> > Containers@lists.linux-foundation.org
-> > https://lists.linux-foundation.org/mailman/listinfo/containers
+-- 
+Jesse Barnes, Intel Open Source Technology Center
