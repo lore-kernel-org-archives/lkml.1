@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbZAFSsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZAFSt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755068AbZAFSsw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbZAFSsg
+	id S1755442AbZAFSt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbZAFStN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:48:36 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36739 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754574AbZAFSsf (ORCPT
+	Tue, 6 Jan 2009 13:49:13 -0500
+Received: from attic.omnifarious.org ([216.254.16.17]:57353 "EHLO
+	attic.omnifarious.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbZAFStM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:48:35 -0500
-To: Casey Dahlin <cdahlin@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH v2] waitfd
-From: Andi Kleen <andi@firstfloor.org>
-References: <49639EB8.40204@redhat.com>
-Date: Tue, 06 Jan 2009 19:48:37 +0100
-In-Reply-To: <49639EB8.40204@redhat.com> (Casey Dahlin's message of "Tue, 06 Jan 2009 13:11:04 -0500")
-Message-ID: <87fxjw46ey.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 6 Jan 2009 13:49:12 -0500
+X-Greylist: delayed 425 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Jan 2009 13:49:12 EST
+Date: Tue, 6 Jan 2009 10:42:05 -0800
+From: Eric Hopper <hopper@omnifarious.org>
+To: linux-kernel@vger.kernel.org
+Subject: nosync, an idea for general filesystem mount flag
+Message-ID: <20090106184205.GC15454@omnifarious.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Pk6IbRAofICFmK5e"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Dahlin <cdahlin@redhat.com> writes:
 
-> Linux now exposes signals, timers, and events via file descriptors
-> through signalfd, timerfd, and eventfd. This means programmers can use
-> a single select/[e]poll call to monitor all change in their
-> program. This patch aims to expose child death via the same mechanism.
->
-> waitfd provides a file descriptor out of which may be read a series of
-> siginfo_t objects describing child death. A child process is reaped as
-> soon as its information is read. This means child monitoring too can
-> be performed with that same poll call.
->
-> Patch is against v2.6.28
+--Pk6IbRAofICFmK5e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Can you please provide a manpage with the exact proposed semantics of
-the interface.
+Maybe somebody has thought of this before.  But I think it would be
+useful to have a mount flag telling the filesystem layer that a certain
+filesystem never ever needs to be synced, even when the 'sync' system
+call is called.
 
-Without that it's very hard to evaluate if the interface makes sense
-or not.
+My /tmp, for example, is reformatted on each and every boot.  There is
+no reason for anything written to /tmp to ever hit the disk.  The only
+reason is to make room for something else in memory.
 
-In general a single paragraph is not enough to justify a new system 
-call.
+I think this could potentially help out notebooks that only had solid
+state drives.
 
--Andi
+Anyway, just a random thought,
+--=20
+I am not an LKML member, so please include me in the 'To' or 'Cc' field
+if you want me to see your message.  -- Eric Hopper (hopper ^at^
+omnifarious ^dot^ ^o^ ^r^ ^g^)
 
--- 
-ak@linux.intel.com
+--Pk6IbRAofICFmK5e
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFJY6X9jtsvlOwvazYRAq5hAKCmMQMj0SELT4uCo9EeHjGGy+CjpgCfYSJl
+yU7wlVrePu7IHuEnZGnPywI=
+=8/63
+-----END PGP SIGNATURE-----
+
+--Pk6IbRAofICFmK5e--
