@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbZAFFog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbZAFFu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753058AbZAFFog (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 00:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZAFFo0
+	id S1752914AbZAFFu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 00:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbZAFFuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 00:44:26 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:1159 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbZAFFo0 (ORCPT
+	Tue, 6 Jan 2009 00:50:14 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:57267 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbZAFFuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 00:44:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MSSFv+TizGeFOQbdMM4C7z1fade2HElLKeb3anlqWlj8zG53dtR7AIibP1d81j5bNn
-         lLUeT/45afbzjZoEMxUV5te+AiCx1RuSnxu2EO4mFPg7vIo0xsz16dk6zErcZPjrt1RA
-         KcbPQUqnMC8Rc58D6LjdgQ6kjs7hk84gr/Z+0=
-Message-ID: <3f9a31f40901052144k7af9966fx905e438f8b55744e@mail.gmail.com>
-Date: Tue, 6 Jan 2009 11:14:25 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "Huang Weiyi" <weiyi.huang@gmail.com>
-Subject: Re: x86: remove duplicated #include's
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <20090106065718.52C8.WEIYI.HUANG@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Jan 2009 00:50:13 -0500
+Date: Tue, 6 Jan 2009 06:51:44 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [GIT]: Networking
+Message-ID: <20090106055144.GA11695@uranus.ravnborg.org>
+References: <alpine.LFD.2.00.0901051839330.3057@localhost.localdomain> <20090105.201530.195720489.davem@davemloft.net> <alpine.LFD.2.00.0901052029220.3057@localhost.localdomain> <20090105.204934.65827705.davem@davemloft.net> <3f9a31f40901052114t68cac881md439bf24b602f269@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20090106065718.52C8.WEIYI.HUANG@gmail.com>
+In-Reply-To: <3f9a31f40901052114t68cac881md439bf24b602f269@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 6, 2009 at 4:28 AM, Huang Weiyi <weiyi.huang@gmail.com> wrote:
-> Removed duplicated #include's in
->  arch/x86/kernel/mpparse.c
->  arch/x86/kernel/nmi.c
->
-> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
->
-> diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-> index c5c5b8d..76ee713 100644
-> --- a/arch/x86/kernel/mpparse.c
-> +++ b/arch/x86/kernel/mpparse.c
-> @@ -17,7 +17,6 @@
->  #include <linux/acpi.h>
->  #include <linux/module.h>
->  #include <linux/smp.h>
-> -#include <linux/acpi.h>
->
->  #include <asm/mtrr.h>
->  #include <asm/mpspec.h>
-> diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
-> index 45a09cc..7228979 100644
-> --- a/arch/x86/kernel/nmi.c
-> +++ b/arch/x86/kernel/nmi.c
-> @@ -26,7 +26,6 @@
->  #include <linux/kernel_stat.h>
->  #include <linux/kdebug.h>
->  #include <linux/smp.h>
-> -#include <linux/nmi.h>
->
->  #include <asm/i8259.h>
->  #include <asm/io_apic.h>
->
+On Tue, Jan 06, 2009 at 10:44:11AM +0530, Jaswinder Singh Rajput wrote:
+> On Tue, Jan 6, 2009 at 10:19 AM, David Miller <davem@davemloft.net> wrote:
+> >
+> > I had 4 firmware patches to apply, each one had to add entries
+> > to the same file.
+> >
+> > The first patch had to be skipped.
+> >
+> 
+> In firmware we maintain WHENCE, so every time we add new firmware we
+> also update WHENCE.
+> 
+> We are facing problems while we prepare patch for firmware as we add
+> new stuff at the end.
+> As per David Woodhouse suggestion, I arranged WHENCE to alphabetical
+> order by driver name to avoid conflicts.
+> 
+> I also send patch on 21 Dec 2008 with ack of David Woodhouse to linus
+> and waiting from his side.
+> 
+> [PATCH] firmware: Arrange WHENCE in alphabetical order to avoid conflicts
+> 
+> I think this will resolve very soon, once we update WHENCE in
+> alphabetical order, If you better suggestions, please let me know.
 
-Thanks Huang Weiyi.
---
-JSR
+We should avoid a central file and push this information
+out to the Kconfig files that are at the driver site.
+
+Then we can postprocess autoconf.h to get the filenames etc.
+
+And IMO it is wrong to stroe the firmware files far away
+from the driver where they belong.
+
+Sorting WHENCE is a good approach under the current ways
+of doing it. But the current ways of doing it looks plain wrong to me.
+
+	Sam
