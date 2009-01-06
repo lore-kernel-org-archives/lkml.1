@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZAFHtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752531AbZAFHws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbZAFHtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 02:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbZAFHtd
+	id S1752531AbZAFHws (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 02:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbZAFHwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 02:49:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:27995 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbZAFHtd (ORCPT
+	Tue, 6 Jan 2009 02:52:39 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:27765 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750711AbZAFHwj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 02:49:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Hq1E0jfSss7XRkJ7+s05ciq0/8yfcZJPZrmdZiNkc9gCU8XQJk3UA4adnbHm+bRLgW
-         5jcDp0KHgXVWxRTs58O/t+fBZfHTi8o7HRuUxRNMZwPLyea/NB7FcVB1o6B1q5/LJ/yF
-         MWsaz9zSq/suC2YmWve4lqm4ya9K6YMeMEywE=
-Date: Tue, 6 Jan 2009 10:49:28 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
-       riel@redhat.com, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com
-Subject: Re: [PATCH] mm: __nr_to_section - make it safe against overflow v2
-Message-ID: <20090106074928.GA7671@localhost>
-References: <20090105103132.GD7645@localhost> <20090105163742.08777d73.akpm@linux-foundation.org> <20090106145741.e9844b93.kamezawa.hiroyu@jp.fujitsu.com> <20090106153036.1263b5ab.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Jan 2009 02:52:39 -0500
+Message-Id: <49631BF0.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 06 Jan 2009 07:53:04 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>, "Al Viro" <viro@ZenIV.linux.org.uk>
+Cc: "David S. Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
+       <rostedt@goodmis.org>, "Steven Rostedt" <srostedt@redhat.com>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "sparclinux" <sparclinux@vger.kernel.org>
+Subject: Re: ftrace breaks sparc64 build
+References: <20090105181922.GA25622@uranus.ravnborg.org>
+ <20090105194844.GR28946@ZenIV.linux.org.uk>
+ <20090105195523.GB6204@uranus.ravnborg.org>
+In-Reply-To: <20090105195523.GB6204@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090106153036.1263b5ab.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[KAMEZAWA Hiroyuki - Tue, Jan 06, 2009 at 03:30:36PM +0900]
-| On Tue, 6 Jan 2009 14:57:41 +0900
-| KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-| 
-| > On Mon, 5 Jan 2009 16:37:42 -0800
-| > Andrew Morton <akpm@linux-foundation.org> wrote:
-| > 
-| > > On Mon, 5 Jan 2009 13:31:32 +0300
-| > > Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > > 
-| > > > __nr_to_section should check for array bound overflow.
-| > > > We should better get NULL dereference then silently
-| > > > pass some memory snippet out of bounds to a caller.
-| > > > 
-| > > 
-| > > Are there actually any known problems here?
-| > > 
-| > 
-| > IIRC, I never saw any problem. (But I may see in memory-hotplug development.)
-| 
-| I digged mails and seems this patch is from this thread.
-| 
-| =
-| http://lkml.org/lkml/2009/1/4/61
-| =
-| 
-| He seems to want to hunt boot time failure.
-| (Finally, BIOS-update was necessary for original problem of this thread.)
-| 
-| Cyrill, could you modify this WARN_ON() works works when __nr_to_section()
-| is called directly by sparse.c and memhotplug.c ?
-| 
-| Adding WARN_ON() in pfn_to_page() is overkill.
-| 
-| Thanks,
-| -Kame
-| 
+>On Mon, Jan 05, 2009 at 07:48:44PM +0000, Al Viro wrote:
+>> On Mon, Jan 05, 2009 at 07:19:22PM +0100, Sam Ravnborg wrote:
+>> > With an allmodconfig build on sparc and sparc64 I started
+>> > to see warnings that become propagated to errors by -Werror.
+>> 
+>> While we are at it, sparc32 allmodconfig is broken by
+>> commit 9bb482476c6c9d1ae033306440c51ceac93ea80c
+>> Author: Jan Beulich <jbeulich@novell.com>
+>> Date:   Tue Dec 16 11:30:08 2008 +0000
+>> 
+>>     allow stripping of generated symbols under CONFIG_KALLSYMS_ALL
+>> 
+>> Results in
+>> sparc-linux-objcopy: not stripping symbol `__ksymtab_strings' because it is named in a relocation
+>> sparc-linux-objcopy: not stripping symbol `__crc_per_cpu__softirq_work_list' because it is named in a relocation
+>> sparc-linux-objcopy: not stripping symbol `__initcall_end' because it is named in a relocation
+>> sparc-linux-objcopy: not stripping symbol `__setup_end' because it is named in a relocation
+>> sparc-linux-objcopy: not stripping symbol `__setup_start' because it is named in a relocation
+>> sparc-linux-objcopy: not stripping symbol `__initcall_start' because it is named in a relocation
+>> make: *** [.tmp_vmlinux1.stripped] Error 1
 
-Thanks for review Kame, this patch should be just dropped.
+The __crc_... reference is definitely bogus - none should survive with the
+new .c->.o rule. Could you find out what object file they originate from?
 
-Actually the only code snippet which make me nervious is
-sizeof (mem_section) part. Which is to remain power of
-two and even doesn't have 'packed' attribute neither any
-comments above. And if it happens that it will be modified
-or say gcc decide to add some bytes here (bugs happens) we
-would silently address wrong mem_section. So I think at least
-the 'comment' part of my patch is deserve to be applied :)
+The others look like a tools side behavioral difference, as I never saw any
+such. Is this problem sparc32-specific (I tested x86 and ia64 only)? What's
+the binutils version used?
 
-		- Cyrill -
+Jan
+
