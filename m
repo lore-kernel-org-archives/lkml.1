@@ -1,100 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbZAFKv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbZAFL1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbZAFKv6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZAFKvu
+	id S1752004AbZAFL1R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 06:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZAFL1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:51:50 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:14131 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbZAFKvt (ORCPT
+	Tue, 6 Jan 2009 06:27:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:9442 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbZAFL1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:51:49 -0500
+	Tue, 6 Jan 2009 06:27:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=ZrDcIV7VODvGe8tn43fob2ZA0a7+KkR6QqcXd9jz/REEhlXTUO44c1zKILVZQm2B12
-         lRr4NuqisOKy4pBalK8I5VEVXNGz6OR4uIryqDKmbBGomP0nzroNSXQ1RRaBYMkzG/66
-         X97BpjZV/B78oz1lg9hjNtwW+hCVmIqo1crkc=
-Message-ID: <84144f020901060251l697052b9udd92a4a04f830ea7@mail.gmail.com>
-Date: Tue, 6 Jan 2009 12:51:47 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: __nr_to_section - make it safe against overflow v2
-Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>, npiggin@suse.de, riel@redhat.com,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com
-In-Reply-To: <20090105163742.08777d73.akpm@linux-foundation.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=b7Ol3dgGxDMaZ8KbRV6TbDdnAmbkSpz1QfU2qzOhzu0LoAOYDxGJKzT4J1zQwsL9Bm
+         8qDEXtOFe/TlVLnIYuJxAcG1l/S0nddO4rlLaKmEP9jk1RntGqf3hGOCUQch0ExhLn8v
+         eY+7SuU+oKh+pHZcxSnjWcJukFeY9VeTSq8os=
+Message-ID: <49633FFF.9050804@gmail.com>
+Date: Tue, 06 Jan 2009 12:26:55 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jiri Kosina <jkosina@suse.cz>
+CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       weidong.han@intel.com
+Subject: Re: mmotm 2009-01-05-12-50 uploaded
+References: <200901052050.n05Kox9j012519@imap1.linux-foundation.org> <49628A1E.9080003@gmail.com> <alpine.LRH.1.10.0901060247580.24105@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.1.10.0901060247580.24105@twin.jikos.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20090105103132.GD7645@localhost>
-	 <20090105163742.08777d73.akpm@linux-foundation.org>
-X-Google-Sender-Auth: e481dbd8e4ba1f20
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Jiri Kosina wrote:
+> On Mon, 5 Jan 2009, Jiri Slaby wrote:
+> 
+>>> The mm-of-the-moment snapshot 2009-01-05-12-50 has been uploaded
+>> it fails to build here due to this link error:
+>> drivers/built-in.o: In function `alloc_iommu':
+>> (.text+0xf1bf): undefined reference to `iommu_calculate_agaw'
+> 
+> This is not a problem of mmotom, the same applies for Linus' tree. The 
+> patch exists [1], but it seems to be queued in Ingo's tree still.
+> 
+> [1] http://lkml.org/lkml/2009/1/4/35
 
-On Tue, Jan 6, 2009 at 2:37 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 5 Jan 2009 13:31:32 +0300
-> Cyrill Gorcunov <gorcunov@gmail.com> wrote:
->
->> __nr_to_section should check for array bound overflow.
->> We should better get NULL dereference then silently
->> pass some memory snippet out of bounds to a caller.
->>
->
-> Are there actually any known problems here?
->
->>
->> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
->> ---
->>  include/linux/mmzone.h |   15 +++++++++++++--
->>  1 file changed, 13 insertions(+), 2 deletions(-)
->>
->> Index: linux-2.6.git/include/linux/mmzone.h
->> ===================================================================
->> --- linux-2.6.git.orig/include/linux/mmzone.h
->> +++ linux-2.6.git/include/linux/mmzone.h
->> @@ -935,6 +935,12 @@ static inline unsigned long early_pfn_to
->>
->>  struct page;
->>  struct page_cgroup;
->> +
->> +/*
->> + * NOTE: sizeof(struct mem_section) _must_ be power of 2
->> + * otherwise SECTION_ROOT_MASK will be broken so be
->> + * really cautious while modifying this structure
->> + */
->>  struct mem_section {
->>       /*
->>        * This is, logically, a pointer to an array of struct
->> @@ -980,9 +986,14 @@ extern struct mem_section mem_section[NR
->>
->>  static inline struct mem_section *__nr_to_section(unsigned long nr)
->>  {
->> -     if (!mem_section[SECTION_NR_TO_ROOT(nr)])
->> +     unsigned long idx = SECTION_NR_TO_ROOT(nr);
->> +
->> +     if (WARN_ON(idx >= NR_SECTION_ROOTS))
->> +             return NULL;
->> +
->> +     if (!mem_section[idx])
->>               return NULL;
->> -     return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
->> +     return &mem_section[idx][nr & SECTION_ROOT_MASK];
->>  }
->
-> The patch adds nearly 300 bytes of stuff to mm/sparse.o, and for what??
-
-I was thinking of things like commit
-bead9a3abd15710b0bdfd418daef606722d86282 ("mm: sparsemem
-memory_present() fix") and such but missed the fact that
-__nr_to_section() inlined all over the place. So yeah, it's not worth
-it.
-
-                                            Pekka
+Ok, thanks Jiri.
