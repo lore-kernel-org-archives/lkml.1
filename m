@@ -1,87 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZAFJvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZAFJvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZAFJvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZAFJu7
+	id S1754868AbZAFJvp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbZAFJve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:50:59 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:5376 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbZAFJu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:50:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Uy0iSVcEPGM00SBqhM+2IwtLaH1f++7W5NGkufM3soazBDzRE5luRSeMdRUxndyzra
-         qSUNiSVo+tYDR4lXalp6C6fzwIeE+ipnthS76w659XT6OM47uhPa+ts6DrgNy8I8IvjO
-         yRsoJdLvxB0SClNUJmJVxkkvOOSZ8kwCVPcv0=
-Message-ID: <84144f020901060150i524a4fatdc1c2ca86ab2adab@mail.gmail.com>
-Date: Tue, 6 Jan 2009 11:50:56 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] sched: fix double kfree
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <496326BA.60605@cn.fujitsu.com>
+	Tue, 6 Jan 2009 04:51:34 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44732 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751707AbZAFJvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 04:51:33 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/NXEQzaY/NsBmw/MlIyQ5jm6VbsrLhoUeBuYeMAm
+	aiawNl/u5ItDlG
+Date: Tue, 6 Jan 2009 10:51:37 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       Dan Williams <dan.j.williams@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
+In-Reply-To: <20090106090422.GC18861@pengutronix.de>
+Message-ID: <Pine.LNX.4.64.0901061021180.5393@axis700.grange>
+References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
+ <20090106090422.GC18861@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <496326BA.60605@cn.fujitsu.com>
-X-Google-Sender-Auth: 6c6f1fb813d02adb
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 6, 2009 at 11:39 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> Impact: fix double kfree in failure path
->
-> It's not the responsibility of init_rootdomain() to free root_domain
-> allocated by alloc_rootdomain().
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Hi Sascha
 
-FWIW
+On Tue, 6 Jan 2009, Sascha Hauer wrote:
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> Hi Guennadi,
+> 
+> On Fri, Dec 26, 2008 at 06:11:13PM +0100, Guennadi Liakhovetski wrote:
+> > Hi,
+> > 
+> > This is version 6 of dmaengine and framebuffer drivers for i.MX31.
+> > 
+> > Changes since version 5: as requested by Sascha Hauer switched to dynamic 
+> > IPU IRQ mapping.
+> 
+> I tried to express that it's really odd that you demux your _internal_
+> interrupts as chained handlers.
 
-> ---
->  kernel/sched.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 545c6fc..2bad712 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6970,7 +6970,7 @@ static int init_rootdomain(struct root_domain *rd, bool bootmem)
->        }
->
->        if (!alloc_cpumask_var(&rd->span, GFP_KERNEL))
-> -               goto free_rd;
-> +               goto out;
->        if (!alloc_cpumask_var(&rd->online, GFP_KERNEL))
->                goto free_span;
->        if (!alloc_cpumask_var(&rd->rto_mask, GFP_KERNEL))
-> @@ -6986,8 +6986,7 @@ free_online:
->        free_cpumask_var(rd->online);
->  free_span:
->        free_cpumask_var(rd->span);
-> -free_rd:
-> -       kfree(rd);
-> +out:
->        return -ENOMEM;
->  }
->
-> --
-> 1.5.4.rc3
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Your last comment was:
+
+> Preferably a way which does not involve introducing 100+ unused
+> interrupts.
+
+which I have done. Now we're back to demux / not demux...
+
+> Consider a network driver which has a
+> rx, tx and an error status bit, all of them can trigger an interrupt. A
+> you aware of a single driver that uses chained interrupts for this
+> case?
+> No, they don't have to, because all this happens inside one driver
+> and this can easily be dispatched in one interrupt handler. IMHO chained
+> interrupts only make sense when you have an interrupt source which
+> leaves your driver code and you don't know who might be interested in,
+> like the assorted non channel interrupts the IPU also provides.
+> 
+> I bet you'd never have the idea for such a code design without the
+> Freescale code as a sample.
+
+Think about other IPU interrupts. For now I removed the CSI interrupt, but 
+it may well be needed at some point. Or any of overflow interrupts? What 
+do we do then? Why shall we build in limitations from the beginning, when 
+there is an implementation already there, which doesn't have them? Sorry, 
+do not understand.
+
+I know you proposed to dispatch all DMA EOF interrupts to one IRQ number 
+and (optionally / as required) others to single IRQs. But I like to see 
+single DMA sources as separate entries in /proc/interrupts, even if only 
+for debugging.
+
+And no, it is not thanks to Freescals code, that I'm doing that, it's more 
+contrary to their code - they do not implement an irq_chip API and instead 
+add an API of their own.
+
+> Note that arch/arm/plat-mxc/include/mach/mx31.h does not apply anymore
+> due to upstream changes.
+
+If we agree on the rest, I'll submit a v7 - updating mx31.h to its current 
+state and fixing Kconfig / NR_IRQS.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
