@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZAFRsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZAFRwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZAFRsw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 12:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZAFRsn
+	id S1754194AbZAFRwB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 12:52:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZAFRvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 12:48:43 -0500
-Received: from mail.gmx.net ([213.165.64.20]:58233 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752443AbZAFRsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 12:48:43 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX185axJMbIY5H8AMyjthQBkKbLkZnuGZPShSJkZz0m
-	kWlJFF7bs8QPQp
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-From: Mike Galbraith <efault@gmx.de>
-To: svaidy@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090106150709.GG4574@dirshya.in.ibm.com>
-References: <20090103101626.GA4301@dirshya.in.ibm.com>
-	 <1230981761.27180.10.camel@marge.simson.net>
-	 <1231081200.17224.44.camel@marge.simson.net>
-	 <20090104181946.GC4301@dirshya.in.ibm.com>
-	 <1231098769.5757.43.camel@marge.simson.net>
-	 <20090105032029.GE4301@dirshya.in.ibm.com>
-	 <1231130416.5479.8.camel@marge.simson.net>
-	 <1231137413.10471.23.camel@marge.simson.net>
-	 <1231168786.9120.26.camel@marge.simson.net>
-	 <1231234297.3806.50.camel@marge.simson.net>
-	 <20090106150709.GG4574@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 18:48:37 +0100
-Message-Id: <1231264117.5254.23.camel@marge.simson.net>
+	Tue, 6 Jan 2009 12:51:52 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:60132 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047AbZAFRvw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 12:51:52 -0500
+Date: Tue, 6 Jan 2009 18:53:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, ccache@lists.samba.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
+Message-ID: <20090106175333.GB16365@uranus.ravnborg.org>
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <496386EF.76E4.0078.0@novell.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496386EF.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-06 at 20:37 +0530, Vaidyanathan Srinivasan wrote:
-
-> Hi Mike,
+On Tue, Jan 06, 2009 at 03:29:35PM +0000, Jan Beulich wrote:
+> >>> "Theodore Ts'o" <tytso@mit.edu> 06.01.09 16:15 >>>
+> >In the short term, though, it would be nice if we could get back a
+> >simple way of making a kernel  object file using just cc, so that ccache
+> >and distcc could be functional again.   Does that seem reasonable?
 > 
-> Thanks for the detailed benchmark reports.  Glad to hear that
-> sched_mc=2 is helping in most scenarios.  Though we would be tempted to
-> make it default, I would still like to default to zero in order to
-> provide base line performance.  I would expect end users to flip the
-> settings to sched_mc=2 if it helps their workload in terms of
-> performance and/or power savings.
+> Making the new logic dependent on a config option would seem reasonable
+> to me - of course at the expense of the respective Makefile becoming
+> even less readable.
+We need to do this I think - sigh..
 
-The mysql+oltp peak loss is there either way, but with 2, mid range
-throughput is ~28 baseline.  High end (yawn) is better, and the nfs
-kbuild performs better than baseline.
+The Makefile.build bits should be easiest.
+Maybe I should revisit the patch to move vmlinux link to a shell script
+to make the toplevel Makefile simpler??
 
-Baseline performance, at least wrt mysql+oltp doesn't seem to be an
-option.  Not my call.  More testing and more testers required I suppose.
-
-	-Mike
-
+	Sam
