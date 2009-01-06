@@ -1,61 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbZAFQih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbZAFQji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662AbZAFQih (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 11:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZAFQi2
+	id S1753728AbZAFQji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 11:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZAFQj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 11:38:28 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:34427 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbZAFQi1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 11:38:27 -0500
-Date: Tue, 6 Jan 2009 17:40:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Milton Miller <miltonm@bga.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with !CONFIG_VIOPATH
-Message-ID: <20090106164006.GA15934@uranus.ravnborg.org>
-References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com> <20090104182441.GA5086@linux.vnet.ibm.com> <98d6aef17cba9d835d7866745f811dc7@bga.com> <20090106072549.GA5066@linux.vnet.ibm.com> <20090106073149.GA12371@uranus.ravnborg.org> <20090106093847.GB5066@linux.vnet.ibm.com> <20090106104619.GA13789@uranus.ravnborg.org> <20090106155724.GA6747@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106155724.GA6747@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 6 Jan 2009 11:39:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43081 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750846AbZAFQj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 11:39:28 -0500
+Message-ID: <4963894B.6000705@redhat.com>
+Date: Tue, 06 Jan 2009 11:39:39 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [PATCH][bugfix] kprobes: fix module compilation error with CONFIG_KPROBES=n
+References: <49628849.1000706@redhat.com>
+In-Reply-To: <49628849.1000706@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 09:27:24PM +0530, Kamalesh Babulal wrote:
-> * Sam Ravnborg <sam@ravnborg.org> [2009-01-06 11:46:19]:
+Oops, this patch was actually for -mm tree.
+
+Masami Hiramatsu wrote:
+> Define kprobes related data structures even if CONFIG_KPROBES is not set.
+> This fixes compilation errors which occur if CONFIG_KPROBES is not set, in
+> kprobe using modules.
 > 
-> > Hi Kamalesh
-> > 
-> > Looks good, small nit below.
-> > 
-> > >  config VIOPATH
-> > >  	bool
-> > > -	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
-> > > -	default y
-> > > +	default n
-> > 
-> > As 'n' is default anyway this line is not needed and I suggest you
-> > spin a final version of the patch with this removed.
-> > 
-> > 	Sam
+> Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> ---
+>  include/linux/kprobes.h |   45 +++++++++++++++++++++++----------------------
+>  1 file changed, 23 insertions(+), 22 deletions(-)
 > 
-> Hi Sam,
+> Index: 2.6.28/include/linux/kprobes.h
+> ===================================================================
+> --- 2.6.28.orig/include/linux/kprobes.h
+> +++ 2.6.28/include/linux/kprobes.h
+> @@ -37,9 +37,9 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/mutex.h>
+> +#include <asm/kprobes.h>
 > 
-> 	Thanks for the review comments. I am resending the patch with the changes
-> you have recommended.
+>  #ifdef CONFIG_KPROBES
+> -#include <asm/kprobes.h>
 > 
-> Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
+>  /* kprobe_status settings */
+>  #define KPROBE_HIT_ACTIVE	0x00000001
+> @@ -49,6 +49,9 @@
 > 
-> iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
-> Removing the dependency of VIOPATH by selecting it, when the drivers
-> dependent on iSeries code.
+>  /* Attach to insert probes on any functions which should be ignored*/
+>  #define __kprobes	__attribute__((__section__(".kprobes.text"))) notrace
+> +#else /* CONFIG_KPROBES */
+> +#define __kprobes	notrace
+> +#endif /* CONFIG_KPROBES */
 > 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+>  struct kprobe;
+>  struct pt_regs;
+> @@ -131,23 +134,6 @@ struct jprobe {
+>  /* For backward compatibility with old code using JPROBE_ENTRY() */
+>  #define JPROBE_ENTRY(handler)	(handler)
+> 
+> -DECLARE_PER_CPU(struct kprobe *, current_kprobe);
+> -DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+> -
+> -#ifdef CONFIG_KRETPROBES
+> -extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
+> -				   struct pt_regs *regs);
+> -extern int arch_trampoline_kprobe(struct kprobe *p);
+> -#else /* CONFIG_KRETPROBES */
+> -static inline void arch_prepare_kretprobe(struct kretprobe *rp,
+> -					struct pt_regs *regs)
+> -{
+> -}
+> -static inline int arch_trampoline_kprobe(struct kprobe *p)
+> -{
+> -	return 0;
+> -}
+> -#endif /* CONFIG_KRETPROBES */
+>  /*
+>   * Function-return probe -
+>   * Note:
+> @@ -188,6 +174,25 @@ struct kprobe_blackpoint {
+>  	unsigned long range;
+>  };
+> 
+> +#ifdef CONFIG_KPROBES
+> +DECLARE_PER_CPU(struct kprobe *, current_kprobe);
+> +DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+> +
+> +#ifdef CONFIG_KRETPROBES
+> +extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
+> +				   struct pt_regs *regs);
+> +extern int arch_trampoline_kprobe(struct kprobe *p);
+> +#else /* CONFIG_KRETPROBES */
+> +static inline void arch_prepare_kretprobe(struct kretprobe *rp,
+> +					struct pt_regs *regs)
+> +{
+> +}
+> +static inline int arch_trampoline_kprobe(struct kprobe *p)
+> +{
+> +	return 0;
+> +}
+> +#endif /* CONFIG_KRETPROBES */
+> +
+>  extern struct kretprobe_blackpoint kretprobe_blacklist[];
+> 
+>  static inline void kretprobe_assert(struct kretprobe_instance *ri,
+> @@ -264,10 +269,6 @@ void recycle_rp_inst(struct kretprobe_in
+> 
+>  #else /* CONFIG_KPROBES */
+> 
+> -#define __kprobes	notrace
+> -struct jprobe;
+> -struct kretprobe;
+> -
+>  static inline struct kprobe *get_kprobe(void *addr)
+>  {
+>  	return NULL;
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
