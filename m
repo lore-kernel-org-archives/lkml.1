@@ -1,80 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbZAFXCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbZAFXC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbZAFXCS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZAFXCA
+	id S1756179AbZAFXC7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:02:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZAFXCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:02:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34992 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750711AbZAFXB6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:01:58 -0500
-Date: Tue, 6 Jan 2009 15:00:47 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-In-Reply-To: <1231281801.11687.125.camel@twins>
-Message-ID: <alpine.LFD.2.00.0901061456280.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
- <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain> <1231281801.11687.125.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 6 Jan 2009 18:02:48 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:40749 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751136AbZAFXCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 18:02:47 -0500
+Date: Tue, 6 Jan 2009 18:02:44 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, Eric Sesterhenn <snakebyte@gmx.de>,
+       hch@lst.de
+Subject: Re: nfsd stuckage
+Message-ID: <20090106230244.GB13785@fieldses.org>
+References: <20090106145612.d4d9948d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106145612.d4d9948d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 Jan 2009, Peter Zijlstra wrote:
+On Tue, Jan 06, 2009 at 02:56:12PM -0800, Andrew Morton wrote:
 > 
-> Indeed, the below does boot -- which means I get to sleep now ;-)
+> I just built current mainline plus the just-sent 266 -mm patches.
+> 
+> The machine failed to power off when hit with `halt -pfn'.  dmesg output:
 
-Well, if you didn't go to sleep, a few more questions..
+Christoph, can you live with this for now?
 
->  int __sched
->  mutex_lock_killable_nested(struct mutex *lock, unsigned int subclass)
->  {
-> +	int ret;
-> +
->  	might_sleep();
-> -	return __mutex_lock_common(lock, TASK_KILLABLE, subclass, _RET_IP_);
-> +	ret =  __mutex_lock_common(lock, TASK_KILLABLE, subclass, _RET_IP_);
-> +	if (!ret)
-> +		lock->owner = current;
-> +
-> +	return ret;
+--b.
 
-This looks ugly. Why doesn't __mutex_lock_common() just set the lock 
-owner? Hate seeing it done in the caller that has to re-compute common 
-(yeah, yeah, it's cheap) and just looks ugly.
+commit 33e3950dc2eae7484e79685083c304d93013e3ec
+Author: J. Bruce Fields <bfields@citi.umich.edu>
+Date:   Tue Jan 6 13:37:03 2009 -0500
 
-IOW, why didn't this just get done with something like
+    nfsd: fix double-locks of directory mutex
+    
+    A number of nfsd operations depend on the i_mutex to cover more code
+    than just the fsync, so the approach of 4c728ef583b3d8 "add a vfs_fsync
+    helper" doesn't work for nfsd.  Revert the parts of those patches that
+    touch nfsd, and remove the logic from vfs_nfsd that was needed only for
+    the special case of nfsd.
+    
+    Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-	--- a/kernel/mutex.c
-	+++ b/kernel/mutex.c
-	@@ -186,6 +186,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
-	 done:
-	 	lock_acquired(&lock->dep_map, ip);
-	 	/* got the lock - rejoice! */
-	+	lock->owner = task;
-	 	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
-	 	debug_mutex_set_owner(lock, task_thread_info(task));
-
-instead?  That takes care of all callers, including the conditional thing 
-(since the error case is a totally different path).
-
-		Linus
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 44aa92a..6e50aaa 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -744,16 +744,44 @@ nfsd_close(struct file *filp)
+ 	fput(filp);
+ }
+ 
++/*
++ * Sync a file
++ * As this calls fsync (not fdatasync) there is no need for a write_inode
++ * after it.
++ */
++static inline int nfsd_dosync(struct file *filp, struct dentry *dp,
++			      const struct file_operations *fop)
++{
++	struct inode *inode = dp->d_inode;
++	int (*fsync) (struct file *, struct dentry *, int);
++	int err;
++
++	err = filemap_fdatawrite(inode->i_mapping);
++	if (err == 0 && fop && (fsync = fop->fsync))
++		err = fsync(filp, dp, 0);
++	if (err == 0)
++		err = filemap_fdatawait(inode->i_mapping);
++
++	return err;
++}
++
+ static int
+ nfsd_sync(struct file *filp)
+ {
+-	return vfs_fsync(filp, filp->f_path.dentry, 0);
++        int err;
++	struct inode *inode = filp->f_path.dentry->d_inode;
++	dprintk("nfsd: sync file %s\n", filp->f_path.dentry->d_name.name);
++	mutex_lock(&inode->i_mutex);
++	err=nfsd_dosync(filp, filp->f_path.dentry, filp->f_op);
++	mutex_unlock(&inode->i_mutex);
++
++	return err;
+ }
+ 
+ int
+-nfsd_sync_dir(struct dentry *dentry)
++nfsd_sync_dir(struct dentry *dp)
+ {
+-	return vfs_fsync(NULL, dentry, 0);
++	return nfsd_dosync(NULL, dp, dp->d_inode->i_fop);
+ }
+ 
+ /*
+diff --git a/fs/sync.c b/fs/sync.c
+index 0921d6d..8e0a656 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -83,10 +83,6 @@ int file_fsync(struct file *filp, struct dentry *dentry, int datasync)
+  *
+  * Write back data and metadata for @file to disk.  If @datasync is
+  * set only metadata needed to access modified file data is written.
+- *
+- * In case this function is called from nfsd @file may be %NULL and
+- * only @dentry is set.  This can only happen when the filesystem
+- * implements the export_operations API.
+  */
+ int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
+ {
+@@ -94,18 +90,8 @@ int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
+ 	struct address_space *mapping;
+ 	int err, ret;
+ 
+-	/*
+-	 * Get mapping and operations from the file in case we have
+-	 * as file, or get the default values for them in case we
+-	 * don't have a struct file available.  Damn nfsd..
+-	 */
+-	if (file) {
+-		mapping = file->f_mapping;
+-		fop = file->f_op;
+-	} else {
+-		mapping = dentry->d_inode->i_mapping;
+-		fop = dentry->d_inode->i_fop;
+-	}
++	mapping = file->f_mapping;
++	fop = file->f_op;
+ 
+ 	if (!fop || !fop->fsync) {
+ 		ret = -EINVAL;
