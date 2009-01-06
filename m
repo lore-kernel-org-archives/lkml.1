@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZAFHJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZAFHMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbZAFHJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 02:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZAFHJk
+	id S1753459AbZAFHMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 02:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZAFHM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 02:09:40 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:42440 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbZAFHJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 02:09:39 -0500
-Message-ID: <4963039D.7000804@knaff.lu>
-Date: Tue, 06 Jan 2009 08:09:17 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Tue, 6 Jan 2009 02:12:29 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:33399 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbZAFHM2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 02:12:28 -0500
+Date: Tue, 6 Jan 2009 12:40:18 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
+Message-ID: <20090106071018.GC4574@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090104174450.GB4301@dirshya.in.ibm.com> <1231092523.29980.4.camel@twins> <20090105040635.GF4301@dirshya.in.ibm.com> <20090105130638.GB6014@elte.hu>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <49615136.9080900@knaff.lu> <4961580A.1020301@zytor.com> <4961A816.40302@knaff.lu> <4961A997.10108@zytor.com> <4961ADC5.6030108@knaff.lu> <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu> <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu> <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu> <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu> <4962858F.20207@zytor.com> <496285C8.7050503@knaff.lu> <496290E0.3020603@zytor.com>
-In-Reply-To: <496290E0.3020603@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090105130638.GB6014@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Go ahead and do an incremental patch at this point.
+* Ingo Molnar <mingo@elte.hu> [2009-01-05 14:06:38]:
+
 > 
->     -hpa
+> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> 
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-04 19:08:43]:
+> > 
+> > > On Sun, 2009-01-04 at 23:14 +0530, Vaidyanathan Srinivasan wrote:
+> > > > Hi Ingo,
+> > > > 
+> > > > Kernbench runs on latest Linux git tree stalled with the following
+> > > > lockdep warning.
+> > > > 
+> > > > Lockdep warning and lockup on Jan 3 Linus git tree
+> > > > commit 7d3b56ba37a95f1f370f50258ed3954c304c524b
+> > > > 
+> > > > kernbench run with two threads stalled.  sched_mc was zero.
+> > > > x86_64 system with 8 logical CPUs in dual socket quad core
+> > > > configuration.
+> > > > 
+> > > > I will post more information as I debug this warning/bug.  
+> > > 
+> > > Its ca109491f612aab5c8152207631c0444f63da97f, I've some ideas on how to
+> > > fix this, just haven't gotten around to actually doing anything --
+> > > seeing how it was holidays and such..
+> > 
+> > Hi Peter,
+> > 
+> > I can definitely test your fix when you have them.  I have an
+> > autotest job that hits this bug.
+> 
+> could you check latest tip/master, it has Peter's and Thomas's hrtimer 
+> fixes.
 
-Thanks, that'll make things easier. Unfortunately, I can no longer check
-out the code. No error messages, but the files just aren't there:
+Hi Ingo,
 
+I have started a test run with the today's sched-tip.  I will report
+results.
 
-> git pull
-Already up-to-date.
-> git checkout -b x86/setup-lzma tip/x86/setup-lzma
-git checkout: branch x86/setup-lzma already exists
-> ls lib/decompress_inflate.c
-ls: cannot access lib/decompress_inflate.c: No such file or directory
+--Vaidy
 
-Thanks
-
-Alain
