@@ -1,109 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZAFEQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZAFEQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZAFEQV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 23:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZAFENf
+	id S1755240AbZAFEQh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 23:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZAFEPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 23:13:35 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58344 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbZAFENb convert rfc822-to-8bit (ORCPT
+	Mon, 5 Jan 2009 23:15:31 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32925
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754540AbZAFEP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 23:13:31 -0500
-Date: Mon, 5 Jan 2009 20:12:39 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [PATCH 4/6] fastboot: make ACPI bus drivers probe asynchronous
-Message-ID: <20090105201239.0784606e@infradead.org>
-In-Reply-To: <20090105200959.04a626ac@infradead.org>
-References: <20090105200959.04a626ac@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+	Mon, 5 Jan 2009 23:15:29 -0500
+Date: Mon, 05 Jan 2009 20:15:30 -0800 (PST)
+Message-Id: <20090105.201530.195720489.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0901051839330.3057@localhost.localdomain>
+References: <20090105.183106.252630446.davem@davemloft.net>
+	<alpine.LFD.2.00.0901051839330.3057@localhost.localdomain>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 5 Jan 2009 18:42:19 -0800 (PST)
 
->From 34c47dd38f49e29eb7cd7fa2078efc6b8b258bb9 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 4 Jan 2009 05:32:28 -0800
-Subject: [PATCH] fastboot: make ACPI bus drivers probe asynchronous
+> On Mon, 5 Jan 2009, David Miller wrote:
+> > 
+> > Jaswinder Singh (1):
+> >       firmware: convert acenic driver to request_firmware()
+> 
+> Grr. But the old acenic_firmware.h file is left around. Which explains 
+> this:
+> 
+> >  63 files changed, 11470 insertions(+), 1910 deletions(-)
+> 
+> Ugh. That looks absolutely horrible.
+> 
+> I pulled, but please take a look at your own diffstats and then ask 
+> yourself if things really look like they should look. Because if you had 
+> done that, you'd have noticed this.
 
-the various ACPI bus drivers have non-overlapping devices and can
-each be run asynchronous. Some of the ACPI drivers (especially the
-battery one, but others as well) can take quite a long time to probe.
+Sorry, I know how this happened even.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/acpi/scan.c |   23 ++++++++++++++++-------
- 1 files changed, 16 insertions(+), 7 deletions(-)
+As an aside, is there a way to make git-am and other stuff using the
+git patch applying engine to take patches liberally like 'patch'
+would?
 
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 39b7233..a9e542d 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -8,6 +8,7 @@
- #include <linux/acpi.h>
- #include <linux/signal.h>
- #include <linux/kthread.h>
-+#include <linux/async.h>
- 
- #include <acpi/acpi_drivers.h>
- #include <acpi/acinterp.h>	/* for acpi_ex_eisa_id_to_string() */
-@@ -578,6 +579,19 @@ static int acpi_start_single_object(struct acpi_device *device)
- 	return result;
- }
- 
-+static void acpi_bus_register_async(void *data, async_cookie_t cookie)
-+{
-+	int ret;
-+	struct acpi_driver *driver = data;
-+	driver->drv.name = driver->name;
-+	driver->drv.bus = &acpi_bus_type;
-+	driver->drv.owner = driver->owner;
-+
-+	async_synchronize_cookie(cookie);
-+
-+	ret = driver_register(&driver->drv);
-+	WARN_ON(ret != 0);
-+}
- /**
-  * acpi_bus_register_driver - register a driver with the ACPI bus
-  * @driver: driver being registered
-@@ -588,16 +602,11 @@ static int acpi_start_single_object(struct acpi_device *device)
-  */
- int acpi_bus_register_driver(struct acpi_driver *driver)
- {
--	int ret;
- 
- 	if (acpi_disabled)
- 		return -ENODEV;
--	driver->drv.name = driver->name;
--	driver->drv.bus = &acpi_bus_type;
--	driver->drv.owner = driver->owner;
--
--	ret = driver_register(&driver->drv);
--	return ret;
-+	async_schedule(acpi_bus_register_async, driver);
-+	return 0;
- }
- 
- EXPORT_SYMBOL(acpi_bus_register_driver);
--- 
-1.6.0.6
+The default is extremely strict, which makes me check things out by
+hand.  That's good, but as I add the change by hand after verifying
+it's sanity I often make mistakes that result in things like the above
+missed delete, so if I could ask git to be non-strict it would help me
+out a lot.
 
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+This doesn't excuse me from looking for bogons at my diffstats of
+course :)
