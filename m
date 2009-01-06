@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbZAFLgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZAFLjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbZAFLgZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 06:36:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZAFLgD
+	id S1752278AbZAFLjx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 06:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZAFLjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 06:36:03 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37044 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751995AbZAFLgB (ORCPT
+	Tue, 6 Jan 2009 06:39:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58372 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZAFLjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 06:36:01 -0500
-Date: Tue, 6 Jan 2009 11:35:43 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, "David S. Miller" <davem@davemloft.net>,
-       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>
-Subject: Re: ftrace breaks sparc64 build
-Message-ID: <20090106113543.GS28946@ZenIV.linux.org.uk>
-References: <20090105181922.GA25622@uranus.ravnborg.org> <20090105194844.GR28946@ZenIV.linux.org.uk> <20090105195523.GB6204@uranus.ravnborg.org> <49631BF0.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49631BF0.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 6 Jan 2009 06:39:41 -0500
+Date: Tue, 6 Jan 2009 09:39:10 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for January 5 (multimedia #2)
+Message-ID: <20090106093910.1bdd3611@pedra.chehab.org>
+In-Reply-To: <20090105120657.f5edf279.randy.dunlap@oracle.com>
+References: <20090105173517.deeff918.sfr@canb.auug.org.au>
+	<20090105120657.f5edf279.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 07:53:04AM +0000, Jan Beulich wrote:
+On Mon, 5 Jan 2009 12:06:57 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> The __crc_... reference is definitely bogus - none should survive with the
-> new .c->.o rule. Could you find out what object file they originate from?
+> On Mon, 5 Jan 2009 17:35:17 +1100 Stephen Rothwell wrote:
+> 
+> > Hi all,
+> > 
+> > This tree will not build a powerpc ppc4xx_defconfig due to a kvm problem.
+> > 
+> > Changes since 20090102:
+> 
+> With CONFIG_INPUT=n and
+> CONFIG_DVB_DM1105=m
+> CONFIG_DVB_FIREDTV=m:
+> 
+> ERROR: "input_event" [drivers/media/dvb/firesat/firedtv.ko] undefined!
+> ERROR: "input_register_device" [drivers/media/dvb/firesat/firedtv.ko] undefined!
+> ERROR: "input_free_device" [drivers/media/dvb/firesat/firedtv.ko] undefined!
+> ERROR: "input_unregister_device" [drivers/media/dvb/firesat/firedtv.ko] undefined!
+> ERROR: "input_allocate_device" [drivers/media/dvb/firesat/firedtv.ko] undefined!
+> ERROR: "input_event" [drivers/media/dvb/dm1105/dm1105.ko] undefined!
+> ERROR: "input_free_device" [drivers/media/dvb/dm1105/dm1105.ko] undefined!
+> ERROR: "input_register_device" [drivers/media/dvb/dm1105/dm1105.ko] undefined!
+> ERROR: "input_allocate_device" [drivers/media/dvb/dm1105/dm1105.ko] undefined!
+> ERROR: "input_unregister_device" [drivers/media/dvb/dm1105/dm1105.ko] undefined!
+> 
+Also fixed by the same patch for the previous report. It were just a matter to
+make DVB_DM1105 dependent of INPUT.
 
-So can you, by use of arcane tool known as "grep"...  It's in kernel/softirq.c
-and that's genksyms parser being fucked in head.  Look for TYPEOF_KEYW
-in parse.y and you'll see.  Especially amusing part is a kludge from
-commit a89a0a2354ae666612968e254d650bfd04f11eb6...
-
-> The others look like a tools side behavioral difference, as I never saw any
-> such. Is this problem sparc32-specific (I tested x86 and ia64 only)? What's
-> the binutils version used?
-
-2.18.50.0.6.
-
-And no, it's not tools side.  What it is, AFAICT, is that sparc32 has
-LDFLAGS_vmlinux = -r, which leaves a metric arseload of relocs that
-wouldn't have survived into vmlinux otherwise.  Look at .rela__ksymtab
-in .tmp_vmlinux1, for example...
+Cheers,
+Mauro
