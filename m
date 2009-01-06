@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZAFWvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbZAFWvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbZAFWvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZAFWu7
+	id S1757778AbZAFWvb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZAFWvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:50:59 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:52891 "EHLO relay.sgi.com"
+	Tue, 6 Jan 2009 17:51:00 -0500
+Received: from styx.suse.cz ([82.119.242.94]:42110 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750924AbZAFWu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751705AbZAFWu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Jan 2009 17:50:58 -0500
-Date: Tue, 6 Jan 2009 16:50:54 -0600
-From: Robin Holt <holt@sgi.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Robin Holt <holt@sgi.com>,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
-       Tony Luck <tony.luck@gmail.com>
-Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
-Message-ID: <20090106225054.GB3850@sgi.com>
-References: <20090106162741.GA7991@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com> <20090106201950.GA3850@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB955B4@orsmsx505.amr.corp.intel.com> <1231275441.11687.110.camel@twins>
+Date: Tue, 6 Jan 2009 23:50:57 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jim Gettys <jg@laptop.org>
+cc: Henrik Rydberg <rydberg@euromail.se>, Greg KH <greg@kroah.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       Peter Hutterer <peter.hutterer@who-t.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] input: Add a detailed multi-touch finger data	report
+ protocol (rev2)
+In-Reply-To: <1231266769.8379.79.camel@jg-vaio>
+Message-ID: <alpine.LNX.1.10.0901062347480.5377@jikos.suse.cz>
+References: <495804B1.10300@euromail.se> <1231266769.8379.79.camel@jg-vaio>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231275441.11687.110.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 09:57:20PM +0100, Peter Zijlstra wrote:
-> On Tue, 2009-01-06 at 12:34 -0800, Luck, Tony wrote:
-> > > > All ia64 systems are potentially affected ... but perhaps you might
-> > > > never see the problem on most because the itc clocks are synced as close
-> > > > as s/w can get them when cpus are brought on line.
-> > >
-> > > Do you want Dimitri to resubmit with this set for all IA64 or leave it
-> > > as is?
-> > 
-> > I'd like to understand the impact of turning on HAVE_UNSTABLE_SCHED_CLOCK
-> > 
-> > It looks like both the i386_defconfig and x86_64_defconfig choose this,
-> > so at least ia64 will be hitting the well tested code paths
-> > 
-> > Have the other architectures just not hit this yet?  Or do they all have
-> > "stable" sched_clock() functions?
-> > 
-> > 
-> > sched_clock() seemed like such a straightforward thing to begin with. A
-> > quick & easy way to measure a time delta ON THE SAME CPU.  I'm not at
-> > all sure why it has been co-opted for general time measurement.
-> 
-> It came from the complication of needing to tell a remote cpu's time due
-> to remote wakeups in the scheduler.
+On Tue, 6 Jan 2009, Jim Gettys wrote:
 
-But doesn't scheduler tick advance the rq->clock?  Why do the others
-need to fiddle with a remote runqueue's clock?  When that cpu starts
-taking ticks again, it will update it's rq->clock field and start the
-processes.  I guess I am a lot underinformed about the new scheduler
-design.
+> 1) Does anyone know if Microsoft has actually made the proposal to the
+> USB IF?  Is there anyone in the community watching/commenting on USB IF
+> proposals?
 
-Robin
+This would be question for Greg.
+
+> 2) do you want generic USB HID patches or do you want to, for now, 
+> confine these to USB device specific drivers as much as possible?
+
+We already have a lot of drivers for special HID devices that emit usages 
+that have not been defined by HID standard. These drivers are independent 
+on the underlying transport (USB, Bluetooth). Therefore all you ideally 
+need to do is to add just another driver which hooks itself to HID bus and 
+performs all that is needed in addition to what generic HID code does. 
+There are lot of such drivers in drivers/hid/hid-*.c which you can use as 
+examples. Please let me know if you have any further questions.
+
+-- 
+Jiri Kosina
+SUSE Labs
