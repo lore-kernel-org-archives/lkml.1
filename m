@@ -1,143 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZAFCbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZAFCeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZAFCbj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 21:31:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZAFCbN
+	id S1753991AbZAFCeR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 21:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZAFCeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 21:31:13 -0500
-Received: from vps1.tull.net ([66.180.172.116]:46801 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752079AbZAFCbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 21:31:10 -0500
-Date: Tue, 6 Jan 2009 13:31:03 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Linas Vepstas <linasvepstas@gmail.com>
-Cc: David Newall <davidn@davidnewall.com>, david@lang.hm,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years	2008-2009
-Message-ID: <20090106023103.GA28431@mail.local.tull.net>
-References: <496076A9.7030907@davidnewall.com> <f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com> <4960897D.5030603@davidnewall.com> <alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm> <4961432A.80509@davidnewall.com> <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm> <49614835.7000505@davidnewall.com> <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com> <20090105143335.GC18055@mail.local.tull.net> <3ae3aa420901050808r100e533fo5f88edfbb5f0747a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3ae3aa420901050808r100e533fo5f88edfbb5f0747a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+	Mon, 5 Jan 2009 21:34:00 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33159
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751545AbZAFCd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 21:33:59 -0500
+Date: Mon, 05 Jan 2009 18:34:00 -0800 (PST)
+Message-Id: <20090105.183400.155883414.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 10:08:50AM -0600, Linas Vepstas wrote:
-> 2009/1/5 Nick Andrew <nick@nick-andrew.net>:
-> > On Sun, Jan 04, 2009 at 11:48:31PM -0600, Linas Vepstas wrote:
-> > Arguably the kernel's responsibility should be to keep track of the
-> > most fundamental representation of time possible for a machine (that's
-> > probably TAI) and it is a userspace responsibility to map from that
-> > value to other time standards including UTC,
-> 
-> Yes, this really does seem like the right solution.
-> 
-> > using control files
-> > which are updated as leap seconds are declared.
-> 
-> Lets be clear on what "control files" means.  This does
-> *NOT* mean some config file shipped by some distro
-> for some package. That would be a horrid solution.
-> People don't install updates, patches, etc.  Distros
-> ship them late, or never, if the distro is old enough.
 
-To clarify - as far as I know, TAI is a fundamental time scale
-because it's regular and monotonically increasing. Wikipedia
-talks about specifying TAI using both Julian Dates and the
-Gregorian Calendar - I don't know whether that means representations
-of TAI time may suffer gaps depending on declared (subtracted)
-leap seconds. In any case I was thinking of something like
-Bernsteins TAI64 (http://cr.yp.to/libtai/tai64.html) which is
-just a count of seconds (and nanoseconds using TAI64N).
+Lots of more 32/64 unification work from Sam Ravnborg,
+with some smaller changes and fixes from Julian Calaby
+and Bastian Blank.
 
-Considering TAI64 as a count of seconds, other time values (UTC,
-unix epoch time) can be derived from TAI64 by applying some mapping
-function which takes into account all the irregularities introduced
-by our complex time systems (including leap years, leap seconds, DST,
-pre-Gregorian calendars and so on).
+Please pull, thanks a lot!
 
-Unix epoch time (seconds since 1 Jan 1970 00:00:00 GMT) is
-also regular and monotonically increasing however it's no
-longer suitable as a fundamental timebase because it doesn't
-recognise the existence of leap seconds. In unix epoch time
-a day is always 86400 seconds long and when I said "preserve
-the existing behaviour of time()" I meant that this constant
-must be maintained.
+The following changes since commit fe0bdec68b77020281dc814805edfe594ae89e0f:
+  Linus Torvalds (1):
+        Merge branch 'audit.b61' of git://git.kernel.org/.../viro/audit-current
 
-As Linas correctly noted, UTC allows a distinct representation of a
-leap second (xx:59:60). It follows from the previous paragraph that
-a mapping from time_t to UTC can never result in ":60". Mapping from
-UTC to time_t is lossy: if the input is a leap second then something
-must be done with it: mktime() for 09:59:60 returns the same time_t
-value as for 10:00:00.
+are available in the git repository at:
 
-Mapping from TAI64 to UTC or time_t requires knowledge of what leap
-seconds were already applied, and when. Wikipedia says TAI is 34
-seconds ahead of UTC right now, but I'm talking about converting any
-past TAI value, not just current time. So it's not really suitable for
-the kernel to just learn about leap seconds on the fly, there needs to
-be a persistent table of some kind which states what changes happened
-and when. This is analogous to the zoneinfo file, which states not
-just the current DST rules but also all past ones.
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
 
-There will certainly be hosts where this mapping file is out of
-date, however it is supplied. That's the case with zoneinfo too,
-and there's a general problem in that politicians keep mucking about
-with daylight saving time. We're experiencing that now in Australia,
-where the state of Western Australia which never had DST in the past,
-now has it as a "test". So WA has got it now, much to my displeasure,
-and may or may not have it in future. In general it's not possible to
-reliably convert future dates from time_t to local time, where future
-dates are anything more recent than your zoneinfo file. The same
-constraint applies to conversion from TAI64.
+Bastian Blank (1):
+      sparc: Use 64BIT config entry
 
-There's a good argument for including up-to-date conversion information
-in the NTP protocol. I don't know enough about NTP whether it has this
-capability already. Hosts which don't have up-to-date zoneinfo files
-and don't sync time with NTP probably don't care about accurate time
-conversion anyway.
+David S. Miller (5):
+      sparc: Kill bogus comment about IRQF_SHARED in pci_psycho.c
+      sparc: Update 64-bit defconfig.
+      sparc: Kill asm/reg*.h
+      sparc: Remove reg*.h from Kbuild
 
-> Well, 'man 2 time' is as clear as mud. It talks about leap seconds,
-> but I can't figure out what its saying.  I rather
-> doubt that time() is doing what POSIX.1 seems to want
-> it to do (which is to ignore leap seconds?)
+Julian Calaby (2):
+      sparc: Clean arch-specific code in prom_common.c
+      sparc: Fix minor SPARC32 compile error
 
-I think I read that linux "ticks the second twice" (I don't know
-whether that's the 59 second or the 00 second, it should be 00 for
-ctime(3) to make any sense) and I don't know whether gettimeofday(2)
-will show tv_usec returning to zero and re-counting the microseconds.
+Sam Ravnborg (23):
+      sparc: delete unused config symbols
+      sparc: unify posix_types.h
+      sparc32: drop __old_kernel_stat
+      sparc32: use proper types in struct stat
+      sparc: unify stat.h
+      sparc64: prepare signal_64 for unification
+      sparc: unify signal.h
+      sparc: add '32' suffix to reg_window, sigcontext, __siginfo_t
+      sparc: unify sigcontext.h
+      sparc: unify ptrace.h
+      sparc: unify siginfo.h
+      sparc: remove ebus definitions from openprom*.h
+      sparc: remove linux_prom_pci_assigned_addresses from openprom_32.h
+      sparc: prepare openprom for unification
+      sparc64: delete unused linux_prom64_ranges from openprom_64.h
+      sparc: unify openprom.h
+      sparc: fix warning in userspace header jsflash.h
+      sparc: fix warnings in userspace header byteorder.h
+      sparc: fix warning in userspace header traps.h
+      sparc: drop get_tbr() in traps.h
+      sparc: remove NO_PROC_ID - it is no longer used
+      sparc: unify ipcbuf.h
+      MAINTAINERS: update sparc maintainer
 
-I think POSIX.1 wants time_t to ignore leap seconds as if they
-didn't exist. That means that the :59:60 and :00:00 wall clock
-seconds share a single time_t value ... in other words, one
-time_t second in linux persists for two wall clock seconds during
-a leap second.
-
-Sane behaviour would be for tv_sec and tv_usec to be monotonically
-increasing while this is going on; the microseconds should pass
-at half the usual rate to preserve this.
-
-> The reason I'm guessing that time() is wrong, is because
-> it seems that POSIX wants time() to use TAI time, and
-> we don't have that handy anywhere (because we've lost
-> track of those leap seconds)
-
-I don't think POSIX wants TAI, but it makes sense for a kernel to
-provide an unambiguous time reference to userspace. time_t is a
-convenient approximation but it is non-linear due to ignoring the
-leap seconds and it probably causes havoc for any precise measurements
-occurring during the leap second.
-
-Nick.
--- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+ MAINTAINERS                             |   15 +-
+ arch/sparc/Kconfig                      |   57 +---
+ arch/sparc/configs/sparc64_defconfig    |  105 +++++---
+ arch/sparc/include/asm/Kbuild           |   20 --
+ arch/sparc/include/asm/byteorder.h      |   12 +-
+ arch/sparc/include/asm/ipcbuf.h         |   38 +++-
+ arch/sparc/include/asm/ipcbuf_32.h      |   31 ---
+ arch/sparc/include/asm/ipcbuf_64.h      |   28 --
+ arch/sparc/include/asm/jsflash.h        |    2 +-
+ arch/sparc/include/asm/openprom.h       |  277 +++++++++++++++++++-
+ arch/sparc/include/asm/openprom_32.h    |  255 ------------------
+ arch/sparc/include/asm/openprom_64.h    |  280 -------------------
+ arch/sparc/include/asm/posix_types.h    |  157 +++++++++++-
+ arch/sparc/include/asm/posix_types_32.h |  118 --------
+ arch/sparc/include/asm/posix_types_64.h |  122 ---------
+ arch/sparc/include/asm/processor_32.h   |    2 +-
+ arch/sparc/include/asm/ptrace.h         |  448 ++++++++++++++++++++++++++++++-
+ arch/sparc/include/asm/ptrace_32.h      |  186 -------------
+ arch/sparc/include/asm/ptrace_64.h      |  356 ------------------------
+ arch/sparc/include/asm/reg.h            |    8 -
+ arch/sparc/include/asm/reg_32.h         |   79 ------
+ arch/sparc/include/asm/reg_64.h         |   56 ----
+ arch/sparc/include/asm/sigcontext.h     |  102 +++++++-
+ arch/sparc/include/asm/sigcontext_32.h  |   62 -----
+ arch/sparc/include/asm/sigcontext_64.h  |   87 ------
+ arch/sparc/include/asm/siginfo.h        |   43 +++-
+ arch/sparc/include/asm/siginfo_32.h     |   17 --
+ arch/sparc/include/asm/siginfo_64.h     |   32 ---
+ arch/sparc/include/asm/signal.h         |  212 ++++++++++++++-
+ arch/sparc/include/asm/signal_32.h      |  207 --------------
+ arch/sparc/include/asm/signal_64.h      |  194 -------------
+ arch/sparc/include/asm/smp_32.h         |    3 -
+ arch/sparc/include/asm/stat.h           |  111 +++++++-
+ arch/sparc/include/asm/stat_32.h        |   76 ------
+ arch/sparc/include/asm/stat_64.h        |   47 ----
+ arch/sparc/include/asm/thread_info_32.h |    2 +-
+ arch/sparc/include/asm/traps.h          |   11 +-
+ arch/sparc/kernel/irq_32.c              |    2 +
+ arch/sparc/kernel/kgdb_32.c             |   12 +-
+ arch/sparc/kernel/muldiv.c              |    8 +-
+ arch/sparc/kernel/pci_psycho.c          |    5 +-
+ arch/sparc/kernel/process_32.c          |   16 +-
+ arch/sparc/kernel/prom_common.c         |   14 +-
+ arch/sparc/kernel/signal_32.c           |    6 +-
+ arch/sparc/kernel/traps_32.c            |    4 +-
+ arch/sparc/kernel/unaligned_32.c        |   12 +-
+ arch/sparc/kernel/windows.c             |    6 +-
+ 47 files changed, 1481 insertions(+), 2462 deletions(-)
+ delete mode 100644 arch/sparc/include/asm/ipcbuf_32.h
+ delete mode 100644 arch/sparc/include/asm/ipcbuf_64.h
+ delete mode 100644 arch/sparc/include/asm/openprom_32.h
+ delete mode 100644 arch/sparc/include/asm/openprom_64.h
+ delete mode 100644 arch/sparc/include/asm/posix_types_32.h
+ delete mode 100644 arch/sparc/include/asm/posix_types_64.h
+ delete mode 100644 arch/sparc/include/asm/ptrace_32.h
+ delete mode 100644 arch/sparc/include/asm/ptrace_64.h
+ delete mode 100644 arch/sparc/include/asm/reg.h
+ delete mode 100644 arch/sparc/include/asm/reg_32.h
+ delete mode 100644 arch/sparc/include/asm/reg_64.h
+ delete mode 100644 arch/sparc/include/asm/sigcontext_32.h
+ delete mode 100644 arch/sparc/include/asm/sigcontext_64.h
+ delete mode 100644 arch/sparc/include/asm/siginfo_32.h
+ delete mode 100644 arch/sparc/include/asm/siginfo_64.h
+ delete mode 100644 arch/sparc/include/asm/signal_32.h
+ delete mode 100644 arch/sparc/include/asm/signal_64.h
+ delete mode 100644 arch/sparc/include/asm/stat_32.h
+ delete mode 100644 arch/sparc/include/asm/stat_64.h
