@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbZAFWhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbZAFWih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759517AbZAFWhu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758889AbZAFWXp
+	id S1761470AbZAFWih (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbZAFWbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:23:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41407 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756568AbZAFWXn (ORCPT
+	Tue, 6 Jan 2009 17:31:07 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:42904 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756249AbZAFWbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:23:43 -0500
-Date: Tue, 6 Jan 2009 14:22:37 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-In-Reply-To: <1231279660.11687.121.camel@twins>
-Message-ID: <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
- <1231279660.11687.121.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Jan 2009 17:31:03 -0500
+Cc: Matt Helsley <matthltc@us.ibm.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-nfs@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Cedric Le Goater <clg@fr.ibm.com>
+Message-Id: <FB1BAB9F-25D4-449F-A66D-D1CC705F3741@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+In-Reply-To: <20090106200229.GA17031@us.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
+Date: Tue, 6 Jan 2009 17:29:05 -0500
+References: <20090106011314.534653345@us.ibm.com> <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
+X-Mailer: Apple Mail (2.930.3)
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4963DB36.00CA:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 6, 2009, at Jan 6, 2009, 3:02 PM, Serge E. Hallyn wrote:
+> Quoting Matt Helsley (matthltc@us.ibm.com):
+>> We can often specify the UTS namespace to use when starting an RPC  
+>> client.
+>> However sometimes no UTS namespace is available (specifically  
+>> during system
+>> shutdown as the last NFS mount in a container is unmounted) so fall
+>> back to the initial UTS namespace.
+>
+> So what happens if we take this patch and do nothing else?
+
+I thought the point of this was to prevent incorrect container  
+nodenames from leaking onto the network.
+
+> The only potential problem situation will be rpc requests
+> made on behalf of a container in which the last task has
+> exited, right?  So let's say a container did an nfs mount
+> and then exits, causing an nfs umount request.
+>
+> That umount request will now be sent with the wrong nodename.
+> Does that actually cause problems, will the server use the
+> nodename to try and determine the client sending the request?
+>
+> thanks,
+> -serge
+>
+>> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+>> Cc: Cedric Le Goater <clg@fr.ibm.com>
+>> Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+>> Cc: linux-nfs@vger.kernel.org
+>> Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+>> Cc: Chuck Lever <chuck.lever@oracle.com>
+>> Cc: Eric W. Biederman <ebiederm@xmission.com>
+>> Cc: Linux Containers <containers@lists.osdl.org>
+>>
+>> ---
+>> net/sunrpc/clnt.c |    7 +++++--
+>> 1 file changed, 5 insertions(+), 2 deletions(-)
+>>
+>> Index: linux-2.6.28/net/sunrpc/clnt.c
+>> ===================================================================
+>> --- linux-2.6.28.orig/net/sunrpc/clnt.c
+>> +++ linux-2.6.28/net/sunrpc/clnt.c
+>> @@ -128,6 +128,7 @@ static struct rpc_clnt * rpc_new_client(
+>> 	struct rpc_version	*version;
+>> 	struct rpc_clnt		*clnt = NULL;
+>> 	struct rpc_auth		*auth;
+>> +	struct new_utsname	*uts_ns = init_utsname();
+>> 	int err;
+>> 	size_t len;
+>>
+>> @@ -213,10 +214,12 @@ static struct rpc_clnt * rpc_new_client(
+>> 	}
+>>
+>> 	/* save the nodename */
+>> -	clnt->cl_nodelen = strlen(init_utsname()->nodename);
+>> +	if (current->nsproxy != NULL)
+>> +		uts_ns = utsname();
+>> +	clnt->cl_nodelen = strlen(uts_ns->nodename);
+>> 	if (clnt->cl_nodelen > UNX_MAXNODENAME)
+>> 		clnt->cl_nodelen = UNX_MAXNODENAME;
+>> -	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt- 
+>> >cl_nodelen);
+>> +	memcpy(clnt->cl_nodename, uts_ns->nodename, clnt->cl_nodelen);
+>> 	rpc_register_client(clnt);
+>> 	return clnt;
+>>
+>>
+>> -- 
+>> _______________________________________________
+>> Containers mailing list
+>> Containers@lists.linux-foundation.org
+>> https://lists.linux-foundation.org/mailman/listinfo/containers
+
+-- 
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
 
 
-On Tue, 6 Jan 2009, Peter Zijlstra wrote:
-> 
-> One of the things the previous patch did wrong was that it never tracked
-> the owner in the mutex fast path -- I initially didn't notice because I
-> had all debugging infrastructure enabled, and that short circuits all
-> the fast paths.
 
-Why even worry?
 
-Just set the owner non-atomically. We can consider a NULL owner in the 
-slow-path to be a "let's schedule" case. After all, it's just a 
-performance tuning thing after all, and the window is going to be very 
-small, so it won't even be relevant from a performance tuning angle.
-
-So there's _no_ reason why the fast-path can't just set owner, and no 
-reason to disable preemption.
-
-I also think the whole preempt_disable/enable around the 
-mutex_spin_or_schedule() is pure garbage.
-
-In fact, I suspect that's the real bug you're hitting: you're enabling 
-preemption while holding a spinlock. That is NOT a good idea.
-
-So 
-
- - remove all the "preempt_disable/enable" crud. It's wrong.
-
- - remove the whole
-
-	+       if (!owner)
-	+               return;
-
-   thing. It's also wrong. Just go to the schedule case for that.
-
-It all looks like unnecessary complexity that you added, and I think 
-_that_ is what bites you.
-
-Aim for _simple_. Not clever. Not complex. What you should aim for is to 
-keep the _exact_ same code that we had before in mutex, and the absolute 
-*only* change is replacing that "unlock+schedule()+relock" sequence with 
-"mutex_spin_or_schedule()".
-
-That should be your starting point.
-
-Yeah, you'll need to set the owner for the fast case, but there are no 
-locking or preemption issues there. Just forget them. You're confusing 
-yourself and the code by trying to look for problems that aren't 
-relevant.
-
-			Linus
