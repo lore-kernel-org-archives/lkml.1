@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752129AbZAFPXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZAFPZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752129AbZAFPXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZAFPXk
+	id S1752543AbZAFPZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:25:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbZAFPZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:23:40 -0500
-Received: from THUNK.ORG ([69.25.196.29]:39911 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbZAFPXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:23:39 -0500
-Date: Tue, 6 Jan 2009 10:23:36 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-       Duane Griffin <duaneg@dghda.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: document ext3 requirements
-Message-ID: <20090106152336.GA13086@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-	Duane Griffin <duaneg@dghda.com>,
-	kernel list <linux-kernel@vger.kernel.org>
-References: <20090103123813.GA1512@ucw.cz> <495FD5D7.2040907@ribosome.natur.cuni.cz> <e9e943910901031417m51c847fepf304650862f0cbc2@mail.gmail.com> <20090103222957.GG1666@elf.ucw.cz> <495FEE66.9080903@ribosome.natur.cuni.cz> <20090106100810.GB6700@merlin.emma.line.org>
+	Tue, 6 Jan 2009 10:25:50 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:53947 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750836AbZAFPZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 10:25:50 -0500
+Message-ID: <496377FA.6050507@sgi.com>
+Date: Tue, 06 Jan 2009 07:25:46 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090106100810.GB6700@merlin.emma.line.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+CC: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 04/11] x86: cleanup remaining cpumask_t ops in smpboot
+ code
+References: <1231222512.3235.6.camel@jaswinder.satnam>	 <1231223480.3235.22.camel@jaswinder.satnam> <4963645A.1040201@sgi.com> <3f9a31f40901060628t3bffe020v6e70c5d6cf17f51e@mail.gmail.com>
+In-Reply-To: <3f9a31f40901060628t3bffe020v6e70c5d6cf17f51e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 11:08:10AM +0100, Matthias Andree wrote:
-> On Sun, 04 Jan 2009, Martin MOKREJŠ wrote:
-> > Hmm, so if my dual-boot machine does not shutdown correctly and I boot
-> > accidentally in M$ Win where I use ext2 IFS driver and modify some
-> > stuff on the ext3 drive, after a while reboot to linux and the journal
-> > get re-played ... Mmm ...
+Jaswinder Singh Rajput wrote:
+> Hi Mike,
 > 
-> If the ext2 IFS driver mounts an ext3 file system that needs journal
-> replay, the IFS driver is broken (unless it can replay the journal, of
-> course - I stopped using that driver long ago, being unhappy with it).
+> On Tue, Jan 6, 2009 at 7:32 PM, Mike Travis <travis@sgi.com> wrote:
+>> I'll look closer but I had assumed that these masks would not be
+>> used for UP configurations (it did not get any compile errors
+>> with the allnoconfig).  In fact, any access to these masks for
+>> UP would be unnecessary since there are no callouts, the boot
+>> cpu is assumed initialized, and it has no siblings.  So the
+>> masks are specific to SMP.
+>>
+> 
+> If it is specific to SMP then:
+> CONFIG_X86_64 should be CONFIG_X86_64_SMP
+> CONFIG_X86_32 should be CONFIG_X86_32_SMP
+> 
+> I am in the process of cleaning smp.h and moving out non-smp from
+> smp.h as per Ingo's suggestion.
+> 
+> I am planning to move cpumask related things to asm/cpumask.h
+> 
+> Is this OK to you.
+> 
+> --
+> JSR
 
-Indeed; that's why there is a INCOMPAT NEEDS_RECOVERY feature flag to
-prevent compliant ext2 implementations from mounting an ext3
-filesystem that needs recovery.  We've thought about most of these
-issues, almost a decade ago...
+It's fine with me, anything to untangle the web we've weaved... ;-)
 
-							- Ted
+Thanks,
+Mike
