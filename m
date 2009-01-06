@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbZAFW1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbZAFW1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759566AbZAFW1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbZAFWOA
+	id S1759487AbZAFW1j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbZAFWN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:14:00 -0500
-Received: from kroah.org ([198.145.64.141]:51291 "EHLO coco.kroah.org"
+	Tue, 6 Jan 2009 17:13:59 -0500
+Received: from kroah.org ([198.145.64.141]:51286 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755665AbZAFWN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:13:58 -0500
+	id S1755680AbZAFWN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:13:56 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 39/60] macintosh: struct device - replace bus_id with dev_name(), dev_set_name()
-Date: Tue,  6 Jan 2009 14:11:58 -0800
-Message-Id: <1231279939-32728-39-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Alex Dubov <oakad@yahoo.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 38/60] memstick: struct device - replace bus_id with dev_name(), dev_set_name()
+Date: Tue,  6 Jan 2009 14:11:57 -0800
+Message-Id: <1231279939-32728-38-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <20090106221123.GA32689@kroah.com>
 References: <20090106221123.GA32689@kroah.com>
@@ -24,102 +25,120 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
+Cc: Alex Dubov <oakad@yahoo.com>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/macintosh/macio_asic.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/memstick/core/memstick.c    |    5 ++---
+ drivers/memstick/core/mspro_block.c |   14 +++++++-------
+ drivers/memstick/host/tifm_ms.c     |    4 ++--
+ 3 files changed, 11 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
-index ec9e5f3..6e149f4 100644
---- a/drivers/macintosh/macio_asic.c
-+++ b/drivers/macintosh/macio_asic.c
-@@ -33,7 +33,7 @@
+diff --git a/drivers/memstick/core/memstick.c b/drivers/memstick/core/memstick.c
+index cea4690..a5b448e 100644
+--- a/drivers/memstick/core/memstick.c
++++ b/drivers/memstick/core/memstick.c
+@@ -385,8 +385,7 @@ static struct memstick_dev *memstick_alloc_card(struct memstick_host *host)
  
- #undef DEBUG
+ 	if (card) {
+ 		card->host = host;
+-		snprintf(card->dev.bus_id, sizeof(card->dev.bus_id),
+-			 "%s", host->dev.bus_id);
++		dev_set_name(&card->dev, "%s", dev_name(&host->dev));
+ 		card->dev.parent = &host->dev;
+ 		card->dev.bus = &memstick_bus_type;
+ 		card->dev.release = memstick_free_card;
+@@ -519,7 +518,7 @@ int memstick_add_host(struct memstick_host *host)
+ 	if (rc)
+ 		return rc;
  
--#define MAX_NODE_NAME_SIZE (BUS_ID_SIZE - 12)
-+#define MAX_NODE_NAME_SIZE (20 - 12)
+-	snprintf(host->dev.bus_id, BUS_ID_SIZE, "memstick%u", host->id);
++	dev_set_name(&host->dev, "memstick%u", host->id);
  
- static struct macio_chip      *macio_on_hold;
- 
-@@ -240,7 +240,7 @@ static void macio_create_fixup_irq(struct macio_dev *dev, int index,
- 	if (irq != NO_IRQ) {
- 		dev->interrupt[index].start = irq;
- 		dev->interrupt[index].flags = IORESOURCE_IRQ;
--		dev->interrupt[index].name = dev->ofdev.dev.bus_id;
-+		dev->interrupt[index].name = dev_name(&dev->ofdev.dev);
- 	}
- 	if (dev->n_interrupts <= index)
- 		dev->n_interrupts = index + 1;
-@@ -303,7 +303,7 @@ static void macio_setup_interrupts(struct macio_dev *dev)
- 			break;
- 		res->start = irq;
- 		res->flags = IORESOURCE_IRQ;
--		res->name = dev->ofdev.dev.bus_id;
-+		res->name = dev_name(&dev->ofdev.dev);
- 		if (macio_resource_quirks(np, res, i - 1)) {
- 			memset(res, 0, sizeof(struct resource));
- 			continue;
-@@ -325,7 +325,7 @@ static void macio_setup_resources(struct macio_dev *dev,
- 		if (index >= MACIO_DEV_COUNT_RESOURCES)
- 			break;
- 		*res = r;
--		res->name = dev->ofdev.dev.bus_id;
-+		res->name = dev_name(&dev->ofdev.dev);
- 
- 		if (macio_resource_quirks(np, res, index)) {
- 			memset(res, 0, sizeof(struct resource));
-@@ -338,7 +338,7 @@ static void macio_setup_resources(struct macio_dev *dev,
- 		if (insert_resource(parent_res, res)) {
- 			printk(KERN_WARNING "Can't request resource "
- 			       "%d for MacIO device %s\n",
--			       index, dev->ofdev.dev.bus_id);
-+			       index, dev_name(&dev->ofdev.dev));
- 		}
- 	}
- 	dev->n_resources = index;
-@@ -385,8 +385,8 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
- 
- 	/* MacIO itself has a different reg, we use it's PCI base */
- 	if (np == chip->of_node) {
--		sprintf(dev->ofdev.dev.bus_id, "%1d.%08x:%.*s",
--			chip->lbus.index,
-+		dev_set_name(&dev->ofdev.dev, "%1d.%08x:%.*s",
-+			     chip->lbus.index,
- #ifdef CONFIG_PCI
- 			(unsigned int)pci_resource_start(chip->lbus.pdev, 0),
- #else
-@@ -395,9 +395,9 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
- 			MAX_NODE_NAME_SIZE, np->name);
- 	} else {
- 		reg = of_get_property(np, "reg", NULL);
--		sprintf(dev->ofdev.dev.bus_id, "%1d.%08x:%.*s",
--			chip->lbus.index,
--			reg ? *reg : 0, MAX_NODE_NAME_SIZE, np->name);
-+		dev_set_name(&dev->ofdev.dev, "%1d.%08x:%.*s",
-+			     chip->lbus.index,
-+			     reg ? *reg : 0, MAX_NODE_NAME_SIZE, np->name);
+ 	rc = device_add(&host->dev);
+ 	if (rc) {
+diff --git a/drivers/memstick/core/mspro_block.c b/drivers/memstick/core/mspro_block.c
+index 7911151..1f1e398 100644
+--- a/drivers/memstick/core/mspro_block.c
++++ b/drivers/memstick/core/mspro_block.c
+@@ -887,14 +887,14 @@ try_again:
+ 	if (rc) {
+ 		printk(KERN_WARNING
+ 		       "%s: could not switch to 4-bit mode, error %d\n",
+-		       card->dev.bus_id, rc);
++		       dev_name(&card->dev), rc);
+ 		return 0;
  	}
  
- 	/* Setup interrupts & resources */
-@@ -408,7 +408,7 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
- 	/* Register with core */
- 	if (of_device_register(&dev->ofdev) != 0) {
- 		printk(KERN_DEBUG"macio: device registration error for %s!\n",
--		       dev->ofdev.dev.bus_id);
-+		       dev_name(&dev->ofdev.dev));
- 		kfree(dev);
- 		return NULL;
+ 	msb->system = MEMSTICK_SYS_PAR4;
+ 	host->set_param(host, MEMSTICK_INTERFACE, MEMSTICK_PAR4);
+ 	printk(KERN_INFO "%s: switching to 4-bit parallel mode\n",
+-	       card->dev.bus_id);
++	       dev_name(&card->dev));
+ 
+ 	if (msb->caps & MEMSTICK_CAP_PAR8) {
+ 		rc = mspro_block_set_interface(card, MEMSTICK_SYS_PAR8);
+@@ -905,11 +905,11 @@ try_again:
+ 					MEMSTICK_PAR8);
+ 			printk(KERN_INFO
+ 			       "%s: switching to 8-bit parallel mode\n",
+-			       card->dev.bus_id);
++			       dev_name(&card->dev));
+ 		} else
+ 			printk(KERN_WARNING
+ 			       "%s: could not switch to 8-bit mode, error %d\n",
+-			       card->dev.bus_id, rc);
++			       dev_name(&card->dev), rc);
  	}
-@@ -558,7 +558,7 @@ err_out:
- 		resource_no,
- 		macio_resource_len(dev, resource_no),
- 		macio_resource_start(dev, resource_no),
--		dev->ofdev.dev.bus_id);
-+		dev_name(&dev->ofdev.dev));
- 	return -EBUSY;
- }
+ 
+ 	card->next_request = h_mspro_block_req_init;
+@@ -922,7 +922,7 @@ try_again:
+ 	if (rc) {
+ 		printk(KERN_WARNING
+ 		       "%s: interface error, trying to fall back to serial\n",
+-		       card->dev.bus_id);
++		       dev_name(&card->dev));
+ 		msb->system = MEMSTICK_SYS_SERIAL;
+ 		host->set_param(host, MEMSTICK_POWER, MEMSTICK_POWER_OFF);
+ 		msleep(10);
+@@ -992,14 +992,14 @@ static int mspro_block_read_attributes(struct memstick_dev *card)
+ 
+ 	if (be16_to_cpu(attr->signature) != MSPRO_BLOCK_SIGNATURE) {
+ 		printk(KERN_ERR "%s: unrecognized device signature %x\n",
+-		       card->dev.bus_id, be16_to_cpu(attr->signature));
++		       dev_name(&card->dev), be16_to_cpu(attr->signature));
+ 		rc = -ENODEV;
+ 		goto out_free_attr;
+ 	}
+ 
+ 	if (attr->count > MSPRO_BLOCK_MAX_ATTRIBUTES) {
+ 		printk(KERN_WARNING "%s: way too many attribute entries\n",
+-		       card->dev.bus_id);
++		       dev_name(&card->dev));
+ 		attr_count = MSPRO_BLOCK_MAX_ATTRIBUTES;
+ 	} else
+ 		attr_count = attr->count;
+diff --git a/drivers/memstick/host/tifm_ms.c b/drivers/memstick/host/tifm_ms.c
+index d32d6ad..03f71a4 100644
+--- a/drivers/memstick/host/tifm_ms.c
++++ b/drivers/memstick/host/tifm_ms.c
+@@ -546,7 +546,7 @@ static void tifm_ms_abort(unsigned long data)
+ 	printk(KERN_ERR
+ 	       "%s : card failed to respond for a long period of time "
+ 	       "(%x, %x)\n",
+-	       host->dev->dev.bus_id, host->req ? host->req->tpc : 0,
++	       dev_name(&host->dev->dev), host->req ? host->req->tpc : 0,
+ 	       host->cmd_flags);
+ 
+ 	tifm_eject(host->dev);
+@@ -561,7 +561,7 @@ static int tifm_ms_probe(struct tifm_dev *sock)
+ 	if (!(TIFM_SOCK_STATE_OCCUPIED
+ 	      & readl(sock->addr + SOCK_PRESENT_STATE))) {
+ 		printk(KERN_WARNING "%s : card gone, unexpectedly\n",
+-		       sock->dev.bus_id);
++		       dev_name(&sock->dev));
+ 		return rc;
+ 	}
  
 -- 
 1.6.0.4
