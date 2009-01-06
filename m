@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZAFViA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbZAFViZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbZAFViA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbZAFVcb
+	id S1756530AbZAFViZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:38:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbZAFVcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:32:31 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:42839 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754133AbZAFVc3 (ORCPT
+	Tue, 6 Jan 2009 16:32:33 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:9249 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbZAFVcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:32:29 -0500
+	Tue, 6 Jan 2009 16:32:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=gw9IIwW8uAw3aCzgrrCqB5K08Kf9xLBRdAZr3wcDpKPYK9nF0O0y2T3CpRVO56cVB1
-         CG2/wJgsUvnVQsRHIbvTa9pGIzZGV6KPfrHYS6ErwTZQK8ZMaeYdNaRkr9qDK8X48v7g
-         ud8jlEbQeHceK7T0qRJDlS+8XoPCL0lL/rFec=
-Subject: [PATCH 16/23] h8300: introduce asm/swab.h
+        b=C9lnM2VxalceCtI2YQRba1uvl3huNf7WOblHKCoGXbMhMxPX0qIkITLovGkusFNYhc
+         EEosduvSD+JaD1YXAhOPoQjqk7Nh1jGqSt9/4VdJ/W/3wkqpMAayP9aKIZ6Jj4iqVQsB
+         qMeov0ZwYgzcAxKNI4NGgoDivAmzNSA6HvgL4=
+Subject: [PATCH 18/23] m68knommu: introduce asm/swab.h
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 06 Jan 2009 13:30:53 -0800
-Message-Id: <1231277453.964.273.camel@brick>
+Date: Tue, 06 Jan 2009 13:30:55 -0800
+Message-Id: <1231277455.964.275.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -36,53 +36,82 @@ Convert to the new-style arch overrides as well.
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/h8300/include/asm/Kbuild      |    1 +
- arch/h8300/include/asm/byteorder.h |    8 +-------
- arch/h8300/include/asm/swab.h      |   10 ++++++++++
- 3 files changed, 12 insertions(+), 7 deletions(-)
+ arch/m68knommu/include/asm/Kbuild      |    2 ++
+ arch/m68knommu/include/asm/byteorder.h |   22 +---------------------
+ arch/m68knommu/include/asm/swab.h      |   24 ++++++++++++++++++++++++
+ 3 files changed, 27 insertions(+), 21 deletions(-)
 
-diff --git a/arch/h8300/include/asm/Kbuild b/arch/h8300/include/asm/Kbuild
-index c68e168..27b108a 100644
---- a/arch/h8300/include/asm/Kbuild
-+++ b/arch/h8300/include/asm/Kbuild
-@@ -1 +1,2 @@
+diff --git a/arch/m68knommu/include/asm/Kbuild b/arch/m68knommu/include/asm/Kbuild
+index c68e168..58c02a4 100644
+--- a/arch/m68knommu/include/asm/Kbuild
++++ b/arch/m68knommu/include/asm/Kbuild
+@@ -1 +1,3 @@
  include include/asm-generic/Kbuild.asm
++
 +unifdef-y += swab.h
-diff --git a/arch/h8300/include/asm/byteorder.h b/arch/h8300/include/asm/byteorder.h
-index 36e597d..c36b80a 100644
---- a/arch/h8300/include/asm/byteorder.h
-+++ b/arch/h8300/include/asm/byteorder.h
-@@ -1,13 +1,7 @@
- #ifndef _H8300_BYTEORDER_H
- #define _H8300_BYTEORDER_H
+diff --git a/arch/m68knommu/include/asm/byteorder.h b/arch/m68knommu/include/asm/byteorder.h
+index 20bb442..a6f0b8f 100644
+--- a/arch/m68knommu/include/asm/byteorder.h
++++ b/arch/m68knommu/include/asm/byteorder.h
+@@ -1,27 +1,7 @@
+ #ifndef _M68KNOMMU_BYTEORDER_H
+ #define _M68KNOMMU_BYTEORDER_H
  
--#include <asm/types.h>
+-#include <linux/types.h>
 -
 -#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
 -#  define __BYTEORDER_HAS_U64__
 -#  define __SWAB_64_THRU_32__
 -#endif
 -
+-#if defined (__mcfisaaplus__) || defined (__mcfisac__)
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 val)
+-{
+-	asm(
+-			"byterev %0"
+-			: "=d" (val)
+-			: "0" (val)
+-	   );
+-	return val;
+-}
+-
+-#define __arch__swab32(x) ___arch__swab32(x)
+-#endif
+-
 +#include <asm/swab.h>
  #include <linux/byteorder/big_endian.h>
  
- #endif /* _H8300_BYTEORDER_H */
-diff --git a/arch/h8300/include/asm/swab.h b/arch/h8300/include/asm/swab.h
+ #endif /* _M68KNOMMU_BYTEORDER_H */
+diff --git a/arch/m68knommu/include/asm/swab.h b/arch/m68knommu/include/asm/swab.h
 new file mode 100644
-index 0000000..c108f39
+index 0000000..e582257
 --- /dev/null
-+++ b/arch/h8300/include/asm/swab.h
-@@ -0,0 +1,10 @@
-+#ifndef _H8300_SWAB_H
-+#define _H8300_SWAB_H
++++ b/arch/m68knommu/include/asm/swab.h
+@@ -0,0 +1,24 @@
++#ifndef _M68KNOMMU_SWAB_H
++#define _M68KNOMMU_SWAB_H
 +
-+#include <asm/types.h>
++#include <linux/types.h>
 +
 +#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
 +#  define __SWAB_64_THRU_32__
 +#endif
 +
-+#endif /* _H8300_SWAB_H */
++#if defined (__mcfisaaplus__) || defined (__mcfisac__)
++static inline __attribute_const__ __u32 __arch_swab32(__u32 val)
++{
++	asm(
++			"byterev %0"
++			: "=d" (val)
++			: "0" (val)
++	   );
++	return val;
++}
++
++#define __arch_swab32 __arch_swab32
++#endif
++
++#endif /* _M68KNOMMU_SWAB_H */
 -- 
 1.6.1.94.g9388
 
