@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZAFPkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbZAFPuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbZAFPkr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZAFPki
+	id S1752165AbZAFPuB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:50:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZAFPtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:40:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51783 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbZAFPkh (ORCPT
+	Tue, 6 Jan 2009 10:49:52 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42250 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbZAFPtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:40:37 -0500
-To: Theodore Tso <tytso@mit.edu>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
-       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-From: Andi Kleen <andi@firstfloor.org>
-References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no>
-	<200901042149.27655.rob@landley.net>
-	<20090105111913.47a8d1a5@lxorguk.ukuu.org.uk>
-	<200901051300.09169.rob@landley.net>
-	<yq1ocyl1rkq.fsf@sermon.lab.mkp.net>
-	<20090106104146.GD6700@merlin.emma.line.org>
-	<20090106153020.GB13086__11022.1833143898$1231255950$gmane$org@mit.edu>
-Date: Tue, 06 Jan 2009 16:40:33 +0100
-In-Reply-To: <20090106153020.GB13086__11022.1833143898$1231255950$gmane$org@mit.edu> (Theodore Tso's message of "Tue, 6 Jan 2009 10:30:20 -0500")
-Message-ID: <87k5984f4e.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 6 Jan 2009 10:49:51 -0500
+Date: Tue, 6 Jan 2009 10:49:49 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Roel Kluin <roel.kluin@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Liming Wang <liming.wang@windriver.com>
+Subject: Re: [PATCH] ftrace: unsigned idx cannot be less than 0
+In-Reply-To: <20090102154805.GA6833@nowhere>
+Message-ID: <alpine.DEB.1.10.0901061048260.10871@gandalf.stny.rr.com>
+References: <495E2987.3070501@gmail.com> <20090102154805.GA6833@nowhere>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso <tytso@mit.edu> writes:
 
-> On Tue, Jan 06, 2009 at 11:41:46AM +0100, Matthias Andree wrote:
->> > Rob> Good to know, but "my laptop hard drive just died" is not the
->> > Rob> optimal time to learn these sorts of things.
->> > 
->> > http://www.garloff.de/kurt/linux/ddrescue/
->> 
->> While nice, it does not reconfigure the block layer to reduce retries;
->> at least not in a manner I see at a glance; no sysctl or SG_IO or ioctl
->> or fcntl anywhere.
->
-> Well, Kurt Garloff wrote that program years and years ago.  I'm sure
-> if someone created patches he'd probably accept them, though.  It's
-> still the best program I've found for doing image backups in
-> catastrophic situations.
+[ added Liming to CC ]
 
-Better would be just to incorporate the functionality as an option
-into standard GNU dd. Then everyone would easily have access to it.
+On Fri, 2 Jan 2009, Frederic Weisbecker wrote:
 
--Andi
+> On Fri, Jan 02, 2009 at 03:49:43PM +0100, Roel Kluin wrote:
+> > // vi kernel/trace/ftrace.c +787
+> > struct ftrace_iterator {
+> > ...
+> >         unsigned                idx;
+> > ...
+> > };
+> > 
+> > idx is unsigned and cannot be less than 0.
+> > 
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > ---
+> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> > index 2f32969..a344add 100644
+> > --- a/kernel/trace/ftrace.c
+> > +++ b/kernel/trace/ftrace.c
+> > @@ -842,7 +842,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
+> >  	void *p = NULL;
+> >  
+> >  	if (*pos > 0) {
+> > -		if (iter->idx < 0)
+> > +		if (iter->idx == 0)
+> >  			return p;
+> >  		(*pos)--;
+> >  		iter->idx--;
+> 
+> 
+> Hi Roel,
+> 
+> I'm not sure this is the right fix.
+> If you look at t_next, if there is no more page to look at,
+> iter_idx takes -1.
+> 
+> A 0 value would mean: we are in the first index on the page, which means
+> there is something to read and we don't want to return NULL.
+> 
+> I guess that would be better to turn idx into a signed int.
 
--- 
-ak@linux.intel.com
+Correct. This bug was added by:
+
+  50cdaf08a8ec1d7f43987705da7aff7cf949708f
+  ftrace: improve seq_operation of ftrace
+
+So the correct fix is to turn it into a signed int.
+
+Thanks,
+
+-- Steve
