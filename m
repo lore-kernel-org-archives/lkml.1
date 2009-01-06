@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZAFJmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbZAFJpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbZAFJmB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZAFJlq
+	id S1754106AbZAFJpu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZAFJpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:41:46 -0500
-Received: from 1wt.eu ([62.212.114.60]:1126 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754487AbZAFJlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:41:45 -0500
-Date: Tue, 6 Jan 2009 10:41:38 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090106094138.GE25644@1wt.eu>
-References: <20081224152841.GB13113@1wt.eu> <20090106085442.GA9513@ff.dom.local>
-Mime-Version: 1.0
+	Tue, 6 Jan 2009 04:45:41 -0500
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:45739 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbZAFJpk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 04:45:40 -0500
+Date: Tue, 6 Jan 2009 10:45:37 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       sparclinux <sparclinux@vger.kernel.org>
+Subject: Re: ftrace breaks sparc64 build
+Message-ID: <20090106094537.GB5061@osiris.boeblingen.de.ibm.com>
+References: <20090105181922.GA25622@uranus.ravnborg.org> <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com> <20090105195415.GA6204@uranus.ravnborg.org> <alpine.DEB.1.10.0901051458460.25066@gandalf.stny.rr.com> <20090105213107.GA27293@uranus.ravnborg.org> <alpine.DEB.1.10.0901051649240.25066@gandalf.stny.rr.com> <20090105220156.GC8592@uranus.ravnborg.org> <alpine.DEB.1.10.0901051710450.25066@gandalf.stny.rr.com> <20090105231136.GA5073@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0901052326180.30989@gandalf.stny.rr.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090106085442.GA9513@ff.dom.local>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <alpine.DEB.1.10.0901052326180.30989@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jarek,
-
-On Tue, Jan 06, 2009 at 08:54:42AM +0000, Jarek Poplawski wrote:
-> On 24-12-2008 16:28, Willy Tarreau wrote:
-> > Hi Jens,
-> > 
-> > I'm facing a data corruption problem with splice() between two
-> > non-blocking TCP sockets on 2.6.27.10. I could finally write a
-> > simpler proof of concept, and capture a snapshot of the issue
-> > with the associated strace result.
-> ...
-> > I found an analysis [1] for a potential corruption problem between two
-> > sockets, but I noticed there were no responses and I did not fully
-> > understand the report anyway.
-> > 
-> > What can I do to help debug the problem ? I'm really willing to help
-> > getting this fixed, and I also have at least one user who definitely
-> > wants splice() to work because the recv/send model currently limits
-> > haproxy to 3 Gbps on his machines, while I have no problem reaching
-> > 10 Gbps with splice().
-> ...
-> > ----
-> > [1] http://lkml.org/lkml/2008/2/26/210
+On Mon, Jan 05, 2009 at 11:30:58PM -0500, Steven Rostedt wrote:
+> On Tue, 6 Jan 2009, Heiko Carstens wrote:
+> Sam and Heiko,
 > 
-> Great story! Alas I don't understand this fully either, but it seems
-> Changli Gao was concerned with sendpage sending this "as pages", so
-> when NETIF_F_SG flag is available. Did you try this without SG btw?
+> I'm trying to see if the (a ? b : c) construct is causing the issue. Can 
+> you test this patch.
+> 
+> diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+> index d95da10..e13ad24 100644
+> --- a/include/linux/compiler.h
+> +++ b/include/linux/compiler.h
+> @@ -113,7 +113,8 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+>   * "Define 'is'", Bill Clinton
+>   * "Define 'if'", Steven Rostedt
+>   */
+> -#define if(cond) if (__builtin_constant_p((cond)) ? !!(cond) :		\
+> +#define if(cond) if ((__builtin_constant_p((cond)) && !!(cond)) ||	\
+> +		     (!__builtin_constant_p((cond)) &&			\
 
-No I did not. I can try, it's not too hard. It would in part defeat the
-purpose of the mechanism (especially at 10 Gbps) but at least it will
-help narrow the problem down.
-
-Thanks for the tip, I'll keep you informed !
-Willy
-
+Doesn't help unfortunately.
