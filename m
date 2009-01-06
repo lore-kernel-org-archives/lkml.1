@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZAFXgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZAFXjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbZAFXgO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZAFXfz
+	id S1755811AbZAFXjD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:39:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZAFXix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:35:55 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:34208 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751844AbZAFXfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:35:54 -0500
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Matt Helsley <matthltc@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-In-Reply-To: <20090106233238.GD13785@fieldses.org>
-References: <20090106011314.534653345@us.ibm.com>
-	 <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
-	 <1231274682.20316.65.camel@heimdal.trondhjem.org>
-	 <20090106215831.GE18147@us.ibm.com> <m1eizg11fy.fsf@frodo.ebiederm.org>
-	 <1231283734.8041.6.camel@heimdal.trondhjem.org>
-	 <20090106233238.GD13785@fieldses.org>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 18:35:43 -0500
-Message-Id: <1231284943.8041.8.camel@heimdal.trondhjem.org>
+	Tue, 6 Jan 2009 18:38:53 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48780 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751677AbZAFXiw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 18:38:52 -0500
+Date: Tue, 6 Jan 2009 15:38:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
+       kobayashi.kk@ncos.nec.co.jp
+Subject: Re: 2.6.29 -mm merge plans
+Message-Id: <20090106153847.df96c8c0.akpm@linux-foundation.org>
+In-Reply-To: <20090106232439.GC25103@infradead.org>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+	<20090106225744.GA10553@infradead.org>
+	<20090106151344.0f146286.akpm@linux-foundation.org>
+	<20090106232439.GC25103@infradead.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 3CC8CCF62218B8FEE8781D99A821A8A48B4D89B5
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 2 total 329 max/h 9 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-06 at 18:32 -0500, J. Bruce Fields wrote:
-> On Tue, Jan 06, 2009 at 06:15:34PM -0500, Trond Myklebust wrote:
-> > On Tue, 2009-01-06 at 15:04 -0800, Eric W. Biederman wrote:
-> > > That implies to me you want to capture the value at mount time, and to
-> > > pass it in to the rpc_call creation, and only at very specific well
-> > > defined points where we interact with user space should we examine
-> > > current->utsname().  At which point there should be no question
-> > > of current->utsname() is valid as the user space process is alive.
+On Tue, 6 Jan 2009 18:24:39 -0500
+Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Tue, Jan 06, 2009 at 03:13:44PM -0800, Andrew Morton wrote:
+> > (cc added)
 > > 
-> > Why pretend that the filesystem is owned by a particular namespace? It
-> > can, and will be shared among many containers...
+> > On Tue, 6 Jan 2009 17:57:44 -0500
+> > Christoph Hellwig <hch@infradead.org> wrote:
+> > 
+> > > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
+> > > 
+> > > > softirq-introduce-statistics-for-softirq.patch
+> > > > proc-export-statistics-for-softirq-to-proc.patch
+> > > > proc-update-document-for-proc-softirqs-and-proc-stat.patch
+> > > 
+> > > Why is this in procfs?
+> > 
+> > softirq stuff in /proc seems appropriate?  It's alongside
+> > /proc/interrupts.  We could put it in /trendy-fs-of-the-day, but what
+> > would it gain us?
 > 
-> If the only purpose of this is to fill in the auth_unix cred then
-> shouldn't it be part of whatever cred structures are passed around?
+> debugfs seems to be the normal thing for these.
 
-So how does tracking it in a shared structure like the rpc_client help?
-If you consider it to be part of the cred, then it needs to be tracked
-in the cred...
+hm.  I'm not a huge fan of debugfs (for other reasons, nicely explained
+by Matt Mackall a while back).
 
-Trond
+But I don't think we actually *gain* anything by putting softirq stats
+into debugfs, whereas it makes sense that it lives in /proc?
+
+otoh, the internal implementation might be nicer if it uses debugfs
+helper infrastructure.  But the existing code is pretty
+straightforward.
+
 
