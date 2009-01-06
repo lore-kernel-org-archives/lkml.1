@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZAFVi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZAFVjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbZAFVi5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZAFVcg
+	id S1755345AbZAFVjZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZAFVci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:32:36 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:23202 "EHLO
+	Tue, 6 Jan 2009 16:32:38 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:13123 "EHLO
 	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754422AbZAFVcf (ORCPT
+	with ESMTP id S1751772AbZAFVch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:32:35 -0500
+	Tue, 6 Jan 2009 16:32:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=idRet0CL1ILJGS9aZd009z2XfuVv71llMphMbaHG9xXZqlqAy6Gn6YjpxjvU8iOb7w
-         6G4vFLSwyRHGOf6Yn+ZQ2/ig0fVFDdL2KaByFtvnGLCVEY9RM/ZjzZ95IzRwhxoegIqu
-         /Wgt2fPst7ICt0ExLIMImOXVlF67l6jkLZ2Ys=
-Subject: [PATCH 20/23] m32r: introduce asm/swab.h
+        b=q43cJ2I4Ue3YtX7q4nJ53wg0zL/bfZk4a2pLgNwmtnCC9v4x0PPbGHpdmTSOihJpyc
+         liT1Ht1a1xhPwC6X68lYjRCMdbTwYzvMKQsicqUs+K8Inu2GTFrq9mwRfdzUJKjuLWLZ
+         rAJi0D28DoxNMoLrOPj4oHEgPLKhGBdHugo64=
+Subject: [PATCH 21/23] mn10300: introduce asm/swab.h
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+       LKML <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>
 Content-Type: text/plain
 Date: Tue, 06 Jan 2009 13:30:56 -0800
-Message-Id: <1231277456.964.277.camel@brick>
+Message-Id: <1231277456.964.278.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -32,56 +33,120 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert to the new-style arch overrides as well.
-
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-m32r/Kbuild      |    1 +
- include/asm-m32r/byteorder.h |    7 +------
- include/asm-m32r/swab.h      |   10 ++++++++++
- 3 files changed, 12 insertions(+), 6 deletions(-)
+ include/asm-mn10300/Kbuild      |    1 +
+ include/asm-mn10300/byteorder.h |   41 +-------------------------------------
+ include/asm-mn10300/swab.h      |   42 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+), 40 deletions(-)
 
-diff --git a/include/asm-m32r/Kbuild b/include/asm-m32r/Kbuild
+diff --git a/include/asm-mn10300/Kbuild b/include/asm-mn10300/Kbuild
 index c68e168..27b108a 100644
---- a/include/asm-m32r/Kbuild
-+++ b/include/asm-m32r/Kbuild
+--- a/include/asm-mn10300/Kbuild
++++ b/include/asm-mn10300/Kbuild
 @@ -1 +1,2 @@
  include include/asm-generic/Kbuild.asm
 +unifdef-y += swab.h
-diff --git a/include/asm-m32r/byteorder.h b/include/asm-m32r/byteorder.h
-index 10b2c1d..61ff9cf 100644
---- a/include/asm-m32r/byteorder.h
-+++ b/include/asm-m32r/byteorder.h
-@@ -1,12 +1,7 @@
- #ifndef _ASM_M32R_BYTEORDER_H
- #define _ASM_M32R_BYTEORDER_H
+diff --git a/include/asm-mn10300/byteorder.h b/include/asm-mn10300/byteorder.h
+index 3c993cc..45b18de 100644
+--- a/include/asm-mn10300/byteorder.h
++++ b/include/asm-mn10300/byteorder.h
+@@ -1,46 +1,7 @@
+-/* MN10300 Byte-order primitive construction
+- *
+- * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
+- * Written by David Howells (dhowells@redhat.com)
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public Licence
+- * as published by the Free Software Foundation; either version
+- * 2 of the Licence, or (at your option) any later version.
+- */
+ #ifndef _ASM_BYTEORDER_H
+ #define _ASM_BYTEORDER_H
  
 -#include <asm/types.h>
+-
+-#ifdef __GNUC__
+-
+-static inline __attribute__((const))
+-__u32 ___arch__swab32(__u32 x)
+-{
+-	__u32 ret;
+-	asm("swap %1,%0" : "=r" (ret) : "r" (x));
+-	return ret;
+-}
+-
+-static inline __attribute__((const))
+-__u16 ___arch__swab16(__u16 x)
+-{
+-	__u16 ret;
+-	asm("swaph %1,%0" : "=r" (ret) : "r" (x));
+-	return ret;
+-}
+-
+-#define __arch__swab32(x) ___arch__swab32(x)
+-#define __arch__swab16(x) ___arch__swab16(x)
 -
 -#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
 -#  define __BYTEORDER_HAS_U64__
 -#  define __SWAB_64_THRU_32__
 -#endif
+-
+-#endif /* __GNUC__ */
+-
 +#include <asm/swab.h>
+ #include <linux/byteorder/little_endian.h>
  
- #if defined(__LITTLE_ENDIAN__)
- #  include <linux/byteorder/little_endian.h>
-diff --git a/include/asm-m32r/swab.h b/include/asm-m32r/swab.h
+ #endif /* _ASM_BYTEORDER_H */
+diff --git a/include/asm-mn10300/swab.h b/include/asm-mn10300/swab.h
 new file mode 100644
-index 0000000..97973e1
+index 0000000..4504d1b
 --- /dev/null
-+++ b/include/asm-m32r/swab.h
-@@ -0,0 +1,10 @@
-+#ifndef _ASM_M32R_SWAB_H
-+#define _ASM_M32R_SWAB_H
++++ b/include/asm-mn10300/swab.h
+@@ -0,0 +1,42 @@
++/* MN10300 Byte-order primitive construction
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++#ifndef _ASM_SWAB_H
++#define _ASM_SWAB_H
 +
 +#include <asm/types.h>
++
++#ifdef __GNUC__
++
++static inline __attribute__((const))
++__u32 __arch_swab32(__u32 x)
++{
++	__u32 ret;
++	asm("swap %1,%0" : "=r" (ret) : "r" (x));
++	return ret;
++}
++#define __arch_swab32 __arch_swab32
++
++static inline __attribute__((const))
++__u16 __arch_swab16(__u16 x)
++{
++	__u16 ret;
++	asm("swaph %1,%0" : "=r" (ret) : "r" (x));
++	return ret;
++}
++#define __arch_swab32 __arch_swab32
 +
 +#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
 +#  define __SWAB_64_THRU_32__
 +#endif
 +
-+#endif /* _ASM_M32R_SWAB_H */
++#endif /* __GNUC__ */
++
++#endif /* _ASM_SWAB_H */
 -- 
 1.6.1.94.g9388
 
