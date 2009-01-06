@@ -1,79 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbZAFX1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZAFX1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbZAFX1U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZAFX1C
+	id S1756990AbZAFX1h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:27:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbZAFX1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:27:02 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:24791 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371AbZAFX1A (ORCPT
+	Tue, 6 Jan 2009 18:27:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:35201 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755313AbZAFX1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:27:00 -0500
-Message-ID: <e37d376a0901061526s3bccb71rb07087e2716159b9@mail.gmail.com>
-Date: Tue, 6 Jan 2009 15:26:59 -0800
-From: "Warren Turkal" <wt@penguintechs.org>
-To: "Christoph Hellwig" <hch@infradead.org>
+	Tue, 6 Jan 2009 18:27:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer;
+        b=Wr1Rdx56NoxB9wQ6ZRMGjSrU68hrW1mVGDFaVI3iP0TdM9NtpdZ2an4Ou3Y2Duz/pb
+         LzPjIARSnHEScQ/by+WAT1MVAYCZZuuXHYbteM46vfHFlulU+wzjEACa5eXifKpqWXD/
+         90seBjIPKSmV79ozCwW/Cs3jPEq55WV86hsys=
 Subject: Re: 2.6.29 -mm merge plans
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Diego Elio 'Flameeyes' Petten?" <flameeyes@gmail.com>
-In-Reply-To: <e37d376a0901061526s5d571febu2eb9758050506442@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: "Diego E. 'Flameeyes'" =?ISO-8859-1?Q?Petten=F2?= 
+	<flameeyes@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Warren Turkal <wt@penguintechs.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20090106231958.GA30271@infradead.org>
 References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
 	 <20090106225744.GA10553@infradead.org>
 	 <20090106151747.c640dfd4.akpm@linux-foundation.org>
 	 <20090106231958.GA30271@infradead.org>
-	 <e37d376a0901061526s5d571febu2eb9758050506442@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-WmIWSHfVGVDphOSoDqqz"
+Date: Wed, 07 Jan 2009 00:27:13 +0100
+Message-Id: <1231284433.5158.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just to clarify, by "previous code", I meant I linked to it. It is not
-the code I used for the patch.
 
-wt
+--=-WmIWSHfVGVDphOSoDqqz
+Content-Type: multipart/mixed; boundary="=-yOAfhYFe4OPbgQo+9e2M"
 
-On Tue, Jan 6, 2009 at 3:26 PM, Warren Turkal <wt@penguintechs.org> wrote:
-> I have a drive at home with the condition. So empirically, it can happen.
->
-> I would also argue that having a journal bit set and then saying that
-> the journal info block is at 0 makes no sense anyhow since the first
-> 1024 bytes of the volume must be empty on HFS+.
->
-> And, I found the previous code from Apple saying that a 0 in the
-> journal_info_block field indicated that there was no journal.
->
-> Is there anything else I should be doing?
->
-> wt
->
-> On Tue, Jan 6, 2009 at 3:19 PM, Christoph Hellwig <hch@infradead.org> wrote:
->> On Tue, Jan 06, 2009 at 03:17:47PM -0800, Andrew Morton wrote:
->>> > I'm pretty sure we already had a version better than that in your
->>> > tree on the list.  But I've lost track and we should just restart
->>> > the review cycle on -fsdevel.
->>>
->>> Yeah, I have the three hfs patches:
->>>
->>> hfsplus-identify-journal-info-block-in-volume-header.patch
->>> hfsplus-fix-journal-detection.patch
->>> hfs-add-basic-export-support.patch
->>>
->>> in a holding pattern awaiting a second round, due to laggy, incomplete
->>> and confusing noises from various people.  It all needs a revisit.
->>
->> The first two are not for me to decide.  They look fine code-wise,
->> but IIRC Roman had some issues with wether the condition should be
->> possible at all.
->>
->> The third one is where I requested a respin, and I'm pretty sure I've
->> seen a version with some improvement over the one in your tree.  Let's
->> get the latests version back on -fsdevel and review it again.
->>
->> The one in your tree certainly is not ready.
->>
->
+
+--=-yOAfhYFe4OPbgQo+9e2M
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2009-01-06 at 18:19 -0500, Christoph Hellwig wrote:
+> The third one is where I requested a respin, and I'm pretty sure I've
+> seen a version with some improvement over the one in your tree.  Let's
+> get the latests version back on -fsdevel and review it again.
+>=20
+> The one in your tree certainly is not ready.
+
+Yes that one wasn't good at all, and I feel sorry for not having noticed
+that before sending it in the first place.
+
+I've sent an updated one (which I'm attaching right now too), and this
+one I've been using (on both .28 and .27 before, slightly modified)
+without any issue at all (fixed the random disappearence of the path on
+my laptop from time to time indeed).
+
+Thanks,
+
+--=20
+Diego "Flameeyes" Petten=C3=B2
+http://blog.flameeyes.eu/
+
+
+--=-yOAfhYFe4OPbgQo+9e2M
+Content-Disposition: attachment;
+	filename="0001-Add-basic-export-support-to-HFS-filesystem.patch"
+Content-Type: text/x-patch; name="0001-Add-basic-export-support-to-HFS-filesystem.patch";
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
+
+RnJvbSA3ZjZkZjFlZTcwZmZkZDdhYzc1ZjY5OTA0NjNlZjNhNDg1ODJhZDhlIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQ0KRnJvbTogPT91dGYtOD9xP0RpZWdvPTIwRS49MjAnRmxhbWVleWVzJz0y
+MFBldHRlbj1DMz1CMj89IDxmbGFtZWV5ZXNAZ21haWwuY29tPg0KRGF0ZTogVGh1LCA0IERlYyAy
+MDA4IDEzOjMyOjA2ICswMTAwDQpTdWJqZWN0OiBbUEFUQ0hdIEFkZCBiYXNpYyBleHBvcnQgc3Vw
+cG9ydCB0byBIRlMrIGZpbGVzeXN0ZW0uDQpNSU1FLVZlcnNpb246IDEuMA0KQ29udGVudC1UeXBl
+OiB0ZXh0L3BsYWluOyBjaGFyc2V0PXV0Zi04DQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiA4
+Yml0DQoNClRoZSBmdW5jdGlvbnMnIHNrZWxldG9uIGlzIHRha2VuIGZyb20gZXh0Mi9zdXBlci5j
+IGFuZCBzZWVtcyB0byB3b3JrDQpmaW5lIGZvciBSL1cgYWNjZXNzIHRvIEhGUysgbm9uLWpvdXJu
+YWxlZCBjYXNlLXNlbnNpdGl2ZSBmaWxlc3lzdGVtcy4NCg0KU2lnbmVkLW9mZi1ieTogRGllZ28g
+RS4gJ0ZsYW1lZXllcycgUGV0dGVuw7IgPGZsYW1lZXllc0BnbWFpbC5jb20+DQpDYzogUm9tYW4g
+WmlwcGVsIDx6aXBwZWxAbGludXgtbTY4ay5vcmc+DQpDYzogQ2hyaXN0b3BoIEhlbGx3aWcgPGhj
+aEBsc3QuZGU+DQpDYzogTmVpbCBCcm93biA8bmVpbGJAc3VzZS5kZT4NCi0tLQ0KIGZzL2hmc3Bs
+dXMvTWFrZWZpbGUgICAgIHwgICAgMyArLQ0KIGZzL2hmc3BsdXMvZXhwb3J0LmMgICAgIHwgIDEx
+OCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KIGZzL2hm
+c3BsdXMvaGZzcGx1c19mcy5oIHwgICAgMyArDQogZnMvaGZzcGx1cy9zdXBlci5jICAgICAgfCAg
+ICAxICsNCiA0IGZpbGVzIGNoYW5nZWQsIDEyNCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygt
+KQ0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBmcy9oZnNwbHVzL2V4cG9ydC5jDQoNCmRpZmYgLS1naXQg
+YS9mcy9oZnNwbHVzL01ha2VmaWxlIGIvZnMvaGZzcGx1cy9NYWtlZmlsZQ0KaW5kZXggM2NjMGRm
+Ny4uMzc0MTMxZSAxMDA2NDQNCi0tLSBhL2ZzL2hmc3BsdXMvTWFrZWZpbGUNCisrKyBiL2ZzL2hm
+c3BsdXMvTWFrZWZpbGUNCkBAIC01LDUgKzUsNiBAQA0KIG9iai0kKENPTkZJR19IRlNQTFVTX0ZT
+KSArPSBoZnNwbHVzLm8NCiANCiBoZnNwbHVzLW9ianMgOj0gc3VwZXIubyBvcHRpb25zLm8gaW5v
+ZGUubyBpb2N0bC5vIGV4dGVudHMubyBjYXRhbG9nLm8gZGlyLm8gYnRyZWUubyBcDQotCQlibm9k
+ZS5vIGJyZWMubyBiZmluZC5vIHRhYmxlcy5vIHVuaWNvZGUubyB3cmFwcGVyLm8gYml0bWFwLm8g
+cGFydF90Ymwubw0KKwkJYm5vZGUubyBicmVjLm8gYmZpbmQubyB0YWJsZXMubyB1bmljb2RlLm8g
+d3JhcHBlci5vIGJpdG1hcC5vIHBhcnRfdGJsLm8gXA0KKwkJZXhwb3J0Lm8NCiANCmRpZmYgLS1n
+aXQgYS9mcy9oZnNwbHVzL2V4cG9ydC5jIGIvZnMvaGZzcGx1cy9leHBvcnQuYw0KbmV3IGZpbGUg
+bW9kZSAxMDA2NDQNCmluZGV4IDAwMDAwMDAuLjkxZTVjYjkNCi0tLSAvZGV2L251bGwNCisrKyBi
+L2ZzL2hmc3BsdXMvZXhwb3J0LmMNCkBAIC0wLDAgKzEsMTE4IEBADQorLyoNCisgKiAgbGludXgv
+ZnMvaGZzcGx1cy9leHBvcnQuYw0KKyAqDQorICogQ29weXJpZ2h0IChDKSAyMDAxDQorICogQnJh
+ZCBCb3llciAoZmxhckBhbGxhbmRyaWEuY29tKQ0KKyAqIChDKSAyMDAzIEFyZGlzIFRlY2hub2xv
+Z2llcyA8cm9tYW5AYXJkaXN0ZWNoLmNvbT4NCisgKiAoQykgMjAwOCBEaWVnbyBFLiBQZXR0ZW7D
+siA8ZmxhbWVleWVzQGdtYWlsLmNvbT4NCisgKg0KKyAqIEV4cG9ydCBmb3IgTkZTDQorICovDQor
+DQorI2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+DQorI2luY2x1ZGUgPGxpbnV4L2ZzLmg+DQorI2lu
+Y2x1ZGUgPGxpbnV4L2V4cG9ydGZzLmg+DQorDQorI2luY2x1ZGUgImhmc3BsdXNfZnMuaCINCisj
+aW5jbHVkZSAiaGZzcGx1c19yYXcuaCINCisNCisvKg0KKyAqIFRoaXMgaXMgdmVyeSBkaWZmZXJl
+bnQgZnJvbSBtb3N0IGdldF9wYXJlbnQgZnVuY3Rpb25zLCBzaW5jZSBIRlMrDQorICogZG9lcyBu
+b3QgaGF2ZSBhICIuLiIgZW50cnkgb24gdGhlaXIgZGlyZWN0b3JpZXMuDQorICoNCisgKiBJbnN0
+ZWFkLCB0aGUgZmlsZXN5c3RlbSB1c2VzIENhdGFsb2cgVGhyZWFkIFJlY29yZHMgdG8gY29ubmVj
+dA0KKyAqIGRpcmVjdG9yaWVzIGFuZCBmaWxlcyB0byB0aGVpciBhbmNlc3RvcnMuDQorICovDQor
+c3RhdGljIHN0cnVjdCBkZW50cnkgKmhmc3BsdXNfZ2V0X3BhcmVudChzdHJ1Y3QgZGVudHJ5ICpj
+aGlsZCkNCit7DQorCXN0cnVjdCBzdXBlcl9ibG9jayAqc2I7DQorCWhmc3BsdXNfY2F0X2VudHJ5
+IGVudHJ5Ow0KKwlzdHJ1Y3QgaGZzX2ZpbmRfZGF0YSBmZDsNCisJc3RydWN0IGlub2RlICppbm9k
+ZTsNCisJaW50IGVycjsNCisNCisJc2IgPSBjaGlsZC0+ZF9zYjsNCisNCisJaGZzX2ZpbmRfaW5p
+dChIRlNQTFVTX1NCKHNiKS5jYXRfdHJlZSwgJmZkKTsNCisJaGZzcGx1c19jYXRfYnVpbGRfa2V5
+KHNiLCBmZC5zZWFyY2hfa2V5LCBjaGlsZC0+ZF9pbm9kZS0+aV9pbm8sIE5VTEwpOw0KKwllcnIg
+PSBoZnNfYnJlY19maW5kKCZmZCk7DQorDQorCWlmIChlcnIpIHsNCisJCXByaW50ayhLRVJOX0VS
+UiAiaGZzOiB1bmFibGUgdG8gZmluZCBjaGlsZCwgY2FsbCB0aGUgcG9saWNlXG4iKTsNCisJCWdv
+dG8gb3V0Ow0KKwl9DQorDQorCWhmc19ibm9kZV9yZWFkKGZkLmJub2RlLCAmZW50cnksIGZkLmVu
+dHJ5b2Zmc2V0LCBmZC5lbnRyeWxlbmd0aCk7DQorCWlmICggYmUxNl90b19jcHUoZW50cnkudHlw
+ZSkgIT0gSEZTUExVU19GT0xERVJfVEhSRUFEKSB7DQorCQlwcmludGsoS0VSTl9FUlIgImhmczog
+YmFkIGNhdGFsb2cgZm9sZGVyIHRocmVhZFxuIik7DQorCQllcnIgPSAtRUlPOw0KKwkJZ290byBv
+dXQ7DQorCX0NCisNCisJaWYgKGZkLmVudHJ5bGVuZ3RoIDwgSEZTUExVU19NSU5fVEhSRUFEX1Na
+KSB7DQorCQlwcmludGsoS0VSTl9FUlIgImhmczogdHJ1bmNhdGVkIGNhdGFsb2cgdGhyZWFkXG4i
+KTsNCisJCWVyciA9IC1FSU87DQorCQlnb3RvIG91dDsNCisJfQ0KKw0KKwloZnNfZmluZF9leGl0
+KCZmZCk7DQorDQorCWlub2RlID0gaGZzcGx1c19pZ2V0KGNoaWxkLT5kX3NiLCBiZTMyX3RvX2Nw
+dShlbnRyeS50aHJlYWQucGFyZW50SUQpKTsNCisJaWYgKElTX0VSUihpbm9kZSkpIHsNCisJCXBy
+aW50ayhLRVJOX0VSUiAiaGZzOiB1bmFibGUgdG8gZmluZCBwYXJlbnQsIGNhbGwgdGhlIHNvY2lh
+bCBzZXJ2aWNlc1xuIik7DQorCQlyZXR1cm4gRVJSX0NBU1QoaW5vZGUpOw0KKwl9DQorDQorCXJl
+dHVybiBkX29idGFpbl9hbGlhcyhpbm9kZSk7DQorDQorb3V0Og0KKwloZnNfZmluZF9leGl0KCZm
+ZCk7DQorCXJldHVybiBFUlJfUFRSKGVycik7DQorfQ0KKw0KK3N0YXRpYyBzdHJ1Y3QgaW5vZGUg
+Kmhmc3BsdXNfZXhwb3J0X2dldF9pbm9kZShzdHJ1Y3Qgc3VwZXJfYmxvY2sgKnNiLA0KKwkJCQkJ
+ICAgICAgdTY0IGlubywgdTMyIGdlbmVyYXRpb24pDQorew0KKwlzdHJ1Y3QgaW5vZGUgKmlub2Rl
+Ow0KKw0KKwlpZiAoaW5vIDwgSEZTUExVU19GSVJTVFVTRVJfQ05JRCAmJiBpbm8gIT0gSEZTUExV
+U19ST09UX0NOSUQpDQorCQlyZXR1cm4gRVJSX1BUUigtRVNUQUxFKTsNCisNCisJaW5vZGUgPSBo
+ZnNwbHVzX2lnZXQoc2IsIGlubyk7DQorCWlmIChJU19FUlIoaW5vZGUpKQ0KKwkJcmV0dXJuIEVS
+Ul9DQVNUKGlub2RlKTsNCisNCisJLyogcHJvYmFibHkgc3VwZXJmbHVvdXMgYnV0IGl0IGRvZXMg
+bm90IHNlZW0gdG8gaHVydCAqLw0KKwlpZiAoZ2VuZXJhdGlvbiAmJiBpbm9kZS0+aV9nZW5lcmF0
+aW9uICE9IGdlbmVyYXRpb24pIHsNCisJCS8qIHdlIGRpZG4ndCBmaW5kIHRoZSByaWdodCBpbm9k
+ZS4uICovDQorCQlpcHV0KGlub2RlKTsNCisJCXJldHVybiBFUlJfUFRSKC1FU1RBTEUpOw0KKwl9
+DQorCXJldHVybiBpbm9kZTsNCit9DQorDQorc3RhdGljIHN0cnVjdCBkZW50cnkgKmhmc3BsdXNf
+ZmhfdG9fZGVudHJ5KHN0cnVjdCBzdXBlcl9ibG9jayAqc2IsIHN0cnVjdCBmaWQgKmZpZCwNCisJ
+CQkJCSAgIGludCBmaF9sZW4sIGludCBmaF90eXBlKQ0KKw0KK3sNCisJcmV0dXJuIGdlbmVyaWNf
+ZmhfdG9fZGVudHJ5KHNiLCBmaWQsIGZoX2xlbiwgZmhfdHlwZSwNCisJCQkJICAgIGhmc3BsdXNf
+ZXhwb3J0X2dldF9pbm9kZSk7DQorfQ0KKw0KK3N0YXRpYyBzdHJ1Y3QgZGVudHJ5ICpoZnNwbHVz
+X2ZoX3RvX3BhcmVudChzdHJ1Y3Qgc3VwZXJfYmxvY2sgKnNiLCBzdHJ1Y3QgZmlkICpmaWQsDQor
+CQkJCQkgICBpbnQgZmhfbGVuLCBpbnQgZmhfdHlwZSkNCisNCit7DQorCXJldHVybiBnZW5lcmlj
+X2ZoX3RvX3BhcmVudChzYiwgZmlkLCBmaF9sZW4sIGZoX3R5cGUsDQorCQkJCSAgICBoZnNwbHVz
+X2V4cG9ydF9nZXRfaW5vZGUpOw0KK30NCisNCisvKiBZZXMsIG1vc3Qgb2YgdGhlc2UgYXJlIGxl
+ZnQgYXMgTlVMTCEhDQorICogQSBOVUxMIHZhbHVlIGltcGxpZXMgdGhlIGRlZmF1bHQsIHdoaWNo
+IHdvcmtzIHdpdGggaGZzKy1saWtlIGZpbGUNCisgKiBzeXN0ZW1zLCBidXQgY2FuIGJlIGltcHJv
+dmVkIHVwb24uDQorICovDQorY29uc3Qgc3RydWN0IGV4cG9ydF9vcGVyYXRpb25zIGhmc3BsdXNf
+ZXhwb3J0X29wcyA9IHsNCisJLmdldF9wYXJlbnQgPSBoZnNwbHVzX2dldF9wYXJlbnQsDQorCS5m
+aF90b19kZW50cnkgPSBoZnNwbHVzX2ZoX3RvX2RlbnRyeSwNCisJLmZoX3RvX3BhcmVudCA9IGhm
+c3BsdXNfZmhfdG9fcGFyZW50LA0KK307DQpkaWZmIC0tZ2l0IGEvZnMvaGZzcGx1cy9oZnNwbHVz
+X2ZzLmggYi9mcy9oZnNwbHVzL2hmc3BsdXNfZnMuaA0KaW5kZXggZjAyN2E5MC4uN2M3ODUyNSAx
+MDA2NDQNCi0tLSBhL2ZzL2hmc3BsdXMvaGZzcGx1c19mcy5oDQorKysgYi9mcy9oZnNwbHVzL2hm
+c3BsdXNfZnMuaA0KQEAgLTM3MSw2ICszNzEsOSBAQCBpbnQgaGZzcGx1c19yZWFkX3dyYXBwZXIo
+c3RydWN0IHN1cGVyX2Jsb2NrICopOw0KIA0KIGludCBoZnNfcGFydF9maW5kKHN0cnVjdCBzdXBl
+cl9ibG9jayAqLCBzZWN0b3JfdCAqLCBzZWN0b3JfdCAqKTsNCiANCisvKiBleHBvcnQuYyAqLw0K
+K2V4dGVybiBjb25zdCBzdHJ1Y3QgZXhwb3J0X29wZXJhdGlvbnMgaGZzcGx1c19leHBvcnRfb3Bz
+Ow0KKw0KIC8qIGFjY2VzcyBtYWNyb3MgKi8NCiAvKg0KIHN0YXRpYyBpbmxpbmUgc3RydWN0IGhm
+c3BsdXNfc2JfaW5mbyAqSEZTUExVU19TQihzdHJ1Y3Qgc3VwZXJfYmxvY2sgKnNiKQ0KZGlmZiAt
+LWdpdCBhL2ZzL2hmc3BsdXMvc3VwZXIuYyBiL2ZzL2hmc3BsdXMvc3VwZXIuYw0KaW5kZXggZWI3
+NDUzMS4uYjVkMTE1MyAxMDA2NDQNCi0tLSBhL2ZzL2hmc3BsdXMvc3VwZXIuYw0KKysrIGIvZnMv
+aGZzcGx1cy9zdXBlci5jDQpAQCAtMzQ1LDYgKzM0NSw3IEBAIHN0YXRpYyBpbnQgaGZzcGx1c19m
+aWxsX3N1cGVyKHN0cnVjdCBzdXBlcl9ibG9jayAqc2IsIHZvaWQgKmRhdGEsIGludCBzaWxlbnQp
+DQogDQogCS8qIFNldCB1cCBvcGVyYXRpb25zIHNvIHdlIGNhbiBsb2FkIG1ldGFkYXRhICovDQog
+CXNiLT5zX29wID0gJmhmc3BsdXNfc29wczsNCisJc2ItPnNfZXhwb3J0X29wID0gJmhmc3BsdXNf
+ZXhwb3J0X29wczsNCiAJc2ItPnNfbWF4Ynl0ZXMgPSBNQVhfTEZTX0ZJTEVTSVpFOw0KIA0KIAlp
+ZiAoISh2aGRyLT5hdHRyaWJ1dGVzICYgY3B1X3RvX2JlMzIoSEZTUExVU19WT0xfVU5NTlQpKSkg
+ew0KLS0gDQoxLjYuMC42DQoNCn==
+
+
+--=-yOAfhYFe4OPbgQo+9e2M--
+
+--=-WmIWSHfVGVDphOSoDqqz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAklj6NEACgkQe2h1+2mHVWMEXACgvuUWswyeLunnKkI3ZF7vgfQ+
+RBUAoJ77Fs0U0VE+z3pgBoXPZnDJyk58
+=i8RO
+-----END PGP SIGNATURE-----
+
+--=-WmIWSHfVGVDphOSoDqqz--
+
