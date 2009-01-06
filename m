@@ -1,211 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZAFVIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZAFVMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbZAFVIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZAFVH7
+	id S1753181AbZAFVMl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:12:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZAFVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:07:59 -0500
-Received: from flock1.newmail.ru ([82.204.219.207]:56549 "HELO
-	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751365AbZAFVH5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:07:57 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Dave <kilroyd@googlemail.com>
-Subject: Re: 2.6.28: warn_slowpath in orinoco receive path
-Date: Wed, 7 Jan 2009 00:07:50 +0300
-User-Agent: KMail/1.10.92 (Linux/2.6.28-1avb; KDE/4.1.85; i686; ; )
-Cc: orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200901052005.12428.arvidjaar@mail.ru> <200901061251.41628.arvidjaar@mail.ru> <4963B8BE.9000204@gmail.com>
-In-Reply-To: <4963B8BE.9000204@gmail.com>
+	Tue, 6 Jan 2009 16:12:30 -0500
+Received: from rtr.ca ([76.10.145.34]:44888 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbZAFVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 16:12:29 -0500
+Message-ID: <4963C93A.1060708@rtr.ca>
+Date: Tue, 06 Jan 2009 16:12:26 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2062355.kNb4u0dCAV";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: linux-dvb@linuxtv.org, v4l-dvb-maintainer@linuxtv.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: 2.6.28: Oops at acpi_ds_exec_end_op+0x1b: kills machine
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200901070007.52508.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2062355.kNb4u0dCAV
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_og8YJDUBxLslQKI"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This happened on our Mythtv box at startup this morning:
+The Oops happened once only, at system startup, on initial device probe.
+Not reproduceable, so probably a rare race of some kind.
+The xc5000 module was loaded with "init_fw=1" to force f/w load on modprobe.
 
---Boundary-01=_og8YJDUBxLslQKI
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+2.6.28 kernel, SMP, x86_64, two CPUs (Core2duo 1.86GHz), 2GB RAM.
 
-On =D0=92=D1=82=D0=BE=D1=80=D0=BD=D0=B8=D0=BA 06 =D1=8F=D0=BD=D0=B2=D0=B0=
-=D1=80=D1=8F 2009 23:02:06 Dave wrote:
+Oops text typed in by hand from screen photos
+( original photos: http://rtr.ca/xc5000_lockup )
+...
+xc5000: firmware read 12332 bytes.
+xc5000: firmware upload
+BUG kernel NULL pointer dereference at 000000000000000c
+IP: [<ffffffff8038fbcf>] acpi_ds_exec_end_op+0x1b/0x3c4
+PGD 7c8cd067 PUD 7d411067 PMD 0
+Oops: 0000 [#1] PREEMPT SMP
+last sysfs file: /sys/class/firmware/i2c-2/loading
+CPU 0
+...
+Modules linked in: xc5000 au8522 tea5767 tda9887 tda8290 tea5761 fuse au0828(+)
+dvd_core usbhid tuner_simple tuner_types snd_hda_intel msp3400 ... nvidia(P) ...
+...
+Pid: 2383, comm: modprobe Tainted: P A 2.6.28 #9  
+RIP: 0010:[<ffffffff8038fbcf>]  [<ffffffff8038fbcf>] acpi_ds_exec_end_op+0x1b/0x3c4
+RSP: 0018:ffff88007a095ad8  EFLAGS: 00010296
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88007f8588f0
+R10: ffff88007f8a4d40 R11: ffff8800000bf9e0 R12: 0000000000000000
+R13: ffff88007e43bc10 R14: ffff88007a0ac000 R15: ffff88007e43bc10
+FS:  00007f844d5666e0(0000) GS:ffffffff8060f540(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+...
+Process modprobe (pid: 2383, threadinfo ffff88007a094000, task ffff88007fa043d0)
+Stack:
+ ffff88007a085380 0000000000000000 ffff88007a085380 ffffffffa09cfb28
+ ffff88007e43bc10 ffffffffa09f263f ffff88007a095b18 ffff88007a085380
+ ffffc200109e6000 ffff88007a085380 000000000000f9f9 00000000000094d7
+Call Trace:
+xc_load_fw_and_init_tuner+0x14b/0x29c [xc5000]
+i2c_transfer+0x8a/0x94
+xc5000_init+0x3d/0x6f [xc5000]
+xc5000_attach+0x22c/0x256 [xc5000]
+__symbol_get+0x2c/0xd3
+au0828+dvb_register+0x2ec/x5cb [au0828]
+au0828_usb_probe+0x10c/0x140 [au0828]
+usb_match_id+0x32/0x58 [usbcore]
+usb_probe_interface+0xfb/0x132 [usbcore]
+driver_probe_device+0xb5/0x159
+__driver_attach+0x59/0x80
+__driver_attach+0x0/0x80
+bus_for_each_dev+0x44/0x78
+bus_add_driver+0xac/0x1f2
+driver_register+0xa2/0x11f
+usb_register_driver+0x7e/0xe0 [usbcore]
+au0828_init+0x0/0xbb [au0828]
+au0828_init+0xa1/0xbb [au0828]
+_stext+0x56/0x14f
+vma_link+0x90/0xa2
+update_curr+0x49/0xf0
+enqueue_task_fair+0x14c/0x161
+check_preempt_wakeup+0xf4/0x124
+try_to_wake_up+0x16a/0x17c
+sys_init_module+0xa0/0x1a9
+system_call_fastpath+0x16/0x1b
+Code: 00 66 c7 40 0c c0 00 89 d8 48 83 c4 18 5b 5d c3 41 55 41 54 55 48 89
+ 48 83 ec 08 48 8b 87 08 03 00 00 4c 8b a7 00 03 00 00 <8a> 50 0c 8a 40 0?
+ c8 83 f9 0a 75 25 41 0f b7 4c 24 0a 48
+RIP  [<ffffffff8038fbcf>] acpi_ds_exec_end_op+0x1b/0x3c4
+ RSP <ffff88007a095ad8>
+CR2: 000000000000000c
+---[ end trace c23df576c022eb7e ]---
 
-> Since we have to use spinlock we should introduce an rx_lock
-> specifically to protect the list so the tasklet is not held up by
-> anything else the driver is doing. I'll put something together if you
-> don't get round to it first.
->
+Could someone perhaps explain how acpi_ds_exec_end_op even enters the
+picture here?  I'm confused by that.
 
-You mean something like attached patch? Not sure if it worth it frankly.
+The driver was doing/completing an i2c firmware transfer at the time of
+the oops.
 
---Boundary-01=_og8YJDUBxLslQKI
-Content-Type: message/rfc822;
-  name="orinoco-rx_list-protect"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="orinoco-rx_list-protect"
-
-Subject: [PATCH] orinoco: protect rx_list manipulation in orinoco_rx_isr_tasklet
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-
-The list is changed both in normal and interrupt context. Protect
-list manipulation by additional spinlock; this hopefully fixes this warning:
-
-[89479.105038] WARNING: at /home/bor/src/linux-git/lib/list_debug.c:30
-__list_add+0x8f/0xa0()
-[89479.105058] list_add corruption. prev->next should be next (dddb3568),
-but was cbc28978. (prev=dddb3568).
-[89479.106002] Pid: 15746, comm: X Not tainted 2.6.28-1avb #26
-[89479.106020] Call Trace:
-[89479.106062]  [<c011d3b0>] warn_slowpath+0x60/0x80
-[89479.106104]  [<c01073d0>] ? native_sched_clock+0x20/0x70
-[89479.106194]  [<c013d825>] ? lock_release_holdtime+0x35/0x200
-[89479.106218]  [<c018d9f0>] ? __slab_alloc+0x550/0x560
-[89479.106254]  [<c02f9c9d>] ? _spin_unlock+0x1d/0x20
-[89479.106270]  [<c018d9f0>] ? __slab_alloc+0x550/0x560
-[89479.106302]  [<c01ff2a7>] ? delay_tsc+0x17/0x24
-[89479.106319]  [<c01ff221>] ? __const_udelay+0x21/0x30
-[89479.106376]  [<dfa8b1e2>] ? hermes_bap_seek+0x112/0x1e0 [hermes]
-[89479.106396]  [<c013d7eb>] ? trace_hardirqs_off+0xb/0x10
-[89479.106418]  [<c018e307>] ? __kmalloc_track_caller+0xb7/0x110
-[89479.106448]  [<c028eefc>] ? dev_alloc_skb+0x1c/0x30
-[89479.106465]  [<c028eefc>] ? dev_alloc_skb+0x1c/0x30
-[89479.106482]  [<c020e13f>] __list_add+0x8f/0xa0
-[89479.106551]  [<dfd0fcae>] orinoco_interrupt+0xcae/0x16c0 [orinoco]
-[89479.106574]  [<c013b0e3>] ? tick_dev_program_event+0x33/0xb0
-[89479.106594]  [<c01073d0>] ? native_sched_clock+0x20/0x70
-[89479.106613]  [<c013d825>] ? lock_release_holdtime+0x35/0x200
-[89479.106662]  [<c013d7eb>] ? trace_hardirqs_off+0xb/0x10
-[89479.106892]  [<dfe7faa7>] ? usb_hcd_irq+0x97/0xa0 [usbcore]
-[89479.106926]  [<c015ba79>] handle_IRQ_event+0x29/0x60
-[89479.106947]  [<c015cf89>] handle_level_irq+0x69/0xe0
-[89479.106963]  [<c015cf20>] ? handle_level_irq+0x0/0xe0
-[89479.106977]  <IRQ>  [<c02ca933>] ? tcp_v4_rcv+0x633/0x6e0
-[89479.107025]  [<c0103f0c>] ? common_interrupt+0x28/0x30
-[89479.107057]  [<c02a0000>] ? sk_run_filter+0x320/0x7a0
-[89479.107078]  [<c020e041>] ? list_del+0x21/0x90
-[89479.107106]  [<dfd0d24e>] ? orinoco_rx_isr_tasklet+0x2ce/0x480 [orinoco]
-[89479.107131]  [<c01402e0>] ? __lock_acquire+0x160/0x1650
-[89479.107151]  [<c01073d0>] ? native_sched_clock+0x20/0x70
-[89479.107169]  [<c013d825>] ? lock_release_holdtime+0x35/0x200
-[89479.107200]  [<c012249a>] ? irq_enter+0xa/0x60
-[89479.107217]  [<c0104e52>] ? do_IRQ+0xd2/0x130
-[89479.107518]  [<c010342c>] ? restore_nocheck_notrace+0x0/0xe
-[89479.107542]  [<c0122830>] ? __do_softirq+0x0/0x110
-[89479.107561]  [<c013f7b4>] ? trace_hardirqs_on_caller+0x74/0x140
-[89479.107583]  [<c01ff678>] ? trace_hardirqs_on_thunk+0xc/0x10
-[89479.107602]  [<c0122087>] ? tasklet_action+0x27/0x90
-[89479.107620]  [<c013f7b4>] ? trace_hardirqs_on_caller+0x74/0x140
-[89479.107638]  [<c01220a3>] ? tasklet_action+0x43/0x90
-[89479.107655]  [<c012289f>] ? __do_softirq+0x6f/0x110
-[89479.107674]  [<c0122830>] ? __do_softirq+0x0/0x110
-[89479.107685]  <IRQ>  [<c015cf20>] ? handle_level_irq+0x0/0xe0
-[89479.107715]  [<c012246d>] ? irq_exit+0x5d/0x80
-[89479.107732]  [<c0104e52>] ? do_IRQ+0xd2/0x130
-[89479.107747]  [<c0103337>] ? sysenter_exit+0xf/0x16
-[89479.107765]  [<c013f83d>] ? trace_hardirqs_on_caller+0xfd/0x140
-[89479.107782]  [<c0103f0c>] ? common_interrupt+0x28/0x30
-[89479.107797] ---[ end trace a1fc0a52df4a729d ]---
-
-Patch based on suggestion of Dave.
-
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
----
-
- drivers/net/wireless/orinoco.c |   13 ++++++++++++-
- drivers/net/wireless/orinoco.h |    1 +
- 2 files changed, 13 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/net/wireless/orinoco.c b/drivers/net/wireless/orinoco.c
-index 1d7e14b..27e29bb 100644
---- a/drivers/net/wireless/orinoco.c
-+++ b/drivers/net/wireless/orinoco.c
-@@ -72,6 +72,8 @@
-  * they are doing and drop the lock again.  The orinoco_lock()
-  * function handles this (it unlocks and returns -EBUSY if
-  * hw_unavailable is non-zero).
-+ *
-+ * Additional lock priv->rx_lock protects received SKB list
-  */
- 
- #define DRIVER_NAME "orinoco"
-@@ -1430,7 +1432,9 @@ static void __orinoco_ev_rx(struct net_device *dev, hermes_t *hw)
- 	}
- 	rx_data->desc = desc;
- 	rx_data->skb = skb;
-+	spin_lock(&priv->rx_lock);
- 	list_add_tail(&rx_data->list, &priv->rx_list);
-+	spin_unlock(&priv->rx_lock);
- 	tasklet_schedule(&priv->rx_tasklet);
- 
- 	return;
-@@ -1568,9 +1572,15 @@ static void orinoco_rx_isr_tasklet(unsigned long data)
- 	struct orinoco_rx_data *rx_data, *temp;
- 	struct hermes_rx_descriptor *desc;
- 	struct sk_buff *skb;
-+	struct list_head temp_rx_list;
-+
-+	/* Move list to temporary head to avoid races with interrupt handler */
-+	spin_lock_irq(&priv->rx_lock);
-+	list_replace_init(&priv->rx_list, &temp_rx_list);
-+	spin_unlock_irq(&priv->rx_lock);
- 
- 	/* extract desc and skb from queue */
--	list_for_each_entry_safe(rx_data, temp, &priv->rx_list, list) {
-+	list_for_each_entry_safe(rx_data, temp, &temp_rx_list, list) {
- 		desc = rx_data->desc;
- 		skb = rx_data->skb;
- 		list_del(&rx_data->list);
-@@ -3536,6 +3546,7 @@ struct net_device
- 	INIT_WORK(&priv->join_work, orinoco_join_ap);
- 	INIT_WORK(&priv->wevent_work, orinoco_send_wevents);
- 
-+	spin_lock_init(&priv->rx_lock);
- 	INIT_LIST_HEAD(&priv->rx_list);
- 	tasklet_init(&priv->rx_tasklet, orinoco_rx_isr_tasklet,
- 		     (unsigned long) dev);
-diff --git a/drivers/net/wireless/orinoco.h b/drivers/net/wireless/orinoco.h
-index 8c29538..680c66e 100644
---- a/drivers/net/wireless/orinoco.h
-+++ b/drivers/net/wireless/orinoco.h
-@@ -83,6 +83,7 @@ struct orinoco_private {
- 	struct tasklet_struct rx_tasklet;
- 	struct list_head rx_list;
- 	struct orinoco_rx_data *rx_data;
-+	spinlock_t rx_lock;
- 
- 	/* driver state */
- 	int open;
-
---Boundary-01=_og8YJDUBxLslQKI--
-
---nextPart2062355.kNb4u0dCAV
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkljyCgACgkQR6LMutpd94wplQCgxOHP51Mi7s3oI0wzpXJzFCA7
-drIAoILVNx72NNH7jZZdSDa2wdpPNr75
-=v1wd
------END PGP SIGNATURE-----
-
---nextPart2062355.kNb4u0dCAV--
+Thanks
