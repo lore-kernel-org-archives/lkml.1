@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbZAFScz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZAFSd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbZAFScz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZAFSce
+	id S1754202AbZAFSd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZAFSdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:32:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51540
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754379AbZAFScc (ORCPT
+	Tue, 6 Jan 2009 13:33:16 -0500
+Received: from qmta06.westchester.pa.mail.comcast.net ([76.96.62.56]:57958
+	"EHLO QMTA06.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751998AbZAFSdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:32:32 -0500
-Date: Tue, 06 Jan 2009 10:32:34 -0800 (PST)
-Message-Id: <20090106.103234.163615537.davem@davemloft.net>
-To: rostedt@goodmis.org
-Cc: sam@ravnborg.org, linux-kernel@vger.kernel.org, srostedt@redhat.com,
-       mingo@elte.hu, sparclinux@vger.kernel.org
-Subject: Re: ftrace breaks sparc64 build
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.1.10.0901051458460.25066@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com>
-	<20090105195415.GA6204@uranus.ravnborg.org>
-	<alpine.DEB.1.10.0901051458460.25066@gandalf.stny.rr.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 6 Jan 2009 13:33:14 -0500
+Subject: Re: [PATCH 2/2] input: Add a detailed multi-touch finger data
+	report protocol (rev2)
+From: Jim Gettys <jg@laptop.org>
+Reply-To: jg@laptop.org
+To: Henrik Rydberg <rydberg@euromail.se>, jkosina@suse.cz,
+       Greg KH <greg@kroah.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       Peter Hutterer <peter.hutterer@who-t.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <495804B1.10300@euromail.se>
+References: <495804B1.10300@euromail.se>
+Content-Type: text/plain
+Organization: One Laptop Per Child
+Date: Tue, 06 Jan 2009 13:32:49 -0500
+Message-Id: <1231266769.8379.79.camel@jg-vaio>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <rostedt@goodmis.org>
-Date: Mon, 5 Jan 2009 15:05:11 -0500 (EST)
+There is a remaining question: how/whether to implement this interface
+in USB HID.....
 
-> Probably the same issue. The problem is that the first use of a variable 
-> is in the OR section of an if statement that does a return.
-> 
-> 	if (x || !(y = init_me())
-> 		return;
-> 
-> 	use_me(y);
-> 
-> IMHO I find this sloppy code. When reading the code it can cause reviewers 
-> trouble, and wasted time, to see that y is indeed initialized. I'm 
-> impressed that gcc was able to figure it out.
+On page 9 of the document you'll find at:
+http://www.microsoft.com/whdc/device/input/DigitizerDrvs_touch.mspx
 
-I'm pretty much in firm disagreement here.
+Microsoft is claiming in that document of December 8 they are proposing
+the interfaces in the document to the USB IF organization, and that
+hardware vendors for Windows 7 should follow that spec.
 
-This code is pretty clear.  The only way to get to use_me() is
-by initializing 'y'.  It's very straightforward.
+Jiri, Greg:
 
-There are many conditionals in the kernel where this order
-of evaluation and side effects is depended upon.  Some of them
-just happen to warn now because of the branch tracer.
+1) Does anyone know if Microsoft has actually made the proposal to the
+USB IF?  Is there anyone in the community watching/commenting on USB IF
+proposals?
 
-> Have you always been compiling with -Werror?
+2) do you want generic USB HID patches or do you want to, for now,
+confine these to USB device specific drivers as much as possible?
+                          - Jim
 
-arch/sparc*/ builds with -Werror for 5+ years.
+-- 
+Jim Gettys <jg@laptop.org>
+One Laptop Per Child
 
-> The reason that gcc complains is because you have the
-> "branch_tracer" on that converts 'if ()' into a macro (as you saw in
-> your -E compile). This makes the if statement more complex, and goes
-> beyond gcc's ability to know that the above 'y' is initialized
-> properly. I would work on fixing this in the branch tracer, but
-> honestly, I'm kind of glad that gcc barfs on it.  This will help us
-> point out this kind of sloppy initializations (sorry if I'm
-> offending anybody about calling it sloppy). I just believe that it
-> makes the code a bit more obfuscated to initialize in an if
-> statement, and a second part of a complex if statement at that!
-
-Keep in mind all this code was fine and built warning free before the
-if() obfuscation done by the branch tracer.  If I wrote the branch
-tracer, I'd probably search for these kinds of excuses too :-)
