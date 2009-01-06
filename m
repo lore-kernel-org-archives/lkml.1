@@ -1,138 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZAFUI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbZAFUJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbZAFUI5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 15:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbZAFUIs
+	id S1755025AbZAFUJX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 15:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbZAFUJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 15:08:48 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47911 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750709AbZAFUIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 15:08:47 -0500
-X-Authenticated: #1189245
-X-Provags-ID: V01U2FsdGVkX1/wPnpsUGzwPuvVPlsB28glpSqwxHf5oEqTthLPYE
-	Ac9x2wQ1+32DSa
-Message-ID: <4963B97D.1020201@gmx.net>
-Date: Tue, 06 Jan 2009 21:05:17 +0100
-From: Carsten Menke <bootsy52@gmx.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
+	Tue, 6 Jan 2009 15:09:06 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:56610 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754399AbZAFUJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 15:09:03 -0500
+Date: Tue, 6 Jan 2009 15:08:54 -0500
+To: David Howells <dhowells@redhat.com>
+Cc: hch@lst.de, jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] CRED: Fix NFSD regression
+Message-ID: <20090106200854.GD5901@fieldses.org>
+References: <20090106194101.GB5901@fieldses.org> <806.1231174132@redhat.com> <20090105171937.4463.98583.stgit@warthog.procyon.org.uk> <28704.1231271771@redhat.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: XFS: xfs_trans_cancel Filesystem shutdown
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <28704.1231271771@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jan 06, 2009 at 07:56:11PM +0000, David Howells wrote:
+> J. Bruce Fields <bfields@fieldses.org> wrote:
+> 
+> > OK, I've tested this and applied it for 2.6.29.
+> > 
+> > Though it only actually fixes the regression if your other patch ("CRED:
+> > Fix regression in cap_capable() as shown up by sys_faccessat() [ver #2")
+> > is also applied.  I'd like to send in my pull request today, but I
+> > usually try not to send a pull request whose tip doesn't pass at least
+> > my basic regression tests....  And that other patch is outside my
+> > baliwick.    Can someone else handle it?
+> 
+> Well, if you're willing to supply an Acked-by or Tested-by for one or both
+> patches I can pass them on to James or Linus.
 
-Yesterday I was called for a problem, one of the servers hat hung up during
-the christmas days. When I looked into it, I saw there were a filesystem error.
+The nfsd-specific one I've already signed off on and queued for Linus.
+For the other one, sure, for what it's worth:
 
-This is the first time I expierence this with an XFS Filesystem, however as the 
-machine is in full production I had to solve the problem and what I post here is 
-what I have as debug information to investigate. The machine was running
-on a 2.6.23.17 for 8 month without a problem. Then on Dec 22th, the machine 
-first reported a Filesystem shutdown to syslog for the /opt partition and later 
-hung up completley.
+	Tested-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-I have unmounted the filesystem, run xfs_repair on it, (didn't create any files 
-in lost+found) and did not report any errors, then mounted the filesystem again
-no problem so far. But as soon as I started the mailserver the Filesystem was 
-shutdown again. I did the steps several times always with the same result. I 
-then updated to Kernel 2.6.27.10 with the same symphtoms. This is a Debian 3.0 
-system with xfs_reapir Version 2.6.20. The /opt partition is on a soft raid
-/dev/md4 (/dev/sda8, /dev/sdb8). After destroying the partition, the raid and 
-repartition and reformat with xfsprogs 2.10.2 and restore from backup, the 
-server now runs again stable. The /opt partition is only 51% full
-
-/dev/md4               47G   24G   24G  51% /opt
-
-Following are the first debug message and then the next after inital xfs_repair 
-and clean mount
-
-Dec 22 17:40:19 hauptserver kernel: Filesystem "md4": XFS internal error 
-xfs_trans_cancel at line 1169 of file fs/xfs/xfs_trans.c.  Caller 0xc
-Dec 22 17:40:19 hauptserver kernel:  [xfs_trans_cancel+93/231] 
-xfs_trans_cancel+0x5d/0xe7
-Dec 22 17:40:19 hauptserver kernel:  [xfs_create+1438/1499] xfs_create+0x59e/0x5db
-Dec 22 17:40:19 hauptserver kernel:  [xfs_create+1438/1499] xfs_create+0x59e/0x5db
-Dec 22 17:40:19 hauptserver kernel:  [xfs_acl_vhasacl_default+54/71] 
-xfs_acl_vhasacl_default+0x36/0x47
-Dec 22 17:40:19 hauptserver kernel:  [xfs_vn_mknod+379/654] xfs_vn_mknod+0x17b/0x28e
-Dec 22 17:40:19 hauptserver kernel:  [xfs_vn_permission+15/19] 
-xfs_vn_permission+0xf/0x13
-Dec 22 17:40:19 hauptserver kernel:  [permission+209/214] permission+0xd1/0xd6
-Dec 22 17:40:19 hauptserver kernel:  [vfs_create+198/261] vfs_create+0xc6/0x105
-Dec 22 17:40:19 hauptserver kernel:  [open_namei_create+71/136] 
-open_namei_create+0x47/0x88
-Dec 22 17:40:19 hauptserver kernel:  [open_namei+342/1294] open_namei+0x156/0x50e
-Dec 22 17:40:19 hauptserver kernel:  [vfs_stat_fd+25/64] vfs_stat_fd+0x19/0x40
-Dec 22 17:40:19 hauptserver kernel:  [do_filp_open+37/57] do_filp_open+0x25/0x39
-Dec 22 17:40:19 hauptserver kernel:  [get_unused_fd_flags+89/194] 
-get_unused_fd_flags+0x59/0xc2
-Dec 22 17:40:19 hauptserver kernel:  [do_sys_open+68/197] do_sys_open+0x44/0xc5
-Dec 22 17:40:19 hauptserver kernel:  [sys_open+26/28] sys_open+0x1a/0x1c
-Dec 22 17:40:19 hauptserver kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
-Dec 22 17:40:19 hauptserver kernel:  =======================
-Dec 22 17:40:19 hauptserver kernel: xfs_force_shutdown(md4,0x8) called from line 
-1170 of file fs/xfs/xfs_trans.c.  Return address = 0xc022041e
-Dec 22 17:40:19 hauptserver kernel: Filesystem "md4": Corruption of in-memory 
-data detected.  Shutting down filesystem: md4
-Dec 22 17:40:19 hauptserver kernel: Please umount the filesystem, and rectify 
-the problem(s)
-
-Jan  5 16:36:25 hauptserver kernel: BUG: soft lockup - CPU#1 stuck for 11s! 
-[mailserver:8172]
-Jan  5 16:36:25 hauptserver kernel:
-Jan  5 16:36:25 hauptserver kernel: Pid: 8172, comm:           mailserver
-Jan  5 16:36:25 hauptserver kernel: EIP: 0060:[block_read_full_page+499/737] CPU: 1
-Jan  5 16:36:25 hauptserver kernel: EIP is at block_read_full_page+0x1f3/0x2e1
-Jan  5 16:36:25 hauptserver kernel:  EFLAGS: 00210246    Not tainted  (2.6.23.17 #1)
-Jan  5 16:36:25 hauptserver kernel: EAX: 00000000 EBX: c710c8d0 ECX: 000003d0 
-EDX: 00001000
-Jan  5 16:36:25 hauptserver kernel: ESI: c10610a0 EDI: c30850c0 EBP: 00000000 
-DS: 007b ES: 007b FS: 00d8
-Jan  5 16:36:25 hauptserver kernel: CR0: 8005003b CR2: 08d86b18 CR3: 01bee000 
-CR4: 00000690
-Jan  5 16:36:25 hauptserver kernel: DR0: 00000000 DR1: 00000000 DR2: 00000000 
-DR3: 00000000
-Jan  5 16:36:25 hauptserver kernel: DR6: ffff0ff0 DR7: 00000400
-Jan  5 16:36:25 hauptserver kernel:  [update_curr+271/310] update_curr+0x10f/0x136
-Jan  5 16:36:25 hauptserver kernel:  [xfs_get_blocks+0/45] xfs_get_blocks+0x0/0x2d
-Jan  5 16:36:25 hauptserver kernel:  [update_curr+271/310] update_curr+0x10f/0x136
-Jan  5 16:36:25 hauptserver kernel:  [do_mpage_readpage+1338/1364] 
-do_mpage_readpage+0x53a/0x554
-Jan  5 16:36:25 hauptserver kernel:  [__check_preempt_curr_fair+67/103] 
-__check_preempt_curr_fair+0x43/0x67
-Jan  5 16:36:25 hauptserver kernel:  [run_timer_softirq+48/370] 
-run_timer_softirq+0x30/0x172
-Jan  5 16:36:25 hauptserver kernel:  [__rcu_process_callbacks+143/161] 
-__rcu_process_callbacks+0x8f/0xa1
-Jan  5 16:36:25 hauptserver kernel:  [tasklet_action+77/145] 
-tasklet_action+0x4d/0x91
-Jan  5 16:36:25 hauptserver kernel:  [mpage_readpage+75/94] mpage_readpage+0x4b/0x5e
-Jan  5 16:36:25 hauptserver kernel:  [xfs_get_blocks+0/45] xfs_get_blocks+0x0/0x2d
-Jan  5 16:36:25 hauptserver kernel:  [find_lock_page+26/126] 
-find_lock_page+0x1a/0x7e
-Jan  5 16:36:25 hauptserver kernel:  [filemap_fault+608/661] 
-filemap_fault+0x260/0x295
-Jan  5 16:36:25 hauptserver kernel:  [__do_fault+104/764] __do_fault+0x68/0x2fc
-Jan  5 16:36:25 hauptserver kernel:  [handle_mm_fault+248/579] 
-handle_mm_fault+0xf8/0x243
-Jan  5 16:36:25 hauptserver kernel:  [do_page_fault+565/1466] 
-do_page_fault+0x235/0x5ba
-Jan  5 16:36:25 hauptserver kernel:  [do_futex+93/242] do_futex+0x5d/0xf2
-Jan  5 16:36:25 hauptserver kernel:  [do_page_fault+0/1466] do_page_fault+0x0/0x5ba
-Jan  5 16:36:25 hauptserver kernel:  [error_code+114/120] error_code+0x72/0x78
-Jan  5 16:36:25 hauptserver kernel:  [xfrm_state_find+665/1175] 
-xfrm_state_find+0x299/0x497
-Jan  5 16:36:25 hauptserver kernel:  =======================
-
-Carsten
--- 
-"There are two major products that came out of Berkeley: LSD and UNIX.
-   We don't believe this to be a coincidence." --Jeremy S. Anderson
+Thanks!--b.
