@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZAFUf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZAFUhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZAFUf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 15:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZAFUfq
+	id S1754891AbZAFUhU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 15:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZAFUhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 15:35:46 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:60638 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbZAFUfp (ORCPT
+	Tue, 6 Jan 2009 15:37:04 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:46836 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751002AbZAFUhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 15:35:45 -0500
-To: penguin-kernel@i-love.sakura.ne.jp
-CC: viro@ZenIV.linux.org.uk, hch@lst.de, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <200901060322.n063MBOt046756@www262.sakura.ne.jp> (message from
-	Tetsuo Handa on Tue, 06 Jan 2009 12:22:11 +0900)
-Subject: Re: [PATCH] Introduce d_realpath().
-References: <200901060322.n063MBOt046756@www262.sakura.ne.jp>
-Message-Id: <E1LKIeB-0006qv-Bv@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 06 Jan 2009 21:35:31 +0100
+	Tue, 6 Jan 2009 15:37:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VemBIF2UCcqAJbddgopBeCa9yKmYDoZ2HOISMX5tjsRn1Cfp6H8a2wRfD8HCwDYaJYO5cLQdMSmGKhCDxk57FhyWNSb9zvj6n0pYgT9IwmnYiZeU5N5d0DsZjdNOe5uesQ30tX1qzcau0rOCFARV6U6N6Pof6g7vNhKYFZcwHRw=  ;
+X-YMail-OSG: upVvcdAVM1ky9JEvGiYdUDrT_IioTc2fvp4GDZ3QeJZ12v2xnvumMeTNkKO4Wug5HoOVMwoTH0HI51JUT23ayJ5MbFOjMwyKIpyiMIAjrcEba.h5R5Now9B2jFOKuQTaeGJAur4j9Neo8ywdydQu4ZxsPdm4QEnTtLfM.hhptw2ps4.bRrV90EpnjRWhGa211g--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2.6.28-rc2] CORE_DUMP_DEFAULT_ELF_HEADERS depends on ELF_CORE
+Date: Tue, 6 Jan 2009 12:37:00 -0800
+User-Agent: KMail/1.9.10
+Cc: Roland McGrath <roland@redhat.com>
+References: <200810301559.50467.david-b@pacbell.net>
+In-Reply-To: <200810301559.50467.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901061237.01020.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 Jan 2009, Tetsuo Handa wrote:
-> Al, thank you very much for processing security_path_*() patch.
-> Now James is reviewing our patch and he suggested
-> following parts need your acknowledgments.
-> Will you review and ACK for introducing a variant of d_path()?
+On Thursday 30 October 2008, David Brownell wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
 > 
-> --------------------
-> Subject: Introduce d_realpath().
+> Kernels that don't support ELF coredumps at all surely can't
+> be supporting new partial-segment flavored ELF coredumps ...
+> don't make folk answer Kconfig questions about that flavor.
+
+PING?
+
 > 
-> To remove factors that make pathname based access control difficult
-> (e.g. symbolic links, "..", "//", chroot() etc.), a variant of d_path()
-> which traverses up to the root of the namespace is needed.
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: Roland McGrath <roland@redhat.com>
+> ---
+>  fs/Kconfig.binfmt |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> This patch introduces d_realpath(), a variant of d_path().
-> While d_path() stops traversing at current->fs->root,
-> d_realpath() doesn't stop traversiong at current->fs->root.
+> --- a/fs/Kconfig.binfmt
+> +++ b/fs/Kconfig.binfmt
+> @@ -43,7 +43,7 @@ config BINFMT_ELF_FDPIC
+>  config CORE_DUMP_DEFAULT_ELF_HEADERS
+>  	bool "Write ELF core dumps with partial segments"
+>  	default n
+> -	depends on BINFMT_ELF
+> +	depends on BINFMT_ELF && ELF_CORE
+>  	help
+>  	  ELF core dump files describe each memory mapping of the crashed
+>  	  process, and can contain or omit the memory contents of each one.
 > 
-> Three differences compared to d_path().
-> (1) Ignores current process's root directory.
 
-I'd suggest calling __d_path() and passing in the namespace root
-instead of the process root.  That would be a lot simpler and result
-in less code duplication.
 
-> (2) Trailing '/' is added if the pathname refers to a directory.
-
-Caller can do this.
-
-> (3) /proc/PID/ is represented as /proc/self/ if PID equals current->tgid.
-
-This too.  Such hacks really don't belong in generic VFS functions.
-
-Thanks,
-Miklos
