@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZAFVSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZAFVVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675AbZAFVSW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZAFVSO
+	id S1753386AbZAFVVA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZAFVUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:18:14 -0500
-Received: from gate.crashing.org ([63.228.1.57]:35978 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbZAFVSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:18:12 -0500
-Subject: Re: Lock-up on PPC64
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: malc <av1474@comtv.ru>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0901062032550.2972@linmac.oyster.ru>
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
-	 <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
-	 <20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
-	 <1230165163.7292.32.camel@pasglop>
-	 <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
-	 <1231158516.8367.3.camel@localhost>
-	 <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
-	 <1231243373.14860.24.camel@pasglop>
-	 <Pine.LNX.4.64.0901062032550.2972@linmac.oyster.ru>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 08:17:23 +1100
-Message-Id: <1231276643.14860.30.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Tue, 6 Jan 2009 16:20:51 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:15912 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbZAFVUu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 16:20:50 -0500
+X-IronPort-AV: E=Sophos;i="4.37,221,1231131600"; 
+   d="scan'208";a="80712877"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: debugfs & vfs file permission issue?
+Date: Tue, 6 Jan 2009 16:20:54 -0500
+User-Agent: KMail/1.9.5
+Cc: "Greg KH" <gregkh@suse.de>, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+References: <200901052157.07306.rgetz@blackfin.uclinux.org> <200901061012.38888.rgetz@blackfin.uclinux.org> <8bd0f97a0901060720l40099bd6o63a692e5fdd3e098@mail.gmail.com>
+In-Reply-To: <8bd0f97a0901060720l40099bd6o63a692e5fdd3e098@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901061620.54179.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 06 Jan 2009 21:20:42.0400 (UTC) FILETIME=[A15BBA00:01C97044]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 6 Jan 2009 10:20, Mike Frysinger pondered:
+> On Tue, Jan 6, 2009 at 10:12, Robin Getz wrote:
+> > On Tue 6 Jan 2009 07:05, Robin Getz suggested:
+> >> adding a readonly, and writeonly, and ensuring that when you call
+> >> debugfs_create_*, the mode is checked, and the "correct" fops are set
+> >> doesn't seem like it would be a bad idea? This would enforce the
+> >> kernel programmer's view on the world, and not allow pesky root users
+> >> to override things....
+> >>
+> >> Greg - would you take something like that?
+> >
+> > How about this?
+> >
+> > Feel free to nak it - we can do the same thing where we are calling the
+> > debugfs_create_* functions - this just makes it cleaner in my opinion.
+> >
+> > ---
+> >
+> > In many SOC implementations there are hardware registers can be read only,
+> > or write only. This extends the debugfs to enforce the file permissions for
+> > these types of registers, by providing a set of fops which are read only
+> > or write only. This assumes that the kernel developer knows more about the
+> > hardware than the user (even root users) - which is normally true.
+> 
+> we want it for cpu registers, but i dont see any reason why this
+> wouldnt also apply to external devices attached via memory interfaces
+> ... fifos and such ...
 
-> As you wish :) I've written some ad-hoc stuff in the failing path which 
-> manually triggers sysrq and then sends the klogctl output via network
-> and here it is:
+Yes - Although the existing use case is for SOC on chip registers - it applies
+to anything where the kernel developer really doesn't want to allow the 
+user to do an access that will cause a negative side effect (crash, effect
+fifos, etc).
 
-Allright, something's unclear to me. What do you mean by the system goes
-down then ? The kernel appears to be working at least to a certain
-extent if you manage to trigger a sysrq from userspace... And from what
-I see, it looks that all processes are somewhere in schedule.
-
-So what is precisely your symptom here ?
-
-Cheers,
-Ben.
-
-
+-Robin
