@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZAFSEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZAFSEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZAFSEZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZAFSEN
+	id S1753177AbZAFSEj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZAFSET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:04:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51359 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750836AbZAFSEL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:04:11 -0500
-Date: Tue, 6 Jan 2009 10:02:56 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-In-Reply-To: <1231242031.11687.97.camel@twins>
-Message-ID: <alpine.LFD.2.00.0901060948220.3057@localhost.localdomain>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>  <20081231104533.abfb1cf9.akpm@linux-foundation.org>  <1230765549.7538.8.camel@think.oraclecorp.com>  <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>  <1231093310.27690.5.camel@twins>
-  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 6 Jan 2009 13:04:19 -0500
+Received: from THUNK.ORG ([69.25.196.29]:40464 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751775AbZAFSES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 13:04:18 -0500
+Date: Tue, 6 Jan 2009 13:04:14 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jan Beulich <jbeulich@novell.com>, ccache@lists.samba.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
+Message-ID: <20090106180414.GB10903@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Sam Ravnborg <sam@ravnborg.org>, Jan Beulich <jbeulich@novell.com>,
+	ccache@lists.samba.org, linux-kernel@vger.kernel.org
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <496386EF.76E4.0078.0@novell.com> <20090106173300.GA10903@mit.edu> <20090106174825.GA16365@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106174825.GA16365@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 06, 2009 at 06:48:25PM +0100, Sam Ravnborg wrote:
+> 
+> I'm all ears for inputs how to make them even a little more readable.
+> We actually used several iteratiosn of Jan's patch just to improve
+> readability in areas the patch touched.
+> 
+> I think at least half of the unreadability comes from the fact that
+> people do not realise the steps needed to actually build the kernel.
 
-Ok, last comment, I promise.
+Yeah, I thought about that a lot, but I couldn't come up with a
+constructive suggestion.  The best I could come up with to have kbuild
+generate a shell script helper or use a shell script helper to
+actually build each .o file.  However, the speed hit probably makes
+that unacceptable, although it would make it easier, I suspect, to use
+that abstractionas part of making something which ccache or distcc
+could use to cache (or distribute to a cluster) all of the steps
+needed to build each object file.  Maybe a helper C program instead?
 
-On Tue, 6 Jan 2009, Peter Zijlstra wrote:
-> @@ -175,11 +199,19 @@ __mutex_lock_common(struct mutex *lock, 
->  			debug_mutex_free_waiter(&waiter);
->  			return -EINTR;
->  		}
-> -		__set_task_state(task, state);
->  
-> -		/* didnt get the lock, go to sleep: */
-> +		owner = lock->owner;
-> +		get_task_struct(owner);
->  		spin_unlock_mutex(&lock->wait_lock, flags);
-> -		schedule();
-> +
-> +		if (adaptive_wait(&waiter, owner, state)) {
-> +			put_task_struct(owner);
-> +			__set_task_state(task, state);
-> +			/* didnt get the lock, go to sleep: */
-> +			schedule();
-> +		} else
-> +			put_task_struct(owner);
-> +
->  		spin_lock_mutex(&lock->wait_lock, flags);
+       	  	     	    	   	   - Ted
 
-So I really dislike the whole get_task_struct/put_task_struct thing. It 
-seems very annoying. And as far as I can tell, it's there _only_ to 
-protect "task->rq" and nothing else (ie to make sure that the task 
-doesn't exit and get freed and the pointer now points to la-la-land).
-
-Wouldn't it be much nicer to just cache the rq pointer (take it while 
-still holding the spinlock), and then pass it in to adaptive_wait()?
-
-Then, adaptive_wait() can just do
-
-	if (lock->owner != owner)
-		return 0;
-
-	if (rq->task != owner)
-		return 1;
-
-Sure - the owner may have rescheduled to another CPU, but if it did that, 
-then we really might as well sleep. So we really don't need to dereference 
-that (possibly stale) owner task_struct at all - because we don't care. 
-All we care about is whether the owner is still busy on that other CPU 
-that it was on. 
-
-Hmm? So it looks to me that we don't really need that annoying "try to 
-protect the task pointer" crud. We can do the sufficient (and limited) 
-sanity checking without the task even existing, as long as we originally 
-load the ->rq pointer at a point where it was stable (ie inside the 
-spinlock, when we know that the task must be still alive since it owns the 
-lock).
-
-		Linus
