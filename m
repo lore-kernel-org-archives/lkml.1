@@ -1,61 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZAFP5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZAFP5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752833AbZAFP5W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZAFP5J
+	id S1753977AbZAFP5q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbZAFP5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:57:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60224 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750888AbZAFP5H (ORCPT
+	Tue, 6 Jan 2009 10:57:33 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:59805 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbZAFP5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:57:07 -0500
-Date: Tue, 6 Jan 2009 07:55:58 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-In-Reply-To: <20090106121052.GA27232@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901060750410.3057@localhost.localdomain>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
- <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 6 Jan 2009 10:57:32 -0500
+Date: Tue, 6 Jan 2009 21:27:24 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Milton Miller <miltonm@bga.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
+	!CONFIG_VIOPATH
+Message-ID: <20090106155724.GA6747@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com> <20090104182441.GA5086@linux.vnet.ibm.com> <98d6aef17cba9d835d7866745f811dc7@bga.com> <20090106072549.GA5066@linux.vnet.ibm.com> <20090106073149.GA12371@uranus.ravnborg.org> <20090106093847.GB5066@linux.vnet.ibm.com> <20090106104619.GA13789@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090106104619.GA13789@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Sam Ravnborg <sam@ravnborg.org> [2009-01-06 11:46:19]:
 
-
-On Tue, 6 Jan 2009, Ingo Molnar wrote:
+> Hi Kamalesh
 > 
-> The thing i like most about Peter's patch (compared to most other adaptive 
-> spinning approaches i've seen, which all sucked as they included various 
-> ugly heuristics complicating the whole thing) is that it solves the "how 
-> long should we spin" question elegantly: we spin until the owner runs on a 
-> CPU.
+> Looks good, small nit below.
+> 
+> >  config VIOPATH
+> >  	bool
+> > -	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
+> > -	default y
+> > +	default n
+> 
+> As 'n' is default anyway this line is not needed and I suggest you
+> spin a final version of the patch with this removed.
+> 
+> 	Sam
 
-The other way around, you mean: we spin until the owner is no longer 
-holding a cpu.
+Hi Sam,
 
-I agree that it's better than the normal "spin for some random time" 
-model, but I can't say I like the "return 0" cases where it just retries 
-the whole loop if the semaphore was gotten by somebody else instead. 
-Sounds like an easyish live-lock to me. 
+	Thanks for the review comments. I am resending the patch with the changes
+you have recommended.
 
-I also still strongly suspect that whatever lock actually needs this, 
-should be seriously re-thought. 
+Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
 
-But apart from the "return 0" craziness I at least dont' _hate_ this 
-patch. Do we have numbers? Do we know which locks this matters on?
+iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
+Removing the dependency of VIOPATH by selecting it, when the drivers
+dependent on iSeries code.
 
-		Linus
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/iseries/Kconfig |    5 +++--
+ drivers/char/Kconfig                   |    1 +
+ drivers/scsi/Kconfig                   |    1 +
+ 3 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+index ed3753d..7ddd0a2 100644
+--- a/arch/powerpc/platforms/iseries/Kconfig
++++ b/arch/powerpc/platforms/iseries/Kconfig
+@@ -10,18 +10,21 @@ menu "iSeries device drivers"
+ config VIODASD
+ 	tristate "iSeries Virtual I/O disk support"
+ 	depends on BLOCK
++	select VIOPATH
+ 	help
+ 	  If you are running on an iSeries system and you want to use
+ 	  virtual disks created and managed by OS/400, say Y.
+ 
+ config VIOCD
+ 	tristate "iSeries Virtual I/O CD support"
++	select VIOPATH
+ 	help
+ 	  If you are running Linux on an IBM iSeries system and you want to
+ 	  read a CD drive owned by OS/400, say Y here.
+ 
+ config VIOTAPE
+ 	tristate "iSeries Virtual Tape Support"
++	select VIOPATH
+ 	help
+ 	  If you are running Linux on an iSeries system and you want Linux
+ 	  to read and/or write a tape drive owned by OS/400, say Y here.
+@@ -30,5 +33,3 @@ endmenu
+ 
+ config VIOPATH
+ 	bool
+-	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
+-	default y
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 1697043..b8da09a 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -616,6 +616,7 @@ config HVC_ISERIES
+ 	default y
+ 	select HVC_DRIVER
+ 	select HVC_IRQ
++	select VIOPATH
+ 	help
+ 	  iSeries machines support a hypervisor virtual console.
+ 
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index b732297..256c7be 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -884,6 +884,7 @@ config SCSI_IBMVSCSI
+ 	tristate "IBM Virtual SCSI support"
+ 	depends on PPC_PSERIES || PPC_ISERIES
+ 	select SCSI_SRP_ATTRS
++	select VIOPATH if PPC_ISERIES
+ 	help
+ 	  This is the IBM POWER Virtual SCSI Client
+ 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
