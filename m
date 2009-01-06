@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZAFJub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZAFJup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbZAFJub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZAFJuX
+	id S1754783AbZAFJup (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZAFJud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:50:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58188 "EHLO mx3.mail.elte.hu"
+	Tue, 6 Jan 2009 04:50:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58242 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751126AbZAFJuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:50:21 -0500
-Date: Tue, 6 Jan 2009 10:50:02 +0100
+	id S1754600AbZAFJuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 04:50:32 -0500
+Date: Tue, 6 Jan 2009 10:50:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: fix double kfree
-Message-ID: <20090106095002.GA961@elte.hu>
-References: <496326BA.60605@cn.fujitsu.com>
+Subject: Re: [PATCH] sched: fix section mismatch
+Message-ID: <20090106095019.GB961@elte.hu>
+References: <49632714.90208@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496326BA.60605@cn.fujitsu.com>
+In-Reply-To: <49632714.90208@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,16 +38,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> Impact: fix double kfree in failure path
+> Impact: section mismatch fixes
 > 
-> It's not the responsibility of init_rootdomain() to free root_domain
-> allocated by alloc_rootdomain().
+> init_rootdomain() calls alloc_bootmem_cpumask_var() at system boot,
+> so does cpupri_init().
 > 
 > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 > ---
->  kernel/sched.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
+>  kernel/sched.c        |    2 +-
+>  kernel/sched_cpupri.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-applied to tip/sched/urgent, thanks!
+applied to tip/sched/urgent, thanks,
 
 	Ingo
