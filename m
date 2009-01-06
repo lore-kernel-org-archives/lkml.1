@@ -1,110 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbZAFKYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbZAFK0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbZAFKYU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbZAFKYK
+	id S1752653AbZAFK0n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 05:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZAFK0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:24:10 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:54996 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750738AbZAFKYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:24:09 -0500
-Date: Tue, 6 Jan 2009 10:23:38 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Clifford Wolf <clifford@clifford.at>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       khali@linux-fr.org, adrian@humboldt.co.uk
-Subject: Re: [PATCH] Incremental i2c-mpc driver fix for multi-master i2c
-	busses.
-Message-ID: <20090106102338.GM12431@fluff.org.uk>
-References: <20090105132102.GA27855@clifford.at>
+	Tue, 6 Jan 2009 05:26:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38066 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750820AbZAFK0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 05:26:30 -0500
+Message-ID: <4963311B.6020502@redhat.com>
+Date: Tue, 06 Jan 2009 11:23:23 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090105132102.GA27855@clifford.at>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, bluebird@gentoo.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH-2.6.28 final] byteorder: fix new headers for userspace
+References: <4943DAD6.7070402@gentoo.org>	 <20081216.011334.124918024.davem@davemloft.net> <1229564779.6481.26.camel@brick>
+In-Reply-To: <1229564779.6481.26.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 02:21:02PM +0100, Clifford Wolf wrote:
-> Incremental i2c-mpc driver fix for multi-master i2c busses.
+Harvey Harrison wrote:
+> glibc headers define both __LITTLE_ENDIAN and __BIG_ENDIAN
+> which was tripping the check in linux/byteorder.h.  Let's
+> just stay out of userspace's way and use __KERN_{endian}
 
-Hi, you missed linux-i2c@vger.kernel.org which is the new home
-for the i2c list. You should have received an auto-reply about
-how this list has moved.
+Ping.  What is the status of this?
 
-I'll probably try and get another merge out sometime this week.
- 
-> This is an incremental bugfix for the i2c-mpc driver. It is based
-> on the bugfix I've sent on 2008-12-22:
-> 
-> 	http://lkml.org/lkml/2008/12/22/99
-> 
-> There still was a remaining problem with multi-master i2c busses
-> when an i2c bus access is interrupted by a unix signal while
-> waiting for bus arbitration.
-> 
-> This is an extreamly rare case but I managed to stumble over it in
-> multi master i2c performance tests.
-> 
-> Tested with a freescale MPC8349E host cpu.
-> 
-> Signed-off-by: Clifford Wolf <clifford@clifford.at>
-> 
-> --- drivers/i2c/busses/i2c-mpc.c	(revision 2216)
-> +++ drivers/i2c/busses/i2c-mpc.c	(working copy)
-> @@ -105,7 +105,7 @@
->  			schedule();
->  			if (time_after(jiffies, orig_jiffies + timeout)) {
->  				pr_debug("I2C: timeout\n");
-> -				writeccr(i2c, 0);
-> +				writeccr(i2c, CCR_MEN);
->  				result = -EIO;
->  				break;
->  			}
-> @@ -119,10 +119,10 @@
->  
->  		if (unlikely(result < 0)) {
->  			pr_debug("I2C: wait interrupted\n");
-> -			writeccr(i2c, 0);
-> +			writeccr(i2c, CCR_MEN);
->  		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
->  			pr_debug("I2C: wait timeout\n");
-> -			writeccr(i2c, 0);
-> +			writeccr(i2c, CCR_MEN);
->  			result = -ETIMEDOUT;
->  		}
->  
-> @@ -267,7 +267,7 @@
->  	while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
->  		if (signal_pending(current)) {
->  			pr_debug("I2C: Interrupted\n");
-> -			writeccr(i2c, 0);
-> +			writeccr(i2c, CCR_MEN);
->  			return -EINTR;
->  		}
->  		if (time_after(jiffies, orig_jiffies + HZ)) {
-> @@ -369,6 +369,15 @@
->  		goto fail_add;
->  	}
->  
-> +	/* Make sure the adapter is already in master mode some time before
-> +	 * the first xfer to make sure arbitration control had enough time
-> +	 * to monitor the bus. The CCR_MEN flag should never be cleared without
-> +	 * makeing sure there is some delay between setting it again and
-> +	 * starting the first transfer..
-> +	 */
-> +	writeccr(i2c, CCR_MEN);
-> +	udelay(100);
-> +
->  	return result;
->  
->        fail_add:
+> Converted the arches in mainline that have already moved to the
+> new header, as the other arches merge the will need simlar
+> fixups.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+In latest git powerpc, s390 and x86 are merged and need this fix too.
 
-  'a smiley only costs 4 bytes'
+cheers,
+  Gerd
