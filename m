@@ -1,126 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZAFMLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbZAFMMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbZAFMLe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 07:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZAFMLW
+	id S1753166AbZAFMMP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 07:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZAFML7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 07:11:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51804 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750905AbZAFMLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 07:11:21 -0500
-Date: Tue, 6 Jan 2009 13:10:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-Message-ID: <20090106121052.GA27232@elte.hu>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231242031.11687.97.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 6 Jan 2009 07:11:59 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:22636 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZAFML6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 07:11:58 -0500
+Subject: Re: mmotm 2009-01-05-12-50 uploaded (ubifs)
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <20090105142437.9406c375.akpm@linux-foundation.org>
+References: <200901052050.n05Kox9j012519@imap1.linux-foundation.org>
+	 <49628515.7010609@oracle.com>
+	 <20090105142437.9406c375.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Jan 2009 14:11:44 +0200
+Message-Id: <1231243904.6608.47.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 06 Jan 2009 12:11:00.0246 (UTC) FILETIME=[D6766B60:01C96FF7]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-01-05 at 14:24 -0800, Andrew Morton wrote:
+> WB_SYNC_HOLD got removed by
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/fs-remove-wb_sync_hold.patch
+> 
+> I think I'll just switch that to WB_SYNC_NONE.  The `wait==0' mode is
+> just an advisory thing to help the fs shove lots of data into the
+> queues.  If some gets missed then it'll be picked up on the second
+> ->sync_fs call, with wait==1.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Sorry for the problems caused by this patch. Here is a fix for your
+convenience. Will you send it to Linus or I should do this?
 
-> +++ linux-2.6/kernel/mutex.c
-> @@ -46,6 +46,7 @@ __mutex_init(struct mutex *lock, const c
->  	atomic_set(&lock->count, 1);
->  	spin_lock_init(&lock->wait_lock);
->  	INIT_LIST_HEAD(&lock->wait_list);
-> +	lock->owner = NULL;
->  
->  	debug_mutex_init(lock, name, key);
->  }
-> @@ -120,6 +121,28 @@ void __sched mutex_unlock(struct mutex *
->  
->  EXPORT_SYMBOL(mutex_unlock);
->  
-> +#ifdef CONFIG_SMP
-> +static int adaptive_wait(struct mutex_waiter *waiter,
-> +			 struct task_struct *owner, long state)
-> +{
-> +	for (;;) {
-> +		if (signal_pending_state(state, waiter->task))
-> +			return 0;
-> +		if (waiter->lock->owner != owner)
-> +			return 0;
-> +		if (!task_is_current(owner))
-> +			return 1;
-> +		cpu_relax();
-> +	}
-> +}
-> +#else
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH] UBIFS: do not use WB_SYNC_HOLD
 
-Linus, what do you think about this particular approach of spin-mutexes? 
-It's not the typical spin-mutex i think.
+WB_SYNC_HOLD is going to be zapped so we should not use it. Use
+%WB_SYNC_NONE instead. Here is what akpm said:
 
-The thing i like most about Peter's patch (compared to most other adaptive 
-spinning approaches i've seen, which all sucked as they included various 
-ugly heuristics complicating the whole thing) is that it solves the "how 
-long should we spin" question elegantly: we spin until the owner runs on a 
-CPU.
+"I think I'll just switch that to WB_SYNC_NONE.  The `wait==0' mode is
+just an advisory thing to help the fs shove lots of data into the
+queues.  If some gets missed then it'll be picked up on the second
+->sync_fs call, with wait==1."
 
-So on shortly held locks we degenerate to spinlock behavior, and only 
-long-held blocking locks [with little CPU time spent while holding the 
-lock - say we wait for IO] we degenerate to classic mutex behavior.
+Thanks to Randy Dunlap <randy.dunlap@oracle.com> for catching this.
 
-There's no time or spin-rate based heuristics in this at all (i.e. these 
-mutexes are not 'adaptive' at all!), and it degenerates to our primary and 
-well-known locking behavior in the important boundary situations.
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ fs/ubifs/super.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-A couple of other properties i like about it:
+diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+index 0d7564b..89556ee 100644
+--- a/fs/ubifs/super.c
++++ b/fs/ubifs/super.c
+@@ -432,12 +432,19 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
+ 	int i, err;
+ 	struct ubifs_info *c = sb->s_fs_info;
+ 	struct writeback_control wbc = {
+-		.sync_mode   = wait ? WB_SYNC_ALL : WB_SYNC_HOLD,
++		.sync_mode   = wait ? WB_SYNC_ALL : WB_SYNC_NONE,
+ 		.range_start = 0,
+ 		.range_end   = LLONG_MAX,
+ 		.nr_to_write = LONG_MAX,
+ 	};
+ 
++	/*
++	 * Note by akpm about WB_SYNC_NONE used above: zero @wait is just an
++	 * advisory thing to help the file system shove lots of data into the
++	 * queues. If some gets missed then it'll be picked up on the second
++	 * '->sync_fs()' call, with non-zero @wait.
++	 */
++
+ 	if (sb->s_flags & MS_RDONLY)
+ 		return 0;
+ 
+-- 
+1.6.0.6
 
- - A spinlock user can be changed to a mutex with no runtime impact. (no 
-   increase in scheduling) This might enable us to convert/standardize 
-   some of the uglier locking constructs within ext2/3/4?
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
- - This mutex modification would probably be a win for workloads where
-   mutexes are held briefly - we'd never schedule.
-
- - If the owner is preempted, we fall back to proper blocking behavior. 
-   This might reduce the cost of preemptive kernels in general.
-
-The flip side:
-
- - The slight increase in the hotpath - we now maintain the 'owner' field.
-   That's cached in a register on most platforms anyway so it's not a too
-   big deal - if the general win justifies it.
-
-   ( This reminds me: why not flip over all the task_struct uses in 
-     mutex.c to thread_info? thread_info is faster to access [on x86] 
-     than current. )
-
- - The extra mutex->owner pointer data overhead.
-
- - It could possibly increase spinning overhead (and waste CPU time) on
-   workloads where locks are held and contended for. OTOH, such cases are
-   probably a prime target for improvements anyway. It would probably be 
-   near-zero-impact for workloads where mutexes are held for a very long 
-   time and where most of the time is spent blocking.
-
-It's hard to tell how it would impact inbetween workloads - i guess it 
-needs to be measured on a couple of workloads.
-
-	Ingo
