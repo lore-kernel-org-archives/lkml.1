@@ -1,86 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbZAFJGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZAFJLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000AbZAFJGI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:06:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZAFJFu
+	id S1752729AbZAFJLm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZAFJLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:05:50 -0500
-Received: from alpha.facton.com ([83.236.152.122]:42062 "EHLO alpha.facton.com"
+	Tue, 6 Jan 2009 04:11:24 -0500
+Received: from tundra.namei.org ([65.99.196.166]:3601 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbZAFJFs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:05:48 -0500
-X-Greylist: delayed 748 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Jan 2009 04:05:47 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1750944AbZAFJLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 04:11:23 -0500
+Date: Tue, 6 Jan 2009 20:11:00 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+cc: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [TOMOYO #14 (mmotm 2008-12-30-16-05) 02/10] Singly linked list
+ implementation.
+In-Reply-To: <200901060813.n068DI3Y023188@www262.sakura.ne.jp>
+Message-ID: <alpine.LRH.1.10.0901062008480.25091@tundra.namei.org>
+References: <20090101050741.372438529@I-love.SAKURA.ne.jp> <20090101050939.802554261@I-love.SAKURA.ne.jp> <alpine.LRH.1.10.0901051926130.16049@tundra.namei.org> <200901060813.n068DI3Y023188@www262.sakura.ne.jp>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: hwinfo problem since 2.6.28
-Date: Tue, 6 Jan 2009 09:53:14 +0100
-Message-ID: <3C59DB883F7B0B4D8096010D45ACCD13C73EA2@exch.facton.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: hwinfo problem since 2.6.28
-Thread-Index: Aclv3DYqPGwhSzk9Qg22IVoJDubF+w==
-From: "Beschorner Daniel" <Daniel.Beschorner@facton.com>
-To: <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since 2.6.28 my hwinfo tool crashes badly on 2 years old OpenSuSE 10.2
-x64/SMP.
-Older kernels run fine, I did a "make oldconfig" and rather used
-defaults (just skipping low-64k checks).
-This seems to be the only affected binary as far I can see.
-Did I miss a new legacy/compat option or is it a bug?
+On Tue, 6 Jan 2009, Tetsuo Handa wrote:
 
-Thank you!
-Daniel
+> 
+> James Morris wrote:
+> > This has a technical ack from Paul, but what about Linus' long-standing 
+> > objection to singly-linked lists in the kernel?  I'm sure this has been 
+> > discussed re. your patches, but I can't find a reference.
+> I couldn't find one neither. (What does "re." mean?)
 
-hwinfo: Corrupted page table at address 7fd04de3ec00
-PGD 7dc33067 PUD 3efe067 PMD 27b83067 PTE fffffffffffffbff
-Bad pagetable: 000d [#9] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:06:05.0/class
-CPU 0
-Modules linked in:
-Pid: 13700, comm: hwinfo Tainted: G      D    2.6.28 #7
-RIP: 0033:[<00007fd04d66f7f2>]  [<00007fd04d66f7f2>] 0x7fd04d66f7f2
-RSP: 002b:00007fff55ed2c68  EFLAGS: 00010202
-RAX: 00000000015d1fb0 RBX: 0000000000001000 RCX: fefefefefefefeff
-RDX: 0000000000000001 RSI: 00007fd04de3ec00 RDI: 00000000015d1fb0
-RBP: 000000000009fc00 R08: ffffffffff000000 R09: 00007fd04d6fbd60
-R10: ffffffffffffffff R11: 0000000000000000 R12: 00007fd04d9a72f6
-R13: 000000000009f000 R14: 0000000000000003 R15: 00000000015b4010
-FS:  00007fd04dec06f0(0000) GS:ffffffff80619540(0000)
-knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00007fd04de3ec00 CR3: 000000007de55000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process hwinfo (pid: 13700, threadinfo ffff88007dff2000, task
-ffff88007ed934a0)
+http://en.wiktionary.org/wiki/re#Etymology_1
 
-RIP  [<00007fd04d66f7f2>] 0x7fd04d66f7f2
- RSP <00007fff55ed2c68>
----[ end trace 742092d3bead57cc ]---
+> But optimistically speaking, there are many in-tree users who define "struct"
+> without "prev" pointer.
+> 
+>   # grep -hr 'struct [a-zA-Z0-9_]* \*next;' linux-2.6.28/include/linux/ | wc -l
+>   42
+>   # grep -hr 'struct [a-zA-Z0-9_]* \*prev;' linux-2.6.28/include/linux/ | wc -l
+>   7
+> 
+> Not all structures listed below are used as singly linked list,
+> but many of them are used as singly linked list.
+
+Can any of these be converted to your singly linked list implementation ?
+
+> 
+>   struct sched_class;
+>   struct acpi_pci_driver;
+>   struct adb_request;
+>   struct atalk_route;
+>   struct core_thread;
+>   struct dma_async_tx_descriptor;
+>   struct erase_info;
+>   struct esp_pio_buffer;
+>   struct fdtable;
+>   struct floppy_raw_cmd;
+>   struct ftrace_ops;
+>   struct hdlc_proto;
+>   struct hwif_s;
+>   struct ippp_buf_queue;
+>   struct irqaction;
+>   struct isdn_net_local_s;
+>   struct kcore_list;
+>   struct mfc6_cache;
+>   struct mfc_cache;
+>   struct nls_table;
+>   struct notifier_block;
+>   struct page_list;
+>   struct pbe;
+>   struct phone_device;
+>   struct pnp_id;
+>   struct r3964_block_header;
+>   struct r3964_client_info;
+>   struct r3964_message;
+>   struct rcu_head;
+>   struct resource_list;
+>   struct sched_group;
+>   struct sdio_func_tuple;
+>   struct tasklet_struct;
+>   struct tty_buffer;
+>   struct xor_block_template;
+> 
+> Thus, I believe it is acceptable that TOMOYO uses singly linked list
+> unless Linus comes out and yell "No!".
+
+He's yelled no in the past, so there needs to be a convincing argument 
+which he'll accept.
 
 
-open("/dev/mem", O_RDONLY)              = 3
-fstat(3, {st_mode=S_IFCHR|0640, st_rdev=makedev(1, 1), ...}) = 0
-mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7faeac9ec000
-munmap(0x7faeac9ec000, 4096)            = 0
-close(3)                                = 0
-mmap(NULL, 266240, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
-0) = 0x7faeac95d000
-open("/dev/mem", O_RDONLY)              = 3
-fstat(3, {st_mode=S_IFCHR|0640, st_rdev=makedev(1, 1), ...}) = 0
-mmap(NULL, 262144, PROT_READ, MAP_PRIVATE, 3, 0xc0000) = 0x7faeac91d000
-munmap(0x7faeac91d000, 262144)          = 0
-close(3)                                = 0
-open("/dev/mem", O_RDONLY)              = 3
-fstat(3, {st_mode=S_IFCHR|0640, st_rdev=makedev(1, 1), ...}) = 0
-mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, 3, 0x9f000) = 0x7faeac95c000
-+++ killed by SIGKILL +++
+- James
+-- 
+James Morris
+<jmorris@namei.org>
