@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752399AbZAFSMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbZAFSQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752399AbZAFSMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbZAFSM3
+	id S1752089AbZAFSQX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbZAFSQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:12:29 -0500
-Received: from THUNK.ORG ([69.25.196.29]:44009 "EHLO thunker.thunk.org"
+	Tue, 6 Jan 2009 13:16:09 -0500
+Received: from 1wt.eu ([62.212.114.60]:1134 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750906AbZAFSM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:12:28 -0500
-Date: Tue, 6 Jan 2009 13:12:24 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: David Miller <davem@davemloft.net>
-Cc: jbeulich@novell.com, sam@ravnborg.org, linux-kernel@vger.kernel.org,
-       ccache@lists.samba.org
-Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
-Message-ID: <20090106181224.GC10903@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Miller <davem@davemloft.net>, jbeulich@novell.com,
-	sam@ravnborg.org, linux-kernel@vger.kernel.org,
-	ccache@lists.samba.org
-References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <20090106.082619.170966508.davem@davemloft.net>
-MIME-Version: 1.0
+	id S1750845AbZAFSQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 13:16:07 -0500
+Date: Tue, 6 Jan 2009 19:15:59 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Ben Mansell <ben@zeus.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090106181559.GA29426@1wt.eu>
+References: <20081224152841.GB13113@1wt.eu> <49639807.1040803@zeus.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090106.082619.170966508.davem@davemloft.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <49639807.1040803@zeus.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 08:26:19AM -0800, David Miller wrote:
-> From: "Theodore Ts'o" <tytso@mit.edu>
-> Date: Tue, 06 Jan 2009 10:15:26 -0500
+Hi Ben,
+
+On Tue, Jan 06, 2009 at 05:42:31PM +0000, Ben Mansell wrote:
+> Hi,
 > 
-> I think the problem might be that the assembler source always
-> "changes" because a different date or timestamp string is put in there
-> by gcc every time the assembler source is built.
+> >I'm facing a data corruption problem with splice() between two
+> >non-blocking TCP sockets on 2.6.27.10. I could finally write a
+> >simpler proof of concept, and capture a snapshot of the issue
+> >with the associated strace result.
+> >
+> >My program does the following :
+> >  - accept an incoming connection
+> >  - connect to a remote server
+> >  - forward all data from the server to the client using splice()
+> >
+> >The data count is always correct, but some parts are corrupted and
+> >contain data which seem to come from random memory locations (this
+> >raises a security concern BTW). It *sometimes* happens that a few
+> >megabytes can be transferred without any problem, but most of the
+> >time, corruption happens for a few hundreds of bytes every few
+> >hundreds of kilobytes.
+> 
+> FWIW, I can easily reproduce this on a Linux 2.6.27-9 (Ubuntu kernel), 
+> using both forcedeth and tg3 network drivers. It's reassuring to hear of 
+> this network corruption as I have been puzzling over non-blocking 
+> splice() code recently!
 
-I'm not sure that's the problem, actually. Running "ccache -s" doesn't
-show any additional cache misses *or* hits.  Instead the only
-statistic which gets bumped is the "called for link" counter.  So I
-suspect it's because ccache doesn't attempt to cache "gcc -S" or "gcc
--c foo.s" operations.  So it might be the case that a change to ccache
-to cache compile-to-assemble and assemble-to-object code
-transformation would help, but then we would still end up calling
-ccache twice, and double the number of things that would be cached in
-the ccache directories, not to mention doubling the number of calls to
-remote hosts of distcc is involved.
+Ah, so you might also have discovered a few annoyances with the API, eg
+the fact that splice() returns after the first read in non-blocking mode,
+as well as the fact that it never returns zero on close, but -EAGAIN,
+which requires an additional recv(MSG_PEEK) to distinguish between a
+close and a lack of data. But I leave that for a later discussion, let's
+address the corruption issue first.
 
-So a full, long-term solution that gets back all of the efficiency
-wins of ccache and distcc probably requires somehow passing a script
-or program to ccache and distcc which does all of the steps which
-kbuild needs to do to transform a kernel .c file to a kernel .o file,
-which seems to involve interposing multiple steps between the foo.c to
-foo.s and foo.s and foo.o steps, as well as post-processing on the
-resulting .o file using objcopy.  If we can somehow get ccache to
-cache all of that work, and distribute all of the steps of going from
-foo.c to foo.o to other machines when distcc is involved, that would
-be really cool.  I suspect this is not trivial to do, however....
+> The corruption does seem to be confined to the user data on the 
+> connections, as I have been able to run some benchmarks using my own 
+> splice()-enabled HTTP proxy to transfer lots of data. All the TCP 
+> connections 'work' fine (as in no broken TCP), the initial HTTP request 
+> & response headers get through OK, but the body data of the responses 
+> sometimes gets corrupted. The benchmark seems to work flawlessly until 
+> you look at the web page data!
 
-   	  	   	   	       - Ted
+I confirm your observations. Benchmarks were OK, it's the first user of
+my experimental code who reported wrong md5sums on their ISO images :-/
+For this reason, I think that it's completely related to the way pages
+are passed between sockets, but I'm too much a loser in this area. I
+understood tcp_splice_read(), but can't manage to find what is called
+on the other side nor what the data become :-(
+
+> I'm happy to run any test code on systems here or provide any debug 
+> information if it would help to track this down.
+
+That's nice, because I'd like to ensure that whatever fix is proposed
+is properly validated, not only on my platforms!
+
+Regards,
+Willy
 
