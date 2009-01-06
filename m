@@ -1,354 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZAFTG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZAFTS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbZAFTG4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 14:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbZAFTGr
+	id S1752401AbZAFTS3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 14:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbZAFTST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 14:06:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33651 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbZAFTGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 14:06:46 -0500
-Message-ID: <4963ABF0.6070400@redhat.com>
-Date: Tue, 06 Jan 2009 14:07:28 -0500
-From: Casey Dahlin <cdahlin@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Tue, 6 Jan 2009 14:18:19 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42699 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbZAFTSS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 14:18:18 -0500
+Date: Tue, 6 Jan 2009 19:17:45 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Andi Kleen <andi@firstfloor.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [3/5] Mark complex bitops.h inlines as __always_inline
+In-Reply-To: <20090104233640.6A7453E6653@basil.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0901061847110.29408@blonde.anvils>
+References: <200901051236.281008835@firstfloor.org>
+ <20090104233640.6A7453E6653@basil.firstfloor.org>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [RESEND][RFC PATCH v2] waitfd
-References: <49639EB8.40204@redhat.com>
-In-Reply-To: <49639EB8.40204@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Same as last time, but the formatting should be right now.
+On Mon, 5 Jan 2009, Andi Kleen wrote:
+> 
+> Hugh Dickins noticed that older gcc versions when the kernel
+> is built for code size didn't inline some of the bitops.
+> 
+> Mark all complex x86 bitops that have more than a single
+> asm statement or two as always inline to avoid this problem.
+> 
+> Probably should be done for other architectures too.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Original description:
-Linux now exposes signals, timers, and events via file descriptors through signalfd, timerfd, and eventfd. This means programmers can use a single select/[e]poll call to monitor all change in their program. This patch aims to expose child death via the same mechanism.
+Thanks for pursuing this again, Andi.  Yes, this patch certainly
+helped in my case.  But could we please change the first sentence
+of that comment?  Though I did first notice the problem while
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y, it persisted to a greater or
+lesser extent without that, so long as CONFIG_OPTIMIZE_INLINING=y:
+it's a problem with that option, not with building for code size.
 
-waitfd provides a file descriptor out of which may be read a series of siginfo_t objects describing child death. A child process is reaped as soon as its information is read. This means child monitoring too can be performed with that same poll call.
+I haven't actually been using your patch since testing it, I just
+switched CONFIG_OPTIMIZE_INLINING off: I'm surprised it remained
+=y in the x86 defconfigs (though default N in the Kconfig, phew),
+and still worry what other silliness that option may be doing, while
+it seems that there isn't yet an actual gcc release that behaves well
+with it (I see from later mail that you do expect 4.4 to fix it).
 
-Patch is against v2.6.28 
+So far as I've been able to tell, the right wording for the first
+sentence would be:
 
-diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
-index f2bba78..134d83c 100644
---- a/arch/x86/include/asm/unistd_32.h
-+++ b/arch/x86/include/asm/unistd_32.h
-@@ -338,6 +338,7 @@
- #define __NR_dup3		330
- #define __NR_pipe2		331
- #define __NR_inotify_init1	332
-+#define __NR_waitfd		333
- 
- #ifdef __KERNEL__
- 
-diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
-index d2e415e..b28eb07 100644
---- a/arch/x86/include/asm/unistd_64.h
-+++ b/arch/x86/include/asm/unistd_64.h
-@@ -653,6 +653,8 @@ __SYSCALL(__NR_dup3, sys_dup3)
- __SYSCALL(__NR_pipe2, sys_pipe2)
- #define __NR_inotify_init1			294
- __SYSCALL(__NR_inotify_init1, sys_inotify_init1)
-+#define __NR_waitfd				295
-+__SYSCALL(__NR_waitfd, sys_waitfd)
- 
- 
- #ifndef __NO_STUBS
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index d44395f..c796a8b 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -332,3 +332,4 @@ ENTRY(sys_call_table)
- 	.long sys_dup3			/* 330 */
- 	.long sys_pipe2
- 	.long sys_inotify_init1
-+	.long sys_waitfd
-diff --git a/fs/Makefile b/fs/Makefile
-index d9f8afe..74c31fb 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -25,6 +25,7 @@ obj-$(CONFIG_INOTIFY_USER)	+= inotify_user.o
- obj-$(CONFIG_EPOLL)		+= eventpoll.o
- obj-$(CONFIG_ANON_INODES)	+= anon_inodes.o
- obj-$(CONFIG_SIGNALFD)		+= signalfd.o
-+obj-$(CONFIG_WAITFD)		+= waitfd.o
- obj-$(CONFIG_TIMERFD)		+= timerfd.o
- obj-$(CONFIG_EVENTFD)		+= eventfd.o
- obj-$(CONFIG_AIO)               += aio.o
-diff --git a/fs/waitfd.c b/fs/waitfd.c
-new file mode 100644
-index 0000000..0155a83
---- /dev/null
-+++ b/fs/waitfd.c
-@@ -0,0 +1,117 @@
-+/*
-+ *  fs/waitfd.c
-+ *
-+ *  Copyright (C) 2008  Red Hat, Casey Dahlin <cdahlin@redhat.com>
-+ *
-+ *  Largely derived from fs/signalfd.c
-+ */
-+
-+#include <linux/file.h>
-+#include <linux/poll.h>
-+#include <linux/init.h>
-+#include <linux/fs.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/signal.h>
-+#include <linux/list.h>
-+#include <linux/anon_inodes.h>
-+#include <linux/syscalls.h>
-+
-+long do_waitid(int which, pid_t upid,
-+	       struct siginfo __user *infop, int options,
-+	       struct rusage __user *ru);
-+
-+struct waitfd_ctx {
-+	int ops;
-+	int which;
-+	pid_t upid;
-+};
-+
-+static int waitfd_release(struct inode *inode, struct file *file)
-+{
-+	kfree(file->private_data);
-+	return 0;
-+}
-+
-+static unsigned int waitfd_poll(struct file *file, poll_table *wait)
-+{
-+	struct waitfd_ctx *ctx = file->private_data;
-+	long value;
-+
-+	poll_wait(file, &current->signal->wait_chldexit, wait);
-+
-+	value = do_waitid(ctx->which, ctx->upid, NULL,
-+			   ctx->ops | WNOHANG | WNOWAIT, NULL);
-+	if (value > 0 || value == -ECHILD)
-+		return POLLIN;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Returns a multiple of the size of a struct siginfo, or a negative
-+ * error code. The "count" parameter must be at least sizeof(struct siginfo)
-+ */
-+static ssize_t waitfd_read(struct file *file, char __user *buf, size_t count,
-+			     loff_t *ppos)
-+{
-+	struct waitfd_ctx *ctx = file->private_data;
-+	struct siginfo __user *info_addr = (struct siginfo *)buf;
-+	int flags = ctx->ops;
-+	ssize_t ret, total = 0;
-+
-+	count /= sizeof(struct siginfo);
-+	if (!count)
-+		return -EINVAL;
-+
-+	do {
-+		ret = do_waitid(ctx->which, ctx->upid, info_addr, flags, NULL);
-+		if (ret == 0)
-+			ret = -EAGAIN;
-+		if (ret == -ECHILD)
-+			ret = 0;
-+		if (ret <= 0)
-+			break;
-+
-+		info_addr++;
-+		total += sizeof(struct siginfo);
-+		flags |= WNOHANG;
-+	} while (--count);
-+
-+	return total ? total: ret;
-+}
-+
-+static const struct file_operations waitfd_fops = {
-+	.release	= waitfd_release,
-+	.poll		= waitfd_poll,
-+	.read		= waitfd_read,
-+};
-+
-+asmlinkage long sys_waitfd(int which, pid_t upid, int options, int unused)
-+{
-+	int ufd;
-+	struct waitfd_ctx *ctx;
-+
-+	/* Just to make sure we don't end up with a sys_waitfd4 */
-+	(void)unused;
-+
-+	if (options & ~(WNOHANG|WEXITED|WSTOPPED|WCONTINUED))
-+		return -EINVAL;
-+	if (!(options & (WEXITED|WSTOPPED|WCONTINUED)))
-+		return -EINVAL;
-+
-+	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->ops = options;
-+	ctx->upid = upid;
-+	ctx->which = which;
-+
-+	ufd = anon_inode_getfd("[waitfd]", &waitfd_fops, ctx,
-+			       (options & WNOHANG) ? O_NONBLOCK : 0);
-+	if (ufd < 0)
-+		kfree(ctx);
-+
-+	return ufd;
-+}
-diff --git a/init/Kconfig b/init/Kconfig
-index f763762..bc34871 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -683,6 +683,16 @@ config EPOLL
- 	  Disabling this option will cause the kernel to be built without
- 	  support for epoll family of system calls.
- 
-+config WAITFD
-+	bool "Enable waitfd() system call" if EMBEDDED
-+	select ANON_INODES
-+	default y
-+	help
-+	  Enable the waitfd() system call that allows receving child state
-+	  changes from a file descriptor.
-+
-+	  If unsure, say Y.
-+
- config SIGNALFD
- 	bool "Enable signalfd() system call" if EMBEDDED
- 	select ANON_INODES
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 2d8be7e..b53e8ba 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1233,18 +1233,20 @@ static int wait_noreap_copyout(struct task_struct *p, pid_t pid, uid_t uid,
- 	int retval = rusagep ? getrusage(p, RUSAGE_BOTH, rusagep) : 0;
- 
- 	put_task_struct(p);
--	if (!retval)
--		retval = put_user(SIGCHLD, &infop->si_signo);
--	if (!retval)
--		retval = put_user(0, &infop->si_errno);
--	if (!retval)
--		retval = put_user((short)why, &infop->si_code);
--	if (!retval)
--		retval = put_user(pid, &infop->si_pid);
--	if (!retval)
--		retval = put_user(uid, &infop->si_uid);
--	if (!retval)
--		retval = put_user(status, &infop->si_status);
-+	if (infop) {
-+		if (!retval)
-+			retval = put_user(SIGCHLD, &infop->si_signo);
-+		if (!retval)
-+			retval = put_user(0, &infop->si_errno);
-+		if (!retval)
-+			retval = put_user((short)why, &infop->si_code);
-+		if (!retval)
-+			retval = put_user(pid, &infop->si_pid);
-+		if (!retval)
-+			retval = put_user(uid, &infop->si_uid);
-+		if (!retval)
-+			retval = put_user(status, &infop->si_status);
-+	}
- 	if (!retval)
- 		retval = pid;
- 	return retval;
-@@ -1727,35 +1729,12 @@ repeat:
- end:
- 	current->state = TASK_RUNNING;
- 	remove_wait_queue(&current->signal->wait_chldexit,&wait);
--	if (infop) {
--		if (retval > 0)
--			retval = 0;
--		else {
--			/*
--			 * For a WNOHANG return, clear out all the fields
--			 * we would set so the user can easily tell the
--			 * difference.
--			 */
--			if (!retval)
--				retval = put_user(0, &infop->si_signo);
--			if (!retval)
--				retval = put_user(0, &infop->si_errno);
--			if (!retval)
--				retval = put_user(0, &infop->si_code);
--			if (!retval)
--				retval = put_user(0, &infop->si_pid);
--			if (!retval)
--				retval = put_user(0, &infop->si_uid);
--			if (!retval)
--				retval = put_user(0, &infop->si_status);
--		}
--	}
- 	return retval;
- }
- 
--asmlinkage long sys_waitid(int which, pid_t upid,
--			   struct siginfo __user *infop, int options,
--			   struct rusage __user *ru)
-+long do_waitid(int which, pid_t upid,
-+	       struct siginfo __user *infop, int options,
-+	       struct rusage __user *ru)
- {
- 	struct pid *pid = NULL;
- 	enum pid_type type;
-@@ -1789,6 +1768,39 @@ asmlinkage long sys_waitid(int which, pid_t upid,
- 	ret = do_wait(type, pid, options, infop, NULL, ru);
- 	put_pid(pid);
- 
-+	return ret;
-+}
-+
-+asmlinkage long sys_waitid(int which, pid_t upid,
-+			   struct siginfo __user *infop, int options,
-+			   struct rusage __user *ru)
-+{
-+	long ret;
-+
-+	ret = do_waitid(which, upid, infop, options, ru);
-+
-+	if (ret > 0)
-+		ret = 0;
-+	else {
-+		/*
-+		 * For a WNOHANG return, clear out all the fields
-+		 * we would set so the user can easily tell the
-+		 * difference.
-+		 */
-+		if (!ret)
-+			ret = put_user(0, &infop->si_signo);
-+		if (!ret)
-+			ret = put_user(0, &infop->si_errno);
-+		if (!ret)
-+			ret = put_user(0, &infop->si_code);
-+		if (!ret)
-+			ret = put_user(0, &infop->si_pid);
-+		if (!ret)
-+			ret = put_user(0, &infop->si_uid);
-+		if (!ret)
-+			ret = put_user(0, &infop->si_status);
-+	}
-+
- 	/* avoid REGPARM breakage on x86: */
- 	asmlinkage_protect(5, ret, which, upid, infop, options, ru);
- 	return ret;
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index e14a232..e8d4da6 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -163,6 +163,7 @@ cond_syscall(sys_ioprio_set);
- cond_syscall(sys_ioprio_get);
- 
- /* New file descriptors */
-+cond_syscall(sys_waitfd);
- cond_syscall(sys_signalfd);
- cond_syscall(sys_signalfd4);
- cond_syscall(compat_sys_signalfd);
+Hugh Dickins noticed that released gcc versions building the kernel
+with CONFIG_OPTIMIZE_INLINING=y don't inline some of the bitops -
+sometimes generating very inefficient pageflag tests, and many
+instances of constant_test_bit().
+
+Hugh
+
+> 
+> ---
+>  arch/x86/include/asm/bitops.h      |   15 +++++++++++----
+>  include/asm-generic/bitops/__ffs.h |    2 +-
+>  include/asm-generic/bitops/__fls.h |    2 +-
+>  include/asm-generic/bitops/fls.h   |    2 +-
+>  include/asm-generic/bitops/fls64.h |    4 ++--
+>  5 files changed, 16 insertions(+), 9 deletions(-)
+> 
+> Index: linux-2.6.28-test/arch/x86/include/asm/bitops.h
+> ===================================================================
+> --- linux-2.6.28-test.orig/arch/x86/include/asm/bitops.h	2008-10-24 13:34:40.000000000 +0200
+> +++ linux-2.6.28-test/arch/x86/include/asm/bitops.h	2009-01-02 16:01:00.000000000 +0100
+> @@ -3,6 +3,9 @@
+>  
+>  /*
+>   * Copyright 1992, Linus Torvalds.
+> + *
+> + * Note: inlines with more than a single statement should be marked
+> + * __always_inline to avoid problems with older gcc's inlining heuristics.
+>   */
+>  
+>  #ifndef _LINUX_BITOPS_H
+> @@ -53,7 +56,8 @@
+>   * Note that @nr may be almost arbitrarily large; this function is not
+>   * restricted to acting on a single-word quantity.
+>   */
+> -static inline void set_bit(unsigned int nr, volatile unsigned long *addr)
+> +static __always_inline void
+> +set_bit(unsigned int nr, volatile unsigned long *addr)
+>  {
+>  	if (IS_IMMEDIATE(nr)) {
+>  		asm volatile(LOCK_PREFIX "orb %1,%0"
+> @@ -90,7 +94,8 @@
+>   * you should call smp_mb__before_clear_bit() and/or smp_mb__after_clear_bit()
+>   * in order to ensure changes are visible on other processors.
+>   */
+> -static inline void clear_bit(int nr, volatile unsigned long *addr)
+> +static __always_inline void
+> +clear_bit(int nr, volatile unsigned long *addr)
+>  {
+>  	if (IS_IMMEDIATE(nr)) {
+>  		asm volatile(LOCK_PREFIX "andb %1,%0"
+> @@ -196,7 +201,8 @@
+>   *
+>   * This is the same as test_and_set_bit on x86.
+>   */
+> -static inline int test_and_set_bit_lock(int nr, volatile unsigned long *addr)
+> +static __always_inline int
+> +test_and_set_bit_lock(int nr, volatile unsigned long *addr)
+>  {
+>  	return test_and_set_bit(nr, addr);
+>  }
+> @@ -292,7 +298,8 @@
+>  	return oldbit;
+>  }
+>  
+> -static inline int constant_test_bit(int nr, const volatile unsigned long *addr)
+> +static __always_inline int
+> +constant_test_bit(int nr, const volatile unsigned long *addr)
+>  {
+>  	return ((1UL << (nr % BITS_PER_LONG)) &
+>  		(((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
+> Index: linux-2.6.28-test/include/asm-generic/bitops/__ffs.h
+> ===================================================================
+> --- linux-2.6.28-test.orig/include/asm-generic/bitops/__ffs.h	2006-04-03 16:06:13.000000000 +0200
+> +++ linux-2.6.28-test/include/asm-generic/bitops/__ffs.h	2009-01-02 16:01:00.000000000 +0100
+> @@ -9,7 +9,7 @@
+>   *
+>   * Undefined if no bit exists, so code should check against 0 first.
+>   */
+> -static inline unsigned long __ffs(unsigned long word)
+> +static __always_inline unsigned long __ffs(unsigned long word)
+>  {
+>  	int num = 0;
+>  
+> Index: linux-2.6.28-test/include/asm-generic/bitops/__fls.h
+> ===================================================================
+> --- linux-2.6.28-test.orig/include/asm-generic/bitops/__fls.h	2008-05-08 12:56:05.000000000 +0200
+> +++ linux-2.6.28-test/include/asm-generic/bitops/__fls.h	2009-01-02 16:01:00.000000000 +0100
+> @@ -9,7 +9,7 @@
+>   *
+>   * Undefined if no set bit exists, so code should check against 0 first.
+>   */
+> -static inline unsigned long __fls(unsigned long word)
+> +static __always_inline unsigned long __fls(unsigned long word)
+>  {
+>  	int num = BITS_PER_LONG - 1;
+>  
+> Index: linux-2.6.28-test/include/asm-generic/bitops/fls.h
+> ===================================================================
+> --- linux-2.6.28-test.orig/include/asm-generic/bitops/fls.h	2006-04-03 16:06:13.000000000 +0200
+> +++ linux-2.6.28-test/include/asm-generic/bitops/fls.h	2009-01-02 16:01:00.000000000 +0100
+> @@ -9,7 +9,7 @@
+>   * Note fls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
+>   */
+>  
+> -static inline int fls(int x)
+> +static __always_inline int fls(int x)
+>  {
+>  	int r = 32;
+>  
+> Index: linux-2.6.28-test/include/asm-generic/bitops/fls64.h
+> ===================================================================
+> --- linux-2.6.28-test.orig/include/asm-generic/bitops/fls64.h	2008-05-08 12:56:05.000000000 +0200
+> +++ linux-2.6.28-test/include/asm-generic/bitops/fls64.h	2009-01-02 16:01:00.000000000 +0100
+> @@ -15,7 +15,7 @@
+>   * at position 64.
+>   */
+>  #if BITS_PER_LONG == 32
+> -static inline int fls64(__u64 x)
+> +static __always_inline int fls64(__u64 x)
+>  {
+>  	__u32 h = x >> 32;
+>  	if (h)
+> @@ -23,7 +23,7 @@
+>  	return fls(x);
+>  }
+>  #elif BITS_PER_LONG == 64
+> -static inline int fls64(__u64 x)
+> +static __always_inline int fls64(__u64 x)
+>  {
+>  	if (x == 0)
+>  		return 0;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
