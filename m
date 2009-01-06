@@ -1,43 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZAFQ3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZAFQ3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbZAFQ3W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 11:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZAFQ3N
+	id S1754775AbZAFQ3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 11:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZAFQ3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 11:29:13 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57964
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751240AbZAFQ3M (ORCPT
+	Tue, 6 Jan 2009 11:29:34 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:53749 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbZAFQ3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 11:29:12 -0500
-Date: Tue, 06 Jan 2009 08:29:13 -0800 (PST)
-Message-Id: <20090106.082913.97432854.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: sam@ravnborg.org, kosaki.motohiro@jp.fujitsu.com, yinghai@kernel.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: irqnr fallout in gpiolib on sparc32
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090106125704.GC20407@elte.hu>
-References: <20090105135508.GB4190@elte.hu>
-	<20090105.123734.137888898.davem@davemloft.net>
-	<20090106125704.GC20407@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 6 Jan 2009 11:29:32 -0500
+Message-ID: <496386DB.8090606@oracle.com>
+Date: Tue, 06 Jan 2009 08:29:15 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Korolev Alexey <akorolev@infradead.org>,
+       Vasiliy Leonenko <vasiliy.leonenko@gmail.com>
+Subject: Re: linux-next: Tree for January 6 (MTD)
+References: <20090106182311.525e4b14.sfr@canb.auug.org.au>
+In-Reply-To: <20090106182311.525e4b14.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.496386DF.0120:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 6 Jan 2009 13:57:04 +0100
+Stephen Rothwell wrote:
+> Hi all,
+> 
+> This tree will not build a powerpc ppc4xx_defconfig due to a kvm problem.
+> 
+> Changes since 20090105:
+> 
+> New tree:
+> 	squashfs
+> 
+> Undropped tree:
+> 	usb
+> 	staging
+> 
+> Dropped trees (temporarily):
+> 	rr (build problem)
+> 	semaphore-removal (due to unfixed conflicts against Linus' tree)
+> 	cpu_alloc (build problem)
+> 	audit (difficult conflicts)
+> 
+> 
+> The mtd tree lost 3 conflicts.
 
-> Sparc32 on the other hand had a clean IRQ layer long before x86 found its 
-> desire for a clean genirq layer - so genirq is a nuisance for Sparc32 at 
-> best and it deserves none of the not nice actions. What i am hoping for is 
-> that perhaps the Sparc unification changed that equation.
+drivers/built-in.o: In function `lpddr_probe':
+(.text+0x95ddc): undefined reference to `lpddr_cmdset'
 
-Not really, the unificiation didn't change much in this area.  That
-doesn't change the fact that I do intend to genirq'ify sparc32 some
-time soon. :-)
+with
+# CONFIG_MTD_LPDDR is not set
+CONFIG_MTD_QINFO_PROBE=y
+
+There appears to be too little control/coordination between those
+two kconfig symbols.  Surely one of them (MTD_QINFO_PROBE) should
+depend on the other (MTD_LPDDR).  And why even build 2 modules
+when MTD_QINFO_PROBE is enabled?  Why not combine the code into
+one module?
+
+
+-- 
+~Randy
