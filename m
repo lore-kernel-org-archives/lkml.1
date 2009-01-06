@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbZAFJb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZAFJgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752656AbZAFJb5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZAFJbs
+	id S1752898AbZAFJgi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:36:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZAFJg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:31:48 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57803 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751164AbZAFJbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:31:47 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19JIs8n31BJapo5AtTW1iSdb5zhP7v6oUtnFkY+xC
-	9ZiLHCYSsYoiL4
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-From: Mike Galbraith <efault@gmx.de>
-To: svaidy@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1231168786.9120.26.camel@marge.simson.net>
-References: <20081230062139.GA30038@elte.hu>
-	 <20081230180722.GA29060@dirshya.in.ibm.com>
-	 <20090102072600.GA13412@dirshya.in.ibm.com>
-	 <20090102221630.GF17240@elte.hu> <1230967765.5257.6.camel@marge.simson.net>
-	 <20090103101626.GA4301@dirshya.in.ibm.com>
-	 <1230981761.27180.10.camel@marge.simson.net>
-	 <1231081200.17224.44.camel@marge.simson.net>
-	 <20090104181946.GC4301@dirshya.in.ibm.com>
-	 <1231098769.5757.43.camel@marge.simson.net>
-	 <20090105032029.GE4301@dirshya.in.ibm.com>
-	 <1231130416.5479.8.camel@marge.simson.net>
-	 <1231137413.10471.23.camel@marge.simson.net>
-	 <1231168786.9120.26.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 10:31:37 +0100
-Message-Id: <1231234297.3806.50.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+	Tue, 6 Jan 2009 04:36:29 -0500
+Received: from n61.bullet.mail.sp1.yahoo.com ([98.136.44.37]:40225 "HELO
+	n61.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751226AbZAFJg2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 04:36:28 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 67299.50093.bm@omp408.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=y6Mr8Sxy2+K/wqos56RcthOjxPql2ZlbsU4IptOlz/sQMb/n/3ih2YZjNGF1U2aiOUPSHRJqSHLM4RbIYmEMN2OZN6cE3FmS5RdQKJXbUUuUgJL6tVodRIwuAfdq6zyrwqK4+ze6fE1hCeig+KkUGC1WfW6Zb15ToGtr5Gbxnc0=;
+X-YMail-OSG: Cu9P76IVM1kX7BdKH2hNxeTb_9reGNV86kDZ4Ep5lbYh2RKsiOVl.1ec66Pqf5xXArfevm3.rnIc9x6RHxiImla7eTP2LZRU6L.Ez5TAQJqvRCaHrfhnUOtH6VZfl.PN_uva87b87nInLYNljzUwhPT3h9g-
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Tue, 6 Jan 2009 01:36:27 -0800 (PST)
+From: barry bouwsma <free_beer_for_all@yahoo.com>
+Reply-To: free_beer_for_all@yahoo.com
+Subject: EHCI problem with USB adapter
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <971780.75725.qm@web46108.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-05 at 16:19 +0100, Mike Galbraith wrote:
-> On Mon, 2009-01-05 at 07:37 +0100, Mike Galbraith wrote:
-> 
-> > I'll rummage around.
-> 
-> Seems to be about the only thing it could be, load balancing inflicting
-> injury on very sensitive mysql+oltp pairs.
+Moin moin,
 
-BTW, I verified this.  Reverting all load-balancing changes fully
-restored mysql+oltp peak, and brought mid-range throughput to the same
-level as sched_mc=2 except at the log-jam end.  (haven't looked at
-vmark, though I'd expect it to be hurting a bit too, it's affinity
-sensitive as well)
+I have a machine with a recent 2.6.28-rc, that stubbornly
+refuses to work well with three PCI USB cards and one
+particular USB WLAN adapter.  Use of a USB flash drive is
+somewhat better, while when booting into NetBSD from Sep
+of last year, two of the three cards have no problem
+recognizing the USB WLAN adapter -- the third card fails
+to be seen and probably needs me to reconfigure my NetBSD
+kernel, being a strange card with onboard bridge.  These
+problems seem to be identical over several kernel versions.
+As NetBSD works, I don't expect the problem to be inherent
+in the hardware.  Also, the device attached properly with
+an EHCI card on a notebook.
 
-I expected sched_mc=2 to help an nfs mount kbuild, and it did, quite a
-bit.  I first tried an nfs4 mount, but after a while, the odd ipv6 80%
-idle problem came back, so I reverted to nfs3.  Full built time there
-went from 4m25s to 4m2s.  A nice improvement.
 
-I haven't noticed anything on the interactivity front.
+Is this most likely to be a fault of the Linux USB EHCI
+stack, or would the WLAN adapter driver code be suspect,
+so that I could post to a narrower-interest mailing list?
 
-Personally, I'd go for sched_mc=2 as default.  I value the fork/exec
-load much more than sensitive benchmarks, though what hurts mysql+oltp
-will certainly hurt others as well.  We have a bit of conflict between
-keeping CPUs busy and affinity cost.  Something to work on.
+I should probably try attaching different devices to be
+able to say what does and what doesn't work...
 
-	-Mike
+
+Some background info:
+I've pulled an ISA network card from the machine, as it
+was seen to be causing issues.  Likewise, I've pulled the
+other PCI card out, in case it would affect anything.
+
+Sometimes, after a period of time, the EHCI adapter will
+hand off to the U/OHCI USB1 adapter which successfully
+attaches, but not always, and only on one port.
+
+With one particular card, attaching the wireless adapter
+causes the number of interrupts on that IRQ to shoot up
+rapidly and continuously, until everything dies.
+
+A different machine in production has a fourth USB PCI
+card which has been working reliably there for those
+devices attached to it, though I haven't tried the
+problematic WLAN adapter there... (much older kernel)
+
+
+I'll be spending some time gathering data and details on
+how each card interacts with different devices, and how
+NetBSD handles those cases which cause problems with
+Linux, to see if I can make it possible to attach this
+particular device reliably.
+
+thanks,
+barry bouwsma
+
+
+      
 
