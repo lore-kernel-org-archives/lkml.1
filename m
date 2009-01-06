@@ -1,106 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbZAFOCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZAFONO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964AbZAFOCT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 09:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZAFOCI
+	id S1752628AbZAFONO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 09:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZAFOM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 09:02:08 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:51968 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751588AbZAFOCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 09:02:07 -0500
-Message-ID: <4963645A.1040201@sgi.com>
-Date: Tue, 06 Jan 2009 06:02:02 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 6 Jan 2009 09:12:56 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:44458 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbZAFOMz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 09:12:55 -0500
+Message-ID: <49636799.1010109@novell.com>
+Date: Tue, 06 Jan 2009 09:15:53 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 04/11] x86: cleanup remaining cpumask_t ops in smpboot
- code
-References: <1231222512.3235.6.camel@jaswinder.satnam> <1231223480.3235.22.camel@jaswinder.satnam>
-In-Reply-To: <1231223480.3235.22.camel@jaswinder.satnam>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+References: <1230722935.4680.5.camel@think.oraclecorp.com>	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>	 <1230765549.7538.8.camel@think.oraclecorp.com>	 <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>	 <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org>	 <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu>	 <4963584A.4090805@novell.com>  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
+In-Reply-To: <1231248041.11687.107.camel@twins>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA10599BC4DA0548C63EADD23"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> Hello Mike,
-> 
-> On Sun, Jan 4, 2009 at 6:48 PM, Mike Travis <travis@sgi.com> wrote:
->> ﻿--- linux-2.6-for-ingo.orig/arch/x86/include/asm/smp.h
->> +++ linux-2.6-for-ingo/arch/x86/include/asm/smp.h
->> @@ -18,9 +18,26 @@
->>  #include <asm/pda.h>
->>  #include <asm/thread_info.h>
->>  
->> +#ifdef CONFIG_X86_64
->> +
->> +extern cpumask_var_t cpu_callin_mask;
->> +extern cpumask_var_t cpu_callout_mask;
->> +extern cpumask_var_t cpu_initialized_mask;
->> +extern cpumask_var_t cpu_sibling_setup_mask;
->> +
->> +#else /* CONFIG_X86_32 */
->> +
->> +extern cpumask_t cpu_callin_map;
-> 
-> 
-> I am not able to understand, why you choose asm/smp.h
-> 
-> You know that asm/smp.h should only be included for CONFIG_SMP
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA10599BC4DA0548C63EADD23
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi Jaswinder,
+Peter Zijlstra wrote:
+> On Tue, 2009-01-06 at 14:16 +0100, Ingo Molnar wrote:
+>  =20
+>> * Gregory Haskins <ghaskins@novell.com> wrote:
+>>
+>>    =20
+>>> Ingo Molnar wrote:
+>>>      =20
+>>>> There's no time or spin-rate based heuristics in this at all (i.e. t=
+hese=20
+>>>> mutexes are not 'adaptive' at all!),
+>>>>        =20
+>>> FYI: The original "adaptive" name was chosen in the -rt implementatio=
+n=20
+>>> to reflect that the locks can adaptively spin or sleep, depending on =
 
-I'll look closer but I had assumed that these masks would not be
-used for UP configurations (it did not get any compile errors
-with the allnoconfig).  In fact, any access to these masks for
-UP would be unnecessary since there are no callouts, the boot
-cpu is assumed initialized, and it has no siblings.  So the
-masks are specific to SMP.
+>>> conditions.  I realize this is in contrast to the typical usage of th=
+e=20
+>>> term when it is in reference to the spin-time being based on some=20
+>>> empirical heuristics, etc as you mentioned.  Sorry for the confusion.=
 
-But as I said, I'll verify this.
+>>>      =20
+>> the current version of the -rt spinny-mutexes bits were mostly written=
+ by=20
+>> Steve, right? Historically it all started out with a more classic=20
+>> "adaptive mutexes" patchset so the name stuck i guess.
+>>    =20
+>
+> Yeah, Gregory and co. started with the whole thing and showed there was=
 
-Thanks,
-Mike
-> 
-> ----- linux/smp.h -----
-> #ifdef CONFIG_SMP
-> 
-> #include <asm/smp.h>
-> 
-> #endif /* !SMP */
-> 
-> -----------------------
-> 
-> If someday this will happen:
-> 
-> ﻿----- asm/smp.h -----
-> #ifndef _ASM_X86_SMP_H
-> #define _ASM_X86_SMP_H
-> #ifndef __ASSEMBLY__
-> #ifdef CONFIG_SMP
-> ...
-> #else /* CONFIG_SMP */
-> #error "Including wrong file, why you need smp.h for uniprocesor"
-> #endif /* CONFIG_SMP */
-> #endif /* __ASSEMBLY__ */
-> #endif /* _ASM_X86_SMP_H */
-> 
-> -----------------------
-> 
-> Then ;-)
-> 
-> Are you planning to make some new file for this or you think some other file will be suitable for this.
-> 
-> If you have some future plans, please let me know.
-> 
-> Thanks
-> --
-> JSR
+> significant performance to be gained, after that Steve rewrote it from
+> scratch reducing it to this minimalist heuristic, with help from Greg.
+>
+> (At least, that is how I remember it, please speak up if I got things
+> wrong)
+>  =20
+Thats pretty accurate IIUC.  The concept and original patches were
+written by myself, Peter Morreale and Sven Dietrich (cc'd).  However,
+Steve cleaned up our patch before accepting it into -rt (we had extra
+provisions for things like handling conditional compilation and run-time
+disablement which he did not care for), but its otherwise the precise
+core concept we introduced.  I think Steven gave a nice attribution to
+that fact in the prologue, however.  And I also ACKed his cleanup, so I
+think all is well from my perspective.
 
+As a historical note: It should be mentioned that Steven also introduced
+a really brilliant optimization to use RCU for the owner tracking that
+the original patch as submitted by my team did not have.  However, it
+turned out to inadvertently regress performance due to the way
+preempt-rcu's rcu_read_lock() works so it had to be reverted a few weeks
+later to the original logic that we submitted (even though on paper his
+ideas in that area were superior to ours).  So whats in -rt now really
+is more or less our patch sans the conditional crap, etc.=20
+
+Hope that helps!
+
+-Greg
+
+
+--------------enigA10599BC4DA0548C63EADD23
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkljZ5kACgkQlOSOBdgZUxlxqQCfY2ZZfOExwh4MCCd0u88kobhK
+dZAAnjuCdDJ/B2LHRwdAkwYAoerUh8wQ
+=k4K3
+-----END PGP SIGNATURE-----
+
+--------------enigA10599BC4DA0548C63EADD23--
