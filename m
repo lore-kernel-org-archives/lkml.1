@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbZAFXVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZAFXWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbZAFXVg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZAFXV1
+	id S1756196AbZAFXWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbZAFXWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:21:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48914 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751372AbZAFXV1 (ORCPT
+	Tue, 6 Jan 2009 18:22:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60150 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbZAFXWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:21:27 -0500
-Date: Tue, 6 Jan 2009 15:21:23 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Wu Fengguang <fengguang.wu@intel.com>
+	Tue, 6 Jan 2009 18:22:09 -0500
+Date: Tue, 6 Jan 2009 18:22:08 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Dmitri Monakhov <dmonakhov@openvz.org>,
+       Dave Chinner <david@fromorbit.com>
 Subject: Re: 2.6.29 -mm merge plans
-Message-Id: <20090106152123.a4bf1736.akpm@linux-foundation.org>
-In-Reply-To: <20090106225744.GA10553@infradead.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	<20090106225744.GA10553@infradead.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Message-ID: <20090106232208.GA25103@infradead.org>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106150855.5f362a2d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106150855.5f362a2d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc added)
-
-On Tue, 6 Jan 2009 17:57:44 -0500
-Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
-> > generic-swap-sparc-rename-swap-to-swap_ulong.patch
-> > generic-swap-iphase-rename-swap-to-swap_byte_order.patch
-> > generic-swap-lib-sortc-rename-swap-to-swap_func.patch
-> > generic-swap-introduce-global-macro-swapa-b.patch
-> > generic-swap-ext3-remove-local-swap-macro.patch
-> > generic-swap-ext4-remove-local-swap-macro.patch
-> > generic-swap-sched-remove-local-swap-macro.patch
-> > generic-swap-dcache-use-swap-instead-of-private-do_switch.patch
+On Tue, Jan 06, 2009 at 03:08:55PM -0800, Andrew Morton wrote:
+> > Btw, this code is still not quite right.  We really need to call
+> > ->setattr instead of vmtruncate here.  Complex filesystem need
+> > transaction to properly free blocks, and those transactions are in
+> > ->setattr not inside vmtruncate where ->truncate doesn't even have
+> > a chance to get the handle to the transaction passed.
 > > 
-> >   Add a kernel-wide swap() macro, use it.  Merge.
+> > As these patches don't make it worse this is not a NACK, but more of
+> > a heads up.
 > 
-> Hmm, must have missed this when it went to lkml.  Having this helper
-> generic is a good idea, but swap is far too generic for something
-> in kernel.h as indicated by the various renaming patches. How about
-> swap_vars?
-> 
+> Sure.  Maybe add a FIXME comment for now?
 
-I thought that swap() was a good name, actually.
+Ok.  I was planning to look into this again, and IIRC Dave already did
+when he was at SGI, but his proof of concept patches got lost somewhere.
 
-Sure, it's bold.  But we only have one swap() implementation,
-kernel-wide, forever, right?   So what the heck: call it swap()!
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+---end quoted text---
