@@ -1,220 +1,503 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbZAFWZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbZAFW0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbZAFWZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:25:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbZAFWNy
+	id S1759383AbZAFW0s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbZAFWN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 6 Jan 2009 17:13:57 -0500
+Received: from kroah.org ([198.145.64.141]:51277 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756013AbZAFWNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Jan 2009 17:13:54 -0500
-Received: from wf-out-1314.google.com ([209.85.200.171]:9428 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbZAFWNw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:13:52 -0500
-Subject: Re: [PATCH] rtc-ds1307: True SMBus compatibility
-From: Ed Swierk <eswierk@aristanetworks.com>
-To: BARRE Sebastien <sbarre@sdelcc.com>
-Cc: linux-i2c@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <C1C62166118DFA4A8BBA01A2411F0D171224AECDC1@PRI-MBX-101.dom1.vinci-energies.net>
-References: <1231176979.13443.19.camel@localhost.localdomain>
-	 <C1C62166118DFA4A8BBA01A2411F0D171224AECDC1@PRI-MBX-101.dom1.vinci-energies.net>
-Content-Type: multipart/mixed; boundary="=-HKD5X0y6qWXtY0G5eVk8"
-Date: Tue, 06 Jan 2009 14:13:44 -0800
-Message-Id: <1231280024.12030.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Kay Sievers <kay.sievers@vrfy.org>, David Woodhouse <dwmw2@infradead.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 36/60] mtd: struct device - replace bus_id with dev_name(), dev_set_name()
+Date: Tue,  6 Jan 2009 14:11:55 -0800
+Message-Id: <1231279939-32728-36-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <20090106221123.GA32689@kroah.com>
+References: <20090106221123.GA32689@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Kay Sievers <kay.sievers@vrfy.org>
 
---=-HKD5X0y6qWXtY0G5eVk8
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+CC: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/mtd/devices/m25p80.c        |   16 ++++++++--------
+ drivers/mtd/devices/mtd_dataflash.c |   30 +++++++++++++++---------------
+ drivers/mtd/maps/integrator-flash.c |    2 +-
+ drivers/mtd/maps/ixp2000.c          |    4 ++--
+ drivers/mtd/maps/ixp4xx.c           |    2 +-
+ drivers/mtd/maps/omap_nor.c         |    2 +-
+ drivers/mtd/maps/physmap.c          |    6 +++---
+ drivers/mtd/maps/physmap_of.c       |    4 ++--
+ drivers/mtd/mtdconcat.c             |    2 +-
+ drivers/mtd/nand/fsl_upm.c          |    2 +-
+ drivers/mtd/nand/plat_nand.c        |    2 +-
+ drivers/mtd/nand/tmio_nand.c        |    2 +-
+ drivers/mtd/onenand/generic.c       |    2 +-
+ drivers/mtd/onenand/omap2.c         |    2 +-
+ drivers/mtd/ubi/build.c             |    2 +-
+ drivers/mtd/ubi/vmt.c               |    4 ++--
+ include/linux/mtd/concat.h          |    2 +-
+ 17 files changed, 43 insertions(+), 43 deletions(-)
 
-On Tue, Jan 6, 2009 at 5:35 AM, BARRE Sebastien <sbarre@sdelcc.com> wrote:
-> I've read your patch quicly, I will test it on my board as soon as possible.
-
-Thanks.
-
-> You can delete the next 3 lines, they are not useful:
->
->> +     ret = ds1307_read_block_data_once(client, command, length, currvalues);
->> +     if (ret < 0)
->> +             return ret;
-
-Oops! Here is an updated patch with these lines removed, and a minor formatting fix.
-
-Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
-
---Ed
-
-
---=-HKD5X0y6qWXtY0G5eVk8
-Content-Disposition: attachment; filename="rtc-ds1307-pure-smbus-compatibility.patch"
-Content-Type: text/x-patch; name="rtc-ds1307-pure-smbus-compatibility.patch"; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Index: linux-2.6.27.4/drivers/rtc/rtc-ds1307.c
-===================================================================
---- linux-2.6.27.4.orig/drivers/rtc/rtc-ds1307.c
-+++ linux-2.6.27.4/drivers/rtc/rtc-ds1307.c
-@@ -132,6 +132,62 @@ MODULE_DEVICE_TABLE(i2c, ds1307_id);
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index 6659b22..5733f06 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -170,7 +170,7 @@ static int wait_till_ready(struct m25p *flash)
+ static int erase_chip(struct m25p *flash)
+ {
+ 	DEBUG(MTD_DEBUG_LEVEL3, "%s: %s %dKiB\n",
+-			flash->spi->dev.bus_id, __func__,
++			dev_name(&flash->spi->dev), __func__,
+ 			flash->mtd.size / 1024);
  
- /*----------------------------------------------------------------------*/
+ 	/* Wait until finished previous write command. */
+@@ -197,7 +197,7 @@ static int erase_chip(struct m25p *flash)
+ static int erase_sector(struct m25p *flash, u32 offset)
+ {
+ 	DEBUG(MTD_DEBUG_LEVEL3, "%s: %s %dKiB at 0x%08x\n",
+-			flash->spi->dev.bus_id, __func__,
++			dev_name(&flash->spi->dev), __func__,
+ 			flash->mtd.erasesize / 1024, offset);
  
-+static s32 ds1307_read_block_data_once(struct i2c_client *client, u8 command,
-+				  u8 length, u8 *values)
-+{
-+	s32 i, data;
-+	for (i = 0; i < length; i++) {
-+		data = i2c_smbus_read_byte_data(client, command + i);
-+		if (data < 0)
-+			return data;
-+		*(values + i) = data;
-+	}
-+	return i;
-+}
-+
-+static s32 ds1307_read_block_data(struct i2c_client *client, u8 command,
-+				  u8 length, u8 *values)
-+{
-+	u8 oldvalues[I2C_SMBUS_BLOCK_MAX];
-+	s32 ret;
-+	pr_debug("ds1307_read_block_data (length=%d)\n", length);
-+	ret = ds1307_read_block_data_once(client, command, length, values);
-+	if (ret < 0)
-+		return ret;
-+	do {
-+		s32 ret;
-+		memcpy(oldvalues, values, length);
-+		ret = ds1307_read_block_data_once(client, command, length, values);
-+		if (ret < 0)
-+			return ret;
-+	} while (memcmp(oldvalues, values, length));
-+	return length;
-+}
-+
-+static s32 ds1307_write_block_data(struct i2c_client *client, u8 command,
-+				   u8 length, const u8 *values)
-+{
-+	u8 currvalues[I2C_SMBUS_BLOCK_MAX];
-+	s32 ret;
-+	pr_debug("ds1307_write_block_data (length=%d)\n", length);
-+	do {
-+		s32 i, ret;
-+		for (i = 0; i < length; i++) {
-+			ret = i2c_smbus_write_byte_data(client, command + i,
-+							*(values + i));
-+			if (ret < 0)
-+				return ret;
-+		}
-+		ret = ds1307_read_block_data_once(client, command, length,
-+						  currvalues);
-+		if (ret < 0)
-+			return ret;
-+	} while (memcmp(currvalues, values, length));
-+	return length;
-+}
-+
-+/*----------------------------------------------------------------------*/
-+
- /*
-  * The IRQ logic includes a "real" handler running in IRQ context just
-  * long enough to schedule this workqueue entry.   We need a task context
-@@ -202,7 +258,7 @@ static int ds1307_get_time(struct device
- 	int		tmp;
+ 	/* Wait until finished previous write command. */
+@@ -234,7 +234,7 @@ static int m25p80_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	u32 addr,len;
  
- 	/* read the RTC date and time registers all at once */
--	tmp = i2c_smbus_read_i2c_block_data(ds1307->client,
-+	tmp = ds1307_read_block_data(ds1307->client,
- 		DS1307_REG_SECS, 7, ds1307->regs);
- 	if (tmp != 7) {
- 		dev_err(dev, "%s error %d\n", "read", tmp);
-@@ -279,7 +335,7 @@ static int ds1307_set_time(struct device
- 		"write", buf[0], buf[1], buf[2], buf[3],
- 		buf[4], buf[5], buf[6]);
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %d\n",
+-			flash->spi->dev.bus_id, __func__, "at",
++			dev_name(&flash->spi->dev), __func__, "at",
+ 			(u32)instr->addr, instr->len);
  
--	result = i2c_smbus_write_i2c_block_data(ds1307->client, 0, 7, buf);
-+	result = ds1307_write_block_data(ds1307->client, 0, 7, buf);
- 	if (result < 0) {
- 		dev_err(dev, "%s error %d\n", "write", result);
- 		return result;
-@@ -297,7 +353,7 @@ static int ds1307_read_alarm(struct devi
- 		return -EINVAL;
+ 	/* sanity checks */
+@@ -295,7 +295,7 @@ static int m25p80_read(struct mtd_info *mtd, loff_t from, size_t len,
+ 	struct spi_message m;
  
- 	/* read all ALARM1, ALARM2, and status registers at once */
--	ret = i2c_smbus_read_i2c_block_data(client,
-+	ret = ds1307_read_block_data(client,
- 			DS1339_REG_ALARM1_SECS, 9, ds1307->regs);
- 	if (ret != 9) {
- 		dev_err(dev, "%s error %d\n", "alarm read", ret);
-@@ -356,7 +412,7 @@ static int ds1307_set_alarm(struct devic
- 		t->enabled, t->pending);
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %zd\n",
+-			flash->spi->dev.bus_id, __func__, "from",
++			dev_name(&flash->spi->dev), __func__, "from",
+ 			(u32)from, len);
  
- 	/* read current status of both alarms and the chip */
--	ret = i2c_smbus_read_i2c_block_data(client,
-+	ret = ds1307_read_block_data(client,
- 			DS1339_REG_ALARM1_SECS, 9, buf);
- 	if (ret != 9) {
- 		dev_err(dev, "%s error %d\n", "alarm write", ret);
-@@ -391,7 +447,7 @@ static int ds1307_set_alarm(struct devic
+ 	/* sanity checks */
+@@ -367,7 +367,7 @@ static int m25p80_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 	struct spi_message m;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %zd\n",
+-			flash->spi->dev.bus_id, __func__, "to",
++			dev_name(&flash->spi->dev), __func__, "to",
+ 			(u32)to, len);
+ 
+ 	if (retlen)
+@@ -563,7 +563,7 @@ static struct flash_info *__devinit jedec_probe(struct spi_device *spi)
+ 	tmp = spi_write_then_read(spi, &code, 1, id, 5);
+ 	if (tmp < 0) {
+ 		DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
+-			spi->dev.bus_id, tmp);
++			dev_name(&spi->dev), tmp);
+ 		return NULL;
  	}
- 	buf[8] = status & ~(DS1337_BIT_A1I | DS1337_BIT_A2I);
+ 	jedec = id[0];
+@@ -617,7 +617,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
+ 		/* unrecognized chip? */
+ 		if (i == ARRAY_SIZE(m25p_data)) {
+ 			DEBUG(MTD_DEBUG_LEVEL0, "%s: unrecognized id %s\n",
+-					spi->dev.bus_id, data->type);
++					dev_name(&spi->dev), data->type);
+ 			info = NULL;
  
--	ret = i2c_smbus_write_i2c_block_data(client,
-+	ret = ds1307_write_block_data(client,
- 			DS1339_REG_ALARM1_SECS, 9, buf);
- 	if (ret < 0) {
- 		dev_err(dev, "can't set alarm time\n");
-@@ -479,7 +535,7 @@ ds1307_nvram_read(struct kobject *kobj, 
- 	if (unlikely(!count))
- 		return count;
+ 		/* recognized; is that chip really what's there? */
+@@ -658,7 +658,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
+ 	if (data && data->name)
+ 		flash->mtd.name = data->name;
+ 	else
+-		flash->mtd.name = spi->dev.bus_id;
++		flash->mtd.name = dev_name(&spi->dev);
  
--	result = i2c_smbus_read_i2c_block_data(client, 8 + off, count, buf);
-+	result = ds1307_read_block_data(client, 8 + off, count, buf);
- 	if (result < 0)
- 		dev_err(&client->dev, "%s error %d\n", "nvram read", result);
- 	return result;
-@@ -501,7 +557,7 @@ ds1307_nvram_write(struct kobject *kobj,
- 	if (unlikely(!count))
- 		return count;
- 
--	result = i2c_smbus_write_i2c_block_data(client, 8 + off, count, buf);
-+	result = ds1307_write_block_data(client, 8 + off, count, buf);
- 	if (result < 0) {
- 		dev_err(&client->dev, "%s error %d\n", "nvram write", result);
- 		return result;
-@@ -537,8 +593,7 @@ static int __devinit ds1307_probe(struct
- 	unsigned char		*buf;
- 
- 	if (!i2c_check_functionality(adapter,
--			I2C_FUNC_SMBUS_WRITE_BYTE_DATA |
--			I2C_FUNC_SMBUS_I2C_BLOCK))
-+			I2C_FUNC_SMBUS_BYTE_DATA))
- 		return -EIO;
- 
- 	if (!(ds1307 = kzalloc(sizeof(struct ds1307), GFP_KERNEL)))
-@@ -558,7 +613,7 @@ static int __devinit ds1307_probe(struct
- 			want_irq = true;
+ 	flash->mtd.type = MTD_NORFLASH;
+ 	flash->mtd.writesize = 1;
+diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+index 6dd9aff..65126cd 100644
+--- a/drivers/mtd/devices/mtd_dataflash.c
++++ b/drivers/mtd/devices/mtd_dataflash.c
+@@ -128,7 +128,7 @@ static int dataflash_waitready(struct spi_device *spi)
+ 		status = dataflash_status(spi);
+ 		if (status < 0) {
+ 			DEBUG(MTD_DEBUG_LEVEL1, "%s: status %d?\n",
+-					spi->dev.bus_id, status);
++					dev_name(&spi->dev), status);
+ 			status = 0;
  		}
- 		/* get registers that the "rtc" read below won't read... */
--		tmp = i2c_smbus_read_i2c_block_data(ds1307->client,
-+		tmp = ds1307_read_block_data(ds1307->client,
- 				DS1337_REG_CONTROL, 2, buf);
- 		if (tmp != 2) {
- 			pr_debug("read error %d\n", tmp);
-@@ -596,7 +651,7 @@ static int __devinit ds1307_probe(struct
  
- read_rtc:
- 	/* read RTC registers */
--	tmp = i2c_smbus_read_i2c_block_data(ds1307->client, 0, 8, buf);
-+	tmp = ds1307_read_block_data(ds1307->client, 0, 8, buf);
- 	if (tmp != 8) {
- 		pr_debug("read error %d\n", tmp);
- 		err = -EIO;
-
---=-HKD5X0y6qWXtY0G5eVk8--
+@@ -154,7 +154,7 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	uint8_t			*command;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: erase addr=0x%x len 0x%x\n",
+-			spi->dev.bus_id,
++			dev_name(&spi->dev),
+ 			instr->addr, instr->len);
+ 
+ 	/* Sanity checks */
+@@ -197,7 +197,7 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 
+ 		if (status < 0) {
+ 			printk(KERN_ERR "%s: erase %x, err %d\n",
+-				spi->dev.bus_id, pageaddr, status);
++				dev_name(&spi->dev), pageaddr, status);
+ 			/* REVISIT:  can retry instr->retries times; or
+ 			 * giveup and instr->fail_addr = instr->addr;
+ 			 */
+@@ -239,7 +239,7 @@ static int dataflash_read(struct mtd_info *mtd, loff_t from, size_t len,
+ 	int			status;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: read 0x%x..0x%x\n",
+-		priv->spi->dev.bus_id, (unsigned)from, (unsigned)(from + len));
++		dev_name(&priv->spi->dev), (unsigned)from, (unsigned)(from + len));
+ 
+ 	*retlen = 0;
+ 
+@@ -288,7 +288,7 @@ static int dataflash_read(struct mtd_info *mtd, loff_t from, size_t len,
+ 		status = 0;
+ 	} else
+ 		DEBUG(MTD_DEBUG_LEVEL1, "%s: read %x..%x --> %d\n",
+-			priv->spi->dev.bus_id,
++			dev_name(&priv->spi->dev),
+ 			(unsigned)from, (unsigned)(from + len),
+ 			status);
+ 	return status;
+@@ -315,7 +315,7 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 	uint8_t			*command;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: write 0x%x..0x%x\n",
+-		spi->dev.bus_id, (unsigned)to, (unsigned)(to + len));
++		dev_name(&spi->dev), (unsigned)to, (unsigned)(to + len));
+ 
+ 	*retlen = 0;
+ 
+@@ -374,7 +374,7 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 			status = spi_sync(spi, &msg);
+ 			if (status < 0)
+ 				DEBUG(MTD_DEBUG_LEVEL1, "%s: xfer %u -> %d \n",
+-					spi->dev.bus_id, addr, status);
++					dev_name(&spi->dev), addr, status);
+ 
+ 			(void) dataflash_waitready(priv->spi);
+ 		}
+@@ -396,7 +396,7 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 		spi_transfer_del(x + 1);
+ 		if (status < 0)
+ 			DEBUG(MTD_DEBUG_LEVEL1, "%s: pgm %u/%u -> %d \n",
+-				spi->dev.bus_id, addr, writelen, status);
++				dev_name(&spi->dev), addr, writelen, status);
+ 
+ 		(void) dataflash_waitready(priv->spi);
+ 
+@@ -416,14 +416,14 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 		status = spi_sync(spi, &msg);
+ 		if (status < 0)
+ 			DEBUG(MTD_DEBUG_LEVEL1, "%s: compare %u -> %d \n",
+-				spi->dev.bus_id, addr, status);
++				dev_name(&spi->dev), addr, status);
+ 
+ 		status = dataflash_waitready(priv->spi);
+ 
+ 		/* Check result of the compare operation */
+ 		if (status & (1 << 6)) {
+ 			printk(KERN_ERR "%s: compare page %u, err %d\n",
+-				spi->dev.bus_id, pageaddr, status);
++				dev_name(&spi->dev), pageaddr, status);
+ 			remaining = 0;
+ 			status = -EIO;
+ 			break;
+@@ -779,7 +779,7 @@ static struct flash_info *__devinit jedec_probe(struct spi_device *spi)
+ 	tmp = spi_write_then_read(spi, &code, 1, id, 3);
+ 	if (tmp < 0) {
+ 		DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
+-			spi->dev.bus_id, tmp);
++			dev_name(&spi->dev), tmp);
+ 		return ERR_PTR(tmp);
+ 	}
+ 	if (id[0] != 0x1f)
+@@ -869,7 +869,7 @@ static int __devinit dataflash_probe(struct spi_device *spi)
+ 	status = dataflash_status(spi);
+ 	if (status <= 0 || status == 0xff) {
+ 		DEBUG(MTD_DEBUG_LEVEL1, "%s: status error %d\n",
+-				spi->dev.bus_id, status);
++				dev_name(&spi->dev), status);
+ 		if (status == 0 || status == 0xff)
+ 			status = -ENODEV;
+ 		return status;
+@@ -905,13 +905,13 @@ static int __devinit dataflash_probe(struct spi_device *spi)
+ 	/* obsolete AT45DB1282 not (yet?) supported */
+ 	default:
+ 		DEBUG(MTD_DEBUG_LEVEL1, "%s: unsupported device (%x)\n",
+-				spi->dev.bus_id, status & 0x3c);
++				dev_name(&spi->dev), status & 0x3c);
+ 		status = -ENODEV;
+ 	}
+ 
+ 	if (status < 0)
+ 		DEBUG(MTD_DEBUG_LEVEL1, "%s: add_dataflash --> %d\n",
+-				spi->dev.bus_id, status);
++				dev_name(&spi->dev), status);
+ 
+ 	return status;
+ }
+@@ -921,7 +921,7 @@ static int __devexit dataflash_remove(struct spi_device *spi)
+ 	struct dataflash	*flash = dev_get_drvdata(&spi->dev);
+ 	int			status;
+ 
+-	DEBUG(MTD_DEBUG_LEVEL1, "%s: remove\n", spi->dev.bus_id);
++	DEBUG(MTD_DEBUG_LEVEL1, "%s: remove\n", dev_name(&spi->dev));
+ 
+ 	if (mtd_has_partitions() && flash->partitioned)
+ 		status = del_mtd_partitions(&flash->mtd);
+diff --git a/drivers/mtd/maps/integrator-flash.c b/drivers/mtd/maps/integrator-flash.c
+index 7100ee3..d2ec262 100644
+--- a/drivers/mtd/maps/integrator-flash.c
++++ b/drivers/mtd/maps/integrator-flash.c
+@@ -105,7 +105,7 @@ static int armflash_probe(struct platform_device *dev)
+ 	info->map.bankwidth	= plat->width;
+ 	info->map.phys		= res->start;
+ 	info->map.virt		= base;
+-	info->map.name		= dev->dev.bus_id;
++	info->map.name		= dev_name(&dev->dev);
+ 	info->map.set_vpp	= armflash_set_vpp;
+ 
+ 	simple_map_init(&info->map);
+diff --git a/drivers/mtd/maps/ixp2000.c b/drivers/mtd/maps/ixp2000.c
+index 3ea1de9..d4fb9a3 100644
+--- a/drivers/mtd/maps/ixp2000.c
++++ b/drivers/mtd/maps/ixp2000.c
+@@ -188,7 +188,7 @@ static int ixp2000_flash_probe(struct platform_device *dev)
+  	 */
+ 	info->map.map_priv_2 = (unsigned long) ixp_data->bank_setup;
+ 
+-	info->map.name = dev->dev.bus_id;
++	info->map.name = dev_name(&dev->dev);
+ 	info->map.read = ixp2000_flash_read8;
+ 	info->map.write = ixp2000_flash_write8;
+ 	info->map.copy_from = ixp2000_flash_copy_from;
+@@ -196,7 +196,7 @@ static int ixp2000_flash_probe(struct platform_device *dev)
+ 
+ 	info->res = request_mem_region(dev->resource->start,
+ 			dev->resource->end - dev->resource->start + 1,
+-			dev->dev.bus_id);
++			dev_name(&dev->dev));
+ 	if (!info->res) {
+ 		dev_err(&dev->dev, "Could not reserve memory region\n");
+ 		err = -ENOMEM;
+diff --git a/drivers/mtd/maps/ixp4xx.c b/drivers/mtd/maps/ixp4xx.c
+index 16555cb..7214b87 100644
+--- a/drivers/mtd/maps/ixp4xx.c
++++ b/drivers/mtd/maps/ixp4xx.c
+@@ -218,7 +218,7 @@ static int ixp4xx_flash_probe(struct platform_device *dev)
+ 	 * handle that.
+ 	 */
+ 	info->map.bankwidth = 2;
+-	info->map.name = dev->dev.bus_id;
++	info->map.name = dev_name(&dev->dev);
+ 	info->map.read = ixp4xx_read16,
+ 	info->map.write = ixp4xx_probe_write16,
+ 	info->map.copy_from = ixp4xx_copy_from,
+diff --git a/drivers/mtd/maps/omap_nor.c b/drivers/mtd/maps/omap_nor.c
+index 05f276a..7e50e9b 100644
+--- a/drivers/mtd/maps/omap_nor.c
++++ b/drivers/mtd/maps/omap_nor.c
+@@ -101,7 +101,7 @@ static int __init omapflash_probe(struct platform_device *pdev)
+ 		err = -ENOMEM;
+ 		goto out_release_mem_region;
+ 	}
+-	info->map.name		= pdev->dev.bus_id;
++	info->map.name		= dev_name(&pdev->dev);
+ 	info->map.phys		= res->start;
+ 	info->map.size		= size;
+ 	info->map.bankwidth	= pdata->width;
+diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
+index dfbf3f2..1db16e5 100644
+--- a/drivers/mtd/maps/physmap.c
++++ b/drivers/mtd/maps/physmap.c
+@@ -108,13 +108,13 @@ static int physmap_flash_probe(struct platform_device *dev)
+ 		if (!devm_request_mem_region(&dev->dev,
+ 			dev->resource[i].start,
+ 			dev->resource[i].end - dev->resource[i].start + 1,
+-			dev->dev.bus_id)) {
++			dev_name(&dev->dev))) {
+ 			dev_err(&dev->dev, "Could not reserve memory region\n");
+ 			err = -ENOMEM;
+ 			goto err_out;
+ 		}
+ 
+-		info->map[i].name = dev->dev.bus_id;
++		info->map[i].name = dev_name(&dev->dev);
+ 		info->map[i].phys = dev->resource[i].start;
+ 		info->map[i].size = dev->resource[i].end - dev->resource[i].start + 1;
+ 		info->map[i].bankwidth = physmap_data->width;
+@@ -150,7 +150,7 @@ static int physmap_flash_probe(struct platform_device *dev)
+ 		 * We detected multiple devices. Concatenate them together.
+ 		 */
+ #ifdef CONFIG_MTD_CONCAT
+-		info->cmtd = mtd_concat_create(info->mtd, devices_found, dev->dev.bus_id);
++		info->cmtd = mtd_concat_create(info->mtd, devices_found, dev_name(&dev->dev));
+ 		if (info->cmtd == NULL)
+ 			err = -ENXIO;
+ #else
+diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+index 5fcfec0..fbf0ca9 100644
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -183,7 +183,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 
+ 	err = -EBUSY;
+ 	info->res = request_mem_region(res.start, res.end - res.start + 1,
+-				       dev->dev.bus_id);
++				       dev_name(&dev->dev));
+ 	if (!info->res)
+ 		goto err_out;
+ 
+@@ -194,7 +194,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 		goto err_out;
+ 	}
+ 
+-	info->map.name = dev->dev.bus_id;
++	info->map.name = dev_name(&dev->dev);
+ 	info->map.phys = res.start;
+ 	info->map.size = res.end - res.start + 1;
+ 	info->map.bankwidth = *width;
+diff --git a/drivers/mtd/mtdconcat.c b/drivers/mtd/mtdconcat.c
+index 789842d..1a05cf3 100644
+--- a/drivers/mtd/mtdconcat.c
++++ b/drivers/mtd/mtdconcat.c
+@@ -691,7 +691,7 @@ static int concat_block_markbad(struct mtd_info *mtd, loff_t ofs)
+  */
+ struct mtd_info *mtd_concat_create(struct mtd_info *subdev[],	/* subdevices to concatenate */
+ 				   int num_devs,	/* number of subdevices      */
+-				   char *name)
++				   const char *name)
+ {				/* name for the new device   */
+ 	int i;
+ 	size_t size;
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index a83192f..7815a40 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -222,7 +222,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 
+ 	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
+ 	if (fun->rnb_gpio >= 0) {
+-		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
++		ret = gpio_request(fun->rnb_gpio, dev_name(&ofdev->dev));
+ 		if (ret) {
+ 			dev_err(&ofdev->dev, "can't request RNB gpio\n");
+ 			goto err2;
+diff --git a/drivers/mtd/nand/plat_nand.c b/drivers/mtd/nand/plat_nand.c
+index f674c54..75f9f48 100644
+--- a/drivers/mtd/nand/plat_nand.c
++++ b/drivers/mtd/nand/plat_nand.c
+@@ -54,7 +54,7 @@ static int __init plat_nand_probe(struct platform_device *pdev)
+ 	data->chip.priv = &data;
+ 	data->mtd.priv = &data->chip;
+ 	data->mtd.owner = THIS_MODULE;
+-	data->mtd.name = pdev->dev.bus_id;
++	data->mtd.name = dev_name(&pdev->dev);
+ 
+ 	data->chip.IO_ADDR_R = data->io_base;
+ 	data->chip.IO_ADDR_W = data->io_base;
+diff --git a/drivers/mtd/nand/tmio_nand.c b/drivers/mtd/nand/tmio_nand.c
+index edb1e32..daa6a4c 100644
+--- a/drivers/mtd/nand/tmio_nand.c
++++ b/drivers/mtd/nand/tmio_nand.c
+@@ -433,7 +433,7 @@ static int tmio_probe(struct platform_device *dev)
+ 	nand_chip->chip_delay = 15;
+ 
+ 	retval = request_irq(irq, &tmio_irq,
+-				IRQF_DISABLED, dev->dev.bus_id, tmio);
++				IRQF_DISABLED, dev_name(&dev->dev), tmio);
+ 	if (retval) {
+ 		dev_err(&dev->dev, "request_irq error %d\n", retval);
+ 		goto err_irq;
+diff --git a/drivers/mtd/onenand/generic.c b/drivers/mtd/onenand/generic.c
+index ad81ab8..5b69e77 100644
+--- a/drivers/mtd/onenand/generic.c
++++ b/drivers/mtd/onenand/generic.c
+@@ -63,7 +63,7 @@ static int __devinit generic_onenand_probe(struct device *dev)
+ 	info->onenand.mmcontrol = pdata->mmcontrol;
+ 	info->onenand.irq = platform_get_irq(pdev, 0);
+ 
+-	info->mtd.name = pdev->dev.bus_id;
++	info->mtd.name = dev_name(&pdev->dev);
+ 	info->mtd.priv = &info->onenand;
+ 	info->mtd.owner = THIS_MODULE;
+ 
+diff --git a/drivers/mtd/onenand/omap2.c b/drivers/mtd/onenand/omap2.c
+index d1e0b8e..96ecc17 100644
+--- a/drivers/mtd/onenand/omap2.c
++++ b/drivers/mtd/onenand/omap2.c
+@@ -668,7 +668,7 @@ static int __devinit omap2_onenand_probe(struct platform_device *pdev)
+ 		 c->onenand.base);
+ 
+ 	c->pdev = pdev;
+-	c->mtd.name = pdev->dev.bus_id;
++	c->mtd.name = dev_name(&pdev->dev);
+ 	c->mtd.priv = &c->onenand;
+ 	c->mtd.owner = THIS_MODULE;
+ 
+diff --git a/drivers/mtd/ubi/build.c b/drivers/mtd/ubi/build.c
+index ba0bd3d..7caf22c 100644
+--- a/drivers/mtd/ubi/build.c
++++ b/drivers/mtd/ubi/build.c
+@@ -280,7 +280,7 @@ static int ubi_sysfs_init(struct ubi_device *ubi)
+ 	ubi->dev.release = dev_release;
+ 	ubi->dev.devt = ubi->cdev.dev;
+ 	ubi->dev.class = ubi_class;
+-	sprintf(&ubi->dev.bus_id[0], UBI_NAME_STR"%d", ubi->ubi_num);
++	dev_set_name(&ubi->dev, UBI_NAME_STR"%d", ubi->ubi_num);
+ 	err = device_register(&ubi->dev);
+ 	if (err)
+ 		return err;
+diff --git a/drivers/mtd/ubi/vmt.c b/drivers/mtd/ubi/vmt.c
+index 3531ca9..22e1d73 100644
+--- a/drivers/mtd/ubi/vmt.c
++++ b/drivers/mtd/ubi/vmt.c
+@@ -329,7 +329,7 @@ int ubi_create_volume(struct ubi_device *ubi, struct ubi_mkvol_req *req)
+ 	vol->dev.devt = dev;
+ 	vol->dev.class = ubi_class;
+ 
+-	sprintf(&vol->dev.bus_id[0], "%s_%d", ubi->ubi_name, vol->vol_id);
++	dev_set_name(&vol->dev, "%s_%d", ubi->ubi_name, vol->vol_id);
+ 	err = device_register(&vol->dev);
+ 	if (err) {
+ 		ubi_err("cannot register device");
+@@ -678,7 +678,7 @@ int ubi_add_volume(struct ubi_device *ubi, struct ubi_volume *vol)
+ 	vol->dev.parent = &ubi->dev;
+ 	vol->dev.devt = dev;
+ 	vol->dev.class = ubi_class;
+-	sprintf(&vol->dev.bus_id[0], "%s_%d", ubi->ubi_name, vol->vol_id);
++	dev_set_name(&vol->dev, "%s_%d", ubi->ubi_name, vol->vol_id);
+ 	err = device_register(&vol->dev);
+ 	if (err)
+ 		goto out_gluebi;
+diff --git a/include/linux/mtd/concat.h b/include/linux/mtd/concat.h
+index c02f3d2..e80c674 100644
+--- a/include/linux/mtd/concat.h
++++ b/include/linux/mtd/concat.h
+@@ -13,7 +13,7 @@
+ struct mtd_info *mtd_concat_create(
+     struct mtd_info *subdev[],  /* subdevices to concatenate */
+     int num_devs,               /* number of subdevices      */
+-    char *name);                /* name for the new device   */
++    const char *name);          /* name for the new device   */
+ 
+ void mtd_concat_destroy(struct mtd_info *mtd);
+ 
+-- 
+1.6.0.4
 
