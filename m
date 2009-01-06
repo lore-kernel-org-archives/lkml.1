@@ -1,91 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZAFPN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbZAFPNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZAFPN0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZAFPNR
+	id S1753147AbZAFPNm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZAFPNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:13:17 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:61856 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbZAFPNQ (ORCPT
+	Tue, 6 Jan 2009 10:13:31 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:51971 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753448AbZAFPNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:13:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=appXVj5VDgsCWfnnxepE00IDlpzoKdG6n8CGaGv6+Rgsluh3JHCKrEmosDx3F0G9PB
-         NpTU72xcFi2c4PeiUTw8WnulJi/sMg8LHOekrFi0oG0kbHRDvdvkrlzteG6/2H+IXnzp
-         ZA78oAFlMhHwiVscXU4pIgihwuW2ivetko5Pc=
-Message-ID: <c4e36d110901060713w28a6e3acq47e91ec53b4b6344@mail.gmail.com>
-Date: Tue, 6 Jan 2009 16:13:14 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: kvm poweroff deadlock
-Cc: "Avi Kivity" <avi@qumranet.com>
+	Tue, 6 Jan 2009 10:13:30 -0500
+X-IronPort-AV: E=Sophos;i="4.36,339,1228107600"; 
+   d="scan'208";a="64838796"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: debugfs & vfs file permission issue?
+Date: Tue, 6 Jan 2009 10:12:38 -0500
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+References: <200901052157.07306.rgetz@blackfin.uclinux.org> <8bd0f97a0901052232l22b60386pbcd9438cc752638f@mail.gmail.com> <200901060705.33294.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200901060705.33294.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200901061012.38888.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 06 Jan 2009 15:12:27.0698 (UTC) FILETIME=[2FE3C120:01C97011]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Tue 6 Jan 2009 07:05, Robin Getz suggested:
+>
+> adding a readonly, and writeonly, and ensuring that when you call 
+> debugfs_create_*, the mode is checked, and the "correct" fops are set 
+> doesn't seem like it would be a bad idea? This would enforce the
+> kernel programmer's view on the world, and not allow pesky root users
+> to override things....
+> 
+> Greg - would you take something like that?
 
-While testing latest  2.6.29-rc  inside qemu-kvm guest I've got this
-deadlock while executing poweroff:
+How about this?
 
-sd 0:0:0:0: [sda] Stopping disk
+Feel free to nak it - we can do the same thing where we are calling the
+debugfs_create_* functions - this just makes it cleaner in my opinion.
 
-ACPI: Preparing to enter system sleep state S5
+---
 
-Disabling non-boot CPUs ...
+In many SOC implementations there are hardware registers can be read only, 
+or write only. This extends the debugfs to enforce the file permissions for
+these types of registers, by providing a set of fops which are read only
+or write only. This assumes that the kernel developer knows more about the
+hardware than the user (even root users) - which is normally true.
 
-BUG: spinlock lockup on CPU#0, halt/2389, ffff88001dc0c3c0
 
-Pid: 2389, comm: halt Not tainted 2.6.28 #103
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
 
-Call Trace:
+---
 
- [<ffffffff803aa3f8>] _raw_spin_lock+0x158/0x170
+This fixes things, which use to crash (SPORT1_TX is a write only hardware
+register).
 
- [<ffffffff80538924>] _spin_lock_irqsave+0x64/0x90
+root:/sys/kernel/debug/blackfin/SPORT> ls -l SPORT1_TX
+--w-------    1 root     root            0 Jan  1  2007 SPORT1_TX
+root:/sys/kernel/debug/blackfin/SPORT> cat SPORT1_TX
+cat: read error: Permission denied
+root:/sys/kernel/debug/blackfin/SPORT> chmod +r SPORT1_TX
+root:/sys/kernel/debug/blackfin/SPORT> ls -l SPORT1_TX
+-rw-r--r--    1 root     root            0 Jan  1  2007 SPORT1_TX
+root:/sys/kernel/debug/blackfin/SPORT> cat SPORT1_TX
+cat: read error: Permission denied
 
- [<ffffffff80259268>] ? __queue_work+0x18/0x90
+Without this patch, things crash - but as Greg suggested - the same thing can
+be done other places.
 
- [<ffffffff80259268>] __queue_work+0x18/0x90
 
- [<ffffffff8025936d>] queue_work_on+0x4d/0x60
-
- [<ffffffff80286ca7>] __stop_machine+0xe7/0x140
-
- [<ffffffff80523930>] _cpu_down+0x120/0x2f0
-
- [<ffffffff802469da>] disable_nonboot_cpus+0x8a/0x120
-
- [<ffffffff802571d1>] kernel_power_off+0x21/0x50
-
- [<ffffffff802574b0>] sys_reboot+0x110/0x230
-
- [<ffffffff8023c11f>] ? finish_task_switch+0x5f/0x120
-
- [<ffffffff8023c0c0>] ? finish_task_switch+0x0/0x120
-
- [<ffffffff8053540b>] ? thread_return+0x3d/0x702
-
- [<ffffffff80254509>] ? sys_kill+0xd9/0x200
-
- [<ffffffff802544ad>] ? sys_kill+0x7d/0x200
-
- [<ffffffff805380dc>] ? lockdep_sys_exit_thunk+0x35/0x67
-
- [<ffffffff80538066>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-
- [<ffffffff80231a48>] sysenter_dispatch+0x7/0x2c
-
- [<ffffffff80538066>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+ fs/debugfs/file.c |   63 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
 
 
 
-Zdenek
+Index: fs/debugfs/file.c
+===================================================================
+--- fs/debugfs/file.c	(revision 5943)
++++ fs/debugfs/file.c	(working copy)
+@@ -67,6 +67,8 @@
+ 	return 0;
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(fops_u8, debugfs_u8_get, debugfs_u8_set, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u8_ro, debugfs_u8_get, NULL, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u8_wo, NULL, debugfs_u8_set, "%llu\n");
+ 
+ /**
+  * debugfs_create_u8 - create a debugfs file that is used to read and write an unsigned 8-bit value
+@@ -95,6 +97,13 @@
+ struct dentry *debugfs_create_u8(const char *name, mode_t mode,
+ 				 struct dentry *parent, u8 *value)
+ {
++	/*if there are no write bits set make read only */
++	if (!(mode & S_IWUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u8_ro);
++	/* if there are no read bits set, make write only */
++	if (!(mode & S_IRUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u8_wo);
++
+ 	return debugfs_create_file(name, mode, parent, value, &fops_u8);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_u8);
+@@ -110,6 +119,8 @@
+ 	return 0;
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(fops_u16, debugfs_u16_get, debugfs_u16_set, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u16_ro, debugfs_u16_get, NULL, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u16_wo, NULL, debugfs_u16_set, "%llu\n");
+ 
+ /**
+  * debugfs_create_u16 - create a debugfs file that is used to read and write an unsigned 16-bit value
+@@ -138,6 +149,13 @@
+ struct dentry *debugfs_create_u16(const char *name, mode_t mode,
+ 				  struct dentry *parent, u16 *value)
+ {
++	/*if there are no write bits set make read only */
++	if (!(mode & S_IWUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u16_ro);
++	/* if there are no read bits set, make write only */
++	if (!(mode & S_IRUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u16_wo);
++
+ 	return debugfs_create_file(name, mode, parent, value, &fops_u16);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_u16);
+@@ -153,6 +171,8 @@
+ 	return 0;
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(fops_u32, debugfs_u32_get, debugfs_u32_set, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u32_ro, debugfs_u32_get, NULL, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u32_wo, NULL, debugfs_u32_set, "%llu\n");
+ 
+ /**
+  * debugfs_create_u32 - create a debugfs file that is used to read and write an unsigned 32-bit value
+@@ -181,6 +201,13 @@
+ struct dentry *debugfs_create_u32(const char *name, mode_t mode,
+ 				 struct dentry *parent, u32 *value)
+ {
++	/*if there are no write bits set make read only */
++	if (!(mode & S_IWUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u32_ro);
++	/* if there are no read bits set, make write only */
++	if (!(mode & S_IRUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u32_wo);
++
+ 	return debugfs_create_file(name, mode, parent, value, &fops_u32);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_u32);
+@@ -197,6 +224,8 @@
+ 	return 0;
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(fops_u64, debugfs_u64_get, debugfs_u64_set, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u64_ro, debugfs_u64_get, NULL, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
+ 
+ /**
+  * debugfs_create_u64 - create a debugfs file that is used to read and write an unsigned 64-bit value
+@@ -225,15 +254,28 @@
+ struct dentry *debugfs_create_u64(const char *name, mode_t mode,
+ 				 struct dentry *parent, u64 *value)
+ {
++	/*if there are no write bits set make read only */
++	if (!(mode & S_IWUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u64_ro);
++	/* if there are no read bits set, make write only */
++	if (!(mode & S_IRUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_u64_wo);
++
+ 	return debugfs_create_file(name, mode, parent, value, &fops_u64);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_u64);
+ 
+ DEFINE_SIMPLE_ATTRIBUTE(fops_x8, debugfs_u8_get, debugfs_u8_set, "0x%02llx\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_x8_ro, debugfs_u8_get, NULL, "0x%02llx\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_x8_wo, NULL, debugfs_u8_set, "0x%02llx\n");
+ 
+ DEFINE_SIMPLE_ATTRIBUTE(fops_x16, debugfs_u16_get, debugfs_u16_set, "0x%04llx\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_x16_ro, debugfs_u16_get, NULL, "0x%04llx\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_x16_wo, NULL, debugfs_u16_set, "0x%04llx\n");
+ 
+ DEFINE_SIMPLE_ATTRIBUTE(fops_x32, debugfs_u32_get, debugfs_u32_set, "0x%08llx\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_x32_ro, debugfs_u32_get, NULL, "0x%08llx\n");
++DEFINE_SIMPLE_ATTRIBUTE(fops_x32_wo, NULL, debugfs_u32_set, "0x%08llx\n");
+ 
+ /*
+  * debugfs_create_x{8,16,32} - create a debugfs file that is used to read and write an unsigned {8,16,32}-bit value
+@@ -256,6 +298,13 @@
+ struct dentry *debugfs_create_x8(const char *name, mode_t mode,
+ 				 struct dentry *parent, u8 *value)
+ {
++	/*if there are no write bits set make read only */
++	if (!(mode & S_IWUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_x8_ro);
++	/* if there are no read bits set, make write only */
++	if (!(mode & S_IRUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_x8_wo);
++
+ 	return debugfs_create_file(name, mode, parent, value, &fops_x8);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_x8);
+@@ -273,6 +322,13 @@
+ struct dentry *debugfs_create_x16(const char *name, mode_t mode,
+ 				 struct dentry *parent, u16 *value)
+ {
++	/*if there are no write bits set make read only */
++	if (!(mode & S_IWUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_x16_ro);
++	/* if there are no read bits set, make write only */
++	if (!(mode & S_IRUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_x16_wo);
++
+ 	return debugfs_create_file(name, mode, parent, value, &fops_x16);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_x16);
+@@ -290,6 +346,13 @@
+ struct dentry *debugfs_create_x32(const char *name, mode_t mode,
+ 				 struct dentry *parent, u32 *value)
+ {
++	/*if there are no write bits set make read only */
++	if (!(mode & S_IWUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_x32_ro);
++	/* if there are no read bits set, make write only */
++	if (!(mode & S_IRUGO))
++		return debugfs_create_file(name, mode, parent, value, &fops_x32_wo);
++
+ 	return debugfs_create_file(name, mode, parent, value, &fops_x32);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_x32);
