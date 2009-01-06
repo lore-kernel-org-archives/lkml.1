@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZAFV7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbZAFWEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbZAFV7d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbZAFV7Z
+	id S1753693AbZAFWEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbZAFWEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:59:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36769 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750928AbZAFV7Y (ORCPT
+	Tue, 6 Jan 2009 17:04:45 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39738
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751449AbZAFWEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:59:24 -0500
-Date: Tue, 6 Jan 2009 13:59:17 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: Re: [PATCH 03/23] cris: introduce asm/swab.h
-In-Reply-To: <1231277446.964.260.camel@brick>
-Message-ID: <alpine.LFD.2.00.0901061357150.3057@localhost.localdomain>
-References: <1231277446.964.260.camel@brick>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Jan 2009 17:04:44 -0500
+Date: Tue, 06 Jan 2009 14:04:46 -0800 (PST)
+Message-Id: <20090106.140446.94442493.davem@davemloft.net>
+To: harvey.harrison@gmail.com
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/23] sparc: introduce asm/swab.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1231277450.964.266.camel@brick>
+References: <1231277450.964.266.camel@brick>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Date: Tue, 06 Jan 2009 13:30:50 -0800
 
-
-On Tue, 6 Jan 2009, Harvey Harrison wrote:
->
-> cris holds its arch overrides in an arch/ folder, rename these
-> byteorder.h files to swab.h and include them from asm/swab.h
-> 
 > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  arch/cris/include/arch-v10/arch/byteorder.h |   28 ---------------------------
->  arch/cris/include/arch-v10/arch/swab.h      |   28 +++++++++++++++++++++++++++
->  arch/cris/include/arch-v32/arch/byteorder.h |   22 ---------------------
->  arch/cris/include/arch-v32/arch/swab.h      |   22 +++++++++++++++++++++
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 
-Since you'e a git user, and you're basically renaming files while then 
-putting a new name in place, can you please send patches done with both 
-the "-M" flag (rename detection) _and_ the "-B" flag (which breaks 
-associations of files even if the name stays the same)?
+> Dave, I would have rather moved the SWAB_64_THRU_32 bit to the
+> top of swab.h like all other arches, but I kept it a pure movement patch.
+> 
+> It seems to make sense for sparc the way it is however, just FYI.
 
-It's rare that this is needed, but it really helps. Now the patches look 
-like a big delete/create event, and it's not at all obvious that the code 
-is actually the same before and after.
-
-		Linus
+Ok.
