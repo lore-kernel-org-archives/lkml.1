@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbZAFEf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbZAFEfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbZAFEf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 23:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZAFEfQ
+	id S1754878AbZAFEfp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 23:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbZAFEfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 23:35:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52732 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbZAFEfO (ORCPT
+	Mon, 5 Jan 2009 23:35:31 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:19844 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754586AbZAFEfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 23:35:14 -0500
-Date: Mon, 5 Jan 2009 20:37:06 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 1/6] fastboot: Asynchronous function calls to speed up
- kernel boot
-Message-ID: <20090105203706.426cdc1f@infradead.org>
-In-Reply-To: <20090105202514.399da36e.akpm@linux-foundation.org>
-References: <20090105200959.04a626ac@infradead.org>
-	<20090105201041.3289d3dd@infradead.org>
-	<20090105202514.399da36e.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Jan 2009 23:35:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=bdXFi/70i+w/Jecr5mI0P0wtVw6qLO9mQCe28xcIU5wOlJICXLt+OPKn9E3wvzdQ8W
+         fWbvDXPYKGt7Hgu0Ii37NISyOambtQ9gTrCM1ZWLa35DnPslTtX9HeNEzIzRDvbHP6Do
+         /3vc1OL7qnP+axY8CN8AF3KkrQLNk30ZDF8QA=
+Message-ID: <3ae3aa420901052035k1ec6a8cn9e8adab266954861@mail.gmail.com>
+Date: Mon, 5 Jan 2009 22:35:29 -0600
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+Reply-To: linasvepstas@gmail.com
+To: "john stultz-lkml" <johnstul.lkml@gmail.com>
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
+Cc: "Chris Adams" <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <1f1b08da0901051821q31a5c98akc5165aac36c6201e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>
+	 <20090103002114.GA1538533@hiwaay.net>
+	 <1f1b08da0901051821q31a5c98akc5165aac36c6201e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Jan 2009 20:25:14 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+2009/1/5 john stultz-lkml <johnstul.lkml@gmail.com>:
+> On Fri, Jan 2, 2009 at 4:21 PM, Chris Adams <cmadams@hiwaay.net> wrote:
+>> Basically (to my untrained eye), the leap second code is called from the
+>> timer interrupt handler, which holds xtime_lock.  The leap second code
+>> does a printk to notify about the leap second.  The printk code tries to
+>> wake up klogd (I assume to prioritize kernel messages), and (under some
+>> conditions), the scheduler attempts to get the current time, which tries
+>> to get xtime_lock => deadlock.
+>
+> This analysis looks correct to me.
+>
+> Grrrr. This has bit us a few times since the "no printk while holding
+> the xtime lock" restriction was added.
+>
+> Thomas: Do you think this warrents adding a check to the printk path
+> to make sure the xtime lock isn't held?
 
-> On Mon, 5 Jan 2009 20:10:41 -0800 Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> 
-> >  kernel/async.c         |  307
-> > ++++++++++++++++++++++++++++++++++++++++++++++++
-> 
-> Am still wondering if this is unacceptably duplicative of dhowells's
-> slow-work infrastructure: http://lkml.org/lkml/2008/11/20/193
-> 
-> 
+No.
 
-I talked to David about this today (as I wrote in 0/6). 
-Based on that discussion we got to the conclusion we have incompatible
-requirements. He needs priorities to be honored (which means rather out
-of order execution of the tasks) while I need strict ordering (for the
-synchronization). While it's not entirely impossible to combine those
-two into one system, the resulting complexity isn't really worth it yet.
+> This way we can at least get a
+> warning when someone accidentally adds a printk or calls a function
+> that does while holding the xtime_lock.
 
-Of the 307 lines, only 100 are actual thread pool code (the rest is
-synchronization and admin code), and about half of those 100 lines are
-comments.
+This seems like a basic mistake, that should be avoidable
+with code review.  I'm sort-of surprised to even see it; anyone
+even vaguely familiar with that code would spot it quickly.
+Heh. Take that with a grain of salt -- not like I never make
+mistakes ;-/
 
+I mean, how many more times can the mistake be made?
+I'm arguing its gonna be zero.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--linas
