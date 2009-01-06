@@ -1,299 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZAFN36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbZAFNbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZAFN36 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 08:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZAFN3r
+	id S1752751AbZAFNbR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 08:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZAFNbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 08:29:47 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47207 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbZAFN3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 08:29:45 -0500
-Date: Tue, 6 Jan 2009 14:29:40 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-Message-ID: <20090106132940.GE16738@wotan.suse.de>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Jan 2009 08:31:03 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:50712 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbZAFNbB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 08:31:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=oEcLI3njbBdKpHVXZ0V/ycEMBcfnezcQ/5KRkCUbdHUcT3SH2FP/0KYJTl6pini+32
+         q8/lI1O+Tkm4Qd2CCU4BkcJ1Gzew46fbxZtHhdu7TEvc/peWqd5Jcj/HyS/w8Xym3Eb1
+         7VPhcHPcBdlm8H3TjmbIHY+OXG4PP++j42hs4=
+Message-ID: <84144f020901060530w2b7fef67j8f1f2242860df3bd@mail.gmail.com>
+Date: Tue, 6 Jan 2009 15:30:59 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Ryusuke Konishi" <konishi.ryusuke@lab.ntt.co.jp>
+Subject: Re: 2.6.29 -mm merge plans
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <c4a7c9420901050140u23697729pc55966110d68452b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1231242031.11687.97.camel@twins>
-User-Agent: Mutt/1.5.9i
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+	 <c4a7c9420901050140u23697729pc55966110d68452b@mail.gmail.com>
+X-Google-Sender-Auth: e6082b8c507dd4f1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 12:40:31PM +0100, Peter Zijlstra wrote:
-> Subject: mutex: adaptive spin
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Tue Jan 06 12:32:12 CET 2009
-> 
-> Based on the code in -rt, provide adaptive spins on generic mutexes.
+Hi Ryusuke,
 
-I guess it would be nice to add another type so you can test/convert
-callsites individually. I've got no objections to improving
-synchronisation primitives, but I would be interested to see good
-results from some mutex that can't be achieved by improving the
-locking (by improving I don't mean inventing some crazy lockless
-algorithm, but simply making it reasonably sane and scalable).
+[snip nilfs patches]
 
-Good area to investigate though, I think.
+On Mon, Jan 5, 2009 at 11:40 AM, Ryusuke Konishi
+<konishi.ryusuke@lab.ntt.co.jp> wrote:
+>>  Dunno.   Has this been reviewed enough?
+>>
+>
+> I'm now working to follow some comments from Chris, and
+> I think nilfs should be reviewed more widely.
+>
+> I'll aim for the next merge window or so.
 
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/linux/mutex.h |    4 ++--
->  include/linux/sched.h |    1 +
->  kernel/mutex-debug.c  |   11 ++---------
->  kernel/mutex-debug.h  |    8 --------
->  kernel/mutex.c        |   46 +++++++++++++++++++++++++++++++++++++++-------
->  kernel/mutex.h        |    2 --
->  kernel/sched.c        |    5 +++++
->  7 files changed, 49 insertions(+), 28 deletions(-)
-> 
-> Index: linux-2.6/include/linux/mutex.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mutex.h
-> +++ linux-2.6/include/linux/mutex.h
-> @@ -50,8 +50,8 @@ struct mutex {
->  	atomic_t		count;
->  	spinlock_t		wait_lock;
->  	struct list_head	wait_list;
-> +	struct task_struct	*owner;
->  #ifdef CONFIG_DEBUG_MUTEXES
-> -	struct thread_info	*owner;
->  	const char 		*name;
->  	void			*magic;
->  #endif
-> @@ -67,8 +67,8 @@ struct mutex {
->  struct mutex_waiter {
->  	struct list_head	list;
->  	struct task_struct	*task;
-> -#ifdef CONFIG_DEBUG_MUTEXES
->  	struct mutex		*lock;
-> +#ifdef CONFIG_DEBUG_MUTEXES
->  	void			*magic;
->  #endif
->  };
-> Index: linux-2.6/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/sched.h
-> +++ linux-2.6/include/linux/sched.h
-> @@ -249,6 +249,7 @@ extern void init_idle(struct task_struct
->  extern void init_idle_bootup_task(struct task_struct *idle);
->  
->  extern int runqueue_is_locked(void);
-> +extern int task_is_current(struct task_struct *p);
->  extern void task_rq_unlock_wait(struct task_struct *p);
->  
->  extern cpumask_var_t nohz_cpu_mask;
-> Index: linux-2.6/kernel/mutex-debug.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/mutex-debug.c
-> +++ linux-2.6/kernel/mutex-debug.c
-> @@ -26,11 +26,6 @@
->  /*
->   * Must be called with lock->wait_lock held.
->   */
-> -void debug_mutex_set_owner(struct mutex *lock, struct thread_info *new_owner)
-> -{
-> -	lock->owner = new_owner;
-> -}
-> -
->  void debug_mutex_lock_common(struct mutex *lock, struct mutex_waiter *waiter)
->  {
->  	memset(waiter, MUTEX_DEBUG_INIT, sizeof(*waiter));
-> @@ -59,7 +54,6 @@ void debug_mutex_add_waiter(struct mutex
->  
->  	/* Mark the current thread as blocked on the lock: */
->  	ti->task->blocked_on = waiter;
-> -	waiter->lock = lock;
->  }
->  
->  void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
-> @@ -80,9 +74,9 @@ void debug_mutex_unlock(struct mutex *lo
->  		return;
->  
->  	DEBUG_LOCKS_WARN_ON(lock->magic != lock);
-> -	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
-> +	DEBUG_LOCKS_WARN_ON(lock->owner != current);
->  	DEBUG_LOCKS_WARN_ON(!lock->wait_list.prev && !lock->wait_list.next);
-> -	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
-> +	DEBUG_LOCKS_WARN_ON(lock->owner != current);
->  }
->  
->  void debug_mutex_init(struct mutex *lock, const char *name,
-> @@ -95,7 +89,6 @@ void debug_mutex_init(struct mutex *lock
->  	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
->  	lockdep_init_map(&lock->dep_map, name, key, 0);
->  #endif
-> -	lock->owner = NULL;
->  	lock->magic = lock;
->  }
->  
-> Index: linux-2.6/kernel/mutex-debug.h
-> ===================================================================
-> --- linux-2.6.orig/kernel/mutex-debug.h
-> +++ linux-2.6/kernel/mutex-debug.h
-> @@ -13,14 +13,6 @@
->  /*
->   * This must be called with lock->wait_lock held.
->   */
-> -extern void
-> -debug_mutex_set_owner(struct mutex *lock, struct thread_info *new_owner);
-> -
-> -static inline void debug_mutex_clear_owner(struct mutex *lock)
-> -{
-> -	lock->owner = NULL;
-> -}
-> -
->  extern void debug_mutex_lock_common(struct mutex *lock,
->  				    struct mutex_waiter *waiter);
->  extern void debug_mutex_wake_waiter(struct mutex *lock,
-> Index: linux-2.6/kernel/mutex.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/mutex.c
-> +++ linux-2.6/kernel/mutex.c
-> @@ -46,6 +46,7 @@ __mutex_init(struct mutex *lock, const c
->  	atomic_set(&lock->count, 1);
->  	spin_lock_init(&lock->wait_lock);
->  	INIT_LIST_HEAD(&lock->wait_list);
-> +	lock->owner = NULL;
->  
->  	debug_mutex_init(lock, name, key);
->  }
-> @@ -120,6 +121,28 @@ void __sched mutex_unlock(struct mutex *
->  
->  EXPORT_SYMBOL(mutex_unlock);
->  
-> +#ifdef CONFIG_SMP
-> +static int adaptive_wait(struct mutex_waiter *waiter,
-> +			 struct task_struct *owner, long state)
-> +{
-> +	for (;;) {
-> +		if (signal_pending_state(state, waiter->task))
-> +			return 0;
-> +		if (waiter->lock->owner != owner)
-> +			return 0;
-> +		if (!task_is_current(owner))
-> +			return 1;
-> +		cpu_relax();
-> +	}
-> +}
-> +#else
-> +static int adaptive_wait(struct mutex_waiter *waiter,
-> +			 struct task_struct *owner, long state)
-> +{
-> +	return 1;
-> +}
-> +#endif
-> +
->  /*
->   * Lock a mutex (possibly interruptible), slowpath:
->   */
-> @@ -127,7 +150,7 @@ static inline int __sched
->  __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
->  	       	unsigned long ip)
->  {
-> -	struct task_struct *task = current;
-> +	struct task_struct *owner, *task = current;
->  	struct mutex_waiter waiter;
->  	unsigned int old_val;
->  	unsigned long flags;
-> @@ -141,6 +164,7 @@ __mutex_lock_common(struct mutex *lock, 
->  	/* add waiting tasks to the end of the waitqueue (FIFO): */
->  	list_add_tail(&waiter.list, &lock->wait_list);
->  	waiter.task = task;
-> +	waiter.lock = lock;
->  
->  	old_val = atomic_xchg(&lock->count, -1);
->  	if (old_val == 1)
-> @@ -175,11 +199,19 @@ __mutex_lock_common(struct mutex *lock, 
->  			debug_mutex_free_waiter(&waiter);
->  			return -EINTR;
->  		}
-> -		__set_task_state(task, state);
->  
-> -		/* didnt get the lock, go to sleep: */
-> +		owner = lock->owner;
-> +		get_task_struct(owner);
->  		spin_unlock_mutex(&lock->wait_lock, flags);
-> -		schedule();
-> +
-> +		if (adaptive_wait(&waiter, owner, state)) {
-> +			put_task_struct(owner);
-> +			__set_task_state(task, state);
-> +			/* didnt get the lock, go to sleep: */
-> +			schedule();
-> +		} else
-> +			put_task_struct(owner);
-> +
->  		spin_lock_mutex(&lock->wait_lock, flags);
->  	}
->  
-> @@ -187,7 +219,7 @@ done:
->  	lock_acquired(&lock->dep_map, ip);
->  	/* got the lock - rejoice! */
->  	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
-> -	debug_mutex_set_owner(lock, task_thread_info(task));
-> +	lock->owner = task;
->  
->  	/* set it to 0 if there are no waiters left: */
->  	if (likely(list_empty(&lock->wait_list)))
-> @@ -260,7 +292,7 @@ __mutex_unlock_common_slowpath(atomic_t 
->  		wake_up_process(waiter->task);
->  	}
->  
-> -	debug_mutex_clear_owner(lock);
-> +	lock->owner = NULL;
->  
->  	spin_unlock_mutex(&lock->wait_lock, flags);
->  }
-> @@ -352,7 +384,7 @@ static inline int __mutex_trylock_slowpa
->  
->  	prev = atomic_xchg(&lock->count, -1);
->  	if (likely(prev == 1)) {
-> -		debug_mutex_set_owner(lock, current_thread_info());
-> +		lock->owner = current;
->  		mutex_acquire(&lock->dep_map, 0, 1, _RET_IP_);
->  	}
->  	/* Set it back to 0 if there are no waiters: */
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -697,6 +697,11 @@ int runqueue_is_locked(void)
->  	return ret;
->  }
->  
-> +int task_is_current(struct task_struct *p)
-> +{
-> +	return task_rq(p)->curr == p;
-> +}
-> +
->  /*
->   * Debugging: various feature bits
->   */
-> Index: linux-2.6/kernel/mutex.h
-> ===================================================================
-> --- linux-2.6.orig/kernel/mutex.h
-> +++ linux-2.6/kernel/mutex.h
-> @@ -16,8 +16,6 @@
->  #define mutex_remove_waiter(lock, waiter, ti) \
->  		__list_del((waiter)->list.prev, (waiter)->list.next)
->  
-> -#define debug_mutex_set_owner(lock, new_owner)		do { } while (0)
-> -#define debug_mutex_clear_owner(lock)			do { } while (0)
->  #define debug_mutex_wake_waiter(lock, waiter)		do { } while (0)
->  #define debug_mutex_free_waiter(waiter)			do { } while (0)
->  #define debug_mutex_add_waiter(lock, waiter, ti)	do { } while (0)
+It would be nice if BUG(), BUG_ON(), and panic() calls would be
+converted to proper error handling using WARN_ON() calls. The BUG()
+call in nilfs_cpfile_delete_checkpoints(), for example, looks to be
+triggerable from user-space via the ioctl() system call (albeit I
+didn't look too closely). Furthermore, the BUG() calls in error paths
+of fs/nilfs2/ioctl.c look really fishy.
+
+On a related note, there are quite a few new ioctls there. Are they
+described somewhere? Also, can they be converted to use
+->unlocked_ioctl? It's bit sad that we're adding new users of BKL in
+shiny new code.
+
+                           Pekka
