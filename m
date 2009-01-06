@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761345AbZAFWg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbZAFWhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761345AbZAFWg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZAFWWo
+	id S1759517AbZAFWhu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758889AbZAFWXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:22:44 -0500
-Received: from kroah.org ([198.145.64.141]:49339 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758641AbZAFWWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:22:42 -0500
-Date: Tue, 6 Jan 2009 14:21:41 -0800
-From: Greg KH <greg@kroah.com>
-To: Jim Gettys <jg@laptop.org>
-Cc: Henrik Rydberg <rydberg@euromail.se>, jkosina@suse.cz,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       Peter Hutterer <peter.hutterer@who-t.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] input: Add a detailed multi-touch finger data
-	report protocol (rev2)
-Message-ID: <20090106222141.GA685@kroah.com>
-References: <495804B1.10300@euromail.se> <1231266769.8379.79.camel@jg-vaio>
+	Tue, 6 Jan 2009 17:23:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41407 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756568AbZAFWXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:23:43 -0500
+Date: Tue, 6 Jan 2009 14:22:37 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+In-Reply-To: <1231279660.11687.121.camel@twins>
+Message-ID: <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
+ <1231279660.11687.121.camel@twins>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231266769.8379.79.camel@jg-vaio>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 01:32:49PM -0500, Jim Gettys wrote:
-> There is a remaining question: how/whether to implement this interface
-> in USB HID.....
+
+
+On Tue, 6 Jan 2009, Peter Zijlstra wrote:
 > 
-> On page 9 of the document you'll find at:
-> http://www.microsoft.com/whdc/device/input/DigitizerDrvs_touch.mspx
-> 
-> Microsoft is claiming in that document of December 8 they are proposing
-> the interfaces in the document to the USB IF organization, and that
-> hardware vendors for Windows 7 should follow that spec.
-> 
-> Jiri, Greg:
-> 
-> 1) Does anyone know if Microsoft has actually made the proposal to the
-> USB IF?  Is there anyone in the community watching/commenting on USB IF
-> proposals?
+> One of the things the previous patch did wrong was that it never tracked
+> the owner in the mutex fast path -- I initially didn't notice because I
+> had all debugging infrastructure enabled, and that short circuits all
+> the fast paths.
 
-Yes, I'm watching them, but nothing is public at this time (if it was
-currently under review privately within the USB-IF, I wouldn't be
-allowed to tell anyone, sorry.)
+Why even worry?
 
-> 2) do you want generic USB HID patches or do you want to, for now,
-> confine these to USB device specific drivers as much as possible?
+Just set the owner non-atomically. We can consider a NULL owner in the 
+slow-path to be a "let's schedule" case. After all, it's just a 
+performance tuning thing after all, and the window is going to be very 
+small, so it won't even be relevant from a performance tuning angle.
 
-As more devices should be showing up with this kind of support, it would
-seem to make sense to add it to the HID core, right?
+So there's _no_ reason why the fast-path can't just set owner, and no 
+reason to disable preemption.
 
-thanks,
+I also think the whole preempt_disable/enable around the 
+mutex_spin_or_schedule() is pure garbage.
 
-greg k-h
+In fact, I suspect that's the real bug you're hitting: you're enabling 
+preemption while holding a spinlock. That is NOT a good idea.
+
+So 
+
+ - remove all the "preempt_disable/enable" crud. It's wrong.
+
+ - remove the whole
+
+	+       if (!owner)
+	+               return;
+
+   thing. It's also wrong. Just go to the schedule case for that.
+
+It all looks like unnecessary complexity that you added, and I think 
+_that_ is what bites you.
+
+Aim for _simple_. Not clever. Not complex. What you should aim for is to 
+keep the _exact_ same code that we had before in mutex, and the absolute 
+*only* change is replacing that "unlock+schedule()+relock" sequence with 
+"mutex_spin_or_schedule()".
+
+That should be your starting point.
+
+Yeah, you'll need to set the owner for the fast case, but there are no 
+locking or preemption issues there. Just forget them. You're confusing 
+yourself and the code by trying to look for problems that aren't 
+relevant.
+
+			Linus
