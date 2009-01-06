@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZAFVQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZAFVSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbZAFVQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZAFVQi
+	id S1753675AbZAFVSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZAFVSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:16:38 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:47998 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161AbZAFVQg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:16:36 -0500
-Message-ID: <4963CA22.2080200@oracle.com>
-Date: Tue, 06 Jan 2009 13:16:18 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Alexey Korolev <akorolev@infradead.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Vasiliy Leonenko <vasiliy.leonenko@gmail.com>
-Subject: Re: linux-next: Tree for January 6 (MTD)
-References: <20090106182311.525e4b14.sfr@canb.auug.org.au> <496386DB.8090606@oracle.com> <alpine.LFD.2.00.0901061632590.4300@casper.infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0901061632590.4300@casper.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 Jan 2009 16:18:14 -0500
+Received: from gate.crashing.org ([63.228.1.57]:35978 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751308AbZAFVSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 16:18:12 -0500
+Subject: Re: Lock-up on PPC64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: malc <av1474@comtv.ru>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0901062032550.2972@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
+	 <20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
+	 <20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
+	 <1230165163.7292.32.camel@pasglop>
+	 <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+	 <1231158516.8367.3.camel@localhost>
+	 <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
+	 <1231243373.14860.24.camel@pasglop>
+	 <Pine.LNX.4.64.0901062032550.2972@linmac.oyster.ru>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 08:17:23 +1100
+Message-Id: <1231276643.14860.30.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4963CA25.01C6:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Korolev wrote:
-> Hi Randy,
-> 
->> # CONFIG_MTD_LPDDR is not set
->> CONFIG_MTD_QINFO_PROBE=y
->>
->> There appears to be too little control/coordination between those
->> two kconfig symbols.  Surely one of them (MTD_QINFO_PROBE) should
->> depend on the other (MTD_LPDDR).  And why even build 2 modules
->> when MTD_QINFO_PROBE is enabled?  Why not combine the code into
->> one module?
-> Thanks a lot for good finding. Here is a fix for the problem.
-> 
-> About combining: it is assumed to have one QINFO probing module for several
-> kinds of LPDDR command set drivers. If we combine two modules into
-> one it would make further extension rather hard. So it is better to have
-> two modules.
-> To fix a problem I just added dependency in Kconfig file.
-> This temporary fix which will work until we have just one cmdset module.
-> In near future we will make a fix which parse command set types
->  and select proper driver according to device type.
-> 
-> Thanks,
-> Alexey
-> 
-> Signed-off-by: Alexey Korolev <akorolev@infradead.org>
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+> As you wish :) I've written some ad-hoc stuff in the failing path which 
+> manually triggers sysrq and then sends the klogctl output via network
+> and here it is:
 
-Thanks.
+Allright, something's unclear to me. What do you mean by the system goes
+down then ? The kernel appears to be working at least to a certain
+extent if you manage to trigger a sysrq from userspace... And from what
+I see, it looks that all processes are somewhere in schedule.
 
-> ---
-> diff --git a/drivers/mtd/lpddr/Kconfig b/drivers/mtd/lpddr/Kconfig
-> index acd4ea9..5a401d8 100644
-> --- a/drivers/mtd/lpddr/Kconfig
-> +++ b/drivers/mtd/lpddr/Kconfig
-> @@ -12,6 +12,7 @@ config MTD_LPDDR
->  	  DDR memories, intended for battery-operated systems.
->  
->  config MTD_QINFO_PROBE
-> +	depends on MTD_LPDDR
->  	tristate "Detect flash chips by QINFO probe"
->  	help
->  	    Device Information for LPDDR chips is offered through the Overlay
-> 
-> 
+So what is precisely your symptom here ?
+
+Cheers,
+Ben.
 
 
--- 
-~Randy
