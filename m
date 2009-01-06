@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZAFEPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZAFEQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbZAFEPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 23:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZAFENt
+	id S1754752AbZAFEQV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 23:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZAFENf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 23:13:49 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58356 "EHLO
+	Mon, 5 Jan 2009 23:13:35 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58344 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754033AbZAFENo (ORCPT
+	with ESMTP id S1754042AbZAFENb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 23:13:44 -0500
-Date: Mon, 5 Jan 2009 20:15:08 -0800
+	Mon, 5 Jan 2009 23:13:31 -0500
+Date: Mon, 5 Jan 2009 20:12:39 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: [PATCH 0/6] v2: Asynchronous function calls to speed up booting and
- more
-Message-ID: <20090105201508.23e98b4b@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [PATCH 4/6] fastboot: make ACPI bus drivers probe asynchronous
+Message-ID: <20090105201239.0784606e@infradead.org>
+In-Reply-To: <20090105200959.04a626ac@infradead.org>
+References: <20090105200959.04a626ac@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,103 +33,74 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+>From 34c47dd38f49e29eb7cd7fa2078efc6b8b258bb9 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sun, 4 Jan 2009 05:32:28 -0800
+Subject: [PATCH] fastboot: make ACPI bus drivers probe asynchronous
 
+the various ACPI bus drivers have non-overlapping devices and can
+each be run asynchronous. Some of the ACPI drivers (especially the
+battery one, but others as well) can take quite a long time to probe.
 
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/acpi/scan.c |   23 ++++++++++++++++-------
+ 1 files changed, 16 insertions(+), 7 deletions(-)
 
-Hi,
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 39b7233..a9e542d 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -8,6 +8,7 @@
+ #include <linux/acpi.h>
+ #include <linux/signal.h>
+ #include <linux/kthread.h>
++#include <linux/async.h>
+ 
+ #include <acpi/acpi_drivers.h>
+ #include <acpi/acinterp.h>	/* for acpi_ex_eisa_id_to_string() */
+@@ -578,6 +579,19 @@ static int acpi_start_single_object(struct acpi_device *device)
+ 	return result;
+ }
+ 
++static void acpi_bus_register_async(void *data, async_cookie_t cookie)
++{
++	int ret;
++	struct acpi_driver *driver = data;
++	driver->drv.name = driver->name;
++	driver->drv.bus = &acpi_bus_type;
++	driver->drv.owner = driver->owner;
++
++	async_synchronize_cookie(cookie);
++
++	ret = driver_register(&driver->drv);
++	WARN_ON(ret != 0);
++}
+ /**
+  * acpi_bus_register_driver - register a driver with the ACPI bus
+  * @driver: driver being registered
+@@ -588,16 +602,11 @@ static int acpi_start_single_object(struct acpi_device *device)
+  */
+ int acpi_bus_register_driver(struct acpi_driver *driver)
+ {
+-	int ret;
+ 
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+-	driver->drv.name = driver->name;
+-	driver->drv.bus = &acpi_bus_type;
+-	driver->drv.owner = driver->owner;
+-
+-	ret = driver_register(&driver->drv);
+-	return ret;
++	async_schedule(acpi_bus_register_async, driver);
++	return 0;
+ }
+ 
+ EXPORT_SYMBOL(acpi_bus_register_driver);
+-- 
+1.6.0.6
 
-Changes since last version
-* some tweaks to the bootchart script to get better visualization
-* added serialization points in the irq autodetector, module unloading
-  and at rootfs mounting (based on feedback from Linus and Andi)
-* added a second libata patch to scan the partition tables from inside
-  the async code, without global serialization (based on Linus
-  suggestion). This saves a ton of boot time for my box with 2 sata
-  controllers
-
-I talked to David Howells to see if we could share the thread pool code
-(all 35 lines of it), but his requirements are more or less
-incompatible with mine. He needs priorities to be honored, while I need
-to do strict sequencing of events, and this appears to be hardly
-compatible, at least not without adding much more complexity than the
-relatively simple thread code justifies.
-
-parts of the original announcement below; I've updated the two
-bootcharts with the new code; basically my testbox is going from 2.75
-seconds to 1.0 seconds (approximately).. which is not a bad gain at all.
-
-I've also stuck the patches in a git tree; the git info is:
-
-The following changes since commit 238c6d54830c624f34ac9cf123ac04aebfca5013:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../agk/linux-2.6-dm
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-async.git master
-
-Arjan van de Ven (6):
-      fastboot: Asynchronous function calls to speed up kernel boot
-      fastboot: make scsi probes asynchronous
-      fastboot: make the libata port scan asynchronous
-      fastboot: make ACPI bus drivers probe asynchronous
-      bootchart: improve output based on Dave Jones' feedback
-      fastboot: Make libata initialization even more async
-
- drivers/acpi/scan.c       |   23 +++-
- drivers/ata/libata-core.c |   96 ++++++++-------
- drivers/scsi/scsi_scan.c  |    3 +
- drivers/scsi/sd.c         |  109 ++++++++++------
- include/linux/async.h     |   21 +++
- init/do_mounts.c          |    2 +
- init/main.c               |    5 +-
- kernel/Makefile           |    3 +-
- kernel/async.c            |  307 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/irq/autoprobe.c    |    5 +
- kernel/module.c           |    2 +
- scripts/bootgraph.pl      |   16 ++-
- 12 files changed, 491 insertions(+), 101 deletions(-)
- create mode 100644 include/linux/async.h
- create mode 100644 kernel/async.c
-
-
-should this go via -tip? is the first patch simple enough for .29 so that the later ones can go via the maintainer trees after that?
-
-
-=====
-
-This patch series introduces asynchronous function calls.
-The goal is still the same (boot faster), the method is entirely
-different.
-
-Asynchronous function calls allow drivers and subsystems to do
-operations asynchronously, while providing a mechanism to serialize
-the asynchronous operations at "externally visible" locations, such as
-device number registrations. 
-
-As such, this approach is NOT a "full parallel kernel init".
-For one, it keeps device numbers stable. For another, it's very much
-opt-in for any code using this.
-
-Rather, it is more comparable to an out-of-order cpu, where computations
-are done asynchronously, but are retired in program order.
-
-This series first introduces the infrastructure in patch 1,
-and then adds users of this infrastructure (scsi in patch2, libata in
-patch 3 and acpi in patch 4).
-
-To see this working, I uploaded a "before" and "after" kernel bootchart
-for one of my testboxes at
-
-http://www.kernel.org/pub/linux/kernel/people/arjan/async/before.svg
-http://www.kernel.org/pub/linux/kernel/people/arjan/async/after.svg
-
-[minor note; the "after" one also has Alan's suggestion to tweak the
-serial config option]
-
-As you can see with inkscape (or gimp or any other svg viewer), there
-is still some room for doing more things in parallel, but the 3 example
-usage patches are a big win already.
 
 
 -- 
