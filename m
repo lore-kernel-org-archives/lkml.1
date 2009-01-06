@@ -1,128 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZAFP5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751562AbZAFP6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbZAFP5q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbZAFP5d
+	id S1751562AbZAFP6D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:58:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbZAFP5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:57:33 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:59805 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbZAFP5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 10:57:34 -0500
+Received: from 1wt.eu ([62.212.114.60]:1132 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751127AbZAFP5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 Jan 2009 10:57:32 -0500
-Date: Tue, 6 Jan 2009 21:27:24 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Milton Miller <miltonm@bga.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
-	!CONFIG_VIOPATH
-Message-ID: <20090106155724.GA6747@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com> <20090104182441.GA5086@linux.vnet.ibm.com> <98d6aef17cba9d835d7866745f811dc7@bga.com> <20090106072549.GA5066@linux.vnet.ibm.com> <20090106073149.GA12371@uranus.ravnborg.org> <20090106093847.GB5066@linux.vnet.ibm.com> <20090106104619.GA13789@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Date: Tue, 6 Jan 2009 16:57:15 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090106155715.GA28783@1wt.eu>
+References: <20081224152841.GB13113@1wt.eu> <20090106085442.GA9513@ff.dom.local> <20090106094138.GE25644@1wt.eu> <20090106100112.GB9513@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090106104619.GA13789@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090106100112.GB9513@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg <sam@ravnborg.org> [2009-01-06 11:46:19]:
-
-> Hi Kamalesh
+On Tue, Jan 06, 2009 at 10:01:13AM +0000, Jarek Poplawski wrote:
+> On Tue, Jan 06, 2009 at 10:41:38AM +0100, Willy Tarreau wrote:
+> ...
+> > > Great story! Alas I don't understand this fully either, but it seems
+> > > Changli Gao was concerned with sendpage sending this "as pages", so
+> > > when NETIF_F_SG flag is available. Did you try this without SG btw?
+> > 
+> > No I did not. I can try, it's not too hard. It would in part defeat the
+> > purpose of the mechanism (especially at 10 Gbps) but at least it will
+> > help narrow the problem down.
 > 
-> Looks good, small nit below.
-> 
-> >  config VIOPATH
-> >  	bool
-> > -	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
-> > -	default y
-> > +	default n
-> 
-> As 'n' is default anyway this line is not needed and I suggest you
-> spin a final version of the patch with this removed.
-> 
-> 	Sam
+> Yes, I meant it only as a proof of concept. BTW, delaying TCP acks a
+> bit for these sendpages should then make it more reproducible, I guess.
 
-Hi Sam,
+OK here is an update. It does not change anything to turn off any acceleration
+feature on the interface (tg3) :
 
-	Thanks for the review comments. I am resending the patch with the changes
-you have recommended.
+root@wtap:~# ethtool -k eth0
+Offload parameters for eth0:
+rx-checksumming: off
+tx-checksumming: off
+scatter-gather: off
+tcp segmentation offload: off
 
-Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
+It still forwards corrupted data like mad. I noticed that the corruption rate
+is 10-100 times higher when forwarding from eth0 to eth0 than from eth0 to lo.
 
-iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
-Removing the dependency of VIOPATH by selecting it, when the drivers
-dependent on iSeries code.
+Maybe this can help find the culprit ?
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/iseries/Kconfig |    5 +++--
- drivers/char/Kconfig                   |    1 +
- drivers/scsi/Kconfig                   |    1 +
- 3 files changed, 5 insertions(+), 2 deletions(-)
+Willy
 
-diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
-index ed3753d..7ddd0a2 100644
---- a/arch/powerpc/platforms/iseries/Kconfig
-+++ b/arch/powerpc/platforms/iseries/Kconfig
-@@ -10,18 +10,21 @@ menu "iSeries device drivers"
- config VIODASD
- 	tristate "iSeries Virtual I/O disk support"
- 	depends on BLOCK
-+	select VIOPATH
- 	help
- 	  If you are running on an iSeries system and you want to use
- 	  virtual disks created and managed by OS/400, say Y.
- 
- config VIOCD
- 	tristate "iSeries Virtual I/O CD support"
-+	select VIOPATH
- 	help
- 	  If you are running Linux on an IBM iSeries system and you want to
- 	  read a CD drive owned by OS/400, say Y here.
- 
- config VIOTAPE
- 	tristate "iSeries Virtual Tape Support"
-+	select VIOPATH
- 	help
- 	  If you are running Linux on an iSeries system and you want Linux
- 	  to read and/or write a tape drive owned by OS/400, say Y here.
-@@ -30,5 +33,3 @@ endmenu
- 
- config VIOPATH
- 	bool
--	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
--	default y
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 1697043..b8da09a 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -616,6 +616,7 @@ config HVC_ISERIES
- 	default y
- 	select HVC_DRIVER
- 	select HVC_IRQ
-+	select VIOPATH
- 	help
- 	  iSeries machines support a hypervisor virtual console.
- 
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index b732297..256c7be 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -884,6 +884,7 @@ config SCSI_IBMVSCSI
- 	tristate "IBM Virtual SCSI support"
- 	depends on PPC_PSERIES || PPC_ISERIES
- 	select SCSI_SRP_ATTRS
-+	select VIOPATH if PPC_ISERIES
- 	help
- 	  This is the IBM POWER Virtual SCSI Client
- 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
