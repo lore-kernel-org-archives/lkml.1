@@ -1,100 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbZAFSw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZAFS4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbZAFSw4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZAFSwk
+	id S1754689AbZAFS4A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbZAFSzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:52:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51898 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755501AbZAFSwj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:52:39 -0500
-Date: Tue, 6 Jan 2009 13:52:36 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: David Miller <davem@davemloft.net>
-cc: sam@ravnborg.org, linux-kernel@vger.kernel.org, srostedt@redhat.com,
-       mingo@elte.hu, sparclinux@vger.kernel.org
-Subject: Re: ftrace breaks sparc64 build
-In-Reply-To: <20090106.103234.163615537.davem@davemloft.net>
-Message-ID: <alpine.DEB.1.10.0901061342570.10871@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901051428370.27085@gandalf.stny.rr.com> <20090105195415.GA6204@uranus.ravnborg.org> <alpine.DEB.1.10.0901051458460.25066@gandalf.stny.rr.com> <20090106.103234.163615537.davem@davemloft.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Jan 2009 13:55:48 -0500
+Received: from 1wt.eu ([62.212.114.60]:1141 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752613AbZAFSzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 13:55:45 -0500
+Date: Tue, 6 Jan 2009 19:55:38 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090106185538.GB30322@1wt.eu>
+References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106183704.GC32491@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106183704.GC32491@kernel.dk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jens,
 
-On Tue, 6 Jan 2009, David Miller wrote:
-
-> From: Steven Rostedt <rostedt@goodmis.org>
-> Date: Mon, 5 Jan 2009 15:05:11 -0500 (EST)
-> 
-> > Probably the same issue. The problem is that the first use of a variable 
-> > is in the OR section of an if statement that does a return.
+On Tue, Jan 06, 2009 at 07:37:05PM +0100, Jens Axboe wrote:
+> On Tue, Jan 06 2009, Evgeniy Polyakov wrote:
+> > Hi Willy.
 > > 
-> > 	if (x || !(y = init_me())
-> > 		return;
+> > Unfortunately I can not work on this problem right now, but will do if
+> > things are not resolved after Jan 11 (long vacations will be finished in
+> > Russia and I will return to my test machines :) But right now I have
+> > one quesstion: I read several times your mail but still can not figure
+> > out if receiving or sending side is broken?
 > > 
-> > 	use_me(y);
+> > I.e. can you splice from socket into the file, check the file, and then
+> > splice to the another socket and check received data to find out which
+> > side is broken? Or did I just missed that in the problem description?
 > > 
-> > IMHO I find this sloppy code. When reading the code it can cause reviewers 
-> > trouble, and wasted time, to see that y is indeed initialized. I'm 
-> > impressed that gcc was able to figure it out.
+> > Thanks a lot for the test application, it will greatly help to resolve
+> > this issue.
 > 
-> I'm pretty much in firm disagreement here.
+> I'll give this a spin tomorrow as well. A hunch tells me that this is
+> likely a page reuse issue, that splice is getting the reference to the
+> buffer dropped before the data has really been transmitted. IOW, the
+> page is likely fine reaching the ->sendpage() bit, but will be reused
+> before the data has actually been transmitted. So once you get that far,
+> other random data from that page is going out.
 
-fair enough.
+I like your explanation because eventhough I don't understand the code
+(can't follow it past the actors in fact), I understand the problem you're
+suggesting ;-)
 
-> 
-> This code is pretty clear.  The only way to get to use_me() is
-> by initializing 'y'.  It's very straightforward.
-> 
-> There are many conditionals in the kernel where this order
-> of evaluation and side effects is depended upon.  Some of them
-> just happen to warn now because of the branch tracer.
-> 
-> > Have you always been compiling with -Werror?
-> 
-> arch/sparc*/ builds with -Werror for 5+ years.
-> 
-> > The reason that gcc complains is because you have the
-> > "branch_tracer" on that converts 'if ()' into a macro (as you saw in
-> > your -E compile). This makes the if statement more complex, and goes
-> > beyond gcc's ability to know that the above 'y' is initialized
-> > properly. I would work on fixing this in the branch tracer, but
-> > honestly, I'm kind of glad that gcc barfs on it.  This will help us
-> > point out this kind of sloppy initializations (sorry if I'm
-> > offending anybody about calling it sloppy). I just believe that it
-> > makes the code a bit more obfuscated to initialize in an if
-> > statement, and a second part of a complex if statement at that!
-> 
-> Keep in mind all this code was fine and built warning free before the
-> if() obfuscation done by the branch tracer.  If I wrote the branch
-> tracer, I'd probably search for these kinds of excuses too :-)
+> Just a guess, I'll try and reproduce this tomorrow!
 
-Yeah, I'm trying different ways to handle the if magic to see if I can 
-come up with a way to keep gcc happy. Unfortunately, every solution so far 
-still seems to confuse sparc (I don't know why it does not confuse x86 or 
-powerpc, although some of my variations do).
+OK. In order not to waste your time, run the test app from one interface to
+the same one, with both the client and the server on the same machine, distinct
+from the test app. It will trigger immediately. "nc|od -Ax -tx1" will save you
+a lot of time on the client side too BTW.
 
-I would hate to black list archs just because it gives warnings. I've 
-analyzed the code greatly to make sure that it keeps the semantics of the 
-original code the same.
-
-It's just that it pushes gcc beyond its threshold of knowing that a 
-variable is initialized. I do not blame gcc because it has to have a limit 
-to handle logic cases (otherwise it has solved the halting problem).
-
-What bothers me is that some versions of gcc are not affected by the if 
-macro and some are. I'm impressed to hear that sparc has been compiling 
-fine for years with -Werror since I'm not sure other archs can say the 
-same.
-
-I'll have to keep hacking at it. :-/
-
--- Steve
+Thanks,
+Willy
 
