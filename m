@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZAFOyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931AbZAFPBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbZAFOyU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 09:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZAFOyM
+	id S1752931AbZAFPBW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZAFPBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 09:54:12 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:53954 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751877AbZAFOyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 09:54:11 -0500
-Message-ID: <49637090.8010501@sgi.com>
-Date: Tue, 06 Jan 2009 06:54:08 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 6 Jan 2009 10:01:09 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:57936 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbZAFPBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 10:01:08 -0500
+Date: Tue, 6 Jan 2009 08:01:05 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+Message-ID: <20090106150105.GO2002@parisc-linux.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu> <1231244501.11687.102.camel@twins>
 MIME-Version: 1.0
-To: Jack Steiner <steiner@sgi.com>
-CC: Nick Piggin <npiggin@suse.de>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Cliff Wickman <cpw@sgi.com>, Russ Anderson <rja@sgi.com>
-Subject: Re: [patch] x86: make UV support optional
-References: <20090106060348.GA16738@wotan.suse.de> <20090106143330.GB18913@sgi.com>
-In-Reply-To: <20090106143330.GB18913@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231244501.11687.102.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jack Steiner wrote:
-> On Tue, Jan 06, 2009 at 07:03:48AM +0100, Nick Piggin wrote:
->> UV is fairly rare.... and much of the support is already there to cope with
->> 32-bit builds. So this makes sense I think.
->>
+On Tue, Jan 06, 2009 at 01:21:41PM +0100, Peter Zijlstra wrote:
+> > It's hard to tell how it would impact inbetween workloads - i guess it 
+> > needs to be measured on a couple of workloads.
 > 
-> 
-> Looks ok to me. One suggestion though. There is a MAXSMP config
-> option. I would suggest enabling UV if MAXSMP is enabled. This
-> will help ensure that UV is tested more frequently & may minimize
-> regressions.
-> 
-> 
-> --- jack
+> Matthew volunteered to run something IIRC.
 
-Nick - would you add something like this to your patch?  Thanks! Mike
----
-Subject: x86: enable UV when MAXSMP is configured.
+I've sent it off to two different teams at Intel for benchmarking.  One
+is a database load, and one is a mixed load.
 
-We want UV code to be tested even for non-UV architectures.  Enabling
-MAXSMP specifies "maximizing the system capabitlity" and UV is one of
-these methods.  Also helps distros select the correct config options
-for their default configurations.
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-2.6-for-ingo.orig/arch/x86/Kconfig
-+++ linux-2.6-for-ingo/arch/x86/Kconfig
-@@ -616,6 +616,7 @@ config MAXSMP
- 	bool "Configure Maximum number of SMP Processors and NUMA Nodes"
- 	depends on X86_64 && SMP && DEBUG_KERNEL && EXPERIMENTAL
- 	select CPUMASK_OFFSTACK
-+	select X86_UV
- 	default n
- 	help
- 	  Configure maximum number of CPUS and NUMA Nodes for this architecture.
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
