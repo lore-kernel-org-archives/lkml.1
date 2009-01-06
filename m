@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZAFHTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbZAFHVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbZAFHTO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 02:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZAFHS6
+	id S1753898AbZAFHVu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 02:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZAFHVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 02:18:58 -0500
-Received: from rv-out-0506.google.com ([209.85.198.225]:11848 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbZAFHS5 (ORCPT
+	Tue, 6 Jan 2009 02:21:41 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52466 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZAFHVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 02:18:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Qa3ZSm4ZKhJIe17wRjd+otuAukxcBM0oTRx4uGhEnw2Yzljyvv0HZwjoKVuG4dBJwu
-         Siac7JaU26Auq4iVbT/BMuGG9ZN92RgkRvtrD2djH4TpB39TkF1omKbVP/C347i0nWdE
-         WlYslUZooKC7cAO8LOuCoh7t4VicmPSSQRjc0=
-Message-ID: <3f9a31f40901052318s7a5a421apa5c6ed8804aeb955@mail.gmail.com>
-Date: Tue, 6 Jan 2009 12:48:56 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-Cc: "Alain Knaff" <alain@knaff.lu>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4962858F.20207@zytor.com>
+	Tue, 6 Jan 2009 02:21:41 -0500
+Message-ID: <496306A2.9080600@zytor.com>
+Date: Mon, 05 Jan 2009 23:22:10 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alain Knaff <alain@knaff.lu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
+References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <49615136.9080900@knaff.lu> <4961580A.1020301@zytor.com> <4961A816.40302@knaff.lu> <4961A997.10108@zytor.com> <4961ADC5.6030108@knaff.lu> <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu> <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu> <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu> <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu> <4962858F.20207@zytor.com> <496285C8.7050503@knaff.lu> <496290E0.3020603@zytor.com> <4963039D.7000804@knaff.lu>
+In-Reply-To: <4963039D.7000804@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu>
-	 <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu>
-	 <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu>
-	 <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu>
-	 <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu>
-	 <4962858F.20207@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 6, 2009 at 3:41 AM, H. Peter Anvin <hpa@zytor.com> wrote:
->
-> I'm thinking that with "preferred" we might just use the first one in the
-> priority list "lzma, bzip2, gzip, uncompressed" depending on what is
-> installed in the kernel.
->
+Alain Knaff wrote:
+> H. Peter Anvin wrote:
+>> Go ahead and do an incremental patch at this point.
+>>
+>>     -hpa
+> 
+> Thanks, that'll make things easier. Unfortunately, I can no longer check
+> out the code. No error messages, but the files just aren't there:
+> 
+> 
+>> git pull
+> Already up-to-date.
+>> git checkout -b x86/setup-lzma tip/x86/setup-lzma
+> git checkout: branch x86/setup-lzma already exists
 
-Only problem I faced with lzma is that, in some machines /usr/bin/lzma
-is not installed by default which leads to error in kernel
-compilations.
+I think the "git checkout" failed here because you were trying to create 
+a local branch (-b) failed.  Just "git checkout x86/setup-lzma" followed 
+by "git pull" *should* work...
 
-Can we check in kernel config that lzma is installed on machine or not.
+>> ls lib/decompress_inflate.c
+> ls: cannot access lib/decompress_inflate.c: No such file or directory
+> 
 
---
-JSR
+If that doesn't work, you may want to ask the people in #git on Freenode.
+
+	-hpa
+
