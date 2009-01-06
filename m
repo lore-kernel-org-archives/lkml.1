@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbZAFTCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZAFTDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbZAFTCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 14:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZAFTCK
+	id S1754852AbZAFTDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 14:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbZAFTDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 14:02:10 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:5005 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751651AbZAFTCI (ORCPT
+	Tue, 6 Jan 2009 14:03:07 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49881 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbZAFTDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 14:02:08 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: =?iso-8859-2?q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-Subject: Re: [PATCH 2.6.28 1/3] PCI-quirks: Unhide MCH5/6 memory controller configuration device
-Date: Tue, 6 Jan 2009 12:02:03 -0700
-User-Agent: KMail/1.9.10
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-References: <20081223215030.GA32525@rere.qmqm.pl> <20090105202829.GB26115@rere.qmqm.pl> <20090105203006.GC26115@rere.qmqm.pl>
-In-Reply-To: <20090105203006.GC26115@rere.qmqm.pl>
+	Tue, 6 Jan 2009 14:03:06 -0500
+X-Greylist: delayed 9293 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Jan 2009 14:03:05 EST
+Date: Tue, 6 Jan 2009 14:03:02 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Peter Zijlstra <peterz@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+In-Reply-To: <alpine.LFD.2.00.0901061013250.3057@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901061401270.10871@gandalf.stny.rr.com>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>  <20081231104533.abfb1cf9.akpm@linux-foundation.org>  <1230765549.7538.8.camel@think.oraclecorp.com>  <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>  <1231093310.27690.5.camel@twins>
+  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <alpine.LFD.2.00.0901060948220.3057@localhost.localdomain> <alpine.LFD.2.00.0901061013250.3057@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200901061202.04321.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009 01:30:06 pm Micha³ Miros³aw wrote:
-> Some BIOSes hide 'overflow' device (dev #6) for i82875P/PE chipsets.
-> The same happens for i82865P/PE. Add a quirk to enable this device.
-> This allows i82875 EDAC driver to bind to chipset's dev #6 and not
-> dev #0 as the latter is used by AGP driver.
+
 > 
-> After testing this patch for couple of days on my laptop (i82856P)
-> it looks like something is resetting device 0 (MCH) config register
-> 0xF4 to zero and effectively disabling the device again. The delay
-> looks random to me.
-
-The BIOS left the device hidden.  When you enable it with the quirk,
-the fact that it mysteriously gets disabled later seems like a pretty
-clear indication that something else we don't know about is using the
-device.  Since there's no synchronization between the "something else"
-and the i82875p_edac.c driver, it seems like you're introducing the
-possibility for problems.
-
-I don't know anything about the EDAC driver.  Is the value it provides
-really worth the possible problems with this approach?  Maybe it is,
-but I don't want to be the one to debug a random interaction that
-causes a problem.
-
-Bjorn
-
-> I can easily update the register using 
-> 'hexedit /sys/bus/pci/devices/0000\:00\:00.0/config' and see
-> correct values in lspci output afterwards. This is probably
-> BIOS's fault. This changes nothing as far as i82875P EDAC driver
-> is concerned as it has the same assumption that BIOS is well behaved.
+> Btw, this also fixes a bug: your patch did
 > 
-> In case some really broken BIOS is found, this can be wrapped around
-> some new Kconfig #ifdef.
+> 	+                     __set_task_state(task, state);
+> 	+                     /* didnt get the lock, go to sleep: */
+> 	+                     schedule();
 > 
-> Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+> for the schedule case without holding the mutex spinlock.
 > 
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index a47db02..0ca02c7 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -1787,6 +1787,28 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
->  			PCI_DEVICE_ID_NX2_5709S,
->  			quirk_brcm_570x_limit_vpd);
->  
-> +/* Originally in EDAC sources for i82875P:
-> + * Intel tells BIOS developers to hide device 6 which
-> + * configures the overflow device access containing
-> + * the DRBs - this is where we expose device 6.
-> + * http://www.x86-secret.com/articles/tweak/pat/patsecrets-2.htm
-> + */
-> +static void __devinit quirk_unhide_mch_dev6(struct pci_dev *dev)
-> +{
-> +	u8 reg;
-> +
-> +	if (pci_read_config_byte(dev, 0xF4, &reg) == 0 && !(reg & 0x02)) {
-> +		dev_info(&dev->dev, "Enabling MCH 'Overflow' Device\n");
-> +		pci_write_config_byte(dev, 0xF4, reg | 0x02);
-> +	}
-> +}
-> +
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82865_HB,
-> +                       quirk_unhide_mch_dev6);
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82875_HB,
-> +                       quirk_unhide_mch_dev6);
-> +
-> +
->  #ifdef CONFIG_PCI_MSI
->  /* Some chipsets do not support MSI. We cannot easily rely on setting
->   * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> And that seems very buggy and racy indeed: since it doesn't hold the mutex 
+> lock, if the old owner releases the mutex at just the right point (yeah, 
+> yeah, it requires a scheduling event on another CPU in order to also miss 
+> the whole "task_is_current()" logic), the wakeup can get lost, because you 
+> set the state to sleeping perhaps _after_ the task just got woken up. So 
+> we stay sleeping even though the mutex is clear.
 
 
+That is indeed a bug.
+
+Peter, why did you need to move __set_task_state down here?  The -rt patch 
+does not do this.
+
+-- Steve
