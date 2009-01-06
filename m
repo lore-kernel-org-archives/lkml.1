@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbZAFB0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZAFB3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbZAFB0u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 20:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZAFB0k
+	id S1753150AbZAFB3R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 20:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZAFB3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 20:26:40 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:55687 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbZAFB0j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 20:26:39 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4962B327.1020209@s5r6.in-berlin.de>
-Date: Tue, 06 Jan 2009 02:25:59 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
-MIME-Version: 1.0
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-CC: Kay Sievers <kay.sievers@vrfy.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
-References: <fa.+H1UnEqOmFht/vMPmVy8ellbQi0@ifi.uio.no> <fa.RLz5WOGorLui5GRkc963Ww1kXqg@ifi.uio.no> <fa.x4ejZ7Kj7ZZRu88Sond1Cap6XxY@ifi.uio.no> <49628720.6050101@yahoo.com>
-In-Reply-To: <49628720.6050101@yahoo.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Jan 2009 20:29:02 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42884 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbZAFB3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 20:29:00 -0500
+Date: Tue, 6 Jan 2009 01:27:59 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Milan Broz <mbroz@redhat.com>,
+       Jaya Kumar <jayakumar.video@gmail.com>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Gene Sally <Gene.Sally@timesys.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: strncat() misuse (was: Re: dm_attr_{name,uuid}_show buffer overflow? (was: Re: linux-next: Tree for January 5))
+Message-ID: <20090106012759.GA3512@agk.fab.redhat.com>
+Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Milan Broz <mbroz@redhat.com>,
+	Jaya Kumar <jayakumar.video@gmail.com>,
+	Laurent Pinchart <laurent.pinchart@skynet.be>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	Gene Sally <Gene.Sally@timesys.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20090105173517.deeff918.sfr@canb.auug.org.au> <Pine.LNX.4.64.0901052225400.5451@anakin> <Pine.LNX.4.64.0901052259420.5451@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0901052259420.5451@anakin>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sitsofe Wheeler wrote:
-> How about cheapseek? fastrandom? flash? ssd? However the internal flag
-> is called QUEUE_FLAG_NONROT so it kind of makes sense just to leave it
-> as nonrot...
+On Mon, Jan 05, 2009 at 11:18:38PM +0100, Geert Uytterhoeven wrote:
+> On Mon, 5 Jan 2009, Geert Uytterhoeven wrote:
+> > On Mon, 5 Jan 2009, Stephen Rothwell wrote:
 
-It is not necessary to obfuscate an interface to userspace just because
-some internally used cpp macro got an awkward name.
+> > |         strncat(buf, "\n", DM_NAME_LEN);
+> > |         return strnlen(buf, DM_NAME_LEN);
+
+> > Probably the intention was to limit the string in _buf_ (not the source string
+> > "\n") to DM_NAME_LEN? If yes, this may cause a buffer overflow.
+
+Both the 'n's look bogus to me as runtime checks.  But I think the code happens
+to work correctly - apart from your compilation problem.
+
+buf is always a page and both strings (name and uuid) are NULL-terminated and
+the longest possible is 128 chars of uuid plus the "\n" i.e. 130 (except for a
+bug I noticed on one code path which we'll fix).
+
+Alasdair
 -- 
-Stefan Richter
--=====-==--= ---= --==-
-http://arcgraph.de/sr/
+agk@redhat.com
