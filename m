@@ -1,147 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZAFCeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZAFCf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbZAFCeR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 21:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZAFCeA
+	id S1753800AbZAFCf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 21:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbZAFCfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 21:34:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33159
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751545AbZAFCd7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 21:33:59 -0500
-Date: Mon, 05 Jan 2009 18:34:00 -0800 (PST)
-Message-Id: <20090105.183400.155883414.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Jan 2009 21:35:12 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63114 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751286AbZAFCfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 21:35:10 -0500
+Message-ID: <4962C322.8000201@cn.fujitsu.com>
+Date: Tue, 06 Jan 2009 10:34:10 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: [BUG] INFO: inconsistent lock state
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I am using Linus' tree, and the top commit is:
 
-Lots of more 32/64 unification work from Sam Ravnborg,
-with some smaller changes and fixes from Julian Calaby
-and Bastian Blank.
+commit fe0bdec68b77020281dc814805edfe594ae89e0f
+Merge: 099e657... 5af75d8...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Sun Jan 4 16:32:11 2009 -0800
 
-Please pull, thanks a lot!
+    Merge branch 'audit.b61' of git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
 
-The following changes since commit fe0bdec68b77020281dc814805edfe594ae89e0f:
-  Linus Torvalds (1):
-        Merge branch 'audit.b61' of git://git.kernel.org/.../viro/audit-current
+don't know how I triggered this, and not sure whom to CC, network related?
 
-are available in the git repository at:
+=================================
+[ INFO: inconsistent lock state ]
+2.6.28 #483
+---------------------------------
+inconsistent {softirq-on-W} -> {in-softirq-W} usage.
+swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
+ (&fbc->lock){-+..}, at: [<c05127a6>] __percpu_counter_add+0x52/0x7a
+{softirq-on-W} state was registered at:
+  [<c044bcd2>] __lock_acquire+0x539/0x700
+  [<c044bef6>] lock_acquire+0x5d/0x7a
+  [<c061ca68>] _spin_lock+0x20/0x2f
+  [<c05127a6>] __percpu_counter_add+0x52/0x7a
+  [<c049d615>] get_empty_filp+0x97/0x135
+  [<c04a59c2>] path_lookup_open+0x23/0x7a
+  [<c04a5ac0>] do_filp_open+0xa7/0x659
+  [<c049af1d>] do_sys_open+0x49/0xbe
+  [<c049afde>] sys_open+0x23/0x2b
+  [<c040332a>] syscall_call+0x7/0xb
+  [<ffffffff>] 0xffffffff
+irq event stamp: 3606392
+hardirqs last  enabled at (3606392): [<c061ce03>] _spin_unlock_irqrestore+0x3b/0x41
+hardirqs last disabled at (3606391): [<c061cd31>] _spin_lock_irqsave+0x14/0x39
+softirqs last  enabled at (3606338): [<c0430aef>] __do_softirq+0x135/0x13d
+softirqs last disabled at (3606369): [<c0404ab6>] do_softirq+0x6a/0xc0
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+other info that might help us debug this:
+4 locks held by swapper/0:
+ #0:  (rcu_read_lock){..--}, at: [<c05c3226>] net_rx_action+0x57/0x194
+ #1:  (rcu_read_lock){..--}, at: [<c05c0a7b>] netif_receive_skb+0x123/0x2c3
+ #2:  (rcu_read_lock){..--}, at: [<c05da9dc>] ip_local_deliver+0x4b/0x119
+ #3:  (slock-AF_INET/1){-+..}, at: [<c05f1eec>] tcp_v4_rcv+0x237/0x50f
 
-Bastian Blank (1):
-      sparc: Use 64BIT config entry
-
-David S. Miller (5):
-      sparc: Kill bogus comment about IRQF_SHARED in pci_psycho.c
-      sparc: Update 64-bit defconfig.
-      sparc: Kill asm/reg*.h
-      sparc: Remove reg*.h from Kbuild
-
-Julian Calaby (2):
-      sparc: Clean arch-specific code in prom_common.c
-      sparc: Fix minor SPARC32 compile error
-
-Sam Ravnborg (23):
-      sparc: delete unused config symbols
-      sparc: unify posix_types.h
-      sparc32: drop __old_kernel_stat
-      sparc32: use proper types in struct stat
-      sparc: unify stat.h
-      sparc64: prepare signal_64 for unification
-      sparc: unify signal.h
-      sparc: add '32' suffix to reg_window, sigcontext, __siginfo_t
-      sparc: unify sigcontext.h
-      sparc: unify ptrace.h
-      sparc: unify siginfo.h
-      sparc: remove ebus definitions from openprom*.h
-      sparc: remove linux_prom_pci_assigned_addresses from openprom_32.h
-      sparc: prepare openprom for unification
-      sparc64: delete unused linux_prom64_ranges from openprom_64.h
-      sparc: unify openprom.h
-      sparc: fix warning in userspace header jsflash.h
-      sparc: fix warnings in userspace header byteorder.h
-      sparc: fix warning in userspace header traps.h
-      sparc: drop get_tbr() in traps.h
-      sparc: remove NO_PROC_ID - it is no longer used
-      sparc: unify ipcbuf.h
-      MAINTAINERS: update sparc maintainer
-
- MAINTAINERS                             |   15 +-
- arch/sparc/Kconfig                      |   57 +---
- arch/sparc/configs/sparc64_defconfig    |  105 +++++---
- arch/sparc/include/asm/Kbuild           |   20 --
- arch/sparc/include/asm/byteorder.h      |   12 +-
- arch/sparc/include/asm/ipcbuf.h         |   38 +++-
- arch/sparc/include/asm/ipcbuf_32.h      |   31 ---
- arch/sparc/include/asm/ipcbuf_64.h      |   28 --
- arch/sparc/include/asm/jsflash.h        |    2 +-
- arch/sparc/include/asm/openprom.h       |  277 +++++++++++++++++++-
- arch/sparc/include/asm/openprom_32.h    |  255 ------------------
- arch/sparc/include/asm/openprom_64.h    |  280 -------------------
- arch/sparc/include/asm/posix_types.h    |  157 +++++++++++-
- arch/sparc/include/asm/posix_types_32.h |  118 --------
- arch/sparc/include/asm/posix_types_64.h |  122 ---------
- arch/sparc/include/asm/processor_32.h   |    2 +-
- arch/sparc/include/asm/ptrace.h         |  448 ++++++++++++++++++++++++++++++-
- arch/sparc/include/asm/ptrace_32.h      |  186 -------------
- arch/sparc/include/asm/ptrace_64.h      |  356 ------------------------
- arch/sparc/include/asm/reg.h            |    8 -
- arch/sparc/include/asm/reg_32.h         |   79 ------
- arch/sparc/include/asm/reg_64.h         |   56 ----
- arch/sparc/include/asm/sigcontext.h     |  102 +++++++-
- arch/sparc/include/asm/sigcontext_32.h  |   62 -----
- arch/sparc/include/asm/sigcontext_64.h  |   87 ------
- arch/sparc/include/asm/siginfo.h        |   43 +++-
- arch/sparc/include/asm/siginfo_32.h     |   17 --
- arch/sparc/include/asm/siginfo_64.h     |   32 ---
- arch/sparc/include/asm/signal.h         |  212 ++++++++++++++-
- arch/sparc/include/asm/signal_32.h      |  207 --------------
- arch/sparc/include/asm/signal_64.h      |  194 -------------
- arch/sparc/include/asm/smp_32.h         |    3 -
- arch/sparc/include/asm/stat.h           |  111 +++++++-
- arch/sparc/include/asm/stat_32.h        |   76 ------
- arch/sparc/include/asm/stat_64.h        |   47 ----
- arch/sparc/include/asm/thread_info_32.h |    2 +-
- arch/sparc/include/asm/traps.h          |   11 +-
- arch/sparc/kernel/irq_32.c              |    2 +
- arch/sparc/kernel/kgdb_32.c             |   12 +-
- arch/sparc/kernel/muldiv.c              |    8 +-
- arch/sparc/kernel/pci_psycho.c          |    5 +-
- arch/sparc/kernel/process_32.c          |   16 +-
- arch/sparc/kernel/prom_common.c         |   14 +-
- arch/sparc/kernel/signal_32.c           |    6 +-
- arch/sparc/kernel/traps_32.c            |    4 +-
- arch/sparc/kernel/unaligned_32.c        |   12 +-
- arch/sparc/kernel/windows.c             |    6 +-
- 47 files changed, 1481 insertions(+), 2462 deletions(-)
- delete mode 100644 arch/sparc/include/asm/ipcbuf_32.h
- delete mode 100644 arch/sparc/include/asm/ipcbuf_64.h
- delete mode 100644 arch/sparc/include/asm/openprom_32.h
- delete mode 100644 arch/sparc/include/asm/openprom_64.h
- delete mode 100644 arch/sparc/include/asm/posix_types_32.h
- delete mode 100644 arch/sparc/include/asm/posix_types_64.h
- delete mode 100644 arch/sparc/include/asm/ptrace_32.h
- delete mode 100644 arch/sparc/include/asm/ptrace_64.h
- delete mode 100644 arch/sparc/include/asm/reg.h
- delete mode 100644 arch/sparc/include/asm/reg_32.h
- delete mode 100644 arch/sparc/include/asm/reg_64.h
- delete mode 100644 arch/sparc/include/asm/sigcontext_32.h
- delete mode 100644 arch/sparc/include/asm/sigcontext_64.h
- delete mode 100644 arch/sparc/include/asm/siginfo_32.h
- delete mode 100644 arch/sparc/include/asm/siginfo_64.h
- delete mode 100644 arch/sparc/include/asm/signal_32.h
- delete mode 100644 arch/sparc/include/asm/signal_64.h
- delete mode 100644 arch/sparc/include/asm/stat_32.h
- delete mode 100644 arch/sparc/include/asm/stat_64.h
+stack backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.28-mc #483
+Call Trace:
+ [<c0449246>] print_usage_bug+0x155/0x161
+ [<c0449e2e>] mark_lock+0x34b/0x905
+ [<c044bc5a>] __lock_acquire+0x4c1/0x700
+ [<c044bef6>] lock_acquire+0x5d/0x7a
+ [<c05127a6>] ? __percpu_counter_add+0x52/0x7a
+ [<c061ca68>] _spin_lock+0x20/0x2f
+ [<c05127a6>] ? __percpu_counter_add+0x52/0x7a
+ [<c05127a6>] __percpu_counter_add+0x52/0x7a
+ [<c05f1403>] tcp_v4_destroy_sock+0x15d/0x165
+ [<c05e184b>] inet_csk_destroy_sock+0x8c/0xbd
+ [<c05e2a5d>] tcp_done+0x5e/0x61
+ [<c05eba12>] tcp_rcv_state_process+0x7b9/0x8ad
+ [<c05f1eec>] ? tcp_v4_rcv+0x237/0x50f
+ [<c05f0901>] tcp_v4_do_rcv+0x138/0x17d
+ [<c05f217d>] tcp_v4_rcv+0x4c8/0x50f
+ [<c05daa2d>] ip_local_deliver+0x9c/0x119
+ [<c05daeb5>] ip_rcv+0x40b/0x452
+ [<c05c0bd5>] netif_receive_skb+0x27d/0x2c3
+ [<f83f06f0>] rtl8169_rx_interrupt+0x2de/0x39a [r8169]
+ [<f83f1963>] rtl8169_poll+0x34/0x155 [r8169]
+ [<c05c3291>] net_rx_action+0xc2/0x194
+ [<c0430a44>] __do_softirq+0x8a/0x13d
+ [<c04309ba>] ? __do_softirq+0x0/0x13d
+ <IRQ>  [<c046891f>] ? handle_fasteoi_irq+0x0/0xb5
+ [<c043098c>] ? irq_exit+0x49/0x77
+ [<c0404bbf>] ? do_IRQ+0xb3/0xcc
+ [<c04038ac>] ? common_interrupt+0x2c/0x34
+ [<c044007b>] ? hrtimer_get_next_event+0x55/0xc0
+ [<c0408541>] ? mwait_idle+0x41/0x4c
+ [<c0401dd0>] ? cpu_idle+0x78/0x91
+ [<c0617ad4>] ? start_secondary+0x193/0x198
