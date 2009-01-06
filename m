@@ -1,86 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbZAFSQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZAFSU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752089AbZAFSQX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 13:16:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbZAFSQJ
+	id S1752503AbZAFSU6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 13:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbZAFSUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 13:16:09 -0500
-Received: from 1wt.eu ([62.212.114.60]:1134 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbZAFSQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 13:16:07 -0500
-Date: Tue, 6 Jan 2009 19:15:59 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Ben Mansell <ben@zeus.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090106181559.GA29426@1wt.eu>
-References: <20081224152841.GB13113@1wt.eu> <49639807.1040803@zeus.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49639807.1040803@zeus.com>
-User-Agent: Mutt/1.5.11
+	Tue, 6 Jan 2009 13:20:47 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60520 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbZAFSUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 13:20:46 -0500
+Date: Tue, 6 Jan 2009 13:20:44 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Peter Zijlstra <peterz@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+In-Reply-To: <alpine.LFD.2.00.0901060948220.3057@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901061314310.10871@gandalf.stny.rr.com>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>  <20081231104533.abfb1cf9.akpm@linux-foundation.org>  <1230765549.7538.8.camel@think.oraclecorp.com>  <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>  <1231093310.27690.5.camel@twins>
+  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <alpine.LFD.2.00.0901060948220.3057@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
 
-On Tue, Jan 06, 2009 at 05:42:31PM +0000, Ben Mansell wrote:
-> Hi,
+On Tue, 6 Jan 2009, Linus Torvalds wrote:
+
 > 
-> >I'm facing a data corruption problem with splice() between two
-> >non-blocking TCP sockets on 2.6.27.10. I could finally write a
-> >simpler proof of concept, and capture a snapshot of the issue
-> >with the associated strace result.
-> >
-> >My program does the following :
-> >  - accept an incoming connection
-> >  - connect to a remote server
-> >  - forward all data from the server to the client using splice()
-> >
-> >The data count is always correct, but some parts are corrupted and
-> >contain data which seem to come from random memory locations (this
-> >raises a security concern BTW). It *sometimes* happens that a few
-> >megabytes can be transferred without any problem, but most of the
-> >time, corruption happens for a few hundreds of bytes every few
-> >hundreds of kilobytes.
+> Ok, last comment, I promise.
 > 
-> FWIW, I can easily reproduce this on a Linux 2.6.27-9 (Ubuntu kernel), 
-> using both forcedeth and tg3 network drivers. It's reassuring to hear of 
-> this network corruption as I have been puzzling over non-blocking 
-> splice() code recently!
+> On Tue, 6 Jan 2009, Peter Zijlstra wrote:
+> > @@ -175,11 +199,19 @@ __mutex_lock_common(struct mutex *lock, 
+> >  			debug_mutex_free_waiter(&waiter);
+> >  			return -EINTR;
+> >  		}
+> > -		__set_task_state(task, state);
+> >  
+> > -		/* didnt get the lock, go to sleep: */
+> > +		owner = lock->owner;
+> > +		get_task_struct(owner);
+> >  		spin_unlock_mutex(&lock->wait_lock, flags);
+> > -		schedule();
+> > +
+> > +		if (adaptive_wait(&waiter, owner, state)) {
+> > +			put_task_struct(owner);
+> > +			__set_task_state(task, state);
+> > +			/* didnt get the lock, go to sleep: */
+> > +			schedule();
+> > +		} else
+> > +			put_task_struct(owner);
+> > +
+> >  		spin_lock_mutex(&lock->wait_lock, flags);
+> 
+> So I really dislike the whole get_task_struct/put_task_struct thing. It 
+> seems very annoying. And as far as I can tell, it's there _only_ to 
+> protect "task->rq" and nothing else (ie to make sure that the task 
+> doesn't exit and get freed and the pointer now points to la-la-land).
 
-Ah, so you might also have discovered a few annoyances with the API, eg
-the fact that splice() returns after the first read in non-blocking mode,
-as well as the fact that it never returns zero on close, but -EAGAIN,
-which requires an additional recv(MSG_PEEK) to distinguish between a
-close and a lack of data. But I leave that for a later discussion, let's
-address the corruption issue first.
+Yeah, that was not one of the things that we liked either. We tried
+other ways to get around the get_task_struct but, ended up with
+the get_task_struct in the end anyway.
 
-> The corruption does seem to be confined to the user data on the 
-> connections, as I have been able to run some benchmarks using my own 
-> splice()-enabled HTTP proxy to transfer lots of data. All the TCP 
-> connections 'work' fine (as in no broken TCP), the initial HTTP request 
-> & response headers get through OK, but the body data of the responses 
-> sometimes gets corrupted. The benchmark seems to work flawlessly until 
-> you look at the web page data!
+> 
+> Wouldn't it be much nicer to just cache the rq pointer (take it while 
+> still holding the spinlock), and then pass it in to adaptive_wait()?
+> 
+> Then, adaptive_wait() can just do
+> 
+> 	if (lock->owner != owner)
+> 		return 0;
+> 
+> 	if (rq->task != owner)
+> 		return 1;
+> 
+> Sure - the owner may have rescheduled to another CPU, but if it did that, 
+> then we really might as well sleep. So we really don't need to dereference 
+> that (possibly stale) owner task_struct at all - because we don't care. 
+> All we care about is whether the owner is still busy on that other CPU 
+> that it was on. 
+> 
+> Hmm? So it looks to me that we don't really need that annoying "try to 
+> protect the task pointer" crud. We can do the sufficient (and limited) 
+> sanity checking without the task even existing, as long as we originally 
+> load the ->rq pointer at a point where it was stable (ie inside the 
+> spinlock, when we know that the task must be still alive since it owns the 
+> lock).
 
-I confirm your observations. Benchmarks were OK, it's the first user of
-my experimental code who reported wrong md5sums on their ISO images :-/
-For this reason, I think that it's completely related to the way pages
-are passed between sockets, but I'm too much a loser in this area. I
-understood tcp_splice_read(), but can't manage to find what is called
-on the other side nor what the data become :-(
+Caching the rq is an interesting idea. But since the rq struct is local to 
+sched.c, what would be a good API to do this?
 
-> I'm happy to run any test code on systems here or provide any debug 
-> information if it would help to track this down.
+in mutex.c:
 
-That's nice, because I'd like to ensure that whatever fix is proposed
-is properly validated, not only on my platforms!
+	void *rq;
 
-Regards,
-Willy
+	[...]
+
+	rq = get_task_rq(owner);
+	spin_unlock(&lock->wait_lock);
+
+	[...]
+
+	if (!task_running_on_rq(rq, owner))
+
+
+in sched.c:
+
+
+	void *get_task_rq(struct task_struct *p)
+	{
+		return task_rq(p);
+	}
+
+	int task_running_on_rq(void *r, struct task_sturct *p)
+	{
+		struct rq *rq = r;
+
+		return rq->curr == p;
+	}
+
+??
+
+-- Steve
+
 
