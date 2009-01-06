@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZAFTVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbZAFTcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbZAFTVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 14:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZAFTVB
+	id S1752578AbZAFTcN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 14:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZAFTb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 14:21:01 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41094
+	Tue, 6 Jan 2009 14:31:56 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41278
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbZAFTVA (ORCPT
+	with ESMTP id S1751017AbZAFTb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 14:21:00 -0500
+	Tue, 6 Jan 2009 14:31:56 -0500
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
 To: Theodore Tso <tytso@mit.edu>
 Subject: Re: document ext3 requirements
-Date: Tue, 6 Jan 2009 13:20:27 -0600
+Date: Tue, 6 Jan 2009 13:31:16 -0600
 User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: Martin =?utf-8?q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
-       Pavel Machek <pavel@suse.cz>, Duane Griffin <duaneg@dghda.com>,
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       Sitsofe Wheeler <sitsofe@yahoo.com>, Duane Griffin <duaneg@dghda.com>,
+       Valdis.Kletnieks@vt.edu,
+       Martin =?utf-8?q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
        kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
        rdunlap@xenotime.net, linux-doc@vger.kernel.org
-References: <20090103123813.GA1512@ucw.cz> <200901041356.32701.rob@landley.net> <20090105191658.GA11632@mit.edu>
-In-Reply-To: <20090105191658.GA11632@mit.edu>
+References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no> <87k5984f4e.fsf@basil.nowhere.org> <20090106155729.GA10034@mit.edu>
+In-Reply-To: <20090106155729.GA10034@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901061320.29732.rob@landley.net>
+Message-Id: <200901061331.18690.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009 13:16:58 Theodore Tso wrote:
-> On Sun, Jan 04, 2009 at 01:56:32PM -0600, Rob Landley wrote:
-> > On Saturday 03 January 2009 17:01:58 Martin MOKREJŠ wrote:
-> > > > Still handy for recovering badly broken filesystems, I'd say.
-> > >
-> > > Me as well. How about improving you doc patch with some summary of
-> > > this thread (although it is probably not over yet)? ;-) Definitely,
-> > > a note that one can mount it as ext2 while read-only would be helpful
-> > > when doing some forensics on the disk.
+On Tuesday 06 January 2009 09:57:29 Theodore Tso wrote:
+> On Tue, Jan 06, 2009 at 04:40:33PM +0100, Andi Kleen wrote:
+> > > Well, Kurt Garloff wrote that program years and years ago.  I'm sure
+> > > if someone created patches he'd probably accept them, though.  It's
+> > > still the best program I've found for doing image backups in
+> > > catastrophic situations.
 > >
-> > Although make sure you _do_ mount it as read only because if you mount an
-> > ext3 filesystem read/write as ext2 I've had it zap the journal entirely
-> > and then you have to tune2fs -j the sucker to turn it back into ext3.
-> >
-> > Ext3 is... touchy.
+> > Better would be just to incorporate the functionality as an option
+> > into standard GNU dd. Then everyone would easily have access to it.
 >
-> Um.... horse pucky:
+> I'm not sure whether the GNU coreutils maintainer would be willing to
+> accept a series of Linux-specific interfaces, but dd_rescue also has
+> the advantage that it uses a large blocksize for speed, but when an
+> error is returned, it backs off to a small block size to recovery the
+> maximum amount of data, and then later returns to the large block
+> size.  (Ideally, it should be able to query the disk drive to
+> determine its internal block size, and use that for the smaller block
+> size, but I'm not sure if there's a standardized way that value is
+> exposed by HDD's or SDD's.)
 
-Well I managed to kill it more than once, but I could easily have the 
-reproduction sequence wrong.  (I wasn't _trying_ to do it again...)
+I don't suppose there a Documentation file to put data recovery information 
+in?
 
-> # mke2fs -q -t ext3 /dev/thunk/footest
-> # debugfs -R features /dev/thunk/footest
-> debugfs 1.41.3 (12-Oct-2008)
-> Filesystem features: has_journal ext_attr resize_inode dir_index filetype
-> sparse_super large_file # mount -t ext2 /dev/thunk/footest /mnt
-> # touch /mnt/foo
-> # umount /mnt
-> # debugfs -R features /dev/thunk/footest
-> debugfs 1.41.3 (12-Oct-2008)
-> Filesystem features: has_journal ext_attr resize_inode dir_index filetype
-> sparse_super large_file
-
-If I can figure out what I did, I'll get back to you.
-
->    	     		 	  	       		 - Ted
+(Maybe the new filesystems expectations file, which doesn't seem the best name 
+for it...?)
 
 Rob
