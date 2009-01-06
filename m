@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbZAFWWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZAFWWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbZAFWWg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbZAFWNq
+	id S1755963AbZAFWWw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZAFWNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:13:46 -0500
-Received: from kroah.org ([198.145.64.141]:51247 "EHLO coco.kroah.org"
+	Tue, 6 Jan 2009 17:13:47 -0500
+Received: from kroah.org ([198.145.64.141]:51250 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755548AbZAFWNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:13:44 -0500
+	id S1752143AbZAFWNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:13:45 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 26/60] video: struct device - replace bus_id with dev_name(), dev_set_name()
-Date: Tue,  6 Jan 2009 14:11:45 -0800
-Message-Id: <1231279939-32728-26-git-send-email-gregkh@suse.de>
+Subject: [PATCH 27/60] tifm: struct device - replace bus_id with dev_name(), dev_set_name()
+Date: Tue,  6 Jan 2009 14:11:46 -0800
+Message-Id: <1231279939-32728-27-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <20090106221123.GA32689@kroah.com>
 References: <20090106221123.GA32689@kroah.com>
@@ -27,50 +27,48 @@ From: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/video/backlight/backlight.c |    2 +-
- drivers/video/backlight/lcd.c       |    2 +-
- drivers/video/output.c              |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/misc/tifm_7xx1.c |    2 +-
+ drivers/misc/tifm_core.c |    7 +++----
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index fab0bc8..0664fc0 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -217,7 +217,7 @@ struct backlight_device *backlight_device_register(const char *name,
- 	new_bd->dev.class = backlight_class;
- 	new_bd->dev.parent = parent;
- 	new_bd->dev.release = bl_device_release;
--	strlcpy(new_bd->dev.bus_id, name, BUS_ID_SIZE);
-+	dev_set_name(&new_bd->dev, name);
- 	dev_set_drvdata(&new_bd->dev, devdata);
+diff --git a/drivers/misc/tifm_7xx1.c b/drivers/misc/tifm_7xx1.c
+index 67503ea..e71eba3 100644
+--- a/drivers/misc/tifm_7xx1.c
++++ b/drivers/misc/tifm_7xx1.c
+@@ -164,7 +164,7 @@ static void tifm_7xx1_switch_media(struct work_struct *work)
+ 		if (sock) {
+ 			printk(KERN_INFO
+ 			       "%s : demand removing card from socket %u:%u\n",
+-			       fm->dev.bus_id, fm->id, cnt);
++			       dev_name(&fm->dev), fm->id, cnt);
+ 			fm->sockets[cnt] = NULL;
+ 			sock_addr = sock->addr;
+ 			spin_unlock_irqrestore(&fm->lock, flags);
+diff --git a/drivers/misc/tifm_core.c b/drivers/misc/tifm_core.c
+index 82dc72a..98bcba5 100644
+--- a/drivers/misc/tifm_core.c
++++ b/drivers/misc/tifm_core.c
+@@ -203,7 +203,7 @@ int tifm_add_adapter(struct tifm_adapter *fm)
+ 	if (rc)
+ 		return rc;
  
- 	rc = device_register(&new_bd->dev);
-diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-index 680e57b..b644947 100644
---- a/drivers/video/backlight/lcd.c
-+++ b/drivers/video/backlight/lcd.c
-@@ -208,7 +208,7 @@ struct lcd_device *lcd_device_register(const char *name, struct device *parent,
- 	new_ld->dev.class = lcd_class;
- 	new_ld->dev.parent = parent;
- 	new_ld->dev.release = lcd_device_release;
--	strlcpy(new_ld->dev.bus_id, name, BUS_ID_SIZE);
-+	dev_set_name(&new_ld->dev, name);
- 	dev_set_drvdata(&new_ld->dev, devdata);
+-	snprintf(fm->dev.bus_id, BUS_ID_SIZE, "tifm%u", fm->id);
++	dev_set_name(&fm->dev, "tifm%u", fm->id);
+ 	rc = device_add(&fm->dev);
+ 	if (rc) {
+ 		spin_lock(&tifm_adapter_lock);
+@@ -266,9 +266,8 @@ struct tifm_dev *tifm_alloc_device(struct tifm_adapter *fm, unsigned int id,
+ 		sock->dev.dma_mask = fm->dev.parent->dma_mask;
+ 		sock->dev.release = tifm_free_device;
  
- 	rc = device_register(&new_ld->dev);
-diff --git a/drivers/video/output.c b/drivers/video/output.c
-index f2df551..5e6439a 100644
---- a/drivers/video/output.c
-+++ b/drivers/video/output.c
-@@ -96,7 +96,7 @@ struct output_device *video_output_register(const char *name,
- 	new_dev->props = op;
- 	new_dev->dev.class = &video_output_class;
- 	new_dev->dev.parent = dev;
--	strlcpy(new_dev->dev.bus_id,name, BUS_ID_SIZE);
-+	dev_set_name(&new_dev->dev, name);
- 	dev_set_drvdata(&new_dev->dev, devdata);
- 	ret_code = device_register(&new_dev->dev);
- 	if (ret_code) {
+-		snprintf(sock->dev.bus_id, BUS_ID_SIZE,
+-			 "tifm_%s%u:%u", tifm_media_type_name(type, 2),
+-			 fm->id, id);
++		dev_set_name(&sock->dev, "tifm_%s%u:%u",
++			     tifm_media_type_name(type, 2), fm->id, id);
+ 		printk(KERN_INFO DRIVER_NAME
+ 		       ": %s card detected in socket %u:%u\n",
+ 		       tifm_media_type_name(type, 0), fm->id, id);
 -- 
 1.6.0.4
 
