@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZAFWtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZAFWub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbZAFWtY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZAFWtC
+	id S1757202AbZAFWub (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbZAFWuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:49:02 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:28497 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753839AbZAFWs7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:48:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fhlwBihGxEQSFOSHdfqyNEND6wCR9fMY36K1YVKOg1nqUrRagSNY7ExuN7ypQh2R66tQThp5BNU6FgdE4hF/nsG4gsxnKuJm9E+bYuC0mGfl+rnhLuAZ+FY5+RTEakWCvnmf38pUjWey8kH7GsTvYu3ZyQzOk9Ih8mCYFLnErZs=  ;
-X-YMail-OSG: uDevnLUVM1nXJ6eeMjttfBnS8uio0sqx21skCcw606rWQSPdyBMCTlsLt7Kh8H7qE4Ccb_.NhatwGU45J7ClncFjF.3BHGcoqesDyevbHhZo2BsLcuhx.zjIH0EhBtvPzAr60mmKHKEzuH7pZnjCWqhe
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ed Swierk <eswierk@aristanetworks.com>
-Subject: Re: [PATCH] rtc-ds1307: True SMBus compatibility
-Date: Tue, 6 Jan 2009 14:48:55 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-i2c@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       BARRE Sebastien <sbarre@sdelcc.com>
-References: <1231177261.13443.20.camel@localhost.localdomain>
-In-Reply-To: <1231177261.13443.20.camel@localhost.localdomain>
+	Tue, 6 Jan 2009 17:50:22 -0500
+Received: from crmm.lgl.lu ([158.64.72.228]:34042 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbZAFWuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:50:21 -0500
+Message-ID: <4963E020.7000304@knaff.lu>
+Date: Tue, 06 Jan 2009 23:50:08 +0100
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [bzip2/lzma] fix for built-in initramfs issue
+References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <49615136.9080900@knaff.lu> <4961580A.1020301@zytor.com> <4961A816.40302@knaff.lu> <4961A997.10108@zytor.com> <4961ADC5.6030108@knaff.lu> <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu> <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu> <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu> <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu> <4962858F.20207@zytor.com> <496285C8.7050503@knaff.lu> <496290E0.3020603@zytor.com> <4963D3C3.9090503@knaff.lu> <4963DFD5.9070204@zytor.com>
+In-Reply-To: <4963DFD5.9070204@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901061448.56500.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009, Ed Swierk wrote:
-> Reading or writing registers repeatedly until they stick is rather
-> nauseating but I'm aiming for correctness if not elegance.  I would
-> appreciate any suggestions for improvement.
+H. Peter Anvin wrote:
+> Alain Knaff wrote:
+>> It also restores the select ZLIB_INFLATE in drivers/block/Kconfig
+>> which somehow came missing. This is needed to activate compilation of
+>> the stuff in zlib_deflate.
+> 
+> It's not missing.  It is (or at least should be) included via the
+> dependency chain DECOMPRESS_GZIP -> ZLIB_INFLATE.
+> 
+>     -hpa
 
-Can i2c_smbus_read_i2c_block_data()/i2c_ smbus_write_i2c_block_data()
-work better -- without nauseating anyone?
+Well, that didn't work when I tried it here...
 
-Faking atomic writes doesn't seem "correct" to me.  Minimally there
-is the case of an alarm misfiring.
-
-- Dave
+Alain
