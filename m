@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbZAFQ1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZAFQ2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbZAFQ1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 11:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZAFQ1o
+	id S1752075AbZAFQ2X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 11:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZAFQ2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 11:27:44 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:48082 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750846AbZAFQ1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 11:27:43 -0500
-Date: Tue, 6 Jan 2009 10:27:41 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-ia64@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
-       Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
-       Tony Luck <tony.luck@gmail.com>, Robin Holt <holt@sgi.com>
-Subject: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
-Message-ID: <20090106162741.GA7991@sgi.com>
+	Tue, 6 Jan 2009 11:28:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45996 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbZAFQ2M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 11:28:12 -0500
+Date: Tue, 6 Jan 2009 11:28:10 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+In-Reply-To: <alpine.LFD.2.00.0901060808260.3057@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901061125340.10871@gandalf.stny.rr.com>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
+ <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu> <alpine.LFD.2.00.0901060750410.3057@localhost.localdomain> <alpine.LFD.2.00.0901060808260.3057@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turn on CONFIG_HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN.
 
-SGI Altix has unsynchronized itc clocks.  This results in rq->clock
-occasionally being set to a time in the past by a remote cpu.
+On Tue, 6 Jan 2009, Linus Torvalds wrote:
+> Btw, I hate the name of the helper function for that. "task_is_current()"? 
+> "current" means something totally different in the linux kernel: it means 
+> that the task is _this_ task.
+> 
+> So the only sensible implementation of "task_is_current(task)" is to just 
+> make it return "task == current", but that's obviously not what the 
+> function wants to do.
+> 
+> So it should be renamed. Something like "task_is_oncpu()" or whatever.
+> 
+> I realize that the scheduler internally has that whole "rq->curr" thing, 
+> but that's an internal scheduler thing, and should not be confused with 
+> the overall kernel model of "current".
 
-Note that it is possible that this problem may exist for other ia64
-machines as well, based on the following comment for sched_clock() in
-arch/ia64/kernel/head.S:
+I totally agree that we should change the name of that. I never thought 
+about the confusion that it would cause to someone that is not working so 
+heavy on the scheduler. Thanks for the perspective.
 
- * Return a CPU-local timestamp in nano-seconds.  This timestamp is
- * NOT synchronized across CPUs its return value must never be
- * compared against the values returned on another CPU.  The usage in
- * kernel/sched.c ensures that.
+Sometimes us scheduler guys have our heads too much up the scheduler ass 
+that all we see is scheduler crap ;-)
 
+-- Steve
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-
----
-
-Greg, if everyone is OK with this patch, this should also be applied
-to all stable trees starting with 2.6.26.
-
- arch/ia64/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6/arch/ia64/Kconfig
-===================================================================
---- linux-2.6.orig/arch/ia64/Kconfig	2009-01-06 10:13:13.051918923 -0600
-+++ linux-2.6/arch/ia64/Kconfig	2009-01-06 10:13:44.547856328 -0600
-@@ -536,6 +536,7 @@ config IA64_MC_ERR_INJECT
- 
- config SGI_SN
- 	def_bool y if (IA64_SGI_SN2 || IA64_GENERIC)
-+	select HAVE_UNSTABLE_SCHED_CLOCK
- 
- config IA64_ESI
- 	bool "ESI (Extensible SAL Interface) support"
