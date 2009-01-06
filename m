@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZAFKVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752935AbZAFKWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752780AbZAFKVj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZAFKVa
+	id S1752935AbZAFKWe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 05:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZAFKWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:21:30 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:40159 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750899AbZAFKV3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:21:29 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6p43HlRCboBc4Jb9Tksr3oGOLdnLDIKJ/R+aWZhajr3cvPBs70Wg2OB8B4KRM+O7S/Oe2B80NGDVH9kfap2/FV3GTnakmBEKPJdtApV7ybuj8ZPnHs3UMpeJGnTWaUycidVQc5e7Owfz4WIkpy6znqFh5mVKEG2Cih4JuWBXVxY=  ;
-X-YMail-OSG: hoGKXFUVM1kmXCFVoYFlrYfHO7H_lJ3o4jjaOyD38v84WJfJQoZp_HoXYGaOLPW7Ug05Ej0lXZ25f3cWcayveP2zkQSciQYtSI2Uy.KtrBmU_7fmVEs7c6iwLp9STzGbSh8RdyA1EkmQzvhmuhAc2vWa
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-Reply-To: dbrownell@users.sourceforge.net
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.28-rc7] regulator: catch some registration errors
-Date: Tue, 6 Jan 2009 02:21:26 -0800
-User-Agent: KMail/1.9.10
-Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
-References: <200812011335.43551.david-b@pacbell.net> <200901051545.04912.david-b@pacbell.net> <20090106101050.GB6783@sirena.org.uk>
-In-Reply-To: <20090106101050.GB6783@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 6 Jan 2009 05:22:25 -0500
+Received: from sh.osrg.net ([192.16.179.4]:47891 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751092AbZAFKWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 05:22:24 -0500
+Date: Tue, 6 Jan 2009 19:22:08 +0900
+To: joro@8bytes.org
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/8] remove map_single and unmap_single in struct
+ dma_mapping_ops
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090105180038.GD14298@8bytes.org>
+References: <1231166848-20149-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1231166848-20149-9-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20090105180038.GD14298@8bytes.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901060221.26614.david-b@pacbell.net>
+Message-Id: <20090106192022D.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 January 2009, Mark Brown wrote:
-> On Mon, Jan 05, 2009 at 03:45:04PM -0800, David Brownell wrote:
-> 
-> > When someone writes a cpufreq driver that uses the
-> > regulator framework, they can arrange to provide the
-> > relevant "struct device *" to make that work neatly.
-> 
-> I'm fairly sure it's been mentioned before but there's some already, for
-> example:
-> 
->	[ Long URL for your i.MX3 cpufreq driver elided ] 
+On Mon, 5 Jan 2009 19:00:38 +0100
+Joerg Roedel <joro@8bytes.org> wrote:
 
-Right, and what's keeping you from providing a "struct device *"
-for that to use?
+> Is it the right way to implement map_single in terms of map_page? Doing
+> this you optimize for the map_page case. But a grep in drivers/ shows:
+> 
+> linux/drivers $ grep -r _map_page *|wc -l
+> 126
+> linux/drivers $ grep -r _map_single *|wc -l
+> 613
 
+The comparison is irrelevant since dma_map_page and dma_map_single
+have different purposes.
+
+If passing virtual memory address to an IOMMU is enough (and
+convenient), then drivers use dma_map_single.
+
+For some purposes, drivers need to pass a page frame and use
+dma_map_page (or dma_map_sg).
+
+We could have two hooks in dma_map_ops struct for dma_map_single and
+dma_map_page. Say, we have map_single and map_page hooks. But the
+map_page hook can be used to support both dma_map_single and
+dma_map_page. Note that the map_single hook can't do that since it use
+a virtual address as an argument. That's why I have only the map_page
+hook in dma_map_ops struct.
+
+As X86 does now, we could have map_single hook that use a physical
+address to handle both dma_map_single and dma_map_page. However, it's
+confusing since it means that the arguments of dma_map_single and its
+hook (map_single) is inconsistent.
+
+
+> There are a lot more users of map_single than of map_page. I think its
+> better to optimize for the map_single case and implement map_page in
+> terms of map_single.
+
+As I wrote above, it doesn't make sense.
