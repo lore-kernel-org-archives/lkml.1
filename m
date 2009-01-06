@@ -1,61 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbZAFKeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbZAFKgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752210AbZAFKeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 05:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZAFKeH
+	id S1752801AbZAFKgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 05:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbZAFKg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 05:34:07 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2942 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbZAFKeF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 05:34:05 -0500
-Date: Tue, 6 Jan 2009 10:33:57 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       davej@redhat.com
-Message-ID: <20090106103357.GC6783@sirena.org.uk>
-References: <200812011335.43551.david-b@pacbell.net> <1228340921.6529.80.camel@vega.slimlogic.co.uk> <20081204111206.GA8019@sirena.org.uk> <200901051545.24605.david-b@pacbell.net>
+	Tue, 6 Jan 2009 05:36:27 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54265 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751339AbZAFKg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 05:36:26 -0500
+X-Authenticated: #428038
+X-Provags-ID: V01U2FsdGVkX19/Z7Zkcqt/W7rko70v4+EpwQ9gRAaHF2RbDx5hKT
+	vNU+xRfDY1/5D+
+Date: Tue, 6 Jan 2009 11:36:20 +0100
+From: Matthias Andree <matthias.andree@gmx.de>
+To: Rob Landley <rob@landley.net>
+Cc: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@suse.cz>,
+       Sitsofe Wheeler <sitsofe@yahoo.com>, Duane Griffin <duaneg@dghda.com>,
+       Valdis.Kletnieks@vt.edu,
+       Martin =?iso-8859-15?Q?MOKREJ=A6?= 
+	<mmokrejs@ribosome.natur.cuni.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+Message-ID: <20090106103620.GC6700@merlin.emma.line.org>
+Mail-Followup-To: Rob Landley <rob@landley.net>,
+	Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@suse.cz>,
+	Sitsofe Wheeler <sitsofe@yahoo.com>,
+	Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
+	Martin =?iso-8859-15?Q?MOKREJ=A6?= <mmokrejs@ribosome.natur.cuni.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org
+References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no> <20090104224052.GE1913@elf.ucw.cz> <20090104233052.GG22958@mit.edu> <200901042149.27655.rob@landley.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901051545.24605.david-b@pacbell.net>
-X-Cookie: The Ranger isn't gonna like it, Yogi.
+In-Reply-To: <200901042149.27655.rob@landley.net>
+X-PGP-Key: http://home.pages.de/~mandree/keys/GPGKEY.asc
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [patch 2.6.28-rc7] regulator: catch some registration errors
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 03:45:24PM -0800, David Brownell wrote:
+On Sun, 04 Jan 2009, Rob Landley wrote:
 
-> Last time I looked, no cpufreq driver tried to use <linux/clk.h>
+> On Sunday 04 January 2009 17:30:52 Theodore Tso wrote:
+> > On Sun, Jan 04, 2009 at 11:40:52PM +0100, Pavel Machek wrote:
+> > > Not neccessarily.
+> > >
+> > > If I have a bit of precious data and lot of junk on the card, I want
+> > > to copy out the precious data before the card dies. Reading the whole
+> > > media may just take too long.
+> > >
+> > > That's probably very true for rotating harddrives after headcrash...
+> >
+> > For a small amount data, maybe; but the number of seeks is often far
+> > more destructive than the amount of time the disk is spinning.  And in
+> > practice, what generally happens is the user starts looking around to
+> > make sure there wasn't anything else on the disk worth saving, and now
+> > data is getting copied off based on human reaction time.  So that's
+> > why I normally advise users that doing a full image copy of the disk
+> > is much better than, say, "cp -r /home/luser /backup", or cd'ing
+> > around a filesystem hierarchy and trying to save files one by one.
+> 
+> That would be true if the disk hardware wasn't doing a gazillion retries to 
+> read a bad sector internally (taking 5 seconds to come back and report 
+> failure), and then the darn scsi layer added another gazillion retries on top 
+> of that, and the two multiply together to make it so slow that that when you 
+> leave the thing copying the disk overnight it's STILL not done 24 hours later.  
+> Going in and cherry picking individual files looks kind of appealing in that 
+> situation.
 
-There's at least these ones kicking about at the minute:
+Well, I recently (Dec 1st or so) had a venerable HDD fail with a couple
+of bad sectors; with oldish backups (couple of days) (Samsung SP2004C
+plugged to a VIA VT6420 in the south bridge, VT8237).
 
-	arch/arm/mach-imx/cpufreq.c
-	arch/avr32/mach-at32ap/cpufreq.c
-	arch/sh/kernel/cpufreq.c
+I couldn't use dd_rescue since the disk drive was detached by the OS
+upon the disk's hitting the first error.
 
-as well as several out of tree ones I'm aware of (the i.MX31 example I
-posted, some other i.MX BSPs and one for the s3c24xx).  There's an
-opportunity for generalisation here since they're pretty much all very
-similar adaption layers with the actual work in the clock framework.
+If it's a software or hardware fault I cannot say, FreeBSD
+7.1-PRERELEASE showed the same behaviour as did the openSUSE 11.0 i686
+kernels, but then again it might be either OS losing patience with the
+drive doing excessive reads, or the drive actually violating the bus
+protocols or hanging. It didn't need power cycling though, detaching and
+reattaching the ATA bus was sufficient.
 
-> calls.  The reason was simple:  the clock framework code sits in
-> DRAM, so it can't be executed while changing DRAM clocks.
+For me, recovery was possible with rsync (or cp -Rp): run rsync -avH
+until the drive froze, figure which file was affected, note the name,
+remount the drive, rm the affected file, and continue.
 
-> Those bits of cpufreq had to live in on-chip SRAM (there's usually
-> a few pages of it) and directly update PLL and other clock config
-> registers ... then wait for things to stabilize before they returned
-> and the CPU executed from DRAM again.
+Is there a "don't retry reads" setting in the kernel that I miss?
 
-That's a fairly system-specific concern, though, and there's no reason
-why the code that does that dance has to live in the cpufreq driver
-rather than the clock framework.  On some systems the clock framework
-will need to know about what the CPU clock is doing anyway.
+(I still have the drive, so I can try some error handling patches if
+desired.)
+
+-- 
+Matthias Andree
