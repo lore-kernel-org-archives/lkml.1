@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZAFEOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZAFEOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbZAFEOj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 23:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZAFENd
+	id S1754822AbZAFEOy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 23:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbZAFENp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 23:13:33 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58340 "EHLO
+	Mon, 5 Jan 2009 23:13:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58348 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbZAFEN2 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1754148AbZAFENg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 23:13:28 -0500
-Date: Mon, 5 Jan 2009 20:12:04 -0800
+	Mon, 5 Jan 2009 23:13:36 -0500
+Date: Mon, 5 Jan 2009 20:13:17 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
        akpm@linux-foundation.org, linux-ide@vger.kernel.org,
        linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [PATCH 3/6] fastboot: make the libata port scan asynchronous
-Message-ID: <20090105201204.2c0bf9af@infradead.org>
+Subject: [PATCH 5/6] bootchart: improve output
+Message-ID: <20090105201317.249aeae3@infradead.org>
 In-Reply-To: <20090105200959.04a626ac@infradead.org>
 References: <20090105200959.04a626ac@infradead.org>
 Organization: Intel
@@ -32,140 +32,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->From 3637ab5b7e9fa4dd3e831f76979fb67314d058e2 Mon Sep 17 00:00:00 2001
+>From ec57f2c6755c5439dcb273f9529f0575b6084d02 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 4 Jan 2009 05:32:28 -0800
-Subject: [PATCH] fastboot: make the libata port scan asynchronous
+Date: Sun, 4 Jan 2009 10:59:18 -0800
+Subject: [PATCH] bootchart: improve output based on Dave Jones' feedback
 
-This patch makes the libata port scanning asynchronous (per device).
-There is a synchronization point before doing the actual disk scan
-so that device ordering is not affected.
+Dave Jones, in his blog, had some feedback about the bootchart script:
+Primarily his complaint was that shorter delays weren't visualized.
+
+The reason for that was that too small delays will have their labels
+mixed up in the graph in an unreadable mess.
+
+This patch has a fix for this; for one, it makes the output wider,
+so more will fit.
+The second part is that smaller delays are now shown with a
+much smaller font for the label; while this isn't per se
+readable at a 1:1 zoom, at least you can zoom in with most SVG
+viewing applications and see what it is you are looking at.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- drivers/ata/libata-core.c |   84 ++++++++++++++++++++++++--------------------
- 1 files changed, 46 insertions(+), 38 deletions(-)
+ scripts/bootgraph.pl |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index fecca42..fe2c208 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -56,6 +56,7 @@
- #include <linux/workqueue.h>
- #include <linux/scatterlist.h>
- #include <linux/io.h>
-+#include <linux/async.h>
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_host.h>
-@@ -5909,6 +5910,48 @@ void ata_host_init(struct ata_host *host, struct device *dev,
- 	host->ops = ops;
+diff --git a/scripts/bootgraph.pl b/scripts/bootgraph.pl
+index f0af9aa..0a498e3 100644
+--- a/scripts/bootgraph.pl
++++ b/scripts/bootgraph.pl
+@@ -88,7 +88,7 @@ END
  }
  
-+
-+void async_port_probe(void *data, async_cookie_t cookie)
-+{
-+	int rc;
-+	struct ata_port *ap = data;
-+	/* probe */
-+	if (ap->ops->error_handler) {
-+		struct ata_eh_info *ehi = &ap->link.eh_info;
-+		unsigned long flags;
-+
-+		ata_port_probe(ap);
-+
-+		/* kick EH for boot probing */
-+		spin_lock_irqsave(ap->lock, flags);
-+
-+		ehi->probe_mask |= ATA_ALL_DEVICES;
-+		ehi->action |= ATA_EH_RESET | ATA_EH_LPM;
-+		ehi->flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET;
-+
-+		ap->pflags &= ~ATA_PFLAG_INITIALIZING;
-+		ap->pflags |= ATA_PFLAG_LOADING;
-+		ata_port_schedule_eh(ap);
-+
-+		spin_unlock_irqrestore(ap->lock, flags);
-+
-+		/* wait for EH to finish */
-+		ata_port_wait_eh(ap);
-+	} else {
-+		DPRINTK("ata%u: bus probe begin\n", ap->print_id);
-+		rc = ata_bus_probe(ap);
-+		DPRINTK("ata%u: bus probe end\n", ap->print_id);
-+
-+		if (rc) {
-+			/* FIXME: do something useful here?
-+			 * Current libata behavior will
-+			 * tear down everything when
-+			 * the module is removed
-+			 * or the h/w is unplugged.
-+			 */
+ print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
+-print "<svg width=\"1000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
++print "<svg width=\"2000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
+ 
+ my @styles;
+ 
+@@ -105,8 +105,9 @@ $styles[9] = "fill:rgb(255,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0
+ $styles[10] = "fill:rgb(255,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+ $styles[11] = "fill:rgb(128,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+ 
+-my $mult = 950.0 / ($maxtime - $firsttime);
+-my $threshold = ($maxtime - $firsttime) / 60.0;
++my $mult = 1950.0 / ($maxtime - $firsttime);
++my $threshold2 = ($maxtime - $firsttime) / 120.0;
++my $threshold = $threshold2/10;
+ my $stylecounter = 0;
+ my %rows;
+ my $rowscount = 1;
+@@ -116,7 +117,7 @@ foreach my $key (@initcalls) {
+ 	my $duration = $end{$key} - $start{$key};
+ 
+ 	if ($duration >= $threshold) {
+-		my ($s, $s2, $e, $w, $y, $y2, $style);
++		my ($s, $s2, $s3, $e, $w, $y, $y2, $style);
+ 		my $pid = $pids{$key};
+ 
+ 		if (!defined($rows{$pid})) {
+@@ -125,6 +126,7 @@ foreach my $key (@initcalls) {
+ 		}
+ 		$s = ($start{$key} - $firsttime) * $mult;
+ 		$s2 = $s + 6;
++		$s3 = $s + 1;
+ 		$e = ($end{$key} - $firsttime) * $mult;
+ 		$w = $e - $s;
+ 
+@@ -138,7 +140,11 @@ foreach my $key (@initcalls) {
+ 		};
+ 
+ 		print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"145\" style=\"$style\"/>\n";
+-		print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
++		if ($duration >= $threshold2) {
++			print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
++		} else {
++			print "<text transform=\"translate($s3,$y2) rotate(90)\" font-size=\"3pt\">$key</text>\n";
 +		}
-+	}
-+}
- /**
-  *	ata_host_register - register initialized ATA host
-  *	@host: ATA host to register
-@@ -5988,45 +6031,9 @@ int ata_host_register(struct ata_host *host, struct scsi_host_template *sht)
- 	DPRINTK("probe begin\n");
- 	for (i = 0; i < host->n_ports; i++) {
- 		struct ata_port *ap = host->ports[i];
--
--		/* probe */
--		if (ap->ops->error_handler) {
--			struct ata_eh_info *ehi = &ap->link.eh_info;
--			unsigned long flags;
--
--			ata_port_probe(ap);
--
--			/* kick EH for boot probing */
--			spin_lock_irqsave(ap->lock, flags);
--
--			ehi->probe_mask |= ATA_ALL_DEVICES;
--			ehi->action |= ATA_EH_RESET | ATA_EH_LPM;
--			ehi->flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET;
--
--			ap->pflags &= ~ATA_PFLAG_INITIALIZING;
--			ap->pflags |= ATA_PFLAG_LOADING;
--			ata_port_schedule_eh(ap);
--
--			spin_unlock_irqrestore(ap->lock, flags);
--
--			/* wait for EH to finish */
--			ata_port_wait_eh(ap);
--		} else {
--			DPRINTK("ata%u: bus probe begin\n", ap->print_id);
--			rc = ata_bus_probe(ap);
--			DPRINTK("ata%u: bus probe end\n", ap->print_id);
--
--			if (rc) {
--				/* FIXME: do something useful here?
--				 * Current libata behavior will
--				 * tear down everything when
--				 * the module is removed
--				 * or the h/w is unplugged.
--				 */
--			}
--		}
-+		async_schedule(async_port_probe, ap);
  	}
--
-+	async_synchronize_full();
- 	/* probes are done, now scan each port's disk(s) */
- 	DPRINTK("host probe begin\n");
- 	for (i = 0; i < host->n_ports; i++) {
-@@ -6034,6 +6041,7 @@ int ata_host_register(struct ata_host *host, struct scsi_host_template *sht)
- 
- 		ata_scsi_scan_host(ap, 1);
- 	}
-+	DPRINTK("host probe end\n");
- 
- 	return 0;
  }
+ 
 -- 
 1.6.0.6
+
+
 
 
 -- 
