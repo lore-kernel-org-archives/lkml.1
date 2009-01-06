@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZAFWub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZAFWvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbZAFWub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 17:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbZAFWuW
+	id S1757446AbZAFWvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 17:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZAFWu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 17:50:22 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:34042 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbZAFWuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 17:50:21 -0500
-Message-ID: <4963E020.7000304@knaff.lu>
-Date: Tue, 06 Jan 2009 23:50:08 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Tue, 6 Jan 2009 17:50:59 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:52891 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750924AbZAFWu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 17:50:58 -0500
+Date: Tue, 6 Jan 2009 16:50:54 -0600
+From: Robin Holt <holt@sgi.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Robin Holt <holt@sgi.com>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
+       Tony Luck <tony.luck@gmail.com>
+Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+Message-ID: <20090106225054.GB3850@sgi.com>
+References: <20090106162741.GA7991@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com> <20090106201950.GA3850@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB955B4@orsmsx505.amr.corp.intel.com> <1231275441.11687.110.camel@twins>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [bzip2/lzma] fix for built-in initramfs issue
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <49615136.9080900@knaff.lu> <4961580A.1020301@zytor.com> <4961A816.40302@knaff.lu> <4961A997.10108@zytor.com> <4961ADC5.6030108@knaff.lu> <49622DE9.2010200@zytor.com> <496240DF.2010102@knaff.lu> <49624F6C.8010103@zytor.com> <4962522F.20804@knaff.lu> <496255B0.1050208@zytor.com> <4962580B.2080806@knaff.lu> <4962612C.8090405@zytor.com> <496284A2.9070003@knaff.lu> <4962858F.20207@zytor.com> <496285C8.7050503@knaff.lu> <496290E0.3020603@zytor.com> <4963D3C3.9090503@knaff.lu> <4963DFD5.9070204@zytor.com>
-In-Reply-To: <4963DFD5.9070204@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231275441.11687.110.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Alain Knaff wrote:
->> It also restores the select ZLIB_INFLATE in drivers/block/Kconfig
->> which somehow came missing. This is needed to activate compilation of
->> the stuff in zlib_deflate.
+On Tue, Jan 06, 2009 at 09:57:20PM +0100, Peter Zijlstra wrote:
+> On Tue, 2009-01-06 at 12:34 -0800, Luck, Tony wrote:
+> > > > All ia64 systems are potentially affected ... but perhaps you might
+> > > > never see the problem on most because the itc clocks are synced as close
+> > > > as s/w can get them when cpus are brought on line.
+> > >
+> > > Do you want Dimitri to resubmit with this set for all IA64 or leave it
+> > > as is?
+> > 
+> > I'd like to understand the impact of turning on HAVE_UNSTABLE_SCHED_CLOCK
+> > 
+> > It looks like both the i386_defconfig and x86_64_defconfig choose this,
+> > so at least ia64 will be hitting the well tested code paths
+> > 
+> > Have the other architectures just not hit this yet?  Or do they all have
+> > "stable" sched_clock() functions?
+> > 
+> > 
+> > sched_clock() seemed like such a straightforward thing to begin with. A
+> > quick & easy way to measure a time delta ON THE SAME CPU.  I'm not at
+> > all sure why it has been co-opted for general time measurement.
 > 
-> It's not missing.  It is (or at least should be) included via the
-> dependency chain DECOMPRESS_GZIP -> ZLIB_INFLATE.
-> 
->     -hpa
+> It came from the complication of needing to tell a remote cpu's time due
+> to remote wakeups in the scheduler.
 
-Well, that didn't work when I tried it here...
+But doesn't scheduler tick advance the rq->clock?  Why do the others
+need to fiddle with a remote runqueue's clock?  When that cpu starts
+taking ticks again, it will update it's rq->clock field and start the
+processes.  I guess I am a lot underinformed about the new scheduler
+design.
 
-Alain
+Robin
