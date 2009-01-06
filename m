@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbZAFFu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbZAFFum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752914AbZAFFu2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 00:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbZAFFuO
+	id S1754106AbZAFFum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 00:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbZAFFuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 00:50:14 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:57267 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbZAFFuN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 00:50:13 -0500
-Date: Tue, 6 Jan 2009 06:51:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [GIT]: Networking
-Message-ID: <20090106055144.GA11695@uranus.ravnborg.org>
-References: <alpine.LFD.2.00.0901051839330.3057@localhost.localdomain> <20090105.201530.195720489.davem@davemloft.net> <alpine.LFD.2.00.0901052029220.3057@localhost.localdomain> <20090105.204934.65827705.davem@davemloft.net> <3f9a31f40901052114t68cac881md439bf24b602f269@mail.gmail.com>
-Mime-Version: 1.0
+	Tue, 6 Jan 2009 00:50:19 -0500
+Received: from mx1.suse.de ([195.135.220.2]:57517 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751104AbZAFFuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 00:50:16 -0500
+Date: Mon, 5 Jan 2009 21:48:58 -0800
+From: Greg KH <gregkh@suse.de>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: debugfs & vfs file permission issue?
+Message-ID: <20090106054858.GA9040@suse.de>
+References: <200901052157.07306.rgetz@blackfin.uclinux.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3f9a31f40901052114t68cac881md439bf24b602f269@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200901052157.07306.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 10:44:11AM +0530, Jaswinder Singh Rajput wrote:
-> On Tue, Jan 6, 2009 at 10:19 AM, David Miller <davem@davemloft.net> wrote:
-> >
-> > I had 4 firmware patches to apply, each one had to add entries
-> > to the same file.
-> >
-> > The first patch had to be skipped.
-> >
+On Mon, Jan 05, 2009 at 09:57:07PM -0500, Robin Getz wrote:
+> On 2.6.28-rc2, If I create a debugfs file with
 > 
-> In firmware we maintain WHENCE, so every time we add new firmware we
-> also update WHENCE.
+>     debugfs_create_x16("SPORT1_TX", 0200 , parent, 0xFFC00910);
+
+Um, are you are passing in a pointer to a known memory location
+properly?  Why would it be ok for the kernel to directly read that
+location?
+
+> Although the file shows up as write only (no read):
 > 
-> We are facing problems while we prepare patch for firmware as we add
-> new stuff at the end.
-> As per David Woodhouse suggestion, I arranged WHENCE to alphabetical
-> order by driver name to avoid conflicts.
+> root:/> ls -l /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
+> --w-------    1 root     root            0 Jan  1  
+> 2007 /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
 > 
-> I also send patch on 21 Dec 2008 with ack of David Woodhouse to linus
-> and waiting from his side.
+> root:/> cat /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
 > 
-> [PATCH] firmware: Arrange WHENCE in alphabetical order to avoid conflicts
+> Still works - and causes the read to occur, which crashes :(
+
+You're root, you can do anything :)
+
+
+> System MMR Error
+> .....
 > 
-> I think this will resolve very soon, once we update WHENCE in
-> alphabetical order, If you better suggestions, please let me know.
+> I can do the same to any file by hand too.
+> 
+> root:/> ls -l /sys/kernel/debug/blackfin/RTC/RTC_STAT
+> -rw-------    1 root     root            0 Jan  1  
+> 2007 /sys/kernel/debug/blackfin/RTC/RTC_STAT
+> root:/> cat /sys/kernel/debug/blackfin/RTC/RTC_STAT
+> 0xb81d3181
+> root:/> chmod 0000 /sys/kernel/debug/blackfin/RTC/RTC_STAT
+> root:/> ls -l /sys/kernel/debug/blackfin/RTC/RTC_STAT
+> ----------    1 root     root            0 Jan  1  
+> 2007 /sys/kernel/debug/blackfin/RTC/RTC_STAT
+> root:/> cat /sys/kernel/debug/blackfin/RTC/RTC_STAT
+> 0xb81d31a5
+> 
+> ?
+> 
+> From what I can tell from the call trace:
+> 
+> cat (userspace)
+>   system_call (into kernel)
+>     sys_read
+>       vfs_read
+>         simple_attr_read
+>           debugfs_u16_get
+>             crash
+> 
+> 
+> I would think that vfs_read should fail....
+> 
+> ./fs/read_write.c:vfs_read()
+> 
+>         if (!(file->f_mode & FMODE_READ))
+>                 return -EBADF; 
 
-We should avoid a central file and push this information
-out to the Kconfig files that are at the driver site.
+I think f_mode is the mode of the file descriptor, not the inode you are
+looking at.  You told userspace to open the file in read mode, right?
+So this is why it passes.
 
-Then we can postprocess autoconf.h to get the filenames etc.
+Hope this helps,
 
-And IMO it is wrong to stroe the firmware files far away
-from the driver where they belong.
-
-Sorting WHENCE is a good approach under the current ways
-of doing it. But the current ways of doing it looks plain wrong to me.
-
-	Sam
+greg k-h
