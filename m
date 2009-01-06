@@ -1,60 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZAFCG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbZAFCHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbZAFCG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 21:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbZAFCGs
+	id S1753796AbZAFCHW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 21:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZAFCHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 21:06:48 -0500
-Received: from fwtops.0.225.230.202.in-addr.arpa ([202.230.225.126]:27463 "EHLO
-	topsms.toshiba-tops.co.jp" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751293AbZAFCGr (ORCPT
+	Mon, 5 Jan 2009 21:07:00 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:49935 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753530AbZAFCG6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 21:06:47 -0500
-Date: Tue, 06 Jan 2009 11:06:42 +0900 (JST)
-Message-Id: <20090106.110642.130607183.nemoto@toshiba-tops.co.jp>
-To: dan.j.williams@intel.com
-Cc: anemo@mba.ocn.ne.jp, haavard.skinnemoen@atmel.com,
-       linux-kernel@vger.kernel.org, hskinnemoen@atmel.com,
-       maciej.sosnowski@intel.com, ralf@linux-mips.org
-Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer
- before DMA
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <4962B414.8010601@intel.com>
-References: <e9c3a7c20901051031y528d0d31r18d44c5096c59e0@mail.gmail.com>
-	<20090106.101425.109407744.nemoto@toshiba-tops.co.jp>
-	<4962B414.8010601@intel.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Jan 2009 21:06:58 -0500
+Message-Id: <200901060206.n0626o5I026322@www262.sakura.ne.jp>
+Subject: Re: [regression 2.6.27.10 & 2.6.28] \"nolapic\" option causes \"nosmp\"?
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: macro@linux-mips.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Date: Tue, 06 Jan 2009 11:06:50 +0900
+References: <200901050318.n053Iu0L068557@www262.sakura.ne.jp> <alpine.LFD.1.10.0901052156460.10676@ftp.linux-mips.org>
+In-Reply-To: <alpine.LFD.1.10.0901052156460.10676@ftp.linux-mips.org>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 05012009 #1403796, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Jan 2009 18:29:56 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
-> > Yes, MIPS and ARM do different thing on partial cache line.  But I
-> > suppose this belongs to "implementation dependent" area of DMA API so
-> > users of the API should not depend on it.  (Well, maybe I'm biased to
-> > MIPS ;-))
-> > In general, drivers must not put normal data and DMA buffer on same
-> > cacheline anyway to avoid unexpected writeback and data loss.  So this
-> > ambiguity is not a problem.  IMHO writeback of the partial line for
-> > DMA_FROM_DEVICE just _hides_ abusing of the DMA API and potential data
-> > loss.
-> 
-> Hmm... one implementation does the right thing in all cases.
+Hello.
 
-Yes, with additional checking in generic path :-)
+Maciej W. Rozycki wrote:
+> This is correct behaviour.  The hardware uses the local APIC to 
+> communicate between CPUs.  With the subsystem disabled there is no way to 
+> reach secondary CPUs on a standard x86 system.
 
-> The other silently allows data corruption unless each callsite that
-> accidentally or purposely passes cacheline-unaligned buffers adds
-> extra maintenance code.  Which implementation are you biased towards
-> now? :-).
-
-Hmm... this is generic DMA mapping API (or linux-arch) issue.  Let's
-wait comments from arch maintainers.  Ralf ?
+Oh, I didn't know that.
+Then, the problem is use of "for_each_possible_cpu".
 
 ---
-Atsushi Nemoto
+ drivers/net/loopback.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- linux-2.6.28.orig/drivers/net/loopback.c
++++ linux-2.6.28/drivers/net/loopback.c
+@@ -92,28 +92,35 @@ static int loopback_xmit(struct sk_buff 
+ static struct net_device_stats *get_stats(struct net_device *dev)
+ {
+ 	const struct pcpu_lstats *pcpu_lstats;
+ 	struct net_device_stats *stats = &dev->stats;
+ 	unsigned long bytes = 0;
+ 	unsigned long packets = 0;
+ 	int i;
+ 
++	printk(KERN_INFO "Entering get_stats()\n");
+ 	pcpu_lstats = dev->ml_priv;
+ 	for_each_possible_cpu(i) {
+ 		const struct pcpu_lstats *lb_stats;
++		printk(KERN_INFO "CPU=%u\n", i);
+ 
+ 		lb_stats = per_cpu_ptr(pcpu_lstats, i);
++		if (!lb_stats) {
++			printk(KERN_INFO "lb_stats == NULL for CPU %u\n", i);
++			continue;
++		}
+ 		bytes   += lb_stats->bytes;
+ 		packets += lb_stats->packets;
+ 	}
+ 	stats->rx_packets = packets;
+ 	stats->tx_packets = packets;
+ 	stats->rx_bytes = bytes;
+ 	stats->tx_bytes = bytes;
++	printk(KERN_INFO "Leaving get_stats()\n");
+ 	return stats;
+ }
+ 
+ static u32 always_on(struct net_device *dev)
+ {
+ 	return 1;
+ }
+ 
+
+Applying the above patch and compiling with config at
+http://I-love.SAKURA.ne.jp/tmp/config-2.6.28 and booting with "nolapic"
+produces below output.
+
+----------------------------------------
+BIOS EBDA/lowmem at: 0009f800/0009f800
+Linux version 2.6.28 (root@tomoyo) (gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)) #1 SMP Tue Jan 6 10:18:14 JST 2009
+(..... snipped .....)
+Kernel command line: ro root=LABEL=/ nolapic
+(..... snipped .....)
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 13 devices
+ACPI: ACPI bus type pnp unregistered
+system 00:01: ioport range 0x1000-0x103f has been reserved
+system 00:01: ioport range 0x1040-0x104f has been reserved
+system 00:01: ioport range 0xcf0-0xcf1 has been reserved
+system 00:0c: ioport range 0x1060-0x107f has been reserved
+system 00:0c: iomem range 0xe0000000-0xefffffff has been reserved
+system 00:0c: iomem range 0xdb400000-0xdb5fffff has been reserved
+Entering get_stats()
+CPU=0
+Leaving get_stats()
+pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
+pci 0000:00:01.0:   IO window: disabled
+pci 0000:00:01.0:   MEM window: disabled
+pci 0000:00:01.0:   PREFETCH window: disabled
+(..... snipped .....)
+kjournald starting.  Commit interval 5 seconds
+(..... snipped .....)
+device-mapper: uevent: version 1.0.3
+device-mapper: ioctl: 4.14.0-ioctl (2008-04-23) initialised: dm-devel@redhat.com
+device-mapper: multipath: version 1.0.5 loaded
+EXT3 FS on sda1, internal journal
+Entering get_stats()
+CPU=0
+CPU=1
+lb_stats == NULL for CPU 1
+Leaving get_stats()
+warning: process `kudzu' used the deprecated sysctl system call with 1.23.
+NET: Registered protocol family 10
+lo: Disabled Privacy Extensions
+process `sysctl' is using deprecated sysctl (syscall) net.ipv6.neigh.default.retrans_time; Use net.ipv6.neigh.default.retrans_time_ms instead.
+Entering get_stats()
+CPU=0
+CPU=1
+lb_stats == NULL for CPU 1
+Leaving get_stats()
+----------------------------------------
+
+When "nolapic" is given, it prints "lb_stats == NULL for CPU 1" message.
+If '"nolapic" disables CPU 1' is correct behavior, the "CPU=1" message
+should not be printed.
+
+Regards.
