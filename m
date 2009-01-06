@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931AbZAFPBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZAFPEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752931AbZAFPBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZAFPBJ
+	id S1753367AbZAFPEc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZAFPEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:01:09 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:57936 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751903AbZAFPBI (ORCPT
+	Tue, 6 Jan 2009 10:04:24 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:38774 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbZAFPEY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:01:08 -0500
-Date: Tue, 6 Jan 2009 08:01:05 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-Message-ID: <20090106150105.GO2002@parisc-linux.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <20081231104533.abfb1cf9.akpm@linux-foundation.org> <1230765549.7538.8.camel@think.oraclecorp.com> <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu> <1231244501.11687.102.camel@twins>
+	Tue, 6 Jan 2009 10:04:24 -0500
+Date: Tue, 6 Jan 2009 20:37:09 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+Message-ID: <20090106150709.GG4574@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090103101626.GA4301@dirshya.in.ibm.com> <1230981761.27180.10.camel@marge.simson.net> <1231081200.17224.44.camel@marge.simson.net> <20090104181946.GC4301@dirshya.in.ibm.com> <1231098769.5757.43.camel@marge.simson.net> <20090105032029.GE4301@dirshya.in.ibm.com> <1231130416.5479.8.camel@marge.simson.net> <1231137413.10471.23.camel@marge.simson.net> <1231168786.9120.26.camel@marge.simson.net> <1231234297.3806.50.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1231244501.11687.102.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1231234297.3806.50.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 01:21:41PM +0100, Peter Zijlstra wrote:
-> > It's hard to tell how it would impact inbetween workloads - i guess it 
-> > needs to be measured on a couple of workloads.
+* Mike Galbraith <efault@gmx.de> [2009-01-06 10:31:37]:
+
+> On Mon, 2009-01-05 at 16:19 +0100, Mike Galbraith wrote:
+> > On Mon, 2009-01-05 at 07:37 +0100, Mike Galbraith wrote:
+> > 
+> > > I'll rummage around.
+> > 
+> > Seems to be about the only thing it could be, load balancing inflicting
+> > injury on very sensitive mysql+oltp pairs.
 > 
-> Matthew volunteered to run something IIRC.
+> BTW, I verified this.  Reverting all load-balancing changes fully
+> restored mysql+oltp peak, and brought mid-range throughput to the same
+> level as sched_mc=2 except at the log-jam end.  (haven't looked at
+> vmark, though I'd expect it to be hurting a bit too, it's affinity
+> sensitive as well)
+> 
+> I expected sched_mc=2 to help an nfs mount kbuild, and it did, quite a
+> bit.  I first tried an nfs4 mount, but after a while, the odd ipv6 80%
+> idle problem came back, so I reverted to nfs3.  Full built time there
+> went from 4m25s to 4m2s.  A nice improvement.
+> 
+> I haven't noticed anything on the interactivity front.
+> 
+> Personally, I'd go for sched_mc=2 as default.  I value the fork/exec
+> load much more than sensitive benchmarks, though what hurts mysql+oltp
+> will certainly hurt others as well.  We have a bit of conflict between
+> keeping CPUs busy and affinity cost.  Something to work on.
 
-I've sent it off to two different teams at Intel for benchmarking.  One
-is a database load, and one is a mixed load.
+Hi Mike,
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thanks for the detailed benchmark reports.  Glad to hear that
+sched_mc=2 is helping in most scenarios.  Though we would be tempted to
+make it default, I would still like to default to zero in order to
+provide base line performance.  I would expect end users to flip the
+settings to sched_mc=2 if it helps their workload in terms of
+performance and/or power savings.
+
+The fact that sched_mc=2 provide performance and/or power saving
+benefits is a good justification to include the new code and tunable.
+
+The benefits from the sched_mc=2 settings vary widely based on
+workload and system configuration.  Hence in my opinion, I would not
+want to change the default to 2 at this time until more wide spread
+use of the tunable under various workloads and system configurations.
+
+--Vaidy
+
