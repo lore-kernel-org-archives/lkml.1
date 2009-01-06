@@ -1,100 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZAFP6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751873AbZAFP62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZAFP6q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 10:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbZAFP6e
+	id S1751873AbZAFP62 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 10:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZAFP5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 10:58:34 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:60788 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753759AbZAFP6d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 10:58:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=s3vkWXx+EDIvVE1HcwAHB1pBKME58HLmEt0CBxi+ZJHUEcW4AtWV3nB2SVtxFnmavf
-         JohuxucTx7JSWWxlXrsHLSMe2qLOOogRPPGrRl9CIWmqww0ApQUA93oUgttLIBQxFlos
-         sCX2GUstQ/sHNByS1719/6/LDwNbQEg/ZuVOg=
-Message-ID: <c62985530901060758m4206fd10u99816302a1e251c6@mail.gmail.com>
-Date: Tue, 6 Jan 2009 16:58:29 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH] ftrace: unsigned idx cannot be less than 0
-Cc: "Roel Kluin" <roel.kluin@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Liming Wang" <liming.wang@windriver.com>
-In-Reply-To: <alpine.DEB.1.10.0901061048260.10871@gandalf.stny.rr.com>
+	Tue, 6 Jan 2009 10:57:51 -0500
+Received: from THUNK.ORG ([69.25.196.29]:48367 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754035AbZAFP5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 10:57:50 -0500
+Date: Tue, 6 Jan 2009 10:57:29 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
+       Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: Re: document ext3 requirements
+Message-ID: <20090106155729.GA10034@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andi Kleen <andi@firstfloor.org>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Pavel Machek <pavel@suse.cz>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+	Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
+	Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org
+References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no> <200901042149.27655.rob@landley.net> <20090105111913.47a8d1a5@lxorguk.ukuu.org.uk> <200901051300.09169.rob@landley.net> <yq1ocyl1rkq.fsf@sermon.lab.mkp.net> <20090106104146.GD6700@merlin.emma.line.org> <20090106153020.GB13086__11022.1833143898$1231255950$gmane$org@mit.edu> <87k5984f4e.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <495E2987.3070501@gmail.com> <20090102154805.GA6833@nowhere>
-	 <alpine.DEB.1.10.0901061048260.10871@gandalf.stny.rr.com>
+In-Reply-To: <87k5984f4e.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/6 Steven Rostedt <rostedt@goodmis.org>:
->
-> [ added Liming to CC ]
->
-> On Fri, 2 Jan 2009, Frederic Weisbecker wrote:
->
->> On Fri, Jan 02, 2009 at 03:49:43PM +0100, Roel Kluin wrote:
->> > // vi kernel/trace/ftrace.c +787
->> > struct ftrace_iterator {
->> > ...
->> >         unsigned                idx;
->> > ...
->> > };
->> >
->> > idx is unsigned and cannot be less than 0.
->> >
->> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
->> > ---
->> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> > index 2f32969..a344add 100644
->> > --- a/kernel/trace/ftrace.c
->> > +++ b/kernel/trace/ftrace.c
->> > @@ -842,7 +842,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
->> >     void *p = NULL;
->> >
->> >     if (*pos > 0) {
->> > -           if (iter->idx < 0)
->> > +           if (iter->idx == 0)
->> >                     return p;
->> >             (*pos)--;
->> >             iter->idx--;
->>
->>
->> Hi Roel,
->>
->> I'm not sure this is the right fix.
->> If you look at t_next, if there is no more page to look at,
->> iter_idx takes -1.
->>
->> A 0 value would mean: we are in the first index on the page, which means
->> there is something to read and we don't want to return NULL.
->>
->> I guess that would be better to turn idx into a signed int.
->
-> Correct. This bug was added by:
->
->  50cdaf08a8ec1d7f43987705da7aff7cf949708f
->  ftrace: improve seq_operation of ftrace
->
-> So the correct fix is to turn it into a signed int.
->
-> Thanks,
->
-> -- Steve
->
+On Tue, Jan 06, 2009 at 04:40:33PM +0100, Andi Kleen wrote:
+> > Well, Kurt Garloff wrote that program years and years ago.  I'm sure
+> > if someone created patches he'd probably accept them, though.  It's
+> > still the best program I've found for doing image backups in
+> > catastrophic situations.
+> 
+> Better would be just to incorporate the functionality as an option
+> into standard GNU dd. Then everyone would easily have access to it.
 
-Both iter->idx and pg->index should be signed int I guess.
+I'm not sure whether the GNU coreutils maintainer would be willing to
+accept a series of Linux-specific interfaces, but dd_rescue also has
+the advantage that it uses a large blocksize for speed, but when an
+error is returned, it backs off to a small block size to recovery the
+maximum amount of data, and then later returns to the large block
+size.  (Ideally, it should be able to query the disk drive to
+determine its internal block size, and use that for the smaller block
+size, but I'm not sure if there's a standardized way that value is
+exposed by HDD's or SDD's.)
 
-Roel is perhaps right, I don't know how is caught an unsigned long
-when compared with a signed int if
-this int is less than 0.
+The dd_rescue program also has a progress bar, which as we all know
+makes things go faster :-), and is useful because it means the user
+knows how much of the disk has been copied, and whether he/she should
+go to sleep for the night, or grab a cup of coffee or beer.  Its user
+interface is also much simpler, and it's much easier to interrupt it
+and start it up again where it left off.  (You can do this with dd,
+but the average inexperienced user will be horribly confused by the dd
+man page, and might easily screw up or skip one of the seek or skip
+options.)
+
+Of course, the right answer is to pursue both paths, although my
+experiences getting changes into the core/file/shell-utils has been
+frustrating and unpleasant, although granted that was over ten years
+ago, and hopefully the maintainer has been replaced since then by one
+who is more responsive.  OTOH, Kurt's a good guy, and would probably
+be willing to accept patches to improve dd_rescue.
+
+						- Ted
