@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZAFEOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbZAFEPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbZAFEOy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 23:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbZAFENp
+	id S1754165AbZAFEPc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 23:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbZAFENr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 23:13:45 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58348 "EHLO
+	Mon, 5 Jan 2009 23:13:47 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58353 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754148AbZAFENg convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1754167AbZAFENm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 23:13:36 -0500
-Date: Mon, 5 Jan 2009 20:13:17 -0800
+	Mon, 5 Jan 2009 23:13:42 -0500
+Date: Mon, 5 Jan 2009 20:13:44 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
        akpm@linux-foundation.org, linux-ide@vger.kernel.org,
        linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [PATCH 5/6] bootchart: improve output
-Message-ID: <20090105201317.249aeae3@infradead.org>
+Subject: [PATCH 6/6] fastboot: Make libata initialization even more async
+Message-ID: <20090105201344.33cf1213@infradead.org>
 In-Reply-To: <20090105200959.04a626ac@infradead.org>
 References: <20090105200959.04a626ac@infradead.org>
 Organization: Intel
@@ -32,84 +32,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ec57f2c6755c5439dcb273f9529f0575b6084d02 Mon Sep 17 00:00:00 2001
+>From d9edec388ac06b74f190ed9ea929158003b915ee Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 4 Jan 2009 10:59:18 -0800
-Subject: [PATCH] bootchart: improve output based on Dave Jones' feedback
+Date: Mon, 5 Jan 2009 15:07:07 -0800
+Subject: [PATCH] fastboot: Make libata initialization even more async
 
-Dave Jones, in his blog, had some feedback about the bootchart script:
-Primarily his complaint was that shorter delays weren't visualized.
+As suggested by Linus: Don't do the libata init in 2 separate
+steps with a global sync inbetween, but do it as one async step,
+with a local sync before registering the device.
 
-The reason for that was that too small delays will have their labels
-mixed up in the graph in an unreadable mess.
-
-This patch has a fix for this; for one, it makes the output wider,
-so more will fit.
-The second part is that smaller delays are now shown with a
-much smaller font for the label; while this isn't per se
-readable at a 1:1 zoom, at least you can zoom in with most SVG
-viewing applications and see what it is you are looking at.
+This cuts the boottime on my machine with 2 sata controllers down
+significantly, and it seems to work. Would be nice if the libata
+folks take a good look at this patch though..
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- scripts/bootgraph.pl |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/ata/libata-core.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/scripts/bootgraph.pl b/scripts/bootgraph.pl
-index f0af9aa..0a498e3 100644
---- a/scripts/bootgraph.pl
-+++ b/scripts/bootgraph.pl
-@@ -88,7 +88,7 @@ END
- }
- 
- print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
--print "<svg width=\"1000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
-+print "<svg width=\"2000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
- 
- my @styles;
- 
-@@ -105,8 +105,9 @@ $styles[9] = "fill:rgb(255,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0
- $styles[10] = "fill:rgb(255,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
- $styles[11] = "fill:rgb(128,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
- 
--my $mult = 950.0 / ($maxtime - $firsttime);
--my $threshold = ($maxtime - $firsttime) / 60.0;
-+my $mult = 1950.0 / ($maxtime - $firsttime);
-+my $threshold2 = ($maxtime - $firsttime) / 120.0;
-+my $threshold = $threshold2/10;
- my $stylecounter = 0;
- my %rows;
- my $rowscount = 1;
-@@ -116,7 +117,7 @@ foreach my $key (@initcalls) {
- 	my $duration = $end{$key} - $start{$key};
- 
- 	if ($duration >= $threshold) {
--		my ($s, $s2, $e, $w, $y, $y2, $style);
-+		my ($s, $s2, $s3, $e, $w, $y, $y2, $style);
- 		my $pid = $pids{$key};
- 
- 		if (!defined($rows{$pid})) {
-@@ -125,6 +126,7 @@ foreach my $key (@initcalls) {
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index fe2c208..5d4f7e5 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -5951,6 +5951,12 @@ void async_port_probe(void *data, async_cookie_t cookie)
+ 			 */
  		}
- 		$s = ($start{$key} - $firsttime) * $mult;
- 		$s2 = $s + 6;
-+		$s3 = $s + 1;
- 		$e = ($end{$key} - $firsttime) * $mult;
- 		$w = $e - $s;
- 
-@@ -138,7 +140,11 @@ foreach my $key (@initcalls) {
- 		};
- 
- 		print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"145\" style=\"$style\"/>\n";
--		print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
-+		if ($duration >= $threshold2) {
-+			print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
-+		} else {
-+			print "<text transform=\"translate($s3,$y2) rotate(90)\" font-size=\"3pt\">$key</text>\n";
-+		}
  	}
++
++	/* in order to keep device order, we need to synchronize at this point */
++	async_synchronize_cookie(cookie);
++
++	ata_scsi_scan_host(ap, 1);
++
  }
+ /**
+  *	ata_host_register - register initialized ATA host
+@@ -6033,15 +6039,7 @@ int ata_host_register(struct ata_host *host, struct scsi_host_template *sht)
+ 		struct ata_port *ap = host->ports[i];
+ 		async_schedule(async_port_probe, ap);
+ 	}
+-	async_synchronize_full();
+-	/* probes are done, now scan each port's disk(s) */
+-	DPRINTK("host probe begin\n");
+-	for (i = 0; i < host->n_ports; i++) {
+-		struct ata_port *ap = host->ports[i];
+-
+-		ata_scsi_scan_host(ap, 1);
+-	}
+-	DPRINTK("host probe end\n");
++	DPRINTK("probe end\n");
  
+ 	return 0;
+ }
 -- 
 1.6.0.6
 
