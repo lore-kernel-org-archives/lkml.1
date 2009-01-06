@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZAFXjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZAFXjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbZAFXjD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:39:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZAFXix
+	id S1756518AbZAFXjn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:39:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZAFXje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:38:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48780 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751677AbZAFXiw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:38:52 -0500
-Date: Tue, 6 Jan 2009 15:38:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
-       kobayashi.kk@ncos.nec.co.jp
-Subject: Re: 2.6.29 -mm merge plans
-Message-Id: <20090106153847.df96c8c0.akpm@linux-foundation.org>
-In-Reply-To: <20090106232439.GC25103@infradead.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	<20090106225744.GA10553@infradead.org>
-	<20090106151344.0f146286.akpm@linux-foundation.org>
-	<20090106232439.GC25103@infradead.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Jan 2009 18:39:34 -0500
+Received: from tundra.namei.org ([65.99.196.166]:1523 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751773AbZAFXjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 18:39:33 -0500
+Date: Wed, 7 Jan 2009 10:39:23 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: [GIT] More security updates for 2.6.29
+Message-ID: <alpine.LRH.1.10.0901071034200.30422@tundra.namei.org>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Jan 2009 18:24:39 -0500
-Christoph Hellwig <hch@infradead.org> wrote:
+Please pull the following updates for the security subsystem.  Noteworthy 
+is the fix for a regression introducted by the creds API (found by hch), 
+and updates from Paul Moore's labeled networking tree.
 
-> On Tue, Jan 06, 2009 at 03:13:44PM -0800, Andrew Morton wrote:
-> > (cc added)
-> > 
-> > On Tue, 6 Jan 2009 17:57:44 -0500
-> > Christoph Hellwig <hch@infradead.org> wrote:
-> > 
-> > > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
-> > > 
-> > > > softirq-introduce-statistics-for-softirq.patch
-> > > > proc-export-statistics-for-softirq-to-proc.patch
-> > > > proc-update-document-for-proc-softirqs-and-proc-stat.patch
-> > > 
-> > > Why is this in procfs?
-> > 
-> > softirq stuff in /proc seems appropriate?  It's alongside
-> > /proc/interrupts.  We could put it in /trendy-fs-of-the-day, but what
-> > would it gain us?
-> 
-> debugfs seems to be the normal thing for these.
+The following changes since commit 238c6d54830c624f34ac9cf123ac04aebfca5013:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../agk/linux-2.6-dm
 
-hm.  I'm not a huge fan of debugfs (for other reasons, nicely explained
-by Matt Mackall a while back).
+are available in the git repository at:
 
-But I don't think we actually *gain* anything by putting softirq stats
-into debugfs, whereas it makes sense that it lives in /proc?
+  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
 
-otoh, the internal implementation might be nicer if it uses debugfs
-helper infrastructure.  But the existing code is pretty
-straightforward.
+Casey Schaufler (1):
+      smack: Add support for unlabeled network hosts and networks
 
+David Howells (2):
+      CRED: Fix regression in cap_capable() as shown up by sys_faccessat() [ver #2]
+      CRED: Fix regression in cap_capable() as shown up by sys_faccessat() [ver #3]
 
+Eric Paris (1):
+      SELinux: shrink sizeof av_inhert selinux_class_perm and context
+
+James Morris (4):
+      keys: fix sparse warning by adding __user annotation to cast
+      Merge branch 'master' of git://git.infradead.org/users/pcmoore/lblnet-2.6_next into next
+      Revert "CRED: Fix regression in cap_capable() as shown up by sys_faccessat() [ver #2]"
+      Merge branch 'next' into for-linus
+
+Paul Moore (2):
+      netlabel: Update kernel configuration API
+      selinux: Deprecate and schedule the removal of the the compat_net functionality
+
+ Documentation/feature-removal-schedule.txt |   12 +
+ include/linux/capability.h                 |   17 ++-
+ include/linux/security.h                   |   41 +++-
+ include/net/cipso_ipv4.h                   |    6 +-
+ include/net/netlabel.h                     |   86 ++++++-
+ kernel/capability.c                        |    2 +-
+ net/ipv4/cipso_ipv4.c                      |   88 +++++--
+ net/netlabel/netlabel_cipso_v4.c           |   61 ++----
+ net/netlabel/netlabel_domainhash.c         |   67 +++++
+ net/netlabel/netlabel_domainhash.h         |    4 +
+ net/netlabel/netlabel_kapi.c               |  347 +++++++++++++++++++++-----
+ net/netlabel/netlabel_unlabeled.c          |   26 +-
+ net/netlabel/netlabel_unlabeled.h          |   15 ++
+ security/commoncap.c                       |   29 +--
+ security/keys/keyctl.c                     |    2 +-
+ security/security.c                        |   26 ++-
+ security/selinux/Kconfig                   |   27 --
+ security/selinux/avc.c                     |   16 +-
+ security/selinux/hooks.c                   |   22 +-
+ security/selinux/include/avc_ss.h          |    4 +-
+ security/selinux/selinuxfs.c               |   16 +-
+ security/selinux/ss/context.h              |    2 +-
+ security/smack/smack.h                     |   31 +++-
+ security/smack/smack_access.c              |   28 ++-
+ security/smack/smack_lsm.c                 |  310 +++++++++++++++++++----
+ security/smack/smackfs.c                   |  369 ++++++++++++++++++----------
+ 26 files changed, 1230 insertions(+), 424 deletions(-)
