@@ -1,119 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZAFONO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZAFONw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752628AbZAFONO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 09:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZAFOM4
+	id S1753364AbZAFONw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 09:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZAFONn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 09:12:56 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:44458 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbZAFOMz (ORCPT
+	Tue, 6 Jan 2009 09:13:43 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:3100 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751914AbZAFONm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 09:12:55 -0500
-Message-ID: <49636799.1010109@novell.com>
-Date: Tue, 06 Jan 2009 09:15:53 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-References: <1230722935.4680.5.camel@think.oraclecorp.com>	 <20081231104533.abfb1cf9.akpm@linux-foundation.org>	 <1230765549.7538.8.camel@think.oraclecorp.com>	 <87r63ljzox.fsf@basil.nowhere.org> <20090103191706.GA2002@parisc-linux.org>	 <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org>	 <1231242031.11687.97.camel@twins> <20090106121052.GA27232@elte.hu>	 <4963584A.4090805@novell.com>  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
-In-Reply-To: <1231248041.11687.107.camel@twins>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA10599BC4DA0548C63EADD23"
+	Tue, 6 Jan 2009 09:13:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=trO5+4MatztQtVwKpczUmJIAQ3n5ZMiJqmI1NLs62J2h/C8KdMRBSgrp0ZjK0nT2wr
+         a6ZMLn0ChnMRRfZcUdDajPHFF5pHlTJbEQPSfvBdUtYcEJAL8OCdiFkuoRS6put+mAUZ
+         8QKMgvSjExrok8cPiVBGMjIXe1i9hHWOm6k9s=
+Date: Tue, 6 Jan 2009 16:13:35 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: ftrace: struct tracer API and trace_iterator::private
+Message-ID: <20090106161335.12f69487@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA10599BC4DA0548C63EADD23
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Peter Zijlstra wrote:
-> On Tue, 2009-01-06 at 14:16 +0100, Ingo Molnar wrote:
->  =20
->> * Gregory Haskins <ghaskins@novell.com> wrote:
->>
->>    =20
->>> Ingo Molnar wrote:
->>>      =20
->>>> There's no time or spin-rate based heuristics in this at all (i.e. t=
-hese=20
->>>> mutexes are not 'adaptive' at all!),
->>>>        =20
->>> FYI: The original "adaptive" name was chosen in the -rt implementatio=
-n=20
->>> to reflect that the locks can adaptively spin or sleep, depending on =
+In the tracing framework, struct trace_iterator has field 'private'. This
+field is used by mmiotrace, I'm not sure if anything else uses it. The issue
+here is, that there are no create and destroy operations defined for
+struct trace_iterator. That object gets created ad hoc, and dies whenever,
+which means that there is no sane way to clean up trace_iterator::private.
 
->>> conditions.  I realize this is in contrast to the typical usage of th=
-e=20
->>> term when it is in reference to the spin-time being based on some=20
->>> empirical heuristics, etc as you mentioned.  Sorry for the confusion.=
+Mmiotrace uses trace_iterator::private to print the PCI device list in
+the beginning of each trace, and it needs to allocate resources. Currently
+these resources are released when the list is printed. If user space decides
+to close the file before all devices are printed, we leak locks and memory.
 
->>>      =20
->> the current version of the -rt spinny-mutexes bits were mostly written=
- by=20
->> Steve, right? Historically it all started out with a more classic=20
->> "adaptive mutexes" patchset so the name stuck i guess.
->>    =20
->
-> Yeah, Gregory and co. started with the whole thing and showed there was=
+Considering when and how mmiotrace is used, this is not a big problem, but
+it is a bug. I am not quite sure how to fix this. I would like to introduce
+create and destroy (or init and cleanup) calls for struct trace_iterator,
+but it does not look trivial.
 
-> significant performance to be gained, after that Steve rewrote it from
-> scratch reducing it to this minimalist heuristic, with help from Greg.
->
-> (At least, that is how I remember it, please speak up if I got things
-> wrong)
->  =20
-Thats pretty accurate IIUC.  The concept and original patches were
-written by myself, Peter Morreale and Sven Dietrich (cc'd).  However,
-Steve cleaned up our patch before accepting it into -rt (we had extra
-provisions for things like handling conditional compilation and run-time
-disablement which he did not care for), but its otherwise the precise
-core concept we introduced.  I think Steven gave a nice attribution to
-that fact in the prologue, however.  And I also ACKed his cleanup, so I
-think all is well from my perspective.
+Another thing I'd like to point out here is the multitude of printing
+callbacks in struct tracer:
+- read
+- print_header
+- print_line
 
-As a historical note: It should be mentioned that Steven also introduced
-a really brilliant optimization to use RCU for the owner tracking that
-the original patch as submitted by my team did not have.  However, it
-turned out to inadvertently regress performance due to the way
-preempt-rcu's rcu_read_lock() works so it had to be reverted a few weeks
-later to the original logic that we submitted (even though on paper his
-ideas in that area were superior to ours).  So whats in -rt now really
-is more or less our patch sans the conditional crap, etc.=20
+tracer::read is a low level callback, that can interrupt the reading of
+entries from the ring buffer. This works only for the pipe.
 
-Hope that helps!
+tracer::print_header is called via trace_seq_ops when iter->ent is NULL,
+and works only for the regular output (/debug/tracing/trace).
 
--Greg
+tracer::print_line is systematically called for every entry in the
+ring buffer and works for both the pipe and the regular output.
+
+Mmiotrace uses tracer::read to print its (long) header, and keeps track
+of it via trace_iterator::private. Then there are the other header
+printing functions that are directly called from trace.c:s_show().
+Maybe tracer::read, tracer::print_header and the other functions
+could be collected under a single tracer API callback, or at least use
+the existing and more flexible interfaces instead of hard-coding where
+possible.
+
+It looks like there are two kinds of tracers: integrated and plugins.
+Plugins, like mmiotrace, work via the (fairly) well defined tracer API.
+Integrated tracers (latency tracer, function tracer, ...) are called
+directly from the framework core, which makes the core big and difficult
+to understand. File trace.c is over 3200 lines even after cutting stuff
+out to trace_output.c.
+
+I just feel the interface between the tracing framework core and the
+myriad of tracers should be more clear, and maybe it is slowly going
+that way. Unfortunately I do not have the time to seriously do
+something about it, I can barely keep up maintaining mmiotrace. I just
+wanted to express my concerns.
 
 
---------------enigA10599BC4DA0548C63EADD23
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkljZ5kACgkQlOSOBdgZUxlxqQCfY2ZZfOExwh4MCCd0u88kobhK
-dZAAnjuCdDJ/B2LHRwdAkwYAoerUh8wQ
-=k4K3
------END PGP SIGNATURE-----
-
---------------enigA10599BC4DA0548C63EADD23--
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
