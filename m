@@ -1,68 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbZAFNdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZAFNot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbZAFNdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 08:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbZAFNdI
+	id S1752438AbZAFNot (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 08:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZAFNok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 08:33:08 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:60006 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbZAFNdH (ORCPT
+	Tue, 6 Jan 2009 08:44:40 -0500
+Received: from smtp4-ft1.vinci-energies.com ([81.252.86.87]:56139 "EHLO
+	vinci-energies.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750889AbZAFNoj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 08:33:07 -0500
-Date: Tue, 6 Jan 2009 14:34:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Jan Beulich <jbeulich@novell.com>, "David S. Miller" <davem@davemloft.net>,
-       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>
-Subject: Re: ftrace breaks sparc64 build
-Message-ID: <20090106133442.GA14780@uranus.ravnborg.org>
-References: <20090105181922.GA25622@uranus.ravnborg.org> <20090105194844.GR28946@ZenIV.linux.org.uk> <20090105195523.GB6204@uranus.ravnborg.org> <49631BF0.76E4.0078.0@novell.com> <20090106113543.GS28946@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106113543.GS28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 6 Jan 2009 08:44:39 -0500
+X-Greylist: delayed 501 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Jan 2009 08:44:38 EST
+From: BARRE Sebastien <sbarre@sdelcc.com>
+To: Ed Swierk <eswierk@aristanetworks.com>
+CC: "i2c@lm-sensors.org" <i2c@lm-sensors.org>,
+       David Brownell <david-b@pacbell.net>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 6 Jan 2009 14:35:05 +0100
+Subject: RE: [PATCH] rtc-ds1307: True SMBus compatibility
+Thread-Topic: [PATCH] rtc-ds1307: True SMBus compatibility
+Thread-Index: AclvXCQslBOZvTYER1mi3NS+Q0iv2QAolsBQ
+Message-ID: <C1C62166118DFA4A8BBA01A2411F0D171224AECDC1@PRI-MBX-101.dom1.vinci-energies.net>
+References: <1231176979.13443.19.camel@localhost.localdomain>
+In-Reply-To: <1231176979.13443.19.camel@localhost.localdomain>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: fr-FR, en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n06DirwM027711
 
-On Tue, Jan 06, 2009 at 11:35:43AM +0000, Al Viro wrote:
-> On Tue, Jan 06, 2009 at 07:53:04AM +0000, Jan Beulich wrote:
-> 
-> > The __crc_... reference is definitely bogus - none should survive with the
-> > new .c->.o rule. Could you find out what object file they originate from?
-> 
-> So can you, by use of arcane tool known as "grep"...  It's in kernel/softirq.c
-> and that's genksyms parser being fucked in head.  Look for TYPEOF_KEYW
-> in parse.y and you'll see.  Especially amusing part is a kludge from
-> commit a89a0a2354ae666612968e254d650bfd04f11eb6...
+Hello,
 
-Any feedback on what to do to make it better?
-Never used typeof myself so I do not know the exact syntax.
+> -----Original Message-----
+> From: Ed Swierk [mailto:eswierk@aristanetworks.com]
+> Sent: Monday, January 05, 2009 6:36 PM
+> To: i2c@lm-sensors.org; David Brownell; Alessandro Zummo; linux-
+> kernel@vger.kernel.org; Andrew Morton; BARRE Sebastien
+> Subject: [PATCH] rtc-ds1307: True SMBus compatibility
+>
+> Following up to Sebastien Barre's recent patch, here I go one step
+> further, replacing i2c block transfers with SMBus byte transfers.
+> Sticking to pure SMBus makes the driver work on our board, which has an
+> nVidia SMBus controller driving a DS1339; nforce2 controllers
+> unfortunately don't support any flavor of i2c block transfer.
+>
+> Reading or writing registers repeatedly until they stick is rather
+> nauseating but I'm aiming for correctness if not elegance.  I would
+> appreciate any suggestions for improvement.
+>
+> Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
 
-> 
-> > The others look like a tools side behavioral difference, as I never saw any
-> > such. Is this problem sparc32-specific (I tested x86 and ia64 only)? What's
-> > the binutils version used?
-> 
-> 2.18.50.0.6.
-> 
-> And no, it's not tools side.  What it is, AFAICT, is that sparc32 has
-> LDFLAGS_vmlinux = -r, which leaves a metric arseload of relocs that
-> wouldn't have survived into vmlinux otherwise.  Look at .rela__ksymtab
-> in .tmp_vmlinux1, for example...
+I've read your patch quicly, I will test it on my board as soon as possible.
 
-The use of -r is to support the btfixup magic.
-I have been thinking of moving the btfixup phase so it happens _before_
-the final link of vmlinux. This should help us here.
+> +static s32 ds1307_write_block_data(struct i2c_client *client, u8 command,
+> +                                u8 length, const u8 *values)
+> +{
+> +     u8 currvalues[I2C_SMBUS_BLOCK_MAX];
+> +     s32 ret;
+> +     pr_debug("ds1307_write_block_data (length=%d)\n", length);
 
-But I never managed to really understand what the btfixup thing is all
-about and has then been sidetracked by funnier stuff.
+You can delete the next 3 lines, they are not useful:
 
-	Sam
+> +     ret = ds1307_read_block_data_once(client, command, length, currvalues);
+> +     if (ret < 0)
+> +             return ret;
 
+> +     do {
+> +             s32 i, ret;
+> +             for (i = 0; i < length; i++) {
+> +                     ret = i2c_smbus_write_byte_data(client, command + i,
+> +                                                     *(values + i));
+> +                     if (ret < 0)
+> +                             return ret;
+> +             }
+> +             ret = ds1307_read_block_data_once(client, command, length, currvalues);
+> +             if (ret < 0)
+> +                     return ret;
+> +     } while (memcmp(currvalues, values, length));
+> +     return length;
+> +}
 
+--
+SÃ©bastien BarrÃ©
+Bureau d'Ã©tude - DÃ©veloppement
+SDEL ContrÃ´le Commande
+D2A - Rue Nungesser et Coli
+44860 Saint Aignan de Grand Lieu
+FRANCE
+TÃ©l : +33(0)2 40 84 50 88
+Fax : +33(0)2 40 84 51 10
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
