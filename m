@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZAFB3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbZAFBaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbZAFB3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 20:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZAFB3C
+	id S1753278AbZAFBaP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 20:30:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZAFB37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 20:29:02 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42884 "EHLO mx2.redhat.com"
+	Mon, 5 Jan 2009 20:29:59 -0500
+Received: from mga01.intel.com ([192.55.52.88]:1449 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbZAFB3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 20:29:00 -0500
-Date: Tue, 6 Jan 2009 01:27:59 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Milan Broz <mbroz@redhat.com>,
-       Jaya Kumar <jayakumar.video@gmail.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Gene Sally <Gene.Sally@timesys.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: strncat() misuse (was: Re: dm_attr_{name,uuid}_show buffer overflow? (was: Re: linux-next: Tree for January 5))
-Message-ID: <20090106012759.GA3512@agk.fab.redhat.com>
-Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Milan Broz <mbroz@redhat.com>,
-	Jaya Kumar <jayakumar.video@gmail.com>,
-	Laurent Pinchart <laurent.pinchart@skynet.be>,
-	Mauro Carvalho Chehab <mchehab@infradead.org>,
-	Gene Sally <Gene.Sally@timesys.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20090105173517.deeff918.sfr@canb.auug.org.au> <Pine.LNX.4.64.0901052225400.5451@anakin> <Pine.LNX.4.64.0901052259420.5451@anakin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901052259420.5451@anakin>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	id S1751293AbZAFB36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 20:29:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,334,1228118400"; 
+   d="scan'208";a="419911380"
+Message-ID: <4962B414.8010601@intel.com>
+Date: Mon, 05 Jan 2009 18:29:56 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: "haavard.skinnemoen@atmel.com" <haavard.skinnemoen@atmel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "ralf@linux-mips.org" <ralf@linux-mips.org>
+Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer before
+ DMA
+References: <20081227111037.3bd13adc@hskinnemoen-d830>	<20081229.025352.01917409.anemo@mba.ocn.ne.jp>	<e9c3a7c20901051031y528d0d31r18d44c5096c59e0@mail.gmail.com> <20090106.101425.109407744.nemoto@toshiba-tops.co.jp>
+In-Reply-To: <20090106.101425.109407744.nemoto@toshiba-tops.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 11:18:38PM +0100, Geert Uytterhoeven wrote:
-> On Mon, 5 Jan 2009, Geert Uytterhoeven wrote:
-> > On Mon, 5 Jan 2009, Stephen Rothwell wrote:
+Atsushi Nemoto wrote:
+> On Mon, 5 Jan 2009 11:31:57 -0700, "Dan Williams" <dan.j.williams@intel.com> wrote:
+> Yes, MIPS and ARM do different thing on partial cache line.  But I
+> suppose this belongs to "implementation dependent" area of DMA API so
+> users of the API should not depend on it.  (Well, maybe I'm biased to
+> MIPS ;-))
+> 
+> In general, drivers must not put normal data and DMA buffer on same
+> cacheline anyway to avoid unexpected writeback and data loss.  So this
+> ambiguity is not a problem.  IMHO writeback of the partial line for
+> DMA_FROM_DEVICE just _hides_ abusing of the DMA API and potential data
+> loss.
 
-> > |         strncat(buf, "\n", DM_NAME_LEN);
-> > |         return strnlen(buf, DM_NAME_LEN);
+Hmm... one implementation does the right thing in all cases.  The other 
+silently allows data corruption unless each callsite that accidentally 
+or purposely passes cacheline-unaligned buffers adds extra maintenance 
+code.  Which implementation are you biased towards now? :-).
 
-> > Probably the intention was to limit the string in _buf_ (not the source string
-> > "\n") to DM_NAME_LEN? If yes, this may cause a buffer overflow.
+--
+Dan
 
-Both the 'n's look bogus to me as runtime checks.  But I think the code happens
-to work correctly - apart from your compilation problem.
-
-buf is always a page and both strings (name and uuid) are NULL-terminated and
-the longest possible is 128 chars of uuid plus the "\n" i.e. 130 (except for a
-bug I noticed on one code path which we'll fix).
-
-Alasdair
--- 
-agk@redhat.com
