@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753377AbZAFGUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZAFGVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753377AbZAFGUu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 01:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZAFGUm
+	id S1754201AbZAFGVZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 01:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbZAFGVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 01:20:42 -0500
-Received: from bureau63.ns.utoronto.ca ([128.100.132.160]:56560 "EHLO
-	bureau63.ns.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbZAFGUl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 01:20:41 -0500
-X-Greylist: delayed 2372 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Jan 2009 01:20:41 EST
-Message-ID: <20090106004107.rb5znb3l44ss0gg4@webmail.utoronto.ca>
-Date: Tue, 06 Jan 2009 00:41:07 -0500
-X-ID: zhaoyuto
-From: yutong.zhao@utoronto.ca
-To: linux-kernel@vger.kernel.org
-Subject: kexec unable to load crash kernel in X
+	Tue, 6 Jan 2009 01:21:16 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58618 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751167AbZAFGVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 01:21:15 -0500
+Date: Mon, 5 Jan 2009 22:19:46 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: debugfs & vfs file permission issue?
+Message-ID: <20090106061946.GA10026@suse.de>
+References: <200901052157.07306.rgetz@blackfin.uclinux.org> <20090106054858.GA9040@suse.de> <8bd0f97a0901052154w213f9a03oafdd07645b1b7dc7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
-X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2009.1.6.52830
+In-Reply-To: <8bd0f97a0901052154w213f9a03oafdd07645b1b7dc7@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi linux-kernel,
+On Tue, Jan 06, 2009 at 12:54:58AM -0500, Mike Frysinger wrote:
+> On Tue, Jan 6, 2009 at 00:48, Greg KH wrote:
+> > On Mon, Jan 05, 2009 at 09:57:07PM -0500, Robin Getz wrote:
+> >> On 2.6.28-rc2, If I create a debugfs file with
+> >>
+> >>     debugfs_create_x16("SPORT1_TX", 0200 , parent, 0xFFC00910);
+> >
+> > Um, are you are passing in a pointer to a known memory location
+> > properly?  Why would it be ok for the kernel to directly read that
+> > location?
+> 
+> it's a nommu system and the 0xffc00000+ addresses are always available
 
-I've been trying to track a hard lock kernel panic since 2.6.24, and  
-it persists in 2.6.28. I've set up kexec as per the instructions in  
-/Documentation/kdump/kdump.txt. I've enabled sysrq in both the kernel,  
-AND, in /etc/sysctl.conf
+Writable but not readable?  Isn't hardware fun :)
 
-The system responds to sysrq-C when I'm in the console and before  
-startx. Thus, properly loading the dump kernel and allowing me access  
-to /proc/vmcore
+> >> Although the file shows up as write only (no read):
+> >>
+> >> root:/> ls -l /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
+> >> --w-------    1 root     root            0 Jan  1
+> >> 2007 /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
+> >>
+> >> root:/> cat /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
+> >>
+> >> Still works - and causes the read to occur, which crashes :(
+> >
+> > You're root, you can do anything :)
+> 
+> any thoughts on how to declare debugfs files that are read or write
+> only ?  we'll have to add new helper functions or have it be a
+> parameter or declare our own debugfs file ?
 
-However, when I'm in X (after startx), sysrq-c does NOT load up the  
-crash kernel, and instead hangs system (no blinking capslock though).  
-I see some flashing hard drive activity, yet nothing changes on the  
-screen as it still shows a frozen snapshot of X. This is true with  
-both nv (with proper modprobe -r nvidia), and nvidia modules.
+Just use debugfs_create_file() and use your own read/write functions to
+prevent a read or write from happening no matter what.  No new debugfs
+infrastructure should be needed.
 
-I'm on a Thinkpad T61P Intel Core 2 Duo, 2.5GHZ, x86_64, 2GB Memory,  
-NVIDIA QUADRO FX 570M, and note that my CONFIG_PHYSICAL_START is  
-0x200000, NOT 0x100000, (I wasn't sure if this should be changed as  
-the default was 0x200000, possibly due to Core 2?). But this shouldn't  
-matter because the kernel is RELOCATABLE(=y).. right?
+good luck,
 
-I've attached my:
-
-.config : http://dpaste.com/105844/
-lspci : http://dpaste.com/105846/
-lsmod : http://dpaste.com/105848/
-dmesg : http://dpaste.com/105849/
-grub.conf : http://dpaste.com/105850/, most relevant boot config  
-system kernel is "kernel /boot/kernel-2.6.28-gentoo-custom  
-root=/dev/sda3 pci=nommconfig idle=poll crashkernel=128M@16M" note  
-that /boot/kernel-2.6.28-gentoo-custom corresponds to the bzImage used  
-in kexec.
-
-my kexec command is "sudo kexec -p  
-/usr/src/linux-2.6.28-gentoo/arch/x86/boot/bzImage  
---append=root=/dev/sda3 1 irqpoll maxcpus=1 reset_devices"
-
-Please assist and CC me in all messages/comments/answers.
-
-
--Yutong Zhao
-
+greg k-h
