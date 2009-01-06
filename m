@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbZAFXtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbZAFXxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbZAFXtr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZAFXth
+	id S1755101AbZAFXxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZAFXxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:49:37 -0500
-Received: from rv-out-0506.google.com ([209.85.198.232]:30777 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbZAFXtg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:49:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ah0a/og+I/uc8O2nHAdmNdC9eiK+FeF8pIAMii7au/YIomrS2TQsGPtLIzgzhTsEOC
-         5DzSu2qov5+aDpORY80PZAH1awZJ2ymp9YVvg9ikK0ay+zsFkkn0+1+eleff1uYul5ZM
-         enEL+F3fseQHul0taIPupsXYCeiQD/iazb2B0=
-Subject: Re: 2.6.29 -mm merge plans
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Diego E. 'Flameeyes' Petten?" <flameeyes@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Warren Turkal <wt@penguintechs.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <20090106233153.GA16469@infradead.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	 <20090106225744.GA10553@infradead.org>
-	 <20090106151747.c640dfd4.akpm@linux-foundation.org>
-	 <20090106231958.GA30271@infradead.org> <1231284433.5158.2.camel@localhost>
-	 <20090106233153.GA16469@infradead.org>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 15:49:33 -0800
-Message-Id: <1231285773.1529.4.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Jan 2009 18:53:32 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:43272 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750978AbZAFXxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 18:53:31 -0500
+Date: Tue, 6 Jan 2009 18:53:22 -0500
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-nfs@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chuck Lever <chuck.lever@oracle.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
+Message-ID: <20090106235322.GE13785@fieldses.org>
+References: <20090106011314.534653345@us.ibm.com> <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com> <1231274682.20316.65.camel@heimdal.trondhjem.org> <20090106215831.GE18147@us.ibm.com> <m1eizg11fy.fsf@frodo.ebiederm.org> <1231283734.8041.6.camel@heimdal.trondhjem.org> <20090106233238.GD13785@fieldses.org> <1231284943.8041.8.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231284943.8041.8.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-06 at 18:31 -0500, Christoph Hellwig wrote:
-> Yes, the version you attached looks much better, and correct.
+On Tue, Jan 06, 2009 at 06:35:43PM -0500, Trond Myklebust wrote:
+> On Tue, 2009-01-06 at 18:32 -0500, J. Bruce Fields wrote:
+> > On Tue, Jan 06, 2009 at 06:15:34PM -0500, Trond Myklebust wrote:
+> > > On Tue, 2009-01-06 at 15:04 -0800, Eric W. Biederman wrote:
+> > > > That implies to me you want to capture the value at mount time, and to
+> > > > pass it in to the rpc_call creation, and only at very specific well
+> > > > defined points where we interact with user space should we examine
+> > > > current->utsname().  At which point there should be no question
+> > > > of current->utsname() is valid as the user space process is alive.
+> > > 
+> > > Why pretend that the filesystem is owned by a particular namespace? It
+> > > can, and will be shared among many containers...
+> > 
+> > If the only purpose of this is to fill in the auth_unix cred then
+> > shouldn't it be part of whatever cred structures are passed around?
 > 
-> Just some minor comments:
-> 
-> > +++ b/fs/hfsplus/export.c
-> > @@ -0,0 +1,118 @@
-> > +/*
-> > + *  linux/fs/hfsplus/export.c
-> > + *
-> 
-> Please don't put filenames in top of file comments.  They don't serve
-> any purpose and easily get out of date.
-> 
-> > +	if ( be16_to_cpu(entry.type) != HFSPLUS_FOLDER_THREAD) {
-> 
-> no space after the opening brace, please/
+> So how does tracking it in a shared structure like the rpc_client help?
+> If you consider it to be part of the cred, then it needs to be tracked
+> in the cred...
 
-One other nit, byteswap the constant so it can be done at compile-time:
+Right, that's what I meant.
 
-	if (entry.type != cpu_to_be16(HFSPLUS_FOLDER_THREAD)) {
+It seems like overkill, though.  Does anyone actually care whether these
+names are right?
 
-Harvey
-
+--b.
