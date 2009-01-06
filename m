@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZAFC5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZAFDF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752559AbZAFC5Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 21:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbZAFC5Q
+	id S1753859AbZAFDF1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 22:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZAFDFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 21:57:16 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:40617 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbZAFC5P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 21:57:15 -0500
-X-IronPort-AV: E=Sophos;i="4.36,334,1228107600"; 
-   d="scan'208";a="64807936"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Greg KH" <gregkh@suse.de>, viro@zeniv.linux.org.uk
-Subject: debugfs & vfs file permission issue?
-Date: Mon, 5 Jan 2009 21:57:07 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200901052157.07306.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 06 Jan 2009 02:56:56.0249 (UTC) FILETIME=[6F7F0A90:01C96FAA]
+	Mon, 5 Jan 2009 22:05:06 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54683 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753345AbZAFDFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 22:05:04 -0500
+Date: Tue, 6 Jan 2009 14:04:48 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Jonathan Brassow <jbrassow@redhat.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
+       Andi Kleen <ak@suse.de>, Cheng Renquan <crquan@gmail.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, Takahiro Yasui <tyasui@redhat.com>
+Subject: Re: [git pull] device-mapper patches for 2.6.29
+Message-Id: <20090106140448.a4f54d2b.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0901051843570.3057@localhost.localdomain>
+References: <20081010125159.GK5098@agk.fab.redhat.com>
+	<20090105191824.GP5098@agk.fab.redhat.com>
+	<alpine.LFD.2.00.0901051843570.3057@localhost.localdomain>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__6_Jan_2009_14_04_48_+1100_.iX5JcqqJq4DdTcQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2.6.28-rc2, If I create a debugfs file with
+--Signature=_Tue__6_Jan_2009_14_04_48_+1100_.iX5JcqqJq4DdTcQ
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-    debugfs_create_x16("SPORT1_TX", 0200 , parent, 0xFFC00910);
+Hi Alasdair.
 
-Although the file shows up as write only (no read):
+On Mon, 5 Jan 2009 18:51:00 -0800 (PST) Linus Torvalds <torvalds@linux-foun=
+dation.org> wrote:
+>
+> Oh no, this is totally broken, and doesn't compile even with my fairly=20
+> minimal install:
+>=20
+>   drivers/md/dm-target.c: In function =E2=80=98dm_unregister_target=E2=80=
+=99:
+>   drivers/md/dm-target.c:106: error: implicit declaration of function =E2=
+=80=98module_refcount=E2=80=99
 
-root:/> ls -l /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
---w-------    1 root     root            0 Jan  1  
-2007 /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
+This is from a patch added to linux-next only yesterday and was
+reported by Randy Dunlap from his overnight build testing.
 
-root:/> cat /sys/kernel/debug/blackfin/SPORT/SPORT1_TX
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Still works - and causes the read to occur, which crashes :(
+--Signature=_Tue__6_Jan_2009_14_04_48_+1100_.iX5JcqqJq4DdTcQ
+Content-Type: application/pgp-signature
 
-System MMR Error
-.....
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-I can do the same to any file by hand too.
+iEYEARECAAYFAkliylAACgkQjjKRsyhoI8zb9wCfWOSEjPCUWjxLSj9P0tNdiNUe
+v8sAoLoUNxIaR1gnZd03C8jb9RCPo8Q9
+=R8nO
+-----END PGP SIGNATURE-----
 
-root:/> ls -l /sys/kernel/debug/blackfin/RTC/RTC_STAT
--rw-------    1 root     root            0 Jan  1  
-2007 /sys/kernel/debug/blackfin/RTC/RTC_STAT
-root:/> cat /sys/kernel/debug/blackfin/RTC/RTC_STAT
-0xb81d3181
-root:/> chmod 0000 /sys/kernel/debug/blackfin/RTC/RTC_STAT
-root:/> ls -l /sys/kernel/debug/blackfin/RTC/RTC_STAT
-----------    1 root     root            0 Jan  1  
-2007 /sys/kernel/debug/blackfin/RTC/RTC_STAT
-root:/> cat /sys/kernel/debug/blackfin/RTC/RTC_STAT
-0xb81d31a5
-
-?
-
->From what I can tell from the call trace:
-
-cat (userspace)
-  system_call (into kernel)
-    sys_read
-      vfs_read
-        simple_attr_read
-          debugfs_u16_get
-            crash
-
-
-I would think that vfs_read should fail....
-
-./fs/read_write.c:vfs_read()
-
-        if (!(file->f_mode & FMODE_READ))
-                return -EBADF; 
-
-I don't understand while the inode that is created 
-
-fs/debugfs/inode.c:debugfs_get_inode()
-
-     inode->i_mode = mode; 
-
-isn't setting the f_mode properly.
-
-Any suggestions?
-
-Thanks
+--Signature=_Tue__6_Jan_2009_14_04_48_+1100_.iX5JcqqJq4DdTcQ--
