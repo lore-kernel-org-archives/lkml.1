@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZAFV6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZAFV7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZAFV6v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 16:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZAFV6l
+	id S1755160AbZAFV7d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 16:59:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbZAFV7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 16:58:41 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:54876 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750926AbZAFV6k (ORCPT
+	Tue, 6 Jan 2009 16:59:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36769 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750928AbZAFV7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 16:58:40 -0500
-Date: Tue, 6 Jan 2009 15:58:31 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Matt Helsley <matthltc@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-Message-ID: <20090106215831.GE18147@us.ibm.com>
-References: <20090106011314.534653345@us.ibm.com> <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com> <1231274682.20316.65.camel@heimdal.trondhjem.org>
+	Tue, 6 Jan 2009 16:59:24 -0500
+Date: Tue, 6 Jan 2009 13:59:17 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesper Nilsson <jesper.nilsson@axis.com>
+Subject: Re: [PATCH 03/23] cris: introduce asm/swab.h
+In-Reply-To: <1231277446.964.260.camel@brick>
+Message-ID: <alpine.LFD.2.00.0901061357150.3057@localhost.localdomain>
+References: <1231277446.964.260.camel@brick>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231274682.20316.65.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Trond Myklebust (trond.myklebust@fys.uio.no):
-> On Tue, 2009-01-06 at 14:02 -0600, Serge E. Hallyn wrote:
-> > Quoting Matt Helsley (matthltc@us.ibm.com):
-> > > We can often specify the UTS namespace to use when starting an RPC client.
-> > > However sometimes no UTS namespace is available (specifically during system
-> > > shutdown as the last NFS mount in a container is unmounted) so fall
-> > > back to the initial UTS namespace.
-> > 
-> > So what happens if we take this patch and do nothing else?
-> > 
-> > The only potential problem situation will be rpc requests
-> > made on behalf of a container in which the last task has
-> > exited, right?  So let's say a container did an nfs mount
-> > and then exits, causing an nfs umount request.
-> > 
-> > That umount request will now be sent with the wrong nodename.
-> > Does that actually cause problems, will the server use the
-> > nodename to try and determine the client sending the request?
+
+
+On Tue, 6 Jan 2009, Harvey Harrison wrote:
+>
+> cris holds its arch overrides in an arch/ folder, rename these
+> byteorder.h files to swab.h and include them from asm/swab.h
 > 
-> The NFSv2/v3 umount rpc call will be sent by the 'umount' program from
-> userspace, not the kernel. The problem here is that because lazy mounts
-> exist, the lifetime of the RPC client may be longer than that of the
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  arch/cris/include/arch-v10/arch/byteorder.h |   28 ---------------------------
+>  arch/cris/include/arch-v10/arch/swab.h      |   28 +++++++++++++++++++++++++++
+>  arch/cris/include/arch-v32/arch/byteorder.h |   22 ---------------------
+>  arch/cris/include/arch-v32/arch/swab.h      |   22 +++++++++++++++++++++
 
-Right that was what i was referring to.
 
-> container. In addition, it may be shared among more than 1 container,
-> because superblocks can be shared.
+Since you'e a git user, and you're basically renaming files while then 
+putting a new name in place, can you please send patches done with both 
+the "-M" flag (rename detection) _and_ the "-B" flag (which breaks 
+associations of files even if the name stays the same)?
 
-Good point.  And in that case what do we care about (even though
-apparently we just might not care at all :) - who did the mount,
-or who is using it?
+It's rare that this is needed, but it really helps. Now the patches look 
+like a big delete/create event, and it's not at all obvious that the code 
+is actually the same before and after.
 
-In fact one thing I noticed in Matt's patch 3 was that he copied
-in the nodename verbatim, so a future hostname() by the container
-wouldn't be reflected, again not sure if that would matter.
-
-> One thing you need to be aware of here is that inode dirty data
-> writebacks may be initiated by completely different processes than the
-> one that dirtied the inode.
-
-Right, but I *was* thinking that we wanted to associate the nodename
-on the rpc calls with the hostname of the mounter, not the actor.  Maybe
-you'll tell me above that that is bogus.
-
-> IOW: Aside from being extremely ugly, approaches like [PATCH 4/4] which
-> rely on being able to determine the container-specific node name at RPC
-> generation time are therefore going to return incorrect values.
-
-So should we use patch 2/4, plus (as someone - was it you? - suggested)
-using a DEFAULT instead of init_utsname()->nodename when
-current->utsname() == NULL?
-
--serge
+		Linus
