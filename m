@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZAFRR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZAFRTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbZAFRR5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 12:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbZAFRRh
+	id S1754381AbZAFRTu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 12:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZAFRTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 12:17:37 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48305 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752210AbZAFRRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 12:17:36 -0500
-Date: Tue, 6 Jan 2009 09:17:16 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Klotz <peter.klotz@aon.at>,
-       stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roman Kononov <kernel@kononov.ftml.net>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] mm: fix lockless pagecache reordering bug (was Re:
-	BUG: soft lockup - is this XFS problem?)
-Message-ID: <20090106171716.GB6969@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090103214443.GA6612@infradead.org> <20090105014821.GA367@wotan.suse.de> <20090105041959.GC367@wotan.suse.de> <20090105064838.GA5209@wotan.suse.de> <49623384.2070801@aon.at> <20090105164135.GC32675@wotan.suse.de> <alpine.LFD.2.00.0901050859430.3057@localhost.localdomain> <20090105180008.GE32675@wotan.suse.de> <alpine.LFD.2.00.0901051027011.3057@localhost.localdomain> <alpine.LFD.2.00.0901051131090.3057@localhost.localdomain>
+	Tue, 6 Jan 2009 12:19:39 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:22716 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751773AbZAFRTi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 12:19:38 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] x86 PCI: Do not use interrupt links for devices using MSI-X
+Date: Tue, 6 Jan 2009 10:19:04 -0700
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <200901042308.42625.rjw@sisk.pl>
+In-Reply-To: <200901042308.42625.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901051131090.3057@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200901061019.04488.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 11:39:29AM -0800, Linus Torvalds wrote:
-> On Mon, 5 Jan 2009, Linus Torvalds wrote:
-> > Either the value can change, or it can not. It's that simple.
-> > 
-> > If it cannot change, then we can load it just once, or we can load it 
-> > multiple times, and it won't matter. Barriers won't do anything but screw 
-> > up the code.
-> > 
-> > If it can change from under us, you need to use rcu_dereference(), or 
-> > open-code it with an ACCESS_ONCE() or put in barriers. But your placement 
-> > of a barrier was NONSENSICAL. Your barrier didn't protect anything else - 
-> > like the test for the RADIX_TREE_INDIRECT_PTR bit.
-> > 
-> > And that was the fundamental problem.
-> 
-> Btw, this is the real issue with anything that does "locking vs 
-> optimistic" accesses.
-> 
-> If you use locking, then by definition (if you did things right), the 
-> values you are working with do not change. As a result, it doesn't matter 
-> if the compiler re-orders accesses, splits them up, or coalesces them. 
-> It's why normal code should never need barriers, because it doesn't matter 
-> whether some access gets optimized away or gets done multiple times.
-> 
-> But whenever you use an optimistic algorithm, and the data may change 
-> under you, you need to use barriers or other things to limit the things 
-> the CPU and/or compiler does.
-> 
-> And yes, "rcu_dereference()" is one such thing - it's not a barrier in the 
-> sense that it doesn't necessarily affect ordering of accesses to other 
-> variables around it (although the read_barrier_depends() obviously _is_ a 
-> very special kind of ordering wrt the pointer itself on alpha). But it 
-> does make sure that the compiler at least does not coalesce - or split - 
-> that _one_ particular access.
-> 
-> It's true that it has "rcu" in its name, and it's also true that that may 
-> be a bit misleading in that it's very much useful not just for rcu, but 
-> for _any_ algorithm that depends on rcu-like behavior - ie optimistic 
-> accesses to data that may change underneath it. RCU is just the most 
-> commonly used (and perhaps best codified) variant of that kind of code.
+On Sunday 04 January 2009 03:08:42 pm Rafael J. Wysocki wrote:
+> pcibios_enable_device() and pcibios_disable_device() don't handle
+> IRQs for devices that have MSI enabled and it should tread the
+> devices with MSI-X enabled in the same way.
 
-The codification is quite important -- otherwise RCU would be a knife
-without a handle.  And some would no doubt argue that RCU is -still-
-a knife without a handle, but so it goes.  It does still need more work.
-And I hope that additional codification of other optimistic concurrency
-algorithms will make them more usable as well.
+There are other places that need similar fixes, too, aren't there?
+I see cris, frv, ia64, and a driver or two testing dev->msi_enabled.
 
-							Thanx, Paul
+> --- linux-2.6.orig/arch/x86/pci/common.c
+> +++ linux-2.6/arch/x86/pci/common.c
+> @@ -551,14 +551,14 @@ int pcibios_enable_device(struct pci_dev
+>  	if ((err = pci_enable_resources(dev, mask)) < 0)
+>  		return err;
+>  
+> -	if (!dev->msi_enabled)
+> +	if (!dev->msi_enabled && !dev->msix_enabled)
+>  		return pcibios_enable_irq(dev);
+>  	return 0;
+>  }
+>  
+>  void pcibios_disable_device (struct pci_dev *dev)
+>  {
+> -	if (!dev->msi_enabled && pcibios_disable_irq)
+> +	if (!dev->msi_enabled && !dev->msix_enabled && pcibios_disable_irq)
+>  		pcibios_disable_irq(dev);
+>  }
