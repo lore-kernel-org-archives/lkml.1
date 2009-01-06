@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZAFTml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZAFTqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbZAFTml (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 14:42:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZAFTmd
+	id S1753416AbZAFTqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 14:46:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZAFTqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 14:42:33 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:49759 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbZAFTmc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 14:42:32 -0500
-Subject: Re: Btrfs for mainline
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Ryusuke Konishi <ryusuke@osrg.net>
-In-Reply-To: <1230722935.4680.5.camel@think.oraclecorp.com>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 14:41:33 -0500
-Message-Id: <1231270893.4888.19.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 6 Jan 2009 14:46:03 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37569 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751136AbZAFTqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 14:46:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] x86 PCI: Do not use interrupt links for devices using MSI-X
+Date: Tue, 6 Jan 2009 20:45:19 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <200901042308.42625.rjw@sisk.pl> <200901061019.04488.bjorn.helgaas@hp.com>
+In-Reply-To: <200901061019.04488.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4963B3F1.027B:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200901062045.21766.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Tuesday 06 January 2009, Bjorn Helgaas wrote:
+> On Sunday 04 January 2009 03:08:42 pm Rafael J. Wysocki wrote:
+> > pcibios_enable_device() and pcibios_disable_device() don't handle
+> > IRQs for devices that have MSI enabled and it should tread the
+> > devices with MSI-X enabled in the same way.
+> 
+> There are other places that need similar fixes, too, aren't there?
+> I see cris, frv, ia64, and a driver or two testing dev->msi_enabled.
 
-Thanks for all of the comments so far.  I've pushed out a number of
-fixes for btrfs mainline, covering most of the comments from this
-thread.
+Well, I didn't look at the other places, just found this one while reviewing
+the code.
 
-* All LINUX_KERNEL_VERSION checks are gone.
-* checkpatch.pl fixes
-* Extra permission checks on the ioctls
-* Some important bug fixes from the btrfs list
-* Andi found a buggy use of kmap_atomic during checksum verification
-* Drop EXPORT_SYMBOLs from extent_io.c
-
-Unresolved from this reviewing thread:
-
-* Should it be named btrfsdev?  My vote is no, it is extra work for the
-distros when we finally do rename it, and I don't think btrfs really has
-the reputation for stability right now.  But if Linus or Andrew would
-prefer the dev on there, I'll do it.
-
-* My ugly mutex_trylock spin.  It's a hefty performance gain so I'm
-hoping to keep it until there is a generic adaptive lock.
-
-The full kernel tree is here:
-
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=summary
-
-
-The standalone tree just has the btrfs files and commits, reviewers may
-find it easier:
-
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable-standalone.git;a=summary
-
-The utilities can be found here:
-
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-progs-unstable.git;a=summary
-
--chris
-
-
+I'll check them later this week.
+ 
+> > --- linux-2.6.orig/arch/x86/pci/common.c
+> > +++ linux-2.6/arch/x86/pci/common.c
+> > @@ -551,14 +551,14 @@ int pcibios_enable_device(struct pci_dev
+> >  	if ((err = pci_enable_resources(dev, mask)) < 0)
+> >  		return err;
+> >  
+> > -	if (!dev->msi_enabled)
+> > +	if (!dev->msi_enabled && !dev->msix_enabled)
+> >  		return pcibios_enable_irq(dev);
+> >  	return 0;
+> >  }
+> >  
+> >  void pcibios_disable_device (struct pci_dev *dev)
+> >  {
+> > -	if (!dev->msi_enabled && pcibios_disable_irq)
+> > +	if (!dev->msi_enabled && !dev->msix_enabled && pcibios_disable_irq)
+> >  		pcibios_disable_irq(dev);
+> >  }
