@@ -1,201 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZAFCGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZAFCG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZAFCGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Jan 2009 21:06:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZAFCGA
+	id S1753512AbZAFCG4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Jan 2009 21:06:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbZAFCGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Jan 2009 21:06:00 -0500
-Received: from ns1.suse.de ([195.135.220.2]:45745 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbZAFCF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Jan 2009 21:05:59 -0500
-Date: Tue, 6 Jan 2009 03:05:50 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Klotz <peter.klotz@aon.at>, stable@kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roman Kononov <kernel@kononov.ftml.net>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] mm: fix lockless pagecache reordering bug (was Re: BUG: soft lockup - is this XFS problem?)
-Message-ID: <20090106020550.GA819@wotan.suse.de>
-References: <20090105041959.GC367@wotan.suse.de> <20090105064838.GA5209@wotan.suse.de> <49623384.2070801@aon.at> <20090105164135.GC32675@wotan.suse.de> <alpine.LFD.2.00.0901050859430.3057@localhost.localdomain> <20090105180008.GE32675@wotan.suse.de> <alpine.LFD.2.00.0901051027011.3057@localhost.localdomain> <20090105201258.GN6959@linux.vnet.ibm.com> <alpine.LFD.2.00.0901051224110.3057@localhost.localdomain> <20090105215727.GQ6959@linux.vnet.ibm.com>
+	Mon, 5 Jan 2009 21:06:48 -0500
+Received: from fwtops.0.225.230.202.in-addr.arpa ([202.230.225.126]:27463 "EHLO
+	topsms.toshiba-tops.co.jp" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751293AbZAFCGr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Jan 2009 21:06:47 -0500
+Date: Tue, 06 Jan 2009 11:06:42 +0900 (JST)
+Message-Id: <20090106.110642.130607183.nemoto@toshiba-tops.co.jp>
+To: dan.j.williams@intel.com
+Cc: anemo@mba.ocn.ne.jp, haavard.skinnemoen@atmel.com,
+       linux-kernel@vger.kernel.org, hskinnemoen@atmel.com,
+       maciej.sosnowski@intel.com, ralf@linux-mips.org
+Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer
+ before DMA
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <4962B414.8010601@intel.com>
+References: <e9c3a7c20901051031y528d0d31r18d44c5096c59e0@mail.gmail.com>
+	<20090106.101425.109407744.nemoto@toshiba-tops.co.jp>
+	<4962B414.8010601@intel.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090105215727.GQ6959@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 01:57:27PM -0800, Paul E. McKenney wrote:
-> On Mon, Jan 05, 2009 at 12:39:14PM -0800, Linus Torvalds wrote:
-> > 
-> > 
-> > On Mon, 5 Jan 2009, Paul E. McKenney wrote:
-> > > 
-> > > My guess is that Nick believes that the value in *pslot cannot change
-> > > in such as way as to cause radix_tree_is_indirect_ptr()'s return value
-> > > to change within a given RCU grace period, and that Linus disagrees.
-> > 
-> > Oh, it's entirely possible that there are some lifetime rules or others 
-> > that make it impossible for things to go from "not indirect" -> 
-> > "indirect". So if that was Nick's point, then I'm not "disagreeing" per 
-> > se.
-> > 
-> > What I'm disagreeing about is that Nick apparently thinks that this is all 
-> > subtle code, and as a result we should add barriers in some very 
-> > non-obvious places.
-> > 
-> > While _I_ think that the problem isn't properly solved by barriers, but by 
-> > just making the code less subtle. If the barrier only exists because of 
-> > the reload issue, then the obvious solution - to me - is to just use what 
-> > is already the proper accessor function that forces a nice reload. That 
-> > way the compiler is forced to create code that does what the source 
-> > clearly means it to do, regardless of any barriers at all.
-> > 
-> > Barriers in general should be the _last_ thing added. And if they are 
-> > added, they should be added as deeply in the call-chain as possible, so 
-> > that we don't need to add them in multiple call-sites. Again, using the 
-> > rcu_dereference() approach seems to solve that issue too - rather than add 
-> > three barriers in three different places, we just add the proper 
-> > dereference in _one_ place.
+On Mon, 05 Jan 2009 18:29:56 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
+> > Yes, MIPS and ARM do different thing on partial cache line.  But I
+> > suppose this belongs to "implementation dependent" area of DMA API so
+> > users of the API should not depend on it.  (Well, maybe I'm biased to
+> > MIPS ;-))
+> > In general, drivers must not put normal data and DMA buffer on same
+> > cacheline anyway to avoid unexpected writeback and data loss.  So this
+> > ambiguity is not a problem.  IMHO writeback of the partial line for
+> > DMA_FROM_DEVICE just _hides_ abusing of the DMA API and potential data
+> > loss.
 > 
-> I don't have any argument with this line of reasoning, and am myself a bit
-> puzzled as to why rcu_dereference() isn't the right tool for Nick's job.
-> Then again, I don't claim to fully understand what he is trying to do.
+> Hmm... one implementation does the right thing in all cases.
 
-OK, granted I do need the ACCESS_ONCE. It is loading a pointer who's target
-can be changed concurrently with the rcu algorithm. The rcu_derefernce
-thing kind of set me thinking down the wrong track, because the object of the
-pointer it loads is not RCU protected and doesn't need the memory barrier
-(on alpha).
+Yes, with additional checking in generic path :-)
 
-But... RCU radix tree is not only used for the pagecache, so it's probably not
-worth complicating things to seperate out those two cases. rcu_dereference
-might be the best fit.
+> The other silently allows data corruption unless each callsite that
+> accidentally or purposely passes cacheline-unaligned buffers adds
+> extra maintenance code.  Which implementation are you biased towards
+> now? :-).
 
+Hmm... this is generic DMA mapping API (or linux-arch) issue.  Let's
+wait comments from arch maintainers.  Ralf ?
 
-> > > Whatever the answer, I would argue for -at- -least- a comment explaining
-> > > why it is safe.  I am not seeing the objection to rcu_dereference(), but
-> > > I must confess that it has been awhile since I have looked closely at
-> > > the radix_tree code.  :-/
-> > 
-> > And I'm actually suprised that gcc can generate the problematic code in 
-> > the first place. I'd expect that a "atomic_add_unless()" would always be 
-> > at LEAST a compiler barrier, even if it isn't necessarily a CPU memory 
-> > barrier.
-> > 
-> > But because we inline it, and because we allow gcc to see that it doesn't 
-> > do anything if it gets just the right value from memory, I guess gcc ends 
-> > up able to change the "for()" loop so that the first iteration can exit 
-> > specially, and then for that case (and no other case) it can cache 
-> > variables over the whole atomic_add_unless().
-> > 
-> > Again, that's very fragile. The fact that Documentation/atomic_ops.txt 
-> > says that the failure case doesn't contain any barriers is really _meant_ 
-> > to be about the architecture-specific CPU barriers, not so much about 
-> > something as simple as a compiler re-ordering. 
-> > 
-> > So while I think that we should use rcu_dereference() (regardless of any 
-> > other issues), I _also_ think that part of the problem really is the 
-> > excessive subtlety in the whole code, and the (obviously very surprising) 
-> > fact that gcc could end up caching an unrelated memory load across that 
-> > whole atomic op.
-> > 
-> > Maybe we should make atomics always imply a compiler barrier, even when 
-> > they do not imply a memory barrier. The one exception would be the 
-> > (special) case of "atomic_read()/atomic_set()", which don't really do any 
-> > kind of complex operation at all, and where we really do want the compiler 
-> > to be able to coalesce multiple atomic_reads() to a single one.
-> > 
-> > In contrast, there's no sense in allowing the compiler to coalesce a 
-> > "atomic_add_unless()" with anything else. Making it a compiler barrier 
-> > (possibly by uninlining it, or just adding a barrier to it) would also 
-> > have avoided the whole subtle case - which is always a good thing.
-> 
-> That makes a lot of sense to me!
-
-It would have avoided one problem (the same one my patch did). But it
-doesn't solve the problem of the missing ACCESS_ONCE allowing the
-pointer to be reloaded from the slot pointer.
-
-Sticking an rcu_dereference in radix_tree_deref_slot seems to fix the
-assembly for me too, I grafted the changelog onto that. Linus probably
-you are using -Os?
-
---
-Subject: mm lockless pagecache barrier fix
-
-An XFS workload showed up a bug in the lockless pagecache patch. Basically it
-would go into an "infinite" loop, although it would sometimes be able to break
-out of the loop! The reason is a missing compiler barrier in the "increment
-reference count unless it was zero" case of the lockless pagecache protocol in
-the gang lookup functions.
-
-This would cause the compiler to use a cached value of struct page pointer to
-retry the operation with, rather than reload it. So the page might have been
-removed from pagecache and freed (refcount==0) but the lookup would not correctly
-notice the page is no longer in pagecache, and keep attempting to increment the
-refcount and failing, until the page gets reallocated for something else. This
-isn't a data corruption because the condition will be detected if the page has
-been reallocated. However it can result in a lockup. 
-
-Linus points out that ACCESS_ONCE is also required in that pointer load, even
-if it's absence is not causing a bug on our particular build. The most general
-way to solve this is just to put an rcu_dereference in radix_tree_deref_slot.
-
-Assembly of find_get_pages,
-before:
-.L220:
-        movq    (%rbx), %rax    #* ivtmp.1162, tmp82
-        movq    (%rax), %rdi    #, prephitmp.1149
-.L218:
-        testb   $1, %dil        #, prephitmp.1149
-        jne     .L217   #,
-        testq   %rdi, %rdi      # prephitmp.1149
-        je      .L203   #,
-        cmpq    $-1, %rdi       #, prephitmp.1149
-        je      .L217   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L218   #,
-
-after:
-.L212:
-        movq    (%rbx), %rax    #* ivtmp.1109, tmp81
-        movq    (%rax), %rdi    #, ret
-        testb   $1, %dil        #, ret
-        jne     .L211   #,
-        testq   %rdi, %rdi      # ret
-        je      .L197   #,
-        cmpq    $-1, %rdi       #, ret
-        je      .L211   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L212   #,
-
-(notice the obvious infinite loop in the first example, if page->count remains 0)
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
 ---
- include/linux/radix-tree.h |    2 +-
- mm/filemap.c               |   23 ++++++++++++++++++++---
- 2 files changed, 21 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/include/linux/radix-tree.h
-===================================================================
---- linux-2.6.orig/include/linux/radix-tree.h
-+++ linux-2.6/include/linux/radix-tree.h
-@@ -136,7 +136,7 @@ do {									\
-  */
- static inline void *radix_tree_deref_slot(void **pslot)
- {
--	void *ret = *pslot;
-+	void *ret = rcu_dereference(*pslot);
- 	if (unlikely(radix_tree_is_indirect_ptr(ret)))
- 		ret = RADIX_TREE_RETRY;
- 	return ret;
-
+Atsushi Nemoto
