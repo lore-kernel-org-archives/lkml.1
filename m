@@ -1,135 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695AbZAFJAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZAFJCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752695AbZAFJAz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 04:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbZAFJAr
+	id S1753392AbZAFJCZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 04:02:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZAFJCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 04:00:47 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:6544 "EHLO kernel.dk"
+	Tue, 6 Jan 2009 04:02:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60465 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750906AbZAFJAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 04:00:46 -0500
-Date: Tue, 6 Jan 2009 09:59:41 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Divyesh Shah <dpshah@google.com>
-Cc: nauman@google.com, mikew@google.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow RT requests to pre-empt ongoing BE timeslice in CFQ.
-Message-ID: <20090106085941.GB32491@kernel.dk>
-References: <20090106062242.6330.27688.stgit@austin.corp.google.com>
+	id S1750845AbZAFJCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 04:02:03 -0500
+Date: Tue, 6 Jan 2009 10:01:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       Cliff Wickman <cpw@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: [patch] x86: make UV support optional
+Message-ID: <20090106090138.GD29917@elte.hu>
+References: <20090106060348.GA16738@wotan.suse.de> <86802c440901052238x5ff919f1u31360163e547b306@mail.gmail.com> <20090106064433.GB16738@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090106062242.6330.27688.stgit@austin.corp.google.com>
+In-Reply-To: <20090106064433.GB16738@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_00,FR_ALMOST_VIAG2 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	2.0 FR_ALMOST_VIAG2        RAW: Almost looks like viagra.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05 2009, Divyesh Shah wrote:
-> This patch adds the ability to pre-empt an ongoing BE timeslice when a RT
-> request is waiting for the current timeslice to complete. This reduces the
-> wait time to disk for RT requests from an upper bound of 4 (current value
-> of cfq_quantum) to 1 disk request.
+
+* Nick Piggin <npiggin@suse.de> wrote:
+
+> On Mon, Jan 05, 2009 at 10:38:17PM -0800, Yinghai Lu wrote:
+> > On Mon, Jan 5, 2009 at 10:03 PM, Nick Piggin <npiggin@suse.de> wrote:
+> > > UV is fairly rare.... and much of the support is already there to cope with
+> > > 32-bit builds. So this makes sense I think.
+> > >
+> > > --
+> > > Make X86 SGI Ultraviolet support configurable. Saves about 13K of text size
+> > > on my modest config.
+> > >
+> > >   text    data     bss     dec     hex filename
+> > > 6770537 1158680  694356 8623573  8395d5 vmlinux
+> > > 6757492 1157664  694228 8609384  835e68 vmlinux.nouv
+> > >
+> > > Signed-off-by: Nick Piggin <npiggin@suse.de>
+> > > ---
+> > >  arch/x86/Kconfig                  |    7 +++++++
+> > >  arch/x86/include/asm/genapic.h    |   24 ++++++++++++++++++++++++
+> > >  arch/x86/include/asm/genapic_32.h |    7 -------
+> > >  arch/x86/include/asm/genapic_64.h |    9 ---------
+> > >  arch/x86/kernel/Makefile          |    5 +++--
+> > >  arch/x86/kernel/entry_64.S        |    2 ++
+> > >  arch/x86/kernel/genapic_64.c      |    3 ++-
+> > >  arch/x86/kernel/io_apic.c         |    2 +-
+> > >  8 files changed, 39 insertions(+), 20 deletions(-)
+> > 
+> > how about
+> > kernel/efi.c:                   efi.uv_systab = config_tables[i].table;
+> > ?
 > 
-> Signed-off-by: Divyesh Shah <dpshah@google.com>
-> ---
-> Patch based on 2.6.28 linus tree.
-> 
-> Test Results:
-> Latency(secs) for the RT task when doing sequential reads from 10G file.
->                          only RT | RT + BE | RT + BE + this patch
-> small (512 byte) reads | 143     | 163     | 146
-> large (1Mb) reads      | 142     | 158     | 146
+> Good point, I missed that. Will resend a patch with that ifdef'ed 
+> tomorrow unless any serious objections are raised.
 
-Results look good. I'm not too keen on doing the rb lookup, how about we
-just track pending rt queues instead? Add a counter to cfqd
-(busy_rq_queues) and inc/dec that along with busy_queues, then check
-that in the two locations? If that value is non-zero, an rt queue should
-be returned with cfq_rb_first() as well.
+Looks good to me, but please also extend the Makefile changes to 
+kernel/tlb_uv.c, ./kernel/uv_sysfs.c, kernel/uv_irq.c, kernel/bios_uv.c - 
+UV not just the genapic bits. Perhaps do it via gradual patches.
 
-Also, the places that test cfq_class_be() seem more appropriate as
-!cfq_class_rt() checks, as that also covers idle queues.
-
-How does the below look to you? It's untested here, but it compiles. I'd
-appreciate your comments and testing!
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index e8525fa..8640199 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -84,6 +84,7 @@ struct cfq_data {
- 	 */
- 	struct cfq_rb_root service_tree;
- 	unsigned int busy_queues;
-+	unsigned int busy_rt_queues;
- 
- 	int rq_in_driver;
- 	int sync_flight;
-@@ -562,6 +563,8 @@ static void cfq_add_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	BUG_ON(cfq_cfqq_on_rr(cfqq));
- 	cfq_mark_cfqq_on_rr(cfqq);
- 	cfqd->busy_queues++;
-+	if (cfq_class_rt(cfqq))
-+		cfqd->busy_rt_queues++;
- 
- 	cfq_resort_rr_list(cfqd, cfqq);
- }
-@@ -581,6 +584,8 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 
- 	BUG_ON(!cfqd->busy_queues);
- 	cfqd->busy_queues--;
-+	if (cfq_class_rt(cfqq))
-+		cfqd->busy_rt_queues--;
- }
- 
- /*
-@@ -1005,6 +1010,20 @@ static struct cfq_queue *cfq_select_queue(struct cfq_data *cfqd)
- 		goto expire;
- 
- 	/*
-+	 * If we have RT queues waiting, then we preempt the current non-rt
-+	 * cfqq.
-+	 */
-+	if (!cfq_class_rt(cfqq) && cfqd->busy_rt_queues) {
-+		/*
-+		 * We simulate this as cfqq timed out so that it gets to bank
-+		 * the remaining of its time slice.
-+		 */
-+		cfq_log_cfqq(cfqd, cfqq, "preempt from RT");
-+		cfq_slice_expired(cfqd, 1);
-+		goto new_queue;
-+	}
-+
-+	/*
- 	 * The active queue has requests and isn't expired, allow it to
- 	 * dispatch.
- 	 */
-@@ -1067,6 +1086,12 @@ __cfq_dispatch_requests(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		if (RB_EMPTY_ROOT(&cfqq->sort_list))
- 			break;
- 
-+		/*
-+		 * If we have pending rt queues, stop dispatching
-+		 */
-+		if (!cfq_class_rt(cfqq) && cfqd->busy_rt_queues)
-+			break;
-+
- 	} while (dispatched < max_dispatch);
- 
- 	/*
-@@ -1801,6 +1826,12 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
- 	if (rq_is_meta(rq) && !cfqq->meta_pending)
- 		return 1;
- 
-+	/*
-+	 * Allow an RT request to pre-empt an ongoing BE cfqq timeslice.
-+	 */
-+	if (cfq_class_rt(new_cfqq) && !cfq_class_rt(cfqq))
-+		return 1;
-+
- 	if (!cfqd->active_cic || !cfq_cfqq_wait_request(cfqq))
- 		return 0;
- 
-
--- 
-Jens Axboe
-
+	Ingo
