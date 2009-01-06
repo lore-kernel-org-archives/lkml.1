@@ -1,71 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZAFUUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZAFUVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbZAFUUE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 15:20:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZAFUTx
+	id S1754874AbZAFUVJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 15:21:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZAFUUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 15:19:53 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:50658 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751535AbZAFUTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 15:19:52 -0500
-Date: Tue, 6 Jan 2009 14:19:50 -0600
-From: Robin Holt <holt@sgi.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Dimitri Sivanich <sivanich@sgi.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
-       Tony Luck <tony.luck@gmail.com>, Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
-Message-ID: <20090106201950.GA3850@sgi.com>
-References: <20090106162741.GA7991@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com>
+	Tue, 6 Jan 2009 15:20:55 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:45972 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751869AbZAFUUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 15:20:54 -0500
+Date: Tue, 6 Jan 2009 15:20:46 -0500
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Matt Helsley <matthltc@us.ibm.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-nfs@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Chuck Lever <chuck.lever@oracle.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
+Message-ID: <20090106202046.GF5901@fieldses.org>
+References: <20090106011314.534653345@us.ibm.com> <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <20090106200229.GA17031@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 12:15:34PM -0800, Luck, Tony wrote:
-> > Turn on CONFIG_HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN.
-> >
-> > SGI Altix has unsynchronized itc clocks.  This results in rq->clock
-> > occasionally being set to a time in the past by a remote cpu.
+On Tue, Jan 06, 2009 at 02:02:29PM -0600, Serge E. Hallyn wrote:
+> Quoting Matt Helsley (matthltc@us.ibm.com):
+> > We can often specify the UTS namespace to use when starting an RPC client.
+> > However sometimes no UTS namespace is available (specifically during system
+> > shutdown as the last NFS mount in a container is unmounted) so fall
+> > back to the initial UTS namespace.
 > 
-> SGI Altix is definitely the worst offender here. On heterogeneneous
-> systems with different model cpus across nodes the itc rate may differ
-> by hundreds of megahertz.  Even when all cpus are at the same rated
-> speed, different nodes are driven from different crystals, so the itc
-> values will slowly drift apart (Linux discovers this from SAL and so
-> doesn't bother to synchronize them).
+> So what happens if we take this patch and do nothing else?
 > 
-> > Note that it is possible that this problem may exist for other ia64
-> > machines as well, based on the following comment for sched_clock() in
-> > arch/ia64/kernel/head.S:
-> >
-> > * Return a CPU-local timestamp in nano-seconds.  This timestamp is
-> > * NOT synchronized across CPUs its return value must never be
-> > * compared against the values returned on another CPU.  The usage in
-> > * kernel/sched.c ensures that.
+> The only potential problem situation will be rpc requests
+> made on behalf of a container in which the last task has
+> exited, right?  So let's say a container did an nfs mount
+> and then exits, causing an nfs umount request.
 > 
-> When sched_clock() was first created this was part of its definition.
-> It meant that sched_clock could be simple & fast because it didn't
-> need to be synchronized across cpus.
-> 
-> It seems that new uses have grown for it that no longer allow that
-> flexibility.
-> 
-> All ia64 systems are potentially affected ... but perhaps you might
-> never see the problem on most because the itc clocks are synced as close
-> as s/w can get them when cpus are brought on line.
+> That umount request will now be sent with the wrong nodename.
+> Does that actually cause problems, will the server use the
+> nodename to try and determine the client sending the request?
 
-Do you want Dimitri to resubmit with this set for all IA64 or leave it
-as is?
+This is just the machine name in the auth_unix credential?  The linux
+server ignores that completely (for the purpose of auth_unix
+authenication, it identifies clients only by source ip address).  I
+suspect other servers also ignore it, but I don't know.
 
-Thanks,
-Robin
+--b.
+
+> 
+> thanks,
+> -serge
+> 
+> > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> > Cc: Cedric Le Goater <clg@fr.ibm.com>
+> > Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> > Cc: linux-nfs@vger.kernel.org
+> > Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+> > Cc: Chuck Lever <chuck.lever@oracle.com>
+> > Cc: Eric W. Biederman <ebiederm@xmission.com>
+> > Cc: Linux Containers <containers@lists.osdl.org>
+> > 
+> > ---
+> >  net/sunrpc/clnt.c |    7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6.28/net/sunrpc/clnt.c
+> > ===================================================================
+> > --- linux-2.6.28.orig/net/sunrpc/clnt.c
+> > +++ linux-2.6.28/net/sunrpc/clnt.c
+> > @@ -128,6 +128,7 @@ static struct rpc_clnt * rpc_new_client(
+> >  	struct rpc_version	*version;
+> >  	struct rpc_clnt		*clnt = NULL;
+> >  	struct rpc_auth		*auth;
+> > +	struct new_utsname	*uts_ns = init_utsname();
+> >  	int err;
+> >  	size_t len;
+> > 
+> > @@ -213,10 +214,12 @@ static struct rpc_clnt * rpc_new_client(
+> >  	}
+> > 
+> >  	/* save the nodename */
+> > -	clnt->cl_nodelen = strlen(init_utsname()->nodename);
+> > +	if (current->nsproxy != NULL)
+> > +		uts_ns = utsname();
+> > +	clnt->cl_nodelen = strlen(uts_ns->nodename);
+> >  	if (clnt->cl_nodelen > UNX_MAXNODENAME)
+> >  		clnt->cl_nodelen = UNX_MAXNODENAME;
+> > -	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt->cl_nodelen);
+> > +	memcpy(clnt->cl_nodename, uts_ns->nodename, clnt->cl_nodelen);
+> >  	rpc_register_client(clnt);
+> >  	return clnt;
+> > 
+> > 
+> > -- 
+> > _______________________________________________
+> > Containers mailing list
+> > Containers@lists.linux-foundation.org
+> > https://lists.linux-foundation.org/mailman/listinfo/containers
