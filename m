@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZAFXkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZAFXn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbZAFXkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:40:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbZAFXj7
+	id S1755552AbZAFXn0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZAFXnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:39:59 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:60449 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752418AbZAFXj5 (ORCPT
+	Tue, 6 Jan 2009 18:43:18 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:31261 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbZAFXnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:39:57 -0500
+	Tue, 6 Jan 2009 18:43:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references
-         :in-reply-to:content-type:content-transfer-encoding:from;
-        b=ffQnHsDmy/VLcvN4WXhyX1O3KTEN4P+JJWAGmHX1WxZSGRO+ym9yv6vsa8OzUcvAr5
-         9u3eXSwBap00EFk1iQWaaLnSOn2aQ6N+91CXjfuJ/FXRiHLhXsw2xfKB7PAK8C2dveq2
-         ss61gufye/IqdaeEAHhYLQKL8f8WyrvUb5qog=
-Message-ID: <4963EBD0.2080907@gmail.com>
-Date: Tue, 06 Jan 2009 23:40:00 +0000
-User-Agent: Thunderbird 2.0.0.19 (X11/20090104)
-MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28: warn_slowpath in orinoco receive path
-References: <200901052005.12428.arvidjaar@mail.ru> <200901061251.41628.arvidjaar@mail.ru> <4963B8BE.9000204@gmail.com> <200901070007.52508.arvidjaar@mail.ru>
-In-Reply-To: <200901070007.52508.arvidjaar@mail.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=eB94V+8EWwUPvlj48qhPqvbDrGVyERPB9Qbq5dQ2jpuEqA3G+uaha7hanYiYuLmPro
+         rSyWjdOQI96/qfQ6Qbzba4ibfg8UdGIKVV2ZjNM3oBscrPfy+GJK/qLN21QkItKEVLlV
+         0nxLAHTFUFcmMPpeVmPBGuONOyR+W0K84NntQ=
+Subject: Re: [PATCH 14/23] arm: introduce asm/swab.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090106231453.GA3568@flint.arm.linux.org.uk>
+References: <1231277452.964.271.camel@brick>
+	 <20090106231235.GB20623@flint.arm.linux.org.uk>
+	 <20090106231453.GA3568@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Tue, 06 Jan 2009 15:42:07 -0800
+Message-Id: <1231285327.1529.2.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-From: Dave <kilroyd@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> On 06 January 2009 23:02:06 Dave wrote:
+On Tue, 2009-01-06 at 23:14 +0000, Russell King wrote:
+> On Tue, Jan 06, 2009 at 11:12:35PM +0000, Russell King wrote:
+> > Thanks for bypassing me.
+> > 
+> > We've had this patch in the kernel before, then it got reverted.
 > 
->> Since we have to use spinlock we should introduce an rx_lock
->> specifically to protect the list so the tasklet is not held up by
->> anything else the driver is doing. I'll put something together if you
->> don't get round to it first.
->>
-> 
-> You mean something like attached patch? Not sure if it worth it frankly.
+> Correction - we've had something similar to this before.
 
-That's what I meant. I forgot we took orinoco_lock in orinoco_interrupt
-though, and that highlights the fact that I've neglected to ensure
-orinoco_lock is held when orinoco_rx is called from the tasklet.
+This got hashed out between HPA, David Woodhouse and I and agreed that
+we'd keep the headers exported.
 
-So the locking gets simpler and fixes more problems than the one you
-noticed. But there's some extra cleanup to do. I'll submit a patch in a
-second.
+Linus didn't like the conditional byteorder.h and some arches were
+already using it.  So I did the sweep of all arches just to get
+this over with and move on.  Sorry I didn't give you a heads up
+beforehand.
 
-I'm surprised my wireless hasn't misbehaved in the last year.
+Cheers,
 
+Harvey
 
-Dave.
