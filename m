@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbZAFUJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZAFUQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755025AbZAFUJX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 15:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbZAFUJG
+	id S1754110AbZAFUQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 15:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZAFUQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 15:09:06 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:56610 "EHLO fieldses.org"
+	Tue, 6 Jan 2009 15:16:20 -0500
+Received: from mga01.intel.com ([192.55.52.88]:17349 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754399AbZAFUJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 15:09:03 -0500
-Date: Tue, 6 Jan 2009 15:08:54 -0500
-To: David Howells <dhowells@redhat.com>
-Cc: hch@lst.de, jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] CRED: Fix NFSD regression
-Message-ID: <20090106200854.GD5901@fieldses.org>
-References: <20090106194101.GB5901@fieldses.org> <806.1231174132@redhat.com> <20090105171937.4463.98583.stgit@warthog.procyon.org.uk> <28704.1231271771@redhat.com>
+	id S1751094AbZAFUQT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 15:16:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,221,1231142400"; 
+   d="scan'208";a="420158155"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Dimitri Sivanich <sivanich@sgi.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
+       Tony Luck <tony.luck@gmail.com>, Robin Holt <holt@sgi.com>
+Date: Tue, 6 Jan 2009 12:15:34 -0800
+Subject: RE: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+Thread-Topic: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+Thread-Index: AclwG7um2g/C/4qwQWiNq7qih4pgjwAHlLjg
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com>
+References: <20090106162741.GA7991@sgi.com>
+In-Reply-To: <20090106162741.GA7991@sgi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <28704.1231271771@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 07:56:11PM +0000, David Howells wrote:
-> J. Bruce Fields <bfields@fieldses.org> wrote:
-> 
-> > OK, I've tested this and applied it for 2.6.29.
-> > 
-> > Though it only actually fixes the regression if your other patch ("CRED:
-> > Fix regression in cap_capable() as shown up by sys_faccessat() [ver #2")
-> > is also applied.  I'd like to send in my pull request today, but I
-> > usually try not to send a pull request whose tip doesn't pass at least
-> > my basic regression tests....  And that other patch is outside my
-> > baliwick.    Can someone else handle it?
-> 
-> Well, if you're willing to supply an Acked-by or Tested-by for one or both
-> patches I can pass them on to James or Linus.
+> Turn on CONFIG_HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN.
+>
+> SGI Altix has unsynchronized itc clocks.  This results in rq->clock
+> occasionally being set to a time in the past by a remote cpu.
 
-The nfsd-specific one I've already signed off on and queued for Linus.
-For the other one, sure, for what it's worth:
+SGI Altix is definitely the worst offender here. On heterogeneneous
+systems with different model cpus across nodes the itc rate may differ
+by hundreds of megahertz.  Even when all cpus are at the same rated
+speed, different nodes are driven from different crystals, so the itc
+values will slowly drift apart (Linux discovers this from SAL and so
+doesn't bother to synchronize them).
 
-	Tested-by: J. Bruce Fields <bfields@citi.umich.edu>
+> Note that it is possible that this problem may exist for other ia64
+> machines as well, based on the following comment for sched_clock() in
+> arch/ia64/kernel/head.S:
+>
+> * Return a CPU-local timestamp in nano-seconds.  This timestamp is
+> * NOT synchronized across CPUs its return value must never be
+> * compared against the values returned on another CPU.  The usage in
+> * kernel/sched.c ensures that.
 
-Thanks!--b.
+When sched_clock() was first created this was part of its definition.
+It meant that sched_clock could be simple & fast because it didn't
+need to be synchronized across cpus.
+
+It seems that new uses have grown for it that no longer allow that
+flexibility.
+
+All ia64 systems are potentially affected ... but perhaps you might
+never see the problem on most because the itc clocks are synced as close
+as s/w can get them when cpus are brought on line.
+
+-Tony
