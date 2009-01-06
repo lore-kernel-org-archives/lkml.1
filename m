@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbZAFIB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbZAFIKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752668AbZAFIB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 03:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbZAFIBU
+	id S1752376AbZAFIKK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 03:10:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZAFIJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 03:01:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:43621 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbZAFIBT (ORCPT
+	Tue, 6 Jan 2009 03:09:58 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:54868 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbZAFIJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 03:01:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=v2O4/e9GOk1JGQIS65njYPmndDtGNgSdcRuSxW05CpRKezsboswWc89YQyZ8CygcqA
-         0C4dEEAiN04O4+ZjHo02Jb8IwjRjoSpEn8WAUn2Xzph7vVn6U6QgI1Top2tfEeIZ65cj
-         o6hMRKme+aenDpagCQq/cC7i+PupwcU30aDdU=
-Date: Tue, 6 Jan 2009 11:01:15 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: david@lang.hm
-Cc: Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>, yhlu.kernel@gmail.com
-Subject: Re: early exception error
-Message-ID: <20090106080115.GB7671@localhost>
-References: <alpine.DEB.1.10.0901030823190.23262@asgard.lang.hm> <20090103161052.GB11093@localhost> <alpine.DEB.1.10.0901031118450.23262@asgard.lang.hm> <20090103190316.GB7367@localhost> <20090103212426.GC7367@localhost> <496001A3.1040201@gmail.com> <20090104112919.GC7632@localhost> <alpine.DEB.1.10.0901051420030.27641@asgard.lang.hm> <20090105212511.GA7468@localhost> <alpine.DEB.1.10.0901051519580.27641@asgard.lang.hm>
-MIME-Version: 1.0
+	Tue, 6 Jan 2009 03:09:57 -0500
+Date: Tue, 6 Jan 2009 09:11:35 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: jaswinderlinux@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20090106081135.GA12695@uranus.ravnborg.org>
+References: <20090105.204934.65827705.davem@davemloft.net> <3f9a31f40901052114t68cac881md439bf24b602f269@mail.gmail.com> <20090106055144.GA11695@uranus.ravnborg.org> <20090105.220742.176919041.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901051519580.27641@asgard.lang.hm>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090105.220742.176919041.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[david@lang.hm - Mon, Jan 05, 2009 at 03:20:13PM -0800]
-> On Tue, 6 Jan 2009, Cyrill Gorcunov wrote:
->
->>
->> Yes, you even may combine it with the patch Johannes proposed.
->> They should not interfere.
->
-> I'm not spotting that patch.
->
-> David Lang
->
+On Mon, Jan 05, 2009 at 10:07:42PM -0800, David Miller wrote:
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Tue, 6 Jan 2009 06:51:44 +0100
+> 
+> > We should avoid a central file and push this information
+> > out to the Kconfig files that are at the driver site.
+> > 
+> > Then we can postprocess autoconf.h to get the filenames etc.
+> 
+> I'll take this opportunity to once again promote my idea wherein build
+> information (and perhaps other bits like firmware info) for a driver
+> is encoded into the source of the driver itself, and the build system
+> just extracts that stuff into Makefiles and whatnot at build time. :-)
 
-It's here http://lkml.org/lkml/2009/1/5/51
+One of the pratical issues I have with this is when to read which files.
 
-		- Cyrill -
+What we could do is something like:
+
+- during *config scan all "wildcard enabled" directories
+  and read the Kconfig info from the relevant .C files.
+- record which .C files which included Kconfig and do
+  an automatic "scan + oldconfig" when one of these files
+  changes
+
+When we add new Kconfig info to a file we would have
+to manually do the *config to trigger a scan for the .C files
+
+
+In the .C file we should restrict us to the first 100 lines or so
+to have the Kconfig info to speedd up the 'parse' for this info.
+
+Something like this:
+
+/* Kconfig
+config FOO
+	tristate "A self contained driver"
+	depends on USB
+	source mydriver-debug.c if DEBUG
+	modulename foobar
+	help
+	  This is a driver for ...
+*/
+
+The source file where this info is contained is implicit a source
+of this module.
+And if we can convince the firmware guys then the firmware info could
+be included in the same section.
+
+
+	Sam
