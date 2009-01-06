@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757258AbZAFXZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbZAFX0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757258AbZAFXZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 18:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZAFXZG
+	id S1756679AbZAFX0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 18:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbZAFX0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 18:25:06 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60335 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbZAFXZF (ORCPT
+	Tue, 6 Jan 2009 18:26:07 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:25901 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754759AbZAFX0F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 18:25:05 -0500
-Date: Tue, 6 Jan 2009 18:25:04 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Michael Halcrow <mhalcrow@us.ibm.com>,
-       ecryptfs-devel@lists.launchpad.net
+	Tue, 6 Jan 2009 18:26:05 -0500
+Message-ID: <e37d376a0901061526s5d571febu2eb9758050506442@mail.gmail.com>
+Date: Tue, 6 Jan 2009 15:26:04 -0800
+From: "Warren Turkal" <wt@penguintechs.org>
+To: "Christoph Hellwig" <hch@infradead.org>
 Subject: Re: 2.6.29 -mm merge plans
-Message-ID: <20090106232504.GD25103@infradead.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151534.9e9205bc.akpm@linux-foundation.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Diego Elio 'Flameeyes' Petten?" <flameeyes@gmail.com>
+In-Reply-To: <20090106231958.GA30271@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090106151534.9e9205bc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+	 <20090106225744.GA10553@infradead.org>
+	 <20090106151747.c640dfd4.akpm@linux-foundation.org>
+	 <20090106231958.GA30271@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 03:15:34PM -0800, Andrew Morton wrote:
-> > > ecryptfs-filename-encryption-tag-70-packets.patch
-> > > ecryptfs-filename-encryption-header-updates.patch
-> > > ecryptfs-filename-encryption-encoding-and-encryption-functions.patch
-> > > ecryptfs-filename-encryption-filldir-lookup-and-readlink.patch
-> > > ecryptfs-filename-encryption-mount-option.patch
-> > > ecryptfs-replace-%z-with-%z.patch
-> > > ecryptfs-fix-data-types-int-size_t.patch
-> > > ecryptfs-kerneldoc-for-ecryptfs_parse_tag_70_packet.patch
-> > > ecryptfs-clean-up-ecryptfs_decode_from_filename.patch
-> > > fs-ecryptfs-inodec-cleanup-kerneldoc.patch
-> > 
-> > By using lookup_one_len on an arbitrary underlying filesystem this
-> > breaks the assumption that a nameidata is always available.  Please
-> > redo to use proper lookup helpers.
-> 
-> It that a nack, or do we think we can address this in the next week or
-> three?
+I have a drive at home with the condition. So empirically, it can happen.
 
-Together we the state of the rest of that code that's a NACK, yes :)
+I would also argue that having a journal bit set and then saying that
+the journal info block is at 0 makes no sense anyhow since the first
+1024 bytes of the volume must be empty on HFS+.
 
+And, I found the previous code from Apple saying that a 0 in the
+journal_info_block field indicated that there was no journal.
+
+Is there anything else I should be doing?
+
+wt
+
+On Tue, Jan 6, 2009 at 3:19 PM, Christoph Hellwig <hch@infradead.org> wrote:
+> On Tue, Jan 06, 2009 at 03:17:47PM -0800, Andrew Morton wrote:
+>> > I'm pretty sure we already had a version better than that in your
+>> > tree on the list.  But I've lost track and we should just restart
+>> > the review cycle on -fsdevel.
+>>
+>> Yeah, I have the three hfs patches:
+>>
+>> hfsplus-identify-journal-info-block-in-volume-header.patch
+>> hfsplus-fix-journal-detection.patch
+>> hfs-add-basic-export-support.patch
+>>
+>> in a holding pattern awaiting a second round, due to laggy, incomplete
+>> and confusing noises from various people.  It all needs a revisit.
+>
+> The first two are not for me to decide.  They look fine code-wise,
+> but IIRC Roman had some issues with wether the condition should be
+> possible at all.
+>
+> The third one is where I requested a respin, and I'm pretty sure I've
+> seen a version with some improvement over the one in your tree.  Let's
+> get the latests version back on -fsdevel and review it again.
+>
+> The one in your tree certainly is not ready.
+>
