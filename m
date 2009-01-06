@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZAFUVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZAFUXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbZAFUVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 15:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbZAFUVV
+	id S1754791AbZAFUXn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 15:23:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZAFUXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 15:21:21 -0500
-Received: from outbound-mail-309.bluehost.com ([67.222.54.2]:60825 "HELO
-	outbound-mail-309.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753588AbZAFUVU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 15:21:20 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=c0jnZjEllDT6lCv/AQ2TYLLxE4rTRjzLjid4JeqhOOaDGLwgApOV+YB7HonJe3WceosRkXmR3FnNIkTscRJxh8rTr27TIsqYI2Yd+4dG+zSjyHqzQPWRwIexxd/Dp9TP;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 2.6.28 1/3] PCI-quirks: Unhide MCH5/6 memory controller configuration device
-Date: Tue, 6 Jan 2009 12:21:18 -0800
-User-Agent: KMail/1.9.10
-Cc: =?iso-8859-2?q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       bluesmoke-devel@lists.sourceforge.net
-References: <20081223215030.GA32525@rere.qmqm.pl> <20090105203006.GC26115@rere.qmqm.pl> <200901061202.04321.bjorn.helgaas@hp.com>
-In-Reply-To: <200901061202.04321.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200901061221.18512.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Tue, 6 Jan 2009 15:23:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59043 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751651AbZAFUXe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 15:23:34 -0500
+Date: Tue, 6 Jan 2009 12:23:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: orenl@cs.columbia.edu, torvalds@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
+       serue@us.ibm.com, mingo@elte.hu, hpa@zytor.com, viro@zeniv.linux.org.uk,
+       mikew@google.com
+Subject: Re: [RFC v12][PATCH 00/14] Kernel based checkpoint/restart
+Message-Id: <20090106122301.db538734.akpm@linux-foundation.org>
+In-Reply-To: <1231272328.23462.43.camel@nimitz>
+References: <1230542187-10434-1-git-send-email-orenl@cs.columbia.edu>
+	<1231272328.23462.43.camel@nimitz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, January 6, 2009 11:02 am Bjorn Helgaas wrote:
-> On Monday 05 January 2009 01:30:06 pm Micha³ Miros³aw wrote:
-> > Some BIOSes hide 'overflow' device (dev #6) for i82875P/PE chipsets.
-> > The same happens for i82865P/PE. Add a quirk to enable this device.
-> > This allows i82875 EDAC driver to bind to chipset's dev #6 and not
-> > dev #0 as the latter is used by AGP driver.
-> >
-> > After testing this patch for couple of days on my laptop (i82856P)
-> > it looks like something is resetting device 0 (MCH) config register
-> > 0xF4 to zero and effectively disabling the device again. The delay
-> > looks random to me.
->
-> The BIOS left the device hidden.  When you enable it with the quirk,
-> the fact that it mysteriously gets disabled later seems like a pretty
-> clear indication that something else we don't know about is using the
-> device.  Since there's no synchronization between the "something else"
-> and the i82875p_edac.c driver, it seems like you're introducing the
-> possibility for problems.
->
-> I don't know anything about the EDAC driver.  Is the value it provides
-> really worth the possible problems with this approach?  Maybe it is,
-> but I don't want to be the one to debug a random interaction that
-> causes a problem.
+On Tue, 06 Jan 2009 12:05:28 -0800
+Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 
-Yeah, there's some uncertainty there for sure so I've dropped the patch.  If 
-it really provides a compelling feature we can always add it again with a 
-config option or runtime option to enable it.
+> On Mon, 2008-12-29 at 04:16 -0500, Oren Laadan wrote:
+> > Checkpoint-restart (c/r): fixed issues in error path handling (comments
+> > from Mike Waychison) and . Updated and tested against v2.6.28
+> > 
+> > We'd like to push these into -mm.
+> 
+> Hey Andrew, I think we've exhausted all the reviewers on this one, and
+> all the comments have been addressed.  How about a spin in -mm?
+> 
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I'll take a look soonish.  Now is not a good time to be merging new
+features into anything..
