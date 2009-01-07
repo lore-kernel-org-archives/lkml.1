@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760442AbZAGTAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760474AbZAGTCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760442AbZAGTAr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbZAGTAi
+	id S1760474AbZAGTCs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbZAGTCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:00:38 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:36855 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZAGTAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 14:00:37 -0500
-Date: Thu, 8 Jan 2009 00:26:27 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 0/4] Memory controller soft limit patches
-Message-ID: <20090107185627.GL4145@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
+	Wed, 7 Jan 2009 14:02:33 -0500
+Received: from genesysrack.ru ([195.178.208.66]:44568 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754611AbZAGTCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 14:02:32 -0500
+Date: Wed, 7 Jan 2009 22:02:30 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: "C. Scott Ananian" <cscott@laptop.org>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Security: Implement and document RLIMIT_NETWORK.
+Message-ID: <20090107190230.GB11037@ioremap.net>
+References: <1231307334-9542-1-git-send-email-michael@laptop.org> <1231307334-9542-2-git-send-email-michael@laptop.org> <20090107114703.GB28161@ioremap.net> <c6d9bea0901071035p1b8b4fc1u49bc7bb7c89782a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <c6d9bea0901071035p1b8b4fc1u49bc7bb7c89782a@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 12:11:10AM +0530, Balbir Singh wrote:
-> 
-> Here is v1 of the new soft limit implementation. Soft limits is a new feature
-> for the memory resource controller, something similar has existed in the
-> group scheduler in the form of shares. We'll compare shares and soft limits
-> below. I've had soft limit implementations earlier, but I've discarded those
-> approaches in favour of this one.
-> 
-> Soft limits are the most useful feature to have for environments where
-> the administrator wants to overcommit the system, such that only on memory
-> contention do the limits become active. The current soft limits implementation
-> provides a soft_limit_in_bytes interface for the memory controller and not
-> for memory+swap controller. The implementation maintains an RB-Tree of groups
-> that exceed their soft limit and starts reclaiming from the group that
-> exceeds this limit by the maximum amount.
-> 
-> This is an RFC implementation and is not meant for inclusion
-> 
-> TODOs
-> 
-> 1. The shares interface is not yet implemented, the current soft limit
->    implementation is not yet hierarchy aware. The end goal is to add
->    a shares interface on top of soft limits and to maintain shares in
->    a manner similar to the group scheduler
+On Wed, Jan 07, 2009 at 01:35:13PM -0500, C. Scott Ananian (cscott@laptop.org) wrote:
+> I haven't reviewed the patch to confirm this, but this is how I would
+> expect RLIMIT_NETWORK functions.  A trusted process like inetd (say)
+> would accept a network connection and create a file handle.  It would
+> then fork, drop the hard and soft RLIMIT_NETWORK to 0, and then exec
+> the untrusted client program.  This would allow the untrusted program
+> to use the 'trusted' network resource via the open file handle, but
+> prevent it from (say) leaking sensitive transaction data by making
+> further connections to some other network resource.  (There are better
+> use cases than inetd, of course.)
 
-Just to clarify, when there is no contention, you want to share memory
-proportionally?
+So effectively it requires higher-prio process to set the limit and then
+drop own priviledges. And by default network rlimit is turned off, so
+this does not work for usual processes?
 
-thanks,
+The same inetd may setup iptables rule btw. I do not say this is the way
+to go, just that it already exists.
+
+> According to man 2 setrlimit, "A child process created via fork(2)
+> inherits its parent's resource limits.  Resource limits are preserved
+> across execve(2).".
+
+Yes, rlimits are copied in copy_signal(), but when parent sets the
+rlimit it is not updated in the childs, so was my question, sorry for
+confusion.
+
 -- 
-regards,
-Dhaval
+	Evgeniy Polyakov
