@@ -1,174 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbZAGMOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752248AbZAGMOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450AbZAGMOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZAGMOA
+	id S1752248AbZAGMOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZAGMOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:14:00 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:33645 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750883AbZAGMN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:13:59 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: lizf@cn.fujitsu.com (Li Zefan)
-Subject: Re: [BUG] INFO: inconsistent lock state
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Organization: Core
-In-Reply-To: <4962C322.8000201@cn.fujitsu.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1LKXIE-0006dE-Lq@gondolin.me.apana.org.au>
-Date: Wed, 07 Jan 2009 23:13:50 +1100
+	Wed, 7 Jan 2009 07:14:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50540 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753197AbZAGMON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:14:13 -0500
+Message-ID: <49649C65.6000706@kernel.org>
+Date: Wed, 07 Jan 2009 21:13:25 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: travis@sgi.com, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, steiner@sgi.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: regarding the x86_64 zero-based percpu patches
+References: <49649814.4040005@kernel.org> <20090107120225.GA30651@elte.hu>
+In-Reply-To: <20090107120225.GA30651@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 07 Jan 2009 12:13:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan <lizf@cn.fujitsu.com> wrote:
-> I am using Linus' tree, and the top commit is:
+(cc'ing people from the original thread and LKML as it seems to
+require actual discussion.)
+
+Hello, this thread started with me asking for help regarding
+the zero-based percpu patches and the initial message is quoted
+below.
+
+Ingo Molnar wrote:
+> * Tejun Heo <tj@kernel.org> wrote:
 > 
-> commit fe0bdec68b77020281dc814805edfe594ae89e0f
-> Merge: 099e657... 5af75d8...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Sun Jan 4 16:32:11 2009 -0800
+>> Hello, Mike, Ingo.
+>>
+>> I was working on something which requires better dynamic per-cpu
+>> performance and have been working on implementing it myself but
+>> realized the strange gcc stack protector ABI limitation and with
+>> Rusty's hint and googling found out that Mike already did the heavy
+>> lifting.
+>>
+>> I read the "x86_64: Optimize percpu accesses" from July last year and
+>> it looks like it got stuck on tool chain problem which showed up as
+>> two problems (is one of the two resolved?).
+>>
+>> * Notifier call chain corruption
+>>
+>> * Stack overflow with default stack size
+>>
+>> >From the cpu_alloc thread from November, it seems Mike is quite
+>> pre-occupied, so I'm willing to give it a shot as it's blocking stuff
+>> I have in queue.  The problem is that I'm having problem finding some
+>> information.
+>>
+>> 1. Mike seems to have splitted the patch but haven't posted them.
+>>
+>> 2. Ingo's x86/percpu-zerobased branch doesn't contain any revision not
+>>    in the current upstream.  Maybe the commits got lost during merges?
+>>
+>> 3. What failed and what got fixed and how to reproduce the problem.
+>>
+>> So, can you please help me a bit?  I'll be happy to forward port the 
+>> patches if they have bit-rotted.
 > 
->    Merge branch 'audit.b61' of git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
-> 
-> don't know how I triggered this, and not sure whom to CC, network related?
+> hm, i zapped them two days ago, because they collided with Rusty's ongoing 
+> percpu-alloc work in his tree. Mike should be able to tell you what the 
+> plans are for the resurrection of those patches.
 
-You need
+IIUC, Rusty is somewhat leaning toward limiting per-cpu area and using
+static allocator. (right?)  As I was trying to do more stuff per-cpu
+(not putting a lot of stuff into per-cpu area but even with small
+things limited per-cpu area poses scalability problems), cpu_alloc
+seems to fit the bill better.
 
-commit ea319518ba3de282c13ae1cf4bf2215c5e03e67e
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Fri Dec 26 15:08:55 2008 +0100
+Anyways, I think it's worthwhile to listen what people have on mind
+regarding how per-cpu stuff should proceed.
 
-    locking, percpu counters: introduce separate lock classes
-    
-    Impact: fix lockdep false positives
-    
-    Classify percpu_counter instances similar to regular lock objects --
-    that is, per instantiation site.
-    
-    The networking code has increased its use of percpu_counters, which
-    leads to false positives if they are treated as a single class.
-    
-    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Thanks.
 
-diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-index 9007ccd..96bdde3 100644
---- a/include/linux/percpu_counter.h
-+++ b/include/linux/percpu_counter.h
-@@ -30,8 +30,16 @@ struct percpu_counter {
- #define FBC_BATCH	(NR_CPUS*4)
- #endif
- 
--int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
--int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
-+int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
-+			  struct lock_class_key *key);
-+
-+#define percpu_counter_init(fbc, value)					\
-+	({								\
-+		static struct lock_class_key __key;			\
-+									\
-+		__percpu_counter_init(fbc, value, &__key);		\
-+	})
-+
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
-@@ -85,8 +93,6 @@ static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- 	return 0;
- }
- 
--#define percpu_counter_init_irq percpu_counter_init
--
- static inline void percpu_counter_destroy(struct percpu_counter *fbc)
- {
- }
-diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
-index a866389..c7fe2e4 100644
---- a/lib/percpu_counter.c
-+++ b/lib/percpu_counter.c
-@@ -71,11 +71,11 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
- }
- EXPORT_SYMBOL(__percpu_counter_sum);
- 
--static struct lock_class_key percpu_counter_irqsafe;
--
--int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
-+int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
-+			  struct lock_class_key *key)
- {
- 	spin_lock_init(&fbc->lock);
-+	lockdep_set_class(&fbc->lock, key);
- 	fbc->count = amount;
- 	fbc->counters = alloc_percpu(s32);
- 	if (!fbc->counters)
-@@ -87,17 +87,7 @@ int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- #endif
- 	return 0;
- }
--EXPORT_SYMBOL(percpu_counter_init);
--
--int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount)
--{
--	int err;
--
--	err = percpu_counter_init(fbc, amount);
--	if (!err)
--		lockdep_set_class(&fbc->lock, &percpu_counter_irqsafe);
--	return err;
--}
-+EXPORT_SYMBOL(__percpu_counter_init);
- 
- void percpu_counter_destroy(struct percpu_counter *fbc)
- {
-diff --git a/lib/proportions.c b/lib/proportions.c
-index 4f387a6..7367f2b 100644
---- a/lib/proportions.c
-+++ b/lib/proportions.c
-@@ -83,11 +83,11 @@ int prop_descriptor_init(struct prop_descriptor *pd, int shift)
- 	pd->index = 0;
- 	pd->pg[0].shift = shift;
- 	mutex_init(&pd->mutex);
--	err = percpu_counter_init_irq(&pd->pg[0].events, 0);
-+	err = percpu_counter_init(&pd->pg[0].events, 0);
- 	if (err)
- 		goto out;
- 
--	err = percpu_counter_init_irq(&pd->pg[1].events, 0);
-+	err = percpu_counter_init(&pd->pg[1].events, 0);
- 	if (err)
- 		percpu_counter_destroy(&pd->pg[0].events);
- 
-@@ -191,7 +191,7 @@ int prop_local_init_percpu(struct prop_local_percpu *pl)
- 	spin_lock_init(&pl->lock);
- 	pl->shift = 0;
- 	pl->period = 0;
--	return percpu_counter_init_irq(&pl->events, 0);
-+	return percpu_counter_init(&pl->events, 0);
- }
- 
- void prop_local_destroy_percpu(struct prop_local_percpu *pl)
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index f2e574d..f3b1258 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -220,7 +220,7 @@ int bdi_init(struct backing_dev_info *bdi)
- 	bdi->max_prop_frac = PROP_FRAC_BASE;
- 
- 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
--		err = percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
-+		err = percpu_counter_init(&bdi->bdi_stat[i], 0);
- 		if (err)
- 			goto err;
- 	}
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+tejun
