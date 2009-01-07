@@ -1,139 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbZAGXhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbZAGXhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762765AbZAGXhQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZAGXg7
+	id S1763940AbZAGXhq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759327AbZAGXhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:36:59 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:16991 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbZAGXg6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:36:58 -0500
-Message-ID: <49653C8C.7050908@oracle.com>
-Date: Wed, 07 Jan 2009 15:36:44 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for January 5 (multimedia #3)
-References: <20090105173517.deeff918.sfr@canb.auug.org.au>	<20090105120927.1f044f59.randy.dunlap@oracle.com>	<20090106223612.180e32f5@pedra.chehab.org>	<4964F5A3.9020101@oracle.com> <20090107212731.6bccd1a0@pedra.chehab.org>
-In-Reply-To: <20090107212731.6bccd1a0@pedra.chehab.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.49653C8F.021D:SCFSTAT928724,ss=1,fgs=0
+	Wed, 7 Jan 2009 18:37:06 -0500
+Received: from mx1.aecom.yu.edu ([129.98.1.51]:38738 "EHLO mx1.aecom.yu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758345AbZAGXhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 18:37:04 -0500
+X-Greylist: delayed 1235 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Jan 2009 18:37:03 EST
+X-AuditID: 816201a0-a8de3bb000001567-99-496537cb3671
+Mime-Version: 1.0
+Message-Id: <a06240403c58ae633aba5@[129.98.90.227]>
+Date: Wed, 7 Jan 2009 18:15:17 -0500
+To: linux-kernel@vger.kernel.org
+From: Maurice Volaski <mvolaski@aecom.yu.edu>
+Subject: swapper: page allocation failure. order:2, mode:0x4020 in 2.6.27
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> On Wed, 07 Jan 2009 10:34:11 -0800
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->> Mauro Carvalho Chehab wrote:
->>> On Mon, 5 Jan 2009 12:09:27 -0800
->>> Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>>
->>>> On Mon, 5 Jan 2009 17:35:17 +1100 Stephen Rothwell wrote:
->>>>
->>>>> Hi all,
->>>>>
->>>>> This tree will not build a powerpc ppc4xx_defconfig due to a kvm problem.
->>>>>
->>>>> Changes since 20090102:
->>>> drivers/built-in.o: In function `cx88_call_i2c_clients':
->>>> (.text+0x20af17): undefined reference to `videobuf_dvb_get_frontend'
->>>> drivers/built-in.o: In function `cx8802_probe':
->>>> cx88-mpeg.c:(.devinit.text+0x268c4): undefined reference to `videobuf_dvb_alloc_frontend'
->>>> cx88-mpeg.c:(.devinit.text+0x268ea): undefined reference to `videobuf_dvb_dealloc_frontends'
->>> This one were trickier. Patch enclosed.
->>>
->>> Cheers,
->>> Mauro
->> Hi Mauro,
->>
->> After applying this patch, now I get these build errors:
->>
->> drivers/built-in.o: In function `mpeg_release':
->> cx88-blackbird.c:(.text+0x21096d): undefined reference to `cx8802_cancel_buffers'
->> cx88-blackbird.c:(.text+0x2109a3): undefined reference to `cx8802_get_device'
->> cx88-blackbird.c:(.text+0x2109bd): undefined reference to `cx8802_get_driver'
->> drivers/built-in.o: In function `bb_buf_queue':
->> cx88-blackbird.c:(.text+0x210a06): undefined reference to `cx8802_buf_queue'
->> drivers/built-in.o: In function `bb_buf_prepare':
->> cx88-blackbird.c:(.text+0x210a25): undefined reference to `cx8802_buf_prepare'
->> drivers/built-in.o: In function `mpeg_open':
->> cx88-blackbird.c:(.text+0x210a59): undefined reference to `cx8802_get_device'
->> cx88-blackbird.c:(.text+0x210aa2): undefined reference to `cx8802_get_driver'
->> drivers/built-in.o: In function `blackbird_init':
->> cx88-blackbird.c:(.text+0x210d18): undefined reference to `cx8802_register_driver'
->> drivers/built-in.o: In function `blackbird_fini':
->> cx88-blackbird.c:(.text+0x210fbc): undefined reference to `cx8802_unregister_driver'
-> 
-> 
-> Sorry, I sent the wrong version. The correct one is here. Btw, I've committed
-> it yesterday on my linux-next tree. It is likely that it were already added upstream.
+Just started with 2.6.27-gentoo-r7 (I think gentoo may have patches 
+from 2.6.28) on an x64 system and during an apparently idle time, I 
+saw this:
 
-Ack, that builds cleanly.  Thanks.
-
-> Cheers,
-> Mauro.
-> 
-> commit 3adb75fc5c8b2b0401e51067db07992d616c7711
-> Author: Mauro Carvalho Chehab <mchehab@redhat.com>
-> Date:   Tue Jan 6 16:06:07 2009 -0300
-> 
->     V4L/DVB (10190): cx88: Fix some Kbuild troubles
->     
->     As Randy Dunlap <randy.dunlap@oracle.com> reported, cx88 has some compilation issues:
->     
->     drivers/built-in.o: In function `cx88_call_i2c_clients':
->     (.text+0x20af17): undefined reference to `videobuf_dvb_get_frontend'
->     drivers/built-in.o: In function `cx8802_probe':
->     cx88-mpeg.c:(.devinit.text+0x268c4): undefined reference to `videobuf_dvb_alloc_frontend'
->     cx88-mpeg.c:(.devinit.text+0x268ea): undefined reference to `videobuf_dvb_dealloc_frontends'
->     
->     With those configs:
->     
->     CONFIG_VIDEO_CX88=y
->     CONFIG_VIDEO_CX88_BLACKBIRD=y
->     CONFIG_VIDEO_CX88_DVB=m
->     CONFIG_DVB_CORE=m
->     
->     After carefully examining the code, with the current code, several cx88 drivers
->     (cx8800, cx8802, cx88_dvb and cx88_blackbird) should be compiled as a module,
->     if one of them is marked as such. Just fixing Kconfig could create a very complex
->     set of rules. Also, this hides a problem with the current approach where the dvb
->     functionality weren't confined inside dvb module.
->     
->     What happens is that:
->     	- cx88-i2c (part of cx8800) has some special rules if DVB;
->     	- cx88-mpeg (cx8802 module) has also part of DVB init code;
->     	- cx88-dvb has the rest of the dvb code;
->     	- cx88-blackbird can be used with cx88-mpeg, having cx88-dvb or not.
->     
->     So, instead of doing some tricks at Kconfig and wait for a next breakage,
->     this patch moves the dvb code inside cx88-i2c and cx88-mpeg into cx88-dvb.
->     
->     Another problem is that cx8802 were being compiled, even without cx88-dvb
->     and cx88-blackbird modules.
->     
->     While on this code, let's fix also a reported problem:
->     http://www.linuxtv.org/pipermail/linux-dvb/2009-January/031225.html
->     
->     A solution for the issue were proposed here:
->     http://www.mail-archive.com/linux-media@vger.kernel.org/msg00021.html
->     
->     Thanks to Randy, Andy, Gregoire and Thomas for helping us to detect
->     and solve the issues.
->     
->     Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-
+Jan  6 23:20:19 [kernel] [358105.255843] swapper: page allocation 
+failure. order:2, mode:0x4020
+Jan  6 23:20:19 [kernel] [358105.255851] Pid: 0, comm: swapper Not 
+tainted 2.6.27-gentoo-r7 #3
+Jan  6 23:20:19 [kernel] [358105.255854]
+Jan  6 23:20:19 [kernel] [358105.255854] Call Trace:
+Jan  6 23:20:19 [kernel] [358105.255857]  <IRQ>  [<ffffffff81076bbf>] 
+__alloc_pages_internal+0x41a/0x439
+Jan  6 23:20:19 [kernel] [358105.255872]  [<ffffffff8126575c>] ? 
+__netdev_alloc_skb+0x1d/0x39
+Jan  6 23:20:19 [kernel] [358105.255875]  [<ffffffff81076c4c>] 
+__get_free_pages+0x17/0x56
+Jan  6 23:20:19 [kernel] [358105.255879]  [<ffffffff8109632b>] 
+__kmalloc_track_caller+0x3b/0xbb
+Jan  6 23:20:19 [kernel] [358105.255882]  [<ffffffff81264d87>] 
+__alloc_skb+0x66/0x12c
+Jan  6 23:20:19 [kernel] [358105.255885]  [<ffffffff8126575c>] 
+__netdev_alloc_skb+0x1d/0x39
+Jan  6 23:20:19 [kernel] [358105.255899]  [<ffffffffa00d203c>] 
+tg3_alloc_rx_skb+0xd1/0x195 [tg3]
+Jan  6 23:20:19 [kernel] [358105.255906]  [<ffffffffa00d9eb2>] 
+tg3_poll+0x563/0xa68 [tg3]
+Jan  6 23:20:19 [kernel] [358105.255910]  [<ffffffff8104b567>] ? 
+clockevents_program_event+0x73/0x7c
+Jan  6 23:20:19 [kernel] [358105.255914]  [<ffffffff81268608>] 
+net_rx_action+0xd3/0x1d0
+Jan  6 23:20:19 [kernel] [358105.255917]  [<ffffffff81268597>] ? 
+net_rx_action+0x62/0x1d0
+Jan  6 23:20:19 [kernel] [358105.255921]  [<ffffffff81035222>] 
+__do_softirq+0x6d/0xdd
+Jan  6 23:20:19 [kernel] [358105.255925]  [<ffffffff8100d2cc>] 
+call_softirq+0x1c/0x28
+Jan  6 23:20:19 [kernel] [358105.255928]  [<ffffffff8100e405>] 
+do_softirq+0x34/0x72
+Jan  6 23:20:19 [kernel] [358105.255931]  [<ffffffff81034f54>] 
+irq_exit+0x3f/0x82
+Jan  6 23:20:19 [kernel] [358105.255933]  [<ffffffff8100e6ee>] 
+do_IRQ+0x146/0x168
+Jan  6 23:20:19 [kernel] [358105.255936]  [<ffffffff8100c541>] 
+ret_from_intr+0x0/0xa
+Jan  6 23:20:19 [kernel] [358105.255938]  <EOI>  [<ffffffff812dd3cc>] 
+? __atomic_notifier_call_chain+0x0/0x87
+Jan  6 23:20:19 [kernel] [358105.255947]  [<ffffffff81012593>] ? 
+default_idle+0x2b/0x40
+Jan  6 23:20:19 [kernel] [358105.255950]  [<ffffffff8100b041>] ? 
+enter_idle+0x22/0x24
+Jan  6 23:20:19 [kernel] [358105.255952]  [<ffffffff8100b0d3>] ? 
+cpu_idle+0x90/0xd8
+Jan  6 23:20:19 [kernel] [358105.255956]  [<ffffffff812d4ce7>] ? 
+start_secondary+0x155/0x159
+Jan  6 23:20:19 [kernel] [358105.255958]
+Jan  6 23:20:19 [kernel] [358105.255959] Mem-Info:
+Jan  6 23:20:19 [kernel] [358105.255961] DMA per-cpu:
+Jan  6 23:20:19 [kernel] [358105.255963] CPU    0: hi:    0, btch:   1 usd:   0
+Jan  6 23:20:19 [kernel] [358105.255965] CPU    1: hi:    0, btch:   1 usd:   0
+Jan  6 23:20:19 [kernel] [358105.255967] DMA32 per-cpu:
+Jan  6 23:20:19 [kernel] [358105.255968] CPU    0: hi:  186, btch:  31 usd: 126
+Jan  6 23:20:19 [kernel] [358105.255970] CPU    1: hi:  186, btch:  31 usd: 148
+Jan  6 23:20:19 [kernel] [358105.255972] Normal per-cpu:
+Jan  6 23:20:19 [kernel] [358105.255973] CPU    0: hi:  186, btch:  31 usd: 181
+Jan  6 23:20:19 [kernel] [358105.255975] CPU    1: hi:  186, btch:  31 usd: 183
+Jan  6 23:20:19 [kernel] [358105.255978] Active:218402 
+inactive:819867 dirty:27016 writeback:0 unstable:0
+Jan  6 23:20:19 [kernel] [358105.255980]  free:44839 slab:151548 
+mapped:5449 pagetables:2110 bounce:0
+Jan  6 23:20:19 [kernel] [358105.255983] DMA free:5328kB min:4kB 
+low:4kB high:4kB active:0kB inactive:0kB present:4256kB 
+pages_scanned:0 all_unreclaimable? yes
+Jan  6 23:20:19 [kernel] [358105.255986] lowmem_reserve[]: 0 3480 5484 5484
+Jan  6 23:20:19 [kernel] [358105.255991] DMA32 free:169860kB 
+min:6008kB low:7508kB high:9012kB active:433812kB inactive:1876764kB 
+present:3563808kB pages_scanned:0 all_unreclaimable? no
+Jan  6 23:20:19 [kernel] [358105.255993] lowmem_reserve[]: 0 0 2004 2004
+Jan  6 23:20:19 [kernel] [358105.255998] Normal free:4168kB 
+min:3460kB low:4324kB high:5188kB active:439796kB inactive:1402704kB 
+present:2052096kB pages_scanned:0 all_unreclaimable? no
+Jan  6 23:20:19 [kernel] [358105.256000] lowmem_reserve[]: 0 0 0 0
+Jan  6 23:20:19 [kernel] [358105.256004] DMA: 2*4kB 3*8kB 5*16kB 
+5*32kB 3*64kB 4*128kB 3*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 
+5328kB
+Jan  6 23:20:19 [kernel] [358105.256012] DMA32: 42208*4kB 0*8kB 
+12*16kB 3*32kB 0*64kB 1*128kB 0*256kB 1*512kB 0*1024kB 0*2048kB 
+0*4096kB = 169760kB
+Jan  6 23:20:19 [kernel] [358105.256020] Normal: 914*4kB 1*8kB 2*16kB 
+1*32kB 1*64kB 1*128kB 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 
+4176kB
+Jan  6 23:20:19 [kernel] [358105.256029] 1015437 total pagecache pages
+Jan  6 23:20:19 [kernel] [358105.256031] 0 pages in swap cache
+Jan  6 23:20:19 [kernel] [358105.256032] Swap cache stats: add 0, 
+delete 0, find 0/0
+Jan  6 23:20:19 [kernel] [358105.256034] Free swap  = 0kB
+Jan  6 23:20:19 [kernel] [358105.256035] Total swap = 0kB
+Jan  6 23:20:19 [kernel] [358105.285015] 1572848 pages RAM
+Jan  6 23:20:19 [kernel] [358105.285015] 170874 pages reserved
+Jan  6 23:20:19 [kernel] [358105.285015] 986700 pages shared
+Jan  6 23:20:19 [kernel] [358105.285015] 411152 pages non-shared
 -- 
-~Randy
+
+Maurice Volaski, mvolaski@aecom.yu.edu
+Computing Support, Rose F. Kennedy Center
+Albert Einstein College of Medicine of Yeshiva University
