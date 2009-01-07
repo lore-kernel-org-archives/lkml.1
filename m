@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbZAGPPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZAGPQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbZAGPPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZAGPPl
+	id S1759614AbZAGPQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZAGPQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:15:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33410 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751586AbZAGPPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:15:40 -0500
-Date: Wed, 7 Jan 2009 16:15:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, James.Bottomley@hansenpartnership.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
-Message-ID: <20090107151522.GA5341@elte.hu>
-References: <1231329368.17961.29.camel@jaswinder.satnam> <20090107125152.GA3529@elte.hu> <20090107133327.GA4911@elte.hu> <3f9a31f40901070557r336020dctbe9549e8634b167@mail.gmail.com> <20090107150351.GB27606@elte.hu> <20090107151223.GA4899@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107151223.GA4899@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 7 Jan 2009 10:16:17 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39972 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbZAGPQR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 10:16:17 -0500
+Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Gregory Haskins <ghaskins@novell.com>, Tony Luck <tony.luck@gmail.com>
+In-Reply-To: <20090107133230.GA28694@sgi.com>
+References: <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com>
+	 <20090106201950.GA3850@sgi.com>
+	 <57C9024A16AD2D4C97DC78E552063EA35CB955B4@orsmsx505.amr.corp.intel.com>
+	 <1231275441.11687.110.camel@twins> <20090106225054.GB3850@sgi.com>
+	 <1231283763.11687.135.camel@twins> <20090107030030.GH3390@wotan.suse.de>
+	 <1231313289.11687.172.camel@twins> <20090107094328.GD3850@sgi.com>
+	 <1231322037.11687.178.camel@twins>  <20090107133230.GA28694@sgi.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 07 Jan 2009 16:16:14 +0100
+Message-Id: <1231341374.11687.303.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
+On Wed, 2009-01-07 at 07:32 -0600, Dimitri Sivanich wrote:
+> Peter,
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
+> On Wed, Jan 07, 2009 at 10:53:57AM +0100, Peter Zijlstra wrote:
 > > 
-> > * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
-> > 
-> > > Hello Ingo,
-> > > 
-> > > On Wed, Jan 7, 2009 at 7:03 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > > >
-> > > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > >
-> > > >> applied to tip/x86/cleanups:
-> > > >
-> > > > excluded it again from tip/master, due to this build failure:
-> > > >
-> > > 
-> > > Please accept only first 4 patches:
-> > > 
-> > > 1.  x86: smp.h remove obsolete function declaration
-> > > 2.  x86: smp.h move zap_low_mappings declartion to tlbflush.h
-> > > 3.  x86: smp.h move prefill_possible_map declartion to cpu.h
-> > > 4.  x86: smp.h move stack_processor_id declartion to cpu.h
-> > > 
-> > > Then it will easier for me to to focus on only few things.
-> > 
-> > ok, i dropped the others.
+> > Clock state is kept per-cpu, and locked with a spinlock. When we request
 > 
-> i dropped the rest too, due to:
-> 
->  arch/x86/kernel/cpu/common.c:983: error: implicit declaration of function 'stack_smp_processor_id'
-> 
-> config attached. Please resend the whole lot once you have those configs 
-> working and if you are reasonably sure similar bugs are not in other 
-> places.
+> Admittedly I have not looked at this possibility too closely, but my
+> initial concern upon looking at sched_clock_cpu() for the UNSTABLE
+> case was the lock_double_clock() and what sort of contention that
+> might cause on larger systems under certain conditions.
 
-note, i kept these:
-
-6e5385d: x86: smp.h move prefill_possible_map declartion to cpu.h
-dacf733: x86: smp.h move zap_low_mappings declartion to tlbflush.h
-7760ec7: x86: smp.h remove obsolete function declaration
-
-as they seem fairly safe.
-
-	Ingo
+Similar contention would already exist on rq->lock.
