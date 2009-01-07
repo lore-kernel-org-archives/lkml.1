@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbZAGCul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbZAGCwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759711AbZAGCul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 21:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbZAGCud
+	id S1759892AbZAGCwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 21:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbZAGCwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 21:50:33 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:54748 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755548AbZAGCuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 21:50:32 -0500
-Message-ID: <49641872.3000404@sgi.com>
-Date: Tue, 06 Jan 2009 18:50:26 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 6 Jan 2009 21:52:04 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45579 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755167AbZAGCwC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 21:52:02 -0500
+Date: Tue, 6 Jan 2009 21:52:01 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       roel.kluin@gmail.com, pq@iki.fi, srostedt@redhat.com
+Subject: Re: [PATCH 2/3] ring-buffer: rename debugfs file tracing_on to
+ writing_enabled
+In-Reply-To: <20090106144740.686c3f33.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0901062145340.25237@gandalf.stny.rr.com>
+References: <20090106223337.677427397@goodmis.org> <20090106223405.512131804@goodmis.org> <20090106144740.686c3f33.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Cliff Wickman <cpw@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Jes Sorensen <jes@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/11] x86: cpumask: some more cpumask cleanups - flush_tlb_*
-References: <20090104131759.865331000@polaris-admin.engr.sgi.com> <20090104144454.GA1132@elte.hu> <4962D4CF.7070200@sgi.com> <200901071242.42573.rusty@rustcorp.com.au>
-In-Reply-To: <200901071242.42573.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Tuesday 06 January 2009 14:19:35 Mike Travis wrote:
->> Ingo Molnar wrote:
->>> Quite good! Can we fix those TLB flush cpumask uses too?
->> Here is one proposal.
-> 
-> Here's what I had.  It's untested though...
-> 
-> x86: change flush_tlb_others to take a const struct cpumask *. FIXME: REVIEW
-> 
-> This is made a little more tricky by uv_flush_tlb_others which
-> actually alters its argument, for an IPI to be sent to the remaining
-> cpus in the mask.
-> 
-> I solve this by allocating a cpumask_var_t for this case and falling back
-> to IPI should this fail.
 
-I thought about this but I wondered if we wanted to add the overhead of a kmalloc
-call for every tlb flush?  For a UV system, simultaneous flushes will be quite common,
-so introducing two kmalloc's in the path could really hamper performance.
+On Tue, 6 Jan 2009, Andrew Morton wrote:
+
+> On Tue, 06 Jan 2009 17:33:39 -0500
+> 
+> There's no corresponding documentation update needed?
+
+I've fallen a little behind in the documentation. I wanted to see what got 
+pulled in before updating ftrace.txt. But you are correct, I probably 
+should add the documentation updates along with the patches.
+
+But unfortunately, I'm a bit lazy. I like to wait and see what makes it to 
+mainline, and then write a patch to update ftrace.txt to reflect that. It 
+lets me do it in one sitting, instead of doing it for each change.
+
+Honestly, I think I document it better that way. If I document right after 
+writing the code, I do it with too much knowledge of the code, and my 
+writing is confusing for others. If I wait to document, I forget what I 
+did, and have to relearn what I wrote, and then I have a better 
+perspective of what others will want to know.
 
 Thanks,
-Mike
+
+-- Steve
+
