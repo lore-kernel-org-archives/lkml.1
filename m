@@ -1,86 +1,638 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZAGDGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbZAGDMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbZAGDGU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 22:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZAGDGL
+	id S1754422AbZAGDMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 22:12:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZAGDLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 22:06:11 -0500
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:29403 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751375AbZAGDGK (ORCPT
+	Tue, 6 Jan 2009 22:11:51 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:32971 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbZAGDLu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 22:06:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ksWThnzvQvUPJJveLnECvvVd3hfmaxeC0UkdgCc3ipPQViO5AUKWNBx9X/qyLF9P8q9hRCr50X/rLwTxodpHPe5IbYNNTHn3ZOhNPsZ74qPTGIdUlpBji9fT1SE3I4O4jiMfaKuMXpLcEzUGnsbG+apKf0XmF9IFCfreBWU8tUc=  ;
-X-YMail-OSG: r4Nx76QVM1lY8CO0An3ik3O.lClt314UernrOwn_pWvG2Vu8C936XVSj5nVNXP1BrRvX59oN9s2VGqeMBcjkOh2hJKhqQMURt7PusHlkbzXr1hOGU4a2U4aGNyqMGAcaSEXogh4WtnO7oJ5TyzbDHYtgOntOwz7nPZjKLzjCchbjRDPbxT4VcEVzca2R5bNMnTZWGROoUdHFNT7XEQ46eu_YWB5JQZF.5Gk-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29 -mm merge plans
-Date: Wed, 7 Jan 2009 14:05:51 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <200901071306.45210.nickpiggin@yahoo.com.au> <20090106181647.e22b27d2.akpm@linux-foundation.org>
-In-Reply-To: <20090106181647.e22b27d2.akpm@linux-foundation.org>
+	Tue, 6 Jan 2009 22:11:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XRuDw/97ERmqtW+kgqqIhjn8Lcu9yp+WdP39KmlqGanbRmEYRdSVwtOLLL9kiNHObD
+         NpH+/2GvLpGj3gguf8UK/x5Y8LOZz9n4iDOEFZdWPWqABfLjKkTmVgHV0O81nnteEeb1
+         Ho+yREN6IEZgUCCH60/L73mUt0vop+sqGcDek=
+Message-ID: <12bfabe40901061911m5f2a1bbco7e2e756129cdca78@mail.gmail.com>
+Date: Wed, 7 Jan 2009 04:11:47 +0100
+From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: Half-Disaster switching from ext3 to ext4
+In-Reply-To: <20090106004706.GF14500@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901071405.51642.nickpiggin@yahoo.com.au>
+References: <12bfabe40901031923r3a828f71v74a8c6a56746b2ec@mail.gmail.com>
+	 <20090106004706.GF14500@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 January 2009 13:16:47 Andrew Morton wrote:
-> On Wed, 7 Jan 2009 13:06:44 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Wednesday 07 January 2009 10:13:44 Andrew Morton wrote:
-> > > (cc added)
-> > >
-> > > On Tue, 6 Jan 2009 17:57:44 -0500
-> > >
-> > > Christoph Hellwig <hch@infradead.org> wrote:
-> > > > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
-> > > > > softirq-introduce-statistics-for-softirq.patch
-> > > > > proc-export-statistics-for-softirq-to-proc.patch
-> > > > > proc-update-document-for-proc-softirqs-and-proc-stat.patch
-> > > >
-> > > > Why is this in procfs?
-> > >
-> > > softirq stuff in /proc seems appropriate?  It's alongside
-> > > /proc/interrupts.  We could put it in /trendy-fs-of-the-day, but what
-> > > would it gain us?
-> >
-> > Haven't we kind of agreed to use sysfs for things like this? A few years
-> > too late to be raising objections now ;)
-> >
-> > One problem I have with sysfs is that it (the directory structure, rather
-> > than the sysfs code itself) really needs to be policed and maintained
-> > by a central and coherent place/person with taste. Otherwise people put
-> > their own random crap with their own random naming schemes and becomes
-> > a crazy mess.
-> >
-> > softirqs are not hardware but purely kernel subsystem construct, as such
-> > they probably go under /sys/kernel/. People unfortunately have already
-> > added random crap to the /sys/kernel/ root directory, but future
-> > additions really should go into a good subdirectory structure (putting it
-> > into the root directory is equivalent to ditching all subdirectories from
-> > /proc/sys/).
+First of all, thanks for your reply!
+On Tue, Jan 6, 2009 at 1:47 AM, Theodore Tso <tytso@mit.edu> wrote:
+> What version of e2fsprogs do you have installed, and can you dig up
+> the exact error message at mount time?  It should be in the your
+> system logs....
 >
-> All sounds like pointless wank^Wbikeshed painting to me.
+e2fsprogs v. 1.41.3(Debian Unstable/Experimental).
+As for the log, I couldn't find any, but I posted the output of
+command "grep -r 'sda2' *"(inside /var/log) at the end of the e-mail.
+Sorry, I know this isn't much help! Anyway, if I can do anything else, just ask.
 
-Really? Our userspace ABI? You think it works bestter when there is as
-little thought as possible put into it and everybody just does what
-they feel is best?
+(sda2 is the partition which had the problem.)
 
+Regards,
+             Giangiacomo
 
-> > /sys/kernel/softirq/*, I suggest.
->
-> What would that *improve*?
+/var/log#grep -r 'sda2' *
 
-It would be logically in the right place.
-
+dmesg:[    4.706967]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+dmesg.0:[    4.707161]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+installer/syslog:Dec  3 14:48:13 kernel: [   10.427087]  sda: sda1
+sda2 sda3 sda4 < sda5 sda6 >
+installer/syslog:Dec  3 15:39:16 os-prober: debug: running
+/usr/lib/os-probes/50mounted-tests on /dev/sda2
+installer/syslog:Dec  3 15:39:16 10freedos: debug: /dev/sda2 is not a
+FAT partition: exiting
+installer/syslog:Dec  3 15:39:16 10qnx: debug: /dev/sda2 is not a QNX4
+partition: exiting
+installer/syslog:Dec  3 15:39:16 20microsoft: debug: /dev/sda2 is a
+NTFS partition
+installer/syslog:Dec  3 15:39:16 20microsoft: result:
+/dev/sda2:Windows Vista/Longhorn (loader):Windows:chain
+installer/syslog:Dec  3 15:41:01 os-prober: debug: running
+/usr/lib/os-probes/50mounted-tests on /dev/sda2
+installer/syslog:Dec  3 15:41:01 10freedos: debug: /dev/sda2 is not a
+FAT partition: exiting
+installer/syslog:Dec  3 15:41:01 10qnx: debug: /dev/sda2 is not a QNX4
+partition: exiting
+installer/syslog:Dec  3 15:41:01 20microsoft: debug: /dev/sda2 is a
+NTFS partition
+installer/syslog:Dec  3 15:41:01 20microsoft: result:
+/dev/sda2:Windows Vista/Longhorn (loader):Windows:chain
+installer/partman:(6079,0,0)	(18260,254,62)	2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:/lib/partman/choose_partition/60partition_tree/choices:
+paragraph: 2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:/lib/partman/choose_partition/60partition_tree/choices:
+paragraph: 2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:/lib/partman/choose_partition/60partition_tree/choices:
+paragraph: 2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:(6079,0,0)	(18260,254,62)	2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:/lib/partman/choose_partition/60partition_tree/choices:
+paragraph: 2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+installer/partman:parted_server: OUT:
+2	50001477120-150201838079	100200360960	primary	ntfs	/dev/sda2
+kern.log:Jan  5 00:36:11 debian-hell kernel: [    4.706967]  sda: sda1
+sda2 sda3 sda4 < sda5 sda6 sda7 >
+kern.log:Jan  5 00:38:01 debian-hell kernel: [  122.144438] EXT4 FS on
+sda2, internal journal on sda2:8
+kern.log.1:Dec 30 01:20:25 debian-hell kernel: [    4.694852]  sda:
+sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+kern.log.1:Dec 30 01:20:25 debian-hell kernel: [   10.723303] EXT3 FS
+on sda2, internal journal
+kern.log.1:Jan  2 19:17:15 debian-hell kernel: [323822.317015] EXT4 FS
+on sda2, internal journal on sda2:8
+kern.log.1:Jan  3 05:01:12 debian-hell kernel: [    4.690035]  sda:
+sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+kern.log.1:Jan  3 05:01:12 debian-hell kernel: [   11.111989] EXT4 FS
+on sda2, internal journal on sda2:8
+kern.log.1:Jan  3 22:41:59 debian-hell kernel: [    4.707161]  sda:
+sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+kern.log.1:Jan  3 23:28:40 debian-hell kernel: [ 2813.351732] EXT4 FS
+on sda2, internal journal on sda2:8
+kern.log.1:Jan  4 02:44:54 debian-hell kernel: [14587.645742] EXT4 FS
+on sda2, internal journal on sda2:8
+kern.log.1:Jan  4 03:10:02 debian-hell kernel: [16095.721236] EXT4 FS
+on sda2, internal journal on sda2:8
+messages:Jan  5 00:36:11 debian-hell kernel: [    4.706967]  sda: sda1
+sda2 sda3 sda4 < sda5 sda6 sda7 >
+messages:Jan  5 00:38:01 debian-hell kernel: [  122.144438] EXT4 FS on
+sda2, internal journal on sda2:8
+messages.1:Dec 30 01:20:25 debian-hell kernel: [    4.694852]  sda:
+sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+messages.1:Dec 30 01:20:25 debian-hell kernel: [   10.723303] EXT3 FS
+on sda2, internal journal
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+messages.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+messages.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
+messages.1:Jan  2 19:17:15 debian-hell kernel: [323822.317015] EXT4 FS
+on sda2, internal journal on sda2:8
+messages.1:Jan  3 05:01:12 debian-hell kernel: [    4.690035]  sda:
+sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+messages.1:Jan  3 05:01:12 debian-hell kernel: [   11.111989] EXT4 FS
+on sda2, internal journal on sda2:8
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+messages.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+messages.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
+messages.1:Jan  3 22:41:59 debian-hell kernel: [    4.707161]  sda:
+sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+messages.1:Jan  3 23:28:40 debian-hell kernel: [ 2813.351732] EXT4 FS
+on sda2, internal journal on sda2:8
+messages.1:Jan  4 02:44:54 debian-hell kernel: [14587.645742] EXT4 FS
+on sda2, internal journal on sda2:8
+messages.1:Jan  4 03:10:02 debian-hell kernel: [16095.721236] EXT4 FS
+on sda2, internal journal on sda2:8
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+user.log.1:Dec 31 07:28:04 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+user.log.1:Dec 31 07:28:31 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+user.log.1:Jan  3 22:21:26 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10freedos on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell 10freedos: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/10qnx on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell 10qnx: debug: /dev/sda2 is not
+a QNX4 partition: exiting
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/20microsoft on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell 20microsoft: debug: /dev/sda2
+is not a MS partition: exiting
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/30utility on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell 30utility: debug: /dev/sda2 is
+not a FAT partition: exiting
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/40lsb on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/70hurd on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/80minix on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90linux-distro on mounted /dev/sda2
+user.log.1:Jan  3 22:22:24 debian-hell os-prober: debug: running
+/usr/lib/os-probes/mounted/90solaris on mounted /dev/sda2
