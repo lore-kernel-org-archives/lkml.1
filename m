@@ -1,41 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbZAGCnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759710AbZAGCrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760114AbZAGCnk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 21:43:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbZAGCn2
+	id S1759710AbZAGCrx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 21:47:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbZAGCro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 21:43:28 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48562 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755979AbZAGCn1 (ORCPT
+	Tue, 6 Jan 2009 21:47:44 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:44824 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755197AbZAGCrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 21:43:27 -0500
-Date: Wed, 7 Jan 2009 03:57:25 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 -mm merge plans
-Message-ID: <20090107025725.GJ496@one.firstfloor.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151131.b6c4ff0b.akpm@linux-foundation.org> <20090106232418.GB25103@infradead.org> <20090107011448.GB3390@wotan.suse.de> <87tz8b3nfe.fsf@basil.nowhere.org> <20090107014915.GE3390@wotan.suse.de>
-Mime-Version: 1.0
+	Tue, 6 Jan 2009 21:47:43 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-nfs@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chuck Lever <chuck.lever@oracle.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Cedric Le Goater <clg@fr.ibm.com>
+References: <20090106200229.GA17031@us.ibm.com>
+	<1231274682.20316.65.camel@heimdal.trondhjem.org>
+	<20090106215831.GE18147@us.ibm.com>
+	<m1eizg11fy.fsf@frodo.ebiederm.org>
+	<1231283734.8041.6.camel@heimdal.trondhjem.org>
+	<20090106233238.GD13785@fieldses.org>
+	<1231284943.8041.8.camel@heimdal.trondhjem.org>
+	<1231287607.11487.0.camel@heimdal.trondhjem.org>
+	<20090107002608.GK13785@fieldses.org>
+	<1231288706.11487.15.camel@heimdal.trondhjem.org>
+	<20090107014422.GA17913@fieldses.org>
+Date: Tue, 06 Jan 2009 18:37:14 -0800
+In-Reply-To: <20090107014422.GA17913@fieldses.org> (J. Bruce Fields's message
+	of "Tue, 6 Jan 2009 20:44:22 -0500")
+Message-ID: <m1r63fzvs5.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107014915.GE3390@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"J. Bruce Fields" <bfields@fieldses.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> sys_sync B which is invoked *after* sys_sync caller A should not
-> return before A. If you didn't have a global lock, they'd tend to
-> block one another's pages anyway. I think it's OK.
+"J. Bruce Fields" <bfields@fieldses.org> writes:
 
-It means that you cannot reboot because reboot does sync.
-What happens when the sync gets stuck somewhere on a really
-slow device?
+> If people seem to think they can do live process and container
+> migration:
+>
+> 	http://ols.fedoraproject.org/OLS/Reprints-2008/mirkin-reprint.pdf
+>
+> then moving the NFS state strikes me as not the greatest of their
+> troubles.
+>
+> I'm not volunteering!
 
--Andi
+Reasonable.  There are a lot easier cases than NFS, and migration is
+not the biggest use case.
 
--- 
-ak@linux.intel.com
+A lot of this work we can do incrementally and simply not support
+doing everything in a container.  Which is where we are today.
+
+The whole hostname in NFS packets isn't something that makes much sense
+to me in the first place, so I can't comment on a good use case for that.
+
+Sorting out the details so we can get NFS working in multiple network namespaces
+makes a lot of sense to me.   It allows things like VPNing into work isolating the
+VPN process in a network namespace, and still being able to use all of the kernel
+networking including NFS like normal sounds fun to me.
+
+There may also be some fun things you can do with testing having both an NFS
+server and the client on the same box and not go through the loopback device.
+
+Eric
