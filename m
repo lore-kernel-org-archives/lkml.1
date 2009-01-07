@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbZAGUki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbZAGUkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761381AbZAGUki (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 15:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761142AbZAGUkT
+	id S1761509AbZAGUkx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 15:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761170AbZAGUkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 15:40:19 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33201 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760819AbZAGUkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 15:40:16 -0500
-Date: Wed, 7 Jan 2009 15:40:12 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
- <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
- <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 7 Jan 2009 15:40:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41101 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761129AbZAGUkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 15:40:17 -0500
+Message-ID: <496512D2.2030809@redhat.com>
+Date: Wed, 07 Jan 2009 15:38:42 -0500
+From: Casey Dahlin <cdahlin@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland McGrath <roland@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107171922.GA18000@redhat.com> <alpine.DEB.1.10.0901070949050.16651@alien.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0901070949050.16651@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 7 Jan 2009, Linus Torvalds wrote:
+Davide Libenzi wrote:
+> On Wed, 7 Jan 2009, Oleg Nesterov wrote:
 > 
-> So we can do all that locklessly and optimistically, just going back and 
-> verifying the results later. This is why "thread_info" is actually a 
-> better thing to use than "task_struct" - we can look up the cpu in it with 
-> a simple dereference. We knew the pointer _used_ to be valid, so in any 
-> normal situation, it will never page fault (and if you have 
-> CONFIG_DEBUG_PAGEALLOC and hit a very unlucky race, then performance isn't 
-> your concern anyway: we just need to make the page fault be non-lethal ;)
+>> minor nit...
+>>
+>> Please note that unlike other sys_...fd() syscalls, sys_waitfd()
+>> doesn't allow to pass O_CLOEXEC. Looks like we need a separate
+>> "flags" argument...
+> 
+> I said this even during the first post. Not a minor nit unless we want to 
+> have a sys_waitfd2 soon after.
+> 
 
-Wow, and I thought I do some crazy things with side effects of different 
-kernel characteristics. So basically, since the owner use to be valid and 
-we take the cpu number directly from the thread_info struct, we do not 
-need to worry about page faulting.
+I don't think I properly understood the complaint last time you made it.
 
-Next comes the issue to know if the owner is still running. Wouldn't we 
-need to do something like
+Fix on the way
 
-	if (task_thread_info(cpu_rq(cpu)->curr) == owner)
-
-I guess that would have the same characteristic, that even if the task 
-struct of cpu_rq(cpu)->curr was freed, we can still reference the 
-thread_info. Although, we might get garbage, but we don't care.
-
-I understand that this should not be a problem, but I'm afraid it will 
-give me nightmares at night. ;-)
-
-God that code had better be commented well.
-
--- Steve
+--CJD
