@@ -1,94 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbZAGGrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZAGGsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbZAGGrv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 01:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZAGGrn
+	id S1757959AbZAGGsf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 01:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbZAGGs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 01:47:43 -0500
-Received: from mail.lang.hm ([64.81.33.126]:53621 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752443AbZAGGrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 01:47:42 -0500
-Date: Tue, 6 Jan 2009 23:49:55 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: early exception error
-In-Reply-To: <86802c440901052209k6785a2f6i755a758d087892f@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0901062348000.31038@asgard.lang.hm>
-References: <20090102174845.GD5372@localhost>  <alpine.DEB.1.10.0901051520210.27641@asgard.lang.hm>  <alpine.DEB.1.10.0901051649250.28400@asgard.lang.hm>  <alpine.DEB.1.10.0901051653290.28400@asgard.lang.hm>  <49629FAF.6060709@kernel.org> 
- <alpine.DEB.1.10.0901051717440.28514@asgard.lang.hm>  <4962A4F0.7030201@kernel.org>  <alpine.DEB.1.10.0901051802320.28514@asgard.lang.hm>  <4962AE82.6050905@kernel.org>  <alpine.DEB.1.10.0901052126360.27565@asgard.lang.hm>
- <86802c440901052209k6785a2f6i755a758d087892f@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 7 Jan 2009 01:48:26 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:4848 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020AbZAGGsY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 01:48:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=kMGVojpGh7a6qqwqyQU+LwU77YAL7VWp9SKg+Npxua3tL+tkM8rDxihE3thraTLH3E
+         7deF8K+slEuJBL0MXlF0Fw41Hfxt/qsTY4Kbz4NxajyiphBXnWXvN2u2J/g+k6kQuYdS
+         95d1OWkMehyT+9jI1+FyO2ynu4aBTNyLHiEBw=
+Message-ID: <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>
+Date: Wed, 7 Jan 2009 08:48:22 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: [ 286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
+Cc: linux-kernel@vger.kernel.org, "Rusty Russell" <rusty@rustcorp.com.au>
+In-Reply-To: <4963F368.7080909@gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; BOUNDARY="----=_Part_74637_3362945.1231222143888"
-Content-ID: <alpine.DEB.1.10.0901062348001.31038@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4963F368.7080909@gmail.com>
+X-Google-Sender-Auth: 5c7368c12d508fbf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Justin,
 
-------=_Part_74637_3362945.1231222143888
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; format=flowed
-Content-ID: <alpine.DEB.1.10.0901062348002.31038@asgard.lang.hm>
-Content-Disposition: INLINE
-
-On Mon, 5 Jan 2009, Yinghai Lu wrote:
-
->> this seems to have solved the problem
+On Wed, Jan 7, 2009 at 2:12 AM, Justin P. Mattock
+<justinmattock@gmail.com> wrote:
+> With pulling git today I'm unable to shut the machine down completely.
+> (the system just sits there with the message on the screen);
 >
-> can you post boot log and lspci -vvxxx ?
+> * will now halt
+> [  286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
 
-I will do this tomorrow
+That looks like use-after-free in __stop_machine() so lets cc Rusty.
+If you want, you can convert the oops location into human-readable
+form. Just search for "GDB" in Documentation/BUG-HUNTING for
+instructions how to do that. And don't forget to send your .config.
 
->>
->> I do have another of these systems if there is any desire to do any more
->> troubleshooting (it would be really nice if things died with a better error
->> message for example)
+> [  286.548940] IP: [<c0150ca4>] __stop_machine+0x88/0xe3
+> [  286.550598] Oops: 0002 [#1] SMP
+> [  286.552206] last sysfs file: /sys/block/sda/removeable
+> [  286.553844] Modules linked in: hidp radeon drm agpgart btusb rfcomm bnep
+> sco l2cap bluetooth fan battery container ipt_LOG xt_limit xt_tcpudp
+> xt_state ipt_addrtype nf_nat_irc nf_conntrack_irc nf_nat_ftp nf_nat
+> nf_conntrack_ftp ipmi_watchdog ipmi_msghandler uvcvideo isight_firmware
+> uinput arpt_mangle arptable_filter arp_tables nf_conntrack_ipv4 nf_conntrack
+> nf_defrag_ipv4 iptable_mangle iptable_filter ip_tables x_tables coretemp
+> eeprom acpi_cpufreq cpufreq_powersave cpufreq_performance cpufreq_ondemand
+> cpufreq_conservative appletouch snd_had_codec_idt ohci1394 ehci_hcd
+> snd_hda_intel snd_hda_codec thermal ath9k uhci_hcd ieee1394 joydev pata_acpi
+> snd_hwdep snd_pcm snd_page_alloc video ac button processor applesmc evdev
+> [  286.560580]
+> [  286.560580] Pid: 3273, comm: halt Not tainted (2.6.28-06127-g238c6d5 #1)
+> MacBookPro2,2
+> [  286.560580] EIP: 0060:[<c0150ca4>] EFLAGS: 00010293 CPU: 0
+> [  286.560580] EIP: is at __stop_machine+0x88/0xe3
+> [  286.560580] EAX: 6b6b6b6b EBX: 00000000 ECX: 6b6b6b6b EDX: 00000000
+> [  286.560580] ESI: c054abe0 EDI: c03d03a4 EBP: f1a29e54 ESP: f1a29e44
+> [  286.560580]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> [  286.560580] Process halt (pid: 3273, ti=f1a28000 task=f4530f30
+> task.ti=f1a28000)
+> [  286.560580] Stack:
+> [  286.560580] f1a29e60 c054abe0 00000001 00000010 f1a29e7c c03d04e4
+> ffffffea 00000010
+> [  286.560580] 00000001 00000003 00000022 00000001 4321fedc c054abe0
+> f1a29e94 c012a57e
+> [  286.560580] 00000000 ffffffff 4321fedc 28121969 f1a29e9c c01360c0
+> f1a29fb0 c0136301
+> [  286.560580] Call Trace:
+> [  286.560580]  [<c03d04e4>] ? _cpu_down+0x10f/0x234
+> [  286.560580]  [<c012a57e>] ? disable_nonboot_cpus+0x58/0xdc
+> [  286.560580]  [<c01360c0>] ? kernel_poweroff+0x22/0x39
+> [  286.560580]  [<c0136301>] ? sys_reboot+0xde/0x14c
+> [  286.560580]  [<c01331b2>] ? complete_signal+0x179/0x191
+> [  286.560580]  [<c0133396>] ? send_signal+0x1cc/0x1e1
+> [  286.560580]  [<c03de418>] ? _spin_unlock_irqrestore+0x2d/0x3c
+> [  286.560580]  [<c0133b65>] ? group_send_signal_info+0x58/0x61
+> [  286.560580]  [<c0133b9e>] ? kill_pid_info+0x30/0x3a
+> [  286.560580]  [<c0133d49>] ? sys_kill+0x75/0x13a
+> [  286.560580]  [<c01a06cb>] ? mntput_no_expire+ox1f/0x101
+> [  286.560580]  [<c019b3b3>] ? dput+0x1e/0x105
+> [  286.560580]  [<c018ef87>] ?  __fput+0x150/0x158
+> [  286.560580]  [<c0157abf>] ? audit_syscall_entry+0x137/0x159
+> [  286.560580]  [<c010329f>] ? sysenter_do_call+0x12/0x34
+> [  286.560580] Code: c7 05 10 06 62 c0 00 00 00 00 a3 f4 05 62 c0 c7 05 ec
+> 05 62 c0 01 00 00 00 83 cb ff eb 2d a1 1c 06 62 c0 f7 d0 8b 0c 98 8d 41 04
+> <c7> 01 00 00 00 00 89 41 04 89 41 08 c7 41 0c ff 0c 15 c0 89 d8
+> [  286.560580] EIP: [<c0150ca4>] __stop_machine+0x88/0xe3 SS:ESP
+> 0068:f1a29e44
+> [  286.639215] ---[ end trace 5b080c1ab14203ae ] ---
+> Segmentation fault
 >
-> good,
-> 0. setup serial cable between your two system. use minicom in your
-> first system to capture serial message from second system
-> 1. apply attached patch
-> 2. we need full boot log of your second system. please boot with "
-> debug console=uart8250,io,0x3f8,115200n8 pci=earlydump"
-
-it will take me a little bit of time to do this. the one I've been working 
-with is now my desktop at work, now that the holidays are over I need to 
-work with it instead of rebooting it, the other boxes are in a stack at 
-home. getting at them is easy compared to figuring out where to set them 
-up. I should have something setup within a couple of days.
-
-David Lang
-------=_Part_74637_3362945.1231222143888
-Content-Type: TEXT/X-PATCH; NAME=mminit_loglevel_2.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.1.10.0901062348003.31038@asgard.lang.hm>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=mminit_loglevel_2.patch
-
-RnJvbTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgpTdWJqZWN0OiBbUEFUQ0hd
-IG1tOiBwcmludCBvdXQgaW5mbyBhYm91dCBhZGRpbmcvcmVtb3ZpbmcgYWN0aXZlIHJlZ2lvbgoK
-U2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKLS0tCiBt
-bS9wYWdlX2FsbG9jLmMgfCAgICA1ICsrLS0tCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25z
-KCspLCAzIGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9tbS9wYWdlX2FsbG9jLmMKPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvbW0vcGFnZV9hbGxvYy5jCisrKyBsaW51eC0yLjYv
-bW0vcGFnZV9hbGxvYy5jCkBAIC0zNjI2LDggKzM2MjYsNyBAQCB2b2lkIF9faW5pdCBhZGRfYWN0
-aXZlX3JhbmdlKHVuc2lnbmVkIGluCiB7CiAJaW50IGk7CiAKLQltbWluaXRfZHByaW50ayhNTUlO
-SVRfVFJBQ0UsICJtZW1vcnlfcmVnaXN0ZXIiLAotCQkJIkVudGVyaW5nIGFkZF9hY3RpdmVfcmFu
-Z2UoJWQsICUjbHgsICUjbHgpICIKKwlwcmludGsoS0VSTl9ERUJVRyAiQWRkaW5nIGFjdGl2ZSBy
-YW5nZSAoJWQsICUjbHgsICUjbHgpICIKIAkJCSIlZCBlbnRyaWVzIG9mICVkIHVzZWRcbiIsCiAJ
-CQluaWQsIHN0YXJ0X3BmbiwgZW5kX3BmbiwKIAkJCW5yX25vZGVtYXBfZW50cmllcywgTUFYX0FD
-VElWRV9SRUdJT05TKTsKQEAgLTM2ODksNyArMzY4OCw3IEBAIHZvaWQgX19pbml0IHJlbW92ZV9h
-Y3RpdmVfcmFuZ2UodW5zaWduZWQKIAlpbnQgaSwgajsKIAlpbnQgcmVtb3ZlZCA9IDA7CiAKLQlw
-cmludGsoS0VSTl9ERUJVRyAicmVtb3ZlX2FjdGl2ZV9yYW5nZSAoJWQsICVsdSwgJWx1KVxuIiwK
-KwlwcmludGsoS0VSTl9ERUJVRyAiUmVtb3ZpbmcgYWN0aXZlIHJhbmdlICglZCwgJSNseCwgJSNs
-eClcbiIsCiAJCQkgIG5pZCwgc3RhcnRfcGZuLCBlbmRfcGZuKTsKIAogCS8qIEZpbmQgdGhlIG9s
-ZCBhY3RpdmUgcmVnaW9uIGVuZCBhbmQgc2hyaW5rICovCg==
-------=_Part_74637_3362945.1231222143888--
+> after this message appears, if I hold down the start button
+> the system shuts off after a few seconds.
+> (BTW hopefully the number are correct,
+> manually writing this down, is a bit of a pain);
+>
+> regards;
+>
+> Justin P. Mattock
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
