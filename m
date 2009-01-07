@@ -1,132 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbZAGPwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbZAGPzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbZAGPwm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZAGPwd
+	id S1759409AbZAGPzG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZAGPyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:52:33 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:1803 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752654AbZAGPwc (ORCPT
+	Wed, 7 Jan 2009 10:54:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53073 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380AbZAGPyt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:52:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=osjzGTVAX7mbp0/GNpNPLMo2BePf3K63a6rFGBKg0CoVwNnrio1HpffFnqYIJLoXdc
-         5NGZygY7WGyRac7IaSTXLZDnqAgYCJn0AJWQiF15jBwMVt/dFFHX4Tv7kdKBjrEVj5yz
-         oHueYmsnco+hDnWVqLHoMugsvqPA7nEgL9Y64=
-Message-ID: <4964CFBB.9050404@gmail.com>
-Date: Wed, 07 Jan 2009 07:52:27 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: [PATCH] stop_machine/cpu hotplug: fix disable_nonboot_cpus
-References: <4963F368.7080909@gmail.com>	 <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>	 <84144f020901070030k6fb888f6n84255078e4885d28@mail.gmail.com>	 <20090107091534.GA4633@osiris.boeblingen.de.ibm.com>	 <1231319946.14720.7.camel@penberg-laptop>	 <b6a2187b0901070336u1cb0bc94i1e47a68d8ea671c@mail.gmail.com>	 <20090107122728.GB4633@osiris.boeblingen.de.ibm.com>	 <b6a2187b0901070551r5bb86dbfye96c2c92e7b78087@mail.gmail.com>	 <20090107151946.GA25560@osiris.boeblingen.de.ibm.com> <c62985530901070730j7515a106x2a56a6d8a14fbbc5@mail.gmail.com>
-In-Reply-To: <c62985530901070730j7515a106x2a56a6d8a14fbbc5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 7 Jan 2009 10:54:49 -0500
+Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.DEB.1.10.0901071014120.32756@gandalf.stny.rr.com>
+References: <87r63ljzox.fsf@basil.nowhere.org>
+	 <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
+	 <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
+	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
+	 <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>
+	 <1231278275.11687.111.camel@twins>
+	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
+	 <1231279660.11687.121.camel@twins>
+	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
+	 <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>
+	 <1231329783.11687.287.camel@twins>
+	 <alpine.DEB.1.10.0901071014120.32756@gandalf.stny.rr.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 07 Jan 2009 16:54:40 +0100
+Message-Id: <1231343680.11687.307.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric Weisbecker wrote:
-> 2009/1/7 Heiko Carstens <heiko.carstens@de.ibm.com>:
->   
->> From: Heiko Carstens <heiko.carstens@de.ibm.com>
->>
->> disable_nonboot_cpus calls _cpu_down. But _cpu_down requires that the
->> caller already created the stop_machine workqueue (like cpu_down does).
->> Otherwise a call to stop_machine will lead to accesses to random memory
->> regions.
->>
->> When introducing this new interface (9ea09af3bd3090e8349ca2899ca2011bd94cda85
->> "stop_machine: introduce stop_machine_create/destroy") I missed the second
->> call site of _cpu_down.
->> So add the missing stop_machine_create/destroy calls to disable_nonboot_cpus
->> as well.
->>
->> Fixes suspend-to-ram/disk and also this bug:
->>
->> [  286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
->> [  286.548940] IP: [<c0150ca4>] __stop_machine+0x88/0xe3
->> [  286.550598] Oops: 0002 [#1] SMP
->> [  286.560580] Pid: 3273, comm: halt Not tainted (2.6.28-06127-g238c6d5
->> [  286.560580] EIP: is at __stop_machine+0x88/0xe3
->> [  286.560580] Process halt (pid: 3273, ti=f1a28000 task=f4530f30
->> [  286.560580] Call Trace:
->> [  286.560580]  [<c03d04e4>] ? _cpu_down+0x10f/0x234
->> [  286.560580]  [<c012a57e>] ? disable_nonboot_cpus+0x58/0xdc
->> [  286.560580]  [<c01360c0>] ? kernel_poweroff+0x22/0x39
->> [  286.560580]  [<c0136301>] ? sys_reboot+0xde/0x14c
->> [  286.560580]  [<c01331b2>] ? complete_signal+0x179/0x191
->> [  286.560580]  [<c0133396>] ? send_signal+0x1cc/0x1e1
->> [  286.560580]  [<c03de418>] ? _spin_unlock_irqrestore+0x2d/0x3c
->> [  286.560580]  [<c0133b65>] ? group_send_signal_info+0x58/0x61
->> [  286.560580]  [<c0133b9e>] ? kill_pid_info+0x30/0x3a
->> [  286.560580]  [<c0133d49>] ? sys_kill+0x75/0x13a
->> [  286.560580]  [<c01a06cb>] ? mntput_no_expire+ox1f/0x101
->> [  286.560580]  [<c019b3b3>] ? dput+0x1e/0x105
->> [  286.560580]  [<c018ef87>] ?  __fput+0x150/0x158
->> [  286.560580]  [<c0157abf>] ? audit_syscall_entry+0x137/0x159
->> [  286.560580]  [<c010329f>] ? sysenter_do_call+0x12/0x34
->>
->> Reported-by: "Justin P. Mattock" <justinmattock@gmail.com>
->> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
->> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
->> ---
->>  kernel/cpu.c |    6 +++++-
->>  1 file changed, 5 insertions(+), 1 deletion(-)
->>
->> Index: linux-2.6/kernel/cpu.c
->> ===================================================================
->> --- linux-2.6.orig/kernel/cpu.c
->> +++ linux-2.6/kernel/cpu.c
->> @@ -379,8 +379,11 @@ static cpumask_var_t frozen_cpus;
->>
->>  int disable_nonboot_cpus(void)
->>  {
->> -       int cpu, first_cpu, error = 0;
->> +       int cpu, first_cpu, error;
->>
->> +       error = stop_machine_create();
->> +       if (error)
->> +               return error;
->>        cpu_maps_update_begin();
->>        first_cpu = cpumask_first(cpu_online_mask);
->>        /* We take down all of the non-boot CPUs in one shot to avoid races
->> @@ -409,6 +412,7 @@ int disable_nonboot_cpus(void)
->>                printk(KERN_ERR "Non-boot CPUs are not disabled\n");
->>        }
->>        cpu_maps_update_done();
->> +       stop_machine_destroy();
->>        return error;
->>  }
->>
->>     
->
->
-> That should explain why suspend to disk failed on my box yesterday on
-> the processors stage...
-> Thanks!
->
->   
-O.K. applied the patch,
-and shutdown the machine
-a few times; no freeze, no bug message.
-sweet!!.
-Now I'm gonna try and dismantle
-a bug message for educational purposes.
-Thanks for the assistance.
+On Wed, 2009-01-07 at 10:22 -0500, Steven Rostedt wrote:
+> Peter, nice work!
 
-regards;
+Thanks!
 
-Justin P. Mattock
+> > +	}
+> > +
+> > +	if (!spin) {
+> > +		schedstat_inc(this_rq(), mtx_sched);
+> > +		__set_task_state(task, state);
+> 
+> I still do not know why you set state here instead of in the mutex code.
+> Yes, you prevent changing the state if we do not schedule, but there's 
+> nothing wrong with setting it before hand. We may even be able to cache 
+> the owner and keep the locking of the wait_lock out of here. But then I 
+> see that it may be used to protect the sched_stat counters.
+
+I was about to say because we need task_rq(owner) and can only deref
+owner while holding that lock, but I found a way around it by using
+task_cpu() which is exported.
+
+Compile tested only so far...
+
+---
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -329,8 +329,8 @@ extern signed long schedule_timeout(sign
+ extern signed long schedule_timeout_interruptible(signed long timeout);
+ extern signed long schedule_timeout_killable(signed long timeout);
+ extern signed long schedule_timeout_uninterruptible(signed long timeout);
+-extern void mutex_spin_or_schedule(struct mutex_waiter *waiter, long state,
+-				   unsigned long *flags);
++extern void mutex_spin_or_schedule(struct mutex_waiter *waiter,
++				   struct task_struct *owner, int cpu);
+ asmlinkage void schedule(void);
+ 
+ struct nsproxy;
+Index: linux-2.6/kernel/mutex.c
+===================================================================
+--- linux-2.6.orig/kernel/mutex.c
++++ linux-2.6/kernel/mutex.c
+@@ -12,7 +12,8 @@
+  *
+  *  - Adaptive spinning for mutexes by Peter Zijlstra. (Ported to mainline
+  *    from the -rt tree, where it was originally implemented for rtmutexes
+- *    by Steven Rostedt, based on work by Gregory Haskins.)
++ *    by Steven Rostedt, based on work by Gregory Haskins, Peter Morreale
++ *    and Sven Dietrich.
+  *
+  * Also see Documentation/mutex-design.txt.
+  */
+@@ -157,6 +158,9 @@ __mutex_lock_common(struct mutex *lock, 
+ 	lock_contended(&lock->dep_map, ip);
+ 
+ 	for (;;) {
++		int cpu = 0;
++		struct task_struct *l_owner;
++
+ 		/*
+ 		 * Lets try to take the lock again - this is needed even if
+ 		 * we get here for the first time (shortly after failing to
+@@ -184,8 +188,15 @@ __mutex_lock_common(struct mutex *lock, 
+ 			return -EINTR;
+ 		}
+ 
+-		mutex_spin_or_schedule(&waiter, state, &flags);
++		__set_task_state(task, state);
++		l_owner = ACCESS_ONCE(lock->owner);
++		if (l_owner)
++			cpu = task_cpu(l_owner);
++		spin_unlock_mutex(&lock->wait_lock, flags);
++		mutex_spin_or_schedule(&waiter, l_owner, cpu);
++		spin_lock_mutex(&lock->wait_lock, flags);
+ 	}
++	__set_task_state(task, TASK_RUNNING);
+ 
+ done:
+ 	lock_acquired(&lock->dep_map, ip);
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -4600,42 +4600,37 @@ pick_next_task(struct rq *rq, struct tas
+ 	}
+ }
+ 
+-#ifdef CONFIG_DEBUG_MUTEXES
+-# include "mutex-debug.h"
+-#else
+-# include "mutex.h"
+-#endif
+-
+-void mutex_spin_or_schedule(struct mutex_waiter *waiter, long state,
+-			    unsigned long *flags)
++void mutex_spin_or_schedule(struct mutex_waiter *waiter,
++			    struct task_struct *owner, int cpu)
+ {
+-	struct mutex *lock = waiter->lock;
+ 	struct task_struct *task = waiter->task;
+-	struct task_struct *owner = lock->owner;
++	struct mutex *lock = waiter->lock;
+ 	struct rq *rq;
+ 	int spin = 0;
+ 
+ 	if (likely(sched_feat(MUTEX_SPIN) && owner)) {
+-		rq = task_rq(owner);
++		rq = cpu_rq(cpu);
+ 		spin = (rq->curr == owner);
+ 	}
+ 
+ 	if (!spin) {
++		preempt_disable();
+ 		schedstat_inc(this_rq(), mtx_sched);
+-		__set_task_state(task, state);
+-		spin_unlock_mutex(&lock->wait_lock, *flags);
++		preempt_enable();
++
+ 		schedule();
+-		spin_lock_mutex(&lock->wait_lock, *flags);
+ 		return;
+ 	}
+ 
++	preempt_disable();
+ 	schedstat_inc(this_rq(), mtx_spin);
+-	spin_unlock_mutex(&lock->wait_lock, *flags);
++	preempt_enable();
++
+ 	for (;;) {
+ 		struct task_struct *l_owner;
+ 
+ 		/* Stop spinning when there's a pending signal. */
+-		if (signal_pending_state(state, task))
++		if (signal_pending_state(task->state, task))
+ 			break;
+ 
+ 		/* Mutex got unlocked, try to acquire. */
+@@ -4666,7 +4661,6 @@ void mutex_spin_or_schedule(struct mutex
+ 		 */
+ 		cpu_relax();
+ 	}
+-	spin_lock_mutex(&lock->wait_lock, *flags);
+ }
+ 
+ /*
+
