@@ -1,510 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbZAGUAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761610AbZAGUAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758689AbZAGUAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 15:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbZAGT6k
+	id S1761610AbZAGUAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 15:00:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154AbZAGT6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:58:40 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:42349 "EHLO relay.sgi.com"
+	Wed, 7 Jan 2009 14:58:41 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:53587 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755977AbZAGT6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756032AbZAGT6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Jan 2009 14:58:38 -0500
-Message-Id: <20090107195832.465094000@polaris-admin.engr.sgi.com>
+Message-Id: <20090107195832.733912000@polaris-admin.engr.sgi.com>
 References: <20090107195832.265117000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 07 Jan 2009 11:58:33 -0800
+Date: Wed, 07 Jan 2009 11:58:35 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 1/5] cpumask: update irq_desc to use cpumask_var_t
-Content-Disposition: inline; filename=cpumask:update-irq_desc-to-use-cpumask_var_t.patch
+       Dean Nelson <dcn@sgi.com>, Robert Richter <robert.richter@amd.com>,
+       oprofile-list@lists.sf.net, Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Ursula Braun <ursula.braun@de.ibm.com>,
+       linux390@de.ibm.com, linux-s390@vger.kernel.org
+Subject: [PATCH 3/5] cpumask: convert misc driver functions
+Content-Disposition: inline; filename=cpumask:convert-drivers.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: reduce memory usage, use new cpumask API.
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-Replace the affinity and pending_masks with cpumask_var_t's.  This adds
-to the significant size reduction done with the SPARSE_IRQS changes.
+Impact: use new cpumask API.
 
-The added functions (init_alloc_desc_masks & init_copy_desc_masks) are
-in the include file so they can be inlined (and optimized out for the
-!CONFIG_CPUMASKS_OFFSTACK case.)  [Naming chosen to be consistent with
-the other init*irq functions, as well as the backwards arg declaration
-of "from, to" instead of the more common "to, from" standard.]
+Convert misc driver functions to use struct cpumask.
 
-Includes a slight change to the declaration of struct irq_desc to embed
-the pending_mask within ifdef(CONFIG_SMP) to be consistent with other
-references, and some small changes to Xen.
+To Do:
+  - Convert iucv_buffer_cpumask to cpumask_var_t.
 
-Tested: sparse/non-sparse/cpumask_offstack/non-cpumask_offstack/nonuma/nosmp on x86_64
-
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Chris Wright <chrisw@sous-sol.org>
+Acked-by: Dean Nelson <dcn@sgi.com>
+Cc: Robert Richter <robert.richter@amd.com>
+Cc: oprofile-list@lists.sf.net
 Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Chris Wright <chrisw@sous-sol.org>
 Cc: virtualization@lists.osdl.org
 Cc: xen-devel@lists.xensource.com
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ursula Braun <ursula.braun@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: linux-s390@vger.kernel.org
 ---
- arch/x86/kernel/io_apic.c |   20 +++++------
- arch/x86/kernel/irq_32.c  |    2 -
- arch/x86/kernel/irq_64.c  |    2 -
- drivers/xen/events.c      |    4 +-
- include/linux/irq.h       |   81 ++++++++++++++++++++++++++++++++++++++++++++--
- kernel/irq/chip.c         |    5 ++
- kernel/irq/handle.c       |   26 +++++++-------
- kernel/irq/manage.c       |   12 +++---
- kernel/irq/migration.c    |   12 +++---
- kernel/irq/numa_migrate.c |   12 ++++++
- kernel/irq/proc.c         |    4 +-
- 11 files changed, 135 insertions(+), 45 deletions(-)
+ drivers/base/cpu.c             |    2 +-
+ drivers/misc/sgi-xp/xpc_main.c |    2 +-
+ drivers/oprofile/buffer_sync.c |   22 ++++++++++++++++++----
+ drivers/oprofile/buffer_sync.h |    4 ++++
+ drivers/oprofile/oprof.c       |    9 ++++++++-
+ drivers/xen/manage.c           |    2 +-
+ net/iucv/iucv.c                |   28 ++++++++++++++++++----------
+ 7 files changed, 51 insertions(+), 18 deletions(-)
 
---- linux-2.6-for-ingo.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/io_apic.c
-@@ -358,7 +358,7 @@ set_extra_move_desc(struct irq_desc *des
- 
- 	if (!cfg->move_in_progress) {
- 		/* it means that domain is not changed */
--		if (!cpumask_intersects(&desc->affinity, mask))
-+		if (!cpumask_intersects(desc->affinity, mask))
- 			cfg->move_desc_pending = 1;
- 	}
- }
-@@ -581,9 +581,9 @@ set_desc_affinity(struct irq_desc *desc,
- 	if (assign_irq_vector(irq, cfg, mask))
- 		return BAD_APICID;
- 
--	cpumask_and(&desc->affinity, cfg->domain, mask);
-+	cpumask_and(desc->affinity, cfg->domain, mask);
- 	set_extra_move_desc(desc, mask);
--	return cpu_mask_to_apicid_and(&desc->affinity, cpu_online_mask);
-+	return cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
- }
- 
- static void
-@@ -2385,7 +2385,7 @@ migrate_ioapic_irq_desc(struct irq_desc 
- 	if (cfg->move_in_progress)
- 		send_cleanup_vector(cfg);
- 
--	cpumask_copy(&desc->affinity, mask);
-+	cpumask_copy(desc->affinity, mask);
- }
- 
- static int migrate_irq_remapped_level_desc(struct irq_desc *desc)
-@@ -2407,11 +2407,11 @@ static int migrate_irq_remapped_level_de
- 	}
- 
- 	/* everthing is clear. we have right of way */
--	migrate_ioapic_irq_desc(desc, &desc->pending_mask);
-+	migrate_ioapic_irq_desc(desc, desc->pending_mask);
- 
- 	ret = 0;
- 	desc->status &= ~IRQ_MOVE_PENDING;
--	cpumask_clear(&desc->pending_mask);
-+	cpumask_clear(desc->pending_mask);
- 
- unmask:
- 	unmask_IO_APIC_irq_desc(desc);
-@@ -2436,7 +2436,7 @@ static void ir_irq_migration(struct work
- 				continue;
- 			}
- 
--			desc->chip->set_affinity(irq, &desc->pending_mask);
-+			desc->chip->set_affinity(irq, desc->pending_mask);
- 			spin_unlock_irqrestore(&desc->lock, flags);
- 		}
- 	}
-@@ -2450,7 +2450,7 @@ static void set_ir_ioapic_affinity_irq_d
+--- linux-2.6-for-ingo.orig/drivers/base/cpu.c
++++ linux-2.6-for-ingo/drivers/base/cpu.c
+@@ -107,7 +107,7 @@ static SYSDEV_ATTR(crash_notes, 0400, sh
+ /*
+  * Print cpu online, possible, present, and system maps
+  */
+-static ssize_t print_cpus_map(char *buf, cpumask_t *map)
++static ssize_t print_cpus_map(char *buf, const struct cpumask *map)
  {
- 	if (desc->status & IRQ_LEVEL) {
- 		desc->status |= IRQ_MOVE_PENDING;
--		cpumask_copy(&desc->pending_mask, mask);
-+		cpumask_copy(desc->pending_mask, mask);
- 		migrate_irq_remapped_level_desc(desc);
- 		return;
- 	}
-@@ -2518,7 +2518,7 @@ static void irq_complete_move(struct irq
+ 	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, map);
  
- 		/* domain has not changed, but affinity did */
- 		me = smp_processor_id();
--		if (cpu_isset(me, desc->affinity)) {
-+		if (cpumask_test_cpu(me, desc->affinity)) {
- 			*descp = desc = move_irq_desc(desc, me);
- 			/* get the new one */
- 			cfg = desc->chip_data;
-@@ -4041,7 +4041,7 @@ void __init setup_ioapic_dest(void)
- 			 */
- 			if (desc->status &
- 			    (IRQ_NO_BALANCING | IRQ_AFFINITY_SET))
--				mask = &desc->affinity;
-+				mask = desc->affinity;
- 			else
- 				mask = TARGET_CPUS;
+--- linux-2.6-for-ingo.orig/drivers/misc/sgi-xp/xpc_main.c
++++ linux-2.6-for-ingo/drivers/misc/sgi-xp/xpc_main.c
+@@ -318,7 +318,7 @@ xpc_hb_checker(void *ignore)
  
---- linux-2.6-for-ingo.orig/arch/x86/kernel/irq_32.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/irq_32.c
-@@ -248,7 +248,7 @@ void fixup_irqs(void)
- 		if (irq == 2)
- 			continue;
+ 	/* this thread was marked active by xpc_hb_init() */
  
--		affinity = &desc->affinity;
-+		affinity = desc->affinity;
- 		if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids) {
- 			printk("Breaking affinity for irq %i\n", irq);
- 			affinity = cpu_all_mask;
---- linux-2.6-for-ingo.orig/arch/x86/kernel/irq_64.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/irq_64.c
-@@ -100,7 +100,7 @@ void fixup_irqs(void)
- 		/* interrupt's are disabled at this point */
- 		spin_lock(&desc->lock);
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(XPC_HB_CHECK_CPU));
++	set_cpus_allowed_ptr(current, cpumask_of(XPC_HB_CHECK_CPU));
  
--		affinity = &desc->affinity;
-+		affinity = desc->affinity;
- 		if (!irq_has_action(irq) ||
- 		    cpumask_equal(affinity, cpu_online_mask)) {
- 			spin_unlock(&desc->lock);
---- linux-2.6-for-ingo.orig/drivers/xen/events.c
-+++ linux-2.6-for-ingo/drivers/xen/events.c
-@@ -125,7 +125,7 @@ static void bind_evtchn_to_cpu(unsigned 
+ 	/* set our heartbeating to other partitions into motion */
+ 	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
+--- linux-2.6-for-ingo.orig/drivers/oprofile/buffer_sync.c
++++ linux-2.6-for-ingo/drivers/oprofile/buffer_sync.c
+@@ -37,7 +37,7 @@
  
- 	BUG_ON(irq == -1);
- #ifdef CONFIG_SMP
--	irq_to_desc(irq)->affinity = cpumask_of_cpu(cpu);
-+	cpumask_copy(irq_to_desc(irq)->affinity, cpumask_of(cpu));
- #endif
+ static LIST_HEAD(dying_tasks);
+ static LIST_HEAD(dead_tasks);
+-static cpumask_t marked_cpus = CPU_MASK_NONE;
++static cpumask_var_t marked_cpus;
+ static DEFINE_SPINLOCK(task_mortuary);
+ static void process_task_mortuary(void);
  
- 	__clear_bit(chn, cpu_evtchn_mask[cpu_evtchn[chn]]);
-@@ -142,7 +142,7 @@ static void init_evtchn_cpu_bindings(voi
- 
- 	/* By default all event channels notify CPU#0. */
- 	for_each_irq_desc(i, desc) {
--		desc->affinity = cpumask_of_cpu(0);
-+		cpumask_copy(desc->affinity, cpumask_of(0));
- 	}
- #endif
- 
---- linux-2.6-for-ingo.orig/include/linux/irq.h
-+++ linux-2.6-for-ingo/include/linux/irq.h
-@@ -182,11 +182,11 @@ struct irq_desc {
- 	unsigned int		irqs_unhandled;
- 	spinlock_t		lock;
- #ifdef CONFIG_SMP
--	cpumask_t		affinity;
-+	cpumask_var_t		affinity;
- 	unsigned int		cpu;
--#endif
- #ifdef CONFIG_GENERIC_PENDING_IRQ
--	cpumask_t		pending_mask;
-+	cpumask_var_t		pending_mask;
-+#endif
- #endif
- #ifdef CONFIG_PROC_FS
- 	struct proc_dir_entry	*dir;
-@@ -422,4 +422,79 @@ extern int set_irq_msi(unsigned int irq,
- 
- #endif /* !CONFIG_S390 */
- 
-+#ifdef CONFIG_SMP
-+/**
-+ * init_alloc_desc_masks - allocate cpumasks for irq_desc
-+ * @desc:	pointer to irq_desc struct
-+ * @boot:	true if need bootmem
-+ *
-+ * Allocates affinity and pending_mask cpumask if required.
-+ * Returns true if successful (or not required).
-+ * Side effect: affinity has all bits set, pending_mask has all bits clear.
-+ */
-+static inline bool init_alloc_desc_masks(struct irq_desc *desc, int node,
-+								bool boot)
-+{
-+	if (boot) {
-+		alloc_bootmem_cpumask_var(&desc->affinity);
-+		cpumask_setall(desc->affinity);
-+
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+		alloc_bootmem_cpumask_var(&desc->pending_mask);
-+		cpumask_clear(desc->pending_mask);
-+#endif
-+		return true;
-+	}
-+
-+	if (!alloc_cpumask_var_node(&desc->affinity, GFP_ATOMIC, node))
-+		return false;
-+	cpumask_setall(desc->affinity);
-+
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+	if (!alloc_cpumask_var_node(&desc->pending_mask, GFP_ATOMIC, node)) {
-+		free_cpumask_var(desc->affinity);
-+		return false;
-+	}
-+	cpumask_clear(desc->pending_mask);
-+#endif
-+	return true;
-+}
-+
-+/**
-+ * init_copy_desc_masks - copy cpumasks for irq_desc
-+ * @old_desc:	pointer to old irq_desc struct
-+ * @new_desc:	pointer to new irq_desc struct
-+ *
-+ * Insures affinity and pending_masks are copied to new irq_desc.
-+ * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
-+ * irq_desc struct so the copy is redundant.
-+ */
-+
-+static inline void init_copy_desc_masks(struct irq_desc *old_desc,
-+					struct irq_desc *new_desc)
-+{
-+#ifdef CONFIG_CPUMASKS_OFFSTACK
-+	cpumask_copy(new_desc->affinity, old_desc->affinity);
-+
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+	cpumask_copy(new_desc->pending_mask, old_desc->pending_mask);
-+#endif
-+#endif
-+}
-+
-+#else /* !CONFIG_SMP */
-+
-+static inline bool init_alloc_desc_masks(struct irq_desc *desc, int node,
-+								bool boot)
-+{
-+	return true;
-+}
-+
-+static inline void init_copy_desc_masks(struct irq_desc *old_desc,
-+					struct irq_desc *new_desc)
-+{
-+}
-+
-+#endif	/* CONFIG_SMP */
-+
- #endif /* _LINUX_IRQ_H */
---- linux-2.6-for-ingo.orig/kernel/irq/chip.c
-+++ linux-2.6-for-ingo/kernel/irq/chip.c
-@@ -46,7 +46,10 @@ void dynamic_irq_init(unsigned int irq)
- 	desc->irq_count = 0;
- 	desc->irqs_unhandled = 0;
- #ifdef CONFIG_SMP
--	cpumask_setall(&desc->affinity);
-+	cpumask_setall(desc->affinity);
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+	cpumask_clear(desc->pending_mask);
-+#endif
- #endif
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
---- linux-2.6-for-ingo.orig/kernel/irq/handle.c
-+++ linux-2.6-for-ingo/kernel/irq/handle.c
-@@ -64,9 +64,6 @@ static struct irq_desc irq_desc_init = {
- 	.handle_irq = handle_bad_irq,
- 	.depth      = 1,
- 	.lock       = __SPIN_LOCK_UNLOCKED(irq_desc_init.lock),
--#ifdef CONFIG_SMP
--	.affinity   = CPU_MASK_ALL
--#endif
- };
- 
- void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr)
-@@ -88,6 +85,8 @@ void init_kstat_irqs(struct irq_desc *de
- 
- static void init_one_irq_desc(int irq, struct irq_desc *desc, int cpu)
+@@ -489,10 +489,10 @@ static void mark_done(int cpu)
  {
-+	int node = cpu_to_node(cpu);
-+
- 	memcpy(desc, &irq_desc_init, sizeof(struct irq_desc));
+ 	int i;
  
- 	spin_lock_init(&desc->lock);
-@@ -101,6 +100,10 @@ static void init_one_irq_desc(int irq, s
- 		printk(KERN_ERR "can not alloc kstat_irqs\n");
- 		BUG_ON(1);
- 	}
-+	if (!init_alloc_desc_masks(desc, node, false)) {
-+		printk(KERN_ERR "can not alloc irq_desc cpumasks\n");
-+		BUG_ON(1);
-+	}
- 	arch_init_chip_data(desc, cpu);
- }
+-	cpu_set(cpu, marked_cpus);
++	cpumask_set_cpu(cpu, marked_cpus);
  
-@@ -119,9 +122,6 @@ static struct irq_desc irq_desc_legacy[N
- 		.handle_irq = handle_bad_irq,
- 		.depth	    = 1,
- 		.lock	    = __SPIN_LOCK_UNLOCKED(irq_desc_init.lock),
--#ifdef CONFIG_SMP
--		.affinity   = CPU_MASK_ALL
--#endif
- 	}
- };
- 
-@@ -141,7 +141,7 @@ int __init early_irq_init(void)
- 		desc[i].irq = i;
- 		desc[i].kstat_irqs = kstat_irqs_legacy[i];
- 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
--
-+		init_alloc_desc_masks(&desc[i], 0, true);
- 		irq_desc_ptrs[i] = desc + i;
+ 	for_each_online_cpu(i) {
+-		if (!cpu_isset(i, marked_cpus))
++		if (!cpumask_test_cpu(i, marked_cpus))
+ 			return;
  	}
  
-@@ -188,6 +188,10 @@ struct irq_desc *irq_to_desc_alloc_cpu(u
- 		printk(KERN_ERR "can not alloc irq_desc\n");
- 		BUG_ON(1);
- 	}
-+	if (!init_alloc_desc_masks(desc, node, false)) {
-+		printk(KERN_ERR "can not alloc irq_desc cpumasks\n");
-+		BUG_ON(1);
-+	}
- 	init_one_irq_desc(irq, desc, cpu);
- 
- 	irq_desc_ptrs[irq] = desc;
-@@ -207,9 +211,6 @@ struct irq_desc irq_desc[NR_IRQS] __cach
- 		.handle_irq = handle_bad_irq,
- 		.depth = 1,
- 		.lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
--#ifdef CONFIG_SMP
--		.affinity = CPU_MASK_ALL
--#endif
- 	}
- };
- 
-@@ -222,9 +223,10 @@ int __init early_irq_init(void)
- 	desc = irq_desc;
- 	count = ARRAY_SIZE(irq_desc);
- 
--	for (i = 0; i < count; i++)
-+	for (i = 0; i < count; i++) {
- 		desc[i].irq = i;
--
-+		init_alloc_desc_masks(&desc[i], 0, true);
-+	}
- 	return arch_early_irq_init();
- }
- 
---- linux-2.6-for-ingo.orig/kernel/irq/manage.c
-+++ linux-2.6-for-ingo/kernel/irq/manage.c
-@@ -98,14 +98,14 @@ int irq_set_affinity(unsigned int irq, c
- 
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
--		cpumask_copy(&desc->affinity, cpumask);
-+		cpumask_copy(desc->affinity, cpumask);
- 		desc->chip->set_affinity(irq, cpumask);
- 	} else {
- 		desc->status |= IRQ_MOVE_PENDING;
--		cpumask_copy(&desc->pending_mask, cpumask);
-+		cpumask_copy(desc->pending_mask, cpumask);
- 	}
- #else
--	cpumask_copy(&desc->affinity, cpumask);
-+	cpumask_copy(desc->affinity, cpumask);
- 	desc->chip->set_affinity(irq, cpumask);
- #endif
- 	desc->status |= IRQ_AFFINITY_SET;
-@@ -127,16 +127,16 @@ int do_irq_select_affinity(unsigned int 
- 	 * one of the targets is online.
+@@ -501,7 +501,7 @@ static void mark_done(int cpu)
  	 */
- 	if (desc->status & (IRQ_AFFINITY_SET | IRQ_NO_BALANCING)) {
--		if (cpumask_any_and(&desc->affinity, cpu_online_mask)
-+		if (cpumask_any_and(desc->affinity, cpu_online_mask)
- 		    < nr_cpu_ids)
- 			goto set_affinity;
- 		else
- 			desc->status &= ~IRQ_AFFINITY_SET;
- 	}
+ 	process_task_mortuary();
  
--	cpumask_and(&desc->affinity, cpu_online_mask, irq_default_affinity);
-+	cpumask_and(desc->affinity, cpu_online_mask, irq_default_affinity);
- set_affinity:
--	desc->chip->set_affinity(irq, &desc->affinity);
-+	desc->chip->set_affinity(irq, desc->affinity);
- 
- 	return 0;
- }
---- linux-2.6-for-ingo.orig/kernel/irq/migration.c
-+++ linux-2.6-for-ingo/kernel/irq/migration.c
-@@ -18,7 +18,7 @@ void move_masked_irq(int irq)
- 
- 	desc->status &= ~IRQ_MOVE_PENDING;
- 
--	if (unlikely(cpumask_empty(&desc->pending_mask)))
-+	if (unlikely(cpumask_empty(desc->pending_mask)))
- 		return;
- 
- 	if (!desc->chip->set_affinity)
-@@ -38,13 +38,13 @@ void move_masked_irq(int irq)
- 	 * For correct operation this depends on the caller
- 	 * masking the irqs.
- 	 */
--	if (likely(cpumask_any_and(&desc->pending_mask, cpu_online_mask)
-+	if (likely(cpumask_any_and(desc->pending_mask, cpu_online_mask)
- 		   < nr_cpu_ids)) {
--		cpumask_and(&desc->affinity,
--			    &desc->pending_mask, cpu_online_mask);
--		desc->chip->set_affinity(irq, &desc->affinity);
-+		cpumask_and(desc->affinity,
-+			    desc->pending_mask, cpu_online_mask);
-+		desc->chip->set_affinity(irq, desc->affinity);
- 	}
--	cpumask_clear(&desc->pending_mask);
-+	cpumask_clear(desc->pending_mask);
+-	cpus_clear(marked_cpus);
++	cpumask_clear(marked_cpus);
  }
  
- void move_native_irq(int irq)
---- linux-2.6-for-ingo.orig/kernel/irq/numa_migrate.c
-+++ linux-2.6-for-ingo/kernel/irq/numa_migrate.c
-@@ -46,6 +46,7 @@ static void init_copy_one_irq_desc(int i
- 	desc->cpu = cpu;
- 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
- 	init_copy_kstat_irqs(old_desc, desc, cpu, nr_cpu_ids);
-+	init_copy_desc_masks(old_desc, desc);
- 	arch_init_copy_chip_data(old_desc, desc, cpu);
+ 
+@@ -595,6 +595,20 @@ void sync_buffer(int cpu)
+ 	mutex_unlock(&buffer_mutex);
  }
  
-@@ -76,11 +77,20 @@ static struct irq_desc *__real_move_irq_
- 	node = cpu_to_node(cpu);
- 	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
- 	if (!desc) {
--		printk(KERN_ERR "irq %d: can not get new irq_desc for migration.\n", irq);
-+		printk(KERN_ERR "irq %d: can not get new irq_desc "
-+				"for migration.\n", irq);
- 		/* still use old one */
- 		desc = old_desc;
- 		goto out_unlock;
- 	}
-+	if (!init_alloc_desc_masks(desc, node, false)) {
-+		printk(KERN_ERR "irq %d: can not get new irq_desc cpumask "
-+				"for migration.\n", irq);
-+		/* still use old one */
-+		kfree(desc);
-+		desc = old_desc;
-+		goto out_unlock;
-+	}
- 	init_copy_one_irq_desc(irq, old_desc, desc, cpu);
++int __init buffer_sync_init(void)
++{
++	if (!alloc_cpumask_var(&marked_cpus, GFP_KERNEL))
++		return -ENOMEM;
++
++	cpumask_clear(marked_cpus);
++		return 0;
++}
++
++void __exit buffer_sync_cleanup(void)
++{
++	free_cpumask_var(marked_cpus);
++}
++
+ /* The function can be used to add a buffer worth of data directly to
+  * the kernel buffer. The buffer is assumed to be a circular buffer.
+  * Take the entries from index start and end at index end, wrapping
+--- linux-2.6-for-ingo.orig/drivers/oprofile/buffer_sync.h
++++ linux-2.6-for-ingo/drivers/oprofile/buffer_sync.h
+@@ -19,4 +19,8 @@ void sync_stop(void);
+ /* sync the given CPU's buffer */
+ void sync_buffer(int cpu);
  
- 	irq_desc_ptrs[irq] = desc;
---- linux-2.6-for-ingo.orig/kernel/irq/proc.c
-+++ linux-2.6-for-ingo/kernel/irq/proc.c
-@@ -20,11 +20,11 @@ static struct proc_dir_entry *root_irq_d
- static int irq_affinity_proc_show(struct seq_file *m, void *v)
++/* initialize/destroy the buffer system. */
++int buffer_sync_init(void);
++void buffer_sync_cleanup(void);
++
+ #endif /* OPROFILE_BUFFER_SYNC_H */
+--- linux-2.6-for-ingo.orig/drivers/oprofile/oprof.c
++++ linux-2.6-for-ingo/drivers/oprofile/oprof.c
+@@ -183,6 +183,10 @@ static int __init oprofile_init(void)
  {
- 	struct irq_desc *desc = irq_to_desc((long)m->private);
--	const struct cpumask *mask = &desc->affinity;
-+	const struct cpumask *mask = desc->affinity;
+ 	int err;
  
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	if (desc->status & IRQ_MOVE_PENDING)
--		mask = &desc->pending_mask;
-+		mask = desc->pending_mask;
- #endif
- 	seq_cpumask(m, mask);
- 	seq_putc(m, '\n');
++	err = buffer_sync_init();
++	if (err)
++		return err;
++
+ 	err = oprofile_arch_init(&oprofile_ops);
+ 
+ 	if (err < 0 || timer) {
+@@ -191,8 +195,10 @@ static int __init oprofile_init(void)
+ 	}
+ 
+ 	err = oprofilefs_register();
+-	if (err)
++	if (err) {
+ 		oprofile_arch_exit();
++		buffer_sync_cleanup();
++	}
+ 
+ 	return err;
+ }
+@@ -202,6 +208,7 @@ static void __exit oprofile_exit(void)
+ {
+ 	oprofilefs_unregister();
+ 	oprofile_arch_exit();
++	buffer_sync_cleanup();
+ }
+ 
+ 
+--- linux-2.6-for-ingo.orig/drivers/xen/manage.c
++++ linux-2.6-for-ingo/drivers/xen/manage.c
+@@ -100,7 +100,7 @@ static void do_suspend(void)
+ 	/* XXX use normal device tree? */
+ 	xenbus_suspend();
+ 
+-	err = stop_machine(xen_suspend, &cancelled, &cpumask_of_cpu(0));
++	err = stop_machine(xen_suspend, &cancelled, cpumask_of(0));
+ 	if (err) {
+ 		printk(KERN_ERR "failed to start xen_suspend: %d\n", err);
+ 		goto out;
+--- linux-2.6-for-ingo.orig/net/iucv/iucv.c
++++ linux-2.6-for-ingo/net/iucv/iucv.c
+@@ -492,15 +492,14 @@ static void iucv_setmask_mp(void)
+  *
+  * Allow iucv interrupts on a single cpu.
+  */
+-static void iucv_setmask_up(void)
++static void iucv_setmask_up(struct cpumask *cpumask)
+ {
+-	cpumask_t cpumask;
+ 	int cpu;
+ 
+ 	/* Disable all cpu but the first in cpu_irq_cpumask. */
+-	cpumask = iucv_irq_cpumask;
+-	cpu_clear(first_cpu(iucv_irq_cpumask), cpumask);
+-	for_each_cpu_mask_nr(cpu, cpumask)
++	cpumask_copy(cpumask, iucv_irq_cpumask);
++	cpumask_clear_cpu(cpumask_first(iucv_irq_cpumask), cpumask);
++	for_each_cpu(cpu, cpumask)
+ 		smp_call_function_single(cpu, iucv_block_cpu, NULL, 1);
+ }
+ 
+@@ -558,7 +557,7 @@ static void iucv_disable(void)
+ static int __cpuinit iucv_cpu_notify(struct notifier_block *self,
+ 				     unsigned long action, void *hcpu)
+ {
+-	cpumask_t cpumask;
++	cpumask_var_t cpumask;
+ 	long cpu = (long) hcpu;
+ 
+ 	switch (action) {
+@@ -593,15 +592,20 @@ static int __cpuinit iucv_cpu_notify(str
+ 		break;
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
+-		cpumask = iucv_buffer_cpumask;
+-		cpu_clear(cpu, cpumask);
+-		if (cpus_empty(cpumask))
++		if (!alloc_cpumask_var(&cpumask, GFP_KERNEL))
++			return NOTIFY_BAD;
++		cpumask_copy(cpumask, &iucv_buffer_cpumask);
++		cpumask_clear_cpu(cpu, cpumask);
++		if (cpumask_empty(cpumask)) {
+ 			/* Can't offline last IUCV enabled cpu. */
++			free_cpumask_var(cpumask);
+ 			return NOTIFY_BAD;
++		}
+ 		smp_call_function_single(cpu, iucv_retrieve_cpu, NULL, 1);
+ 		if (cpus_empty(iucv_irq_cpumask))
+ 			smp_call_function_single(first_cpu(iucv_buffer_cpumask),
+ 						 iucv_allow_cpu, NULL, 1);
++		free_cpumask_var(cpumask);
+ 		break;
+ 	}
+ 	return NOTIFY_OK;
+@@ -686,9 +690,12 @@ static void iucv_cleanup_queue(void)
+ int iucv_register(struct iucv_handler *handler, int smp)
+ {
+ 	int rc;
++	cpumask_var_t scratch;
+ 
+ 	if (!iucv_available)
+ 		return -ENOSYS;
++	if (!alloc_cpumask_var(&scratch, GFP_KERNEL))
++		return -ENOMEM;
+ 	mutex_lock(&iucv_register_mutex);
+ 	if (!smp)
+ 		iucv_nonsmp_handler++;
+@@ -697,7 +704,7 @@ int iucv_register(struct iucv_handler *h
+ 		if (rc)
+ 			goto out_mutex;
+ 	} else if (!smp && iucv_nonsmp_handler == 1)
+-		iucv_setmask_up();
++		iucv_setmask_up(scratch);
+ 	INIT_LIST_HEAD(&handler->paths);
+ 
+ 	spin_lock_bh(&iucv_table_lock);
+@@ -706,6 +713,7 @@ int iucv_register(struct iucv_handler *h
+ 	rc = 0;
+ out_mutex:
+ 	mutex_unlock(&iucv_register_mutex);
++	free_cpumask_var(scratch);
+ 	return rc;
+ }
+ EXPORT_SYMBOL(iucv_register);
 
 -- 
