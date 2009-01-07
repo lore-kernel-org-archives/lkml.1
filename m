@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759948AbZAGCRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbZAGCRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759948AbZAGCRQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 21:17:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758052AbZAGCRD
+	id S1760082AbZAGCRp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 21:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbZAGCRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 21:17:03 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:47015 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755941AbZAGCRA (ORCPT
+	Tue, 6 Jan 2009 21:17:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49562 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758052AbZAGCR2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 21:17:00 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEFAGufY0l5LDnl/2dsb2JhbACDHMw0hXU
-X-IronPort-AV: E=Sophos;i="4.37,223,1231075800"; 
-   d="scan'208";a="288070453"
-Date: Wed, 7 Jan 2009 13:16:54 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Dmitri Monakhov <dmonakhov@openvz.org>
+	Tue, 6 Jan 2009 21:17:28 -0500
+Date: Tue, 6 Jan 2009 18:16:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
 Subject: Re: 2.6.29 -mm merge plans
-Message-ID: <20090107021654.GD9448@disturbed>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	Dmitri Monakhov <dmonakhov@openvz.org>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106150855.5f362a2d.akpm@linux-foundation.org> <20090106232208.GA25103@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106232208.GA25103@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <20090106181647.e22b27d2.akpm@linux-foundation.org>
+In-Reply-To: <200901071306.45210.nickpiggin@yahoo.com.au>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+	<20090106225744.GA10553@infradead.org>
+	<20090106151344.0f146286.akpm@linux-foundation.org>
+	<200901071306.45210.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 06:22:08PM -0500, Christoph Hellwig wrote:
-> On Tue, Jan 06, 2009 at 03:08:55PM -0800, Andrew Morton wrote:
-> > > Btw, this code is still not quite right.  We really need to call
-> > > ->setattr instead of vmtruncate here.  Complex filesystem need
-> > > transaction to properly free blocks, and those transactions are in
-> > > ->setattr not inside vmtruncate where ->truncate doesn't even have
-> > > a chance to get the handle to the transaction passed.
-> > > 
-> > > As these patches don't make it worse this is not a NACK, but more of
-> > > a heads up.
-> > 
-> > Sure.  Maybe add a FIXME comment for now?
+On Wed, 7 Jan 2009 13:06:44 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> On Wednesday 07 January 2009 10:13:44 Andrew Morton wrote:
+> > (cc added)
+> >
+> > On Tue, 6 Jan 2009 17:57:44 -0500
+> >
+> > Christoph Hellwig <hch@infradead.org> wrote:
+> > > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
+> > > > softirq-introduce-statistics-for-softirq.patch
+> > > > proc-export-statistics-for-softirq-to-proc.patch
+> > > > proc-update-document-for-proc-softirqs-and-proc-stat.patch
+> > >
+> > > Why is this in procfs?
+> >
+> > softirq stuff in /proc seems appropriate?  It's alongside
+> > /proc/interrupts.  We could put it in /trendy-fs-of-the-day, but what
+> > would it gain us?
 > 
-> Ok.  I was planning to look into this again, and IIRC Dave already did
-> when he was at SGI, but his proof of concept patches got lost somewhere.
+> Haven't we kind of agreed to use sysfs for things like this? A few years
+> too late to be raising objections now ;)
+> 
+> One problem I have with sysfs is that it (the directory structure, rather
+> than the sysfs code itself) really needs to be policed and maintained
+> by a central and coherent place/person with taste. Otherwise people put
+> their own random crap with their own random naming schemes and becomes
+> a crazy mess.
+> 
+> softirqs are not hardware but purely kernel subsystem construct, as such
+> they probably go under /sys/kernel/. People unfortunately have already
+> added random crap to the /sys/kernel/ root directory, but future additions
+> really should go into a good subdirectory structure (putting it into the
+> root directory is equivalent to ditching all subdirectories from /proc/sys/).
 
-Hmmmm - I think I posted the "it works for XFs but nothing else" POC
-patches to fsdevel when I first found this....
+All sounds like pointless wank^Wbikeshed painting to me.
 
-<rummage>
+> /sys/kernel/softirq/*, I suggest.
 
-http://marc.info/?l=linux-fsdevel&m=120952722315259&w=2
+What would that *improve*?
 
-The thread starts here for those that want the whole story:
-
-http://marc.info/?l=linux-fsdevel&m=120946361527726&w=2
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
