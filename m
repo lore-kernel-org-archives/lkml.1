@@ -1,108 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbZAGO3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZAGOfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758430AbZAGO3b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbZAGO3B
+	id S1756199AbZAGOfw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:35:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZAGOfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:29:01 -0500
-Received: from viefep18-int.chello.at ([62.179.121.38]:14853 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752982AbZAGO3A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:29:00 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <20090107142009.GM4574@dirshya.in.ibm.com>
-References: <20090104174450.GB4301@dirshya.in.ibm.com>
-	 <1231092523.29980.4.camel@twins> <20090105040635.GF4301@dirshya.in.ibm.com>
-	 <20090105130638.GB6014@elte.hu> <20090107114947.GJ4574@dirshya.in.ibm.com>
-	 <20090107122913.GL4574@dirshya.in.ibm.com>
-	 <1231333963.11687.288.camel@twins>
-	 <20090107142009.GM4574@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 15:28:57 +0100
-Message-Id: <1231338537.11687.295.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 7 Jan 2009 09:35:43 -0500
+Received: from mail2.ntp.org ([204.152.184.138]:57930 "EHLO mail2.ntp.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557AbZAGOfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 09:35:42 -0500
+Message-ID: <4964BD76.9090700@ntp.isc.org>
+Date: Wed, 07 Jan 2009 09:34:30 -0500
+From: Danny Mayer <mayer@ntp.isc.org>
+Reply-To: mayer@ntp.isc.org
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: linasvepstas@gmail.com
+Cc: david@lang.hm, Robert Hancock <hancockr@shaw.ca>,
+       Ben Goodger <goodgerster@gmail.com>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       MentalMooMan <slashdot@jameshallam.info>,
+       David Newall <davidn@davidnewall.com>, linux-kernel@vger.kernel.org,
+       ntpwg@lists.ntp.isc.org, Travis Crump <pretzalz@techhouse.org>,
+       burdell@iruntheinter.net, Nick Andrew <nick@nick-andrew.net>,
+       "Jeffrey J. Kosowsky" <jeff@kosowsky.org>
+Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on
+ new years 2008-2009
+References: <495F0672.6020708@davidnewall.com> <4961432A.80509@davidnewall.com>	 <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>	 <49614835.7000505@davidnewall.com>	 <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>	 <20090105143335.GC18055@mail.local.tull.net>	 <3ae3aa420901050808r100e533fo5f88edfbb5f0747a@mail.gmail.com>	 <alpine.DEB.1.10.0901050949560.27641@asgard.lang.hm>	 <3ae3aa420901050942y56f0ecdei39c091a73e49c1fd@mail.gmail.com>	 <49642674.9080703@ntp.isc.org> <3ae3aa420901062052h75fcab11n8ce45c41ac0e4cd2@mail.gmail.com>
+In-Reply-To: <3ae3aa420901062052h75fcab11n8ce45c41ac0e4cd2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-kostecke.net-MailScanner: Found to be clean
+X-kostecke.net-MailScanner-From: mayer@ntp.isc.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 19:50 +0530, Vaidyanathan Srinivasan wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-07 14:12:43]:
+Linas Vepstas wrote:
+> 2009/1/6 Danny Mayer <mayer@ntp.isc.org>:
+> Hi,
 > 
-> > On Wed, 2009-01-07 at 17:59 +0530, Vaidyanathan Srinivasan wrote:
-> > 
-> > > =============================================
-> > > [ INFO: possible recursive locking detected ]
-> > > 2.6.28-autotest-tip-sv #1
-> > > ---------------------------------------------
-> > > klogd/5062 is trying to acquire lock:
-> > >  (&rq->lock){++..}, at: [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
-> > > 
-> > > but task is already holding lock:
-> > >  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> > > 
-> > > other info that might help us debug this:
-> > > 1 lock held by klogd/5062:
-> > >  #0:  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> > > 
-> > > stack backtrace:
-> > > Pid: 5062, comm: klogd Not tainted 2.6.28-autotest-tip-sv #1
-> > > Call Trace:
-> > >  [<ffffffff80259ef1>] __lock_acquire+0xeb9/0x16a4
-> > >  [<ffffffff8025a6c0>] ? __lock_acquire+0x1688/0x16a4
-> > >  [<ffffffff8025a761>] lock_acquire+0x85/0xa9
-> > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
-> > >  [<ffffffff805fa4d4>] _spin_lock+0x31/0x66
-> > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
-> > >  [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
-> > >  [<ffffffff80233363>] try_to_wake_up+0x88/0x27a
-> > >  [<ffffffff80233581>] wake_up_process+0x10/0x12
-> > >  [<ffffffff805f775c>] schedule+0x560/0xa31
-> > 
-> > I'd be most curious to know where in schedule we are.
+>> I don't know what this discussion is really about and why this was sent
+>>  to the working group in the middle of the discussion, but there is no
+>> need for NTP to provide TAI information since NTP only uses UTC. Leap
+>> Seconds are automatically signaled  and incorporated when they become
+>> due. If you don't have NTP running for some reason when a leap second is
+>> signaled it doesn't matter since your server source will already have
+>> incorporated the leap second so the NTP packet includes the timestamps
+>> that include the leap second adjustment.
+>>
+>> Operating Systems use UTC and not TAI by universal agreement and the
+>> ones that don't are extremely rare.
+>>
+>> Why don't you tell us what the real problem is instead of telling us
+>> that you need TAI offset information?
 > 
-> ok, we are in sched.c:3777
+> Currently, the Linux kernel keeps time in UTC. This means
+> that it must take special actions to tick twice when a leap
+> second comes by.  Due to a (stupid) bug, some fraction
+> of linux systems crashed; this includes everything from
+> laptops to servers, to DVR's,  to cell phones and cell
+> phone towers. There's now a fix for this.
 > 
->                 double_unlock_balance(this_rq, busiest);
->                 if (active_balance)
-> >>>>>>>>>>>              wake_up_process(busiest->migration_thread);
+> However, during the discussion, the idea came out that
+> maybe keeping UTC time in the kernel is just plain stupid.
+> So there's this idea floating around that maybe the kernel
+> should keep TAI time instead. The hope is that this will
+> reduce the complexity in the kernel, and push it out to
+> user space, "where it belongs" (to repeat a well-worn
+> mantra).
 > 
->         } else  
+> However, *if* we were to kick UTC out of the kernel,
+> and push it to user-land, then, of course, there's a
+> different problem: how does the kernel know what the
+> correct TAI time is?  As your reply makes abundantly
+> clear, NTP is not a good source for TAI information.
 > 
-> In active balance in newidle.  This implies sched_mc was 2 at that time.
-> let me trace this and debug further.
+> The comments which you labelled as "non-sense" were
+> a mis-understanding of  a discussion of a particular issue
+> that would arise if the kernel were to keep TAI -- if it did,
+> then user-space systems would need to have a reliable
+> source for leap-seconds. Since NTP does not
+> provide this, there was discussion about how that
+> could be worked-around. This then lead to the comment
+> that, "gee, wouldn't the right long-term solution be that
+> NTP provide TAI info?"
 
-How about something like this? Strictly speaking we'll not deadlock,
-because ttwu will not be able to place the migration task on our rq, but
-since the code can deal with both rqs getting unlocked, this seems the
-easiest way out.
+It was nonsense because the summary didn't contain all of the
+information required to provide context and you copied the Working Group
+in the middle of all this.
 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -3777,8 +3777,13 @@ redo:
- 		}
- 
- 		double_unlock_balance(this_rq, busiest);
-+		/*
-+		 * Should not call ttwu while holding a rq->lock
-+		 */
-+		spin_unlock(&this_rq->lock);
- 		if (active_balance)
- 			wake_up_process(busiest->migration_thread);
-+		spin_lock(&this_rq->lock);
- 
- 	} else
- 		sd->nr_balance_failed = 0;
+NTP can provide leap-second information via an autokey protocol request,
+ see Section 10.6 Leapseconds Values Message (LEAP)
+http://www.ietf.org/internet-drafts/draft-ietf-ntp-autokey-04.txt but
+that means you need to have autokey set up with another NTP server and
+that means adding infrastructure that you probably don't want and are
+not prepared to handle.
 
+> 
+> Clearly, it would be a lot of work to get the kernel to keep
+> TAI instead of UTC, so this is not, at this time, a "serious
+> proposal".  But if it were possible, and all the various
+> little issues that result were solvable, then it does seem
+> like a better long-term solution.
+> 
+
+This is a *lot* more complicated than you might think. If you are
+thinking of implementing this similarly to the way timezone information
+is added for display purposes, you need the whole list of leap seconds
+and when the change happened since you now have to look at a timestamp
+and see when it was and then apply all of the leapseconds up to that
+point in time and none of the leapseconds beyond that. In addition, you
+have legacy files that have UTC timestamps on them so you would need to
+distinguish between UTC (legacy) and TAI timestamps in the file system
+among other places (anywhere where a timestamp exists) and what would
+you do about database tables which contain timestamps? The list goes on.
+
+I'd much rather you spend the time tackling the clock interrupt losses
+that many of our Linux users complain about. See:
+https://support.ntp.org/bin/view/Support/KnownOsIssues#Section_9.2.4.
+for some of the gorier details. I'm sure you don't really want us
+recommending that they set HZ=100 in the kernel to alleviate the problem.
+
+Danny
+
+> --linas
+> 
+> p.s. the opinions above are not my own; I'm just
+> summarizing the points made by the most vocal
+> posters to this list.
+> 
+> 
 
