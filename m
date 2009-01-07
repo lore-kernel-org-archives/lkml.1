@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbZAGQEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbZAGQFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758378AbZAGQEZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZAGQER
+	id S1759479AbZAGQFF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:05:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZAGQEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:04:17 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:54646 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752794AbZAGQEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:04:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=HES6UnFdaG6+7pzH3qHdbLgrXzwRMI8SwnfVe2NpD+xo9Z1gsvY4brVAguxlk7tfwL
-         6Te+AcwhqQgqNdnrJInFAJCuMWMglmrmjBQbFeInjI693fDQWLnK0r6x+Ibv6sZDE5jx
-         1Mg32NePM+MN5UjgIGkGW/kaZYQXIWCV6RZHk=
-Message-ID: <1f1b08da0901070804t163e111fj6664adbfc5f3a76e@mail.gmail.com>
-Date: Wed, 7 Jan 2009 08:04:14 -0800
-From: "john stultz" <johnstul@us.ibm.com>
-To: mayer@ntp.isc.org
-Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
-Cc: linasvepstas@gmail.com, david@lang.hm, "Robert Hancock" <hancockr@shaw.ca>,
-       "Ben Goodger" <goodgerster@gmail.com>,
-       "Kyle Moffett" <kyle@moffetthome.net>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       "David Newall" <davidn@davidnewall.com>, linux-kernel@vger.kernel.org,
-       ntpwg@lists.ntp.isc.org, "Travis Crump" <pretzalz@techhouse.org>,
-       burdell@iruntheinter.net, "Nick Andrew" <nick@nick-andrew.net>,
-       "Jeffrey J. Kosowsky" <jeff@kosowsky.org>
-In-Reply-To: <4964BD76.9090700@ntp.isc.org>
+	Wed, 7 Jan 2009 11:04:53 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39955 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751743AbZAGQEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 11:04:52 -0500
+Message-ID: <4964D2A2.2010109@suse.de>
+Date: Wed, 07 Jan 2009 17:04:50 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <495F0672.6020708@davidnewall.com>
-	 <49614835.7000505@davidnewall.com>
-	 <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>
-	 <20090105143335.GC18055@mail.local.tull.net>
-	 <3ae3aa420901050808r100e533fo5f88edfbb5f0747a@mail.gmail.com>
-	 <alpine.DEB.1.10.0901050949560.27641@asgard.lang.hm>
-	 <3ae3aa420901050942y56f0ecdei39c091a73e49c1fd@mail.gmail.com>
-	 <49642674.9080703@ntp.isc.org>
-	 <3ae3aa420901062052h75fcab11n8ce45c41ac0e4cd2@mail.gmail.com>
-	 <4964BD76.9090700@ntp.isc.org>
-X-Google-Sender-Auth: 9b307ddecec90c80
+To: Dave Jones <davej@redhat.com>, Daniel Pittman <daniel@rimspace.net>,
+       Jeremy Katz <katzj@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       initramfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Dracut -- Cross distribution initramfs infrastructure
+References: <1229540094.28858.150.camel@aglarond.local> <20081217190700.GA15377@infradead.org> <4949FD67.6040906@suse.de> <494B5031.5080306@bfh.ch> <20081219091841.207bc951@kopernikus.site> <494BA7CE.2020007@suse.de> <20081219152708.GE9871@mit.edu> <9C4F1B7D-CCBC-48D7-8624-9A7C314C1590@redhat.com> <87skojrm5e.fsf@rimspace.net> <20081220182254.GA2996@redhat.com>
+In-Reply-To: <20081220182254.GA2996@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 7, 2009 at 6:34 AM, Danny Mayer <mayer@ntp.isc.org> wrote:
-> I'd much rather you spend the time tackling the clock interrupt losses
-> that many of our Linux users complain about. See:
-> https://support.ntp.org/bin/view/Support/KnownOsIssues#Section_9.2.4.
-> for some of the gorier details. I'm sure you don't really want us
-> recommending that they set HZ=100 in the kernel to alleviate the problem.
+Dave Jones wrote:
+> On Sun, Dec 21, 2008 at 12:50:21AM +1100, Daniel Pittman wrote:
+> 
+>  > One of the features of the Debian / Ubuntu initramfs infrastructure,
+>  > which sounds remarkably like your design (or vice-versa), is that it
+>  > drops all the "standard" drivers into the initramfs.
+>  > 
+>  > This is, to me, worth several minutes of additional boot time, in terms
+>  > of flexibility: being able to modify the hardware and be confident that
+>  > the appropriate drivers are in place already makes life much, much
+>  > easier.
+> 
+> There's another reason this is really useful.
+> If something goes wrong, remotely debugging a users initrd right is
+> a lot easier if you know what it looks like.  Right now, in Fedora for eg,
+> where we generate an initrd for each users system at runtime, we need
+> to get a copy of the generated initrd, and pull it apart just to find
+> out what modules ended up in there, what didn't, and then somehow
+> try to work backwards to try and figure out how the generator got into
+> that state.  After doing this for five years, let me tell you it's
+> _really_ _really_ painful.
+> 
+Whom do you tell.
 
-I believe the lost tick issue as well as the HZ=100 suggestions at the
-page above are out of date for 2.6.21 and higher kernels as the
-generic timekeeping rework addressed these problems.
+I ended up on adding lots of shell escapes; everytime something goes
+wrong you'll be dropped into a shell, which will resume execution
+of the initrd once exited.
+Quite handy for fixing up most things.
 
-Please let me know if you're still seeing any such issues with NTP.
+>  > (In practice I doubt this adds more than a second or five to boot time;
+>  >  certainly, it takes no longer to get to rootfs mounted than the RHEL 4
+>  >  systems that have nothing but what is essential in the initrd...)
+> 
+> At least in theory, with a kernel-event/udev driven system, the additional
+> modules shouldn't cause any additional boot time. There wouldn't be
+> events generated to cause them to be loaded, so they'd just be taking
+> up space.  And the additional load time for a bigger initrd should be
+> really lost in the noise of the overall boot.
+> 
+One can but hope. You certainly will notice a load time increase if the size
+of the initrd increases by orders of magnitude.
+Plus kdump / kexec will need to be configured to have more memory available.
 
-thanks
--john
+Actually, I do like the callout idea:
+Have the initrd configure a 'standard' system, and add some API which will
+allow you to hook in additional scripts / services / whatever to configure
+non-standard systems.
+Which then can be distributed by the individual packages / vendors.
+And then we would have a small common initramfs which well could be included
+with the kernel sources.
+
+Cheers,
+
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
