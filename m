@@ -1,61 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763307AbZAGWgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbZAGWhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763307AbZAGWgx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:36:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932592AbZAGWdq
+	id S1760064AbZAGWhi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:37:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762543AbZAGWdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:33:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59708 "EHLO mx3.mail.elte.hu"
+	Wed, 7 Jan 2009 17:33:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48095 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932586AbZAGWdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:33:43 -0500
-Date: Wed, 7 Jan 2009 23:33:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090107223317.GB27629@elte.hu>
-References: <1231283778.11687.136.camel@twins> <1231329783.11687.287.camel@twins> <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain> <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain> <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com> <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <20090107210923.GV2002@parisc-linux.org> <20090107213924.GP496@one.firstfloor.org> <49652C7C.3000909@novell.com>
+	id S932593AbZAGWdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:33:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: philipl@overt.org
+Subject: Re: [PATCH] ricoh_mmc: Use suspend/resume_noirq (v2) (resend)
+Date: Wed, 7 Jan 2009 23:33:21 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: "linux kernel" <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
+       sfr@canb.auug.org.au, "Pierre Ossman" <drzeus@drzeus.cx>
+References: <40499.98.210.152.237.1231345314.squirrel@overt.org>
+In-Reply-To: <40499.98.210.152.237.1231345314.squirrel@overt.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49652C7C.3000909@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901072333.21725.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Gregory Haskins <ghaskins@novell.com> wrote:
-
-> Can I ask a simple question in light of all this discussion?
+On Wednesday 07 January 2009, philipl@overt.org wrote:
+> If ricoh_mmc suspends before sdhci_pci, it will pull the card
+> out from under the controller, which could leave the system in
+> a very confused state.
 > 
-> "Is get_task_struct() really that bad?"
+> Using suspend/resume_noirq ensures that sdhci_pci suspends first
+> and resumes second.
+> 
+> Signed-off-by: Philip Langdale <philipl@overt.org>
+> Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+> ---
+> 
+>   ricoh_mmc.c |   20 ++++++++++++++++----
+>   1 file changed, 16 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/mmc/host/ricoh_mmc.c b/drivers/mmc/host/ricoh_mmc.c
+> index 1837719..b4958a7 100644
+> --- a/drivers/mmc/host/ricoh_mmc.c
+> +++ b/drivers/mmc/host/ricoh_mmc.c
+> @@ -194,10 +194,14 @@ static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
+>  	pci_set_drvdata(pdev, NULL);
+>  }
+> 
+> -static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state) +static int
+> ricoh_mmc_suspend_noirq(struct device *dev)
+>  {
+> +	struct pci_dev *pdev = NULL;
+>  	struct pci_dev *fw_dev = NULL;
+> 
+> +	pdev = to_pci_dev(dev);
+> +	BUG_ON(pdev == NULL);
+> +
+>  	fw_dev = pci_get_drvdata(pdev);
+>  	BUG_ON(fw_dev == NULL);
+> 
+> @@ -208,10 +212,14 @@ static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
+>  	return 0;
+>  }
+> 
+> -static int ricoh_mmc_resume(struct pci_dev *pdev)
+> +static int ricoh_mmc_resume_noirq(struct device *dev)
+>  {
+> +	struct pci_dev *pdev = NULL;
+>  	struct pci_dev *fw_dev = NULL;
+> 
+> +	pdev = to_pci_dev(dev);
+> +	BUG_ON(pdev == NULL);
+> +
+>  	fw_dev = pci_get_drvdata(pdev);
+>  	BUG_ON(fw_dev == NULL);
+> 
+> @@ -222,13 +230,17 @@ static int ricoh_mmc_resume(struct pci_dev *pdev)
+>  	return 0;
+>  }
+> 
+> +static struct dev_pm_ops ricoh_mmc_pm_opts = {
+> +	.suspend_noirq =	ricoh_mmc_suspend_noirq,
+> +	.resume_noirq =		ricoh_mmc_resume_noirq,
+> +};
+> +
+>  static struct pci_driver ricoh_mmc_driver = {
+>  	.name = 	DRIVER_NAME,
+>  	.id_table =	pci_ids,
+>  	.probe = 	ricoh_mmc_probe,
+>  	.remove =	__devexit_p(ricoh_mmc_remove),
+> -	.suspend =	ricoh_mmc_suspend,
+> -	.resume =	ricoh_mmc_resume,
+> +	.driver.pm =	&ricoh_mmc_pm_opts,
+>  };
+> 
+>  /*****************************************************************************\
+> 
+> Rafael,
+> 
+> Pierre asked that you take this patch into your tree because it depends on
+> the new pm ops design.
 
-it dirties a cacheline and it also involves atomics.
+Yes, thanks.
 
-Also, it's a small design cleanliness issue to me: get_task_struct() 
-impacts the lifetime of an object - and if a locking primitive has 
-side-effects on object lifetimes that's never nice.
+I'll look into this and get back to you shortly, most likely tomorrow.
 
-	Ingo
-
+Thanks,
+Rafael
