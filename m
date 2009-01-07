@@ -1,109 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbZAGMEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbZAGMOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752738AbZAGMEI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:04:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZAGMDk
+	id S1754450AbZAGMOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZAGMOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:03:40 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:63528 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752762AbZAGMDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:03:39 -0500
-Date: Wed, 7 Jan 2009 13:03:28 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       AVR32 Linux Kernel <kernel@avr32linux.org>
-Subject: [GIT PULL] AVR32 update for 2.6.29
-Message-ID: <20090107130328.7f18e2e2@hskinnemoen-d830>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 07:14:00 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:33645 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750883AbZAGMN7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:13:59 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: lizf@cn.fujitsu.com (Li Zefan)
+Subject: Re: [BUG] INFO: inconsistent lock state
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Organization: Core
+In-Reply-To: <4962C322.8000201@cn.fujitsu.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1LKXIE-0006dE-Lq@gondolin.me.apana.org.au>
+Date: Wed, 07 Jan 2009 23:13:50 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+> I am using Linus' tree, and the top commit is:
+> 
+> commit fe0bdec68b77020281dc814805edfe594ae89e0f
+> Merge: 099e657... 5af75d8...
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Sun Jan 4 16:32:11 2009 -0800
+> 
+>    Merge branch 'audit.b61' of git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
+> 
+> don't know how I triggered this, and not sure whom to CC, network related?
 
-Please pull
+You need
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
+commit ea319518ba3de282c13ae1cf4bf2215c5e03e67e
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Fri Dec 26 15:08:55 2008 +0100
 
-to receive the following updates.
+    locking, percpu counters: introduce separate lock classes
+    
+    Impact: fix lockdep false positives
+    
+    Classify percpu_counter instances similar to regular lock objects --
+    that is, per instantiation site.
+    
+    The networking code has increased its use of percpu_counters, which
+    leads to false positives if they are treated as a single class.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Unfortunately, I didn't manage to get the AP7200 patches I promised
-ready in time, so they'll have to wait for 2.6.30.
+diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+index 9007ccd..96bdde3 100644
+--- a/include/linux/percpu_counter.h
++++ b/include/linux/percpu_counter.h
+@@ -30,8 +30,16 @@ struct percpu_counter {
+ #define FBC_BATCH	(NR_CPUS*4)
+ #endif
+ 
+-int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+-int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
++int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
++			  struct lock_class_key *key);
++
++#define percpu_counter_init(fbc, value)					\
++	({								\
++		static struct lock_class_key __key;			\
++									\
++		__percpu_counter_init(fbc, value, &__key);		\
++	})
++
+ void percpu_counter_destroy(struct percpu_counter *fbc);
+ void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
+@@ -85,8 +93,6 @@ static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ 	return 0;
+ }
+ 
+-#define percpu_counter_init_irq percpu_counter_init
+-
+ static inline void percpu_counter_destroy(struct percpu_counter *fbc)
+ {
+ }
+diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+index a866389..c7fe2e4 100644
+--- a/lib/percpu_counter.c
++++ b/lib/percpu_counter.c
+@@ -71,11 +71,11 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
+ }
+ EXPORT_SYMBOL(__percpu_counter_sum);
+ 
+-static struct lock_class_key percpu_counter_irqsafe;
+-
+-int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
++int __percpu_counter_init(struct percpu_counter *fbc, s64 amount,
++			  struct lock_class_key *key)
+ {
+ 	spin_lock_init(&fbc->lock);
++	lockdep_set_class(&fbc->lock, key);
+ 	fbc->count = amount;
+ 	fbc->counters = alloc_percpu(s32);
+ 	if (!fbc->counters)
+@@ -87,17 +87,7 @@ int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ #endif
+ 	return 0;
+ }
+-EXPORT_SYMBOL(percpu_counter_init);
+-
+-int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount)
+-{
+-	int err;
+-
+-	err = percpu_counter_init(fbc, amount);
+-	if (!err)
+-		lockdep_set_class(&fbc->lock, &percpu_counter_irqsafe);
+-	return err;
+-}
++EXPORT_SYMBOL(__percpu_counter_init);
+ 
+ void percpu_counter_destroy(struct percpu_counter *fbc)
+ {
+diff --git a/lib/proportions.c b/lib/proportions.c
+index 4f387a6..7367f2b 100644
+--- a/lib/proportions.c
++++ b/lib/proportions.c
+@@ -83,11 +83,11 @@ int prop_descriptor_init(struct prop_descriptor *pd, int shift)
+ 	pd->index = 0;
+ 	pd->pg[0].shift = shift;
+ 	mutex_init(&pd->mutex);
+-	err = percpu_counter_init_irq(&pd->pg[0].events, 0);
++	err = percpu_counter_init(&pd->pg[0].events, 0);
+ 	if (err)
+ 		goto out;
+ 
+-	err = percpu_counter_init_irq(&pd->pg[1].events, 0);
++	err = percpu_counter_init(&pd->pg[1].events, 0);
+ 	if (err)
+ 		percpu_counter_destroy(&pd->pg[0].events);
+ 
+@@ -191,7 +191,7 @@ int prop_local_init_percpu(struct prop_local_percpu *pl)
+ 	spin_lock_init(&pl->lock);
+ 	pl->shift = 0;
+ 	pl->period = 0;
+-	return percpu_counter_init_irq(&pl->events, 0);
++	return percpu_counter_init(&pl->events, 0);
+ }
+ 
+ void prop_local_destroy_percpu(struct prop_local_percpu *pl)
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index f2e574d..f3b1258 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -220,7 +220,7 @@ int bdi_init(struct backing_dev_info *bdi)
+ 	bdi->max_prop_frac = PROP_FRAC_BASE;
+ 
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
+-		err = percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
++		err = percpu_counter_init(&bdi->bdi_stat[i], 0);
+ 		if (err)
+ 			goto err;
+ 	}
 
-Alex Raimondi (2):
-      avr32: Allow reserving multiple pins at once
-      avr32: Hammerhead board support
-
-Ben Nizette (1):
-      avr32: Remove DMATEST from defconfigs
-
-Haavard Skinnemoen (7):
-      favr-32: Remove deprecated call
-      Merge branch 'cleanups' into boards
-      Merge branch 'move-atmel-mci-h' into boards
-      avr32: data param to at32_add_device_mci() must be non-NULL
-      avr32: Define DIE_OOPS
-      Merge branches 'fixes', 'cleanups' and 'boards'
-      avr32: Move syscalls.h under arch/avr32/include/asm/
-
-Jaswinder Singh (1):
-      avr32: Introducing asm/syscalls.h
-
-Julia Lawall (1):
-      arch/avr32: Eliminate NULL test and memset after alloc_bootmem
-
-Kay Sievers (1):
-      avr: struct device - replace bus_id with dev_name(), dev_set_name()
-
-Mark Jackson (1):
-      MIMC200: Remove deprecated call
-
-Nicolas Ferre (1):
-      atmel-mci: move atmel-mci.h file to include/linux
-
- arch/avr32/Kconfig                                 |   19 +
- arch/avr32/Makefile                                |    1 +
- arch/avr32/boards/atngw100/setup.c                 |    2 +-
- arch/avr32/boards/atstk1000/atstk1002.c            |   20 +-
- arch/avr32/boards/atstk1000/atstk1003.c            |   20 +-
- arch/avr32/boards/atstk1000/atstk1004.c            |    2 +-
- arch/avr32/boards/favr-32/setup.c                  |   31 +-
- arch/avr32/boards/hammerhead/Kconfig               |   43 +
- arch/avr32/boards/hammerhead/Makefile              |    1 +
- arch/avr32/boards/hammerhead/flash.c               |  377 +++++
- arch/avr32/boards/hammerhead/flash.h               |    6 +
- arch/avr32/boards/hammerhead/setup.c               |  245 ++++
- arch/avr32/boards/mimc200/setup.c                  |    4 +-
- arch/avr32/configs/atngw100_defconfig              |    2 +-
- arch/avr32/configs/atstk1002_defconfig             |    2 +-
- arch/avr32/configs/atstk1003_defconfig             |    2 +-
- arch/avr32/configs/atstk1006_defconfig             |    2 +-
- arch/avr32/configs/hammerhead_defconfig            | 1467 ++++++++++++++++++++
- arch/avr32/include/asm/kdebug.h                    |    1 +
- arch/avr32/include/asm/syscalls.h                  |   39 +
- arch/avr32/kernel/process.c                        |    1 +
- arch/avr32/kernel/signal.c                         |    1 +
- arch/avr32/kernel/sys_avr32.c                      |    1 +
- arch/avr32/mach-at32ap/at32ap700x.c                |    6 +-
- arch/avr32/mach-at32ap/clock.h                     |    3 +
- arch/avr32/mach-at32ap/include/mach/at32ap700x.h   |    3 +
- arch/avr32/mach-at32ap/include/mach/portmux.h      |    2 +-
- arch/avr32/mach-at32ap/pio.c                       |   19 +-
- arch/avr32/mm/cache.c                              |    1 +
- arch/avr32/mm/init.c                               |    1 -
- drivers/mmc/host/atmel-mci.c                       |    2 +-
- .../include/asm => include/linux}/atmel-mci.h      |    6 +-
- 32 files changed, 2252 insertions(+), 80 deletions(-)
- create mode 100644 arch/avr32/boards/hammerhead/Kconfig
- create mode 100644 arch/avr32/boards/hammerhead/Makefile
- create mode 100644 arch/avr32/boards/hammerhead/flash.c
- create mode 100644 arch/avr32/boards/hammerhead/flash.h
- create mode 100644 arch/avr32/boards/hammerhead/setup.c
- create mode 100644 arch/avr32/configs/hammerhead_defconfig
- create mode 100644 arch/avr32/include/asm/syscalls.h
- rename {arch/avr32/include/asm => include/linux}/atmel-mci.h (91%)
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
