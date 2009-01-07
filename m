@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbZAGTlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760981AbZAGTo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761417AbZAGTlX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760895AbZAGTlA
+	id S1760981AbZAGTo6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbZAGTot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:41:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53079 "EHLO mx2.suse.de"
+	Wed, 7 Jan 2009 14:44:49 -0500
+Received: from bsdimp.com ([199.45.160.85]:53336 "EHLO harmony.bsdimp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761332AbZAGTk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 14:40:59 -0500
-Date: Wed, 7 Jan 2009 11:38:46 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 06/60] sysfs: clarify SYSFS_DEPRECATED help text
-Message-ID: <20090107193846.GB19027@suse.de>
-References: <20090106221123.GA32689@kroah.com> <1231279939-32728-6-git-send-email-gregkh@suse.de> <18788.29727.163564.90030@harpo.it.uu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18788.29727.163564.90030@harpo.it.uu.se>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1751538AbZAGTos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 14:44:48 -0500
+Date: Wed, 07 Jan 2009 12:42:01 -0700 (MST)
+Message-Id: <20090107.124201.-1760127186.imp@bsdimp.com>
+To: alan@lxorguk.ukuu.org.uk
+Cc: mayer@ntp.isc.org, linasvepstas@gmail.com, david@lang.hm, hancockr@shaw.ca,
+       kyle@moffetthome.net, slashdot@jameshallam.info, goodgerster@gmail.com,
+       davidn@davidnewall.com, linux-kernel@vger.kernel.org,
+       ntpwg@lists.ntp.isc.org, pretzalz@techhouse.org,
+       burdell@iruntheinter.net, nick@nick-andrew.net, jeff@kosowsky.org
+Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on
+ new years 2008-2009
+From: "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <20090107193127.0bec8ad8@lxorguk.ukuu.org.uk>
+References: <49642674.9080703@ntp.isc.org>
+	<20090107.103947.1324582654.imp@bsdimp.com>
+	<20090107193127.0bec8ad8@lxorguk.ukuu.org.uk>
+X-Mailer: Mew version 5.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 10:21:35AM +0100, Mikael Pettersson wrote:
-> Greg Kroah-Hartman writes:
->  > From: Kay Sievers <kay.sievers@vrfy.org>
->  > +	  This option is not a pure compatibility option that can
->  > +	  be safely enabled on newer distributions. It will change the
->  > +	  layout of sysfs to the non-extensible deprecated version,
->  > +	  and disable some features, which can not be exported without
->  > +	  confusing older userspace tools. Since 2007/2008 all major
->  > +	  distributions do not enable this option, and ship no tools which
->  > +	  depend on the deprecated layout or this option.
->  > +
->  > +	  If you are using a new kernel on an older distribution, or use
->  > +	  older userspace tools, you might need to say Y here. Do not say Y,
->  > +	  if the original kernel, that came with your distribution, has
->  > +	  this option set to N.
-> 
-> Instead of making vague references to "older" tools, could someone
-> please make a list of the major tools that depend on sysfs, and the
-> minimal/oldest versions needed for the non-deprecated layout?
+In message: <20090107193127.0bec8ad8@lxorguk.ukuu.org.uk>
+            Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+: > time, causing time to jump backwards by 1s (or violate POSIX time_t's
+: > invariant that midnight time_t is % 86400 == 0).  This jump backwards
+: > is a pita in the kernel, and violates the assumption that many
+: > programs have that time doesn't flow backwards.
+: 
+: They can slew the clock slowly as well. There is a wonderful quote from
+: one of the summaries of the POSIX committee discussions on time that says
+: quite simply "the posix clock is not guaranteed to be accurate"
 
-Patches to do so are gladly welcome, but it might be a bit difficult as
-spelunking through old distros isn't exactly the most fun thing to do :)
+True, You can.  However, anybody you peer with via ntpd will have
+issues unless things are coordinated with ntpd (and aren't a leaf
+node).  There you have much higher tolerances for correctness.
 
-In short, any distro released in 2008 is fine, for 2007, you should also
-be fine, but you might want to be safe.  anything older than that, you
-should set this value to Y.
+: As it currently stands the kernel contains sufficient support that at the
+: point you know a leap second is coming you can adjust the second length
+: marginally over the entire period.
+: 
+: The current behaviour is an implementation decision. Jumping on a second
+: shouldn't be an issue to most people, jumping back is asking for badness
+: but isn't in fact used in the world today. Slewing the entire day so that
+: each second is 1/86400 of a second longer or shorter wouldn't be noticed
+: by anyone.
 
-hope this helps,
+If you are an ntp leaf node, that doesn't care about UTC accurate to
+the second, this will work well.  For most users, this effectively
+papers over the problem.
 
-greg k-h
+If you do care about UTC time being more accurate than this slewing
+will be too large and introduce errors that are too big.  Likewise for
+non-leaf ntp nodes.  For these machines, having time be off by 1/2
+second can be very bad.  There are many real-time systems that fall
+into this category, trading systems on wall street, systems that
+control things based on doing things at certain points within UTC
+second, etc.  For those types of systems, changing the length of the
+second by this much isn't going to work at all.
+
+ntpd also lights the INS bit only on 'leap day' so depending on when
+you poll, you might not have a full day's notice of these changes, but
+that can be managed...
+
+Warner
+
