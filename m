@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762744AbZAGXLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZAGXNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762744AbZAGXLn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbZAGXLb
+	id S932393AbZAGXNd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZAGXNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:11:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34286 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752389AbZAGXLa (ORCPT
+	Wed, 7 Jan 2009 18:13:22 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46727 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbZAGXNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:11:30 -0500
-Date: Wed, 7 Jan 2009 15:10:27 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <1231366716.11687.377.camel@twins>
-Message-ID: <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <4963584A.4090805@novell.com>  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>
-  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>  <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>
-  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com> 
- <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>  <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain> <1231366716.11687.377.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Jan 2009 18:13:21 -0500
+Date: Wed, 7 Jan 2009 15:11:51 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: [PATCH 0/7] V3 of the async function call patches
+Message-ID: <20090107151151.458333c1@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+version 3 of the async function call patches
+
+* Dropped the ACPI part; it broke i surprising ways; needs a rethink
+  (working with Len and co on that)
+* Included asynchronous delete()
 
 
-On Wed, 7 Jan 2009, Peter Zijlstra wrote:
-> 
-> Hmm, still wouldn't the spin_on_owner() loopyness and the above need
-> that need_resched() check you mentioned to that it can fall into the
-> slow path and go to sleep?
+There is still no integration with the out of tree slow-work patch;
+the slow-work patch does really weird things with refcounts that make it
+really specific to cachefs and, frankly, I think it's a rather
+weird design.
 
-Yes, I do think that the outer loop at least should have a test for 
-need_resched(). 
+The overlap is maybe 200 lines of code at most, of which 100+ would
+need to be added just to deal with the various weirdnesses. I really
+don't think this is a good idea or a fair requirement on the async
+function call patch series.
 
-Please take all my patches to be pseudo-code. They've neither been 
-compiled nor tested, and I'm just posting them in the hope that somebody 
-else will then do things in the direction I think is the proper one ;)
+The following changes since commit 8903709b054a8dafe4e8c6d9a6444034d7aba36f:
+  Harvey Harrison (1):
+        xtensa: introduce swab.h
 
-		Linus
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-async.git master
+
+Arjan van de Ven (7):
+      async: Asynchronous function calls to speed up kernel boot
+      fastboot: make scsi probes asynchronous
+      fastboot: make the libata port scan asynchronous
+      fastboot: Make libata initialization even more async
+      async: make the final inode deletion an asynchronous event
+      bootchart: improve output based on Dave Jones' feedback
+      async: don't do the initcall stuff post boot
+
+ drivers/ata/libata-core.c |   96 +++++++-------
+ drivers/scsi/scsi_scan.c  |    3 +
+ drivers/scsi/sd.c         |  109 ++++++++++------
+ fs/inode.c                |   20 ++-
+ fs/super.c                |   10 ++
+ include/linux/async.h     |   25 ++++
+ include/linux/fs.h        |    5 +
+ init/do_mounts.c          |    2 +
+ init/main.c               |    5 +-
+ kernel/Makefile           |    3 +-
+ kernel/async.c            |  321 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/irq/autoprobe.c    |    5 +
+ kernel/module.c           |    2 +
+ scripts/bootgraph.pl      |   16 ++-
+ 14 files changed, 521 insertions(+), 101 deletions(-)
+ create mode 100644 include/linux/async.h
+ create mode 100644 kernel/async.c
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
