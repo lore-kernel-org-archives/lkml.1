@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbZAGOkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbZAGOki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753791AbZAGOkK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:40:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbZAGOju
+	id S1758987AbZAGOki (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZAGOkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:39:50 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:65521 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758335AbZAGOjt (ORCPT
+	Wed, 7 Jan 2009 09:40:06 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:35096 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758784AbZAGOkF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:39:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=RkBgvrA0V92PqlMfKAdepeD4t42xhK40rV4IoPTRwVsAKhAF8xJ07gGD5+uE+MQ4hW
-         wePJqT04Vw6ksW4DT8JSwGePY1ciDJk4MuT7AAmqmw1bvkCS7/4voOzY8hFtc0ENMBiA
-         0bqj3Tp13Gw9JQx4Ruc6PZ7GslGoUjAtWroRo=
-Message-ID: <4964BEB0.7040400@gmail.com>
-Date: Wed, 07 Jan 2009 15:39:44 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mm-commits@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-01-07-00-23 uploaded
-References: <200901070828.n078SRKJ024599@imap1.linux-foundation.org>
-In-Reply-To: <200901070828.n078SRKJ024599@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 09:40:05 -0500
+Message-Id: <4964CCEE.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 07 Jan 2009 14:40:30 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Al Viro" <viro@ZenIV.linux.org.uk>
+Cc: <ccache@lists.samba.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       "Sam Ravnborg" <sam@ravnborg.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [REGRESSION] Recent change to kernel spikes out
+	 ccache/distcc
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org>
+ <20090107051027.GU28946@ZenIV.linux.org.uk>
+ <49647A9E.76E4.0078.0@novell.com>
+ <20090107140328.GV28946@ZenIV.linux.org.uk>
+ <4964CA0A.76E4.0078.0@novell.com>
+ <20090107143711.GW28946@ZenIV.linux.org.uk>
+In-Reply-To: <20090107143711.GW28946@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07/2009 09:28 AM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-01-07-00-23 has been uploaded to
+>>> Al Viro <viro@ZenIV.linux.org.uk> 07.01.09 15:37 >>>
+>On Wed, Jan 07, 2009 at 02:28:10PM +0000, Jan Beulich wrote:
+>> >	b) is there any reason why we can't copy symbol table out of module
+>> >ourselves (instead of setting SHF_ALLOC on it) and trim the crap out of
+>> >it?  Note that __crc_... is not the only junk in there - you don't need
+>> >(or want) to keep the things like undefs for /proc/kallsyms purposes.
+>> >And modules *using* an exported symbol are more common that modules exporting
+>> >one...  Why not copy it at add_kallsyms() time, skipping the junk we don't
+>> >want anyway?
+>> 
+>> Would certainly be doable, but would seem reasonable only if it's a small
+>> set of easily recognizable symbols. If you look at scripts/strip-symbols,
+>> you may agree that it's better to do this at build time...
+>
+>I will not.  Undefined ones are far more common than any of those...
 
-Hi,
+Undefined ones could certainly be stripped out there (while they definitely
+can't be at build time).
 
-there is wrong parenthesis pairing added in:
-patches/mm-add-proc-controls-for-pdflush-threads-fix.patch
-which causes a build error.
+Jan
+
