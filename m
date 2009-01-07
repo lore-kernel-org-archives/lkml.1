@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760344AbZAGRs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbZAGRv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760344AbZAGRs2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 12:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZAGRsN
+	id S1759962AbZAGRv7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 12:51:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZAGRvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 12:48:13 -0500
-Received: from cet.com.ru ([195.178.208.66]:41507 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752719AbZAGRsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 12:48:12 -0500
-Date: Wed, 7 Jan 2009 20:48:09 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: =?utf-8?B?UsOpbWk=?= Denis-Courmont <rdenis@simphalempin.com>
-Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Security: Implement and document RLIMIT_NETWORK.
-Message-ID: <20090107174809.GA8989@ioremap.net>
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <1231307334-9542-2-git-send-email-michael@laptop.org> <20090107114703.GB28161@ioremap.net> <200901071852.32078.rdenis@simphalempin.com>
+	Wed, 7 Jan 2009 12:51:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51324 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751020AbZAGRvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 12:51:46 -0500
+Date: Wed, 7 Jan 2009 09:50:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Chris Mason <chris.mason@oracle.com>
+cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <1231348801.27813.31.camel@think.oraclecorp.com>
+Message-ID: <alpine.LFD.2.00.0901070945450.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com> <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
+ <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins> <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+ <1231348801.27813.31.camel@think.oraclecorp.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901071852.32078.rdenis@simphalempin.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 06:52:27PM +0200, Rémi Denis-Courmont (rdenis@simphalempin.com) wrote:
-> Le mercredi 7 janvier 2009 13:47:03 Evgeniy Polyakov, vous avez écrit :
-> > The same goal can be achieved with 'owner' iptables match module btw.
+
+
+On Wed, 7 Jan 2009, Chris Mason wrote:
 > 
-> Err no. iptables is _not_ suitable for userland applications dropping their 
-> _own_ privileges. For privileged processes, it's clumsy at best, as iptables 
-> does not quite work if more than one applications uses it. That's typically 
-> your firewall configuration wizard or some custom admin-made script.
-> As for UNprivileged processes, iptables is not allowed.
+> So far I haven't found any btrfs benchmarks where this is slower than
+> mutexes without any spinning.  But, it isn't quite as fast as the btrfs
+> spin.
 
-If setting that rlimit does not require admin priviledges, then it does
-not require to drop this. So it is superuser or admin who does this.
-And exactly the same can be achieved with 'owner' iptables module.
+Quite frankly, from our history with ext3 and other filesystems, using a 
+mutex in the filesystem is generally the wrong thing to do anyway. 
 
-If process itself changes own rlimit, then it is not a rlimit, but a
-hint to how it is supposed to work.
+Are you sure you can't just use a spinlock, and just release it over IO? 
+The "have to do IO or extend the btree" case is usually pretty damn clear.
 
-Plus I did not see how fork is protected, i.e. does children get the
-same rlimit, it looks like it does not.
+Because it really sounds like you're lock-limited, and you should just try 
+to clean it up. A pure "just spinlock" in the hotpath is always going to 
+be better.
 
-> As I understand it, Michael is trying to build something similar to SECCOMP, 
-> only way less restrictive and way more usable by real-life userland programs.
-
-Security and unpriveledged setup are mutually impossible cases.
-
--- 
-	Evgeniy Polyakov
+		Linus
