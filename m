@@ -1,62 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZAGAJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZAGAJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbZAGAJZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 19:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZAGAJG
+	id S1757373AbZAGAJl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 19:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZAGAJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 19:09:06 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:35199 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753535AbZAGAJF (ORCPT
+	Tue, 6 Jan 2009 19:09:15 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:60977 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754522AbZAGAJM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 19:09:05 -0500
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-In-Reply-To: <1231281732.4173.6.camel@heimdal.trondhjem.org>
-References: <20090106011314.534653345@us.ibm.com>
-	 <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
-	 <1231274682.20316.65.camel@heimdal.trondhjem.org>
-	 <20090106215831.GE18147@us.ibm.com>
-	 <1231281732.4173.6.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 16:08:50 -0800
-Message-Id: <1231286930.14345.196.camel@localhost>
+	Tue, 6 Jan 2009 19:09:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer;
+        b=QiUYepWBFsMhQB/VlikO9rk8cf6CeP8aVHcEK0/NR5dLv2ZUe5nDFl2VTbQOdZrkz4
+         LQo/EKaFVRbpvrp8M6PEskgWHNNuLCFXI7xQsnLIk0RiWmhFr+bud0fM0j+T3+gfaFFI
+         Q4X1crF4iikmoqhL4t86ueLBU09DF6xedy0BU=
+Subject: Re: 2.6.29 -mm merge plans
+From: "Diego E. 'Flameeyes'" =?ISO-8859-1?Q?Petten=F2?= 
+	<flameeyes@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Warren Turkal <wt@penguintechs.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20090106233153.GA16469@infradead.org>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+	 <20090106225744.GA10553@infradead.org>
+	 <20090106151747.c640dfd4.akpm@linux-foundation.org>
+	 <20090106231958.GA30271@infradead.org> <1231284433.5158.2.camel@localhost>
+	 <20090106233153.GA16469@infradead.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MMlYQgnFm/DmiVjohZyh"
+Date: Wed, 07 Jan 2009 01:09:14 +0100
+Message-Id: <1231286954.5158.18.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-06 at 17:42 -0500, Trond Myklebust wrote:
-> On Tue, 2009-01-06 at 15:58 -0600, Serge E. Hallyn wrote:
-> 
-> > So should we use patch 2/4, plus (as someone - was it you? - suggested)
-> > using a DEFAULT instead of init_utsname()->nodename when
-> > current->utsname() == NULL?
-> 
-> No. I'm don't think that 2/4 is correct either. Basically, 2/4 is saying
-> that the container that first mounts the filesystem 'owns' it. However
-> at the same time we know that the lifetime of the filesystem is in no
-> way bounded by the lifetime of the container, and that's what gets you
-> into trouble with 'umount' in the first place.
->
-> IMO, the current code is the most correct approach, in that it assumes
-> that the filesystems are owned by the 'init' namespace.
 
-IMHO This seems more incorrect than trying to use a more proximal
-namespace.
+--=-MMlYQgnFm/DmiVjohZyh
+Content-Type: multipart/mixed; boundary="=-JHUm2KwsJfB0ooLLRBsC"
 
-Cheers,
-	-Matt Helsley
+
+--=-JHUm2KwsJfB0ooLLRBsC
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2009-01-06 at 18:31 -0500, Christoph Hellwig wrote:
+> Just some minor comments:
+
+I'm attaching a version fixing both yours comments and Harvey's.
+
+> Please don't put filenames in top of file comments.  They don't serve
+> any purpose and easily get out of date.
+
+I've done that just to make it "fit-in" with the rest of the hfsplus
+code, should I send a patch to remove those from the other files?
+
+> No need for this comment I think.  All this is pretty well documented
+> in Documentation/filesystems/Exporting, and all the other filesystems
+> that just fill out these three methods don't comment on it either.
+
+I copied over the code from ext2 sources, so at least one other
+filesystem does comment on it ;)
+
+But indeed it's misleading, better for it to be gone.
+
+On Tue, 2009-01-06 at 15:49 -0800, Harvey Harrison wrote:
+> One other nit, byteswap the constant so it can be done at compile-time:
+>=20
+I copied over the code from dir.c, so I've propagated the change to
+that, and also to super.c where a similar case was present, I'm
+attaching it at 0002 (but maybe it should go in before the NFS export
+support?).
+
+I've not checked if there are other cases where this can be optimised
+though, maybe I should.
+
+If you all are in mood of HFS+ patches review, I might try to run the
+code through a couple of my tools, I had in my TODO list to try them on
+kernel code for a while ;)
+
+--=20
+Diego "Flameeyes" Petten=C3=B2
+http://blog.flameeyes.eu/
+
+
+--=-JHUm2KwsJfB0ooLLRBsC
+Content-Disposition: attachment;
+	filename="0001-Add-basic-export-support-to-HFS-filesystem.patch"
+Content-Transfer-Encoding: base64
+Content-Type: text/x-patch; name="0001-Add-basic-export-support-to-HFS-filesystem.patch";
+	charset="UTF-8"
+
+RnJvbSA4NTQxNDZiOWJjMDE0M2U5ZTNiZmZjNzY1Mzg4YjlkYWNiNDkwNTI3IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQ0KRnJvbTogPT91dGYtOD9xP0RpZWdvPTIwRS49MjAnRmxhbWVleWVzJz0y
+MFBldHRlbj1DMz1CMj89IDxmbGFtZWV5ZXNAZ21haWwuY29tPg0KRGF0ZTogVGh1LCA0IERlYyAy
+MDA4IDEzOjMyOjA2ICswMTAwDQpTdWJqZWN0OiBbUEFUQ0hdIEFkZCBiYXNpYyBleHBvcnQgc3Vw
+cG9ydCB0byBIRlMrIGZpbGVzeXN0ZW0uDQpNSU1FLVZlcnNpb246IDEuMA0KQ29udGVudC1UeXBl
+OiB0ZXh0L3BsYWluOyBjaGFyc2V0PXV0Zi04DQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiA4
+Yml0DQoNClRoZSBmdW5jdGlvbnMnIHNrZWxldG9uIGlzIHRha2VuIGZyb20gZXh0Mi9zdXBlci5j
+IGFuZCBzZWVtcyB0byB3b3JrDQpmaW5lIGZvciBSL1cgYWNjZXNzIHRvIEhGUysgbm9uLWpvdXJu
+YWxlZCBjYXNlLXNlbnNpdGl2ZSBmaWxlc3lzdGVtcy4NCg0KU2lnbmVkLW9mZi1ieTogRGllZ28g
+RS4gJ0ZsYW1lZXllcycgUGV0dGVuw7IgPGZsYW1lZXllc0BnbWFpbC5jb20+DQpDYzogUm9tYW4g
+WmlwcGVsIDx6aXBwZWxAbGludXgtbTY4ay5vcmc+DQpDYzogQ2hyaXN0b3BoIEhlbGx3aWcgPGhj
+aEBsc3QuZGU+DQpDYzogTmVpbCBCcm93biA8bmVpbGJAc3VzZS5kZT4NCi0tLQ0KIGZzL2hmc3Bs
+dXMvTWFrZWZpbGUgICAgIHwgICAgMyArLQ0KIGZzL2hmc3BsdXMvZXhwb3J0LmMgICAgIHwgIDEw
+NCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KIGZzL2hm
+c3BsdXMvaGZzcGx1c19mcy5oIHwgICAgMyArDQogZnMvaGZzcGx1cy9zdXBlci5jICAgICAgfCAg
+ICAxICsNCiA0IGZpbGVzIGNoYW5nZWQsIDExMCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygt
+KQ0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBmcy9oZnNwbHVzL2V4cG9ydC5jDQoNCmRpZmYgLS1naXQg
+YS9mcy9oZnNwbHVzL01ha2VmaWxlIGIvZnMvaGZzcGx1cy9NYWtlZmlsZQ0KaW5kZXggM2NjMGRm
+Ny4uMzc0MTMxZSAxMDA2NDQNCi0tLSBhL2ZzL2hmc3BsdXMvTWFrZWZpbGUNCisrKyBiL2ZzL2hm
+c3BsdXMvTWFrZWZpbGUNCkBAIC01LDUgKzUsNiBAQA0KIG9iai0kKENPTkZJR19IRlNQTFVTX0ZT
+KSArPSBoZnNwbHVzLm8NCiANCiBoZnNwbHVzLW9ianMgOj0gc3VwZXIubyBvcHRpb25zLm8gaW5v
+ZGUubyBpb2N0bC5vIGV4dGVudHMubyBjYXRhbG9nLm8gZGlyLm8gYnRyZWUubyBcDQotCQlibm9k
+ZS5vIGJyZWMubyBiZmluZC5vIHRhYmxlcy5vIHVuaWNvZGUubyB3cmFwcGVyLm8gYml0bWFwLm8g
+cGFydF90Ymwubw0KKwkJYm5vZGUubyBicmVjLm8gYmZpbmQubyB0YWJsZXMubyB1bmljb2RlLm8g
+d3JhcHBlci5vIGJpdG1hcC5vIHBhcnRfdGJsLm8gXA0KKwkJZXhwb3J0Lm8NCiANCmRpZmYgLS1n
+aXQgYS9mcy9oZnNwbHVzL2V4cG9ydC5jIGIvZnMvaGZzcGx1cy9leHBvcnQuYw0KbmV3IGZpbGUg
+bW9kZSAxMDA2NDQNCmluZGV4IDAwMDAwMDAuLjM0ODZlNTQNCi0tLSAvZGV2L251bGwNCisrKyBi
+L2ZzL2hmc3BsdXMvZXhwb3J0LmMNCkBAIC0wLDAgKzEsMTA0IEBADQorLyoNCisgKiBDb3B5cmln
+aHQgKEMpIDIwMDENCisgKiBCcmFkIEJveWVyIChmbGFyQGFsbGFuZHJpYS5jb20pDQorICogKEMp
+IDIwMDMgQXJkaXMgVGVjaG5vbG9naWVzIDxyb21hbkBhcmRpc3RlY2guY29tPg0KKyAqIChDKSAy
+MDA4IERpZWdvIEUuIFBldHRlbsOyIDxmbGFtZWV5ZXNAZ21haWwuY29tPg0KKyAqDQorICogRXhw
+b3J0IGZvciBORlMNCisgKi8NCisNCisjaW5jbHVkZSA8bGludXgvZXJybm8uaD4NCisjaW5jbHVk
+ZSA8bGludXgvZnMuaD4NCisjaW5jbHVkZSA8bGludXgvZXhwb3J0ZnMuaD4NCisNCisjaW5jbHVk
+ZSAiaGZzcGx1c19mcy5oIg0KKyNpbmNsdWRlICJoZnNwbHVzX3Jhdy5oIg0KKw0KKy8qDQorICog
+VGhpcyBpcyB2ZXJ5IGRpZmZlcmVudCBmcm9tIG1vc3QgZ2V0X3BhcmVudCBmdW5jdGlvbnMsIHNp
+bmNlIEhGUysNCisgKiBkb2VzIG5vdCBoYXZlIGEgIi4uIiBlbnRyeSBvbiB0aGVpciBkaXJlY3Rv
+cmllcy4NCisgKg0KKyAqIEluc3RlYWQsIHRoZSBmaWxlc3lzdGVtIHVzZXMgQ2F0YWxvZyBUaHJl
+YWQgUmVjb3JkcyB0byBjb25uZWN0DQorICogZGlyZWN0b3JpZXMgYW5kIGZpbGVzIHRvIHRoZWly
+IGFuY2VzdG9ycy4NCisgKi8NCitzdGF0aWMgc3RydWN0IGRlbnRyeSAqaGZzcGx1c19nZXRfcGFy
+ZW50KHN0cnVjdCBkZW50cnkgKmNoaWxkKQ0KK3sNCisJc3RydWN0IHN1cGVyX2Jsb2NrICpzYjsN
+CisJaGZzcGx1c19jYXRfZW50cnkgZW50cnk7DQorCXN0cnVjdCBoZnNfZmluZF9kYXRhIGZkOw0K
+KwlzdHJ1Y3QgaW5vZGUgKmlub2RlOw0KKwlpbnQgZXJyOw0KKw0KKwlzYiA9IGNoaWxkLT5kX3Ni
+Ow0KKw0KKwloZnNfZmluZF9pbml0KEhGU1BMVVNfU0Ioc2IpLmNhdF90cmVlLCAmZmQpOw0KKwlo
+ZnNwbHVzX2NhdF9idWlsZF9rZXkoc2IsIGZkLnNlYXJjaF9rZXksIGNoaWxkLT5kX2lub2RlLT5p
+X2lubywgTlVMTCk7DQorCWVyciA9IGhmc19icmVjX2ZpbmQoJmZkKTsNCisNCisJaWYgKGVycikg
+ew0KKwkJcHJpbnRrKEtFUk5fRVJSICJoZnM6IHVuYWJsZSB0byBmaW5kIGNoaWxkLCBjYWxsIHBv
+bGljZVxuIik7DQorCQlnb3RvIG91dDsNCisJfQ0KKw0KKwloZnNfYm5vZGVfcmVhZChmZC5ibm9k
+ZSwgJmVudHJ5LCBmZC5lbnRyeW9mZnNldCwgZmQuZW50cnlsZW5ndGgpOw0KKwlpZiAoZW50cnku
+dHlwZSAhPSBjcHVfdG9fYmUxNihIRlNQTFVTX0ZPTERFUl9USFJFQUQpKSB7DQorCQlwcmludGso
+S0VSTl9FUlIgImhmczogYmFkIGNhdGFsb2cgZm9sZGVyIHRocmVhZFxuIik7DQorCQllcnIgPSAt
+RUlPOw0KKwkJZ290byBvdXQ7DQorCX0NCisNCisJaWYgKGZkLmVudHJ5bGVuZ3RoIDwgSEZTUExV
+U19NSU5fVEhSRUFEX1NaKSB7DQorCQlwcmludGsoS0VSTl9FUlIgImhmczogdHJ1bmNhdGVkIGNh
+dGFsb2cgdGhyZWFkXG4iKTsNCisJCWVyciA9IC1FSU87DQorCQlnb3RvIG91dDsNCisJfQ0KKw0K
+KwloZnNfZmluZF9leGl0KCZmZCk7DQorDQorCWlub2RlID0gaGZzcGx1c19pZ2V0KGNoaWxkLT5k
+X3NiLCBiZTMyX3RvX2NwdShlbnRyeS50aHJlYWQucGFyZW50SUQpKTsNCisJaWYgKElTX0VSUihp
+bm9kZSkpIHsNCisJCXByaW50ayhLRVJOX0VSUg0KKwkJICAgICAgICJoZnM6IHVuYWJsZSB0byBm
+aW5kIHBhcmVudCwgY2FsbCBzb2NpYWwgc2VydmljZXNcbiIpOw0KKwkJcmV0dXJuIEVSUl9DQVNU
+KGlub2RlKTsNCisJfQ0KKw0KKwlyZXR1cm4gZF9vYnRhaW5fYWxpYXMoaW5vZGUpOw0KKw0KK291
+dDoNCisJaGZzX2ZpbmRfZXhpdCgmZmQpOw0KKwlyZXR1cm4gRVJSX1BUUihlcnIpOw0KK30NCisN
+CitzdGF0aWMgc3RydWN0IGlub2RlICpoZnNwbHVzX2V4cG9ydF9nZXRfaW5vZGUoc3RydWN0IHN1
+cGVyX2Jsb2NrICpzYiwNCisJCQkJCSAgICAgIHU2NCBpbm8sIHUzMiBnZW5lcmF0aW9uKQ0KK3sN
+CisJc3RydWN0IGlub2RlICppbm9kZTsNCisNCisJaWYgKGlubyA8IEhGU1BMVVNfRklSU1RVU0VS
+X0NOSUQgJiYgaW5vICE9IEhGU1BMVVNfUk9PVF9DTklEKQ0KKwkJcmV0dXJuIEVSUl9QVFIoLUVT
+VEFMRSk7DQorDQorCS8qIGhmc3BsdXMgZG9lc24ndCBzZXQgaV9nZW5lcmF0aW9uIHNvIG5vIG5l
+ZWQgdG8gY2hlY2sgZm9yIGl0LiAqLw0KKwlyZXR1cm4gaGZzcGx1c19pZ2V0KHNiLCBpbm8pOw0K
+K30NCisNCitzdGF0aWMgc3RydWN0IGRlbnRyeSAqaGZzcGx1c19maF90b19kZW50cnkoc3RydWN0
+IHN1cGVyX2Jsb2NrICpzYiwgc3RydWN0IGZpZCAqZmlkLA0KKwkJCQkJICAgaW50IGZoX2xlbiwg
+aW50IGZoX3R5cGUpDQorDQorew0KKwlyZXR1cm4gZ2VuZXJpY19maF90b19kZW50cnkoc2IsIGZp
+ZCwgZmhfbGVuLCBmaF90eXBlLA0KKwkJCQkgICAgaGZzcGx1c19leHBvcnRfZ2V0X2lub2RlKTsN
+Cit9DQorDQorc3RhdGljIHN0cnVjdCBkZW50cnkgKmhmc3BsdXNfZmhfdG9fcGFyZW50KHN0cnVj
+dCBzdXBlcl9ibG9jayAqc2IsIHN0cnVjdCBmaWQgKmZpZCwNCisJCQkJCSAgIGludCBmaF9sZW4s
+IGludCBmaF90eXBlKQ0KKw0KK3sNCisJcmV0dXJuIGdlbmVyaWNfZmhfdG9fcGFyZW50KHNiLCBm
+aWQsIGZoX2xlbiwgZmhfdHlwZSwNCisJCQkJICAgIGhmc3BsdXNfZXhwb3J0X2dldF9pbm9kZSk7
+DQorfQ0KKw0KK2NvbnN0IHN0cnVjdCBleHBvcnRfb3BlcmF0aW9ucyBoZnNwbHVzX2V4cG9ydF9v
+cHMgPSB7DQorCS5nZXRfcGFyZW50ID0gaGZzcGx1c19nZXRfcGFyZW50LA0KKwkuZmhfdG9fZGVu
+dHJ5ID0gaGZzcGx1c19maF90b19kZW50cnksDQorCS5maF90b19wYXJlbnQgPSBoZnNwbHVzX2Zo
+X3RvX3BhcmVudCwNCit9Ow0KZGlmZiAtLWdpdCBhL2ZzL2hmc3BsdXMvaGZzcGx1c19mcy5oIGIv
+ZnMvaGZzcGx1cy9oZnNwbHVzX2ZzLmgNCmluZGV4IGYwMjdhOTAuLjdjNzg1MjUgMTAwNjQ0DQot
+LS0gYS9mcy9oZnNwbHVzL2hmc3BsdXNfZnMuaA0KKysrIGIvZnMvaGZzcGx1cy9oZnNwbHVzX2Zz
+LmgNCkBAIC0zNzEsNiArMzcxLDkgQEAgaW50IGhmc3BsdXNfcmVhZF93cmFwcGVyKHN0cnVjdCBz
+dXBlcl9ibG9jayAqKTsNCiANCiBpbnQgaGZzX3BhcnRfZmluZChzdHJ1Y3Qgc3VwZXJfYmxvY2sg
+Kiwgc2VjdG9yX3QgKiwgc2VjdG9yX3QgKik7DQogDQorLyogZXhwb3J0LmMgKi8NCitleHRlcm4g
+Y29uc3Qgc3RydWN0IGV4cG9ydF9vcGVyYXRpb25zIGhmc3BsdXNfZXhwb3J0X29wczsNCisNCiAv
+KiBhY2Nlc3MgbWFjcm9zICovDQogLyoNCiBzdGF0aWMgaW5saW5lIHN0cnVjdCBoZnNwbHVzX3Ni
+X2luZm8gKkhGU1BMVVNfU0Ioc3RydWN0IHN1cGVyX2Jsb2NrICpzYikNCmRpZmYgLS1naXQgYS9m
+cy9oZnNwbHVzL3N1cGVyLmMgYi9mcy9oZnNwbHVzL3N1cGVyLmMNCmluZGV4IGViNzQ1MzEuLmI1
+ZDExNTMgMTAwNjQ0DQotLS0gYS9mcy9oZnNwbHVzL3N1cGVyLmMNCisrKyBiL2ZzL2hmc3BsdXMv
+c3VwZXIuYw0KQEAgLTM0NSw2ICszNDUsNyBAQCBzdGF0aWMgaW50IGhmc3BsdXNfZmlsbF9zdXBl
+cihzdHJ1Y3Qgc3VwZXJfYmxvY2sgKnNiLCB2b2lkICpkYXRhLCBpbnQgc2lsZW50KQ0KIA0KIAkv
+KiBTZXQgdXAgb3BlcmF0aW9ucyBzbyB3ZSBjYW4gbG9hZCBtZXRhZGF0YSAqLw0KIAlzYi0+c19v
+cCA9ICZoZnNwbHVzX3NvcHM7DQorCXNiLT5zX2V4cG9ydF9vcCA9ICZoZnNwbHVzX2V4cG9ydF9v
+cHM7DQogCXNiLT5zX21heGJ5dGVzID0gTUFYX0xGU19GSUxFU0laRTsNCiANCiAJaWYgKCEodmhk
+ci0+YXR0cmlidXRlcyAmIGNwdV90b19iZTMyKEhGU1BMVVNfVk9MX1VOTU5UKSkpIHsNCi0tIA0K
+MS42LjAuNg0KDQo=
+
+
+--=-JHUm2KwsJfB0ooLLRBsC
+Content-Disposition: attachment;
+	filename*0=0002-Swap-the-constant-when-comparing-values-read-from-di.pat;
+	filename*1=ch
+Content-Transfer-Encoding: base64
+Content-Type: text/x-patch;
+	name="0002-Swap-the-constant-when-comparing-values-read-from-di.patch";
+	charset="UTF-8"
+
+RnJvbSAzYjQ3ZGE1YjE4YjQ0NjNkN2QxNDY1MzQxODJjNDBiOTViNmNhNmQ0IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQ0KRnJvbTogPT91dGYtOD9xP0RpZWdvPTIwRS49MjAnRmxhbWVleWVzJz0y
+MFBldHRlbj1DMz1CMj89IDxmbGFtZWV5ZXNAZ21haWwuY29tPg0KRGF0ZTogV2VkLCA3IEphbiAy
+MDA5IDAxOjAyOjM3ICswMTAwDQpTdWJqZWN0OiBbUEFUQ0hdIFN3YXAgdGhlIGNvbnN0YW50IHdo
+ZW4gY29tcGFyaW5nIHZhbHVlcyByZWFkIGZyb20gZGlzay4NCg0KVGhpcyB3YXkgdGhlIHN3YXAg
+Y2FuIGJlIGRvbmUgYXQgYnVpbGQtdGltZSB3aXRob3V0IGRvaW5nIGl0IG9uIHRoZSBydW5uaW5n
+DQpzeXN0ZW0uDQoNClVwb24gY29tbWVudCBieSBIYXJ2ZXkgSGFycmlzb24uDQotLS0NCiBmcy9o
+ZnNwbHVzL2Rpci5jICAgfCAgICAyICstDQogZnMvaGZzcGx1cy9zdXBlci5jIHwgICAgMiArLQ0K
+IDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KDQpkaWZm
+IC0tZ2l0IGEvZnMvaGZzcGx1cy9kaXIuYyBiL2ZzL2hmc3BsdXMvZGlyLmMNCmluZGV4IDVmNDAy
+MzYuLjE2ZjgyNWIgMTAwNjQ0DQotLS0gYS9mcy9oZnNwbHVzL2Rpci5jDQorKysgYi9mcy9oZnNw
+bHVzL2Rpci5jDQpAQCAtMTM5LDcgKzEzOSw3IEBAIHN0YXRpYyBpbnQgaGZzcGx1c19yZWFkZGly
+KHN0cnVjdCBmaWxlICpmaWxwLCB2b2lkICpkaXJlbnQsIGZpbGxkaXJfdCBmaWxsZGlyKQ0KIAkJ
+LyogZmFsbCB0aHJvdWdoICovDQogCWNhc2UgMToNCiAJCWhmc19ibm9kZV9yZWFkKGZkLmJub2Rl
+LCAmZW50cnksIGZkLmVudHJ5b2Zmc2V0LCBmZC5lbnRyeWxlbmd0aCk7DQotCQlpZiAoYmUxNl90
+b19jcHUoZW50cnkudHlwZSkgIT0gSEZTUExVU19GT0xERVJfVEhSRUFEKSB7DQorCQlpZiAoZW50
+cnkudHlwZSAhPSBjcHVfdG9fYmUxNihIRlNQTFVTX0ZPTERFUl9USFJFQUQpKSB7DQogCQkJcHJp
+bnRrKEtFUk5fRVJSICJoZnM6IGJhZCBjYXRhbG9nIGZvbGRlciB0aHJlYWRcbiIpOw0KIAkJCWVy
+ciA9IC1FSU87DQogCQkJZ290byBvdXQ7DQpkaWZmIC0tZ2l0IGEvZnMvaGZzcGx1cy9zdXBlci5j
+IGIvZnMvaGZzcGx1cy9zdXBlci5jDQppbmRleCBiNWQxMTUzLi43ZWY5OTNiIDEwMDY0NA0KLS0t
+IGEvZnMvaGZzcGx1cy9zdXBlci5jDQorKysgYi9mcy9oZnNwbHVzL3N1cGVyLmMNCkBAIC0xODIs
+NyArMTgyLDcgQEAgc3RhdGljIHZvaWQgaGZzcGx1c193cml0ZV9zdXBlcihzdHJ1Y3Qgc3VwZXJf
+YmxvY2sgKnNiKQ0KIAkJCWJoID0gc2JfYnJlYWQoc2IsIGJsb2NrKTsNCiAJCQlpZiAoYmgpIHsN
+CiAJCQkJdmhkciA9IChzdHJ1Y3QgaGZzcGx1c192aCAqKShiaC0+Yl9kYXRhICsgb2Zmc2V0KTsN
+Ci0JCQkJaWYgKGJlMTZfdG9fY3B1KHZoZHItPnNpZ25hdHVyZSkgPT0gSEZTUExVU19WT0xIRUFE
+X1NJRykgew0KKwkJCQlpZiAodmhkci0+c2lnbmF0dXJlID09IGNwdV90b19iZTE2KEhGU1BMVVNf
+Vk9MSEVBRF9TSUcpKSB7DQogCQkJCQltZW1jcHkodmhkciwgSEZTUExVU19TQihzYikuc192aGRy
+LCBzaXplb2YoKnZoZHIpKTsNCiAJCQkJCW1hcmtfYnVmZmVyX2RpcnR5KGJoKTsNCiAJCQkJCWJy
+ZWxzZShiaCk7DQotLSANCjEuNi4wLjYNCg0K
+
+
+--=-JHUm2KwsJfB0ooLLRBsC--
+
+--=-MMlYQgnFm/DmiVjohZyh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAklj8qoACgkQe2h1+2mHVWMVDQCg0q1+H/DBUecnUJLACAolMDC2
+HI0AoKs2oWXzxsd28GI1kOZG+m6KSsBa
+=EoFk
+-----END PGP SIGNATURE-----
+
+--=-MMlYQgnFm/DmiVjohZyh--
 
