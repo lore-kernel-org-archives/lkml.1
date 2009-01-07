@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763469AbZAGXQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763690AbZAGXQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763469AbZAGXQP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932287AbZAGXNa
+	id S1763690AbZAGXQi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbZAGXNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:13:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46736 "EHLO
+	Wed, 7 Jan 2009 18:13:32 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46738 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932259AbZAGXN3 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S932300AbZAGXNb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:13:29 -0500
-Date: Wed, 7 Jan 2009 15:14:22 -0800
+	Wed, 7 Jan 2009 18:13:31 -0500
+Date: Wed, 7 Jan 2009 15:14:50 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+To: linux-kernel@vger.kernel.org
+Cc: Arjan van de Ven <arjan@infradead.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org
-Subject: [PATCH 5/7] async: make the final inode deletion an asynchronous
- event
-Message-ID: <20090107151422.6fa64ca0@infradead.org>
+Subject: [PATCH 6/7] bootchart: improve output based on Dave Jones' feedback
+Message-ID: <20090107151450.1f2eb7e5@infradead.org>
 In-Reply-To: <20090107151151.458333c1@infradead.org>
 References: <20090107151151.458333c1@infradead.org>
 Organization: Intel
@@ -32,134 +31,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From efaee192063a54749c56b7383803e16fe553630e Mon Sep 17 00:00:00 2001
+>From 24b0ecad07ac4d7ef74cb6f7da08c449fa9f6a4f Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Tue, 6 Jan 2009 07:20:54 -0800
-Subject: [PATCH] async: make the final inode deletion an asynchronous event
+Date: Sun, 4 Jan 2009 10:59:18 -0800
+Subject: [PATCH] bootchart: improve output based on Dave Jones' feedback
 
-this makes "rm -rf" on a (names cached) kernel tree go from
-11.6 to 8.6 seconds on an ext3 filesystem
+Dave Jones, in his blog, had some feedback about the bootchart script:
+Primarily his complaint was that shorter delays weren't visualized.
+
+The reason for that was that too small delays will have their labels
+mixed up in the graph in an unreadable mess.
+
+This patch has a fix for this; for one, it makes the output wider,
+so more will fit.
+The second part is that smaller delays are now shown with a
+much smaller font for the label; while this isn't per se
+readable at a 1:1 zoom, at least you can zoom in with most SVG
+viewing applications and see what it is you are looking at.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- fs/inode.c         |   20 +++++++++++++-------
- fs/super.c         |   10 ++++++++++
- include/linux/fs.h |    5 +++++
- 3 files changed, 28 insertions(+), 7 deletions(-)
+ scripts/bootgraph.pl |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/fs/inode.c b/fs/inode.c
-index 7a6e8c2..0013ac1 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -22,6 +22,7 @@
- #include <linux/bootmem.h>
- #include <linux/inotify.h>
- #include <linux/mount.h>
-+#include <linux/async.h>
- 
- /*
-  * This is needed for the following functions:
-@@ -1138,16 +1139,11 @@ EXPORT_SYMBOL(remove_inode_hash);
-  * I_FREEING is set so that no-one will take a new reference to the inode while
-  * it is being deleted.
-  */
--void generic_delete_inode(struct inode *inode)
-+static void generic_delete_inode_async(void *data, async_cookie_t cookie)
- {
-+	struct inode *inode = data;
- 	const struct super_operations *op = inode->i_sb->s_op;
- 
--	list_del_init(&inode->i_list);
--	list_del_init(&inode->i_sb_list);
--	inode->i_state |= I_FREEING;
--	inodes_stat.nr_inodes--;
--	spin_unlock(&inode_lock);
--
- 	security_inode_delete(inode);
- 
- 	if (op->delete_inode) {
-@@ -1171,6 +1167,16 @@ void generic_delete_inode(struct inode *inode)
- 	destroy_inode(inode);
+diff --git a/scripts/bootgraph.pl b/scripts/bootgraph.pl
+index f0af9aa..0a498e3 100644
+--- a/scripts/bootgraph.pl
++++ b/scripts/bootgraph.pl
+@@ -88,7 +88,7 @@ END
  }
  
-+void generic_delete_inode(struct inode *inode)
-+{
-+	list_del_init(&inode->i_list);
-+	list_del_init(&inode->i_sb_list);
-+	inode->i_state |= I_FREEING;
-+	inodes_stat.nr_inodes--;
-+	spin_unlock(&inode_lock);
-+	async_schedule_special(generic_delete_inode_async, inode, &inode->i_sb->s_async_list);
-+}
-+
- EXPORT_SYMBOL(generic_delete_inode);
+ print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
+-print "<svg width=\"1000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
++print "<svg width=\"2000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
  
- static void generic_forget_inode(struct inode *inode)
-diff --git a/fs/super.c b/fs/super.c
-index ddba069..cb20744 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -38,6 +38,7 @@
- #include <linux/kobject.h>
- #include <linux/mutex.h>
- #include <linux/file.h>
-+#include <linux/async.h>
- #include <asm/uaccess.h>
- #include "internal.h"
+ my @styles;
  
-@@ -71,6 +72,7 @@ static struct super_block *alloc_super(struct file_system_type *type)
- 		INIT_HLIST_HEAD(&s->s_anon);
- 		INIT_LIST_HEAD(&s->s_inodes);
- 		INIT_LIST_HEAD(&s->s_dentry_lru);
-+		INIT_LIST_HEAD(&s->s_async_list);
- 		init_rwsem(&s->s_umount);
- 		mutex_init(&s->s_lock);
- 		lockdep_set_class(&s->s_umount, &type->s_umount_key);
-@@ -289,11 +291,18 @@ void generic_shutdown_super(struct super_block *sb)
- {
- 	const struct super_operations *sop = sb->s_op;
+@@ -105,8 +105,9 @@ $styles[9] = "fill:rgb(255,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0
+ $styles[10] = "fill:rgb(255,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+ $styles[11] = "fill:rgb(128,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
  
-+
- 	if (sb->s_root) {
- 		shrink_dcache_for_umount(sb);
- 		fsync_super(sb);
- 		lock_super(sb);
- 		sb->s_flags &= ~MS_ACTIVE;
-+
-+		/*
-+		 * wait for asynchronous fs operations to finish before going further
-+		 */
-+		async_synchronize_full_special(&sb->s_async_list);
-+
- 		/* bad name - it should be evict_inodes() */
- 		invalidate_inodes(sb);
- 		lock_kernel();
-@@ -449,6 +458,7 @@ void sync_filesystems(int wait)
- 		if (sb->s_flags & MS_RDONLY)
- 			continue;
- 		sb->s_need_sync_fs = 1;
-+		async_synchronize_full_special(&sb->s_async_list);
+-my $mult = 950.0 / ($maxtime - $firsttime);
+-my $threshold = ($maxtime - $firsttime) / 60.0;
++my $mult = 1950.0 / ($maxtime - $firsttime);
++my $threshold2 = ($maxtime - $firsttime) / 120.0;
++my $threshold = $threshold2/10;
+ my $stylecounter = 0;
+ my %rows;
+ my $rowscount = 1;
+@@ -116,7 +117,7 @@ foreach my $key (@initcalls) {
+ 	my $duration = $end{$key} - $start{$key};
+ 
+ 	if ($duration >= $threshold) {
+-		my ($s, $s2, $e, $w, $y, $y2, $style);
++		my ($s, $s2, $s3, $e, $w, $y, $y2, $style);
+ 		my $pid = $pids{$key};
+ 
+ 		if (!defined($rows{$pid})) {
+@@ -125,6 +126,7 @@ foreach my $key (@initcalls) {
+ 		}
+ 		$s = ($start{$key} - $firsttime) * $mult;
+ 		$s2 = $s + 6;
++		$s3 = $s + 1;
+ 		$e = ($end{$key} - $firsttime) * $mult;
+ 		$w = $e - $s;
+ 
+@@ -138,7 +140,11 @@ foreach my $key (@initcalls) {
+ 		};
+ 
+ 		print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"145\" style=\"$style\"/>\n";
+-		print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
++		if ($duration >= $threshold2) {
++			print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
++		} else {
++			print "<text transform=\"translate($s3,$y2) rotate(90)\" font-size=\"3pt\">$key</text>\n";
++		}
  	}
+ }
  
- restart:
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index d7eba77..e38a64d 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1184,6 +1184,11 @@ struct super_block {
- 	 * generic_show_options()
- 	 */
- 	char *s_options;
-+
-+	/*
-+	 * storage for asynchronous operations
-+	 */
-+	struct list_head s_async_list;
- };
- 
- extern struct timespec current_fs_time(struct super_block *sb);
 -- 
 1.6.0.6
+
 
 
 -- 
