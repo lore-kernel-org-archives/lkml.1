@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbZAGVgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762022AbZAGVgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761905AbZAGVgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 16:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbZAGVgH
+	id S1762022AbZAGVgo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761904AbZAGVgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:36:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45423 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754964AbZAGVgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:36:05 -0500
-Date: Wed, 7 Jan 2009 13:35:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: torvalds@linux-foundation.org, peterz@infradead.org,
-       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, mingo@elte.hu,
-       matthew@wil.cx, andi@firstfloor.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org, tglx@linutronix.de, rostedt@goodmis.org,
-       npiggin@suse.de, pmorreale@novell.com, SDietrich@novell.com
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-Message-Id: <20090107133535.858ce125.akpm@linux-foundation.org>
-In-Reply-To: <20090107213740.GO496@one.firstfloor.org>
-References: <1231278275.11687.111.camel@twins>
-	<alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
-	<1231279660.11687.121.camel@twins>
-	<alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
-	<1231281801.11687.125.camel@twins>
-	<1231283778.11687.136.camel@twins>
-	<1231329783.11687.287.camel@twins>
-	<alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
-	<1231347442.11687.344.camel@twins>
-	<alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
-	<20090107213740.GO496@one.firstfloor.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 7 Jan 2009 16:36:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38480 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761872AbZAGVgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:36:21 -0500
+Date: Thu, 8 Jan 2009 08:36:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Tim Bird <tim.bird@am.sony.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH V3 01/17] Squashfs: inode operations
+Message-Id: <20090108083609.97f0703a.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0901071854210.32034@vixen.sonytel.be>
+References: <E1LJnJn-0002L2-GZ@dylan.lougher.demon.co.uk>
+	<Pine.LNX.4.64.0901071854210.32034@vixen.sonytel.be>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Jan 2009 22:37:40 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+--Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > But we can do that with __get_user(thread_info->cpu) (very unlikely page 
-> > fault protection due to the possibility of CONFIG_DEBUG_PAGEALLOC) and 
-> > then validating the cpu. It it's in range, we can use it and verify 
-> > whether cpu_rq(cpu)->curr has that thread_info.
-> > 
-> > So we can do all that locklessly and optimistically, just going back and 
-> > verifying the results later. This is why "thread_info" is actually a 
-> > better thing to use than "task_struct" - we can look up the cpu in it with 
-> > a simple dereference. We knew the pointer _used_ to be valid, so in any 
-> > normal situation, it will never page fault (and if you have 
-> > CONFIG_DEBUG_PAGEALLOC and hit a very unlucky race, then performance isn't 
-> > your concern anyway: we just need to make the page fault be non-lethal ;)
-> 
-> The problem with probe_kernel_address() is that it does lots of
-> operations around the access in the hot path (set_fs, pagefault_disable etc.), 
-> so i'm not sure that's a good idea. 
+Hi Geert,
 
-probe_kernel_address() isn't tooooo bad - a few reads and writes into
-the task_struct and thread_struct.  And we're on the slow, contended
-path here anyway..
+On Wed, 7 Jan 2009 19:00:24 +0100 (CET) Geert Uytterhoeven <Geert.Uytterhoe=
+ven@sonycom.com> wrote:
+>
+> Note that I get lots of
+>=20
+> | warning: format '%llx' expects type 'long long unsigned int', but argum=
+ent 3 has type 'u64'
+>=20
+> on ppc64, since you switched from `unsigned long long' to 'u64', as `u64'=
+ is
+> (still -- this is being changed) `unsigned long' on pp64.
+>=20
+> I guess no action has to be taken, for now?
+
+Correct, as we are in the process of changing u64 to unsigned long long for
+powerpc.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkllIEkACgkQjjKRsyhoI8z+kACgqYc6WZOOWrsC3r7DIQxcBfZT
+ddUAoKQX7RBP6l9WH98d3MgBSQ/3fPDf
+=JuME
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i--
