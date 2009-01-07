@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbZAGLYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbZAGL3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbZAGLYg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 06:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZAGLY0
+	id S1753817AbZAGL3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 06:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZAGL3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 06:24:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52486 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752324AbZAGLYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 06:24:25 -0500
-Date: Wed, 7 Jan 2009 12:24:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Leonardo Potenza <lpotenza@inwind.it>
-Cc: kernel-janitors@vger.kernel.org, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] x86: fix section mismatch warnings in
-	mcheck/mce_amd_64.c
-Message-ID: <20090107112410.GB30522@elte.hu>
-References: <200901062358.29954.lpotenza@inwind.it>
+	Wed, 7 Jan 2009 06:29:10 -0500
+Received: from cet.com.ru ([195.178.208.66]:38218 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752383AbZAGL3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 06:29:09 -0500
+Date: Wed, 7 Jan 2009 14:29:06 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Willy Tarreau <w@1wt.eu>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107112906.GA28161@ioremap.net>
+References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106183704.GC32491@kernel.dk> <20090107044232.GA22218@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901062358.29954.lpotenza@inwind.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090107044232.GA22218@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Herbert.
 
-* Leonardo Potenza <lpotenza@inwind.it> wrote:
-
-> From: Leonardo Potenza <lpotenza@inwind.it>
+On Wed, Jan 07, 2009 at 03:42:32PM +1100, Herbert Xu (herbert@gondor.apana.org.au) wrote:
+> I see the problem.
 > 
-> The function local_allocate_threshold_blocks() has been marked 
-> __cpuinit, in order to remove the following section mismatch messages:
+> The socket pipes in net/core/skbuff.c use references on the skb
+> to hold down the memory in skb->head as well as the pages in the
+> skb.
+> 
+> Unfortunately, once the pipe is fed into sendpage we only use
+> page reference counting to pin down the memory.  So as soon as
+> sendpage returns we drop the ref count on the skb, thus freeing
+> the memory in skb->head, which is yet to be transmitted.
+> 
+> Moral: Using page reference counts on skb->head is wrong.
 
-applied to tip/x86/urgent, thanks Leonardo!
+That would not happen without scatter-gather support on the interface,
+date would be plain copied, and after Jarek's requst Willy confirmed
+that corruption happens with all acceleration being turned off.
 
-	Ingo
+-- 
+	Evgeniy Polyakov
