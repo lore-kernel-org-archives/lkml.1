@@ -1,86 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbZAGNMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbZAGNMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757023AbZAGNMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZAGNM1
+	id S1757852AbZAGNMy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757012AbZAGNMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:12:27 -0500
-Received: from THUNK.ORG ([69.25.196.29]:42120 "EHLO thunker.thunk.org"
+	Wed, 7 Jan 2009 08:12:38 -0500
+Received: from sh.osrg.net ([192.16.179.4]:43461 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776AbZAGNM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:12:26 -0500
-Date: Wed, 7 Jan 2009 08:12:21 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, ccache@lists.samba.org
-Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
-Message-ID: <20090107131221.GA17110@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>,
-	linux-kernel@vger.kernel.org, ccache@lists.samba.org
-References: <E1LKDeQ-0002xz-7E@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LKDeQ-0002xz-7E@closure.thunk.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1755633AbZAGNMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 08:12:35 -0500
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: [PATCH mmotm] nilfs2: insert checks and hole block allocation in page_mkwrite
+Date: Wed,  7 Jan 2009 22:06:19 +0900
+Message-Id: <1231333579-25296-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 10:15:26AM -0500, Theodore Ts'o wrote:
-> The following commit, ad7a953c, "kbuild: strip generated symbols from
-> *.ko" which was merged to the mainline last week (December 28th) has the
-> unfortunate side effct of making ccache useless.
+Chris Mason told me that page_mkwrite() has some works to do.
 
-I've just discovered another problem with this commit.
+On Wed, 17 Dec 2008 21:52:55 -0500, Chris Mason wrote:
+> nilfs_page_mkwrite doesn't seem to dirty the page?  block_page_mkwrite
+> does more, including checks against i_size and others.
 
-% du -s /lib/modules/2.6.28
-63072	/lib/modules/2.6.28/
- du -s /lib/modules/2.6.28-git7
-221556	/lib/modules/2.6.28-git7/
+This will insert i_size check, and hole block allocation code in the
+nilfs_page_mkwrite.
 
-The two configs are largely equal.  I'm building with
-CONFIG_DEBUG_KERNEL=y, but then installing with "make
-INSTALL_MOD_STRIP=1 modules_install".   
+Previously, the hole block allocation was delayed until just before
+writing for mmapped pages.  This accompanies removal of the delayed
+allocation code.
 
-But look:
+Cc: Chris Mason <chris.mason@oracle.com>
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+---
+ fs/nilfs2/file.c    |   59 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/nilfs2/segment.c |   42 ++++--------------------------------
+ 2 files changed, 62 insertions(+), 39 deletions(-)
 
-% ls /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko 
-10460 /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko
+diff --git a/fs/nilfs2/file.c b/fs/nilfs2/file.c
+index 7ddd42e..146dc23 100644
+--- a/fs/nilfs2/file.c
++++ b/fs/nilfs2/file.c
+@@ -75,11 +75,66 @@ nilfs_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+ 
+ static int nilfs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+ {
+-	if (!(vma->vm_flags & (VM_WRITE | VM_MAYWRITE)))
+-		return -EPERM;
++	struct inode *inode = vma->vm_file->f_dentry->d_inode;
++	struct address_space *mapping = inode->i_mapping;
++	struct nilfs_transaction_info ti;
++	struct buffer_head *bh, *head;
++	int fully_mapped = 1;
++	int ret = -EINVAL;
++
++	/*
++	 * use i_alloc_sem to stop truncate operations on the inode
++	 */
++	down_read(&inode->i_alloc_sem);
++
++	if (page->mapping != mapping ||
++	    page_offset(page) >= i_size_read(inode) || !PageUptodate(page))
++		goto failed;
++
++	if (PageMappedToDisk(page))
++		goto mapped;
++
++	spin_lock(&mapping->private_lock); /* exclude try_to_free_buffers() */
++	if (page_has_buffers(page)) {
++		bh = head = page_buffers(page);
++		do {
++			if (!buffer_mapped(bh)) {
++				fully_mapped = 0;
++				break;
++			}
++		} while (bh = bh->b_this_page, bh != head);
++
++		if (fully_mapped) {
++			spin_unlock(&mapping->private_lock);
++			SetPageMappedToDisk(page);
++			goto mapped;
++		}
++	}
++	spin_unlock(&mapping->private_lock);
++
++	/*
++	 * Fill hole blocks. This accompanies a disk capacity check.
++	 */
++	ret = nilfs_transaction_begin(inode->i_sb, &ti, 1);
++	if (unlikely(ret))
++		goto failed;
++
++	ret = block_page_mkwrite(vma, page, nilfs_get_block);
++	if (unlikely(ret)) {
++		nilfs_transaction_abort(inode->i_sb);
++		goto failed;
++	}
++	nilfs_transaction_commit(inode->i_sb);
++
++ mapped:
++	up_read(&inode->i_alloc_sem);
+ 	SetPageChecked(page);
+ 	wait_on_page_writeback(page);
+ 	return 0;
++
++ failed:
++	up_read(&inode->i_alloc_sem);
++	return ret;
+ }
+ 
+ struct vm_operations_struct nilfs_file_vm_ops = {
+diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
+index 182fb26..b5d28d2 100644
+--- a/fs/nilfs2/segment.c
++++ b/fs/nilfs2/segment.c
+@@ -667,42 +667,6 @@ struct nilfs_sc_operations nilfs_sc_dsync_ops = {
+ 	.write_node_binfo = NULL,
+ };
+ 
+-static int nilfs_prepare_data_page(struct inode *inode, struct page *page)
+-{
+-	int err = 0;
+-
+-	lock_page(page);
+-	if (!page_has_buffers(page))
+-		create_empty_buffers(page, 1 << inode->i_blkbits, 0);
+-
+-	if (!PageMappedToDisk(page)) {
+-		struct buffer_head *bh, *head;
+-		sector_t blkoff
+-			= page->index << (PAGE_SHIFT - inode->i_blkbits);
+-
+-		int non_mapped = 0;
+-
+-		bh = head = page_buffers(page);
+-		do {
+-			if (!buffer_mapped(bh)) {
+-				if (!buffer_dirty(bh)) {
+-					non_mapped++;
+-					continue;
+-				}
+-				err = nilfs_get_block(inode, blkoff, bh, 1);
+-				if (unlikely(err))
+-					goto out_unlock;
+-			}
+-		} while (blkoff++, (bh = bh->b_this_page) != head);
+-		if (!non_mapped)
+-			SetPageMappedToDisk(page);
+-	}
+-
+- out_unlock:
+-	unlock_page(page);
+-	return err;
+-}
+-
+ static int nilfs_lookup_dirty_data_buffers(struct inode *inode,
+ 					   struct list_head *listp,
+ 					   struct nilfs_sc_info *sci)
+@@ -727,7 +691,11 @@ static int nilfs_lookup_dirty_data_buffers(struct inode *inode,
+ 		struct page *page = pvec.pages[i];
+ 
+ 		if (mapping->host) {
+-			err = nilfs_prepare_data_page(inode, page);
++			lock_page(page);
++			if (!page_has_buffers(page))
++				create_empty_buffers(page,
++						     1 << inode->i_blkbits, 0);
++			unlock_page(page);
+ 			if (unlikely(err))
+ 				break;
+ 		}
+-- 
+1.5.6.5
 
-% ls /lib/modules/2.6.28/kernel/fs/xfs/xfs.ko 
-564 /lib/modules/2.6.28/kernel/fs/xfs/xfs.ko
-
-The reason?  The ad7a953c commit uses this procedure to do the installation:
-
-# objcopy --strip-debug --wildcard --strip-symbols /usr/projects/linux/linux-2.6/scripts/strip-symbols fs/xfs/xfs.ko /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko  || cp fs/xfs/xfs.ko /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko 
-objcopy: not stripping symbol `__ksymtab_strings' because it is named in a relocation
-
-So because it can't safely strip __ksymtab_strings it returns a
-non-zero exit status, and doesn't do anything at all, and then the cp
-command doesn't do any stripping whatso ever.
-
-I could fix this by patching Makefile and scripts/Makefile.modist to
-do this instead:
-
-# objcopy --strip-debug --wildcard --strip-symbols /usr/projects/linux/linux-2.6/scripts/strip-symbols fs/xfs/xfs.ko /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko  || (cp fs/xfs/xfs.ko /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko ; strip --strip-debug /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko)
-
-... but at this point, is there going to be any massive downside if I
-just revert commit ad7a953c?  Quite frankly, it's causing me a huge
-amount of trouble, and I'm still a bit unclear what the upside of this
-patch is.  As near as I can tell there is *single* __crc_ symbol in
-xfs.ko which all of this rigamorale is doing to strip out.  From what
-I can tell, not quite doubling the compile time when fully cached by
-ccache, causing INSTALL_MOD_STRIP to fail randomly so that the
-installed modules are a factor of 4 larger, compromising the amount of
-space in my root partition, is all to remove a handful of __crc_*
-symbols from the generated .ko file?
-
-What am I missing?  Why is stripping the __crc_* symbols so
-gosh-darned important?
-
-						- Ted
