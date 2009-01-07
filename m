@@ -1,54 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758354AbZAGRiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbZAGRik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758354AbZAGRiY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 12:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZAGRiJ
+	id S1760035AbZAGRik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 12:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZAGRiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 12:38:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59490 "EHLO mx2.redhat.com"
+	Wed, 7 Jan 2009 12:38:15 -0500
+Received: from sh.osrg.net ([192.16.179.4]:32923 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753730AbZAGRiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 12:38:06 -0500
-Message-ID: <4964E7EE.7090301@redhat.com>
-Date: Wed, 07 Jan 2009 12:35:42 -0500
-From: Chris Snook <csnook@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Eric Hopper <hopper@omnifarious.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: nosync, an idea for general filesystem mount flag
-References: <20090106184205.GC15454@omnifarious.org>
-In-Reply-To: <20090106184205.GC15454@omnifarious.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1755228AbZAGRiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 12:38:13 -0500
+Date: Thu, 08 Jan 2009 02:33:45 +0900 (JST)
+Message-Id: <20090108.023345.105818287.ryusuke@osrg.net>
+To: chris.mason@oracle.com
+Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH mmotm] nilfs2: insert checks and hole block allocation
+ in page_mkwrite
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1231339382.27813.10.camel@think.oraclecorp.com>
+References: <1231333579-25296-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	<1231339382.27813.10.camel@think.oraclecorp.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Hopper wrote:
-> Maybe somebody has thought of this before.  But I think it would be
-> useful to have a mount flag telling the filesystem layer that a certain
-> filesystem never ever needs to be synced, even when the 'sync' system
-> call is called.
+On Wed, 07 Jan 2009 09:43:02 -0500, Chris Mason wrote:
+> On Wed, 2009-01-07 at 22:06 +0900, Ryusuke Konishi wrote:
+> > Chris Mason told me that page_mkwrite() has some works to do.
+> > 
+> > On Wed, 17 Dec 2008 21:52:55 -0500, Chris Mason wrote:
+> > > nilfs_page_mkwrite doesn't seem to dirty the page?  block_page_mkwrite
+> > > does more, including checks against i_size and others.
+> > 
+> > This will insert i_size check, and hole block allocation code in the
+> > nilfs_page_mkwrite.
+> > 
+> > Previously, the hole block allocation was delayed until just before
+> > writing for mmapped pages.  This accompanies removal of the delayed
+> > allocation code.
+<snip>
+> >  static int nilfs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+> >  {
+> > -	if (!(vma->vm_flags & (VM_WRITE | VM_MAYWRITE)))
+> > -		return -EPERM;
+> > +	struct inode *inode = vma->vm_file->f_dentry->d_inode;
+> > +	struct address_space *mapping = inode->i_mapping;
+> > +	struct nilfs_transaction_info ti;
+> > +	struct buffer_head *bh, *head;
+> > +	int fully_mapped = 1;
+> > +	int ret = -EINVAL;
+> > +
+> > +	/*
+> > +	 * use i_alloc_sem to stop truncate operations on the inode
+> > +	 */
+> > +	down_read(&inode->i_alloc_sem);
 > 
-> My /tmp, for example, is reformatted on each and every boot.  There is
-> no reason for anything written to /tmp to ever hit the disk.  The only
-> reason is to make room for something else in memory.
-> 
-> I think this could potentially help out notebooks that only had solid
-> state drives.
-> 
-> Anyway, just a random thought,
+> I'm not 100% sure this is safe.  It seems likely the direct io paths
+> could trigger a mkwrite with the i_alloc_sem already held?
 
-This is why tmpfs was written, but if you're using an SSD with large erase 
-blocks, and want to avoid setting up a swap partition, you could put the 
-filesystem on a loop device instead.  The sync calls would be absorbed as writes 
-to the non-sync backing file.  It's slightly more complicated to set up, and 
-slightly less flexible, but the next generation SSDs won't have problems with 
-random write performance, so the convenience of implementing such an option 
-would be rather short-lived.  It's not a fundamentally evil idea, but it just 
-doesn't seem to be worth the effort, particularly to maintain it for the rest of 
-eternity.
+vmtruncate() can change i_size outside the page lock, and it even
+calls unmap_mapping_range(). Does it have any problems?
 
--- Chris
+> If I'm reading the code correctly you're:
+> 
+> * grab i_alloc sem to protect against truncate
+> * check to see if the page is mapped already (no holes)
+> 
+> * if there are holes, lock the page, start transaction and do the full
+> block_page_mkwrite
+> 
+> * drop i_alloc_sem
+
+Yes, it is.
+ 
+> Would this work instead?:
+> 
+> * lock the page, check to see if it is mapped
+> 
+> * if there are holes, drop the lock, start transaction and do the full
+> block_page_mkwrite
+> 
+> -chris
+
+If we don't need care for vmtruncate(), I think it's better, too.
+
+Regards,
+Ryusuke
