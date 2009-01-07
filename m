@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbZAGUX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760344AbZAGUZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759870AbZAGUX0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 15:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbZAGUXR
+	id S1760344AbZAGUZo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 15:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZAGUZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 15:23:17 -0500
-Received: from h155.mvista.com ([63.81.120.155]:60767 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752361AbZAGUXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 15:23:16 -0500
-Message-ID: <49650F2C.9030809@ru.mvista.com>
-Date: Wed, 07 Jan 2009 23:23:08 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, david-b@pacbell.net,
-       khilman@deeprootsystems.com
-Subject: Re: [GIT PATCH] USB patches for 2.6-git
-References: <20090107192438.GA18146@kroah.com>
-In-Reply-To: <20090107192438.GA18146@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 15:25:34 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:45982 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754067AbZAGUZd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 15:25:33 -0500
+Date: Wed, 7 Jan 2009 21:27:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [3/3] KBUILD: Add a "bin" symlink for the scripts directory too
+Message-ID: <20090107202712.GI4647@uranus.ravnborg.org>
+References: <20090103321.351399938@firstfloor.org> <20090103022143.6D0803E6650@basil.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090103022143.6D0803E6650@basil.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sat, Jan 03, 2009 at 03:21:43AM +0100, Andi Kleen wrote:
+> 
+> Several of the scripts in "scripts" are useful to operate on
+> files in a separate objdir. Instead of always manually typing
+> the path to the source dir create a convenient symlink to
+> the source dir's script directory in the objdir too.
+> 
+> I named it bin because scripts was already used for the object
+> files of scripts.
 
-Greg KH wrote:
+So you suggest we in the O=... case should have
+a bin symlink to save you typing "source/sc<tab>
 
-> Here is the set of USB patches for the 2.6.29-rc1 merge.
->
-> They also include the wimax patches, because of a dependancy on a change
-> in the USB core to support one of the wimax drivers.  The wimax patch
-> set has been acked by the network maintainers already, and they agreed
-> that it should go through the USB tree to you.
->
-> Other than wimax, the patchset includes:
-> 	- some new USB drivers (gadget, host, and serial)
-> 	- USB OTG (on-the-go) device support
-> 	- lots of device id updates
-> 	- renaming in the i2c drivers to move into the proper location
-> 	  in the usb tree
-> 	- usb-storage quirk handling cleaned up and reworked
-> 	- sped up the option wireless usb driver speed.
-> 	- removal of info() and warn() usb macros now that the non-usb	  portions of the kernel have removed their usage of them.
-> 	- lots of minor tweaks and reworks.
->
-> Please pull from:
-> 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
->
-> All of these patches have been in the -next and -mm releases for a while.
->
-> The full patches will be sent to the linux-usb mailing list, if anyone
-> wants to see them.
->
-> thanks,
->
-> greg k-h
->   
+That does not justify another symlink in the output
+directory.
 
-[...]
-
-> Kevin Hilman (1):
->       USB: musb: build fixes for DaVinci
->   
-
-   NAK this patch. I and David Brownell have asked Greg to pull this 
-totally broken patch (broken while in MUSB tree, the original patch was 
-sane) from his tree and all to no avail...
-The patch doesn't fix anything and only adds more breakage as it 
-duplicates musb_platform_set_mode().
-   I am dissatisfied how MUSB patches have been handled in general -- 
-this is not the first breakage, and the valid patches have been lost, so 
-DaVinci MUSB code keeps being broken since early 2.6.27-rc's (!) up to 
-this time...
-
-WBR, Sergei
-
-
+	Sam
