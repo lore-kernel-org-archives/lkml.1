@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbZAGOju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbZAGOkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbZAGOju (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZAGOjj
+	id S1753791AbZAGOkK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbZAGOju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:39:39 -0500
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:11072 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751893AbZAGOji (ORCPT
+	Wed, 7 Jan 2009 09:39:50 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:65521 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758335AbZAGOjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:39:38 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlwFACtMZEnCTsYx/2dsb2JhbACBbM4PhXU
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: strncat() misuse (was: Re: dm_attr_{name,uuid}_show buffer overflow? (was: Re: linux-next: Tree for January 5))
-Date: Wed, 7 Jan 2009 15:39:35 +0100
-User-Agent: KMail/1.9.9
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Milan Broz <mbroz@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>,
-       Jaya Kumar <jayakumar.video@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Gene Sally <Gene.Sally@timesys.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20090105173517.deeff918.sfr@canb.auug.org.au> <Pine.LNX.4.64.0901052225400.5451@anakin> <Pine.LNX.4.64.0901052259420.5451@anakin>
-In-Reply-To: <Pine.LNX.4.64.0901052259420.5451@anakin>
-X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+	Wed, 7 Jan 2009 09:39:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=RkBgvrA0V92PqlMfKAdepeD4t42xhK40rV4IoPTRwVsAKhAF8xJ07gGD5+uE+MQ4hW
+         wePJqT04Vw6ksW4DT8JSwGePY1ciDJk4MuT7AAmqmw1bvkCS7/4voOzY8hFtc0ENMBiA
+         0bqj3Tp13Gw9JQx4Ruc6PZ7GslGoUjAtWroRo=
+Message-ID: <4964BEB0.7040400@gmail.com>
+Date: Wed, 07 Jan 2009 15:39:44 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+CC: mm-commits@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm 2009-01-07-00-23 uploaded
+References: <200901070828.n078SRKJ024599@imap1.linux-foundation.org>
+In-Reply-To: <200901070828.n078SRKJ024599@imap1.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901071539.35810.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+On 01/07/2009 09:28 AM, akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2009-01-07-00-23 has been uploaded to
 
-On Monday 05 January 2009, Geert Uytterhoeven wrote:
->
-> A quick `git grep strncat' shows a few more misusers of strncat() that may
->
-> cause buffer overflows and should be converted to strlcat():
-> | drivers/media/video/uvc/uvc_driver.c:
-> | 	strncat(format->name, buffer[8] & (1 << 7) ? " 60Hz" : " 50Hz",
+Hi,
 
-Thanks for the report. As both the source length is fixed and the destination 
-buffer length known, I'll just replace strncat with strcat.
-
-Best regards,
-
-Laurent Pinchart
+there is wrong parenthesis pairing added in:
+patches/mm-add-proc-controls-for-pdflush-threads-fix.patch
+which causes a build error.
