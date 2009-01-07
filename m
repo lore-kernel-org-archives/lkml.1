@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763690AbZAGXQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbZAGXRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763690AbZAGXQi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbZAGXNc
+	id S1763622AbZAGXRM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932375AbZAGXNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:13:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46738 "EHLO
+	Wed, 7 Jan 2009 18:13:33 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46741 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932300AbZAGXNb convert rfc822-to-8bit (ORCPT
+	with ESMTP id S932341AbZAGXNc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:13:31 -0500
-Date: Wed, 7 Jan 2009 15:14:50 -0800
+	Wed, 7 Jan 2009 18:13:32 -0500
+Date: Wed, 7 Jan 2009 15:15:22 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org
-Subject: [PATCH 6/7] bootchart: improve output based on Dave Jones' feedback
-Message-ID: <20090107151450.1f2eb7e5@infradead.org>
+Subject: [PATCH 7/7] async: don't do the initcall stuff post boot
+Message-ID: <20090107151522.6850faf7@infradead.org>
 In-Reply-To: <20090107151151.458333c1@infradead.org>
 References: <20090107151151.458333c1@infradead.org>
 Organization: Intel
@@ -31,83 +31,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 24b0ecad07ac4d7ef74cb6f7da08c449fa9f6a4f Mon Sep 17 00:00:00 2001
+>From ad160d23198193135cb2bcc75222e0816b5838c0 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 4 Jan 2009 10:59:18 -0800
-Subject: [PATCH] bootchart: improve output based on Dave Jones' feedback
+Date: Wed, 7 Jan 2009 09:28:53 -0800
+Subject: [PATCH] async: don't do the initcall stuff post boot
 
-Dave Jones, in his blog, had some feedback about the bootchart script:
-Primarily his complaint was that shorter delays weren't visualized.
-
-The reason for that was that too small delays will have their labels
-mixed up in the graph in an unreadable mess.
-
-This patch has a fix for this; for one, it makes the output wider,
-so more will fit.
-The second part is that smaller delays are now shown with a
-much smaller font for the label; while this isn't per se
-readable at a 1:1 zoom, at least you can zoom in with most SVG
-viewing applications and see what it is you are looking at.
+while tracking the asynchronous calls during boot using the initcall_debug
+convention is useful, doing it once the kernel is done is actually
+bad now that we use asynchronous operations post boot as well...
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- scripts/bootgraph.pl |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ kernel/async.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/scripts/bootgraph.pl b/scripts/bootgraph.pl
-index f0af9aa..0a498e3 100644
---- a/scripts/bootgraph.pl
-+++ b/scripts/bootgraph.pl
-@@ -88,7 +88,7 @@ END
- }
+diff --git a/kernel/async.c b/kernel/async.c
+index afaa8a6..9737338 100644
+--- a/kernel/async.c
++++ b/kernel/async.c
+@@ -124,12 +124,12 @@ static void run_one_entry(void)
+ 	spin_unlock_irqrestore(&async_lock, flags);
  
- print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
--print "<svg width=\"1000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
-+print "<svg width=\"2000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
- 
- my @styles;
- 
-@@ -105,8 +105,9 @@ $styles[9] = "fill:rgb(255,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0
- $styles[10] = "fill:rgb(255,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
- $styles[11] = "fill:rgb(128,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
- 
--my $mult = 950.0 / ($maxtime - $firsttime);
--my $threshold = ($maxtime - $firsttime) / 60.0;
-+my $mult = 1950.0 / ($maxtime - $firsttime);
-+my $threshold2 = ($maxtime - $firsttime) / 120.0;
-+my $threshold = $threshold2/10;
- my $stylecounter = 0;
- my %rows;
- my $rowscount = 1;
-@@ -116,7 +117,7 @@ foreach my $key (@initcalls) {
- 	my $duration = $end{$key} - $start{$key};
- 
- 	if ($duration >= $threshold) {
--		my ($s, $s2, $e, $w, $y, $y2, $style);
-+		my ($s, $s2, $s3, $e, $w, $y, $y2, $style);
- 		my $pid = $pids{$key};
- 
- 		if (!defined($rows{$pid})) {
-@@ -125,6 +126,7 @@ foreach my $key (@initcalls) {
- 		}
- 		$s = ($start{$key} - $firsttime) * $mult;
- 		$s2 = $s + 6;
-+		$s3 = $s + 1;
- 		$e = ($end{$key} - $firsttime) * $mult;
- 		$w = $e - $s;
- 
-@@ -138,7 +140,11 @@ foreach my $key (@initcalls) {
- 		};
- 
- 		print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"145\" style=\"$style\"/>\n";
--		print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
-+		if ($duration >= $threshold2) {
-+			print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
-+		} else {
-+			print "<text transform=\"translate($s3,$y2) rotate(90)\" font-size=\"3pt\">$key</text>\n";
-+		}
+ 	/* 3) run it (and print duration)*/
+-	if (initcall_debug) {
++	if (initcall_debug && system_state == SYSTEM_BOOTING) {
+ 		printk("calling  %lli_%pF @ %i\n", entry->cookie, entry->func, task_pid_nr(current));
+ 		calltime = ktime_get();
  	}
- }
+ 	entry->func(entry->data, entry->cookie);
+-	if (initcall_debug) {
++	if (initcall_debug && system_state == SYSTEM_BOOTING) {
+ 		rettime = ktime_get();
+ 		delta = ktime_sub(rettime, calltime);
+ 		printk("initcall %lli_%pF returned 0 after %lld usecs\n", entry->cookie,
+@@ -220,14 +220,14 @@ void async_synchronize_cookie_special(async_cookie_t cookie, struct list_head *r
+ {
+ 	ktime_t starttime, delta, endtime;
+ 
+-	if (initcall_debug) {
++	if (initcall_debug && system_state == SYSTEM_BOOTING) {
+ 		printk("async_waiting @ %i\n", task_pid_nr(current));
+ 		starttime = ktime_get();
+ 	}
+ 
+ 	wait_event(async_done, __lowest_in_progress(running) >= cookie);
+ 
+-	if (initcall_debug) {
++	if (initcall_debug && system_state == SYSTEM_BOOTING) {
+ 		endtime = ktime_get();
+ 		delta = ktime_sub(endtime, starttime);
  
 -- 
 1.6.0.6
