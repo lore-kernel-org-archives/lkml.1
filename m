@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbZAGVc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761620AbZAGVfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761505AbZAGVc6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 16:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZAGVcq
+	id S1761620AbZAGVfK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:35:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZAGVe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:32:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41272 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753476AbZAGVco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:32:44 -0500
-Date: Wed, 7 Jan 2009 22:32:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090107213222.GE4597@elte.hu>
-References: <1231281801.11687.125.camel@twins> <1231283778.11687.136.camel@twins> <1231329783.11687.287.camel@twins> <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain> <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain> <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com> <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <20090107210923.GV2002@parisc-linux.org> <alpine.LFD.2.00.0901071314490.3057@localhost.localdomain>
-MIME-Version: 1.0
+	Wed, 7 Jan 2009 16:34:58 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:58158 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbZAGVe5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:34:57 -0500
+Date: Wed, 7 Jan 2009 22:36:36 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [3/3] KBUILD: Add a "bin" symlink for the scripts directory too
+Message-ID: <20090107213636.GA9273@uranus.ravnborg.org>
+References: <20090103321.351399938@firstfloor.org> <20090103022143.6D0803E6650@basil.firstfloor.org> <20090107202712.GI4647@uranus.ravnborg.org> <20090107213032.GM496@one.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901071314490.3057@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090107213032.GM496@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> 
-> 
-> On Wed, 7 Jan 2009, Matthew Wilcox wrote:
+On Wed, Jan 07, 2009 at 10:30:32PM +0100, Andi Kleen wrote:
+> On Wed, Jan 07, 2009 at 09:27:12PM +0100, Sam Ravnborg wrote:
+> > On Sat, Jan 03, 2009 at 03:21:43AM +0100, Andi Kleen wrote:
+> > > 
+> > > Several of the scripts in "scripts" are useful to operate on
+> > > files in a separate objdir. Instead of always manually typing
+> > > the path to the source dir create a convenient symlink to
+> > > the source dir's script directory in the objdir too.
+> > > 
+> > > I named it bin because scripts was already used for the object
+> > > files of scripts.
 > > 
-> > I appreciate this is sample code, but using __get_user() on
-> > non-userspace pointers messes up architectures which have separate
-> > user/kernel spaces (eg the old 4G/4G split for x86-32).  Do we have an
-> > appropriate function for kernel space pointers?  Is this a good reason
-> > to add one?
+> > So you suggest we in the O=... case should have
+> > a bin symlink to save you typing "source/sc<tab>
 > 
-> Yes, you're right. 
+> Yes.
 > 
-> We could do the whole "oldfs = get_fs(); set_fs(KERNEL_DS); .. 
-> set_fs(oldfs);" crud, but it would probably be better to just add an 
-> architected accessor. Especially since it's going to generally just be a
+> > 
+> > That does not justify another symlink in the output
+> > directory.
 > 
-> 	#define get_kernel_careful(val,p) __get_user(val,p)
-> 
-> for most architectures.
-> 
-> We've needed that before (and yes, we've simply mis-used __get_user() on 
-> x86 before rather than add it).
+> Why not? They don't cost anything, do they? And
+> convenience matters.
 
-for the oldfs stuff we already have probe_kernel_read(). OTOH, that 
-involves pagefault_disable() which is an atomic op, so 
-__get_user_careful() should be much more lightweight - and we already know 
-that the memory range at least _used to_ be a valid kernel address.
+Different people have different needs.
+The next guys needs Arch to point at source/arch/$ARCH
+and so on.
+If it is convinient for your workflow I suggest you to
+create it yourself.
 
-(Theoretical race: with memory hotplug that kernel pointer address could 
-have gotten unmapped and we could get device memory there - with 
-side-effects if accessed. Wont happen in practice.)
+Doing stuff like this as part of the build is simply the wrong place to do it.
 
-	Ingo
+	Sam
