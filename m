@@ -1,152 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZAGHn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZAGHqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbZAGHn6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 02:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZAGHnV
+	id S1755364AbZAGHqQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 02:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZAGHqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 02:43:21 -0500
-Received: from mga12.intel.com ([143.182.124.36]:6106 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752326AbZAGHnQ (ORCPT
+	Wed, 7 Jan 2009 02:46:00 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:19292 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651AbZAGHp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 02:43:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,225,1231142400"; 
-   d="scan'208";a="97224771"
-Subject: Re: [patch] Performance Counters for Linux, v2
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20081208114921.GA8635@elte.hu>
-References: <20081208012211.GA23106@elte.hu>
-	 <20081207174932.09673cae@infradead.org>  <20081208114921.GA8635@elte.hu>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 15:43:16 +0800
-Message-Id: <1231314196.2711.48.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 02:45:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=m5ggN2e3IoKzbtf1Sg7hvMUi62A6SKaiBHy+F82urF0piX3OLhkSz/N0qVbWm/0Qf3
+         g5UqA4j+7uEBbH739J7qNkOBXtGGv5hA5MY6oM5pXOXj5LcvG+A1CxMumzv39JnToidI
+         0JnkBR2AJFvKqfz+bRfu3+tOaMjMFOtxLbkdk=
+Date: Wed, 7 Jan 2009 16:45:18 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Remove needless lock and list in vmap
+Message-ID: <20090107074518.GA2342@barrios-desktop>
+Mail-Followup-To: Nick Piggin <npiggin@suse.de>, stable@kernel.org,
+	Linux Memory Management List <linux-mm@kvack.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20090107054713.GA1416@barrios-desktop> <20090107065517.GB21629@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107065517.GB21629@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-08 at 12:49 +0100, Ingo Molnar wrote:
-> * Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> > On Mon, 8 Dec 2008 02:22:12 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
+* Nick Piggin (npiggin@suse.de) wrote:
+> On Wed, Jan 07, 2009 at 02:47:13PM +0900, MinChan Kim wrote:
+> > Anyone don't use vmap's dirty_list.
+> > I am not sure this is thing Nick's future work on purpose.
+> > If it is a dummy, we can remove dirty list and related codes
+> > to handle list and locking.
 > > 
-> > > 
-> > > [ Performance counters are special hardware registers available on
-> > > most modern CPUs. These register count the number of certain types of
-> > > hw events: such as instructions executed, cachemisses suffered, or 
-> > >   branches mis-predicted, without slowing down the kernel or 
-> > >   applications. These registers can also trigger interrupts when a 
-> > >   threshold number of events have passed - and can thus be used to 
-> > >   profile the code that runs on that CPU. ]
-> > > 
-> > > This is version 2 of our Performance Counters subsystem
-> > > implementation.
-> > > 
-> > > The biggest user-visible change in this release is a new user-space 
-> > > text-mode profiling utility that is based on this code: KernelTop.
-> > > 
-> > > KernelTop can be downloaded from:
-> > > 
-> > >   http://redhat.com/~mingo/perfcounters/kerneltop.c
-> > > 
-> > > It's a standalone .c file that needs no extra libraries - it only
-> > > needs a CONFIG_PERF_COUNTERS=y kernel to run on.
-> > > 
-> > > This utility is intended for kernel developers - it's basically a
-> > > dynamic kernel profiler that gets hardware counter events dispatched
-> > > to it continuously, which it feeds into a histogram and outputs it 
-> > > periodically.
-> > > 
+> > Also, In free_vmap_block, we don't have to check empty free_list.
+> > That's becuase before calling free_vmap_block, vb_free always checks
+> > empty of vb->free_list.
 > > 
-> > I played with this a little, and while it works neat, I wanted a 
-> > feature added where it shows a detailed profile for the top function.
+> > Now except vb_free, Anywhere don't call free_vmap_block.
+> > so, we can remove that check and locking.
+> > 
+> > If it is nick's intention to work in future, please, ignore this patch. 
 > 
-> ah, very nice idea!
-> 
-> > I've hacked this in quickly (the usability isn't all that great yet) 
-> > and put the source code up at
-> >
-> > http://www.tglx.de/~arjan/kerneltop-0.02.tar.gz
-> 
-> ok, picked it up :-)
-Ingo,
+> It was going to be an attempt to optimise flushing a bit, but I never
+> finished writing the code. Either way, it doesn't belong upstream until
+> time as it is needed, so your patch is good.
 
-I try to use patch V5 and the latest kerneltop to collect some cachemiss data.
+Thanks for your kind words. 
+ 
+> Can you just put a BUG_ON(!list_empty(&vb->free_list)); in free_vmap_block?
+> Then add Acked-by: Nick Piggin <npiggin@suse.de>
 
-It seems kerneltop just shows the first instruction ip address of functions. Does
-the latest kerneltop include the enhancement from Arjan? As you know, with oprofile,
-we can get detailed instrument ip address which causes the cache miss although the ip
-address should go back one instruction mostly.
+I added BUG_ON.
 
+> Thanks,
+> Nick
 > 
-> > with this it looks like this:
-> > 
-> > $ sudo ./kerneltop --vmlinux=/home/arjan/linux-2.6.git/vmlinux
-> > 
-> > ------------------------------------------------------------------------------
-> >  KernelTop:     274 irqs/sec  [NMI, 1000000 cycles],  (all, 2 CPUs)
-> > ------------------------------------------------------------------------------
-> > 
-> >              events         RIP          kernel function
-> >              ______   ________________   _______________
-> > 
-> >                 230 - 00000000c04189e9 : read_hpet
-> >                  82 - 00000000c0409439 : mwait_idle_with_hints
-> >                  77 - 00000000c051a7b7 : acpi_os_read_port
-> >                  52 - 00000000c053cb3a : acpi_idle_enter_bm
-> >                  38 - 00000000c0418d93 : hpet_next_event
-> >                  19 - 00000000c051a802 : acpi_os_write_port
-> >                  14 - 00000000c04f8704 : __copy_to_user_ll
-> >                  13 - 00000000c0460c20 : get_page_from_freelist
-> >                   7 - 00000000c041c96c : kunmap_atomic
-> >                   5 - 00000000c06a30d2 : _spin_lock	[joydev]
-> >                   4 - 00000000c04f79b7 : vsnprintf	[snd_seq]
-> >                   4 - 00000000c06a3048 : _spin_lock_irqsave	[pcspkr]
-> >                   3 - 00000000c0403b3c : irq_entries_start
-> >                   3 - 00000000c0423fee : run_rebalance_domains
-> >                   3 - 00000000c0425e2c : scheduler_tick
-> >                   3 - 00000000c0430938 : get_next_timer_interrupt
-> >                   3 - 00000000c043cdfa : __update_sched_clock
-> >                   3 - 00000000c0448b14 : update_iter
-> >                   2 - 00000000c04304bd : run_timer_softirq
-> > 
-> > Showing details for read_hpet
-> >        0	c04189e9 <read_hpet>:
-> >        2	c04189e9:	a1 b0 e0 89 c0       	mov    0xc089e0b0,%eax
-> >        0	
-> >        0	/*
-> >        0	 * Clock source related code
-> >        0	 */
-> >        0	static cycle_t read_hpet(void)
-> >        0	{
-> >        1	c04189ee:	55                   	push   %ebp
-> >        0	c04189ef:	89 e5                	mov    %esp,%ebp
-> >        1	c04189f1:	05 f0 00 00 00       	add    $0xf0,%eax
-> >        0	c04189f6:	8b 00                	mov    (%eax),%eax
-> >        0		return (cycle_t)hpet_readl(HPET_COUNTER);
-> >        0	}
-> >      300	c04189f8:	31 d2                	xor    %edx,%edx
-> >        0	c04189fa:	5d                   	pop    %ebp
-> >        0	c04189fb:	c3                   	ret    
-> >        0	
-> 
-Just like above detailed information.
 
-Thanks,
-Yanmin
+This is improvement patch. 
 
+===
+
+
+Subject: [PATCH] Remove needless lock and list in vmap
+
+Now, Anyone don't use vmap's dirty_list.
+It's for optimizing flushing. but Nick didn't write the code yet.
+so, we don't need it until time as it is needed.
+
+This patch removes vmap_block's dirty_list and codes related to it.
+
+Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+---
+ mm/vmalloc.c |   19 +++----------------
+ 1 files changed, 3 insertions(+), 16 deletions(-)
+
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index 1ddb77b..a7e1c2e 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -629,10 +629,7 @@ struct vmap_block {
+ 	DECLARE_BITMAP(alloc_map, VMAP_BBMAP_BITS);
+ 	DECLARE_BITMAP(dirty_map, VMAP_BBMAP_BITS);
+ 	union {
+-		struct {
+-			struct list_head free_list;
+-			struct list_head dirty_list;
+-		};
++		struct list_head free_list;
+ 		struct rcu_head rcu_head;
+ 	};
+ };
+@@ -699,7 +696,6 @@ static struct vmap_block *new_vmap_block(gfp_t gfp_mask)
+ 	bitmap_zero(vb->alloc_map, VMAP_BBMAP_BITS);
+ 	bitmap_zero(vb->dirty_map, VMAP_BBMAP_BITS);
+ 	INIT_LIST_HEAD(&vb->free_list);
+-	INIT_LIST_HEAD(&vb->dirty_list);
+ 
+ 	vb_idx = addr_to_vb_idx(va->va_start);
+ 	spin_lock(&vmap_block_tree_lock);
+@@ -730,12 +726,7 @@ static void free_vmap_block(struct vmap_block *vb)
+ 	struct vmap_block *tmp;
+ 	unsigned long vb_idx;
+ 
+-	spin_lock(&vb->vbq->lock);
+-	if (!list_empty(&vb->free_list))
+-		list_del(&vb->free_list);
+-	if (!list_empty(&vb->dirty_list))
+-		list_del(&vb->dirty_list);
+-	spin_unlock(&vb->vbq->lock);
++	BUG_ON(!list_empty(&vb->free_list));
+ 
+ 	vb_idx = addr_to_vb_idx(vb->va->va_start);
+ 	spin_lock(&vmap_block_tree_lock);
+@@ -820,11 +811,7 @@ static void vb_free(const void *addr, unsigned long size)
+ 
+ 	spin_lock(&vb->lock);
+ 	bitmap_allocate_region(vb->dirty_map, offset >> PAGE_SHIFT, order);
+-	if (!vb->dirty) {
+-		spin_lock(&vb->vbq->lock);
+-		list_add(&vb->dirty_list, &vb->vbq->dirty);
+-		spin_unlock(&vb->vbq->lock);
+-	}
++
+ 	vb->dirty += 1UL << order;
+ 	if (vb->dirty == VMAP_BBMAP_BITS) {
+ 		BUG_ON(vb->free || !list_empty(&vb->free_list));
+-- 
+1.5.4.3
 
