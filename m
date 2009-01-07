@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbZAGXuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbZAGXuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762797AbZAGXuA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756457AbZAGXts
+	id S1763106AbZAGXuv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZAGXum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:49:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51339 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756378AbZAGXtr (ORCPT
+	Wed, 7 Jan 2009 18:50:42 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:60584 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754889AbZAGXul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:49:47 -0500
-Date: Wed, 7 Jan 2009 18:49:45 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <alpine.LFD.2.00.0901071518570.3057@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0901071848431.23456@gandalf.stny.rr.com>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins> 
- <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>  <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>
-  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-  <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain> <1231368870.6686.16.camel@norville.austin.ibm.com> <alpine.LFD.2.00.0901071518570.3057@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 7 Jan 2009 18:50:41 -0500
+Date: Wed, 7 Jan 2009 23:50:37 +0000
+From: Andy Whitcroft <apw@canonical.com>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: davej@redhat.com, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: scripts/checkpatch.pl : undefined value as an ARRAY reference
+Message-ID: <20090107235037.GF12402@shadowen.org>
+References: <3f9a31f40901070454x678f75d2xee2a6de04a940321@mail.gmail.com> <20090107130742.GD2520@shadowen.org> <3f9a31f40901070527y31fcccc9n5b3d52faa58e359e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f9a31f40901070527y31fcccc9n5b3d52faa58e359e@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 7 Jan 2009, Linus Torvalds wrote:
-> On Wed, 7 Jan 2009, Dave Kleikamp wrote:
-> > 
-> > Do you need to even do that if CONFIG_DEBUG_PAGEALLOC is unset?
+On Wed, Jan 07, 2009 at 06:57:04PM +0530, Jaswinder Singh Rajput wrote:
+> On Wed, Jan 7, 2009 at 6:37 PM, Andy Whitcroft <apw@canonical.com> wrote:
+> > On Wed, Jan 07, 2009 at 06:24:55PM +0530, Jaswinder Singh Rajput wrote:
+> >> Hello Andy,
+> >>
+> >> On -tip git I am getting this error:
+> >>
+> >> $ ./scripts/checkpatch.pl 000*
+> >> Can't use an undefined value as an ARRAY reference at
+> >> ./scripts/checkpatch.pl line 451.
+> >>
+> >> But earlier it was working great. Is this a feature or a bug.
+> >
+> > That looks wrong indeed.  Assuming that is the same version I have here
+> > then that is a bug in the #else preprocessor handling.  Could you send
+> > me the specific patch which is throwing this error.
+> >
 > 
-> No.
+> ./scripts/checkpatch.pl
+> 0007-x86-smp.h-move-boot_cpu_id-declartion-to-cpu.h.patch
+> Can't use an undefined value as an ARRAY reference at
+> ./scripts/checkpatch.pl line 453.
 > 
-> > Something like:
-> > 
-> > #ifdef CONFIG_DEBUG_PAGEALLOC
-> >                 /*
-> >                  * Need to access the cpu field knowing that
-> >                  * DEBUG_PAGEALLOC could have unmapped it if
-> >                  * the mutex owner just released it and exited.
-> >                  */
-> >                 if (probe_kernel_address(&thread->cpu, cpu))
-> >                         break;
-> > #else
-> > 		cpu = thread->cpu;
-> > #endif
-> 
-> yes. That would work fine.
+> I am attaching this file you can also save this file from LKML
 
-What about memory hotplug as Ingo mentioned?
+Thanks thats great.  I think I have this fixed in my tree now.  Can you
+test with the version at the url below:
 
-Should that be:
+  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
 
-#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_MEMORY_HOTPLUG)
-
-??
-
--- Steve
-
+-apw
