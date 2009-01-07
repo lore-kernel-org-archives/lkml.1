@@ -1,107 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZAGNOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZAGNQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbZAGNOm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZAGNOc
+	id S1756453AbZAGNQK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZAGNPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:14:32 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50024 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752317AbZAGNOb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:14:31 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] rtc: Convert wm8350 use new alarm and update operations
-Date: Wed,  7 Jan 2009 13:14:29 +0000
-Message-Id: <1231334069-12072-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.5
+	Wed, 7 Jan 2009 08:15:52 -0500
+Received: from 1wt.eu ([62.212.114.60]:1232 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752079AbZAGNPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 08:15:51 -0500
+Date: Wed, 7 Jan 2009 14:15:39 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107131539.GF6307@1wt.eu>
+References: <20090107115921.GA25323@gondor.apana.org.au> <20090107121530.GA30164@ioremap.net> <20090107122238.GB25673@gondor.apana.org.au> <20090107123741.GA31255@ioremap.net> <20090107124246.GA26034@gondor.apana.org.au> <20090107124629.GA31732@ioremap.net> <20090107125535.GC6307@1wt.eu> <20090107125734.GA26331@gondor.apana.org.au> <20090107130259.GB32336@ioremap.net> <20090107131057.GD9677@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107131057.GD9677@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are the only two ioctls so the ioctl() function is also removed.
+On Wed, Jan 07, 2009 at 01:10:57PM +0000, Jarek Poplawski wrote:
+> On Wed, Jan 07, 2009 at 04:02:59PM +0300, Evgeniy Polyakov wrote:
+> ...
+> > If I understood correctly Jarek's patch, he wants to allocate a page and
+> > copy linear content of the skb there, so this will end up being the same
+> > case as with splicing from the file. And while generally this may be a
+> > good idea, but with usual 1.5k mtu this will copy every skb, which is
+> > rather bad idea. Will have to think :)
+> > 
+> 
+> As I mentioned earlier, I (poorly) tried to realize Changli's idea
+> only, and it's more to verify the reason still (after it failed with
+> SG method...).
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/rtc/rtc-wm8350.c |   39 ++++++++++++++++++---------------------
- 1 files changed, 18 insertions(+), 21 deletions(-)
+Jarek, since it now works when disabling both SG and GSO, we know that the
+bug is triggered when passing through do_tcp_sendpage(). Thus, I will not
+try your patch #3 yet, but rather wait for fix candidates to try.
 
-diff --git a/drivers/rtc/rtc-wm8350.c b/drivers/rtc/rtc-wm8350.c
-index 5c5e3aa..616630d 100644
---- a/drivers/rtc/rtc-wm8350.c
-+++ b/drivers/rtc/rtc-wm8350.c
-@@ -236,6 +236,17 @@ static int wm8350_rtc_start_alarm(struct wm8350 *wm8350)
- 	return 0;
- }
- 
-+static int wm8350_rtc_alarm_irq_enable(struct device *dev,
-+				       unsigned int enabled)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-+
-+	if (enabled)
-+		return wm8350_rtc_start_alarm(wm8350);
-+	else
-+		return wm8350_rtc_stop_alarm(wm8350);
-+}
-+
- static int wm8350_rtc_setalarm(struct device *dev, struct rtc_wkalrm *alrm)
- {
- 	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-@@ -291,30 +302,15 @@ static int wm8350_rtc_setalarm(struct device *dev, struct rtc_wkalrm *alrm)
- 	return ret;
- }
- 
--/*
-- * Handle commands from user-space
-- */
--static int wm8350_rtc_ioctl(struct device *dev, unsigned int cmd,
--			    unsigned long arg)
-+static int wm8350_rtc_update_irq_enable(struct device *dev,
-+					unsigned int enabled)
- {
- 	struct wm8350 *wm8350 = dev_get_drvdata(dev);
- 
--	switch (cmd) {
--	case RTC_AIE_OFF:
--		return wm8350_rtc_stop_alarm(wm8350);
--	case RTC_AIE_ON:
--		return wm8350_rtc_start_alarm(wm8350);
--
--	case RTC_UIE_OFF:
--		wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
--		break;
--	case RTC_UIE_ON:
-+	if (enabled)
- 		wm8350_unmask_irq(wm8350, WM8350_IRQ_RTC_SEC);
--		break;
--
--	default:
--		return -ENOIOCTLCMD;
--	}
-+	else
-+		wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
- 
- 	return 0;
- }
-@@ -345,11 +341,12 @@ static void wm8350_rtc_update_handler(struct wm8350 *wm8350, int irq,
- }
- 
- static const struct rtc_class_ops wm8350_rtc_ops = {
--	.ioctl = wm8350_rtc_ioctl,
- 	.read_time = wm8350_rtc_readtime,
- 	.set_time = wm8350_rtc_settime,
- 	.read_alarm = wm8350_rtc_readalarm,
- 	.set_alarm = wm8350_rtc_setalarm,
-+	.alarm_irq_enable = wm8350_rtc_alarm_irq_enable,
-+	.update_irq_enable = wm8350_rtc_update_irq_enable,
- };
- 
- #ifdef CONFIG_PM
--- 
-1.5.6.5
+Thanks!
+Willy
 
