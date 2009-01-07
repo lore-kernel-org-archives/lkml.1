@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbZAGT0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761043AbZAGTcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760888AbZAGT0h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:26:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZAGTZu
+	id S1761043AbZAGTcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbZAGTcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:25:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55185 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754586AbZAGTZt (ORCPT
+	Wed, 7 Jan 2009 14:32:12 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42323 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759539AbZAGTcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 14:25:49 -0500
-Date: Wed, 7 Jan 2009 11:25:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Crutcher Dunnavant <crutcher+kernel@datastacks.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sysrq loglevel
-Message-Id: <20090107112539.972e60e2.akpm@linux-foundation.org>
-In-Reply-To: <20090107123725.GC2520@shadowen.org>
-References: <20090107123725.GC2520@shadowen.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 7 Jan 2009 14:32:12 -0500
+Date: Wed, 7 Jan 2009 20:46:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] [3/5] Mark complex bitops.h inlines as __always_inline
+Message-ID: <20090107194613.GL496@one.firstfloor.org>
+References: <200901051236.281008835@firstfloor.org> <20090104233640.6A7453E6653@basil.firstfloor.org> <20090106101710.GA22134@elte.hu> <20090106143215.GD496@one.firstfloor.org> <20090107132653.GA22229@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107132653.GA22229@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Jan 2009 12:37:58 +0000 Andy Whitcroft <apw@canonical.com> wrote:
+Hi Ingo,
 
-> It seems that we deliberatly manage the console_loglevel while handling a
-> sysrq request.  Raising it to 7 to emit the sysrq command header, and then
-> lower it before processing the command itself.  When booting the kernel
-> 'quiet' this means that we only see the header of the command and not its
-> output on the console, the whole thing is in dmesg and thereby in syslog
-> (if it is working).
+> Yes, simple functions should always be inlined, nobody will argue about 
+> that. But GCC's inliner will never be fixed (for the kernel domain at 
+> least) if we keep working it around and if we keep micro-managing it.
 
-I always thought it was fairly stupid.  Wouldn't we get the same effect
-by tossing that code and switching those printks to KERN_EMERG?
+To my knowledge the inliner is already fixed. We're just talking about 
+old gccs.
 
-> void __handle_sysrq(int key, struct tty_struct *tty, int check_mask)
-> [...]
->         console_loglevel = 7;
->         printk(KERN_INFO "SysRq : ");
-> [...]
->                         printk("%s\n", op_p->action_msg);
->                         console_loglevel = orig_log_level;
->                         op_p->handler(key, tty);
-> [...]
+Also to be honest I never quite believed in the basic idea of
+"hurt users to get someone else to do something" strategies like
+you're advocating here.
+
 > 
-> Is this intentional?  I can see arguments both ways.  One way to look at
-> it would be that I asked for the output so I should get it regardless.
-> The other side might be that consoles can be really slow (serial or
-> something) and so only outputting it there if logging is enabled
-> generally is sane.
+> We work around GCC bugs only if it hurts visibly (and generally if it 
+> affects default-enabled features/optimizations): if it can be quantified 
+> either via stability/robustness problems or there's excesssive size / 
+> efficiency problems.
+
+Not inlining bitops qualifies as the later I believe. 
+
+I agree with you if we're talking about random static function
+in .c files, but widely used functions in .h files that are 
+not expected to change are a little different. The main
+reason to not use __always_inline normally is that when people
+change the function to contain more code they typically don't 
+drop these markers and then it eventually leads to bloat.
+But for the bitops style functions I changed here it's not really
+expected that they change this way.
+
+Also I don't think adding a few __always_inline for functions which
+really need it will hurt maintainability or anything else. In fact
+we already have them in a couple of places (e.g. uaccess.h)
+
 > 
-> Obviously we can work round this at the moment using sysrq-7 to up the
-> loglevel before the command and sysrq-4 after to restore quiet.
-> 
-> What do people think.  If we are happy with the status quo then I will
-> spin a documentation patch to point out this behaviour and the work
-> around.  Else I will happily spin a patch to fix it.
-> 
+> You simply have not made that argument via any numbers here. So i have no 
 
-There is a legitimate use case, I think: to emit the sysrq command's
-output into the log bufffer and not to the console[s].  So you can do
+That's true, I just reacted to Hugh's report. I don't use old
+compilers on my own.
 
-	echo t > /proc/sysrq-trigger
-	dmesg -s 1000000 > foo
+-Andi
 
-
+-- 
+ak@linux.intel.com
