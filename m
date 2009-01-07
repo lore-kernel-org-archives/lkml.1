@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbZAGFMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZAGFTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758464AbZAGFMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 00:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZAGFM1
+	id S1756660AbZAGFTW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 00:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZAGFTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 00:12:27 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:42242 "EHLO
+	Wed, 7 Jan 2009 00:19:13 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:46524 "EHLO
 	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbZAGFM1 (ORCPT
+	with ESMTP id S1750985AbZAGFTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 00:12:27 -0500
+	Wed, 7 Jan 2009 00:19:13 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Wed, 07 Jan 2009 00:12:21 -0500 (EST)
+Date: Wed, 07 Jan 2009 00:19:07 -0500 (EST)
 From: Nicolas Pitre <nico@cam.org>
 X-X-Sender: nico@xanadu.home
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
 Subject: Re: powerpc: introduce asm/swab.h
-In-reply-to: <alpine.LFD.2.00.0901062103390.3057@localhost.localdomain>
-Message-id: <alpine.LFD.2.00.0901070011240.26118@xanadu.home>
+In-reply-to: <alpine.LFD.2.00.0901062108440.3057@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0901070017550.26118@xanadu.home>
 References: <200901070400.n0740Ore002063@hera.kernel.org>
- <1231303340.14860.61.camel@pasglop> <1231303722.14442.1.camel@brick>
- <alpine.LFD.2.00.0901062354030.26118@xanadu.home>
- <alpine.LFD.2.00.0901062103390.3057@localhost.localdomain>
+ <1231303340.14860.61.camel@pasglop> <1231304552.14860.72.camel@pasglop>
+ <alpine.LFD.2.00.0901062108440.3057@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -36,34 +35,22 @@ On Tue, 6 Jan 2009, Linus Torvalds wrote:
 
 > 
 > 
-> On Tue, 6 Jan 2009, Nicolas Pitre wrote:
+> On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
 > > 
-> > Well, this series breaks ARM as well:
+> > Even if fixing that to use __swab32() instead, then it fails because
+> > this is defined after it's used. I worked around it using fswab in
+> > there instead.
 > 
-> Ahh. I think it's the __SWAB_64_THRU_32__ case that is broken. 
+> That's the same patch I just sent out (but you changed comments too), so I 
+> obviously agree. 
 > 
-> Does this fix things? Totally untested. Of course.
+> x86 didn't see this (even in 32-bit mode) because it doesn't use that odd 
+> __SWAB_64_THRU_32__ case, but does the 64-bit swab with native code.
+> 
+> Can you also verify that it works for you (not just compiles), just so 
+> that I can commit it?
 
-Yep.
+Tested OK on ARM (using LE mode with networking, etc.)
 
 
-> 
-> 		Linus
-> ---
->  include/linux/swab.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/swab.h b/include/linux/swab.h
-> index 9a2d33e..be5284d 100644
-> --- a/include/linux/swab.h
-> +++ b/include/linux/swab.h
-> @@ -68,7 +68,7 @@ static inline __attribute_const__ __u64 __fswab64(__u64 val)
->  #elif defined(__SWAB_64_THRU_32__)
->  	__u32 h = val >> 32;
->  	__u32 l = val & ((1ULL << 32) - 1);
-> -	return (((__u64)___swab32(l)) << 32) | ((__u64)(___swab32(h)));
-> +	return (((__u64)__fswab32(l)) << 32) | ((__u64)(__fswab32(h)));
->  #else
->  	return ___constant_swab64(val);
->  #endif
-> 
+Nicolas
