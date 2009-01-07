@@ -1,103 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbZAGQ0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757672AbZAGQ1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753568AbZAGQ0a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZAGQ0T
+	id S1757672AbZAGQ1A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZAGQ0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:26:19 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:64677 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752274AbZAGQ0R (ORCPT
+	Wed, 7 Jan 2009 11:26:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41020 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751901AbZAGQ0q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:26:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=fqD5TyGaBuD0lzjNIZVWAygNuESRR4rxdUH4+5czT7zL+hoZIPFXs8oV4plHVCCWQM
-         YDVs2oEmdM4cYtAOCZXWicmTkvGrr6b/g6mjc/zUOSxgoHyAVJNfa6IS2JTT4xPLHd1y
-         VuIswz6ZMcgnDgUhNEJYcQbpY8hnbw/q+WQtc=
-From: Bryan Wu <cooloney@kernel.org>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] bin_elf_fdpic: check the return value of clear_user
-Date: Thu,  8 Jan 2009 00:27:06 +0800
-Message-Id: <1231345626-27023-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
+	Wed, 7 Jan 2009 11:26:46 -0500
+Date: Wed, 7 Jan 2009 08:25:30 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <1231329783.11687.287.camel@twins>
+Message-ID: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
+ <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins> <1231329783.11687.287.camel@twins>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- fs/binfmt_elf_fdpic.c |   25 +++++++++++++++++--------
- 1 files changed, 17 insertions(+), 8 deletions(-)
 
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index aa5b432..008be20 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -980,9 +980,12 @@ static int elf_fdpic_map_file_constdisp_on_uclinux(
- 			params->elfhdr_addr = seg->addr;
- 
- 		/* clear any space allocated but not loaded */
--		if (phdr->p_filesz < phdr->p_memsz)
--			clear_user((void *) (seg->addr + phdr->p_filesz),
--				   phdr->p_memsz - phdr->p_filesz);
-+		if (phdr->p_filesz < phdr->p_memsz) {
-+			ret = clear_user((void *) (seg->addr + phdr->p_filesz),
-+					 phdr->p_memsz - phdr->p_filesz);
-+			if (ret)
-+				return ret;
-+		}
- 
- 		if (mm) {
- 			if (phdr->p_flags & PF_X) {
-@@ -1022,7 +1025,7 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *params,
- 	struct elf32_fdpic_loadseg *seg;
- 	struct elf32_phdr *phdr;
- 	unsigned long load_addr, delta_vaddr;
--	int loop, dvset;
-+	int loop, dvset, ret;
- 
- 	load_addr = params->load_addr;
- 	delta_vaddr = 0;
-@@ -1122,7 +1125,9 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *params,
- 		 * PT_LOAD */
- 		if (prot & PROT_WRITE && disp > 0) {
- 			kdebug("clear[%d] ad=%lx sz=%lx", loop, maddr, disp);
--			clear_user((void __user *) maddr, disp);
-+			ret = clear_user((void __user *) maddr, disp);
-+			if (ret)
-+				return ret;
- 			maddr += disp;
- 		}
- 
-@@ -1157,15 +1162,19 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *params,
- 		if (prot & PROT_WRITE && excess1 > 0) {
- 			kdebug("clear[%d] ad=%lx sz=%lx",
- 			       loop, maddr + phdr->p_filesz, excess1);
--			clear_user((void __user *) maddr + phdr->p_filesz,
--				   excess1);
-+			ret = clear_user((void __user *) maddr + phdr->p_filesz,
-+					 excess1);
-+			if (ret)
-+				return ret;
- 		}
- 
- #else
- 		if (excess > 0) {
- 			kdebug("clear[%d] ad=%lx sz=%lx",
- 			       loop, maddr + phdr->p_filesz, excess);
--			clear_user((void *) maddr + phdr->p_filesz, excess);
-+			ret = clear_user((void *) maddr + phdr->p_filesz, excess);
-+			if (ret)
-+				return ret;
- 		}
- #endif
- 
--- 
-1.5.6
+On Wed, 7 Jan 2009, Peter Zijlstra wrote:
+>
+> Change mutex contention behaviour such that it will sometimes busy wait on
+> acquisition - moving its behaviour closer to that of spinlocks.
 
+Ok, this one looks _almost_ ok.
+
+The only problem is that I think you've lost the UP case. 
+
+In UP, you shouldn't have the code to spin, and the "spin_or_schedule()" 
+should fall back to just the schedule case.
+
+It migth also be worthwhile to try to not set the owner, and re-organize 
+that a bit (by making it a inline function that sets the owner only for 
+CONFIG_SMP or lockdep/debug). 
+
+			Linus
