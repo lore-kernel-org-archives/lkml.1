@@ -1,101 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZAGGd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbZAGGeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbZAGGd1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 01:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZAGGdO
+	id S1756499AbZAGGeq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 01:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZAGGef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 01:33:14 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55190 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752394AbZAGGdN (ORCPT
+	Wed, 7 Jan 2009 01:34:35 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:65114 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbZAGGee (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 01:33:13 -0500
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <49642829.20006@cn.fujitsu.com>
-References: <87r63ljzox.fsf@basil.nowhere.org>
-	 <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
-	 <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
-	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
-	 <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>
-	 <1231278275.11687.111.camel@twins>
-	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
-	 <1231279660.11687.121.camel@twins>
-	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
-	 <1231281801.11687.125.camel@twins>  <49642829.20006@cn.fujitsu.com>
-Content-Type: text/plain
+	Wed, 7 Jan 2009 01:34:34 -0500
+Message-Id: <200901070634.n076YCxF061022@www262.sakura.ne.jp>
+Subject: Re: [PATCH] Add in_execve flag into task_struct.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: sds@tycho.nsa.gov, serue@us.ibm.com, spotter@cs.columbia.edu
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Date: Wed, 07 Jan 2009 07:32:50 +0100
-Message-Id: <1231309970.11687.163.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Date: Wed, 07 Jan 2009 15:34:12 +0900
+References: <200901060514.n065E462074929@www262.sakura.ne.jp> <20090106155829.GA9773@us.ibm.com>  <49639039.4060708@cs.columbia.edu> <1231267532.9746.116.camel@localhost.localdomain>
+In-Reply-To: <1231267532.9746.116.camel@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 07012009 #1412118, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 11:57 +0800, Lai Jiangshan wrote:
-> Peter Zijlstra wrote:
-> > +void mutex_spin_or_schedule(struct mutex_waiter *waiter, long state, unsigned long *flags)
-> > +{
-> > +	struct mutex *lock = waiter->lock;
-> > +	struct task_struct *task = waiter->task;
-> > +	struct task_struct *owner = lock->owner;
-> > +	struct rq *rq;
-> > +
-> > +	if (!owner)
-> > +		goto do_schedule;
-> > +
-> > +	rq = task_rq(owner);
-> > +
-> > +	if (rq->curr != owner) {
-> > +do_schedule:
-> > +		__set_task_state(task, state);
-> > +		spin_unlock_mutex(&lock->wait_lock, *flags);
-> > +		schedule();
-> > +	} else {
-> > +		spin_unlock_mutex(&lock->wait_lock, *flags);
-> > +		for (;;) {
-> > +			/* Stop spinning when there's a pending signal. */
-> > +			if (signal_pending_state(state, task))
-> > +				break;
-> > +
-> > +			/* Owner changed, bail to revalidate state */
-> > +			if (lock->owner != owner)
-> > +				break;
-> > +
-> > +			/* Owner stopped running, bail to revalidate state */
-> > +			if (rq->curr != owner)
-> > +				break;
-> > +
-> 
-> 2 questions from my immature thought:
-> 
-> 1) Do we need keep gcc from optimizing when we access lock->owner
->    and rq->curr in the loop?
+Stephen Smalley wrote:
+> As I understand it, they want to apply the exec check against the
+> caller's credential as usual but not apply a read check against the
+> caller's credential.
+Right.
 
-cpu_relax() is a compiler barrier iirc.
+> Note btw that in the DAC case the dumpable flag gets cleared if the
+> caller lacks read access to the program, so TOMOYO should do likewise if
+> they are going to support this "execute-without-read" mode.
+That's this "in_execve" flag.
 
-> 2) "if (rq->curr != owner)" need become smarter.
->    schedule()
->    {
-> 	select_next
-> 	rq->curr = next;
-> 	contex_swith
->    }
-> we also spin when owner is select_next-ing in schedule().
-> but select_next is not fast enough.
 
-I'm not sure what you're saying here..
+
+Shaya Potter wrote:
+> I assume this has been asked and answered by whats the advantage of this
+> in_exec flag over a single function that set the security domain, oncee
+> at the beginning of exec to set the new domain (B) and once in the
+> fail/exit path to reset it back (to A) in case of failure.
+Old implementation (where security_bprm_alloc() and security_bprm_free()
+were available) used that approach.
+But new implementation (where security_bprm_alloc() and security_bprm_free()
+are no longer available) uses an approach which won't rollback.
+
+> it just seems weird to say that we are technically in security domain A,
+> but are going to treat the process as if its in security domain B when
+> you can just as easily put it in security domain B and put it back in
+> security domain A if the operation fails.
+A LSM hook for doing rollback operation no longer exists.
+If we can introduce security_start_execve()/security_finish_execve() hooks
+in place of security_bprm_alloc() and security_bprm_free(),
+TOMOYO can use that approach.
+
+But by utilizing existing LSM hooks, TOMOYO finally came to the point
+where TOMOYO can live without more LSM hooks if current process can
+remember "whether I'm doing an execve() operation or not".
+David Howells prefers this 'in_execve' approach over introducing
+security_start_execve()/security_finish_execve() hooks.
+
+
+
+Serge E. Hallyn wrote:
+> I still don't like it.  Now I gather the reason for this is that you
+> want to allow a less trusted domain to execute a file (in a new domain)
+> without giving it the right to read it?  I'd be interested in hearing
+> whether others think that's a worthy goal.
+
+I see you don't like 'in_execve' flag.
+But, this approach is the result of negotiation with David Howells
+and was authorized by him.
+Serge, will you please accept this 'in_execve' flag?
