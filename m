@@ -1,104 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbZAGAoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZAGApQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbZAGAoZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 19:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZAGAoQ
+	id S1758261AbZAGApQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 19:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZAGApB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 19:44:16 -0500
-Received: from ns1.suse.de ([195.135.220.2]:55505 "EHLO mx1.suse.de"
+	Tue, 6 Jan 2009 19:45:01 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43955 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754514AbZAGAoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 19:44:14 -0500
-Date: Tue, 6 Jan 2009 16:42:58 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] pci: fix no_pci_devices() #2
-Message-ID: <20090107004258.GA3223@suse.de>
-References: <20081220111419.GA5367@localhost.localdomain> <200901051109.43953.jbarnes@virtuousgeek.org>
+	id S1752117AbZAGApA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 19:45:00 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901051109.43953.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: David Brownell <david-b@pacbell.net>
+X-Fcc: ~/Mail/linus
+X-Fcc: ~/Mail/linus
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.28-rc2] CORE_DUMP_DEFAULT_ELF_HEADERS depends on ELF_CORE
+In-Reply-To: David Brownell's message of  Tuesday, 6 January 2009 12:37:00 -0800 <200901061237.01020.david-b@pacbell.net>
+References: <200810301559.50467.david-b@pacbell.net>
+	<200901061237.01020.david-b@pacbell.net>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090107004447.3FD19FC305@magilla.sf.frob.com>
+Date: Tue,  6 Jan 2009 16:44:47 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 11:09:43AM -0800, Jesse Barnes wrote:
-> On Saturday, December 20, 2008 3:14 am Vegard Nossum wrote:
-> > On Sat, Dec 20, 2008 at 11:56 AM, Vegard Nossum <vegard.nossum@gmail.com> 
-> wrote:
-> > > On Sat, Dec 20, 2008 at 9:58 AM, Greg KH <gregkh@suse.de> wrote:
-> > >> Care to make a patch for no_pci_devices() to work properly in this kind
-> > >> of situation?
-> > >
-> > > How does this look?
-> > >
-> > > I have introduced a variable pci_is_initiated, which is set after the bus
-> > > has been registered.
-> >
-> > This patch is simpler and also works for me. But I am not too fond of it
-> > either...
-> >
-> >
-> > Vegard
-> >
-> >
-> > From 1f047c86fc7a831d85174452da92344a3582a158 Mon Sep 17 00:00:00 2001
-> > From: Vegard Nossum <vegard.nossum@gmail.com>
-> > Date: Sat, 20 Dec 2008 12:08:18 +0100
-> > Subject: [PATCH] pci: fix no_pci_devices() #2
-> >
-> > In short, no_pci_devices() should not use bus_find_device() before
-> > initcalls have run, because the pci bus structure has not been
-> > initialized yet.
-> >
-> > Reference: http://lkml.org/lkml/2008/12/20/21
-> >
-> > Cc: Greg KH <gregkh@suse.de>
-> > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> > Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> > ---
-> >  drivers/base/bus.c  |    1 +
-> >  drivers/pci/probe.c |    3 +++
-> >  2 files changed, 4 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-> > index 5aee1c0..5e83faf 100644
-> > --- a/drivers/base/bus.c
-> > +++ b/drivers/base/bus.c
-> > @@ -931,6 +931,7 @@ bus_devices_fail:
-> >  bus_uevent_fail:
-> >  	kset_unregister(&bus->p->subsys);
-> >  	kfree(bus->p);
-> > +	bus->p = NULL;
-> >  out:
-> >  	return retval;
-> >  }
-> > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> > index 003a9b3..d561be7 100644
-> > --- a/drivers/pci/probe.c
-> > +++ b/drivers/pci/probe.c
-> > @@ -35,6 +35,9 @@ int no_pci_devices(void)
-> >  	struct device *dev;
-> >  	int no_devices;
-> >
-> > +	if (!pci_bus_type.p)
-> > +		return 1;
-> > +
-> >  	dev = bus_find_device(&pci_bus_type, NULL, NULL, find_anything);
-> >  	no_devices = (dev == NULL);
-> >  	put_device(dev);
+Acked-by: Roland McGrath <roland@redhat.com>
+
+> On Thursday 30 October 2008, David Brownell wrote:
+> > From: David Brownell <dbrownell@users.sourceforge.net>
+> > 
+> > Kernels that don't support ELF coredumps at all surely can't
+> > be supporting new partial-segment flavored ELF coredumps ...
+> > don't make folk answer Kconfig questions about that flavor.
 > 
-> Assuming Greg already took the generic part, can you resend the PCI part to 
-> the linux-pci@vger.kernel.org list for review just in case anyone has a better 
-> idea of how to do it?
-
-Did I take the generic part?  I can't remember...
-
-thanks,
-
-greg k-h
+> PING?
+> 
+> > 
+> > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > Cc: Roland McGrath <roland@redhat.com>
+> > ---
+> >  fs/Kconfig.binfmt |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > --- a/fs/Kconfig.binfmt
+> > +++ b/fs/Kconfig.binfmt
+> > @@ -43,7 +43,7 @@ config BINFMT_ELF_FDPIC
+> >  config CORE_DUMP_DEFAULT_ELF_HEADERS
+> >  	bool "Write ELF core dumps with partial segments"
+> >  	default n
+> > -	depends on BINFMT_ELF
+> > +	depends on BINFMT_ELF && ELF_CORE
+> >  	help
+> >  	  ELF core dump files describe each memory mapping of the crashed
+> >  	  process, and can contain or omit the memory contents of each one.
+> > 
+> 
+> 
