@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbZAGPOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbZAGPPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbZAGPOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZAGPOf
+	id S1759437AbZAGPPt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZAGPPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:14:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53965 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbZAGPOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:14:34 -0500
-Subject: [PATCH -tip 5/7] x86: smp.h move safe_smp_processor_id declartion
-	to cpu.h
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, James.Bottomley@hansenpartnership.com,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 17:27:01 +0530
-Message-Id: <1231329421.17961.34.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 10:15:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33410 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586AbZAGPPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 10:15:40 -0500
+Date: Wed, 7 Jan 2009 16:15:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, James.Bottomley@hansenpartnership.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
+Message-ID: <20090107151522.GA5341@elte.hu>
+References: <1231329368.17961.29.camel@jaswinder.satnam> <20090107125152.GA3529@elte.hu> <20090107133327.GA4911@elte.hu> <3f9a31f40901070557r336020dctbe9549e8634b167@mail.gmail.com> <20090107150351.GB27606@elte.hu> <20090107151223.GA4899@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107151223.GA4899@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, moving NON-SMP stuff from smp.h
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/cpu.h    |    1 +
- arch/x86/include/asm/smp.h    |    1 -
- arch/x86/mach-voyager/setup.c |    1 +
- 3 files changed, 2 insertions(+), 1 deletions(-)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index f958e7e..4c16888 100644
---- a/arch/x86/include/asm/cpu.h
-+++ b/arch/x86/include/asm/cpu.h
-@@ -15,6 +15,7 @@ extern void prefill_possible_map(void);
- 
- static inline void prefill_possible_map(void) {}
- 
-+#define safe_smp_processor_id()			0
- #define stack_smp_processor_id()		0
- 
- #endif /* CONFIG_SMP */
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index cbbea22..3a76b19 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -198,7 +198,6 @@ extern int safe_smp_processor_id(void);
- 
- #else /* !CONFIG_X86_32_SMP && !CONFIG_X86_64_SMP */
- #define cpu_physical_id(cpu)		boot_cpu_physical_apicid
--#define safe_smp_processor_id()		0
- #endif
- 
- #ifdef CONFIG_X86_LOCAL_APIC
-diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
-index a580b95..0ade625 100644
---- a/arch/x86/mach-voyager/setup.c
-+++ b/arch/x86/mach-voyager/setup.c
-@@ -9,6 +9,7 @@
- #include <asm/e820.h>
- #include <asm/io.h>
- #include <asm/setup.h>
-+#include <asm/cpu.h>
- 
- void __init pre_intr_init_hook(void)
- {
--- 
-1.5.6.6
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+> > 
+> > > Hello Ingo,
+> > > 
+> > > On Wed, Jan 7, 2009 at 7:03 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > >
+> > > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > >
+> > > >> applied to tip/x86/cleanups:
+> > > >
+> > > > excluded it again from tip/master, due to this build failure:
+> > > >
+> > > 
+> > > Please accept only first 4 patches:
+> > > 
+> > > 1.  x86: smp.h remove obsolete function declaration
+> > > 2.  x86: smp.h move zap_low_mappings declartion to tlbflush.h
+> > > 3.  x86: smp.h move prefill_possible_map declartion to cpu.h
+> > > 4.  x86: smp.h move stack_processor_id declartion to cpu.h
+> > > 
+> > > Then it will easier for me to to focus on only few things.
+> > 
+> > ok, i dropped the others.
+> 
+> i dropped the rest too, due to:
+> 
+>  arch/x86/kernel/cpu/common.c:983: error: implicit declaration of function 'stack_smp_processor_id'
+> 
+> config attached. Please resend the whole lot once you have those configs 
+> working and if you are reasonably sure similar bugs are not in other 
+> places.
 
+note, i kept these:
 
+6e5385d: x86: smp.h move prefill_possible_map declartion to cpu.h
+dacf733: x86: smp.h move zap_low_mappings declartion to tlbflush.h
+7760ec7: x86: smp.h remove obsolete function declaration
 
+as they seem fairly safe.
+
+	Ingo
