@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZAGM6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZAGNB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbZAGM6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZAGM6Q
+	id S1756199AbZAGNB5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZAGNBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:58:16 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37417 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757185AbZAGM6O (ORCPT
+	Wed, 7 Jan 2009 08:01:45 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:41179 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750796AbZAGNBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:58:14 -0500
-From: Chandru <chandru@in.ibm.com>
-Organization: ibm
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Date: Wed, 7 Jan 2009 18:28:13 +0530
-User-Agent: KMail/1.9.10
-Cc: Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <200812241325.49404.chandru@in.ibm.com> <200901051919.52327.chandru@in.ibm.com> <1231173033.19452.190.camel@nimitz>
-In-Reply-To: <1231173033.19452.190.camel@nimitz>
+	Wed, 7 Jan 2009 08:01:45 -0500
+Date: Thu, 8 Jan 2009 00:01:29 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Changli Gao <xiaosuo@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107130129.GA26440@gondor.apana.org.au>
+References: <20090106094138.GE25644@1wt.eu> <20090106100112.GB9513@ff.dom.local> <20090106155715.GA28783@1wt.eu> <20090107093915.GA6899@ff.dom.local> <20090107122205.GA6051@1wt.eu> <20090107123153.GA9597@ff.dom.local> <20090107123504.GN32491@kernel.dk> <20090107124946.GA9677@ff.dom.local> <20090107125217.GA26235@gondor.apana.org.au> <20090107130031.GD6307@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901071828.13719.chandru@in.ibm.com>
+In-Reply-To: <20090107130031.GD6307@1wt.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009 22:00:33 Dave Hansen wrote:
-> OK, I had to think about this for a good, long time.  That's bad. :)
+On Wed, Jan 07, 2009 at 02:00:31PM +0100, Willy Tarreau wrote:
 >
-> There are two things that we're dealing with here: "active regions" and
-> the NODE_DATA's.  The if() you've pasted above resizes the reservation
-> so that it fits into the current active region.  However, as you noted,
-> we haven't resized it so that it fits into the NODE_DATA() that we're
-> looking at.  We call into the bootmem code, and BUG_ON().
->
-> The thing I don't like about this is that it might hide bugs in other
-> callers.  This really is a ppc-specific thing and, although what you
-> wrote will fix the bug on ppc, it will probably cause someone in the
-> future to call reserve_bootmem_node() with too large a reservation and
-> get a silent failure (not reserving the requested size) back.
->
-> We really do need to go take a hard look at the whole interaction
-> between lmb's, node active regions, and the NUMA code some day.  It has
-> kinda grown to be a bit ungainly.
->
-> How about we just consult the NODE_DATA() in
-> mark_reserved_regions_for_nid() instead of reserve_bootmem_node()?
+> that's what I was initially wondering about, but it looks like only linear
+> data is copied. Will that cause too much a overhead ? (I don't like copying
 
-I don't know how you wanted NODE_DATA() to be consulted here. i.e before 
-calling reserve_bootmem_node() should we have a condition 
+For splicing from socket to socket or socket to file, all the
+data will be linear with most drivers.
 
-	if (PFN_UP(physbase+reserve_size) > node_end_pfn) 
-	then
-		resize reserve_size again so that PFN_UP() will equate to node_end_pfn ??
-	end 
-
-Also I was wondering if in reserve_bootmem_node()
-	end = PFN_DOWN() ; will do.. 
-
-With the recent changes from you that went into 2.6.28 stable 
-(commit:a4c74ddd5ea3db53fc73d29c222b22656a7d05be), it worked on the system 
-with PFN_DOWN(). 
-
-Thanks,
-Chandru
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
