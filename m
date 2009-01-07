@@ -1,58 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZAGQ3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbZAGQak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbZAGQ3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZAGQ3g
+	id S1757049AbZAGQak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZAGQab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:29:36 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:41693 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbZAGQ3f (ORCPT
+	Wed, 7 Jan 2009 11:30:31 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:56811 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbZAGQaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:29:35 -0500
+	Wed, 7 Jan 2009 11:30:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=ewiv+7uYSrgyPDMxW0A0Pxpihhp45PRYtQce97DFXPBOsE0KvR5Za1xGcFsefiE/z2
-         GCfdECYj1DhlkVlNwiYCYJaTHEckdYAJaOmMMjIWxs4bxVvbCIT7d6j/F8WEgIHhjFQQ
-         5ifMdOYysthqt+5k8Q8gvMVbUwKDmMZ6nRkTk=
-From: Bryan Wu <cooloney@kernel.org>
-To: dhowells@redhat.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] ramfs/nommu: fix bug - kernel crash when (nr != lpages)
-Date: Thu,  8 Jan 2009 00:30:23 +0800
-Message-Id: <1231345823-27376-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=c/w8D8A5RuoDTwT9h17jdDzfFKK4u4cizG4bA9ACQ68HbxqZWWgXN4Lcu7C1G6ZTcl
+         4/gOi4PUYTfO42Ixmfw/MYL8p1vIjRMKuAdd5ElQthaGNtRrk9x/PcE3wyZexdWlmTrh
+         uuJcnW416aV0w/WPxd5IvWC5G35TZbs9MZgEQ=
+Message-ID: <f19298770901070830q71cc7604nf55e1d5b70a22f37@mail.gmail.com>
+Date: Wed, 7 Jan 2009 19:30:27 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 11
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081211200459.14d18d7a.sfr@canb.auug.org.au>
+	 <f19298770812110440s7e3781eex4a16b961ad6847b2@mail.gmail.com>
+	 <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Graf Yang <graf.yang@analog.com>
+On Sun, Dec 14, 2008 at 17:34, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+> On Thu, Dec 11, 2008 at 15:40, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+>> On Thu, Dec 11, 2008 at 12:04, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>> Hi all,
+>>>
+>>>
+>>> ----------------------------------------------------------------------------
+>>
+>> Hi.
 
-Avoiding kernel crash when (nr != lpages), and return -ENOMEM,
-let the user space application handle this error.
+Almost a month later, the warning is still there, and now also in Linus' git.
+Am I the only one who sees it?
 
-Signed-off-by: Graf Yang <graf.yang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- fs/ramfs/file-nommu.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+[    0.004000] Intel machine check reporting enabled on CPU#0.
+[    0.004000] using mwait in idle threads.
+[    0.004000] Checking 'hlt' instruction... <4>------------[ cut here
+]------------
+[    0.004150] WARNING: at kernel/sched.c:4435 sub_preempt_count+0xae/0xc0()
+[    0.004247] Hardware name: HP Compaq nx7300 (GB848ES#ACB)
+[    0.004342] Modules linked in:
+[    0.004477] Pid: 0, comm: swapper Not tainted 2.6.28-06859-gede6f5a #179
+[    0.004575] Call Trace:
+[    0.004672]  [<c012fbe6>] warn_slowpath+0x86/0xa0
+[    0.004770]  [<c014e99b>] ? tick_check_oneshot_change+0x4b/0x100
+[    0.004868]  [<c046dc00>] ? _spin_unlock_irq+0x10/0x30
+[    0.004963]  [<c047045e>] sub_preempt_count+0xae/0xc0
+[    0.005060]  [<c0134787>] _local_bh_enable+0x27/0xa0
+[    0.005155]  [<c0134ac7>] __do_softirq+0xf7/0x150
+[    0.005250]  [<c01349d0>] ? __do_softirq+0x0/0x150
+[    0.005345]  <IRQ>  [<c014ec2e>] ? tick_nohz_update_jiffies+0xe/0x50
+[    0.005488]  [<c013494f>] ? irq_exit+0x7f/0x90
+[    0.005584]  [<c0104f23>] ? do_IRQ+0xa3/0x120
+[    0.005678]  [<c01038a7>] ? common_interrupt+0x27/0x2c
+[    0.005773]  [<c013007b>] ? try_acquire_console_sem+0x1b/0x30
+[    0.005872]  [<c05f7378>] ? check_bugs+0xb8/0xe0
+[    0.005967]  [<c05ef98a>] ? start_kernel+0x25a/0x2f0
+[    0.006062]  [<c05ef270>] ? unknown_bootoption+0x0/0x210
+[    0.006159]  [<c05ef07c>] ? __init_begin+0x7c/0xb0
+[    0.006260] ---[ end trace 4eaa2a86a8e2da22 ]---
+[    0.016003] OK.
+[    0.016538] ACPI: Core revision 20080926
 
-diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-index 76acdbc..9311031 100644
---- a/fs/ramfs/file-nommu.c
-+++ b/fs/ramfs/file-nommu.c
-@@ -283,7 +283,8 @@ unsigned long ramfs_nommu_get_unmapped_area(struct file *file,
- 	if (pages) {
- 		ptr = pages;
- 		for (loop = lpages; loop > 0; loop--)
--			put_page(*ptr++);
-+			if (*ptr)
-+				put_page(*ptr++);
- 		kfree(pages);
- 	}
- 
--- 
-1.5.6
-
+>>
+>> I'm seeing this warning early in boot logs. It does not appear on 2.6.28-rc7.
+>> Not sure how long it's been around. Haven't built -next for some time.
+>>
+>> [    0.004000] Intel machine check reporting enabled on CPU#0.
+>> [    0.004000] using mwait in idle threads.
+>> [    0.004000] Checking 'hlt' instruction... <4>------------[ cut here
+>> ]------------
+>> [    0.004167] WARNING: at kernel/sched.c:4364 sub_preempt_count+0xae/0xc0()
+>> [    0.004266] Hardware name: HP Compaq nx7300 (GB848ES#ACB)
+>> [    0.004361] Modules linked in:
+>> [    0.004497] Pid: 0, comm: swapper Not tainted 2.6.28-rc8-next-20081211 #117
+>> [    0.004595] Call Trace:
+>> [    0.004689]  [<c01324d6>] warn_slowpath+0x86/0xa0
+>> [    0.004789]  [<c0155d00>] ? check_usage_forwards+0x10/0xb0
+>> [    0.004886]  [<c015394a>] ? save_trace+0x3a/0xa0
+>> [    0.004981]  [<c015742d>] ? mark_lock+0x37d/0xe00
+>> [    0.005076]  [<c01580f9>] ? __lock_acquire+0x249/0x610
+>> [    0.005175]  [<c04a3a02>] ? _spin_unlock_irq+0x22/0x50
+>> [    0.005272]  [<c0158e50>] ? trace_hardirqs_on_caller+0x70/0x1a0
+>> [    0.005369]  [<c04a3a0d>] ? _spin_unlock_irq+0x2d/0x50
+>> [    0.005465]  [<c0124bfe>] sub_preempt_count+0xae/0xc0
+>> [    0.005564]  [<c0137012>] _local_bh_enable+0x52/0xc0
+>> [    0.005661]  [<c013725f>] __do_softirq+0x11f/0x170
+>> [    0.005756]  [<c0137140>] ? __do_softirq+0x0/0x170
+>> [    0.005851]  <IRQ>  [<c0137729>] ? irq_exit+0x89/0xa0
+>> [    0.005993]  [<c01059ed>] ? do_IRQ+0xad/0x120
+>> [    0.006088]  [<c0103aac>] ? common_interrupt+0x2c/0x34
+>> [    0.006184]  [<c013007b>] ? mmput+0x2b/0xc0
+>> [    0.006281]  [<c06735a8>] ? check_bugs+0xb8/0xe0
+>> [    0.006379]  [<c066b7ea>] ? start_kernel+0x26a/0x310
+>> [    0.006475]  [<c066b270>] ? unknown_bootoption+0x0/0x210
+>> [    0.006572]  [<c066b077>] ? __init_begin+0x77/0xb0
+>> [    0.006674] ---[ end trace 4eaa2a86a8e2da22 ]---
+>> [    0.016004] OK.
+>> [    0.016560] ACPI: Core revision 20081031
+>> [    0.044495] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+>>
+>> Config and full dmesg attached.
+>>
+>
+> The warning can also be reproduced in qemu, so it was easy to bisect.
+>
+> commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
+> Author: Nick Piggin <nickpiggin@yahoo.com.au>
+> Date:   Tue Sep 30 20:50:27 2008 +1000
+>
+>    sched: improve preempt debugging
+>
+>    This patch helped me out with a problem I recently had....
+>
+>    Basically, when the kernel lock is held, then preempt_count
+> underflow does not
+>    get detected until it is released which may be a long time (and arbitrarily,
+>    eg at different points it may be rescheduled). If the bkl is released at
+>    schedule, the resulting output is actually fairly cryptic...
+>
+>    With any other lock that elevates preempt_count, it is illegal to schedule
+>    under it (which would get found pretty quickly). bkl allows scheduling with
+>    preempt_count elevated, which makes underflows hard to debug.
+>
+>    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> I understand that not this particular commit is buggy, but at least
+> I've got someone to add to the CC. ;)
