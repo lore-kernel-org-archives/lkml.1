@@ -1,117 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZAGRVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZAGRVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753602AbZAGRVG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 12:21:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbZAGRUp
+	id S1754144AbZAGRVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 12:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZAGRVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 12:20:45 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:28038 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756549AbZAGRUn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 12:20:43 -0500
-Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>
-	 <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
-	 <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
-	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
-	 <49636799.1010109@novell.com> <20090106214229.GD6741@linux.vnet.ibm.com>
-	 <1231278275.11687.111.camel@twins>
-	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
-	 <1231279660.11687.121.camel@twins>
-	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
-	 <1231281801.11687.125.camel@twins> <1231283778.11687.136.camel@twins>
-	 <1231329783.11687.287.camel@twins>
-	 <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 12:20:01 -0500
-Message-Id: <1231348801.27813.31.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4964E447.017E:SCFSTAT928724,ss=1,fgs=0
+	Wed, 7 Jan 2009 12:21:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53924 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753649AbZAGRVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 12:21:31 -0500
+Date: Wed, 7 Jan 2009 18:19:22 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Casey Dahlin <cdahlin@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland McGrath <roland@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+Message-ID: <20090107171922.GA18000@redhat.com>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107123457.GB16268@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 08:25 -0800, Linus Torvalds wrote:
-> 
-> On Wed, 7 Jan 2009, Peter Zijlstra wrote:
-> >
-> > Change mutex contention behaviour such that it will sometimes busy wait on
-> > acquisition - moving its behaviour closer to that of spinlocks.
-> 
-> Ok, this one looks _almost_ ok.
-> 
-> The only problem is that I think you've lost the UP case. 
-> 
-> In UP, you shouldn't have the code to spin, and the "spin_or_schedule()" 
-> should fall back to just the schedule case.
-> 
-> It migth also be worthwhile to try to not set the owner, and re-organize 
-> that a bit (by making it a inline function that sets the owner only for 
-> CONFIG_SMP or lockdep/debug). 
+On 01/07, Ingo Molnar wrote:
+>
+> (Cc:-ed a few more folks who might be interested in this)
+>
+> * Casey Dahlin <cdahlin@redhat.com> wrote:
+>
+> > +asmlinkage long sys_waitfd(int which, pid_t upid, int options, int unused)
+> > +{
+> > +	int ufd;
+> > +	struct waitfd_ctx *ctx;
+> > +
+> > +	/* Just to make sure we don't end up with a sys_waitfd4 */
+> > +	(void)unused;
+>
+> looks a bit silly ...
+>
+> > +
+> > +	if (options & ~(WNOHANG|WEXITED|WSTOPPED|WCONTINUED))
+> > +		return -EINVAL;
+> > +	if (!(options & (WEXITED|WSTOPPED|WCONTINUED)))
+> > +		return -EINVAL;
+> > +
+> > +	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
+> > +	if (!ctx)
+> > +		return -ENOMEM;
+> > +
+> > +	ctx->ops = options;
+> > +	ctx->upid = upid;
+> > +	ctx->which = which;
+> > +
+> > +	ufd = anon_inode_getfd("[waitfd]", &waitfd_fops, ctx,
+> > +			       (options & WNOHANG) ? O_NONBLOCK : 0);
 
-So far I haven't found any btrfs benchmarks where this is slower than
-mutexes without any spinning.  But, it isn't quite as fast as the btrfs
-spin.
+minor nit...
 
-I'm using three different benchmarks, and they hammer on different
-things.  All against btrfs and a single sata drive.
+Please note that unlike other sys_...fd() syscalls, sys_waitfd()
+doesn't allow to pass O_CLOEXEC. Looks like we need a separate
+"flags" argument...
 
-* dbench -t 30 50, which means run dbench 50 for 30 seconds.   It is a
-broad workload that hammers on lots of code, but it also tends to go
-faster when things are less fair.  These numbers are stable across runs.
-Some IO is done at the very start of the run, but the bulk of the run is
-CPU bound in various btrfs btrees.
+Also, ioctl(FIONBIO) or fcntl(O_NONBLOCK) have no effect on
+waitfd, not very good.
 
-Plain mutex: dbench reports 240MB/s
-Simple spin: dbench reports 560MB/s
-Peter's v4: dbench reports 388MB/s
+I'd suggest to remove WNOHANG from waitfd_ctx->ops and treat
+(->f_flags & O_NONBLOCK) as WNOHANG.
 
-* 50 procs creating 10,000 files (4k each), one dir per proc.  The
-result is 50 dirs and each dir has 10,000 files.  This is mostly CPU
-bound for the procs, but pdflush and friends are doing lots of IO.
+(can't resist, ->ops is not the best name ;)
 
-Plain mutex: avg: 115 files/s avg system time for each proc: 1.6s
-Simple spin: avg: 152 files/s avg system time for each proc: 2s
-Peter's v4:  avg: 130 files/s avg system time for each proc: 2.9s
-
-I would have expected Peter's patch to use less system time than my
-spin.  If I change his patch to limit the spin to 512 iterations (same
-as my code), the system time goes back down to 1.7s, but the files/s
-doesn't improve.
-
-* Parallel stat:  the last benchmark is the most interesting, since it
-really hammers on the btree locking speed.  I take the directory tree
-the file creation run (50 dirs, 10,000 files each) and have 50 procs
-running stat on all the files in parallel.
-
-Before the run I clear the inode cache but leave the page cache.  So,
-everything is hot in the btree but there are no inodes in cache.
-
-Plain mutex: 9.488s real, 8.6 sys
-Simple spin: 3.8s real 13.8s sys
-Peter's v4: 7.9s real 8.5s sys
-
--chris
-
-
+Oleg.
 
