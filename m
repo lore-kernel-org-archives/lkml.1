@@ -1,131 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbZAGRYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbZAGRYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbZAGRYS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 12:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbZAGRX6
+	id S1758973AbZAGRYv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 12:24:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbZAGRYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 12:23:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44927 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbZAGRX5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 12:23:57 -0500
-Date: Wed, 7 Jan 2009 09:25:55 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Yong Wang <yong.y.wang@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/6] fastboot: make ACPI bus drivers probe asynchronous
-Message-ID: <20090107092555.6e89e9c7@infradead.org>
-In-Reply-To: <20090107141256.GA22902@ywang-moblin2.bj.intel.com>
-References: <20090105200959.04a626ac@infradead.org>
-	<20090105201239.0784606e@infradead.org>
-	<20090107141256.GA22902@ywang-moblin2.bj.intel.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 7 Jan 2009 12:24:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45029 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754668AbZAGRYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 12:24:41 -0500
+Date: Wed, 7 Jan 2009 18:24:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Casey Dahlin <cdahlin@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland McGrath <roland@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+Message-ID: <20090107172431.GA24982@elte.hu>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107171922.GA18000@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107171922.GA18000@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Jan 2009 22:12:56 +0800
-Yong Wang <yong.y.wang@linux.intel.com> wrote:
 
-> On Mon, Jan 05, 2009 at 08:12:39PM -0800, Arjan van de Ven wrote:
-> > 
-> > >From 34c47dd38f49e29eb7cd7fa2078efc6b8b258bb9 Mon Sep 17 00:00:00
-> > >2001
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Sun, 4 Jan 2009 05:32:28 -0800
-> > Subject: [PATCH] fastboot: make ACPI bus drivers probe asynchronous
-> > 
-> > the various ACPI bus drivers have non-overlapping devices and can
-> > each be run asynchronous. Some of the ACPI drivers (especially the
-> > battery one, but others as well) can take quite a long time to
-> > probe.
-> > 
-> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> > ---
-> >  drivers/acpi/scan.c |   23 ++++++++++++++++-------
-> >  1 files changed, 16 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-> > index 39b7233..a9e542d 100644
-> > --- a/drivers/acpi/scan.c
-> > +++ b/drivers/acpi/scan.c
-> > @@ -8,6 +8,7 @@
-> >  #include <linux/acpi.h>
-> >  #include <linux/signal.h>
-> >  #include <linux/kthread.h>
-> > +#include <linux/async.h>
-> >  
-> >  #include <acpi/acpi_drivers.h>
-> >  #include <acpi/acinterp.h>	/* for
-> > acpi_ex_eisa_id_to_string() */ @@ -578,6 +579,19 @@ static int
-> > acpi_start_single_object(struct acpi_device *device) return result;
-> >  }
-> >  
-> > +static void acpi_bus_register_async(void *data, async_cookie_t
-> > cookie) +{
-> > +	int ret;
-> > +	struct acpi_driver *driver = data;
-> > +	driver->drv.name = driver->name;
-> > +	driver->drv.bus = &acpi_bus_type;
-> > +	driver->drv.owner = driver->owner;
-> > +
-> > +	async_synchronize_cookie(cookie);
-> > +
-> > +	ret = driver_register(&driver->drv);
-> > +	WARN_ON(ret != 0);
-> > +}
-> >  /**
-> >   * acpi_bus_register_driver - register a driver with the ACPI bus
-> >   * @driver: driver being registered
-> > @@ -588,16 +602,11 @@ static int acpi_start_single_object(struct
-> > acpi_device *device) */
-> >  int acpi_bus_register_driver(struct acpi_driver *driver)
-> >  {
-> > -	int ret;
-> >  
-> >  	if (acpi_disabled)
-> >  		return -ENODEV;
-> > -	driver->drv.name = driver->name;
-> > -	driver->drv.bus = &acpi_bus_type;
-> > -	driver->drv.owner = driver->owner;
-> > -
-> > -	ret = driver_register(&driver->drv);
-> > -	return ret;
-> > +	async_schedule(acpi_bus_register_async, driver);
-> > +	return 0;
-> >  }
-> >  
-> >  EXPORT_SYMBOL(acpi_bus_register_driver);
+* Oleg Nesterov <oleg@redhat.com> wrote:
+
+> On 01/07, Ingo Molnar wrote:
+> >
+> > (Cc:-ed a few more folks who might be interested in this)
+> >
+> > * Casey Dahlin <cdahlin@redhat.com> wrote:
+> >
+> > > +asmlinkage long sys_waitfd(int which, pid_t upid, int options, int unused)
+> > > +{
+> > > +	int ufd;
+> > > +	struct waitfd_ctx *ctx;
+> > > +
+> > > +	/* Just to make sure we don't end up with a sys_waitfd4 */
+> > > +	(void)unused;
+> >
+> > looks a bit silly ...
+> >
+> > > +
+> > > +	if (options & ~(WNOHANG|WEXITED|WSTOPPED|WCONTINUED))
+> > > +		return -EINVAL;
+> > > +	if (!(options & (WEXITED|WSTOPPED|WCONTINUED)))
+> > > +		return -EINVAL;
+> > > +
+> > > +	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
+> > > +	if (!ctx)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	ctx->ops = options;
+> > > +	ctx->upid = upid;
+> > > +	ctx->which = which;
+> > > +
+> > > +	ufd = anon_inode_getfd("[waitfd]", &waitfd_fops, ctx,
+> > > +			       (options & WNOHANG) ? O_NONBLOCK : 0);
 > 
-> For ACPI battery, button and thermal drivers whose init funtion
-> immediately ends right after calling acpi_bus_register_driver, it
-> might be OK. But for other drivers whose init function has more work
-> to do and depends on acpi_bus_register_driver having *really* done
-> its job, it is certainly not OK. In the latter case, the 'return 0'
-> in acpi_bus_register_driver is effectively cheating those drivers
-> that acpi_bus_register_driver has already done its job which is
-> unfortunately not the case. Example drivers include eeepc_laptop and
-> asus_laptop. At least I am seeing a kernel oops on eeepc because of
-> that.
-
-ok I've dropped the ACPI part for now; I'll work with you and Len to
-see how we can solve the ACPI side, but for now it seems to have too
-many issues
-
+> minor nit...
 > 
-> -Yong
+> Please note that unlike other sys_...fd() syscalls, sys_waitfd()
+> doesn't allow to pass O_CLOEXEC. Looks like we need a separate
+> "flags" argument...
+> 
+> Also, ioctl(FIONBIO) or fcntl(O_NONBLOCK) have no effect on
+> waitfd, not very good.
+> 
+> I'd suggest to remove WNOHANG from waitfd_ctx->ops and treat
+> (->f_flags & O_NONBLOCK) as WNOHANG.
+> 
+> (can't resist, ->ops is not the best name ;)
 
+yeah, ->ops should be ->options. The name ->ops is generally use for 
+method vectors and so.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
