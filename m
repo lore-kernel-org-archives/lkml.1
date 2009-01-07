@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZAGMrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbZAGMsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753608AbZAGMrU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZAGMrE
+	id S1756626AbZAGMsV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZAGMsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:47:04 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48434 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbZAGMrB (ORCPT
+	Wed, 7 Jan 2009 07:48:12 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55517 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751586AbZAGMsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:47:01 -0500
-Subject: [PATCH -tip 5/7] x86: smp.h move safe_smp_processor_id declartion
-	to cpu.h
+	Wed, 7 Jan 2009 07:48:11 -0500
+Subject: [PATCH -tip 7/7] x86: smp.h move boot_cpu_id declartion to cpu.h
 From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, James.Bottomley@hansenpartnership.com,
-       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       x86 maintainers <x86@kernel.org>
 Content-Type: text/plain
-Date: Wed, 07 Jan 2009 18:14:49 +0530
-Message-Id: <1231332289.18558.15.camel@jaswinder.satnam>
+Date: Wed, 07 Jan 2009 18:15:54 +0530
+Message-Id: <1231332354.18558.17.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -29,47 +28,82 @@ Impact: cleanup, moving NON-SMP stuff from smp.h
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/include/asm/cpu.h    |    1 +
- arch/x86/include/asm/smp.h    |    1 -
- arch/x86/mach-voyager/setup.c |    1 +
- 3 files changed, 2 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/cpu.h   |    7 +++++++
+ arch/x86/include/asm/smp.h   |    6 ------
+ arch/x86/kernel/cpu/common.c |    2 +-
+ arch/x86/kernel/io_apic.c    |    1 +
+ drivers/pci/intr_remapping.c |    1 +
+ 5 files changed, 10 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index f958e7e..4c16888 100644
+index 89edafb..f03b23e 100644
 --- a/arch/x86/include/asm/cpu.h
 +++ b/arch/x86/include/asm/cpu.h
-@@ -15,6 +15,7 @@ extern void prefill_possible_map(void);
- 
- static inline void prefill_possible_map(void) {}
- 
-+#define safe_smp_processor_id()			0
- #define stack_smp_processor_id()		0
- 
- #endif /* CONFIG_SMP */
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index cbbea22..3a76b19 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -198,7 +198,6 @@ extern int safe_smp_processor_id(void);
- 
- #else /* !CONFIG_X86_32_SMP && !CONFIG_X86_64_SMP */
- #define cpu_physical_id(cpu)		boot_cpu_physical_apicid
--#define safe_smp_processor_id()		0
+@@ -31,4 +31,11 @@ extern void arch_unregister_cpu(int);
  #endif
  
- #ifdef CONFIG_X86_LOCAL_APIC
-diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
-index a580b95..0ade625 100644
---- a/arch/x86/mach-voyager/setup.c
-+++ b/arch/x86/mach-voyager/setup.c
-@@ -9,6 +9,7 @@
- #include <asm/e820.h>
- #include <asm/io.h>
- #include <asm/setup.h>
-+#include <asm/cpu.h>
+ DECLARE_PER_CPU(int, cpu_state);
++
++#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
++extern unsigned char boot_cpu_id;
++#else
++#define boot_cpu_id				0
++#endif
++
+ #endif /* _ASM_X86_CPU_H */
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 136f1c7..1963e27 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -238,11 +238,5 @@ static inline int hard_smp_processor_id(void)
  
- void __init pre_intr_init_hook(void)
- {
+ #endif /* CONFIG_X86_LOCAL_APIC */
+ 
+-#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
+-extern unsigned char boot_cpu_id;
+-#else
+-#define boot_cpu_id	0
+-#endif
+-
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_X86_SMP_H */
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 667e5d5..693f3b9 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -21,7 +21,7 @@
+ #include <asm/pat.h>
+ #include <asm/asm.h>
+ #include <asm/numa.h>
+-#include <asm/smp.h>
++#include <asm/cpu.h>
+ #ifdef CONFIG_X86_LOCAL_APIC
+ #include <asm/mpspec.h>
+ #include <asm/apic.h>
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 1c4a130..109c91d 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -46,6 +46,7 @@
+ #include <asm/idle.h>
+ #include <asm/io.h>
+ #include <asm/smp.h>
++#include <asm/cpu.h>
+ #include <asm/desc.h>
+ #include <asm/proto.h>
+ #include <asm/acpi.h>
+diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
+index f78371b..5a57753 100644
+--- a/drivers/pci/intr_remapping.c
++++ b/drivers/pci/intr_remapping.c
+@@ -6,6 +6,7 @@
+ #include <linux/irq.h>
+ #include <asm/io_apic.h>
+ #include <asm/smp.h>
++#include <asm/cpu.h>
+ #include <linux/intel-iommu.h>
+ #include "intr_remapping.h"
+ 
 -- 
 1.5.6.6
 
