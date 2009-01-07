@@ -1,122 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZAGQd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZAGQgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbZAGQd1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZAGQdR
+	id S1756460AbZAGQgf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:36:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZAGQg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:33:17 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:43302 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbZAGQdR (ORCPT
+	Wed, 7 Jan 2009 11:36:26 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:59734 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbZAGQgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:33:17 -0500
-Date: Wed, 7 Jan 2009 22:01:00 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
-Message-ID: <20090107163100.GO4574@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090104174450.GB4301@dirshya.in.ibm.com> <1231092523.29980.4.camel@twins> <20090105040635.GF4301@dirshya.in.ibm.com> <20090105130638.GB6014@elte.hu> <20090107114947.GJ4574@dirshya.in.ibm.com> <20090107122913.GL4574@dirshya.in.ibm.com> <1231333963.11687.288.camel@twins> <20090107142009.GM4574@dirshya.in.ibm.com> <1231338537.11687.295.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1231338537.11687.295.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Jan 2009 11:36:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=oh5iHxo3120ArGS0FMatZ3f1Uif5PV6wAj2x2mBXgByAzQ0dgQ3MzsJZO80Z6XVgNZ
+         TsY/Gsxy/VL0/DzByuIql7Z/dAl82OzHDzUhCLYBXAtqFbLeEVQclOFjbbje3/u0re77
+         VXSjBkhDjRm5i7cN5VF3iVVybIXEIyPGZe0xI=
+From: Bryan Wu <cooloney@kernel.org>
+To: jeff@garzik.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] pata: fix bug - __pata_platform_remove() should not be in discarded section
+Date: Thu,  8 Jan 2009 00:37:12 +0800
+Message-Id: <1231346232-27861-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-07 15:28:57]:
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-> On Wed, 2009-01-07 at 19:50 +0530, Vaidyanathan Srinivasan wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-07 14:12:43]:
-> > 
-> > > On Wed, 2009-01-07 at 17:59 +0530, Vaidyanathan Srinivasan wrote:
-> > > 
-> > > > =============================================
-> > > > [ INFO: possible recursive locking detected ]
-> > > > 2.6.28-autotest-tip-sv #1
-> > > > ---------------------------------------------
-> > > > klogd/5062 is trying to acquire lock:
-> > > >  (&rq->lock){++..}, at: [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
-> > > > 
-> > > > but task is already holding lock:
-> > > >  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> > > > 
-> > > > other info that might help us debug this:
-> > > > 1 lock held by klogd/5062:
-> > > >  #0:  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> > > > 
-> > > > stack backtrace:
-> > > > Pid: 5062, comm: klogd Not tainted 2.6.28-autotest-tip-sv #1
-> > > > Call Trace:
-> > > >  [<ffffffff80259ef1>] __lock_acquire+0xeb9/0x16a4
-> > > >  [<ffffffff8025a6c0>] ? __lock_acquire+0x1688/0x16a4
-> > > >  [<ffffffff8025a761>] lock_acquire+0x85/0xa9
-> > > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
-> > > >  [<ffffffff805fa4d4>] _spin_lock+0x31/0x66
-> > > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
-> > > >  [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
-> > > >  [<ffffffff80233363>] try_to_wake_up+0x88/0x27a
-> > > >  [<ffffffff80233581>] wake_up_process+0x10/0x12
-> > > >  [<ffffffff805f775c>] schedule+0x560/0xa31
-> > > 
-> > > I'd be most curious to know where in schedule we are.
-> > 
-> > ok, we are in sched.c:3777
-> > 
-> >                 double_unlock_balance(this_rq, busiest);
-> >                 if (active_balance)
-> > >>>>>>>>>>>              wake_up_process(busiest->migration_thread);
-> > 
-> >         } else  
-> > 
-> > In active balance in newidle.  This implies sched_mc was 2 at that time.
-> > let me trace this and debug further.
-> 
-> How about something like this? Strictly speaking we'll not deadlock,
-> because ttwu will not be able to place the migration task on our rq, but
-> since the code can deal with both rqs getting unlocked, this seems the
-> easiest way out.
+--
+  UPD     include/linux/compile.h
+`___pata_platform_remove' referenced in section `__ksymtab_gpl' of
+drivers/built-in.o: defined in discarded section `.devexit.text' of
+drivers/built-in.o
+make: *** [.tmp_vmlinux1] Error 1
+--
 
-Hi Peter,
+__pata_platform_remove() should not be in discarded section
+__pata_platform_remove(struct device *dev) is invoked in both
+pata_platform.c and pata_of_platform.c by reomve function defined in
+discarded section ".devexit.text". An exported function should not be put
+into discarded section.
 
-I agree.  Unlocking this_rq is an easy way out.  Thanks for the
-suggestion.  I have moved the unlock and lock withing the if
-condition.
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/ata/pata_platform.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---Vaidy
-
-        sched: bug fix -- do not call ttwu while holding rq->lock
-    
-        When sched_mc=2 wake_up_process() is called on busiest_rq
-        while holding this_rq lock in load_balance_newidle()
-        Though this will not deadlock, this is a lockdep warning
-        and the situation is easily solved by releasing the this_rq
-        lock at this point in code
-    
-    Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 71a054f..703a669 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3773,8 +3773,12 @@ redo:
-                }
+diff --git a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
+index 6afa07a..d8d743a 100644
+--- a/drivers/ata/pata_platform.c
++++ b/drivers/ata/pata_platform.c
+@@ -186,7 +186,7 @@ EXPORT_SYMBOL_GPL(__pata_platform_probe);
+  *	A platform bus ATA device has been unplugged. Perform the needed
+  *	cleanup. Also called on module unload for any active devices.
+  */
+-int __devexit __pata_platform_remove(struct device *dev)
++int __pata_platform_remove(struct device *dev)
+ {
+ 	struct ata_host *host = dev_get_drvdata(dev);
  
-                double_unlock_balance(this_rq, busiest);
--               if (active_balance)
-+               if (active_balance) {
-+                       /*  Should not call ttwu while holding a rq->lock */
-+                       spin_unlock(&this_rq->lock);
-                        wake_up_process(busiest->migration_thread);
-+                       spin_lock(&this_rq->lock);
-+               }
- 
-        } else
-                sd->nr_balance_failed = 0;
+-- 
+1.5.6
 
