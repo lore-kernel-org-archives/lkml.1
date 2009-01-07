@@ -1,146 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbZAGQak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZAGQd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757049AbZAGQak (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZAGQab
+	id S1756196AbZAGQd1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZAGQdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:30:31 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:56811 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbZAGQaa (ORCPT
+	Wed, 7 Jan 2009 11:33:17 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:43302 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752485AbZAGQdR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:30:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=c/w8D8A5RuoDTwT9h17jdDzfFKK4u4cizG4bA9ACQ68HbxqZWWgXN4Lcu7C1G6ZTcl
-         4/gOi4PUYTfO42Ixmfw/MYL8p1vIjRMKuAdd5ElQthaGNtRrk9x/PcE3wyZexdWlmTrh
-         uuJcnW416aV0w/WPxd5IvWC5G35TZbs9MZgEQ=
-Message-ID: <f19298770901070830q71cc7604nf55e1d5b70a22f37@mail.gmail.com>
-Date: Wed, 7 Jan 2009 19:30:27 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 11
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
+	Wed, 7 Jan 2009 11:33:17 -0500
+Date: Wed, 7 Jan 2009 22:01:00 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
+Message-ID: <20090107163100.GO4574@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090104174450.GB4301@dirshya.in.ibm.com> <1231092523.29980.4.camel@twins> <20090105040635.GF4301@dirshya.in.ibm.com> <20090105130638.GB6014@elte.hu> <20090107114947.GJ4574@dirshya.in.ibm.com> <20090107122913.GL4574@dirshya.in.ibm.com> <1231333963.11687.288.camel@twins> <20090107142009.GM4574@dirshya.in.ibm.com> <1231338537.11687.295.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20081211200459.14d18d7a.sfr@canb.auug.org.au>
-	 <f19298770812110440s7e3781eex4a16b961ad6847b2@mail.gmail.com>
-	 <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
+In-Reply-To: <1231338537.11687.295.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 14, 2008 at 17:34, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
-> On Thu, Dec 11, 2008 at 15:40, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
->> On Thu, Dec 11, 2008 at 12:04, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>> Hi all,
->>>
->>>
->>> ----------------------------------------------------------------------------
->>
->> Hi.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-07 15:28:57]:
 
-Almost a month later, the warning is still there, and now also in Linus' git.
-Am I the only one who sees it?
+> On Wed, 2009-01-07 at 19:50 +0530, Vaidyanathan Srinivasan wrote:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-07 14:12:43]:
+> > 
+> > > On Wed, 2009-01-07 at 17:59 +0530, Vaidyanathan Srinivasan wrote:
+> > > 
+> > > > =============================================
+> > > > [ INFO: possible recursive locking detected ]
+> > > > 2.6.28-autotest-tip-sv #1
+> > > > ---------------------------------------------
+> > > > klogd/5062 is trying to acquire lock:
+> > > >  (&rq->lock){++..}, at: [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
+> > > > 
+> > > > but task is already holding lock:
+> > > >  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
+> > > > 
+> > > > other info that might help us debug this:
+> > > > 1 lock held by klogd/5062:
+> > > >  #0:  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
+> > > > 
+> > > > stack backtrace:
+> > > > Pid: 5062, comm: klogd Not tainted 2.6.28-autotest-tip-sv #1
+> > > > Call Trace:
+> > > >  [<ffffffff80259ef1>] __lock_acquire+0xeb9/0x16a4
+> > > >  [<ffffffff8025a6c0>] ? __lock_acquire+0x1688/0x16a4
+> > > >  [<ffffffff8025a761>] lock_acquire+0x85/0xa9
+> > > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
+> > > >  [<ffffffff805fa4d4>] _spin_lock+0x31/0x66
+> > > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
+> > > >  [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
+> > > >  [<ffffffff80233363>] try_to_wake_up+0x88/0x27a
+> > > >  [<ffffffff80233581>] wake_up_process+0x10/0x12
+> > > >  [<ffffffff805f775c>] schedule+0x560/0xa31
+> > > 
+> > > I'd be most curious to know where in schedule we are.
+> > 
+> > ok, we are in sched.c:3777
+> > 
+> >                 double_unlock_balance(this_rq, busiest);
+> >                 if (active_balance)
+> > >>>>>>>>>>>              wake_up_process(busiest->migration_thread);
+> > 
+> >         } else  
+> > 
+> > In active balance in newidle.  This implies sched_mc was 2 at that time.
+> > let me trace this and debug further.
+> 
+> How about something like this? Strictly speaking we'll not deadlock,
+> because ttwu will not be able to place the migration task on our rq, but
+> since the code can deal with both rqs getting unlocked, this seems the
+> easiest way out.
 
-[    0.004000] Intel machine check reporting enabled on CPU#0.
-[    0.004000] using mwait in idle threads.
-[    0.004000] Checking 'hlt' instruction... <4>------------[ cut here
-]------------
-[    0.004150] WARNING: at kernel/sched.c:4435 sub_preempt_count+0xae/0xc0()
-[    0.004247] Hardware name: HP Compaq nx7300 (GB848ES#ACB)
-[    0.004342] Modules linked in:
-[    0.004477] Pid: 0, comm: swapper Not tainted 2.6.28-06859-gede6f5a #179
-[    0.004575] Call Trace:
-[    0.004672]  [<c012fbe6>] warn_slowpath+0x86/0xa0
-[    0.004770]  [<c014e99b>] ? tick_check_oneshot_change+0x4b/0x100
-[    0.004868]  [<c046dc00>] ? _spin_unlock_irq+0x10/0x30
-[    0.004963]  [<c047045e>] sub_preempt_count+0xae/0xc0
-[    0.005060]  [<c0134787>] _local_bh_enable+0x27/0xa0
-[    0.005155]  [<c0134ac7>] __do_softirq+0xf7/0x150
-[    0.005250]  [<c01349d0>] ? __do_softirq+0x0/0x150
-[    0.005345]  <IRQ>  [<c014ec2e>] ? tick_nohz_update_jiffies+0xe/0x50
-[    0.005488]  [<c013494f>] ? irq_exit+0x7f/0x90
-[    0.005584]  [<c0104f23>] ? do_IRQ+0xa3/0x120
-[    0.005678]  [<c01038a7>] ? common_interrupt+0x27/0x2c
-[    0.005773]  [<c013007b>] ? try_acquire_console_sem+0x1b/0x30
-[    0.005872]  [<c05f7378>] ? check_bugs+0xb8/0xe0
-[    0.005967]  [<c05ef98a>] ? start_kernel+0x25a/0x2f0
-[    0.006062]  [<c05ef270>] ? unknown_bootoption+0x0/0x210
-[    0.006159]  [<c05ef07c>] ? __init_begin+0x7c/0xb0
-[    0.006260] ---[ end trace 4eaa2a86a8e2da22 ]---
-[    0.016003] OK.
-[    0.016538] ACPI: Core revision 20080926
+Hi Peter,
 
->>
->> I'm seeing this warning early in boot logs. It does not appear on 2.6.28-rc7.
->> Not sure how long it's been around. Haven't built -next for some time.
->>
->> [    0.004000] Intel machine check reporting enabled on CPU#0.
->> [    0.004000] using mwait in idle threads.
->> [    0.004000] Checking 'hlt' instruction... <4>------------[ cut here
->> ]------------
->> [    0.004167] WARNING: at kernel/sched.c:4364 sub_preempt_count+0xae/0xc0()
->> [    0.004266] Hardware name: HP Compaq nx7300 (GB848ES#ACB)
->> [    0.004361] Modules linked in:
->> [    0.004497] Pid: 0, comm: swapper Not tainted 2.6.28-rc8-next-20081211 #117
->> [    0.004595] Call Trace:
->> [    0.004689]  [<c01324d6>] warn_slowpath+0x86/0xa0
->> [    0.004789]  [<c0155d00>] ? check_usage_forwards+0x10/0xb0
->> [    0.004886]  [<c015394a>] ? save_trace+0x3a/0xa0
->> [    0.004981]  [<c015742d>] ? mark_lock+0x37d/0xe00
->> [    0.005076]  [<c01580f9>] ? __lock_acquire+0x249/0x610
->> [    0.005175]  [<c04a3a02>] ? _spin_unlock_irq+0x22/0x50
->> [    0.005272]  [<c0158e50>] ? trace_hardirqs_on_caller+0x70/0x1a0
->> [    0.005369]  [<c04a3a0d>] ? _spin_unlock_irq+0x2d/0x50
->> [    0.005465]  [<c0124bfe>] sub_preempt_count+0xae/0xc0
->> [    0.005564]  [<c0137012>] _local_bh_enable+0x52/0xc0
->> [    0.005661]  [<c013725f>] __do_softirq+0x11f/0x170
->> [    0.005756]  [<c0137140>] ? __do_softirq+0x0/0x170
->> [    0.005851]  <IRQ>  [<c0137729>] ? irq_exit+0x89/0xa0
->> [    0.005993]  [<c01059ed>] ? do_IRQ+0xad/0x120
->> [    0.006088]  [<c0103aac>] ? common_interrupt+0x2c/0x34
->> [    0.006184]  [<c013007b>] ? mmput+0x2b/0xc0
->> [    0.006281]  [<c06735a8>] ? check_bugs+0xb8/0xe0
->> [    0.006379]  [<c066b7ea>] ? start_kernel+0x26a/0x310
->> [    0.006475]  [<c066b270>] ? unknown_bootoption+0x0/0x210
->> [    0.006572]  [<c066b077>] ? __init_begin+0x77/0xb0
->> [    0.006674] ---[ end trace 4eaa2a86a8e2da22 ]---
->> [    0.016004] OK.
->> [    0.016560] ACPI: Core revision 20081031
->> [    0.044495] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
->>
->> Config and full dmesg attached.
->>
->
-> The warning can also be reproduced in qemu, so it was easy to bisect.
->
-> commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
-> Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date:   Tue Sep 30 20:50:27 2008 +1000
->
->    sched: improve preempt debugging
->
->    This patch helped me out with a problem I recently had....
->
->    Basically, when the kernel lock is held, then preempt_count
-> underflow does not
->    get detected until it is released which may be a long time (and arbitrarily,
->    eg at different points it may be rescheduled). If the bkl is released at
->    schedule, the resulting output is actually fairly cryptic...
->
->    With any other lock that elevates preempt_count, it is illegal to schedule
->    under it (which would get found pretty quickly). bkl allows scheduling with
->    preempt_count elevated, which makes underflows hard to debug.
->
->    Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
-> I understand that not this particular commit is buggy, but at least
-> I've got someone to add to the CC. ;)
+I agree.  Unlocking this_rq is an easy way out.  Thanks for the
+suggestion.  I have moved the unlock and lock withing the if
+condition.
+
+--Vaidy
+
+        sched: bug fix -- do not call ttwu while holding rq->lock
+    
+        When sched_mc=2 wake_up_process() is called on busiest_rq
+        while holding this_rq lock in load_balance_newidle()
+        Though this will not deadlock, this is a lockdep warning
+        and the situation is easily solved by releasing the this_rq
+        lock at this point in code
+    
+    Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 71a054f..703a669 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3773,8 +3773,12 @@ redo:
+                }
+ 
+                double_unlock_balance(this_rq, busiest);
+-               if (active_balance)
++               if (active_balance) {
++                       /*  Should not call ttwu while holding a rq->lock */
++                       spin_unlock(&this_rq->lock);
+                        wake_up_process(busiest->migration_thread);
++                       spin_lock(&this_rq->lock);
++               }
+ 
+        } else
+                sd->nr_balance_failed = 0;
+
