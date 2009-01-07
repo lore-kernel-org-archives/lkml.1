@@ -1,56 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZAGKj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZAGKlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbZAGKj4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 05:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZAGKjq
+	id S1752678AbZAGKlc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 05:41:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZAGKlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 05:39:46 -0500
-Received: from hobbit.corpit.ru ([81.13.33.150]:23805 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbZAGKjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 05:39:45 -0500
-Message-ID: <4964866D.8010503@msgid.tls.msk.ru>
-Date: Wed, 07 Jan 2009 13:39:41 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Kay Sievers <kay.sievers@vrfy.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
-References: <200901051952.58029.bzolnier@gmail.com> <20090105185428.GS32491@kernel.dk> <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com> <20090106073515.GY32491@kernel.dk>
-In-Reply-To: <20090106073515.GY32491@kernel.dk>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 Jan 2009 05:41:23 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46303 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbZAGKlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 05:41:22 -0500
+Date: Wed, 7 Jan 2009 12:41:20 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH][TCP]: simplify tcp_mark_lost_retrans()
+In-Reply-To: <alpine.DEB.2.00.0901071009000.6102@rhea>
+Message-ID: <Pine.LNX.4.64.0901071229160.27307@wrl-59.cs.helsinki.fi>
+References: <alpine.DEB.2.00.0901071009000.6102@rhea>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Mon, Jan 05 2009, Kay Sievers wrote:
->> On Mon, Jan 5, 2009 at 19:54, Jens Axboe <jens.axboe@oracle.com> wrote:
->>> On Mon, Jan 05 2009, Bartlomiej Zolnierkiewicz wrote:
->>>> +static struct queue_sysfs_entry queue_nonrot_entry = {
->>>> +     .attr = {.name = "nonrot", .mode = S_IRUGO | S_IWUSR },
->>>> +     .show = queue_nonrot_show,
->>>> +     .store = queue_nonrot_store,
->>>> +};
->>>> +
->>> Lets please use a better name for export reasons, non-rotational is a
->>> lot better. Nobody will know what nonrot means :-)
->> What's that negation good for? Can't we just have "rotational", like
->> we have "removable" and not "non-removable"? :)
+On Wed, 7 Jan 2009, Arnd Hannemann wrote:
+
+> I noticed
+
+Good that somebody else is looking TCP code besides me... :-)
+
+> that in tcp_mark_lost_retrans the for-loop is only entered
+> if tcp_is_fack(tp) evaluates to true:
 > 
-> Non-rotational is the term typically used, since rotational is the norm
-> (still). So I think the negation actually makes sense in this case :-)
+>           if (!tcp_is_fack(tp) || !tp->retrans_out ||
+>               !after(received_upto, tp->lost_retrans_low) ||
+>               icsk->icsk_ca_state != TCP_CA_Recovery)
+>                   return;
+> 
+> Therefore the following check in the for-loop seems to be redundant,
+> because it always evaluates to true:
+> 
+>                      (tcp_is_fack(tp) ||
+>                       !before(received_upto,
+>                               ack_seq + tp->reordering * tp->mss_cache))
+> 
+> Did I miss something?
 
-You used the word "still" yourself.  I mean, in 5 years SSD will be more
-common than rotational media, and "the norm" will be !rotational..
-So let's name them correctly and uniformly from the beginning.. ;)
+It was just a left over from the RFC3517 SACK addition which added that 
+!tcp_is_fack(tp) there above. ...It would have been nice to have similar 
+lost rexmit feature without FACK as well but calculating that wasn't 
+trivial (or I didn't find that too trivial) and could end up being 
+extremely expensive in case of large holes. (So I also left it there as 
+sort of reminder).
 
-/mjt
+On the second thought, it would be possible to count skbs we pass while 
+walking from the beginning and use that a remaining_sacked counter 
+to get rid of all heurestics too and base the counting only on sacked 
+stuff which aligns with the spirit of rfc3517 much better than 
+sacked+holes used by fack.
+
+> Best regards,
+> Arnd Hannemann
+> 
+> From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+> 
+> Because the for loop is only executed for FACK-enabled flows remove
+> redundant checks within the loop.
+> 
+> Signed-off-by: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+> ---
+> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+> index 99b7ecb..cd8b4bd 100644
+> --- a/net/ipv4/tcp_input.c
+> +++ b/net/ipv4/tcp_input.c
+> @@ -1178,10 +1178,7 @@ static void tcp_mark_lost_retrans(struct sock *sk)
+>    		if (!(TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_RETRANS))
+>    			continue;
+> 
+> -		if (after(received_upto, ack_seq) &&
+> -		    (tcp_is_fack(tp) ||
+> -		     !before(received_upto,
+> -			     ack_seq + tp->reordering * tp->mss_cache))) {
+> +		if (after(received_upto, ack_seq)) {
+>    			TCP_SKB_CB(skb)->sacked &= ~TCPCB_SACKED_RETRANS;
+>    			tp->retrans_out -= tcp_skb_pcount(skb);
+
+
+-- 
+ i.
