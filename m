@@ -1,1519 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbZAGWeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbZAGWev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932537AbZAGWeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762622AbZAGWaz
+	id S932702AbZAGWev (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762710AbZAGWa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:30:55 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:59429 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762462AbZAGWav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:30:51 -0500
-Date: Wed, 7 Jan 2009 14:30:48 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, snakebyte@gmx.de, josh@freedesktop.org, dipankar@in.ibm.com,
-       dvhltc@us.ibm.com, niv@us.ibm.com, kamalesh@linux.vnet.ibm.com,
-       akpm@linux-foundation.org
-Subject: [PATCH -tip] Fix bug in rcutorture system-shutdown code
-Message-ID: <20090107223048.GA19903@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Wed, 7 Jan 2009 17:30:59 -0500
+Received: from outbound-mail-302.bluehost.com ([67.222.53.9]:39328 "HELO
+	outbound-mail-302.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762455AbZAGWa6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:30:58 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=cH9EwHl6f8uNS/wrLRlSTZ0lOWdk1gbj2gJKM2CNVYsxoulw+grMjo4I3WAe7hXGhKm09t8XE8rwcGevlr7oNaTtQ58rg26WfeoC80pw3shmBBpIOMkfDBSwSaCSx+eI;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] PCI pull request for 2.6.29
+Date: Wed, 7 Jan 2009 14:30:55 -0800
+User-Agent: KMail/1.9.10
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200901071430.55580.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes an rcutorture bug found by Eric Sesterhenn that
-resulted in oopses in response to "rmmod rcutorture".  The problem
-was in some new code that attempted to handle the case where a system
-is shut down while rcutorture is still running, for example, when
-rcutorture is built into the kernel so that it cannot be removed.
-The fix causes the rcutorture threads to "park" in an
-schedule_timeout_uninterruptible(MAX_SCHEDULE_TIMEOUT) rather than
-trying to get them to terminate cleanly.  Concurrent shutdown and
-rmmod is illegal.
-
-I believe that this is 2.6.29 material, as it is used in some testing
-setups.
-
-For reference, here are the rcutorture operating modes:
-
-CONFIG_RCU_TORTURE_TEST=m
-
-	This is the normal rcutorture build.  Use "modprobe rcutorture"
-	(with optional arguments) to start, and "rmmod rcutorture" to
-	stop.  If you shut the system down without doing the rmmod, you
-	should see console output like:
-
-	rcutorture thread rcu_torture_writer parking due to system shutdown
-
-	One for each rcutorture kthread.
-
-CONFIG_RCU_TORTURE_TEST=y
-CONFIG_RCU_TORTURE_TEST_RUNNABLE=n
-
-	Use this if you want rcutorture built in, but don't want the
-	test to start running during early boot.  To start the
-	torturing:
-
-		echo 1 > /proc/sys/kernel/rcutorture_runnable
-
-	To stop the torturing, s/1/0/
-
-	You will get "parking" console messages as noted above when
-	you shut the system down.
-
-CONFIG_RCU_TORTURE_TEST=y
-CONFIG_RCU_TORTURE_TEST_RUNNABLE=y
-
-	Same as above, except that the torturing starts during early
-	boot.  Only for the stout of heart and strong of stomach.
-	The same /proc entry noted above may be used to control the
-	test.
-
-Located-by: Eric Sesterhenn <snakebyte@gmx.de>
-Tested-by: Eric Sesterhenn <snakebyte@gmx.de>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcutorture.c |   94 +++++++++++++++++++++++++++++++++++++----------------------
- 1 file changed, 59 insertions(+), 35 deletions(-)
-
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index b310655..7c4142a 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -136,31 +136,47 @@ static int stutter_pause_test = 0;
- #endif
- int rcutorture_runnable = RCUTORTURE_RUNNABLE_INIT;
- 
--#define FULLSTOP_SIGNALED 1	/* Bail due to signal. */
--#define FULLSTOP_CLEANUP  2	/* Orderly shutdown. */
--static int fullstop;		/* stop generating callbacks at test end. */
--DEFINE_MUTEX(fullstop_mutex);	/* protect fullstop transitions and */
--				/*  spawning of kthreads. */
-+/* Mediate rmmod and system shutdown.  Concurrent rmmod & shutdown illegal! */
-+
-+#define FULLSTOP_DONTSTOP 0	/* Normal operation. */
-+#define FULLSTOP_SHUTDOWN 1	/* System shutdown with rcutorture running. */
-+#define FULLSTOP_RMMOD    2	/* Normal rmmod of rcutorture. */
-+static int fullstop = FULLSTOP_RMMOD;
-+DEFINE_MUTEX(fullstop_mutex);	/* Protect fullstop transitions and spawning */
-+				/*  of kthreads. */
- 
- /*
-- * Detect and respond to a signal-based shutdown.
-+ * Detect and respond to a system shutdown.
-  */
- static int
- rcutorture_shutdown_notify(struct notifier_block *unused1,
- 			   unsigned long unused2, void *unused3)
- {
--	if (fullstop)
--		return NOTIFY_DONE;
--	if (signal_pending(current)) {
--		mutex_lock(&fullstop_mutex);
--		if (!ACCESS_ONCE(fullstop))
--			fullstop = FULLSTOP_SIGNALED;
--		mutex_unlock(&fullstop_mutex);
--	}
-+	mutex_lock(&fullstop_mutex);
-+	if (fullstop == FULLSTOP_DONTSTOP)
-+		fullstop = FULLSTOP_SHUTDOWN;
-+	else
-+		printk(KERN_WARNING /* but going down anyway, so... */
-+		       "Concurrent 'rmmod rcutorture' and shutdown illegal!\n");
-+	mutex_unlock(&fullstop_mutex);
- 	return NOTIFY_DONE;
- }
- 
- /*
-+ * Absorb kthreads into a kernel function that won't return, so that
-+ * they won't ever access module text or data again.
-+ */
-+static void rcutorture_shutdown_absorb(char *title)
-+{
-+	if (ACCESS_ONCE(fullstop) == FULLSTOP_SHUTDOWN) {
-+		printk(KERN_NOTICE
-+		       "rcutorture thread %s parking due to system shutdown\n",
-+		       title);
-+		schedule_timeout_uninterruptible(MAX_SCHEDULE_TIMEOUT);
-+	}
-+}
-+
-+/*
-  * Allocate an element from the rcu_tortures pool.
-  */
- static struct rcu_torture *
-@@ -221,13 +237,14 @@ rcu_random(struct rcu_random_state *rrsp)
- }
- 
- static void
--rcu_stutter_wait(void)
-+rcu_stutter_wait(char *title)
- {
--	while ((stutter_pause_test || !rcutorture_runnable) && !fullstop) {
-+	while (stutter_pause_test || !rcutorture_runnable) {
- 		if (rcutorture_runnable)
- 			schedule_timeout_interruptible(1);
- 		else
- 			schedule_timeout_interruptible(round_jiffies_relative(HZ));
-+		rcutorture_shutdown_absorb(title);
- 	}
- }
- 
-@@ -289,7 +306,7 @@ rcu_torture_cb(struct rcu_head *p)
- 	int i;
- 	struct rcu_torture *rp = container_of(p, struct rcu_torture, rtort_rcu);
- 
--	if (fullstop) {
-+	if (fullstop != FULLSTOP_DONTSTOP) {
- 		/* Test is ending, just drop callbacks on the floor. */
- 		/* The next initialization will pick up the pieces. */
- 		return;
-@@ -621,10 +638,11 @@ rcu_torture_writer(void *arg)
- 		}
- 		rcu_torture_current_version++;
- 		oldbatch = cur_ops->completed();
--		rcu_stutter_wait();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcu_stutter_wait("rcu_torture_writer");
-+	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
- 	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
--	while (!kthread_should_stop() && fullstop != FULLSTOP_SIGNALED)
-+	rcutorture_shutdown_absorb("rcu_torture_writer");
-+	while (!kthread_should_stop())
- 		schedule_timeout_uninterruptible(1);
- 	return 0;
- }
-@@ -645,11 +663,12 @@ rcu_torture_fakewriter(void *arg)
- 		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
- 		udelay(rcu_random(&rand) & 0x3ff);
- 		cur_ops->sync();
--		rcu_stutter_wait();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcu_stutter_wait("rcu_torture_fakewriter");
-+	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
- 
- 	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task stopping");
--	while (!kthread_should_stop() && fullstop != FULLSTOP_SIGNALED)
-+	rcutorture_shutdown_absorb("rcu_torture_fakewriter");
-+	while (!kthread_should_stop())
- 		schedule_timeout_uninterruptible(1);
- 	return 0;
- }
-@@ -754,12 +773,13 @@ rcu_torture_reader(void *arg)
- 		preempt_enable();
- 		cur_ops->readunlock(idx);
- 		schedule();
--		rcu_stutter_wait();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcu_stutter_wait("rcu_torture_reader");
-+	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
- 	VERBOSE_PRINTK_STRING("rcu_torture_reader task stopping");
-+	rcutorture_shutdown_absorb("rcu_torture_reader");
- 	if (irqreader && cur_ops->irqcapable)
- 		del_timer_sync(&t);
--	while (!kthread_should_stop() && fullstop != FULLSTOP_SIGNALED)
-+	while (!kthread_should_stop())
- 		schedule_timeout_uninterruptible(1);
- 	return 0;
- }
-@@ -856,7 +876,8 @@ rcu_torture_stats(void *arg)
- 	do {
- 		schedule_timeout_interruptible(stat_interval * HZ);
- 		rcu_torture_stats_print();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcutorture_shutdown_absorb("rcu_torture_stats");
-+	} while (!kthread_should_stop());
- 	VERBOSE_PRINTK_STRING("rcu_torture_stats task stopping");
- 	return 0;
- }
-@@ -924,7 +945,8 @@ rcu_torture_shuffle(void *arg)
- 	do {
- 		schedule_timeout_interruptible(shuffle_interval * HZ);
- 		rcu_torture_shuffle_tasks();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcutorture_shutdown_absorb("rcu_torture_shuffle");
-+	} while (!kthread_should_stop());
- 	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task stopping");
- 	return 0;
- }
-@@ -939,10 +961,11 @@ rcu_torture_stutter(void *arg)
- 	do {
- 		schedule_timeout_interruptible(stutter * HZ);
- 		stutter_pause_test = 1;
--		if (!kthread_should_stop() && !fullstop)
-+		if (!kthread_should_stop())
- 			schedule_timeout_interruptible(stutter * HZ);
- 		stutter_pause_test = 0;
--	} while (!kthread_should_stop() && !fullstop);
-+		rcutorture_shutdown_absorb("rcu_torture_stutter");
-+	} while (!kthread_should_stop());
- 	VERBOSE_PRINTK_STRING("rcu_torture_stutter task stopping");
- 	return 0;
- }
-@@ -969,15 +992,16 @@ rcu_torture_cleanup(void)
- 	int i;
- 
- 	mutex_lock(&fullstop_mutex);
--	if (!fullstop) {
--		/* If being signaled, let it happen, then exit. */
-+	if (fullstop == FULLSTOP_SHUTDOWN) {
-+		printk(KERN_WARNING /* but going down anyway, so... */
-+		       "Concurrent 'rmmod rcutorture' and shutdown illegal!\n");
- 		mutex_unlock(&fullstop_mutex);
--		schedule_timeout_interruptible(10 * HZ);
-+		schedule_timeout_uninterruptible(10);
- 		if (cur_ops->cb_barrier != NULL)
- 			cur_ops->cb_barrier();
- 		return;
- 	}
--	fullstop = FULLSTOP_CLEANUP;
-+	fullstop = FULLSTOP_RMMOD;
- 	mutex_unlock(&fullstop_mutex);
- 	unregister_reboot_notifier(&rcutorture_nb);
- 	if (stutter_task) {
-@@ -1077,7 +1101,7 @@ rcu_torture_init(void)
- 	else
- 		nrealreaders = 2 * num_online_cpus();
- 	rcu_torture_print_module_parms("Start of test");
--	fullstop = 0;
-+	fullstop = FULLSTOP_DONTSTOP;
- 
- 	/* Set up the freelist. */
- 
-
-Content-Description: kernel/rcutorture.c
-/*
- * Read-Copy Update module-based torture test facility
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- * Copyright (C) IBM Corporation, 2005, 2006
- *
- * Authors: Paul E. McKenney <paulmck@us.ibm.com>
- *          Josh Triplett <josh@freedesktop.org>
- *
- * See also:  Documentation/RCU/torture.txt
- */
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/kthread.h>
-#include <linux/err.h>
-#include <linux/spinlock.h>
-#include <linux/smp.h>
-#include <linux/rcupdate.h>
-#include <linux/interrupt.h>
-#include <linux/sched.h>
-#include <asm/atomic.h>
-#include <linux/bitops.h>
-#include <linux/completion.h>
-#include <linux/moduleparam.h>
-#include <linux/percpu.h>
-#include <linux/notifier.h>
-#include <linux/reboot.h>
-#include <linux/freezer.h>
-#include <linux/cpu.h>
-#include <linux/delay.h>
-#include <linux/stat.h>
-#include <linux/srcu.h>
-#include <linux/slab.h>
-#include <asm/byteorder.h>
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
-              "Josh Triplett <josh@freedesktop.org>");
-
-static int nreaders = -1;	/* # reader threads, defaults to 2*ncpus */
-static int nfakewriters = 4;	/* # fake writer threads */
-static int stat_interval;	/* Interval between stats, in seconds. */
-				/*  Defaults to "only at end of test". */
-static int verbose;		/* Print more debug info. */
-static int test_no_idle_hz;	/* Test RCU's support for tickless idle CPUs. */
-static int shuffle_interval = 3; /* Interval between shuffles (in sec)*/
-static int stutter = 5;		/* Start/stop testing interval (in sec) */
-static int irqreader = 1;	/* RCU readers from irq (timers). */
-static char *torture_type = "rcu"; /* What RCU implementation to torture. */
-
-module_param(nreaders, int, 0444);
-MODULE_PARM_DESC(nreaders, "Number of RCU reader threads");
-module_param(nfakewriters, int, 0444);
-MODULE_PARM_DESC(nfakewriters, "Number of RCU fake writer threads");
-module_param(stat_interval, int, 0444);
-MODULE_PARM_DESC(stat_interval, "Number of seconds between stats printk()s");
-module_param(verbose, bool, 0444);
-MODULE_PARM_DESC(verbose, "Enable verbose debugging printk()s");
-module_param(test_no_idle_hz, bool, 0444);
-MODULE_PARM_DESC(test_no_idle_hz, "Test support for tickless idle CPUs");
-module_param(shuffle_interval, int, 0444);
-MODULE_PARM_DESC(shuffle_interval, "Number of seconds between shuffles");
-module_param(stutter, int, 0444);
-MODULE_PARM_DESC(stutter, "Number of seconds to run/halt test");
-module_param(irqreader, int, 0444);
-MODULE_PARM_DESC(irqreader, "Allow RCU readers from irq handlers");
-module_param(torture_type, charp, 0444);
-MODULE_PARM_DESC(torture_type, "Type of RCU to torture (rcu, rcu_bh, srcu)");
-
-#define TORTURE_FLAG "-torture:"
-#define PRINTK_STRING(s) \
-	do { printk(KERN_ALERT "%s" TORTURE_FLAG s "\n", torture_type); } while (0)
-#define VERBOSE_PRINTK_STRING(s) \
-	do { if (verbose) printk(KERN_ALERT "%s" TORTURE_FLAG s "\n", torture_type); } while (0)
-#define VERBOSE_PRINTK_ERRSTRING(s) \
-	do { if (verbose) printk(KERN_ALERT "%s" TORTURE_FLAG "!!! " s "\n", torture_type); } while (0)
-
-static char printk_buf[4096];
-
-static int nrealreaders;
-static struct task_struct *writer_task;
-static struct task_struct **fakewriter_tasks;
-static struct task_struct **reader_tasks;
-static struct task_struct *stats_task;
-static struct task_struct *shuffler_task;
-static struct task_struct *stutter_task;
-
-#define RCU_TORTURE_PIPE_LEN 10
-
-struct rcu_torture {
-	struct rcu_head rtort_rcu;
-	int rtort_pipe_count;
-	struct list_head rtort_free;
-	int rtort_mbtest;
-};
-
-static LIST_HEAD(rcu_torture_freelist);
-static struct rcu_torture *rcu_torture_current = NULL;
-static long rcu_torture_current_version = 0;
-static struct rcu_torture rcu_tortures[10 * RCU_TORTURE_PIPE_LEN];
-static DEFINE_SPINLOCK(rcu_torture_lock);
-static DEFINE_PER_CPU(long [RCU_TORTURE_PIPE_LEN + 1], rcu_torture_count) =
-	{ 0 };
-static DEFINE_PER_CPU(long [RCU_TORTURE_PIPE_LEN + 1], rcu_torture_batch) =
-	{ 0 };
-static atomic_t rcu_torture_wcount[RCU_TORTURE_PIPE_LEN + 1];
-static atomic_t n_rcu_torture_alloc;
-static atomic_t n_rcu_torture_alloc_fail;
-static atomic_t n_rcu_torture_free;
-static atomic_t n_rcu_torture_mberror;
-static atomic_t n_rcu_torture_error;
-static long n_rcu_torture_timers = 0;
-static struct list_head rcu_torture_removed;
-
-static int stutter_pause_test = 0;
-
-#if defined(MODULE) || defined(CONFIG_RCU_TORTURE_TEST_RUNNABLE)
-#define RCUTORTURE_RUNNABLE_INIT 1
-#else
-#define RCUTORTURE_RUNNABLE_INIT 0
-#endif
-int rcutorture_runnable = RCUTORTURE_RUNNABLE_INIT;
-
-/* Mediate rmmod and system shutdown.  Concurrent rmmod & shutdown illegal! */
-
-#define FULLSTOP_DONTSTOP 0	/* Normal operation. */
-#define FULLSTOP_SHUTDOWN 1	/* System shutdown with rcutorture running. */
-#define FULLSTOP_RMMOD    2	/* Normal rmmod of rcutorture. */
-static int fullstop = FULLSTOP_RMMOD;
-DEFINE_MUTEX(fullstop_mutex);	/* Protect fullstop transitions and spawning */
-				/*  of kthreads. */
-
-/*
- * Detect and respond to a system shutdown.
- */
-static int
-rcutorture_shutdown_notify(struct notifier_block *unused1,
-			   unsigned long unused2, void *unused3)
-{
-	mutex_lock(&fullstop_mutex);
-	if (fullstop == FULLSTOP_DONTSTOP)
-		fullstop = FULLSTOP_SHUTDOWN;
-	else
-		printk(KERN_WARNING /* but going down anyway, so... */
-		       "Concurrent 'rmmod rcutorture' and shutdown illegal!\n");
-	mutex_unlock(&fullstop_mutex);
-	return NOTIFY_DONE;
-}
-
-/*
- * Absorb kthreads into a kernel function that won't return, so that
- * they won't ever access module text or data again.
- */
-static void rcutorture_shutdown_absorb(char *title)
-{
-	if (ACCESS_ONCE(fullstop) == FULLSTOP_SHUTDOWN) {
-		printk(KERN_NOTICE
-		       "rcutorture thread %s parking due to system shutdown\n",
-		       title);
-		schedule_timeout_uninterruptible(MAX_SCHEDULE_TIMEOUT);
-	}
-}
-
-/*
- * Allocate an element from the rcu_tortures pool.
- */
-static struct rcu_torture *
-rcu_torture_alloc(void)
-{
-	struct list_head *p;
-
-	spin_lock_bh(&rcu_torture_lock);
-	if (list_empty(&rcu_torture_freelist)) {
-		atomic_inc(&n_rcu_torture_alloc_fail);
-		spin_unlock_bh(&rcu_torture_lock);
-		return NULL;
-	}
-	atomic_inc(&n_rcu_torture_alloc);
-	p = rcu_torture_freelist.next;
-	list_del_init(p);
-	spin_unlock_bh(&rcu_torture_lock);
-	return container_of(p, struct rcu_torture, rtort_free);
-}
-
-/*
- * Free an element to the rcu_tortures pool.
- */
-static void
-rcu_torture_free(struct rcu_torture *p)
-{
-	atomic_inc(&n_rcu_torture_free);
-	spin_lock_bh(&rcu_torture_lock);
-	list_add_tail(&p->rtort_free, &rcu_torture_freelist);
-	spin_unlock_bh(&rcu_torture_lock);
-}
-
-struct rcu_random_state {
-	unsigned long rrs_state;
-	long rrs_count;
-};
-
-#define RCU_RANDOM_MULT 39916801  /* prime */
-#define RCU_RANDOM_ADD	479001701 /* prime */
-#define RCU_RANDOM_REFRESH 10000
-
-#define DEFINE_RCU_RANDOM(name) struct rcu_random_state name = { 0, 0 }
-
-/*
- * Crude but fast random-number generator.  Uses a linear congruential
- * generator, with occasional help from cpu_clock().
- */
-static unsigned long
-rcu_random(struct rcu_random_state *rrsp)
-{
-	if (--rrsp->rrs_count < 0) {
-		rrsp->rrs_state +=
-			(unsigned long)cpu_clock(raw_smp_processor_id());
-		rrsp->rrs_count = RCU_RANDOM_REFRESH;
-	}
-	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
-	return swahw32(rrsp->rrs_state);
-}
-
-static void
-rcu_stutter_wait(char *title)
-{
-	while (stutter_pause_test || !rcutorture_runnable) {
-		if (rcutorture_runnable)
-			schedule_timeout_interruptible(1);
-		else
-			schedule_timeout_interruptible(round_jiffies_relative(HZ));
-		rcutorture_shutdown_absorb(title);
-	}
-}
-
-/*
- * Operations vector for selecting different types of tests.
- */
-
-struct rcu_torture_ops {
-	void (*init)(void);
-	void (*cleanup)(void);
-	int (*readlock)(void);
-	void (*readdelay)(struct rcu_random_state *rrsp);
-	void (*readunlock)(int idx);
-	int (*completed)(void);
-	void (*deferredfree)(struct rcu_torture *p);
-	void (*sync)(void);
-	void (*cb_barrier)(void);
-	int (*stats)(char *page);
-	int irqcapable;
-	char *name;
-};
-static struct rcu_torture_ops *cur_ops = NULL;
-
-/*
- * Definitions for rcu torture testing.
- */
-
-static int rcu_torture_read_lock(void) __acquires(RCU)
-{
-	rcu_read_lock();
-	return 0;
-}
-
-static void rcu_read_delay(struct rcu_random_state *rrsp)
-{
-	long delay;
-	const long longdelay = 200;
-
-	/* We want there to be long-running readers, but not all the time. */
-
-	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay);
-	if (!delay)
-		udelay(longdelay);
-}
-
-static void rcu_torture_read_unlock(int idx) __releases(RCU)
-{
-	rcu_read_unlock();
-}
-
-static int rcu_torture_completed(void)
-{
-	return rcu_batches_completed();
-}
-
-static void
-rcu_torture_cb(struct rcu_head *p)
-{
-	int i;
-	struct rcu_torture *rp = container_of(p, struct rcu_torture, rtort_rcu);
-
-	if (fullstop != FULLSTOP_DONTSTOP) {
-		/* Test is ending, just drop callbacks on the floor. */
-		/* The next initialization will pick up the pieces. */
-		return;
-	}
-	i = rp->rtort_pipe_count;
-	if (i > RCU_TORTURE_PIPE_LEN)
-		i = RCU_TORTURE_PIPE_LEN;
-	atomic_inc(&rcu_torture_wcount[i]);
-	if (++rp->rtort_pipe_count >= RCU_TORTURE_PIPE_LEN) {
-		rp->rtort_mbtest = 0;
-		rcu_torture_free(rp);
-	} else
-		cur_ops->deferredfree(rp);
-}
-
-static void rcu_torture_deferred_free(struct rcu_torture *p)
-{
-	call_rcu(&p->rtort_rcu, rcu_torture_cb);
-}
-
-static struct rcu_torture_ops rcu_ops = {
-	.init = NULL,
-	.cleanup = NULL,
-	.readlock = rcu_torture_read_lock,
-	.readdelay = rcu_read_delay,
-	.readunlock = rcu_torture_read_unlock,
-	.completed = rcu_torture_completed,
-	.deferredfree = rcu_torture_deferred_free,
-	.sync = synchronize_rcu,
-	.cb_barrier = rcu_barrier,
-	.stats = NULL,
-	.irqcapable = 1,
-	.name = "rcu"
-};
-
-static void rcu_sync_torture_deferred_free(struct rcu_torture *p)
-{
-	int i;
-	struct rcu_torture *rp;
-	struct rcu_torture *rp1;
-
-	cur_ops->sync();
-	list_add(&p->rtort_free, &rcu_torture_removed);
-	list_for_each_entry_safe(rp, rp1, &rcu_torture_removed, rtort_free) {
-		i = rp->rtort_pipe_count;
-		if (i > RCU_TORTURE_PIPE_LEN)
-			i = RCU_TORTURE_PIPE_LEN;
-		atomic_inc(&rcu_torture_wcount[i]);
-		if (++rp->rtort_pipe_count >= RCU_TORTURE_PIPE_LEN) {
-			rp->rtort_mbtest = 0;
-			list_del(&rp->rtort_free);
-			rcu_torture_free(rp);
-		}
-	}
-}
-
-static void rcu_sync_torture_init(void)
-{
-	INIT_LIST_HEAD(&rcu_torture_removed);
-}
-
-static struct rcu_torture_ops rcu_sync_ops = {
-	.init = rcu_sync_torture_init,
-	.cleanup = NULL,
-	.readlock = rcu_torture_read_lock,
-	.readdelay = rcu_read_delay,
-	.readunlock = rcu_torture_read_unlock,
-	.completed = rcu_torture_completed,
-	.deferredfree = rcu_sync_torture_deferred_free,
-	.sync = synchronize_rcu,
-	.cb_barrier = NULL,
-	.stats = NULL,
-	.irqcapable = 1,
-	.name = "rcu_sync"
-};
-
-/*
- * Definitions for rcu_bh torture testing.
- */
-
-static int rcu_bh_torture_read_lock(void) __acquires(RCU_BH)
-{
-	rcu_read_lock_bh();
-	return 0;
-}
-
-static void rcu_bh_torture_read_unlock(int idx) __releases(RCU_BH)
-{
-	rcu_read_unlock_bh();
-}
-
-static int rcu_bh_torture_completed(void)
-{
-	return rcu_batches_completed_bh();
-}
-
-static void rcu_bh_torture_deferred_free(struct rcu_torture *p)
-{
-	call_rcu_bh(&p->rtort_rcu, rcu_torture_cb);
-}
-
-struct rcu_bh_torture_synchronize {
-	struct rcu_head head;
-	struct completion completion;
-};
-
-static void rcu_bh_torture_wakeme_after_cb(struct rcu_head *head)
-{
-	struct rcu_bh_torture_synchronize *rcu;
-
-	rcu = container_of(head, struct rcu_bh_torture_synchronize, head);
-	complete(&rcu->completion);
-}
-
-static void rcu_bh_torture_synchronize(void)
-{
-	struct rcu_bh_torture_synchronize rcu;
-
-	init_completion(&rcu.completion);
-	call_rcu_bh(&rcu.head, rcu_bh_torture_wakeme_after_cb);
-	wait_for_completion(&rcu.completion);
-}
-
-static struct rcu_torture_ops rcu_bh_ops = {
-	.init = NULL,
-	.cleanup = NULL,
-	.readlock = rcu_bh_torture_read_lock,
-	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
-	.readunlock = rcu_bh_torture_read_unlock,
-	.completed = rcu_bh_torture_completed,
-	.deferredfree = rcu_bh_torture_deferred_free,
-	.sync = rcu_bh_torture_synchronize,
-	.cb_barrier = rcu_barrier_bh,
-	.stats = NULL,
-	.irqcapable = 1,
-	.name = "rcu_bh"
-};
-
-static struct rcu_torture_ops rcu_bh_sync_ops = {
-	.init = rcu_sync_torture_init,
-	.cleanup = NULL,
-	.readlock = rcu_bh_torture_read_lock,
-	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
-	.readunlock = rcu_bh_torture_read_unlock,
-	.completed = rcu_bh_torture_completed,
-	.deferredfree = rcu_sync_torture_deferred_free,
-	.sync = rcu_bh_torture_synchronize,
-	.cb_barrier = NULL,
-	.stats = NULL,
-	.irqcapable = 1,
-	.name = "rcu_bh_sync"
-};
-
-/*
- * Definitions for srcu torture testing.
- */
-
-static struct srcu_struct srcu_ctl;
-
-static void srcu_torture_init(void)
-{
-	init_srcu_struct(&srcu_ctl);
-	rcu_sync_torture_init();
-}
-
-static void srcu_torture_cleanup(void)
-{
-	synchronize_srcu(&srcu_ctl);
-	cleanup_srcu_struct(&srcu_ctl);
-}
-
-static int srcu_torture_read_lock(void) __acquires(&srcu_ctl)
-{
-	return srcu_read_lock(&srcu_ctl);
-}
-
-static void srcu_read_delay(struct rcu_random_state *rrsp)
-{
-	long delay;
-	const long uspertick = 1000000 / HZ;
-	const long longdelay = 10;
-
-	/* We want there to be long-running readers, but not all the time. */
-
-	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay * uspertick);
-	if (!delay)
-		schedule_timeout_interruptible(longdelay);
-}
-
-static void srcu_torture_read_unlock(int idx) __releases(&srcu_ctl)
-{
-	srcu_read_unlock(&srcu_ctl, idx);
-}
-
-static int srcu_torture_completed(void)
-{
-	return srcu_batches_completed(&srcu_ctl);
-}
-
-static void srcu_torture_synchronize(void)
-{
-	synchronize_srcu(&srcu_ctl);
-}
-
-static int srcu_torture_stats(char *page)
-{
-	int cnt = 0;
-	int cpu;
-	int idx = srcu_ctl.completed & 0x1;
-
-	cnt += sprintf(&page[cnt], "%s%s per-CPU(idx=%d):",
-		       torture_type, TORTURE_FLAG, idx);
-	for_each_possible_cpu(cpu) {
-		cnt += sprintf(&page[cnt], " %d(%d,%d)", cpu,
-			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[!idx],
-			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[idx]);
-	}
-	cnt += sprintf(&page[cnt], "\n");
-	return cnt;
-}
-
-static struct rcu_torture_ops srcu_ops = {
-	.init = srcu_torture_init,
-	.cleanup = srcu_torture_cleanup,
-	.readlock = srcu_torture_read_lock,
-	.readdelay = srcu_read_delay,
-	.readunlock = srcu_torture_read_unlock,
-	.completed = srcu_torture_completed,
-	.deferredfree = rcu_sync_torture_deferred_free,
-	.sync = srcu_torture_synchronize,
-	.cb_barrier = NULL,
-	.stats = srcu_torture_stats,
-	.name = "srcu"
-};
-
-/*
- * Definitions for sched torture testing.
- */
-
-static int sched_torture_read_lock(void)
-{
-	preempt_disable();
-	return 0;
-}
-
-static void sched_torture_read_unlock(int idx)
-{
-	preempt_enable();
-}
-
-static int sched_torture_completed(void)
-{
-	return 0;
-}
-
-static void rcu_sched_torture_deferred_free(struct rcu_torture *p)
-{
-	call_rcu_sched(&p->rtort_rcu, rcu_torture_cb);
-}
-
-static void sched_torture_synchronize(void)
-{
-	synchronize_sched();
-}
-
-static struct rcu_torture_ops sched_ops = {
-	.init = rcu_sync_torture_init,
-	.cleanup = NULL,
-	.readlock = sched_torture_read_lock,
-	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
-	.readunlock = sched_torture_read_unlock,
-	.completed = sched_torture_completed,
-	.deferredfree = rcu_sched_torture_deferred_free,
-	.sync = sched_torture_synchronize,
-	.cb_barrier = rcu_barrier_sched,
-	.stats = NULL,
-	.irqcapable = 1,
-	.name = "sched"
-};
-
-static struct rcu_torture_ops sched_ops_sync = {
-	.init = rcu_sync_torture_init,
-	.cleanup = NULL,
-	.readlock = sched_torture_read_lock,
-	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
-	.readunlock = sched_torture_read_unlock,
-	.completed = sched_torture_completed,
-	.deferredfree = rcu_sync_torture_deferred_free,
-	.sync = sched_torture_synchronize,
-	.cb_barrier = NULL,
-	.stats = NULL,
-	.name = "sched_sync"
-};
-
-/*
- * RCU torture writer kthread.  Repeatedly substitutes a new structure
- * for that pointed to by rcu_torture_current, freeing the old structure
- * after a series of grace periods (the "pipeline").
- */
-static int
-rcu_torture_writer(void *arg)
-{
-	int i;
-	long oldbatch = rcu_batches_completed();
-	struct rcu_torture *rp;
-	struct rcu_torture *old_rp;
-	static DEFINE_RCU_RANDOM(rand);
-
-	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
-	set_user_nice(current, 19);
-
-	do {
-		schedule_timeout_uninterruptible(1);
-		if ((rp = rcu_torture_alloc()) == NULL)
-			continue;
-		rp->rtort_pipe_count = 0;
-		udelay(rcu_random(&rand) & 0x3ff);
-		old_rp = rcu_torture_current;
-		rp->rtort_mbtest = 1;
-		rcu_assign_pointer(rcu_torture_current, rp);
-		smp_wmb();
-		if (old_rp) {
-			i = old_rp->rtort_pipe_count;
-			if (i > RCU_TORTURE_PIPE_LEN)
-				i = RCU_TORTURE_PIPE_LEN;
-			atomic_inc(&rcu_torture_wcount[i]);
-			old_rp->rtort_pipe_count++;
-			cur_ops->deferredfree(old_rp);
-		}
-		rcu_torture_current_version++;
-		oldbatch = cur_ops->completed();
-		rcu_stutter_wait("rcu_torture_writer");
-	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
-	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
-	rcutorture_shutdown_absorb("rcu_torture_writer");
-	while (!kthread_should_stop())
-		schedule_timeout_uninterruptible(1);
-	return 0;
-}
-
-/*
- * RCU torture fake writer kthread.  Repeatedly calls sync, with a random
- * delay between calls.
- */
-static int
-rcu_torture_fakewriter(void *arg)
-{
-	DEFINE_RCU_RANDOM(rand);
-
-	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
-	set_user_nice(current, 19);
-
-	do {
-		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
-		udelay(rcu_random(&rand) & 0x3ff);
-		cur_ops->sync();
-		rcu_stutter_wait("rcu_torture_fakewriter");
-	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
-
-	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task stopping");
-	rcutorture_shutdown_absorb("rcu_torture_fakewriter");
-	while (!kthread_should_stop())
-		schedule_timeout_uninterruptible(1);
-	return 0;
-}
-
-/*
- * RCU torture reader from timer handler.  Dereferences rcu_torture_current,
- * incrementing the corresponding element of the pipeline array.  The
- * counter in the element should never be greater than 1, otherwise, the
- * RCU implementation is broken.
- */
-static void rcu_torture_timer(unsigned long unused)
-{
-	int idx;
-	int completed;
-	static DEFINE_RCU_RANDOM(rand);
-	static DEFINE_SPINLOCK(rand_lock);
-	struct rcu_torture *p;
-	int pipe_count;
-
-	idx = cur_ops->readlock();
-	completed = cur_ops->completed();
-	p = rcu_dereference(rcu_torture_current);
-	if (p == NULL) {
-		/* Leave because rcu_torture_writer is not yet underway */
-		cur_ops->readunlock(idx);
-		return;
-	}
-	if (p->rtort_mbtest == 0)
-		atomic_inc(&n_rcu_torture_mberror);
-	spin_lock(&rand_lock);
-	cur_ops->readdelay(&rand);
-	n_rcu_torture_timers++;
-	spin_unlock(&rand_lock);
-	preempt_disable();
-	pipe_count = p->rtort_pipe_count;
-	if (pipe_count > RCU_TORTURE_PIPE_LEN) {
-		/* Should not happen, but... */
-		pipe_count = RCU_TORTURE_PIPE_LEN;
-	}
-	++__get_cpu_var(rcu_torture_count)[pipe_count];
-	completed = cur_ops->completed() - completed;
-	if (completed > RCU_TORTURE_PIPE_LEN) {
-		/* Should not happen, but... */
-		completed = RCU_TORTURE_PIPE_LEN;
-	}
-	++__get_cpu_var(rcu_torture_batch)[completed];
-	preempt_enable();
-	cur_ops->readunlock(idx);
-}
-
-/*
- * RCU torture reader kthread.  Repeatedly dereferences rcu_torture_current,
- * incrementing the corresponding element of the pipeline array.  The
- * counter in the element should never be greater than 1, otherwise, the
- * RCU implementation is broken.
- */
-static int
-rcu_torture_reader(void *arg)
-{
-	int completed;
-	int idx;
-	DEFINE_RCU_RANDOM(rand);
-	struct rcu_torture *p;
-	int pipe_count;
-	struct timer_list t;
-
-	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
-	set_user_nice(current, 19);
-	if (irqreader && cur_ops->irqcapable)
-		setup_timer_on_stack(&t, rcu_torture_timer, 0);
-
-	do {
-		if (irqreader && cur_ops->irqcapable) {
-			if (!timer_pending(&t))
-				mod_timer(&t, 1);
-		}
-		idx = cur_ops->readlock();
-		completed = cur_ops->completed();
-		p = rcu_dereference(rcu_torture_current);
-		if (p == NULL) {
-			/* Wait for rcu_torture_writer to get underway */
-			cur_ops->readunlock(idx);
-			schedule_timeout_interruptible(HZ);
-			continue;
-		}
-		if (p->rtort_mbtest == 0)
-			atomic_inc(&n_rcu_torture_mberror);
-		cur_ops->readdelay(&rand);
-		preempt_disable();
-		pipe_count = p->rtort_pipe_count;
-		if (pipe_count > RCU_TORTURE_PIPE_LEN) {
-			/* Should not happen, but... */
-			pipe_count = RCU_TORTURE_PIPE_LEN;
-		}
-		++__get_cpu_var(rcu_torture_count)[pipe_count];
-		completed = cur_ops->completed() - completed;
-		if (completed > RCU_TORTURE_PIPE_LEN) {
-			/* Should not happen, but... */
-			completed = RCU_TORTURE_PIPE_LEN;
-		}
-		++__get_cpu_var(rcu_torture_batch)[completed];
-		preempt_enable();
-		cur_ops->readunlock(idx);
-		schedule();
-		rcu_stutter_wait("rcu_torture_reader");
-	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
-	VERBOSE_PRINTK_STRING("rcu_torture_reader task stopping");
-	rcutorture_shutdown_absorb("rcu_torture_reader");
-	if (irqreader && cur_ops->irqcapable)
-		del_timer_sync(&t);
-	while (!kthread_should_stop())
-		schedule_timeout_uninterruptible(1);
-	return 0;
-}
-
-/*
- * Create an RCU-torture statistics message in the specified buffer.
- */
-static int
-rcu_torture_printk(char *page)
-{
-	int cnt = 0;
-	int cpu;
-	int i;
-	long pipesummary[RCU_TORTURE_PIPE_LEN + 1] = { 0 };
-	long batchsummary[RCU_TORTURE_PIPE_LEN + 1] = { 0 };
-
-	for_each_possible_cpu(cpu) {
-		for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
-			pipesummary[i] += per_cpu(rcu_torture_count, cpu)[i];
-			batchsummary[i] += per_cpu(rcu_torture_batch, cpu)[i];
-		}
-	}
-	for (i = RCU_TORTURE_PIPE_LEN - 1; i >= 0; i--) {
-		if (pipesummary[i] != 0)
-			break;
-	}
-	cnt += sprintf(&page[cnt], "%s%s ", torture_type, TORTURE_FLAG);
-	cnt += sprintf(&page[cnt],
-		       "rtc: %p ver: %ld tfle: %d rta: %d rtaf: %d rtf: %d "
-		       "rtmbe: %d nt: %ld",
-		       rcu_torture_current,
-		       rcu_torture_current_version,
-		       list_empty(&rcu_torture_freelist),
-		       atomic_read(&n_rcu_torture_alloc),
-		       atomic_read(&n_rcu_torture_alloc_fail),
-		       atomic_read(&n_rcu_torture_free),
-		       atomic_read(&n_rcu_torture_mberror),
-		       n_rcu_torture_timers);
-	if (atomic_read(&n_rcu_torture_mberror) != 0)
-		cnt += sprintf(&page[cnt], " !!!");
-	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
-	if (i > 1) {
-		cnt += sprintf(&page[cnt], "!!! ");
-		atomic_inc(&n_rcu_torture_error);
-		WARN_ON_ONCE(1);
-	}
-	cnt += sprintf(&page[cnt], "Reader Pipe: ");
-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
-		cnt += sprintf(&page[cnt], " %ld", pipesummary[i]);
-	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
-	cnt += sprintf(&page[cnt], "Reader Batch: ");
-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
-		cnt += sprintf(&page[cnt], " %ld", batchsummary[i]);
-	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
-	cnt += sprintf(&page[cnt], "Free-Block Circulation: ");
-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
-		cnt += sprintf(&page[cnt], " %d",
-			       atomic_read(&rcu_torture_wcount[i]));
-	}
-	cnt += sprintf(&page[cnt], "\n");
-	if (cur_ops->stats)
-		cnt += cur_ops->stats(&page[cnt]);
-	return cnt;
-}
-
-/*
- * Print torture statistics.  Caller must ensure that there is only
- * one call to this function at a given time!!!  This is normally
- * accomplished by relying on the module system to only have one copy
- * of the module loaded, and then by giving the rcu_torture_stats
- * kthread full control (or the init/cleanup functions when rcu_torture_stats
- * thread is not running).
- */
-static void
-rcu_torture_stats_print(void)
-{
-	int cnt;
-
-	cnt = rcu_torture_printk(printk_buf);
-	printk(KERN_ALERT "%s", printk_buf);
-}
-
-/*
- * Periodically prints torture statistics, if periodic statistics printing
- * was specified via the stat_interval module parameter.
- *
- * No need to worry about fullstop here, since this one doesn't reference
- * volatile state or register callbacks.
- */
-static int
-rcu_torture_stats(void *arg)
-{
-	VERBOSE_PRINTK_STRING("rcu_torture_stats task started");
-	do {
-		schedule_timeout_interruptible(stat_interval * HZ);
-		rcu_torture_stats_print();
-		rcutorture_shutdown_absorb("rcu_torture_stats");
-	} while (!kthread_should_stop());
-	VERBOSE_PRINTK_STRING("rcu_torture_stats task stopping");
-	return 0;
-}
-
-static int rcu_idle_cpu;	/* Force all torture tasks off this CPU */
-
-/* Shuffle tasks such that we allow @rcu_idle_cpu to become idle. A special case
- * is when @rcu_idle_cpu = -1, when we allow the tasks to run on all CPUs.
- */
-static void rcu_torture_shuffle_tasks(void)
-{
-	cpumask_t tmp_mask;
-	int i;
-
-	cpus_setall(tmp_mask);
-	get_online_cpus();
-
-	/* No point in shuffling if there is only one online CPU (ex: UP) */
-	if (num_online_cpus() == 1) {
-		put_online_cpus();
-		return;
-	}
-
-	if (rcu_idle_cpu != -1)
-		cpu_clear(rcu_idle_cpu, tmp_mask);
-
-	set_cpus_allowed_ptr(current, &tmp_mask);
-
-	if (reader_tasks) {
-		for (i = 0; i < nrealreaders; i++)
-			if (reader_tasks[i])
-				set_cpus_allowed_ptr(reader_tasks[i],
-						     &tmp_mask);
-	}
-
-	if (fakewriter_tasks) {
-		for (i = 0; i < nfakewriters; i++)
-			if (fakewriter_tasks[i])
-				set_cpus_allowed_ptr(fakewriter_tasks[i],
-						     &tmp_mask);
-	}
-
-	if (writer_task)
-		set_cpus_allowed_ptr(writer_task, &tmp_mask);
-
-	if (stats_task)
-		set_cpus_allowed_ptr(stats_task, &tmp_mask);
-
-	if (rcu_idle_cpu == -1)
-		rcu_idle_cpu = num_online_cpus() - 1;
-	else
-		rcu_idle_cpu--;
-
-	put_online_cpus();
-}
-
-/* Shuffle tasks across CPUs, with the intent of allowing each CPU in the
- * system to become idle at a time and cut off its timer ticks. This is meant
- * to test the support for such tickless idle CPU in RCU.
- */
-static int
-rcu_torture_shuffle(void *arg)
-{
-	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task started");
-	do {
-		schedule_timeout_interruptible(shuffle_interval * HZ);
-		rcu_torture_shuffle_tasks();
-		rcutorture_shutdown_absorb("rcu_torture_shuffle");
-	} while (!kthread_should_stop());
-	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task stopping");
-	return 0;
-}
-
-/* Cause the rcutorture test to "stutter", starting and stopping all
- * threads periodically.
- */
-static int
-rcu_torture_stutter(void *arg)
-{
-	VERBOSE_PRINTK_STRING("rcu_torture_stutter task started");
-	do {
-		schedule_timeout_interruptible(stutter * HZ);
-		stutter_pause_test = 1;
-		if (!kthread_should_stop())
-			schedule_timeout_interruptible(stutter * HZ);
-		stutter_pause_test = 0;
-		rcutorture_shutdown_absorb("rcu_torture_stutter");
-	} while (!kthread_should_stop());
-	VERBOSE_PRINTK_STRING("rcu_torture_stutter task stopping");
-	return 0;
-}
-
-static inline void
-rcu_torture_print_module_parms(char *tag)
-{
-	printk(KERN_ALERT "%s" TORTURE_FLAG
-		"--- %s: nreaders=%d nfakewriters=%d "
-		"stat_interval=%d verbose=%d test_no_idle_hz=%d "
-		"shuffle_interval=%d stutter=%d irqreader=%d\n",
-		torture_type, tag, nrealreaders, nfakewriters,
-		stat_interval, verbose, test_no_idle_hz, shuffle_interval,
-		stutter, irqreader);
-}
-
-static struct notifier_block rcutorture_nb = {
-	.notifier_call = rcutorture_shutdown_notify,
-};
-
-static void
-rcu_torture_cleanup(void)
-{
-	int i;
-
-	mutex_lock(&fullstop_mutex);
-	if (fullstop == FULLSTOP_SHUTDOWN) {
-		printk(KERN_WARNING /* but going down anyway, so... */
-		       "Concurrent 'rmmod rcutorture' and shutdown illegal!\n");
-		mutex_unlock(&fullstop_mutex);
-		schedule_timeout_uninterruptible(10);
-		if (cur_ops->cb_barrier != NULL)
-			cur_ops->cb_barrier();
-		return;
-	}
-	fullstop = FULLSTOP_RMMOD;
-	mutex_unlock(&fullstop_mutex);
-	unregister_reboot_notifier(&rcutorture_nb);
-	if (stutter_task) {
-		VERBOSE_PRINTK_STRING("Stopping rcu_torture_stutter task");
-		kthread_stop(stutter_task);
-	}
-	stutter_task = NULL;
-	if (shuffler_task) {
-		VERBOSE_PRINTK_STRING("Stopping rcu_torture_shuffle task");
-		kthread_stop(shuffler_task);
-	}
-	shuffler_task = NULL;
-
-	if (writer_task) {
-		VERBOSE_PRINTK_STRING("Stopping rcu_torture_writer task");
-		kthread_stop(writer_task);
-	}
-	writer_task = NULL;
-
-	if (reader_tasks) {
-		for (i = 0; i < nrealreaders; i++) {
-			if (reader_tasks[i]) {
-				VERBOSE_PRINTK_STRING(
-					"Stopping rcu_torture_reader task");
-				kthread_stop(reader_tasks[i]);
-			}
-			reader_tasks[i] = NULL;
-		}
-		kfree(reader_tasks);
-		reader_tasks = NULL;
-	}
-	rcu_torture_current = NULL;
-
-	if (fakewriter_tasks) {
-		for (i = 0; i < nfakewriters; i++) {
-			if (fakewriter_tasks[i]) {
-				VERBOSE_PRINTK_STRING(
-					"Stopping rcu_torture_fakewriter task");
-				kthread_stop(fakewriter_tasks[i]);
-			}
-			fakewriter_tasks[i] = NULL;
-		}
-		kfree(fakewriter_tasks);
-		fakewriter_tasks = NULL;
-	}
-
-	if (stats_task) {
-		VERBOSE_PRINTK_STRING("Stopping rcu_torture_stats task");
-		kthread_stop(stats_task);
-	}
-	stats_task = NULL;
-
-	/* Wait for all RCU callbacks to fire.  */
-
-	if (cur_ops->cb_barrier != NULL)
-		cur_ops->cb_barrier();
-
-	rcu_torture_stats_print();  /* -After- the stats thread is stopped! */
-
-	if (cur_ops->cleanup)
-		cur_ops->cleanup();
-	if (atomic_read(&n_rcu_torture_error))
-		rcu_torture_print_module_parms("End of test: FAILURE");
-	else
-		rcu_torture_print_module_parms("End of test: SUCCESS");
-}
-
-static int __init
-rcu_torture_init(void)
-{
-	int i;
-	int cpu;
-	int firsterr = 0;
-	static struct rcu_torture_ops *torture_ops[] =
-		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
-		  &srcu_ops, &sched_ops, &sched_ops_sync, };
-
-	mutex_lock(&fullstop_mutex);
-
-	/* Process args and tell the world that the torturer is on the job. */
-	for (i = 0; i < ARRAY_SIZE(torture_ops); i++) {
-		cur_ops = torture_ops[i];
-		if (strcmp(torture_type, cur_ops->name) == 0)
-			break;
-	}
-	if (i == ARRAY_SIZE(torture_ops)) {
-		printk(KERN_ALERT "rcutorture: invalid torture type: \"%s\"\n",
-		       torture_type);
-		mutex_unlock(&fullstop_mutex);
-		return (-EINVAL);
-	}
-	if (cur_ops->init)
-		cur_ops->init(); /* no "goto unwind" prior to this point!!! */
-
-	if (nreaders >= 0)
-		nrealreaders = nreaders;
-	else
-		nrealreaders = 2 * num_online_cpus();
-	rcu_torture_print_module_parms("Start of test");
-	fullstop = FULLSTOP_DONTSTOP;
-
-	/* Set up the freelist. */
-
-	INIT_LIST_HEAD(&rcu_torture_freelist);
-	for (i = 0; i < ARRAY_SIZE(rcu_tortures); i++) {
-		rcu_tortures[i].rtort_mbtest = 0;
-		list_add_tail(&rcu_tortures[i].rtort_free,
-			      &rcu_torture_freelist);
-	}
-
-	/* Initialize the statistics so that each run gets its own numbers. */
-
-	rcu_torture_current = NULL;
-	rcu_torture_current_version = 0;
-	atomic_set(&n_rcu_torture_alloc, 0);
-	atomic_set(&n_rcu_torture_alloc_fail, 0);
-	atomic_set(&n_rcu_torture_free, 0);
-	atomic_set(&n_rcu_torture_mberror, 0);
-	atomic_set(&n_rcu_torture_error, 0);
-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
-		atomic_set(&rcu_torture_wcount[i], 0);
-	for_each_possible_cpu(cpu) {
-		for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
-			per_cpu(rcu_torture_count, cpu)[i] = 0;
-			per_cpu(rcu_torture_batch, cpu)[i] = 0;
-		}
-	}
-
-	/* Start up the kthreads. */
-
-	VERBOSE_PRINTK_STRING("Creating rcu_torture_writer task");
-	writer_task = kthread_run(rcu_torture_writer, NULL,
-				  "rcu_torture_writer");
-	if (IS_ERR(writer_task)) {
-		firsterr = PTR_ERR(writer_task);
-		VERBOSE_PRINTK_ERRSTRING("Failed to create writer");
-		writer_task = NULL;
-		goto unwind;
-	}
-	fakewriter_tasks = kzalloc(nfakewriters * sizeof(fakewriter_tasks[0]),
-	                           GFP_KERNEL);
-	if (fakewriter_tasks == NULL) {
-		VERBOSE_PRINTK_ERRSTRING("out of memory");
-		firsterr = -ENOMEM;
-		goto unwind;
-	}
-	for (i = 0; i < nfakewriters; i++) {
-		VERBOSE_PRINTK_STRING("Creating rcu_torture_fakewriter task");
-		fakewriter_tasks[i] = kthread_run(rcu_torture_fakewriter, NULL,
-		                                  "rcu_torture_fakewriter");
-		if (IS_ERR(fakewriter_tasks[i])) {
-			firsterr = PTR_ERR(fakewriter_tasks[i]);
-			VERBOSE_PRINTK_ERRSTRING("Failed to create fakewriter");
-			fakewriter_tasks[i] = NULL;
-			goto unwind;
-		}
-	}
-	reader_tasks = kzalloc(nrealreaders * sizeof(reader_tasks[0]),
-			       GFP_KERNEL);
-	if (reader_tasks == NULL) {
-		VERBOSE_PRINTK_ERRSTRING("out of memory");
-		firsterr = -ENOMEM;
-		goto unwind;
-	}
-	for (i = 0; i < nrealreaders; i++) {
-		VERBOSE_PRINTK_STRING("Creating rcu_torture_reader task");
-		reader_tasks[i] = kthread_run(rcu_torture_reader, NULL,
-					      "rcu_torture_reader");
-		if (IS_ERR(reader_tasks[i])) {
-			firsterr = PTR_ERR(reader_tasks[i]);
-			VERBOSE_PRINTK_ERRSTRING("Failed to create reader");
-			reader_tasks[i] = NULL;
-			goto unwind;
-		}
-	}
-	if (stat_interval > 0) {
-		VERBOSE_PRINTK_STRING("Creating rcu_torture_stats task");
-		stats_task = kthread_run(rcu_torture_stats, NULL,
-					"rcu_torture_stats");
-		if (IS_ERR(stats_task)) {
-			firsterr = PTR_ERR(stats_task);
-			VERBOSE_PRINTK_ERRSTRING("Failed to create stats");
-			stats_task = NULL;
-			goto unwind;
-		}
-	}
-	if (test_no_idle_hz) {
-		rcu_idle_cpu = num_online_cpus() - 1;
-		/* Create the shuffler thread */
-		shuffler_task = kthread_run(rcu_torture_shuffle, NULL,
-					  "rcu_torture_shuffle");
-		if (IS_ERR(shuffler_task)) {
-			firsterr = PTR_ERR(shuffler_task);
-			VERBOSE_PRINTK_ERRSTRING("Failed to create shuffler");
-			shuffler_task = NULL;
-			goto unwind;
-		}
-	}
-	if (stutter < 0)
-		stutter = 0;
-	if (stutter) {
-		/* Create the stutter thread */
-		stutter_task = kthread_run(rcu_torture_stutter, NULL,
-					  "rcu_torture_stutter");
-		if (IS_ERR(stutter_task)) {
-			firsterr = PTR_ERR(stutter_task);
-			VERBOSE_PRINTK_ERRSTRING("Failed to create stutter");
-			stutter_task = NULL;
-			goto unwind;
-		}
-	}
-	register_reboot_notifier(&rcutorture_nb);
-	mutex_unlock(&fullstop_mutex);
-	return 0;
-
-unwind:
-	mutex_unlock(&fullstop_mutex);
-	rcu_torture_cleanup();
-	return firsterr;
-}
-
-module_init(rcu_torture_init);
-module_exit(rcu_torture_cleanup);
-
-
+Please consider pulling my linux-next branch:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git linux-next
+
+Here it is, a bit later than I was hoping but well coordinated with Greg &
+Rafael.  Shortlog & diffstat below.
+
+Perhaps the most visible change is Rafael's suspend/resume stuff; it doesn't
+appear to introduce any problems that your tree doesn't already have, so I'm
+hopeful that things will go smoothly.  Aside from that there's the usual
+hotplug related churn (things really are improving here, honest), and several
+consolidation patches from Bjorn.
+
+If things go well we might have a couple of more SR-IOV support patches soon
+(all of the preparatory patches are already in), but those should have a
+fairly limited impact since they mainly add a few new APIs for drivers to use
+on SR-IOV capable hardware.
+
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
+
+Adam Jackson (1):
+      PCI quirks: piix3: warn softer about enabling passive release
+
+Alan Stern (1):
+      PCI: fix incorrect error return in pci_enable_wake
+
+Alex Chiang (1):
+      PCI hotplug: acpiphp whitespace cleanup
+
+Andrew Morton (1):
+      PCI: uninline pci_ioremap_bar()
+
+Andrew Patterson (8):
+      ACPI/PCI: include missing acpi.h file in pci-acpi.h.
+      ACPI/PCI: call _OSC support during root bridge discovery
+      ACPI/PCI: PCI extended config _OSC support called when root bridge added
+      ACPI/PCI: PCIe ASPM _OSC support capabilities called when root bridge added
+      ACPI/PCI: PCIe AER _OSC support capabilities called when root bridge added
+      ACPI/PCI: PCI MSI _OSC support capabilities called when root bridge added
+      ACPI/PCI: remove obsolete _OSC capability support functions
+      PCI: Use msleep instead of cpu_relax during ASPM link retraining
+
+Arjan van de Ven (1):
+      resource: allow MMIO exclusivity for device drivers
+
+Ben Hutchings (2):
+      PCI: Add pci_clear_master() as opposite of pci_set_master()
+      net: sfc: Use pci_clear_master() to disable bus mastering
+
+Benjamin Herrenschmidt (1):
+      PCI: Add legacy_io/mem to all busses
+
+Bjorn Helgaas (23):
+      PCI: make PCI bus resource messages more meaningful
+      x86/PCI: make PCI bus locality messages more meaningful
+      PCI: pcie port driver: remove extra printks
+      PCI hotplug: cpqphp: use config space PCI interrupt pin encoding
+      PCI: use config space encoding in pci_get_interrupt_pin()
+      x86/PCI: use config space encoding for interrupt pins
+      x86/PCI: minor logic simplications
+      PCI: add pci_swizzle_interrupt_pin()
+      PCI: arm: use generic pci_swizzle_interrupt_pin()
+      PCI: sh: use generic pci_swizzle_interrupt_pin()
+      PCI: powerpc: use generic pci_swizzle_interrupt_pin()
+      PCI: alpha: use generic pci_swizzle_interrupt_pin()
+      PCI: x86: use generic pci_swizzle_interrupt_pin()
+      PCI: mips: use generic pci_swizzle_interrupt_pin()
+      PCI: parisc: use generic pci_swizzle_interrupt_pin()
+      PCI: add pci_common_swizzle() for INTx swizzling
+      PCI: alpha: use generic INTx swizzle from PCI core
+      PCI: arm: use generic INTx swizzle from PCI core
+      PCI: mips: use generic INTx swizzle from PCI core
+      PCI: sh: use generic INTx swizzle from PCI core
+      PCI: x86/visws: use generic INTx swizzle from PCI core
+      PCI: use dev_printk for PCI bus resource mssages
+      x86/PCI: use dev_printk for PCI bus locality messages
+
+Chris Wright (2):
+      PCI: allow pci driver to support only dynids
+      PCI: pci-stub module to reserve pci device
+
+Hidetoshi Seto (1):
+      PCI hotplug: aerdrv: fix a typo in error message
+
+Ingo Molnar (1):
+      PCI: Don't carp about BAR allocation failures in quiet boot
+
+Jacob Pan (1):
+      PCI: avoid early PCI mmconfig init if pci=noearly is given in cmdline
+
+Jesse Barnes (3):
+      PCI: check mmap range of /proc/bus/pci files too
+      PCI: fixup whitespace in quirks.c
+      PCI: set device wakeup capable flag if platform support is present
+
+Julia Lawall (2):
+      drivers/pci/hotplug: Add missing pci_dev_get
+      PCI hotplug: remove redundant test in cpq hotplug
+
+Kay Sievers (1):
+      PCI: struct device - replace bus_id with dev_name(), dev_set_name()
+
+Kenji Kaneshige (6):
+      PCI hotplug: pciehp: remove unnecessary wait after turning power off
+      PCI: pciehp: add ACPI based slot detection
+      PCI: pciehp: add auto option to pciehp_detect_mode
+      PCI hotplug: introduce functions for ACPI slot detection
+      PCI: pciehp: ignore undefined bit in link status register
+      PCI: pciehp: cleanup register and field definitions
+
+Linus Torvalds (1):
+      PCI: extend on the ICH motherboard IO decode quirk list
+
+Matthew Garrett (1):
+      PCI/ACPI:  acpiphp: Identify more removable slots
+
+Rafael J. Wysocki (19):
+      PCI: Suspend and resume PCI Express ports with interrupts disabled
+      PCI: handle PCI state saving with interrupts disabled
+      PCI PM: Fix pci_update_current_state
+      PCI PM: Split PCI Express port suspend-resume
+      x86/PCI: Do not use interrupt links for devices using MSI-X
+      PCI: PCIe portdrv: Add kerneldoc comments to some core functions
+      PCI: PCIe portdrv: Fix suspend and resume of PCI Express port services
+      PCI: PCIe portdrv: Rearrange code so that related things are together
+      PCI: PCIe portdrv: Add kerneldoc comments to remining core funtions
+      PCI PM: Fix poweroff and restore callbacks
+      PCI PM: Add suspend counterpart of pci_reenable_device
+      PCI PM: Power-manage devices without drivers during suspend-resume
+      PCI PM: Move pci_has_legacy_pm_support
+      PCI PM: Avoid touching devices behind bridges in unknown state
+      PCI PM: Rearrange code in pci-driver.c
+      PCI PM: Call pci_fixup_device from legacy routines
+      PCI PM: Register power state of devices during initialization
+      PCI PM: Run default PM callbacks for all devices using new framework
+      PCI PM: Put PM callbacks in the order of execution
+
+Rusty Russell (1):
+      PCI: work_on_cpu: use in drivers/pci/pci-driver.c
+
+Shaohua Li (1):
+      PCI: keep ASPM link state consistent throughout PCIe hierarchy
+
+Sheng Yang (3):
+      PCI: Refactor pci_reset_function()
+      PCI: add PCI Advanced Feature Capability defines
+      PCI: Extend pci_reset_function() to support PCI Advanced Features
+
+Stephen Hemminger (3):
+      PCI: handle long delays in VPD access
+      PCI: revise VPD access interface
+      PCI: add interface to set visible size of VPD
+
+Taku Izumi (3):
+      PCI: revert additional _OSC evaluation
+      PCI/ACPI: Remove unnecessary _OSC evaluation for control request
+      pci-acpi: Cleanup _OSC evaluation code
+
+Trent Piepho (1):
+      PCI: Make settable sysfs attributes more consistent
+
+Yu Zhao (9):
+      PCI: enhance pci_ari_enabled()
+      PCI: remove unnecessary arg of pci_update_resource()
+      PCI: define PCI resource names in an 'enum'
+      PCI: remove unnecessary condition check in pci_restore_bars()
+      PCI: export __pci_read_base()
+      PCI: allow pci_alloc_child_bus() to handle a NULL bridge
+      PCI: add a new function to map BAR offsets
+      PCI: cleanup pci_bus_add_devices()
+      PCI: factor pci_bus_add_child() from pci_bus_add_devices()
+
+ Documentation/PCI/pci.txt              |    3 +-
+ Documentation/kernel-parameters.txt    |    4 +
+ arch/alpha/kernel/pci.c                |   18 --
+ arch/alpha/kernel/pci_impl.h           |   13 +-
+ arch/alpha/kernel/sys_dp264.c          |    2 +-
+ arch/alpha/kernel/sys_eiger.c          |    2 +-
+ arch/alpha/kernel/sys_miata.c          |    2 +-
+ arch/alpha/kernel/sys_noritake.c       |    2 +-
+ arch/alpha/kernel/sys_ruffian.c        |    2 +-
+ arch/alpha/kernel/sys_sable.c          |    2 +-
+ arch/arm/include/asm/mach/pci.h        |    2 +-
+ arch/arm/kernel/bios32.c               |   27 --
+ arch/arm/mach-integrator/pci.c         |   11 +-
+ arch/mips/pci/pci-ip27.c               |    6 -
+ arch/mips/pci/pci.c                    |   24 +--
+ arch/powerpc/kernel/prom_parse.c       |    7 +-
+ arch/sh/drivers/pci/ops-cayman.c       |    9 +-
+ arch/sh/drivers/pci/pci.c              |   22 +--
+ arch/x86/kernel/pci-dma.c              |    2 +-
+ arch/x86/mm/init_32.c                  |    2 +
+ arch/x86/mm/init_64.c                  |    2 +
+ arch/x86/pci/acpi.c                    |    7 +-
+ arch/x86/pci/common.c                  |   12 +-
+ arch/x86/pci/i386.c                    |    4 +-
+ arch/x86/pci/init.c                    |    3 +-
+ arch/x86/pci/irq.c                     |   54 ++--
+ arch/x86/pci/visws.c                   |   20 +--
+ drivers/acpi/pci_root.c                |   20 ++
+ drivers/net/e1000e/netdev.c            |    2 +-
+ drivers/net/sfc/falcon.c               |    4 +-
+ drivers/parisc/dino.c                  |    4 +-
+ drivers/parisc/iosapic.c               |    3 +-
+ drivers/pci/Kconfig                    |    9 +
+ drivers/pci/Makefile                   |    2 +
+ drivers/pci/access.c                   |  226 ++++++++++-----
+ drivers/pci/bus.c                      |   87 ++++---
+ drivers/pci/hotplug/Makefile           |    3 +
+ drivers/pci/hotplug/acpi_pcihp.c       |   69 +++++
+ drivers/pci/hotplug/acpiphp.h          |    2 +-
+ drivers/pci/hotplug/acpiphp_glue.c     |  117 ++------
+ drivers/pci/hotplug/acpiphp_ibm.c      |    2 +-
+ drivers/pci/hotplug/cpqphp_ctrl.c      |    6 +-
+ drivers/pci/hotplug/cpqphp_pci.c       |    2 +-
+ drivers/pci/hotplug/fakephp.c          |    1 +
+ drivers/pci/hotplug/pciehp.h           |   15 +-
+ drivers/pci/hotplug/pciehp_acpi.c      |  141 +++++++++
+ drivers/pci/hotplug/pciehp_core.c      |    1 +
+ drivers/pci/hotplug/pciehp_ctrl.c      |   26 +-
+ drivers/pci/hotplug/pciehp_hpc.c       |  329 ++++++--------------
+ drivers/pci/irq.c                      |    2 +-
+ drivers/pci/msi.c                      |   31 +--
+ drivers/pci/pci-acpi.c                 |   82 +++---
+ drivers/pci/pci-driver.c               |  420 ++++++++++++++++----------
+ drivers/pci/pci-stub.c                 |   47 +++
+ drivers/pci/pci-sysfs.c                |   95 +++----
+ drivers/pci/pci.c                      |  513 +++++++++++++++++++++++++-------
+ drivers/pci/pci.h                      |   34 ++-
+ drivers/pci/pcie/aer/aerdrv_acpi.c     |    1 -
+ drivers/pci/pcie/aer/aerdrv_errprint.c |    2 +-
+ drivers/pci/pcie/aspm.c                |  165 ++++++++---
+ drivers/pci/pcie/portdrv_bus.c         |   32 +--
+ drivers/pci/pcie/portdrv_core.c        |  240 +++++++++------
+ drivers/pci/pcie/portdrv_pci.c         |   21 +-
+ drivers/pci/probe.c                    |   40 ++-
+ drivers/pci/proc.c                     |   18 +-
+ drivers/pci/quirks.c                   |  112 ++++++--
+ drivers/pci/setup-bus.c                |    5 +-
+ drivers/pci/setup-res.c                |   24 +-
+ include/linux/ioport.h                 |   11 +-
+ include/linux/pci-acpi.h               |   23 +-
+ include/linux/pci.h                    |   90 ++++--
+ include/linux/pci_hotplug.h            |    2 +
+ include/linux/pci_regs.h               |   76 +++++-
+ kernel/resource.c                      |   61 ++++-
+ 74 files changed, 2150 insertions(+), 1332 deletions(-)
+ create mode 100644 drivers/pci/hotplug/pciehp_acpi.c
+ create mode 100644 drivers/pci/pci-stub.c
