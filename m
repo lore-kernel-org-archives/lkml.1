@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbZAGUuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbZAGUvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbZAGUuo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 15:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZAGUug
+	id S1758568AbZAGUvl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 15:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZAGUvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 15:50:36 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:50412 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753828AbZAGUuf (ORCPT
+	Wed, 7 Jan 2009 15:51:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45473
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754432AbZAGUvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 15:50:35 -0500
-Date: Wed, 7 Jan 2009 20:50:30 +0000
-From: Andy Whitcroft <apw@canonical.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Crutcher Dunnavant <crutcher+kernel@datastacks.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sysrq loglevel
-Message-ID: <20090107205030.GE12402@shadowen.org>
-References: <20090107123725.GC2520@shadowen.org> <20090107112539.972e60e2.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107112539.972e60e2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Jan 2009 15:51:31 -0500
+Date: Wed, 07 Jan 2009 12:51:33 -0800 (PST)
+Message-Id: <20090107.125133.214628094.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: peterz@infradead.org, jack@suse.cz, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, npiggin@suse.de
+Subject: Re: Increase dirty_ratio and dirty_background_ratio?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0901070833430.3057@localhost.localdomain>
+References: <20090107154517.GA5565@duck.suse.cz>
+	<1231345546.11687.314.camel@twins>
+	<alpine.LFD.2.00.0901070833430.3057@localhost.localdomain>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 11:25:39AM -0800, Andrew Morton wrote:
-> On Wed, 7 Jan 2009 12:37:58 +0000 Andy Whitcroft <apw@canonical.com> wrote:
-> 
-> > It seems that we deliberatly manage the console_loglevel while handling a
-> > sysrq request.  Raising it to 7 to emit the sysrq command header, and then
-> > lower it before processing the command itself.  When booting the kernel
-> > 'quiet' this means that we only see the header of the command and not its
-> > output on the console, the whole thing is in dmesg and thereby in syslog
-> > (if it is working).
-> 
-> I always thought it was fairly stupid.  Wouldn't we get the same effect
-> by tossing that code and switching those printks to KERN_EMERG?
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 7 Jan 2009 08:39:01 -0800 (PST)
 
-I believe it is different as the level is still KERN_INFO and that is
-what the consumers of /proc/kmsg will see, and that might affect where
-they are logged to.
-
-> > void __handle_sysrq(int key, struct tty_struct *tty, int check_mask)
-> > [...]
-> >         console_loglevel = 7;
-> >         printk(KERN_INFO "SysRq : ");
-> > [...]
-> >                         printk("%s\n", op_p->action_msg);
-> >                         console_loglevel = orig_log_level;
-> >                         op_p->handler(key, tty);
-> > [...]
+> On Wed, 7 Jan 2009, Peter Zijlstra wrote:
 > > 
-> > Is this intentional?  I can see arguments both ways.  One way to look at
-> > it would be that I asked for the output so I should get it regardless.
-> > The other side might be that consoles can be really slow (serial or
-> > something) and so only outputting it there if logging is enabled
-> > generally is sane.
+> > >   So the question is: What kind of workloads are lower limits supposed to
+> > > help? Desktop? Has anybody reported that they actually help? I'm asking
+> > > because we are probably going to increase limits to the old values for
+> > > SLES11 if we don't see serious negative impact on other workloads...
 > > 
-> > Obviously we can work round this at the moment using sysrq-7 to up the
-> > loglevel before the command and sysrq-4 after to restore quiet.
+> > Adding some CCs.
 > > 
-> > What do people think.  If we are happy with the status quo then I will
-> > spin a documentation patch to point out this behaviour and the work
-> > around.  Else I will happily spin a patch to fix it.
-> > 
+> > The idea was that 40% of the memory is a _lot_ these days, and writeback
+> > times will be huge for those hitting sync or similar. By lowering these
+> > you'd smooth that out a bit.
 > 
-> There is a legitimate use case, I think: to emit the sysrq command's
-> output into the log bufffer and not to the console[s].  So you can do
+> Not just a bit. If you have 4GB of RAM (not at all unusual for even just a 
+> regular desktop, never mind a "real" workstation), it's simply crazy to 
+> allow 1.5GB of dirty memory. Not unless you have a really wicked RAID 
+> system with great write performance that can push it out to disk (with 
+> seeking) in just a few seconds.
 > 
-> 	echo t > /proc/sysrq-trigger
-> 	dmesg -s 1000000 > foo
+> And few people have that.
+> 
+> For a server, where throughput matters but latency generally does not, go 
+> ahead and raise it. But please don't raise it for anything sane. The only 
+> time it makes sense upping that percentage is for some odd special-case 
+> benchmark that otherwise can fit the dirty data set in memory, and never 
+> syncs it (ie it deletes all the files after generating them).
+> 
+> In other words, yes, 40% dirty can make a big difference to benchmarks, 
+> but is almost never actually a good idea any more.
 
-Yeah I agree.  I will spin a documentation patch to capture this
-reasoning so we don't end up asking again in a years time.
+I have to say that my workstation is still helped by reverting this
+change and all I do is play around in GIT trees and read email.
 
--apw
+It's a slow UltraSPARC-IIIi 1.5GHz machine with a very slow IDE disk
+and 2GB of ram.
+
+With the dirty ratio changeset there, I'm waiting for disk I/O
+seemingly all the time.  Without it, I only feel the machine seize up
+in disk I/O when I really punish it.
+
+Maybe all the dirty I/O is from my not using 'noatime', and if that's
+how I should "fix" this then we can ask why isn't it the default? :)
+
+I did mention this when the original changeset went into the tree.
+
