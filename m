@@ -1,42 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZAGRUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZAGRVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757231AbZAGRUq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 12:20:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZAGRUe
+	id S1753602AbZAGRVG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 12:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbZAGRUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 12:20:34 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:52381 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbZAGRUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 12:20:33 -0500
-Message-ID: <4964E44F.3040609@knaff.lu>
-Date: Wed, 07 Jan 2009 18:20:15 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Sam Ravnborg <sam@ravnborg.org>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Patches applied to tip:x86/setup-lzma
-References: <200901042146.n04LkGTC005829@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <496468EE.9000802@zytor.com>
-In-Reply-To: <496468EE.9000802@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 7 Jan 2009 12:20:45 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:28038 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756549AbZAGRUn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 12:20:43 -0500
+Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>
+	 <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
+	 <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
+	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
+	 <49636799.1010109@novell.com> <20090106214229.GD6741@linux.vnet.ibm.com>
+	 <1231278275.11687.111.camel@twins>
+	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
+	 <1231279660.11687.121.camel@twins>
+	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
+	 <1231281801.11687.125.camel@twins> <1231283778.11687.136.camel@twins>
+	 <1231329783.11687.287.camel@twins>
+	 <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 12:20:01 -0500
+Message-Id: <1231348801.27813.31.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4964E447.017E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> I just applied these three patches to the tip:x86/setup-lzma tree to
-> resolve the build issues in some configurations.  The third and largest
-> patch is a slightly modified version of Alain's last patch, the other
-> two addresses the Kconfig chain.  Please review.
+On Wed, 2009-01-07 at 08:25 -0800, Linus Torvalds wrote:
 > 
-> 	-hpa
+> On Wed, 7 Jan 2009, Peter Zijlstra wrote:
+> >
+> > Change mutex contention behaviour such that it will sometimes busy wait on
+> > acquisition - moving its behaviour closer to that of spinlocks.
 > 
+> Ok, this one looks _almost_ ok.
 > 
+> The only problem is that I think you've lost the UP case. 
+> 
+> In UP, you shouldn't have the code to spin, and the "spin_or_schedule()" 
+> should fall back to just the schedule case.
+> 
+> It migth also be worthwhile to try to not set the owner, and re-organize 
+> that a bit (by making it a inline function that sets the owner only for 
+> CONFIG_SMP or lockdep/debug). 
 
-Looks ok to me
+So far I haven't found any btrfs benchmarks where this is slower than
+mutexes without any spinning.  But, it isn't quite as fast as the btrfs
+spin.
 
-Alain
+I'm using three different benchmarks, and they hammer on different
+things.  All against btrfs and a single sata drive.
+
+* dbench -t 30 50, which means run dbench 50 for 30 seconds.   It is a
+broad workload that hammers on lots of code, but it also tends to go
+faster when things are less fair.  These numbers are stable across runs.
+Some IO is done at the very start of the run, but the bulk of the run is
+CPU bound in various btrfs btrees.
+
+Plain mutex: dbench reports 240MB/s
+Simple spin: dbench reports 560MB/s
+Peter's v4: dbench reports 388MB/s
+
+* 50 procs creating 10,000 files (4k each), one dir per proc.  The
+result is 50 dirs and each dir has 10,000 files.  This is mostly CPU
+bound for the procs, but pdflush and friends are doing lots of IO.
+
+Plain mutex: avg: 115 files/s avg system time for each proc: 1.6s
+Simple spin: avg: 152 files/s avg system time for each proc: 2s
+Peter's v4:  avg: 130 files/s avg system time for each proc: 2.9s
+
+I would have expected Peter's patch to use less system time than my
+spin.  If I change his patch to limit the spin to 512 iterations (same
+as my code), the system time goes back down to 1.7s, but the files/s
+doesn't improve.
+
+* Parallel stat:  the last benchmark is the most interesting, since it
+really hammers on the btree locking speed.  I take the directory tree
+the file creation run (50 dirs, 10,000 files each) and have 50 procs
+running stat on all the files in parallel.
+
+Before the run I clear the inode cache but leave the page cache.  So,
+everything is hot in the btree but there are no inodes in cache.
+
+Plain mutex: 9.488s real, 8.6 sys
+Simple spin: 3.8s real 13.8s sys
+Peter's v4: 7.9s real 8.5s sys
+
+-chris
+
+
 
