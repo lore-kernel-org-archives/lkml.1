@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZAGFJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZAGFKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbZAGFJW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 00:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZAGFJD
+	id S1757631AbZAGFKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 00:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZAGFKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 00:09:03 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:41532 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbZAGFJB (ORCPT
+	Wed, 7 Jan 2009 00:10:35 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43287 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbZAGFKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 00:09:01 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Wed, 07 Jan 2009 00:08:54 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: powerpc: introduce asm/swab.h
-In-reply-to: <alpine.LFD.2.00.0901062056540.3057@localhost.localdomain>
-Message-id: <alpine.LFD.2.00.0901070005530.26118@xanadu.home>
-References: <200901070400.n0740Ore002063@hera.kernel.org>
- <1231303340.14860.61.camel@pasglop>
- <alpine.LFD.2.00.0901062056540.3057@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 7 Jan 2009 00:10:34 -0500
+Date: Wed, 7 Jan 2009 05:10:27 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, ccache@lists.samba.org
+Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
+Message-ID: <20090107051027.GU28946@ZenIV.linux.org.uk>
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1LKDeQ-0002xz-7E@closure.thunk.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Jan 2009, Linus Torvalds wrote:
+On Tue, Jan 06, 2009 at 10:15:26AM -0500, Theodore Ts'o wrote:
+> Or, if that's too complicated, maybe it would be worthwhile to have
+> kbuild create its own specialized ccache system?  Note that the last two
+> solutions rule out using distcc, unless we can encapsulate the build
+> process from a series of Makefile macros to a shell or C program, which
+> could then be injected to the remote host system to be executed by
+> distcc.  One value of doing that is the CRC or MD5 of the shell script
+> could be used as the version tag for the cache system.
 
-> 
-> 
-> On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
-> > 
-> > Was this tested ? I see no arch maintainer signed-off here, it appears
-> > to at least break ppc32, and contains hunks that paulus says were
-> > explicitely nacked (removing of our ld_* macros) etc...
-> 
-> It did no such thing. It just moved the file.
-> 
-> Use
-> 
-> 	git show -M -B 156ca2bbf6503a02d7d6829886ce381d572de66e
-> 
-> to see how <asm/swab.h> is just the old <asm/byteorder.h> renamed, and 
-> with some stuff moved around.
+Ho-hum...  Could somebody explain why the hell had we switched to this
+"intermediate .s" approach, anyway?  It's not as if we couldn't run
+objcopy after what we used to do...
 
-I suspect that all archs that define __SWAB_64_THRU_32__ are broken atm.
-
-According to "git grep ___swab32", there is no more definition for 
-___swab32 anywhere.
-
-
-Nicolas
+BTW, do we care about non-ELF targets at all?
