@@ -1,53 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZAGKVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbZAGKVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbZAGKVg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 05:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZAGKV1
+	id S1752376AbZAGKVu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 05:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZAGKVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 05:21:27 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60637 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbZAGKV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 05:21:26 -0500
-Subject: GFS2: Pull request (fixes)
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Wed, 07 Jan 2009 10:21:59 +0000
-Message-Id: <1231323719.3511.3.camel@localhost.localdomain>
+	Wed, 7 Jan 2009 05:21:32 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:50312 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754681AbZAGKVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 05:21:31 -0500
+Date: Wed, 7 Jan 2009 11:21:19 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/23] avr32: introduce asm/swab.h
+Message-ID: <20090107112119.2e12d737@hskinnemoen-d830>
+In-Reply-To: <1231277445.964.259.camel@brick>
+References: <1231277445.964.259.camel@brick>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Harvey Harrison wrote:
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Please consider pulling the following small fixes,
+Looks good to me. This fixes the recent userspace breakage, right?
 
-Steve.
-
------------------------------------------------------------------------------------
-The following changes since commit ede6f5aea054d3fb67c78857f7abdee602302043:
-  Linus Torvalds (1):
-        Fix up 64-bit byte swaps for most 32-bit architectures
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git master
-
-Benjamin Marzinski (1):
-      GFS2: Fix typo in gfs_page_mkwrite()
-
-Steven Whitehouse (2):
-      GFS2: Set GFP_NOFS when allocating page on write
-      GFS2: LSF and LBD are now one and the same
-
- fs/gfs2/Kconfig       |    2 +-
- fs/gfs2/ops_address.c |    1 +
- fs/gfs2/ops_file.c    |    2 +-
- 3 files changed, 3 insertions(+), 2 deletions(-)
-
-
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
