@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZAGBow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZAGBt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZAGBow (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 20:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZAGBoi
+	id S1756592AbZAGBt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 20:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZAGBtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 20:44:38 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:42638 "EHLO fieldses.org"
+	Tue, 6 Jan 2009 20:49:17 -0500
+Received: from mx1.suse.de ([195.135.220.2]:58702 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757329AbZAGBoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 20:44:37 -0500
-Date: Tue, 6 Jan 2009 20:44:22 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Matt Helsley <matthltc@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-Message-ID: <20090107014422.GA17913@fieldses.org>
-References: <20090106200229.GA17031@us.ibm.com> <1231274682.20316.65.camel@heimdal.trondhjem.org> <20090106215831.GE18147@us.ibm.com> <m1eizg11fy.fsf@frodo.ebiederm.org> <1231283734.8041.6.camel@heimdal.trondhjem.org> <20090106233238.GD13785@fieldses.org> <1231284943.8041.8.camel@heimdal.trondhjem.org> <1231287607.11487.0.camel@heimdal.trondhjem.org> <20090107002608.GK13785@fieldses.org> <1231288706.11487.15.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
+	id S1751375AbZAGBtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 20:49:17 -0500
+Date: Wed, 7 Jan 2009 02:49:15 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 -mm merge plans
+Message-ID: <20090107014915.GE3390@wotan.suse.de>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151131.b6c4ff0b.akpm@linux-foundation.org> <20090106232418.GB25103@infradead.org> <20090107011448.GB3390@wotan.suse.de> <87tz8b3nfe.fsf@basil.nowhere.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231288706.11487.15.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <87tz8b3nfe.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 07:38:26PM -0500, Trond Myklebust wrote:
-> On Tue, 2009-01-06 at 19:26 -0500, J. Bruce Fields wrote:
-> > On Tue, Jan 06, 2009 at 07:20:07PM -0500, Trond Myklebust wrote:
-> > > As for the NFSv4 clientid, I can't see how you would ever want to use
-> > > anything other than the init->utsname(), since the requirement is only
-> > > that the clientid string be unique and preserved across reboots. The
-> > > server isn't allowed to interpret the contents of the clientid string.
-> > > Ditto for the RPCSEC_GSS machine creds that are used to establish the
-> > > clientid.
-> > 
-> > If people eventually expect to be able to, say, migrate a container to
-> > another host while using an nfs mount as their storage, then they'd need
-> > the name to be that of the container, not of the host.
+On Wed, Jan 07, 2009 at 02:38:45AM +0100, Andi Kleen wrote:
+> Nick Piggin <npiggin@suse.de> writes:
+> >
+> > I can't see a problem with putting a global mutex around sys_sync (almost
+> > by definition, any app in the last 10+ years that calls sys_sync is not
+> > performance critical).
 > 
-> Why?
->
-> > Obviously we'd also need to ensure the container got its own nfsv4
-> > client state, etc., etc., and it sounds like we're far from that.
-> 
-> Again, why? Are you seriously proposing a plan to transport all NFS and
-> locking state directly from one kernel to another?
+> Hmm, but sync() used to (is still?) livelocky and when it takes a
 
-If people seem to think they can do live process and container
-migration:
+It's not livelocky because it no longer has to do repeated passes
+over the superblock list. It is subject to the single inode syncing
+issue where it can get stuck behind a process dirtying memory (same
+as fsync) but we've decided not to add complexity to improve that
+just yet, and see whether it turns out to be a real problem.
 
-	http://ols.fedoraproject.org/OLS/Reprints-2008/mirkin-reprint.pdf
 
-then moving the NFS state strikes me as not the greatest of their
-troubles.
+> minute or so to flush (and I've seen that) do you really want any
+> other sync user to block for a minute too?
 
-I'm not volunteering!
+sys_sync B which is invoked *after* sys_sync caller A should not
+return before A. If you didn't have a global lock, they'd tend to
+block one another's pages anyway. I think it's OK.
 
---b.
