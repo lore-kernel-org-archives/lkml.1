@@ -1,127 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbZAGO6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbZAGO7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758666AbZAGO6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZAGO6e
+	id S1758761AbZAGO7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZAGO7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:58:34 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35525 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751572AbZAGO6d convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:58:33 -0500
-Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
-From: Peter Zijlstra <peterz@infradead.org>
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <c62985530901070650x3264c6d5g14788c5440fe5d3@mail.gmail.com>
-References: <87r63ljzox.fsf@basil.nowhere.org> <49636799.1010109@novell.com>
-	 <20090106214229.GD6741@linux.vnet.ibm.com>
-	 <1231278275.11687.111.camel@twins>
-	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
-	 <1231279660.11687.121.camel@twins>
-	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
-	 <1231281801.11687.125.camel@twins> <1231283778.11687.136.camel@twins>
-	 <1231329783.11687.287.camel@twins>
-	 <c62985530901070650x3264c6d5g14788c5440fe5d3@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 07 Jan 2009 15:58:17 +0100
-Message-Id: <1231340297.11687.301.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 7 Jan 2009 09:59:32 -0500
+Received: from mga02.intel.com ([134.134.136.20]:61838 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753382AbZAGO7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 09:59:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,226,1231142400"; 
+   d="scan'208";a="479648869"
+Date: Wed, 7 Jan 2009 22:52:24 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/6] PCI: support the ATS capability
+Message-ID: <20090107145224.GB4697@yzhao12-linux.sh.intel.com>
+References: <20090107144716.GA4697@yzhao12-linux.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107144716.GA4697@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 15:50 +0100, Frédéric Weisbecker wrote:
-> 2009/1/7 Peter Zijlstra <peterz@infradead.org>:
-> > Change mutex contention behaviour such that it will sometimes busy wait on
-> > acquisition - moving its behaviour closer to that of spinlocks.
-> >
-> > This concept got ported to mainline from the -rt tree, where it was originally
-> > implemented for rtmutexes by Steven Rostedt, based on work by Gregory Haskins.
-> >
-> > Testing with Ingo's test-mutex application (http://lkml.org/lkml/2006/1/8/50)
-> > gave a 8% boost for VFS scalability on my testbox:
-> >
-> >  # echo MUTEX_SPIN > /debug/sched_features
-> >  # ./test-mutex V 16 10
-> >  2 CPUs, running 16 parallel test-tasks.
-> >  checking VFS performance.
-> >
-> >  avg ops/sec:                74910
-> >
-> >  # echo NO_MUTEX_SPIN > /debug/sched_features
-> >  # ./test-mutex V 16 10
-> >  2 CPUs, running 16 parallel test-tasks.
-> >  checking VFS performance.
-> >
-> >  avg ops/sec:                68804
-> >
-> > The key criteria for the busy wait is that the lock owner has to be running on
-> > a (different) cpu. The idea is that as long as the owner is running, there is a
-> > fair chance it'll release the lock soon, and thus we'll be better off spinning
-> > instead of blocking/scheduling.
-> >
-> > Since regular mutexes (as opposed to rtmutexes) do not atomically track the
-> > owner, we add the owner in a non-atomic fashion and deal with the races in
-> > the slowpath.
-> >
-> > Furthermore, to ease the testing of the performance impact of this new code,
-> > there is means to disable this behaviour runtime (without having to reboot
-> > the system), when scheduler debugging is enabled (CONFIG_SCHED_DEBUG=y),
-> > by issuing the following command:
-> >
-> >  # echo NO_MUTEX_SPIN > /debug/sched_features
-> >
-> > This command re-enables spinning again (this is also the default):
-> >
-> >  # echo MUTEX_SPIN > /debug/sched_features
-> >
-> > There's also a few new statistic fields in /proc/sched_debug
-> > (available if CONFIG_SCHED_DEBUG=y and CONFIG_SCHEDSTATS=y):
-> >
-> >  # grep mtx /proc/sched_debug
-> >  .mtx_spin                      : 2387
-> >  .mtx_sched                     : 2283
-> >  .mtx_spin                      : 1277
-> >  .mtx_sched                     : 1700
-> >
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Reviewed-and-signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
+The ATS spec can be found at http://www.pcisig.com/specifications/iov/ats/
+(it requires membership).
 
-> Sorry I haven't read all the previous talk about the older version.
-> But it is possible that, in hopefully rare cases, you enter
-> mutex_spin_or_schedule
-> multiple times, and try to spin for the same lock each of these times.
-> 
-> For each of the above break,
-> 
-> _if you exit the spin because the mutex is unlocked, and someone else
-> grab it before you
-> _ or simply the owner changed...
-> 
-> then you will enter again in mutex_spin_or_schedule, you have some chances that
-> rq->curr == the new owner, and then you will spin again.
-> And this situation can almost really make you behave like a spinlock...
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-You understand correctly, that is indeed possible.
+---
+ drivers/pci/pci.c        |   68 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci.h      |   15 ++++++++++
+ include/linux/pci_regs.h |   10 +++++++
+ 3 files changed, 93 insertions(+), 0 deletions(-)
 
-> Shouldn't it actually try only one time to spin, and if it calls again
-> mutex_spin_or_schedule()
-> then it would be better to schedule()  ?
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 061d1ee..5abab14 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1337,6 +1337,74 @@ void pci_enable_ari(struct pci_dev *dev)
+ 	bridge->ari_enabled = 1;
+ }
+ 
++/**
++ * pci_enable_ats - enable the ATS capability
++ * @dev: the PCI device
++ * @ps: the IOMMU page shift
++ *
++ * Returns 0 on success, or a negative value on error.
++ */
++int pci_enable_ats(struct pci_dev *dev, int ps)
++{
++	int pos;
++	u16 ctrl;
++
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ATS);
++	if (!pos)
++		return -ENODEV;
++
++	if (ps < PCI_ATS_MIN_STU)
++		return -EINVAL;
++
++	ctrl = PCI_ATS_CTRL_STU(ps - PCI_ATS_MIN_STU) | PCI_ATS_CTRL_ENABLE;
++	pci_write_config_word(dev, pos + PCI_ATS_CTRL, ctrl);
++
++	dev->ats_enabled = 1;
++
++	return 0;
++}
++
++/**
++ * pci_disable_ats - disable the ATS capability
++ * @dev: the PCI device
++ */
++void pci_disable_ats(struct pci_dev *dev)
++{
++	int pos;
++	u16 ctrl;
++
++	if (!dev->ats_enabled)
++		return;
++
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ATS);
++	if (!pos)
++		return;
++
++	pci_read_config_word(dev, pos + PCI_ATS_CTRL, &ctrl);
++	ctrl &= ~PCI_ATS_CTRL_ENABLE;
++	pci_write_config_word(dev, pos + PCI_ATS_CTRL, ctrl);
++}
++
++/**
++ * pci_ats_qdep - query ATS Invalidate Queue Depth
++ * @dev: the PCI device
++ *
++ * Returns the queue depth on success, or 0 on error.
++ */
++int pci_ats_qdep(struct pci_dev *dev)
++{
++	int pos;
++	u16 cap;
++
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ATS);
++	if (!pos)
++		return 0;
++
++	pci_read_config_word(dev, pos + PCI_ATS_CAP, &cap);
++
++	return PCI_ATS_CAP_QDEP(cap) ? : PCI_ATS_MAX_QDEP;
++}
++
+ int
+ pci_get_interrupt_pin(struct pci_dev *dev, struct pci_dev **bridge)
+ {
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 4bb156b..e6a1b5a 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -227,6 +227,7 @@ struct pci_dev {
+ 	unsigned int 	msi_enabled:1;
+ 	unsigned int	msix_enabled:1;
+ 	unsigned int	ari_enabled:1;	/* ARI forwarding */
++	unsigned int	ats_enabled:1;	/* Address Translation Service */
+ 	unsigned int	is_managed:1;
+ 	unsigned int	is_pcie:1;
+ 	pci_dev_flags_t dev_flags;
+@@ -1155,5 +1156,19 @@ static inline void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
+ }
+ #endif
+ 
++extern int pci_enable_ats(struct pci_dev *dev, int ps);
++extern void pci_disable_ats(struct pci_dev *dev);
++extern int pci_ats_qdep(struct pci_dev *dev);
++/**
++ * pci_ats_enabled - query the ATS status
++ * @dev: the PCI device
++ *
++ * Returns 1 if ATS capability is enabled, or 0 if not.
++ */
++static inline int pci_ats_enabled(struct pci_dev *dev)
++{
++	return dev->ats_enabled;
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* LINUX_PCI_H */
+diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
+index e5effd4..00c9db5 100644
+--- a/include/linux/pci_regs.h
++++ b/include/linux/pci_regs.h
+@@ -436,6 +436,7 @@
+ #define PCI_EXT_CAP_ID_DSN	3
+ #define PCI_EXT_CAP_ID_PWR	4
+ #define PCI_EXT_CAP_ID_ARI	14
++#define PCI_EXT_CAP_ID_ATS	15
+ 
+ /* Advanced Error Reporting */
+ #define PCI_ERR_UNCOR_STATUS	4	/* Uncorrectable Error Status */
+@@ -553,4 +554,13 @@
+ #define  PCI_ARI_CTRL_ACS	0x0002	/* ACS Function Groups Enable */
+ #define  PCI_ARI_CTRL_FG(x)	(((x) >> 4) & 7) /* Function Group */
+ 
++/* Address Translation Service */
++#define PCI_ATS_CAP		0x04	/* ATS Capability Register */
++#define  PCI_ATS_CAP_QDEP(x)	((x) & 0x1f)	/* Invalidate Queue Depth */
++#define  PCI_ATS_MAX_QDEP	32	/* Max Invalidate Queue Depth */
++#define PCI_ATS_CTRL		0x06	/* ATS Control Register */
++#define  PCI_ATS_CTRL_ENABLE	0x8000	/* ATS Enable */
++#define  PCI_ATS_CTRL_STU(x)	((x) & 0x1f)	/* Smallest Translation Unit */
++#define  PCI_ATS_MIN_STU	12	/* shift of minimum STU block */
++
+ #endif /* LINUX_PCI_REGS_H */
+-- 
+1.5.6.4
 
-I don't know, maybe code it up and find a benchmark where it makes a
-difference. :-)
