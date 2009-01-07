@@ -1,159 +1,534 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbZAGIbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZAGIeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbZAGIbQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 03:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZAGIbA
+	id S1755618AbZAGIeU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 03:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZAGIeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 03:31:00 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:53187 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbZAGIa6 (ORCPT
+	Wed, 7 Jan 2009 03:34:12 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53950 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752315AbZAGIeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 03:30:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=YzTLEdvCQACN8j4ppblntjHT9izlqajdK/uL8e3BOXltyRmqkiQhiDVB0Gh1UwiSSg
-         oV7XkC8Fadj96mNShr3yBV5rtvZHC8UhPjdHy+msY/I2HckU+TXmd30oY1I+PUp3cu0c
-         D/bD3qjTNBd1dcIN1D9FmWTIySY6BFrKeB4mM=
-Message-ID: <84144f020901070030k6fb888f6n84255078e4885d28@mail.gmail.com>
-Date: Wed, 7 Jan 2009 10:30:56 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [ 286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
-Cc: linux-kernel@vger.kernel.org, "Rusty Russell" <rusty@rustcorp.com.au>,
-       heiko.carstens@de.ibm.com
-In-Reply-To: <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>
+	Wed, 7 Jan 2009 03:34:10 -0500
+Message-ID: <496468EE.9000802@zytor.com>
+Date: Wed, 07 Jan 2009 00:33:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4963F368.7080909@gmail.com>
-	 <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>
-X-Google-Sender-Auth: df7561c80e654219
+To: Alain Knaff <alain@knaff.lu>, Sam Ravnborg <sam@ravnborg.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Patches applied to tip:x86/setup-lzma
+References: <200901042146.n04LkGTC005829@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu>
+In-Reply-To: <200901042146.n04LkGTC005829@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu>
+Content-Type: multipart/mixed;
+ boundary="------------080909020803090001040706"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 7, 2009 at 8:48 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On Wed, Jan 7, 2009 at 2:12 AM, Justin P. Mattock
-> <justinmattock@gmail.com> wrote:
->> With pulling git today I'm unable to shut the machine down completely.
->> (the system just sits there with the message on the screen);
->>
->> * will now halt
->> [  286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
->
-> That looks like use-after-free in __stop_machine() so lets cc Rusty.
-> If you want, you can convert the oops location into human-readable
-> form. Just search for "GDB" in Documentation/BUG-HUNTING for
-> instructions how to do that. And don't forget to send your .config.
->
->> [  286.548940] IP: [<c0150ca4>] __stop_machine+0x88/0xe3
->> [  286.550598] Oops: 0002 [#1] SMP
->> [  286.552206] last sysfs file: /sys/block/sda/removeable
->> [  286.553844] Modules linked in: hidp radeon drm agpgart btusb rfcomm bnep
->> sco l2cap bluetooth fan battery container ipt_LOG xt_limit xt_tcpudp
->> xt_state ipt_addrtype nf_nat_irc nf_conntrack_irc nf_nat_ftp nf_nat
->> nf_conntrack_ftp ipmi_watchdog ipmi_msghandler uvcvideo isight_firmware
->> uinput arpt_mangle arptable_filter arp_tables nf_conntrack_ipv4 nf_conntrack
->> nf_defrag_ipv4 iptable_mangle iptable_filter ip_tables x_tables coretemp
->> eeprom acpi_cpufreq cpufreq_powersave cpufreq_performance cpufreq_ondemand
->> cpufreq_conservative appletouch snd_had_codec_idt ohci1394 ehci_hcd
->> snd_hda_intel snd_hda_codec thermal ath9k uhci_hcd ieee1394 joydev pata_acpi
->> snd_hwdep snd_pcm snd_page_alloc video ac button processor applesmc evdev
->> [  286.560580]
->> [  286.560580] Pid: 3273, comm: halt Not tainted (2.6.28-06127-g238c6d5 #1)
->> MacBookPro2,2
->> [  286.560580] EIP: 0060:[<c0150ca4>] EFLAGS: 00010293 CPU: 0
->> [  286.560580] EIP: is at __stop_machine+0x88/0xe3
->> [  286.560580] EAX: 6b6b6b6b EBX: 00000000 ECX: 6b6b6b6b EDX: 00000000
->> [  286.560580] ESI: c054abe0 EDI: c03d03a4 EBP: f1a29e54 ESP: f1a29e44
->> [  286.560580]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->> [  286.560580] Process halt (pid: 3273, ti=f1a28000 task=f4530f30
->> task.ti=f1a28000)
->> [  286.560580] Stack:
->> [  286.560580] f1a29e60 c054abe0 00000001 00000010 f1a29e7c c03d04e4
->> ffffffea 00000010
->> [  286.560580] 00000001 00000003 00000022 00000001 4321fedc c054abe0
->> f1a29e94 c012a57e
->> [  286.560580] 00000000 ffffffff 4321fedc 28121969 f1a29e9c c01360c0
->> f1a29fb0 c0136301
->> [  286.560580] Call Trace:
->> [  286.560580]  [<c03d04e4>] ? _cpu_down+0x10f/0x234
->> [  286.560580]  [<c012a57e>] ? disable_nonboot_cpus+0x58/0xdc
->> [  286.560580]  [<c01360c0>] ? kernel_poweroff+0x22/0x39
->> [  286.560580]  [<c0136301>] ? sys_reboot+0xde/0x14c
->> [  286.560580]  [<c01331b2>] ? complete_signal+0x179/0x191
->> [  286.560580]  [<c0133396>] ? send_signal+0x1cc/0x1e1
->> [  286.560580]  [<c03de418>] ? _spin_unlock_irqrestore+0x2d/0x3c
->> [  286.560580]  [<c0133b65>] ? group_send_signal_info+0x58/0x61
->> [  286.560580]  [<c0133b9e>] ? kill_pid_info+0x30/0x3a
->> [  286.560580]  [<c0133d49>] ? sys_kill+0x75/0x13a
->> [  286.560580]  [<c01a06cb>] ? mntput_no_expire+ox1f/0x101
->> [  286.560580]  [<c019b3b3>] ? dput+0x1e/0x105
->> [  286.560580]  [<c018ef87>] ?  __fput+0x150/0x158
->> [  286.560580]  [<c0157abf>] ? audit_syscall_entry+0x137/0x159
->> [  286.560580]  [<c010329f>] ? sysenter_do_call+0x12/0x34
->> [  286.560580] Code: c7 05 10 06 62 c0 00 00 00 00 a3 f4 05 62 c0 c7 05 ec
->> 05 62 c0 01 00 00 00 83 cb ff eb 2d a1 1c 06 62 c0 f7 d0 8b 0c 98 8d 41 04
->> <c7> 01 00 00 00 00 89 41 04 89 41 08 c7 41 0c ff 0c 15 c0 89 d8
->> [  286.560580] EIP: [<c0150ca4>] __stop_machine+0x88/0xe3 SS:ESP
->> 0068:f1a29e44
->> [  286.639215] ---[ end trace 5b080c1ab14203ae ] ---
->> Segmentation fault
->>
->> after this message appears, if I hold down the start button
->> the system shuts off after a few seconds.
->> (BTW hopefully the number are correct,
->> manually writing this down, is a bit of a pain);
+This is a multi-part message in MIME format.
+--------------080909020803090001040706
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-scripts/decodecode gives us:
+I just applied these three patches to the tip:x86/setup-lzma tree to
+resolve the build issues in some configurations.  The third and largest
+patch is a slightly modified version of Alain's last patch, the other
+two addresses the Kconfig chain.  Please review.
 
-   0:   c7 05 10 06 62 c0 00    movl   $0x0,0xc0620610
-   7:   00 00 00
-   a:   a3 f4 05 62 c0          mov    %eax,0xc06205f4
-   f:   c7 05 ec 05 62 c0 01    movl   $0x1,0xc06205ec
-  16:   00 00 00
-  19:   83 cb ff                or     $0xffffffff,%ebx
-  1c:   eb 2d                   jmp    0x4b
-  1e:   a1 1c 06 62 c0          mov    0xc062061c,%eax
-  23:   f7 d0                   not    %eax
-  25:   8b 0c 98                mov    (%eax,%ebx,4),%ecx
-  28:   8d 41 04                lea    0x4(%ecx),%eax
-  2b:   c7 01 00 00 00 00       movl   $0x0,(%ecx)
-  31:   89 41 04                mov    %eax,0x4(%ecx)
-  34:   89 41 08                mov    %eax,0x8(%ecx)
-  37:   c7 41 0c ff 0c 15 c0    movl   $0xc0150cff,0xc(%ecx)
-  3e:   89 d8                   mov    %ebx,%eax
-   0:   c7 01 00 00 00 00       movl   $0x0,(%ecx)      <-- oops
-   6:   89 41 04                mov    %eax,0x4(%ecx)
-   9:   89 41 08                mov    %eax,0x8(%ecx)
-   c:   c7 41 0c ff 0c 15 c0    movl   $0xc0150cff,0xc(%ecx)
-  13:   89 d8                   mov    %ebx,%eax
+	-hpa
 
-objdump -S -d kernel/stop_machine.o looks like this on my machine:
 
-        /* Schedule the stop_cpu work on all cpus: hold this CPU so one
-         * doesn't hit this CPU until we're ready. */
-        get_cpu();
-        for_each_online_cpu(i) {
-                sm_work = percpu_ptr(stop_machine_work, i);
-                INIT_WORK(sm_work, stop_cpu);
-  8b:   c7 01 00 00 00 00       movl   $0x0,(%ecx)
-  91:   c7 41 0c e0 00 00 00    movl   $0xe0,0xc(%ecx)
+--------------080909020803090001040706
+Content-Type: text/x-patch;
+ name="0001-bzip2-lzma-DECOMPRESS_GZIP-should-select-ZLIB_INFLA.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-bzip2-lzma-DECOMPRESS_GZIP-should-select-ZLIB_INFLA.pat";
+ filename*1="ch"
 
-where
+>From 7856a16ea03ed9b17860d756ee6473c2e57882b2 Mon Sep 17 00:00:00 2001
+From: H. Peter Anvin <hpa@zytor.com>
+Date: Wed, 7 Jan 2009 00:01:43 -0800
+Subject: [PATCH] bzip2/lzma: DECOMPRESS_GZIP should select ZLIB_INFLATE
 
-#define INIT_WORK(_work, _func)                                         \
-        do {                                                            \
-                (_work)->data = (atomic_long_t) WORK_DATA_INIT();       \
+Impact: Partial resolution of build failure
 
-and offset of ->data is zero and WORK_DATA_INIT() expands to
-ATOMIC_LONG_INIT(0) so looks to me like 'sm_work' is used after it has
-been free'd. Perhaps stop_machine_destroy() was called before or in
-parallel to __stop_machine()? So lets cc Heiko as well.
+DECOMPRESS_GZIP is just a common-interface wrapper around the
+zlib_inflate code; it thus need to select it.
 
-                        Pekka
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ lib/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/Kconfig b/lib/Kconfig
+index e37f061..daa4818 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -102,6 +102,7 @@ config LZO_DECOMPRESS
+ # ZLIB_INFLATE; DECOMPRESS_GZIP is just a wrapper.)
+ #
+ config DECOMPRESS_GZIP
++	select ZLIB_INFLATE
+ 	tristate
+ 
+ config DECOMPRESS_BZIP2
+-- 
+1.5.6.6
+
+
+--------------080909020803090001040706
+Content-Type: text/x-patch;
+ name="0002-bzip2-lzma-move-initrd-ramfs-options-out-of-BLK_DEV.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0002-bzip2-lzma-move-initrd-ramfs-options-out-of-BLK_DEV.pat";
+ filename*1="ch"
+
+>From fb9a4ca9820fd4d7c4906bd393004662451e273e Mon Sep 17 00:00:00 2001
+From: H. Peter Anvin <hpa@zytor.com>
+Date: Wed, 7 Jan 2009 00:03:49 -0800
+Subject: [PATCH] bzip2/lzma: move initrd/ramfs options out of BLK_DEV
+
+Impact: Partial resolution of build failure
+
+Move the initrd/initramfs configuration options from
+drivers/block/Kconfig to usr/Kconfig, since they do not and should not
+depend on CONFIG_BLK_DEV.  This fixes builds when CONFIG_BLK_DEV=n.
+
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ drivers/block/Kconfig |   27 ---------------------------
+ usr/Kconfig           |   27 +++++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index cc9fa69..0344a8a 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -358,33 +358,6 @@ config BLK_DEV_XIP
+ 	  will prevent RAM block device backing store memory from being
+ 	  allocated from highmem (only a problem for highmem systems).
+ 
+-config RD_GZIP
+-	bool "Initial ramdisk compressed using gzip"
+-	default y
+-	depends on BLK_DEV_INITRD=y
+-	select DECOMPRESS_GZIP
+-	help
+-	  Support loading of a gzip encoded initial ramdisk or cpio buffer.
+-	  If unsure, say Y.
+-
+-config RD_BZIP2
+-	bool "Initial ramdisk compressed using bzip2"
+-	default n
+-	depends on BLK_DEV_INITRD=y
+-	select DECOMPRESS_BZIP2
+-	help
+-	  Support loading of a bzip2 encoded initial ramdisk or cpio buffer
+-	  If unsure, say N.
+-
+-config RD_LZMA
+-	bool "Initial ramdisk compressed using lzma"
+-	default n
+-	depends on BLK_DEV_INITRD=y
+-	select DECOMPRESS_LZMA
+-	help
+-	  Support loading of a lzma encoded initial ramdisk or cpio buffer
+-	  If unsure, say N.
+-
+ config CDROM_PKTCDVD
+ 	tristate "Packet writing on CD/DVD media"
+ 	depends on !UML
+diff --git a/usr/Kconfig b/usr/Kconfig
+index 86cecb5..a691a8f 100644
+--- a/usr/Kconfig
++++ b/usr/Kconfig
+@@ -44,3 +44,30 @@ config INITRAMFS_ROOT_GID
+ 	  owned by group root in the initial ramdisk image.
+ 
+ 	  If you are not sure, leave it set to "0".
++
++config RD_GZIP
++	bool "Initial ramdisk compressed using gzip"
++	default y
++	depends on BLK_DEV_INITRD=y
++	select DECOMPRESS_GZIP
++	help
++	  Support loading of a gzip encoded initial ramdisk or cpio buffer.
++	  If unsure, say Y.
++
++config RD_BZIP2
++	bool "Initial ramdisk compressed using bzip2"
++	default n
++	depends on BLK_DEV_INITRD=y
++	select DECOMPRESS_BZIP2
++	help
++	  Support loading of a bzip2 encoded initial ramdisk or cpio buffer
++	  If unsure, say N.
++
++config RD_LZMA
++	bool "Initial ramdisk compressed using lzma"
++	default n
++	depends on BLK_DEV_INITRD=y
++	select DECOMPRESS_LZMA
++	help
++	  Support loading of a lzma encoded initial ramdisk or cpio buffer
++	  If unsure, say N.
+-- 
+1.5.6.6
+
+
+--------------080909020803090001040706
+Content-Type: text/x-patch;
+ name="0003-bzip2-lzma-fix-built-in-initramfs-vs-CONFIG_RD_GZIP.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0003-bzip2-lzma-fix-built-in-initramfs-vs-CONFIG_RD_GZIP.pat";
+ filename*1="ch"
+
+>From a26ee60f90daffe1de6be0d093af86e7279b3dfd Mon Sep 17 00:00:00 2001
+From: Alain Knaff <alain@knaff.lu>
+Date: Wed, 7 Jan 2009 00:10:27 -0800
+Subject: [PATCH] bzip2/lzma: fix built-in initramfs vs CONFIG_RD_GZIP
+
+Impact: Resolves build failures in some configurations
+
+Makes it possible to disable CONFIG_RD_GZIP . In that case, the
+built-in initramfs will be compressed by whatever compressor is
+available (bzip2 or lzma) or left uncompressed if none is available.
+
+It also removes a couple of warnings which occur when no ramdisk
+compression at all is chosen.
+
+It also restores the select ZLIB_INFLATE in drivers/block/Kconfig
+which somehow came missing. This is needed to activate compilation of
+the stuff in zlib_deflate.
+
+Signed-off-by: Alain Knaff <alain@knaff.lu>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ init/initramfs.c              |    7 +++++-
+ scripts/gen_initramfs_list.sh |   17 ++++++++++-----
+ usr/Makefile                  |   42 +++++++++++++++++++++++++++++-----------
+ usr/initramfs_data.S          |    2 +-
+ usr/initramfs_data.bz2.S      |   29 ++++++++++++++++++++++++++++
+ usr/initramfs_data.gz.S       |   29 ++++++++++++++++++++++++++++
+ usr/initramfs_data.lzma.S     |   29 ++++++++++++++++++++++++++++
+ 7 files changed, 135 insertions(+), 20 deletions(-)
+ create mode 100644 usr/initramfs_data.bz2.S
+ create mode 100644 usr/initramfs_data.gz.S
+ create mode 100644 usr/initramfs_data.lzma.S
+
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 40bd4fb..a3ba91c 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -389,7 +389,7 @@ static int __init write_buffer(char *buf, unsigned len)
+ 	return len - count;
+ }
+ 
+-
++#if defined CONFIG_RD_GZIP || defined CONFIG_RD_BZIP2 || defined CONFIG_RD_LZMA
+ static int __init flush_buffer(void *bufv, unsigned len)
+ {
+ 	char *buf = (char *) bufv;
+@@ -412,6 +412,7 @@ static int __init flush_buffer(void *bufv, unsigned len)
+ 	}
+ 	return origLen;
+ }
++#endif
+ 
+ static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
+ 
+@@ -449,10 +450,12 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
+ 			continue;
+ 		}
+ 		this_header = 0;
++#ifdef CONFIG_RD_GZIP
+ 		if (!gunzip(buf, len, NULL, flush_buffer, NULL,
+ 			    &my_inptr, error) &&
+ 		    message == NULL)
+ 			goto ok;
++#endif
+ 
+ #ifdef CONFIG_RD_BZIP2
+ 		message = NULL; /* Zero out message, or else cpio will
+@@ -473,7 +476,9 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
+ 			goto ok;
+ 		}
+ #endif
++#if defined CONFIG_RD_GZIP || defined CONFIG_RD_BZIP2 || defined CONFIG_RD_LZMA
+ ok:
++#endif
+ 		if (state != Reset)
+ 			error("junk in compressed archive");
+ 		this_header = saved_offset + my_inptr;
+diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
+index 5f3415f..41041e4 100644
+--- a/scripts/gen_initramfs_list.sh
++++ b/scripts/gen_initramfs_list.sh
+@@ -5,7 +5,7 @@
+ # Released under the terms of the GNU GPL
+ #
+ # Generate a cpio packed initramfs. It uses gen_init_cpio to generate
+-# the cpio archive, and gzip to pack it.
++# the cpio archive, and then compresses it.
+ # The script may also be used to generate the inputfile used for gen_init_cpio
+ # This script assumes that gen_init_cpio is located in usr/ directory
+ 
+@@ -16,8 +16,8 @@ usage() {
+ cat << EOF
+ Usage:
+ $0 [-o <file>] [-u <uid>] [-g <gid>] {-d | <cpio_source>} ...
+-	-o <file>      Create gzipped initramfs file named <file> using
+-		       gen_init_cpio and gzip
++	-o <file>      Create compressed initramfs file named <file> using
++		       gen_init_cpio and compressor depending on the extension
+ 	-u <uid>       User ID to map to user ID 0 (root).
+ 		       <uid> is only meaningful if <cpio_source> is a
+ 		       directory.  "squash" forces all files to uid 0.
+@@ -225,6 +225,7 @@ cpio_list=
+ output="/dev/stdout"
+ output_file=""
+ is_cpio_compressed=
++compr="gzip -9 -f"
+ 
+ arg="$1"
+ case "$arg" in
+@@ -233,11 +234,15 @@ case "$arg" in
+ 		echo "deps_initramfs := \\"
+ 		shift
+ 		;;
+-	"-o")	# generate gzipped cpio image named $1
++	"-o")	# generate compressed cpio image named $1
+ 		shift
+ 		output_file="$1"
+ 		cpio_list="$(mktemp ${TMPDIR:-/tmp}/cpiolist.XXXXXX)"
+ 		output=${cpio_list}
++		echo "$output_file" | grep -q "\.gz$" && compr="gzip -9 -f"
++		echo "$output_file" | grep -q "\.bz2$" && compr="bzip2 -9 -f"
++		echo "$output_file" | grep -q "\.lzma$" && compr="lzma -9 -f"
++		echo "$output_file" | grep -q "\.cpio$" && compr="cat"
+ 		shift
+ 		;;
+ esac
+@@ -274,7 +279,7 @@ while [ $# -gt 0 ]; do
+ 	esac
+ done
+ 
+-# If output_file is set we will generate cpio archive and gzip it
++# If output_file is set we will generate cpio archive and compress it
+ # we are carefull to delete tmp files
+ if [ ! -z ${output_file} ]; then
+ 	if [ -z ${cpio_file} ]; then
+@@ -287,7 +292,7 @@ if [ ! -z ${output_file} ]; then
+ 	if [ "${is_cpio_compressed}" = "compressed" ]; then
+ 		cat ${cpio_tfile} > ${output_file}
+ 	else
+-		cat ${cpio_tfile} | gzip -f -9 - > ${output_file}
++		cat ${cpio_tfile} | ${compr}  - > ${output_file}
+ 	fi
+ 	[ -z ${cpio_file} ] && rm ${cpio_tfile}
+ fi
+diff --git a/usr/Makefile b/usr/Makefile
+index 201f27f..451cdff 100644
+--- a/usr/Makefile
++++ b/usr/Makefile
+@@ -5,14 +5,32 @@
+ klibcdirs:;
+ PHONY += klibcdirs
+ 
++# Find out "preferred" ramdisk compressor. Order of preference is
++#  1. bzip2 efficient, and likely to be present
++#  2. gzip former default
++#  3. lzma
++#  4. none
++
++# None of the above
++suffix_y                   =
++
++# Lzma, but no gzip nor bzip2
++suffix_$(CONFIG_RD_LZMA)   = .lzma
++
++# Gzip, but no bzip2
++suffix_$(CONFIG_RD_GZIP)   = .gz
++
++# Bzip2
++suffix_$(CONFIG_RD_BZIP2)  = .bz2
++
+ 
+ # Generate builtin.o based on initramfs_data.o
+-obj-$(CONFIG_BLK_DEV_INITRD) := initramfs_data.o
++obj-$(CONFIG_BLK_DEV_INITRD) := initramfs_data$(suffix_y).o
+ 
+-# initramfs_data.o contains the initramfs_data.cpio.gz image.
++# initramfs_data.o contains the compressed initramfs_data.cpio image.
+ # The image is included using .incbin, a dependency which is not
+ # tracked automatically.
+-$(obj)/initramfs_data.o: $(obj)/initramfs_data.cpio.gz FORCE
++$(obj)/initramfs_data$(suffix_y).o: $(obj)/initramfs_data.cpio$(suffix_y) FORCE
+ 
+ #####
+ # Generate the initramfs cpio archive
+@@ -25,28 +43,28 @@ ramfs-args  := \
+         $(if $(CONFIG_INITRAMFS_ROOT_UID), -u $(CONFIG_INITRAMFS_ROOT_UID)) \
+         $(if $(CONFIG_INITRAMFS_ROOT_GID), -g $(CONFIG_INITRAMFS_ROOT_GID))
+ 
+-# .initramfs_data.cpio.gz.d is used to identify all files included
++# .initramfs_data.cpio.d is used to identify all files included
+ # in initramfs and to detect if any files are added/removed.
+ # Removed files are identified by directory timestamp being updated
+ # The dependency list is generated by gen_initramfs.sh -l
+-ifneq ($(wildcard $(obj)/.initramfs_data.cpio.gz.d),)
+-	include $(obj)/.initramfs_data.cpio.gz.d
++ifneq ($(wildcard $(obj)/.initramfs_data.cpio.d),)
++	include $(obj)/.initramfs_data.cpio.d
+ endif
+ 
+ quiet_cmd_initfs = GEN     $@
+       cmd_initfs = $(initramfs) -o $@ $(ramfs-args) $(ramfs-input)
+ 
+-targets := initramfs_data.cpio.gz
++targets := initramfs_data.cpio.gz initramfs_data.cpio.bz2 initramfs_data.cpio.lzma initramfs_data.cpio
+ # do not try to update files included in initramfs
+ $(deps_initramfs): ;
+ 
+ $(deps_initramfs): klibcdirs
+-# We rebuild initramfs_data.cpio.gz if:
+-# 1) Any included file is newer then initramfs_data.cpio.gz
++# We rebuild initramfs_data.cpio if:
++# 1) Any included file is newer then initramfs_data.cpio
+ # 2) There are changes in which files are included (added or deleted)
+-# 3) If gen_init_cpio are newer than initramfs_data.cpio.gz
++# 3) If gen_init_cpio are newer than initramfs_data.cpio
+ # 4) arguments to gen_initramfs.sh changes
+-$(obj)/initramfs_data.cpio.gz: $(obj)/gen_init_cpio $(deps_initramfs) klibcdirs
+-	$(Q)$(initramfs) -l $(ramfs-input) > $(obj)/.initramfs_data.cpio.gz.d
++$(obj)/initramfs_data.cpio$(suffix_y): $(obj)/gen_init_cpio $(deps_initramfs) klibcdirs
++	$(Q)$(initramfs) -l $(ramfs-input) > $(obj)/.initramfs_data.cpio.d
+ 	$(call if_changed,initfs)
+ 
+diff --git a/usr/initramfs_data.S b/usr/initramfs_data.S
+index c2e1ad4..7c6973d 100644
+--- a/usr/initramfs_data.S
++++ b/usr/initramfs_data.S
+@@ -26,5 +26,5 @@ SECTIONS
+ */
+ 
+ .section .init.ramfs,"a"
+-.incbin "usr/initramfs_data.cpio.gz"
++.incbin "usr/initramfs_data.cpio"
+ 
+diff --git a/usr/initramfs_data.bz2.S b/usr/initramfs_data.bz2.S
+new file mode 100644
+index 0000000..bc54d09
+--- /dev/null
++++ b/usr/initramfs_data.bz2.S
+@@ -0,0 +1,29 @@
++/*
++  initramfs_data includes the compressed binary that is the
++  filesystem used for early user space.
++  Note: Older versions of "as" (prior to binutils 2.11.90.0.23
++  released on 2001-07-14) dit not support .incbin.
++  If you are forced to use older binutils than that then the
++  following trick can be applied to create the resulting binary:
++
++
++  ld -m elf_i386  --format binary --oformat elf32-i386 -r \
++  -T initramfs_data.scr initramfs_data.cpio.gz -o initramfs_data.o
++   ld -m elf_i386  -r -o built-in.o initramfs_data.o
++
++  initramfs_data.scr looks like this:
++SECTIONS
++{
++       .init.ramfs : { *(.data) }
++}
++
++  The above example is for i386 - the parameters vary from architectures.
++  Eventually look up LDFLAGS_BLOB in an older version of the
++  arch/$(ARCH)/Makefile to see the flags used before .incbin was introduced.
++
++  Using .incbin has the advantage over ld that the correct flags are set
++  in the ELF header, as required by certain architectures.
++*/
++
++.section .init.ramfs,"a"
++.incbin "usr/initramfs_data.cpio.bz2"
+diff --git a/usr/initramfs_data.gz.S b/usr/initramfs_data.gz.S
+new file mode 100644
+index 0000000..890c8dd
+--- /dev/null
++++ b/usr/initramfs_data.gz.S
+@@ -0,0 +1,29 @@
++/*
++  initramfs_data includes the compressed binary that is the
++  filesystem used for early user space.
++  Note: Older versions of "as" (prior to binutils 2.11.90.0.23
++  released on 2001-07-14) dit not support .incbin.
++  If you are forced to use older binutils than that then the
++  following trick can be applied to create the resulting binary:
++
++
++  ld -m elf_i386  --format binary --oformat elf32-i386 -r \
++  -T initramfs_data.scr initramfs_data.cpio.gz -o initramfs_data.o
++   ld -m elf_i386  -r -o built-in.o initramfs_data.o
++
++  initramfs_data.scr looks like this:
++SECTIONS
++{
++       .init.ramfs : { *(.data) }
++}
++
++  The above example is for i386 - the parameters vary from architectures.
++  Eventually look up LDFLAGS_BLOB in an older version of the
++  arch/$(ARCH)/Makefile to see the flags used before .incbin was introduced.
++
++  Using .incbin has the advantage over ld that the correct flags are set
++  in the ELF header, as required by certain architectures.
++*/
++
++.section .init.ramfs,"a"
++.incbin "usr/initramfs_data.cpio.gz"
+diff --git a/usr/initramfs_data.lzma.S b/usr/initramfs_data.lzma.S
+new file mode 100644
+index 0000000..e11469e
+--- /dev/null
++++ b/usr/initramfs_data.lzma.S
+@@ -0,0 +1,29 @@
++/*
++  initramfs_data includes the compressed binary that is the
++  filesystem used for early user space.
++  Note: Older versions of "as" (prior to binutils 2.11.90.0.23
++  released on 2001-07-14) dit not support .incbin.
++  If you are forced to use older binutils than that then the
++  following trick can be applied to create the resulting binary:
++
++
++  ld -m elf_i386  --format binary --oformat elf32-i386 -r \
++  -T initramfs_data.scr initramfs_data.cpio.gz -o initramfs_data.o
++   ld -m elf_i386  -r -o built-in.o initramfs_data.o
++
++  initramfs_data.scr looks like this:
++SECTIONS
++{
++       .init.ramfs : { *(.data) }
++}
++
++  The above example is for i386 - the parameters vary from architectures.
++  Eventually look up LDFLAGS_BLOB in an older version of the
++  arch/$(ARCH)/Makefile to see the flags used before .incbin was introduced.
++
++  Using .incbin has the advantage over ld that the correct flags are set
++  in the ELF header, as required by certain architectures.
++*/
++
++.section .init.ramfs,"a"
++.incbin "usr/initramfs_data.cpio.lzma"
+-- 
+1.5.6.6
+
+
+--------------080909020803090001040706--
