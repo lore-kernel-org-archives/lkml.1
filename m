@@ -1,146 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZAGHqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZAGHsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbZAGHqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 02:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZAGHqA
+	id S1755269AbZAGHsi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 02:48:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZAGHs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 02:46:00 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:19292 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751651AbZAGHp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 02:45:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=m5ggN2e3IoKzbtf1Sg7hvMUi62A6SKaiBHy+F82urF0piX3OLhkSz/N0qVbWm/0Qf3
-         g5UqA4j+7uEBbH739J7qNkOBXtGGv5hA5MY6oM5pXOXj5LcvG+A1CxMumzv39JnToidI
-         0JnkBR2AJFvKqfz+bRfu3+tOaMjMFOtxLbkdk=
-Date: Wed, 7 Jan 2009 16:45:18 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Remove needless lock and list in vmap
-Message-ID: <20090107074518.GA2342@barrios-desktop>
-Mail-Followup-To: Nick Piggin <npiggin@suse.de>, stable@kernel.org,
-	Linux Memory Management List <linux-mm@kvack.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20090107054713.GA1416@barrios-desktop> <20090107065517.GB21629@wotan.suse.de>
+	Wed, 7 Jan 2009 02:48:29 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:54755 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751470AbZAGHs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 02:48:29 -0500
+Date: Tue, 6 Jan 2009 23:45:58 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       bastian@waldi.eu.org
+Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/7][v6] Container-init signal semantics
+Message-ID: <20090107074558.GA27881@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090107065517.GB21629@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nick Piggin (npiggin@suse.de) wrote:
-> On Wed, Jan 07, 2009 at 02:47:13PM +0900, MinChan Kim wrote:
-> > Anyone don't use vmap's dirty_list.
-> > I am not sure this is thing Nick's future work on purpose.
-> > If it is a dummy, we can remove dirty list and related codes
-> > to handle list and locking.
-> > 
-> > Also, In free_vmap_block, we don't have to check empty free_list.
-> > That's becuase before calling free_vmap_block, vb_free always checks
-> > empty of vb->free_list.
-> > 
-> > Now except vb_free, Anywhere don't call free_vmap_block.
-> > so, we can remove that check and locking.
-> > 
-> > If it is nick's intention to work in future, please, ignore this patch. 
-> 
-> It was going to be an attempt to optimise flushing a bit, but I never
-> finished writing the code. Either way, it doesn't belong upstream until
-> time as it is needed, so your patch is good.
 
-Thanks for your kind words. 
- 
-> Can you just put a BUG_ON(!list_empty(&vb->free_list)); in free_vmap_block?
-> Then add Acked-by: Nick Piggin <npiggin@suse.de>
+Container-init must behave like global-init to processes within the
+container and hence it must be immune to unhandled fatal signals from
+within the container (i.e SIG_DFL signals that terminate the process).
 
-I added BUG_ON.
+But the same container-init must behave like a normal process to 
+processes in ancestor namespaces and so if it receives the same fatal
+signal from a process in ancestor namespace, the signal must be
+processed.
 
-> Thanks,
-> Nick
-> 
+Implementing these semantics requires that send_signal() determine pid
+namespace of the sender but since signals can originate from workqueues/
+interrupt-handlers, determining pid namespace of sender may not always
+be possible or safe.
 
-This is improvement patch. 
+This patchset implements the design/simplified semantics suggested by
+Oleg Nesterov.  The simplified semantics for container-init are:
 
-===
+	- container-init must never be terminated by a signal from a
+	  descendant process.
+
+	- container-init must never be immune to SIGKILL from an ancestor
+	  namespace (so a process in parent namespace must always be able
+	  to terminate a descendant container).
+
+	- container-init may be immune to unhandled fatal signals (like
+	  SIGUSR1) even if they are from ancestor namespace (SIGKILL is
+	  the only reliable signal from ancestor namespace).
+
+Patches in this set:
+
+	 [PATCH 1/7] Remove 'handler' parameter to tracehook functions
+	 [PATCH 2/7] Protect init from unwanted signals more
+	 [PATCH 3/7] Add from_ancestor_ns parameter to send_signal()
+	 [PATCH 4/7] Define siginfo_from_ancestor_ns()
+	 [PATCH 5/7] Protect cinit from unblocked SIG_DFL signals
+	 [PATCH 6/7] Protect cinit from blocked fatal signals
+	 [PATCH 7/7] SI_USER: Masquerade si_pid when crossing pid ns boundary
+
+Changelog[v6]:
+
+	- Patches 3,4: Have kill_pid_info_as_uid() pass in 'from_ancestor_ns'
+	  parameter to __send_signal() and remove SI_ASYNCIO check in
+	  siginfo_from_user().
+	- Patches 4,6: Update changelog and simplify code
+
+Changelog[v5]:
+	- Patch 2/6: Remove SIG_IGN check in sig_task_ignored() and let
+	  sig_handler_ignored() check SIG_IGN.
+        - Patch 3/6. Put siginfo_from_ancestor_ns() back under CONFIG_PID_NS
+	  and remove warning in rt_sigqueueinfo().
+	- (Patch 5/6)Simplify check in get_signal_to_deliver()
+	- (Patch 6/6)Simplify masquerading pid
+	- LTP-20081219-intermediate showed no new errors on 2.6.28-rc5-mm2.
+
+Changelog[v4]:
+	- [Bugfix] Patch 3/7. Check ns == NULL in siginfo_from_ancestor_ns().
+	  Although http://lkml.org/lkml/2008/12/16/502 makes it less likely
+	  that ns == NULL, looks like an explicit check won't hurt ?
+	- Remove SIGNAL_UNKILLABLE_FROM_NS flag and simplify logic as
+	  suggested by Oleg Nesterov.
+	- Dropped patch that set SIGNAL_UNKILLABLE_FROM_NS and set
+	  SIGNAL_UNKILLABLE in patch 5/7 to be bisect-safe.
+	- Add a warning in rt_sigqueueinfo() if SI_ASYNCIO is used
+	  (patch 3/7)
+	- Added two patches (6/7 and 7/7) to masquerade si_pid for
+	  SI_USER and SI_TKILL
 
 
-Subject: [PATCH] Remove needless lock and list in vmap
+Changelog[v3]:
+	Changes based on discussions of previous version:
+		http://lkml.org/lkml/2008/11/25/458
 
-Now, Anyone don't use vmap's dirty_list.
-It's for optimizing flushing. but Nick didn't write the code yet.
-so, we don't need it until time as it is needed.
+	Major changes:
 
-This patch removes vmap_block's dirty_list and codes related to it.
+	- Define SIGNAL_UNKILLABLE_FROM_NS and use in container-inits to
+	  skip fatal signals from same namespace but process SIGKILL/SIGSTOP
+	  from ancestor namespace.
+	- Use SI_FROMUSER() and si_code != SI_ASYNCIO to determine if
+	  it is safe to dereference pid-namespace of caller. Highly
+	  experimental :-)
+	- Masquerading si_pid when crossing namespace boundary: relevant
+	  patches merged in -mm and dropped from this set.
 
-Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
-Acked-by: Nick Piggin <npiggin@suse.de>
----
- mm/vmalloc.c |   19 +++----------------
- 1 files changed, 3 insertions(+), 16 deletions(-)
+	Minor changes:
 
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 1ddb77b..a7e1c2e 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -629,10 +629,7 @@ struct vmap_block {
- 	DECLARE_BITMAP(alloc_map, VMAP_BBMAP_BITS);
- 	DECLARE_BITMAP(dirty_map, VMAP_BBMAP_BITS);
- 	union {
--		struct {
--			struct list_head free_list;
--			struct list_head dirty_list;
--		};
-+		struct list_head free_list;
- 		struct rcu_head rcu_head;
- 	};
- };
-@@ -699,7 +696,6 @@ static struct vmap_block *new_vmap_block(gfp_t gfp_mask)
- 	bitmap_zero(vb->alloc_map, VMAP_BBMAP_BITS);
- 	bitmap_zero(vb->dirty_map, VMAP_BBMAP_BITS);
- 	INIT_LIST_HEAD(&vb->free_list);
--	INIT_LIST_HEAD(&vb->dirty_list);
- 
- 	vb_idx = addr_to_vb_idx(va->va_start);
- 	spin_lock(&vmap_block_tree_lock);
-@@ -730,12 +726,7 @@ static void free_vmap_block(struct vmap_block *vb)
- 	struct vmap_block *tmp;
- 	unsigned long vb_idx;
- 
--	spin_lock(&vb->vbq->lock);
--	if (!list_empty(&vb->free_list))
--		list_del(&vb->free_list);
--	if (!list_empty(&vb->dirty_list))
--		list_del(&vb->dirty_list);
--	spin_unlock(&vb->vbq->lock);
-+	BUG_ON(!list_empty(&vb->free_list));
- 
- 	vb_idx = addr_to_vb_idx(vb->va->va_start);
- 	spin_lock(&vmap_block_tree_lock);
-@@ -820,11 +811,7 @@ static void vb_free(const void *addr, unsigned long size)
- 
- 	spin_lock(&vb->lock);
- 	bitmap_allocate_region(vb->dirty_map, offset >> PAGE_SHIFT, order);
--	if (!vb->dirty) {
--		spin_lock(&vb->vbq->lock);
--		list_add(&vb->dirty_list, &vb->vbq->dirty);
--		spin_unlock(&vb->vbq->lock);
--	}
-+
- 	vb->dirty += 1UL << order;
- 	if (vb->dirty == VMAP_BBMAP_BITS) {
- 		BUG_ON(vb->free || !list_empty(&vb->free_list));
--- 
-1.5.4.3
+	- Remove 'handler' parameter to tracehook functions
+	- Update sig_ignored() to drop SIG_DFL signals to global init early
+	  (tried to address Roland's  and Oleg's comments)
+	- Use 'same_ns' flag to drop SIGKILL/SIGSTOP to cinit from same
+	  namespace
 
+TODO:
+	- Add a check in fs/proc/array.c:task_sig() to include SIG_DFL
+	  signals from same namespace in 'ignored signals' set for
+	  container/global init.
+
+
+Limitations/side-effects of current design
+
+	- Container-init is immune to suicide - kill(getpid(), SIGKILL) is
+	  ignored. Use exit() :-)
