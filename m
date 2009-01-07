@@ -1,61 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757646AbZAGOVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZAGOWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757646AbZAGOVH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZAGOUz
+	id S1758054AbZAGOWu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:22:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZAGOWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:20:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60207 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZAGOUy (ORCPT
+	Wed, 7 Jan 2009 09:22:37 -0500
+Received: from mga07.intel.com ([143.182.124.22]:53016 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751627AbZAGOWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:20:54 -0500
-Subject: Re: SMP timer issue
-From: Peter Zijlstra <peterz@infradead.org>
-To: melwyn lobo <linux.melwyn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <121039230901062108s7312343cwaf81feebfcf8d734@mail.gmail.com>
-References: <121039230901062108s7312343cwaf81feebfcf8d734@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 07 Jan 2009 15:20:51 +0100
-Message-Id: <1231338051.11687.293.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 7 Jan 2009 09:22:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,226,1231142400"; 
+   d="scan'208";a="97324943"
+Date: Wed, 7 Jan 2009 22:12:56 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/6] fastboot: make ACPI bus drivers probe asynchronous
+Message-ID: <20090107141256.GA22902@ywang-moblin2.bj.intel.com>
+References: <20090105200959.04a626ac@infradead.org> <20090105201239.0784606e@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090105201239.0784606e@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 10:38 +0530, melwyn lobo wrote:
-> Hello All,
-> Following reply from Russell on the ARM mailing list, I have posted my
-> question on this list.
+On Mon, Jan 05, 2009 at 08:12:39PM -0800, Arjan van de Ven wrote:
 > 
-> We have ported the arm kernel 2.6.24 to ARM Cortex dual core
-> processor. My question is regarding timer optimization.
-> At present we have three timers for the two cores as follows;
-> 1. MTU which provides the system tick and in the absence of local
-> timers provides IPI_TIMER messages to other processors.
-> 2. Localtimer for CPU0
-> 3. Localtimer for CPU1
+> >From 34c47dd38f49e29eb7cd7fa2078efc6b8b258bb9 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Sun, 4 Jan 2009 05:32:28 -0800
+> Subject: [PATCH] fastboot: make ACPI bus drivers probe asynchronous
 > 
-> So presently (when local timers are enabled) there are 3 interrupts
-> for every tick. I want to optimize the logic performed by MTU into the
-> local timer of CPU0 so that this one serves as the system tick. Thus
-> there would be no need for MTU interrupts and it would serve only as a
-> clock source.
+> the various ACPI bus drivers have non-overlapping devices and can
+> each be run asynchronous. Some of the ACPI drivers (especially the
+> battery one, but others as well) can take quite a long time to probe.
 > 
-> My question in particular:
-> 1. Is there some platform which has already done this ?
-> 2. Is this possible without modifying existing kernel framework?
-> 3. How to update jiffies during boot when localtimer has not yet been setup?
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  drivers/acpi/scan.c |   23 ++++++++++++++++-------
+>  1 files changed, 16 insertions(+), 7 deletions(-)
 > 
-> Eagerly awaiting for some advice/comments.
+> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+> index 39b7233..a9e542d 100644
+> --- a/drivers/acpi/scan.c
+> +++ b/drivers/acpi/scan.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/acpi.h>
+>  #include <linux/signal.h>
+>  #include <linux/kthread.h>
+> +#include <linux/async.h>
+>  
+>  #include <acpi/acpi_drivers.h>
+>  #include <acpi/acinterp.h>	/* for acpi_ex_eisa_id_to_string() */
+> @@ -578,6 +579,19 @@ static int acpi_start_single_object(struct acpi_device *device)
+>  	return result;
+>  }
+>  
+> +static void acpi_bus_register_async(void *data, async_cookie_t cookie)
+> +{
+> +	int ret;
+> +	struct acpi_driver *driver = data;
+> +	driver->drv.name = driver->name;
+> +	driver->drv.bus = &acpi_bus_type;
+> +	driver->drv.owner = driver->owner;
+> +
+> +	async_synchronize_cookie(cookie);
+> +
+> +	ret = driver_register(&driver->drv);
+> +	WARN_ON(ret != 0);
+> +}
+>  /**
+>   * acpi_bus_register_driver - register a driver with the ACPI bus
+>   * @driver: driver being registered
+> @@ -588,16 +602,11 @@ static int acpi_start_single_object(struct acpi_device *device)
+>   */
+>  int acpi_bus_register_driver(struct acpi_driver *driver)
+>  {
+> -	int ret;
+>  
+>  	if (acpi_disabled)
+>  		return -ENODEV;
+> -	driver->drv.name = driver->name;
+> -	driver->drv.bus = &acpi_bus_type;
+> -	driver->drv.owner = driver->owner;
+> -
+> -	ret = driver_register(&driver->drv);
+> -	return ret;
+> +	async_schedule(acpi_bus_register_async, driver);
+> +	return 0;
+>  }
+>  
+>  EXPORT_SYMBOL(acpi_bus_register_driver);
 
-There is plenty code in the hrtimer stuff to make the cpu local timers
-(which I presume are used to implement hrtimer clockevents) do the
-jiffie tick.
+For ACPI battery, button and thermal drivers whose init funtion immediately ends
+right after calling acpi_bus_register_driver, it might be OK. But for other drivers
+whose init function has more work to do and depends on acpi_bus_register_driver
+having *really* done its job, it is certainly not OK. In the latter case, the
+'return 0' in acpi_bus_register_driver is effectively cheating those drivers that
+acpi_bus_register_driver has already done its job which is unfortunately not
+the case. Example drivers include eeepc_laptop and asus_laptop. At least I am
+seeing a kernel oops on eeepc because of that.
 
-I've no idea how to hook all that up, but added some folks who might
-know to the CC.
+-Yong
