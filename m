@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbZAGAVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZAGAXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbZAGAVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 19:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZAGAUd
+	id S1757254AbZAGAXk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 19:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZAGAXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 19:20:33 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:38249 "EHLO fieldses.org"
+	Tue, 6 Jan 2009 19:23:31 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:62309 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754002AbZAGAUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 19:20:31 -0500
-Date: Tue, 6 Jan 2009 19:20:24 -0500
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
+	id S1751438AbZAGAXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 19:23:30 -0500
+X-IronPort-AV: E=Sophos;i="4.37,222,1231142400"; 
+   d="scan'208";a="108977616"
+Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Matt Helsley <matthltc@us.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
        Linux Containers <containers@lists.linux-foundation.org>,
        linux-nfs@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -20,46 +22,39 @@ Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Linux Containers <containers@lists.osdl.org>,
        Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-Message-ID: <20090107002024.GJ13785@fieldses.org>
-References: <20090106011314.534653345@us.ibm.com> <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com> <1231274682.20316.65.camel@heimdal.trondhjem.org> <20090106215831.GE18147@us.ibm.com> <1231281732.4173.6.camel@heimdal.trondhjem.org> <1231286930.14345.196.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231286930.14345.196.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <20090107002024.GJ13785@fieldses.org>
+References: <20090106011314.534653345@us.ibm.com>
+	 <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
+	 <1231274682.20316.65.camel@heimdal.trondhjem.org>
+	 <20090106215831.GE18147@us.ibm.com>
+	 <1231281732.4173.6.camel@heimdal.trondhjem.org>
+	 <1231286930.14345.196.camel@localhost>
+	 <20090107002024.GJ13785@fieldses.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 06 Jan 2009 19:23:11 -0500
+Message-Id: <1231287791.11487.4.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+X-OriginalArrivalTime: 07 Jan 2009 00:23:29.0207 (UTC) FILETIME=[2A15AC70:01C9705E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 04:08:50PM -0800, Matt Helsley wrote:
-> On Tue, 2009-01-06 at 17:42 -0500, Trond Myklebust wrote:
-> > On Tue, 2009-01-06 at 15:58 -0600, Serge E. Hallyn wrote:
-> > 
-> > > So should we use patch 2/4, plus (as someone - was it you? - suggested)
-> > > using a DEFAULT instead of init_utsname()->nodename when
-> > > current->utsname() == NULL?
-> > 
-> > No. I'm don't think that 2/4 is correct either. Basically, 2/4 is saying
-> > that the container that first mounts the filesystem 'owns' it. However
-> > at the same time we know that the lifetime of the filesystem is in no
-> > way bounded by the lifetime of the container, and that's what gets you
-> > into trouble with 'umount' in the first place.
-> >
-> > IMO, the current code is the most correct approach, in that it assumes
-> > that the filesystems are owned by the 'init' namespace.
-> 
-> IMHO This seems more incorrect than trying to use a more proximal
-> namespace.
+On Tue, 2009-01-06 at 19:20 -0500, J. Bruce Fields wrote:
+> If it would be possible, for example, for the 'init' namespace to have
+> no network interfaces at all, then it would be nicer to use a name
+> that's at least been used with nfs at *some* point--just on the general
+> principle of not leaking information to a domain that the user wouldn't
+> expect it to.
 
-If it would be possible, for example, for the 'init' namespace to have
-no network interfaces at all, then it would be nicer to use a name
-that's at least been used with nfs at *some* point--just on the general
-principle of not leaking information to a domain that the user wouldn't
-expect it to.
+Then RPC would fail. Thanks to the limitations imposed by selinux &
+friends, all RPC sockets have to be owned by the init process.
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
-(Assuming it's unlikely anyone would consider init's utsname to be
-sensitive information, that's a minor point.)
-
---b.
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
