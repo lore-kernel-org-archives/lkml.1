@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbZAGUkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbZAGUki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761045AbZAGUkI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 15:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZAGUjx
+	id S1761381AbZAGUki (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 15:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761142AbZAGUkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 15:39:53 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43808
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752931AbZAGUjw (ORCPT
+	Wed, 7 Jan 2009 15:40:19 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33201 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760819AbZAGUkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 15:39:52 -0500
-Date: Wed, 07 Jan 2009 12:39:54 -0800 (PST)
-Message-Id: <20090107.123954.257436361.davem@davemloft.net>
-To: jeffrey.t.kirsher@intel.com
-Cc: jaswinder@infradead.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH -net-next 1/4] firmware: convert e100 driver to
- request_firmware()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9929d2390901071023s590f439fre15696786f098b81@mail.gmail.com>
-References: <9929d2390901041820h4cf51e2h3612108c516b6869@mail.gmail.com>
-	<20090104.213402.12464178.davem@davemloft.net>
-	<9929d2390901071023s590f439fre15696786f098b81@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 15:40:16 -0500
+Date: Wed, 7 Jan 2009 15:40:12 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
+ <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+ <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-Date: Wed, 7 Jan 2009 10:23:44 -0800
 
-> The only testing that we were not able to do was the IPMI testing,
-> because of the lack of resources.  All other testing passed.
+On Wed, 7 Jan 2009, Linus Torvalds wrote:
 > 
-> While all other testing passed, I am concerned about not being able to
-> test whether or not this change affects the ability to pass IPMI
-> traffic.  I am not sure if the "gain" of using request_firmware() out
-> weighs the potential risk that IPMI traffic may be broken with this
-> patch.  I guess I wondering what the gain is in using the
-> request_firmware() function?
-> 
-> >From past experience with IPMI traffic and the e100, the loading of
-> the microcode in the correct manner greatly affected whether IPMI
-> traffic would pass or not.
+> So we can do all that locklessly and optimistically, just going back and 
+> verifying the results later. This is why "thread_info" is actually a 
+> better thing to use than "task_struct" - we can look up the cpu in it with 
+> a simple dereference. We knew the pointer _used_ to be valid, so in any 
+> normal situation, it will never page fault (and if you have 
+> CONFIG_DEBUG_PAGEALLOC and hit a very unlucky race, then performance isn't 
+> your concern anyway: we just need to make the page fault be non-lethal ;)
 
-Jeff, I've lost all of my patience.
+Wow, and I thought I do some crazy things with side effects of different 
+kernel characteristics. So basically, since the owner use to be valid and 
+we take the cpu number directly from the thread_info struct, we do not 
+need to worry about page faulting.
 
-All drivers are being converted this way.  I fought against doing it
-to tg3 for various reasons, but the tide worked against me and I
-accepted that.
+Next comes the issue to know if the owner is still running. Wouldn't we 
+need to do something like
 
-We can't hold this patch up forever for a potential problem that you
-don't have the resources to even test for more than a week.
+	if (task_thread_info(cpu_rq(cpu)->curr) == owner)
 
-I'm therefore adding this patch, and we'll fix or revert if the
-"possible" IPMI problems do surface.
+I guess that would have the same characteristic, that even if the task 
+struct of cpu_rq(cpu)->curr was freed, we can still reference the 
+thread_info. Although, we might get garbage, but we don't care.
+
+I understand that this should not be a problem, but I'm afraid it will 
+give me nightmares at night. ;-)
+
+God that code had better be commented well.
+
+-- Steve
