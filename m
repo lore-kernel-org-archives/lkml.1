@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZAGPne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbZAGPpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbZAGPne (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759992AbZAGPnV
+	id S1760027AbZAGPpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZAGPpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:43:21 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:49847 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbZAGPnT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:43:19 -0500
-Message-ID: <9ae48b020901070743x1a5eaf72k5314cd969dc580ef@mail.gmail.com>
-Date: Wed, 7 Jan 2009 07:43:18 -0800
-From: "Ed Swierk" <eswierk@aristanetworks.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH] rtc-ds1307: True SMBus compatibility
-Cc: linux-i2c@vger.kernel.org, "David Brownell" <david-b@pacbell.net>,
-       "Alessandro Zummo" <a.zummo@towertech.it>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "BARRE Sebastien" <sbarre@sdelcc.com>
-In-Reply-To: <20090107162709.755982c0@hyperion.delvare>
+	Wed, 7 Jan 2009 10:45:21 -0500
+Received: from styx.suse.cz ([82.119.242.94]:34884 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751312AbZAGPpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 10:45:19 -0500
+Date: Wed, 7 Jan 2009 16:45:17 +0100
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Subject: Increase dirty_ratio and dirty_background_ratio?
+Message-ID: <20090107154517.GA5565@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1231177261.13443.20.camel@localhost.localdomain>
-	 <20090107142426.4be04d4d@hyperion.delvare>
-	 <9ae48b020901070722l77bebc6boc8fa2fd0bcc8da28@mail.gmail.com>
-	 <20090107162709.755982c0@hyperion.delvare>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 7, 2009 at 7:27 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> Did you try 0x4a (as i2c-amd8111 is using)?
+  Hi,
 
-Yes, it returns an error, as do all the other unsupported commands.
+  I'm writing mainly to gather opinions of clever people here ;). In commit
+07db59bd6b0f279c31044cba6787344f63be87ea (in April 2007) Linus has
+decreased default /proc/sys/vm/dirty_ratio from 40 to 10 and
+/proc/sys/vm/dirty_background_ratio from 10 to 5. While tracking
+performance regressions in SLES11 wrt SLES10 we noted that this has severely
+affected perfomance of some workloads using Berkeley DB (basically because
+what the database does is that it creates a file almost as big as available
+memory, mmaps it and randomly scribbles all over it and with lower limits
+it gets much earlier throttled / pdflush is more aggressive writing back
+stuff which is counterproductive in this particular case).
+  So the question is: What kind of workloads are lower limits supposed to
+help? Desktop? Has anybody reported that they actually help? I'm asking
+because we are probably going to increase limits to the old values for
+SLES11 if we don't see serious negative impact on other workloads...
+  Thanks for any ideas.
 
-> So, you have the datasheet... Is this something you would be allowed to
-> share with me?
-
-Unfortunately not; we acquired it under an NDA.
-
->> I could change the ds1307 driver to check whether the controller
->> supports i2c block commands and fall back to emulation only if they
->> are not available. Would that address your concerns?
->
-> Yes, that would. Same thing the eeprom or lm93 drivers are doing, to
-> only name a few of them. Should be fairly easy.
-
-OK, will do.
-
---Ed
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
