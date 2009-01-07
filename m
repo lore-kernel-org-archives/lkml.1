@@ -1,111 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbZAGXa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763823AbZAGXba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763341AbZAGXa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757298AbZAGXaF
+	id S1763823AbZAGXba (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZAGXbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:30:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54403
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755690AbZAGXaD (ORCPT
+	Wed, 7 Jan 2009 18:31:21 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:54967 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbZAGXbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:30:03 -0500
-Date: Wed, 07 Jan 2009 15:30:05 -0800 (PST)
-Message-Id: <20090107.153005.136649913.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, rmk+kernel@arm.linux.org.uk,
-       adobriyan@gmail.com, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: hardirq.h removal broke sparc64 build...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090107145822.625960f2.akpm@linux-foundation.org>
-References: <20090107.144310.79937111.davem@davemloft.net>
-	<20090107145822.625960f2.akpm@linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Wed, 7 Jan 2009 18:31:20 -0500
+Message-ID: <49653B15.4090901@oracle.com>
+Date: Wed, 07 Jan 2009 15:30:29 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Andy Whitcroft <apw@canonical.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Crutcher Dunnavant <crutcher+kernel@datastacks.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] sysrq documentation: document why the command header
+ only is shown
+References: <1231364958-26253-1-git-send-email-apw@canonical.com> <1231364958-26253-3-git-send-email-apw@canonical.com>
+In-Reply-To: <1231364958-26253-3-git-send-email-apw@canonical.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.49653B19.011C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n07NUUwM013463
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 7 Jan 2009 14:58:22 -0800
-
-> On Wed, 07 Jan 2009 14:43:10 -0800 (PST)
-> David Miller <davem@davemloft.net> wrote:
+Andy Whitcroft wrote:
+> Document the interactions between loglevel and the sysrq output.  Also
+> document how to work round it should output on the console be required.
 > 
-> > I've spent most of last night and this morning trying to figure out
-> > a way to fix this, it is very non-trivial.
-> > 
-> > Adding a simple asm/cpudata.h include into asm/topology_64.h for the
-> > SMP case does not work.
-> > 
-> > asm/cpudata.h brings in percpu.h which wants SLAB which wants to use
-> > GFP_* values and thus includes gfp.h
-> > 
-> > And thus because of the include loop:
- ...
-> > we can't include asm/cpudata.h into asm/topology.h otherwise
-> > we get:
- ...
-> > for the drivers/base/topology.o build failure case above.
+> Signed-off-by: Andy Whitcroft <apw@canonical.com>
+> ---
+>  Documentation/sysrq.txt |   18 ++++++++++++++++++
+>  1 files changed, 18 insertions(+), 0 deletions(-)
 > 
-> yes, there were some nasty problems like that.  In several cases we wimped
-> out and added the necessary includes to the .c file.  Will that (sad hack)
-> work here?
+> diff --git a/Documentation/sysrq.txt b/Documentation/sysrq.txt
+> index 265f637..a262ffb 100644
+> --- a/Documentation/sysrq.txt
+> +++ b/Documentation/sysrq.txt
+> @@ -210,6 +210,24 @@ within a function called by handle_sysrq, you must be aware that you are in
+>  a lock (you are also in an interrupt handler, which means don't sleep!), so
+>  you must call __handle_sysrq_nolock instead.
+>  
+> +*  When I hit a sysrq combination only the header appears on the console, why?
 
-Ok, this works.
+   *  When I hit a sysrq key combination, only the header appears on the console. Why?
+> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +Sysrq output is subject to the same console loglevel control as all
+> +other console output.  This means that if the kernel was booted 'quiet'
+> +as is common on distro kernels the output may not appear on the actual
+> +console, even though it will appear in the dmesg buffer, and be accessible
+> +via the dmesg command and to the consumers of /proc/kmsg.  As a specific
+> +exception the header line from the sysrq command is passed to all console
+> +consumers as if the current loglevel was maximum.  If only the header
+> +is emitted it is almost cirtain that the kernel loglevel is too low.
 
-Linus, please apply, thanks!
+                           certain
 
-topology: Fix sparc64 build.
+> +Should you require the output on the console channel then you will need
+> +to temporarily up the console loglevel using alt-sysrq-8 or:
+> +
+> +    echo 8 > /proc/sysrq-trigger
+> +
+> +Remember to return the loglevel to normal after triggering the sysrq
+> +command you are interested in.
+> +
+>  *  I have more questions, who can I ask?
+>  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>  And I'll answer any questions about the registration system you got, also
 
-Due to changeset ba84be2338d3a2b6020d39279335bb06fcd332e1
-("remove linux/hardirq.h from asm-generic/local.h") the
-sparc64 build started failing on drivers/base/topology.c:
 
-drivers/base/topology.c: In function â€˜show_physical_package_idâ€™:
-drivers/base/topology.c:103: error: implicit declaration of function â€˜cpu_dataâ€™
-drivers/base/topology.c:103: error: request for member â€˜proc_idâ€™ in something not a structure or union
-drivers/base/topology.c: In function â€˜show_core_idâ€™:
-drivers/base/topology.c:106: error: request for member â€˜core_idâ€™ in something not a structure or union
-
-Adding the obvious fix of including asm/cpudata.h into
-asm/topology.h on sparc64 doesn't fix it, in fact it
-makes things worse because of the header file dependency
-chain:
-
-	linux/gfp.h --> linux/mmzone.h --> linux/topology.h -->
-	asm/topology.h --> asm/cpudata.h --> linux/percpu.h -->
-	linux/slab.h
-
-which results in:
-
-include/linux/slub_def.h: In function â€˜kmalloc_largeâ€™:
-include/linux/slub_def.h:209: error: implicit declaration of function â€˜__get_free_pagesâ€™
-include/linux/slub_def.h:209: error: â€˜__GFP_COMPâ€™ undeclared (first use in this function)
-include/linux/slub_def.h:209: error: (Each undeclared identifier is reported only once
-include/linux/slub_def.h:209: error: for each function it appears in.)
-include/linux/slub_def.h:209: warning: cast to pointer from integer of different size
-
-The simplest thing to do is to add yet another one-off hack like
-parts of the guilty changeset did, by putting an explicit
-linux/hardirq.h include into drivers/base/topology.c
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-index a8bc1cb..a778fb5 100644
---- a/drivers/base/topology.c
-+++ b/drivers/base/topology.c
-@@ -28,6 +28,7 @@
- #include <linux/mm.h>
- #include <linux/cpu.h>
- #include <linux/module.h>
-+#include <linux/hardirq.h>
- #include <linux/topology.h>
- 
- #define define_one_ro(_name) 		\
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+-- 
+~Randy
