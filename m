@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZAGMmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756489AbZAGMmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbZAGMmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZAGMmZ
+	id S1756489AbZAGMmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZAGMma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:42:25 -0500
-Received: from 1wt.eu ([62.212.114.60]:1207 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbZAGMmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:42:24 -0500
-Date: Wed, 7 Jan 2009 13:39:02 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Changli Gao <xiaosuo@gmail.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090107123902.GA6307@1wt.eu>
-References: <20081224152841.GB13113@1wt.eu> <20090106085442.GA9513@ff.dom.local> <20090106094138.GE25644@1wt.eu> <20090106100112.GB9513@ff.dom.local> <20090106155715.GA28783@1wt.eu> <20090107093915.GA6899@ff.dom.local> <20090107122205.GA6051@1wt.eu> <20090107123153.GA9597@ff.dom.local>
+	Wed, 7 Jan 2009 07:42:30 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60962 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbZAGMm2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:42:28 -0500
+Subject: [PATCH -tip 1/7] x86: smp.h remove obsolete function declaration
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       x86 maintainers <x86@kernel.org>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 18:10:13 +0530
+Message-Id: <1231332013.18558.7.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107123153.GA9597@ff.dom.local>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 12:31:53PM +0000, Jarek Poplawski wrote:
-> On Wed, Jan 07, 2009 at 01:22:05PM +0100, Willy Tarreau wrote:
-> > [ CCing Evgeniy and Herbert who also participate to the thread ]
-> ...
-> > Well, I've just tested it. It did not fix the problem but made it worse.
-> ...
-> 
-> Terrible mistake! Here is take 2.
+Impact: cleanup
 
-no problem. However, Herbert explained that this fix could not work for
-multiple reasons (refcounting not fixed where the issue really is). BTW,
-I've just tried it, and it crashed again, this time in tcp_send_ack().
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/smp.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Regards,
-Willy
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 19953df..643a3a0 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -39,7 +39,6 @@ extern cpumask_t cpu_sibling_setup_map;
+ 
+ #endif /* CONFIG_X86_32 */
+ 
+-extern void (*mtrr_hook)(void);
+ extern void zap_low_mappings(void);
+ 
+ extern int __cpuinit get_local_pda(int cpu);
+-- 
+1.5.6.6
+
+
 
