@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZAGFDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZAGFHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZAGFDO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 00:03:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZAGFC6
+	id S1756153AbZAGFHN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 00:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZAGFG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 00:02:58 -0500
-Received: from gate.crashing.org ([63.228.1.57]:54325 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750713AbZAGFC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 00:02:57 -0500
-Subject: Re: powerpc: introduce asm/swab.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-In-Reply-To: <1231303340.14860.61.camel@pasglop>
-References: <200901070400.n0740Ore002063@hera.kernel.org>
-	 <1231303340.14860.61.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 07 Jan 2009 16:02:32 +1100
-Message-Id: <1231304552.14860.72.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 8bit
+	Wed, 7 Jan 2009 00:06:59 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:48654 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750784AbZAGFG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 00:06:58 -0500
+Message-ID: <49643869.8000500@lwfinger.net>
+Date: Tue, 06 Jan 2009 23:06:49 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: BUG in latest GIT 2.6.28-0658-g637b180
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 15:42 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-01-07 at 04:00 +0000, Linux Kernel Mailing List wrote:
-> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=156ca2bbf6503a02d7d6829886ce381d572de66e
-> > Commit:     156ca2bbf6503a02d7d6829886ce381d572de66e
-> > Parent:     8cdd3a9261e8efe36aeb6c708edb76d7e2b5d13f
-> > Author:     Harvey Harrison <harvey.harrison@gmail.com>
-> > AuthorDate: Tue Jan 6 14:56:23 2009 -0800
-> > Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-> > CommitDate: Tue Jan 6 18:10:27 2009 -0800
-> > 
-> >     powerpc: introduce asm/swab.h
-> >     
-> >     Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> Was this tested ? I see no arch maintainer signed-off here, it appears
-> to at least break ppc32, and contains hunks that paulus says were
-> explicitely nacked (removing of our ld_* macros) etc...
-> 
-> Linus, please revert.
-
-More details:
-
-include/linux/swab.h: In function ‘__fswab64’:
-include/linux/swab.h:71: error: implicit declaration of function ‘___swab32’
-make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
-make: *** [prepare0] Error 2
-
-I don't see any place where ___swab32() is defined (with 3 underscores).
-
-Even if fixing that to use __swab32() instead, then it fails because
-this is defined after it's used. I worked around it using fswab in
-there instead.
-
-This tentative patches fixes that too, but I haven't followed the whole
-discussion closely, so I can't tell whether it's fully in the original
-intend. In any case, it makes ppc32 build again (and probably others).
-
-byteorder: Fix a couple of bugs in the new include/linux/swab.h
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-diff --git a/include/linux/swab.h b/include/linux/swab.h
-index 9a2d33e..351c456 100644
---- a/include/linux/swab.h
-+++ b/include/linux/swab.h
-@@ -40,7 +40,7 @@
- /*
-  * Implement the following as inlines, but define the interface using
-  * macros to allow constant folding when possible:
-- * ___swab16, ___swab32, ___swab64, ___swahw32, ___swahb32
-+ * __swab16, __swab32, __swab64, __swahw32, __swahb32
-  */
- 
- static inline __attribute_const__ __u16 __fswab16(__u16 val)
-@@ -68,7 +68,7 @@ static inline __attribute_const__ __u64 __fswab64(__u64 val)
- #elif defined(__SWAB_64_THRU_32__)
- 	__u32 h = val >> 32;
- 	__u32 l = val & ((1ULL << 32) - 1);
--	return (((__u64)___swab32(l)) << 32) | ((__u64)(___swab32(h)));
-+	return (((__u64)__fswab32(l)) << 32) | ((__u64)(__fswab32(h)));
- #else
- 	return ___constant_swab64(val);
- #endif
+The latest GIT generates the following BUG.
 
 
+BUG: sleeping function called from invalid context at mm/slab.c:3046
+in_atomic(): 0, irqs_disabled(): 1, pid: 523, name: modprobe
+no locks held by modprobe/523.
+irq event stamp: 17802
+hardirqs last  enabled at (17801): [<ffffffff8045dd99>]
+_spin_unlock_irqrestore+0x44/0x4c
+hardirqs last disabled at (17802): [<ffffffffa00a4792>]
+ide_probe_port+0x6c/0x469 [ide_core]
+softirqs last  enabled at (17796): [<ffffffff802431f3>]
+__do_softirq+0x159/0x166
+softirqs last disabled at (17789): [<ffffffff8020d4bc>]
+call_softirq+0x1c/0x28
+Pid: 523, comm: modprobe Not tainted 2.6.28-Linus-06858-g637b180 #31
+Call Trace:
+ [<ffffffff8025dbdd>] ? print_irqtrace_events+0xd0/0xd4
+ [<ffffffff80236bcd>] __might_sleep+0xf9/0xfb
+ [<ffffffff802b5469>] kmem_cache_alloc+0x2d/0x142
+ [<ffffffffa00a489b>] ide_probe_port+0x175/0x469 [ide_core]
+ [<ffffffffa00a5750>] ide_host_register+0x2b8/0x611 [ide_core]
+ [<ffffffffa00a8526>] ? do_ide_setup_pci_device+0x70/0xd3 [ide_core]
+ [<ffffffffa00a8f1d>] ide_pci_init_one+0xcc/0xee [ide_core]
+ [<ffffffff8025e852>] ? trace_hardirqs_off+0xd/0xf
+ [<ffffffff8045dd92>] ? _spin_unlock_irqrestore+0x3d/0x4c
+ [<ffffffff8023e3ec>] ? release_console_sem+0x1b0/0x1e5
+ [<ffffffff8045aac8>] ? printk+0x41/0x49
+ [<ffffffffa00bf604>] amd74xx_probe+0x13e/0x145 [amd74xx]
+ [<ffffffffa00bf340>] ? init_chipset_amd74xx+0x0/0x160 [amd74xx]
+ [<ffffffffa00bf4a0>] ? init_hwif_amd74xx+0x0/0x26 [amd74xx]
+ [<ffffffff80345fb6>] pci_device_probe+0xc6/0x11d
+ [<ffffffff803b7f1d>] driver_probe_device+0xc3/0x168
+ [<ffffffff803b801f>] __driver_attach+0x5d/0x80
+ [<ffffffff803b7fc2>] ? __driver_attach+0x0/0x80
+ [<ffffffff803b7794>] bus_for_each_dev+0x59/0x90
+ [<ffffffff803b7d60>] driver_attach+0x21/0x23
+ [<ffffffff803b703b>] bus_add_driver+0xbf/0x20c
+ [<ffffffff803b822e>] driver_register+0xb0/0x130
+ [<ffffffff8034628d>] __pci_register_driver+0x68/0xa3
+ [<ffffffffa0023000>] ? amd74xx_ide_init+0x0/0x20 [amd74xx]
+ [<ffffffffa002301e>] amd74xx_ide_init+0x1e/0x20 [amd74xx]
+ [<ffffffff8020905b>] _stext+0x5b/0x135
+ [<ffffffff802561b0>] ? __blocking_notifier_call_chain+0x5d/0x6f
+ [<ffffffff8026af0c>] sys_init_module+0xb0/0x1d3
+ [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
