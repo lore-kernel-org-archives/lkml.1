@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZAGNQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbZAGNTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbZAGNQK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:16:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZAGNPw
+	id S1755734AbZAGNTV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZAGNTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:15:52 -0500
-Received: from 1wt.eu ([62.212.114.60]:1232 "EHLO 1wt.eu"
+	Wed, 7 Jan 2009 08:19:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35795 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752079AbZAGNPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:15:51 -0500
-Date: Wed, 7 Jan 2009 14:15:39 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090107131539.GF6307@1wt.eu>
-References: <20090107115921.GA25323@gondor.apana.org.au> <20090107121530.GA30164@ioremap.net> <20090107122238.GB25673@gondor.apana.org.au> <20090107123741.GA31255@ioremap.net> <20090107124246.GA26034@gondor.apana.org.au> <20090107124629.GA31732@ioremap.net> <20090107125535.GC6307@1wt.eu> <20090107125734.GA26331@gondor.apana.org.au> <20090107130259.GB32336@ioremap.net> <20090107131057.GD9677@ff.dom.local>
-Mime-Version: 1.0
+	id S1751596AbZAGNTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 08:19:12 -0500
+Date: Wed, 7 Jan 2009 14:18:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [3/5] Mark complex bitops.h inlines as __always_inline
+Message-ID: <20090107131846.GF3529@elte.hu>
+References: <200901051236.281008835@firstfloor.org> <20090104233640.6A7453E6653@basil.firstfloor.org> <Pine.LNX.4.64.0901061847110.29408@blonde.anvils>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090107131057.GD9677@ff.dom.local>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.64.0901061847110.29408@blonde.anvils>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 01:10:57PM +0000, Jarek Poplawski wrote:
-> On Wed, Jan 07, 2009 at 04:02:59PM +0300, Evgeniy Polyakov wrote:
-> ...
-> > If I understood correctly Jarek's patch, he wants to allocate a page and
-> > copy linear content of the skb there, so this will end up being the same
-> > case as with splicing from the file. And while generally this may be a
-> > good idea, but with usual 1.5k mtu this will copy every skb, which is
-> > rather bad idea. Will have to think :)
-> > 
-> 
-> As I mentioned earlier, I (poorly) tried to realize Changli's idea
-> only, and it's more to verify the reason still (after it failed with
-> SG method...).
 
-Jarek, since it now works when disabling both SG and GSO, we know that the
-bug is triggered when passing through do_tcp_sendpage(). Thus, I will not
-try your patch #3 yet, but rather wait for fix candidates to try.
+* Hugh Dickins <hugh@veritas.com> wrote:
 
-Thanks!
-Willy
+> Hugh Dickins noticed that released gcc versions building the kernel with 
+> CONFIG_OPTIMIZE_INLINING=y don't inline some of the bitops - sometimes 
+> generating very inefficient pageflag tests, and many instances of 
+> constant_test_bit().
 
+Could you quantify that please?
+
+We really dont want to reintroduce __always_inline just for performance / 
+code size reasons. If GCC messes up and makes a larger / more inefficient 
+kernel, GCC will be fixed. CONFIG_OPTIMIZE_INLINING is default-off, so 
+enable it only if it improves your kernel.
+
+	Ingo
