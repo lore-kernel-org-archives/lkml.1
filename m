@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759710AbZAGCrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbZAGCul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759710AbZAGCrx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 21:47:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbZAGCro
+	id S1759711AbZAGCul (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 21:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbZAGCud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 21:47:44 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:44824 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755197AbZAGCrn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 21:47:43 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Matt Helsley <matthltc@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-References: <20090106200229.GA17031@us.ibm.com>
-	<1231274682.20316.65.camel@heimdal.trondhjem.org>
-	<20090106215831.GE18147@us.ibm.com>
-	<m1eizg11fy.fsf@frodo.ebiederm.org>
-	<1231283734.8041.6.camel@heimdal.trondhjem.org>
-	<20090106233238.GD13785@fieldses.org>
-	<1231284943.8041.8.camel@heimdal.trondhjem.org>
-	<1231287607.11487.0.camel@heimdal.trondhjem.org>
-	<20090107002608.GK13785@fieldses.org>
-	<1231288706.11487.15.camel@heimdal.trondhjem.org>
-	<20090107014422.GA17913@fieldses.org>
-Date: Tue, 06 Jan 2009 18:37:14 -0800
-In-Reply-To: <20090107014422.GA17913@fieldses.org> (J. Bruce Fields's message
-	of "Tue, 6 Jan 2009 20:44:22 -0500")
-Message-ID: <m1r63fzvs5.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 6 Jan 2009 21:50:33 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:54748 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755548AbZAGCuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 21:50:32 -0500
+Message-ID: <49641872.3000404@sgi.com>
+Date: Tue, 06 Jan 2009 18:50:26 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"J. Bruce Fields" <bfields@fieldses.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Cliff Wickman <cpw@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Jes Sorensen <jes@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/11] x86: cpumask: some more cpumask cleanups - flush_tlb_*
+References: <20090104131759.865331000@polaris-admin.engr.sgi.com> <20090104144454.GA1132@elte.hu> <4962D4CF.7070200@sgi.com> <200901071242.42573.rusty@rustcorp.com.au>
+In-Reply-To: <200901071242.42573.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"J. Bruce Fields" <bfields@fieldses.org> writes:
+Rusty Russell wrote:
+> On Tuesday 06 January 2009 14:19:35 Mike Travis wrote:
+>> Ingo Molnar wrote:
+>>> Quite good! Can we fix those TLB flush cpumask uses too?
+>> Here is one proposal.
+> 
+> Here's what I had.  It's untested though...
+> 
+> x86: change flush_tlb_others to take a const struct cpumask *. FIXME: REVIEW
+> 
+> This is made a little more tricky by uv_flush_tlb_others which
+> actually alters its argument, for an IPI to be sent to the remaining
+> cpus in the mask.
+> 
+> I solve this by allocating a cpumask_var_t for this case and falling back
+> to IPI should this fail.
 
-> If people seem to think they can do live process and container
-> migration:
->
-> 	http://ols.fedoraproject.org/OLS/Reprints-2008/mirkin-reprint.pdf
->
-> then moving the NFS state strikes me as not the greatest of their
-> troubles.
->
-> I'm not volunteering!
+I thought about this but I wondered if we wanted to add the overhead of a kmalloc
+call for every tlb flush?  For a UV system, simultaneous flushes will be quite common,
+so introducing two kmalloc's in the path could really hamper performance.
 
-Reasonable.  There are a lot easier cases than NFS, and migration is
-not the biggest use case.
-
-A lot of this work we can do incrementally and simply not support
-doing everything in a container.  Which is where we are today.
-
-The whole hostname in NFS packets isn't something that makes much sense
-to me in the first place, so I can't comment on a good use case for that.
-
-Sorting out the details so we can get NFS working in multiple network namespaces
-makes a lot of sense to me.   It allows things like VPNing into work isolating the
-VPN process in a network namespace, and still being able to use all of the kernel
-networking including NFS like normal sounds fun to me.
-
-There may also be some fun things you can do with testing having both an NFS
-server and the client on the same box and not go through the loopback device.
-
-Eric
+Thanks,
+Mike
