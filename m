@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZAGNqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZAGNrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbZAGNqS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZAGNqE
+	id S1756223AbZAGNrp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:47:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZAGNrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:46:04 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:43397 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbZAGNqD (ORCPT
+	Wed, 7 Jan 2009 08:47:37 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:32805 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbZAGNrg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:46:03 -0500
-Message-ID: <4964B20B.4030406@davidnewall.com>
-Date: Thu, 08 Jan 2009 00:15:47 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Nick Andrew <nick@nick-andrew.net>, Linas Vepstas <linasvepstas@gmail.com>,
-       david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
-       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-References: <496076A9.7030907@davidnewall.com>	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>	<4960897D.5030603@davidnewall.com>	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>	<4961432A.80509@davidnewall.com>	<alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>	<49614835.7000505@davidnewall.com>	<3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>	<20090105143335.GC18055@mail.local.tull.net>	<4962BB13.7060304@davidnewall.com>	<20090106025125.GB28431@mail.local.tull.net>	<20090106094058.64c89586@lxorguk.ukuu.org.uk>	<496479EA.1020207@davidnewall.com>	<20090107095419.70b78dc7@lxorguk.ukuu.org.uk>	<49648163.9060007@davidnewall.com> <20090107105201.054c011f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090107105201.054c011f@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 08:47:36 -0500
+Message-Id: <4964C0A3.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 07 Jan 2009 13:48:03 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: <ccache@lists.samba.org>, "Theodore Tso" <tytso@mit.edu>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [REGRESSION] Recent change to kernel spikes out
+	 ccache/distcc
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org>
+ <496386EF.76E4.0078.0@novell.com> <20090106173300.GA10903@mit.edu>
+ <49647B00.76E4.0078.0@novell.com>
+ <20090107113138.GA29730@uranus.ravnborg.org>
+ <4964AF8D.76E4.0078.0@novell.com>
+ <20090107132337.GA2289@uranus.ravnborg.org>
+In-Reply-To: <20090107132337.GA2289@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> True but irrelevant because the RTC returns a timestamp.  And it's
->> quietly understood that the RTC is only an approximation.
->>     
+>>> Sam Ravnborg <sam@ravnborg.org> 07.01.09 14:23 >>>
+>On Wed, Jan 07, 2009 at 12:35:09PM +0000, Jan Beulich wrote:
+>> >>> Sam Ravnborg <sam@ravnborg.org> 07.01.09 12:31 >>>
+>> >What is the gain/pain ratio here?
+>> 
+>> Certainly depends on the pov - it reduces the kernel module (disk) image
+>> sizes quite a bit, so from a distro perspective its a move against the ever
+>> growing package sizes (and the disk space) hundreds or even thousands
+>> of modules require.
 >
-> You miss the point.
->   
+>The kernel modules seldom export anything so the benefit is minimal here.
 
-No, I got the point.  I see no problem.
+Not really, for highly modular distro kernels.
 
-> The RTC stores the CMOS time in MM DD YY HH:MM:SS format.
+>I did a 15 minutes hack to try ripping the .c -> .s -> .o stuff out.
 
-Yes, which is perfect for mktime(), which knows about leap seconds and
-so produces the correct time_t.
+Looks good to me. In case you decide to revert the stuff for .29, I'll
+merge this into my patch.
 
+>Jan - I need some hard numbers to convince me that stripping the
+>__crc symbols is worth it.
 
->> However it is now clear that no special kernel support is required for
->> leap-seconds, and any such code that's been incorporated needs to be
->> removed.  Removed I say!
->>     
->
-> There never has been any. Its all handled (both posix and sane) by glibc.
+The on-disk size of the modules in my builds is reduced by about 5% with
+this patch (but I can't immediately tell how much of this is due to __crc_*
+vs. other symbol stripping).
 
-Which is what one would expect.  It's reports of crashes and kernel bugs
-being found and fixed in code to handle leap seconds which lead me to a
-different understanding.  I thought it was said that there's kernel
-support to handle the leap second flag in NTP's broadcasts, and that
-that was where the bug was.
+Jan
 
-So.  What is the situation?
