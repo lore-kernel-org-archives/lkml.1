@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbZAGSgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZAGSl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759795AbZAGSgs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 13:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZAGSgj
+	id S1758050AbZAGSl2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 13:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbZAGSlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 13:36:39 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:39471 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbZAGSgj (ORCPT
+	Wed, 7 Jan 2009 13:41:15 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:40976 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbZAGSlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 13:36:39 -0500
-Date: Wed, 7 Jan 2009 18:36:33 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: i8259.c fix style problems
-In-Reply-To: <1231067032.27852.34.camel@jaswinder.satnam>
-Message-ID: <alpine.LFD.1.10.0901071814580.11407@ftp.linux-mips.org>
-References: <1231067032.27852.34.camel@jaswinder.satnam>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Jan 2009 13:41:14 -0500
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 08 Jan 2009 00:11:10 +0530
+Message-Id: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
+Subject: [RFC][PATCH 0/4] Memory controller soft limit patches
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Jan 2009, Jaswinder Singh Rajput wrote:
 
-> @@ -11,15 +11,15 @@
->  #include <linux/kernel_stat.h>
->  #include <linux/sysdev.h>
->  #include <linux/bitops.h>
-> +#include <linux/acpi.h>
-> +#include <linux/io.h>
-> +#include <linux/delay.h>
->  
-> -#include <asm/acpi.h>
->  #include <asm/atomic.h>
->  #include <asm/system.h>
-> -#include <asm/io.h>
->  #include <asm/timer.h>
->  #include <asm/hw_irq.h>
->  #include <asm/pgtable.h>
-> -#include <asm/delay.h>
->  #include <asm/desc.h>
->  #include <asm/apic.h>
->  #include <asm/arch_hooks.h>
+Here is v1 of the new soft limit implementation. Soft limits is a new feature
+for the memory resource controller, something similar has existed in the
+group scheduler in the form of shares. We'll compare shares and soft limits
+below. I've had soft limit implementations earlier, but I've discarded those
+approaches in favour of this one.
 
- My feeling is this hunk and the following one should be submitted as 
-separate patches.
+Soft limits are the most useful feature to have for environments where
+the administrator wants to overcommit the system, such that only on memory
+contention do the limits become active. The current soft limits implementation
+provides a soft_limit_in_bytes interface for the memory controller and not
+for memory+swap controller. The implementation maintains an RB-Tree of groups
+that exceed their soft limit and starts reclaiming from the group that
+exceeds this limit by the maximum amount.
 
-> @@ -323,7 +323,7 @@ void init_8259A(int auto_eoi)
->  	outb_pic(0x11, PIC_MASTER_CMD);	/* ICW1: select 8259A-1 init */
->  
->  	/* ICW2: 8259A-1 IR0-7 mapped to 0x30-0x37 on x86-64,
-> -	                       to 0x20-0x27 on i386 */
-> +	   to 0x20-0x27 on i386 */
->  	outb_pic(IRQ0_VECTOR, PIC_MASTER_IMR);
->  
->  	/* 8259A-1 (the master) has a slave on IR2 */
+This is an RFC implementation and is not meant for inclusion
 
- I think the original formatting is more readable; I would align the two 
-'to's vertically even.  You can fix the comment to adhere to the Linux 
-coding standard though and the whitespace "problem" will vanish 
-automagically.
+TODOs
 
-  Maciej
+1. The shares interface is not yet implemented, the current soft limit
+   implementation is not yet hierarchy aware. The end goal is to add
+   a shares interface on top of soft limits and to maintain shares in
+   a manner similar to the group scheduler
+2. The current implementation maintains the delta from the soft limit
+   and pushes back groups to their soft limits, a ratio of delta/soft_limit
+   is more useful
+3. It would be nice to have more targetted reclaim (in terms of pages to
+   recalim) interface. So that groups are pushed back, close to their soft
+   limits.
+
+Tests
+-----
+
+I've run two memory intensive workloads with differing soft limits and
+seen that they are pushed back to their soft limit on contention. Their usage
+was their soft limit plus additional memory that they were able to grab
+on the system.
+
+Please review, comment.
+
+Series
+------
+
+memcg-soft-limit-documentation.patch
+memcg-add-soft-limit-interface.patch
+memcg-organize-over-soft-limit-groups.patch
+memcg-soft-limit-reclaim-on-contention.patch
+
+-- 
+	Balbir
