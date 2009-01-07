@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758559AbZAGO5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbZAGO5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758559AbZAGO5B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZAGO4s
+	id S1758862AbZAGO5X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:57:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758558AbZAGO5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:56:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51749 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752798AbZAGO4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:56:47 -0500
-Date: Wed, 7 Jan 2009 15:56:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: Btrfs for mainline
-Message-ID: <20090107145621.GB23455@elte.hu>
-References: <1230722935.4680.5.camel@think.oraclecorp.com> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <200901060147.24285.nickpiggin@yahoo.com.au> <1231173015.4290.129.camel@think.oraclecorp.com> <20090107130742.GD3529@elte.hu> <20090107132447.GR2002@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107132447.GR2002@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 7 Jan 2009 09:57:01 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47399 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758503AbZAGO5A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 09:57:00 -0500
+Subject: [PATCH -tip 1/7] x86: smp.h remove obsolete function declaration
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 17:26:22 +0530
+Message-Id: <1231329382.17961.30.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: cleanup
 
-* Matthew Wilcox <matthew@wil.cx> wrote:
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/smp.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-> On Wed, Jan 07, 2009 at 02:07:42PM +0100, Ingo Molnar wrote:
-> > * Chris Mason <chris.mason@oracle.com> wrote:
-> > > All of this is a long way of saying the btrfs locking scheme is far from 
-> > > perfect.  I'll look harder at the loop and ways to get rid of it.
-> > 
-> > <ob'plug>
-> > 
-> > adaptive spinning mutexes perhaps? Such as:
-> 
-> Um, I don't know how your mail client does threading, but mine shows 
-> Peter's message introducing the adaptive spinning mutexes as a reply to 
-> one of Chris' messages in the btrfs thread.
->
-> Chris is just saying he'll look at other ways to not need the spinning 
-> mutexes.
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 19953df..643a3a0 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -39,7 +39,6 @@ extern cpumask_t cpu_sibling_setup_map;
+ 
+ #endif /* CONFIG_X86_32 */
+ 
+-extern void (*mtrr_hook)(void);
+ extern void zap_low_mappings(void);
+ 
+ extern int __cpuinit get_local_pda(int cpu);
+-- 
+1.5.6.6
 
-But those are not the same spinning mutexes. Chris wrote his mail on Jan 
-05, Peter his first mail about spin-mutexes on Jan 06, as a reaction to 
-Chris's mail.
 
-My reply links back the discussion to the original analysis from Chris 
-pointing out that it would be nice to try BTRFS with plain mutexes plus 
-Peter's patch - instead of throwing away BTRFS's locking design or 
-anything intrusive like that.
 
-Where's the problem? :)
-
-	Ingo
