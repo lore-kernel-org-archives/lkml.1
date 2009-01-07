@@ -1,144 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbZAGVlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbZAGVlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762078AbZAGVlP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 16:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZAGVky
+	id S1762138AbZAGVlg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762067AbZAGVlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:40:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:4241 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbZAGVkx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:40:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:cc:subject;
-        b=qId9kj2UCGDTJI9YOiDi8Fv5Sawl4QftfiaQZJeTQN7vTXWlK6WAPrM5T4nrG3zz1r
-         rIv01YKiUScFVkLEXiU+17jklw+1KUNf6BKfWY9oA5y4GJ0MKZ18uCQ894KL9AE+UhxW
-         ZAjkgpu8qjwS5zJejSqOcK/AErB8M/j+4ilq0=
-Message-ID: <49652162.1358560a.1934.2024@mx.google.com>
-Date: Wed, 07 Jan 2009 13:40:50 -0800 (PST)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com
-Subject: [PATCH 2/2] [Resend] tracing/branch-tracer: adapt to the new reentrant stat tracing api
+	Wed, 7 Jan 2009 16:41:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58356 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755433AbZAGVlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:41:06 -0500
+Date: Wed, 7 Jan 2009 22:40:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, James.Bottomley@hansenpartnership.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
+Message-ID: <20090107214045.GA15761@elte.hu>
+References: <1231329368.17961.29.camel@jaswinder.satnam> <20090107125152.GA3529@elte.hu> <20090107133327.GA4911@elte.hu> <3f9a31f40901070557r336020dctbe9549e8634b167@mail.gmail.com> <20090107150351.GB27606@elte.hu> <20090107151223.GA4899@elte.hu> <20090107151522.GA5341@elte.hu> <1231344766.3770.12.camel@jaswinder.satnam> <20090107173509.GD24982@elte.hu> <3f9a31f40901071043u5a112962l2dd7e1d88de8aae2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3f9a31f40901071043u5a112962l2dd7e1d88de8aae2@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: make all and annotated branches available simultaneously
 
-Create two files "all" and "annotated" inside the /debugfs/tracing/trace_stat
-directory, making the both stats simultaneously available instead of needing
-to change an option to switch from one stat file to another.
+* Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
 
-The output of these stats haven't changed.
+> On Wed, Jan 7, 2009 at 11:05 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+> >
+> >> I send new 4 patches:
+> >>
+> >> ﻿[PATCH -tip 1/4 V2] x86: smp.h move stack_processor_id declartion to cpu.h
+> >> ﻿[PATCH -tip 2/4 V2] x86: smp.h move safe_smp_processor_id declartion to cpu.h
+> >> ﻿[PATCH -tip 3/4 V2] x86: smp.h move cpu_physical_id declartion to cpu.h
+> >> ﻿[PATCH -tip 4/4 V2] x86: smp.h move boot_cpu_id declartion to cpu.h
+> >>
+> >> Please accept them.
+> >
+> > Just to make sure: they should solve the 3 failures i reported?
+> >
+> 
+> Yes.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace_branch.c |   69 +++++++++++++++++-------------------------
- 1 files changed, 28 insertions(+), 41 deletions(-)
+ok, i've applied the remaining bits and they are holding up quite well so 
+far in tip/master testing:
 
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index 4785a3b..da5cf3e 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -306,19 +306,6 @@ static int annotated_branch_stat_cmp(void *p1, void *p2)
- }
- 
- #ifdef CONFIG_PROFILE_ALL_BRANCHES
--enum {
--	TRACE_BRANCH_OPT_ALL = 0x1
--};
--
--static struct tracer_opt branch_opts[] = {
--	{ TRACER_OPT(stat_all_branch, TRACE_BRANCH_OPT_ALL) },
--	{ }
--};
--
--static struct tracer_flags branch_flags = {
--	.val = 0,
--	.opts = branch_opts
--};
- 
- extern unsigned long __start_branch_profile[];
- extern unsigned long __stop_branch_profile[];
-@@ -352,28 +339,36 @@ all_branch_stat_next(void *v, int idx)
- 	return p;
- }
- 
--static int branch_set_flag(u32 old_flags, u32 bit, int set)
--{
--	if (bit == TRACE_BRANCH_OPT_ALL) {
--		if (set) {
--			branch_trace.stat_headers = all_branch_stat_headers;
--			branch_trace.stat_start = all_branch_stat_start;
--			branch_trace.stat_next = all_branch_stat_next;
--			branch_trace.stat_cmp = NULL;
--		} else {
--			branch_trace.stat_headers =
--				annotated_branch_stat_headers;
--			branch_trace.stat_start = annotated_branch_stat_start;
--			branch_trace.stat_next = annotated_branch_stat_next;
--			branch_trace.stat_cmp = annotated_branch_stat_cmp;
--		}
--		init_tracer_stat(&branch_trace);
--	}
--	return 0;
--}
-+static struct tracer_stat branch_stats[] = {
-+	{.name = "annotated",
-+	.stat_start = annotated_branch_stat_start,
-+	.stat_next = annotated_branch_stat_next,
-+	.stat_cmp = annotated_branch_stat_cmp,
-+	.stat_headers = annotated_branch_stat_headers,
-+	.stat_show = branch_stat_show},
- 
-+	{.name = "all",
-+	.stat_start = all_branch_stat_start,
-+	.stat_next = all_branch_stat_next,
-+	.stat_headers = all_branch_stat_headers,
-+	.stat_show = branch_stat_show},
-+
-+	{ }
-+};
-+#else
-+static struct tracer_stat branch_stats[] = {
-+	{.name = "annotated",
-+	.stat_start = annotated_branch_stat_start,
-+	.stat_next = annotated_branch_stat_next,
-+	.stat_cmp = annotated_branch_stat_cmp,
-+	.stat_headers = annotated_branch_stat_headers,
-+	.stat_show = branch_stat_show},
-+
-+	{ }
-+};
- #endif /* CONFIG_PROFILE_ALL_BRANCHES */
- 
-+
- static struct tracer branch_trace __read_mostly =
- {
- 	.name		= "branch",
-@@ -383,16 +378,8 @@ static struct tracer branch_trace __read_mostly =
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest	= trace_selftest_startup_branch,
- #endif /* CONFIG_FTRACE_SELFTEST */
--#endif /* CONFIG_BRANCH_TRACER */
--	.stat_start	=	annotated_branch_stat_start,
--	.stat_next	= annotated_branch_stat_next,
--	.stat_show	= branch_stat_show,
--	.stat_headers	= annotated_branch_stat_headers,
--	.stat_cmp	= annotated_branch_stat_cmp,
--#ifdef CONFIG_PROFILE_ALL_BRANCHES
--	.flags	= &branch_flags,
--	.set_flag	= branch_set_flag,
- #endif
-+	.stats		= branch_stats
- };
- 
- __init static int init_branch_trace(void)
--- 
-1.6.0.4
+6d652ea: x86: smp.h move boot_cpu_id declartion to cpu.h
+af8968a: x86: smp.h move cpu_physical_id declartion to cpu.h
+96b89dc: x86: smp.h move safe_smp_processor_id declartion to cpu.h
+f472cdb: x86: smp.h move stack_processor_id declartion to cpu.h
 
+	Ingo
 
+	Ingo
