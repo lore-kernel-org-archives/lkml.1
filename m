@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbZAGCxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759786AbZAGDAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760228AbZAGCxV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 21:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbZAGCxH
+	id S1759786AbZAGDAm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 22:00:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZAGDAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 21:53:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46237 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758169AbZAGCxG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 21:53:06 -0500
-Date: Tue, 6 Jan 2009 21:53:03 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       roel.kluin@gmail.com, pq@iki.fi, srostedt@redhat.com
-Subject: Re: [PATCH 3/3] tracing/ftrace: fix a memory leak in stat tracing
-In-Reply-To: <20090106145157.124e910f.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0901062152290.25237@gandalf.stny.rr.com>
-References: <20090106223337.677427397@goodmis.org> <20090106223405.703770821@goodmis.org> <20090106145157.124e910f.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Jan 2009 22:00:32 -0500
+Received: from ns2.suse.de ([195.135.220.15]:58768 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753120AbZAGDAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 22:00:32 -0500
+Date: Wed, 7 Jan 2009 04:00:30 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Robin Holt <holt@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Gregory Haskins <ghaskins@novell.com>, Tony Luck <tony.luck@gmail.com>
+Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+Message-ID: <20090107030030.GH3390@wotan.suse.de>
+References: <20090106162741.GA7991@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com> <20090106201950.GA3850@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB955B4@orsmsx505.amr.corp.intel.com> <1231275441.11687.110.camel@twins> <20090106225054.GB3850@sgi.com> <1231283763.11687.135.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231283763.11687.135.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 Jan 2009, Andrew Morton wrote:
-
-> On Tue, 06 Jan 2009 17:33:40 -0500
-> Steven Rostedt <rostedt@goodmis.org> wrote:
+On Wed, Jan 07, 2009 at 12:16:03AM +0100, Peter Zijlstra wrote:
+> > 
+> > But doesn't scheduler tick advance the rq->clock?  Why do the others
+> > need to fiddle with a remote runqueue's clock?  When that cpu starts
+> > taking ticks again, it will update it's rq->clock field and start the
+> > processes.  I guess I am a lot underinformed about the new scheduler
+> > design.
 > 
-> >  static int stat_seq_show(struct seq_file *s, void *v)
-> >  {
-> > -	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
-> > -	return current_tracer.stat_show(s, l->stat);
-> > +	struct trace_stat_list *entry =
-> > +		list_entry(v, struct trace_stat_list, list);
-> > +
-> > +	return current_tracer.stat_show(s, entry->stat);
-> >  }
-> 
-> Rather than jumping through weird 80-column hoops, one can just do:
-> 
-> 	struct trace_stat_list *entry;
-> 
-> 	...
-> 
-> 	entry = list_entry(v, struct trace_stat_list, list);
+> We try to do better than tick based time accounting these days.
 
-OK, this is Frederics work. I'll submit a separate clean up patch.
-
--- Steve
+But if you contain the drift to within one tick, it shouldn't be much
+problem to just truncate negative deltas I would have thought? The
+time between events on different CPUs is pretty fuzzy at the ns level
+anyway, I think ;)
 
