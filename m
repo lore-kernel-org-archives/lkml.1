@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761226AbZAGTdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932137AbZAGTd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761226AbZAGTdm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758292AbZAGTdd
+	id S932137AbZAGTd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761247AbZAGTdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:33:33 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59522 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757330AbZAGTdc (ORCPT
+	Wed, 7 Jan 2009 14:33:44 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:58054 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761233AbZAGTdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 14:33:32 -0500
-Date: Wed, 7 Jan 2009 19:31:27 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "M. Warner Losh" <imp@bsdimp.com>
-Cc: mayer@ntp.isc.org, linasvepstas@gmail.com, david@lang.hm, hancockr@shaw.ca,
-       kyle@moffetthome.net, slashdot@jameshallam.info, goodgerster@gmail.com,
-       davidn@davidnewall.com, linux-kernel@vger.kernel.org,
-       ntpwg@lists.ntp.isc.org, pretzalz@techhouse.org,
-       burdell@iruntheinter.net, nick@nick-andrew.net, jeff@kosowsky.org
-Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on
- new years 2008-2009
-Message-ID: <20090107193127.0bec8ad8@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090107.103947.1324582654.imp@bsdimp.com>
-References: <alpine.DEB.1.10.0901050949560.27641@asgard.lang.hm>
-	<3ae3aa420901050942y56f0ecdei39c091a73e49c1fd@mail.gmail.com>
-	<49642674.9080703@ntp.isc.org>
-	<20090107.103947.1324582654.imp@bsdimp.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 7 Jan 2009 14:33:43 -0500
+Date: Wed, 7 Jan 2009 20:35:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Detlef Riekenberg <wine.dev@web.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, trivial@kernel.org
+Subject: Re: [PATCH] [TRIVIAL] linux/types.h: Don't depend on __GNUC__ for __le64 / __be64 [synced to git]
+Message-ID: <20090107193523.GA4647@uranus.ravnborg.org>
+References: <1230594921.7652.35.camel@p4.lan> <1231029623.7225.10.camel@p4.lan> <1231320558.5547.21.camel@p4.lan> <496500D2.8080201@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496500D2.8080201@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> time, causing time to jump backwards by 1s (or violate POSIX time_t's
-> invariant that midnight time_t is % 86400 == 0).  This jump backwards
-> is a pita in the kernel, and violates the assumption that many
-> programs have that time doesn't flow backwards.
+On Wed, Jan 07, 2009 at 11:21:54AM -0800, H. Peter Anvin wrote:
+> Detlef Riekenberg wrote:
+> >Hi.
+> ><linux/cdrom.h> is used in Wine, but failed to compile with pcc.
+> >(__le64 and __be64 are referenced in <linux/byteorder/little_endian.h>)
+> >
+> >There is no reason to restrict the typedefs to __GNUC__.
+> >This Patch is trivial for gcc and icc, but required for other compiler.
+> >
+> >As reference, the typedefs for __u64 and __s64 where fixed to be
+> >available for other compiler on 02. Mai 2008 by H. Peter Anvin
+> >(commit edfa5cfa3dc5bfa95e6aa82a2b8904e7f6c35ed7)
+> >
+> >Wine: http://www.winehq.org
+> >pcc:  http://pcc.ludd.ltu.se
+> >
+> >This patch is again a resync to current git.
+> >Is there anything, that I can do for this Patch?
+> >
+> 
+> For what it's worth...
+> 
+> Acked-by: H. Peter Anvin <hpa@zytor.com>
+> 
+> This isn't an x86 thing so it's a bit out of scope for me to push it 
+> through -tip, but it's a valid bugfix.
+I have applied it to kbuild-fixes.git.
 
-They can slew the clock slowly as well. There is a wonderful quote from
-one of the summaries of the POSIX committee discussions on time that says
-quite simply "the posix clock is not guaranteed to be accurate"
-
-As it currently stands the kernel contains sufficient support that at the
-point you know a leap second is coming you can adjust the second length
-marginally over the entire period.
-
-The current behaviour is an implementation decision. Jumping on a second
-shouldn't be an issue to most people, jumping back is asking for badness
-but isn't in fact used in the world today. Slewing the entire day so that
-each second is 1/86400 of a second longer or shorter wouldn't be noticed
-by anyone.
-
-Alan
+Thanks,
+	Sam
