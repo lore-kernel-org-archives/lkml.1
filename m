@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZAGNwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZAGN6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbZAGNwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZAGNwW
+	id S1756049AbZAGN6D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:58:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZAGN5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:52:22 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:44613 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZAGNwV (ORCPT
+	Wed, 7 Jan 2009 08:57:53 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:37580 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbZAGN5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:52:21 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: linville@tuxdriver.com, davem@davemloft.net,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>
-Subject: [PATCH 1/1] ath5k: fix hw rate index condition
-Date: Wed,  7 Jan 2009 14:51:22 +0100
-Message-Id: <1231336282-22283-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <20090106170740.GD11588@linux.vnet.ibm.com>
-References: <20090106170740.GD11588@linux.vnet.ibm.com>
+	Wed, 7 Jan 2009 08:57:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=P5KyquUNewkBBf+31gCCl3y9oMBHuP2UxnbVJiydqm2pH19fKCGzFmTeoFzQEU5yi8
+         GBHkRJZNNT4Er0QQJpTSzdWpCyMIm8hUAchkG5IJMXXPre4TpDU3W0hmPrdiRlEWsrPZ
+         c38suI/cThlOQhBmDFAqlUxyjUmE9PGgin8Mg=
+Message-ID: <3f9a31f40901070557r336020dctbe9549e8634b167@mail.gmail.com>
+Date: Wed, 7 Jan 2009 19:27:51 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
+Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
+       "x86 maintainers" <x86@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       James.Bottomley@hansenpartnership.com,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090107133327.GA4911@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1231329368.17961.29.camel@jaswinder.satnam>
+	 <20090107125152.GA3529@elte.hu> <20090107133327.GA4911@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dhaval Giani wrote:
-> I see this on current git. Not sure how to reproduce it, has happened on
-> two random occasions. At both times, I was not connected to a wireless
-> network, but to wired networks.
-> 
-> ------------[ cut here ]------------
-> WARNING: at net/mac80211/rx.c:2234 __ieee80211_rx+0x7f/0x559
-> ...
-> Call Trace:
->  [<f80d4192>] __ieee80211_rx+0x7f/0x559 [mac80211]
->  [<f80a19f4>] ath5k_tasklet_rx+0x4f7/0x53b [ath5k]
-> ...
+Hello Ingo,
 
-Hmm, maybe ath5k is culprit. Could you apply the attached patch and
-use the kernel till the problem appears again?
+On Wed, Jan 7, 2009 at 7:03 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> applied to tip/x86/cleanups:
+>
+> excluded it again from tip/master, due to this build failure:
+>
 
+Please accept only first 4 patches:
+
+1.  x86: smp.h remove obsolete function declaration
+2.  x86: smp.h move zap_low_mappings declartion to tlbflush.h
+3.  x86: smp.h move prefill_possible_map declartion to cpu.h
+4.  x86: smp.h move stack_processor_id declartion to cpu.h
+
+Then it will easier for me to to focus on only few things.
+
+Thanks
 --
-
-Make sure we print out a warning when the index is out of bounds,
-i.e. even on hw_rix == AR5K_MAX_RATES.
-
-Also change to WARN and print text with the reported hw_rix.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Luis R. Rodriguez <lrodriguez@atheros.com>
-Cc: Bob Copeland <me@bobcopeland.com>
----
- drivers/net/wireless/ath5k/base.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
-index 4af2607..0e65e25 100644
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -1088,7 +1088,8 @@ ath5k_mode_setup(struct ath5k_softc *sc)
- static inline int
- ath5k_hw_to_driver_rix(struct ath5k_softc *sc, int hw_rix)
- {
--	WARN_ON(hw_rix < 0 || hw_rix > AR5K_MAX_RATES);
-+	WARN(hw_rix < 0 || hw_rix >= AR5K_MAX_RATES,
-+			"hw_rix out of bounds: %x\n", hw_rix);
- 	return sc->rate_idx[sc->curband->band][hw_rix];
- }
- 
--- 
-1.6.0.6
-
+JSR
