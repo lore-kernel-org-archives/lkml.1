@@ -1,89 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZAGD1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZAGD2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbZAGD1x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 22:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZAGD1o
+	id S1756436AbZAGD2W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 22:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZAGD2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 22:27:44 -0500
-Received: from sh.osrg.net ([192.16.179.4]:58664 "EHLO sh.osrg.net"
+	Tue, 6 Jan 2009 22:28:08 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34812 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbZAGD1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 22:27:44 -0500
-Date: Wed, 07 Jan 2009 12:26:53 +0900 (JST)
-Message-Id: <20090107.122653.111144635.ryusuke@osrg.net>
-To: penberg@cs.helsinki.fi
-Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>
+	id S1751562AbZAGD2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 22:28:06 -0500
+Date: Wed, 7 Jan 2009 04:28:03 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: 2.6.29 -mm merge plans
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <84144f020901060530w2b7fef67j8f1f2242860df3bd@mail.gmail.com>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	<c4a7c9420901050140u23697729pc55966110d68452b@mail.gmail.com>
-	<84144f020901060530w2b7fef67j8f1f2242860df3bd@mail.gmail.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Message-ID: <20090107032802.GA22559@wotan.suse.de>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151131.b6c4ff0b.akpm@linux-foundation.org> <20090106232418.GB25103@infradead.org> <20090107011448.GB3390@wotan.suse.de> <87tz8b3nfe.fsf@basil.nowhere.org> <20090107014915.GE3390@wotan.suse.de> <20090107025725.GJ496@one.firstfloor.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107025725.GJ496@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka,
-
-On Tue, 6 Jan 2009 15:30:59 +0200, "Pekka Enberg" wrote:
-> Hi Ryusuke,
+On Wed, Jan 07, 2009 at 03:57:25AM +0100, Andi Kleen wrote:
+> > sys_sync B which is invoked *after* sys_sync caller A should not
+> > return before A. If you didn't have a global lock, they'd tend to
+> > block one another's pages anyway. I think it's OK.
 > 
-> [snip nilfs patches]
-> 
-> On Mon, Jan 5, 2009 at 11:40 AM, Ryusuke Konishi
-> <konishi.ryusuke@lab.ntt.co.jp> wrote:
-> >>  Dunno.   Has this been reviewed enough?
-> >>
-> >
-> > I'm now working to follow some comments from Chris, and
-> > I think nilfs should be reviewed more widely.
-> >
-> > I'll aim for the next merge window or so.
-> 
-> It would be nice if BUG(), BUG_ON(), and panic() calls would be
-> converted to proper error handling using WARN_ON() calls. The BUG()
-> call in nilfs_cpfile_delete_checkpoints(), for example, looks to be
-> triggerable from user-space via the ioctl() system call (albeit I
-> didn't look too closely).
+> It means that you cannot reboot because reboot does sync.
+> What happens when the sync gets stuck somewhere on a really
+> slow device?
 
-Thanks for looking at the code.
+I don't follow you.
 
-Well, there are too many BUG() and BUG_ON() calls.
-I'll try to convert them as your advice.
+The sync gets "stuck" because it is writing out dirty data. You
+don't want to reboot before that happens, which is exactly the
+reason why sync gets called (although it is probably not needed
+anyway if all filesystems get unmounted).
 
-The use of panic() call is a mimic of ext2/3, and this is called only
-if an "errors=panic" mount option is specified.
-Do you think it should be removed along with the mount option for
-new filesystems ?
-
-> Furthermore, the BUG() calls in error paths
-> of fs/nilfs2/ioctl.c look really fishy.
-
-I agree, but this seems to need some consideration.
-I'll try to remove them separately if not easy.
-
-> On a related note, there are quite a few new ioctls there. Are they
-> described somewhere?
-
-Not yet.  Where is the recommended place to put it in?
-
-And, Chris Mason today gave me another comment on the ioctls; he
-pointed out there is a structure using unfixed sized types (compat
-ioctls are used to instead).
-
-I agree with his comment.  I'd like to rewrite the ioctl declarations
-and remove compat ioctls some time soon.
-
-> Also, can they be converted to use
-> ->unlocked_ioctl? It's bit sad that we're adding new users of BKL in
-> shiny new code.
-
-All right, I'll do some tests for it.
-
-Regards,
-Ryusuke Konishi
