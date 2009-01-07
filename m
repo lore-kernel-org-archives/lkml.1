@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759883AbZAGUhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbZAGUkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759883AbZAGUhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 15:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758277AbZAGUhb
+	id S1761045AbZAGUkI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 15:40:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZAGUjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 15:37:31 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:34162 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757558AbZAGUha (ORCPT
+	Wed, 7 Jan 2009 15:39:53 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43808
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752931AbZAGUjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 15:37:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=qVo1niw3lYF6oCE9x4Isk2vtLMvFfLHdIjYRi9Y+tmRljm8a4tHSWZRTULDb4bT4fq
-         0RJuA2SVsDIX3kx+DpuG9ysEgbqm6oBOTktfla1plVtYERhdjyVv3lhcYbc0A1ZNyu6f
-         YH9CKxBLhO15wZQJooaSbjuYsyv/EMItkZnEE=
-Message-ID: <49651285.1020302@gmail.com>
-Date: Wed, 07 Jan 2009 21:37:25 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Nico -telmich- Schottelius <nico-linux-20090106@schottelius.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: Suspend issues on all latest kernels!
-References: <20090107193559.GA4306@denkbrett.schottelius.org>
-In-Reply-To: <20090107193559.GA4306@denkbrett.schottelius.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2
+	Wed, 7 Jan 2009 15:39:52 -0500
+Date: Wed, 07 Jan 2009 12:39:54 -0800 (PST)
+Message-Id: <20090107.123954.257436361.davem@davemloft.net>
+To: jeffrey.t.kirsher@intel.com
+Cc: jaswinder@infradead.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH -net-next 1/4] firmware: convert e100 driver to
+ request_firmware()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <9929d2390901071023s590f439fre15696786f098b81@mail.gmail.com>
+References: <9929d2390901041820h4cf51e2h3612108c516b6869@mail.gmail.com>
+	<20090104.213402.12464178.davem@davemloft.net>
+	<9929d2390901071023s590f439fre15696786f098b81@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07/2009 08:35 PM, Nico -telmich- Schottelius wrote:
-> Hello!
-> 
-> Suspend fails on Lenovo X200 with
-> 
->   - 2.6.28-next-20090107-ikn
->   - 2.6.28-ikn-06859-gede6f5a
-> 
-> When doing echo mem > /sys/power/state, the
-> "Suspending consoles..." message appears, the "moon" is blinking,
-> but the system stays in this state (waited 10 minutes) forever.
+From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+Date: Wed, 7 Jan 2009 10:23:44 -0800
 
-Could you test
-http://lkml.org/lkml/2009/1/7/67
-? If it doesn't help, add no_console_suspend on kernel command line and post the
-suspend hang output.
+> The only testing that we were not able to do was the IPMI testing,
+> because of the lack of resources.  All other testing passed.
+> 
+> While all other testing passed, I am concerned about not being able to
+> test whether or not this change affects the ability to pass IPMI
+> traffic.  I am not sure if the "gain" of using request_firmware() out
+> weighs the potential risk that IPMI traffic may be broken with this
+> patch.  I guess I wondering what the gain is in using the
+> request_firmware() function?
+> 
+> >From past experience with IPMI traffic and the e100, the loading of
+> the microcode in the correct manner greatly affected whether IPMI
+> traffic would pass or not.
 
-Thanks.
+Jeff, I've lost all of my patience.
+
+All drivers are being converted this way.  I fought against doing it
+to tg3 for various reasons, but the tide worked against me and I
+accepted that.
+
+We can't hold this patch up forever for a potential problem that you
+don't have the resources to even test for more than a week.
+
+I'm therefore adding this patch, and we'll fix or revert if the
+"possible" IPMI problems do surface.
