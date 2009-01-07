@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbZAGQnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbZAGQow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760473AbZAGQnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760315AbZAGQmt
+	id S1759724AbZAGQow (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZAGQon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:42:49 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:63955 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760303AbZAGQmr (ORCPT
+	Wed, 7 Jan 2009 11:44:43 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51661 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbZAGQom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:42:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=c6Bn1rByYndL7tU4uF9zzFelrdVugp/kGASPD10trBYYMD03de+P8se9/BNtNdvaW1
-         gBeNqyZvgJiYuKAWzquPJwQR1/Y6N0Gb5lWfHRwSaSMnR3aCUwIdWqG9aqvfhuu2e1OM
-         EmsTJs4I8zIETB/PbgDoDpmm1+pM/iXXB+e6A=
-From: Bryan Wu <cooloney@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] video/framebuffer: fix bug: jpegview cannot work on framebuffer device other than 16BPP
-Date: Thu,  8 Jan 2009 00:43:35 +0800
-Message-Id: <1231346615-28958-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
+	Wed, 7 Jan 2009 11:44:42 -0500
+Subject: Re: [PATCH] x86 byteorder.h: use __asm__/__inline__ for userspace
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Mike Frysinger <vapier@gentoo.org>, tglx@linutronix.de,
+       mingo@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20081227191223.GA10592@uranus.ravnborg.org>
+References: <1230360604-6711-1-git-send-email-vapier@gentoo.org>
+	 <20081227071208.GB27736@uranus.ravnborg.org>
+	 <20081227084708.GA16077@elte.hu>
+	 <20081227185727.GB10442@uranus.ravnborg.org> <49567AC3.4030507@zytor.com>
+	 <20081227191223.GA10592@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 16:44:18 +0000
+Message-Id: <1231346658.10383.2.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Sat, 2008-12-27 at 20:12 +0100, Sam Ravnborg wrote:
+> 
+> Speaking of what we want to use in exported headers.
+> What is the recommendation with respect to uint32_t and friends?
+> To my best knowledge they are banned in exported headers as they
+> are not part of the kernel namespace and I see few users too.
+> But is this something we should check for?
 
-Force fb_var_screeninfo color format on all Blackfin Framebuffer Drivers.
+No, they're not banned. There are a few cases where they can't be used
+and we have to use the kernels "speshul" __u32 types, because certain
+headers get included by glibc and we can't "pollute" the namespace with
+the C standard types. But in _most_ cases, using the standard C types is
+just fine.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/video/bf54x-lq043fb.c    |   15 ++++++++++++++-
- drivers/video/bfin-t350mcqb-fb.c |   15 ++++++++++++++-
- 2 files changed, 28 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-index 7644ed2..37e60b1 100644
---- a/drivers/video/bf54x-lq043fb.c
-+++ b/drivers/video/bf54x-lq043fb.c
-@@ -335,7 +335,20 @@ static int bfin_bf54x_fb_check_var(struct fb_var_screeninfo *var,
- 				   struct fb_info *info)
- {
- 
--	if (var->bits_per_pixel != LCD_BPP) {
-+	switch (var->bits_per_pixel) {
-+	case 24:/* TRUECOLOUR, 16m */
-+		var->red.offset = 16;
-+		var->green.offset = 8;
-+		var->blue.offset = 0;
-+		var->red.length = var->green.length = var->blue.length = 8;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+		var->transp.msb_right = 0;
-+		var->red.msb_right = 0;
-+		var->green.msb_right = 0;
-+		var->blue.msb_right = 0;
-+		break;
-+	default:
- 		pr_debug("%s: depth not supported: %u BPP\n", __func__,
- 			 var->bits_per_pixel);
- 		return -EINVAL;
-diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
-index a9b3ada..2a423d3 100644
---- a/drivers/video/bfin-t350mcqb-fb.c
-+++ b/drivers/video/bfin-t350mcqb-fb.c
-@@ -254,7 +254,20 @@ static int bfin_t350mcqb_fb_check_var(struct fb_var_screeninfo *var,
- 				   struct fb_info *info)
- {
- 
--	if (var->bits_per_pixel != LCD_BPP) {
-+	switch (var->bits_per_pixel) {
-+	case 24:/* TRUECOLOUR, 16m */
-+		var->red.offset = 0;
-+		var->green.offset = 8;
-+		var->blue.offset = 16;
-+		var->red.length = var->green.length = var->blue.length = 8;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+		var->transp.msb_right = 0;
-+		var->red.msb_right = 0;
-+		var->green.msb_right = 0;
-+		var->blue.msb_right = 0;
-+		break;
-+	default:
- 		pr_debug("%s: depth not supported: %u BPP\n", __func__,
- 			 var->bits_per_pixel);
- 		return -EINVAL;
 -- 
-1.5.6
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
