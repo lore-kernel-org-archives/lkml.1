@@ -1,112 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbZAGTyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbZAGTzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbZAGTyT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZAGTyH
+	id S1755328AbZAGTzY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZAGTzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:54:07 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33776 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753339AbZAGTyG (ORCPT
+	Wed, 7 Jan 2009 14:55:09 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:35186 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754804AbZAGTzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 14:54:06 -0500
-Date: Wed, 7 Jan 2009 20:55:42 +0100
+	Wed, 7 Jan 2009 14:55:07 -0500
+Date: Wed, 7 Jan 2009 20:56:46 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 1/1] scripts: allow docproc invocation from external
-Message-ID: <20090107195542.GD4647@uranus.ravnborg.org>
-References: <1231164510-14355-1-git-send-email-jirislaby@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 0/13] IA64: unifying ways to handle multiple sets of dma mapping ops
+Message-ID: <20090107195646.GE4647@uranus.ravnborg.org>
+References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231164510-14355-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 03:08:30PM +0100, Jiri Slaby wrote:
-> - getcwd returns path without slash at the end, add the slash
-> - add KERNSRCTREE env, so that we can specify path for kernel
->   (for knowing where to find scripts/kernel-doc) and SRCTREE
->   (for searching files referenced in .tmpl) separately
+On Mon, Jan 05, 2009 at 11:36:05PM +0900, FUJITA Tomonori wrote:
+> This patchset is the first part of the unification of ways to handle
+> multiple sets of dma mapping API. The whole work consists of three
+> patchset. This is for IA64 and can be applied independently.
+> 
+> dma_mapping_ops (or dma_ops) struct is used to handle multiple sets of
+> dma mapping API by X86, SPARC, and POWER. IA64 also handle multiple
+> sets of dma mapping API but in a very different way (some define
+> magic).
+> 
+> X86 and IA64 share VT-d and SWIOTLB code. We need several workarounds
+> for it because of the deference of ways to handle multiple sets of dma
+> mapping API (e.g., X86 people can't freely change struct
+> dma_mapping_ops in x86's dma-mapping.h now because it could break
+> IA64).  Seems POWER will use SWIOTLB code soon. I think that it's time
+> to unify ways to handle multiple sets of dma mapping API. After
+> applying the whole work, we have struct dma_map_ops
+> include/linux/dma-mapping.h (I also dream of changing all the archs to
+> use SWIOTLB in order to remove the bounce code in the block and
+> network stacks...).
+> 
+> This patchset changes IA64 to handle multiple sets of dma mapping API
+> in the common way (as X86, SPARC, and POWER do):
 
-
-Kbuild already have:
-
-KBUILD_SRC that point to the source tree
-KBUILD_OUTPUT that points to the output directory
-
-Could we reuse these?
+Do you have any plans to update sparc too?
+Maybe it is not relevant.
 
 	Sam
-
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  scripts/basic/docproc.c |   13 +++++++++----
->  1 files changed, 9 insertions(+), 4 deletions(-)
-> 
-> diff --git a/scripts/basic/docproc.c b/scripts/basic/docproc.c
-> index 35bdc68..c716ae8 100644
-> --- a/scripts/basic/docproc.c
-> +++ b/scripts/basic/docproc.c
-> @@ -69,7 +69,7 @@ FILELINE * docsection;
->  #define NOFUNCTION    "-nofunction"
->  #define NODOCSECTIONS "-no-doc-sections"
->  
-> -char *srctree;
-> +static char *srctree, *kernsrctree;
->  
->  void usage (void)
->  {
-> @@ -77,7 +77,8 @@ void usage (void)
->  	fprintf(stderr, "Input is read from file.tmpl. Output is sent to stdout\n");
->  	fprintf(stderr, "doc: frontend when generating kernel documentation\n");
->  	fprintf(stderr, "depend: generate list of files referenced within file\n");
-> -	fprintf(stderr, "Environment variable SRCTREE: absolute path to kernel source tree.\n");
-> +	fprintf(stderr, "Environment variable SRCTREE: absolute path to sources.\n");
-> +	fprintf(stderr, "                     KERNSRCTREE: absolute path to kernel source tree.\n");
->  }
->  
->  /*
-> @@ -96,8 +97,8 @@ void exec_kernel_doc(char **svec)
->  			exit(1);
->  		case  0:
->  			memset(real_filename, 0, sizeof(real_filename));
-> -			strncat(real_filename, srctree, PATH_MAX);
-> -			strncat(real_filename, KERNELDOCPATH KERNELDOC,
-> +			strncat(real_filename, kernsrctree, PATH_MAX);
-> +			strncat(real_filename, "/" KERNELDOCPATH KERNELDOC,
->  					PATH_MAX - strlen(real_filename));
->  			execvp(real_filename, svec);
->  			fprintf(stderr, "exec ");
-> @@ -178,6 +179,7 @@ void find_export_symbols(char * filename)
->  		char real_filename[PATH_MAX + 1];
->  		memset(real_filename, 0, sizeof(real_filename));
->  		strncat(real_filename, srctree, PATH_MAX);
-> +		strncat(real_filename, "/", PATH_MAX - strlen(real_filename));
->  		strncat(real_filename, filename,
->  				PATH_MAX - strlen(real_filename));
->  		sym = add_new_file(filename);
-> @@ -382,6 +384,9 @@ int main(int argc, char *argv[])
->  	srctree = getenv("SRCTREE");
->  	if (!srctree)
->  		srctree = getcwd(NULL, 0);
-> +	kernsrctree = getenv("KERNSRCTREE");
-> +	if (!kernsrctree)
-> +		kernsrctree = srctree;
->  	if (argc != 3) {
->  		usage();
->  		exit(1);
-> -- 
-> 1.6.0.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
