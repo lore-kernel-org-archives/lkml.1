@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZAGBK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759222AbZAGBO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbZAGBK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 20:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbZAGBKO
+	id S1759222AbZAGBO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 20:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZAGBOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 20:10:14 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:58315 "EHLO mx2.netapp.com"
+	Tue, 6 Jan 2009 20:14:50 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56297 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755763AbZAGBKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 20:10:12 -0500
-X-IronPort-AV: E=Sophos;i="4.37,222,1231142400"; 
-   d="scan'208";a="108990493"
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-In-Reply-To: <1231288999.14345.231.camel@localhost>
-References: <20090106011314.534653345@us.ibm.com>
-	 <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
-	 <1231274682.20316.65.camel@heimdal.trondhjem.org>
-	 <20090106215831.GE18147@us.ibm.com>
-	 <1231281732.4173.6.camel@heimdal.trondhjem.org>
-	 <1231286930.14345.196.camel@localhost>
-	 <1231287619.11487.2.camel@heimdal.trondhjem.org>
-	 <1231288999.14345.231.camel@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 06 Jan 2009 20:10:02 -0500
-Message-Id: <1231290602.11487.42.camel@heimdal.trondhjem.org>
+	id S1753408AbZAGBOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 20:14:50 -0500
+Date: Wed, 7 Jan 2009 02:14:48 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 -mm merge plans
+Message-ID: <20090107011448.GB3390@wotan.suse.de>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151131.b6c4ff0b.akpm@linux-foundation.org> <20090106232418.GB25103@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-X-OriginalArrivalTime: 07 Jan 2009 01:10:10.0497 (UTC) FILETIME=[AFC89B10:01C97064]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106232418.GB25103@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-06 at 16:43 -0800, Matt Helsley wrote:
-> On Tue, 2009-01-06 at 19:20 -0500, Trond Myklebust wrote:
-> > On Tue, 2009-01-06 at 16:08 -0800, Matt Helsley wrote:
-> > > IMHO This seems more incorrect than trying to use a more proximal
-> > > namespace.
+On Tue, Jan 06, 2009 at 06:24:18PM -0500, Christoph Hellwig wrote:
+> On Tue, Jan 06, 2009 at 03:11:31PM -0800, Andrew Morton wrote:
+> > > I'm not sure this is a good idea.  Concurrent syncs are a bad idea
+> > > to start with and we should just synchronyze do_sync completely.
+> > > sync_filesystems as one of the main components of do_sync already
+> > > is synchronized in that way, and taking that to a higher level would
+> > > get rid of all the worries about concurrent syncs.
 > > 
-> > You have yet to explain why.
+> > Yes, single-threading sys_sync() would fix the problem which that patch
+> > addresses.
+> > 
+> > However there are a lot of performance and correctness issues around
+> > sys_sync()-versus-fsync(), etc for which such a simple fix won't be
+> > acceptable.
 > 
-> It's "more proximal" -- it's closer to the container that we expect to
-> cause (directly or otherwise) the bulk of the RPC calls for that mount.
-> If the container does not wind up sharing that mount with other
-> containers then the reported node name matches. If the container winds
-> up sharing the mount with other containers then at least we can learn
-> which container originated the mount.
+> fsync should really not much interac with sync at that level.  While
+> they both end up at same primitives at the lowest level those aren't
+> the ones we're trying to protect against.  I'm currently in the process
+> of a major rework of sys_sync/do_sync to make it work properly for
+> modern filesystems and the global synchronization was one of the first
+> things I did..
 > 
-> I imagine an NFS administrator trying to determine the source of a bunch
-> of RPC calls. If we just report the initial namespace then that
-> administrator has to do lots more digging to determine which container
-> sent the calls (assuming they aren't in different network namespaces).
+> So if you have any workloads where that causes a problem please send
+> them my way.  Not that I can really thing of them, given the global
+> nature of sys_sync I can't see any benefit of doing multiple of these
+> in parallel.
 
-As I said elsewhere, the network namespaces do not matter, since we
-always create the sockets via the rpciod workqueue.
+I can't see a problem with putting a global mutex around sys_sync (almost
+by definition, any app in the last 10+ years that calls sys_sync is not
+performance critical).
 
-> By not always reporting the initial namespace we may give the
-> administrator one way to narrow down the search. Even if the reported
-> node name does not perfectly match the source of all RPC traffic related
-> to the mount at least the administrator gets something more specific.
+But this patch fixes a correctness problem, so I think it is OK to go
+upstream now.
 
-The administrator would have to be running wireshark or something in
-order to track the rpc calls. That's hardly a convenient interface, or a
-compelling reason to add namespace info into RPC credentials. We
-certainly haven't added any other information to the RPC calls in order
-to allow the administrator to identify which process it originated from.
-
-  Trond
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
