@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbZAGVlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762055AbZAGVmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762138AbZAGVlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 16:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762067AbZAGVlH
+	id S1762055AbZAGVmZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:42:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZAGVmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:41:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58356 "EHLO mx2.mail.elte.hu"
+	Wed, 7 Jan 2009 16:42:14 -0500
+Received: from bee.hiwaay.net ([216.180.54.11]:65222 "EHLO bee.hiwaay.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755433AbZAGVlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:41:06 -0500
-Date: Wed, 7 Jan 2009 22:40:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, James.Bottomley@hansenpartnership.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
-Message-ID: <20090107214045.GA15761@elte.hu>
-References: <1231329368.17961.29.camel@jaswinder.satnam> <20090107125152.GA3529@elte.hu> <20090107133327.GA4911@elte.hu> <3f9a31f40901070557r336020dctbe9549e8634b167@mail.gmail.com> <20090107150351.GB27606@elte.hu> <20090107151223.GA4899@elte.hu> <20090107151522.GA5341@elte.hu> <1231344766.3770.12.camel@jaswinder.satnam> <20090107173509.GD24982@elte.hu> <3f9a31f40901071043u5a112962l2dd7e1d88de8aae2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1752075AbZAGVmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:42:13 -0500
+Date: Wed, 7 Jan 2009 15:42:04 -0600
+From: Chris Adams <cmadams@hiwaay.net>
+To: David Newall <davidn@davidnewall.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
+Message-ID: <20090107214204.GA950819@hiwaay.net>
+References: <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com> <20090105143335.GC18055@mail.local.tull.net> <4962BB13.7060304@davidnewall.com> <20090106025125.GB28431@mail.local.tull.net> <20090106094058.64c89586@lxorguk.ukuu.org.uk> <496479EA.1020207@davidnewall.com> <20090107095419.70b78dc7@lxorguk.ukuu.org.uk> <49648163.9060007@davidnewall.com> <20090107133306.GA1506277@hiwaay.net> <4964B7A0.3050900@davidnewall.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <3f9a31f40901071043u5a112962l2dd7e1d88de8aae2@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4964B7A0.3050900@davidnewall.com>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
-
-> On Wed, Jan 7, 2009 at 11:05 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
-> >
-> >> I send new 4 patches:
-> >>
-> >> ﻿[PATCH -tip 1/4 V2] x86: smp.h move stack_processor_id declartion to cpu.h
-> >> ﻿[PATCH -tip 2/4 V2] x86: smp.h move safe_smp_processor_id declartion to cpu.h
-> >> ﻿[PATCH -tip 3/4 V2] x86: smp.h move cpu_physical_id declartion to cpu.h
-> >> ﻿[PATCH -tip 4/4 V2] x86: smp.h move boot_cpu_id declartion to cpu.h
-> >>
-> >> Please accept them.
-> >
-> > Just to make sure: they should solve the 3 failures i reported?
-> >
+Once upon a time, David Newall <davidn@davidnewall.com> said:
+> > - the standards say that time() returns seconds since the epoch in UTC
+> >   _except_ explicity NOT including leap seconds
 > 
-> Yes.
+> Don't believe everything you read.  For example, the time(2) man page
+> says what POSIX does, but doesn't actually say that Linux also does the
+> same.  It also says what you paraphrased above, but demonstrably that's
+> not the case.  Man pages often are wrong in some details.  Hence RTSL.
 
-ok, i've applied the remaining bits and they are holding up quite well so 
-far in tip/master testing:
+I wasn't talking about man pages.  I already quoted the section from the
+Single Unix Specification version 3 (which supersedes POSIX) that
+explicitly says leap seconds are ignored (despite sometimes heated
+disagreement, as seen repeated here).  The standard "seconds since the
+epoch" is seconds since 1970-01-01 00:00:00 UTC but not including leap
+seconds (00:00:00 UTC is always 86400*n seconds since the epoch).
 
-6d652ea: x86: smp.h move boot_cpu_id declartion to cpu.h
-af8968a: x86: smp.h move cpu_physical_id declartion to cpu.h
-96b89dc: x86: smp.h move safe_smp_processor_id declartion to cpu.h
-f472cdb: x86: smp.h move stack_processor_id declartion to cpu.h
+As long as Linux wants to work like all the other POSIX systems (which
+it should unless there is huge advantage in doing otherwise), time(),
+gettimeofday(), etc., all must work without leap seconds.
 
-	Ingo
-
-	Ingo
+-- 
+Chris Adams <cmadams@hiwaay.net>
+Systems and Network Administrator - HiWAAY Internet Services
+I don't speak for anybody but myself - that's enough trouble.
