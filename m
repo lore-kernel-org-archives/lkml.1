@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbZAGXRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763902AbZAGXSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763732AbZAGXRv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763336AbZAGXOi
+	id S1763902AbZAGXSS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763410AbZAGXPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:14:38 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:60675 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932582AbZAGXOe (ORCPT
+	Wed, 7 Jan 2009 18:15:19 -0500
+Received: from mail.impinj.com ([206.169.229.170]:57187 "EHLO earth.impinj.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762721AbZAGXPP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:14:34 -0500
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <1231368665.3470.513.camel@hermosa.site>
-References: <1231283778.11687.136.camel@twins>
-	 <1231329783.11687.287.camel@twins>
-	 <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
-	 <1231347442.11687.344.camel@twins>
-	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
-	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-	 <20090107210923.GV2002@parisc-linux.org>
-	 <20090107213924.GP496@one.firstfloor.org> <49652C7C.3000909@novell.com>
-	 <20090107223317.GB27629@elte.hu>  <1231368665.3470.513.camel@hermosa.site>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Wed, 07 Jan 2009 23:14:24 +0000
-Message-Id: <1231370064.3470.516.camel@hermosa.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 18:15:15 -0500
+X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Jan 2009 18:15:15 EST
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: thomas.dahlmann@amd.com
+Subject: amd5536udc interrupts bug
+Date: Wed, 7 Jan 2009 15:10:00 -0800
+User-Agent: KMail/1.10.3 (Linux/2.6.27.9-159.fc10.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200901071510.00673.vlobanov@speakeasy.net>
+X-OriginalArrivalTime: 07 Jan 2009 23:10:00.0951 (UTC) FILETIME=[10F8F070:01C9711D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 15:51 -0700, Peter W. Morreale wrote:
-> On Wed, 2009-01-07 at 23:33 +0100, Ingo Molnar wrote:
-> > * Gregory Haskins <ghaskins@novell.com> wrote:
-> > 
-> > > Can I ask a simple question in light of all this discussion?
-> > > 
-> > > "Is get_task_struct() really that bad?"
-> > 
-> > it dirties a cacheline and it also involves atomics.
-> > 
-> > Also, it's a small design cleanliness issue to me: get_task_struct() 
-> > impacts the lifetime of an object - and if a locking primitive has 
-> > side-effects on object lifetimes that's never nice.
-> > 
-> 
-> True, but it's for one iteration * NR_CPUS, max.
-> 
-> Best,
-> -PWM
+Hello,
 
-Never mind.  Bogus argument.  
+>From perusing the code and playing with the module, it seems to me that 
+the amd5536udc driver's handling of interrupts is currently "bustificated".
 
-That's why we have you Big Guns out there... - To keep us rif-raf in
-line... 
+The long story:
 
-:-)
+During the amd5536udc initialization sequence within udc_pci_probe(), 
+the code attempts to request a shared irq for the device thusly:
+	request_irq(pdev->irq, udc_irq, IRQF_SHARED, name, dev)
+where 'dev' is the internal state structure. By the time this call is made, 
+the 'dev' structure is still not fully initialized and contains blank/zero 
+data for many of the fields, in particular both 'dev->lock' and 'dev->regs' 
+which are both clearly used within the udc_irq() handler. Those get 
+initialized a bit later, namely inside the udc_probe() call at the bottom of 
+udc_pci_probe().
 
-Best,
--PWM
+It is my understanding that a handler for a shared interrupt can be 
+invoked at any time after the corresponding request_irq() call is made, 
+simply because some other device on the same interrupt may already 
+be active. This leaves us with a very noticeable race condition, where 
+udc_irq() can be invoked with uninitialized 'dev' data.
+
+In particular, this effect is very noticeable when I try modprobing the 
+amd5536udc driver on a kernel that is built with CONFIG_DEBUG_SHIRQ 
+set. Given that the debug config option forces an invocation of the irq 
+handler from within the request_irq() function, the immediate effect is a 
+masterful kernel NULL-dereference OOPS within udc_irq().
+
+The simple fix may be to say that amd5536udc does not support shared 
+irqs, and to remove the IRQF_SHARED flag from the request_irq() call. A 
+more complicated fix may be to try to shuffle all the code around to 
+make sure that 'dev' is fully initialized before we request the irq, but I 
+don't understand the code well enough (yet) to comfortably do this.
+
+Comments? Thoughts?
+
+On a side note, it occurs to me that the CONFIG_DEBUG_SHIRQ option 
+went into the kernel a bit less than two years ago, and that it exposes a 
+very immediate and reproducible OOPS in this driver. Does this mean 
+that noone uses the 5536 UDC functionality with any recent kernels? 
+Should I be worried? :)
+
+-- Vadim Lobanov
 
