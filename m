@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759107AbZAGBFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZAGBK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759107AbZAGBFZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 20:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbZAGBFE
+	id S1757911AbZAGBK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 20:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbZAGBKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 20:05:04 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55898 "EHLO mx2.suse.de"
+	Tue, 6 Jan 2009 20:10:14 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:58315 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758662AbZAGBFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 20:05:02 -0500
-Date: Wed, 7 Jan 2009 02:05:01 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: 2.6.29 -mm merge plans
-Message-ID: <20090107010501.GA3390@wotan.suse.de>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106150804.2697e0c2.akpm@linux-foundation.org>
+	id S1755763AbZAGBKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 20:10:12 -0500
+X-IronPort-AV: E=Sophos;i="4.37,222,1231142400"; 
+   d="scan'208";a="108990493"
+Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-nfs@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Chuck Lever <chuck.lever@oracle.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Cedric Le Goater <clg@fr.ibm.com>
+In-Reply-To: <1231288999.14345.231.camel@localhost>
+References: <20090106011314.534653345@us.ibm.com>
+	 <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
+	 <1231274682.20316.65.camel@heimdal.trondhjem.org>
+	 <20090106215831.GE18147@us.ibm.com>
+	 <1231281732.4173.6.camel@heimdal.trondhjem.org>
+	 <1231286930.14345.196.camel@localhost>
+	 <1231287619.11487.2.camel@heimdal.trondhjem.org>
+	 <1231288999.14345.231.camel@localhost>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 06 Jan 2009 20:10:02 -0500
+Message-Id: <1231290602.11487.42.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106150804.2697e0c2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.2 
+X-OriginalArrivalTime: 07 Jan 2009 01:10:10.0497 (UTC) FILETIME=[AFC89B10:01C97064]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 03:08:04PM -0800, Andrew Morton wrote:
-> (suitable cc's added)
-> 
-> On Tue, 6 Jan 2009 17:57:44 -0500
-> Christoph Hellwig <hch@infradead.org> wrote:
-> 
-> > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
-> > > mm-invoke-oom-killer-from-page-fault.patch
-> > > mm-invoke-oom-killer-from-page-fault-fix.patch
-> > > mm-invoke-oom-killer-from-page-fault-fix-fix-2.patch
+On Tue, 2009-01-06 at 16:43 -0800, Matt Helsley wrote:
+> On Tue, 2009-01-06 at 19:20 -0500, Trond Myklebust wrote:
+> > On Tue, 2009-01-06 at 16:08 -0800, Matt Helsley wrote:
+> > > IMHO This seems more incorrect than trying to use a more proximal
+> > > namespace.
 > > 
-> > Just implementing this behaviour for x86 and uml is extremly
-> > counter-productive.  Please fix up all architectures as this
-> > behaviour needs to be the same on all ports (at least those
-> > with a MMU)
+> > You have yet to explain why.
 > 
-> Yes, that would be nice.  
+> It's "more proximal" -- it's closer to the container that we expect to
+> cause (directly or otherwise) the bulk of the RPC calls for that mount.
+> If the container does not wind up sharing that mount with other
+> containers then the reported node name matches. If the container winds
+> up sharing the mount with other containers then at least we can learn
+> which container originated the mount.
+> 
+> I imagine an NFS administrator trying to determine the source of a bunch
+> of RPC calls. If we just report the initial namespace then that
+> administrator has to do lots more digging to determine which container
+> sent the calls (assuming they aren't in different network namespaces).
 
-Yes I will do that. I cc'ed the linux-arch list a few times with hints ;)
-But if this is now going upstream I'll do a quick pass to convert the rest
-for 2.6.29.
+As I said elsewhere, the network namespaces do not matter, since we
+always create the sockets via the rpciod workqueue.
 
+> By not always reporting the initial namespace we may give the
+> administrator one way to narrow down the search. Even if the reported
+> node name does not perfectly match the source of all RPC traffic related
+> to the mount at least the administrator gets something more specific.
+
+The administrator would have to be running wireshark or something in
+order to track the rpc calls. That's hardly a convenient interface, or a
+compelling reason to add namespace info into RPC credentials. We
+certainly haven't added any other information to the RPC calls in order
+to allow the administrator to identify which process it originated from.
+
+  Trond
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
