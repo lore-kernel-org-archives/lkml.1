@@ -1,90 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbZAGV5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbZAGV6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760192AbZAGV5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 16:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbZAGV5Z
+	id S1761566AbZAGV6s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZAGV6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:57:25 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:6867 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752114AbZAGV5X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:57:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=Lj3GsXAd2ila6kdxGHj3vE38PaO5MD3YbBRKGkR/3c6IJ58K/DOEP3/CoULGdAbBjX
-         P0o0vodtiN+qogntupKJOM861Ade9CqEuqyHxbcBG8+hNfvz3qmNsVsuhoNXlBEu8KC7
-         +wV2Q2VHzUDd2cBSzawj7f5esBYt7e5CiK9LM=
-Message-ID: <86802c440901071357j3dd03b2ax9b79735fd374e94d@mail.gmail.com>
-Date: Wed, 7 Jan 2009 13:57:22 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: initrd panic
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Wed, 7 Jan 2009 16:58:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59889 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752272AbZAGV6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:58:35 -0500
+Date: Wed, 7 Jan 2009 22:57:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, matthew@wil.cx, rostedt@goodmis.org,
+       peterz@infradead.org, paulmck@linux.vnet.ibm.com, ghaskins@novell.com,
+       andi@firstfloor.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090107215759.GA17917@elte.hu>
+References: <1231329783.11687.287.camel@twins> <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain> <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain> <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com> <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <20090107210923.GV2002@parisc-linux.org> <alpine.LFD.2.00.0901071314490.3057@localhost.localdomain> <20090107213222.GE4597@elte.hu> <20090107134715.9c5e139e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: 84c4b120cddf78de
+In-Reply-To: <20090107134715.9c5e139e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[    0.000000] Bootmem setup node 0 0000000000000000-0000000828000000
-[    0.000000]   NODE_DATA [000000000008b580 - 000000000009057f]
-[    0.000000]   bootmap [00000000011e4000 -  00000000012e8fff] pages 105
-[    0.000000] (9 early reservations) ==> bootmem [0000000000 - 0828000000]
-[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==>
-[0000000000 - 0000001000]
-[    0.000000]   #1 [0000006000 - 0000008000]       TRAMPOLINE ==>
-[0000006000 - 0000008000]
-[    0.000000]   #2 [0000200000 - 00011e3010]    TEXT DATA BSS ==>
-[0000200000 - 00011e3010]
-[    0.000000]   #3 [007ddb0000 - 007ffff746]          RAMDISK ==>
-[007ddb0000 - 007ffff746]
-[    0.000000]   #4 [0000095400 - 0000100000]    BIOS reserved ==>
-[0000095400 - 0000100000]
-[    0.000000]   #5 [0000008000 - 000000a000]          PGTABLE ==>
-[0000008000 - 000000a000]
-[    0.000000]   #6 [000000a000 - 000000b000]          PGTABLE ==>
-[000000a000 - 000000b000]
-[    0.000000]   #7 [0000001000 - 000000106c]        ACPI SLIT ==>
-[0000001000 - 000000106c]
-[    0.000000]   #8 [000000b000 - 000008b580]       MEMNODEMAP ==>
-[000000b000 - 000008b580]
-...
-[   26.878476] calling  populate_rootfs+0x0/0xef @ 1
-[   26.883266] checking if image is initramfs...it isn't (no cpio
-magic); looks like an initrd
-[   26.925007] Freeing initrd memory: 35133k freed
-[   26.947946] initcall populate_rootfs+0x0/0xef returned 0 after 63247 usecs
-...
-[   99.714363] RAMDISK: gzip image found at block 0
-[  100.831449] RAMDISK: incomplete write (1880 != 1999)
-[  100.836421] write error
-[  101.092202] kjournald starting.  Commit interval 5 seconds
-[  101.092217] EXT3 FS on ram0, internal journal
-[  101.092227] EXT3-fs: mounted filesystem with ordered data mode.
-[  101.092244] VFS: Mounted root (ext3 filesystem) on device 1:0.
-[  101.092262] Freeing unused kernel memory: 448k freed
-[  101.092586] init_special_inode: bogus i_mode (177777)
-[  101.092591] Warning: unable to open an initial console.
-[  101.092607] init_special_inode: bogus i_mode (177777)
-[  101.092618] init_special_inode: bogus i_mode (177777)
-[  101.092630] init_special_inode: bogus i_mode (177777)
-[  101.092635] Kernel panic - not syncing: No init found.  Try passing
-init= option to kernel.
-[  101.092639] Pid: 1, comm: swapper Not tainted
-2.6.28-tip-07660-g1bc0566-dirty #366
-[  101.092641] Call Trace:
-[  101.092655]  [<ffffffff809cc9be>] panic+0x75/0x12c
-[  101.092662]  [<ffffffff802092a8>] name_to_dev_t+0x0/0x1f0
-[  101.092668]  [<ffffffff8022c05a>] ? child_rip+0xa/0x20
-[  101.092671]  [<ffffffff8022c050>] ? child_rip+0x0/0x20
 
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-wonder if LZMA B2ZIP etc into tip/master today broke it?
+> On Wed, 7 Jan 2009 22:32:22 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > We could do the whole "oldfs = get_fs(); set_fs(KERNEL_DS); .. 
+> > > set_fs(oldfs);" crud, but it would probably be better to just add an 
+> > > architected accessor. Especially since it's going to generally just be a
+> > > 
+> > > 	#define get_kernel_careful(val,p) __get_user(val,p)
+> > > 
+> > > for most architectures.
+> > > 
+> > > We've needed that before (and yes, we've simply mis-used __get_user() on 
+> > > x86 before rather than add it).
+> > 
+> > for the oldfs stuff we already have probe_kernel_read(). OTOH, that 
+> > involves pagefault_disable() which is an atomic op
+> 
+> tisn't.  pagefault_disable() is just preempt_count()+=1;barrier() ?
 
-YH
+okay. Not an atomic (which is plenty fast on Nehalem with 20 cycles 
+anyway), but probe_kernel_read() is expensive nevertheless:
+
+ffffffff8027c092 <probe_kernel_read>:
+ffffffff8027c092:	65 48 8b 04 25 10 00 	mov    %gs:0x10,%rax
+ffffffff8027c099:	00 00 
+ffffffff8027c09b:	53                   	push   %rbx
+ffffffff8027c09c:	48 8b 98 48 e0 ff ff 	mov    -0x1fb8(%rax),%rbx
+ffffffff8027c0a3:	48 c7 80 48 e0 ff ff 	movq   $0xffffffffffffffff,-0x1fb8(%rax)
+ffffffff8027c0aa:	ff ff ff ff 
+ffffffff8027c0ae:	65 48 8b 04 25 10 00 	mov    %gs:0x10,%rax
+ffffffff8027c0b5:	00 00 
+ffffffff8027c0b7:	ff 80 44 e0 ff ff    	incl   -0x1fbc(%rax)
+ffffffff8027c0bd:	e8 0e dd 0d 00       	callq  ffffffff80359dd0 <__copy_from_user_inatomic>
+ffffffff8027c0c2:	65 48 8b 14 25 10 00 	mov    %gs:0x10,%rdx
+ffffffff8027c0c9:	00 00 
+ffffffff8027c0cb:	ff 8a 44 e0 ff ff    	decl   -0x1fbc(%rdx)
+ffffffff8027c0d1:	65 48 8b 14 25 10 00 	mov    %gs:0x10,%rdx
+ffffffff8027c0d8:	00 00 
+ffffffff8027c0da:	48 83 f8 01          	cmp    $0x1,%rax
+ffffffff8027c0de:	48 89 9a 48 e0 ff ff 	mov    %rbx,-0x1fb8(%rdx)
+ffffffff8027c0e5:	48 19 c0             	sbb    %rax,%rax
+ffffffff8027c0e8:	48 f7 d0             	not    %rax
+ffffffff8027c0eb:	48 83 e0 f2          	and    $0xfffffffffffffff2,%rax
+ffffffff8027c0ef:	5b                   	pop    %rbx
+ffffffff8027c0f0:	c3                   	retq   
+ffffffff8027c0f1:	90                   	nop    
+
+where __copy_user_inatomic() goes into the full __copy_generic_unrolled(). 
+Not pretty.
+
+> Am suspecting that you guys might be over-optimising this 
+> contended-path-were-going-to-spin-anyway code?
+
+not sure. Especially for 'good' locking usage - where there are shortly 
+held locks and the spin times are short, the average time to get _out_ of 
+the spinning section is a kind of secondary fastpath as well.
+
+	Ingo
