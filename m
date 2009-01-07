@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbZAGMqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZAGMrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbZAGMqn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZAGMqb
+	id S1753608AbZAGMrU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZAGMrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:46:31 -0500
-Received: from matrixpower.ru ([195.178.208.66]:55360 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbZAGMqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:46:31 -0500
-Date: Wed, 7 Jan 2009 15:46:29 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090107124629.GA31732@ioremap.net>
-References: <20090106183704.GC32491@kernel.dk> <20090107044232.GA22218@gondor.apana.org.au> <20090107112906.GA28161@ioremap.net> <20090107115032.GA25198@gondor.apana.org.au> <20090107115605.GA29250@ioremap.net> <20090107115921.GA25323@gondor.apana.org.au> <20090107121530.GA30164@ioremap.net> <20090107122238.GB25673@gondor.apana.org.au> <20090107123741.GA31255@ioremap.net> <20090107124246.GA26034@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107124246.GA26034@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 7 Jan 2009 07:47:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:48434 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbZAGMrB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:47:01 -0500
+Subject: [PATCH -tip 5/7] x86: smp.h move safe_smp_processor_id declartion
+	to cpu.h
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, James.Bottomley@hansenpartnership.com,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 18:14:49 +0530
+Message-Id: <1231332289.18558.15.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 11:42:46PM +1100, Herbert Xu (herbert@gondor.apana.org.au) wrote:
-> > Doesn't your tcp fallbacks to kernel_sendmsg() without sg in
-> > tcp_sendpage()? And then just feeds data into the stack the same way it
-> > happens with send() i.e. by copying it.
-> 
-> Good point.  Did he check GSO though? GSO will always enable SG
-> on the socket regardless of the netdev's setting.  And if the device
-> started out with SG enabled then recent kernels will enable GSO
-> by default.
+Impact: cleanup, moving NON-SMP stuff from smp.h
 
-Willy, what was the kernel you are tested no-accel behaviour and what
-were the gso settings?
-Can you add a simple single print into tcp_sendpage() to determine if
-content was copied or fed into do_tcp_sendpages() otherwise?
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/cpu.h    |    1 +
+ arch/x86/include/asm/smp.h    |    1 -
+ arch/x86/mach-voyager/setup.c |    1 +
+ 3 files changed, 2 insertions(+), 1 deletions(-)
 
+diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
+index f958e7e..4c16888 100644
+--- a/arch/x86/include/asm/cpu.h
++++ b/arch/x86/include/asm/cpu.h
+@@ -15,6 +15,7 @@ extern void prefill_possible_map(void);
+ 
+ static inline void prefill_possible_map(void) {}
+ 
++#define safe_smp_processor_id()			0
+ #define stack_smp_processor_id()		0
+ 
+ #endif /* CONFIG_SMP */
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index cbbea22..3a76b19 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -198,7 +198,6 @@ extern int safe_smp_processor_id(void);
+ 
+ #else /* !CONFIG_X86_32_SMP && !CONFIG_X86_64_SMP */
+ #define cpu_physical_id(cpu)		boot_cpu_physical_apicid
+-#define safe_smp_processor_id()		0
+ #endif
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
+index a580b95..0ade625 100644
+--- a/arch/x86/mach-voyager/setup.c
++++ b/arch/x86/mach-voyager/setup.c
+@@ -9,6 +9,7 @@
+ #include <asm/e820.h>
+ #include <asm/io.h>
+ #include <asm/setup.h>
++#include <asm/cpu.h>
+ 
+ void __init pre_intr_init_hook(void)
+ {
 -- 
-	Evgeniy Polyakov
+1.5.6.6
+
+
+
