@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZAGNWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbZAGNXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbZAGNWO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:22:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZAGNV5
+	id S1757593AbZAGNXY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZAGNXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:21:57 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:52168 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZAGNV4 (ORCPT
+	Wed, 7 Jan 2009 08:23:11 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:5868 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZAGNXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:21:56 -0500
-Date: Wed, 7 Jan 2009 14:23:37 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: ccache@lists.samba.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
-Message-ID: <20090107132337.GA2289@uranus.ravnborg.org>
-References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <496386EF.76E4.0078.0@novell.com> <20090106173300.GA10903@mit.edu> <49647B00.76E4.0078.0@novell.com> <20090107113138.GA29730@uranus.ravnborg.org> <4964AF8D.76E4.0078.0@novell.com>
-Mime-Version: 1.0
+	Wed, 7 Jan 2009 08:23:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GJCNoDHFkxxhk/MPq76w8l91S1HsMR3m/JlJeyNreTmLeghlmZdCrInMBIhxw7MdnD
+         i9o0SrKJomQAromobm0nu1Ta0FOoqbVQx6esJoV0RDhov5BJIwIlRBSpyyorTc5aaNWK
+         X2RiDTPhdjD/FrdRM6Sin85xj1IP35WjWfXIk=
+Date: Wed, 7 Jan 2009 13:22:58 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107132258.GE9677@ff.dom.local>
+References: <20090107121530.GA30164@ioremap.net> <20090107122238.GB25673@gondor.apana.org.au> <20090107123741.GA31255@ioremap.net> <20090107124246.GA26034@gondor.apana.org.au> <20090107124629.GA31732@ioremap.net> <20090107125535.GC6307@1wt.eu> <20090107125734.GA26331@gondor.apana.org.au> <20090107130259.GB32336@ioremap.net> <20090107131057.GD9677@ff.dom.local> <20090107131539.GF6307@1wt.eu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4964AF8D.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090107131539.GF6307@1wt.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 12:35:09PM +0000, Jan Beulich wrote:
-> >>> Sam Ravnborg <sam@ravnborg.org> 07.01.09 12:31 >>>
-> >What is the gain/pain ratio here?
+On Wed, Jan 07, 2009 at 02:15:39PM +0100, Willy Tarreau wrote:
+> On Wed, Jan 07, 2009 at 01:10:57PM +0000, Jarek Poplawski wrote:
+> > On Wed, Jan 07, 2009 at 04:02:59PM +0300, Evgeniy Polyakov wrote:
+> > ...
+> > > If I understood correctly Jarek's patch, he wants to allocate a page and
+> > > copy linear content of the skb there, so this will end up being the same
+> > > case as with splicing from the file. And while generally this may be a
+> > > good idea, but with usual 1.5k mtu this will copy every skb, which is
+> > > rather bad idea. Will have to think :)
+> > > 
+> > 
+> > As I mentioned earlier, I (poorly) tried to realize Changli's idea
+> > only, and it's more to verify the reason still (after it failed with
+> > SG method...).
 > 
-> Certainly depends on the pov - it reduces the kernel module (disk) image
-> sizes quite a bit, so from a distro perspective its a move against the ever
-> growing package sizes (and the disk space) hundreds or even thousands
-> of modules require.
+> Jarek, since it now works when disabling both SG and GSO, we know that the
+> bug is triggered when passing through do_tcp_sendpage(). Thus, I will not
+> try your patch #3 yet, but rather wait for fix candidates to try.
 
-The kernel modules seldom export anything so the benefit is minimal here.
+Sure! Congratulations for debugging to you and Evgeniy!
 
-I really think we are on a wrong track here.
-
-I did a 15 minutes hack to try ripping the .c -> .s -> .o stuff out.
-
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 5d90030..8c93dc3 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -153,7 +153,7 @@ $(obj)/%.i: $(src)/%.c FORCE
- 
- cmd_genksyms =                                                              \
-     $(CPP) -D__GENKSYMS__ $(c_flags) $< |                                   \
--    $(GENKSYMS) -T $@ -A -a $(ARCH)                                         \
-+    $(GENKSYMS) -T $@ $(if $(CONFIG_KBUILD_STRIP_CRC), -A) -a $(ARCH)       \
-      $(if $(KBUILD_PRESERVE),-p)                                            \
-      $(if $(1),-r $(firstword $(wildcard $(@:.symtypes=.symref) /dev/null)))
- 
-@@ -192,6 +192,7 @@ v_file = $(@D)/.tmp_$(@F:.o=.v)
- tmp_o_file = $(@D)/.tmp_$(@F)
- no_g_c_flags = $(filter-out -g%,$(c_flags))
- 
-+ifdef CONFIG_KBUILD_STRIP_CRC
- cmd_cc_o_c = $(CC) $(c_flags) -S -o $(s_file) $<
- 
- cmd_modversions =							\
-@@ -208,8 +209,20 @@ cmd_modversions =							\
- 		fi;							\
- 	else								\
- 		rm -f $(v_file);					\
--		$(CC) $(no_g_c_flags) -c -o $@ $(s_file);		\
-+		$(CC) $(no_g_c_flags) -c -o $@ $< ;			\
- 	fi;
-+else
-+cmd_cc_o_c = $(CC) $(c_flags) -c -o $(tmp_o_file) $<
-+
-+cmd_modversions =							\
-+	if $(OBJDUMP) -h $(tmp_o_file) | grep -q __ksymtab; then	\
-+		$(call cmd_genksyms, $(KBUILD_SYMTYPES)) > $(v_file);	\
-+		$(LD) $(LDFLAGS) -r -o $@ $(tmp_o_file)	-T $(v_file);	\
-+	else								\
-+		rm -f $(v_file);					\
-+	fi;
-+
-+endif
- endif
- 
- ifdef CONFIG_FTRACE_MCOUNT_RECORD
-
-
-Jan - I need some hard numbers to convince me that stripping the
-__crc symbols is worth it.
-
-We can make it a configuration option as I showed above but we should
-at least know what we are gaining for this.
-
-I am very positive about stripping of the modules in general,
-but the __crc_ symbols seems to trigger a few things:
-1) ccahce, distcc issues in the MODVERSION case (that is allmodconfig builds)
-2) It does not increase readability of the Makefile machinery and I like more
-   people to be able to hack on this - not less.
-
-Thanks,
-	Sam
+Jarek P.
