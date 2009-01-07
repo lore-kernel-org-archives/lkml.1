@@ -1,113 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZAGJTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZAGJWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbZAGJTZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 04:19:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZAGJTK
+	id S1756885AbZAGJWB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 04:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZAGJVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 04:19:10 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55017 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbZAGJTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 04:19:09 -0500
-Subject: Re: [ 286.547348] BUG: unable to handle kernel paging request at
-	6b6b6b6b
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <20090107091534.GA4633@osiris.boeblingen.de.ibm.com>
-References: <4963F368.7080909@gmail.com>
-	 <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>
-	 <84144f020901070030k6fb888f6n84255078e4885d28@mail.gmail.com>
-	 <20090107091534.GA4633@osiris.boeblingen.de.ibm.com>
-Date: Wed, 07 Jan 2009 11:19:06 +0200
-Message-Id: <1231319946.14720.7.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 7 Jan 2009 04:21:44 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:38018 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753078AbZAGJVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 04:21:41 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Message-ID: <18788.29727.163564.90030@harpo.it.uu.se>
+Date: Wed, 7 Jan 2009 10:21:35 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 06/60] sysfs: clarify SYSFS_DEPRECATED help text
+In-Reply-To: <1231279939-32728-6-git-send-email-gregkh@suse.de>
+References: <20090106221123.GA32689@kroah.com>
+	<1231279939-32728-6-git-send-email-gregkh@suse.de>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 10:15 +0100, Heiko Carstens wrote:
-> I missed to convert disable_nonboot_cpus to
-> stop_machine_create/destroy.
-> So it's a use before-even-allocated bug.
-> 
-> The patch below should hopefully fix it:
-> 
-> Subject: [PATCH] cpu hotplug: add stop_machine_create/destroy to disable_nonboot_cpus
-> 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> disable_nonboot_cpus calls directly _cpu_down. _cpu_down however relies on
-> the in advanced created stop_machine kernel threads which should be created
-> by the caller (like cpu_down does).
-> 
-> So add the missing stop_machine_create/destroy calls to disable_nonboot_cpus
-> as well.
-> 
-> Fixes this bug:
-> 
-> [  286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
-> [  286.548940] IP: [<c0150ca4>] __stop_machine+0x88/0xe3
-> [  286.550598] Oops: 0002 [#1] SMP
-> [  286.560580] Pid: 3273, comm: halt Not tainted (2.6.28-06127-g238c6d5
-> [  286.560580] EIP: is at __stop_machine+0x88/0xe3
-> [  286.560580] Process halt (pid: 3273, ti=f1a28000 task=f4530f30
-> [  286.560580] Call Trace:
-> [  286.560580]  [<c03d04e4>] ? _cpu_down+0x10f/0x234
-> [  286.560580]  [<c012a57e>] ? disable_nonboot_cpus+0x58/0xdc
-> [  286.560580]  [<c01360c0>] ? kernel_poweroff+0x22/0x39
-> [  286.560580]  [<c0136301>] ? sys_reboot+0xde/0x14c
-> [  286.560580]  [<c01331b2>] ? complete_signal+0x179/0x191
-> [  286.560580]  [<c0133396>] ? send_signal+0x1cc/0x1e1
-> [  286.560580]  [<c03de418>] ? _spin_unlock_irqrestore+0x2d/0x3c
-> [  286.560580]  [<c0133b65>] ? group_send_signal_info+0x58/0x61
-> [  286.560580]  [<c0133b9e>] ? kill_pid_info+0x30/0x3a
-> [  286.560580]  [<c0133d49>] ? sys_kill+0x75/0x13a
-> [  286.560580]  [<c01a06cb>] ? mntput_no_expire+ox1f/0x101
-> [  286.560580]  [<c019b3b3>] ? dput+0x1e/0x105
-> [  286.560580]  [<c018ef87>] ?  __fput+0x150/0x158
-> [  286.560580]  [<c0157abf>] ? audit_syscall_entry+0x137/0x159
-> [  286.560580]  [<c010329f>] ? sysenter_do_call+0x12/0x34
-> 
-> Reported-by: "Justin P. Mattock" <justinmattock@gmail.com>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Greg Kroah-Hartman writes:
+ > From: Kay Sievers <kay.sievers@vrfy.org>
+ > 
+ > This should make the help text of SYSFS_DEPRECATED more clear, that this
+ > is _not_ about (what some people think it is) suppressing a few symlinks
+ > and variables, but a different sysfs _layout_ with new features.
+ > 
+ > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+ > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+ > ---
+ >  init/Kconfig |   44 +++++++++++++++++++++++++++-----------------
+ >  1 files changed, 27 insertions(+), 17 deletions(-)
+ > 
+ > diff --git a/init/Kconfig b/init/Kconfig
+ > index 52847ee..d9d3dba 100644
+ > --- a/init/Kconfig
+ > +++ b/init/Kconfig
+ > @@ -423,27 +423,37 @@ config SYSFS_DEPRECATED
+ >  	bool
+ >  
+ >  config SYSFS_DEPRECATED_V2
+ > -	bool "Create deprecated sysfs files"
+ > +	bool "Create deprecated sysfs layout for older userspace tools"
+ >  	depends on SYSFS
+ >  	default y
+ >  	select SYSFS_DEPRECATED
+ >  	help
+ > -	  This option creates deprecated symlinks such as the
+ > -	  "device"-link, the <subsystem>:<name>-link, and the
+ > -	  "bus"-link. It may also add deprecated key in the
+ > -	  uevent environment.
+ > -	  None of these features or values should be used today, as
+ > -	  they export driver core implementation details to userspace
+ > -	  or export properties which can't be kept stable across kernel
+ > -	  releases.
+ > -
+ > -	  If enabled, this option will also move any device structures
+ > -	  that belong to a class, back into the /sys/class hierarchy, in
+ > -	  order to support older versions of udev and some userspace
+ > -	  programs.
+ > -
+ > -	  If you are using a distro with the most recent userspace
+ > -	  packages, it should be safe to say N here.
+ > +	  This option switches the layout of sysfs to the deprecated
+ > +	  version.
+ > +
+ > +	  The current sysfs layout features a unified device tree at
+ > +	  /sys/devices/, which is able to express a hierarchy between
+ > +	  class devices. If the deprecated option is set to Y, the
+ > +	  unified device tree is split into a bus device tree at
+ > +	  /sys/devices/ and several individual class device trees at
+ > +	  /sys/class/. The class and bus devices will be connected by
+ > +	  "<subsystem>:<name>" and the "device" links. The "block"
+ > +	  class devices, will not show up in /sys/class/block/. Some
+ > +	  subsystems will suppress the creation of some devices which
+ > +	  depend on the unified device tree.
+ > +
+ > +	  This option is not a pure compatibility option that can
+ > +	  be safely enabled on newer distributions. It will change the
+ > +	  layout of sysfs to the non-extensible deprecated version,
+ > +	  and disable some features, which can not be exported without
+ > +	  confusing older userspace tools. Since 2007/2008 all major
+ > +	  distributions do not enable this option, and ship no tools which
+ > +	  depend on the deprecated layout or this option.
+ > +
+ > +	  If you are using a new kernel on an older distribution, or use
+ > +	  older userspace tools, you might need to say Y here. Do not say Y,
+ > +	  if the original kernel, that came with your distribution, has
+ > +	  this option set to N.
 
-Looks good to me!
+Instead of making vague references to "older" tools, could someone
+please make a list of the major tools that depend on sysfs, and the
+minimal/oldest versions needed for the non-deprecated layout?
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-
-> ---
->  kernel/cpu.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/kernel/cpu.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/cpu.c
-> +++ linux-2.6/kernel/cpu.c
-> @@ -379,8 +379,11 @@ static cpumask_var_t frozen_cpus;
->  
->  int disable_nonboot_cpus(void)
->  {
-> -	int cpu, first_cpu, error = 0;
-> +	int cpu, first_cpu, error;
->  
-> +	error = stop_machine_create();
-> +	if (error)
-> +		return error;
->  	cpu_maps_update_begin();
->  	first_cpu = cpumask_first(cpu_online_mask);
->  	/* We take down all of the non-boot CPUs in one shot to avoid races
-> @@ -409,6 +412,7 @@ int disable_nonboot_cpus(void)
->  		printk(KERN_ERR "Non-boot CPUs are not disabled\n");
->  	}
->  	cpu_maps_update_done();
-> +	stop_machine_destroy();
->  	return error;
->  }
->  
-
+/Mikael
