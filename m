@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbZAGNgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbZAGNhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759155AbZAGNgK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758796AbZAGNfo
+	id S1759275AbZAGNhx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbZAGNhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:35:44 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:40989 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758236AbZAGNfm (ORCPT
+	Wed, 7 Jan 2009 08:37:45 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35400 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751168AbZAGNho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:35:42 -0500
-Date: Wed, 7 Jan 2009 06:35:40 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-Message-ID: <20090107133540.GS2002@parisc-linux.org>
-References: <49636799.1010109@novell.com> <20090106214229.GD6741@linux.vnet.ibm.com> <1231278275.11687.111.camel@twins> <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> <1231279660.11687.121.camel@twins> <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain> <1231281801.11687.125.camel@twins> <49642829.20006@cn.fujitsu.com> <1231309970.11687.163.camel@twins> <49645B17.7000001@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49645B17.7000001@cn.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 7 Jan 2009 08:37:44 -0500
+Date: Wed, 7 Jan 2009 13:37:46 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Chris Adams <cmadams@hiwaay.net>
+Cc: David Newall <davidn@davidnewall.com>, linux-kernel@vger.kernel.org
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
+ 2008-2009
+Message-ID: <20090107133746.63d2677b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090107133306.GA1506277@hiwaay.net>
+References: <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
+	<49614835.7000505@davidnewall.com>
+	<3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>
+	<20090105143335.GC18055@mail.local.tull.net>
+	<4962BB13.7060304@davidnewall.com>
+	<20090106025125.GB28431@mail.local.tull.net>
+	<20090106094058.64c89586@lxorguk.ukuu.org.uk>
+	<496479EA.1020207@davidnewall.com>
+	<20090107095419.70b78dc7@lxorguk.ukuu.org.uk>
+	<49648163.9060007@davidnewall.com>
+	<20090107133306.GA1506277@hiwaay.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 03:34:47PM +0800, Lai Jiangshan wrote:
-> So I think current task should sleep earlier when it detects that
-> mutex owner start schedule().
+> - zoneinfo is for offset from UTC, leap seconds are changes in UTC
 
-How do you propose it detects this?
+If you two would stop throwing toys at each other and read the glibc
+documentation and source you might get somewhere.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> - the standards say that time() returns seconds since the epoch in UTC
+>   _except_ explicity NOT including leap seconds
+
+Glibc has timezone support for both leap second inclusive ("right" as
+it calls them) and posix time offsets.
+
+Alan
