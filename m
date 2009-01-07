@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZAGHk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZAGHnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbZAGHk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 02:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZAGHkQ
+	id S1754891AbZAGHnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 02:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZAGHnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 02:40:16 -0500
-Received: from ns.suse.de ([195.135.220.2]:48029 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbZAGHkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 02:40:14 -0500
-Date: Wed, 7 Jan 2009 08:40:13 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Robin Holt <holt@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Gregory Haskins <ghaskins@novell.com>, Tony Luck <tony.luck@gmail.com>
-Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
-Message-ID: <20090107074013.GF21629@wotan.suse.de>
-References: <20090106162741.GA7991@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB95575@orsmsx505.amr.corp.intel.com> <20090106201950.GA3850@sgi.com> <57C9024A16AD2D4C97DC78E552063EA35CB955B4@orsmsx505.amr.corp.intel.com> <1231275441.11687.110.camel@twins> <20090106225054.GB3850@sgi.com> <1231283763.11687.135.camel@twins> <20090107030030.GH3390@wotan.suse.de> <1231313289.11687.172.camel@twins>
-Mime-Version: 1.0
+	Wed, 7 Jan 2009 02:43:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47006 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbZAGHnG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 02:43:06 -0500
+Date: Wed, 7 Jan 2009 02:42:56 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org, neilb@suse.de,
+       snakebyte@gmx.de
+Subject: Re: nfsd stuckage
+Message-ID: <20090107074256.GA5102@infradead.org>
+References: <20090106145612.d4d9948d.akpm@linux-foundation.org> <20090106230244.GB13785@fieldses.org> <20090106230356.GA31520@lst.de> <20090106230551.GC13785@fieldses.org> <20090107001501.GH13785@fieldses.org> <20090106162328.1b4511a6.akpm@linux-foundation.org> <20090107002816.GL13785@fieldses.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231313289.11687.172.camel@twins>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090107002816.GL13785@fieldses.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 08:28:09AM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-01-07 at 04:00 +0100, Nick Piggin wrote:
-> > On Wed, Jan 07, 2009 at 12:16:03AM +0100, Peter Zijlstra wrote:
-> > > > 
-> > > > But doesn't scheduler tick advance the rq->clock?  Why do the others
-> > > > need to fiddle with a remote runqueue's clock?  When that cpu starts
-> > > > taking ticks again, it will update it's rq->clock field and start the
-> > > > processes.  I guess I am a lot underinformed about the new scheduler
-> > > > design.
-> > > 
-> > > We try to do better than tick based time accounting these days.
+On Tue, Jan 06, 2009 at 07:28:16PM -0500, J. Bruce Fields wrote:
+> On Tue, Jan 06, 2009 at 04:23:28PM -0800, Andrew Morton wrote:
+> > On Tue, 6 Jan 2009 19:15:01 -0500
+> > "J. Bruce Fields" <bfields@fieldses.org> wrote:
 > > 
-> > But if you contain the drift to within one tick, it shouldn't be much
-> > problem to just truncate negative deltas I would have thought? The
-> > time between events on different CPUs is pretty fuzzy at the ns level
-> > anyway, I think ;)
+> > >     nfsd: fix double-locks of directory mutex
+> > 
+> > grumble.
 > 
-> That's basically what the HAVE_UNSTABLE_SCHED_CLOCK code does. It takes
-> a tick timestamp and tries to improve on that by using strict per cpu
-> sched_clock() deltas.
-> 
-> What we do to obtain remote time, is basically calculate local time and
-> pull remote time fwd if that was behind.
-> 
-> While doing that, it filters out any backward motion and large fwd leaps
-> so as to stay no worse than a jiffie clock.
+> This is literally just a revert of part of 4c728ef583b3d822; if you'd
+> like me to clean up this stuff while I'm there, I'm happy to.
 
-OK, that's good. I guess the optimisations to remove that code should
-have been called HAVE_STABLE_SCHED_CLOCK and have archs turn it on on
-a case by case basis. 
+Please leave it as the revert.  NFSD really needs to use vfs_fsync
+eventually so we can sort out our ->fsync usage.  I suspect the best
+way to get there is to to the i_mutex removal for fsync earlier than
+planned, but I'll need to audit the filesystems first.
 
