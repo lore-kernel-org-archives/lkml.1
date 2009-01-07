@@ -1,47 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZAGMPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZAGMQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbZAGMPn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbZAGMPc
+	id S1755377AbZAGMQQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZAGMP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:15:32 -0500
-Received: from kandzendo.ru ([195.178.208.66]:42895 "EHLO tservice.net.ru"
+	Wed, 7 Jan 2009 07:15:59 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41869 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750924AbZAGMPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:15:31 -0500
-Date: Wed, 7 Jan 2009 15:15:30 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090107121530.GA30164@ioremap.net>
-References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106183704.GC32491@kernel.dk> <20090107044232.GA22218@gondor.apana.org.au> <20090107112906.GA28161@ioremap.net> <20090107115032.GA25198@gondor.apana.org.au> <20090107115605.GA29250@ioremap.net> <20090107115921.GA25323@gondor.apana.org.au>
+	id S1752080AbZAGMP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:15:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 7/8] PCI PCIe portdrv: Simplily probe callback of service drivers
+Date: Wed, 7 Jan 2009 13:15:50 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200901042346.42723.rjw@sisk.pl> <200901042359.40195.rjw@sisk.pl>
+In-Reply-To: <200901042359.40195.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090107115921.GA25323@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200901071315.50625.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 10:59:21PM +1100, Herbert Xu (herbert@gondor.apana.org.au) wrote:
-> On Wed, Jan 07, 2009 at 02:56:05PM +0300, Evgeniy Polyakov wrote:
-> >
-> > But it will not push pages into the stack, but copy them including copy
-> > of the submitted head?
+On Sunday 04 January 2009, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> It will use a single page entry for skb->head with splice, see
-> skb_splice_bits.
+> The second argument of the ->probe() callback in
+> struct pcie_port_service_driver is unnecessary and never used.
+> Remove it.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Looks like we are talking about different directions of the dataflow.
-I meant that set of pages submitted into the sending part will be copied
-if sending interface does not support acceleration, and thus it will
-copy part of the page corresponding to the linear part of the skb prior
-the transmission, so even if skb will be freed right after that call
-(prior data transmission by the hardware), it should not affect copied
-data.
+This patch had to be rebased on top of the current linux-next branch of the
+pci-2.6 tree.
 
--- 
-	Evgeniy Polyakov
+Updated patch is appended.
+
+Thanks,
+Rafael
+
+---
+Subject: PCI PCIe portdrv: Simplily probe callback of service drivers (rev. 2)
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+The second argument of the ->probe() callback in
+struct pcie_port_service_driver is unnecessary and never used.
+Remove it.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/hotplug/pciehp_acpi.c |    3 +--
+ drivers/pci/hotplug/pciehp_core.c |    2 +-
+ drivers/pci/pcie/aer/aerdrv.c     |    6 ++----
+ drivers/pci/pcie/portdrv_core.c   |    2 +-
+ include/linux/pcieport_if.h       |    3 +--
+ 5 files changed, 6 insertions(+), 10 deletions(-)
+
+Index: linux-2.6/include/linux/pcieport_if.h
+===================================================================
+--- linux-2.6.orig/include/linux/pcieport_if.h
++++ linux-2.6/include/linux/pcieport_if.h
+@@ -57,8 +57,7 @@ static inline void* get_service_data(str
+ 
+ struct pcie_port_service_driver {
+ 	const char *name;
+-	int (*probe) (struct pcie_device *dev, 
+-		const struct pcie_port_service_id *id);
++	int (*probe) (struct pcie_device *dev);
+ 	void (*remove) (struct pcie_device *dev);
+ 	int (*suspend) (struct pcie_device *dev, pm_message_t state);
+ 	int (*resume) (struct pcie_device *dev);
+Index: linux-2.6/drivers/pci/pcie/aer/aerdrv.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/aer/aerdrv.c
++++ linux-2.6/drivers/pci/pcie/aer/aerdrv.c
+@@ -38,8 +38,7 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+ 
+-static int __devinit aer_probe (struct pcie_device *dev,
+-	const struct pcie_port_service_id *id );
++static int __devinit aer_probe (struct pcie_device *dev);
+ static void aer_remove(struct pcie_device *dev);
+ static int aer_suspend(struct pcie_device *dev, pm_message_t state)
+ {return 0;}
+@@ -207,8 +206,7 @@ static void aer_remove(struct pcie_devic
+  *
+  * Invoked when PCI Express bus loads AER service driver.
+  **/
+-static int __devinit aer_probe (struct pcie_device *dev,
+-				const struct pcie_port_service_id *id )
++static int __devinit aer_probe (struct pcie_device *dev)
+ {
+ 	int status;
+ 	struct aer_rpc *rpc;
+Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
++++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+@@ -461,7 +461,7 @@ static int pcie_port_probe_service(struc
+ 		return -ENODEV;
+ 
+ 	pciedev = to_pcie_device(dev);
+-	status = driver->probe(pciedev, driver->id_table);
++	status = driver->probe(pciedev);
+ 	if (!status) {
+ 		dev_printk(KERN_DEBUG, dev, "service driver %s loaded\n",
+ 			driver->name);
+Index: linux-2.6/drivers/pci/hotplug/pciehp_core.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp_core.c
++++ linux-2.6/drivers/pci/hotplug/pciehp_core.c
+@@ -399,7 +399,7 @@ static int get_cur_bus_speed(struct hotp
+ 	return 0;
+ }
+ 
+-static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_id *id)
++static int pciehp_probe(struct pcie_device *dev)
+ {
+ 	int rc;
+ 	struct controller *ctrl;
+Index: linux-2.6/drivers/pci/hotplug/pciehp_acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp_acpi.c
++++ linux-2.6/drivers/pci/hotplug/pciehp_acpi.c
+@@ -82,8 +82,7 @@ static int __initdata acpi_slot_detected
+ static struct list_head __initdata dummy_slots = LIST_HEAD_INIT(dummy_slots);
+ 
+ /* Dummy driver for dumplicate name detection */
+-static int __init dummy_probe(struct pcie_device *dev,
+-			      const struct pcie_port_service_id *id)
++static int __init dummy_probe(struct pcie_device *dev)
+ {
+ 	int pos;
+ 	u32 slot_cap;
+
