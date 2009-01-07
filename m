@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbZAGNXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbZAGNYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbZAGNXY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:23:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZAGNXL
+	id S1757212AbZAGNYv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:24:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZAGNYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:23:11 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:5868 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbZAGNXJ (ORCPT
+	Wed, 7 Jan 2009 08:24:41 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:5305 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZAGNYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:23:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GJCNoDHFkxxhk/MPq76w8l91S1HsMR3m/JlJeyNreTmLeghlmZdCrInMBIhxw7MdnD
-         i9o0SrKJomQAromobm0nu1Ta0FOoqbVQx6esJoV0RDhov5BJIwIlRBSpyyorTc5aaNWK
-         X2RiDTPhdjD/FrdRM6Sin85xj1IP35WjWfXIk=
-Date: Wed, 7 Jan 2009 13:22:58 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090107132258.GE9677@ff.dom.local>
-References: <20090107121530.GA30164@ioremap.net> <20090107122238.GB25673@gondor.apana.org.au> <20090107123741.GA31255@ioremap.net> <20090107124246.GA26034@gondor.apana.org.au> <20090107124629.GA31732@ioremap.net> <20090107125535.GC6307@1wt.eu> <20090107125734.GA26331@gondor.apana.org.au> <20090107130259.GB32336@ioremap.net> <20090107131057.GD9677@ff.dom.local> <20090107131539.GF6307@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107131539.GF6307@1wt.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Jan 2009 08:24:40 -0500
+Date: Wed, 7 Jan 2009 14:24:26 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Ed Swierk <eswierk@aristanetworks.com>
+Cc: linux-i2c@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       BARRE Sebastien <sbarre@sdelcc.com>
+Subject: Re: [PATCH] rtc-ds1307: True SMBus compatibility
+Message-ID: <20090107142426.4be04d4d@hyperion.delvare>
+In-Reply-To: <1231177261.13443.20.camel@localhost.localdomain>
+References: <1231177261.13443.20.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 02:15:39PM +0100, Willy Tarreau wrote:
-> On Wed, Jan 07, 2009 at 01:10:57PM +0000, Jarek Poplawski wrote:
-> > On Wed, Jan 07, 2009 at 04:02:59PM +0300, Evgeniy Polyakov wrote:
-> > ...
-> > > If I understood correctly Jarek's patch, he wants to allocate a page and
-> > > copy linear content of the skb there, so this will end up being the same
-> > > case as with splicing from the file. And while generally this may be a
-> > > good idea, but with usual 1.5k mtu this will copy every skb, which is
-> > > rather bad idea. Will have to think :)
-> > > 
-> > 
-> > As I mentioned earlier, I (poorly) tried to realize Changli's idea
-> > only, and it's more to verify the reason still (after it failed with
-> > SG method...).
+Hi Ed,
+
+On Mon, 05 Jan 2009 09:41:01 -0800, Ed Swierk wrote:
+> [Resent to correct linux-i2c address]
 > 
-> Jarek, since it now works when disabling both SG and GSO, we know that the
-> bug is triggered when passing through do_tcp_sendpage(). Thus, I will not
-> try your patch #3 yet, but rather wait for fix candidates to try.
+> Following up to Sebastien Barre's recent patch, here I go one step
+> further, replacing i2c block transfers with SMBus byte transfers.
 
-Sure! Congratulations for debugging to you and Evgeniy!
+Please, no. Adding a compatibility quirk may be acceptable, but forcing
+everyone to use it instead of the more efficient original code is not
+fair.
 
-Jarek P.
+> Sticking to pure SMBus makes the driver work on our board, which has an
+> nVidia SMBus controller driving a DS1339; nforce2 controllers
+> unfortunately don't support any flavor of i2c block transfer.
+
+Are you certain the nForce2 controllers can't do it? The i2c-nforce2
+driver doesn't implement it, but this doesn't mean the hardware can't
+do it. I don't have any datasheet for these chips, but I know their
+SMBus implementation is very similar to those of the AMD 8111, and
+i2c-amd8111 has support for I2C block reads and writes. I think it
+would be worth giving it a try, by copying the i2c-amd8111
+implementation into the i2c-nforce2 driver and seeing if it happens to
+just work. If it works, that would be more elegant than your proposed
+hack to the rtc-ds1307 driver.
+
+> Reading or writing registers repeatedly until they stick is rather
+> nauseating but I'm aiming for correctness if not elegance.  I would
+> appreciate any suggestions for improvement.
+
+See above.
+
+-- 
+Jean Delvare
