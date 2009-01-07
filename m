@@ -1,114 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbZAGCFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbZAGCHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbZAGCFQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 21:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbZAGCE6
+	id S1759556AbZAGCHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 21:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759348AbZAGCHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 21:04:58 -0500
-Received: from ozlabs.org ([203.10.76.45]:55870 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759257AbZAGCE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 21:04:57 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
+	Tue, 6 Jan 2009 21:07:10 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:32775 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759360AbZAGCHJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 21:07:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=6jPmVLZck03oMV1UCoXHatKPwOBxJp0byoX4CI4rsdaX5YBjVBF6dCTgnPhpTBSmS+NPvleqqm9XpnI1dZb6YK9r5va9pewEIxv4HGLn3M6Ir0Gj36uh/jCB1eAoJlvntqsk5rexMdh1PQkozmaQm2QZMNfMQsAXhuKuvPxnq/I=  ;
+X-YMail-OSG: VqX.uuEVM1ljvIOv23X0pniY03.0gX3TGh8nZ6P4364LPWhbGFsGzDd4VVieiPbT7.o7NY4xG2KJmVBF9vUlcL27sIvwiGbcfUjGuwlDA5IS6GNUZ7q3U2Z6anR3ZENQK1b6GUT6ilqGaQxC6LpcIvcKIU3eOEE_Aje_.U6uaN5ksWXQTMM.9Fc.i8795ZiAmd6bZARtHc.xpGoGw3vuXZOVFwSpU7Zazrw-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/6] cpuset: convert cpuset_attach() to use cpumask_var_t
-Date: Wed, 7 Jan 2009 12:34:50 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Mike Travis <travis@sgi.com>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <495B2EA6.7010808@cn.fujitsu.com> <4961C919.6040404@cn.fujitsu.com> <20090105010147.bc42b655.akpm@linux-foundation.org>
-In-Reply-To: <20090105010147.bc42b655.akpm@linux-foundation.org>
+Subject: Re: 2.6.29 -mm merge plans
+Date: Wed, 7 Jan 2009 13:06:44 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151344.0f146286.akpm@linux-foundation.org>
+In-Reply-To: <20090106151344.0f146286.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901071234.51646.rusty@rustcorp.com.au>
+Message-Id: <200901071306.45210.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 January 2009 19:31:47 Andrew Morton wrote:
-> On Mon, 05 Jan 2009 16:47:21 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> > Allocate a global cpumask_var_t at boot, and use it in cpuset_attach(), so
-> > we won't fail cpuset_attach().
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > Acked-by: Mike Travis <travis@sgi.com>
-> > ---
-> >  kernel/cpuset.c |   14 +++++++++-----
-> >  1 files changed, 9 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> > index afa29cf..1e32e6b 100644
-> > --- a/kernel/cpuset.c
-> > +++ b/kernel/cpuset.c
-> > @@ -1306,6 +1306,9 @@ static int fmeter_getrate(struct fmeter *fmp)
-> >  	return val;
-> >  }
-> >  
-> > +/* Protected by cgroup_lock */
-> > +static cpumask_var_t cpus_attach;
-> > +
-> >  /* Called by cgroups to determine if a cpuset is usable; cgroup_mutex held */
-> >  static int cpuset_can_attach(struct cgroup_subsys *ss,
-> >  			     struct cgroup *cont, struct task_struct *tsk)
-> > @@ -1330,7 +1333,6 @@ static void cpuset_attach(struct cgroup_subsys *ss,
-> >  			  struct cgroup *cont, struct cgroup *oldcont,
-> >  			  struct task_struct *tsk)
-> >  {
-> > -	cpumask_t cpus;
-> >  	nodemask_t from, to;
-> >  	struct mm_struct *mm;
-> >  	struct cpuset *cs = cgroup_cs(cont);
-> > @@ -1338,13 +1340,13 @@ static void cpuset_attach(struct cgroup_subsys *ss,
-> >  	int err;
-> >  
-> >  	if (cs == &top_cpuset) {
-> > -		cpus = cpu_possible_map;
-> > +		cpumask_copy(cpus_attach, cpu_possible_mask);
-> >  	} else {
-> >  		mutex_lock(&callback_mutex);
-> > -		guarantee_online_cpus(cs, &cpus);
-> > +		guarantee_online_cpus(cs, cpus_attach);
-> >  		mutex_unlock(&callback_mutex);
-> >  	}
-> > -	err = set_cpus_allowed_ptr(tsk, &cpus);
-> > +	err = set_cpus_allowed_ptr(tsk, cpus_attach);
-> >  	if (err)
-> >  		return;
-> >  
-> > @@ -1357,7 +1359,6 @@ static void cpuset_attach(struct cgroup_subsys *ss,
-> >  			cpuset_migrate_mm(mm, &from, &to);
-> >  		mmput(mm);
-> >  	}
-> > -
-> >  }
-> >  
-> >  /* The various types of files and directories in a cpuset file system */
-> > @@ -1838,6 +1839,9 @@ int __init cpuset_init(void)
-> >  	if (err < 0)
-> >  		return err;
-> >  
-> > +	if (!alloc_cpumask_var(&cpus_attach, GFP_KERNEL))
-> > +		BUG();
-> > +
-> >  	number_of_cpusets = 1;
-> >  	return 0;
-> >  }
-> 
-> OK, that works.
-> 
-> Do we need to dynamically allocate cpus_attach?  Can we just do
-> 
-> static cpumask_t cpus_attach;
+On Wednesday 07 January 2009 10:13:44 Andrew Morton wrote:
+> (cc added)
+>
+> On Tue, 6 Jan 2009 17:57:44 -0500
+>
+> Christoph Hellwig <hch@infradead.org> wrote:
+> > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
+> > > softirq-introduce-statistics-for-softirq.patch
+> > > proc-export-statistics-for-softirq-to-proc.patch
+> > > proc-update-document-for-proc-softirqs-and-proc-stat.patch
+> >
+> > Why is this in procfs?
+>
+> softirq stuff in /proc seems appropriate?  It's alongside
+> /proc/interrupts.  We could put it in /trendy-fs-of-the-day, but what
+> would it gain us?
 
-Well, (1) we're deprecating the typedef, (2) we really want the NR_CPUS=16384
-and nr_cpu_ids=4 case not to suck and this sets a bad example, but moreover
-(3) struct cpumask won't be defined eventually when CONFIG_CPUMASKS_OFFSTACK=y
-so that won't compile.
+Haven't we kind of agreed to use sysfs for things like this? A few years
+too late to be raising objections now ;)
 
-Cheers,
-Rusty.
+One problem I have with sysfs is that it (the directory structure, rather
+than the sysfs code itself) really needs to be policed and maintained
+by a central and coherent place/person with taste. Otherwise people put
+their own random crap with their own random naming schemes and becomes
+a crazy mess.
+
+softirqs are not hardware but purely kernel subsystem construct, as such
+they probably go under /sys/kernel/. People unfortunately have already
+added random crap to the /sys/kernel/ root directory, but future additions
+really should go into a good subdirectory structure (putting it into the
+root directory is equivalent to ditching all subdirectories from /proc/sys/).
+
+/sys/kernel/softirq/*, I suggest.
+
+
