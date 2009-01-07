@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759222AbZAGBO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbZAGBR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759222AbZAGBO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 20:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZAGBOu
+	id S1758973AbZAGBR3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 20:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZAGBRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 20:14:50 -0500
-Received: from ns2.suse.de ([195.135.220.15]:56297 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408AbZAGBOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 20:14:50 -0500
-Date: Wed, 7 Jan 2009 02:14:48 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 -mm merge plans
-Message-ID: <20090107011448.GB3390@wotan.suse.de>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151131.b6c4ff0b.akpm@linux-foundation.org> <20090106232418.GB25103@infradead.org>
-Mime-Version: 1.0
+	Tue, 6 Jan 2009 20:17:21 -0500
+Received: from vps1.tull.net ([66.180.172.116]:45210 "HELO vps1.tull.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751072AbZAGBRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 20:17:21 -0500
+Date: Wed, 7 Jan 2009 12:17:13 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Newall <davidn@davidnewall.com>,
+       Linas Vepstas <linasvepstas@gmail.com>, david@lang.hm,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
+       MentalMooMan <slashdot@jameshallam.info>,
+       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years	2008-2009
+Message-ID: <20090107011713.GA27527@mail.local.tull.net>
+References: <4960897D.5030603@davidnewall.com> <alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm> <4961432A.80509@davidnewall.com> <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm> <49614835.7000505@davidnewall.com> <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com> <20090105143335.GC18055@mail.local.tull.net> <4962BB13.7060304@davidnewall.com> <20090106025125.GB28431@mail.local.tull.net> <20090106094058.64c89586@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090106232418.GB25103@infradead.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090106094058.64c89586@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 06:24:18PM -0500, Christoph Hellwig wrote:
-> On Tue, Jan 06, 2009 at 03:11:31PM -0800, Andrew Morton wrote:
-> > > I'm not sure this is a good idea.  Concurrent syncs are a bad idea
-> > > to start with and we should just synchronyze do_sync completely.
-> > > sync_filesystems as one of the main components of do_sync already
-> > > is synchronized in that way, and taking that to a higher level would
-> > > get rid of all the worries about concurrent syncs.
-> > 
-> > Yes, single-threading sys_sync() would fix the problem which that patch
-> > addresses.
-> > 
-> > However there are a lot of performance and correctness issues around
-> > sys_sync()-versus-fsync(), etc for which such a simple fix won't be
-> > acceptable.
+On Tue, Jan 06, 2009 at 09:40:58AM +0000, Alan Cox wrote:
+> >        UTC  equivalent  to  conversion  on  the naive basis that leap seconds are ignored and all
+> >        years divisible by 4 are leap years.  This value is not the same as the actual  number  of
+> >        seconds between the time and the Epoch, because of leap seconds and because clocks are not
+> >        required to be synchronized to a standard reference.
 > 
-> fsync should really not much interac with sync at that level.  While
-> they both end up at same primitives at the lowest level those aren't
-> the ones we're trying to protect against.  I'm currently in the process
-> of a major rework of sys_sync/do_sync to make it work properly for
-> modern filesystems and the global synchronization was one of the first
-> things I did..
-> 
-> So if you have any workloads where that causes a problem please send
-> them my way.  Not that I can really thing of them, given the global
-> nature of sys_sync I can't see any benefit of doing multiple of these
-> in parallel.
+> I'm not sure what you are quoting from but it is out of date on the
+> subject of leap years.
 
-I can't see a problem with putting a global mutex around sys_sync (almost
-by definition, any app in the last 10+ years that calls sys_sync is not
-performance critical).
+"man 2 time" on Debian Lenny. The treatment of leap years looks ridiculous, but
+within the context of a 32-bit time_t, all divisible-by-4 years between 1901 and
+2038 are leap years. It's a bit of a problem for 64-bit time_t though.
 
-But this patch fixes a correctness problem, so I think it is OK to go
-upstream now.
-
+Nick.
+-- 
+PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
+PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
