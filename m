@@ -1,113 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbZAGWhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762881AbZAGWil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760064AbZAGWhi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762543AbZAGWdt
+	id S1762881AbZAGWil (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbZAGWeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:33:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48095 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932593AbZAGWdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:33:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: philipl@overt.org
-Subject: Re: [PATCH] ricoh_mmc: Use suspend/resume_noirq (v2) (resend)
-Date: Wed, 7 Jan 2009 23:33:21 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: "linux kernel" <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
-       sfr@canb.auug.org.au, "Pierre Ossman" <drzeus@drzeus.cx>
-References: <40499.98.210.152.237.1231345314.squirrel@overt.org>
-In-Reply-To: <40499.98.210.152.237.1231345314.squirrel@overt.org>
+	Wed, 7 Jan 2009 17:34:17 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37033 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932620AbZAGWeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:34:16 -0500
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX18ShuMCyMYSwoqepNqXmQYV+GWeJfLxggh6jtamKG
+	u25XJjbp8oeXdc
+Date: Wed, 7 Jan 2009 23:34:12 +0100
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, josh@freedesktop.org, dipankar@in.ibm.com
+Subject: Re: [BUG] NULL pointer deref with rcutorture
+Message-ID: <20090107223412.GB32513@alice>
+References: <20090105201631.GO6959@linux.vnet.ibm.com> <20090105203153.GC11244@alice> <20090105221836.GT6959@linux.vnet.ibm.com> <20090106002912.GA21071@linux.vnet.ibm.com> <20090106021506.GA23052@linux.vnet.ibm.com> <20090106074707.GA5975@alice> <20090106124809.GC7655@linux.vnet.ibm.com> <20090107194635.GA17174@linux.vnet.ibm.com> <20090107201904.GA32513@alice> <20090107220646.GH6900@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200901072333.21725.rjw@sisk.pl>
+In-Reply-To: <20090107220646.GH6900@linux.vnet.ibm.com>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
+X-Uptime: 23:33:52 up 1 day, 15:00,  6 users,  load average: 0.09, 0.12,
+	0.19
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 January 2009, philipl@overt.org wrote:
-> If ricoh_mmc suspends before sdhci_pci, it will pull the card
-> out from under the controller, which could leave the system in
-> a very confused state.
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Wed, Jan 07, 2009 at 09:19:04PM +0100, Eric Sesterhenn wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > On Tue, Jan 06, 2009 at 04:48:09AM -0800, Paul E. McKenney wrote:
+> > > > On Tue, Jan 06, 2009 at 08:47:07AM +0100, Eric Sesterhenn wrote:
+> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > On Mon, Jan 05, 2009 at 04:29:12PM -0800, Paul E. McKenney wrote:
+> > > > > > > On Mon, Jan 05, 2009 at 02:18:36PM -0800, Paul E. McKenney wrote:
+> > > > > > > I will see what I can find from this.
+> > > > > > 
+> > > > > > Hello, Eric,
+> > > > > > 
+> > > > > > Just for grins, I built the 2.6.28 kernel/rcutorture.c on b58602a.  It
+> > > > > > insmoded and rmmoded without errors.
+> > > > > > 
+> > > > > > Could you please try this on your setup?  I have attached this file in
+> > > > > > case that helps.
+> > > > > 
+> > > > > works like a charm
+> > > > 
+> > > > Well, that certainly tells me where the bug lies.  ;-)
+> > > > 
+> > > > Thank you for all your hard work on this, I should have a patch soon.
+> > > 
+> > > And here it is, against the original version of rcutorture.c (revert
+> > > all of my previous patches against rcutorture.c).  I am also attaching
+> > > the resulting rcutorture.c, if that makes things more convenient for you.
+> > > 
+> > > Could you please fire this up and see if it fixes the rmmod-time bug
+> > > that you located?
+> > 
+> > it does fix the bug, thanks for your work
 > 
-> Using suspend/resume_noirq ensures that sdhci_pci suspends first
-> and resumes second.
+> Thank you very much for finding this one, bearing with me during the
+> debug process, and testing it!  I will post the patch with credit to you.
 > 
-> Signed-off-by: Philip Langdale <philipl@overt.org>
-> Acked-by: Pierre Ossman <drzeus@drzeus.cx>
-> ---
-> 
->   ricoh_mmc.c |   20 ++++++++++++++++----
->   1 file changed, 16 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/ricoh_mmc.c b/drivers/mmc/host/ricoh_mmc.c
-> index 1837719..b4958a7 100644
-> --- a/drivers/mmc/host/ricoh_mmc.c
-> +++ b/drivers/mmc/host/ricoh_mmc.c
-> @@ -194,10 +194,14 @@ static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
->  	pci_set_drvdata(pdev, NULL);
->  }
-> 
-> -static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state) +static int
-> ricoh_mmc_suspend_noirq(struct device *dev)
->  {
-> +	struct pci_dev *pdev = NULL;
->  	struct pci_dev *fw_dev = NULL;
-> 
-> +	pdev = to_pci_dev(dev);
-> +	BUG_ON(pdev == NULL);
-> +
->  	fw_dev = pci_get_drvdata(pdev);
->  	BUG_ON(fw_dev == NULL);
-> 
-> @@ -208,10 +212,14 @@ static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
->  	return 0;
->  }
-> 
-> -static int ricoh_mmc_resume(struct pci_dev *pdev)
-> +static int ricoh_mmc_resume_noirq(struct device *dev)
->  {
-> +	struct pci_dev *pdev = NULL;
->  	struct pci_dev *fw_dev = NULL;
-> 
-> +	pdev = to_pci_dev(dev);
-> +	BUG_ON(pdev == NULL);
-> +
->  	fw_dev = pci_get_drvdata(pdev);
->  	BUG_ON(fw_dev == NULL);
-> 
-> @@ -222,13 +230,17 @@ static int ricoh_mmc_resume(struct pci_dev *pdev)
->  	return 0;
->  }
-> 
-> +static struct dev_pm_ops ricoh_mmc_pm_opts = {
-> +	.suspend_noirq =	ricoh_mmc_suspend_noirq,
-> +	.resume_noirq =		ricoh_mmc_resume_noirq,
-> +};
-> +
->  static struct pci_driver ricoh_mmc_driver = {
->  	.name = 	DRIVER_NAME,
->  	.id_table =	pci_ids,
->  	.probe = 	ricoh_mmc_probe,
->  	.remove =	__devexit_p(ricoh_mmc_remove),
-> -	.suspend =	ricoh_mmc_suspend,
-> -	.resume =	ricoh_mmc_resume,
-> +	.driver.pm =	&ricoh_mmc_pm_opts,
->  };
-> 
->  /*****************************************************************************\
-> 
-> Rafael,
-> 
-> Pierre asked that you take this patch into your tree because it depends on
-> the new pm ops design.
+> Does this fix all of the problems that you observed, or is there still
+> some breakage?
 
-Yes, thanks.
+It fixes everything i saw. Thanks.
 
-I'll look into this and get back to you shortly, most likely tomorrow.
-
-Thanks,
-Rafael
+Eric
