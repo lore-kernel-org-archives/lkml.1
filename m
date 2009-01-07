@@ -1,124 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbZAGTPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbZAGTTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759446AbZAGTPr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZAGTPi
+	id S1760284AbZAGTTZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZAGTTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:15:38 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:33070 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751562AbZAGTPh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 14:15:37 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 7 Jan 2009 20:14:53 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: cdev: increment fw_cdev_version, update
- documentation
-To: David Moore <dcm@MIT.EDU>, linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4964FCA5.1040808@s5r6.in-berlin.de>
-Message-ID: <tkrat.d261fdcc22c8bd25@s5r6.in-berlin.de>
-References: <1216794220.18969.14.camel@pisces.mit.edu>
- <4964FCA5.1040808@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Wed, 7 Jan 2009 14:19:12 -0500
+Received: from mga01.intel.com ([192.55.52.88]:17508 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751491AbZAGTTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 14:19:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,227,1231142400"; 
+   d="scan'208";a="420466625"
+Subject: [git pull] async_tx/dmaengine update for 2.6.29 (part 1)
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>, g.liakhovetski@gmx.de,
+       sfr@canb.auug.org.au, linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 12:19:09 -0700
+Message-Id: <1231355949.4895.28.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Necessary due to
-    Date: Tue, 22 Jul 2008 23:23:40 -0700
-    From: David Moore <dcm@acm.org>
-    Subject: firewire: Include iso timestamp in headers when header_size > 4
+Hi Linus, please pull from:
 
-Side note:  The lack of upwards compatibility sounds worse than it is.
-All existing client implementations, libraw1394 and libdc1394, set
-header_size = 4.  And since the ABI v1 behaviour does not offer any
-advantages over the new behaviour, we deliberately do not provide the
-old behaviour anymore.
+  git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
 
-Also add documentation about the format of fw_cdev_get_cycle_timer which
-may be used in conjunction with the timestamp of iso packets but has a
-different format.
+...to receive:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- include/linux/firewire-cdev.h |   35 +++++++++++++++++++++++++++++-----
- 1 file changed, 30 insertions(+), 5 deletions(-)
+Dan Williams (22):
+      async_tx, dmaengine: document channel allocation and api rework
+      dmaengine: remove dependency on async_tx
+      dmaengine: up-level reference counting to the module level
+      dmaengine: centralize channel allocation, introduce dma_find_channel
+      dmaengine: provide a common 'issue_pending_all' implementation
+      net_dma: convert to dma_find_channel
+      dmaengine: introduce dma_request_channel and private channels
+      dmatest: convert to dma_request_channel
+      atmel-mci: convert to dma_request_channel and down-level dma_slave
+      dmaengine: replace dma_async_client_register with dmaengine_get
+      dmaengine: kill struct dma_client and supporting infrastructure
+      dmaengine: remove 'bigref' infrastructure
+      dmaengine: kill enum dma_state_client
+      iop-adma: let devm do its job, don't duplicate free
+      iop-adma: kill debug BUG_ON
+      iop-adma: enable module removal
+      ioat: do not perform removal actions at shutdown
+      dmaengine: add a release for dma class devices and dependent infrastructure
+      dmaengine: use idr for registering dma device numbers
+      dmaengine: advertise all channels on a device to dma_filter_fn
+      dmaengine: bump initcall level to arch_initcall
+      ioat: fix self test for multi-channel case
 
-Index: linux/include/linux/firewire-cdev.h
-===================================================================
---- linux.orig/include/linux/firewire-cdev.h
-+++ linux/include/linux/firewire-cdev.h
-@@ -138,7 +138,24 @@ struct fw_cdev_event_request {
-  * This event is sent when the controller has completed an &fw_cdev_iso_packet
-  * with the %FW_CDEV_ISO_INTERRUPT bit set.  In the receive case, the headers
-  * stripped of all packets up until and including the interrupt packet are
-- * returned in the @header field.
-+ * returned in the @header field.  The amount of header data per packet is as
-+ * specified at iso context creation by &fw_cdev_create_iso_context.header_size.
-+ *
-+ * In version 1 of this ABI, header data consisted of the 1394 isochronous
-+ * packet header, followed by quadlets from the packet payload if
-+ * &fw_cdev_create_iso_context.header_size > 4.
-+ *
-+ * In version 2 of this ABI, header data consist of the 1394 isochronous
-+ * packet header, followed by a timestamp quadlet if
-+ * &fw_cdev_create_iso_context.header_size > 4, followed by quadlets from the
-+ * packet payload if &fw_cdev_create_iso_context.header_size > 8.
-+ *
-+ * Behaviour of ver. 1 of this ABI is no longer available since ABI ver. 2.
-+ *
-+ * Format of 1394 iso packet header: 16 bits len, 2 bits tag, 6 bits channel,
-+ * 4 bits tcode, 4 bits sy, in big endian byte order.  Format of timestamp:
-+ * 16 bits invalid, 3 bits cycleSeconds, 13 bits cycleCount, in big endian byte
-+ * order.
-  */
- struct fw_cdev_event_iso_interrupt {
- 	__u64 closure;
-@@ -232,11 +249,13 @@ union fw_cdev_event {
- #define FW_CDEV_IOC_GET_SPEED                    _IOR('#', 0x11, struct fw_cdev_get_speed)
- #define FW_CDEV_IOC_SEND_BROADCAST_REQUEST       _IOW('#', 0x12, struct fw_cdev_send_request)
- 
--/* FW_CDEV_VERSION History
-- *
-- * 1	Feb 18, 2007:  Initial version.
-+/*
-+ * FW_CDEV_VERSION History
-+ *  1  (2.6.22)  - initial version
-+ *  2  (2.6.30)  - changed &fw_cdev_event_iso_interrupt.header if
-+ *                 &fw_cdev_create_iso_context.header_size is 8 or more
-  */
--#define FW_CDEV_VERSION		1
-+#define FW_CDEV_VERSION 2
- 
- /**
-  * struct fw_cdev_get_info - General purpose information ioctl
-@@ -417,6 +436,9 @@ struct fw_cdev_remove_descriptor {
-  *
-  * If a context was successfully created, the kernel writes back a handle to the
-  * context, which must be passed in for subsequent operations on that context.
-+ *
-+ * Note that the effect of a @header_size > 4 depends on
-+ * &fw_cdev_get_info.version, as documented at &fw_cdev_event_iso_interrupt.
-  */
- struct fw_cdev_create_iso_context {
- 	__u32 type;
-@@ -520,6 +542,9 @@ struct fw_cdev_stop_iso {
-  * The %FW_CDEV_IOC_GET_CYCLE_TIMER ioctl reads the isochronous cycle timer
-  * and also the system clock.  This allows to express the receive time of an
-  * isochronous packet as a system time with microsecond accuracy.
-+ *
-+ * @cycle_timer consists of 7 bits cycleSeconds, 13 bits cycleCount, and
-+ * 12 bits cycleOffset, in host byte order.
-  */
- struct fw_cdev_get_cycle_timer {
- 	__u64 local_time;
+ Documentation/crypto/async-tx-api.txt |   96 ++---
+ Documentation/dmaengine.txt           |    1 +
+ arch/avr32/include/asm/atmel-mci.h    |    6 +-
+ arch/avr32/mach-at32ap/at32ap700x.c   |   15 +-
+ crypto/async_tx/async_tx.c            |  350 +---------------
+ drivers/dca/dca-core.c                |    2 +-
+ drivers/dma/Kconfig                   |    2 -
+ drivers/dma/dmaengine.c               |  778 ++++++++++++++++++++++++---------
+ drivers/dma/dmatest.c                 |  129 ++----
+ drivers/dma/dw_dmac.c                 |  119 +++---
+ drivers/dma/fsldma.c                  |    5 +-
+ drivers/dma/ioat.c                    |   92 ++---
+ drivers/dma/ioat_dma.c                |   18 +-
+ drivers/dma/iop-adma.c                |   30 +--
+ drivers/dma/mv_xor.c                  |   11 +-
+ drivers/mmc/host/atmel-mci.c          |  103 ++----
+ include/linux/async_tx.h              |   17 +-
+ include/linux/dmaengine.h             |  181 +++------
+ include/linux/dw_dmac.h               |   31 +-
+ include/linux/netdevice.h             |    3 -
+ include/net/netdma.h                  |   11 -
+ net/core/dev.c                        |  149 +------
+ net/ipv4/tcp.c                        |    5 +-
+ net/ipv4/tcp_input.c                  |    2 +-
+ net/ipv4/tcp_ipv4.c                   |    2 +-
+ net/ipv6/tcp_ipv6.c                   |    2 +-
+ 26 files changed, 900 insertions(+), 1260 deletions(-)
+ create mode 100644 Documentation/dmaengine.txt
 
--- 
-Stefan Richter
--=====-==--= ---= --===
-http://arcgraph.de/sr/
+1) Channel allocation rework
+The dmaengine subsystem collects and advertises dma channels for two
+classes of users in the kernel, memory-to-memory offload and traditional
+device-to-memory DMA.  The original design was driven by the
+memory-to-memory case and is starting to show its limitations now that
+more device-to-memory DMA users are appearing.  The primary difference
+between the two classes is that memory-to-memory offload is very
+amenable to channel sharing and is tolerant of dynamic channel changes.
+Compare this to the device-to-memory case where a channel must be
+dedicated to a device and may have platform-specific reasons why it
+cannot talk to a different device.
+
+This rework allows channels to be targeted to a public mem-to-mem pool
+or be reserved for an exclusive (private) dev-to-mem allocation.
+
+2) Fixes for dmaengine
+Stephen Hemminger pointed out that the dmaengine sysfs implementation
+was broken.  It now has a proper ->release() routine.
+
+3) Fixes for ioat
+The previous channel allocation scheme covered a shutdown bug.
+
+4) Fixes for iop-adma
+Some devm fixups, and module removal enablement.
+
+These commits have been in linux-next, although I bit the bullet and
+rebased recently to cover a git-bisect breakage case.  This was caused
+by net-next-2.6.git moving a routine that was deleted by this branch.
+Thanks to Stephen Rothwell for pointing this out.
+
+There is at least 1 pending driver that depends on this code, it may
+come in a "part 2" pull request once some final comments are resolved.
+
+Thanks!
+Dan
 
