@@ -1,142 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZAGMQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbZAGMRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZAGMQQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZAGMP7
+	id S1755157AbZAGMRZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:17:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbZAGMRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:15:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41869 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752080AbZAGMP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:15:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 7/8] PCI PCIe portdrv: Simplily probe callback of service drivers
-Date: Wed, 7 Jan 2009 13:15:50 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-References: <200901042346.42723.rjw@sisk.pl> <200901042359.40195.rjw@sisk.pl>
-In-Reply-To: <200901042359.40195.rjw@sisk.pl>
+	Wed, 7 Jan 2009 07:17:04 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:33658 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751811AbZAGMRB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:17:01 -0500
+Date: Wed, 7 Jan 2009 23:16:54 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Zdenek Kabelac <zkabelac@redhat.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [BUG] INFO: inconsistent lock state
+Message-ID: <20090107121654.GA25591@gondor.apana.org.au>
+References: <4962C322.8000201@cn.fujitsu.com> <49633005.5080305@redhat.com> <4963319D.8040204@cn.fujitsu.com> <496350DF.5030500@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901071315.50625.rjw@sisk.pl>
+In-Reply-To: <496350DF.5030500@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 January 2009, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The second argument of the ->probe() callback in
-> struct pcie_port_service_driver is unnecessary and never used.
-> Remove it.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, Jan 06, 2009 at 12:38:55PM +0000, Zdenek Kabelac wrote:
+>
+> I've just tested the very latest build from git repository:
+> (commit: 238c6d54830c624f34ac9cf123ac04aebfca5013)
 
-This patch had to be rebased on top of the current linux-next branch of the
-pci-2.6 tree.
+You also need
 
-Updated patch is appended.
+commit ea319518ba3de282c13ae1cf4bf2215c5e03e67e
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Fri Dec 26 15:08:55 2008 +0100
 
-Thanks,
-Rafael
+    locking, percpu counters: introduce separate lock classes
+    
+    Impact: fix lockdep false positives
+    
+    Classify percpu_counter instances similar to regular lock objects --
+    that is, per instantiation site.
+    
+    The networking code has increased its use of percpu_counters, which
+    leads to false positives if they are treated as a single class.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
----
-Subject: PCI PCIe portdrv: Simplily probe callback of service drivers (rev. 2)
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-The second argument of the ->probe() callback in
-struct pcie_port_service_driver is unnecessary and never used.
-Remove it.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/hotplug/pciehp_acpi.c |    3 +--
- drivers/pci/hotplug/pciehp_core.c |    2 +-
- drivers/pci/pcie/aer/aerdrv.c     |    6 ++----
- drivers/pci/pcie/portdrv_core.c   |    2 +-
- include/linux/pcieport_if.h       |    3 +--
- 5 files changed, 6 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/include/linux/pcieport_if.h
-===================================================================
---- linux-2.6.orig/include/linux/pcieport_if.h
-+++ linux-2.6/include/linux/pcieport_if.h
-@@ -57,8 +57,7 @@ static inline void* get_service_data(str
- 
- struct pcie_port_service_driver {
- 	const char *name;
--	int (*probe) (struct pcie_device *dev, 
--		const struct pcie_port_service_id *id);
-+	int (*probe) (struct pcie_device *dev);
- 	void (*remove) (struct pcie_device *dev);
- 	int (*suspend) (struct pcie_device *dev, pm_message_t state);
- 	int (*resume) (struct pcie_device *dev);
-Index: linux-2.6/drivers/pci/pcie/aer/aerdrv.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/aer/aerdrv.c
-+++ linux-2.6/drivers/pci/pcie/aer/aerdrv.c
-@@ -38,8 +38,7 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
- MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_LICENSE("GPL");
- 
--static int __devinit aer_probe (struct pcie_device *dev,
--	const struct pcie_port_service_id *id );
-+static int __devinit aer_probe (struct pcie_device *dev);
- static void aer_remove(struct pcie_device *dev);
- static int aer_suspend(struct pcie_device *dev, pm_message_t state)
- {return 0;}
-@@ -207,8 +206,7 @@ static void aer_remove(struct pcie_devic
-  *
-  * Invoked when PCI Express bus loads AER service driver.
-  **/
--static int __devinit aer_probe (struct pcie_device *dev,
--				const struct pcie_port_service_id *id )
-+static int __devinit aer_probe (struct pcie_device *dev)
- {
- 	int status;
- 	struct aer_rpc *rpc;
-Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_core.c
-@@ -461,7 +461,7 @@ static int pcie_port_probe_service(struc
- 		return -ENODEV;
- 
- 	pciedev = to_pcie_device(dev);
--	status = driver->probe(pciedev, driver->id_table);
-+	status = driver->probe(pciedev);
- 	if (!status) {
- 		dev_printk(KERN_DEBUG, dev, "service driver %s loaded\n",
- 			driver->name);
-Index: linux-2.6/drivers/pci/hotplug/pciehp_core.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/pciehp_core.c
-+++ linux-2.6/drivers/pci/hotplug/pciehp_core.c
-@@ -399,7 +399,7 @@ static int get_cur_bus_speed(struct hotp
- 	return 0;
- }
- 
--static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_id *id)
-+static int pciehp_probe(struct pcie_device *dev)
- {
- 	int rc;
- 	struct controller *ctrl;
-Index: linux-2.6/drivers/pci/hotplug/pciehp_acpi.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/pciehp_acpi.c
-+++ linux-2.6/drivers/pci/hotplug/pciehp_acpi.c
-@@ -82,8 +82,7 @@ static int __initdata acpi_slot_detected
- static struct list_head __initdata dummy_slots = LIST_HEAD_INIT(dummy_slots);
- 
- /* Dummy driver for dumplicate name detection */
--static int __init dummy_probe(struct pcie_device *dev,
--			      const struct pcie_port_service_id *id)
-+static int __init dummy_probe(struct pcie_device *dev)
- {
- 	int pos;
- 	u32 slot_cap;
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
