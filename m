@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbZAGEnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbZAGErp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbZAGEnA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 23:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbZAGEmp
+	id S1756880AbZAGErp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 23:47:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZAGEre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 23:42:45 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:35942 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754649AbZAGEmo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 23:42:44 -0500
-Date: Wed, 7 Jan 2009 15:42:32 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090107044232.GA22218@gondor.apana.org.au>
-References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106183704.GC32491@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106183704.GC32491@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 6 Jan 2009 23:47:34 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43723 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753306AbZAGEre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 23:47:34 -0500
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       linux-usb@vger.kernel.org,
+       linux-kernel Kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Message-Id: <F4CBCB9E-5C58-4F9B-B0B2-623C81DF1339@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Greg Kroah-Hartman <greg@kroah.com>
+In-Reply-To: <20081225141402.GA30689@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 0/6] USB: Fixes for fsl_qe_udc driver
+Date: Tue, 6 Jan 2009 22:44:13 -0600
+References: <20081225141402.GA30689@oksana.dev.rtsoft.ru>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 06:37:05PM +0000, Jens Axboe wrote:
-> 
-> I'll give this a spin tomorrow as well. A hunch tells me that this is
-> likely a page reuse issue, that splice is getting the reference to the
-> buffer dropped before the data has really been transmitted. IOW, the
-> page is likely fine reaching the ->sendpage() bit, but will be reused
-> before the data has actually been transmitted. So once you get that far,
-> other random data from that page is going out.
 
-I see the problem.
+On Dec 25, 2008, at 8:14 AM, Anton Vorontsov wrote:
 
-The socket pipes in net/core/skbuff.c use references on the skb
-to hold down the memory in skb->head as well as the pages in the
-skb.
+> Hi all,
+>
+> Just resending some fixes that seem to be lost...
 
-Unfortunately, once the pipe is fed into sendpage we only use
-page reference counting to pin down the memory.  So as soon as
-sendpage returns we drop the ref count on the skb, thus freeing
-the memory in skb->head, which is yet to be transmitted.
+Greg,
 
-Moral: Using page reference counts on skb->head is wrong.
+What happened w/this patch set?
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+- k
