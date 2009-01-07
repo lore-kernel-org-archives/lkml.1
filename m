@@ -1,93 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZAGV3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbZAGVc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZAGV3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 16:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZAGV3Q
+	id S1761505AbZAGVc6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZAGVcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:29:16 -0500
-Received: from mx2.suse.de ([195.135.220.15]:59190 "EHLO mx2.suse.de"
+	Wed, 7 Jan 2009 16:32:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41272 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbZAGV3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:29:14 -0500
-Date: Wed, 7 Jan 2009 13:28:01 -0800
-From: Greg KH <gregkh@suse.de>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, david-b@pacbell.net,
-       khilman@deeprootsystems.com
-Subject: Re: [GIT PATCH] USB patches for 2.6-git
-Message-ID: <20090107212801.GA21012@suse.de>
-References: <20090107192438.GA18146@kroah.com> <49650F2C.9030809@ru.mvista.com>
+	id S1753476AbZAGVco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:32:44 -0500
+Date: Wed, 7 Jan 2009 22:32:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090107213222.GE4597@elte.hu>
+References: <1231281801.11687.125.camel@twins> <1231283778.11687.136.camel@twins> <1231329783.11687.287.camel@twins> <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain> <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain> <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com> <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <20090107210923.GV2002@parisc-linux.org> <alpine.LFD.2.00.0901071314490.3057@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49650F2C.9030809@ru.mvista.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.2.00.0901071314490.3057@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 11:23:08PM +0300, Sergei Shtylyov wrote:
-> Hello.
->
-> Greg KH wrote:
->
->> Here is the set of USB patches for the 2.6.29-rc1 merge.
->>
->> They also include the wimax patches, because of a dependancy on a change
->> in the USB core to support one of the wimax drivers.  The wimax patch
->> set has been acked by the network maintainers already, and they agreed
->> that it should go through the USB tree to you.
->>
->> Other than wimax, the patchset includes:
->> 	- some new USB drivers (gadget, host, and serial)
->> 	- USB OTG (on-the-go) device support
->> 	- lots of device id updates
->> 	- renaming in the i2c drivers to move into the proper location
->> 	  in the usb tree
->> 	- usb-storage quirk handling cleaned up and reworked
->> 	- sped up the option wireless usb driver speed.
->> 	- removal of info() and warn() usb macros now that the non-usb	  portions 
->> of the kernel have removed their usage of them.
->> 	- lots of minor tweaks and reworks.
->>
->> Please pull from:
->> 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
->>
->> All of these patches have been in the -next and -mm releases for a while.
->>
->> The full patches will be sent to the linux-usb mailing list, if anyone
->> wants to see them.
->>
->> thanks,
->>
->> greg k-h
->>   
->
-> [...]
->
->> Kevin Hilman (1):
->>       USB: musb: build fixes for DaVinci
->>   
->
->   NAK this patch. I and David Brownell have asked Greg to pull this totally 
-> broken patch (broken while in MUSB tree, the original patch was sane) from 
-> his tree and all to no avail...
-> The patch doesn't fix anything and only adds more breakage as it duplicates 
-> musb_platform_set_mode().
 
-{sigh}
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I'll fix this up after Linus pulls, sorry about that.
+> 
+> 
+> On Wed, 7 Jan 2009, Matthew Wilcox wrote:
+> > 
+> > I appreciate this is sample code, but using __get_user() on
+> > non-userspace pointers messes up architectures which have separate
+> > user/kernel spaces (eg the old 4G/4G split for x86-32).  Do we have an
+> > appropriate function for kernel space pointers?  Is this a good reason
+> > to add one?
+> 
+> Yes, you're right. 
+> 
+> We could do the whole "oldfs = get_fs(); set_fs(KERNEL_DS); .. 
+> set_fs(oldfs);" crud, but it would probably be better to just add an 
+> architected accessor. Especially since it's going to generally just be a
+> 
+> 	#define get_kernel_careful(val,p) __get_user(val,p)
+> 
+> for most architectures.
+> 
+> We've needed that before (and yes, we've simply mis-used __get_user() on 
+> x86 before rather than add it).
 
->   I am dissatisfied how MUSB patches have been handled in general -- this 
-> is not the first breakage, and the valid patches have been lost, so DaVinci 
-> MUSB code keeps being broken since early 2.6.27-rc's (!) up to this time...
+for the oldfs stuff we already have probe_kernel_read(). OTOH, that 
+involves pagefault_disable() which is an atomic op, so 
+__get_user_careful() should be much more lightweight - and we already know 
+that the memory range at least _used to_ be a valid kernel address.
 
-I agree, there's a big disconnect somewhere, I'm sorry about that.  I
-now see David's request to change this patch in my archives :(
+(Theoretical race: with memory hotplug that kernel pointer address could 
+have gotten unmapped and we could get device memory there - with 
+side-effects if accessed. Wont happen in practice.)
 
-thanks,
-
-greg k-h
+	Ingo
