@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932365AbZAGWsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762652AbZAGWtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932365AbZAGWsq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:48:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbZAGWsS
+	id S1762652AbZAGWtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbZAGWs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:48:18 -0500
-Received: from mail91.analogic.com ([12.187.86.31]:48776 "EHLO
-	mail01.analogic.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757521AbZAGWsP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:48:15 -0500
-X-Greylist: delayed 1485 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Jan 2009 17:48:15 EST
-X-AuditID: 0a770115-ac9eebb000000e72-18-49652b628fbd
+	Wed, 7 Jan 2009 17:48:59 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51557 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754339AbZAGWs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:48:58 -0500
+Date: Wed, 7 Jan 2009 14:48:57 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Eric Sesterhenn <snakebyte@gmx.de>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, josh@freedesktop.org, dipankar@in.ibm.com
+Subject: Re: [BUG] NULL pointer deref with rcutorture
+Message-ID: <20090107224857.GK6900@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090105203153.GC11244@alice> <20090105221836.GT6959@linux.vnet.ibm.com> <20090106002912.GA21071@linux.vnet.ibm.com> <20090106021506.GA23052@linux.vnet.ibm.com> <20090106074707.GA5975@alice> <20090106124809.GC7655@linux.vnet.ibm.com> <20090107194635.GA17174@linux.vnet.ibm.com> <20090107201904.GA32513@alice> <20090107220646.GH6900@linux.vnet.ibm.com> <20090107223412.GB32513@alice>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 07 Jan 2009 22:23:09.0153 (UTC) FILETIME=[85029D10:01C97116]
-Content-class: urn:content-classes:message
-Subject: Inconsistent disk state when creating paritions
-Date: Wed, 7 Jan 2009 17:23:09 -0500
-Message-ID: <Pine.LNX.4.61.0901071715070.9551@chaos.analogic.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-thread-topic: Inconsistent disk state when creating paritions
-thread-index: AclxFoUJ5Hrrt45OSXGOvmyxN9wc3w==
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107223412.GB32513@alice>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Attempting to use mkfs immediately after creating
-partitions using sfdisk, (in the same shell-script)
-fails with all kernels I have tried. The partition
-information doesn't get updated for several seconds!
+On Wed, Jan 07, 2009 at 11:34:12PM +0100, Eric Sesterhenn wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Wed, Jan 07, 2009 at 09:19:04PM +0100, Eric Sesterhenn wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > On Tue, Jan 06, 2009 at 04:48:09AM -0800, Paul E. McKenney wrote:
+> > > > > On Tue, Jan 06, 2009 at 08:47:07AM +0100, Eric Sesterhenn wrote:
+> > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > > On Mon, Jan 05, 2009 at 04:29:12PM -0800, Paul E. McKenney wrote:
+> > > > > > > > On Mon, Jan 05, 2009 at 02:18:36PM -0800, Paul E. McKenney wrote:
+> > > > > > > > I will see what I can find from this.
+> > > > > > > 
+> > > > > > > Hello, Eric,
+> > > > > > > 
+> > > > > > > Just for grins, I built the 2.6.28 kernel/rcutorture.c on b58602a.  It
+> > > > > > > insmoded and rmmoded without errors.
+> > > > > > > 
+> > > > > > > Could you please try this on your setup?  I have attached this file in
+> > > > > > > case that helps.
+> > > > > > 
+> > > > > > works like a charm
+> > > > > 
+> > > > > Well, that certainly tells me where the bug lies.  ;-)
+> > > > > 
+> > > > > Thank you for all your hard work on this, I should have a patch soon.
+> > > > 
+> > > > And here it is, against the original version of rcutorture.c (revert
+> > > > all of my previous patches against rcutorture.c).  I am also attaching
+> > > > the resulting rcutorture.c, if that makes things more convenient for you.
+> > > > 
+> > > > Could you please fire this up and see if it fixes the rmmod-time bug
+> > > > that you located?
+> > > 
+> > > it does fix the bug, thanks for your work
+> > 
+> > Thank you very much for finding this one, bearing with me during the
+> > debug process, and testing it!  I will post the patch with credit to you.
+> > 
+> > Does this fix all of the problems that you observed, or is there still
+> > some breakage?
+> 
+> It fixes everything i saw. Thanks.
 
-In every case, with both ext2 and ext3 file-systems,
-I can create them manually or I can sleep in the
-shell-script. However, I don't think this problem
-should exist.
+Woo-hoo!!!  ;-)
 
-The problem was first discovered with old-fashioned
-IDE disks. I don't have any spare SATA drives to
-see if the problem exists there. I note that sfdisk
-says it is re-reading to update the parition information.
-
-
-Does anybody know about this or care?
-
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.25.17 on an i686 machine (4784.32 Gimps).
-My book : http://www.AbominableFirebug.com/
-.
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged. Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+							Thanx, Paul
