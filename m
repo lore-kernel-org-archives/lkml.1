@@ -1,248 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbZAGPBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZAGPCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759204AbZAGPBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbZAGPBU
+	id S1759274AbZAGPCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbZAGPB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:01:20 -0500
-Received: from mga09.intel.com ([134.134.136.24]:59125 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751572AbZAGPBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:01:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,226,1231142400"; 
-   d="scan'208";a="479649454"
-Date: Wed, 7 Jan 2009 22:54:23 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/6] VT-d: parse ATSR in DMA Remapping Reporting Structure
-Message-ID: <20090107145423.GC4697@yzhao12-linux.sh.intel.com>
-References: <20090107144716.GA4697@yzhao12-linux.sh.intel.com>
+	Wed, 7 Jan 2009 10:01:57 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:34674
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753065AbZAGPB4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 10:01:56 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: document ext3 requirements
+Date: Wed, 7 Jan 2009 05:59:02 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
+Cc: Theodore Tso <tytso@mit.edu>, "Alexander E. Patrakov" <patrakov@gmail.com>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org
+References: <20090103123813.GA1512@ucw.cz> <20090104183834.GB17558@mit.edu> <20090105114329.7973057b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090105114329.7973057b@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090107144716.GA4697@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901070559.03359.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parse the Root Port ATS Capability Reporting Structure in DMA Remapping
-Reporting Structure ACPI table.
+On Monday 05 January 2009 05:43:29 Alan Cox wrote:
+> > Huh?  I've never heard an assertion that disabling the write cache (I
+> > assume you mean using write-through caching as opposed to write-back
+> > caching), shortens the lifespan of disk drives.  Aggressive battery
+>
+> Thats what I was told by a disk vendor - simply because the drive makes a
+> lot more mechanical movements and writes.
 
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+It certainly sounds like less write cacheing would shorten the lifespan of 
+flash devices...
 
----
- drivers/pci/dmar.c          |  114 ++++++++++++++++++++++++++++++++++++++++--
- include/linux/dmar.h        |    9 +++
- include/linux/intel-iommu.h |    1 +
- 3 files changed, 118 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index f5a662a..f2859d1 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -254,6 +254,86 @@ rmrr_parse_dev(struct dmar_rmrr_unit *rmrru)
- 	}
- 	return ret;
- }
-+
-+LIST_HEAD(dmar_atsr_units);
-+
-+static int __init dmar_parse_one_atsr(struct acpi_dmar_header *hdr)
-+{
-+	struct acpi_dmar_atsr *atsr;
-+	struct dmar_atsr_unit *atsru;
-+
-+	atsr = container_of(hdr, struct acpi_dmar_atsr, header);
-+	atsru = kzalloc(sizeof(*atsru), GFP_KERNEL);
-+	if (!atsru)
-+		return -ENOMEM;
-+
-+	atsru->hdr = hdr;
-+	atsru->include_all = atsr->flags & 0x1;
-+
-+	if (atsru->include_all)
-+		list_add_tail(&atsru->list, &dmar_atsr_units);
-+	else
-+		list_add(&atsru->list, &dmar_atsr_units);
-+
-+	return 0;
-+}
-+
-+static int __init atsr_parse_dev(struct dmar_atsr_unit *atsru)
-+{
-+	int ret = 0;
-+	struct acpi_dmar_atsr *atsr;
-+
-+	atsr = container_of(atsru->hdr, struct acpi_dmar_atsr, header);
-+	if (!atsru->include_all)
-+		ret = dmar_parse_dev_scope((void *)(atsr + 1),
-+				(void *)atsr + atsr->header.length,
-+				&atsru->devices_cnt, &atsru->devices,
-+				atsr->segment);
-+
-+	if (ret || !(atsru->include_all || atsru->devices_cnt)) {
-+		list_del(&atsru->list);
-+		kfree(atsru);
-+	}
-+
-+	return ret;
-+}
-+
-+int dmar_find_matched_atsr_unit(struct pci_dev *dev)
-+{
-+	int i;
-+	struct pci_bus *bus;
-+	struct acpi_dmar_atsr *atsr;
-+	struct dmar_atsr_unit *atsru;
-+
-+	list_for_each_entry(atsru, &dmar_atsr_units, list) {
-+		atsr = container_of(atsru->hdr, struct acpi_dmar_atsr, header);
-+		if (atsr->segment == pci_domain_nr(dev->bus))
-+			goto found;
-+	}
-+
-+	return 0;
-+
-+found:
-+	for (bus = dev->bus; bus; bus = bus->parent) {
-+		struct pci_dev *bridge = bus->self;
-+
-+		if (!bridge || !bridge->is_pcie ||
-+		    bridge->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE)
-+			return 0;
-+
-+		if (bridge->pcie_type == PCI_EXP_TYPE_ROOT_PORT) {
-+			for (i = 0; i < atsru->devices_cnt; i++)
-+				if (atsru->devices[i] == bridge)
-+					return 1;
-+			break;
-+		}
-+	}
-+
-+	if (atsru->include_all)
-+		return 1;
-+
-+	return 0;
-+}
- #endif
- 
- static void __init
-@@ -261,22 +341,28 @@ dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
- {
- 	struct acpi_dmar_hardware_unit *drhd;
- 	struct acpi_dmar_reserved_memory *rmrr;
-+	struct acpi_dmar_atsr *atsr;
- 
- 	switch (header->type) {
- 	case ACPI_DMAR_TYPE_HARDWARE_UNIT:
--		drhd = (struct acpi_dmar_hardware_unit *)header;
-+		drhd = container_of(header, struct acpi_dmar_hardware_unit,
-+				    header);
- 		printk (KERN_INFO PREFIX
--			"DRHD (flags: 0x%08x)base: 0x%016Lx\n",
--			drhd->flags, (unsigned long long)drhd->address);
-+			"DRHD base: %#016Lx flags: %#x\n",
-+			(unsigned long long)drhd->address, drhd->flags);
- 		break;
- 	case ACPI_DMAR_TYPE_RESERVED_MEMORY:
--		rmrr = (struct acpi_dmar_reserved_memory *)header;
--
-+		rmrr = container_of(header, struct acpi_dmar_reserved_memory,
-+				    header);
- 		printk (KERN_INFO PREFIX
--			"RMRR base: 0x%016Lx end: 0x%016Lx\n",
-+			"RMRR base: %#016Lx end: %#016Lx\n",
- 			(unsigned long long)rmrr->base_address,
- 			(unsigned long long)rmrr->end_address);
- 		break;
-+	case ACPI_DMAR_TYPE_ATSR:
-+		atsr = container_of(header, struct acpi_dmar_atsr, header);
-+		printk(KERN_INFO PREFIX "ATSR flags: %#x\n", atsr->flags);
-+		break;
- 	}
- }
- 
-@@ -341,6 +427,11 @@ parse_dmar_table(void)
- 			ret = dmar_parse_one_rmrr(entry_header);
- #endif
- 			break;
-+		case ACPI_DMAR_TYPE_ATSR:
-+#ifdef CONFIG_DMAR
-+			ret = dmar_parse_one_atsr(entry_header);
-+#endif
-+			break;
- 		default:
- 			printk(KERN_WARNING PREFIX
- 				"Unknown DMAR structure type\n");
-@@ -409,11 +500,19 @@ int __init dmar_dev_scope_init(void)
- #ifdef CONFIG_DMAR
- 	{
- 		struct dmar_rmrr_unit *rmrr, *rmrr_n;
-+		struct dmar_atsr_unit *atsr, *atsr_n;
-+
- 		list_for_each_entry_safe(rmrr, rmrr_n, &dmar_rmrr_units, list) {
- 			ret = rmrr_parse_dev(rmrr);
- 			if (ret)
- 				return ret;
- 		}
-+
-+		list_for_each_entry_safe(atsr, atsr_n, &dmar_atsr_units, list) {
-+			ret = atsr_parse_dev(atsr);
-+			if (ret)
-+				return ret;
-+		}
- 	}
- #endif
- 
-@@ -446,6 +545,9 @@ int __init dmar_table_init(void)
- #ifdef CONFIG_DMAR
- 	if (list_empty(&dmar_rmrr_units))
- 		printk(KERN_INFO PREFIX "No RMRR found\n");
-+
-+	if (list_empty(&dmar_atsr_units))
-+		printk(KERN_INFO PREFIX "No ATSR found\n");
- #endif
- 
- #ifdef CONFIG_INTR_REMAP
-diff --git a/include/linux/dmar.h b/include/linux/dmar.h
-index f284407..d3a1234 100644
---- a/include/linux/dmar.h
-+++ b/include/linux/dmar.h
-@@ -142,6 +142,15 @@ struct dmar_rmrr_unit {
- 
- #define for_each_rmrr_units(rmrr) \
- 	list_for_each_entry(rmrr, &dmar_rmrr_units, list)
-+
-+struct dmar_atsr_unit {
-+	struct list_head list;		/* list of ATSR units */
-+	struct acpi_dmar_header *hdr;	/* ACPI header */
-+	struct pci_dev **devices;	/* target devices */
-+	int devices_cnt;		/* target device count */
-+	u8 include_all:1;		/* include all ports */
-+};
-+
- /* Intel DMAR  initialization functions */
- extern int intel_iommu_init(void);
- #else
-diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
-index c4f6c10..5323ad9 100644
---- a/include/linux/intel-iommu.h
-+++ b/include/linux/intel-iommu.h
-@@ -316,6 +316,7 @@ static inline void __iommu_flush_cache(
- }
- 
- extern struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev);
-+extern int dmar_find_matched_atsr_unit(struct pci_dev *dev);
- 
- extern int alloc_iommu(struct dmar_drhd_unit *drhd);
- extern void free_iommu(struct intel_iommu *iommu);
--- 
-1.5.6.4
-
+Rob
