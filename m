@@ -1,121 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZAGGsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZAGGza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbZAGGsf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 01:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbZAGGs0
+	id S1754277AbZAGGza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 01:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbZAGGzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 01:48:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:4848 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbZAGGsY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 01:48:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=kMGVojpGh7a6qqwqyQU+LwU77YAL7VWp9SKg+Npxua3tL+tkM8rDxihE3thraTLH3E
-         7deF8K+slEuJBL0MXlF0Fw41Hfxt/qsTY4Kbz4NxajyiphBXnWXvN2u2J/g+k6kQuYdS
-         95d1OWkMehyT+9jI1+FyO2ynu4aBTNyLHiEBw=
-Message-ID: <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>
-Date: Wed, 7 Jan 2009 08:48:22 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [ 286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
-Cc: linux-kernel@vger.kernel.org, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <4963F368.7080909@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 01:55:21 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:37894 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbZAGGzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 01:55:20 -0500
+Date: Wed, 7 Jan 2009 07:55:17 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Remove needless lock and list in vmap
+Message-ID: <20090107065517.GB21629@wotan.suse.de>
+References: <20090107054713.GA1416@barrios-desktop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4963F368.7080909@gmail.com>
-X-Google-Sender-Auth: 5c7368c12d508fbf
+In-Reply-To: <20090107054713.GA1416@barrios-desktop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Justin,
+On Wed, Jan 07, 2009 at 02:47:13PM +0900, MinChan Kim wrote:
+> Anyone don't use vmap's dirty_list.
+> I am not sure this is thing Nick's future work on purpose.
+> If it is a dummy, we can remove dirty list and related codes
+> to handle list and locking.
+> 
+> Also, In free_vmap_block, we don't have to check empty free_list.
+> That's becuase before calling free_vmap_block, vb_free always checks
+> empty of vb->free_list.
+> 
+> Now except vb_free, Anywhere don't call free_vmap_block.
+> so, we can remove that check and locking.
+> 
+> If it is nick's intention to work in future, please, ignore this patch. 
 
-On Wed, Jan 7, 2009 at 2:12 AM, Justin P. Mattock
-<justinmattock@gmail.com> wrote:
-> With pulling git today I'm unable to shut the machine down completely.
-> (the system just sits there with the message on the screen);
->
-> * will now halt
-> [  286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
+It was going to be an attempt to optimise flushing a bit, but I never
+finished writing the code. Either way, it doesn't belong upstream until
+time as it is needed, so your patch is good.
 
-That looks like use-after-free in __stop_machine() so lets cc Rusty.
-If you want, you can convert the oops location into human-readable
-form. Just search for "GDB" in Documentation/BUG-HUNTING for
-instructions how to do that. And don't forget to send your .config.
+Can you just put a BUG_ON(!list_empty(&vb->free_list)); in free_vmap_block?
+Then add Acked-by: Nick Piggin <npiggin@suse.de>
 
-> [  286.548940] IP: [<c0150ca4>] __stop_machine+0x88/0xe3
-> [  286.550598] Oops: 0002 [#1] SMP
-> [  286.552206] last sysfs file: /sys/block/sda/removeable
-> [  286.553844] Modules linked in: hidp radeon drm agpgart btusb rfcomm bnep
-> sco l2cap bluetooth fan battery container ipt_LOG xt_limit xt_tcpudp
-> xt_state ipt_addrtype nf_nat_irc nf_conntrack_irc nf_nat_ftp nf_nat
-> nf_conntrack_ftp ipmi_watchdog ipmi_msghandler uvcvideo isight_firmware
-> uinput arpt_mangle arptable_filter arp_tables nf_conntrack_ipv4 nf_conntrack
-> nf_defrag_ipv4 iptable_mangle iptable_filter ip_tables x_tables coretemp
-> eeprom acpi_cpufreq cpufreq_powersave cpufreq_performance cpufreq_ondemand
-> cpufreq_conservative appletouch snd_had_codec_idt ohci1394 ehci_hcd
-> snd_hda_intel snd_hda_codec thermal ath9k uhci_hcd ieee1394 joydev pata_acpi
-> snd_hwdep snd_pcm snd_page_alloc video ac button processor applesmc evdev
-> [  286.560580]
-> [  286.560580] Pid: 3273, comm: halt Not tainted (2.6.28-06127-g238c6d5 #1)
-> MacBookPro2,2
-> [  286.560580] EIP: 0060:[<c0150ca4>] EFLAGS: 00010293 CPU: 0
-> [  286.560580] EIP: is at __stop_machine+0x88/0xe3
-> [  286.560580] EAX: 6b6b6b6b EBX: 00000000 ECX: 6b6b6b6b EDX: 00000000
-> [  286.560580] ESI: c054abe0 EDI: c03d03a4 EBP: f1a29e54 ESP: f1a29e44
-> [  286.560580]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> [  286.560580] Process halt (pid: 3273, ti=f1a28000 task=f4530f30
-> task.ti=f1a28000)
-> [  286.560580] Stack:
-> [  286.560580] f1a29e60 c054abe0 00000001 00000010 f1a29e7c c03d04e4
-> ffffffea 00000010
-> [  286.560580] 00000001 00000003 00000022 00000001 4321fedc c054abe0
-> f1a29e94 c012a57e
-> [  286.560580] 00000000 ffffffff 4321fedc 28121969 f1a29e9c c01360c0
-> f1a29fb0 c0136301
-> [  286.560580] Call Trace:
-> [  286.560580]  [<c03d04e4>] ? _cpu_down+0x10f/0x234
-> [  286.560580]  [<c012a57e>] ? disable_nonboot_cpus+0x58/0xdc
-> [  286.560580]  [<c01360c0>] ? kernel_poweroff+0x22/0x39
-> [  286.560580]  [<c0136301>] ? sys_reboot+0xde/0x14c
-> [  286.560580]  [<c01331b2>] ? complete_signal+0x179/0x191
-> [  286.560580]  [<c0133396>] ? send_signal+0x1cc/0x1e1
-> [  286.560580]  [<c03de418>] ? _spin_unlock_irqrestore+0x2d/0x3c
-> [  286.560580]  [<c0133b65>] ? group_send_signal_info+0x58/0x61
-> [  286.560580]  [<c0133b9e>] ? kill_pid_info+0x30/0x3a
-> [  286.560580]  [<c0133d49>] ? sys_kill+0x75/0x13a
-> [  286.560580]  [<c01a06cb>] ? mntput_no_expire+ox1f/0x101
-> [  286.560580]  [<c019b3b3>] ? dput+0x1e/0x105
-> [  286.560580]  [<c018ef87>] ?  __fput+0x150/0x158
-> [  286.560580]  [<c0157abf>] ? audit_syscall_entry+0x137/0x159
-> [  286.560580]  [<c010329f>] ? sysenter_do_call+0x12/0x34
-> [  286.560580] Code: c7 05 10 06 62 c0 00 00 00 00 a3 f4 05 62 c0 c7 05 ec
-> 05 62 c0 01 00 00 00 83 cb ff eb 2d a1 1c 06 62 c0 f7 d0 8b 0c 98 8d 41 04
-> <c7> 01 00 00 00 00 89 41 04 89 41 08 c7 41 0c ff 0c 15 c0 89 d8
-> [  286.560580] EIP: [<c0150ca4>] __stop_machine+0x88/0xe3 SS:ESP
-> 0068:f1a29e44
-> [  286.639215] ---[ end trace 5b080c1ab14203ae ] ---
-> Segmentation fault
->
-> after this message appears, if I hold down the start button
-> the system shuts off after a few seconds.
-> (BTW hopefully the number are correct,
-> manually writing this down, is a bit of a pain);
->
-> regards;
->
-> Justin P. Mattock
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Thanks,
+Nick
+
+> 
+> Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+> ---
+>  mm/vmalloc.c |   19 ++-----------------
+>  1 files changed, 2 insertions(+), 17 deletions(-)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 1ddb77b..1f79883 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -629,10 +629,7 @@ struct vmap_block {
+>  	DECLARE_BITMAP(alloc_map, VMAP_BBMAP_BITS);
+>  	DECLARE_BITMAP(dirty_map, VMAP_BBMAP_BITS);
+>  	union {
+> -		struct {
+> -			struct list_head free_list;
+> -			struct list_head dirty_list;
+> -		};
+> +		struct list_head free_list;
+>  		struct rcu_head rcu_head;
+>  	};
+>  };
+> @@ -699,7 +696,6 @@ static struct vmap_block *new_vmap_block(gfp_t gfp_mask)
+>  	bitmap_zero(vb->alloc_map, VMAP_BBMAP_BITS);
+>  	bitmap_zero(vb->dirty_map, VMAP_BBMAP_BITS);
+>  	INIT_LIST_HEAD(&vb->free_list);
+> -	INIT_LIST_HEAD(&vb->dirty_list);
+>  
+>  	vb_idx = addr_to_vb_idx(va->va_start);
+>  	spin_lock(&vmap_block_tree_lock);
+> @@ -730,13 +726,6 @@ static void free_vmap_block(struct vmap_block *vb)
+>  	struct vmap_block *tmp;
+>  	unsigned long vb_idx;
+>  
+> -	spin_lock(&vb->vbq->lock);
+> -	if (!list_empty(&vb->free_list))
+> -		list_del(&vb->free_list);
+> -	if (!list_empty(&vb->dirty_list))
+> -		list_del(&vb->dirty_list);
+> -	spin_unlock(&vb->vbq->lock);
+> -
+>  	vb_idx = addr_to_vb_idx(vb->va->va_start);
+>  	spin_lock(&vmap_block_tree_lock);
+>  	tmp = radix_tree_delete(&vmap_block_tree, vb_idx);
+> @@ -820,11 +809,7 @@ static void vb_free(const void *addr, unsigned long size)
+>  
+>  	spin_lock(&vb->lock);
+>  	bitmap_allocate_region(vb->dirty_map, offset >> PAGE_SHIFT, order);
+> -	if (!vb->dirty) {
+> -		spin_lock(&vb->vbq->lock);
+> -		list_add(&vb->dirty_list, &vb->vbq->dirty);
+> -		spin_unlock(&vb->vbq->lock);
+> -	}
+> +
+>  	vb->dirty += 1UL << order;
+>  	if (vb->dirty == VMAP_BBMAP_BITS) {
+>  		BUG_ON(vb->free || !list_empty(&vb->free_list));
+> -- 
+> 1.5.4.3
