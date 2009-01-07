@@ -1,155 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbZAGOYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbZAGO1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbZAGOYi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:24:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbZAGOYa
+	id S1757923AbZAGO1w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZAGO1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:24:30 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:48058 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754229AbZAGOY3 (ORCPT
+	Wed, 7 Jan 2009 09:27:43 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:34661 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753474AbZAGO1n convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:24:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=PStU+aMFgBhxX3Zrjk2vfZcTTkRcavNJU4jCUjXvD7w+xBPLnOZbzwKoSShRbEtXII
-         +pvOTWK0QL3ESszOL7qKglepHJgg+I3GZuM6ex1g3lYbdmWN3xcJ3tK+MpyDgKsQsT1f
-         i6KL48zidkDzK560afVI8J57d7cwcflCL7J+E=
-Message-ID: <5a4c581d0901070624t6e769966t6b034b14d4732bd@mail.gmail.com>
-Date: Wed, 7 Jan 2009 15:24:26 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 09:27:43 -0500
+Message-Id: <4964CA0A.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 07 Jan 2009 14:28:10 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Al Viro" <viro@ZenIV.linux.org.uk>
+Cc: <ccache@lists.samba.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       "Sam Ravnborg" <sam@ravnborg.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [REGRESSION] Recent change to kernel spikes out
+	 ccache/distcc
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org>
+ <20090107051027.GU28946@ZenIV.linux.org.uk>
+ <49647A9E.76E4.0078.0@novell.com>
+ <20090107140328.GV28946@ZenIV.linux.org.uk>
+In-Reply-To: <20090107140328.GV28946@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From dmesg:
+>>> Al Viro <viro@ZenIV.linux.org.uk> 07.01.09 15:03 >>>
+>I do not understand two things.
+>	a) WTF would we care about ones in vmlinux, when kallsyms drops the
+>absolute ones anyway?
 
-[asuardi@sandman src]$ dmesg | grep tg3
-tg3.c:v3.97 (December 10, 2008)
-tg3 0000:02:00.0: PCI INT A -> Link[LNKA] -> GSI 11 (level, low) -> IRQ 11
-tg3 0000:02:00.0: setting latency timer to 64
-tg3 0000:02:00.0: wake-up capability disabled by ACPI
-tg3 0000:02:00.0: PME# disabled
-tg3 0000:02:00.0: firmware: requesting tigon/tg3_tso.bin
-tg3: Failed to load firmware "tigon/tg3_tso.bin"
-tg3 0000:02:00.0: PCI INT A disabled
-tg3: probe of 0000:02:00.0 failed with error -2
+The patch is not only about __crc_* - for vmlinux, this part really doesn't
+matter, but there's a significant amount of other symbols that get stripped
+from vmlinux with the second patch.
 
+>	b) is there any reason why we can't copy symbol table out of module
+>ourselves (instead of setting SHF_ALLOC on it) and trim the crap out of
+>it?  Note that __crc_... is not the only junk in there - you don't need
+>(or want) to keep the things like undefs for /proc/kallsyms purposes.
+>And modules *using* an exported symbol are more common that modules exporting
+>one...  Why not copy it at add_kallsyms() time, skipping the junk we don't
+>want anyway?
 
-But /lib/firmware/tigon/tg3_tso.bin is actually present:
+Would certainly be doable, but would seem reasonable only if it's a small
+set of easily recognizable symbols. If you look at scripts/strip-symbols,
+you may agree that it's better to do this at build time...
 
-[asuardi@sandman src]$ ls -l /lib/firmware/tigon/tg3_tso.bin
--rw-r--r-- 1 root root 7004 2009-01-06 22:58 /lib/firmware/tigon/tg3_tso.bin
+Jan
 
-
-
-Diffing the .configs one can see CONFIG_KMOD disappeared; and
- the output of the kernel build in -git8 also has the IHEX parts about
- tg3 firmware which are new (I don't recall seeing those in the last
- 1000 builds or so ;)
-
-[asuardi@sandman src]$ diff .config-2.6.28-git[78]
-3,4c3,4
-< # Linux kernel version: 2.6.28-git7
-< # Mon Jan  5 17:34:11 2009
----
-> # Linux kernel version: 2.6.28-git8
-> # Tue Jan  6 22:06:19 2009
-133d132
-< CONFIG_KMOD=y
-1324a1324
-> # CONFIG_TWL4030_CORE is not set
-1591d1590
-< CONFIG_HID_BRIGHT=y
-1595d1593
-< CONFIG_HID_DELL=y
-1602a1601
-> CONFIG_HID_NTRIG=y
-1608a1608,1609
-> # CONFIG_GREENASIA_FF is not set
-> CONFIG_HID_TOPSEED=y
-1821c1822
-< # CONFIG_OCFS2_COMPAT_JBD is not set
----
-> CONFIG_OCFS2_FS_POSIX_ACL=y
-1825c1826,1832
-< # CONFIG_QUOTA is not set
----
-> CONFIG_QUOTA=y
-> CONFIG_QUOTA_NETLINK_INTERFACE=y
-> # CONFIG_PRINT_QUOTA_WARNING is not set
-> CONFIG_QUOTA_TREE=y
-> # CONFIG_QFMT_V1 is not set
-> CONFIG_QFMT_V2=y
-> CONFIG_QUOTACTL=y
-
-
-
-[asuardi@sandman src]$ diff /tmp/make-kernel-2.6.28-git[78].out
-669a670
->   CC [M]  fs/ocfs2/blockcheck.o
-692a694,695
->   CC [M]  fs/ocfs2/quota_local.o
->   CC [M]  fs/ocfs2/quota_global.o
-693a697
->   CC [M]  fs/ocfs2/acl.o
-810a815,818
->   CC      fs/dquot.o
->   CC      fs/quota_v2.o
->   CC      fs/quota_tree.o
->   CC      fs/quota.o
-1045c1053
-< /share/src/linux-2.6.28-git7/arch/x86/include/asm/string_32.h:75:
-warning: array subscript is above array bounds
----
-> /share/src/linux-2.6.28-git8/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
-1286d1293
-<   CC      drivers/hid/hid-bright.o
-1290d1296
-<   CC      drivers/hid/hid-dell.o
-1295a1302
->   CC      drivers/hid/hid-ntrig.o
-1300a1308
->   CC      drivers/hid/hid-topseed.o
-1521c1529
-< /share/src/linux-2.6.28-git7/arch/x86/include/asm/string_32.h:75:
-warning: array subscript is above array bounds
----
-> /share/src/linux-2.6.28-git8/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
-1983d1990
-< net/rfkill/rfkill.c:59: warning: 'rfkill_led_trigger' defined but not used
-2234,2235c2241,2242
-< System is 2000 kB
-< CRC 8dd05de2
----
-> System is 2013 kB
-> CRC 37411210
-2646a2654,2656
->   IHEX    firmware/tigon/tg3.bin
->   IHEX    firmware/tigon/tg3_tso.bin
->   IHEX    firmware/tigon/tg3_tso5.bin
-
-
-So which is it, whatever the IHEX part did or the disappearance of
- CONFIG_KMOD (which is in the -git8 patch, indeed) to cause
- this issue ?
-
-Note that I don't have CONFIG_FIRMWARE_IN_KERNEL, but on
- the other hand I didn't earlier, either... and yes, CONFIG_MODULES=y.
-
-
-thanks in advance, ciao,
-
---alessandro
-
- "Sun keeps rising in the west / I keep on waking fully confused"
-
-   (The Replacements, "Within Your Reach")
