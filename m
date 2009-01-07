@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZAGGza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbZAGGzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbZAGGza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 01:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbZAGGzV
+	id S1755213AbZAGGzz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 01:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZAGGzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 01:55:21 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:37894 "EHLO mx2.suse.de"
+	Wed, 7 Jan 2009 01:55:44 -0500
+Received: from mx2.suse.de ([195.135.220.15]:37907 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbZAGGzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 01:55:20 -0500
-Date: Wed, 7 Jan 2009 07:55:17 +0100
+	id S1751596AbZAGGzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 01:55:42 -0500
+Date: Wed, 7 Jan 2009 07:55:41 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH] Remove needless lock and list in vmap
-Message-ID: <20090107065517.GB21629@wotan.suse.de>
+Message-ID: <20090107065541.GC21629@wotan.suse.de>
 References: <20090107054713.GA1416@barrios-desktop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -41,15 +41,7 @@ On Wed, Jan 07, 2009 at 02:47:13PM +0900, MinChan Kim wrote:
 > 
 > If it is nick's intention to work in future, please, ignore this patch. 
 
-It was going to be an attempt to optimise flushing a bit, but I never
-finished writing the code. Either way, it doesn't belong upstream until
-time as it is needed, so your patch is good.
-
-Can you just put a BUG_ON(!list_empty(&vb->free_list)); in free_vmap_block?
-Then add Acked-by: Nick Piggin <npiggin@suse.de>
-
-Thanks,
-Nick
+I should add, it isn't really required for -stable.
 
 > 
 > Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
