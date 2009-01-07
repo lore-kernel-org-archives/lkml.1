@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbZAGNhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZAGNjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275AbZAGNhx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbZAGNhp
+	id S1753991AbZAGNjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZAGNjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:37:45 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35400 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751168AbZAGNho (ORCPT
+	Wed, 7 Jan 2009 08:39:13 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:32381 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbZAGNjM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:37:44 -0500
-Date: Wed, 7 Jan 2009 13:37:46 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chris Adams <cmadams@hiwaay.net>
-Cc: David Newall <davidn@davidnewall.com>, linux-kernel@vger.kernel.org
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-Message-ID: <20090107133746.63d2677b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090107133306.GA1506277@hiwaay.net>
-References: <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
-	<49614835.7000505@davidnewall.com>
-	<3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>
-	<20090105143335.GC18055@mail.local.tull.net>
-	<4962BB13.7060304@davidnewall.com>
-	<20090106025125.GB28431@mail.local.tull.net>
-	<20090106094058.64c89586@lxorguk.ukuu.org.uk>
-	<496479EA.1020207@davidnewall.com>
-	<20090107095419.70b78dc7@lxorguk.ukuu.org.uk>
-	<49648163.9060007@davidnewall.com>
-	<20090107133306.GA1506277@hiwaay.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 7 Jan 2009 08:39:12 -0500
+Message-Id: <4964BEAA.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 07 Jan 2009 13:39:38 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Theodore Tso" <tytso@mit.edu>, "Sam Ravnborg" <sam@ravnborg.org>
+Cc: <ccache@lists.samba.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [REGRESSION] Recent change to kernel spikes out
+	 ccache/distcc
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org>
+ <20090107131221.GA17110@mit.edu>
+In-Reply-To: <20090107131221.GA17110@mit.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - zoneinfo is for offset from UTC, leap seconds are changes in UTC
+>>> Theodore Tso <tytso@mit.edu> 07.01.09 14:12 >>>
+>objcopy: not stripping symbol `__ksymtab_strings' because it is named in a relocation
 
-If you two would stop throwing toys at each other and read the glibc
-documentation and source you might get somewhere.
+Another thing I've never seen in any of my builds - these strings always
+get relocations against the corresponding section symbol.
 
-> - the standards say that time() returns seconds since the epoch in UTC
->   _except_ explicity NOT including leap seconds
+>So because it can't safely strip __ksymtab_strings it returns a
+>non-zero exit status, and doesn't do anything at all, and then the cp
+>command doesn't do any stripping whatso ever.
+>
+>I could fix this by patching Makefile and scripts/Makefile.modist to
+>do this instead:
+>
+># objcopy --strip-debug --wildcard --strip-symbols /usr/projects/linux/linux-2.6/scripts/strip-symbols fs/xfs/xfs.ko /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko  || (cp fs/xfs/xfs.ko /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko ; strip --strip-debug /lib/modules/2.6.28-git7/kernel/fs/xfs/xfs.ko)
 
-Glibc has timezone support for both leap second inclusive ("right" as
-it calls them) and posix time offsets.
+I'd rather insert a second objcopy attempt here with just --strip-debug.
 
-Alan
+>... but at this point, is there going to be any massive downside if I
+>just revert commit ad7a953c?  Quite frankly, it's causing me a huge
+>amount of trouble, and I'm still a bit unclear what the upside of this
+>patch is.  As near as I can tell there is *single* __crc_ symbol in
+>xfs.ko which all of this rigamorale is doing to strip out.  From what
+>I can tell, not quite doubling the compile time when fully cached by
+>ccache, causing INSTALL_MOD_STRIP to fail randomly so that the
+>installed modules are a factor of 4 larger, compromising the amount of
+>space in my root partition, is all to remove a handful of __crc_*
+>symbols from the generated .ko file?
+
+With this and the previous issue I certainly wouldn't mind this and the
+subsequent vmlinux stripping patches to be reverted, and I'd aim at
+providing an improved version for .30.
+
+>What am I missing?  Why is stripping the __crc_* symbols so
+>gosh-darned important?
+
+In a separate response I already explained what the goal here is - size
+reduction (i.e. making distro package sizes as well as foot print on disk
+smaller, thus improving the already existing stripping). And it's not only
+about __crc_*, those are just the ones that when removed have the
+biggest overall effect. And, as pointed out above, the vmlinux stripping
+patch, which has an even more significant effect as it reduces the in-
+memory kernel size when using KALLSYMS_ALL, depends on this one.
+
+I have to admit that I generally dislike the tendency for everything to
+always only grow, and hence I'm trying to find opportunities to shrink
+stuff where possible. I've got a couple of other patches in my local
+queue that also aim in that direction, plus there are a few thoughts on
+improvements beyond that.
+
+Jan
+
