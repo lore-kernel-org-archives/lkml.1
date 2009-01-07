@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761296AbZAGT7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761000AbZAGT7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761296AbZAGT7A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbZAGT6g
+	id S1761000AbZAGT7e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbZAGT6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:58:36 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:53569 "EHLO relay.sgi.com"
+	Wed, 7 Jan 2009 14:58:37 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:53571 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754262AbZAGT6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754925AbZAGT6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Jan 2009 14:58:36 -0500
-Message-Id: <20090107195833.012202000@polaris-admin.engr.sgi.com>
+Message-Id: <20090107195832.871689000@polaris-admin.engr.sgi.com>
 References: <20090107195832.265117000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 07 Jan 2009 11:58:37 -0800
+Date: Wed, 07 Jan 2009 11:58:36 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] cpumask: convert other misc kernel functions
-Content-Disposition: inline; filename=cpumask:convert-misc.patch
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Ben Hutchings <bhutchings@solarflare.com>,
+       linux-net-drivers@solarflare.com
+Subject: [PATCH 4/5] cpumask: convert drivers/net/sfc
+Content-Disposition: inline; filename=cpumask:convert-drivers_net_sfc_efx.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-Impact: use new cpumask API.
+Impact: reduce stack usage, use new cpumask API.
 
-Convert other misc kernel functions to use struct cpumask.
+Remove a cpumask from the stack.  Ben Hutchings indicated that printing
+a warning and returning 1 was acceptable for the corner case where allocation
+fails.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
+Cc: Ben Hutchings <bhutchings@solarflare.com>
+Cc: linux-net-drivers@solarflare.com
 ---
- lib/smp_processor_id.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/sfc/efx.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
---- linux-2.6.28.orig/lib/smp_processor_id.c
-+++ linux-2.6.28/lib/smp_processor_id.c
-@@ -22,7 +22,7 @@ notrace unsigned int debug_smp_processor
- 	 * Kernel threads bound to a single CPU can safely use
- 	 * smp_processor_id():
- 	 */
--	if (cpus_equal(current->cpus_allowed, cpumask_of_cpu(this_cpu)))
-+	if (cpumask_equal(&current->cpus_allowed, cpumask_of(this_cpu)))
- 		goto out;
+diff --git a/drivers/net/sfc/efx.c b/drivers/net/sfc/efx.c
+--- a/drivers/net/sfc/efx.c
++++ b/drivers/net/sfc/efx.c
+@@ -854,20 +854,27 @@ static void efx_fini_io(struct efx_nic *
+  * interrupts across them. */
+ static int efx_wanted_rx_queues(void)
+ {
+-	cpumask_t core_mask;
++	cpumask_var_t core_mask;
+ 	int count;
+ 	int cpu;
  
- 	/*
+-	cpus_clear(core_mask);
++	if (!alloc_cpumask_var(&core_mask, GFP_KERNEL)) {
++		printk(KERN_WARNING
++		       "efx.c: allocation failure, irq balancing hobbled\n");
++		return 1;
++	}
++
++	cpumask_clear(core_mask);
+ 	count = 0;
+ 	for_each_online_cpu(cpu) {
+-		if (!cpu_isset(cpu, core_mask)) {
++		if (!cpumask_test_cpu(cpu, core_mask)) {
+ 			++count;
+-			cpumask_or(&core_mask, &core_mask,
++			cpumask_or(core_mask, core_mask,
+ 				   topology_core_cpumask(cpu));
+ 		}
+ 	}
+ 
++	free_cpumask_var(core_mask);
+ 	return count;
+ }
+ 
 
 -- 
