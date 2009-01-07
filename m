@@ -1,89 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbZAGWAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbZAGWAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758570AbZAGWAK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759091AbZAGV7l
+	id S1762210AbZAGWAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:00:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbZAGV77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:59:41 -0500
-Received: from matrixpower.ru ([195.178.208.66]:50092 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762065AbZAGV7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:59:38 -0500
-Date: Thu, 8 Jan 2009 00:59:36 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Security: Implement and document RLIMIT_NETWORK.
-Message-ID: <20090107215935.GB4610@ioremap.net>
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <1231307334-9542-2-git-send-email-michael@laptop.org> <20090107114703.GB28161@ioremap.net> <20090107210758.GH3164@didacte.laptop.org>
+	Wed, 7 Jan 2009 16:59:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43745 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762174AbZAGV74 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:59:56 -0500
+Date: Wed, 7 Jan 2009 13:58:45 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <1231365115.11687.361.camel@twins>
+Message-ID: <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins> 
+ <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>  <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
+  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <1231365115.11687.361.camel@twins>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107210758.GH3164@didacte.laptop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 04:07:58PM -0500, Michael Stone (michael@laptop.org) wrote:
-> First, thanks very much for all your comments and questions.
 
-you are welcome :)
 
-> >It isn't, since it can not set rlimit, and if it can, it still can drop
-> >it.
+On Wed, 7 Jan 2009, Peter Zijlstra wrote:
 > 
-> Some sample code will probably clarify the use of my patch: 
-> 
->   http://dev.laptop.org/git?p=users/mstone/test-rlimit-network;a=blob;f=disable_network.c;hb=HEAD
-> 
-> This C code describes a 'disable_network' exec-chain script which, when run 
-> as
-> any user, irrevocably disables network access as described in my previous
-> emails. 
-> 
-> As you can see, processes start with full access to the 'network' resource 
-> and
-> may, at any time, irrevocably (modulo CAP_SYS_RESOURCE) limit their and 
-> their
-> future children's access to this resource by lowering both their soft and 
-> hard
-> limits to 0.
+> Do we really have to re-do all that code every loop?
 
-Argh, I see. That clarifies most questions indeed.
+No, you're right, we can just look up the cpu once. Which makes Andrew's 
+argument that "probe_kernel_address()" isn't in any hot path even more 
+true.
 
-> >Your code does not cover sendpage() interface (aka splice() and
-> >sendfile()) 
+> Also, it would still need to do the funny:
 > 
-> Nor should it. Applications should continue to be able to send data on any
-> sockets where were already connected and should be able to accept new
-> connections on sockets which were already bound.
-> 
-> I have done some primitive testing to ensure that the patch implements this
-> functionality by means of the test utilities provided here:
-> 
->  http://dev.laptop.org/git?p=users/mstone/test-rlimit-network;a=tree
-> 
-> Can you confirm my results?
+>  l_owner = ACCESS_ONCE(lock->owner)
+>  if (l_owner && l_owner != thread)
+>    break;
 
-Your patch adds a rlimit check into __sock_sendmsg() call, which is
-invoked via usual send() path, but sendfile() and splice() are still
-exectuted without this check and thus will be able to send data after
-rlimit applied.
+Why? That would fall out of the 
 
-> >and with your approach application will suddenly stops sending data even 
-> >into
-> >old sockets, but will be able to receive it from anywhere. Is it 
-> >intentional?
-> 
-> Why do you think this would happen? 
-> 
-> (My test results, e.g. via
->    http://dev.laptop.org/git?p=users/mstone/test-rlimit-network;a=blob;f=positive_localhost_tcp;hb=HEAD
->  show otherwise.)
+	if (lock->owner != thread)
+		break;
 
-I meant that connected or accepted socket will not be able to send data
-via send() call, but will be able to receive data using recv().
+part. We don't actually care that it only happens once: this all has 
+_known_ races, and the "cpu_relax()" is a barrier.
 
--- 
-	Evgeniy Polyakov
+And notice how the _caller_ handles the "owner == NULL" case by not even 
+calling this, and looping over just the state in the lock itself. That was 
+in the earlier emails. So this approach is actually pretty different from 
+the case that depended on the whole spinlock thing.
+
+			Linus
