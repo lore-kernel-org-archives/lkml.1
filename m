@@ -1,102 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZAGAMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbZAGAPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469AbZAGAMj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 19:12:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZAGAMb
+	id S1756210AbZAGAPY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 19:15:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZAGAPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 19:12:31 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:45067 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbZAGAM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 19:12:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=cpfM+aQqE7rCO/HPqlkPP/amnsd2GCgPu8LYyg9VkYadvaf1usz0Zcckew+0BcAb2x
-         Zv5MWcsdMq6f53orCEPJjcrOabD+WQ5HgoehmiT48mzLmqkvTG2v9+HvKY5dHgtedzqf
-         bn0g8PSuDR/8MAMY6PWMHpOxpGPjhvHFmmOng=
-Message-ID: <4963F368.7080909@gmail.com>
-Date: Tue, 06 Jan 2009 16:12:24 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
+	Tue, 6 Jan 2009 19:15:08 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:38165 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751572AbZAGAPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 19:15:07 -0500
+Date: Tue, 6 Jan 2009 19:15:01 -0500
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Eric Sesterhenn <snakebyte@gmx.de>
+Subject: Re: nfsd stuckage
+Message-ID: <20090107001501.GH13785@fieldses.org>
+References: <20090106145612.d4d9948d.akpm@linux-foundation.org> <20090106230244.GB13785@fieldses.org> <20090106230356.GA31520@lst.de> <20090106230551.GC13785@fieldses.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [  286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106230551.GC13785@fieldses.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With pulling git today I'm unable to shut the machine down completely.
-(the system just sits there with the message on the screen);
+On Tue, Jan 06, 2009 at 06:05:51PM -0500, bfields wrote:
+> On Wed, Jan 07, 2009 at 12:03:56AM +0100, Christoph Hellwig wrote:
+> > On Tue, Jan 06, 2009 at 06:02:44PM -0500, J. Bruce Fields wrote:
+> > > On Tue, Jan 06, 2009 at 02:56:12PM -0800, Andrew Morton wrote:
+> > > > 
+> > > > I just built current mainline plus the just-sent 266 -mm patches.
+> > > > 
+> > > > The machine failed to power off when hit with `halt -pfn'.  dmesg output:
+> > > 
+> > > Christoph, can you live with this for now?
+> > 
+> > nfsd part is well, livable.  But the fs/sync.c is buggy as stackable
+> > filesystems can call vfs_fsync with a NULL pointer due to nfs calling it
+> > that way, so please drop that hunk.
+> 
+> Whoops, OK, I didn't understand that.  I'll drop that hunk, retest, then
+> submit--should take a few minutes.
 
-* will now halt
-[  286.547348] BUG: unable to handle kernel paging request at 6b6b6b6b
-[  286.548940] IP: [<c0150ca4>] __stop_machine+0x88/0xe3
-[  286.550598] Oops: 0002 [#1] SMP
-[  286.552206] last sysfs file: /sys/block/sda/removeable
-[  286.553844] Modules linked in: hidp radeon drm agpgart btusb rfcomm 
-bnep sco l2cap bluetooth fan battery container ipt_LOG xt_limit 
-xt_tcpudp xt_state ipt_addrtype nf_nat_irc nf_conntrack_irc nf_nat_ftp 
-nf_nat nf_conntrack_ftp ipmi_watchdog ipmi_msghandler uvcvideo 
-isight_firmware uinput arpt_mangle arptable_filter arp_tables 
-nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 iptable_mangle 
-iptable_filter ip_tables x_tables coretemp eeprom acpi_cpufreq 
-cpufreq_powersave cpufreq_performance cpufreq_ondemand 
-cpufreq_conservative appletouch snd_had_codec_idt ohci1394 ehci_hcd 
-snd_hda_intel snd_hda_codec thermal ath9k uhci_hcd ieee1394 joydev 
-pata_acpi snd_hwdep snd_pcm snd_page_alloc video ac button processor 
-applesmc evdev
-[  286.560580]
-[  286.560580] Pid: 3273, comm: halt Not tainted (2.6.28-06127-g238c6d5 
-#1) MacBookPro2,2
-[  286.560580] EIP: 0060:[<c0150ca4>] EFLAGS: 00010293 CPU: 0
-[  286.560580] EIP: is at __stop_machine+0x88/0xe3
-[  286.560580] EAX: 6b6b6b6b EBX: 00000000 ECX: 6b6b6b6b EDX: 00000000
-[  286.560580] ESI: c054abe0 EDI: c03d03a4 EBP: f1a29e54 ESP: f1a29e44
-[  286.560580]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-[  286.560580] Process halt (pid: 3273, ti=f1a28000 task=f4530f30 
-task.ti=f1a28000)
-[  286.560580] Stack:
-[  286.560580] f1a29e60 c054abe0 00000001 00000010 f1a29e7c c03d04e4 
-ffffffea 00000010
-[  286.560580] 00000001 00000003 00000022 00000001 4321fedc c054abe0 
-f1a29e94 c012a57e
-[  286.560580] 00000000 ffffffff 4321fedc 28121969 f1a29e9c c01360c0 
-f1a29fb0 c0136301
-[  286.560580] Call Trace:
-[  286.560580]  [<c03d04e4>] ? _cpu_down+0x10f/0x234
-[  286.560580]  [<c012a57e>] ? disable_nonboot_cpus+0x58/0xdc
-[  286.560580]  [<c01360c0>] ? kernel_poweroff+0x22/0x39
-[  286.560580]  [<c0136301>] ? sys_reboot+0xde/0x14c
-[  286.560580]  [<c01331b2>] ? complete_signal+0x179/0x191
-[  286.560580]  [<c0133396>] ? send_signal+0x1cc/0x1e1
-[  286.560580]  [<c03de418>] ? _spin_unlock_irqrestore+0x2d/0x3c
-[  286.560580]  [<c0133b65>] ? group_send_signal_info+0x58/0x61
-[  286.560580]  [<c0133b9e>] ? kill_pid_info+0x30/0x3a
-[  286.560580]  [<c0133d49>] ? sys_kill+0x75/0x13a
-[  286.560580]  [<c01a06cb>] ? mntput_no_expire+ox1f/0x101
-[  286.560580]  [<c019b3b3>] ? dput+0x1e/0x105
-[  286.560580]  [<c018ef87>] ?  __fput+0x150/0x158
-[  286.560580]  [<c0157abf>] ? audit_syscall_entry+0x137/0x159
-[  286.560580]  [<c010329f>] ? sysenter_do_call+0x12/0x34
-[  286.560580] Code: c7 05 10 06 62 c0 00 00 00 00 a3 f4 05 62 c0 c7 05 
-ec 05 62 c0 01 00 00 00 83 cb ff eb 2d a1 1c 06 62 c0 f7 d0 8b 0c 98 8d 
-41 04 <c7> 01 00 00 00 00 89 41 04 89 41 08 c7 41 0c ff 0c 15 c0 89 d8
-[  286.560580] EIP: [<c0150ca4>] __stop_machine+0x88/0xe3 SS:ESP 
-0068:f1a29e44
-[  286.639215] ---[ end trace 5b080c1ab14203ae ] ---
-Segmentation fault
+So this works for me--and I guess I may as well submit it in a pull
+request.  But: it sounds like we still have a regression for ecryptfs?
+(Since on ecryptfs export nfsd will still try to get the mutex twice on
+create, unlink, etc.)  Maybe we should just revert
+4c728ef583b3d82266584da5cb068294c09df31e entirely for now?
 
-after this message appears, if I hold down the start button
-the system shuts off after a few seconds.
-(BTW hopefully the number are correct,
-manually writing this down, is a bit of a pain);
+--b.
 
-regards;
+commit 3fbc5c762bd9f9ff52fe7b5b09398a3cff0e8415
+Author: J. Bruce Fields <bfields@citi.umich.edu>
+Date:   Tue Jan 6 13:37:03 2009 -0500
 
-Justin P. Mattock
+    nfsd: fix double-locks of directory mutex
+    
+    A number of nfsd operations depend on the i_mutex to cover more code
+    than just the fsync, so the approach of 4c728ef583b3d8 "add a vfs_fsync
+    helper" doesn't work for nfsd.  Revert the parts of those patches that
+    touch nfsd.
+    
+    Note: we can't, however, remove the logic from vfs_fsync that was needed
+    only for the special case of nfsd, because a vfs_fsync(NULL,...) call
+    can still result indirectly from a stackable filesystem that was called
+    by nfsd.
+    
+    Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 44aa92a..6e50aaa 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -744,16 +744,44 @@ nfsd_close(struct file *filp)
+ 	fput(filp);
+ }
+ 
++/*
++ * Sync a file
++ * As this calls fsync (not fdatasync) there is no need for a write_inode
++ * after it.
++ */
++static inline int nfsd_dosync(struct file *filp, struct dentry *dp,
++			      const struct file_operations *fop)
++{
++	struct inode *inode = dp->d_inode;
++	int (*fsync) (struct file *, struct dentry *, int);
++	int err;
++
++	err = filemap_fdatawrite(inode->i_mapping);
++	if (err == 0 && fop && (fsync = fop->fsync))
++		err = fsync(filp, dp, 0);
++	if (err == 0)
++		err = filemap_fdatawait(inode->i_mapping);
++
++	return err;
++}
++
+ static int
+ nfsd_sync(struct file *filp)
+ {
+-	return vfs_fsync(filp, filp->f_path.dentry, 0);
++        int err;
++	struct inode *inode = filp->f_path.dentry->d_inode;
++	dprintk("nfsd: sync file %s\n", filp->f_path.dentry->d_name.name);
++	mutex_lock(&inode->i_mutex);
++	err=nfsd_dosync(filp, filp->f_path.dentry, filp->f_op);
++	mutex_unlock(&inode->i_mutex);
++
++	return err;
+ }
+ 
+ int
+-nfsd_sync_dir(struct dentry *dentry)
++nfsd_sync_dir(struct dentry *dp)
+ {
+-	return vfs_fsync(NULL, dentry, 0);
++	return nfsd_dosync(NULL, dp, dp->d_inode->i_fop);
+ }
+ 
+ /*
