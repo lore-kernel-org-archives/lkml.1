@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbZAGP1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbZAGP3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758081AbZAGP1n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:27:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZAGP1d
+	id S1758268AbZAGP3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZAGP3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:27:33 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:35775 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbZAGP1c (ORCPT
+	Wed, 7 Jan 2009 10:29:02 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:64683 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874AbZAGP3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:27:32 -0500
-Date: Wed, 7 Jan 2009 16:27:09 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Ed Swierk" <eswierk@aristanetworks.com>
-Cc: linux-i2c@vger.kernel.org, "David Brownell" <david-b@pacbell.net>,
-       "Alessandro Zummo" <a.zummo@towertech.it>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "BARRE Sebastien" <sbarre@sdelcc.com>
-Subject: Re: [PATCH] rtc-ds1307: True SMBus compatibility
-Message-ID: <20090107162709.755982c0@hyperion.delvare>
-In-Reply-To: <9ae48b020901070722l77bebc6boc8fa2fd0bcc8da28@mail.gmail.com>
-References: <1231177261.13443.20.camel@localhost.localdomain>
-	<20090107142426.4be04d4d@hyperion.delvare>
-	<9ae48b020901070722l77bebc6boc8fa2fd0bcc8da28@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Jan 2009 10:29:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=txQ85CVNrJHpbXYxLV1IfrS+1pzeL6c+s/0oQ5xeRI6aciZPj2U8EnFCdpIsYV+lsR
+         bqBudf7jpI68//WST/JwDXGm7iqbeTNY3tlvKjEx0gxSdEiHpyBjEApzdL1fmgVAtzCD
+         xvr7/YtilYgCBRF3H8BCRxRh10TXRGgjgrqlA=
+Message-ID: <4964CA37.4010503@gmail.com>
+Date: Wed, 07 Jan 2009 07:28:55 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
+MIME-Version: 1.0
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [ 286.547348] BUG: unable to handle kernel paging request at
+ 6b6b6b6b
+References: <4963F368.7080909@gmail.com>	 <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>	 <84144f020901070030k6fb888f6n84255078e4885d28@mail.gmail.com>	 <20090107091534.GA4633@osiris.boeblingen.de.ibm.com>	 <1231319946.14720.7.camel@penberg-laptop>	 <b6a2187b0901070336u1cb0bc94i1e47a68d8ea671c@mail.gmail.com>	 <20090107122728.GB4633@osiris.boeblingen.de.ibm.com> <b6a2187b0901070551r5bb86dbfye96c2c92e7b78087@mail.gmail.com>
+In-Reply-To: <b6a2187b0901070551r5bb86dbfye96c2c92e7b78087@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ed,
+Jeff Chua wrote:
+> On Wed, Jan 7, 2009 at 8:27 PM, Heiko Carstens
+> <heiko.carstens@de.ibm.com> wrote:
+>   
+>> On Wed, Jan 07, 2009 at 07:36:57PM +0800, Jeff Chua wrote:
+>>     
+>>> On Wed, Jan 7, 2009 at 5:19 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>>>       
+>>>> On Wed, 2009-01-07 at 10:15 +0100, Heiko Carstens wrote:
+>>>>         
+>>>>> I missed to convert disable_nonboot_cpus to
+>>>>> stop_machine_create/destroy.
+>>>>> So it's a use before-even-allocated bug.
+>>>>> The patch below should hopefully fix it:
+>>>>> Subject: [PATCH] cpu hotplug: add stop_machine_create/destroy to disable_nonboot_cpus
+>>>>>           
+>>>> Looks good to me!
+>>>>         
+>>> This also fixes the suspend-to-ram/disk problem. Without it, the
+>>> system will just hang.
+>>>       
+>
+>   
+>> Did you also see the reboot problem and does the patch fix it for you?
+>>     
+>
+> I never had problem with rebooting. Just suspend hanging which is
+> really annoying ... walking away and come back hours later and
+> realized that the suspend is hanging and having to do a hard boot.
+>
+> Thanks,
+> Jeff.
+>
+>   
+Man!!  I missed this whole conversation
+(passed out, too tired);
+I'll go ahead and apply the patch and let you
+know If I get the freeze at shutdown.
+Then I'm still interested in knowing
+how to take a debug messages and dissect
+it to find the exact location of the problem.
+(but could do that later);
 
-On Wed, 7 Jan 2009 07:22:12 -0800, Ed Swierk wrote:
-> On Wed, Jan 7, 2009 at 5:24 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > Are you certain the nForce2 controllers can't do it? The i2c-nforce2
-> > driver doesn't implement it, but this doesn't mean the hardware can't
-> > do it. I don't have any datasheet for these chips, but I know their
-> > SMBus implementation is very similar to those of the AMD 8111, and
-> > i2c-amd8111 has support for I2C block reads and writes. I think it
-> > would be worth giving it a try, by copying the i2c-amd8111
-> > implementation into the i2c-nforce2 driver and seeing if it happens to
-> > just work. If it works, that would be more elegant than your proposed
-> > hack to the rtc-ds1307 driver.
-> 
-> I checked the datasheet and also tried every possible SMBus command
-> value to try to discover any supported commands that the i2c-nforce2
-> driver happens not to use, to no avail. The nVidia SMBus is pure
-> SMBus.
+regards;
 
-Did you try 0x4a (as i2c-amd8111 is using)?
-
-So, you have the datasheet... Is this something you would be allowed to
-share with me?
-
-> I could change the ds1307 driver to check whether the controller
-> supports i2c block commands and fall back to emulation only if they
-> are not available. Would that address your concerns?
-
-Yes, that would. Same thing the eeprom or lm93 drivers are doing, to
-only name a few of them. Should be fairly easy.
-
--- 
-Jean Delvare
+Justin P. Mattock
