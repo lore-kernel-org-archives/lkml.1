@@ -1,41 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZAGOym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZAGO4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbZAGOym (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:54:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbZAGOyc
+	id S1757624AbZAGO4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZAGO4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:54:32 -0500
-Received: from mga09.intel.com ([134.134.136.24]:18671 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752601AbZAGOyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:54:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,226,1231142400"; 
-   d="scan'208";a="479647798"
-Date: Wed, 7 Jan 2009 22:47:16 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: jbarnes@virtuousgeek.org, dwmw2@infradead.org
-Cc: linux-pci@vger.kernel.org, iommu@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/6] ATS capability support for Intel IOMMU
-Message-ID: <20090107144716.GA4697@yzhao12-linux.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Jan 2009 09:56:04 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47367 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752798AbZAGO4B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 09:56:01 -0500
+Subject: [PATCH -tip 3/7] x86: smp.h move prefill_possible_map declartion
+	to cpu.h
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 17:26:47 +0530
+Message-Id: <1231329407.17961.32.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series implements Address Translation Service support for
-the Intel IOMMU. ATS provides ability for the PCI Endpoint to request
-the DMA address translation from the IOMMU and cache the translation
-in the Endpoint to alleviate IOMMU pressure and improve the hardware
-performance in the I/O virtualization environment.
+Impact: cleanup, moving NON-SMP stuff from smp.h
 
-[PATCH 1/6] PCI: support the ATS capability
-[PATCH 2/6] VT-d: parse ATSR in DMA Remapping Reporting Structure
-[PATCH 3/6] VT-d: add queue invalidation fault status support
-[PATCH 4/6] VT-d: add device IOTLB invalidation support
-[PATCH 5/6] VT-d: cleanup iommu_flush_iotlb_psi and flush_unmaps
-[PATCH 6/6] VT-d: support the device IOTLB
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/cpu.h |   10 ++++++++++
+ arch/x86/include/asm/smp.h |    6 ------
+ arch/x86/kernel/setup.c    |    2 +-
+ arch/x86/kernel/smpboot.c  |    1 -
+ 4 files changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
+index bae482d..29aa6d0 100644
+--- a/arch/x86/include/asm/cpu.h
++++ b/arch/x86/include/asm/cpu.h
+@@ -7,6 +7,16 @@
+ #include <linux/nodemask.h>
+ #include <linux/percpu.h>
+ 
++#ifdef CONFIG_SMP
++
++extern void prefill_possible_map(void);
++
++#else /* CONFIG_SMP */
++
++static inline void prefill_possible_map(void) {}
++
++#endif /* CONFIG_SMP */
++
+ struct x86_cpu {
+ 	struct cpu cpu;
+ };
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index d2ab0ed..a151651 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -164,8 +164,6 @@ void play_dead_common(void);
+ void native_send_call_func_ipi(const struct cpumask *mask);
+ void native_send_call_func_single_ipi(int cpu);
+ 
+-extern void prefill_possible_map(void);
+-
+ void smp_store_cpu_info(int id);
+ #define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
+ 
+@@ -174,10 +172,6 @@ static inline int num_booting_cpus(void)
+ {
+ 	return cpumask_weight(cpu_callout_mask);
+ }
+-#else
+-static inline void prefill_possible_map(void)
+-{
+-}
+ #endif /* CONFIG_SMP */
+ 
+ extern unsigned disabled_cpus __cpuinitdata;
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index ae0d804..f41c448 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -89,7 +89,7 @@
+ 
+ #include <asm/system.h>
+ #include <asm/vsyscall.h>
+-#include <asm/smp.h>
++#include <asm/cpu.h>
+ #include <asm/desc.h>
+ #include <asm/dma.h>
+ #include <asm/iommu.h>
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index bb1a3b1..6c2b844 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -53,7 +53,6 @@
+ #include <asm/nmi.h>
+ #include <asm/irq.h>
+ #include <asm/idle.h>
+-#include <asm/smp.h>
+ #include <asm/trampoline.h>
+ #include <asm/cpu.h>
+ #include <asm/numa.h>
+-- 
+1.5.6.6
+
+
+
