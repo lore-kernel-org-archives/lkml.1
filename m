@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbZAGP3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZAGPaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbZAGP3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZAGP3C
+	id S1756192AbZAGPaE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:30:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZAGP3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:29:02 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:64683 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbZAGP3A (ORCPT
+	Wed, 7 Jan 2009 10:29:50 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42137 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753186AbZAGP3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:29:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=txQ85CVNrJHpbXYxLV1IfrS+1pzeL6c+s/0oQ5xeRI6aciZPj2U8EnFCdpIsYV+lsR
-         bqBudf7jpI68//WST/JwDXGm7iqbeTNY3tlvKjEx0gxSdEiHpyBjEApzdL1fmgVAtzCD
-         xvr7/YtilYgCBRF3H8BCRxRh10TXRGgjgrqlA=
-Message-ID: <4964CA37.4010503@gmail.com>
-Date: Wed, 07 Jan 2009 07:28:55 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
+	Wed, 7 Jan 2009 10:29:49 -0500
+Date: Wed, 7 Jan 2009 10:29:46 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <alpine.DEB.1.10.0901071014120.32756@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0901071028270.32756@gandalf.stny.rr.com>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
+ <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins> <1231329783.11687.287.camel@twins>
+ <alpine.DEB.1.10.0901071014120.32756@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [ 286.547348] BUG: unable to handle kernel paging request at
- 6b6b6b6b
-References: <4963F368.7080909@gmail.com>	 <84144f020901062248j5d406656wb21130d914c7749d@mail.gmail.com>	 <84144f020901070030k6fb888f6n84255078e4885d28@mail.gmail.com>	 <20090107091534.GA4633@osiris.boeblingen.de.ibm.com>	 <1231319946.14720.7.camel@penberg-laptop>	 <b6a2187b0901070336u1cb0bc94i1e47a68d8ea671c@mail.gmail.com>	 <20090107122728.GB4633@osiris.boeblingen.de.ibm.com> <b6a2187b0901070551r5bb86dbfye96c2c92e7b78087@mail.gmail.com>
-In-Reply-To: <b6a2187b0901070551r5bb86dbfye96c2c92e7b78087@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua wrote:
-> On Wed, Jan 7, 2009 at 8:27 PM, Heiko Carstens
-> <heiko.carstens@de.ibm.com> wrote:
->   
->> On Wed, Jan 07, 2009 at 07:36:57PM +0800, Jeff Chua wrote:
->>     
->>> On Wed, Jan 7, 2009 at 5:19 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
->>>       
->>>> On Wed, 2009-01-07 at 10:15 +0100, Heiko Carstens wrote:
->>>>         
->>>>> I missed to convert disable_nonboot_cpus to
->>>>> stop_machine_create/destroy.
->>>>> So it's a use before-even-allocated bug.
->>>>> The patch below should hopefully fix it:
->>>>> Subject: [PATCH] cpu hotplug: add stop_machine_create/destroy to disable_nonboot_cpus
->>>>>           
->>>> Looks good to me!
->>>>         
->>> This also fixes the suspend-to-ram/disk problem. Without it, the
->>> system will just hang.
->>>       
->
->   
->> Did you also see the reboot problem and does the patch fix it for you?
->>     
->
-> I never had problem with rebooting. Just suspend hanging which is
-> really annoying ... walking away and come back hours later and
-> realized that the suspend is hanging and having to do a hard boot.
->
-> Thanks,
-> Jeff.
->
->   
-Man!!  I missed this whole conversation
-(passed out, too tired);
-I'll go ahead and apply the patch and let you
-know If I get the freeze at shutdown.
-Then I'm still interested in knowing
-how to take a debug messages and dissect
-it to find the exact location of the problem.
-(but could do that later);
 
-regards;
+On Wed, 7 Jan 2009, Steven Rostedt wrote:
+> On Wed, 7 Jan 2009, Peter Zijlstra wrote:
+> > --- a/kernel/mutex.c
+> > +++ b/kernel/mutex.c
+> > @@ -10,6 +10,10 @@
+> >   * Many thanks to Arjan van de Ven, Thomas Gleixner, Steven Rostedt and
+> >   * David Howells for suggestions and improvements.
+> >   *
+> > + *  - Adaptive spinning for mutexes by Peter Zijlstra. (Ported to mainline
+> > + *    from the -rt tree, where it was originally implemented for rtmutexes
+> > + *    by Steven Rostedt, based on work by Gregory Haskins.)
+> 
+> I feel guilty with my name being the only one there for the rtmutexes.
+> Thomas Gleixner, Ingo Molnar and Esben Nielsen also played large roles in
+> that code.
+> 
+> And Peter Morreale and Sven Dietrich might also be mentioned next to
+> Gregory's name.
+> 
 
-Justin P. Mattock
+If you are not talking about rtmutexes in general, and are just 
+referencing the spinning part, then just group us all together:
+
+  Gregory Haskins, Steven Rostedt, Peter Morreale and Sven Dietrich.
+
+Thanks,
+
+-- Steve
+
