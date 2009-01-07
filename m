@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbZAGRv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759732AbZAGRxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759962AbZAGRv7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 12:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZAGRvr
+	id S1759732AbZAGRxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 12:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZAGRxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 12:51:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51324 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751020AbZAGRvq (ORCPT
+	Wed, 7 Jan 2009 12:53:06 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:52864 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754287AbZAGRxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 12:51:46 -0500
-Date: Wed, 7 Jan 2009 09:50:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Mason <chris.mason@oracle.com>
-cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <1231348801.27813.31.camel@think.oraclecorp.com>
-Message-ID: <alpine.LFD.2.00.0901070945450.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com> <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
- <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins> <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
- <1231348801.27813.31.camel@think.oraclecorp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 7 Jan 2009 12:53:05 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 7 Jan 2009 09:52:46 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, Casey Dahlin <cdahlin@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland McGrath <roland@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+In-Reply-To: <20090107171922.GA18000@redhat.com>
+Message-ID: <alpine.DEB.1.10.0901070949050.16651@alien.or.mcafeemobile.com>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107171922.GA18000@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 7 Jan 2009, Oleg Nesterov wrote:
 
-
-On Wed, 7 Jan 2009, Chris Mason wrote:
+> minor nit...
 > 
-> So far I haven't found any btrfs benchmarks where this is slower than
-> mutexes without any spinning.  But, it isn't quite as fast as the btrfs
-> spin.
+> Please note that unlike other sys_...fd() syscalls, sys_waitfd()
+> doesn't allow to pass O_CLOEXEC. Looks like we need a separate
+> "flags" argument...
 
-Quite frankly, from our history with ext3 and other filesystems, using a 
-mutex in the filesystem is generally the wrong thing to do anyway. 
+I said this even during the first post. Not a minor nit unless we want to 
+have a sys_waitfd2 soon after.
 
-Are you sure you can't just use a spinlock, and just release it over IO? 
-The "have to do IO or extend the btree" case is usually pretty damn clear.
 
-Because it really sounds like you're lock-limited, and you should just try 
-to clean it up. A pure "just spinlock" in the hotpath is always going to 
-be better.
+> Also, ioctl(FIONBIO) or fcntl(O_NONBLOCK) have no effect on
+> waitfd, not very good.
 
-		Linus
+Ack.
+
+ 
+> I'd suggest to remove WNOHANG from waitfd_ctx->ops and treat
+> (->f_flags & O_NONBLOCK) as WNOHANG.
+
+Ack.
+
+
+> (can't resist, ->ops is not the best name ;)
+
+Ack. "flags" looks a pretty nice shot at it.
+
+
+
+- Davide
+
+
