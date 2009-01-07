@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZAGMiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZAGMks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637AbZAGMiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZAGMiQ
+	id S1755842AbZAGMks (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbZAGMkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:38:16 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:33524 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbZAGMiO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:38:14 -0500
-Date: Wed, 7 Jan 2009 12:37:58 +0000
-From: Andy Whitcroft <apw@canonical.com>
-To: Crutcher Dunnavant <crutcher+kernel@datastacks.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: sysrq loglevel
-Message-ID: <20090107123725.GC2520@shadowen.org>
+	Wed, 7 Jan 2009 07:40:36 -0500
+Received: from netgear.net.ru ([195.178.208.66]:50761 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751355AbZAGMkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:40:35 -0500
+Date: Wed, 7 Jan 2009 15:40:34 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Changli Gao <xiaosuo@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107124034.GB31255@ioremap.net>
+References: <20081224152841.GB13113@1wt.eu> <20090106085442.GA9513@ff.dom.local> <20090106094138.GE25644@1wt.eu> <20090106100112.GB9513@ff.dom.local> <20090106155715.GA28783@1wt.eu> <20090107093915.GA6899@ff.dom.local> <20090107122205.GA6051@1wt.eu> <20090107123153.GA9597@ff.dom.local> <20090107123504.GN32491@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090107123504.GN32491@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that we deliberatly manage the console_loglevel while handling a
-sysrq request.  Raising it to 7 to emit the sysrq command header, and then
-lower it before processing the command itself.  When booting the kernel
-'quiet' this means that we only see the header of the command and not its
-output on the console, the whole thing is in dmesg and thereby in syslog
-(if it is working).
+On Wed, Jan 07, 2009 at 01:35:04PM +0100, Jens Axboe (jens.axboe@oracle.com) wrote:
+> Irregardless of that particular oddity, I don't think this is the right
+> path to take at all. We need to delay the pipe buffer consumption until
+> the appropriate time.
 
-void __handle_sysrq(int key, struct tty_struct *tty, int check_mask)
-[...]
-        console_loglevel = 7;
-        printk(KERN_INFO "SysRq : ");
-[...]
-                        printk("%s\n", op_p->action_msg);
-                        console_loglevel = orig_log_level;
-                        op_p->handler(key, tty);
-[...]
+As a proof of concept we can put a delayed work_struct into the buffer
+and only release its content after some timeout big enough (like one
+second or so) for the hardware to actually transmit its buffers.
 
-Is this intentional?  I can see arguments both ways.  One way to look at
-it would be that I asked for the output so I should get it regardless.
-The other side might be that consoles can be really slow (serial or
-something) and so only outputting it there if logging is enabled
-generally is sane.
-
-Obviously we can work round this at the moment using sysrq-7 to up the
-loglevel before the command and sysrq-4 after to restore quiet.
-
-What do people think.  If we are happy with the status quo then I will
-spin a documentation patch to point out this behaviour and the work
-around.  Else I will happily spin a patch to fix it.
-
-Thoughts?
-
--apw
+-- 
+	Evgeniy Polyakov
