@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761797AbZAGWG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbZAGWHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761797AbZAGWG4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZAGWGs
+	id S1752402AbZAGWHe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZAGWHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:06:48 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:53689 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751282AbZAGWGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:06:47 -0500
-Date: Wed, 7 Jan 2009 14:06:46 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, josh@freedesktop.org, dipankar@in.ibm.com
-Subject: Re: [BUG] NULL pointer deref with rcutorture
-Message-ID: <20090107220646.GH6900@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090105200012.GB11244@alice> <20090105201631.GO6959@linux.vnet.ibm.com> <20090105203153.GC11244@alice> <20090105221836.GT6959@linux.vnet.ibm.com> <20090106002912.GA21071@linux.vnet.ibm.com> <20090106021506.GA23052@linux.vnet.ibm.com> <20090106074707.GA5975@alice> <20090106124809.GC7655@linux.vnet.ibm.com> <20090107194635.GA17174@linux.vnet.ibm.com> <20090107201904.GA32513@alice>
+	Wed, 7 Jan 2009 17:07:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39867 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752244AbZAGWHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:07:11 -0500
+Date: Wed, 7 Jan 2009 14:06:40 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0901071401380.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins> 
+ <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>  <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
+  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <1231365115.11687.361.camel@twins> <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107201904.GA32513@alice>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 09:19:04PM +0100, Eric Sesterhenn wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Tue, Jan 06, 2009 at 04:48:09AM -0800, Paul E. McKenney wrote:
-> > > On Tue, Jan 06, 2009 at 08:47:07AM +0100, Eric Sesterhenn wrote:
-> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > On Mon, Jan 05, 2009 at 04:29:12PM -0800, Paul E. McKenney wrote:
-> > > > > > On Mon, Jan 05, 2009 at 02:18:36PM -0800, Paul E. McKenney wrote:
-> > > > > > I will see what I can find from this.
-> > > > > 
-> > > > > Hello, Eric,
-> > > > > 
-> > > > > Just for grins, I built the 2.6.28 kernel/rcutorture.c on b58602a.  It
-> > > > > insmoded and rmmoded without errors.
-> > > > > 
-> > > > > Could you please try this on your setup?  I have attached this file in
-> > > > > case that helps.
-> > > > 
-> > > > works like a charm
-> > > 
-> > > Well, that certainly tells me where the bug lies.  ;-)
-> > > 
-> > > Thank you for all your hard work on this, I should have a patch soon.
-> > 
-> > And here it is, against the original version of rcutorture.c (revert
-> > all of my previous patches against rcutorture.c).  I am also attaching
-> > the resulting rcutorture.c, if that makes things more convenient for you.
-> > 
-> > Could you please fire this up and see if it fixes the rmmod-time bug
-> > that you located?
+
+
+On Wed, 7 Jan 2009, Linus Torvalds wrote:
 > 
-> it does fix the bug, thanks for your work
+> We don't actually care that it only happens once: this all has _known_ 
+> races, and the "cpu_relax()" is a barrier.
 
-Thank you very much for finding this one, bearing with me during the
-debug process, and testing it!  I will post the patch with credit to you.
+I phrased that badly. It's not that it has "known races", it's really that 
+the whole code sequence is very much written and intended to be 
+optimistic.
 
-Does this fix all of the problems that you observed, or is there still
-some breakage?
+So whatever code motion or whatever CPU memory ordering motion that 
+happens, we don't really care, because none of the tests are final. We do 
+need to make sure that the compiler doesn't optimize the loads out of the 
+loops _entirely_, but the "cpu_relax()" things that we need for other 
+reasons guarantee that part.
 
-							Thanx, Paul
+One related issue: since we avoid the spinlock, we now suddenly end up 
+relying on the "atomic_cmpxchg()" having lock acquire memory ordering 
+semantics. Because _that_ is the one non-speculative thing we do end up 
+doing in the whole loop. 
+
+But atomic_cmpxchg() is currently defined to be a full memory barrier, so 
+we should be ok. The only issue might be that it's _too_ much of a memory 
+barrier for some architectures, but this is not the pure fastpath, so I 
+think we're all good.
+
+			Linus
