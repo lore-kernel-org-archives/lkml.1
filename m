@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZAGMSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbZAGMSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbZAGMSI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:18:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbZAGMRd
+	id S1755157AbZAGMSe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZAGMSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:17:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35314 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755445AbZAGMRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:17:32 -0500
-Date: Wed, 7 Jan 2009 13:16:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Cheng Renquan <crquan@gmail.com>
-Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of CONFIG_PM
-Message-ID: <20090107121659.GA16268@elte.hu>
-References: <200901062112.29227.rjw@sisk.pl> <200901062115.33286.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901062115.33286.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 7 Jan 2009 07:18:09 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:59059 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755453AbZAGMSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 07:18:07 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: akpm@linux-foundation.org (Andrew Morton)
+Subject: Re: Deadlock after info soft-safe -> soft-unsafe lock order detected
+Cc: zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, dada1@cosmosbay.com
+Organization: Core
+In-Reply-To: <20090105201811.00242be7.akpm@linux-foundation.org>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1LKXMF-0006fe-DK@gondolin.me.apana.org.au>
+Date: Wed, 07 Jan 2009 23:17:59 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> From: Masami Hiramatsu <mhiramat@redhat.com>
+Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
-> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
-> 
-> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
-> and CONFIG_FREEZER=n.
-> 
-> Reported-by: Cheng Renquan <crquan@gmail.com>
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  arch/ia64/kernel/kprobes.c |    2 +-
->  arch/x86/kernel/kprobes.c  |    2 +-
->  kernel/kprobes.c           |    2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
+> I'd be suspecting the percpu counter work in TCP?
 
-looks good, the x86 bits:
+This is the bogus lockdep output which is fixed by
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+commit ea319518ba3de282c13ae1cf4bf2215c5e03e67e
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Fri Dec 26 15:08:55 2008 +0100
 
-	Ingo
+    locking, percpu counters: introduce separate lock classes
+    
+    Impact: fix lockdep false positives
+    
+    Classify percpu_counter instances similar to regular lock objects --
+    that is, per instantiation site.
+    
+    The networking code has increased its use of percpu_counters, which
+    leads to false positives if they are treated as a single class.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+It was only pulled very recently despite the Dec 26 date.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
