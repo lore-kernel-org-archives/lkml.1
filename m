@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbZAGU6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761361AbZAGVAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932118AbZAGU6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 15:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZAGU6d
+	id S1761361AbZAGVAw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757596AbZAGVAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 15:58:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51537 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753389AbZAGU6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 15:58:32 -0500
-Date: Wed, 7 Jan 2009 21:58:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Casey Dahlin <cdahlin@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Oleg Nesterov <oleg@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-Message-ID: <20090107205816.GC4597@elte.hu>
-References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com>
-MIME-Version: 1.0
+	Wed, 7 Jan 2009 16:00:35 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:54770 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757576AbZAGVAe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:00:34 -0500
+Date: Wed, 7 Jan 2009 22:02:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT] kbuild stuff
+Message-ID: <20090107210212.GA8735@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090107205322.5F8C7FC3E0@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus.
 
-* Roland McGrath <roland@redhat.com> wrote:
+First set of kbuild related fixes and other stuff.
 
-> New syscall should have gone to linux-api, I think.
-> 
-> Do we really need another one for this?  How about using signalfd plus 
-> setting the child's exit_signal to a queuing (SIGRTMIN+n) signal instead 
-> of SIGCHLD?  It's slightly more magical for the userland process to know 
-> to do that (fork -> clone SIGRTMIN).  But compared to adding a syscall 
-> we don't really have to add, maybe better.
+o Anders fixed up qnx and I took this patch via my tree
+  as it is a general include header issue.
 
-hm, i think it's cleaner conceptually than trying to wrap this into 
-signalfd. Since we already have:
+o Andi added a new script 'config' to manipulate the configuration
+  It needs some polishing but is usefull as is
 
-  #define __NR_signalfd           321
-  #define __NR_timerfd_create     322
-  #define __NR_timerfd_settime    325
-  #define __NR_timerfd_gettime    326
-  #define __NR_signalfd4          327
+o Arjan improved bootchart - and I took his word for that it is an improvement
 
-is one more really such an issue?
+o Jike added back ALLSOURCE_ARCHS to tags as it is actually used
 
-	Ingo
+o Wolfram fixed some documentation typos
+
+o And I fixed a modules_install regression
+
+All in all only small details.
+
+Outstanding things at the moments:
+
+- The patches to strip modules and vmlinux causes troubles:
+  o With MODVERSIONS enabled ccache and distcc does no longer improve things
+  o sparc build is br0ken
+
+- Alan's reported issue with broken 32 bit build is not solved - awaiting feedback from Alan
+
+I dunno what to do to make people start looking at all the warnings our
+exported headers generates. Maybe I should let headers_check error ou if
+there is more than 10 warnings in a directory..
+
+Please pull from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+	Sam
+
+
+Anders Larsen (1):
+      qnx: include <linux/types.h> for definitions of __[us]{8,16,32,64} types
+
+Andi Kleen (2):
+      kconfig: add script to manipulate .config files on the command line
+      kbuild: add a symlink to the source for separate objdirs
+
+Arjan van de Ven (1):
+      bootchart: improve output based on Dave Jones' feedback
+
+Jike Song (1):
+      kbuild: reintroduce ALLSOURCE_ARCHS support for tags/cscope
+
+Sam Ravnborg (1):
+      fix modules_install via NFS
+
+Wolfram Sang (1):
+      kbuild: fix typos (s/bin_shipped/bin.o_shipped/) in Documentation
+
+ Documentation/kbuild/kbuild.txt  |    7 ++
+ Documentation/kbuild/modules.txt |    4 +-
+ Makefile                         |    1 +
+ firmware/.gitignore              |    1 -
+ firmware/Makefile                |   10 +--
+ include/linux/qnx4_fs.h          |    4 +-
+ include/linux/qnxtypes.h         |    5 +-
+ scripts/.gitignore               |    1 +
+ scripts/Makefile                 |    3 +-
+ scripts/bootgraph.pl             |   16 +++-
+ scripts/config                   |  150 ++++++++++++++++++++++++++++++++++++++
+ {firmware => scripts}/ihex2fw.c  |    0
+ scripts/tags.sh                  |   18 +++-
+ 13 files changed, 194 insertions(+), 26 deletions(-)
