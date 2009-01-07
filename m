@@ -1,109 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbZAGTKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbZAGTPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760674AbZAGTKd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 14:10:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZAGTKY
+	id S1759446AbZAGTPr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 14:15:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZAGTPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 14:10:24 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:23032 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752488AbZAGTKX (ORCPT
+	Wed, 7 Jan 2009 14:15:38 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33070 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562AbZAGTPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 14:10:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TyYP7IrvRl6n41v2UU9mHl5LQMPcr95QPbqXx4SJXtKUqskvPlLU8rL+d8oI/DaR8V
-         xOa59ydzP6+mYcqSXdd7xEvtlZH6TsMp0LNVtZLF8IrgENZOgBTm1ph9Nw+KzOjRcv8b
-         wO3bOZOXrs8ZaH9EK1rC573VROPVNWhGlDbw4=
-Message-ID: <f19298770901071110vad914c1w364b5973b35c4c16@mail.gmail.com>
-Date: Wed, 7 Jan 2009 22:10:18 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: linux-next: Tree for December 11
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090107184721.GA16193@elte.hu>
+	Wed, 7 Jan 2009 14:15:37 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 7 Jan 2009 20:14:53 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: cdev: increment fw_cdev_version, update
+ documentation
+To: David Moore <dcm@MIT.EDU>, linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4964FCA5.1040808@s5r6.in-berlin.de>
+Message-ID: <tkrat.d261fdcc22c8bd25@s5r6.in-berlin.de>
+References: <1216794220.18969.14.camel@pisces.mit.edu>
+ <4964FCA5.1040808@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081211200459.14d18d7a.sfr@canb.auug.org.au>
-	 <f19298770812110440s7e3781eex4a16b961ad6847b2@mail.gmail.com>
-	 <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
-	 <f19298770901070830q71cc7604nf55e1d5b70a22f37@mail.gmail.com>
-	 <alpine.LFD.2.00.0901070840240.3057@localhost.localdomain>
-	 <20090107171730.GA21799@elte.hu>
-	 <f19298770901070935u6396a367j86937c9394518877@mail.gmail.com>
-	 <20090107184721.GA16193@elte.hu>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 7, 2009 at 21:47, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
->
->> And last time I bisected, it pointed to:
->>
->> commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
->> Author: Nick Piggin <nickpiggin@yahoo.com.au>
->> Date:   Tue Sep 30 20:50:27 2008 +1000
->>
->>    sched: improve preempt debugging
->>
->>
->>    This patch helped me out with a problem I recently had....
->>
->>    Basically, when the kernel lock is held, then preempt_count
->> underflow does not
->>    get detected until it is released which may be a long time (and arbitrarily,
->>    eg at different points it may be rescheduled). If the bkl is released at
->>    schedule, the resulting output is actually fairly cryptic...
->>
->>    With any other lock that elevates preempt_count, it is illegal to schedule
->>    under it (which would get found pretty quickly). bkl allows scheduling with
->>    preempt_count elevated, which makes underflows hard to debug.
->>
->>    Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>
->> so at least a dumb bisection won't do here.
->
-> ah, sorry for being a slow starter, i missed that bit - merge window
-> attention span troubles ...
->
-> I think the kernel_locked() check added here is plain buggy against IRQ
-> contexts: we drop the BKL spinlock and reduce current->kernel_depth
-> non-atomically.
->
-> So kernel_locked() can become detached from the preempt_count().
->
-> Nick, can you think of any better way of still saving this debug check, or
-> should we revert it?
->
-> Although it seems a bit weird how consistently you seem to be able to
-> trigger it - as this seems to be a narrow race. Is there an IRQ storm
-> there perhaps, or something widens things up for Qemu to inject an IRQ
-> right there?
+Necessary due to
+    Date: Tue, 22 Jul 2008 23:23:40 -0700
+    From: David Moore <dcm@acm.org>
+    Subject: firewire: Include iso timestamp in headers when header_size > 4
 
-I'm not sure about the qemu case, but at least on my laptop it happens
-somewhere along
+Side note:  The lack of upwards compatibility sounds worse than it is.
+All existing client implementations, libraw1394 and libdc1394, set
+header_size = 4.  And since the ABI v1 behaviour does not offer any
+advantages over the new behaviour, we deliberately do not provide the
+old behaviour anymore.
 
-arch/x86/kernel/cpu/bugs.c:
- 92         printk(KERN_INFO "Checking 'hlt' instruction... ");
- 93         if (!boot_cpu_data.hlt_works_ok) {
- 94                 printk("disabled\n");
- 95                 return;
- 96         }
- 97         halt();
- 98         halt();
- 99         halt();
-100         halt();
-101         printk("OK.\n");
+Also add documentation about the format of fw_cdev_get_cycle_timer which
+may be used in conjunction with the timestamp of iso packets but has a
+different format.
 
-where an interrupt has to come in order to get the cpu from hlt, so
-there is no surprise that I'm seeing this on every single boot. ;)
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ include/linux/firewire-cdev.h |   35 +++++++++++++++++++++++++++++-----
+ 1 file changed, 30 insertions(+), 5 deletions(-)
+
+Index: linux/include/linux/firewire-cdev.h
+===================================================================
+--- linux.orig/include/linux/firewire-cdev.h
++++ linux/include/linux/firewire-cdev.h
+@@ -138,7 +138,24 @@ struct fw_cdev_event_request {
+  * This event is sent when the controller has completed an &fw_cdev_iso_packet
+  * with the %FW_CDEV_ISO_INTERRUPT bit set.  In the receive case, the headers
+  * stripped of all packets up until and including the interrupt packet are
+- * returned in the @header field.
++ * returned in the @header field.  The amount of header data per packet is as
++ * specified at iso context creation by &fw_cdev_create_iso_context.header_size.
++ *
++ * In version 1 of this ABI, header data consisted of the 1394 isochronous
++ * packet header, followed by quadlets from the packet payload if
++ * &fw_cdev_create_iso_context.header_size > 4.
++ *
++ * In version 2 of this ABI, header data consist of the 1394 isochronous
++ * packet header, followed by a timestamp quadlet if
++ * &fw_cdev_create_iso_context.header_size > 4, followed by quadlets from the
++ * packet payload if &fw_cdev_create_iso_context.header_size > 8.
++ *
++ * Behaviour of ver. 1 of this ABI is no longer available since ABI ver. 2.
++ *
++ * Format of 1394 iso packet header: 16 bits len, 2 bits tag, 6 bits channel,
++ * 4 bits tcode, 4 bits sy, in big endian byte order.  Format of timestamp:
++ * 16 bits invalid, 3 bits cycleSeconds, 13 bits cycleCount, in big endian byte
++ * order.
+  */
+ struct fw_cdev_event_iso_interrupt {
+ 	__u64 closure;
+@@ -232,11 +249,13 @@ union fw_cdev_event {
+ #define FW_CDEV_IOC_GET_SPEED                    _IOR('#', 0x11, struct fw_cdev_get_speed)
+ #define FW_CDEV_IOC_SEND_BROADCAST_REQUEST       _IOW('#', 0x12, struct fw_cdev_send_request)
+ 
+-/* FW_CDEV_VERSION History
+- *
+- * 1	Feb 18, 2007:  Initial version.
++/*
++ * FW_CDEV_VERSION History
++ *  1  (2.6.22)  - initial version
++ *  2  (2.6.30)  - changed &fw_cdev_event_iso_interrupt.header if
++ *                 &fw_cdev_create_iso_context.header_size is 8 or more
+  */
+-#define FW_CDEV_VERSION		1
++#define FW_CDEV_VERSION 2
+ 
+ /**
+  * struct fw_cdev_get_info - General purpose information ioctl
+@@ -417,6 +436,9 @@ struct fw_cdev_remove_descriptor {
+  *
+  * If a context was successfully created, the kernel writes back a handle to the
+  * context, which must be passed in for subsequent operations on that context.
++ *
++ * Note that the effect of a @header_size > 4 depends on
++ * &fw_cdev_get_info.version, as documented at &fw_cdev_event_iso_interrupt.
+  */
+ struct fw_cdev_create_iso_context {
+ 	__u32 type;
+@@ -520,6 +542,9 @@ struct fw_cdev_stop_iso {
+  * The %FW_CDEV_IOC_GET_CYCLE_TIMER ioctl reads the isochronous cycle timer
+  * and also the system clock.  This allows to express the receive time of an
+  * isochronous packet as a system time with microsecond accuracy.
++ *
++ * @cycle_timer consists of 7 bits cycleSeconds, 13 bits cycleCount, and
++ * 12 bits cycleOffset, in host byte order.
+  */
+ struct fw_cdev_get_cycle_timer {
+ 	__u64 local_time;
+
+-- 
+Stefan Richter
+-=====-==--= ---= --===
+http://arcgraph.de/sr/
+
