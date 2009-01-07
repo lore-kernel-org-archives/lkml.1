@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762652AbZAGWtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762623AbZAGWv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762652AbZAGWtW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbZAGWs7
+	id S1762623AbZAGWv2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbZAGWvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:48:59 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51557 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754339AbZAGWs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:48:58 -0500
-Date: Wed, 7 Jan 2009 14:48:57 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, josh@freedesktop.org, dipankar@in.ibm.com
-Subject: Re: [BUG] NULL pointer deref with rcutorture
-Message-ID: <20090107224857.GK6900@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090105203153.GC11244@alice> <20090105221836.GT6959@linux.vnet.ibm.com> <20090106002912.GA21071@linux.vnet.ibm.com> <20090106021506.GA23052@linux.vnet.ibm.com> <20090106074707.GA5975@alice> <20090106124809.GC7655@linux.vnet.ibm.com> <20090107194635.GA17174@linux.vnet.ibm.com> <20090107201904.GA32513@alice> <20090107220646.GH6900@linux.vnet.ibm.com> <20090107223412.GB32513@alice>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107223412.GB32513@alice>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 7 Jan 2009 17:51:17 -0500
+Received: from charybdis-ext.suse.de ([195.135.221.2]:60789 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752089AbZAGWvP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:51:15 -0500
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+From: "Peter W. Morreale" <pmorreale@novell.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <20090107223317.GB27629@elte.hu>
+References: <1231283778.11687.136.camel@twins>
+	 <1231329783.11687.287.camel@twins>
+	 <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+	 <1231347442.11687.344.camel@twins>
+	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
+	 <20090107210923.GV2002@parisc-linux.org>
+	 <20090107213924.GP496@one.firstfloor.org> <49652C7C.3000909@novell.com>
+	 <20090107223317.GB27629@elte.hu>
+Content-Type: text/plain
+Organization: Linux Solutions Group
+Date: Wed, 07 Jan 2009 22:51:05 +0000
+Message-Id: <1231368665.3470.513.camel@hermosa.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 11:34:12PM +0100, Eric Sesterhenn wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Wed, Jan 07, 2009 at 09:19:04PM +0100, Eric Sesterhenn wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Tue, Jan 06, 2009 at 04:48:09AM -0800, Paul E. McKenney wrote:
-> > > > > On Tue, Jan 06, 2009 at 08:47:07AM +0100, Eric Sesterhenn wrote:
-> > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > > On Mon, Jan 05, 2009 at 04:29:12PM -0800, Paul E. McKenney wrote:
-> > > > > > > > On Mon, Jan 05, 2009 at 02:18:36PM -0800, Paul E. McKenney wrote:
-> > > > > > > > I will see what I can find from this.
-> > > > > > > 
-> > > > > > > Hello, Eric,
-> > > > > > > 
-> > > > > > > Just for grins, I built the 2.6.28 kernel/rcutorture.c on b58602a.  It
-> > > > > > > insmoded and rmmoded without errors.
-> > > > > > > 
-> > > > > > > Could you please try this on your setup?  I have attached this file in
-> > > > > > > case that helps.
-> > > > > > 
-> > > > > > works like a charm
-> > > > > 
-> > > > > Well, that certainly tells me where the bug lies.  ;-)
-> > > > > 
-> > > > > Thank you for all your hard work on this, I should have a patch soon.
-> > > > 
-> > > > And here it is, against the original version of rcutorture.c (revert
-> > > > all of my previous patches against rcutorture.c).  I am also attaching
-> > > > the resulting rcutorture.c, if that makes things more convenient for you.
-> > > > 
-> > > > Could you please fire this up and see if it fixes the rmmod-time bug
-> > > > that you located?
-> > > 
-> > > it does fix the bug, thanks for your work
-> > 
-> > Thank you very much for finding this one, bearing with me during the
-> > debug process, and testing it!  I will post the patch with credit to you.
-> > 
-> > Does this fix all of the problems that you observed, or is there still
-> > some breakage?
+On Wed, 2009-01-07 at 23:33 +0100, Ingo Molnar wrote:
+> * Gregory Haskins <ghaskins@novell.com> wrote:
 > 
-> It fixes everything i saw. Thanks.
+> > Can I ask a simple question in light of all this discussion?
+> > 
+> > "Is get_task_struct() really that bad?"
+> 
+> it dirties a cacheline and it also involves atomics.
+> 
+> Also, it's a small design cleanliness issue to me: get_task_struct() 
+> impacts the lifetime of an object - and if a locking primitive has 
+> side-effects on object lifetimes that's never nice.
+> 
 
-Woo-hoo!!!  ;-)
+True, but it's for one iteration * NR_CPUS, max.
 
-							Thanx, Paul
+Best,
+-PWM
+
+
+> 	Ingo
+> 
+
