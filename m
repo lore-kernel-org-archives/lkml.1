@@ -1,102 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbZAGPcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbZAGPes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbZAGPcd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:32:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbZAGPcX
+	id S1759757AbZAGPes (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZAGPej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:32:23 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:45083 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753597AbZAGPcW (ORCPT
+	Wed, 7 Jan 2009 10:34:39 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:48332 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752109AbZAGPei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:32:22 -0500
-Date: Wed, 7 Jan 2009 21:05:10 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: balbir@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-Message-ID: <20090107153510.GN4574@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <1231130416.5479.8.camel@marge.simson.net> <1231137413.10471.23.camel@marge.simson.net> <1231168786.9120.26.camel@marge.simson.net> <1231234297.3806.50.camel@marge.simson.net> <20090106150709.GG4574@dirshya.in.ibm.com> <1231264117.5254.23.camel@marge.simson.net> <20090106184552.GI17198@balbir.in.ibm.com> <1231318755.3899.57.camel@marge.simson.net> <20090107112639.GI4574@dirshya.in.ibm.com> <1231338985.5709.22.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1231338985.5709.22.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Jan 2009 10:34:38 -0500
+Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through
+	sysfs
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <4964866D.8010503@msgid.tls.msk.ru>
+References: <200901051952.58029.bzolnier@gmail.com>
+	 <20090105185428.GS32491@kernel.dk>
+	 <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com>
+	 <20090106073515.GY32491@kernel.dk>  <4964866D.8010503@msgid.tls.msk.ru>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 09:34:33 -0600
+Message-Id: <1231342473.3282.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mike Galbraith <efault@gmx.de> [2009-01-07 15:36:25]:
-
-> On Wed, 2009-01-07 at 16:56 +0530, Vaidyanathan Srinivasan wrote:
-> > * Mike Galbraith <efault@gmx.de> [2009-01-07 09:59:15]:
+On Wed, 2009-01-07 at 13:39 +0300, Michael Tokarev wrote:
+> Jens Axboe wrote:
+> > On Mon, Jan 05 2009, Kay Sievers wrote:
+> >> On Mon, Jan 5, 2009 at 19:54, Jens Axboe <jens.axboe@oracle.com> wrote:
+> >>> On Mon, Jan 05 2009, Bartlomiej Zolnierkiewicz wrote:
+> >>>> +static struct queue_sysfs_entry queue_nonrot_entry = {
+> >>>> +     .attr = {.name = "nonrot", .mode = S_IRUGO | S_IWUSR },
+> >>>> +     .show = queue_nonrot_show,
+> >>>> +     .store = queue_nonrot_store,
+> >>>> +};
+> >>>> +
+> >>> Lets please use a better name for export reasons, non-rotational is a
+> >>> lot better. Nobody will know what nonrot means :-)
+> >> What's that negation good for? Can't we just have "rotational", like
+> >> we have "removable" and not "non-removable"? :)
 > > 
-> > > I have a couple questions if you don't mind.
-> > > 
-> > > In wake_idle() there's an odd looking check for kthreads.  Why does it
-> > > matter if a kbuild task wakes kernel or userland helper thread?
-> > 
-> > Only user space tasks/threads should be biased at wakeup and
-> > consolidated for the following reasons:
-> > 
-> > * kernel threads generally perform housekeeping tasks and its rate of
-> >   execution and cpu utilisation is far less than that of user task in
-> >   an under utilised system.  
-> > * Biasing at wakeup help consolidate bursty user space tasks. Long
-> >   running user space tasks will be consolidated by load balancer.
-> >   kthreads are not bursty, they are generally very short running.
+> > Non-rotational is the term typically used, since rotational is the norm
+> > (still). So I think the negation actually makes sense in this case :-)
 > 
-> Rummaging around in an nfs mount is bursty, and the nfs threads are part
-> of the burst.  No big deal, but I think it's illogical to differentiate.
+> You used the word "still" yourself.  I mean, in 5 years SSD will be more
+> common than rotational media, and "the norm" will be !rotational..
+> So let's name them correctly and uniformly from the beginning.. ;)
 
-nfs threads is a real good example.  I missed that.  I will play
-around with nfs threads and try to optimise the condition.
+I'm afraid that's pretty much marketing coolaid.  Rotational storage
+will dominate for the forseeable future: just do a simple back of the
+envelope calculation:
 
-> > > I also don't see why sched_mc overrides domain tunings.  You can turn
-> > > NEWIDLE off and sched_mc remains as set, so it's a one-way override.  If
-> > > NEWIDLE is a requirement for sched_mc > 0, it seems only logical to set
-> > > sched_mc to 0 if the user explicitly disables NEWIDLE.
-> > 
-> > SD_BALANCE_NEWIDLE is required for sched_mc=2 and power savings while
-> 
-> That's a buglet then, because you can have sched_mc=2 and NEWIDLE off.
+      * Total shipped spinning storage in 2008: 128EB (Gartner figures)
+      * If all the chip FABs in all the world were turned solely to
+        flash production, they'd be able to ship about 16EB per year (or
+        about 13%  of the total 2008 consumption [estimate from Steve
+        Hetzler, IBM]), assuming any given FAB can produce about 0.5EB
+        per year).
+      * Then factor in that storage requirements are growing
+        exponentially (the 2009 estimated requirement is 400EB).
+      * Given that it costs ~$3-7bn for one fab plant and that we're in
+        an economic depression, no-one is making the necessary trillion
+        dollar capital investment to even make Flash be a significant
+        fraction of the current storage market ... it's not even clear
+        that it will be able to break the 1% barrier, let alone the 10%
+        one.
 
-Tweaking the sched domain parameters affect the default power saving
-heuristics anyway.  Protecting against the flags alone will not help.
-Your point is valid, I will think about this scenario and see how we
-can protect the behavior.
- 
-> > not mandated for sched_mc=0.  We can remove NEWIDLE balance at
-> > sched_mc=0 if that helps baseline performance.  Ingo had identified
-> > that removing NEWIDLE balance help performance in certain benchmarks.
-> 
-> It used to help mysql+oltp low end throughput for one.  efbe027 seems to
-> have done away with that though (not that alone).
-> 
-> > I do not get what you have mentioned by NEWIDLE off?  Is there
-> > a separate user space control to independently set or reset
-> > SD_BALANCE_NEWIDLE at a give sched_domain level?
-> 
-> Yes. /proc/sys/kernel/sched_domain/cpuN/domainN/*
+That's not to say flash isn't important, it is; it's just to remind
+everyone that storage subsystems will be focused on rotating media.  Any
+flash features we add have to make sure they don't impact our rotating
+performance.
 
-Changing flags through this interface is complete low level control.
-End users who want to tweak individual sched domain parameters are
-either experimenting or optimising for their specific workload.
+Sorry, now we can go back to regularly scheduled programming.  This
+isn't the first "everything will be flash and we should be planning for
+it" type statement, but I thought a little reality injection would be
+appropriate at this juncture.
 
-The defaults should generally across common workloads.  Users can
-further tweak this low level settings.  We can clearly document the
-relations so that we know what to expect.
+James
 
-sched_mc=2 depends on NEWIDLE but the wakeup biasing part will be
-enabled even without this flag.  The power savings will be marginally
-better than sched_mc=1 without NEWIDLE.  But the end user can have
-that setup if they want to.
 
-You have pointed out a scenario where users can turn off NEWIDLE and
-still expect to use sched_mc=2.  The scenario is valid and the user
-should be allowed to do so.
-
---Vaidy
