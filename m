@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbZAGFIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZAGFJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752109AbZAGFIl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 00:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbZAGFIN
+	id S1758166AbZAGFJW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 00:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZAGFJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 00:08:13 -0500
-Received: from ag-out-0708.google.com ([72.14.246.240]:12895 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbZAGFIM (ORCPT
+	Wed, 7 Jan 2009 00:09:03 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:41532 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbZAGFJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 00:08:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=t73Wi0z/qUuNFqkZHTmn++6c8Uvlx+M6hXGZuIeJHwGN4wbJZ/3rmvkVZtekf1ktI8
-         xWl4/Q/rljuYXG0QOh6e8grZpxoUOvKWPGQ9D75qyuakEzKpGPivw/dEfG9BQ7owZ+z9
-         Di3yv+bkmUFAJwdZWitzkl4jpo/jmbFcfPXgo=
-Message-ID: <121039230901062108s7312343cwaf81feebfcf8d734@mail.gmail.com>
-Date: Wed, 7 Jan 2009 10:38:11 +0530
-From: "melwyn lobo" <linux.melwyn@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: SMP timer issue
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 7 Jan 2009 00:09:01 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 07 Jan 2009 00:08:54 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: powerpc: introduce asm/swab.h
+In-reply-to: <alpine.LFD.2.00.0901062056540.3057@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0901070005530.26118@xanadu.home>
+References: <200901070400.n0740Ore002063@hera.kernel.org>
+ <1231303340.14860.61.camel@pasglop>
+ <alpine.LFD.2.00.0901062056540.3057@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All,
-Following reply from Russell on the ARM mailing list, I have posted my
-question on this list.
+On Tue, 6 Jan 2009, Linus Torvalds wrote:
 
-We have ported the arm kernel 2.6.24 to ARM Cortex dual core
-processor. My question is regarding timer optimization.
-At present we have three timers for the two cores as follows;
-1. MTU which provides the system tick and in the absence of local
-timers provides IPI_TIMER messages to other processors.
-2. Localtimer for CPU0
-3. Localtimer for CPU1
+> 
+> 
+> On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
+> > 
+> > Was this tested ? I see no arch maintainer signed-off here, it appears
+> > to at least break ppc32, and contains hunks that paulus says were
+> > explicitely nacked (removing of our ld_* macros) etc...
+> 
+> It did no such thing. It just moved the file.
+> 
+> Use
+> 
+> 	git show -M -B 156ca2bbf6503a02d7d6829886ce381d572de66e
+> 
+> to see how <asm/swab.h> is just the old <asm/byteorder.h> renamed, and 
+> with some stuff moved around.
 
-So presently (when local timers are enabled) there are 3 interrupts
-for every tick. I want to optimize the logic performed by MTU into the
-local timer of CPU0 so that this one serves as the system tick. Thus
-there would be no need for MTU interrupts and it would serve only as a
-clock source.
+I suspect that all archs that define __SWAB_64_THRU_32__ are broken atm.
 
-My question in particular:
-1. Is there some platform which has already done this ?
-2. Is this possible without modifying existing kernel framework?
-3. How to update jiffies during boot when localtimer has not yet been setup?
+According to "git grep ___swab32", there is no more definition for 
+___swab32 anywhere.
 
-Eagerly awaiting for some advice/comments.
 
-Thanks & Regards,
-Melwyn
-
-On Tue, Jan 6, 2009 at 11:44 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Tue, Jan 06, 2009 at 03:07:15PM +0530, melwyn lobo wrote:
->> Hello All,
->
-> I suggest you ask your question of the kernel timer folk, who would
-> be more knowledgable of the code you're asking about.  See the
-> MAINTAINERS file for their contact info.
->
+Nicolas
