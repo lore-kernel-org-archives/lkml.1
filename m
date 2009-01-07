@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbZAHGM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbZAHGRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbZAHGM4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 01:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZAHGMo
+	id S1758701AbZAHGRc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 01:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZAHGRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 01:12:44 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:53070 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbZAHGMn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 01:12:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tLErKNrFMGkIyIZcWMj8Yv65AxL93GeKvT0B23zzOyEUDbL6ODrySBHNOGRlxilF43
-         /8ztNDFvJn7zc7IwE6irzjvSPQtu4qVEhpEsXt4fpDGuKB0/fEijawvutr37EKfiZbHd
-         tBNdVSetoKRqfUJaoeUR7gauXwTH0kWoqdQ84=
-Message-ID: <3f9a31f40901072212x41e405fh7e36f6adb927814b@mail.gmail.com>
-Date: Thu, 8 Jan 2009 11:42:42 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
-Cc: LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       "David Woodhouse" <dwmw2@infradead.org>
-In-Reply-To: <5a4c581d0901070624t6e769966t6b034b14d4732bd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5a4c581d0901070624t6e769966t6b034b14d4732bd@mail.gmail.com>
+	Thu, 8 Jan 2009 01:17:22 -0500
+Received: from 076-076-148-181.pdx.net ([76.76.148.181]:35214 "EHLO gocho"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752089AbZAHGRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 01:17:21 -0500
+X-Greylist: delayed 46703 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Jan 2009 01:17:21 EST
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+To: netdev@vger.kernel.org
+Cc: wimax@linuxwimax.org, greg@kroah.com,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-wimax@intel.com
+Subject: [PATCH 0/3] wimax: Kbuild / rfkill-build fixes (v2)
+Date: Wed,  7 Jan 2009 09:18:44 -0800
+Message-Id: <cover.1231348339.git.inaky@linux.intel.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello alessandro,
+These three patches fix issues reported by Randy Dunlap on the
+linux-next tree for Jan 6:
 
-On Wed, Jan 7, 2009 at 7:54 PM, Alessandro Suardi
-<alessandro.suardi@gmail.com> wrote:
->
-> Note that I don't have CONFIG_FIRMWARE_IN_KERNEL, but on
->  the other hand I didn't earlier, either... and yes, CONFIG_MODULES=y.
->
+http://lkml.org/lkml/2009/1/6/340
 
-Please try with CONFIG_FIRMWARE_IN_KERNEL , is this makes some difference.
+The issue fixed by patch #3 wasn't reported on the emails but was
+uncovered while discussing the fixes.
 
---
-JSR
+This applies to the wimax tree kept in gregkh's repository:
+
+http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-04-usb/
+
+Changes in v2
+
+- fixed silly one-char typo #ifndef CONFIG_BUG vs #ifdef CONFIG_BUG
+  reported by Ilpo Järvinen 
+
+Inaky Perez-Gonzalez (3):
+  wimax: fix '#ifndef CONFIG_BUG' layout to avoid warning
+  wimax: fix kconfig interactions with rfkill and input layers
+  wimax: testing for rfkill support should also test for
+    CONFIG_RFKILL_MODULE
+
+ net/wimax/Kconfig     |   14 ++++++++++++++
+ net/wimax/id-table.c  |    8 +++++---
+ net/wimax/op-rfkill.c |    2 +-
+ 3 files changed, 20 insertions(+), 4 deletions(-)
+
