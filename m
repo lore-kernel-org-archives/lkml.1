@@ -1,96 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbZAGWkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbZAGWm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932754AbZAGWkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932525AbZAGWjF
+	id S1762770AbZAGWm4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:42:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZAGWmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:39:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55166 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932401AbZAGWil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:38:41 -0500
-Message-ID: <49652ED1.6050808@kernel.org>
-Date: Wed, 07 Jan 2009 14:38:09 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: initrd panic
-References: <86802c440901071357j3dd03b2ax9b79735fd374e94d@mail.gmail.com> <20090107215914.GB17917@elte.hu>
-In-Reply-To: <20090107215914.GB17917@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 Jan 2009 17:42:45 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:5525 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbZAGWmn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:42:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=OIWchwf5G0wFYAOEpEXnKbo7QVDnilAtWKhWfq64iubHXxIInsAl69OmNJE5MKmetu
+         flt8LFek+kx4BcuOCmN4fDSylwud6SB66lb9JNaX8LlFzSGxAhhs2cQTabmd3jNlDtHf
+         YSjZPW/1pLFuhph1Xduk5wPGM/8ZIGLZvP28Q=
+Subject: [PATCH] trivial: replace last usages of __FUNCTION__ in kernel
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, airlied <airlied@linux.ie>,
+       Eric Anholt <eric@anholt.net>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 14:42:41 -0800
+Message-Id: <1231368161.5586.30.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> [    0.000000] Bootmem setup node 0 0000000000000000-0000000828000000
->> [    0.000000]   NODE_DATA [000000000008b580 - 000000000009057f]
->> [    0.000000]   bootmap [00000000011e4000 -  00000000012e8fff] pages 105
->> [    0.000000] (9 early reservations) ==> bootmem [0000000000 - 0828000000]
->> [    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==>
->> [0000000000 - 0000001000]
->> [    0.000000]   #1 [0000006000 - 0000008000]       TRAMPOLINE ==>
->> [0000006000 - 0000008000]
->> [    0.000000]   #2 [0000200000 - 00011e3010]    TEXT DATA BSS ==>
->> [0000200000 - 00011e3010]
->> [    0.000000]   #3 [007ddb0000 - 007ffff746]          RAMDISK ==>
->> [007ddb0000 - 007ffff746]
->> [    0.000000]   #4 [0000095400 - 0000100000]    BIOS reserved ==>
->> [0000095400 - 0000100000]
->> [    0.000000]   #5 [0000008000 - 000000a000]          PGTABLE ==>
->> [0000008000 - 000000a000]
->> [    0.000000]   #6 [000000a000 - 000000b000]          PGTABLE ==>
->> [000000a000 - 000000b000]
->> [    0.000000]   #7 [0000001000 - 000000106c]        ACPI SLIT ==>
->> [0000001000 - 000000106c]
->> [    0.000000]   #8 [000000b000 - 000008b580]       MEMNODEMAP ==>
->> [000000b000 - 000008b580]
->> ...
->> [   26.878476] calling  populate_rootfs+0x0/0xef @ 1
->> [   26.883266] checking if image is initramfs...it isn't (no cpio
->> magic); looks like an initrd
->> [   26.925007] Freeing initrd memory: 35133k freed
->> [   26.947946] initcall populate_rootfs+0x0/0xef returned 0 after 63247 usecs
->> ...
->> [   99.714363] RAMDISK: gzip image found at block 0
->> [  100.831449] RAMDISK: incomplete write (1880 != 1999)
->> [  100.836421] write error
->> [  101.092202] kjournald starting.  Commit interval 5 seconds
->> [  101.092217] EXT3 FS on ram0, internal journal
->> [  101.092227] EXT3-fs: mounted filesystem with ordered data mode.
->> [  101.092244] VFS: Mounted root (ext3 filesystem) on device 1:0.
->> [  101.092262] Freeing unused kernel memory: 448k freed
->> [  101.092586] init_special_inode: bogus i_mode (177777)
->> [  101.092591] Warning: unable to open an initial console.
->> [  101.092607] init_special_inode: bogus i_mode (177777)
->> [  101.092618] init_special_inode: bogus i_mode (177777)
->> [  101.092630] init_special_inode: bogus i_mode (177777)
->> [  101.092635] Kernel panic - not syncing: No init found.  Try passing
->> init= option to kernel.
->> [  101.092639] Pid: 1, comm: swapper Not tainted
->> 2.6.28-tip-07660-g1bc0566-dirty #366
->> [  101.092641] Call Trace:
->> [  101.092655]  [<ffffffff809cc9be>] panic+0x75/0x12c
->> [  101.092662]  [<ffffffff802092a8>] name_to_dev_t+0x0/0x1f0
->> [  101.092668]  [<ffffffff8022c05a>] ? child_rip+0xa/0x20
->> [  101.092671]  [<ffffffff8022c050>] ? child_rip+0x0/0x20
->>
->>
->> wonder if LZMA B2ZIP etc into tip/master today broke it?
-> 
-> you enabled:
-> 
->  CONFIG_KERNEL_LZMA=y
->  CONFIG_RD_LZMA=y
-no
-> 
-> ? Or did the normal zlib decompressor break?
-looks like
+__FUNCTION__ is gcc-specific, use __func__
 
-YH
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/mm/numa_32.c                     |    4 ++--
+ drivers/gpu/drm/drm_crtc.c                |    2 +-
+ drivers/gpu/drm/i915/i915_gem.c           |    4 ++--
+ drivers/media/dvb/frontends/lgdt3304.c    |   10 +++++-----
+ drivers/media/dvb/frontends/s921_module.c |    2 +-
+ drivers/media/dvb/ttpci/budget-ci.c       |    2 +-
+ 6 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
+index 8518c67..d1f7439 100644
+--- a/arch/x86/mm/numa_32.c
++++ b/arch/x86/mm/numa_32.c
+@@ -239,7 +239,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
+ 		start_pfn = node_remap_start_pfn[node];
+ 		size = node_remap_size[node];
+ 
+-		printk(KERN_DEBUG "%s: node %d\n", __FUNCTION__, node);
++		printk(KERN_DEBUG "%s: node %d\n", __func__, node);
+ 
+ 		for (pfn = 0; pfn < size; pfn += PTRS_PER_PTE) {
+ 			unsigned long vaddr = start_va + (pfn << PAGE_SHIFT);
+@@ -251,7 +251,7 @@ void resume_map_numa_kva(pgd_t *pgd_base)
+ 						PAGE_KERNEL_LARGE_EXEC));
+ 
+ 			printk(KERN_DEBUG "%s: %08lx -> pfn %08lx\n",
+-				__FUNCTION__, vaddr, start_pfn + pfn);
++				__func__, vaddr, start_pfn + pfn);
+ 		}
+ 	}
+ }
+diff --git a/drivers/gpu/drm/drm_crtc.c b/drivers/gpu/drm/drm_crtc.c
+index 53c8725..5b2cbb7 100644
+--- a/drivers/gpu/drm/drm_crtc.c
++++ b/drivers/gpu/drm/drm_crtc.c
+@@ -210,7 +210,7 @@ static int drm_mode_object_get(struct drm_device *dev,
+ 	int ret;
+ 
+ 	WARN(!mutex_is_locked(&dev->mode_config.mutex),
+-	     "%s called w/o mode_config lock\n", __FUNCTION__);
++	     "%s called w/o mode_config lock\n", __func__);
+ again:
+ 	if (idr_pre_get(&dev->mode_config.crtc_idr, GFP_KERNEL) == 0) {
+ 		DRM_ERROR("Ran out memory getting a mode number\n");
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 14afc23..1384d66 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -1445,7 +1445,7 @@ static void i915_write_fence_reg(struct drm_i915_fence_reg *reg)
+ 
+ 	if ((obj_priv->gtt_offset & ~I915_FENCE_START_MASK) ||
+ 	    (obj_priv->gtt_offset & (obj->size - 1))) {
+-		WARN(1, "%s: object not 1M or size aligned\n", __FUNCTION__);
++		WARN(1, "%s: object not 1M or size aligned\n", __func__);
+ 		return;
+ 	}
+ 
+@@ -1478,7 +1478,7 @@ static void i830_write_fence_reg(struct drm_i915_fence_reg *reg)
+ 
+ 	if ((obj_priv->gtt_offset & ~I915_FENCE_START_MASK) ||
+ 	    (obj_priv->gtt_offset & (obj->size - 1))) {
+-		WARN(1, "%s: object not 1M or size aligned\n", __FUNCTION__);
++		WARN(1, "%s: object not 1M or size aligned\n", __func__);
+ 		return;
+ 	}
+ 
+diff --git a/drivers/media/dvb/frontends/lgdt3304.c b/drivers/media/dvb/frontends/lgdt3304.c
+index 469ace5..3bb0c43 100644
+--- a/drivers/media/dvb/frontends/lgdt3304.c
++++ b/drivers/media/dvb/frontends/lgdt3304.c
+@@ -42,7 +42,7 @@ static int i2c_write_demod_bytes (struct dvb_frontend *fe, __u8 *buf, int len)
+ 
+ 	for (i=0; i<len-1; i+=3){
+ 		if((err = i2c_transfer(state->i2c, &i2cmsgs, 1))<0) {
+-			printk("%s i2c_transfer error %d\n", __FUNCTION__, err);
++			printk("%s i2c_transfer error %d\n", __func__, err);
+ 			if (err < 0)
+ 				return err;
+ 			else
+@@ -73,7 +73,7 @@ static int lgdt3304_i2c_read_reg(struct dvb_frontend *fe, unsigned int reg)
+ 	i2cmsgs[1].buf = &buf;
+ 
+ 	if((ret = i2c_transfer(state->i2c, i2cmsgs, 2))<0) {
+-		printk("%s i2c_transfer error %d\n", __FUNCTION__, ret);
++		printk("%s i2c_transfer error %d\n", __func__, ret);
+ 		return ret;
+ 	}
+ 
+@@ -94,7 +94,7 @@ static int lgdt3304_i2c_write_reg(struct dvb_frontend *fe, int reg, int val)
+ 	};
+ 	ret = i2c_transfer(state->i2c, &i2cmsgs, 1);
+ 	if (ret != 1) {
+-		printk("%s i2c_transfer error %d\n", __FUNCTION__, ret);
++		printk("%s i2c_transfer error %d\n", __func__, ret);
+ 		return ret;
+ 	}
+ 
+@@ -238,7 +238,7 @@ static int lgdt3304_set_parameters(struct dvb_frontend *fe, struct dvb_frontend_
+ 		}
+ 
+ 		if (err) {
+-			printk("%s error setting modulation\n", __FUNCTION__);
++			printk("%s error setting modulation\n", __func__);
+ 		} else {
+ 			state->current_modulation = param->u.vsb.modulation;
+ 		}
+@@ -305,7 +305,7 @@ static int lgdt3304_read_status(struct dvb_frontend *fe, fe_status_t *status)
+ 		}
+ 		break;
+ 	default:
+-		printk("%s unhandled modulation\n", __FUNCTION__);
++		printk("%s unhandled modulation\n", __func__);
+ 	}
+ 
+ 
+diff --git a/drivers/media/dvb/frontends/s921_module.c b/drivers/media/dvb/frontends/s921_module.c
+index 3cbb9cb..892af8c 100644
+--- a/drivers/media/dvb/frontends/s921_module.c
++++ b/drivers/media/dvb/frontends/s921_module.c
+@@ -136,7 +136,7 @@ static int s921_write(void *dev, u8 reg, u8 val) {
+ 	};
+ 
+ 	if((err = i2c_transfer(state->i2c, &i2cmsgs, 1))<0) {
+-		printk("%s i2c_transfer error %d\n", __FUNCTION__, err);
++		printk("%s i2c_transfer error %d\n", __func__, err);
+ 		if (err < 0)
+ 			return err;
+ 		else
+diff --git a/drivers/media/dvb/ttpci/budget-ci.c b/drivers/media/dvb/ttpci/budget-ci.c
+index 3507463..4d2a5cf 100644
+--- a/drivers/media/dvb/ttpci/budget-ci.c
++++ b/drivers/media/dvb/ttpci/budget-ci.c
+@@ -1450,7 +1450,7 @@ static void frontend_init(struct budget_ci *budget_ci)
+ 		if (budget_ci->budget.dvb_frontend) {
+ 			if (dvb_attach(stb6100_attach, budget_ci->budget.dvb_frontend, &tt3200_stb6100_config, &budget_ci->budget.i2c_adap)) {
+ 				if (!dvb_attach(lnbp21_attach, budget_ci->budget.dvb_frontend, &budget_ci->budget.i2c_adap, 0, 0)) {
+-					printk("%s: No LNBP21 found!\n", __FUNCTION__);
++					printk("%s: No LNBP21 found!\n", __func__);
+ 					dvb_frontend_detach(budget_ci->budget.dvb_frontend);
+ 					budget_ci->budget.dvb_frontend = NULL;
+ 				}
+-- 
+1.6.1.94.g9388
+
+
+
