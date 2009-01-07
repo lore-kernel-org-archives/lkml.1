@@ -1,112 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZAGO4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758559AbZAGO5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbZAGO4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZAGO4E
+	id S1758559AbZAGO5B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:57:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZAGO4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:56:04 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47367 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbZAGO4B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:56:01 -0500
-Subject: [PATCH -tip 3/7] x86: smp.h move prefill_possible_map declartion
-	to cpu.h
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 17:26:47 +0530
-Message-Id: <1231329407.17961.32.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 09:56:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51749 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752798AbZAGO4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 09:56:47 -0500
+Date: Wed, 7 Jan 2009 15:56:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: Btrfs for mainline
+Message-ID: <20090107145621.GB23455@elte.hu>
+References: <1230722935.4680.5.camel@think.oraclecorp.com> <1231093310.27690.5.camel@twins> <20090104184103.GE2002@parisc-linux.org> <200901060147.24285.nickpiggin@yahoo.com.au> <1231173015.4290.129.camel@think.oraclecorp.com> <20090107130742.GD3529@elte.hu> <20090107132447.GR2002@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107132447.GR2002@parisc-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, moving NON-SMP stuff from smp.h
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/cpu.h |   10 ++++++++++
- arch/x86/include/asm/smp.h |    6 ------
- arch/x86/kernel/setup.c    |    2 +-
- arch/x86/kernel/smpboot.c  |    1 -
- 4 files changed, 11 insertions(+), 8 deletions(-)
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
-diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index bae482d..29aa6d0 100644
---- a/arch/x86/include/asm/cpu.h
-+++ b/arch/x86/include/asm/cpu.h
-@@ -7,6 +7,16 @@
- #include <linux/nodemask.h>
- #include <linux/percpu.h>
- 
-+#ifdef CONFIG_SMP
-+
-+extern void prefill_possible_map(void);
-+
-+#else /* CONFIG_SMP */
-+
-+static inline void prefill_possible_map(void) {}
-+
-+#endif /* CONFIG_SMP */
-+
- struct x86_cpu {
- 	struct cpu cpu;
- };
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index d2ab0ed..a151651 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -164,8 +164,6 @@ void play_dead_common(void);
- void native_send_call_func_ipi(const struct cpumask *mask);
- void native_send_call_func_single_ipi(int cpu);
- 
--extern void prefill_possible_map(void);
--
- void smp_store_cpu_info(int id);
- #define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
- 
-@@ -174,10 +172,6 @@ static inline int num_booting_cpus(void)
- {
- 	return cpumask_weight(cpu_callout_mask);
- }
--#else
--static inline void prefill_possible_map(void)
--{
--}
- #endif /* CONFIG_SMP */
- 
- extern unsigned disabled_cpus __cpuinitdata;
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index ae0d804..f41c448 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -89,7 +89,7 @@
- 
- #include <asm/system.h>
- #include <asm/vsyscall.h>
--#include <asm/smp.h>
-+#include <asm/cpu.h>
- #include <asm/desc.h>
- #include <asm/dma.h>
- #include <asm/iommu.h>
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index bb1a3b1..6c2b844 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -53,7 +53,6 @@
- #include <asm/nmi.h>
- #include <asm/irq.h>
- #include <asm/idle.h>
--#include <asm/smp.h>
- #include <asm/trampoline.h>
- #include <asm/cpu.h>
- #include <asm/numa.h>
--- 
-1.5.6.6
+> On Wed, Jan 07, 2009 at 02:07:42PM +0100, Ingo Molnar wrote:
+> > * Chris Mason <chris.mason@oracle.com> wrote:
+> > > All of this is a long way of saying the btrfs locking scheme is far from 
+> > > perfect.  I'll look harder at the loop and ways to get rid of it.
+> > 
+> > <ob'plug>
+> > 
+> > adaptive spinning mutexes perhaps? Such as:
+> 
+> Um, I don't know how your mail client does threading, but mine shows 
+> Peter's message introducing the adaptive spinning mutexes as a reply to 
+> one of Chris' messages in the btrfs thread.
+>
+> Chris is just saying he'll look at other ways to not need the spinning 
+> mutexes.
 
+But those are not the same spinning mutexes. Chris wrote his mail on Jan 
+05, Peter his first mail about spin-mutexes on Jan 06, as a reaction to 
+Chris's mail.
 
+My reply links back the discussion to the original analysis from Chris 
+pointing out that it would be nice to try BTRFS with plain mutexes plus 
+Peter's patch - instead of throwing away BTRFS's locking design or 
+anything intrusive like that.
 
+Where's the problem? :)
+
+	Ingo
