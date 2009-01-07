@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbZAGNdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbZAGNdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbZAGNdd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:33:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbZAGNdQ
+	id S1758329AbZAGNdw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbZAGNdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:33:16 -0500
-Received: from bee.hiwaay.net ([216.180.54.11]:33108 "EHLO bee.hiwaay.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757392AbZAGNdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:33:15 -0500
-Date: Wed, 7 Jan 2009 07:33:06 -0600
-From: Chris Adams <cmadams@hiwaay.net>
-To: David Newall <davidn@davidnewall.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
-Message-ID: <20090107133306.GA1506277@hiwaay.net>
-References: <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm> <49614835.7000505@davidnewall.com> <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com> <20090105143335.GC18055@mail.local.tull.net> <4962BB13.7060304@davidnewall.com> <20090106025125.GB28431@mail.local.tull.net> <20090106094058.64c89586@lxorguk.ukuu.org.uk> <496479EA.1020207@davidnewall.com> <20090107095419.70b78dc7@lxorguk.ukuu.org.uk> <49648163.9060007@davidnewall.com>
+	Wed, 7 Jan 2009 08:33:39 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:36981 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754555AbZAGNdi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 08:33:38 -0500
+Date: Wed, 7 Jan 2009 14:33:30 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux I2C <linux-i2c@vger.kernel.org>
+Subject: [GIT PULL] i2c updates for 2.6.29
+Message-ID: <20090107143330.4b324026@hyperion.delvare>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49648163.9060007@davidnewall.com>
-User-Agent: Mutt/1.4i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once upon a time, David Newall <davidn@davidnewall.com> said:
-> The remaining fly in the ointment, if indeed the NTP client doesn't
-> already do what I've outlined, is that leap seconds aren't reckoned into
-> NTP broadcasts.  As intimated, this is correctable using leap second
-> information from zoneinfo.
+Hi Linus,
 
-No it isn't; you are still wrong.  Yet again, you are ignoring the
-facts:
+Please pull the i2c subsystem updates for Linux 2.6.29 from:
 
-- zoneinfo is for offset from UTC, leap seconds are changes in UTC
+git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
 
-- the standards say that time() returns seconds since the epoch in UTC
-  _except_ explicity NOT including leap seconds
+Only small changes this time, with the exception of the conversion of
+the apanel driver to the standard i2c device driver binding model.
 
-- NTP already has a way to distribute leap second information to trusted
-  clients
+ drivers/i2c/busses/i2c-ali1563.c               |    4 +-
+ drivers/i2c/busses/i2c-amd756-s4882.c          |    4 +-
+ drivers/i2c/busses/i2c-amd756.c                |    5 +-
+ drivers/i2c/busses/i2c-at91.c                  |    2 +-
+ drivers/i2c/busses/i2c-bfin-twi.c              |    2 +-
+ drivers/i2c/busses/i2c-i801.c                  |   50 ++++++++++++++-
+ drivers/i2c/busses/i2c-pxa.c                   |    4 +-
+ drivers/i2c/busses/i2c-s3c2410.c               |    2 +-
+ drivers/i2c/busses/i2c-sh7760.c                |    2 +-
+ drivers/i2c/busses/i2c-sh_mobile.c             |    2 +-
+ drivers/i2c/busses/i2c-sis5595.c               |    4 +-
+ drivers/i2c/busses/i2c-sis630.c                |    4 +-
+ drivers/i2c/i2c-core.c                         |    8 +-
+ drivers/input/misc/apanel.c                    |   81 ++++++++----------------
+ drivers/media/video/cafe_ccic.c                |    1 -
+ drivers/media/video/ov7670.c                   |    1 -
+ drivers/media/video/ovcamchip/ovcamchip_core.c |    1 -
+ drivers/media/video/w9968cf.c                  |    1 -
+ include/linux/i2c.h                            |    4 -
+ 19 files changed, 98 insertions(+), 84 deletions(-)
 
-> Even though this is manifestly not a kernel issue, I'll work up a patch
-> for ntpdate (apparently what I use) and post her, which I'm sure will be
-> useful for all other NTP clients.
+---------------
 
-ntpdate is obsolete.
+Jean Delvare (6):
+      i2c: Get rid of remaining bus_id access
+      i2c: Drop I2C_CLASS_ALL
+      i2c: Drop I2C_CLASS_CAM_ANALOG and I2C_CLASS_SOUND
+      i2c: Drop I2C_CLASS_CAM_DIGITAL
+      Input: apanel - convert to new i2c binding
+      i2c: Use snprintf to set adapter names
 
-> However it is now clear that no special kernel support is required for
-> leap-seconds, and any such code that's been incorporated needs to be
-> removed.  Removed I say!
+Kay Sievers (1):
+      i2c: Replace bus_id with dev_name(), dev_set_name()
 
-And you are wrong.
+Thanks,
 -- 
-Chris Adams <cmadams@hiwaay.net>
-Systems and Network Administrator - HiWAAY Internet Services
-I don't speak for anybody but myself - that's enough trouble.
+Jean Delvare
