@@ -1,101 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932707AbZAGXAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbZAGXAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932707AbZAGXAR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762345AbZAGW6J
+	id S932794AbZAGXAo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762737AbZAGW6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:58:09 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:64827 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760550AbZAGW6F (ORCPT
+	Wed, 7 Jan 2009 17:58:11 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:22163 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761610AbZAGW6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:58:05 -0500
-X-BigFish: VPS3(zzzzzzz32i43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0KD4IG9-02-ZHA-01
+	Wed, 7 Jan 2009 17:58:07 -0500
+X-BigFish: VPS1(zzzzzzz32i65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KD4IG8-01-LSO-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 8/9] oprofile: remove #ifdef CONFIG_OPROFILE_IBS in non-ibs code
-Date: Wed, 7 Jan 2009 23:45:24 +0100
-Message-ID: <1231368325-19246-9-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 5/9] oprofile: add op_cpu_buffer_get_data()
+Date: Wed, 7 Jan 2009 23:45:21 +0100
+Message-ID: <1231368325-19246-6-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1231368325-19246-1-git-send-email-robert.richter@amd.com>
 References: <1231368325-19246-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 07 Jan 2009 22:57:46.0585 (UTC) FILETIME=[5B419490:01C9711B]
+X-OriginalArrivalTime: 07 Jan 2009 22:57:46.0491 (UTC) FILETIME=[5B333CB0:01C9711B]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ifdefs can be removed since the code is no longer ibs specific and
-can be used for other purposes as well. IBS specific code is only in
-op_model_amd.c.
+This function provides access to attached data of a sample. It returns
+the size of data including the current value. Also,
+op_cpu_buffer_get_size() is available to check if there is data
+attached.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- drivers/oprofile/buffer_sync.c |    6 ------
- drivers/oprofile/cpu_buffer.c  |    4 ----
- 2 files changed, 0 insertions(+), 10 deletions(-)
+ drivers/oprofile/buffer_sync.c |    6 ++++--
+ drivers/oprofile/cpu_buffer.h  |   20 ++++++++++++++++++++
+ 2 files changed, 24 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-index d692fdc..ac014cb 100644
+index d969bb1..f9031d3 100644
 --- a/drivers/oprofile/buffer_sync.c
 +++ b/drivers/oprofile/buffer_sync.c
-@@ -316,8 +316,6 @@ static void add_trace_begin(void)
- 	add_event_entry(TRACE_BEGIN_CODE);
- }
- 
--#ifdef CONFIG_OPROFILE_IBS
--
- static void add_data(struct op_entry *entry, struct mm_struct *mm)
+@@ -524,6 +524,7 @@ void sync_buffer(int cpu)
  {
- 	unsigned long code, pc, val;
-@@ -355,8 +353,6 @@ static void add_data(struct op_entry *entry, struct mm_struct *mm)
- 		add_event_entry(val);
- }
- 
--#endif
--
- static inline void add_sample_entry(unsigned long offset, unsigned long event)
- {
- 	add_event_entry(offset);
-@@ -544,10 +540,8 @@ void sync_buffer(int cpu)
- 					cookie = get_exec_dcookie(mm);
- 				add_user_ctx_switch(new, cookie);
+ 	struct mm_struct *mm = NULL;
+ 	struct mm_struct *oldmm;
++	unsigned long val;
+ 	struct task_struct *new;
+ 	unsigned long cookie = 0;
+ 	int in_kernel = 1;
+@@ -559,10 +560,11 @@ void sync_buffer(int cpu)
+ 					state = sb_sample_start;
+ 				add_kernel_ctx_switch(flags & IS_KERNEL);
  			}
--#ifdef CONFIG_OPROFILE_IBS
- 			if (op_cpu_buffer_get_size(&entry))
- 				add_data(&entry, mm);
--#endif
- 			continue;
- 		}
- 
-diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
-index ddba9d0..b846af6 100644
---- a/drivers/oprofile/cpu_buffer.c
-+++ b/drivers/oprofile/cpu_buffer.c
-@@ -361,8 +361,6 @@ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
- 	__oprofile_add_ext_sample(pc, regs, event, is_kernel);
+-			if (flags & USER_CTX_SWITCH) {
++			if (flags & USER_CTX_SWITCH
++			    && op_cpu_buffer_get_data(&entry, &val)) {
+ 				/* userspace context switch */
++				new = (struct task_struct *)val;
+ 				oldmm = mm;
+-				new = (struct task_struct *)sample->data[0];
+ 				release_mm(oldmm);
+ 				mm = take_tasks_mm(new);
+ 				if (mm != oldmm)
+diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
+index e178dd2..f343760 100644
+--- a/drivers/oprofile/cpu_buffer.h
++++ b/drivers/oprofile/cpu_buffer.h
+@@ -90,6 +90,26 @@ int op_cpu_buffer_add_data(struct op_entry *entry, unsigned long val)
+ 	return entry->size;
  }
  
--#ifdef CONFIG_OPROFILE_IBS
--
- /*
-  * Add samples with data to the ring buffer.
-  *
-@@ -397,8 +395,6 @@ fail:
- 	cpu_buf->sample_lost_overflow++;
- }
- 
--#endif
--
- void oprofile_add_pc(unsigned long pc, int is_kernel, unsigned long event)
- {
- 	struct oprofile_cpu_buffer *cpu_buf = &__get_cpu_var(cpu_buffer);
++/* returns the size of data in the entry */
++static inline
++int op_cpu_buffer_get_size(struct op_entry *entry)
++{
++	return entry->size;
++}
++
++/* returns 0 if empty or the size of data including the current value */
++static inline
++int op_cpu_buffer_get_data(struct op_entry *entry, unsigned long *val)
++{
++	int size = entry->size;
++	if (!size)
++		return 0;
++	*val = *entry->data;
++	entry->size--;
++	entry->data++;
++	return size;
++}
++
+ /* extra data flags */
+ #define KERNEL_CTX_SWITCH	(1UL << 0)
+ #define IS_KERNEL		(1UL << 1)
 -- 
 1.6.0.1
 
