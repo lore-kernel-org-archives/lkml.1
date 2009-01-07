@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761023AbZAGW1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763068AbZAGW1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761023AbZAGW1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762249AbZAGWXV
+	id S1763068AbZAGW1o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762268AbZAGWXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 7 Jan 2009 17:23:21 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:21285 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762183AbZAGWXS (ORCPT
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:38915 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762211AbZAGWXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:23:18 -0500
-X-BigFish: VPS1(zzzzzzz32i62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KD4GU9-02-XTE-01
+	Wed, 7 Jan 2009 17:23:19 -0500
+X-BigFish: VPS1(zzzzzzz32i65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KD4GU9-02-XTD-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 08/18] oprofile: simplify sync_buffer()
-Date: Wed, 7 Jan 2009 23:17:25 +0100
-Message-ID: <1231366655-17837-9-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 06/18] oprofile: add inline function __oprofile_add_ext_sample()
+Date: Wed, 7 Jan 2009 23:17:23 +0100
+Message-ID: <1231366655-17837-7-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1231366655-17837-1-git-send-email-robert.richter@amd.com>
 References: <1231366655-17837-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 07 Jan 2009 22:22:59.0366 (UTC) FILETIME=[7F2D3C60:01C97116]
+X-OriginalArrivalTime: 07 Jan 2009 22:22:59.0350 (UTC) FILETIME=[7F2ACB60:01C97116]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make code more readable. No functional changes.
+This patch adds the inline function __oprofile_add_ext_sample() to
+cpu_buffer.c and thus reduces overhead when calling
+oprofile_add_sample().
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- drivers/oprofile/buffer_sync.c |   20 ++++++++++++++------
- 1 files changed, 14 insertions(+), 6 deletions(-)
+ drivers/oprofile/cpu_buffer.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-index 0abe29e..22cdb51 100644
---- a/drivers/oprofile/buffer_sync.c
-+++ b/drivers/oprofile/buffer_sync.c
-@@ -579,12 +579,20 @@ void sync_buffer(int cpu)
- 				add_user_ctx_switch(new, cookie);
- 				break;
- 			}
--		} else if (state >= sb_bt_start &&
--			   !add_sample(mm, s, in_kernel)) {
--			if (state == sb_bt_start) {
--				state = sb_bt_ignore;
--				atomic_inc(&oprofile_stats.bt_lost_no_mapping);
--			}
-+			continue;
-+		}
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index b353b19..9e66c38 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -277,8 +277,9 @@ static void oprofile_end_trace(struct oprofile_cpu_buffer *cpu_buf)
+ 	cpu_buf->tracing = 0;
+ }
+ 
+-void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
+-				unsigned long event, int is_kernel)
++static inline void
++__oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
++			  unsigned long event, int is_kernel)
+ {
+ 	struct oprofile_cpu_buffer *cpu_buf = &__get_cpu_var(cpu_buffer);
+ 
+@@ -299,12 +300,18 @@ void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
+ 	oprofile_end_trace(cpu_buf);
+ }
+ 
++void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
++			     unsigned long event, int is_kernel)
++{
++	__oprofile_add_ext_sample(pc, regs, event, is_kernel);
++}
 +
-+		if (state < sb_bt_start)
-+			/* ignore sample */
-+			continue;
-+
-+		if (add_sample(mm, s, in_kernel))
-+			continue;
-+
-+		/* ignore backtraces if failed to add a sample */
-+		if (state == sb_bt_start) {
-+			state = sb_bt_ignore;
-+			atomic_inc(&oprofile_stats.bt_lost_no_mapping);
- 		}
- 	}
- 	release_mm(mm);
+ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
+ {
+ 	int is_kernel = !user_mode(regs);
+ 	unsigned long pc = profile_pc(regs);
+ 
+-	oprofile_add_ext_sample(pc, regs, event, is_kernel);
++	__oprofile_add_ext_sample(pc, regs, event, is_kernel);
+ }
+ 
+ #ifdef CONFIG_OPROFILE_IBS
 -- 
 1.6.0.1
 
