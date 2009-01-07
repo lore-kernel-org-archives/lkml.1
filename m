@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZAGEBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZAGEBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbZAGEBK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 23:01:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZAGEA5
+	id S1754791AbZAGEBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 23:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbZAGEBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 23:00:57 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51681 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753728AbZAGEA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 23:00:56 -0500
-Message-ID: <49642829.20006@cn.fujitsu.com>
-Date: Wed, 07 Jan 2009 11:57:29 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH][RFC]: mutex: adaptive spin
-References: <87r63ljzox.fsf@basil.nowhere.org>	 <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>	 <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>	 <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>	 <1231278275.11687.111.camel@twins>	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>	 <1231279660.11687.121.camel@twins>	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain> <1231281801.11687.125.camel@twins>
-In-Reply-To: <1231281801.11687.125.camel@twins>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Jan 2009 23:01:21 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:56392 "EHLO
+	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756581AbZAGEBU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 23:01:20 -0500
+Subject: Re: [Regression] X server doesn't start on MSI Wind w/ current
+	mainline
+From: Eric Anholt <eric@anholt.net>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@gmail.com>
+In-Reply-To: <200901050948.14352.jbarnes@virtuousgeek.org>
+References: <200901031328.40574.rjw@sisk.pl>
+	 <200901050011.32974.rjw@sisk.pl>
+	 <200901050948.14352.jbarnes@virtuousgeek.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-U5b/ldxRgTx/fopiPgiC"
+Date: Tue, 06 Jan 2009 20:01:17 -0800
+Message-Id: <1231300877.4690.46.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> +void mutex_spin_or_schedule(struct mutex_waiter *waiter, long state, unsigned long *flags)
-> +{
-> +	struct mutex *lock = waiter->lock;
-> +	struct task_struct *task = waiter->task;
-> +	struct task_struct *owner = lock->owner;
-> +	struct rq *rq;
-> +
-> +	if (!owner)
-> +		goto do_schedule;
-> +
-> +	rq = task_rq(owner);
-> +
-> +	if (rq->curr != owner) {
-> +do_schedule:
-> +		__set_task_state(task, state);
-> +		spin_unlock_mutex(&lock->wait_lock, *flags);
-> +		schedule();
-> +	} else {
-> +		spin_unlock_mutex(&lock->wait_lock, *flags);
-> +		for (;;) {
-> +			/* Stop spinning when there's a pending signal. */
-> +			if (signal_pending_state(state, task))
-> +				break;
-> +
-> +			/* Owner changed, bail to revalidate state */
-> +			if (lock->owner != owner)
-> +				break;
-> +
-> +			/* Owner stopped running, bail to revalidate state */
-> +			if (rq->curr != owner)
-> +				break;
-> +
 
-2 questions from my immature thought:
+--=-U5b/ldxRgTx/fopiPgiC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-1) Do we need keep gcc from optimizing when we access lock->owner
-   and rq->curr in the loop?
+On Mon, 2009-01-05 at 09:48 -0800, Jesse Barnes wrote:
+> On Sunday, January 4, 2009 3:11 pm Rafael J. Wysocki wrote:
+> > On Saturday 03 January 2009, Rafael J. Wysocki wrote:
+> > > Hi,
+> > >
+> > > With the current mainline and the linux-next branch of your pci-2.6 t=
+ree
+> > > on top, the X server doesn't start any more on MSI Wind (Intel hardwa=
+re)
+> > > w/ openSUSE 11.1 .
+> > >
+> > > I also tested the linux-next branch of the pci-2.6 tree on top of 2.6=
+.28
+> > > and it doesn't cause any problem with the X server to happen.
+> >
+> > Well, I pulled the mainline from today, unsetted DRM_I915_KMS and it wo=
+rks
+> > again.
+> >
+> > BTW, what user land is necessary for the KMS to work?
+>=20
+> Ah yeah defaulting to KMS enabled will probably get you undesirable resul=
+ts at=20
+> this point.  You'll need a bleeding edge 2D driver (from xf86-video-intel=
+ git)=20
+> and libdrm 2.4.3 to make this all work.  Be sure to pass "--enable-kms" w=
+hen=20
+> you configure your 2D driver.
 
-2) "if (rq->curr != owner)" need become smarter.
-   schedule()
-   {
-	select_next
-	rq->curr = next;
-	contex_swith
-   }
-we also spin when owner is select_next-ing in schedule().
-but select_next is not fast enough.
+The --enable-kms requirement is gone now.  Hopefully soon we'll have a
+release out and can mention a version number in the Kconfig.
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
 
-Lai.
 
+--=-U5b/ldxRgTx/fopiPgiC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklkKQ0ACgkQHUdvYGzw6vewMQCfZ4ARvDSn47PHIh20y5yU+Uzn
+68MAn3ozI/Yvhhnh0bKbRawFm2daA2xW
+=QBgP
+-----END PGP SIGNATURE-----
+
+--=-U5b/ldxRgTx/fopiPgiC--
 
