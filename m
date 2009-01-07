@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbZAGNUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZAGNWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbZAGNUr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZAGNUi
+	id S1756821AbZAGNWO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZAGNV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:20:38 -0500
-Received: from viefep17-int.chello.at ([62.179.121.37]:15848 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751562AbZAGNUh (ORCPT
+	Wed, 7 Jan 2009 08:21:57 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:52168 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbZAGNV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:20:37 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <20090107122913.GL4574@dirshya.in.ibm.com>
-References: <20090104174450.GB4301@dirshya.in.ibm.com>
-	 <1231092523.29980.4.camel@twins> <20090105040635.GF4301@dirshya.in.ibm.com>
-	 <20090105130638.GB6014@elte.hu> <20090107114947.GJ4574@dirshya.in.ibm.com>
-	 <20090107122913.GL4574@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 14:12:43 +0100
-Message-Id: <1231333963.11687.288.camel@twins>
+	Wed, 7 Jan 2009 08:21:56 -0500
+Date: Wed, 7 Jan 2009 14:23:37 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: ccache@lists.samba.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
+Message-ID: <20090107132337.GA2289@uranus.ravnborg.org>
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <496386EF.76E4.0078.0@novell.com> <20090106173300.GA10903@mit.edu> <49647B00.76E4.0078.0@novell.com> <20090107113138.GA29730@uranus.ravnborg.org> <4964AF8D.76E4.0078.0@novell.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4964AF8D.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 17:59 +0530, Vaidyanathan Srinivasan wrote:
-
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.28-autotest-tip-sv #1
-> ---------------------------------------------
-> klogd/5062 is trying to acquire lock:
->  (&rq->lock){++..}, at: [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
+On Wed, Jan 07, 2009 at 12:35:09PM +0000, Jan Beulich wrote:
+> >>> Sam Ravnborg <sam@ravnborg.org> 07.01.09 12:31 >>>
+> >What is the gain/pain ratio here?
 > 
-> but task is already holding lock:
->  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> 
-> other info that might help us debug this:
-> 1 lock held by klogd/5062:
->  #0:  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> 
-> stack backtrace:
-> Pid: 5062, comm: klogd Not tainted 2.6.28-autotest-tip-sv #1
-> Call Trace:
->  [<ffffffff80259ef1>] __lock_acquire+0xeb9/0x16a4
->  [<ffffffff8025a6c0>] ? __lock_acquire+0x1688/0x16a4
->  [<ffffffff8025a761>] lock_acquire+0x85/0xa9
->  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
->  [<ffffffff805fa4d4>] _spin_lock+0x31/0x66
->  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
->  [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
->  [<ffffffff80233363>] try_to_wake_up+0x88/0x27a
->  [<ffffffff80233581>] wake_up_process+0x10/0x12
->  [<ffffffff805f775c>] schedule+0x560/0xa31
+> Certainly depends on the pov - it reduces the kernel module (disk) image
+> sizes quite a bit, so from a distro perspective its a move against the ever
+> growing package sizes (and the disk space) hundreds or even thousands
+> of modules require.
 
-I'd be most curious to know where in schedule we are.
+The kernel modules seldom export anything so the benefit is minimal here.
 
-Thanks
+I really think we are on a wrong track here.
 
+I did a 15 minutes hack to try ripping the .c -> .s -> .o stuff out.
+
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 5d90030..8c93dc3 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -153,7 +153,7 @@ $(obj)/%.i: $(src)/%.c FORCE
+ 
+ cmd_genksyms =                                                              \
+     $(CPP) -D__GENKSYMS__ $(c_flags) $< |                                   \
+-    $(GENKSYMS) -T $@ -A -a $(ARCH)                                         \
++    $(GENKSYMS) -T $@ $(if $(CONFIG_KBUILD_STRIP_CRC), -A) -a $(ARCH)       \
+      $(if $(KBUILD_PRESERVE),-p)                                            \
+      $(if $(1),-r $(firstword $(wildcard $(@:.symtypes=.symref) /dev/null)))
+ 
+@@ -192,6 +192,7 @@ v_file = $(@D)/.tmp_$(@F:.o=.v)
+ tmp_o_file = $(@D)/.tmp_$(@F)
+ no_g_c_flags = $(filter-out -g%,$(c_flags))
+ 
++ifdef CONFIG_KBUILD_STRIP_CRC
+ cmd_cc_o_c = $(CC) $(c_flags) -S -o $(s_file) $<
+ 
+ cmd_modversions =							\
+@@ -208,8 +209,20 @@ cmd_modversions =							\
+ 		fi;							\
+ 	else								\
+ 		rm -f $(v_file);					\
+-		$(CC) $(no_g_c_flags) -c -o $@ $(s_file);		\
++		$(CC) $(no_g_c_flags) -c -o $@ $< ;			\
+ 	fi;
++else
++cmd_cc_o_c = $(CC) $(c_flags) -c -o $(tmp_o_file) $<
++
++cmd_modversions =							\
++	if $(OBJDUMP) -h $(tmp_o_file) | grep -q __ksymtab; then	\
++		$(call cmd_genksyms, $(KBUILD_SYMTYPES)) > $(v_file);	\
++		$(LD) $(LDFLAGS) -r -o $@ $(tmp_o_file)	-T $(v_file);	\
++	else								\
++		rm -f $(v_file);					\
++	fi;
++
++endif
+ endif
+ 
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+
+
+Jan - I need some hard numbers to convince me that stripping the
+__crc symbols is worth it.
+
+We can make it a configuration option as I showed above but we should
+at least know what we are gaining for this.
+
+I am very positive about stripping of the modules in general,
+but the __crc_ symbols seems to trigger a few things:
+1) ccahce, distcc issues in the MODVERSION case (that is allmodconfig builds)
+2) It does not increase readability of the Makefile machinery and I like more
+   people to be able to hack on this - not less.
+
+Thanks,
+	Sam
