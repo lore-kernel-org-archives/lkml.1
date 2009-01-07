@@ -1,196 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbZAGPzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbZAGPzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759409AbZAGPzG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:55:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZAGPyv
+	id S1760205AbZAGPzh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZAGPzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:54:51 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53073 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380AbZAGPyt (ORCPT
+	Wed, 7 Jan 2009 10:55:19 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:11889 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbZAGPzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:54:49 -0500
-Subject: Re: [PATCH -v4][RFC]: mutex: implement adaptive spinning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <alpine.DEB.1.10.0901071014120.32756@gandalf.stny.rr.com>
-References: <87r63ljzox.fsf@basil.nowhere.org>
-	 <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>
-	 <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
-	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
-	 <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>
-	 <1231278275.11687.111.camel@twins>
-	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
-	 <1231279660.11687.121.camel@twins>
-	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
-	 <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>
-	 <1231329783.11687.287.camel@twins>
-	 <alpine.DEB.1.10.0901071014120.32756@gandalf.stny.rr.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 07 Jan 2009 16:54:40 +0100
-Message-Id: <1231343680.11687.307.camel@twins>
+	Wed, 7 Jan 2009 10:55:17 -0500
+Date: Wed, 7 Jan 2009 16:55:01 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] hwmon updates for 2.6.29
+Message-ID: <20090107165501.646e4841@hyperion.delvare>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 10:22 -0500, Steven Rostedt wrote:
-> Peter, nice work!
+Hi Linus,
 
-Thanks!
+Please pull some hwmon subsystem updates for Linux 2.6.29 from:
 
-> > +	}
-> > +
-> > +	if (!spin) {
-> > +		schedstat_inc(this_rq(), mtx_sched);
-> > +		__set_task_state(task, state);
-> 
-> I still do not know why you set state here instead of in the mutex code.
-> Yes, you prevent changing the state if we do not schedule, but there's 
-> nothing wrong with setting it before hand. We may even be able to cache 
-> the owner and keep the locking of the wait_lock out of here. But then I 
-> see that it may be used to protect the sched_stat counters.
+git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
 
-I was about to say because we need task_rq(owner) and can only deref
-owner while holding that lock, but I found a way around it by using
-task_cpu() which is exported.
+There are a lot of improvements to the f71882fg driver, a new driver
+(ltc4245), watchdog support added to the fschmd driver, support for the
+ITE IT8720F, and a few other small things.
 
-Compile tested only so far...
+ Documentation/feature-removal-schedule.txt |    8 +
+ Documentation/hwmon/f71882fg               |   89 ++
+ Documentation/hwmon/it87                   |   20 +-
+ Documentation/hwmon/lm70                   |   12 +-
+ Documentation/hwmon/lm85                   |    2 +-
+ Documentation/hwmon/ltc4245                |   81 ++
+ Documentation/spi/spi-lm70llp              |   10 +
+ drivers/hwmon/Kconfig                      |   47 +-
+ drivers/hwmon/Makefile                     |    1 +
+ drivers/hwmon/asb100.c                     |    5 +-
+ drivers/hwmon/dme1737.c                    |    5 +
+ drivers/hwmon/f71805f.c                    |    5 +
+ drivers/hwmon/f71882fg.c                   | 1549 +++++++++++++++++++++++-----
+ drivers/hwmon/fschmd.c                     |  448 ++++++++-
+ drivers/hwmon/i5k_amb.c                    |    7 +
+ drivers/hwmon/it87.c                       |   37 +-
+ drivers/hwmon/lm70.c                       |   91 ++-
+ drivers/hwmon/ltc4245.c                    |  567 ++++++++++
+ drivers/hwmon/pc87360.c                    |    6 +
+ drivers/hwmon/pc87427.c                    |    5 +
+ drivers/hwmon/sis5595.c                    |    5 +
+ drivers/hwmon/smsc47b397.c                 |    5 +
+ drivers/hwmon/smsc47m1.c                   |    5 +
+ drivers/hwmon/via686a.c                    |    5 +
+ drivers/hwmon/vt1211.c                     |    5 +
+ drivers/hwmon/vt8231.c                     |    5 +
+ drivers/hwmon/w83627ehf.c                  |    8 +-
+ drivers/hwmon/w83627hf.c                   |    5 +
+ drivers/hwmon/w83781d.c                    |    5 +-
+ drivers/hwmon/w83791d.c                    |    5 +-
+ drivers/hwmon/w83792d.c                    |    5 +-
+ drivers/hwmon/w83793.c                     |    5 +-
+ drivers/spi/spi_lm70llp.c                  |   33 +-
+ 33 files changed, 2729 insertions(+), 362 deletions(-)
+ create mode 100644 Documentation/hwmon/f71882fg
+ create mode 100644 Documentation/hwmon/ltc4245
+ create mode 100644 drivers/hwmon/ltc4245.c
 
----
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -329,8 +329,8 @@ extern signed long schedule_timeout(sign
- extern signed long schedule_timeout_interruptible(signed long timeout);
- extern signed long schedule_timeout_killable(signed long timeout);
- extern signed long schedule_timeout_uninterruptible(signed long timeout);
--extern void mutex_spin_or_schedule(struct mutex_waiter *waiter, long state,
--				   unsigned long *flags);
-+extern void mutex_spin_or_schedule(struct mutex_waiter *waiter,
-+				   struct task_struct *owner, int cpu);
- asmlinkage void schedule(void);
- 
- struct nsproxy;
-Index: linux-2.6/kernel/mutex.c
-===================================================================
---- linux-2.6.orig/kernel/mutex.c
-+++ linux-2.6/kernel/mutex.c
-@@ -12,7 +12,8 @@
-  *
-  *  - Adaptive spinning for mutexes by Peter Zijlstra. (Ported to mainline
-  *    from the -rt tree, where it was originally implemented for rtmutexes
-- *    by Steven Rostedt, based on work by Gregory Haskins.)
-+ *    by Steven Rostedt, based on work by Gregory Haskins, Peter Morreale
-+ *    and Sven Dietrich.
-  *
-  * Also see Documentation/mutex-design.txt.
-  */
-@@ -157,6 +158,9 @@ __mutex_lock_common(struct mutex *lock, 
- 	lock_contended(&lock->dep_map, ip);
- 
- 	for (;;) {
-+		int cpu = 0;
-+		struct task_struct *l_owner;
-+
- 		/*
- 		 * Lets try to take the lock again - this is needed even if
- 		 * we get here for the first time (shortly after failing to
-@@ -184,8 +188,15 @@ __mutex_lock_common(struct mutex *lock, 
- 			return -EINTR;
- 		}
- 
--		mutex_spin_or_schedule(&waiter, state, &flags);
-+		__set_task_state(task, state);
-+		l_owner = ACCESS_ONCE(lock->owner);
-+		if (l_owner)
-+			cpu = task_cpu(l_owner);
-+		spin_unlock_mutex(&lock->wait_lock, flags);
-+		mutex_spin_or_schedule(&waiter, l_owner, cpu);
-+		spin_lock_mutex(&lock->wait_lock, flags);
- 	}
-+	__set_task_state(task, TASK_RUNNING);
- 
- done:
- 	lock_acquired(&lock->dep_map, ip);
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -4600,42 +4600,37 @@ pick_next_task(struct rq *rq, struct tas
- 	}
- }
- 
--#ifdef CONFIG_DEBUG_MUTEXES
--# include "mutex-debug.h"
--#else
--# include "mutex.h"
--#endif
--
--void mutex_spin_or_schedule(struct mutex_waiter *waiter, long state,
--			    unsigned long *flags)
-+void mutex_spin_or_schedule(struct mutex_waiter *waiter,
-+			    struct task_struct *owner, int cpu)
- {
--	struct mutex *lock = waiter->lock;
- 	struct task_struct *task = waiter->task;
--	struct task_struct *owner = lock->owner;
-+	struct mutex *lock = waiter->lock;
- 	struct rq *rq;
- 	int spin = 0;
- 
- 	if (likely(sched_feat(MUTEX_SPIN) && owner)) {
--		rq = task_rq(owner);
-+		rq = cpu_rq(cpu);
- 		spin = (rq->curr == owner);
- 	}
- 
- 	if (!spin) {
-+		preempt_disable();
- 		schedstat_inc(this_rq(), mtx_sched);
--		__set_task_state(task, state);
--		spin_unlock_mutex(&lock->wait_lock, *flags);
-+		preempt_enable();
-+
- 		schedule();
--		spin_lock_mutex(&lock->wait_lock, *flags);
- 		return;
- 	}
- 
-+	preempt_disable();
- 	schedstat_inc(this_rq(), mtx_spin);
--	spin_unlock_mutex(&lock->wait_lock, *flags);
-+	preempt_enable();
-+
- 	for (;;) {
- 		struct task_struct *l_owner;
- 
- 		/* Stop spinning when there's a pending signal. */
--		if (signal_pending_state(state, task))
-+		if (signal_pending_state(task->state, task))
- 			break;
- 
- 		/* Mutex got unlocked, try to acquire. */
-@@ -4666,7 +4661,6 @@ void mutex_spin_or_schedule(struct mutex
- 		 */
- 		cpu_relax();
- 	}
--	spin_lock_mutex(&lock->wait_lock, *flags);
- }
- 
- /*
+---------------
 
+Darrick J. Wong (1):
+      hwmon: (i5k_amb) Load automatically on all 5000/5400 chipsets
+
+Hans de Goede (18):
+      hwmon: (f71882fg) Style cleanups and put some repeating code into functions
+      hwmon: (f71882fg) Add support for the F71862FG superio sensors
+      hwmon: (f71882fg) Move some io access from the detect to the probe function
+      hwmon: (f71882fg) Prepare for adding F8000 support
+      hwmon: (f71882fg) Fix various sysfs callback function issues
+      hwmon: (f71882fg) Cleanup fan and temp hyst functions
+      hwmon: (f71882fg) Check for hwmon powerdown state
+      hwmon: (f71882fg) Separate max and crit alarm and beep
+      hwmon: (f71882fg) Remove the fan_mode module option
+      hwmon: (f71882fg) Add F8000 support
+      hwmon: (f71882fg) Add missing pwm3 attr for f71862fg
+      hwmon: (f71882fg) Fix auto_channels_temp temp numbering with f8000
+      hwmon: (f71882fg) Add documentation
+      hwmon: (f71882fg) Printout fan modes
+      hwmon: (f71882fg) Fix fan_to/from_reg prototypes
+      hwmon: (fschmd) Cleanups for watchdog support
+      hwmon: (fschmd) Add watchdog support
+      hwmon: Deprecate the fscher and fscpos drivers
+
+Ira Snyder (1):
+      hwmon: Add LTC4245 driver
+
+Jean Delvare (3):
+      hwmon: Don't overuse I2C_CLIENT_MODULE_PARM
+      hwmon: Check for ACPI resource conflicts
+      hwmon: Fix various typos
+
+Jean-Marc Spaggiari (1):
+      hwmon: (it87) Add support for the ITE IT8720F
+
+Kaiwan N Billimoria (1):
+      hwmon: (lm70) Code streamlining and cleanup
+
+Manuel Lauss (1):
+      hwmon: (lm70) Add TI TMP121 support
+
+Mark van Doesburg (3):
+      hwmon: (f71882fg) Use sensor_device_attribute_2
+      hwmon: (f71882fg) Misc cleanups
+      hwmon: (f71882fg) Add PWM support
+
+
+
+-- 
+Jean Delvare
