@@ -1,226 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760080AbZAGSmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbZAGSnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760080AbZAGSmq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 13:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760244AbZAGSlm
+	id S1760246AbZAGSnG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 13:43:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760663AbZAGSmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 13:41:42 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:58376 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760206AbZAGSll (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 13:41:41 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 08 Jan 2009 00:11:35 +0530
-Message-Id: <20090107184135.18062.96358.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
-Subject: [RFC][PATCH 4/4] Memory controller soft limit reclaim on contention
+	Wed, 7 Jan 2009 13:42:36 -0500
+Received: from THUNK.ORG ([69.25.196.29]:33552 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760650AbZAGSme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 13:42:34 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 updates for 2.6.29
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1LKdMM-0001Og-C1@closure.thunk.org>
+Date: Wed, 07 Jan 2009 13:42:30 -0500
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Hi Linus,
 
-This patch allows reclaim from memory cgroups on contention (via the
-__alloc_pages_internal() path). If a order greater than 0 is specified, we
-anyway fall back on try_to_free_pages().
+Please pull from:
 
-memory cgroup soft limit reclaim finds the group that exceeds its soft limit
-by the largest amount and reclaims pages from it and then reinserts the
-cgroup into its correct place in the rbtree.
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+This contains lots of cleanups as well as various bug fixes, some of
+which will also need to included in the 2.6.28.x stable tree.  There are
+also some performance improvements, such as Josef Bacik fsync batching,
+and also of note Frank Mayhar from Google's extensions which allow ext4
+to run without a journal.  (This way, if you are using aggressively
+replicated filesets, and you want the performance improvements of ext4
+--- extents, delayed allocation, et. al --- you can get it without the
+overhead of the journal.  This is useful if your recovery mechanism on
+an unclean shutdown is to mkfs the filesystem and recover it from one of
+the other backup copies of the filesystem.  :-)   Finally, we have some
+robustification patches which prevent ext4 from oops when given a
+corrupted filesystem image.
 
- include/linux/memcontrol.h |    1 
- mm/memcontrol.c            |   82 +++++++++++++++++++++++++++++++++--
- mm/page_alloc.c            |   10 +++-
- 3 files changed, 88 insertions(+), 5 deletions(-)
+Thanks!!
 
-diff -puN mm/memcontrol.c~memcg-soft-limit-reclaim-on-contention mm/memcontrol.c
---- a/mm/memcontrol.c~memcg-soft-limit-reclaim-on-contention
-+++ a/mm/memcontrol.c
-@@ -177,6 +177,7 @@ struct mem_cgroup {
- 	struct rb_node mem_cgroup_node;
- 	unsigned long long usage_in_excess;
- 	unsigned long last_tree_update;
-+	bool on_tree;
- 
- 	/*
- 	 * statistics. This must be placed at the end of memcg.
-@@ -184,7 +185,7 @@ struct mem_cgroup {
- 	struct mem_cgroup_stat stat;
- };
- 
--#define	MEM_CGROUP_TREE_UPDATE_INTERVAL		(HZ)
-+#define	MEM_CGROUP_TREE_UPDATE_INTERVAL		(HZ/4)
- 
- enum charge_type {
- 	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
-@@ -217,13 +218,15 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
- static void mem_cgroup_get(struct mem_cgroup *mem);
- static void mem_cgroup_put(struct mem_cgroup *mem);
- 
--static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-+static void __mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
- {
- 	struct rb_node **p = &mem_cgroup_soft_limit_exceeded_groups.rb_node;
- 	struct rb_node *parent = NULL;
- 	struct mem_cgroup *mem_node;
- 
--	mutex_lock(&memcg_soft_limit_tree_mutex);
-+	if (mem->on_tree)
-+		return;
-+
- 	while (*p) {
- 		parent = *p;
- 		mem_node = rb_entry(parent, struct mem_cgroup, mem_cgroup_node);
-@@ -240,16 +243,54 @@ static void mem_cgroup_insert_exceeded(s
- 	rb_insert_color(&mem->mem_cgroup_node,
- 			&mem_cgroup_soft_limit_exceeded_groups);
- 	mem->last_tree_update = jiffies;
-+	mem->on_tree = true;
-+}
-+
-+static void __mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
-+{
-+	if (!mem->on_tree)
-+		return;
-+	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_exceeded_groups);
-+	mem->on_tree = false;
-+}
-+
-+static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-+{
-+	mutex_lock(&memcg_soft_limit_tree_mutex);
-+	__mem_cgroup_insert_exceeded(mem);
- 	mutex_unlock(&memcg_soft_limit_tree_mutex);
- }
- 
- static void mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
- {
- 	mutex_lock(&memcg_soft_limit_tree_mutex);
--	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_exceeded_groups);
-+	__mem_cgroup_remove_exceeded(mem);
- 	mutex_unlock(&memcg_soft_limit_tree_mutex);
- }
- 
-+static struct mem_cgroup *mem_cgroup_get_largest_soft_limit_exceeding_node(void)
-+{
-+	struct rb_node *rightmost = NULL;
-+	struct mem_cgroup *mem = NULL;
-+
-+	mutex_lock(&memcg_soft_limit_tree_mutex);
-+	rightmost = rb_last(&mem_cgroup_soft_limit_exceeded_groups);
-+	if (!rightmost)
-+		goto done;		/* Nothing to reclaim from */
-+
-+	mem = rb_entry(rightmost, struct mem_cgroup, mem_cgroup_node);
-+	mem_cgroup_get(mem);
-+	/*
-+	 * Remove the node now but someone else can add it back,
-+	 * we will to add it back at the end of reclaim to its correct
-+	 * position in the tree.
-+	 */
-+	__mem_cgroup_remove_exceeded(mem);
-+done:
-+	mutex_unlock(&memcg_soft_limit_tree_mutex);
-+	return mem;
-+}
-+
- static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
- 					 struct page_cgroup *pc,
- 					 bool charge)
-@@ -1795,6 +1836,37 @@ try_to_free:
- 	goto out;
- }
- 
-+unsigned long mem_cgroup_soft_limit_reclaim(gfp_t gfp_mask)
-+{
-+	unsigned long nr_reclaimed = 0;
-+	struct mem_cgroup *mem;
-+
-+	do {
-+		mem = mem_cgroup_get_largest_soft_limit_exceeding_node();
-+		if (!mem)
-+			break;
-+		if (mem_cgroup_is_obsolete(mem)) {
-+			mem_cgroup_put(mem);
-+			continue;
-+		}
-+		nr_reclaimed +=
-+			try_to_free_mem_cgroup_pages(mem, gfp_mask, false,
-+							get_swappiness(mem));
-+		mutex_lock(&memcg_soft_limit_tree_mutex);
-+		mem->usage_in_excess = res_counter_soft_limit_excess(&mem->res);
-+		/*
-+		 * We need to remove and reinsert the node in its correct
-+		 * position
-+		 */
-+		__mem_cgroup_remove_exceeded(mem);
-+		if (mem->usage_in_excess)
-+			__mem_cgroup_insert_exceeded(mem);
-+		mutex_unlock(&memcg_soft_limit_tree_mutex);
-+		mem_cgroup_put(mem);
-+	} while (!nr_reclaimed);
-+	return nr_reclaimed;
-+}
-+
- int mem_cgroup_force_empty_write(struct cgroup *cont, unsigned int event)
- {
- 	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont), true);
-@@ -2309,6 +2381,8 @@ mem_cgroup_create(struct cgroup_subsys *
- 	mem->last_scanned_child = NULL;
- 	mem->usage_in_excess = 0;
- 	mem->last_tree_update = 0;	/* Yes, time begins at 0 here */
-+	mem->on_tree = false;
-+
- 	spin_lock_init(&mem->reclaim_param_lock);
- 
- 	if (parent)
-diff -puN mm/vmscan.c~memcg-soft-limit-reclaim-on-contention mm/vmscan.c
-diff -puN include/linux/memcontrol.h~memcg-soft-limit-reclaim-on-contention include/linux/memcontrol.h
---- a/include/linux/memcontrol.h~memcg-soft-limit-reclaim-on-contention
-+++ a/include/linux/memcontrol.h
-@@ -117,6 +117,7 @@ static inline bool mem_cgroup_disabled(v
- }
- 
- extern bool mem_cgroup_oom_called(struct task_struct *task);
-+extern unsigned long mem_cgroup_soft_limit_reclaim(gfp_t gfp_mask);
- 
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
- struct mem_cgroup;
-diff -puN mm/page_alloc.c~memcg-soft-limit-reclaim-on-contention mm/page_alloc.c
---- a/mm/page_alloc.c~memcg-soft-limit-reclaim-on-contention
-+++ a/mm/page_alloc.c
-@@ -1582,7 +1582,15 @@ nofail_alloc:
- 	reclaim_state.reclaimed_slab = 0;
- 	p->reclaim_state = &reclaim_state;
- 
--	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
-+	did_some_progress = mem_cgroup_soft_limit_reclaim(gfp_mask);
-+	/*
-+	 * If we made no progress or need higher order allocations
-+	 * try_to_free_pages() is still our best bet, since mem_cgroup
-+	 * reclaim does not handle freeing pages greater than order 0
-+	 */
-+	if (!did_some_progress || order)
-+		did_some_progress = try_to_free_pages(zonelist, order,
-+							gfp_mask);
- 
- 	p->reclaim_state = NULL;
- 	p->flags &= ~PF_MEMALLOC;
-_
+                                                - Ted
 
--- 
-	Balbir
+Alexander Beregalov (1):
+      ext4: fix printk format warning
+
+Aneesh Kumar K.V (20):
+      ext4: Fix the delalloc writepages to allocate blocks at the right offset.
+      ext4: avoid ext4_error when mounting a fs with a single bg
+      ext4: Don't overwrite allocation_context ac_status
+      ext4: sparse fixes
+      ext4: Add blocks added during resize to bitmap
+      ext4: Use EXT4_GROUP_INFO_NEED_INIT_BIT during resize
+      ext4: cleanup mballoc header files
+      jbd2: Call journal commit callback without holding j_list_lock
+      ext4: don't use blocks freed but not yet committed in buddy cache init
+      ext4: Fix lockdep recursive locking warning
+      ext4: fix BUG when calling ext4_error with locked block group
+      ext4: Fix race between read_block_bitmap() and mark_diskspace_used()
+      ext4: Use high 16 bits of the block group descriptor's free counts fields
+      ext4: code cleanup
+      ext4: Fix the race between read_inode_bitmap() and ext4_new_inode()
+      ext4: Use new buffer_head flag to check uninit group bitmaps initialization
+      ext4: mark the blocks/inode bitmap beyond end of group as used
+      ext4: Don't allow new groups to be added during block allocation
+      ext4: Init the complete page while building buddy cache
+      ext4: Fix s_dirty_blocks_counter if block allocation failed with nodelalloc
+
+Frank Mayhar (1):
+      ext4: Allow ext4 to run without a journal
+
+Jan Kara (1):
+      jbd2: Fix oops in jbd2_journal_init_inode() on corrupted fs
+
+Josef Bacik (1):
+      jbd2: improve jbd2 fsync batching
+
+Mark Fasheh (1):
+      jbd2: Add BH_JBDPrivateStart
+
+Roel Kluin (1):
+      ext4: Use simple_strtol() instead of simple_strtoul() in ext4_ui_proc_open
+
+Solofo.Ramangalahy@bull.net (1):
+      ext4: When resizing set the EXT4_BG_INODE_ZEROED flag for new block groups
+
+Theodore Ts'o (26):
+      ext3: Add support for non-native signed/unsigned htree hash algorithms
+      ext4: Add support for non-native signed/unsigned htree hash algorithms
+      ext3/4: Fix loop index in do_split() so it is signed
+      Update Documentation/filesystems/ext4.txt
+      ext4: remove ext4_new_blocks() and call ext4_mb_new_blocks() directly
+      ext4: remove ext4_new_meta_block()
+      ext4: remove do_blk_alloc()
+      ext4: tone down ext4_da_writepages warnings
+      jbd2: Add barrier not supported test to journal_wait_on_commit_record
+      ext4: remove extraneous newlines from calls to ext4_error() and ext4_warning()
+      ext4: display average commit time
+      ext4: add fsync batch tuning knobs
+      ext4: Remove i_ext_generation from ext4_inode_info structure
+      ext4: Make ext4_group_t be an unsigned int
+      ext4: Change unsigned long to unsigned int
+      jbd2: Remove a large array of bh's from the stack of the checkpoint routine
+      add releasepage hooks to block devices which can be used by file systems
+      ext4: Remove code to create the journal inode
+      ext4: Add markers for better debuggability
+      jbd2: Add pid and journal device name to the "kjournald2 starting" message
+      jbd2: Submit writes to the journal using WRITE_SYNC
+      ext4: Add mount option to set kjournald's I/O priority
+      ext4: Add sanity checks for the superblock before mounting the filesystem
+      ext4: Make printk's consistently prefixed with "EXT4-fs: "
+      block: Add Kconfig help which notes that ext4 needs CONFIG_LBD
+      ext4: Remove "extents" mount option
+
+Toshiyuki Okajima (2):
+      ext3: provide function to release metadata pages under memory pressure
+      ext4: provide function to release metadata pages under memory pressure
+
+Wu Fengguang (1):
+      ext4: fix build warning
+
+Yasunori Goto (1):
+      ext4: Widen type of ext4_sb_info.s_mb_maxs[]
+
+ Documentation/filesystems/ext4.txt |   85 ++++-
+ block/Kconfig                      |    6 +
+ fs/block_dev.c                     |   15 +
+ fs/ext3/hash.c                     |   77 ++++-
+ fs/ext3/namei.c                    |   11 +-
+ fs/ext3/super.c                    |   33 ++
+ fs/ext4/balloc.c                   |  293 ++++++------------
+ fs/ext4/bitmap.c                   |    5 +-
+ fs/ext4/dir.c                      |   10 +-
+ fs/ext4/ext4.h                     |  152 +++++++--
+ fs/ext4/ext4_extents.h             |    5 -
+ fs/ext4/ext4_i.h                   |   16 +-
+ fs/ext4/ext4_jbd2.c                |   83 ++++--
+ fs/ext4/ext4_jbd2.h                |   87 ++++-
+ fs/ext4/ext4_sb.h                  |    6 +-
+ fs/ext4/extents.c                  |   60 ++--
+ fs/ext4/file.c                     |    3 -
+ fs/ext4/hash.c                     |   77 ++++-
+ fs/ext4/ialloc.c                   |  324 +++++++++++--------
+ fs/ext4/inode.c                    |  309 +++++++++++++-----
+ fs/ext4/ioctl.c                    |    2 +-
+ fs/ext4/mballoc.c                  |  629 ++++++++++++++++++++++++++----------
+ fs/ext4/mballoc.h                  |   71 +----
+ fs/ext4/migrate.c                  |   19 +-
+ fs/ext4/namei.c                    |   92 +++---
+ fs/ext4/resize.c                   |  113 ++-----
+ fs/ext4/super.c                    |  622 ++++++++++++++++++++++-------------
+ fs/ext4/xattr.c                    |   25 +-
+ fs/ioprio.c                        |    3 +-
+ fs/jbd2/checkpoint.c               |   24 +-
+ fs/jbd2/commit.c                   |   58 +++-
+ fs/jbd2/journal.c                  |  124 +++-----
+ fs/jbd2/transaction.c              |   60 +++-
+ fs/super.c                         |    2 +
+ include/linux/ext3_fs.h            |   28 ++-
+ include/linux/ext3_fs_sb.h         |    1 +
+ include/linux/fs.h                 |    2 +
+ include/linux/ioprio.h             |    2 +
+ include/linux/jbd2.h               |   39 ++-
+ 39 files changed, 2272 insertions(+), 1301 deletions(-)
