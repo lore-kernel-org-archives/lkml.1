@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbZAGQJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZAGQK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbZAGQJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZAGQJg
+	id S1756199AbZAGQK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZAGQKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:09:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33539 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbZAGQJg (ORCPT
+	Wed, 7 Jan 2009 11:10:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:28555 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752019AbZAGQKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:09:36 -0500
-Subject: [PATCH -tip 3/4 V2] x86: smp.h move cpu_physical_id declartion to
-	cpu.h
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 21:37:33 +0530
-Message-Id: <1231344453.3770.6.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Wed, 7 Jan 2009 11:10:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=QNA3PSiw26LBe0hVFDHwXAdgLh8H0m76fUq1PzQwQEH7L8jZnkmbV/SwKSBDjEReoP
+         7d9uphuGc4o5WHhVWEKf1HQ7RiEIu2YZCuztNXf9dTrAOE9R5CH7jnLYvK+IyIjfABws
+         urCLA2A6G8bGEeUHy1EiamYmpNWeFxw2EIBJo=
+Message-ID: <4964D403.3090709@gmail.com>
+Date: Wed, 07 Jan 2009 17:10:43 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] cpu: create stop machine in disable_nonboot_cpus
+References: <1231342755-5122-1-git-send-email-jirislaby@gmail.com> <20090107160039.GB25560@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090107160039.GB25560@osiris.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, moving NON-SMP stuff from smp.h
+On 01/07/2009 05:00 PM, Heiko Carstens wrote:
+> Yep, it's exactly the same what I had as well:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/cpu.h |    1 +
- arch/x86/include/asm/smp.h |    2 --
- 2 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index 4c16888..89edafb 100644
---- a/arch/x86/include/asm/cpu.h
-+++ b/arch/x86/include/asm/cpu.h
-@@ -15,6 +15,7 @@ extern void prefill_possible_map(void);
- 
- static inline void prefill_possible_map(void) {}
- 
-+#define cpu_physical_id(cpu)			boot_cpu_physical_apicid
- #define safe_smp_processor_id()			0
- #define stack_smp_processor_id()		0
- 
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index 3a76b19..136f1c7 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -196,8 +196,6 @@ extern int safe_smp_processor_id(void);
- })
- #define safe_smp_processor_id()		smp_processor_id()
- 
--#else /* !CONFIG_X86_32_SMP && !CONFIG_X86_64_SMP */
--#define cpu_physical_id(cpu)		boot_cpu_physical_apicid
- #endif
- 
- #ifdef CONFIG_X86_LOCAL_APIC
--- 
-1.5.6.6
-
-
-
+Great ;).
