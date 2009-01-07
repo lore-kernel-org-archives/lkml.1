@@ -1,98 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932256AbZAGW3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932360AbZAGW33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932256AbZAGW3F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:29:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762422AbZAGWX0
+	id S932360AbZAGW33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762431AbZAGWX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:23:26 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:21813 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762405AbZAGWXZ (ORCPT
+	Wed, 7 Jan 2009 17:23:27 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:39238 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762415AbZAGWXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Jan 2009 17:23:25 -0500
-X-BigFish: VPS1(zzzzzzz32i64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0KD4GUK-02-XU0-01
+X-BigFish: VPS3(zzzzzzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KD4GUG-01-K3Z-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 18/18] oprofile: rename variables in add_ibs_begin()
-Date: Wed, 7 Jan 2009 23:17:35 +0100
-Message-ID: <1231366655-17837-19-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 14/18] oprofile: remove backtrace code for ibs
+Date: Wed, 7 Jan 2009 23:17:31 +0100
+Message-ID: <1231366655-17837-15-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1231366655-17837-1-git-send-email-robert.richter@amd.com>
 References: <1231366655-17837-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 07 Jan 2009 22:22:59.0663 (UTC) FILETIME=[7F5A8DF0:01C97116]
+X-OriginalArrivalTime: 07 Jan 2009 22:22:59.0538 (UTC) FILETIME=[7F477B20:01C97116]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This unifies usage of variable names within oprofile.
+This code is broken since a TRACE_BEGIN_CODE is never sent to the
+daemon. The data becomes corrupt since the backtrace is interpreted as
+ibs sample.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- drivers/oprofile/buffer_sync.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/oprofile/buffer_sync.c |    2 --
+ drivers/oprofile/cpu_buffer.c  |   10 ++--------
+ 2 files changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-index bf8fcc7..21fd249 100644
+index 7415d2e..e61e25f 100644
 --- a/drivers/oprofile/buffer_sync.c
 +++ b/drivers/oprofile/buffer_sync.c
-@@ -325,36 +325,36 @@ static void add_trace_begin(void)
-  */
- static void add_ibs_begin(int cpu, int code, struct mm_struct *mm)
- {
--	unsigned long rip;
-+	unsigned long pc;
- 	int i, count;
--	unsigned long ibs_cookie = 0;
-+	unsigned long cookie = 0;
- 	off_t offset;
- 	struct op_sample *sample;
- 
- 	sample = op_cpu_buffer_read_entry(cpu);
- 	if (!sample)
- 		return;
--	rip = sample->eip;
-+	pc = sample->eip;
- 
- #ifdef __LP64__
--	rip += sample->event << 32;
-+	pc += sample->event << 32;
+@@ -557,11 +557,9 @@ void sync_buffer(int cpu)
+ 				break;
+ #ifdef CONFIG_OPROFILE_IBS
+ 			case IBS_FETCH_BEGIN:
+-				state = sb_bt_start;
+ 				add_ibs_begin(cpu, IBS_FETCH_CODE, mm);
+ 				break;
+ 			case IBS_OP_BEGIN:
+-				state = sb_bt_start;
+ 				add_ibs_begin(cpu, IBS_OP_CODE, mm);
+ 				break;
  #endif
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index 8ae37c9..92bf8c0 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -347,17 +347,11 @@ void oprofile_add_ibs_sample(struct pt_regs * const regs,
+ 		fail = fail || add_sample(cpu_buf, ibs_sample[10], ibs_sample[11]);
+ 	}
  
- 	if (mm) {
--		ibs_cookie = lookup_dcookie(mm, rip, &offset);
-+		cookie = lookup_dcookie(mm, pc, &offset);
+-	if (fail)
+-		goto fail;
+-
+-	if (oprofile_backtrace_depth)
+-		oprofile_ops.backtrace(regs, oprofile_backtrace_depth);
+-
+-	return;
++	if (!fail)
++		return;
  
--		if (ibs_cookie == NO_COOKIE)
--			offset = rip;
--		if (ibs_cookie == INVALID_COOKIE) {
-+		if (cookie == NO_COOKIE)
-+			offset = pc;
-+		if (cookie == INVALID_COOKIE) {
- 			atomic_inc(&oprofile_stats.sample_lost_no_mapping);
--			offset = rip;
-+			offset = pc;
- 		}
--		if (ibs_cookie != last_cookie) {
--			add_cookie_switch(ibs_cookie);
--			last_cookie = ibs_cookie;
-+		if (cookie != last_cookie) {
-+			add_cookie_switch(cookie);
-+			last_cookie = cookie;
- 		}
- 	} else
--		offset = rip;
-+		offset = pc;
+ fail:
+ 	cpu_buf->sample_lost_overflow++;
+-	return;
+ }
  
- 	add_event_entry(ESCAPE_CODE);
- 	add_event_entry(code);
+ #endif
 -- 
 1.6.0.1
 
