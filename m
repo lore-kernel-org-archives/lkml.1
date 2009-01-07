@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbZAGWEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760313AbZAGWF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbZAGWEw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbZAGWEn
+	id S1760313AbZAGWF4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZAGWFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:04:43 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45714 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751748AbZAGWEm (ORCPT
+	Wed, 7 Jan 2009 17:05:48 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:52379 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbZAGWFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:04:42 -0500
-Date: Wed, 7 Jan 2009 13:54:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: gregkh@suse.de, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       david-b@pacbell.net, khilman@deeprootsystems.com
-Subject: Re: [GIT PATCH] USB patches for 2.6-git
-Message-Id: <20090107135435.c837e425.akpm@linux-foundation.org>
-In-Reply-To: <496521D7.1050002@ru.mvista.com>
-References: <20090107192438.GA18146@kroah.com>
-	<49650F2C.9030809@ru.mvista.com>
-	<20090107212801.GA21012@suse.de>
-	<496521D7.1050002@ru.mvista.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 7 Jan 2009 17:05:47 -0500
+Date: Wed, 7 Jan 2009 23:07:28 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/3] KBUILD: Add script to manipulate .config files on the command line
+Message-ID: <20090107220728.GA9707@uranus.ravnborg.org>
+References: <20090103321.351399938@firstfloor.org> <20090107201849.GH4647@uranus.ravnborg.org> <20090107213315.GN496@one.firstfloor.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107213315.GN496@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Jan 2009 00:42:47 +0300
-Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
-
-> >  I'm sorry about that.  I now see David's request to change this patch in my archives :(
-> >   
+On Wed, Jan 07, 2009 at 10:33:15PM +0100, Andi Kleen wrote:
+> > When I try to run the script with no arguments nothing happens!?!
+> > 
+> > I will merge as is but please followup with a patch so it prints out usage
+> > in this situation.
 > 
->    You forgot to mention my several prior mails -- succeffully ignored 
-> as well, unless they all managed to fall thru the cracks somehow...
+> Here's a patch 
+> 
+> -Andi
+> 
+> ---
+> 
+> Kbuild: print usage with no arguments in scripts/config
+> 
+> Requested by Sam.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-I fill cracks.  Copy me on stuff if there are problems.
+Thanks,
+added and pushes out to kbuild-fixes.git
 
-Especially bugfixes.  I like bugfixes.
+	Sam
