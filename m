@@ -1,143 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbZAGSM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbZAGSN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760488AbZAGSM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 13:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759773AbZAGSMq
+	id S1760230AbZAGSN1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 13:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbZAGSNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 13:12:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54853 "EHLO mx2.mail.elte.hu"
+	Wed, 7 Jan 2009 13:13:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46351 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753649AbZAGSMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 13:12:45 -0500
-Date: Wed, 7 Jan 2009 19:12:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [BUG] 2.6.28-git LOCKDEP: Possible recursive rq->lock
-Message-ID: <20090107181233.GG24982@elte.hu>
-References: <1231092523.29980.4.camel@twins> <20090105040635.GF4301@dirshya.in.ibm.com> <20090105130638.GB6014@elte.hu> <20090107114947.GJ4574@dirshya.in.ibm.com> <20090107122913.GL4574@dirshya.in.ibm.com> <1231333963.11687.288.camel@twins> <20090107142009.GM4574@dirshya.in.ibm.com> <1231338537.11687.295.camel@twins> <20090107163100.GO4574@dirshya.in.ibm.com> <20090107180937.GP4574@dirshya.in.ibm.com>
+	id S1754287AbZAGSNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 13:13:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] x86 PCI: Do not use interrupt links for devices using MSI-X
+Date: Wed, 7 Jan 2009 19:12:50 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200901042308.42625.rjw@sisk.pl> <20090107131348.GE3529@elte.hu> <200901070933.52100.jbarnes@virtuousgeek.org>
+In-Reply-To: <200901070933.52100.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090107180937.GP4574@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901071912.51299.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2009-01-07 22:01:00]:
+On Wednesday 07 January 2009, Jesse Barnes wrote:
+> On Wednesday, January 7, 2009 5:13 am Ingo Molnar wrote:
+> > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > > On Monday, January 5, 2009 5:04 am Ingo Molnar wrote:
+> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > >
+> > > > > pcibios_enable_device() and pcibios_disable_device() don't handle
+> > > > > IRQs for devices that have MSI enabled and it should tread the
+> > > >
+> > > > s/tread/treat
+> > > >
+> > > > > devices with MSI-X enabled in the same way.
+> > > > >
+> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > ---
+> > > > >  arch/x86/pci/common.c |    4 ++--
+> > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > >
+> > > > looks good - Jesse, what do you think?
+> > >
+> > > Yeah, seems obviously correct, I'll queue it up.
+> > >
+> > > > Rafael, i'm curious is this in response to some regression/bug? Did
+> > > > some box or driver get confused by us enabling/disabling the GSI? Some
+> > > > IRQ flood perhaps?
+> > > >
+> > > > btw., there's a small observation:
+> > > > > +     if (!dev->msi_enabled && !dev->msix_enabled)
+> > > >
+> > > > maybe a "pci_has_gsi_irq()" wrapper would make these checks cleaner and
+> > > > would make things more robust, should there be any new IRQ delivery
+> > > > method be introduced in the future?
+> > >
+> > > pci_has_msi_irq surely?  Otherwise we'll catch pretty much everything? 
+> > > Or did you mean !pci_has_gsi_irq() here instead?
+> >
+> > Well - here the check is: "if (not MSI or MSIX)" in essence. I thought
+> > that it might be confusing to call it _msi() as well, so we could approach
+> > it via the inverse space: general system interrupts (GSIs) - which are
+> > device irqs that are neither MSI nor MSIX.
+> >
+> > But if pci_has_msi_irq() can cleanly include the MSIX portion too, that's
+> > fine too. (MSI-X is really MSI with wider eventing capabilities but
+> > otherwise non-GSI just as much - and we dont want to enable (or even
+> > touch) the legacy IRQ line registers for any of them, even if they happen
+> > to be enumerated)
+> >
+> > Right?
 > 
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-07 15:28:57]:
-> > 
-> > > On Wed, 2009-01-07 at 19:50 +0530, Vaidyanathan Srinivasan wrote:
-> > > > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-01-07 14:12:43]:
-> > > > 
-> > > > > On Wed, 2009-01-07 at 17:59 +0530, Vaidyanathan Srinivasan wrote:
-> > > > > 
-> > > > > > =============================================
-> > > > > > [ INFO: possible recursive locking detected ]
-> > > > > > 2.6.28-autotest-tip-sv #1
-> > > > > > ---------------------------------------------
-> > > > > > klogd/5062 is trying to acquire lock:
-> > > > > >  (&rq->lock){++..}, at: [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
-> > > > > > 
-> > > > > > but task is already holding lock:
-> > > > > >  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> > > > > > 
-> > > > > > other info that might help us debug this:
-> > > > > > 1 lock held by klogd/5062:
-> > > > > >  #0:  (&rq->lock){++..}, at: [<ffffffff805f7354>] schedule+0x158/0xa31
-> > > > > > 
-> > > > > > stack backtrace:
-> > > > > > Pid: 5062, comm: klogd Not tainted 2.6.28-autotest-tip-sv #1
-> > > > > > Call Trace:
-> > > > > >  [<ffffffff80259ef1>] __lock_acquire+0xeb9/0x16a4
-> > > > > >  [<ffffffff8025a6c0>] ? __lock_acquire+0x1688/0x16a4
-> > > > > >  [<ffffffff8025a761>] lock_acquire+0x85/0xa9
-> > > > > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
-> > > > > >  [<ffffffff805fa4d4>] _spin_lock+0x31/0x66
-> > > > > >  [<ffffffff8022aca2>] ? task_rq_lock+0x45/0x7e
-> > > > > >  [<ffffffff8022aca2>] task_rq_lock+0x45/0x7e
-> > > > > >  [<ffffffff80233363>] try_to_wake_up+0x88/0x27a
-> > > > > >  [<ffffffff80233581>] wake_up_process+0x10/0x12
-> > > > > >  [<ffffffff805f775c>] schedule+0x560/0xa31
-> > > > > 
-> > > > > I'd be most curious to know where in schedule we are.
-> > > > 
-> > > > ok, we are in sched.c:3777
-> > > > 
-> > > >                 double_unlock_balance(this_rq, busiest);
-> > > >                 if (active_balance)
-> > > > >>>>>>>>>>>              wake_up_process(busiest->migration_thread);
-> > > > 
-> > > >         } else  
-> > > > 
-> > > > In active balance in newidle.  This implies sched_mc was 2 at that time.
-> > > > let me trace this and debug further.
-> > > 
-> > > How about something like this? Strictly speaking we'll not deadlock,
-> > > because ttwu will not be able to place the migration task on our rq, but
-> > > since the code can deal with both rqs getting unlocked, this seems the
-> > > easiest way out.
-> > 
-> > Hi Peter,
-> > 
-> > I agree.  Unlocking this_rq is an easy way out.  Thanks for the
-> > suggestion.  I have moved the unlock and lock withing the if
-> > condition.
-> > 
-> > --Vaidy
-> > 
-> >         sched: bug fix -- do not call ttwu while holding rq->lock
-> >     
-> >         When sched_mc=2 wake_up_process() is called on busiest_rq
-> >         while holding this_rq lock in load_balance_newidle()
-> >         Though this will not deadlock, this is a lockdep warning
-> >         and the situation is easily solved by releasing the this_rq
-> >         lock at this point in code
-> >     
-> >     Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> > 
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 71a054f..703a669 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -3773,8 +3773,12 @@ redo:
-> >                 }
-> >  
-> >                 double_unlock_balance(this_rq, busiest);
-> > -               if (active_balance)
-> > +               if (active_balance) {
-> > +                       /*  Should not call ttwu while holding a rq->lock */
-> > +                       spin_unlock(&this_rq->lock);
-> >                         wake_up_process(busiest->migration_thread);
-> > +                       spin_lock(&this_rq->lock);
-> > +               }
-> >  
-> >         } else
-> >                 sd->nr_balance_failed = 0;
-> 
-> 
-> Hi Peter and Ingo,
-> 
-> The above fix seem to have fixed the lockdep warning.  Please include
-> in sched-tip for further testing and later push to mainline.
+> Right, I see where you're coming from.  However, I've queued up Rafael's last 
+> patch with some fixes for dev vs. pci_dev and a name collision 
+> (pci_msi_enabled -> pci_dev_msi_enabled).  Bjorn caught the fact that some 
+> other arches may want similar treatment too, I think Rafael is checking that 
+> out.
 
-already in tip/sched/urgent, thanks guys!
+Yes, I am.
 
-	Ingo
+Thanks,
+Rafael
