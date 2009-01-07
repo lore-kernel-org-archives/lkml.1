@@ -1,111 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZAGOWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZAGOXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbZAGOWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:22:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZAGOWh
+	id S1756809AbZAGOXi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:23:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZAGOX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:22:37 -0500
-Received: from mga07.intel.com ([143.182.124.22]:53016 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751627AbZAGOWg (ORCPT
+	Wed, 7 Jan 2009 09:23:27 -0500
+Received: from smtp4-ft1.vinci-energies.com ([81.252.86.87]:59249 "EHLO
+	vinci-energies.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754118AbZAGOX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:22:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,226,1231142400"; 
-   d="scan'208";a="97324943"
-Date: Wed, 7 Jan 2009 22:12:56 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/6] fastboot: make ACPI bus drivers probe asynchronous
-Message-ID: <20090107141256.GA22902@ywang-moblin2.bj.intel.com>
-References: <20090105200959.04a626ac@infradead.org> <20090105201239.0784606e@infradead.org>
+	Wed, 7 Jan 2009 09:23:27 -0500
+From: BARRE Sebastien <sbarre@sdelcc.com>
+To: Ed Swierk <eswierk@aristanetworks.com>
+CC: "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jean Delvare <khali@linux-fr.org>
+Date: Wed, 7 Jan 2009 15:22:19 +0100
+Subject: RE: [PATCH] rtc-ds1307: True SMBus compatibility
+Thread-Topic: [PATCH] rtc-ds1307: True SMBus compatibility
+Thread-Index: AclwTBDPwykVJJUtQlu8gw5EwdNp2gAhLL0w
+Message-ID: <C1C62166118DFA4A8BBA01A2411F0D171224AED05D@PRI-MBX-101.dom1.vinci-energies.net>
+References: <1231176979.13443.19.camel@localhost.localdomain>
+	 <C1C62166118DFA4A8BBA01A2411F0D171224AECDC1@PRI-MBX-101.dom1.vinci-energies.net>
+ <1231280024.12030.2.camel@localhost.localdomain>
+In-Reply-To: <1231280024.12030.2.camel@localhost.localdomain>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: fr-FR, en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090105201239.0784606e@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n07ENgwM007825
 
-On Mon, Jan 05, 2009 at 08:12:39PM -0800, Arjan van de Ven wrote:
-> 
-> >From 34c47dd38f49e29eb7cd7fa2078efc6b8b258bb9 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Sun, 4 Jan 2009 05:32:28 -0800
-> Subject: [PATCH] fastboot: make ACPI bus drivers probe asynchronous
-> 
-> the various ACPI bus drivers have non-overlapping devices and can
-> each be run asynchronous. Some of the ACPI drivers (especially the
-> battery one, but others as well) can take quite a long time to probe.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  drivers/acpi/scan.c |   23 ++++++++++++++++-------
->  1 files changed, 16 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-> index 39b7233..a9e542d 100644
-> --- a/drivers/acpi/scan.c
-> +++ b/drivers/acpi/scan.c
-> @@ -8,6 +8,7 @@
->  #include <linux/acpi.h>
->  #include <linux/signal.h>
->  #include <linux/kthread.h>
-> +#include <linux/async.h>
->  
->  #include <acpi/acpi_drivers.h>
->  #include <acpi/acinterp.h>	/* for acpi_ex_eisa_id_to_string() */
-> @@ -578,6 +579,19 @@ static int acpi_start_single_object(struct acpi_device *device)
->  	return result;
->  }
->  
-> +static void acpi_bus_register_async(void *data, async_cookie_t cookie)
-> +{
-> +	int ret;
-> +	struct acpi_driver *driver = data;
-> +	driver->drv.name = driver->name;
-> +	driver->drv.bus = &acpi_bus_type;
-> +	driver->drv.owner = driver->owner;
-> +
-> +	async_synchronize_cookie(cookie);
-> +
-> +	ret = driver_register(&driver->drv);
-> +	WARN_ON(ret != 0);
-> +}
->  /**
->   * acpi_bus_register_driver - register a driver with the ACPI bus
->   * @driver: driver being registered
-> @@ -588,16 +602,11 @@ static int acpi_start_single_object(struct acpi_device *device)
->   */
->  int acpi_bus_register_driver(struct acpi_driver *driver)
->  {
-> -	int ret;
->  
->  	if (acpi_disabled)
->  		return -ENODEV;
-> -	driver->drv.name = driver->name;
-> -	driver->drv.bus = &acpi_bus_type;
-> -	driver->drv.owner = driver->owner;
-> -
-> -	ret = driver_register(&driver->drv);
-> -	return ret;
-> +	async_schedule(acpi_bus_register_async, driver);
-> +	return 0;
->  }
->  
->  EXPORT_SYMBOL(acpi_bus_register_driver);
+> -----Original Message-----
+> From: Ed Swierk [mailto:eswierk@aristanetworks.com]
+> Sent: Tuesday, January 06, 2009 11:14 PM
+> To: BARRE Sebastien
+> Cc: linux-i2c@vger.kernel.org; David Brownell; Alessandro Zummo; linux-
+> kernel@vger.kernel.org; Andrew Morton
+> Subject: Re: [PATCH] rtc-ds1307: True SMBus compatibility
+>
+> On Tue, Jan 6, 2009 at 5:35 AM, BARRE Sebastien <sbarre@sdelcc.com> wrote:
+> > I've read your patch quicly, I will test it on my board as soon as
+> possible.
+>
+> Thanks.
+>
+> > You can delete the next 3 lines, they are not useful:
+> >
+> >> +     ret = ds1307_read_block_data_once(client, command, length,
+> currvalues);
+> >> +     if (ret < 0)
+> >> +             return ret;
+>
+> Oops! Here is an updated patch with these lines removed, and a minor
+> formatting fix.
+>
+> Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
+>
+> --Ed
 
-For ACPI battery, button and thermal drivers whose init funtion immediately ends
-right after calling acpi_bus_register_driver, it might be OK. But for other drivers
-whose init function has more work to do and depends on acpi_bus_register_driver
-having *really* done its job, it is certainly not OK. In the latter case, the
-'return 0' in acpi_bus_register_driver is effectively cheating those drivers that
-acpi_bus_register_driver has already done its job which is unfortunately not
-the case. Example drivers include eeepc_laptop and asus_laptop. At least I am
-seeing a kernel oops on eeepc because of that.
+I've tested the patch on my geode LX board with a DS1307 device.
+It works well for me.
 
--Yong
+However I think writing the clock one byte at a time could cause strange behavior when using alarms on device like ds1337.
+
+Tested-by: SÃ©bastien BarrÃ© <sbarre@sdelcc.com>
+
+--
+SÃ©bastien BarrÃ©
+Bureau d'Ã©tude - DÃ©veloppement
+SDEL ContrÃ´le Commande
+D2A - Rue Nungesser et Coli
+44860 Saint Aignan de Grand Lieu
+FRANCE
+TÃ©l : +33(0)2 40 84 50 88
+Fax : +33(0)2 40 84 51 10
+
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
