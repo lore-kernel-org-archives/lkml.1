@@ -1,85 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762706AbZAGWys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762393AbZAGW4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762706AbZAGWys (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 17:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZAGWyh
+	id S1762393AbZAGW4m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 17:56:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbZAGW4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 17:54:37 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51270 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbZAGWyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 17:54:35 -0500
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>
-	 <20090103191706.GA2002@parisc-linux.org> <1231242031.11687.97.camel@twins>
-	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
-	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>
-	 <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>
-	 <1231278275.11687.111.camel@twins>
-	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>
-	 <1231279660.11687.121.camel@twins>
-	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>
-	 <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>
-	 <1231329783.11687.287.camel@twins>
-	 <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
-	 <1231347442.11687.344.camel@twins>
-	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
-	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-	 <1231365115.11687.361.camel@twins>
-	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 16:54:30 -0600
-Message-Id: <1231368870.6686.16.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 7 Jan 2009 17:56:32 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57802
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754788AbZAGW4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 17:56:32 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-kernel@vger.kernel.org
+Subject: Spaces in filenames in gen_initramfs_list.sh/gen_init_cpio.c?
+Date: Wed, 7 Jan 2009 16:56:18 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901071656.18802.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 13:58 -0800, Linus Torvalds wrote:
-> 
-> On Wed, 7 Jan 2009, Peter Zijlstra wrote:
-> > 
-> > Do we really have to re-do all that code every loop?
-> 
-> No, you're right, we can just look up the cpu once. Which makes Andrew's 
-> argument that "probe_kernel_address()" isn't in any hot path even more 
-> true.
+What do I do if I have a space in a filename that I want to put into an 
+initramfs?  (Or a space in the source argument of "file" entries or the 
+redirect argument of "slink" entries?)
 
-Do you need to even do that if CONFIG_DEBUG_PAGEALLOC is unset?
-Something like:
+I don't see any kind of quoting or escape syntax, has anybody planned one or 
+should I go write something myself?
 
-#ifdef CONFIG_DEBUG_PAGEALLOC
-                /*
-                 * Need to access the cpu field knowing that
-                 * DEBUG_PAGEALLOC could have unmapped it if
-                 * the mutex owner just released it and exited.
-                 */
-                if (probe_kernel_address(&thread->cpu, cpu))
-                        break;
-#else
-		cpu = thread->cpu;
-#endif
-
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+Rob
