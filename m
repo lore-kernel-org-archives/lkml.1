@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZAGL7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbZAGMA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbZAGL7p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 06:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZAGL7d
+	id S1754797AbZAGMA3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZAGMAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 06:59:33 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:47939 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750924AbZAGL7c (ORCPT
+	Wed, 7 Jan 2009 07:00:14 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47335 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbZAGMAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 06:59:32 -0500
-Date: Wed, 7 Jan 2009 22:59:21 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090107115921.GA25323@gondor.apana.org.au>
-References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106183704.GC32491@kernel.dk> <20090107044232.GA22218@gondor.apana.org.au> <20090107112906.GA28161@ioremap.net> <20090107115032.GA25198@gondor.apana.org.au> <20090107115605.GA29250@ioremap.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107115605.GA29250@ioremap.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Jan 2009 07:00:12 -0500
+Subject: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, James.Bottomley@hansenpartnership.com,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 17:26:08 +0530
+Message-Id: <1231329368.17961.29.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 02:56:05PM +0300, Evgeniy Polyakov wrote:
->
-> But it will not push pages into the stack, but copy them including copy
-> of the submitted head?
+These are first set of patches for removing NON-SMP data from smp.h as suggested by Ingo.
 
-It will use a single page entry for skb->head with splice, see
-skb_splice_bits.
+The following changes since commit b97d41dd7df418cacfa01e399d35927bbdff600f:
+  Ingo Molnar (1):
+        Merge branch 'out-of-tree'
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Jaswinder Singh Rajput (7):
+      x86: smp.h remove obsolete function declaration
+      x86: smp.h move zap_low_mappings declartion to tlbflush.h
+      x86: smp.h move prefill_possible_map declartion to cpu.h
+      x86: smp.h move stack_processor_id declartion to cpu.h
+      x86: smp.h move safe_smp_processor_id declartion to cpu.h
+      x86: smp.h move cpu_physical_id declartion to cpu.h
+      x86: smp.h move boot_cpu_id declartion to cpu.h
+
+ arch/x86/include/asm/cpu.h      |   21 +++++++++++++++++++++
+ arch/x86/include/asm/smp.h      |   19 -------------------
+ arch/x86/include/asm/tlbflush.h |    2 ++
+ arch/x86/kernel/cpu/common.c    |    2 +-
+ arch/x86/kernel/io_apic.c       |    1 +
+ arch/x86/kernel/setup.c         |    2 +-
+ arch/x86/kernel/smpboot.c       |    1 -
+ arch/x86/mach-voyager/setup.c   |    1 +
+ arch/x86/mm/init_32.c           |    1 -
+ drivers/pci/intr_remapping.c    |    1 +
+ 10 files changed, 28 insertions(+), 23 deletions(-)
+
+Thanks
+--
+JSR
+
