@@ -1,65 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZAGFCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZAGFDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbZAGFCM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 00:02:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZAGFB5
+	id S1756118AbZAGFDO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 00:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZAGFC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 00:01:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55876 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750786AbZAGFB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 00:01:56 -0500
-Date: Tue, 6 Jan 2009 21:01:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
+	Wed, 7 Jan 2009 00:02:58 -0500
+Received: from gate.crashing.org ([63.228.1.57]:54325 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750713AbZAGFC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 00:02:57 -0500
 Subject: Re: powerpc: introduce asm/swab.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
 In-Reply-To: <1231303340.14860.61.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.0901062056540.3057@localhost.localdomain>
-References: <200901070400.n0740Ore002063@hera.kernel.org> <1231303340.14860.61.camel@pasglop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <200901070400.n0740Ore002063@hera.kernel.org>
+	 <1231303340.14860.61.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 07 Jan 2009 16:02:32 +1100
+Message-Id: <1231304552.14860.72.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
+On Wed, 2009-01-07 at 15:42 +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-01-07 at 04:00 +0000, Linux Kernel Mailing List wrote:
+> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=156ca2bbf6503a02d7d6829886ce381d572de66e
+> > Commit:     156ca2bbf6503a02d7d6829886ce381d572de66e
+> > Parent:     8cdd3a9261e8efe36aeb6c708edb76d7e2b5d13f
+> > Author:     Harvey Harrison <harvey.harrison@gmail.com>
+> > AuthorDate: Tue Jan 6 14:56:23 2009 -0800
+> > Committer:  Linus Torvalds <torvalds@linux-foundation.org>
+> > CommitDate: Tue Jan 6 18:10:27 2009 -0800
+> > 
+> >     powerpc: introduce asm/swab.h
+> >     
+> >     Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 > 
 > Was this tested ? I see no arch maintainer signed-off here, it appears
 > to at least break ppc32, and contains hunks that paulus says were
 > explicitely nacked (removing of our ld_* macros) etc...
+> 
+> Linus, please revert.
 
-It did no such thing. It just moved the file.
+More details:
 
-Use
+include/linux/swab.h: In function ‘__fswab64’:
+include/linux/swab.h:71: error: implicit declaration of function ‘___swab32’
+make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+make: *** [prepare0] Error 2
 
-	git show -M -B 156ca2bbf6503a02d7d6829886ce381d572de66e
+I don't see any place where ___swab32() is defined (with 3 underscores).
 
-to see how <asm/swab.h> is just the old <asm/byteorder.h> renamed, and 
-with some stuff moved around. Eg it contains:
+Even if fixing that to use __swab32() instead, then it fails because
+this is defined after it's used. I worked around it using fswab in
+there instead.
 
-	-#define __BIG_ENDIAN
-	-#include <linux/byteorder.h>
+This tentative patches fixes that too, but I haven't followed the whole
+discussion closely, so I can't tell whether it's fully in the original
+intend. In any case, it makes ppc32 build again (and probably others).
 
-because now the <asm/byteorder.h> header file on powerpc will just do
+byteorder: Fix a couple of bugs in the new include/linux/swab.h
 
-	+#include <asm/swab.h>
-	+#include <linux/byteorder/big_endian.h>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-instead of doing that __BIG_ENDIAN define and conditionals that didn't 
-work with user space.
+diff --git a/include/linux/swab.h b/include/linux/swab.h
+index 9a2d33e..351c456 100644
+--- a/include/linux/swab.h
++++ b/include/linux/swab.h
+@@ -40,7 +40,7 @@
+ /*
+  * Implement the following as inlines, but define the interface using
+  * macros to allow constant folding when possible:
+- * ___swab16, ___swab32, ___swab64, ___swahw32, ___swahb32
++ * __swab16, __swab32, __swab64, __swahw32, __swahb32
+  */
+ 
+ static inline __attribute_const__ __u16 __fswab16(__u16 val)
+@@ -68,7 +68,7 @@ static inline __attribute_const__ __u64 __fswab64(__u64 val)
+ #elif defined(__SWAB_64_THRU_32__)
+ 	__u32 h = val >> 32;
+ 	__u32 l = val & ((1ULL << 32) - 1);
+-	return (((__u64)___swab32(l)) << 32) | ((__u64)(___swab32(h)));
++	return (((__u64)__fswab32(l)) << 32) | ((__u64)(__fswab32(h)));
+ #else
+ 	return ___constant_swab64(val);
+ #endif
 
-So it really should be a no-op. And no, I'm not reverting it, because 
-I guarantee that reverting it won't result in a working build - the broken 
-<linux/byteorder.h> file no longer exists (and will not be re-instated).
 
-So I'd suggest testing it, and if it really doesn't work, trying to figure 
-out why. Because a revert won't be helping.
-
-			Linus
