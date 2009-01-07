@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbZAGSrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbZAGSt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760278AbZAGSrq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 13:47:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZAGSrg
+	id S1759553AbZAGSt0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 13:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZAGStR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 13:47:36 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44660 "EHLO mx3.mail.elte.hu"
+	Wed, 7 Jan 2009 13:49:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59367 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbZAGSrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 13:47:35 -0500
-Date: Wed, 7 Jan 2009 19:47:21 +0100
+	id S1751732AbZAGStQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 13:49:16 -0500
+Date: Wed, 7 Jan 2009 19:48:52 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: linux-next: Tree for December 11
-Message-ID: <20090107184721.GA16193@elte.hu>
-References: <20081211200459.14d18d7a.sfr@canb.auug.org.au> <f19298770812110440s7e3781eex4a16b961ad6847b2@mail.gmail.com> <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com> <f19298770901070830q71cc7604nf55e1d5b70a22f37@mail.gmail.com> <alpine.LFD.2.00.0901070840240.3057@localhost.localdomain> <20090107171730.GA21799@elte.hu> <f19298770901070935u6396a367j86937c9394518877@mail.gmail.com>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, James.Bottomley@hansenpartnership.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
+Message-ID: <20090107184852.GB16193@elte.hu>
+References: <1231329368.17961.29.camel@jaswinder.satnam> <20090107125152.GA3529@elte.hu> <20090107133327.GA4911@elte.hu> <3f9a31f40901070557r336020dctbe9549e8634b167@mail.gmail.com> <20090107150351.GB27606@elte.hu> <20090107151223.GA4899@elte.hu> <20090107151522.GA5341@elte.hu> <1231344766.3770.12.camel@jaswinder.satnam> <20090107173509.GD24982@elte.hu> <3f9a31f40901071043u5a112962l2dd7e1d88de8aae2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <f19298770901070935u6396a367j86937c9394518877@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3f9a31f40901071043u5a112962l2dd7e1d88de8aae2@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,48 +39,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+* Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
 
-> And last time I bisected, it pointed to:
+> On Wed, Jan 7, 2009 at 11:05 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+> >
+> >> I send new 4 patches:
+> >>
+> >> ﻿[PATCH -tip 1/4 V2] x86: smp.h move stack_processor_id declartion to cpu.h
+> >> ﻿[PATCH -tip 2/4 V2] x86: smp.h move safe_smp_processor_id declartion to cpu.h
+> >> ﻿[PATCH -tip 3/4 V2] x86: smp.h move cpu_physical_id declartion to cpu.h
+> >> ﻿[PATCH -tip 4/4 V2] x86: smp.h move boot_cpu_id declartion to cpu.h
+> >>
+> >> Please accept them.
+> >
+> > Just to make sure: they should solve the 3 failures i reported?
+> >
 > 
-> commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
-> Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date:   Tue Sep 30 20:50:27 2008 +1000
-> 
->    sched: improve preempt debugging
->
-> 
->    This patch helped me out with a problem I recently had....
-> 
->    Basically, when the kernel lock is held, then preempt_count
-> underflow does not
->    get detected until it is released which may be a long time (and arbitrarily,
->    eg at different points it may be rescheduled). If the bkl is released at
->    schedule, the resulting output is actually fairly cryptic...
-> 
->    With any other lock that elevates preempt_count, it is illegal to schedule
->    under it (which would get found pretty quickly). bkl allows scheduling with
->    preempt_count elevated, which makes underflows hard to debug.
-> 
->    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> so at least a dumb bisection won't do here.
+> Yes.
 
-ah, sorry for being a slow starter, i missed that bit - merge window 
-attention span troubles ...
+ok, great.
 
-I think the kernel_locked() check added here is plain buggy against IRQ 
-contexts: we drop the BKL spinlock and reduce current->kernel_depth 
-non-atomically.
+> I am sorry for earlier errors messages.
 
-So kernel_locked() can become detached from the preempt_count().
-
-Nick, can you think of any better way of still saving this debug check, or 
-should we revert it?
-
-Although it seems a bit weird how consistently you seem to be able to 
-trigger it - as this seems to be a narrow race. Is there an IRQ storm 
-there perhaps, or something widens things up for Qemu to inject an IRQ 
-right there?
+no need to be sorry about that - we knew that this is a spaghetti of 
+historic dependencies. We'll likely need a few more tries before we reach 
+the desired end result.
 
 	Ingo
