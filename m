@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbZAGXDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763688AbZAGXEC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763414AbZAGXDg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbZAGXDW
+	id S1763688AbZAGXEC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:04:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762359AbZAGXD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:03:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48376 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbZAGXDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:03:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH 5/10] PCI PM: Avoid touching devices behind bridges in unknown state (rev. 2)
-Date: Thu, 8 Jan 2009 00:02:54 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200812190049.34343.rjw@sisk.pl> <200901051430.55649.rjw@sisk.pl> <20090107223225.GE2101@elf.ucw.cz>
-In-Reply-To: <20090107223225.GE2101@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901080002.55603.rjw@sisk.pl>
+	Wed, 7 Jan 2009 18:03:28 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:35908 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759206AbZAGXDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 18:03:25 -0500
+Date: Wed, 07 Jan 2009 15:03:24 -0800
+From: Om <om.turyx@gmail.com>
+Subject: 64 bit PCI access using MMX register -- how?
+To: linux-kernel@vger.kernel.org
+Message-id: <496534BC.4060603@gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 January 2009, Pavel Machek wrote:
-> On Mon 2009-01-05 14:30:54, Rafael J. Wysocki wrote:
-> > On Monday 05 January 2009, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > Subject: PCI PM: Avoid touching devices behind bridges in unknown state (rev. 2)
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > It generally is better to avoid accessing devices behind bridges that
-> > > > may not be in the D0 power state, because in that case the bridges'
-> > > > secondary buses may not be accessible.  For this reason, during the
-> > > > early phase of resume (ie. with interrupts disabled), before
-> > > > restoring the standard config registers of a device, check the power
-> > > > state of the bridge the device is behind and postpone the restoration
-> > > > of the device's config space, as well as any other operations that
-> > > > would involve accessing the device, if that state is not D0.
-> > > 
-> > > I'm not sure if this is good idea.
-> > > 
-> > > Either pci config space needs to be restored early, or it can wait.
-> > > 
-> > > Sometimes restoring it early and sometimes restoring it late seems
-> > > harmful: it will make code harder to understand and harder to test.
-> > 
-> > Unfortunately, we need to restore it early at least for some devices (bridges
-> > and PCI Express ports) and I don't think it is generally safe to go and restore
-> > it early for every device (as explained in this changelog).
-> 
-> Could we make it so that it is restored early exactly on bridges and
-> PCIe ports?
-> 
-> Idea that restore of one specific device is called early or late
-> depending if it is connected directly or behind bridge scares me...
+Hi,
+I have a buggy hardware with many 64 bit registers. (The bug is, when a
+64bit read/write is split to two 32bit read/write, under high loads,
+hardware would mess up the order of reads/writes. As a result,
+read/written values would not be correct).
 
-There's nothing scary in it IMO and in fact the device's config space is
-always restored as soon as reasonably possible.
+To avoid data corruption in 32bit Linux, when I implement `readq` as two
+back to back `readl`, I need a lock serializing accesses to whole PIO
+space. To avoid locking, I implemented suggestion from a friend to use
+MMX registers like below.
 
-It will be restored early even if it is behind a bridge, unless that bridge
-itself is in a low power state, in which case clearly we _can't_ restore it
-early.
+#if BITS_PER_LONG == 32
+static inline void hxge_writeq32(u64 val, void *addr)
+{
+         u64 tmp = 0;
+         __asm__ __volatile__ (
+                 "movq %%mm0, %[t]\n\t"
+                 "movq %[d], %%mm0\n\t"
+                 "movl %[a], %%eax\n\t"
+                 "movq %%mm0, (%%eax)\n\t"
+                 "movq %[t], %%mm0\n\t"
+                 :[t] "+m"(tmp)
+                 :[a] "r"(addr), [d] "m"(val)
+                 :"%eax"
+                 );
+         smp_wmb();
+         return;
+}
+
+static inline unsigned long long hxge_readq32(void __iomem *addr)
+{
+         u64 var = 0, tmp = 0xfeedfacedeadbeefULL;
+         printk(KERN_ERR "addr= %#lx\n", (unsigned long) addr);
+         __asm__ __volatile__ (
+                 "movq %%mm0, %[t]\n\t"
+                 "movl %[a], %%eax\n\t"
+                 "movq (%%eax), %%mm0\n\t"
+                 "movq %%mm0, %[r]\n\t"
+                 "movq %[t], %%mm0\n\t"
+                 :[r] "=m"(var), [t]"+m"(tmp)
+                 :[a] "r"(addr)
+                 :"%eax"
+         );
+         smp_rmb();
+         printk(KERN_ERR "tmp = %#llx, var = %#llx\n", (unsigned long
+long) tmp,
+var);
+         return var;
+}
+
+#endif
+
+All the reads return 0xFFFFFFFFFFFFFFFF when tried on ioremap_nocache()
+PCI address space.
+E.g, output from dmesg:
+
+addr= 0xf9f80010
+tmp = 0x0, var = 0xffffffffffffffff
+
+data = 0xffffffffffffffff, da = 0xbc000004
+
+(da is the result of 32bit read on the same address)
+
+Any idea what could be wrong? Any suggestions / pointers?
+( I am not subscribed, please CC: me)
+
+I tried reading and writing an ordinary memory location ( a global u64
+variable, that is working fine. Only PCI access gives a problem)
+
+PCI access in the form of
+val = *((u64*)ioremapped_address)
+gets me the expected result. But my question is, is this operation
+atomic in 32bit arch?
 
 Thanks,
-Rafael
+Om.
+
