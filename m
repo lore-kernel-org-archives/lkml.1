@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbZAGPbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZAGPbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759962AbZAGPbd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:31:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbZAGPbA
+	id S1754814AbZAGPbz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759924AbZAGPbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:31:00 -0500
-Received: from ik-out-1112.google.com ([66.249.90.178]:54128 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754914AbZAGPa6 (ORCPT
+	Wed, 7 Jan 2009 10:31:25 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:42825 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759898AbZAGPbY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:30:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=MDgY6dl1aCwyfv5Ao3XvnGld3kElGCCkaOIIUJFmf80C1331Q7pUnjqWEw1G2fmza8
-         nSRhRVH/IUfSPp4spGDWdUK5funVVPhN3+vfcFxB5lOHBg2Nd6Zg+hKWUiTvLcFf1MS/
-         exOhGJhQy5lUVHNbBDW7yitsqkFBADavW0DJ8=
-Message-ID: <4964CAAA.3040801@gmail.com>
-Date: Wed, 07 Jan 2009 16:30:50 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-CC: linville@tuxdriver.com, davem@davemloft.net,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ath5k: fix hw rate index condition
-References: <1231336282-22283-1-git-send-email-jirislaby@gmail.com> <1231338965-796-1-git-send-email-jirislaby@gmail.com> <20090107152208.GB4207@linux.vnet.ibm.com>
-In-Reply-To: <20090107152208.GB4207@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 10:31:24 -0500
+X-Greylist: delayed 645 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Jan 2009 10:31:24 EST
+Date: Wed, 7 Jan 2009 15:20:35 +0000
+From: Andrew Price <andy@andrewprice.me.uk>
+To: linux-kernel@vger.kernel.org
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [PATCH] Cleanup: Remove zero-sized file (clock.h)
+Message-ID: <20090107152035.GA19289@silver.sucs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07/2009 04:22 PM, Dhaval Giani wrote:
-> I will get back to you in about a day or two.
+arch/arm/mach-integrator/clock.h was not removed properly and was left
+zero-sized so it was being removed by 'make distclean', leaving an
+uncommitted change. This removes it.
 
-No problem. Thanks.
+Signed-off-by: Andrew Price <andy@andrewprice.me.uk>
+---
+ 0 files changed, 0 insertions(+), 0 deletions(-)
+ delete mode 100644 arch/arm/mach-integrator/clock.h
+
+diff --git a/arch/arm/mach-integrator/clock.h b/arch/arm/mach-integrator/clock.h
+deleted file mode 100644
+index e69de29..0000000
+-- 
+1.5.6.5
+
