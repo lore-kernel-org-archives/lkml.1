@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbZAGOQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbZAGOSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbZAGOQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 09:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZAGOQH
+	id S1757558AbZAGOSc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 09:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZAGOSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 09:16:07 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50188 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752823AbZAGOQE (ORCPT
+	Wed, 7 Jan 2009 09:18:24 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:62959 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751627AbZAGOSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 09:16:04 -0500
-Date: Wed, 7 Jan 2009 14:10:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <davidn@davidnewall.com>
-Cc: Nick Andrew <nick@nick-andrew.net>, Linas Vepstas <linasvepstas@gmail.com>,
-       david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
-       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-Message-ID: <20090107141025.143158b7@lxorguk.ukuu.org.uk>
-In-Reply-To: <4964B20B.4030406@davidnewall.com>
-References: <496076A9.7030907@davidnewall.com>
-	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
-	<4960897D.5030603@davidnewall.com>
-	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>
-	<4961432A.80509@davidnewall.com>
-	<alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
-	<49614835.7000505@davidnewall.com>
-	<3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>
-	<20090105143335.GC18055@mail.local.tull.net>
-	<4962BB13.7060304@davidnewall.com>
-	<20090106025125.GB28431@mail.local.tull.net>
-	<20090106094058.64c89586@lxorguk.ukuu.org.uk>
-	<496479EA.1020207@davidnewall.com>
-	<20090107095419.70b78dc7@lxorguk.ukuu.org.uk>
-	<49648163.9060007@davidnewall.com>
-	<20090107105201.054c011f@lxorguk.ukuu.org.uk>
-	<4964B20B.4030406@davidnewall.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 7 Jan 2009 09:18:24 -0500
+Subject: Re: 2.6.29 -mm merge plans
+From: Chris Mason <chris.mason@oracle.com>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090107.122653.111144635.ryusuke@osrg.net>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
+	 <c4a7c9420901050140u23697729pc55966110d68452b@mail.gmail.com>
+	 <84144f020901060530w2b7fef67j8f1f2242860df3bd@mail.gmail.com>
+	 <20090107.122653.111144635.ryusuke@osrg.net>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 09:17:59 -0500
+Message-Id: <1231337879.27813.4.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4964B99E.0172:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The RTC stores the CMOS time in MM DD YY HH:MM:SS format.
+On Wed, 2009-01-07 at 12:26 +0900, Ryusuke Konishi wrote:
+> Hi Pekka,
 > 
-> Yes, which is perfect for mktime(), which knows about leap seconds and
-> so produces the correct time_t.
+> On Tue, 6 Jan 2009 15:30:59 +0200, "Pekka Enberg" wrote:
+> > Hi Ryusuke,
+> > 
+> > [snip nilfs patches]
+> > 
+> > On Mon, Jan 5, 2009 at 11:40 AM, Ryusuke Konishi
+> > <konishi.ryusuke@lab.ntt.co.jp> wrote:
+> > >>  Dunno.   Has this been reviewed enough?
+> > >>
+> > >
+> > > I'm now working to follow some comments from Chris, and
+> > > I think nilfs should be reviewed more widely.
+> > >
+> > > I'll aim for the next merge window or so.
+> > 
 
-mktime in the kernel has no knowledge of leap seconds whatsoever. Go read
-kernel/time.c
+Overall nilfs is pretty clean and clearly well maintained.  I don't see
+any major reason to keep it out.
 
-> different understanding.  I thought it was said that there's kernel
-> support to handle the leap second flag in NTP's broadcasts, and that
-> that was where the bug was.
+-chris
 
-All the kernel knows how to do is to slew time (in general) and to repeat
-or remove one second. It has no knowledge of leap seconds and it doesn't
-know how to convert between UTC/TAI/Unix Epoch etc
 
