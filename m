@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbZAGNCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZAGNDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbZAGNCr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZAGNCf
+	id S1757417AbZAGNDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbZAGNC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:02:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41196 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751586AbZAGNCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:02:34 -0500
-Date: Wed, 7 Jan 2009 14:02:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: sam@ravnborg.org, kosaki.motohiro@jp.fujitsu.com, yinghai@kernel.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: irqnr fallout in gpiolib on sparc32
-Message-ID: <20090107130213.GB3529@elte.hu>
-References: <20090105135508.GB4190@elte.hu> <20090105.123734.137888898.davem@davemloft.net> <20090106125704.GC20407@elte.hu> <20090106.082913.97432854.davem@davemloft.net>
+	Wed, 7 Jan 2009 08:02:56 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:48536 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbZAGNCz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 08:02:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mNWY9jJWJiEniv1+NK8Wh3p8XSc1z88YsX35/ItPK6JTGqpiIXFQ2pVzwynVYhuJr9
+         eDilA0oRMGEWWshIwzYCLz91wLlWvl+5MHJaIuj1fMXeAfidJ4wKhxt+2ho57Hxb20uy
+         bYRKRZ+6k0SEiH1qeBHsTZcEJQxgxosSWz6PI=
+Date: Wed, 7 Jan 2009 13:02:45 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Willy Tarreau <w@1wt.eu>,
+       Changli Gao <xiaosuo@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107130245.GC9677@ff.dom.local>
+References: <20090106085442.GA9513@ff.dom.local> <20090106094138.GE25644@1wt.eu> <20090106100112.GB9513@ff.dom.local> <20090106155715.GA28783@1wt.eu> <20090107093915.GA6899@ff.dom.local> <20090107122205.GA6051@1wt.eu> <20090107123153.GA9597@ff.dom.local> <20090107123504.GN32491@kernel.dk> <20090107124946.GA9677@ff.dom.local> <20090107125217.GA26235@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090106.082913.97432854.davem@davemloft.net>
+In-Reply-To: <20090107125217.GA26235@gondor.apana.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 6 Jan 2009 13:57:04 +0100
+On Wed, Jan 07, 2009 at 11:52:17PM +1100, Herbert Xu wrote:
+> On Wed, Jan 07, 2009 at 12:49:46PM +0000, Jarek Poplawski wrote:
+> > 
+> > Hmm... in any case: take 3
 > 
-> > Sparc32 on the other hand had a clean IRQ layer long before x86 found its 
-> > desire for a clean genirq layer - so genirq is a nuisance for Sparc32 at 
-> > best and it deserves none of the not nice actions. What i am hoping for is 
-> > that perhaps the Sparc unification changed that equation.
+> Yes this should fix the corruption but it kind of defeats the
+> purpose of splice by copying the data.
 > 
-> Not really, the unificiation didn't change much in this area. [...]
 
-Yeah, i mean - "changed the equation" psychologically, the same way it did 
-it on x86.
+Hmm.. Again - the main point of this patch was a proof of concept...
+If the bug is really here it could be optimized (e.g. done only for
+sendmesage) or fixed another way.
 
-There's now two files close to each other in the namespace:
-
- earth4:~/tip> ls -l arch/sparc/kernel/irq*.c
- -rw-rw-r-- 1 mingo mingo 16122 2009-01-07 13:50 arch/sparc/kernel/irq_32.c
- -rw-rw-r-- 1 mingo mingo 26556 2009-01-07 12:34 arch/sparc/kernel/irq_64.c
-
-Each of them crying out loud to be unified. Every time you open irq_64.c 
-you'll think "why that ugly _64.c postfix, shouldnt this be irq.c 
-instead?" ;-)
-
-That kind of gentle pressure to unify comes straight from the fact that 
-there's _32.c and _64.c postfixes around and the postfixes mess up command 
-completion when those files are opened, so we notice the non-unified-ness 
-again and again.
-
-At least this was what drove many of the x86 unifications. (Mind you, 
-irq_32/irq_64.c is still not fully unified on x86 ;)
-
-> [...] That doesn't change the fact that I do intend to genirq'ify 
-> sparc32 some time soon. :-)
-
-Cool! :-)
-
-	Ingo
+Jarek P.
