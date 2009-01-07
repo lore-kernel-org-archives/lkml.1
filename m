@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbZAGJyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZAGJzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757432AbZAGJyn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 04:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZAGJya
+	id S1754501AbZAGJzA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 04:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbZAGJyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 04:54:30 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32828 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756375AbZAGJy3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 04:54:29 -0500
-Date: Wed, 7 Jan 2009 09:54:19 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <davidn@davidnewall.com>
-Cc: Nick Andrew <nick@nick-andrew.net>, Linas Vepstas <linasvepstas@gmail.com>,
-       david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
-       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
- 2008-2009
-Message-ID: <20090107095419.70b78dc7@lxorguk.ukuu.org.uk>
-In-Reply-To: <496479EA.1020207@davidnewall.com>
-References: <496076A9.7030907@davidnewall.com>
-	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>
-	<4960897D.5030603@davidnewall.com>
-	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>
-	<4961432A.80509@davidnewall.com>
-	<alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>
-	<49614835.7000505@davidnewall.com>
-	<3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>
-	<20090105143335.GC18055@mail.local.tull.net>
-	<4962BB13.7060304@davidnewall.com>
-	<20090106025125.GB28431@mail.local.tull.net>
-	<20090106094058.64c89586@lxorguk.ukuu.org.uk>
-	<496479EA.1020207@davidnewall.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 7 Jan 2009 04:54:32 -0500
+Received: from 1wt.eu ([62.212.114.60]:1190 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751838AbZAGJyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 04:54:31 -0500
+Date: Wed, 7 Jan 2009 10:54:15 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107095415.GB30749@1wt.eu>
+References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106183704.GC32491@kernel.dk> <20090107044232.GA22218@gondor.apana.org.au> <20090107063859.GA30749@1wt.eu> <20090107095218.GA24264@gondor.apana.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107095218.GA24264@gondor.apana.org.au>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The range of signed 32-bit times is 1901 through 2039, which has only
-> one century, 2000, which is a leap year.  So the caveat for leap years
-> is correct but unnecessary.
+On Wed, Jan 07, 2009 at 08:52:18PM +1100, Herbert Xu wrote:
+> On Wed, Jan 07, 2009 at 07:38:59AM +0100, Willy Tarreau wrote:
+> >
+> > > Unfortunately, once the pipe is fed into sendpage we only use
+> > > page reference counting to pin down the memory.  So as soon as
+> > > sendpage returns we drop the ref count on the skb, thus freeing
+> > > the memory in skb->head, which is yet to be transmitted.
+> > 
+> > So this means that anything relying on sendpage() is at risk ? What
+> 
+> No the bug is in the splice code.  sendfile() and other sendpage
+> users are not affected.
 
-The standard however (and library code) were updated many years ago, so
-the description is still wrong.
+but sendfile() now uses splice().
 
-> So I've discoverd, at least on Ubuntu, something wonderful and
-> reassuring.  It already works exactly the way I think is correct.  Look:
-> I create a test timezone with no daylight saving and one leap second:
+Willy
 
-This is entirely configurable - see my earlier post about the "right" and
-posix timezones. Really however that belongs on the glibc list.
-
-As far as the kernel and leapseconds go - remember the kernel RTC support
-does not know about leap seconds
