@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763823AbZAGXba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbZAGXdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763823AbZAGXba (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZAGXbV
+	id S1762750AbZAGXdb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 18:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbZAGXdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:31:21 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:54967 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbZAGXbU (ORCPT
+	Wed, 7 Jan 2009 18:33:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35494 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753908AbZAGXdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:31:20 -0500
-Message-ID: <49653B15.4090901@oracle.com>
-Date: Wed, 07 Jan 2009 15:30:29 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 7 Jan 2009 18:33:18 -0500
+Date: Wed, 7 Jan 2009 15:32:11 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <alpine.DEB.1.10.0901071806240.23456@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.0901071529530.3057@localhost.localdomain>
+References: <1231283778.11687.136.camel@twins> <1231329783.11687.287.camel@twins> <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain> <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+ <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com> <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <20090107210923.GV2002@parisc-linux.org> <20090107213924.GP496@one.firstfloor.org> <49652C7C.3000909@novell.com> <20090107223317.GB27629@elte.hu>
+ <4965331E.8090202@novell.com> <alpine.DEB.1.10.0901071806240.23456@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@canonical.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Crutcher Dunnavant <crutcher+kernel@datastacks.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] sysrq documentation: document why the command header
- only is shown
-References: <1231364958-26253-1-git-send-email-apw@canonical.com> <1231364958-26253-3-git-send-email-apw@canonical.com>
-In-Reply-To: <1231364958-26253-3-git-send-email-apw@canonical.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.49653B19.011C:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> Document the interactions between loglevel and the sysrq output.  Also
-> document how to work round it should output on the console be required.
+
+
+On Wed, 7 Jan 2009, Steven Rostedt wrote:
 > 
-> Signed-off-by: Andy Whitcroft <apw@canonical.com>
-> ---
->  Documentation/sysrq.txt |   18 ++++++++++++++++++
->  1 files changed, 18 insertions(+), 0 deletions(-)
+> What would be interesting is various benchmarks against all three.
 > 
-> diff --git a/Documentation/sysrq.txt b/Documentation/sysrq.txt
-> index 265f637..a262ffb 100644
-> --- a/Documentation/sysrq.txt
-> +++ b/Documentation/sysrq.txt
-> @@ -210,6 +210,24 @@ within a function called by handle_sysrq, you must be aware that you are in
->  a lock (you are also in an interrupt handler, which means don't sleep!), so
->  you must call __handle_sysrq_nolock instead.
->  
-> +*  When I hit a sysrq combination only the header appears on the console, why?
+> 1) no mutex spinning.
+> 2) get_task_struct() implementation.
+> 3) spin_or_sched implementation.
 
-   *  When I hit a sysrq key combination, only the header appears on the console. Why?
-> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +Sysrq output is subject to the same console loglevel control as all
-> +other console output.  This means that if the kernel was booted 'quiet'
-> +as is common on distro kernels the output may not appear on the actual
-> +console, even though it will appear in the dmesg buffer, and be accessible
-> +via the dmesg command and to the consumers of /proc/kmsg.  As a specific
-> +exception the header line from the sysrq command is passed to all console
-> +consumers as if the current loglevel was maximum.  If only the header
-> +is emitted it is almost cirtain that the kernel loglevel is too low.
+One of the issues is that I cannot convince myself that (2) is even 
+necessarily correct. At least not without having all cases happen inder 
+the mutex spinlock - which they don't. Even with the original patch, the 
+uncontended cases set and cleared the owner field outside the lock.
 
-                           certain
-
-> +Should you require the output on the console channel then you will need
-> +to temporarily up the console loglevel using alt-sysrq-8 or:
-> +
-> +    echo 8 > /proc/sysrq-trigger
-> +
-> +Remember to return the loglevel to normal after triggering the sysrq
-> +command you are interested in.
-> +
->  *  I have more questions, who can I ask?
->  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->  And I'll answer any questions about the registration system you got, also
-
-
--- 
-~Randy
+			Linus
