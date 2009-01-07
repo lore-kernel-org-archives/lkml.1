@@ -1,98 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759770AbZAGSyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760490AbZAGS40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759770AbZAGSyw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 13:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZAGSym
+	id S1760490AbZAGS40 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 13:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbZAGS4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 13:54:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56754 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753111AbZAGSyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 13:54:41 -0500
-Date: Wed, 7 Jan 2009 19:53:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+	Wed, 7 Jan 2009 13:56:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52119 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753021AbZAGS4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 13:56:12 -0500
+Date: Wed, 7 Jan 2009 10:55:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Roel Kluin <roel.kluin@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2 0/4] ftrace: important updates
-Message-ID: <20090107185349.GC16193@elte.hu>
-References: <20090107041605.168020089@goodmis.org> <20090107094905.GB16025@elte.hu> <20090107195456.3247bab5@daedalus.pq.iki.fi> <alpine.DEB.1.10.0901071302260.17678@gandalf.stny.rr.com>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <1231347442.11687.344.camel@twins>
+Message-ID: <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>  <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>  <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>
+  <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>  <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>  <1231278275.11687.111.camel@twins>  <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain> 
+ <1231279660.11687.121.camel@twins>  <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain>  <1231281801.11687.125.camel@twins>  <1231283778.11687.136.camel@twins>  <1231329783.11687.287.camel@twins>  <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+ <1231347442.11687.344.camel@twins>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901071302260.17678@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Wed, 7 Jan 2009, Pekka Paalanen wrote:
-> 
-> > On Wed, 7 Jan 2009 10:49:05 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > 
-> > > >       ring-buffer: rename debugfs file tracing_on to writing_enabled
-> > > 
-> > > writing_enabled is at least as confusing as tracing_on - if not more so.
-> > > 
-> > > The user really does not care about all the deeper machinery that happens 
-> > > in ftrace - the difference between a 'light' disabling of a tracer and a 
-> > > 'heavy' disabling of a tracer (which means it unregisters itself 
-> > > completely in essence).
-> > > 
-> > > To resolve this, we should probably hide this difference altogether (as i 
-> > > have suggested to do many months ago, when this first came up), by 
-> > > removing tracing_enabled.
-> > > 
-> > > A tracer can still be fully unregistered: by simply switching the current 
-> > > tracer to the 'nop' tracer. tracing_on/off remains the lightweight version 
-> > > that most users are interested in anyway.
-> > 
-> > This sounds even better. We should not need tracing_enabled anymore, since
-> > the buffer size can be changed regardless. tracing_on is more useful to
-> > mmiotrace than tracing_enabled, too, since mmiotrace does not implement
-> > the proper pausing behaviour on the tracing_enabled trigger.
-> > 
-> > But if Steven wants to keep the "pause" semantics, should there be a
-> > callback dispatched to the tracer from tracing_on, just like there is
-> > from tracing_enabled currently? Of course the callback semantics would
-> > be different and the usual reaction would be to do nothing. It would
-> > only be meaningful to tracers that update data outside the ring buffer,
-> > so that they can properly pause.
-> 
-> The tracing_on is implemented by the ring buffer, and disables all ring 
-> buffers, even those that are not part of ftrace. This file really has no 
-> concept of a tracer. It simply stops writing to the ring buffer.
-> 
-> Things like the irq latency tracer is will still update its "max time" 
-> when tracing is off, although the trace output will not be updated.
-> 
-> I could remove tracing_enabled, and move the tracing_on to trace.c, that 
-> just calls the tracing_off of the ring buffer, and then the file will be 
-> at the higher layer, and have a concept of the current tracer.
+Ok a few more issues. This never stops.
 
-Sounds good to me. I think the highest utility is in the 'lightweight' 
-tracing_on toggle - even though it does not do as thorough of a job of 
-disabling a tracer as writing 0 to tracing_on.
+Here's the basic spinloop:
 
-I think we shouldnt even _try_ to provide a simple toggle for unregister: 
-it is clear from looking at /debug/tracing/current_tracer that the current 
-tracer is still active - so asking people to change that back to 'nop' 
-will be rather intuitive IMO.
+On Wed, 7 Jan 2009, Peter Zijlstra wrote:
+>
+> +	for (;;) {
+> +		struct task_struct *l_owner;
+> +
+> +		/* Stop spinning when there's a pending signal. */
+> +		if (signal_pending_state(task->state, task))
+> +			break;
 
-	Ingo
+This just can't be right. If we have signal latency issues, we have way 
+way _way_ bigger issues.
+
+So the correct test is to just break out if we have any work at all, 
+whether it's signals or rescheduling. Yes, you probably never saw that in 
+RT, but that was because you have preemption on etc. And obviously usually 
+there isn't enough constant contention to trigger anything like this 
+anyway, so usually the wait is short either because the owner ends up 
+sleeping, or because the owner releases the semaphore.
+
+But you could have starvation issues where everybody is all on CPU, and 
+other processes constantly get the semaphore, and latency is absolutely 
+HORRIBLE because of this guy just busy-looping all the time.
+
+So at a minimum, add a couple of "if (need_resched())" calls.
+
+However, the other thing that really strikes me is that we've done all 
+that insane work to add ourselves to the waiter lists etc, and _then_ we 
+start spinning. Again, that can't be right: if there are other people on 
+the waiter list, we should not spin - because it's going to be really 
+really unfair to take the lock from them!
+
+So we should do all this spinning ONLY IF there are no other waiters, ie 
+everybody else is spinning too!
+
+Anything else sounds just horribly broken due to the extreme unfairness of 
+it all. Those things are supposed to be fair.
+
+What does that mean? It means that the spinning loop should also check 
+that the wait-queue was empty. But it can't do that, because the way this 
+whole adaptive spinning was done is _inside_ the slow path that already 
+added itself to the waiting list - so you cannot tell if there are other 
+spinners.
+
+So I think that the spinning is actually done in the wrong place. It 
+_should_ be done at the very top of __mutex_lock_common, _before_ we've 
+done that lock->wait_list thing etc. That also makes us only spin at the 
+beginning, and if we start sleeping, we don't suddenly go back to spinning 
+again.
+
+That in turn would mean that we should try to do this spinning without any 
+locks. I think it's doable. I think it's also doable to spin _without_ 
+dirtying the cacheline further and bouncing it due to the spinlock. We can 
+really do the spinning by just reading that lock, and the only time we 
+want to write is when we see the lock releasing.
+
+Something like this..
+
+NOTE NOTE NOTE! This does _not_ implement "spin_on_owner(lock, owner);". 
+That's the thing that the scheduler needs to do, with the extra 
+interesting part of needing to be able to access the thread_info struct 
+without knowing whether it might possibly have exited already.
+
+But we can do that with __get_user(thread_info->cpu) (very unlikely page 
+fault protection due to the possibility of CONFIG_DEBUG_PAGEALLOC) and 
+then validating the cpu. It it's in range, we can use it and verify 
+whether cpu_rq(cpu)->curr has that thread_info.
+
+So we can do all that locklessly and optimistically, just going back and 
+verifying the results later. This is why "thread_info" is actually a 
+better thing to use than "task_struct" - we can look up the cpu in it with 
+a simple dereference. We knew the pointer _used_ to be valid, so in any 
+normal situation, it will never page fault (and if you have 
+CONFIG_DEBUG_PAGEALLOC and hit a very unlucky race, then performance isn't 
+your concern anyway: we just need to make the page fault be non-lethal ;)
+
+			Linus
+
+---
+ kernel/mutex.c |   30 ++++++++++++++++++++++++++++--
+ 1 files changed, 28 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/mutex.c b/kernel/mutex.c
+index 4f45d4b..65525d0 100644
+--- a/kernel/mutex.c
++++ b/kernel/mutex.c
+@@ -120,6 +120,8 @@ void __sched mutex_unlock(struct mutex *lock)
+ 
+ EXPORT_SYMBOL(mutex_unlock);
+ 
++#define MUTEX_SLEEPERS (-1000)
++
+ /*
+  * Lock a mutex (possibly interruptible), slowpath:
+  */
+@@ -132,6 +134,30 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
+ 	unsigned int old_val;
+ 	unsigned long flags;
+ 
++#ifdef CONFIG_SMP
++	/* Optimistic spinning.. */
++	for (;;) {
++		struct thread_struct *owner;
++		int oldval = atomic_read(&lock->count);
++
++		if (oldval <= MUTEX_SLEEPERS)
++			break;
++		if (oldval == 1) {
++			oldval = atomic_cmpxchg(&lock->count, oldval, 0);
++			if (oldval == 1) {
++				lock->owner = task_thread_info(task);
++				return 0;
++			}
++		} else {
++			/* See who owns it, and spin on him if anybody */
++			owner = lock->owner;
++			if (owner)
++				spin_on_owner(lock, owner);
++		}
++		cpu_relax();
++	}
++#endif
++
+ 	spin_lock_mutex(&lock->wait_lock, flags);
+ 
+ 	debug_mutex_lock_common(lock, &waiter);
+@@ -142,7 +168,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
+ 	list_add_tail(&waiter.list, &lock->wait_list);
+ 	waiter.task = task;
+ 
+-	old_val = atomic_xchg(&lock->count, -1);
++	old_val = atomic_xchg(&lock->count, MUTEX_SLEEPERS);
+ 	if (old_val == 1)
+ 		goto done;
+ 
+@@ -158,7 +184,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
+ 		 * that when we release the lock, we properly wake up the
+ 		 * other waiters:
+ 		 */
+-		old_val = atomic_xchg(&lock->count, -1);
++		old_val = atomic_xchg(&lock->count, MUTEX_SLEEPERS);
+ 		if (old_val == 1)
+ 			break;
+ 
