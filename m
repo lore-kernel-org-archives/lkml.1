@@ -1,134 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZAGDC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZAGDGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbZAGDC0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 22:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbZAGDCQ
+	id S1753908AbZAGDGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 22:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZAGDGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 22:02:16 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:60198 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbZAGDCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 22:02:15 -0500
-Subject: Re: [RFC][PATCH 3/4] sunrpc: Improve UTS namespace workaround
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Chuck Lever <chuck.lever@oracle.com>
-Cc: Linux Containers <containers@lists.linux-foundation.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-In-Reply-To: <E184097A-C995-4C92-9608-A97B43E750E0@oracle.com>
-References: <20090106011314.534653345@us.ibm.com>
-	 <20090106011315.100081168@us.ibm.com>
-	 <E184097A-C995-4C92-9608-A97B43E750E0@oracle.com>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 19:02:12 -0800
-Message-Id: <1231297332.14345.334.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 6 Jan 2009 22:06:11 -0500
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:29403 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751375AbZAGDGK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 22:06:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ksWThnzvQvUPJJveLnECvvVd3hfmaxeC0UkdgCc3ipPQViO5AUKWNBx9X/qyLF9P8q9hRCr50X/rLwTxodpHPe5IbYNNTHn3ZOhNPsZ74qPTGIdUlpBji9fT1SE3I4O4jiMfaKuMXpLcEzUGnsbG+apKf0XmF9IFCfreBWU8tUc=  ;
+X-YMail-OSG: r4Nx76QVM1lY8CO0An3ik3O.lClt314UernrOwn_pWvG2Vu8C936XVSj5nVNXP1BrRvX59oN9s2VGqeMBcjkOh2hJKhqQMURt7PusHlkbzXr1hOGU4a2U4aGNyqMGAcaSEXogh4WtnO7oJ5TyzbDHYtgOntOwz7nPZjKLzjCchbjRDPbxT4VcEVzca2R5bNMnTZWGROoUdHFNT7XEQ46eu_YWB5JQZF.5Gk-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29 -mm merge plans
+Date: Wed, 7 Jan 2009 14:05:51 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <200901071306.45210.nickpiggin@yahoo.com.au> <20090106181647.e22b27d2.akpm@linux-foundation.org>
+In-Reply-To: <20090106181647.e22b27d2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901071405.51642.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Argh, missed some questions I should've answered earlier...
-
-On Tue, 2009-01-06 at 11:02 -0500, Chuck Lever wrote:
-> Matt-
-> 
-> Thanks for pursuing a permanent fix for this.
-> 
-> On Jan 5, 2009, at Jan 5, 2009, 8:13 PM, Matt Helsley wrote:
-> 
-> > We can improve upon a workaround applied in commit
-> > 63ffc23d307c9534c732edd87895e37b223004a3 ( http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=63ffc23d307c9534c732edd87895e37b223004a3 
-> >  )
+On Wednesday 07 January 2009 13:16:47 Andrew Morton wrote:
+> On Wed, 7 Jan 2009 13:06:44 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
+wrote:
+> > On Wednesday 07 January 2009 10:13:44 Andrew Morton wrote:
+> > > (cc added)
+> > >
+> > > On Tue, 6 Jan 2009 17:57:44 -0500
+> > >
+> > > Christoph Hellwig <hch@infradead.org> wrote:
+> > > > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
+> > > > > softirq-introduce-statistics-for-softirq.patch
+> > > > > proc-export-statistics-for-softirq-to-proc.patch
+> > > > > proc-update-document-for-proc-softirqs-and-proc-stat.patch
+> > > >
+> > > > Why is this in procfs?
+> > >
+> > > softirq stuff in /proc seems appropriate?  It's alongside
+> > > /proc/interrupts.  We could put it in /trendy-fs-of-the-day, but what
+> > > would it gain us?
 > >
-> > The original problem was:
+> > Haven't we kind of agreed to use sysfs for things like this? A few years
+> > too late to be raising objections now ;)
 > >
-> > "On a system with nfs mounts, if a task unshares its mount namespace,
-> > a oops can occur when the system is rebooted if the task is the last
-> > to unreference the nfs mount. It will try to create a rpc request
-> > using utsname() which has been invalidated by free_nsproxy()."
+> > One problem I have with sysfs is that it (the directory structure, rather
+> > than the sysfs code itself) really needs to be policed and maintained
+> > by a central and coherent place/person with taste. Otherwise people put
+> > their own random crap with their own random naming schemes and becomes
+> > a crazy mess.
 > >
-> > Cedric worked around this by always using the initial uts namespace  
-> > for RPC.
-> > Critically this workaround meant that RPC clients in uts namespaces  
-> > can never
-> > report the changed nodename when utilizing RPC.
-> >
-> > Fix that by storing the nodename in the NFS server structure (part  
-> > of the NFS
-> > super block) and, when an RPC client is operating on behalf of NFS,  
-> > reporting
-> > that nodename. This solves the problem for NFS clients but leaves  
-> > any other
-> > RPC users out in the cold.
-> >
-> > Rather than caching the nodename in the client structure RPC should  
-> > obtain the
-> > nodename from RPC callers. It would then be up to those services  
-> > making RPC
-> > calls to cache the nodename for as long as necessary -- somewhat  
-> > like this patch
-> > does with NFS.
-> 
-> Instead of having the RPC client call the consumer back, why can't you  
-> pass the nodename as an argument to each RPC call; say, via the  
-> rpc_message structure?
+> > softirqs are not hardware but purely kernel subsystem construct, as such
+> > they probably go under /sys/kernel/. People unfortunately have already
+> > added random crap to the /sys/kernel/ root directory, but future
+> > additions really should go into a good subdirectory structure (putting it
+> > into the root directory is equivalent to ditching all subdirectories from
+> > /proc/sys/).
+>
+> All sounds like pointless wank^Wbikeshed painting to me.
 
-I suspect it would work and it would avoid the layering violation you
-pointed out.
+Really? Our userspace ABI? You think it works bestter when there is as
+little thought as possible put into it and everybody just does what
+they feel is best?
 
-> > NOTE: Part of Cedric's workaround -- use of the initial uts  
-> > namespace -- is
-> > still necessary because non-NFS RPC callers still rely on the  
-> > nodename cached
-> > with the RPC client struct.
-> 
-> In the long run I think it would be more useful to spell out where  
-> each consumer gets its nodename value, rather than having a convenient  
-> default value.  A default would encourage exposing nodenames  
-> inappropriately due to sloppy coding and incorrect assumptions (on the  
-> developer's part) about a complex API.
 
-You make some good points here. I'll add your idea to my list of patches
-to try writing:
-	1. Store a reference to the uts namespace with the credentials
-	2. Pass the nodename directly for each RPC call (via rpc_message
-		perhaps)
+> > /sys/kernel/softirq/*, I suggest.
+>
+> What would that *improve*?
 
-<snip>
-
-> > Index: linux-2.6.28/include/linux/sunrpc/clnt.h
-> > ===================================================================
-> > --- linux-2.6.28.orig/include/linux/sunrpc/clnt.h
-> > +++ linux-2.6.28/include/linux/sunrpc/clnt.h
-> > @@ -19,6 +19,7 @@
-> > #include <asm/signal.h>
-> >
-> > struct rpc_inode;
-> > +struct nfs_server;
-> >
-> > /*
-> >  * The high-level client handle
-> > @@ -50,6 +51,7 @@ struct rpc_clnt {
-> >
-> > 	int			cl_nodelen;	/* nodename length */
-> > 	char 			cl_nodename[UNX_MAXNODENAME];
-> > +	struct nfs_server	*cl_nfs_server;
-> 
-> This is a layering violation...  I would rather avoid introducing new  
-> strong data structure dependencies on one of RPC's consumers.
-
-<snip>
-
-I addressed your other comments in an earlier reply.
-
-Thanks!
-
-Cheers,
-	-Matt Helsley
+It would be logically in the right place.
 
