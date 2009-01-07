@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZAGDpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZAGEBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbZAGDpF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Jan 2009 22:45:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZAGDow
+	id S1756356AbZAGEBK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Jan 2009 23:01:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZAGEA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Jan 2009 22:44:52 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:52754 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbZAGDov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Jan 2009 22:44:51 -0500
-Subject: Re: [RFC][PATCH 2/4] sunrpc: Use utsnamespaces
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>
-In-Reply-To: <1231287791.11487.4.camel@heimdal.trondhjem.org>
-References: <20090106011314.534653345@us.ibm.com>
-	 <20090106011314.961946803@us.ibm.com> <20090106200229.GA17031@us.ibm.com>
-	 <1231274682.20316.65.camel@heimdal.trondhjem.org>
-	 <20090106215831.GE18147@us.ibm.com>
-	 <1231281732.4173.6.camel@heimdal.trondhjem.org>
-	 <1231286930.14345.196.camel@localhost>
-	 <20090107002024.GJ13785@fieldses.org>
-	 <1231287791.11487.4.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 19:44:48 -0800
-Message-Id: <1231299888.14345.369.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 6 Jan 2009 23:00:57 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51681 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753728AbZAGEA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Jan 2009 23:00:56 -0500
+Message-ID: <49642829.20006@cn.fujitsu.com>
+Date: Wed, 07 Jan 2009 11:57:29 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH][RFC]: mutex: adaptive spin
+References: <87r63ljzox.fsf@basil.nowhere.org>	 <20090103191706.GA2002@parisc-linux.org> <1231093310.27690.5.camel@twins>	 <20090104184103.GE2002@parisc-linux.org> <1231242031.11687.97.camel@twins>	 <20090106121052.GA27232@elte.hu> <4963584A.4090805@novell.com>	 <20090106131643.GA15228@elte.hu> <1231248041.11687.107.camel@twins>	 <49636799.1010109@novell.com>  <20090106214229.GD6741@linux.vnet.ibm.com>	 <1231278275.11687.111.camel@twins>	 <alpine.LFD.2.00.0901061349520.3057@localhost.localdomain>	 <1231279660.11687.121.camel@twins>	 <alpine.LFD.2.00.0901061413310.3057@localhost.localdomain> <1231281801.11687.125.camel@twins>
+In-Reply-To: <1231281801.11687.125.camel@twins>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-06 at 19:23 -0500, Trond Myklebust wrote:
-> On Tue, 2009-01-06 at 19:20 -0500, J. Bruce Fields wrote:
-> > If it would be possible, for example, for the 'init' namespace to have
-> > no network interfaces at all, then it would be nicer to use a name
-> > that's at least been used with nfs at *some* point--just on the general
-> > principle of not leaking information to a domain that the user wouldn't
-> > expect it to.
-> 
-> Then RPC would fail. Thanks to the limitations imposed by selinux &
-> friends, all RPC sockets have to be owned by the init process.
+Peter Zijlstra wrote:
+> +void mutex_spin_or_schedule(struct mutex_waiter *waiter, long state, unsigned long *flags)
+> +{
+> +	struct mutex *lock = waiter->lock;
+> +	struct task_struct *task = waiter->task;
+> +	struct task_struct *owner = lock->owner;
+> +	struct rq *rq;
+> +
+> +	if (!owner)
+> +		goto do_schedule;
+> +
+> +	rq = task_rq(owner);
+> +
+> +	if (rq->curr != owner) {
+> +do_schedule:
+> +		__set_task_state(task, state);
+> +		spin_unlock_mutex(&lock->wait_lock, *flags);
+> +		schedule();
+> +	} else {
+> +		spin_unlock_mutex(&lock->wait_lock, *flags);
+> +		for (;;) {
+> +			/* Stop spinning when there's a pending signal. */
+> +			if (signal_pending_state(state, task))
+> +				break;
+> +
+> +			/* Owner changed, bail to revalidate state */
+> +			if (lock->owner != owner)
+> +				break;
+> +
+> +			/* Owner stopped running, bail to revalidate state */
+> +			if (rq->curr != owner)
+> +				break;
+> +
 
-Interesting -- I'm not familiar with this requirement of selinux. Must
-it be the init process of the initial pid namespace or could any pid
-namespace's init process own it?
+2 questions from my immature thought:
 
-Cheers,
-	-Matt Helsley
+1) Do we need keep gcc from optimizing when we access lock->owner
+   and rq->curr in the loop?
+
+2) "if (rq->curr != owner)" need become smarter.
+   schedule()
+   {
+	select_next
+	rq->curr = next;
+	contex_swith
+   }
+we also spin when owner is select_next-ing in schedule().
+but select_next is not fast enough.
+
+
+Lai.
+
 
