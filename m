@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZAGFKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbZAGFL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757631AbZAGFKo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 00:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZAGFKf
+	id S1757897AbZAGFL4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 00:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZAGFLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 00:10:35 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43287 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbZAGFKe (ORCPT
+	Wed, 7 Jan 2009 00:11:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50158 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751423AbZAGFLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 00:10:34 -0500
-Date: Wed, 7 Jan 2009 05:10:27 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, ccache@lists.samba.org
-Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
-Message-ID: <20090107051027.GU28946@ZenIV.linux.org.uk>
-References: <E1LKDeQ-0002xz-7E@closure.thunk.org>
+	Wed, 7 Jan 2009 00:11:46 -0500
+Date: Tue, 6 Jan 2009 21:11:42 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: powerpc: introduce asm/swab.h
+In-Reply-To: <1231304552.14860.72.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0901062108440.3057@localhost.localdomain>
+References: <200901070400.n0740Ore002063@hera.kernel.org>  <1231303340.14860.61.camel@pasglop> <1231304552.14860.72.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LKDeQ-0002xz-7E@closure.thunk.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 10:15:26AM -0500, Theodore Ts'o wrote:
-> Or, if that's too complicated, maybe it would be worthwhile to have
-> kbuild create its own specialized ccache system?  Note that the last two
-> solutions rule out using distcc, unless we can encapsulate the build
-> process from a series of Makefile macros to a shell or C program, which
-> could then be injected to the remote host system to be executed by
-> distcc.  One value of doing that is the CRC or MD5 of the shell script
-> could be used as the version tag for the cache system.
 
-Ho-hum...  Could somebody explain why the hell had we switched to this
-"intermediate .s" approach, anyway?  It's not as if we couldn't run
-objcopy after what we used to do...
 
-BTW, do we care about non-ELF targets at all?
+On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
+> 
+> Even if fixing that to use __swab32() instead, then it fails because
+> this is defined after it's used. I worked around it using fswab in
+> there instead.
+
+That's the same patch I just sent out (but you changed comments too), so I 
+obviously agree. 
+
+x86 didn't see this (even in 32-bit mode) because it doesn't use that odd 
+__SWAB_64_THRU_32__ case, but does the 64-bit swab with native code.
+
+Can you also verify that it works for you (not just compiles), just so 
+that I can commit it?
+
+			Linus
