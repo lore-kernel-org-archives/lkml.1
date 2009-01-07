@@ -1,111 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbZAGPRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759139AbZAGPTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758692AbZAGPRc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 10:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZAGPRZ
+	id S1759139AbZAGPTW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 10:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZAGPTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 10:17:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33201 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbZAGPRY (ORCPT
+	Wed, 7 Jan 2009 10:19:13 -0500
+Received: from mail-gx0-f13.google.com ([209.85.217.13]:50696 "EHLO
+	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbZAGPTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 10:17:24 -0500
-Subject: [PATCH -tip 7/7] x86: smp.h move boot_cpu_id declartion to cpu.h
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+	Wed, 7 Jan 2009 10:19:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VMkGxvKOKOs89DrDlVDczykICB9qH00fDBuFGUK9FoCq2Qm1mhC7k8+PnWZcyIAz8h
+         xY/TbPMxTBm3s04SSE18MSmVXqZwH2qudMJtg+ahLQDdosCBPnSXuj5MIZqtV/M0akic
+         QvX+Svxsf7Nt8Tlbz+zHhBuORG6B6NPFInsNE=
+Message-ID: <3f9a31f40901070719j1349b44fk8f20b3cbb227e9d@mail.gmail.com>
+Date: Wed, 7 Jan 2009 20:49:10 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH -tip 0/7] x86: move NON-SMP data from smp.h
+Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
+       "x86 maintainers" <x86@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       James.Bottomley@hansenpartnership.com,
        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 17:27:19 +0530
-Message-Id: <1231329439.17961.36.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+In-Reply-To: <20090107151522.GA5341@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1231329368.17961.29.camel@jaswinder.satnam>
+	 <20090107125152.GA3529@elte.hu> <20090107133327.GA4911@elte.hu>
+	 <3f9a31f40901070557r336020dctbe9549e8634b167@mail.gmail.com>
+	 <20090107150351.GB27606@elte.hu> <20090107151223.GA4899@elte.hu>
+	 <20090107151522.GA5341@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, moving NON-SMP stuff from smp.h
+On Wed, Jan 7, 2009 at 8:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> note, i kept these:
+>
+> 6e5385d: x86: smp.h move prefill_possible_map declartion to cpu.h
+> dacf733: x86: smp.h move zap_low_mappings declartion to tlbflush.h
+> 7760ec7: x86: smp.h remove obsolete function declaration
+>
+> as they seem fairly safe.
+>
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/cpu.h   |    7 +++++++
- arch/x86/include/asm/smp.h   |    6 ------
- arch/x86/kernel/cpu/common.c |    2 +-
- arch/x86/kernel/io_apic.c    |    1 +
- drivers/pci/intr_remapping.c |    1 +
- 5 files changed, 10 insertions(+), 7 deletions(-)
+OK, thanks.
 
-diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index 89edafb..f03b23e 100644
---- a/arch/x86/include/asm/cpu.h
-+++ b/arch/x86/include/asm/cpu.h
-@@ -31,4 +31,11 @@ extern void arch_unregister_cpu(int);
- #endif
- 
- DECLARE_PER_CPU(int, cpu_state);
-+
-+#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
-+extern unsigned char boot_cpu_id;
-+#else
-+#define boot_cpu_id				0
-+#endif
-+
- #endif /* _ASM_X86_CPU_H */
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index 136f1c7..1963e27 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -238,11 +238,5 @@ static inline int hard_smp_processor_id(void)
- 
- #endif /* CONFIG_X86_LOCAL_APIC */
- 
--#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
--extern unsigned char boot_cpu_id;
--#else
--#define boot_cpu_id	0
--#endif
--
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_X86_SMP_H */
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 667e5d5..693f3b9 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -21,7 +21,7 @@
- #include <asm/pat.h>
- #include <asm/asm.h>
- #include <asm/numa.h>
--#include <asm/smp.h>
-+#include <asm/cpu.h>
- #ifdef CONFIG_X86_LOCAL_APIC
- #include <asm/mpspec.h>
- #include <asm/apic.h>
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 1c4a130..109c91d 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -46,6 +46,7 @@
- #include <asm/idle.h>
- #include <asm/io.h>
- #include <asm/smp.h>
-+#include <asm/cpu.h>
- #include <asm/desc.h>
- #include <asm/proto.h>
- #include <asm/acpi.h>
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index f78371b..5a57753 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -6,6 +6,7 @@
- #include <linux/irq.h>
- #include <asm/io_apic.h>
- #include <asm/smp.h>
-+#include <asm/cpu.h>
- #include <linux/intel-iommu.h>
- #include "intr_remapping.h"
- 
--- 
-1.5.6.6
+I will prepare new lot of remaining 4 patches.
 
+Due to some problem in mailer server it sending my old patches, please
+ignore them.
 
-
+Thanks
+--
+JSR
