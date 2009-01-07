@@ -1,84 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbZAGVmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762116AbZAGVnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761974AbZAGVmy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 16:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZAGVmb
+	id S1762116AbZAGVnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 16:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZAGVnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 16:42:31 -0500
-Received: from intermatrixgroup.ru ([195.178.208.66]:58673 "EHLO
-	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762083AbZAGVma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 16:42:30 -0500
-Date: Thu, 8 Jan 2009 00:42:28 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: =?utf-8?B?UsOpbWk=?= Denis-Courmont <rdenis@simphalempin.com>
-Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Security: Implement and document RLIMIT_NETWORK.
-Message-ID: <20090107214228.GA4610@ioremap.net>
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <200901071852.32078.rdenis@simphalempin.com> <20090107174809.GA8989@ioremap.net> <200901072254.14017.rdenis@simphalempin.com>
+	Wed, 7 Jan 2009 16:43:00 -0500
+Received: from h155.mvista.com ([63.81.120.155]:62270 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758017AbZAGVm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 16:42:58 -0500
+Message-ID: <496521D7.1050002@ru.mvista.com>
+Date: Thu, 08 Jan 2009 00:42:47 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901072254.14017.rdenis@simphalempin.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, david-b@pacbell.net,
+       khilman@deeprootsystems.com
+Subject: Re: [GIT PATCH] USB patches for 2.6-git
+References: <20090107192438.GA18146@kroah.com> <49650F2C.9030809@ru.mvista.com> <20090107212801.GA21012@suse.de>
+In-Reply-To: <20090107212801.GA21012@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 10:54:13PM +0200, Rémi Denis-Courmont (rdenis@simphalempin.com) wrote:
-> No no no.
-> 
-> There is a huge fundamental difference between setrlimit, prctl(SECCOMP), 
-> set*uid and chroot on the one side, and iptables on the other side: The first 
-> ones are APIs for a process to control its own permission. iptables is an 
-> interface to control the _whole_ system.
-> 
-> In other words, the first ones are usable programmatically. iptables is not, 
-> unless you're willing to assume the kernel only operates one single 
-> userland "software".
+Hello.
 
-iptables 'owner' match module exactly 'operates one signel userland software'.
+Greg KH wrote:
 
-> From the perspective of distros and system admins, perhaps SELinux and 
-> iptables are sufficient to address this. But from that of a third-party, 
-> upstream, distro-independent or whatever-you-want-to-call-it software vendor, 
-> they don't quite work due to their centralized nature.
+>>> Here is the set of USB patches for the 2.6.29-rc1 merge.
+>>>
+>>> They also include the wimax patches, because of a dependancy on a change
+>>> in the USB core to support one of the wimax drivers.  The wimax patch
+>>> set has been acked by the network maintainers already, and they agreed
+>>> that it should go through the USB tree to you.
+>>>
+>>> Other than wimax, the patchset includes:
+>>> 	- some new USB drivers (gadget, host, and serial)
+>>> 	- USB OTG (on-the-go) device support
+>>> 	- lots of device id updates
+>>> 	- renaming in the i2c drivers to move into the proper location
+>>> 	  in the usb tree
+>>> 	- usb-storage quirk handling cleaned up and reworked
+>>> 	- sped up the option wireless usb driver speed.
+>>> 	- removal of info() and warn() usb macros now that the non-usb	  portions 
+>>> of the kernel have removed their usage of them.
+>>> 	- lots of minor tweaks and reworks.
+>>>
+>>> Please pull from:
+>>> 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+>>>
+>>> All of these patches have been in the -next and -mm releases for a while.
+>>>
+>>> The full patches will be sent to the linux-usb mailing list, if anyone
+>>> wants to see them.
+>>>
+>>> thanks,
+>>>
+>>> greg k-h
+>>>   
+>>>       
+>> [...]
+>>
+>>     
+>>> Kevin Hilman (1):
+>>>       USB: musb: build fixes for DaVinci
+>>>   
+>>>       
+>>   NAK this patch. I and David Brownell have asked Greg to pull this totally 
+>> broken patch (broken while in MUSB tree, the original patch was sane) from 
+>> his tree and all to no avail...
+>> The patch doesn't fix anything and only adds more breakage as it duplicates 
+>> musb_platform_set_mode().
+>>     
+>
+> {sigh}
+>   
 
-Actually selinux is even better example although this does depend on the
-distro. System which wants to secure network connections already knows
-what is the netfilter. This dependency equals to the recent-enough
-kernel with the new rlimit.
+   Argh rather. The linux-usb bureaucracy deserves stronger expressions. :-P
 
-To be clear: I do _not_ object against this patch. This is likely a good
-idea and while it potentially can be implemented via different way, it
-has its right for the existance :)
+> I'll fix this up after Linus pulls, sorry about that.
 
-> > > As I understand it, Michael is trying to build something similar to
-> > > SECCOMP,  only way less restrictive and way more usable by real-life
-> > > userland programs. 
-> 
-> > Security and unpriveledged setup are mutually impossible cases.
-> 
-> On a high-level, sure. You need a trusted privileged entity somewhere.
-> 
-> But when it comes _specifically_ to "unprivileged" as in "non-root", I believe 
-> there is a use case for something less restrictive than SECCOMP, yet more 
-> restrictive than just being a normal non-root process. Something along the 
-> lines of: cannot debug other processes, cannot send signal to them, cannot 
-> create file descriptors, cannot bind sockets, yet can allocate memory, can 
-> read timers, can read/write from any type of (already opened) file. Or 
-> whatever brighter and more knowledgeable mind than mine could define.
-> 
-> Or can someone prove that there is no set of permissions bigger than those of 
-> SECCOMP that would effectively equate to those of a normal non-privileged 
-> process?
+   Brialliant. Better later than never, though.
 
-We have a good capabilities subsystem and it has proper layered design.
-But still rlimit has to be assigned by something higher in this
-hierarchy.
+>>  I am dissatisfied how MUSB patches have been handled in general -- this 
+>> is not the first breakage, and the valid patches have been lost, so DaVinci 
+>> MUSB code keeps being broken since early 2.6.27-rc's (!) up to this time...
+>>     
+>
+> I agree, there's a big disconnect somewhere,
 
--- 
-	Evgeniy Polyakov
+   With Felipe disappearing again, not only 8 MUSB fixes posted by me 
+prior to 2.6.28 hadn't gotten into stable kernel, now there's little 
+chance they can get into -rc1 and so no chance for my several (yet 
+unposted) cleanup/reorg patches to get there as well... sigh... :-(
+
+>  I'm sorry about that.  I now see David's request to change this patch in my archives :(
+>   
+
+   You forgot to mention my several prior mails -- succeffully ignored 
+as well, unless they all managed to fall thru the cracks somehow...
+
+> thanks,
+>
+> greg k-h
+>   
+
+WBR, Sergei
+
+
