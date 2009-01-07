@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbZAGNmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZAGNqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757744AbZAGNmq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 08:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZAGNmh
+	id S1756885AbZAGNqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 08:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZAGNqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 08:42:37 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:37802 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbZAGNmg (ORCPT
+	Wed, 7 Jan 2009 08:46:04 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:43397 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbZAGNqD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 08:42:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=F77gotio9mZKGuWwZHHOpbzLu02/ZijGQEhZLUzn8cMEcIgHLaeb/LQqQGbnJxuWge
-         uJcDFJp4bo3KdCR8XK/yGXroq3byG4zDGHeUhWDFCYnW+ITAdntojE/Jr1LnQrX1MovE
-         7YF4wQUp6GYy4RZQxKJ6dsmuvPC1rpTFR4fAI=
-Message-ID: <c4e36d110901070542w16eec1b8ve651d1477caa4e32@mail.gmail.com>
-Date: Wed, 7 Jan 2009 14:42:35 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: kvm poweroff deadlock
-In-Reply-To: <c4e36d110901070254g7f3f3393qef23f3f50322550b@mail.gmail.com>
+	Wed, 7 Jan 2009 08:46:03 -0500
+Message-ID: <4964B20B.4030406@davidnewall.com>
+Date: Thu, 08 Jan 2009 00:15:47 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Nick Andrew <nick@nick-andrew.net>, Linas Vepstas <linasvepstas@gmail.com>,
+       david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
+       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
+       MentalMooMan <slashdot@jameshallam.info>,
+       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net
+Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
+ 2008-2009
+References: <496076A9.7030907@davidnewall.com>	<f73f7ab80901040100i78148513s75c6276722a76661@mail.gmail.com>	<4960897D.5030603@davidnewall.com>	<alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm>	<4961432A.80509@davidnewall.com>	<alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm>	<49614835.7000505@davidnewall.com>	<3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com>	<20090105143335.GC18055@mail.local.tull.net>	<4962BB13.7060304@davidnewall.com>	<20090106025125.GB28431@mail.local.tull.net>	<20090106094058.64c89586@lxorguk.ukuu.org.uk>	<496479EA.1020207@davidnewall.com>	<20090107095419.70b78dc7@lxorguk.ukuu.org.uk>	<49648163.9060007@davidnewall.com> <20090107105201.054c011f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090107105201.054c011f@lxorguk.ukuu.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c4e36d110901060713w28a6e3acq47e91ec53b4b6344@mail.gmail.com>
-	 <c4e36d110901070254g7f3f3393qef23f3f50322550b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/7 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> 2009/1/6 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
->> Hi
->>
->> While testing latest  2.6.29-rc  inside qemu-kvm guest I've got this
->> deadlock while executing poweroff:
->>
->> sd 0:0:0:0: [sda] Stopping disk
->>
->> ACPI: Preparing to enter system sleep state S5
->>
+Alan Cox wrote:
+>> True but irrelevant because the RTC returns a timestamp.  And it's
+>> quietly understood that the RTC is only an approximation.
+>>     
 >
-> Hi
->
-> This might be related to my previous post - but today with
-> commit: ede6f5aea054d3fb67c78857f7abdee602302043
->
-> I'm getting this oops inside qemu guest while doing poweroff:
->
-> ACPI: Preparing to enter system sleep state S5
->
-> Disabling non-boot CPUs ...
->
-> BUG: unable to handle kernel paging request at 000077ffe1adad5f
->
-> IP: [<ffffffff802592d4>] queue_work_on+0x44/0x60
->
+> You miss the point.
+>   
 
-My problem seems to be fixed by this patch:
+No, I got the point.  I see no problem.
+
+> The RTC stores the CMOS time in MM DD YY HH:MM:SS format.
+
+Yes, which is perfect for mktime(), which knows about leap seconds and
+so produces the correct time_t.
 
 
-http://marc.info/?l=linux-kernel&m=123131978225429&w=2
+>> However it is now clear that no special kernel support is required for
+>> leap-seconds, and any such code that's been incorporated needs to be
+>> removed.  Removed I say!
+>>     
+>
+> There never has been any. Its all handled (both posix and sane) by glibc.
 
-Zdenek
+Which is what one would expect.  It's reports of crashes and kernel bugs
+being found and fixed in code to handle leap seconds which lead me to a
+different understanding.  I thought it was said that there's kernel
+support to handle the leap second flag in NTP's broadcasts, and that
+that was where the bug was.
+
+So.  What is the situation?
