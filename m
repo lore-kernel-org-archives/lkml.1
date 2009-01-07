@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbZAGQmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbZAGQmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760124AbZAGQmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 11:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbZAGQl3
+	id S1759742AbZAGQmk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 11:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbZAGQlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 11:41:29 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:25149 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758575AbZAGQl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 11:41:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=e/Ao98hz0+rTwrsI/zNPuH3pzsdiTi/OrPQwT8uEoNu6wJOkwLNwMfJCWKIWUstFKY
-         1++X5hFB79v3inYXVCfh9AN6qdMSj8YnXhBpYOp24cXxMETN4CrCKUmviOSgTN/W2B8+
-         2OGYPDlJj72I5zN3LpOfd1eoVR03W4Dccjzeg=
-From: Bryan Wu <cooloney@kernel.org>
-To: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 3/3] Blackfin NFC Driver: drop pointless casts with set_dma_callback()
-Date: Thu,  8 Jan 2009 00:41:59 +0800
-Message-Id: <1231346519-28603-4-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1231346519-28603-1-git-send-email-cooloney@kernel.org>
-References: <1231346519-28603-1-git-send-email-cooloney@kernel.org>
+	Wed, 7 Jan 2009 11:41:37 -0500
+Received: from mga03.intel.com ([143.182.124.21]:9389 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759214AbZAGQlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 11:41:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,226,1231142400"; 
+   d="scan'208";a="97372426"
+Message-ID: <4964DB3E.6080908@intel.com>
+Date: Wed, 07 Jan 2009 09:41:34 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>
+Subject: Re: Status/support for Linux HECI from Intel? (for temp/voltage monitoring)
+References: <alpine.DEB.1.10.0812300700410.11356@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0812300700410.11356@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+Justin Piszcz wrote:
+> The HECI interface would allow lm_sensors developers to grab the
+> temperatures off the chips on the board.
+> 
+> From 2005(?)-2008 there was some chatter about supporting it but it never
+> seemed to happen, is there any eventual planned support for supporting
+> Intel's HECI interface or if the user wants to see the
+> temperatures/voltages just buy a different motherboard with an ITE I/O
+> controller?
+> 
+> I have a couple DG965WH boards and it would be nice to see the
+> temperature of the chipset etc without having to reboot into the BIOS.
+> 
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/mtd/nand/bf5xx_nand.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hi Justin,
 
-diff --git a/drivers/mtd/nand/bf5xx_nand.c b/drivers/mtd/nand/bf5xx_nand.c
-index 520314d..4c2a67c 100644
---- a/drivers/mtd/nand/bf5xx_nand.c
-+++ b/drivers/mtd/nand/bf5xx_nand.c
-@@ -572,7 +572,7 @@ static int bf5xx_nand_dma_init(struct bf5xx_nand_info *info)
- 	SSYNC();
- #endif
- 
--	set_dma_callback(CH_NFC, (void *) bf5xx_nand_dma_irq, (void *) info);
-+	set_dma_callback(CH_NFC, bf5xx_nand_dma_irq, info);
- 
- 	/* Turn off the DMA channel first */
- 	disable_dma(CH_NFC);
--- 
-1.5.6
+I am not up to date on the progress in this area, but perhaps this site 
+(http://www.openamt.org/) has what you are looking for?
 
+Regards,
+Dan
