@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZAGMpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZAGMpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbZAGMpQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:45:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbZAGMo6
+	id S1756793AbZAGMpm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZAGMpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:44:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48428 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbZAGMo6 (ORCPT
+	Wed, 7 Jan 2009 07:45:06 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:46575 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753807AbZAGMpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:44:58 -0500
-Subject: [PATCH -tip 4/7] x86: smp.h move stack_processor_id declartion to
-	cpu.h
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 18:12:50 +0530
-Message-Id: <1231332170.18558.13.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 07:45:05 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: w@1wt.eu (Willy Tarreau)
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Cc: jarkao2@gmail.com, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Organization: Core
+In-Reply-To: <20090106155715.GA28783@1wt.eu>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1LKXmG-0006nY-14@gondolin.me.apana.org.au>
+Date: Wed, 07 Jan 2009 23:44:52 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, moving NON-SMP stuff from smp.h
+Willy Tarreau <w@1wt.eu> wrote:
+> 
+> root@wtap:~# ethtool -k eth0
+> Offload parameters for eth0:
+> rx-checksumming: off
+> tx-checksumming: off
+> scatter-gather: off
+> tcp segmentation offload: off
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/cpu.h |    2 ++
- arch/x86/include/asm/smp.h |    1 -
- 2 files changed, 2 insertions(+), 1 deletions(-)
+Can you please upgrade your ethtool so that it knows about GSO?
+Once you've done that please retest with everything including
+GSO turned off.
 
-diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index 29aa6d0..f958e7e 100644
---- a/arch/x86/include/asm/cpu.h
-+++ b/arch/x86/include/asm/cpu.h
-@@ -15,6 +15,8 @@ extern void prefill_possible_map(void);
- 
- static inline void prefill_possible_map(void) {}
- 
-+#define stack_smp_processor_id()		0
-+
- #endif /* CONFIG_SMP */
- 
- struct x86_cpu {
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index a151651..cbbea22 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -199,7 +199,6 @@ extern int safe_smp_processor_id(void);
- #else /* !CONFIG_X86_32_SMP && !CONFIG_X86_64_SMP */
- #define cpu_physical_id(cpu)		boot_cpu_physical_apicid
- #define safe_smp_processor_id()		0
--#define stack_smp_processor_id() 	0
- #endif
- 
- #ifdef CONFIG_X86_LOCAL_APIC
+Alternatively edit out the bit that enables GSO by default in
+net/core/dev.c.
+
+Thanks,
 -- 
-1.5.6.6
-
-
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
