@@ -1,111 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbZAGMsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZAGMuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbZAGMsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 07:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZAGMsM
+	id S1755381AbZAGMuP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 07:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZAGMt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 07:48:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55517 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbZAGMsL (ORCPT
+	Wed, 7 Jan 2009 07:49:58 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:62613 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbZAGMt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 07:48:11 -0500
-Subject: [PATCH -tip 7/7] x86: smp.h move boot_cpu_id declartion to cpu.h
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 18:15:54 +0530
-Message-Id: <1231332354.18558.17.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 07:49:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=B+wbCl8bgC5U3ssaCEIiC0Hsz+YtS9pW6DKQ7rQGHc5TITOV6oWRWwmutEldPLptK5
+         A83N8MbnkfXx5Fm6hmF52s4DYpyn9FuKzTvmz5FimcAsWkmrW/TpkXxZsGPEVLaPxvTz
+         Kp85WQpgIvz2AEnVZG8QusLqeNJq7td5PDnh0=
+Date: Wed, 7 Jan 2009 12:49:46 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Willy Tarreau <w@1wt.eu>, Changli Gao <xiaosuo@gmail.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090107124946.GA9677@ff.dom.local>
+References: <20081224152841.GB13113@1wt.eu> <20090106085442.GA9513@ff.dom.local> <20090106094138.GE25644@1wt.eu> <20090106100112.GB9513@ff.dom.local> <20090106155715.GA28783@1wt.eu> <20090107093915.GA6899@ff.dom.local> <20090107122205.GA6051@1wt.eu> <20090107123153.GA9597@ff.dom.local> <20090107123504.GN32491@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107123504.GN32491@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, moving NON-SMP stuff from smp.h
+On Wed, Jan 07, 2009 at 01:35:04PM +0100, Jens Axboe wrote:
+> On Wed, Jan 07 2009, Jarek Poplawski wrote:
+> > On Wed, Jan 07, 2009 at 01:22:05PM +0100, Willy Tarreau wrote:
+> > > [ CCing Evgeniy and Herbert who also participate to the thread ]
+> > ...
+> > > Well, I've just tested it. It did not fix the problem but made it worse.
+> > ...
+> > 
+> > Terrible mistake! Here is take 2.
+> 
+> Not sure what this:
+> 
+> > +static inline struct page *linear_to_page(struct page *page, unsigned int len,
+> > +					  unsigned int offset)
+> > +{
+> > +	struct page *p = alloc_pages(GFP_KERNEL, 0);
+> > +
+> > +	if (!p)
+> > +		return NULL;
+> > +	memcpy((void *)p + offset, (void *)page + offset, len);
+> 
+> is trying to do. I'm assuming you want to copy the page contents? If so,
+> you'd want something like
+> 
+>         memcpy(page_address(p) + offset, page_address(page) + offset, len);
+> 
+> with possible kmaps for 'page'.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+My BAD!!! Thanks!
+
+> 
+> Irregardless of that particular oddity, I don't think this is the right
+> path to take at all. We need to delay the pipe buffer consumption until
+> the appropriate time.
+
+Hmm... in any case: take 3
+
+Jarek P. 
+
 ---
- arch/x86/include/asm/cpu.h   |    7 +++++++
- arch/x86/include/asm/smp.h   |    6 ------
- arch/x86/kernel/cpu/common.c |    2 +-
- arch/x86/kernel/io_apic.c    |    1 +
- drivers/pci/intr_remapping.c |    1 +
- 5 files changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index 89edafb..f03b23e 100644
---- a/arch/x86/include/asm/cpu.h
-+++ b/arch/x86/include/asm/cpu.h
-@@ -31,4 +31,11 @@ extern void arch_unregister_cpu(int);
- #endif
- 
- DECLARE_PER_CPU(int, cpu_state);
-+
-+#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
-+extern unsigned char boot_cpu_id;
-+#else
-+#define boot_cpu_id				0
-+#endif
-+
- #endif /* _ASM_X86_CPU_H */
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index 136f1c7..1963e27 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -238,11 +238,5 @@ static inline int hard_smp_processor_id(void)
- 
- #endif /* CONFIG_X86_LOCAL_APIC */
- 
--#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
--extern unsigned char boot_cpu_id;
--#else
--#define boot_cpu_id	0
--#endif
+ net/core/skbuff.c |   41 +++++++++++++++++++++++++++--------------
+ 1 files changed, 27 insertions(+), 14 deletions(-)
+
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 5110b35..6e43d52 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -73,17 +73,13 @@ static struct kmem_cache *skbuff_fclone_cache __read_mostly;
+ static void sock_pipe_buf_release(struct pipe_inode_info *pipe,
+ 				  struct pipe_buffer *buf)
+ {
+-	struct sk_buff *skb = (struct sk_buff *) buf->private;
 -
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_X86_SMP_H */
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 667e5d5..693f3b9 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -21,7 +21,7 @@
- #include <asm/pat.h>
- #include <asm/asm.h>
- #include <asm/numa.h>
--#include <asm/smp.h>
-+#include <asm/cpu.h>
- #ifdef CONFIG_X86_LOCAL_APIC
- #include <asm/mpspec.h>
- #include <asm/apic.h>
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 1c4a130..109c91d 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -46,6 +46,7 @@
- #include <asm/idle.h>
- #include <asm/io.h>
- #include <asm/smp.h>
-+#include <asm/cpu.h>
- #include <asm/desc.h>
- #include <asm/proto.h>
- #include <asm/acpi.h>
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index f78371b..5a57753 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -6,6 +6,7 @@
- #include <linux/irq.h>
- #include <asm/io_apic.h>
- #include <asm/smp.h>
-+#include <asm/cpu.h>
- #include <linux/intel-iommu.h>
- #include "intr_remapping.h"
+-	kfree_skb(skb);
++	put_page(buf->page);
+ }
  
--- 
-1.5.6.6
-
-
-
+ static void sock_pipe_buf_get(struct pipe_inode_info *pipe,
+ 				struct pipe_buffer *buf)
+ {
+-	struct sk_buff *skb = (struct sk_buff *) buf->private;
+-
+-	skb_get(skb);
++	get_page(buf->page);
+ }
+ 
+ static int sock_pipe_buf_steal(struct pipe_inode_info *pipe,
+@@ -1334,9 +1330,19 @@ fault:
+  */
+ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+ {
+-	struct sk_buff *skb = (struct sk_buff *) spd->partial[i].private;
++	put_page(spd->pages[i]);
++}
+ 
+-	kfree_skb(skb);
++static inline struct page *linear_to_page(struct page *page, unsigned int len,
++					  unsigned int offset)
++{
++	struct page *p = alloc_pages(GFP_KERNEL, 0);
++
++	if (!p)
++		return NULL;
++	memcpy(page_address(p) + offset, page_address(page) + offset, len);
++
++	return p;
+ }
+ 
+ /*
+@@ -1344,16 +1350,23 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+  */
+ static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
+ 				unsigned int len, unsigned int offset,
+-				struct sk_buff *skb)
++				struct sk_buff *skb, int linear)
+ {
+ 	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
+ 		return 1;
+ 
++	if (linear) {
++		page = linear_to_page(page, len, offset);
++		if (!page)
++			return 1;
++	}
++
+ 	spd->pages[spd->nr_pages] = page;
+ 	spd->partial[spd->nr_pages].len = len;
+ 	spd->partial[spd->nr_pages].offset = offset;
+-	spd->partial[spd->nr_pages].private = (unsigned long) skb_get(skb);
+ 	spd->nr_pages++;
++	get_page(page);
++
+ 	return 0;
+ }
+ 
+@@ -1369,7 +1382,7 @@ static inline void __segment_seek(struct page **page, unsigned int *poff,
+ static inline int __splice_segment(struct page *page, unsigned int poff,
+ 				   unsigned int plen, unsigned int *off,
+ 				   unsigned int *len, struct sk_buff *skb,
+-				   struct splice_pipe_desc *spd)
++				   struct splice_pipe_desc *spd, int linear)
+ {
+ 	if (!*len)
+ 		return 1;
+@@ -1392,7 +1405,7 @@ static inline int __splice_segment(struct page *page, unsigned int poff,
+ 		/* the linear region may spread across several pages  */
+ 		flen = min_t(unsigned int, flen, PAGE_SIZE - poff);
+ 
+-		if (spd_fill_page(spd, page, flen, poff, skb))
++		if (spd_fill_page(spd, page, flen, poff, skb, linear))
+ 			return 1;
+ 
+ 		__segment_seek(&page, &poff, &plen, flen);
+@@ -1419,7 +1432,7 @@ static int __skb_splice_bits(struct sk_buff *skb, unsigned int *offset,
+ 	if (__splice_segment(virt_to_page(skb->data),
+ 			     (unsigned long) skb->data & (PAGE_SIZE - 1),
+ 			     skb_headlen(skb),
+-			     offset, len, skb, spd))
++			     offset, len, skb, spd, 1))
+ 		return 1;
+ 
+ 	/*
+@@ -1429,7 +1442,7 @@ static int __skb_splice_bits(struct sk_buff *skb, unsigned int *offset,
+ 		const skb_frag_t *f = &skb_shinfo(skb)->frags[seg];
+ 
+ 		if (__splice_segment(f->page, f->page_offset, f->size,
+-				     offset, len, skb, spd))
++				     offset, len, skb, spd, 0))
+ 			return 1;
+ 	}
+ 
