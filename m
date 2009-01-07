@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbZAGRik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbZAGRi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760035AbZAGRik (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 12:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZAGRiP
+	id S1760199AbZAGRi6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 12:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759364AbZAGRi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 12:38:15 -0500
-Received: from sh.osrg.net ([192.16.179.4]:32923 "EHLO sh.osrg.net"
+	Wed, 7 Jan 2009 12:38:28 -0500
+Received: from bsdimp.com ([199.45.160.85]:64771 "EHLO harmony.bsdimp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755228AbZAGRiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 12:38:13 -0500
-Date: Thu, 08 Jan 2009 02:33:45 +0900 (JST)
-Message-Id: <20090108.023345.105818287.ryusuke@osrg.net>
-To: chris.mason@oracle.com
-Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH mmotm] nilfs2: insert checks and hole block allocation
- in page_mkwrite
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <1231339382.27813.10.camel@think.oraclecorp.com>
-References: <1231333579-25296-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	<1231339382.27813.10.camel@think.oraclecorp.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	id S1759128AbZAGRi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 12:38:27 -0500
+Date: Wed, 07 Jan 2009 10:36:45 -0700 (MST)
+Message-Id: <20090107.103645.480811344.imp@bsdimp.com>
+To: linasvepstas@gmail.com
+Cc: mayer@ntp.isc.org, david@lang.hm, hancockr@shaw.ca, kyle@moffetthome.net,
+       slashdot@jameshallam.info, goodgerster@gmail.com,
+       davidn@davidnewall.com, linux-kernel@vger.kernel.org,
+       ntpwg@lists.ntp.isc.org, pretzalz@techhouse.org,
+       burdell@iruntheinter.net, nick@nick-andrew.net, jeff@kosowsky.org
+Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on
+ new years 2008-2009
+From: "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <3ae3aa420901062052h75fcab11n8ce45c41ac0e4cd2@mail.gmail.com>
+References: <3ae3aa420901050942y56f0ecdei39c091a73e49c1fd@mail.gmail.com>
+	<49642674.9080703@ntp.isc.org>
+	<3ae3aa420901062052h75fcab11n8ce45c41ac0e4cd2@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -28,65 +32,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Jan 2009 09:43:02 -0500, Chris Mason wrote:
-> On Wed, 2009-01-07 at 22:06 +0900, Ryusuke Konishi wrote:
-> > Chris Mason told me that page_mkwrite() has some works to do.
-> > 
-> > On Wed, 17 Dec 2008 21:52:55 -0500, Chris Mason wrote:
-> > > nilfs_page_mkwrite doesn't seem to dirty the page?  block_page_mkwrite
-> > > does more, including checks against i_size and others.
-> > 
-> > This will insert i_size check, and hole block allocation code in the
-> > nilfs_page_mkwrite.
-> > 
-> > Previously, the hole block allocation was delayed until just before
-> > writing for mmapped pages.  This accompanies removal of the delayed
-> > allocation code.
-<snip>
-> >  static int nilfs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-> >  {
-> > -	if (!(vma->vm_flags & (VM_WRITE | VM_MAYWRITE)))
-> > -		return -EPERM;
-> > +	struct inode *inode = vma->vm_file->f_dentry->d_inode;
-> > +	struct address_space *mapping = inode->i_mapping;
-> > +	struct nilfs_transaction_info ti;
-> > +	struct buffer_head *bh, *head;
-> > +	int fully_mapped = 1;
-> > +	int ret = -EINVAL;
-> > +
-> > +	/*
-> > +	 * use i_alloc_sem to stop truncate operations on the inode
-> > +	 */
-> > +	down_read(&inode->i_alloc_sem);
-> 
-> I'm not 100% sure this is safe.  It seems likely the direct io paths
-> could trigger a mkwrite with the i_alloc_sem already held?
+In message: <3ae3aa420901062052h75fcab11n8ce45c41ac0e4cd2@mail.gmail.com>
+            "Linas Vepstas" <linasvepstas@gmail.com> writes:
+: However, during the discussion, the idea came out that
+: maybe keeping UTC time in the kernel is just plain stupid.
+: So there's this idea floating around that maybe the kernel
+: should keep TAI time instead. The hope is that this will
+: reduce the complexity in the kernel, and push it out to
+: user space, "where it belongs" (to repeat a well-worn
+: mantra).
 
-vmtruncate() can change i_size outside the page lock, and it even
-calls unmap_mapping_range(). Does it have any problems?
+I agree that this is where it belongs, but it is hard to do that in a
+POSIX compliant way.  It also becomes hard to timestamp things in
+filesystems using UTC rather than TAI.  There are other protocols that
+deal with UTC times as well.
 
-> If I'm reading the code correctly you're:
-> 
-> * grab i_alloc sem to protect against truncate
-> * check to see if the page is mapped already (no holes)
-> 
-> * if there are holes, lock the page, start transaction and do the full
-> block_page_mkwrite
-> 
-> * drop i_alloc_sem
+: However, *if* we were to kick UTC out of the kernel,
+: and push it to user-land, then, of course, there's a
+: different problem: how does the kernel know what the
+: correct TAI time is?  As your reply makes abundantly
+: clear, NTP is not a good source for TAI information.
 
-Yes, it is.
- 
-> Would this work instead?:
-> 
-> * lock the page, check to see if it is mapped
-> 
-> * if there are holes, drop the lock, start transaction and do the full
-> block_page_mkwrite
-> 
-> -chris
+Agreed.  That's the whole crux of the 'multiple time scales suck'
+threads that I've talked about in other forums.  You have to know this
+information before you start, have to deal with 'dusty system' problem
+for systems that have been off for 6 months or not upgraded.  You also
+have to cope with learning after the fact that your initial guess was
+wrong.
 
-If we don't need care for vmtruncate(), I think it's better, too.
+I've had many systems that would get this information from GPS and
+stall the rest of the system until this data came in.  I did this
+mostly because there were big issues with the software down stream if
+you changed the delta between your putative UTC and TAI after the
+fact.
 
-Regards,
-Ryusuke
+: The comments which you labelled as "non-sense" were
+: a mis-understanding of  a discussion of a particular issue
+: that would arise if the kernel were to keep TAI -- if it did,
+: then user-space systems would need to have a reliable
+: source for leap-seconds. Since NTP does not
+: provide this, there was discussion about how that
+: could be worked-around. This then lead to the comment
+: that, "gee, wouldn't the right long-term solution be that
+: NTP provide TAI info?"
+
+I've wanted this for a long time...
+
+: Clearly, it would be a lot of work to get the kernel to keep
+: TAI instead of UTC, so this is not, at this time, a "serious
+: proposal".  But if it were possible, and all the various
+: little issues that result were solvable, then it does seem
+: like a better long-term solution.
+
+Yes.  The kernel would need to be able to return both UTC and TAI
+times to the kernel as well, since there are requirements for NFS to
+return timestamps in UTC, not in TAI.  Many file systems specify UTC
+time, or have traditionally been implemented that way.
+
+Warner
