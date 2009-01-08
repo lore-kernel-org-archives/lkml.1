@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbZAHHgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZAHHvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbZAHHgO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 02:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZAHHf6
+	id S1754739AbZAHHvG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 02:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZAHHuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 02:35:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49566 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753199AbZAHHf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 02:35:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: [Regression] USB wakeup problem on Toshiba Portege R500
-Date: Thu, 8 Jan 2009 08:35:39 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Greg KH <greg@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Thu, 8 Jan 2009 02:50:55 -0500
+Received: from viefep15-int.chello.at ([62.179.121.35]:59211 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751638AbZAHHuy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 02:50:54 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [git pull] scheduler fix
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0901071543550.3057@localhost.localdomain>
+References: <20090107222641.GA27541@elte.hu>
+	 <alpine.LFD.2.00.0901071543550.3057@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 08:50:53 +0100
+Message-Id: <1231401053.11687.386.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901080835.39639.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On Wed, 2009-01-07 at 15:47 -0800, Linus Torvalds wrote:
+> 
+> On Wed, 7 Jan 2009, Ingo Molnar wrote:
+> > +		/*
+> > +		 * Should not call ttwu while holding a rq->lock
+> > +		 */
+> > +		spin_unlock(&this_rq->lock);
+> >  		if (active_balance)
+> >  			wake_up_process(busiest->migration_thread);
+> > +		spin_lock(&this_rq->lock);
+> 
+> Btw, this isn't the first time we've wanted to do a wakeup while 
+> potentially locked.
+> 
+> Is there any way to perhaps go a "wake_up_gentle()" that doesn't need the 
+> lock, and just basically does a potentially delayed wakeup by just 
+> scheduling it asynchronously.
+> 
+> That would have solved all those nasty printk issues too. These kinds of 
+> things don't need the strict "wake up NOW" behaviour - they are more of a 
+> "kick the dang thing and make sure it wakes up in some timely manner".
 
-Unfortunately, the following commit:
+Right -- so the printk thing was solved by polling some state from the
+timer tick, we could make that into a list, but then you'd have to worry
+about memory allocation for list elements failing etc.
 
-commit 6fd9086a518d4f14213a32fe6c9ac17fabebbc1e
-Author: Alan Stern <stern@rowland.harvard.edu>
-Date:   Wed Dec 17 17:20:38 2008 -0500
+Same story as generic smp function call, we could do this using a self
+(or remote) IPI, but you'd still have the memory allocation issue -- and
+would need to make self-IPI work on !SMP.
 
-    USB: automatically enable wakeup for PCI host controllers
+I'll ponder the issue a bit more, but I'm not directly seeing anything
+(of course, if it were easy, we'd have done it ages ago ;-)
 
-    Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-causes a regression to appear on my Toshiba Portege R500.
-
-The regression is that when suspended to RAM, the box wakes up immediately
-unless 'disabled' is written into the /sys/devices/.../power/wakeup file of the
-EHCI controller.  I know of at least 10 different boxes out there that are
-going to have similar problems forcing their users to use manual workaround.
-
-Also, it wakes up on a USB mouse activity, which I don't want it to do, so in
-fact I have to write 'disabled' to the /sys/devices/.../power/wakeup files of
-all USB controllers.
-
-I'm not sure if the commit went into the right direction.
-
-Thanks,
-Rafael
