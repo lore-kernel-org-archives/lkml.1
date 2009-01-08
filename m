@@ -1,404 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZAHJci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbZAHJda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbZAHJci (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 04:32:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbZAHJcG
+	id S1758652AbZAHJda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 04:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZAHJdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 04:32:06 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:60826 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758483AbZAHJcA (ORCPT
+	Thu, 8 Jan 2009 04:33:15 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36460 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753577AbZAHJdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 04:32:00 -0500
-Date: Thu, 8 Jan 2009 11:31:59 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Greg Kroah-Hartman <greg@kroah.com>
-cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] w35und: kill WBDEBUG and remove common.h header file
-Message-ID: <Pine.LNX.4.64.0901081131290.15334@melkki.cs.Helsinki.FI>
+	Thu, 8 Jan 2009 04:33:12 -0500
+Date: Thu, 8 Jan 2009 18:32:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>
+Subject: [RFC][PATCH 3/4] memcg: fix OOM KILL under hierarchy
+Message-Id: <20090108183207.26d88794.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-The only remaining thing in common.h header file is the WBDEBUG() macro which
-is unconditionally defined as printk(). Kill the macro and remove the header
-file.
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Current memcg's oom-killer has 2 problems when hierarchy is used.
+
+Assume following tree,
+	Group_A/     use_hierarchy = 1, limit=1G
+	        01/  nolimit
+		02/  nolimit
+		03/  nolimit
+In this case, sum of memory usage from 01,02,03 is limited to 1G (of Group_A).
+
+Assume a task in Group_A/01 causes OOM by limit of Group_A, in this case,
+bad_process() will select a process in Group_A, not in 01,02,03.
+
+This patch fixes the behavior and all processes under Group_A's hierarchy
+01,02,03 will be OOM kill candidates.
+
+And now, to avoid calling oom_kill twice, mem_cgroup_oom_called() hook is
+used in pagefault_out_of_memory(). This check the timestamp of the most
+recent OOM in memcg. This timestamp should be updated per hierarchy.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+
 ---
- drivers/staging/winbond/common.h  |   23 -----------------------
- drivers/staging/winbond/mds.c     |    8 ++++----
- drivers/staging/winbond/mto.c     |    1 -
- drivers/staging/winbond/reg.c     |   18 +++++++++---------
- drivers/staging/winbond/wb35reg.c |   10 +++++-----
- drivers/staging/winbond/wb35rx.c  |   10 +++++-----
- drivers/staging/winbond/wb35tx.c  |   10 +++++-----
- drivers/staging/winbond/wbhal.c   |    2 +-
- drivers/staging/winbond/wbhal_s.h |    2 --
- drivers/staging/winbond/wbusb.c   |    4 ++--
- 10 files changed, 31 insertions(+), 57 deletions(-)
- delete mode 100644 drivers/staging/winbond/common.h
+ Documentation/controllers/memcg_test.txt |   15 ++++++++
+ include/linux/memcontrol.h               |    4 +-
+ mm/memcontrol.c                          |   55 +++++++++++++++++++++++++++++--
+ mm/oom_kill.c                            |    4 +-
+ 4 files changed, 72 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/winbond/common.h b/drivers/staging/winbond/common.h
-deleted file mode 100644
-index 4409edd..0000000
---- a/drivers/staging/winbond/common.h
-+++ /dev/null
-@@ -1,23 +0,0 @@
--//
--// common.h
--//
--// This file contains the OS dependant definition and function.
--// Every OS has this file individual.
--//
--#ifndef COMMON_DEF
--#define COMMON_DEF
--
--//#define DEBUG_ENABLED  1
--
--//==================================================================================================
--// Common function definition
--//==================================================================================================
--#define DEBUG_ENABLED
--#ifdef DEBUG_ENABLED
--#define WBDEBUG( _M )	printk _M
--#else
--#define WBDEBUG( _M )	0
--#endif
--
--#endif // COMMON_DEF
--
-diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
-index a9d1945..9a14836 100644
---- a/drivers/staging/winbond/mds.c
-+++ b/drivers/staging/winbond/mds.c
-@@ -374,7 +374,7 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, PDESCRIPTOR pDes, u8 *T
+Index: mmotm-2.6.28-Jan7/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.28-Jan7.orig/mm/memcontrol.c
++++ mmotm-2.6.28-Jan7/mm/memcontrol.c
+@@ -431,12 +431,31 @@ void mem_cgroup_move_lists(struct page *
+ 	mem_cgroup_add_lru_list(page, to);
+ }
  
- 	pDes->TxRate = ctmp1;
- 	#ifdef _PE_TX_DUMP_
--	WBDEBUG(("Tx rate =%x\n", ctmp1));
-+	printk("Tx rate =%x\n", ctmp1);
- 	#endif
- 
- 	pT01->T01_modulation_type = (ctmp1%3) ? 0 : 1;
-@@ -442,7 +442,7 @@ Mds_Tx(struct wbsoft_priv * adapter)
- 		FillIndex = pMds->TxFillIndex;
- 		if (pMds->TxOwner[FillIndex]) { // Is owned by software 0:Yes 1:No
- #ifdef _PE_TX_DUMP_
--			WBDEBUG(("[Mds_Tx] Tx Owner is H/W.\n"));
-+			printk("[Mds_Tx] Tx Owner is H/W.\n");
- #endif
- 			break;
- 		}
-@@ -488,7 +488,7 @@ Mds_Tx(struct wbsoft_priv * adapter)
- 			// For speed up Key setting
- 			if (pTxDes->EapFix) {
- #ifdef _PE_TX_DUMP_
--				WBDEBUG(("35: EPA 4th frame detected. Size = %d\n", PacketSize));
-+				printk("35: EPA 4th frame detected. Size = %d\n", PacketSize);
- #endif
- 				pHwData->IsKeyPreSet = 1;
- 			}
-@@ -585,7 +585,7 @@ Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
- 				else
- 					pHwData->tx_retry_count[7] += RetryCount;
- 				#ifdef _PE_STATE_DUMP_
--				WBDEBUG(("dto_tx_retry_count =%d\n", pHwData->dto_tx_retry_count));
-+				printk("dto_tx_retry_count =%d\n", pHwData->dto_tx_retry_count);
- 				#endif
- 				MTO_SetTxCount(adapter, TxRate, RetryCount);
- 			}
-diff --git a/drivers/staging/winbond/mto.c b/drivers/staging/winbond/mto.c
-index 7718423..8c4107b 100644
---- a/drivers/staging/winbond/mto.c
-+++ b/drivers/staging/winbond/mto.c
-@@ -83,7 +83,6 @@ void hal_get_dto_para(MTO_FUNC_INPUT, char *buffer);
- void MTO_Init(MTO_FUNC_INPUT)
+-int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
++static int
++mm_match_cgroup_hierarchy(struct mm_struct *mm, struct mem_cgroup *mem)
++{
++	struct mem_cgroup *curr;
++	int ret;
++
++	if (!mm)
++		return 0;
++	rcu_read_lock();
++	curr = mem_cgroup_from_task(mm->owner);
++	if (mem->use_hierarchy)
++		ret = css_is_ancestor(&curr->css, &mem->css);
++	else
++		ret = (curr == mem);
++	rcu_read_unlock();
++	return ret;
++}
++
++int task_in_mem_cgroup_hierarchy(struct task_struct *task,
++				 struct mem_cgroup *mem)
  {
-     int i;
--	//WBDEBUG(("[MTO] -> MTO_Init()\n"));
- 	//[WKCHEN]pMTOcore_data = pcore_data;
- // 20040510 Turbo add for global variable
-     MTO_TMR_CNT()       = 0;
-diff --git a/drivers/staging/winbond/reg.c b/drivers/staging/winbond/reg.c
-index c365c5d..55b05d5 100644
---- a/drivers/staging/winbond/reg.c
-+++ b/drivers/staging/winbond/reg.c
-@@ -1115,7 +1115,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 		//Start to fill RF parameters, PLL_ON should be pulled low.
- 		Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000000 );
- #ifdef _PE_STATE_DUMP_
--		WBDEBUG(("* PLL_ON    low\n"));
-+		printk("* PLL_ON    low\n");
- #endif
+ 	int ret;
  
- 		number = sizeof(al7230_rf_data_24)/sizeof(al7230_rf_data_24[0]);
-@@ -1224,7 +1224,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 			//pulled high
- 			Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000080 );
- 			#ifdef _PE_STATE_DUMP_
--			WBDEBUG(("* PLL_ON    high\n"));
-+			printk("* PLL_ON    high\n");
- 			#endif
+ 	task_lock(task);
+-	ret = task->mm && mm_match_cgroup(task->mm, mem);
++	ret = mm_match_cgroup_hierarchy(task->mm, mem);
+ 	task_unlock(task);
+ 	return ret;
+ }
+@@ -723,6 +742,36 @@ static int mem_cgroup_hierarchical_recla
+ 	return total;
+ }
  
- 			//2.4GHz
-@@ -1244,7 +1244,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 			//5GHz
- 			Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000000 );
- 			#ifdef _PE_STATE_DUMP_
--			WBDEBUG(("* PLL_ON    low\n"));
-+			printk("* PLL_ON    low\n");
- 			#endif
- 
- 			number = sizeof(al7230_rf_data_50)/sizeof(al7230_rf_data_50[0]);
-@@ -1256,7 +1256,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 
- 			Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000080 );
- 			#ifdef _PE_STATE_DUMP_
--			WBDEBUG(("* PLL_ON    high\n"));
-+			printk("* PLL_ON    high\n");
- 			#endif
- 
- 			//ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x12BACF;
-@@ -1272,7 +1272,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 			msleep(5);
- 
- 			//Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000080 );
--			//WBDEBUG(("* PLL_ON    high\n"));
-+			//printk("* PLL_ON    high\n");
- 			break;
- 
- 		case RF_WB_242:
-@@ -2012,7 +2012,7 @@ RFSynthesizer_SwitchingChannel(  phw_data_t pHwData,  ChanInfo Channel )
- 
- 			//Start to fill RF parameters, PLL_ON should be pulled low.
- 			//Wb35Reg_Write( pHwData, 0x03dc, 0x00000000 );
--			//WBDEBUG(("* PLL_ON    low\n"));
-+			//printk("* PLL_ON    low\n");
- 
- 			//Channel independent registers
- 			if( Channel.band != pHwData->band)
-@@ -2037,7 +2037,7 @@ RFSynthesizer_SwitchingChannel(  phw_data_t pHwData,  ChanInfo Channel )
- 				// Write to register. number must less and equal than 16
- 				Wb35Reg_BurstWrite( pHwData, 0x0864, pltmp, number, NO_INCREMENT );
- 				#ifdef _PE_STATE_DUMP_
--				WBDEBUG(("Band changed\n"));
-+				printk("Band changed\n");
- 				#endif
++/*
++ *  Update last_oom_jiffies of hierarchy.
++ */
++void mem_cgroup_update_oom_jiffies(struct mem_cgroup *mem)
++{
++	struct mem_cgroup *cur;
++	struct cgroup_subsys_state *css;
++	int id, found;
++
++	if (!mem->use_hierarchy) {
++		mem->last_oom_jiffies = jiffies;
++		return;
++	}
++
++	id = 0;
++	rcu_read_lock();
++	while (1) {
++		css = css_get_next(&mem_cgroup_subsys, id, &mem->css, &found);
++		if (!css)
++			break;
++		if (css_tryget(css)) {
++			cur = container_of(css, struct mem_cgroup, css);
++			cur->last_oom_jiffies = jiffies;
++			css_put(css);
++		}
++		id = found + 1;
++	}
++	rcu_read_unlock();
++	return;
++}
+ bool mem_cgroup_oom_called(struct task_struct *task)
+ {
+ 	bool ret = false;
+@@ -819,7 +868,7 @@ static int __mem_cgroup_try_charge(struc
+ 				mutex_lock(&memcg_tasklist);
+ 				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
+ 				mutex_unlock(&memcg_tasklist);
+-				mem_over_limit->last_oom_jiffies = jiffies;
++				mem_cgroup_update_oom_jiffies(mem_over_limit);
  			}
- 
-@@ -2612,9 +2612,9 @@ void EEPROMTxVgaAdjust(  phw_data_t pHwData ) // 20060619.5 Add
- 	}
- 
- 	#ifdef _PE_STATE_DUMP_
--	WBDEBUG((" TxVgaFor24 : \n"));
-+	printk(" TxVgaFor24 : \n");
- 	DataDmp((u8 *)pHwData->TxVgaFor24, 14 ,0);
--	WBDEBUG((" TxVgaFor50 : \n"));
-+	printk(" TxVgaFor50 : \n");
- 	DataDmp((u8 *)pHwData->TxVgaFor50, 70 ,0);
- 	#endif
- }
-diff --git a/drivers/staging/winbond/wb35reg.c b/drivers/staging/winbond/wb35reg.c
-index 9d0a3aa..6a355f0 100644
---- a/drivers/staging/winbond/wb35reg.c
-+++ b/drivers/staging/winbond/wb35reg.c
-@@ -149,7 +149,7 @@ Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
- 
- 	if (ret < 0) {
- 		#ifdef _PE_REG_DUMP_
--		WBDEBUG(("EP0 Write register usb message sending error\n"));
-+		printk("EP0 Write register usb message sending error\n");
- 		#endif
- 
- 		pHwData->SurpriseRemove = 1; // 20060704.2
-@@ -316,7 +316,7 @@ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
- 
- 	if (ret < 0) {
- 		#ifdef _PE_REG_DUMP_
--		WBDEBUG(("EP0 Read register usb message sending error\n"));
-+		printk("EP0 Read register usb message sending error\n");
- 		#endif
- 
- 		pHwData->SurpriseRemove = 1; // 20060704.2
-@@ -441,7 +441,7 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
- 
- 	if (ret < 0) {
- #ifdef _PE_REG_DUMP_
--		WBDEBUG(("EP0 Irp sending error\n"));
-+		printk("EP0 Irp sending error\n");
- #endif
- 		goto cleanup;
- 	}
-@@ -480,7 +480,7 @@ Wb35Reg_EP0VM_complete(struct urb *urb)
- 
- 		if (reg->EP0VM_status) {
- #ifdef _PE_REG_DUMP_
--			WBDEBUG(("EP0 IoCompleteRoutine return error\n"));
-+			printk("EP0 IoCompleteRoutine return error\n");
- #endif
- 			reg->EP0vm_state = VM_STOP;
- 			pHwData->SurpriseRemove = 1;
-@@ -529,7 +529,7 @@ Wb35Reg_destroy(phw_data_t pHwData)
- 			kfree(reg_queue);
- 		} else {
- 			#ifdef _PE_REG_DUMP_
--			WBDEBUG(("EP0 queue release error\n"));
-+			printk("EP0 queue release error\n");
- 			#endif
+ 			goto nomem;
  		}
- 		spin_lock_irq( &reg->EP0VM_spin_lock );
-diff --git a/drivers/staging/winbond/wb35rx.c b/drivers/staging/winbond/wb35rx.c
-index 63d5591..029d918 100644
---- a/drivers/staging/winbond/wb35rx.c
-+++ b/drivers/staging/winbond/wb35rx.c
-@@ -118,7 +118,7 @@ static u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
- 			// Basic check for Rx length. Is length valid?
- 			if (PacketSize > MAX_PACKET_SIZE) {
- 				#ifdef _PE_RX_DUMP_
--				WBDEBUG(("Serious ERROR : Rx data size too long, size =%d\n", PacketSize));
-+				printk("Serious ERROR : Rx data size too long, size =%d\n", PacketSize);
- 				#endif
+Index: mmotm-2.6.28-Jan7/include/linux/memcontrol.h
+===================================================================
+--- mmotm-2.6.28-Jan7.orig/include/linux/memcontrol.h
++++ mmotm-2.6.28-Jan7/include/linux/memcontrol.h
+@@ -66,7 +66,9 @@ extern unsigned long mem_cgroup_isolate_
+ 					struct mem_cgroup *mem_cont,
+ 					int active, int file);
+ extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
+-int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
++
++int task_in_mem_cgroup_hierarchy(struct task_struct *task,
++			struct mem_cgroup *mem);
  
- 				pWb35Rx->EP3vm_state = VM_STOP;
-@@ -194,7 +194,7 @@ static void Wb35Rx_Complete(struct urb *urb)
- 	// The URB is completed, check the result
- 	if (pWb35Rx->EP3VM_status != 0) {
- 		#ifdef _PE_USB_STATE_DUMP_
--		WBDEBUG(("EP3 IoCompleteRoutine return error\n"));
-+		printk("EP3 IoCompleteRoutine return error\n");
- 		#endif
- 		pWb35Rx->EP3vm_state = VM_STOP;
- 		goto error;
-@@ -259,7 +259,7 @@ static void Wb35Rx(struct ieee80211_hw *hw)
- 	if (!pWb35Rx->RxOwner[RxBufferId]) {
- 		// It's impossible to run here.
- 		#ifdef _PE_RX_DUMP_
--		WBDEBUG(("Rx driver fifo unavailable\n"));
-+		printk("Rx driver fifo unavailable\n");
- 		#endif
- 		goto error;
- 	}
-@@ -348,7 +348,7 @@ void Wb35Rx_stop(phw_data_t pHwData)
- 	if (pWb35Rx->EP3vm_state == VM_RUNNING) {
- 		usb_unlink_urb( pWb35Rx->RxUrb ); // Only use unlink, let Wb35Rx_destroy to free them
- 		#ifdef _PE_RX_DUMP_
--		WBDEBUG(("EP3 Rx stop\n"));
-+		printk("EP3 Rx stop\n");
- 		#endif
- 	}
- }
-@@ -366,7 +366,7 @@ void Wb35Rx_destroy(phw_data_t pHwData)
- 	if (pWb35Rx->RxUrb)
- 		usb_free_urb( pWb35Rx->RxUrb );
- 	#ifdef _PE_RX_DUMP_
--	WBDEBUG(("Wb35Rx_destroy OK\n"));
-+	printk("Wb35Rx_destroy OK\n");
- 	#endif
- }
+ extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
  
-diff --git a/drivers/staging/winbond/wb35tx.c b/drivers/staging/winbond/wb35tx.c
-index b9b4456..f7fe8d6 100644
---- a/drivers/staging/winbond/wb35tx.c
-+++ b/drivers/staging/winbond/wb35tx.c
-@@ -153,14 +153,14 @@ void Wb35Tx_stop(phw_data_t pHwData)
- 	if (pWb35Tx->EP2vm_state == VM_RUNNING)
- 		usb_unlink_urb( pWb35Tx->Tx2Urb ); // Only use unlink, let Wb35Tx_destrot to free them
- 	#ifdef _PE_TX_DUMP_
--	WBDEBUG(("EP2 Tx stop\n"));
-+	printk("EP2 Tx stop\n");
- 	#endif
+Index: mmotm-2.6.28-Jan7/mm/oom_kill.c
+===================================================================
+--- mmotm-2.6.28-Jan7.orig/mm/oom_kill.c
++++ mmotm-2.6.28-Jan7/mm/oom_kill.c
+@@ -220,7 +220,7 @@ static struct task_struct *select_bad_pr
+ 		/* skip the init task */
+ 		if (is_global_init(p))
+ 			continue;
+-		if (mem && !task_in_mem_cgroup(p, mem))
++		if (mem && !task_in_mem_cgroup_hierarchy(p, mem))
+ 			continue;
  
- 	// Trying to canceling the Irp of EP4
- 	if (pWb35Tx->EP4vm_state == VM_RUNNING)
- 		usb_unlink_urb( pWb35Tx->Tx4Urb ); // Only use unlink, let Wb35Tx_destrot to free them
- 	#ifdef _PE_TX_DUMP_
--	WBDEBUG(("EP4 Tx stop\n"));
-+	printk("EP4 Tx stop\n");
- 	#endif
- }
+ 		/*
+@@ -292,7 +292,7 @@ static void dump_tasks(const struct mem_
+ 		 */
+ 		if (!p->mm)
+ 			continue;
+-		if (mem && !task_in_mem_cgroup(p, mem))
++		if (mem && !task_in_mem_cgroup_hierarchy(p, mem))
+ 			continue;
+ 		if (!thread_group_leader(p))
+ 			continue;
+Index: mmotm-2.6.28-Jan7/Documentation/controllers/memcg_test.txt
+===================================================================
+--- mmotm-2.6.28-Jan7.orig/Documentation/controllers/memcg_test.txt
++++ mmotm-2.6.28-Jan7/Documentation/controllers/memcg_test.txt
+@@ -340,3 +340,18 @@ Under below explanation, we assume CONFI
+ 	# mount -t cgroup none /cgroup -t cpuset,memory,cpu,devices
  
-@@ -182,7 +182,7 @@ void Wb35Tx_destroy(phw_data_t pHwData)
- 		usb_free_urb( pWb35Tx->Tx2Urb );
- 
- 	#ifdef _PE_TX_DUMP_
--	WBDEBUG(("Wb35Tx_destroy OK\n"));
-+	printk("Wb35Tx_destroy OK\n");
- 	#endif
- }
- 
-@@ -229,7 +229,7 @@ static void Wb35Tx_EP2VM_complete(struct urb * pUrb)
- 
- 	//The Urb is completed, check the result
- 	if (pWb35Tx->EP2VM_status != 0) {
--		WBDEBUG(("EP2 IoCompleteRoutine return error\n"));
-+		printk("EP2 IoCompleteRoutine return error\n");
- 		pWb35Tx->EP2vm_state= VM_STOP;
- 		goto error;
- 	}
-@@ -279,7 +279,7 @@ static void Wb35Tx_EP2VM(struct wbsoft_priv *adapter)
- 
- 	if (retv < 0) {
- 		#ifdef _PE_TX_DUMP_
--		WBDEBUG(("EP2 Tx Irp sending error\n"));
-+		printk("EP2 Tx Irp sending error\n");
- 		#endif
- 		goto error;
- 	}
-diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index d7bbb9a..3dfb422 100644
---- a/drivers/staging/winbond/wbhal.c
-+++ b/drivers/staging/winbond/wbhal.c
-@@ -396,7 +396,7 @@ static void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel )
- 	pHwData->Channel = channel.ChanNo;
- 	pHwData->band = channel.band;
- 	#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("Set channel is %d, band =%d\n", pHwData->Channel, pHwData->band));
-+	printk("Set channel is %d, band =%d\n", pHwData->Channel, pHwData->band);
- 	#endif
- 	reg->M28_MacControl &= ~0xff; // Clean channel information field
- 	reg->M28_MacControl |= channel.ChanNo;
-diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
-index 513babb..068a327 100644
---- a/drivers/staging/winbond/wbhal_s.h
-+++ b/drivers/staging/winbond/wbhal_s.h
-@@ -3,8 +3,6 @@
- 
- #include <linux/types.h>
- 
--#include "common.h"
--
- //[20040722 WK]
- #define HAL_LED_SET_MASK		0x001c	//20060901 Extend
- #define HAL_LED_SET_SHIFT		2
-diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
-index 008f0fb..7bb9d48 100644
---- a/drivers/staging/winbond/wbusb.c
-+++ b/drivers/staging/winbond/wbusb.c
-@@ -277,7 +277,7 @@ static unsigned char wb35_hw_init(struct ieee80211_hw *hw)
- 	//get current antenna
- 	priv->sLocalPara.bAntennaNo = hal_get_antenna_number(pHwData);
- #ifdef _PE_STATE_DUMP_
--	WBDEBUG(("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo));
-+	printk("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo);
- #endif
- 	hal_get_hw_radio_off( pHwData );
- 
-@@ -398,7 +398,7 @@ static void wb35_hw_halt(struct wbsoft_priv *adapter)
- 	// Turn off Rx and Tx hardware ability
- 	hal_stop( &adapter->sHwData );
- #ifdef _PE_USB_INI_DUMP_
--	WBDEBUG(("[w35und] Hal_stop O.K.\n"));
-+	printk("[w35und] Hal_stop O.K.\n");
- #endif
- 	msleep(100);// Waiting Irp completed
- 
--- 
-1.5.4.3
+ 	and do task move, mkdir, rmdir etc...under this.
++
++ 9.7 OOM-KILL
++	If memcg finds out-of-memory, OOM Kill should kill a task in memcg.
++	The select_bad_process() should take hierarchy into account and
++	OOM-KILL itself shoudn't call panic_on_oom or some hooks for generic
++	OOM.
++
++	It's not difficult to cause OOM under memcg by setting memsw.limit
++	as following.
++	# echo 50M > memory.limit_in_bytes
++	# echo 50M > memory.memsw.limit_in_bytes
++	and run malloc(51M) program.
++	(Alternative is do swapoff/mlock and malloc())
++
++
 
