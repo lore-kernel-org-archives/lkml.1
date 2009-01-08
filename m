@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZAHIE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZAHIFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbZAHIE6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 03:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZAHIEs
+	id S1757069AbZAHIFl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 03:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZAHIF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 03:04:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47828 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbZAHIEs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 03:04:48 -0500
-Message-ID: <4965B38C.3040204@kernel.org>
-Date: Thu, 08 Jan 2009 00:04:28 -0800
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [3/5] Mark complex bitops.h inlines as __always_inline
-References: <200901051236.281008835@firstfloor.org> <20090104233640.6A7453E6653@basil.firstfloor.org> <Pine.LNX.4.64.0901061847110.29408@blonde.anvils> <20090107131846.GF3529@elte.hu>
-In-Reply-To: <20090107131846.GF3529@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Jan 2009 03:05:28 -0500
+Received: from 1wt.eu ([62.212.114.60]:1245 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752977AbZAHIF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 03:05:27 -0500
+Date: Thu, 8 Jan 2009 09:05:20 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Ben Mansell <ben@zeus.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090108080520.GG30749@1wt.eu>
+References: <20090106181559.GA29426@1wt.eu> <20090108071651.GA4496@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090108071651.GA4496@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Hugh Dickins <hugh@veritas.com> wrote:
+On Thu, Jan 08, 2009 at 07:16:51AM +0000, Jarek Poplawski wrote:
+> On 06-01-2009 19:15, Willy Tarreau wrote:
+> ...
+> > Ah, so you might also have discovered a few annoyances with the API, eg
+> > the fact that splice() returns after the first read in non-blocking mode,
+> > as well as the fact that it never returns zero on close, but -EAGAIN,
+> > which requires an additional recv(MSG_PEEK) to distinguish between a
+> > close and a lack of data. But I leave that for a later discussion, let's
+> > address the corruption issue first.
 > 
->> Hugh Dickins noticed that released gcc versions building the kernel with 
->> CONFIG_OPTIMIZE_INLINING=y don't inline some of the bitops - sometimes 
->> generating very inefficient pageflag tests, and many instances of 
->> constant_test_bit().
-> 
-> Could you quantify that please?
-> 
-> We really dont want to reintroduce __always_inline just for performance / 
-> code size reasons. If GCC messes up and makes a larger / more inefficient 
-> kernel, GCC will be fixed. CONFIG_OPTIMIZE_INLINING is default-off, so 
-> enable it only if it improves your kernel.
+> FYI, this should be just fixed:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=4f7d54f59bc470f0aaa932f747a95232d7ebf8b1
 > 
 
-There is one condition under which gcc simply won't know, and that is
-when an inline is composed primarily of asm code.  gcc, I believe,
-creates a worst-case estimate based on the number of semicolons or
-newlines (something that works semi-okayish on RISC), and thus tend to
-vastly overestimate the size of an asm() on x86, where statements are
-highly variable length.  Hence it is probably always going to need
-hints, unless the whole handling of inline assembly is revamped (which
-would be good for scheduling, but I doubt it will happen.)
+Ah cool, thanks Jarek for notifying us. Indeed, it's the exact same patch
+I had pending here ;-)
 
-	-hpa
+I'll ping Greg for a backport into -stable, as applications relying on this
+will clearly not work without that fix.
+
+The other one I had consists in removing "|| !timeo" at the end of the loop,
+because otherwise splice() returns very small chunks (typically 1448 or
+1460 bytes), leading to disastrous performance on high bandwidth links.
+At 10 Gbps, this means about 800000 calls to splice() per second!
+
+Regards,
+Willy
+
