@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZAHQnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbZAHQst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZAHQnm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 11:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZAHQne
+	id S1755226AbZAHQst (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 11:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZAHQsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 11:43:34 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40860 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751400AbZAHQne (ORCPT
+	Thu, 8 Jan 2009 11:48:40 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:59449 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbZAHQsk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 11:43:34 -0500
-Date: Thu, 8 Jan 2009 17:45:14 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Is 386 processor still supported?
-Message-ID: <20090108164514.GA18409@uranus.ravnborg.org>
-References: <20090108120338.6b8b4567@zonk.pl> <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz> <1231424025.11687.447.camel@twins> <alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz> <1231424833.11687.452.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 8 Jan 2009 11:48:40 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Regression] USB wakeup problem on Toshiba Portege R500
+Date: Thu, 8 Jan 2009 17:48:57 +0100
+User-Agent: KMail/1.9.10
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200901080835.39639.rjw@sisk.pl> <200901080949.34339.oliver@neukum.org> <200901081736.12926.rjw@sisk.pl>
+In-Reply-To: <200901081736.12926.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1231424833.11687.452.camel@twins>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901081748.58962.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 03:27:13PM +0100, Peter Zijlstra wrote:
-> On Thu, 2009-01-08 at 15:21 +0100, Jiri Kosina wrote:
-> > On Thu, 8 Jan 2009, Peter Zijlstra wrote:
-> > 
-> > > > Subject: x86: make spinlocks available on machines without xadd insn
-> > > > Current kernel wouldn't compile on ancient x86 machines that don't support 
-> > > > xadd instruction, as ticket spinlocks implementation unconditionally uses 
-> > > > it.
-> > > > On machines without CONFIG_X86_XADD, use old-style byte spinlock 
-> > > > implementation instead.
-> > > afaik we don't support i386-smp and up spinlocks are trivial
-> > > preempt_disable() calls.
-> > 
-> > Hmm. Where in Kconfig is SMP for M386 not allowed?
+Am Thursday 08 January 2009 17:36:12 schrieb Rafael J. Wysocki:
+> > We do support remote wakeup from PS2 keyboards. So you might argue we
+> > should do the same for USB HID devices.
 > 
-> Dunno, kconfig is too much of a jungle for a simple person like me ;-)
+> Well, _I_ can live with a few 'echo disabled > /sys/devices/.../power/wakeup'
+> lines in my init scripts, but I'm afraid we're going to get many problem
+> reports related to this.  This means people will likely lose time on trying to
+> debug this problem and someone will have to handle the reports.  Are you
+> volunteering to do that?
 
-Kconfig for x86 does nothing to prevent us from selecting SMP
-when we have selected the 386 processor variant.
+You are making a very persuasive argument for reverting it.
+But what about laptops that only have a USB keyboard?
 
-But then you need to enable the CONFIG_EXPERT(*) option to
-select CPU type - which imply you know what you are doing.
+> Also, it would have been nice to notify people of such a change of behavior in
+> advance.
 
-(*) Named CONFIG_EMBEDDED for some reason.
+Yes, sorry.
 
-	Sam
+	Regards
+		Oliver
+
+
