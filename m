@@ -1,135 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZAHNtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbZAHN4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbZAHNtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 08:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZAHNs7
+	id S1759282AbZAHN4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 08:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbZAHN4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 08:48:59 -0500
-Received: from styx.suse.cz ([82.119.242.94]:33054 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755439AbZAHNs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 08:48:59 -0500
-Date: Thu, 8 Jan 2009 14:48:57 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>
-Subject: Re: Is 386 processor still supported?
-In-Reply-To: <20090108132442.GB8015@localhost>
-Message-ID: <alpine.LNX.1.10.0901081446040.5377@jikos.suse.cz>
-References: <20090108120338.6b8b4567@zonk.pl> <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz> <20090108132442.GB8015@localhost>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 8 Jan 2009 08:56:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42799 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755021AbZAHN4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 08:56:08 -0500
+Date: Thu, 8 Jan 2009 21:56:00 +0800
+From: Eugene Teo <eugeneteo@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: rolandd@cisco.com, sean.hefty@intel.com, hal.rosenstock@gmail.com
+Subject: [PATCH] IB: check for memory allocation failure
+Message-ID: <20090108135549.GA9756@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009, Cyrill Gorcunov wrote:
+Fix error-path NULL deref in c2_register_device().
 
-> Jiri I could be wrong but it seems __byte_spin_lock is implemented
-> under CONFIG_PARAVIRT and now referred under #else  /* !CONFIG_PARAVIRT */
-> At least I didn'y found additional implementaion in tree.
-> Did I miss anything?
+Signed-off-by: Eugene Teo <eugeneteo@kernel.org>
+---
+ drivers/infiniband/hw/amso1100/c2_provider.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-You're right, my bad. There is going to be some ifdef ugliness introduced 
-by this unfortunately, but on the other hand it's pretty straightforward.
-
-
-
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: x86: make spinlocks available on machines without xadd insn
-
-Current kernel wouldn't compile on ancient x86 machines that don't support
-xadd instruction, as ticket spinlocks implementation unconditionally uses
-it.
-
-On machines without CONFIG_X86_XADD, use old-style byte spinlock
-implementation instead.
-
-Reported-by: Adam Osuchowski <adwol@zonk.pl>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
---- 
-
- arch/x86/include/asm/spinlock.h |   28 ++++++++++++++++++++++++----
- 1 files changed, 24 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-index d17c919..1331333 100644
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -172,10 +172,10 @@ static inline int __ticket_spin_is_contended(raw_spinlock_t *lock)
- 	return (((tmp >> TICKET_SHIFT) - tmp) & ((1 << TICKET_SHIFT) - 1)) > 1;
- }
+diff --git a/drivers/infiniband/hw/amso1100/c2_provider.c b/drivers/infiniband/hw/amso1100/c2_provider.c
+index 5119d65..8cede6c 100644
+--- a/drivers/infiniband/hw/amso1100/c2_provider.c
++++ b/drivers/infiniband/hw/amso1100/c2_provider.c
+@@ -780,11 +780,11 @@ int c2_register_device(struct c2_dev *dev)
+ 	/* Register pseudo network device */
+ 	dev->pseudo_netdev = c2_pseudo_netdev_init(dev);
+ 	if (!dev->pseudo_netdev)
+-		goto out3;
++		goto out4;
  
--#ifdef CONFIG_PARAVIRT
-+#if defined(CONFIG_PARAVIRT) || !defined(CONFIG_X86_XADD)
- /*
-  * Define virtualization-friendly old-style lock byte lock, for use in
-- * pv_lock_ops if desired.
-+ * pv_lock_ops or for machines not supporting xadd instruction.
-  *
-  * This differs from the pre-2.6.24 spinlock by always using xchgb
-  * rather than decb to take the lock; this allows it to use a
-@@ -235,30 +235,50 @@ static inline void __byte_spin_unlock(raw_spinlock_t *lock)
- 	smp_wmb();
- 	bl->lock = 0;
- }
--#else  /* !CONFIG_PARAVIRT */
-+#else
- static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
- {
-+#ifdef CONFIG_X86_XADD
- 	return __ticket_spin_is_locked(lock);
-+#else
-+	return __byte_spin_is_locked(lock);
-+#endif
- }
+ 	ret = register_netdev(dev->pseudo_netdev);
+ 	if (ret)
+-		goto out2;
++		goto out3;
  
- static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
- {
-+#ifdef CONFIG_X86_XADD
- 	return __ticket_spin_is_contended(lock);
-+#else
-+	return __byte_spin_is_contended(lock);
-+#endif
+ 	pr_debug("%s:%u\n", __func__, __LINE__);
+ 	strlcpy(dev->ibdev.name, "amso%d", IB_DEVICE_NAME_MAX);
+@@ -851,6 +851,8 @@ int c2_register_device(struct c2_dev *dev)
+ 	dev->ibdev.post_recv = c2_post_receive;
+ 
+ 	dev->ibdev.iwcm = kmalloc(sizeof(*dev->ibdev.iwcm), GFP_KERNEL);
++	if (!dev->ibdev.iwcm)
++		goto out2;
+ 	dev->ibdev.iwcm->add_ref = c2_add_ref;
+ 	dev->ibdev.iwcm->rem_ref = c2_rem_ref;
+ 	dev->ibdev.iwcm->get_qp = c2_get_qp;
+@@ -870,15 +872,17 @@ int c2_register_device(struct c2_dev *dev)
+ 		if (ret)
+ 			goto out0;
+ 	}
+-	goto out3;
++	goto out4;
+ 
+ out0:
+ 	ib_unregister_device(&dev->ibdev);
+ out1:
+-	unregister_netdev(dev->pseudo_netdev);
++	kfree(dev->ibdev.iwcm);
+ out2:
+-	free_netdev(dev->pseudo_netdev);
++	unregister_netdev(dev->pseudo_netdev);
+ out3:
++	free_netdev(dev->pseudo_netdev);
++out4:
+ 	pr_debug("%s:%u ret=%d\n", __func__, __LINE__, ret);
+ 	return ret;
  }
- 
- static __always_inline void __raw_spin_lock(raw_spinlock_t *lock)
- {
-+#ifdef CONFIG_X86_XADD
- 	__ticket_spin_lock(lock);
-+#else
-+	__byte_spin_lock(lock);
-+#endif
- }
- 
- static __always_inline int __raw_spin_trylock(raw_spinlock_t *lock)
- {
-+#ifdef CONFIG_X86_XADD
- 	return __ticket_spin_trylock(lock);
-+#else
-+	return __byte_spin_trylock(lock);
-+#endif
- }
- 
- static __always_inline void __raw_spin_unlock(raw_spinlock_t *lock)
- {
-+#ifdef CONFIG_X86_XADD
- 	__ticket_spin_unlock(lock);
-+#else
-+	__byte_spin_unlock(lock);
-+#endif
- }
- 
- static __always_inline void __raw_spin_lock_flags(raw_spinlock_t *lock,
-@@ -267,7 +287,7 @@ static __always_inline void __raw_spin_lock_flags(raw_spinlock_t *lock,
- 	__raw_spin_lock(lock);
- }
- 
--#endif	/* CONFIG_PARAVIRT */
-+#endif
- 
- static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
- {
+
