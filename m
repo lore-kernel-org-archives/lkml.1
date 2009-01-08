@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbZAHAHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZAHALY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbZAHAHF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 19:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZAHAGv
+	id S932071AbZAHALY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 19:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbZAHALK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 19:06:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41073 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755874AbZAHAGu (ORCPT
+	Wed, 7 Jan 2009 19:11:10 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:41356 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbZAHALJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 19:06:50 -0500
-Date: Wed, 7 Jan 2009 16:05:20 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCHES for 2.6.29] V4L/DVB fixes
-In-Reply-To: <20090107215252.6e843e29@pedra.chehab.org>
-Message-ID: <alpine.LFD.2.00.0901071603130.3057@localhost.localdomain>
-References: <20090107215252.6e843e29@pedra.chehab.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 7 Jan 2009 19:11:09 -0500
+Message-ID: <4965448D.7000607@oracle.com>
+Date: Wed, 07 Jan 2009 16:10:53 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+CC: netdev@vger.kernel.org, wimax@linuxwimax.org, greg@kroah.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-wimax@intel.com
+Subject: Re: [PATCH 0/4] wimax: Kbuild / rfkill-build / PM fixes (v3)
+References: <cover.1231355768.git.inaky@linux.intel.com>
+In-Reply-To: <cover.1231355768.git.inaky@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.49654491.0141:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 7 Jan 2009, Mauro Carvalho Chehab wrote:
+Inaky Perez-Gonzalez wrote:
+> These four patches fix build issues reported by Randy Dunlap on the
+> linux-next tree for Jan 6 and Jan 7:
 > 
-> Please pull from:
->         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+> http://lkml.org/lkml/2009/1/6/340
+> http://lkml.org/lkml/2009/1/7/360
 > 
->  MAINTAINERS                                     |   65 ++++++++++------
+> The issue fixed by patch #3 wasn't reported on the emails but was
+> uncovered while discussing the fixes.
 > 
-> Mauro Carvalho Chehab (8):
->       V4L/DVB (10191a): Update MAINTAINERS entries on media drivers
+> This applies to the wimax tree kept in gregkh's repository:
+> 
+> http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-04-usb/
 
-I'm not seeing this one. Forgot to push out?
+Ack.  They all work for me.  Thanks.
 
-		Linus
+
+> Changes in v3
+> 
+> - Add patch #4, wrapping access to power-saving members of the struct
+>   usb_device in #ifdef CONFIG_PM. 
+> 
+> Changes in v2
+> 
+> - fixed silly one-char typo #ifndef CONFIG_BUG vs #ifdef CONFIG_BUG
+>   reported by Ilpo Järvinen 
+> 
+> Inaky Perez-Gonzalez (4):
+>   wimax: fix '#ifndef CONFIG_BUG' layout to avoid warning
+>   wimax: fix kconfig interactions with rfkill and input layers
+>   wimax: testing for rfkill support should also test for
+>     CONFIG_RFKILL_MODULE
+>   i2400m/usb: wrap USB power saving in #ifdef CONFIG_PM
+> 
+>  drivers/net/wimax/i2400m/usb.c |    6 ++++++
+>  net/wimax/Kconfig              |   14 ++++++++++++++
+>  net/wimax/id-table.c           |    8 +++++---
+>  net/wimax/op-rfkill.c          |    2 +-
+>  4 files changed, 26 insertions(+), 4 deletions(-)
+> 
+
+
+-- 
+~Randy
