@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbZAHPgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbZAHPis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbZAHPgz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 10:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757096AbZAHPgq
+	id S1759557AbZAHPis (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 10:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZAHPik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 10:36:46 -0500
-Received: from ns1.wincor-nixdorf.com ([80.154.98.129]:58010 "EHLO
-	mxpdbe1.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753791AbZAHPgp (ORCPT
+	Thu, 8 Jan 2009 10:38:40 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:40215 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbZAHPij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 10:36:45 -0500
-Message-ID: <49661CD8.9060400@wincor-nixdorf.com>
-Date: Thu, 08 Jan 2009 16:33:44 +0100
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Organization: Wincor Nixdorf International
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Eugene Teo <eugeneteo@kernel.org>
-CC: linux-kernel@vger.kernel.org, rolandd@cisco.com, sean.hefty@intel.com,
-       hal.rosenstock@gmail.com
-Subject: Re: [PATCH] IB: check for memory allocation failure [v2]
-References: <28fa9c5e0901080620g7f4707daxbffc9bf798581882@mail.gmail.com>
-In-Reply-To: <28fa9c5e0901080620g7f4707daxbffc9bf798581882@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD7423BE752545296A1C40F72"
-X-OriginalArrivalTime: 08 Jan 2009 15:36:34.0469 (UTC) FILETIME=[E30EFD50:01C971A6]
+	Thu, 8 Jan 2009 10:38:39 -0500
+From: Artem Bityutskiy <dedekind@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Artem Bityutskiy <dedekind@infradead.org>
+Date: Thu, 08 Jan 2009 19:38:07 +0200
+Message-Id: <20090108173807.2387.93418.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/2] JFFS2: remove junk prototypes
+X-OriginalArrivalTime: 08 Jan 2009 15:38:31.0802 (UTC) FILETIME=[28FE95A0:01C971A7]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD7423BE752545296A1C40F72
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH] JFFS2: remove junk prototypes
 
-Eugene Teo wrote:
-> On Thu, Jan 8, 2009 at 10:05 PM, Niels de Vos
-> <niels.devos@wincor-nixdorf.com> wrote:
->> Hi Eugene,
->>
->> please see below.
->=20
-> Thanks for reviewing. Here's an updated patch:
->=20
-> Fix error-path NULL deref in c2_register_device().
->=20
-> Signed-off-by: Eugene Teo <eugeneteo@kernel.org>
+'rb_prev()', 'rb_next()' and 'rb_replace_node()' are declared in
+include/linux/rbtree.h, no need for JFFS2 to re-declare them. I
+believe these are left-overs from the old days when the common
+RB tree code did not have those call and JFFS2 had private
+implementation.
 
-(note: your patch was attached, not inlined...)
+Cc: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ fs/jffs2/nodelist.h |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-There is also an additional kfree() at the end of the patch. It wasn't
-included in the first version you sent. Looks correct now imho.
+diff --git a/fs/jffs2/nodelist.h b/fs/jffs2/nodelist.h
+index 1750445..507ed6e 100644
+--- a/fs/jffs2/nodelist.h
++++ b/fs/jffs2/nodelist.h
+@@ -366,9 +366,6 @@ void jffs2_free_ino_caches(struct jffs2_sb_info *c);
+ void jffs2_free_raw_node_refs(struct jffs2_sb_info *c);
+ struct jffs2_node_frag *jffs2_lookup_node_frag(struct rb_root *fragtree, uint32_t offset);
+ void jffs2_kill_fragtree(struct rb_root *root, struct jffs2_sb_info *c_delete);
+-struct rb_node *rb_next(struct rb_node *);
+-struct rb_node *rb_prev(struct rb_node *);
+-void rb_replace_node(struct rb_node *victim, struct rb_node *new, struct rb_root *root);
+ int jffs2_add_full_dnode_to_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f, struct jffs2_full_dnode *fn);
+ uint32_t jffs2_truncate_fragtree (struct jffs2_sb_info *c, struct rb_root *list, uint32_t size);
+ struct jffs2_raw_node_ref *jffs2_link_node_ref(struct jffs2_sb_info *c,
+-- 
+1.6.0.6
 
-Reviewed-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
-
-
-> ---
->  drivers/infiniband/hw/amso1100/c2_provider.c |   17 ++++++++++++-----
->  1 file changed, 12 insertions(+), 5 deletions(-)
-
-
-
---------------enigD7423BE752545296A1C40F72
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFJZhzY5KAkGQPO/QoRApB7AJoCQad2AM8odhOTHyac+B00q0ZMqACgy4wX
-Vsjnwnq1TtPTU3/OJdItwh4=
-=TWf4
------END PGP SIGNATURE-----
-
---------------enigD7423BE752545296A1C40F72--
