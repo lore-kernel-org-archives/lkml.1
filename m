@@ -1,52 +1,456 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbZAHQ12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbZAHQc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759494AbZAHQ12 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 11:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbZAHQ1V
+	id S1758480AbZAHQc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 11:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZAHQcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 11:27:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44591 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbZAHQ1U (ORCPT
+	Thu, 8 Jan 2009 11:32:18 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:55689 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbZAHQcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 11:27:20 -0500
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>
-Subject: Re: Is 386 processor still supported?
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090108120338.6b8b4567@zonk.pl>
-	<alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz>
-Date: Thu, 08 Jan 2009 17:27:30 +0100
-In-Reply-To: <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz> (Jiri Kosina's message of "Thu, 8 Jan 2009 14:05:48 +0100 (CET)")
-Message-ID: <87vdspwyod.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 8 Jan 2009 11:32:16 -0500
+Date: Thu, 8 Jan 2009 18:32:14 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Greg Kroah-Hartman <greg@kroah.com>
+cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: [PATCH] w35und: typedef removal
+Message-ID: <Pine.LNX.4.64.0901081830380.7049@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jkosina@suse.cz> writes:
->
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: x86: make spinlocks available on machines without xadd insn
->
-> Current kernel wouldn't compile on ancient x86 machines that don't support 
-> xadd instruction, as ticket spinlocks implementation unconditionally uses 
-> it.
->
-> On machines without CONFIG_X86_XADD, use old-style byte spinlock 
-> implementation instead.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-The assumption was always the 386s don't run SMP.
+This patch removes some typedefs from the driver code. I also removed some 
+unused structs I spotted while removing the typedefs.
 
-So I think it would be better if you just made these xadds 
-part of the UP patch implementation and patch them out on
-UP systems similar to how it's done for LOCK prefixes. 
-That would help non 386 UP systems too.
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/mto.c      |    6 ---
+ drivers/staging/winbond/wb35rx.c   |   16 ++++----
+ drivers/staging/winbond/wb35rx_s.h |    8 +---
+ drivers/staging/winbond/wb35tx.c   |   22 +++++-----
+ drivers/staging/winbond/wb35tx_s.h |    6 +--
+ drivers/staging/winbond/wbhal.c    |    2 +-
+ drivers/staging/winbond/wbhal_s.h  |   74 ++---------------------------------
+ drivers/staging/winbond/wbusb.c    |    2 +-
+ drivers/staging/winbond/wbusb_s.h  |   16 +-------
+ 9 files changed, 32 insertions(+), 120 deletions(-)
+
+diff --git a/drivers/staging/winbond/mto.c b/drivers/staging/winbond/mto.c
+index 8c4107b..a962fdd 100644
+--- a/drivers/staging/winbond/mto.c
++++ b/drivers/staging/winbond/mto.c
+@@ -51,12 +51,6 @@ static int retryrate_rec[MTO_MAX_DATA_RATE_LEVELS];//this record the retry rate
+ static int PeriodTotalTxPkt = 0;
+ static int PeriodTotalTxPktRetry = 0;
  
--Andi
-
+-typedef struct
+-{
+-	s32 RSSI;
+-	u8  TxRate;
+-}RSSI2RATE;
+-
+ static u8 boSparseTxTraffic = false;
+ 
+ void MTO_Init(MTO_FUNC_INPUT);
+diff --git a/drivers/staging/winbond/wb35rx.c b/drivers/staging/winbond/wb35rx.c
+index 029d918..bffebf9 100644
+--- a/drivers/staging/winbond/wb35rx.c
++++ b/drivers/staging/winbond/wb35rx.c
+@@ -84,7 +84,7 @@ static u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
+ 	struct wbsoft_priv *priv = hw->priv;
+ 	phw_data_t pHwData = &priv->sHwData;
+ 	DESCRIPTOR	RxDes;
+-	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 	u8 *		pRxBufferAddress;
+ 	u16		PacketSize;
+ 	u16		stmp, BufferSize, stmp2 = 0;
+@@ -162,7 +162,7 @@ static void Wb35Rx_Complete(struct urb *urb)
+ 	struct ieee80211_hw *hw = urb->context;
+ 	struct wbsoft_priv *priv = hw->priv;
+ 	phw_data_t pHwData = &priv->sHwData;
+-	PWB35RX		pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 	u8 *		pRxBufferAddress;
+ 	u32		SizeCheck;
+ 	u16		BulkLength;
+@@ -239,7 +239,7 @@ static void Wb35Rx(struct ieee80211_hw *hw)
+ {
+ 	struct wbsoft_priv *priv = hw->priv;
+ 	phw_data_t pHwData = &priv->sHwData;
+-	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 	u8 *	pRxBufferAddress;
+ 	struct urb *urb = pWb35Rx->RxUrb;
+ 	int	retv;
+@@ -302,7 +302,7 @@ void Wb35Rx_start(struct ieee80211_hw *hw)
+ {
+ 	struct wbsoft_priv *priv = hw->priv;
+ 	phw_data_t pHwData = &priv->sHwData;
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 
+ 	// Allow only one thread to run into the Wb35Rx() function
+ 	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
+@@ -315,7 +315,7 @@ void Wb35Rx_start(struct ieee80211_hw *hw)
+ //=====================================================================================
+ static void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
+ {
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 	u32	i;
+ 
+ 	pWb35Rx->ByteReceived = 0;
+@@ -331,7 +331,7 @@ static void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
+ 
+ unsigned char Wb35Rx_initial(phw_data_t pHwData)
+ {
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 
+ 	// Initial the Buffer Queue
+ 	Wb35Rx_reset_descriptor( pHwData );
+@@ -342,7 +342,7 @@ unsigned char Wb35Rx_initial(phw_data_t pHwData)
+ 
+ void Wb35Rx_stop(phw_data_t pHwData)
+ {
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 
+ 	// Canceling the Irp if already sends it out.
+ 	if (pWb35Rx->EP3vm_state == VM_RUNNING) {
+@@ -356,7 +356,7 @@ void Wb35Rx_stop(phw_data_t pHwData)
+ // Needs process context
+ void Wb35Rx_destroy(phw_data_t pHwData)
+ {
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
++	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
+ 
+ 	do {
+ 		msleep(10); // Delay for waiting function enter 940623.1.a
+diff --git a/drivers/staging/winbond/wb35rx_s.h b/drivers/staging/winbond/wb35rx_s.h
+index f18350b..4b03274 100644
+--- a/drivers/staging/winbond/wb35rx_s.h
++++ b/drivers/staging/winbond/wb35rx_s.h
+@@ -15,8 +15,7 @@
+ //====================================
+ // Internal variable for module
+ //====================================
+-typedef struct _WB35RX
+-{
++struct wb35_rx {
+ 	u32			ByteReceived;// For calculating throughput of BulkIn
+ 	atomic_t		RxFireCounter;// Does Wb35Rx module fire?
+ 
+@@ -42,7 +41,4 @@ typedef struct _WB35RX
+ 
+ 	int		EP3VM_status;
+ 	u8 *	pDRx;
+-
+-} WB35RX, *PWB35RX;
+-
+-
++};
+diff --git a/drivers/staging/winbond/wb35tx.c b/drivers/staging/winbond/wb35tx.c
+index f7fe8d6..d35875f 100644
+--- a/drivers/staging/winbond/wb35tx.c
++++ b/drivers/staging/winbond/wb35tx.c
+@@ -17,7 +17,7 @@
+ unsigned char
+ Wb35Tx_get_tx_buffer(phw_data_t pHwData, u8 **pBuffer)
+ {
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	*pBuffer = pWb35Tx->TxBuffer[0];
+ 	return true;
+@@ -29,7 +29,7 @@ static void Wb35Tx_complete(struct urb * pUrb)
+ {
+ 	struct wbsoft_priv *adapter = pUrb->context;
+ 	phw_data_t	pHwData = &adapter->sHwData;
+-	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 	PMDS		pMds = &adapter->Mds;
+ 
+ 	printk("wb35: tx complete\n");
+@@ -65,7 +65,7 @@ error:
+ static void Wb35Tx(struct wbsoft_priv *adapter)
+ {
+ 	phw_data_t	pHwData = &adapter->sHwData;
+-	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 	u8		*pTxBufferAddress;
+ 	PMDS		pMds = &adapter->Mds;
+ 	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx4Urb;
+@@ -116,7 +116,7 @@ static void Wb35Tx(struct wbsoft_priv *adapter)
+ void Wb35Tx_start(struct wbsoft_priv *adapter)
+ {
+ 	phw_data_t pHwData = &adapter->sHwData;
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Allow only one thread to run into function
+ 	if (atomic_inc_return(&pWb35Tx->TxFireCounter) == 1) {
+@@ -128,7 +128,7 @@ void Wb35Tx_start(struct wbsoft_priv *adapter)
+ 
+ unsigned char Wb35Tx_initial(phw_data_t pHwData)
+ {
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	pWb35Tx->Tx4Urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (!pWb35Tx->Tx4Urb)
+@@ -147,7 +147,7 @@ unsigned char Wb35Tx_initial(phw_data_t pHwData)
+ //======================================================
+ void Wb35Tx_stop(phw_data_t pHwData)
+ {
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Trying to canceling the Trp of EP2
+ 	if (pWb35Tx->EP2vm_state == VM_RUNNING)
+@@ -167,7 +167,7 @@ void Wb35Tx_stop(phw_data_t pHwData)
+ //======================================================
+ void Wb35Tx_destroy(phw_data_t pHwData)
+ {
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Wait for VM stop
+ 	do {
+@@ -189,7 +189,7 @@ void Wb35Tx_destroy(phw_data_t pHwData)
+ void Wb35Tx_CurrentTime(struct wbsoft_priv *adapter, u32 TimeCount)
+ {
+ 	phw_data_t pHwData = &adapter->sHwData;
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 	unsigned char Trigger = false;
+ 
+ 	if (pWb35Tx->TxTimer > TimeCount)
+@@ -210,7 +210,7 @@ static void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+ 	struct wbsoft_priv *adapter = pUrb->context;
+ 	phw_data_t	pHwData = &adapter->sHwData;
+ 	T02_DESCRIPTOR	T02, TSTATUS;
+-	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 	u32 *		pltmp = (u32 *)pWb35Tx->EP2_buf;
+ 	u32		i;
+ 	u16		InterruptInLength;
+@@ -257,7 +257,7 @@ error:
+ static void Wb35Tx_EP2VM(struct wbsoft_priv *adapter)
+ {
+ 	phw_data_t	pHwData = &adapter->sHwData;
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx2Urb;
+ 	u32 *	pltmp = (u32 *)pWb35Tx->EP2_buf;
+ 	int		retv;
+@@ -293,7 +293,7 @@ error:
+ void Wb35Tx_EP2VM_start(struct wbsoft_priv *adapter)
+ {
+ 	phw_data_t pHwData = &adapter->sHwData;
+-	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
++	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Allow only one thread to run into function
+ 	if (atomic_inc_return(&pWb35Tx->TxResultCount) == 1) {
+diff --git a/drivers/staging/winbond/wb35tx_s.h b/drivers/staging/winbond/wb35tx_s.h
+index 3960276..f70f433 100644
+--- a/drivers/staging/winbond/wb35tx_s.h
++++ b/drivers/staging/winbond/wb35tx_s.h
+@@ -18,8 +18,7 @@
+ //====================================
+ 
+ 
+-typedef struct _WB35TX
+-{
++struct wb35_tx {
+ 	// For Tx buffer
+ 	u8	TxBuffer[ MAX_USB_TX_BUFFER_NUMBER ][ MAX_USB_TX_BUFFER ];
+ 
+@@ -43,7 +42,6 @@ typedef struct _WB35TX
+ 
+ 	u32	TxFillCount; // 20060928
+ 	u32	TxTimer; // 20060928 Add if sending packet not great than 13
+-
+-} WB35TX, *PWB35TX;
++};
+ 
+ #endif
+diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+index c8313db..a1cd411 100644
+--- a/drivers/staging/winbond/wbhal.c
++++ b/drivers/staging/winbond/wbhal.c
+@@ -484,7 +484,7 @@ void hal_stop(  phw_data_t pHwData )
+ unsigned char hal_idle(phw_data_t pHwData)
+ {
+ 	struct wb35_reg *reg = &pHwData->reg;
+-	PWBUSB	pWbUsb = &pHwData->WbUsb;
++	struct wb_usb *pWbUsb = &pHwData->WbUsb;
+ 
+ 	if( !pHwData->SurpriseRemove && ( pWbUsb->DetectCount || reg->EP0vm_state!=VM_STOP ) )
+ 		return false;
+diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
+index 64d8e61..799f790 100644
+--- a/drivers/staging/winbond/wbhal_s.h
++++ b/drivers/staging/winbond/wbhal_s.h
+@@ -85,19 +85,6 @@ enum {
+ 	VM_COMPLETED
+ };
+ 
+-// Be used for 802.11 mac header
+-typedef struct _MAC_FRAME_CONTROL {
+-	u8	mac_frame_info; // this is a combination of the protovl version, type and subtype
+-	u8	to_ds:1;
+-	u8	from_ds:1;
+-	u8	more_frag:1;
+-	u8	retry:1;
+-	u8	pwr_mgt:1;
+-	u8	more_data:1;
+-	u8	WEP:1;
+-	u8	order:1;
+-} MAC_FRAME_CONTROL, *PMAC_FRAME_CONTROL;
+-
+ //-----------------------------------------------------
+ // Normal Key table format
+ //-----------------------------------------------------
+@@ -105,28 +92,6 @@ typedef struct _MAC_FRAME_CONTROL {
+ #define MAX_KEY_TABLE				24	// 24 entry for storing key data
+ #define GROUP_KEY_START_INDEX		4
+ #define MAPPING_KEY_START_INDEX		8
+-typedef struct _KEY_TABLE
+-{
+-	u32	DW0_Valid:1;
+-	u32	DW0_NullKey:1;
+-	u32	DW0_Security_Mode:2;//0:WEP 40 bit 1:WEP 104 bit 2:TKIP 128 bit 3:CCMP 128 bit
+-	u32	DW0_WEPON:1;
+-	u32	DW0_RESERVED:11;
+-	u32	DW0_Address1:16;
+-
+-	u32	DW1_Address2;
+-
+-	u32	DW2_RxSequenceCount1;
+-
+-	u32	DW3_RxSequenceCount2:16;
+-	u32	DW3_RESERVED:16;
+-
+-	u32	DW4_TxSequenceCount1;
+-
+-	u32	DW5_TxSequenceCount2:16;
+-	u32	DW5_RESERVED:16;
+-
+-} KEY_TABLE, *PKEY_TABLE;
+ 
+ //--------------------------------------------------------
+ // 			 Descriptor
+@@ -412,8 +377,8 @@ typedef struct _DESCRIPTOR {		// Skip length = 8 DWORD
+ #define MAX_RF_PARAMETER	32
+ 
+ typedef struct _TXVGA_FOR_50 {
+-	u8	ChanNo;
+-	u8	TxVgaValue;
++	u8      ChanNo;
++	u8      TxVgaValue;
+ } TXVGA_FOR_50;
+ 
+ 
+@@ -500,10 +465,10 @@ typedef struct _HW_DATA_T
+ 	//========================================================================
+ 	// Variable for each module
+ 	//========================================================================
+-	WBUSB		WbUsb; // Need WbUsb.h
++	struct wb_usb	WbUsb; // Need WbUsb.h
+ 	struct wb35_reg	reg; // Need Wb35Reg.h
+-	WB35TX		Wb35Tx; // Need Wb35Tx.h
+-	WB35RX		Wb35Rx; // Need Wb35Rx.h
++	struct wb35_tx	Wb35Tx; // Need Wb35Tx.h
++	struct wb35_rx	Wb35Rx; // Need Wb35Rx.h
+ 
+ 	struct timer_list	LEDTimer;// For LED
+ 
+@@ -578,33 +543,4 @@ typedef struct _HW_DATA_T
+ 
+ } hw_data_t, *phw_data_t;
+ 
+-// The mapping of Rx and Tx descriptor field
+-typedef struct _HAL_RATE
+-{
+-	// DSSS
+-	u32	RESERVED_0;
+-	u32   NumRate2MS;
+-	u32   NumRate55MS;
+-	u32   NumRate11MS;
+-
+-	u32	RESERVED_1[4];
+-
+-	u32   NumRate1M;
+-	u32   NumRate2ML;
+-	u32   NumRate55ML;
+-	u32   NumRate11ML;
+-
+-	u32	RESERVED_2[4];
+-
+-	// OFDM
+-	u32   NumRate6M;
+-	u32   NumRate9M;
+-	u32   NumRate12M;
+-	u32   NumRate18M;
+-	u32   NumRate24M;
+-	u32   NumRate36M;
+-	u32   NumRate48M;
+-	u32   NumRate54M;
+-} HAL_RATE, *PHAL_RATE;
+-
+ #endif
+diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+index 7bb9d48..59d3e77 100644
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -312,7 +312,7 @@ error:
+ 
+ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+ {
+-	PWBUSB		pWbUsb;
++	struct wb_usb *pWbUsb;
+         struct usb_host_interface *interface;
+ 	struct usb_endpoint_descriptor *endpoint;
+ 	u32	ltmp;
+diff --git a/drivers/staging/winbond/wbusb_s.h b/drivers/staging/winbond/wbusb_s.h
+index 1de9360..0c7e6a3 100644
+--- a/drivers/staging/winbond/wbusb_s.h
++++ b/drivers/staging/winbond/wbusb_s.h
+@@ -16,22 +16,10 @@
+ 
+ #include <linux/types.h>
+ 
+-//---------------------------------------------------------------------------
+-//  RW_CONTEXT --
+-//
+-//  Used to track driver-generated io irps
+-//---------------------------------------------------------------------------
+-typedef struct _RW_CONTEXT
+-{
+-	void*			pHwData;
+-	struct urb		*urb;
+-	void*			pCallBackFunctionParameter;
+-} RW_CONTEXT, *PRW_CONTEXT;
+-
+-typedef struct _WBUSB {
++struct wb_usb {
+ 	u32	IsUsb20;
+ 	struct usb_device *udev;
+ 	u32	DetectCount;
+-} WBUSB, *PWBUSB;
++};
+ 
+ #endif
 -- 
-ak@linux.intel.com
+1.5.4.3
+
