@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZAHHy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZAHH5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbZAHHy7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 02:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZAHHyv
+	id S1756709AbZAHH5c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 02:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbZAHH5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 02:54:51 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:46055 "EHLO
+	Thu, 8 Jan 2009 02:57:24 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36875 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbZAHHyu (ORCPT
+	with ESMTP id S1753346AbZAHH5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 02:54:50 -0500
-Date: Thu, 8 Jan 2009 08:56:25 +0100
+	Thu, 8 Jan 2009 02:57:23 -0500
+Date: Thu, 8 Jan 2009 08:59:01 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: rmk+kernel@arm.linux.org.uk, adobriyan@gmail.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: hardirq.h removal broke sparc64 build...
-Message-ID: <20090108075625.GA14179@uranus.ravnborg.org>
-References: <20090107.144310.79937111.davem@davemloft.net>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Spaces in filenames in gen_initramfs_list.sh/gen_init_cpio.c?
+Message-ID: <20090108075901.GB14179@uranus.ravnborg.org>
+References: <200901071656.18802.rob@landley.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090107.144310.79937111.davem@davemloft.net>
+In-Reply-To: <200901071656.18802.rob@landley.net>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 07, 2009 at 04:56:18PM -0600, Rob Landley wrote:
+> What do I do if I have a space in a filename that I want to put into an 
+> initramfs?  (Or a space in the source argument of "file" entries or the 
+> redirect argument of "slink" entries?)
 > 
-> Actually, looking at the patch, where is the part from Alexey
-> that does the "fix sparc64"?  I see nothing in the patch that
-> would even appear to possibly be for that.  The diffstat is:
-> 
->  arch/avr32/kernel/traps.c     |    1 +
->  arch/sh/kernel/traps_32.c     |    1 +
->  drivers/acpi/processor_idle.c |    1 +
->  include/asm-generic/local.h   |    1 -
->  4 files changed, 3 insertions(+), 1 deletion(-)
-> 
-> Was Alexey's fix removed or lost? :-/
+> I don't see any kind of quoting or escape syntax, has anybody planned one or 
+> should I go write something myself?
 
-When I made my patch I saw some issues in non-sparc files
-but I did not address these as I thought they were generic
-bugs addressed by someone else.
-I should have checked if the same build error was
-also present on x86/arm then :-(
-
-I'm glad to see it is sorted out properly now.
+I have not seen anything addressing this - please go ahead.
 
 	Sam
-
