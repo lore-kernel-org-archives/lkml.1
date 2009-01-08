@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbZAHErT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758742AbZAHEuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758566AbZAHErT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 23:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZAHErJ
+	id S1758742AbZAHEuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 23:50:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZAHEtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 23:47:09 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49763 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380AbZAHErI (ORCPT
+	Wed, 7 Jan 2009 23:49:52 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41722 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbZAHEtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 23:47:08 -0500
-Date: Thu, 8 Jan 2009 13:41:33 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: nishimura@mxp.nes.nec.co.jp,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>, riel@redhat.com,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 0/4] Memory controller soft limit patches
-Message-Id: <20090108134133.6edf461f.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090108035930.GB7294@balbir.in.ibm.com>
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
-	<20090108093040.22d5f281.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090108035930.GB7294@balbir.in.ibm.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 23:49:52 -0500
+Date: Wed, 7 Jan 2009 23:49:49 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/2] tracing/branch-tracer: adapt to the stat tracing
+ API
+In-Reply-To: <4956b070.0c07560a.2b34.2325@mx.google.com>
+Message-ID: <alpine.DEB.1.10.0901072344260.2429@gandalf.stny.rr.com>
+References: <4956b070.0c07560a.2b34.2325@mx.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >   1. please fix current bugs on hierarchy management, before new feature.
-> >      AFAIK, OOM-Kill under hierarchy is broken. (I have patches but waits for
-> >      merge window close.)
-> 
-> I've not hit the OOM-kill issue under hierarchy so far, is the OOM
-> killer selecting a bad task to kill? I'll debug/reproduce the issue.
-> I am not posting these patches for inclusion, fixing bugs is
-> definitely the highest priority.
-> 
-I agree.
-
-Just FYI, I have several bug fix patches for current memcg(that is for .29).
-I've been testing them now, and it survives my test(rmdir aftre task move
-under memory pressure and page migration) w/o big problem(except oom) for hours
-in both use_hierarchy==0/1 case.
-
-> >      I wonder there will be some others. Lockdep error which Nishimura reported
-> >      are all fixed now ?
-> 
-> I run all my kernels and tests with lockdep enabled, I did not see any
-> lockdep errors showing up.
-> 
-I think Paul's hierarchy_mutex patches fixed the dead lock, I haven't seen
-the dead lock after the patch.
-(Although, it may cause another dead lock when other subsystems are added.)
 
 
-Thanks,
-Daisuke Nishimura.
+On Sat, 27 Dec 2008, Frederic Weisbecker wrote:
+
+> This patch adapts the branch tracer to the tracing API.
+> This is not really for inclusion but more likely a proof of concept because
+> the branch tracer implements two "stat tracing" that were split in two files.
+> 
+> So I added an option to the branch tracer: stat_all_branch.
+> If it is set, then trace_stat will output all of the branches entries stats.
+> Otherwise, it will print the annotated branches.
+> 
+> Its is a kind of quick trick, waiting for a better solution.
+> By default, the annotated branches stat are sorted by incorrect branch prediction
+> percentage.
+> 
+
+OK, I have not had a chance to look at this code since it was sent when I 
+was on Holiday. But I do not think that the only way to see the output of 
+a histogram is to set it in the current_tracer. If I have the branch 
+tracer on, I would have to run it to see the output of the histogram.
+
+The histogram starts recording at boot up. Although the branch tracer is 
+dependent on the histograms, the histogram is not dependent on the branch 
+tracer. This code is making the histogram dependent on the trace. It took 
+me a while to figure out how to see my histogram.
+
+With the new patches (after the compile issue is solved) we could have a 
+register_histogram or something that would put the file in the trace_stats 
+directory. This would separate the need of coupling the tracers with the 
+histogram even when they are not coupled.
+
+-- Steve
+
