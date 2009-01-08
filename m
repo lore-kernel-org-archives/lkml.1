@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761229AbZAHTIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbZAHTLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761229AbZAHTIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbZAHTIf
+	id S1761977AbZAHTLR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZAHTLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:08:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49400
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758006AbZAHTId (ORCPT
+	Thu, 8 Jan 2009 14:11:04 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:18214 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751743AbZAHTLC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:08:33 -0500
-Date: Thu, 08 Jan 2009 11:08:35 -0800 (PST)
-Message-Id: <20090108.110835.109199764.davem@davemloft.net>
-To: inaky@linux.intel.com
-Cc: netdev@vger.kernel.org, wimax@linuxwimax.org, greg@kroah.com,
-       randy.dunlap@oracle.com, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wimax@intel.com
-Subject: Re: [PATCH 4/4] i2400m/usb: wrap USB power saving in #ifdef
- CONFIG_PM
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <0e511f3772ac9887551bec34ee682fa5bf63fb69.1231355768.git.inaky@linux.intel.com>
-References: <cover.1231355768.git.inaky@linux.intel.com>
-	<0e511f3772ac9887551bec34ee682fa5bf63fb69.1231355768.git.inaky@linux.intel.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 8 Jan 2009 14:11:02 -0500
+Message-ID: <49664F9B.8070703@caviumnetworks.com>
+Date: Thu, 08 Jan 2009 11:10:19 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PULL] cpumask tree
+References: <200901011149.18401.rusty@rustcorp.com.au>
+In-Reply-To: <200901011149.18401.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Jan 2009 19:10:19.0538 (UTC) FILETIME=[BF653720:01C971C4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Date: Wed,  7 Jan 2009 11:22:22 -0800
-
-> Current code was assuming PM was always enabled, which is not
-> correct. Code which accesses members in the struct usb_device that are
-> dependant on CONFIG_PM must be protected the same.
+Rusty Russell wrote:
+> commit d036e67b40f52bdd95392390108defbac7e53837
+> Author: Rusty Russell <rusty@rustcorp.com.au>
+> Date:   Thu Jan 1 10:12:26 2009 +1030
 > 
-> Reported by Randy Dunlap from a build error in the linux-next tree on
-> 07/01/2009.
+>     cpumask: convert kernel/irq
+>     
+>     Impact: Reduce stack usage, use new cpumask API.  ALPHA mod!
+>     
+>     Main change is that irq_default_affinity becomes a cpumask_var_t, so
+>     treat it as a pointer (this effects alpha).
+>     
+>     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 > 
-> Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
 
-Also applied, thanks a lot.
+Which contains:
+
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 61c4a9b..cd0cd8d 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -16,8 +16,15 @@
+>  #include "internals.h"
+>  
+>  #ifdef CONFIG_SMP
+> +cpumask_var_t irq_default_affinity;
+>  
+> -cpumask_t irq_default_affinity = CPU_MASK_ALL;
+> +static int init_irq_default_affinity(void)
+> +{
+> +       alloc_cpumask_var(&irq_default_affinity, GFP_KERNEL);
+> +       cpumask_setall(irq_default_affinity);
+> +       return 0;
+> +}
+> +core_initcall(init_irq_default_affinity);
+
+I think core_initcall is too late to be initializing 
+irq_default_affinity.  This happens way after init_IRQ() is called and 
+for my target (mips/cavium_octeon) after the timer and SMP related irqs 
+are setup.
+
+I had been setting irq_default_affinity in init_IRQ(), and I could 
+probably do it later with no real problem, but this seems wrong to me. 
+Data that is potentially used in interrupt configuration and processing 
+should be initialized before it is used.
+
+David Daney
