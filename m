@@ -1,60 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762427AbZAHTRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbZAHTTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762427AbZAHTRw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:17:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760258AbZAHTRm
+	id S1762171AbZAHTTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbZAHTTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:17:42 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51182 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759952AbZAHTRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:17:40 -0500
-Date: Thu, 8 Jan 2009 14:17:03 -0500
-From: Dave Jones <davej@redhat.com>
-To: Theodore Tso <tytso@mit.edu>, Jan Beulich <jbeulich@novell.com>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       ccache@lists.samba.org
-Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
-Message-ID: <20090108191703.GA11273@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Theodore Tso <tytso@mit.edu>, Jan Beulich <jbeulich@novell.com>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-	ccache@lists.samba.org
-References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <20090107131221.GA17110@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107131221.GA17110@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 8 Jan 2009 14:19:04 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:49722 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757738AbZAHTTB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 14:19:01 -0500
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: Chris Mason <chris.mason@oracle.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.DEB.1.10.0901081305430.24688@gandalf.stny.rr.com>
+References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+	 <1231347442.11687.344.camel@twins>
+	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
+	 <1231365115.11687.361.camel@twins>
+	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
+	 <1231366716.11687.377.camel@twins>
+	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>
+	 <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
+	 <1231426014.11687.456.camel@twins>
+	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+	 <1231434515.14304.27.camel@think.oraclecorp.com>
+	 <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
+	 <alpine.DEB.1.10.0901081300370.24688@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0901081305430.24688@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 14:17:53 -0500
+Message-Id: <1231442273.14304.49.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.49665167.0124:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 07, 2009 at 08:12:21AM -0500, Theodore Tso wrote:
- > On Tue, Jan 06, 2009 at 10:15:26AM -0500, Theodore Ts'o wrote:
- > > The following commit, ad7a953c, "kbuild: strip generated symbols from
- > > *.ko" which was merged to the mainline last week (December 28th) has the
- > > unfortunate side effct of making ccache useless.
- > 
- > I've just discovered another problem with this commit.
- > 
- > % du -s /lib/modules/2.6.28
- > 63072	/lib/modules/2.6.28/
- >  du -s /lib/modules/2.6.28-git7
- > 221556	/lib/modules/2.6.28-git7/
- > 
- > The two configs are largely equal.  I'm building with
- > CONFIG_DEBUG_KERNEL=y, but then installing with "make
- > INSTALL_MOD_STRIP=1 modules_install".   
+On Thu, 2009-01-08 at 13:14 -0500, Steven Rostedt wrote:
+> 
+> 
+> On Thu, 8 Jan 2009, Steven Rostedt wrote:
+> > > In fact, you might not even need a process C: all you need is for B to be 
+> > > on the same runqueue as A, and having enough load on the other CPU's that 
+> > > A never gets migrated away. So "C" might be in user space.
+> 
+> You're right about not needing process C.
+> 
+> > > 
+> > > I dunno. There are probably variations on the above.
+> > 
+> > Ouch! I think you are on to something:
+> > 
+> >         for (;;) {
+> >                 struct thread_info *owner;
+> > 
+> >                 old_val = atomic_cmpxchg(&lock->count, 1, 0);
+> >                 if (old_val == 1) {
+> >                         lock_acquired(&lock->dep_map, ip);
+> >                         mutex_set_owner(lock);
+> >                         return 0;
+> >                 }
+> > 
+> >                 if (old_val < 0 && !list_empty(&lock->wait_list))
+> >                         break;
+> > 
+> >                 /* See who owns it, and spin on him if anybody */
+> >                 owner = ACCESS_ONCE(lock->owner);
+> > 
+> > The owner was preempted before assigning lock->owner (as you stated).
+> 
+> If it was the current process that preempted the owner and these are RT 
+> tasks pinned to the same CPU and the owner is of lower priority than the 
+> spinner, we have a deadlock!
+> 
+> Hmm, I do not think the need_sched here will even fix that :-/
 
-Fedora rawhide users noticed this same problem this morning too,
-when I pushed out a build that eats up a gig of diskspace thanks
-to the number of modules we have, that are all afflicted by this problem.
+RT tasks could go directly to sleeping.  The spinner would see them on
+the list and break out.
 
-I'll have to revert ad7a953c for our builds to continue tracking mainline
-without monopolising the diskspace in the Fedora build system.
+-chris
 
-	Dave
 
--- 
-http://www.codemonkey.org.uk
