@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbZAHUTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759672AbZAHUVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760933AbZAHUTT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 15:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZAHUSe
+	id S1759672AbZAHUVs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 15:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZAHUVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 15:18:34 -0500
-Received: from 201-217-static-ppp.3menatwork.com ([64.235.217.201]:40251 "EHLO
-	server.hugovil.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760708AbZAHUSc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 15:18:32 -0500
-Date: Thu, 8 Jan 2009 15:18:27 -0500
-From: Hugo Villeneuve <hugo@hugovil.com>
-To: Florian Fainelli <florian@openwrt.org>
-Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
-Subject: Re: FPGA programming driver architecture
-Message-Id: <20090108151827.72f50cee.hugo@hugovil.com>
-In-Reply-To: <200812131358.03010.florian@openwrt.org>
-References: <20081212150314.6ea24996.hugo@hugovil.com>
-	<200812131358.03010.florian@openwrt.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 8 Jan 2009 15:21:41 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:39193 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752269AbZAHUVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 15:21:40 -0500
+Subject: [GIT PULL] Voltage regulator updates
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 20:21:38 +0000
+Message-Id: <1231446098.6488.15.camel@vega.slimlogic.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Default is to whitelist mail, not delayed by milter-greylist-3.0 (server.hugovil.com [64.235.217.201]); Thu, 08 Jan 2009 15:18:29 -0500 (EST)
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Dec 2008 13:58:01 +0100
-Florian Fainelli <florian@openwrt.org> wrote:
+Linus,
 
-> (CC'ing linux-embedded)
-> 
-> Salut Hugo,
-> 
-> Le Friday 12 December 2008 21:03:14 Hugo Villeneuve, vous avez écrit :
-> > Hi,
-> > I have written some code to program a FPGA in Linux, for two
-> > different types of boards: one uses a serial interface (SPI) and
-> > the second a parallel interface. I have been able to sucessfully
-> > program both boards. I'm now trying to clean my code and make it
-> > more generic, as well as better in line with the Linux driver
-> > model. I would also like to include it in the mainline kernel if
-> > there is interest.
-> ...
-> What about something like that :
-> 
-> - fpgaload-core which contains all the code that can be shared
-> between the drivers like requesting firmware, providing sysfs
-> attributes, 
-> - fpgaload-spi would handle the low-level SPI connection
-> - fpgaload-par would handle the low-level parallel connection
-> 
-> fpgaload-ser and par would register with fpgaload-core and they could
-> register a fpga loading callback which is low-level specific for
-> instance. Platform code would instantiate the core driver. That way,
-> adding support for other loading protocols like slave serial or
-> master serial can be done easily.
+Please pull the following voltage regulator updates.
 
-Yes, but how I actually implement fpgaload_core, fpgaload_ser and
-fpgaload_par?
+Assorted core updates for improved error checks, ref counting, code
+size, documentation and registration. Minor fixes for the DA903x PMIC.  
 
-Bus driver?
-class driver?
-platform driver?
+The following changes since commit 9e42d0cf5020aaf217433cad1a224745241d212a:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/sparc-2.6
 
-I am not sure how I should implement things and how each low-level
-specific driver should register with the fpgaload_core driver...
+are available in the git repository at:
 
-Hugo V.
+  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
 
----------------
-Hugo Villeneuve
-www.hugovil.com
----------------
+David Brownell (6):
+      regulator: enable/disable refcounting
+      regulator: improved mode error checks
+      regulator: code shrink (v2)
+      regulator: sysfs attribute reduction (v2)
+      regulator: init/link earlier
+      regulator: catch some registration errors
+
+Kay Sievers (1):
+      regulator: struct device - replace bus_id with dev_name(), dev_set_name()
+
+Mark Brown (5):
+      regulator: Remove extraneous kerneldoc annotations
+      regulator: Clean up kerneldoc warnings
+      regulator: Add missing kerneldoc
+      regulator: Fix some kerneldoc rendering issues
+      regulator: Add basic DocBook manual
+
+Mike Rapoport (3):
+      regulator: da903x: add '\n' to error messages
+      regulator: da903x: make da903x_is_enabled return 0 or 1
+      regulator: move set_machine_constraints after regulator device initialization
+
+Randy Dunlap (1):
+      regulator: fix kernel-doc warnings
+
+ Documentation/ABI/testing/sysfs-class-regulator |  136 +++----
+ Documentation/DocBook/Makefile                  |    2 +-
+ Documentation/DocBook/regulator.tmpl            |  304 +++++++++++++++
+ drivers/Makefile                                |    4 +-
+ drivers/regulator/core.c                        |  474 ++++++++++++++---------
+ drivers/regulator/da903x.c                      |   12 +-
+ include/linux/regulator/consumer.h              |    8 +-
+ include/linux/regulator/driver.h                |   37 ++-
+ include/linux/regulator/machine.h               |   41 ++
+ 9 files changed, 746 insertions(+), 272 deletions(-)
+ create mode 100644 Documentation/DocBook/regulator.tmpl
+
+
