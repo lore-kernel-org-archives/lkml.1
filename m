@@ -1,114 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759036AbZAHEvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbZAHE6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759036AbZAHEvi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 23:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbZAHEvL
+	id S1757691AbZAHE6m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 23:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZAHE6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 23:51:11 -0500
-Received: from lists.laptop.org ([18.85.2.145]:41478 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754962AbZAHEvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 23:51:10 -0500
-Date: Wed, 7 Jan 2009 23:51:08 -0500
-From: Michael Stone <michael@laptop.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: RFC: Network privilege separation.
-Message-ID: <20090108045108.GL3164@didacte.laptop.org>
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <87mye2yg8a.fsf@basil.nowhere.org> <20090108023111.GJ3164@didacte.laptop.org> <20090108031042.GQ496@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20090108031042.GQ496@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Jan 2009 23:58:33 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40338 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbZAHE6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 23:58:32 -0500
+Date: Thu, 8 Jan 2009 13:57:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [RFC][PATCH 3/4] Memory controller soft limit organize cgroups
+Message-Id: <20090108135728.cdb20fe2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090108044108.GG7294@balbir.in.ibm.com>
+References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
+	<20090107184128.18062.96016.sendpatchset@localhost.localdomain>
+	<20090108101148.96e688f4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090108042558.GC7294@balbir.in.ibm.com>
+	<20090108132855.77d3d3d4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090108044108.GG7294@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 04:10:42AM +0100, Andi Kleen wrote:
->On Wed, Jan 07, 2009 at 09:31:11PM -0500, Michael Stone wrote:
->I suppose I don't understand your requirements very well.
+On Thu, 8 Jan 2009 10:11:08 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-In that case, allow me to try to state them more clearly so that you can better
-appreciate why your proposed solution is wholly unsatisfactory for my purposes.
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-08 13:28:55]:
+> 
+> > On Thu, 8 Jan 2009 09:55:58 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-08 10:11:48]:
+> > > > Hmm,  Could you clarify following ?
+> > > >   
+> > > >   - Usage of memory at insertsion and usage of memory at reclaim is different.
+> > > >     So, this *sorted* order by RB-tree isn't the best order in general.
+> > > 
+> > > True, but we frequently update the tree at an interval of HZ/4.
+> > > Updating at every page fault sounded like an overkill and building the
+> > > entire tree at reclaim is an overkill too.
+> > > 
+> > "sort" is not necessary.
+> > If this feature is implemented as background daemon,
+> > just select the worst one at each iteration is enough.
+> 
+> OK, definitely an alternative worth considering, but the trade-off is
+> lazy building (your suggestion), which involves actively seeing the
+> usage of all cgroups (and if they are large, O(c), c is number of
+> cgroups can be quite a bit) versus building the tree as and when the
+> fault occurs and controlled by some interval.
+> 
+I never think there will be "thousands" of memcg. O(c) is not so bad
+if it's on background.
 
-In short, I'm trying to provide a general-purpose facility for
+But usual cost of adding res_counter_soft_limit_excess(&mem->res); is big...
+This maintainance cost of tree is always necessary even while there are no
+memory shortage.
 
-   * limiting networking per _process_, not per user, 
+BTW, 
+- mutex is bad. Can you use mutex while __GFP_WAIT is unset ?
 
-   * with an api that requires no privilege to exercise, 
+- what happens when a big uncharge() occurs and no new charge() happens ?
+  please add
 
-   * which is suitable for widespread adoption by lots of Unix vendors and
-     related standards bodies,
+   +		mem = mem_cgroup_get_largest_soft_limit_exceeding_node();
+		if ( mem is still over soft limit )
+			do reclaim....
 
-   * which is atomic from userland's perspective (i.e. so that userland never
-     sees inconsistent or partial state)
+   at least.
 
-   * which requires no userland refcounting or gc to maintain on long-running
-     hosts
+-Kame
 
-   * which is brain-dead simple to use
 
-   * and which functions according to the standard Unix discretionary access
-     control paradigm; namely that 
-
-       + when your process has privileges, it can open resources (files,
-         sockets, fds, ...) for later use and
-
-       + when it drops privileges, it can still use any open resources that
-         it has descriptors for regardless of how it got them but
-
-       + when it drop privileges, it becomes unable to acquire new resources on
-         its own
-
-       + though other processes may still be able to send your process tokens
-         which give it access to resources which it couldn't open on its own.
-
-Does this help clarify the causes of my design choices?
-
->> * so far as I know, netfilter is only commonly used to filter IP traffic. 
->>   Can I really use it to limit connections to abstract unix sockets?
->
->No you can't. But is that really your requirement? 
-
-It's my first-draft proposal but it's not a hard requirement. I picked it from
-among several plausible alternate policies like:
-
-   * permit localhost/loopback IP and abstract unix sockets
-   * permit all unix sockets but no IP
-   * permit only filesystem-based unix sockets
-
-because it's the functionality that I personally want to be available to people
-writing privilege-separated software and because Mark Seaborn (the author of
-plash) criticised my previous choice of the second option in his review of one
-of my previous attempts to implement a similar facility:
-
-   http://lists.laptop.org/pipermail/security/2008-April/000391.html
-
-After considering the matter, I came to agree with his position that permitting
-low-privilege processes to connect to arbitrary "local" sockets is "not quite
-safe" on the grounds that such sockets may be excellent vectors for user-land
-privilege-escalation attacks.
-
-(NB: This time, though, I have been careful to leave some room in my proposed
-API for other people to implement other variations on this continuum by means
-of RLIMIT_NETWORK values between 0 and RLIM_INFINITY.)
-
-> Why limiting Unix sockets and not e.g. named pipes? 
-
-Named pipes, like non-abstract unix sockets, are manageable through the
-filesystem, e.g. by DAC and namespace manipulating tools like bind-mounts and
-chroots.
-
-> Unix sockets do not talk to the network.
-
-Depends on your definition of "network". For the purposes of this discussion,
-mine basically means "every sort of inter-process communication which is not
-naturally mediated by UNIX DAC."
-
-Regards,
-
-Michael
-
-P.S. - Thanks very much for your questions; I feel that they're definitely
-helping me to clarify my thinking and arguments.
