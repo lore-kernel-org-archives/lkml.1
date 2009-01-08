@@ -1,56 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbZAHNcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZAHNtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbZAHNcm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 08:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZAHNcc
+	id S1758755AbZAHNtQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 08:49:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZAHNs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 08:32:32 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:45802 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753421AbZAHNcb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 08:32:31 -0500
-Date: Thu, 8 Jan 2009 13:32:20 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Peter Moulder <pjrm@mail.internode.on.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?Q?=C9ric?= Piel <E.A.B.Piel@tudelft.nl>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH, resend] relatime: Let relatime update atime at least once per day
-Message-ID: <20090108133220.GA11254@srcf.ucam.org>
-References: <20081228152901.GB13565@srcf.ucam.org> <20090108122952.GA19743@mail.internode.on.net>
+	Thu, 8 Jan 2009 08:48:59 -0500
+Received: from styx.suse.cz ([82.119.242.94]:33054 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755439AbZAHNs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 08:48:59 -0500
+Date: Thu, 8 Jan 2009 14:48:57 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>
+Subject: Re: Is 386 processor still supported?
+In-Reply-To: <20090108132442.GB8015@localhost>
+Message-ID: <alpine.LNX.1.10.0901081446040.5377@jikos.suse.cz>
+References: <20090108120338.6b8b4567@zonk.pl> <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz> <20090108132442.GB8015@localhost>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090108122952.GA19743@mail.internode.on.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 11:29:53PM +1100, Peter Moulder wrote:
-> What was the fate of Ingo's previous patch[*1] to implement this (which,
-> incidentally, also included updates to documentation and made the interval
-> configurable as Éric Piel suggests) ?
+On Thu, 8 Jan 2009, Cyrill Gorcunov wrote:
 
-Nobody merged it and Ingo got bored of pushing it. I sent it earlier, 
-but nobody came up with an especially good argument for the 
-configurability and everyone seemed to want to paint the patch pink with 
-yellow polka dots, so I gave up and just sent a minimal one in the hope 
-that nobody could find anything to complain about.
+> Jiri I could be wrong but it seems __byte_spin_lock is implemented
+> under CONFIG_PARAVIRT and now referred under #else  /* !CONFIG_PARAVIRT */
+> At least I didn'y found additional implementaion in tree.
+> Did I miss anything?
 
-> Just a minor nit, but the patch description (not included in the patch itself)
-> "at least once a day" isn't particularly accurate given that the patch enforces
-> at least a day [minus a second or so] has elapsed since the last update.  The
-> description in the above-referenced patch "only once a day" better captures the
-> situation, I think.
+You're right, my bad. There is going to be some ifdef ugliness introduced 
+by this unfortunately, but on the other hand it's pretty straightforward.
 
-If mtime is changed then atime will be updated on the next access, so 
-you can easily have more than one atime update a day.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: x86: make spinlocks available on machines without xadd insn
+
+Current kernel wouldn't compile on ancient x86 machines that don't support
+xadd instruction, as ticket spinlocks implementation unconditionally uses
+it.
+
+On machines without CONFIG_X86_XADD, use old-style byte spinlock
+implementation instead.
+
+Reported-by: Adam Osuchowski <adwol@zonk.pl>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+--- 
+
+ arch/x86/include/asm/spinlock.h |   28 ++++++++++++++++++++++++----
+ 1 files changed, 24 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+index d17c919..1331333 100644
+--- a/arch/x86/include/asm/spinlock.h
++++ b/arch/x86/include/asm/spinlock.h
+@@ -172,10 +172,10 @@ static inline int __ticket_spin_is_contended(raw_spinlock_t *lock)
+ 	return (((tmp >> TICKET_SHIFT) - tmp) & ((1 << TICKET_SHIFT) - 1)) > 1;
+ }
+ 
+-#ifdef CONFIG_PARAVIRT
++#if defined(CONFIG_PARAVIRT) || !defined(CONFIG_X86_XADD)
+ /*
+  * Define virtualization-friendly old-style lock byte lock, for use in
+- * pv_lock_ops if desired.
++ * pv_lock_ops or for machines not supporting xadd instruction.
+  *
+  * This differs from the pre-2.6.24 spinlock by always using xchgb
+  * rather than decb to take the lock; this allows it to use a
+@@ -235,30 +235,50 @@ static inline void __byte_spin_unlock(raw_spinlock_t *lock)
+ 	smp_wmb();
+ 	bl->lock = 0;
+ }
+-#else  /* !CONFIG_PARAVIRT */
++#else
+ static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
+ {
++#ifdef CONFIG_X86_XADD
+ 	return __ticket_spin_is_locked(lock);
++#else
++	return __byte_spin_is_locked(lock);
++#endif
+ }
+ 
+ static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
+ {
++#ifdef CONFIG_X86_XADD
+ 	return __ticket_spin_is_contended(lock);
++#else
++	return __byte_spin_is_contended(lock);
++#endif
+ }
+ 
+ static __always_inline void __raw_spin_lock(raw_spinlock_t *lock)
+ {
++#ifdef CONFIG_X86_XADD
+ 	__ticket_spin_lock(lock);
++#else
++	__byte_spin_lock(lock);
++#endif
+ }
+ 
+ static __always_inline int __raw_spin_trylock(raw_spinlock_t *lock)
+ {
++#ifdef CONFIG_X86_XADD
+ 	return __ticket_spin_trylock(lock);
++#else
++	return __byte_spin_trylock(lock);
++#endif
+ }
+ 
+ static __always_inline void __raw_spin_unlock(raw_spinlock_t *lock)
+ {
++#ifdef CONFIG_X86_XADD
+ 	__ticket_spin_unlock(lock);
++#else
++	__byte_spin_unlock(lock);
++#endif
+ }
+ 
+ static __always_inline void __raw_spin_lock_flags(raw_spinlock_t *lock,
+@@ -267,7 +287,7 @@ static __always_inline void __raw_spin_lock_flags(raw_spinlock_t *lock,
+ 	__raw_spin_lock(lock);
+ }
+ 
+-#endif	/* CONFIG_PARAVIRT */
++#endif
+ 
+ static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
+ {
