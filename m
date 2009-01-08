@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762787AbZAHUDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbZAHUDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762787AbZAHUDG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 15:03:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762640AbZAHUCx
+	id S1762830AbZAHUDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 15:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbZAHUDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 15:02:53 -0500
-Received: from lazybastard.de ([212.112.238.170]:58583 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755056AbZAHUCw (ORCPT
+	Thu, 8 Jan 2009 15:03:25 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:43395 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757418AbZAHUDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 15:02:52 -0500
-Date: Thu, 8 Jan 2009 21:02:43 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] B+Tree library V2
-Message-ID: <20090108200243.GD24884@logfs.org>
-References: <20081026124643.GA1328@logfs.org> <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org> <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org> <20081101155958.GA28776@logfs.org> <1231376241.3545.96.camel@johannes> <20090108162429.GA24884@logfs.org> <1231434601.8398.9.camel@johannes>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1231434601.8398.9.camel@johannes>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 8 Jan 2009 15:03:24 -0500
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Chandru <chandru@in.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <200901081559.22204.chandru@in.ibm.com>
+References: <200812241325.49404.chandru@in.ibm.com>
+	 <200901071828.13719.chandru@in.ibm.com> <1231349125.23462.81.camel@nimitz>
+	 <200901081559.22204.chandru@in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 12:03:12 -0800
+Message-Id: <1231444992.23462.138.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 January 2009 18:10:01 +0100, Johannes Berg wrote:
-> On Thu, 2009-01-08 at 17:24 +0100, Jörn Engel wrote:
-> 
-> > If you want to open-code it, you can use btree_lookup_less().  I added
-> > that function sometime last month.  Basically something like this:
-> > 	key = btree_last(head, geo);
-> > 	while (key) {
-> > 		/* do something with key */
-> > 		key = btree_lookup_less(head, geo, key);
-> > 	}
-> 
-> Ok, so looking deeper into this, how about adding
-> 
-> #define btree_for_each_key(head, geo, key, tmp)	\
-> 	for (key = btree_last(head, geo), tmp = btree_get_prev_key(head, geo, key);
-> 	     key; key = tmp, tmp = btree_get_prev_key(head, geo, key))
+On Thu, 2009-01-08 at 15:59 +0530, Chandru wrote:
+> @@ -898,9 +899,17 @@ static void mark_reserved_regions_for_ni
+>                          * if reserved region extends past active region
+>                          * then trim size to active region
+>                          */
+> -                       if (end_pfn > node_ar.end_pfn)
+> +                       if (end_pfn > node_ar.end_pfn) {
+>                                 reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
+>                                         - (start_pfn << PAGE_SHIFT);
+> +                               /*
+> +                                * resize it further if the reservation could
+> +                                * cross the last page in this node
+> +                                */
+> +                               if (PFN_UP(physbase+reserve_size) >
+> +                                                node_end_pfn)
+> +                                       reserve_size -= PAGE_SIZE;
+> +                       }
+>                         /*
 
-[ Changed the function name above.  It really isn't a lookup, it returns
-a key, not a value.  My fault. ]
+Now I'm even more confused.  Could you please send a fully changelogged
+patch that describes the problem, and how this fixes it?  This just
+seems like an off-by-one error, which isn't what I thought we had before
+at all.
 
-Looks correct otherwise.  Probably needs a comment that without "tmp" we
-would skip a 0 key.  Or am I the only one who wants to simplify the code
-before spotting this little subtlety?
+I'm also horribly confused why PFN_UP is needed here.  Is 'physbase' not
+page aligned?  reserve_size looks like it *has* to be.  'end_pfn' is
+always (as far as I have ever seen in the kernel) the pfn of the page
+after the area we are interested in and we treat it as such in that
+function.  In the case of an unaligned physbase, that wouldn't be true.
 
-> (and possibly some type-checking variants that hardcode the geo)
-> 
-> Does that seem correct? And would it be possible to provide btree_last()
-> that takes an void ** and fills it with the last entry, and the same for
-> lookup_less(), so we can write btree_for_each_entry() too?
+Think of the case where we have a 1-byte reservation.  start_pfn will
+equal end_pfn and we won't go into that while loop at *all* and won't
+reserve anything.
 
-Not sure what you mean.  Something with the same effect as this?
+Does 'end_pfn' need fixing?
 
-#define btree_for_each_val(head, geo, key, val)				\
-	 for (key = btree_last(head, geo),				\
-	 		val = btree_lookup(head, geo, key);		\
-	 		val;						\
-			key = btree_get_prev_key(head, geo, key),	\
-			val = btree_lookup(head, geo, key))
+-- Dave
 
-Jörn
-
--- 
-Time? What's that? Time is only worth what you do with it.
--- Theo de Raadt
