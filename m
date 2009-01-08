@@ -1,90 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbZAHE6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbZAHE66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757691AbZAHE6m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 23:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZAHE6d
+	id S1758961AbZAHE66 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 23:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbZAHE6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 23:58:33 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40338 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbZAHE6c (ORCPT
+	Wed, 7 Jan 2009 23:58:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53548 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757506AbZAHE6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 23:58:32 -0500
-Date: Thu, 8 Jan 2009 13:57:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [RFC][PATCH 3/4] Memory controller soft limit organize cgroups
-Message-Id: <20090108135728.cdb20fe2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090108044108.GG7294@balbir.in.ibm.com>
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
-	<20090107184128.18062.96016.sendpatchset@localhost.localdomain>
-	<20090108101148.96e688f4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090108042558.GC7294@balbir.in.ibm.com>
-	<20090108132855.77d3d3d4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090108044108.GG7294@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 23:58:41 -0500
+Date: Wed, 7 Jan 2009 23:58:39 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Robert Richter <robert.richter@amd.com>
+Subject: [PATCH] ring_buffer: fix ring_buffer_event_length()
+Message-ID: <alpine.DEB.1.10.0901072356480.14345@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009 10:11:08 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-08 13:28:55]:
-> 
-> > On Thu, 8 Jan 2009 09:55:58 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-08 10:11:48]:
-> > > > Hmm,  Could you clarify following ?
-> > > >   
-> > > >   - Usage of memory at insertsion and usage of memory at reclaim is different.
-> > > >     So, this *sorted* order by RB-tree isn't the best order in general.
-> > > 
-> > > True, but we frequently update the tree at an interval of HZ/4.
-> > > Updating at every page fault sounded like an overkill and building the
-> > > entire tree at reclaim is an overkill too.
-> > > 
-> > "sort" is not necessary.
-> > If this feature is implemented as background daemon,
-> > just select the worst one at each iteration is enough.
-> 
-> OK, definitely an alternative worth considering, but the trade-off is
-> lazy building (your suggestion), which involves actively seeing the
-> usage of all cgroups (and if they are large, O(c), c is number of
-> cgroups can be quite a bit) versus building the tree as and when the
-> fault occurs and controlled by some interval.
-> 
-I never think there will be "thousands" of memcg. O(c) is not so bad
-if it's on background.
+Hi Ingo,
 
-But usual cost of adding res_counter_soft_limit_excess(&mem->res); is big...
-This maintainance cost of tree is always necessary even while there are no
-memory shortage.
+I added the Impact line. This probably should go into 2.6.29.
 
-BTW, 
-- mutex is bad. Can you use mutex while __GFP_WAIT is unset ?
+The following patch is in:
 
-- what happens when a big uncharge() occurs and no new charge() happens ?
-  please add
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
 
-   +		mem = mem_cgroup_get_largest_soft_limit_exceeding_node();
-		if ( mem is still over soft limit )
-			do reclaim....
+    branch: tip/devel
 
-   at least.
 
--Kame
+Robert Richter (1):
+      ring_buffer: fix ring_buffer_event_length()
 
+----
+ kernel/trace/ring_buffer.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+---------------------------
+commit 49c86f2104c25d36f1a44e569c08968f388da75d
+Author: Robert Richter <robert.richter@amd.com>
+Date:   Wed Jan 7 23:45:23 2009 +0100
+
+    ring_buffer: fix ring_buffer_event_length()
+    
+    Impact: fix to ring_buffer_event_length()
+    
+    Function ring_buffer_event_length() provides an interface to detect
+    the length of data stored in an entry. However, the length contains
+    offsets depending on the internal usage. This makes it unusable. This
+    patch fixes this and now ring_buffer_event_length() returns the
+    alligned length that has been used in ring_buffer_lock_reserve().
+    
+    Signed-off-by: Robert Richter <robert.richter@amd.com>
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index a9d9760..8b0daf0 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -168,7 +168,13 @@ rb_event_length(struct ring_buffer_event *event)
+  */
+ unsigned ring_buffer_event_length(struct ring_buffer_event *event)
+ {
+-	return rb_event_length(event);
++	unsigned length = rb_event_length(event);
++	if (event->type != RINGBUF_TYPE_DATA)
++		return length;
++	length -= RB_EVNT_HDR_SIZE;
++	if (length > RB_MAX_SMALL_DATA + sizeof(event->array[0]))
++                length -= sizeof(event->array[0]);
++	return length;
+ }
+ EXPORT_SYMBOL_GPL(ring_buffer_event_length);
+ 
 
