@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbZAHMzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZAHM4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759764AbZAHMzz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 07:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbZAHMzm
+	id S1759614AbZAHM4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 07:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759669AbZAHMzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 07:55:42 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40742 "EHLO mx2.redhat.com"
+	Thu, 8 Jan 2009 07:55:50 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40748 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754181AbZAHMzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 07:55:41 -0500
+	id S1759652AbZAHMzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 07:55:47 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 03/10] NOMMU: Delete askedalloc and realalloc variables [ver
-	#3]
+Subject: [PATCH 08/10] FLAT: Don't attempt to expand the userspace stack to
+	fill the space allocated [ver #3]
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: bernds_cb1@t-online.de, dhowells@redhat.com, rgetz@blackfin.uclinux.org,
        vapier.adi@gmail.com, lethal@linux-sh.org, linux-kernel@vger.kernel.org
-Date: Thu, 08 Jan 2009 12:54:02 +0000
-Message-ID: <20090108125402.28454.97719.stgit@warthog.procyon.org.uk>
+Date: Thu, 08 Jan 2009 12:54:27 +0000
+Message-ID: <20090108125427.28454.34772.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20090108125346.28454.90871.stgit@warthog.procyon.org.uk>
 References: <20090108125346.28454.90871.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,96 +31,113 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Delete the askedalloc and realalloc variables as nothing actually uses the
-value calculated.
+Stop the FLAT binfmt from attempting to expand the userspace stack and brk
+segments to fill the space actually allocated for it.  The space allocated may
+be rounded up by mmap(), and may be wasted.
+
+However, finding out how much space we actually obtained uses the contentious
+kobjsize() function which we'd like to get rid of as it doesn't necessarily
+work for all slab allocators.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 Tested-by: Mike Frysinger <vapier.adi@gmail.com>
 Acked-by: Paul Mundt <lethal@linux-sh.org>
 ---
 
- mm/nommu.c |   28 +---------------------------
- 1 files changed, 1 insertions(+), 27 deletions(-)
+ fs/binfmt_flat.c |   34 +++++++++++-----------------------
+ 1 files changed, 11 insertions(+), 23 deletions(-)
 
 
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 1c28ea3..23f355b 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -40,7 +40,6 @@ void *high_memory;
- struct page *mem_map;
- unsigned long max_mapnr;
- unsigned long num_physpages;
--unsigned long askedalloc, realalloc;
- atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50; /* default is 50% */
-@@ -1042,22 +1041,11 @@ unsigned long do_mmap_pgoff(struct file *file,
- 	/* okay... we have a mapping; now we have to register it */
- 	result = (void *) vma->vm_start;
- 
--	if (vma->vm_flags & VM_MAPPED_COPY) {
--		realalloc += kobjsize(result);
--		askedalloc += len;
--	}
--
--	realalloc += kobjsize(vma);
--	askedalloc += sizeof(*vma);
--
- 	current->mm->total_vm += len >> PAGE_SHIFT;
- 
- 	add_nommu_vma(vma);
- 
-  shared:
--	realalloc += kobjsize(vml);
--	askedalloc += sizeof(*vml);
--
- 	add_vma_to_mm(current->mm, vml);
- 
- 	up_write(&nommu_vma_sem);
-@@ -1124,14 +1112,8 @@ static void put_vma(struct mm_struct *mm, struct vm_area_struct *vma)
- 
- 			/* IO memory and memory shared directly out of the pagecache from
- 			 * ramfs/tmpfs mustn't be released here */
--			if (vma->vm_flags & VM_MAPPED_COPY) {
--				realalloc -= kobjsize((void *) vma->vm_start);
--				askedalloc -= vma->vm_end - vma->vm_start;
-+			if (vma->vm_flags & VM_MAPPED_COPY)
- 				kfree((void *) vma->vm_start);
--			}
--
--			realalloc -= kobjsize(vma);
--			askedalloc -= sizeof(*vma);
- 
- 			if (vma->vm_file) {
- 				fput(vma->vm_file);
-@@ -1177,8 +1159,6 @@ int do_munmap(struct mm_struct *mm, unsigned long addr, size_t len)
- 	put_vma(mm, vml->vma);
- 
- 	*parent = vml->next;
--	realalloc -= kobjsize(vml);
--	askedalloc -= sizeof(*vml);
- 	kfree(vml);
- 
- 	update_hiwater_vm(mm);
-@@ -1220,9 +1200,6 @@ void exit_mmap(struct mm_struct * mm)
- 		while ((tmp = mm->context.vmlist)) {
- 			mm->context.vmlist = tmp->next;
- 			put_vma(mm, tmp->vma);
--
--			realalloc -= kobjsize(tmp);
--			askedalloc -= sizeof(*tmp);
- 			kfree(tmp);
+diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+index 7bbd5c6..5cebf0b 100644
+--- a/fs/binfmt_flat.c
++++ b/fs/binfmt_flat.c
+@@ -417,8 +417,8 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 	unsigned long textpos = 0, datapos = 0, result;
+ 	unsigned long realdatastart = 0;
+ 	unsigned long text_len, data_len, bss_len, stack_len, flags;
+-	unsigned long len, reallen, memp = 0;
+-	unsigned long extra, rlim;
++	unsigned long len, memp = 0;
++	unsigned long memp_size, extra, rlim;
+ 	unsigned long *reloc = 0, *rp;
+ 	struct inode *inode;
+ 	int i, rev, relocs = 0;
+@@ -543,17 +543,10 @@ static int load_flat_file(struct linux_binprm * bprm,
  		}
  
-@@ -1276,9 +1253,6 @@ unsigned long do_mremap(unsigned long addr,
- 	/* all checks complete - do it */
- 	vma->vm_end = vma->vm_start + new_len;
+ 		len = data_len + extra + MAX_SHARED_LIBS * sizeof(unsigned long);
++		len = PAGE_ALIGN(len);
+ 		down_write(&current->mm->mmap_sem);
+ 		realdatastart = do_mmap(0, 0, len,
+ 			PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE, 0);
+-		/* Remap to use all availabe slack region space */
+-		if (realdatastart && (realdatastart < (unsigned long)-4096)) {
+-			reallen = kobjsize((void *)realdatastart);
+-			if (reallen > len) {
+-				realdatastart = do_mremap(realdatastart, len,
+-					reallen, MREMAP_FIXED, realdatastart);
+-			}
+-		}
+ 		up_write(&current->mm->mmap_sem);
  
--	askedalloc -= old_len;
--	askedalloc += new_len;
+ 		if (realdatastart == 0 || realdatastart >= (unsigned long)-4096) {
+@@ -591,21 +584,14 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 
+ 		reloc = (unsigned long *) (datapos+(ntohl(hdr->reloc_start)-text_len));
+ 		memp = realdatastart;
 -
- 	return vma->vm_start;
- }
- EXPORT_SYMBOL(do_mremap);
++		memp_size = len;
+ 	} else {
+ 
+ 		len = text_len + data_len + extra + MAX_SHARED_LIBS * sizeof(unsigned long);
++		len = PAGE_ALIGN(len);
+ 		down_write(&current->mm->mmap_sem);
+ 		textpos = do_mmap(0, 0, len,
+ 			PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE, 0);
+-		/* Remap to use all availabe slack region space */
+-		if (textpos && (textpos < (unsigned long) -4096)) {
+-			reallen = kobjsize((void *)textpos);
+-			if (reallen > len) {
+-				textpos = do_mremap(textpos, len, reallen,
+-					MREMAP_FIXED, textpos);
+-			}
+-		}
+ 		up_write(&current->mm->mmap_sem);
+ 
+ 		if (!textpos  || textpos >= (unsigned long) -4096) {
+@@ -622,7 +608,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 		reloc = (unsigned long *) (textpos + ntohl(hdr->reloc_start) +
+ 				MAX_SHARED_LIBS * sizeof(unsigned long));
+ 		memp = textpos;
+-
++		memp_size = len;
+ #ifdef CONFIG_BINFMT_ZFLAT
+ 		/*
+ 		 * load it all in and treat it like a RAM load from now on
+@@ -680,10 +666,12 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 		 * set up the brk stuff, uses any slack left in data/bss/stack
+ 		 * allocation.  We put the brk after the bss (between the bss
+ 		 * and stack) like other platforms.
++		 * Userspace code relies on the stack pointer starting out at
++		 * an address right at the end of a page.
+ 		 */
+ 		current->mm->start_brk = datapos + data_len + bss_len;
+ 		current->mm->brk = (current->mm->start_brk + 3) & ~3;
+-		current->mm->context.end_brk = memp + kobjsize((void *) memp) - stack_len;
++		current->mm->context.end_brk = memp + memp_size - stack_len;
+ 	}
+ 
+ 	if (flags & FLAT_FLAG_KTRACE)
+@@ -790,8 +778,8 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 
+ 	/* zero the BSS,  BRK and stack areas */
+ 	memset((void*)(datapos + data_len), 0, bss_len + 
+-			(memp + kobjsize((void *) memp) - stack_len -	/* end brk */
+-			libinfo->lib_list[id].start_brk) +		/* start brk */
++			(memp + memp_size - stack_len -		/* end brk */
++			libinfo->lib_list[id].start_brk) +	/* start brk */
+ 			stack_len);
+ 
+ 	return 0;
 
