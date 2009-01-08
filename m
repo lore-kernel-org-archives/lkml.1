@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZAHMhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbZAHMr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756899AbZAHMhg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 07:37:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbZAHMh1
+	id S1756800AbZAHMr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 07:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbZAHMrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 07:37:27 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48775 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753349AbZAHMh1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 07:37:27 -0500
-Date: Thu, 8 Jan 2009 12:36:19 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Milton Miller <miltonm@bga.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Benjiman Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       lkml <linux-kernel@vger.kernel.org>, Joe Peterson <joe@skyrush.com>
-Subject: Re: [PATCH 1/4] hvc_console: do not set low_latency
-Message-ID: <20090108123619.3543719f@lxorguk.ukuu.org.uk>
-In-Reply-To: <hvc-console-29-3-1@bga.com>
-References: <hvc-console-29-3@bga.com>
-	<hvc-console-29-3-1@bga.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Jan 2009 07:47:19 -0500
+Received: from tundra.namei.org ([65.99.196.166]:3702 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752489AbZAHMrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 07:47:18 -0500
+Date: Thu, 8 Jan 2009 23:46:03 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: David Howells <dhowells@redhat.com>
+cc: torvalds@osdl.org, akpm@linux-foundation.org, jirislaby@gmail.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] CRED: Fix commit_creds() on a process that has no mm
+In-Reply-To: <20090108111831.27076.81306.stgit@warthog.procyon.org.uk>
+Message-ID: <alpine.LRH.1.10.0901082344470.15751@tundra.namei.org>
+References: <20090108111831.27076.81306.stgit@warthog.procyon.org.uk>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> v2.6.16-rc1 via 33f0f88f1c51ae5c2d593d26960c760ea154c2e2
->     [PATCH] TTY layer buffering revamp
-> 
-> added this new api.
+On Thu, 8 Jan 2009, David Howells wrote:
 
-No - tty_flip_buffer_push is from 2.1.66 and with the same constraints
-from the day it was added.
+> Fix commit_creds()'s handling of a process that has no mm (such as one that is
+> calling or has called daemonize()).  commit_creds() should check to see if
+> task->mm is not NULL before calling set_dumpable() on it.
+
+This looks correct in its own right, and is available for Linus to pull 
+per below, but I'd also like to know that Jiri's problem is verified to be 
+fixed.
 
 
-> Having the flag set for purely polled drivers will save delaying
-> the work when receiving input for 1 jiffie.
-> 
-> 
-> Index: work.git/drivers/char/hvc_console.c
-> ===================================================================
-> --- work.git.orig/drivers/char/hvc_console.c	2009-01-08 03:01:24.000000000 -0600
-> +++ work.git/drivers/char/hvc_console.c	2009-01-08 03:01:51.000000000 -0600
-> @@ -318,7 +318,8 @@ static int hvc_open(struct tty_struct *t
->  	} /* else count == 0 */
->  
->  	tty->driver_data = hp;
-> -	tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
-> +	if (!hp->irq_requested)
-> +		tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
->  
->  	hp->tty = tty;
+The following changes since commit 9e42d0cf5020aaf217433cad1a224745241d212a:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/sparc-2.6
 
-Looks good to me
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
+
+David Howells (1):
+      CRED: Fix commit_creds() on a process that has no mm
+
+ kernel/cred.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
