@@ -1,155 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZAHF3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbZAHFkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbZAHF3r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 00:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZAHF3g
+	id S1757102AbZAHFkT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 00:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZAHFkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 00:29:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34254 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750962AbZAHF3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 00:29:35 -0500
-Date: Wed, 7 Jan 2009 21:29:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Robert Richter <robert.richter@amd.com>
-Subject: Re: [PATCH] ring_buffer: fix ring_buffer_event_length()
-Message-Id: <20090107212912.e2903579.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0901072356480.14345@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901072356480.14345@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 8 Jan 2009 00:40:05 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53157 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750876AbZAHFkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 00:40:03 -0500
+Subject: [git pull] Please pull powerpc.git next branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 16:39:46 +1100
+Message-Id: <1231393186.2142.47.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Jan 2009 23:58:39 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
+Hi Linus
 
->  kernel/trace/ring_buffer.c |    8 +++++++-
+The following changes since commit 9e42d0cf5020aaf217433cad1a224745241d212a:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/sparc-2.6
 
-<looks>
+are available in the git repository at:
 
-heavens, what a lot of inlining.  Looks like something from 1997 :)
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 
-Prove me wrong!
+Those are remaining bits for this merge window that didn't quite make it in
+the previous batch. Mostly arch/powerpc though you'll find a couple of
+new drivers: The long awaited PS3 video ram driver in drivers/mtd
+(David Woodhouse is happy for us to merge it via our tree) and the Cell
+Network Processor serial in drivers/serial (Alan Cox reviewed it)
 
+There's also a couple of one liner Kconfig fixe in drivers/scsi and
+drivers/serial for iseries related drivers.
 
-From: Andrew Morton <akpm@linux-foundation.org>
+I don't expect much more now. There may be a handful still pending
+from freescale that were waiting for dependent patches to go in via
+some maintainers, but at worst they can probably make -rc1. I will
+push the big u64 change from unsigned long to unsigned long long
+after that, along with a handful of related fixups.
 
-          text    data     bss     dec     hex filename
-before:  11320     228       8   11556    2d24 kernel/trace/ring_buffer.o
-after:   10592     228       8   10828    2a4c kernel/trace/ring_buffer.o
+Please let me know what I screwed up this time !
 
-Also: free_page(0) is legal.
+Cheers,
+Ben.
 
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Anton Vorontsov (14):
+      powerpc: Implement get_brgfreq() and get_baudrate() stubs
+      powerpc/83xx: Fix sparse warnings in board files
+      powerpc/83xx: Fix sparse warnings in mpc836x_mds.c
+      powerpc/qe: Implement QE Pin Multiplexing API
+      powerpc: Add device tree bindings for BCSR GPIO banks
+      powerpc: Implement GPIO driver for simple memory-mapped banks
+      powerpc/83xx: Add USB Host/Gadget support for MPC8360E-MDS boards
+      powerpc/83xx: Add USB Host support for MPC8360E-RDK boards
+      powerpc/fsl_pci: Fix sparse warnings
+      powerpc/83xx: Fix few build errors with CONFIG_QUICC_ENGINE=n
+      powerpc/qe: Fix few build errors with CONFIG_QUICC_ENGINE=n
+      powerpc/qe: Select QE_USB with USB_GADGET_FSL_QE
+      powerpc/kdump: Use ppc_save_regs() in crash_setup_regs()
+      powerpc/mm: Make clear_fixmap() actually work
 
- kernel/trace/ring_buffer.c |   23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+Becky Bruce (1):
+      powerpc/86xx: Update 8641hpcn dts file to match latest u-boot
 
-diff -puN kernel/trace/ring_buffer.c~kernel-trace-ring_bufferc-reduce-inlining kernel/trace/ring_buffer.c
---- a/kernel/trace/ring_buffer.c~kernel-trace-ring_bufferc-reduce-inlining
-+++ a/kernel/trace/ring_buffer.c
-@@ -133,7 +133,7 @@ enum {
- };
- 
- /* inline for ring buffer fast paths */
--static inline unsigned
-+static unsigned
- rb_event_length(struct ring_buffer_event *event)
- {
- 	unsigned length;
-@@ -173,7 +173,7 @@ unsigned ring_buffer_event_length(struct
- EXPORT_SYMBOL_GPL(ring_buffer_event_length);
- 
- /* inline for ring buffer fast paths */
--static inline void *
-+static void *
- rb_event_data(struct ring_buffer_event *event)
- {
- 	BUG_ON(event->type != RINGBUF_TYPE_DATA);
-@@ -223,10 +223,9 @@ static void rb_init_page(struct buffer_d
-  * Also stolen from mm/slob.c. Thanks to Mathieu Desnoyers for pointing
-  * this issue out.
-  */
--static inline void free_buffer_page(struct buffer_page *bpage)
-+static void free_buffer_page(struct buffer_page *bpage)
- {
--	if (bpage->page)
--		free_page((unsigned long)bpage->page);
-+	free_page((unsigned long)bpage->page);
- 	kfree(bpage);
- }
- 
-@@ -805,7 +804,7 @@ rb_event_index(struct ring_buffer_event 
- 	return (addr & ~PAGE_MASK) - (PAGE_SIZE - BUF_PAGE_SIZE);
- }
- 
--static inline int
-+static int
- rb_is_commit(struct ring_buffer_per_cpu *cpu_buffer,
- 	     struct ring_buffer_event *event)
- {
-@@ -819,7 +818,7 @@ rb_is_commit(struct ring_buffer_per_cpu 
- 		rb_commit_index(cpu_buffer) == index;
- }
- 
--static inline void
-+static void
- rb_set_commit_event(struct ring_buffer_per_cpu *cpu_buffer,
- 		    struct ring_buffer_event *event)
- {
-@@ -844,7 +843,7 @@ rb_set_commit_event(struct ring_buffer_p
- 	local_set(&cpu_buffer->commit_page->page->commit, index);
- }
- 
--static inline void
-+static void
- rb_set_commit_to_write(struct ring_buffer_per_cpu *cpu_buffer)
- {
- 	/*
-@@ -890,7 +889,7 @@ static void rb_reset_reader_page(struct 
- 	cpu_buffer->reader_page->read = 0;
- }
- 
--static inline void rb_inc_iter(struct ring_buffer_iter *iter)
-+static void rb_inc_iter(struct ring_buffer_iter *iter)
- {
- 	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
- 
-@@ -920,7 +919,7 @@ static inline void rb_inc_iter(struct ri
-  * and with this, we can determine what to place into the
-  * data field.
-  */
--static inline void
-+static void
- rb_update_event(struct ring_buffer_event *event,
- 			 unsigned type, unsigned length)
- {
-@@ -958,7 +957,7 @@ rb_update_event(struct ring_buffer_event
- 	}
- }
- 
--static inline unsigned rb_calculate_event_length(unsigned length)
-+static unsigned rb_calculate_event_length(unsigned length)
- {
- 	struct ring_buffer_event event; /* Used only for sizeof array */
- 
-@@ -1432,7 +1431,7 @@ int ring_buffer_write(struct ring_buffer
- }
- EXPORT_SYMBOL_GPL(ring_buffer_write);
- 
--static inline int rb_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer)
-+static int rb_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer)
- {
- 	struct buffer_page *reader = cpu_buffer->reader_page;
- 	struct buffer_page *head = cpu_buffer->head_page;
-_
+Benjamin Herrenschmidt (4):
+      Merge commit 'kumar/kumar-next' into next
+      Merge commit 'origin/master' into next
+      powerpc/pci: Reserve legacy regions on PCI
+      powerpc: Fix missing semicolons in mmu_decl.h
+
+Benjamin Krill (1):
+      serial: Add driver for the Cell Network Processor serial port NWP device
+
+Dave Hansen (4):
+      powerpc/mm: Add better comment on careful_allocation()
+      powerpc/mm:: Cleanup careful_allocation(): bootmem already panics
+      powerpc/mm: Make careful_allocation() return virtual addrs
+      powerpc/mm: Cleanup careful_allocation(): consolidate memset()
+
+Dave Liu (1):
+      powerpc: Remove the redundant _tlbil_pid at SMP case
+
+Geert Uytterhoeven (1):
+      mtd/ps3vram: Add modalias support to the ps3vram driver
+
+Geoff Levand (5):
+      mtd/ps3vram: Remove ps3vram debug routines
+      mtd/ps3vram: Cleanup ps3vram driver messages
+      mtd/ps3vram: Use proper kernel types
+      mtd/ps3vram: Use msleep in waits
+      mtd/ps3vram: Use _PAGE_NO_CACHE in memory ioremap
+
+Grant Likely (1):
+      powerpc: Copy bootable images in the default install script
+
+Ingo Molnar (4):
+      powerpc: Use correct type in prom_init.c
+      powerpc/cell: Use correct types in beat files
+      powerpc/cell: Fix some u64 vs. long types
+      powerpc/pasemi: local_irq_save uses an unsigned long
+
+Jim Paris (1):
+      mtd/ps3vram: Add ps3vram driver for accessing video RAM as MTD
+
+Julia Lawall (3):
+      powerpc/85xx: Add local_irq_restore in error handling code
+      powerpc/52xx: Use DEFINE_SPINLOCK
+      powerpc/pasemi: Use DEFINE_SPINLOCK
+
+Kamalesh Babulal (1):
+      powerpc: Fix iseries drivers build failure without CONFIG_VIOPATH
+
+Kumar Gala (3):
+      powerpc/85xx: Enable SMP support
+      powerpc/85xx: Add SMP support to MPC8572 DS
+      powerpc: Export cacheable_memzero as its now used in a driver
+
+Matthias Fuchs (1):
+      powerpc: Add ioctls for RS485 mode control of serial drivers
+
+Michael Ellerman (1):
+      powerpc/iseries: Kexec is known not to work on iseries
+
+Mohan Kumar M (1):
+      powerpc: Enable RELOCATABLE option for CRASH_DUMP
+
+Nathan Lynch (1):
+      powerpc: Rewrite sysfs processor cache info code
+
+Nicolas Palix (1):
+      powerpc/powermac: Add missing of_node_put
+
+Paul Mackerras (1):
+      powerpc: Fix pciconfig_iobase system call on PCI-Express powermac
+
+Stephen Rothwell (4):
+      powerpc/cell: Bitops work on unsigned longs
+      powerpc/cell: local_irq_save takes an unsigned long
+      powerpc: Remove unnecessary casts
+      powerpc/cell: Fix the prototype of create_vma_map()
+
+Steven Rostedt (1):
+      powerpc: enable dynamic ftrace
+
+ Documentation/powerpc/dts-bindings/fsl/board.txt   |   32 +-
+ MAINTAINERS                                        |    6 +
+ arch/powerpc/Kconfig                               |    5 +-
+ arch/powerpc/boot/Makefile                         |    2 +-
+ arch/powerpc/boot/dts/mpc836x_mds.dts              |   43 +-
+ arch/powerpc/boot/dts/mpc836x_rdk.dts              |   19 +-
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts             |   56 +-
+ arch/powerpc/boot/install.sh                       |   14 +-
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig     |   43 +-
+ arch/powerpc/include/asm/ioctls.h                  |    2 +
+ arch/powerpc/include/asm/kexec.h                   |   55 --
+ arch/powerpc/include/asm/ps3.h                     |    2 +
+ arch/powerpc/include/asm/qe.h                      |   37 +-
+ arch/powerpc/include/asm/qe_ic.h                   |   21 +-
+ arch/powerpc/include/asm/spu.h                     |    2 +-
+ arch/powerpc/kernel/Makefile                       |    2 +-
+ arch/powerpc/kernel/cacheinfo.c                    |  837 ++++++++++++++++++++
+ arch/powerpc/kernel/cacheinfo.h                    |    8 +
+ arch/powerpc/kernel/pci-common.c                   |   71 ++-
+ arch/powerpc/kernel/pci_64.c                       |    9 +-
+ arch/powerpc/kernel/ppc_ksyms.c                    |    1 +
+ arch/powerpc/kernel/prom.c                         |   14 +-
+ arch/powerpc/kernel/prom_init.c                    |    2 +-
+ arch/powerpc/kernel/sysfs.c                        |  300 +-------
+ arch/powerpc/mm/mmu_decl.h                         |    6 +-
+ arch/powerpc/mm/numa.c                             |   62 +-
+ arch/powerpc/mm/pgtable_32.c                       |    3 +-
+ arch/powerpc/mm/tlb_nohash.c                       |    3 +-
+ arch/powerpc/oprofile/cell/pr_util.h               |    2 +-
+ arch/powerpc/platforms/52xx/mpc52xx_common.c       |    2 +-
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c          |    2 +-
+ arch/powerpc/platforms/83xx/mpc832x_mds.c          |    9 +-
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c          |    5 +-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c          |   81 ++-
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c          |    6 +-
+ arch/powerpc/platforms/83xx/mpc837x_mds.c          |    1 -
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c          |    2 -
+ arch/powerpc/platforms/83xx/mpc83xx.h              |    1 +
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c           |    7 +
+ arch/powerpc/platforms/85xx/smp.c                  |    1 +
+ arch/powerpc/platforms/Kconfig                     |   11 +
+ arch/powerpc/platforms/Kconfig.cputype             |    2 +-
+ arch/powerpc/platforms/cell/beat_htab.c            |   21 +-
+ arch/powerpc/platforms/cell/beat_udbg.c            |    4 +-
+ .../powerpc/platforms/cell/cbe_cpufreq_pervasive.c |    2 +-
+ arch/powerpc/platforms/cell/interrupt.c            |    2 +-
+ arch/powerpc/platforms/cell/io-workarounds.c       |    4 +-
+ arch/powerpc/platforms/cell/iommu.c                |    4 +-
+ arch/powerpc/platforms/iseries/Kconfig             |    5 +-
+ arch/powerpc/platforms/iseries/setup.c             |   11 +
+ arch/powerpc/platforms/pasemi/cpufreq.c            |    2 +-
+ arch/powerpc/platforms/pasemi/dma_lib.c            |    2 +-
+ arch/powerpc/platforms/powermac/pci.c              |    2 +
+ arch/powerpc/platforms/powermac/time.c             |   11 +-
+ arch/powerpc/platforms/ps3/device-init.c           |   37 +
+ arch/powerpc/sysdev/Makefile                       |    1 +
+ arch/powerpc/sysdev/fsl_pci.c                      |    7 +-
+ arch/powerpc/sysdev/fsl_soc.h                      |    5 +
+ arch/powerpc/sysdev/qe_lib/Kconfig                 |    3 +-
+ arch/powerpc/sysdev/qe_lib/gpio.c                  |  195 +++++
+ arch/powerpc/sysdev/simple_gpio.c                  |  155 ++++
+ arch/powerpc/sysdev/simple_gpio.h                  |   12 +
+ drivers/char/Kconfig                               |    1 +
+ drivers/char/hvc_beat.c                            |    4 +-
+ drivers/mtd/devices/Kconfig                        |    7 +
+ drivers/mtd/devices/Makefile                       |    1 +
+ drivers/mtd/devices/ps3vram.c                      |  768 ++++++++++++++++++
+ drivers/scsi/Kconfig                               |    1 +
+ drivers/serial/Kconfig                             |   19 +-
+ drivers/serial/Makefile                            |    1 +
+ drivers/serial/nwpserial.c                         |  475 +++++++++++
+ drivers/serial/of_serial.c                         |   19 +
+ include/linux/nwpserial.h                          |   18 +
+ include/linux/serial_core.h                        |    3 +
+ 74 files changed, 3089 insertions(+), 502 deletions(-)
+ create mode 100644 arch/powerpc/kernel/cacheinfo.c
+ create mode 100644 arch/powerpc/kernel/cacheinfo.h
+ create mode 100644 arch/powerpc/sysdev/simple_gpio.c
+ create mode 100644 arch/powerpc/sysdev/simple_gpio.h
+ create mode 100644 drivers/mtd/devices/ps3vram.c
+ create mode 100644 drivers/serial/nwpserial.c
+ create mode 100644 include/linux/nwpserial.h
+
 
