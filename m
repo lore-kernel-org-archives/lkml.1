@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZAHTqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbZAHTq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbZAHTqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbZAHTph
+	id S1762104AbZAHTq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZAHTqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:45:37 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:20231 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753146AbZAHTpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:45:33 -0500
-Date: Thu, 8 Jan 2009 20:44:24 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
-       Ben Mansell <ben@zeus.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090108194424.GE32491@kernel.dk>
-References: <20090108173028.GA22531@1wt.eu>
+	Thu, 8 Jan 2009 14:46:47 -0500
+Received: from lazybastard.de ([212.112.238.170]:52996 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753439AbZAHTqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 14:46:46 -0500
+Date: Thu, 8 Jan 2009 20:46:38 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] B+Tree library V2
+Message-ID: <20090108194638.GC24884@logfs.org>
+References: <20081026124643.GA1328@logfs.org> <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org> <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org> <20081101155958.GA28776@logfs.org> <1231376241.3545.96.camel@johannes> <20090108162429.GA24884@logfs.org> <1231433404.8398.1.camel@johannes>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090108173028.GA22531@1wt.eu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1231433404.8398.1.camel@johannes>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08 2009, Willy Tarreau wrote:
-> Jens,
+On Thu, 8 January 2009 17:50:04 +0100, Johannes Berg wrote:
 > 
-> here's the other patch I was talking about, for better behaviour of
-> non-blocking splice(). Ben Mansell also confirms similar improvements
-> in his tests, where non-blocking splice() initially showed half of
-> read()/write() performance. Ben, would you mind adding a Tested-By
-> line ?
+> I see this:
+> 
+> 
+> - * Second trick is to special-case the key "0" or NUL.  As seen above, this
+> - * value indicates an unused slot, so such a value should not be stored in the
+> - * tree itself.  Instead it is stored in the null_ptr field in the btree_head.
+> 
+> Does that mean that wasn't true, and I can store a 0 key?
 
-Looks very good to me, I don't see any valid reason to have that !timeo
-break. So feel free to add my acked-by to that patch and send it to
-Dave.
+Ahh, don't look at that!  The embarrassment is unbearable!  Go away!
 
-> 
-> Also, please note that this is unrelated to the corruption bug I reported
-> and does not fix it.
-> 
-> Regards,
-> Willy
-> 
-> From fafe76713523c8e9767805cfdc7b73323d7bf180 Mon Sep 17 00:00:00 2001
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Thu, 8 Jan 2009 17:10:13 +0100
-> Subject: [PATCH] tcp: splice as many packets as possible at once
-> 
-> Currently, in non-blocking mode, tcp_splice_read() returns after
-> splicing one segment regardless of the len argument. This results
-> in low performance and very high overhead due to syscall rate when
-> splicing from interfaces which do not support LRO.
-> 
-> The fix simply consists in not breaking out of the loop after the
-> first read. That way, we can read up to the size requested by the
-> caller and still return when there is no data left.
-> 
-> Performance has significantly improved with this fix, with the
-> number of calls to splice() divided by about 20, and CPU usage
-> dropped from 100% to 75%.
-> 
-> Signed-off-by: Willy Tarreau <w@1wt.eu>
-> ---
->  net/ipv4/tcp.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-> index 35bcddf..80261b4 100644
-> --- a/net/ipv4/tcp.c
-> +++ b/net/ipv4/tcp.c
-> @@ -615,7 +615,7 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
->  		lock_sock(sk);
->  
->  		if (sk->sk_err || sk->sk_state == TCP_CLOSE ||
-> -		    (sk->sk_shutdown & RCV_SHUTDOWN) || !timeo ||
-> +		    (sk->sk_shutdown & RCV_SHUTDOWN) ||
->  		    signal_pending(current))
->  			break;
->  	}
-> -- 
-> 1.6.0.3
-> 
+Yes, I used to have a special exception for a 0 key.  But I also have
+a special exception for a NULL value and can test against that instead
+of testing against a 0 key.  It is even faster, because the value is not
+variable-sized.  In hindsight it is hard to explain why I ever did that.
+
+Jörn
 
 -- 
-Jens Axboe
-
+Unless something dramatically changes, by 2015 we'll be largely
+wondering what all the fuss surrounding Linux was really about.
+-- Rob Enderle
