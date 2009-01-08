@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZAHOlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbZAHOns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760067AbZAHOlR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 09:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZAHOlD
+	id S1760259AbZAHOns (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 09:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZAHOnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 09:41:03 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56199 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170AbZAHOlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 09:41:01 -0500
-Date: Thu, 8 Jan 2009 15:40:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Robert Richter <robert.richter@amd.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] ring_buffer: fix ring_buffer_event_length()
-Message-ID: <20090108144046.GB18120@elte.hu>
-References: <alpine.DEB.1.10.0901072356480.14345@gandalf.stny.rr.com> <20090108115958.GB1539@elte.hu> <alpine.DEB.1.10.0901080927340.22642@gandalf.stny.rr.com>
+	Thu, 8 Jan 2009 09:43:40 -0500
+Received: from rv-out-0506.google.com ([209.85.198.233]:26133 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbZAHOnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 09:43:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=AoFKpKZsNi8gnlGcAD72taR1ofkRJSSvXfgszVti6z1OZiVY7E/OInSQtQEUNGCnWX
+         1trZsGEd4Y0c80Xwj66/k0bmoN5Lu73sfX1c9Gk5WL2Hfz9nmusmU7P7yTJJ3ARjqzFA
+         I/A/kT3YoYAI0BYpQZF945bpAcYDN+ouSHYPs=
+Message-ID: <3f9a31f40901080643i4a355168gcdf12ea706c34e3b@mail.gmail.com>
+Date: Thu, 8 Jan 2009 20:13:38 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: mpparse.c fix style problems
+Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "x86 maintainers" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090104172319.GA1238@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901080927340.22642@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1230723533.3738.8.camel@jaswinder.satnam>
+	 <20090102172150.GC6759@elte.hu>
+	 <3f9a31f40901040917i52df1ef5i7d86ddee05d4d0b1@mail.gmail.com>
+	 <20090104172319.GA1238@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Ingo,
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+On Sun, Jan 4, 2009 at 10:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+>
+>>
+>> Currently I rename fields of few mpc_X structures from
+>> arch/x86/include/asm/mpspec_def.h. In this file struct
+>> intel_mp_floating is still remaining with mpf_X fields, Is this also
+>> need to be fixed ? if yes then mpf_intel name is OK ?
+>>
 
-> 
-> On Thu, 8 Jan 2009, Ingo Molnar wrote:
-> > 
-> > That is a pretty useless duplication of the subject line, so i dropped it. 
-> > When the subject line explains the practical impact already, there's no 
-> > need to add the impact line.
-> 
-> Actually, Frederic and I had a discussion about a duplicate Impact line. 
-> Perhaps someone is searching the git log on "Impact:" looking for all 
-> fixes. Perhaps just a simple:
-> 
-> Impact: fix
-> 
-> would be sufficient?
+I send :
+[PATCH -tip 1/2] x86: rename intel_mp_floating to mpf_intel
+[PATCH -tip 2/2] x86: rename all fields of mpf_intel mpf_X to X
 
-hm, okay - but it should be somewhat different. The impact line should 
-really be a 'description of impact/risk'. That overlaps subject lines some 
-of the time - but often not. So we could do something more specific like:
+Is this OK ?
 
-  Impact: change/fix (unused) ring-buffer API to be more useful
+>> Similarly in arch/x86/include/asm/io_apic.h :
+>> 1. struct mp_config_ioapic with mp_X fields (what name will be best ?)
+>> 2. struct mp_config_intsrc with mp_X fields
+>>
+>> These are also used in arch/x86/kernel/mpparse.c
+>>
+>> Please let me know should I fix mp_X things first or should I proceed
+>> further in mpparse.c as per your suggestions.
+>
+> i think those should be standardized to mpc_X too, and the fields should
+> lose their mp_ prefix.
+>
 
-(For future commits.)
+struct mpc_ioapic and struct mpc_intsrc is based on MultiProcessor
+Specification Version 1.4
 
-	Ingo
+But I am not able to find the specification Manual of:
+
+struct mp_config_ioapic and struct mp_config_intsrc.
+(arch/x86/include/asm/io_apic.h)
+
+Can you please point me out why the fields of struct mp_config_ioapic
+and struct mp_config_intsrc are different from MultiProcessor
+Specification Version 1.4
+
+Thanks
+--
+JSR
