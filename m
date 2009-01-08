@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZAHKMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbZAHKNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbZAHKMW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 05:12:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZAHKMO
+	id S1758346AbZAHKNl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 05:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZAHKNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 05:12:14 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:38385 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbZAHKMN (ORCPT
+	Thu, 8 Jan 2009 05:13:33 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:45520 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbZAHKNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 05:12:13 -0500
-Date: Thu, 8 Jan 2009 19:08:18 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com,
-       balbir@linux.vnet.ibm.com, lizf@cn.fujitsu.com, menage@google.com,
-       nishimura@mxp.nes.nec.co.jp
-Subject: [RFC][PATCH 0/4] some memcg fixes
-Message-Id: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 8 Jan 2009 05:13:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=eSmH6utueTY5q6iMDTry+pB4y+v/wBPBM2rBdi5SqPtCDFYnAa9/4pwA9z76Yi7ANa
+         ezB6VGXHLLKTxDPU3GA1hV+8FBtEypO77Z68YiNrr6TX3VRdjpPc/zYfeAdJjhLMy5/l
+         /4epk1JGQ2NCLpqqS/kBwNbv6qWlB0T4Z8I6k=
+Subject: Re: [PATCH 1/3] w35und: Move ETH_LENGTH_OF_ADDRESS to wbhal_s.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Pavel Machek <pavel@suse.cz>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1231408613.9373.5.camel@penberg-laptop>
+References: <Pine.LNX.4.64.0901081130160.15334@melkki.cs.Helsinki.FI>
+	 <1231408018.5539.6.camel@brick>  <1231408613.9373.5.camel@penberg-laptop>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 02:13:30 -0800
+Message-Id: <1231409610.5539.7.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu, 2009-01-08 at 11:56 +0200, Pekka Enberg wrote:
+> On Thu, 2009-01-08 at 01:46 -0800, Harvey Harrison wrote:
+> > On Thu, 2009-01-08 at 11:30 +0200, Pekka J Enberg wrote:
+> > > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> > >  
+> > > +#define ETH_LENGTH_OF_ADDRESS 6
+> > 
+> > Or just use ETH_ALEN like the rest of the kernel and drop this guy.
+> 
+> Even better, thanks Harvey! Greg, please use this one instead. The rest
+> of the series is unaffected by the changes in this patch.
+> 
+> >From c849ed5b5e68953a72f8dc43066513f118822f94 Mon Sep 17 00:00:00 2001
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> Date: Thu, 8 Jan 2009 11:10:06 +0200
+> Subject: [PATCH] w35und: convert code to use ETH_ALEN
+> 
+> As suggested by Harvey Harrison, convert driver to use ETH_ALEN and kill a
+> private macro from common.h that is used for the same thing.
 
-These are patches that I've been testing.
+Untested, but obviously ACK the approach :-)
 
-They survived my test(rmdir aftre task move under memory pressure
-and page migration) w/o big problem(except oom) for hours
-in both use_hierarchy==0/1 case.
+Harvey
 
-I want them go in 2.6.29.
-
-They are based on mmotm-2009-01-05-12-50.
-
-[1/4] fix for mem_cgroup_get_reclaim_stat_from_page
-
-[2/4] fix error path of mem_cgroup_move_parent
-
-[3/4] fix for mem_cgroup_hierarchical_reclaim
-
-[4/4] make oom less frequently
-
-
-I think 1 and 2 are ok.
-I'll update them based on comments.
-
-
-Thanks,
-Daisuke Nishimura.
