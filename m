@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762732AbZAHT6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762658AbZAHT5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762732AbZAHT6I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762306AbZAHT5c
+	id S1762658AbZAHT5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762174AbZAHT52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:57:32 -0500
-Received: from styx.suse.cz ([82.119.242.94]:40421 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762242AbZAHT5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:57:30 -0500
-Date: Thu, 8 Jan 2009 20:57:28 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Mason <chris.mason@oracle.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, peterz@infradead.org, jack@suse.cz,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de
-Subject: Re: Increase dirty_ratio and dirty_background_ratio?
-Message-ID: <20090108195728.GC14560@duck.suse.cz>
-References: <alpine.LFD.2.00.0901070833430.3057@localhost.localdomain> <20090107.125133.214628094.davem@davemloft.net> <20090108030245.e7c8ceaf.akpm@linux-foundation.org> <20090108.082413.156881254.davem@davemloft.net> <alpine.LFD.2.00.0901080842180.3283@localhost.localdomain> <1231433701.14304.24.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080858500.3283@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901080858500.3283@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 8 Jan 2009 14:57:28 -0500
+Received: from lennon.multicasttech.com ([63.105.122.7]:2721 "EHLO
+	multicasttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760499AbZAHT51 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 14:57:27 -0500
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Jan 2009 14:57:27 EST
+Cc: alan@lxorguk.ukuu.org.uk, david@lang.hm, hancockr@shaw.ca,
+       kyle@moffetthome.net, slashdot@jameshallam.info, goodgerster@gmail.com,
+       mayer@ntp.isc.org, davidn@davidnewall.com, linux-kernel@vger.kernel.org,
+       ntpwg@lists.ntp.isc.org, pretzalz@techhouse.org,
+       burdell@iruntheinter.net, linasvepstas@gmail.com, nick@nick-andrew.net,
+       jeff@kosowsky.org
+Message-Id: <9981A902-73ED-44B9-87B5-803621BF307B@multicasttech.com>
+From: Marshall Eubanks <tme@multicasttech.com>
+To: "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <20090108.080229.1159156694.imp@bsdimp.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on new years 2008-2009
+Date: Thu, 8 Jan 2009 13:57:24 -0500
+References: <496579C2.5050800@ntp.isc.org> <20090107.214220.-233694826.imp@bsdimp.com> <20090108104854.2dbc41b1@lxorguk.ukuu.org.uk> <20090108.080229.1159156694.imp@bsdimp.com>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 08-01-09 09:05:01, Linus Torvalds wrote:
-> On Thu, 8 Jan 2009, Chris Mason wrote:
-> > 
-> > Does it make sense to hook into kupdate?  If kupdate finds it can't meet
-> > the no-data-older-than 30 seconds target, it lowers the sync/async combo
-> > down to some reasonable bottom.  
-> > 
-> > If it finds it is going to sleep without missing the target, raise the
-> > combo up to some reasonable top.
-> 
-> I like autotuning, so that sounds like an intriguing approach. It's worked 
-> for us before (ie VM).
-> 
-> That said, 30 seconds sounds like a _loong_ time for something like this. 
-> I'd use the normal 5-second dirty_writeback_interval for this: if we can't 
-> clean the whole queue in that normal background writeback interval, then 
-> we try to lower the tagets. We already have that "congestion_wait()" thing 
-> there, that would be a logical place, methinks.
-  But I think there are workloads for which this is suboptimal to say the
-least. Imagine you do some crazy LDAP database crunching or other similar load
-which randomly writes to a big file (big means it's size is rougly
-comparable to your available memory). Kernel finds pdflush isn't able to
-flush the data fast enough so we decrease dirty limits. This results in
-even more agressive flushing but that makes things even worse (in a sence
-that your application runs slower and the disk is busy all the time anyway).
-This is the kind of load where we observe problems currently.
-  Ideally we could observe that we write out the same pages again and again
-(or even pages close to them) and in that case be less agressive about
-writeback on the file. But it feels a bit overcomplicated...
 
-> I'm not sure how to raise them, though. We don't want to raise any limits 
-> just because the user suddenly went idle. I think the raising should 
-> happen if we hit the sync/async ratio, and we haven't lowered in the last 
-> 30 seconds or something like that.
+On Jan 8, 2009, at 10:02 AM, M. Warner Losh wrote:
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> In message: <20090108104854.2dbc41b1@lxorguk.ukuu.org.uk>
+>            Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> : > On FreeBSD, Solaris and Digital Unix, I'll point out, that jumping
+> : > backwards is used, and has been used since at least 1994.  So  
+> saying
+> : > it isn't used in the world today is flat out wrong.
+> :
+> : I stand by my comment - when was the last time the IERS used a leap
+> : second removal ? The code may exist but it doesn't happen.
+>
+> Jumping backwards is used for every leap second that IERS has ever
+> done, which was your original comment.  There's has never been a case
+> where there was a leap second for jump forward though.  The proper
+> technical term here is 'negative leap second'.  All leap seconds up
+> until now have been positive leap seconds, and it is unlikely there
+> ever will be a negative one.
+
+I disagree. In the 1970's, the excess LOD was as much as 3 msec.
+After going down some, the mid 1990's it rose to around 2 msec.
+Now, it is around 1 msec.
+
+Here is a plot
+
+http://www.iers.org/MainDisp.csl?pid=95-100
+
+Only the long period variations count for leap seconds - the seasonal  
+and other high frequency
+oscillations tend to average out.
+
+In the early part of the last century (~1905), it decreased by ~ 5  
+msec in a year or so.
+If that happened right now, it would go to ~ -4 msec negative, and we  
+would be seeing
+2 negative leap seconds or more per year. Even if the decrease from  
+1975 to 1985 happened again, it
+would be at -1 msec, and we would have a negative leap second every  
+two years or so.
+
+What is a reasonable assumption is that we would likely have a year or  
+more warning of the
+likelihood of a negative leap second.
+
+Regards
+Marshall Eubanks
+
+>
+>
+> Warner
+> _______________________________________________
+> ntpwg mailing list
+> ntpwg@lists.ntp.org
+> https://lists.ntp.org/mailman/listinfo/ntpwg
+
