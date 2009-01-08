@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZAHHvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZAHHy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZAHHvG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 02:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZAHHuz
+	id S1755875AbZAHHy7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 02:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZAHHyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 02:50:55 -0500
-Received: from viefep15-int.chello.at ([62.179.121.35]:59211 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751638AbZAHHuy (ORCPT
+	Thu, 8 Jan 2009 02:54:51 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:46055 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752822AbZAHHyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 02:50:54 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [git pull] scheduler fix
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0901071543550.3057@localhost.localdomain>
-References: <20090107222641.GA27541@elte.hu>
-	 <alpine.LFD.2.00.0901071543550.3057@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 08 Jan 2009 08:50:53 +0100
-Message-Id: <1231401053.11687.386.camel@twins>
+	Thu, 8 Jan 2009 02:54:50 -0500
+Date: Thu, 8 Jan 2009 08:56:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: rmk+kernel@arm.linux.org.uk, adobriyan@gmail.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: hardirq.h removal broke sparc64 build...
+Message-ID: <20090108075625.GA14179@uranus.ravnborg.org>
+References: <20090107.144310.79937111.davem@davemloft.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107.144310.79937111.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 15:47 -0800, Linus Torvalds wrote:
 > 
-> On Wed, 7 Jan 2009, Ingo Molnar wrote:
-> > +		/*
-> > +		 * Should not call ttwu while holding a rq->lock
-> > +		 */
-> > +		spin_unlock(&this_rq->lock);
-> >  		if (active_balance)
-> >  			wake_up_process(busiest->migration_thread);
-> > +		spin_lock(&this_rq->lock);
+> Actually, looking at the patch, where is the part from Alexey
+> that does the "fix sparc64"?  I see nothing in the patch that
+> would even appear to possibly be for that.  The diffstat is:
 > 
-> Btw, this isn't the first time we've wanted to do a wakeup while 
-> potentially locked.
+>  arch/avr32/kernel/traps.c     |    1 +
+>  arch/sh/kernel/traps_32.c     |    1 +
+>  drivers/acpi/processor_idle.c |    1 +
+>  include/asm-generic/local.h   |    1 -
+>  4 files changed, 3 insertions(+), 1 deletion(-)
 > 
-> Is there any way to perhaps go a "wake_up_gentle()" that doesn't need the 
-> lock, and just basically does a potentially delayed wakeup by just 
-> scheduling it asynchronously.
-> 
-> That would have solved all those nasty printk issues too. These kinds of 
-> things don't need the strict "wake up NOW" behaviour - they are more of a 
-> "kick the dang thing and make sure it wakes up in some timely manner".
+> Was Alexey's fix removed or lost? :-/
 
-Right -- so the printk thing was solved by polling some state from the
-timer tick, we could make that into a list, but then you'd have to worry
-about memory allocation for list elements failing etc.
+When I made my patch I saw some issues in non-sparc files
+but I did not address these as I thought they were generic
+bugs addressed by someone else.
+I should have checked if the same build error was
+also present on x86/arm then :-(
 
-Same story as generic smp function call, we could do this using a self
-(or remote) IPI, but you'd still have the memory allocation issue -- and
-would need to make self-IPI work on !SMP.
+I'm glad to see it is sorted out properly now.
 
-I'll ponder the issue a bit more, but I'm not directly seeing anything
-(of course, if it were easy, we'd have done it ages ago ;-)
+	Sam
 
