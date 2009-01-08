@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZAHEoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbZAHEot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbZAHEoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 23:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZAHEoX
+	id S1758863AbZAHEot (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 23:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZAHEod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 23:44:23 -0500
-Received: from bsdimp.com ([199.45.160.85]:57916 "EHLO harmony.bsdimp.com"
+	Wed, 7 Jan 2009 23:44:33 -0500
+Received: from kandzendo.ru ([195.178.208.66]:35432 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752380AbZAHEoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 23:44:23 -0500
-Date: Wed, 07 Jan 2009 21:42:20 -0700 (MST)
-Message-Id: <20090107.214220.-233694826.imp@bsdimp.com>
-To: mayer@ntp.isc.org
-Cc: alan@lxorguk.ukuu.org.uk, linasvepstas@gmail.com, david@lang.hm,
-       hancockr@shaw.ca, kyle@moffetthome.net, slashdot@jameshallam.info,
-       goodgerster@gmail.com, davidn@davidnewall.com,
-       linux-kernel@vger.kernel.org, ntpwg@lists.ntp.isc.org,
-       pretzalz@techhouse.org, burdell@iruntheinter.net, nick@nick-andrew.net,
-       jeff@kosowsky.org
-Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on
- new years 2008-2009
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <496579C2.5050800@ntp.isc.org>
-References: <20090107.103947.1324582654.imp@bsdimp.com>
-	<20090107193127.0bec8ad8@lxorguk.ukuu.org.uk>
-	<496579C2.5050800@ntp.isc.org>
-X-Mailer: Mew version 5.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1758682AbZAHEoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 23:44:32 -0500
+Date: Thu, 8 Jan 2009 07:44:31 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Maurice Volaski <mvolaski@aecom.yu.edu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: swapper: page allocation failure. order:2, mode:0x4020 in 2.6.27
+Message-ID: <20090108044431.GA16272@ioremap.net>
+References: <a06240403c58ae633aba5@[129.98.90.227]> <20090108100917.65F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090108100917.65F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message: <496579C2.5050800@ntp.isc.org>
-            Danny Mayer <mayer@ntp.isc.org> writes:
-: Alan Cox wrote:
-: >> time, causing time to jump backwards by 1s (or violate POSIX time_t's
-: >> invariant that midnight time_t is % 86400 == 0).  This jump backwards
-: >> is a pita in the kernel, and violates the assumption that many
-: >> programs have that time doesn't flow backwards.
-: > 
-: > They can slew the clock slowly as well. There is a wonderful quote from
-: > one of the summaries of the POSIX committee discussions on time that says
-: > quite simply "the posix clock is not guaranteed to be accurate"
-: > 
-: > As it currently stands the kernel contains sufficient support that at the
-: > point you know a leap second is coming you can adjust the second length
-: > marginally over the entire period.
-: > 
-: > The current behaviour is an implementation decision. Jumping on a second
-: > shouldn't be an issue to most people, jumping back is asking for badness
-: > but isn't in fact used in the world today. Slewing the entire day so that
-: > each second is 1/86400 of a second longer or shorter wouldn't be noticed
-: > by anyone.
-: 
-: NTP handles most of this, but it needs the cooperation of the O/S kernel
-: and most of the Unix kernels are able to provide the required API's.
-: FreeBSD doesn't have any of these problems but Linux historically has.
-: Most of that code was designed by Dave Mills but since each kernel is
-: different we should not expect them all to behave the same way and
-: generally requires an understanding of what NTP expects and that's not
-: always clear to kernel developers who are not expected to know NTP.
+Hi.
 
-On FreeBSD, Solaris and Digital Unix, I'll point out, that jumping
-backwards is used, and has been used since at least 1994.  So saying
-it isn't used in the world today is flat out wrong.
+On Thu, Jan 08, 2009 at 10:19:23AM +0900, KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
+> if stack dump has tg3_alloc_rx_skb(), that isn't bug. (maybe)
+> tg3 network card often reqire non order-0 pages under irq/softirq context.
+> 
+> but linux memory manager can't drop any cache under irq/softirq context.
+> therefore the allocation failure is relatively typical.
+> 
+> the allocation failure in packet receive (tg3_alloc_rx_skb) cause
+> packet dropping and network peer resend the same packet.
+> it decrease network performance a bit. but it doesn't cause any serious problem.
+> 
+> last problem is, why we should look this false-positive warning repeatedly.
+> 
+> 
+> net-guys, if I say false thing, please fix.
 
-Warner
+You are right. You repeatedly get that message likely because of jumbo
+frames enabled and fragmented ram which does not allow to allocate more
+than order-0 pages.
+
+-- 
+	Evgeniy Polyakov
