@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762880AbZAHVli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762925AbZAHVn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762880AbZAHVli (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 16:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbZAHVla
+	id S1762925AbZAHVn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 16:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbZAHVnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 16:41:30 -0500
-Received: from colo.lackof.org ([198.49.126.79]:59389 "EHLO colo.lackof.org"
+	Thu, 8 Jan 2009 16:43:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36837 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZAHVl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 16:41:29 -0500
-Date: Thu, 8 Jan 2009 14:41:16 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Dirk Hohndel <hohndel@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, iommu@lists.linux-foundation.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: git-latest: kernel oops in IOMMU setup
-Message-ID: <20090108214116.GB20506@colo.lackof.org>
-References: <20090108120538.0176d348@infradead.org>
+	id S1757341AbZAHVnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 16:43:19 -0500
+Date: Thu, 8 Jan 2009 22:39:01 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Casey Dahlin <cdahlin@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+Message-ID: <20090108213901.GA26729@redhat.com>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com> <a36005b50901071302q70160bady41abc5ed2b105474@mail.gmail.com> <20090108143220.GA8717@redhat.com> <20090108193530.99D74FC3DD@magilla.sf.frob.com> <496663B6.3090709@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090108120538.0176d348@infradead.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <496663B6.3090709@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 12:05:38PM -0800, Dirk Hohndel wrote:
-> 
-> latest git from Linus. On a Thinkpad x200s with VT-d enabled (if I
-> disable VT-d, this of course goes away). 
-> 
-> The oops happens very early during boot in device_to_iommu (called
-> from domain_context_mapping_one).
-> 
-> Looking at the code dump and the disassembled function here's where
-> the error happens:
-> 
-> static struct intel_iommu *device_to_iommu(u8 bus, u8 devfn)
-> {
->         struct dmar_drhd_unit *drhd = NULL;
->         int i;
-> 
->         for_each_drhd_unit(drhd) {
->                 if (drhd->ignored)
->                         continue;
-> 
->                 for (i = 0; i < drhd->devices_cnt; i++)
->                         if (drhd->devices[i]->bus->number == bus &&
-> --> drhd->devices[0] is NULL
->                             drhd->devices[i]->devfn == devfn)
->                                 return drhd->iommu;
-> 
-> 
-> Given how early this happens it's a little hard to provide logs, etc. I
-> literally used delay_boot=100 and wrote things down by hand (forgot my
-> digital camera) and then added printk's to verify).
-> 
-> please let me know what other data I should collect.
+On 01/08, Casey Dahlin wrote:
+>
+> Roland McGrath wrote:
+> >>> Since waitfd shouldn't consume the child termination notification
+> >>> waitfd should be more widely usable than the wait*() interfaces.
+> >
+> > waitid can be used that way with WNOWAIT.
+>
+> Yes, but waitfd does not have this flag. The reason being waitfd just
+> calls waitid internally, and there is no guarantee (afaik) that calling
+> waitid with WNOWAIT multiple times in succession will yield different
+> results each time. This breaks the streaming behavior of the descriptor.
 
-If you can, a back trace. Basically just need to know which caller
-is tripping over this. But there can't be that many callers and they
-are all in this file:
-0 intel-iommu.c device_to_iommu            431 static struct intel_iommu *device_to_iommu(u8 bus, u8 devfn)
-1 intel-iommu.c domain_context_mapping_on 1471 iommu = device_to_iommu(bus, devfn);
-2 intel-iommu.c domain_context_mapped     1593 iommu = device_to_iommu(pdev->bus->number, pdev->devfn);
-3 intel-iommu.c domain_remove_dev_info    1684 iommu = device_to_iommu(info->bus, info->devfn);
-4 intel-iommu.c vm_domain_remove_one_dev_ 2773 iommu = device_to_iommu(pdev->bus->number, pdev->devfn);
-5 intel-iommu.c vm_domain_remove_one_dev_ 2803 if (device_to_iommu(info->bus, info->devfn) == iommu)
-6 intel-iommu.c vm_domain_remove_all_dev_ 2836 iommu = device_to_iommu(info->bus, info->devfn);
-7 intel-iommu.c intel_iommu_attach_device 3023 iommu = device_to_iommu(pdev->bus->number, pdev->devfn);
+Yes, do_wait(WNOWAIT) will return the same result on each call. Until
+the next child dies, and this child is closer to the head of ->children
+list.
 
-so it should be possible to figure out which one is called
-before the dev is setup. It's unlikely to be anything with
-"remove" in the name. :)
-
-My guess is it's intel_iommu_attach_device being called "too early".
-
-hth,
-grant
+But the reason is not that waitfd just calls waitid() internally. Let's
+suppose we add another helper (or waitfd_read() can do this by hand) so
+that read(waitfd_with_WNOWAIT_flag) correctly returns the info about all
+childs. Now, what should the next read() do?
 
 
-hth,
-grant
+Btw. It is not that I am trying to argue against sys_waitfd(), but do
+you have the "real life" example when it can be useful? Yes, poll().
+But we have signalfd. SIGCHLD is not rt signal, but afaics this is not
+the problem actually. Just curious.
 
-> 
-> The system ran fine with the 2.6.28 release kernel.
-> 
-> /D
-> 
-> -- 
-> Dirk Hohndel
-> Intel Open Source Technology Center
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Oleg.
+
