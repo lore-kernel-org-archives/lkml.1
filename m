@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761856AbZAHX30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZAHX3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761856AbZAHX30 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 18:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZAHX3L
+	id S1754760AbZAHX3m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 18:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZAHX3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 18:29:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54496 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752525AbZAHX3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 18:29:07 -0500
-Date: Thu, 8 Jan 2009 21:28:47 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Leonardo Potenza <lpotenza@inwind.it>, David Miller <davem@davemloft.net>,
-       Gerrit Renker <gerrit@erg.abdn.ac.uk>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       DCCP Mailing List <dccp@vger.kernel.org>,
-       Linux Networking Development Mailing List 
-	<netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: fix section mismatch warnings in
-	dccp/ccids/lib/tfrc.c
-Message-ID: <20090108232847.GV23891@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Leonardo Potenza <lpotenza@inwind.it>,
-	David Miller <davem@davemloft.net>,
-	Gerrit Renker <gerrit@erg.abdn.ac.uk>,
-	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-	DCCP Mailing List <dccp@vger.kernel.org>,
-	Linux Networking Development Mailing List <netdev@vger.kernel.org>
-References: <200901081957.03413.lpotenza@inwind.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901081957.03413.lpotenza@inwind.it>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 8 Jan 2009 18:29:17 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33035 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754400AbZAHX3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 18:29:12 -0500
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Alain Knaff <alain@knaff.lu>, Sam Ravnborg <sam@ravnborg.org>,
+       x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, Alain Knaff <alain@knaff.lu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] bzip2/lzma: fix decompress_inflate.c vs multi-block-with-embedded-filename
+Date: Thu,  8 Jan 2009 15:28:59 -0800
+Message-Id: <1231457340-18045-3-git-send-email-hpa@zytor.com>
+X-Mailer: git-send-email 1.5.6.6
+In-Reply-To: <1231457340-18045-2-git-send-email-hpa@zytor.com>
+References: <1231457340-18045-1-git-send-email-hpa@zytor.com>
+ <1231457340-18045-2-git-send-email-hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding netdev to the CC list.
+From: Alain Knaff <alain@knaff.lu>
 
-Em Thu, Jan 08, 2009 at 07:57:03PM +0100, Leonardo Potenza escreveu:
-> From: Leonardo Potenza <lpotenza@inwind.it>
-> 
-> Removed the __exit annotation of tfrc_lib_exit(), in order to suppress the following section mismatch messages:
-> 
-> WARNING: net/dccp/dccp.o(.text+0xd9): Section mismatch in reference from the function ccid_cleanup_builtins() to the function .exit.text:tfrc_lib_exit()
-> The function ccid_cleanup_builtins() references a function in an exit section.
-> Often the function tfrc_lib_exit() has valid usage outside the exit section
-> and the fix is to remove the __exit annotation of tfrc_lib_exit.
-> 
-> WARNING: net/dccp/dccp.o(.init.text+0x48): Section mismatch in reference from the function ccid_initialize_builtins() to the function .exit.text:tfrc_lib_exit()
-> The function __init ccid_initialize_builtins() references
-> a function __exit tfrc_lib_exit().
-> This is often seen when error handling in the init function
-> uses functionality in the exit path.
-> The fix is often to remove the __exit annotation of
-> tfrc_lib_exit() so it may be used outside an exit section.
-> 
-> Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
-> ---
-> Index: linux-2.6/net/dccp/ccids/lib/tfrc.c
-> ===================================================================
-> --- linux-2.6.orig/net/dccp/ccids/lib/tfrc.c	2009-01-08 19:19:50.000000000 +0100
-> +++ linux-2.6/net/dccp/ccids/lib/tfrc.c	2009-01-08 19:20:07.000000000 +0100
-> @@ -36,7 +36,7 @@ out:
->  	return rc;
->  }
->  
-> -void __exit tfrc_lib_exit(void)
-> +void tfrc_lib_exit(void)
->  {
->  	tfrc_rx_packet_history_exit();
->  	tfrc_tx_packet_history_exit();
+Impact: Bug fix
 
-Thanks Leonardo,
+Fix gunzip uncompression, so that it also works with files with
+embedded filenames that are larger than one block.
 
-Dave/Gerrit,
+Signed-off-by: Alain Knaff <alain@knaff.lu>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ lib/decompress_inflate.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Please apply.
+diff --git a/lib/decompress_inflate.c b/lib/decompress_inflate.c
+index d2e7c75..839a329 100644
+--- a/lib/decompress_inflate.c
++++ b/lib/decompress_inflate.c
+@@ -97,7 +97,7 @@ STATIC int INIT gunzip(unsigned char *buf, int len,
+ 			strm->next_in++;
+ 		strm->next_in++;
+ 	}
+-	strm->avail_in = len - 10;
++	strm->avail_in = len - (strm->next_in - zbuf);
+ 
+ 	strm->next_out = out_buf;
+ 	strm->avail_out = out_len;
+-- 
+1.5.6.6
 
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-Thanks,
-
-- Arnaldo
