@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbZAHCTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751400AbZAHCbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbZAHCTs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 21:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZAHCTg
+	id S1751400AbZAHCbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 21:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZAHCbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 21:19:36 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34198 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751305AbZAHCTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 21:19:34 -0500
-Date: Thu, 8 Jan 2009 11:18:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-Message-Id: <20090108111827.f6f8bcd9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.LFD.2.00.0901071552550.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>
-	<20090103191706.GA2002@parisc-linux.org>
-	<1231368870.6686.16.camel@norville.austin.ibm.com>
-	<alpine.LFD.2.00.0901071518570.3057@localhost.localdomain>
-	<alpine.DEB.1.10.0901071848431.23456@gandalf.stny.rr.com>
-	<alpine.LFD.2.00.0901071552550.3057@localhost.localdomain>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 21:31:13 -0500
+Received: from lists.laptop.org ([18.85.2.145]:32789 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751391AbZAHCbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 21:31:12 -0500
+Date: Wed, 7 Jan 2009 21:31:11 -0500
+From: Michael Stone <michael@laptop.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: RFC: Network privilege separation.
+Message-ID: <20090108023111.GJ3164@didacte.laptop.org>
+References: <1231307334-9542-1-git-send-email-michael@laptop.org> <87mye2yg8a.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <87mye2yg8a.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Jan 2009 15:57:06 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Wed, Jan 07, 2009 at 10:10:45PM +0100, Andi Kleen wrote:
+>Michael Stone <michael@laptop.org> writes:
+>
+>> For the sake of discussion, I have written up and documented one possible
+>> implementation of this concept based on the idea of a new rlimit named
+>> RLIMIT_NETWORK in the following patch series. 
+>>
+>> I eagerly await your questions, comments, suggestions, and improvements.
+>
+>At least for outgoing packets you could already do it using the netfilter
+>owner match and a suitable uid. I suppose that could be also extended
+>for incoming packets.
 
-> 
-> 
-> On Wed, 7 Jan 2009, Steven Rostedt wrote:
-> > 
-> > Should that be:
-> > 
-> > #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_MEMORY_HOTPLUG)
-> 
-> Well, probably CONFIG_MEMORY_HOTREMOVE, no? And I'd actually suggest that 
-> unplugging should have a stop-machine if it doesn't already, just because 
-> it's such a special case - like module removal.
-> 
-I looked memory hotplug code again, then..
+While it's certainly true that you can simulate /some/ of the functionality of
+my patch with the (deprecated?) netfilter owner match extension and by
+synthesizing new uids as needed, I'm fairly sure that you'll run into some
+serious complications involving concurrent manipulations of shared mutable
+state which my proposal does not suffer from.
 
- 1. stop_machine() is not used.
- 2. x86-64 code doesn't have "unmap physical memory from the kernel space".
-    (because ia64, my (old) target machine, doesn't need it.)
-    I'm not sure about powerpc.
+For example:
 
-I'd like to look into this for x86-64 when I can. 
+   * in order to user owner-match, you need to specify a uid and you probably
+     need to back it up with an account in the pwd database in order to keep
+     random bits of userland happy. What uid should you use?
 
-BTW, can I make a quiestion ?
-==
-			if (lock->owner != thread)
-				break;
+     -- if it's the same as Joe User's uid, then you're probably going to break
+        random other parts of Joe User's software stack. How is Joe going to
+        debug this?
 
-			/*
-			 * Need to access the cpu field knowing that
-			 * DEBUG_PAGEALLOC could have unmapped it if
-			 * the mutex owner just released it and exited.
-			 */
-			if (__get_user(cpu, &thread->cpu))
-				break;
-==
-"thread" can be obsolete while lock->owner == thread ?
-Isn't this depends on  CONFIG_DEBUG_MUTEXES ?
+         + (unless, of course, you've also got CAP_NET_ADMIN, use the new net
+           namespaces work, /and/ reconfigure your whole networking stack inside
+           the new NS.)
+    
+     -- if it's different from Joe User's regular uid, then where did it come
+        from and how is Joe going to clean it up when he no longer needs it?
 
+         + again, privilege is required, either in the form of a setuid
+           executable, CAP_SETUID capability, or an NSS module (or some
+           combination of these)
 
-Thanks,
--Kame
+   * so far as I know, netfilter is only commonly used to filter IP traffic. Can
+     I really use it to limit connections to abstract unix sockets?
 
+   * I think there are some problems with resource acquisition, trust, and
+     finalization:
+
+     -- something has to work out the actual firewall rules which need to be
+        added. 
+
+         + why should you or your sysadmin trust whatever is doing this to pick
+           the right ones?
+
+     -- something (with privilege) needs to install the firewall rules and needs
+        to remove unneeded rules or you've got a space leak.
+
+         + are there any significant race conditions between whatever is
+           installing the rules and whatever is removing the dead rules?
+
+Conclusion: so far as I can see, RLIMIT_NETWORK is, in every way, a smaller
+expansion of the end user's trusted code base and should therefore be preferred
+in comparison netfilter-based solutions for process-level network privilege
+separation tasks. Do you see things differently?
+
+Thanks very much,
+
+Michael
