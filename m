@@ -1,112 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZAHUSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbZAHUTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbZAHUSw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 15:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759952AbZAHUS0
+	id S1760933AbZAHUTT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 15:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZAHUSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 15:18:26 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:44492 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759633AbZAHUSZ (ORCPT
+	Thu, 8 Jan 2009 15:18:34 -0500
+Received: from 201-217-static-ppp.3menatwork.com ([64.235.217.201]:40251 "EHLO
+	server.hugovil.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760708AbZAHUSc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 15:18:25 -0500
-Subject: Re: [RFC] B+Tree library V2
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090108200243.GD24884@logfs.org>
-References: <20081026124643.GA1328@logfs.org>
-	 <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org>
-	 <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org>
-	 <20081101155958.GA28776@logfs.org> <1231376241.3545.96.camel@johannes>
-	 <20090108162429.GA24884@logfs.org> <1231434601.8398.9.camel@johannes>
-	 <20090108200243.GD24884@logfs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-wQg4ACe/OyQVDzA25y5P"
-Date: Thu, 08 Jan 2009 21:18:55 +0100
-Message-Id: <1231445935.8398.18.camel@johannes>
+	Thu, 8 Jan 2009 15:18:32 -0500
+Date: Thu, 8 Jan 2009 15:18:27 -0500
+From: Hugo Villeneuve <hugo@hugovil.com>
+To: Florian Fainelli <florian@openwrt.org>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Subject: Re: FPGA programming driver architecture
+Message-Id: <20090108151827.72f50cee.hugo@hugovil.com>
+In-Reply-To: <200812131358.03010.florian@openwrt.org>
+References: <20081212150314.6ea24996.hugo@hugovil.com>
+	<200812131358.03010.florian@openwrt.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Default is to whitelist mail, not delayed by milter-greylist-3.0 (server.hugovil.com [64.235.217.201]); Thu, 08 Jan 2009 15:18:29 -0500 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 13 Dec 2008 13:58:01 +0100
+Florian Fainelli <florian@openwrt.org> wrote:
 
---=-wQg4ACe/OyQVDzA25y5P
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> (CC'ing linux-embedded)
+> 
+> Salut Hugo,
+> 
+> Le Friday 12 December 2008 21:03:14 Hugo Villeneuve, vous avez écrit :
+> > Hi,
+> > I have written some code to program a FPGA in Linux, for two
+> > different types of boards: one uses a serial interface (SPI) and
+> > the second a parallel interface. I have been able to sucessfully
+> > program both boards. I'm now trying to clean my code and make it
+> > more generic, as well as better in line with the Linux driver
+> > model. I would also like to include it in the mainline kernel if
+> > there is interest.
+> ...
+> What about something like that :
+> 
+> - fpgaload-core which contains all the code that can be shared
+> between the drivers like requesting firmware, providing sysfs
+> attributes, 
+> - fpgaload-spi would handle the low-level SPI connection
+> - fpgaload-par would handle the low-level parallel connection
+> 
+> fpgaload-ser and par would register with fpgaload-core and they could
+> register a fpga loading callback which is low-level specific for
+> instance. Platform code would instantiate the core driver. That way,
+> adding support for other loading protocols like slave serial or
+> master serial can be done easily.
 
-On Thu, 2009-01-08 at 21:02 +0100, J=C3=B6rn Engel wrote:
+Yes, but how I actually implement fpgaload_core, fpgaload_ser and
+fpgaload_par?
 
-> > #define btree_for_each_key(head, geo, key, tmp)	\
-> > 	for (key =3D btree_last(head, geo), tmp =3D btree_get_prev_key(head, g=
-eo, key);
-> > 	     key; key =3D tmp, tmp =3D btree_get_prev_key(head, geo, key))
->=20
-> [ Changed the function name above.  It really isn't a lookup, it returns
-> a key, not a value.  My fault. ]
+Bus driver?
+class driver?
+platform driver?
 
-Right.
+I am not sure how I should implement things and how each low-level
+specific driver should register with the fpgaload_core driver...
 
-> Looks correct otherwise.  Probably needs a comment that without "tmp" we
-> would skip a 0 key.  Or am I the only one who wants to simplify the code
-> before spotting this little subtlety?
+Hugo V.
 
-I, uh, I didn't even realise that. I think the code for
-btree_last/btree_get_prev_key isn't correct as is since the 0 key is
-valid, but you can't tell whether it returned 0 because it didn't find
-anything, or because there was no more entry. Or am I missing something?
-
-> > (and possibly some type-checking variants that hardcode the geo)
-> >=20
-> > Does that seem correct? And would it be possible to provide btree_last(=
-)
-> > that takes an void ** and fills it with the last entry, and the same fo=
-r
-> > lookup_less(), so we can write btree_for_each_entry() too?
->=20
-> Not sure what you mean.  Something with the same effect as this?
->=20
-> #define btree_for_each_val(head, geo, key, val)				\
-> 	 for (key =3D btree_last(head, geo),				\
-> 	 		val =3D btree_lookup(head, geo, key);		\
-> 	 		val;						\
-> 			key =3D btree_get_prev_key(head, geo, key),	\
-> 			val =3D btree_lookup(head, geo, key))
-
-Well, that does lots of lookups that don't seem necessary, since a
-function like btree_last should be able to return the value right away.
-Also, if it was
-
-#define btree_for_each_val(head, geo, key, val)
-	for (val =3D btree_last(head, geo, &key);
-	     val;
-	     val =3D btree_get_prev(head, geo, &key))
-
-it would be more correct, I think?
-
-johannes
-
---=-wQg4ACe/OyQVDzA25y5P
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJZl+sAAoJEKVg1VMiehFYjcYQAKM4jn+8Urwa4bauiWis7Qh5
-BzCttmfw66PekpOqcAb8OznrDjWu8neC5Q/hD5V5osJYbro6oCXh2gzv7hNPMcA/
-TZal+/I4gsWqhP6qq/6Vd/9adURLDPKbH6nZMoEcMJubVDPIVn3kMPrKlaVjRi3r
-YJZIjGSg6eyKClUeNfjNL+316HQNL5Ix9E5O4jdoDZx1qOY5viKVgco46+xSaap2
-7GoBxrxPeISLrCl8whiq8yrGH8Xmmx8gXC+hIRznMXtAL5J4xyWcI37jKFn88o4W
-1pQMwphYbbEA1dyKHhzFRR9PFS3ydLEtMgiKmDVeD2jgCWu0c476lk3GlfLDiH/O
-/+TbD4KnftYacNqtgmE0FTVBGGQ8ExSEFIdwVF/bfAIrnHjwrE7a3j5PvoFCjAea
-O5XGehsVUclrb5T/2S5Q3AuFraJK3Llqxwa+Eal8Lg4Dm3wMwqU+CSLIlIEEHoss
-Uvu5UnZ1fZgTUv8+KQMsHh4mFLMX2mThtOsXuXGF5f5YKwx9p1pDJq3c2FW9W4EU
-ploBQT7+/0xBwUXF8YboG8Utm4xCLsO2xXIDrtBmbFqhYIuPS2RNk7YOLYRPPwQ6
-DQxjFbgTX8RNP1YgxCEqfy7l5EMgBs8VRWYtcU1X/b3gwVLsaX5tNp3tmoCkbBuv
-fyb4OpVRjmm2tKu2Sdn5
-=ll8a
------END PGP SIGNATURE-----
-
---=-wQg4ACe/OyQVDzA25y5P--
-
+---------------
+Hugo Villeneuve
+www.hugovil.com
+---------------
