@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761498AbZAHRLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbZAHRRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761498AbZAHRLg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 12:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbZAHRL0
+	id S1758994AbZAHRRv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 12:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZAHRRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 12:11:26 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:51852 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754785AbZAHRLZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 12:11:25 -0500
-Date: Thu, 8 Jan 2009 18:11:18 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-In-Reply-To: <20090108165029.GA10951@infradead.org>
-Message-ID: <Pine.LNX.4.64.0901081809340.25621@vixen.sonytel.be>
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
- <20090108165029.GA10951@infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 8 Jan 2009 12:17:41 -0500
+Received: from 1wt.eu ([62.212.114.60]:1256 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752508AbZAHRRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 12:17:40 -0500
+Date: Thu, 8 Jan 2009 18:14:19 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, Ben Mansell <ben@zeus.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090108171419.GE5038@1wt.eu>
+References: <20090106181559.GA29426@1wt.eu> <20090108071651.GA4496@ff.dom.local> <20090108080520.GG30749@1wt.eu> <20090108145259.GF18120@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090108145259.GF18120@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009, Christoph Hellwig wrote:
-> On Thu, Jan 08, 2009 at 04:48:51PM +0000, Phillip Lougher wrote:
-> > Please consider pulling my linux-next branch
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git
-> > 
-> > The patches have been posted to LKML and linux-fsdevel over the last
-> > couple of months and have been reviewed and changed as requested.
-> > Diffstat below.
-> > 
-> > Squashfs is a compressed read-only filesystem. It compresses metadata
-> > and data, and uses up to 1 MiB block sizes for greater compression.
+On Thu, Jan 08, 2009 at 03:53:00PM +0100, Ingo Molnar wrote:
 > 
-> That seems pretty fast for something only posted this week and not
+> * Willy Tarreau <w@1wt.eu> wrote:
+> 
+> > On Thu, Jan 08, 2009 at 07:16:51AM +0000, Jarek Poplawski wrote:
+> > > On 06-01-2009 19:15, Willy Tarreau wrote:
+> > > ...
+> > > > Ah, so you might also have discovered a few annoyances with the API, eg
+> > > > the fact that splice() returns after the first read in non-blocking mode,
+> > > > as well as the fact that it never returns zero on close, but -EAGAIN,
+> > > > which requires an additional recv(MSG_PEEK) to distinguish between a
+> > > > close and a lack of data. But I leave that for a later discussion, let's
+> > > > address the corruption issue first.
+> > > 
+> > > FYI, this should be just fixed:
+> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=4f7d54f59bc470f0aaa932f747a95232d7ebf8b1
+> > > 
+> > 
+> > Ah cool, thanks Jarek for notifying us. Indeed, it's the exact same patch
+> > I had pending here ;-)
+> > 
+> > I'll ping Greg for a backport into -stable, as applications relying on 
+> > this will clearly not work without that fix.
+> > 
+> > The other one I had consists in removing "|| !timeo" at the end of the 
+> > loop, because otherwise splice() returns very small chunks (typically 
+> > 1448 or 1460 bytes), leading to disastrous performance on high bandwidth 
+> > links. At 10 Gbps, this means about 800000 calls to splice() per second!
+> 
+> looks interesting - would you mind to submit it?
 
-The patches have been posted before last October, and the recent changes are
-according to the review comments.
+OK I will. I preferred to focus on the bug first, which is clearly
+more annoying since it basically makes splice() unusuable in a proxy.
+I wanted to avoid changes before the bug is fixed, but now, with the
+first investigations, it seems that the fix will be in a different
+area anyway so that doesn't matter.
 
-> even in -next.
+Regards,
+Willy
 
-Incorrect, as of next-20090106 ;-)
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
