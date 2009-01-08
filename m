@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbZAHRXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbZAHRYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbZAHRXs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 12:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZAHRXh
+	id S1761029AbZAHRYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 12:24:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZAHRYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 12:23:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37115 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbZAHRXf (ORCPT
+	Thu, 8 Jan 2009 12:24:10 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:43190 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751599AbZAHRYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 12:23:35 -0500
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
-References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
-	 <1231347442.11687.344.camel@twins>
-	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
-	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-	 <1231365115.11687.361.camel@twins>
-	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
-	 <1231366716.11687.377.camel@twins>
-	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>
-	 <1231408718.11687.400.camel@twins>  <20090108141808.GC11629@elte.hu>
-	 <1231426014.11687.456.camel@twins>
-	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
-Content-Type: text/plain
+	Thu, 8 Jan 2009 12:24:08 -0500
+Message-ID: <496636AB.9000903@oracle.com>
+Date: Thu, 08 Jan 2009 09:23:55 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for January 8 (percpu)
+References: <20090108171730.19a41e14.sfr@canb.auug.org.au>
+In-Reply-To: <20090108171730.19a41e14.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Jan 2009 18:23:12 +0100
-Message-Id: <1231435392.11687.520.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.496636AF.0185:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 08:58 -0800, Linus Torvalds wrote:
+Stephen Rothwell wrote:
+> Hi all,
 > 
-> Ok, I've gone through -v7, and I'm sure you're all shocked to hear it, but 
-> I have no complaints. 
-
-*cheer*, except I guess we need to figure out what goes bad for Chris.
-
-> Except that you dropped all the good commit 
-> commentary you had earlier ;)
-
-Yeah, I've yet to add that back, will do.
-
-> The patch looks pretty good (except for the big "#if 0" block in 
-> mutex-debug.c that I hope gets fixed, but I can't even really claim that I 
-> can be bothered), the locking looks fine (ie no locking at all), and the 
-> numbers seem pretty convinving.
+> Changes since 20090107:
 > 
-> Oh, and I think the open-coded
+> Undropped tree:
+> 	rr
 > 
-> 	atomic_cmpxchg(count, 1, 0) == 1
-> 
-> could possibly just be replaced with a simple __mutex_fastpath_trylock(). 
-> I dunno.
+> Dropped trees (temporarily):
+> 	ocfs2 (build problem)
+> 	cpu_alloc (build problem)
 
-__mutex_fastpath_trylock() isn't always that neat -- see
-include/asm-generic/mutex-xchg.h -- and its a NOP on DEBUG_MUTEXES.
 
-Note how I used old_val for the list_empty() thing as well, we could
-possibly drop that extra condition though.
+When CONFIG_SMP=n, both arch/x86/include/asm/percpu.h and
+include/asm-generic/percpu.h define both of
+read_percpu_ptr() and read_percpu_var().
 
+
+build-r8079.out:linux-next-20090108/include/asm-generic/percpu.h:124:1: warning: "read_percpu_ptr" redefined
+build-r8079.out:linux-next-20090108/arch/x86/include/asm/percpu.h:107:1: warning: this is the location of the previous definition
+build-r8079.out:linux-next-20090108/include/asm-generic/percpu.h:120:1: warning: "read_percpu_var" redefined
+build-r8079.out:linux-next-20090108/arch/x86/include/asm/percpu.h:106:1: warning: this is the location of the previous definition
+
+
+
+-- 
+~Randy
