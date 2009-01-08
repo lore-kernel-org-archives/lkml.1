@@ -1,218 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbZAHKQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbZAHKRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759366AbZAHKQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 05:16:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbZAHKQO
+	id S1758737AbZAHKRa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 05:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbZAHKRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 05:16:14 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41715 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753775AbZAHKQN (ORCPT
+	Thu, 8 Jan 2009 05:17:23 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39400 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbZAHKRV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 05:16:13 -0500
-Subject: [PATCH -tip 2/2] x86: rename all fields of mpf_intel mpf_X to X
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>, astarikovskiy@suse.de,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 08 Jan 2009 15:43:26 +0530
-Message-Id: <1231409606.7119.7.camel@jaswinder.satnam>
+	Thu, 8 Jan 2009 05:17:21 -0500
+Date: Thu, 8 Jan 2009 19:14:30 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com,
+       balbir@linux.vnet.ibm.com, lizf@cn.fujitsu.com, menage@google.com,
+       nishimura@mxp.nes.nec.co.jp
+Subject: [RFC][PATCH 1/4] memcg: fix for
+ mem_cgroup_get_reclaim_stat_from_page
+Message-Id: <20090108191430.af89e037.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
+References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, solve 80 columns wrap problems
+In case of swapin, a new page is added to lru before it is charged,
+so page->pc->mem_cgroup points to NULL or last mem_cgroup the page
+was charged before.
 
-It would be cleaner to rename all the mpf->mpf_X fields to
-mpf->X - that alone would give 4 characters per usage site.
-(we already know that it's an 'mpf' entity -
-no need to duplicate that in the field too)
+In the latter case, if the mem_cgroup has already freed by rmdir,
+the area pointed to by page->pc->mem_cgroup may have invalid data.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Actually, I saw general protection fault.
+
+    general protection fault: 0000 [#1] SMP
+    last sysfs file: /sys/devices/system/cpu/cpu15/cache/index1/shared_cpu_map
+    CPU 4
+    Modules linked in: ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables bridge stp ipv6 autofs4 hidp rfcomm l2cap bluetooth sunrpc dm_mirror dm_region_hash dm_log dm_multipath dm_mod rfkill input_polldev sbs sbshc battery ac lp sg ide_cd_mod cdrom button serio_raw acpi_memhotplug parport_pc e1000 rtc_cmos parport rtc_core rtc_lib i2c_i801 i2c_core shpchp pcspkr ata_piix libata megaraid_mbox megaraid_mm sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd [last unloaded: microcode]
+    Pid: 26038, comm: page01 Tainted: G        W  2.6.28-rc9-mm1-mmotm-2008-12-22-16-14-f2ab3dea #1
+    RIP: 0010:[<ffffffff8028e710>]  [<ffffffff8028e710>] update_page_reclaim_stat+0x2f/0x42
+    RSP: 0000:ffff8801ee457da8  EFLAGS: 00010002
+    RAX: 32353438312021c8 RBX: 0000000000000000 RCX: 32353438312021c8
+    RDX: 0000000000000000 RSI: ffff8800cb0b1000 RDI: ffff8801164d1d28
+    RBP: ffff880110002cb8 R08: ffff88010f2eae23 R09: 0000000000000001
+    R10: ffff8800bc514b00 R11: ffff880110002c00 R12: 0000000000000000
+    R13: ffff88000f484100 R14: 0000000000000003 R15: 00000000001200d2
+    FS:  00007f8a261726f0(0000) GS:ffff88010f2eaa80(0000) knlGS:0000000000000000
+    CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+    CR2: 00007f8a25d22000 CR3: 00000001ef18c000 CR4: 00000000000006e0
+    DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+    DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+    Process page01 (pid: 26038, threadinfo ffff8801ee456000, task ffff8800b585b960)
+    Stack:
+     ffffe200071ee568 ffff880110001f00 0000000000000000 ffffffff8028ea17
+     ffff88000f484100 0000000000000000 0000000000000020 00007f8a25d22000
+     ffff8800bc514b00 ffffffff8028ec34 0000000000000000 0000000000016fd8
+    Call Trace:
+     [<ffffffff8028ea17>] ? ____pagevec_lru_add+0xc1/0x13c
+     [<ffffffff8028ec34>] ? drain_cpu_pagevecs+0x36/0x89
+     [<ffffffff802a4f8c>] ? swapin_readahead+0x78/0x98
+     [<ffffffff8029a37a>] ? handle_mm_fault+0x3d9/0x741
+     [<ffffffff804da654>] ? do_page_fault+0x3ce/0x78c
+     [<ffffffff804d7a42>] ? trace_hardirqs_off_thunk+0x3a/0x3c
+     [<ffffffff804d860f>] ? page_fault+0x1f/0x30
+    Code: cc 55 48 8d af b8 0d 00 00 48 89 f7 53 89 d3 e8 39 85 02 00 48 63 d3 48 ff 44 d5 10 45 85 e4 74 05 48 ff 44 d5 00 48 85 c0 74 0e <48> ff 44 d0 10 45 85 e4 74 04 48 ff 04 d0 5b 5d 41 5c c3 41 54
+    RIP  [<ffffffff8028e710>] update_page_reclaim_stat+0x2f/0x42
+     RSP <ffff8801ee457da8>
+
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 ---
- arch/x86/include/asm/mpspec_def.h |   20 +++++++-------
- arch/x86/kernel/mpparse.c         |   50 ++++++++++++++++++------------------
- 2 files changed, 35 insertions(+), 35 deletions(-)
+ mm/memcontrol.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/mpspec_def.h b/arch/x86/include/asm/mpspec_def.h
-index 187dc92..4a7f96d 100644
---- a/arch/x86/include/asm/mpspec_def.h
-+++ b/arch/x86/include/asm/mpspec_def.h
-@@ -26,16 +26,16 @@
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index e2996b8..62e69d8 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -559,6 +559,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
+ 		return NULL;
  
- /* Intel MP Floating Pointer Structure */
- struct mpf_intel {
--	char mpf_signature[4];		/* "_MP_"			*/
--	unsigned int mpf_physptr;	/* Configuration table address	*/
--	unsigned char mpf_length;	/* Our length (paragraphs)	*/
--	unsigned char mpf_specification;/* Specification version	*/
--	unsigned char mpf_checksum;	/* Checksum (makes sum 0)	*/
--	unsigned char mpf_feature1;	/* Standard or configuration ?	*/
--	unsigned char mpf_feature2;	/* Bit7 set for IMCR|PIC	*/
--	unsigned char mpf_feature3;	/* Unused (0)			*/
--	unsigned char mpf_feature4;	/* Unused (0)			*/
--	unsigned char mpf_feature5;	/* Unused (0)			*/
-+	char signature[4];		/* "_MP_"			*/
-+	unsigned int physptr;		/* Configuration table address	*/
-+	unsigned char length;		/* Our length (paragraphs)	*/
-+	unsigned char specification;	/* Specification version	*/
-+	unsigned char checksum;		/* Checksum (makes sum 0)	*/
-+	unsigned char feature1;		/* Standard or configuration ?	*/
-+	unsigned char feature2;		/* Bit7 set for IMCR|PIC	*/
-+	unsigned char feature3;		/* Unused (0)			*/
-+	unsigned char feature4;		/* Unused (0)			*/
-+	unsigned char feature5;		/* Unused (0)			*/
- };
- 
- #define MPC_SIGNATURE "PCMP"
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 6cea941..8385d4e 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -597,9 +597,9 @@ static void __init __get_smp_config(unsigned int early)
- 	}
- 
- 	printk(KERN_INFO "Intel MultiProcessor Specification v1.%d\n",
--	       mpf->mpf_specification);
-+	       mpf->specification);
- #if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_32)
--	if (mpf->mpf_feature2 & (1 << 7)) {
-+	if (mpf->feature2 & (1 << 7)) {
- 		printk(KERN_INFO "    IMCR and PIC compatibility mode.\n");
- 		pic_mode = 1;
- 	} else {
-@@ -610,7 +610,7 @@ static void __init __get_smp_config(unsigned int early)
- 	/*
- 	 * Now see if we need to read further.
- 	 */
--	if (mpf->mpf_feature1 != 0) {
-+	if (mpf->feature1 != 0) {
- 		if (early) {
- 			/*
- 			 * local APIC has default address
-@@ -620,16 +620,16 @@ static void __init __get_smp_config(unsigned int early)
- 		}
- 
- 		printk(KERN_INFO "Default MP configuration #%d\n",
--		       mpf->mpf_feature1);
--		construct_default_ISA_mptable(mpf->mpf_feature1);
-+		       mpf->feature1);
-+		construct_default_ISA_mptable(mpf->feature1);
- 
--	} else if (mpf->mpf_physptr) {
-+	} else if (mpf->physptr) {
- 
- 		/*
- 		 * Read the physical hardware table.  Anything here will
- 		 * override the defaults.
- 		 */
--		if (!smp_read_mpc(phys_to_virt(mpf->mpf_physptr), early)) {
-+		if (!smp_read_mpc(phys_to_virt(mpf->physptr), early)) {
- #ifdef CONFIG_X86_LOCAL_APIC
- 			smp_found_config = 0;
- #endif
-@@ -696,10 +696,10 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
- 	while (length > 0) {
- 		mpf = (struct mpf_intel *)bp;
- 		if ((*bp == SMP_MAGIC_IDENT) &&
--		    (mpf->mpf_length == 1) &&
-+		    (mpf->length == 1) &&
- 		    !mpf_checksum((unsigned char *)bp, 16) &&
--		    ((mpf->mpf_specification == 1)
--		     || (mpf->mpf_specification == 4))) {
-+		    ((mpf->specification == 1)
-+		     || (mpf->specification == 4))) {
- #ifdef CONFIG_X86_LOCAL_APIC
- 			smp_found_config = 1;
- #endif
-@@ -712,7 +712,7 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
- 				return 1;
- 			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
- 					BOOTMEM_DEFAULT);
--			if (mpf->mpf_physptr) {
-+			if (mpf->physptr) {
- 				unsigned long size = PAGE_SIZE;
- #ifdef CONFIG_X86_32
- 				/*
-@@ -721,14 +721,14 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
- 				 * the bottom is mapped now.
- 				 * PC-9800's MPC table places on the very last
- 				 * of physical memory; so that simply reserving
--				 * PAGE_SIZE from mpg->mpf_physptr yields BUG()
-+				 * PAGE_SIZE from mpf->physptr yields BUG()
- 				 * in reserve_bootmem.
- 				 */
- 				unsigned long end = max_low_pfn * PAGE_SIZE;
--				if (mpf->mpf_physptr + size > end)
--					size = end - mpf->mpf_physptr;
-+				if (mpf->physptr + size > end)
-+					size = end - mpf->physptr;
- #endif
--				reserve_bootmem_generic(mpf->mpf_physptr, size,
-+				reserve_bootmem_generic(mpf->physptr, size,
- 						BOOTMEM_DEFAULT);
- 			}
- 
-@@ -1013,19 +1013,19 @@ static int __init update_mp_table(void)
- 	/*
- 	 * Now see if we need to go further.
- 	 */
--	if (mpf->mpf_feature1 != 0)
-+	if (mpf->feature1 != 0)
- 		return 0;
- 
--	if (!mpf->mpf_physptr)
-+	if (!mpf->physptr)
- 		return 0;
- 
--	mpc = phys_to_virt(mpf->mpf_physptr);
-+	mpc = phys_to_virt(mpf->physptr);
- 
- 	if (!smp_check_mpc(mpc, oem, str))
- 		return 0;
- 
- 	printk(KERN_INFO "mpf: %lx\n", virt_to_phys(mpf));
--	printk(KERN_INFO "mpf_physptr: %x\n", mpf->mpf_physptr);
-+	printk(KERN_INFO "physptr: %x\n", mpf->physptr);
- 
- 	if (mpc_new_phys && mpc->length > mpc_new_length) {
- 		mpc_new_phys = 0;
-@@ -1046,23 +1046,23 @@ static int __init update_mp_table(void)
- 		}
- 		printk(KERN_INFO "use in-positon replacing\n");
- 	} else {
--		mpf->mpf_physptr = mpc_new_phys;
-+		mpf->physptr = mpc_new_phys;
- 		mpc_new = phys_to_virt(mpc_new_phys);
- 		memcpy(mpc_new, mpc, mpc->length);
- 		mpc = mpc_new;
- 		/* check if we can modify that */
--		if (mpc_new_phys - mpf->mpf_physptr) {
-+		if (mpc_new_phys - mpf->physptr) {
- 			struct mpf_intel *mpf_new;
- 			/* steal 16 bytes from [0, 1k) */
- 			printk(KERN_INFO "mpf new: %x\n", 0x400 - 16);
- 			mpf_new = phys_to_virt(0x400 - 16);
- 			memcpy(mpf_new, mpf, 16);
- 			mpf = mpf_new;
--			mpf->mpf_physptr = mpc_new_phys;
-+			mpf->physptr = mpc_new_phys;
- 		}
--		mpf->mpf_checksum = 0;
--		mpf->mpf_checksum -= mpf_checksum((unsigned char *)mpf, 16);
--		printk(KERN_INFO "mpf_physptr new: %x\n", mpf->mpf_physptr);
-+		mpf->checksum = 0;
-+		mpf->checksum -= mpf_checksum((unsigned char *)mpf, 16);
-+		printk(KERN_INFO "physptr new: %x\n", mpf->physptr);
- 	}
- 
- 	/*
--- 
-1.5.6.6
-
-
-
+ 	pc = lookup_page_cgroup(page);
++	smp_rmb();
++	if (!PageCgroupUsed(pc))
++		return NULL;
++
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	if (!mz)
+ 		return NULL;
