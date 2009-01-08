@@ -1,124 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZAHEAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZAHEDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758358AbZAHEAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 23:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbZAHD7f
+	id S1758064AbZAHEDZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 23:03:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZAHEDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 22:59:35 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:54858 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751773AbZAHD7e (ORCPT
+	Wed, 7 Jan 2009 23:03:12 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:9801 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZAHEDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 22:59:34 -0500
-Date: Thu, 8 Jan 2009 09:29:30 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>, riel@redhat.com,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 0/4] Memory controller soft limit patches
-Message-ID: <20090108035930.GB7294@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain> <20090108093040.22d5f281.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 7 Jan 2009 23:03:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XdFhFN5LNXx0j7GKcl0PL3pJymRp7YPkaXPx9g5cTM+GmZ88WPWZdORLzAp12g03KW
+         gjl7o9pY+9JmX+887ZgfzFU0ZgsYOIOFX0K18013iE4va10yT8hSArele0V66zV9dMRA
+         0G6qvkaI0EnUS8XEEgsEpi73tlhcwYedhLAB4=
+Message-ID: <5a4c581d0901072003j1d3c7d0dy9b2f4cdd68bc1663@mail.gmail.com>
+Date: Thu, 8 Jan 2009 05:03:07 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
+Cc: Netdev <netdev@vger.kernel.org>
+In-Reply-To: <5a4c581d0901070624t6e769966t6b034b14d4732bd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090108093040.22d5f281.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <5a4c581d0901070624t6e769966t6b034b14d4732bd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-08 09:30:40]:
+On Wed, Jan 7, 2009 at 3:24 PM, Alessandro Suardi
+<alessandro.suardi@gmail.com> wrote:
+> From dmesg:
+>
+> [asuardi@sandman src]$ dmesg | grep tg3
+> tg3.c:v3.97 (December 10, 2008)
+> tg3 0000:02:00.0: PCI INT A -> Link[LNKA] -> GSI 11 (level, low) -> IRQ 11
+> tg3 0000:02:00.0: setting latency timer to 64
+> tg3 0000:02:00.0: wake-up capability disabled by ACPI
+> tg3 0000:02:00.0: PME# disabled
+> tg3 0000:02:00.0: firmware: requesting tigon/tg3_tso.bin
+> tg3: Failed to load firmware "tigon/tg3_tso.bin"
+> tg3 0000:02:00.0: PCI INT A disabled
+> tg3: probe of 0000:02:00.0 failed with error -2
+>
+>
+> But /lib/firmware/tigon/tg3_tso.bin is actually present:
+>
+> [asuardi@sandman src]$ ls -l /lib/firmware/tigon/tg3_tso.bin
+> -rw-r--r-- 1 root root 7004 2009-01-06 22:58 /lib/firmware/tigon/tg3_tso.bin
+>
+>
+>
+> Diffing the .configs one can see CONFIG_KMOD disappeared; and
+>  the output of the kernel build in -git8 also has the IHEX parts about
+>  tg3 firmware which are new (I don't recall seeing those in the last
+>  1000 builds or so ;)
+>
+> [asuardi@sandman src]$ diff .config-2.6.28-git[78]
+> 3,4c3,4
+> < # Linux kernel version: 2.6.28-git7
+> < # Mon Jan  5 17:34:11 2009
+> ---
+>> # Linux kernel version: 2.6.28-git8
+>> # Tue Jan  6 22:06:19 2009
+> 133d132
+> < CONFIG_KMOD=y
+> 1324a1324
+>> # CONFIG_TWL4030_CORE is not set
+> 1591d1590
+> < CONFIG_HID_BRIGHT=y
+> 1595d1593
+> < CONFIG_HID_DELL=y
+> 1602a1601
+>> CONFIG_HID_NTRIG=y
+> 1608a1608,1609
+>> # CONFIG_GREENASIA_FF is not set
+>> CONFIG_HID_TOPSEED=y
+> 1821c1822
+> < # CONFIG_OCFS2_COMPAT_JBD is not set
+> ---
+>> CONFIG_OCFS2_FS_POSIX_ACL=y
+> 1825c1826,1832
+> < # CONFIG_QUOTA is not set
+> ---
+>> CONFIG_QUOTA=y
+>> CONFIG_QUOTA_NETLINK_INTERFACE=y
+>> # CONFIG_PRINT_QUOTA_WARNING is not set
+>> CONFIG_QUOTA_TREE=y
+>> # CONFIG_QFMT_V1 is not set
+>> CONFIG_QFMT_V2=y
+>> CONFIG_QUOTACTL=y
+>
+>
+>
+> [asuardi@sandman src]$ diff /tmp/make-kernel-2.6.28-git[78].out
+> 669a670
+>>   CC [M]  fs/ocfs2/blockcheck.o
+> 692a694,695
+>>   CC [M]  fs/ocfs2/quota_local.o
+>>   CC [M]  fs/ocfs2/quota_global.o
+> 693a697
+>>   CC [M]  fs/ocfs2/acl.o
+> 810a815,818
+>>   CC      fs/dquot.o
+>>   CC      fs/quota_v2.o
+>>   CC      fs/quota_tree.o
+>>   CC      fs/quota.o
+> 1045c1053
+> < /share/src/linux-2.6.28-git7/arch/x86/include/asm/string_32.h:75:
+> warning: array subscript is above array bounds
+> ---
+>> /share/src/linux-2.6.28-git8/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
+> 1286d1293
+> <   CC      drivers/hid/hid-bright.o
+> 1290d1296
+> <   CC      drivers/hid/hid-dell.o
+> 1295a1302
+>>   CC      drivers/hid/hid-ntrig.o
+> 1300a1308
+>>   CC      drivers/hid/hid-topseed.o
+> 1521c1529
+> < /share/src/linux-2.6.28-git7/arch/x86/include/asm/string_32.h:75:
+> warning: array subscript is above array bounds
+> ---
+>> /share/src/linux-2.6.28-git8/arch/x86/include/asm/string_32.h:75: warning: array subscript is above array bounds
+> 1983d1990
+> < net/rfkill/rfkill.c:59: warning: 'rfkill_led_trigger' defined but not used
+> 2234,2235c2241,2242
+> < System is 2000 kB
+> < CRC 8dd05de2
+> ---
+>> System is 2013 kB
+>> CRC 37411210
+> 2646a2654,2656
+>>   IHEX    firmware/tigon/tg3.bin
+>>   IHEX    firmware/tigon/tg3_tso.bin
+>>   IHEX    firmware/tigon/tg3_tso5.bin
+>
+>
+> So which is it, whatever the IHEX part did or the disappearance of
+>  CONFIG_KMOD (which is in the -git8 patch, indeed) to cause
+>  this issue ?
+>
+> Note that I don't have CONFIG_FIRMWARE_IN_KERNEL, but on
+>  the other hand I didn't earlier, either... and yes, CONFIG_MODULES=y.
+>
+>
+> thanks in advance, ciao,
 
-> On Thu, 08 Jan 2009 00:11:10 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > 
-> > Here is v1 of the new soft limit implementation. Soft limits is a new feature
-> > for the memory resource controller, something similar has existed in the
-> > group scheduler in the form of shares. We'll compare shares and soft limits
-> > below. I've had soft limit implementations earlier, but I've discarded those
-> > approaches in favour of this one.
-> > 
-> > Soft limits are the most useful feature to have for environments where
-> > the administrator wants to overcommit the system, such that only on memory
-> > contention do the limits become active. The current soft limits implementation
-> > provides a soft_limit_in_bytes interface for the memory controller and not
-> > for memory+swap controller. The implementation maintains an RB-Tree of groups
-> > that exceed their soft limit and starts reclaiming from the group that
-> > exceeds this limit by the maximum amount.
-> > 
-> > This is an RFC implementation and is not meant for inclusion
-> > 
-> Core implemantation seems simple and the feature sounds good.
+Still broken in -git10, cc'ing netdev... h/w is the onboard
+ Gigabit ethernet on my Dell Latitude D610, that is
 
-Thanks!
+02:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5751
+Gigabit Ethernet PCI Express (rev 01)
 
-> But, before reviewing into details, 3 points.
-> 
->   1. please fix current bugs on hierarchy management, before new feature.
->      AFAIK, OOM-Kill under hierarchy is broken. (I have patches but waits for
->      merge window close.)
+thanks,
 
-I've not hit the OOM-kill issue under hierarchy so far, is the OOM
-killer selecting a bad task to kill? I'll debug/reproduce the issue.
-I am not posting these patches for inclusion, fixing bugs is
-definitely the highest priority.
+--alessandro
 
->      I wonder there will be some others. Lockdep error which Nishimura reported
->      are all fixed now ?
+ "Sun keeps rising in the west / I keep on waking fully confused"
 
-I run all my kernels and tests with lockdep enabled, I did not see any
-lockdep errors showing up.
-
-> 
->   2. You inserts reclaim-by-soft-limit into alloc_pages(). But, to do this,
->      you have to pass zonelist to try_to_free_mem_cgroup_pages() and have to modify
->      try_to_free_mem_cgroup_pages().
->      2-a) If not, when the memory request is for gfp_mask==GFP_DMA or allocation
->           is under a cpuset, memory reclaim will not work correctlly.
-
-The idea behind adding the code in alloc_pages() is to detect
-contention and trim mem cgroups down, if they have grown beyond their
-soft limit
-
->      2-b) try_to_free_mem_cgroup_pages() cannot do good work for order > 1 allocation.
->   
->      Please try fake-numa (or real NUMA machine) and cpuset.
-
-Yes, order > 1 is documented in the patch and you can see the code as
-well. Your suggestion is to look at the gfp_mask as well, I'll do
-that.
-
-> 
->   3. If you want to insert hooks to "generic" page allocator, it's better to add CC to
->      Rik van Riel, Kosaki Motohiro, at leaset.
-
-Sure, I'll do that in the next patchset.
-
-> 
->      To be honest, I myself don't like to add a hook to alloc_pages() directly.
->      Can we implment call soft-limit like kswapd (or on kswapd()) ?
->      i.e. in moderate way ?
->    
-
-Yes, that might be another point to experiment with, I'll try that in
-the next iteration.
-
-
-> A happy new year,
-> 
-
-A very happy new year to you as well.
-
-> -Kame
-> 
-
--- 
-	Balbir
+   (The Replacements, "Within Your Reach")
