@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762442AbZAHTzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762241AbZAHT53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762442AbZAHTzu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758569AbZAHTza
+	id S1762241AbZAHT53 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbZAHT5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:55:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59970 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757226AbZAHTz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:55:28 -0500
-Date: Thu, 8 Jan 2009 11:54:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Mason <chris.mason@oracle.com>
-cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <1231441350.14304.48.camel@think.oraclecorp.com>
-Message-ID: <alpine.LFD.2.00.0901081140550.3283@localhost.localdomain>
-References: <1231441350.14304.48.camel@think.oraclecorp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 8 Jan 2009 14:57:20 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52963 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753858AbZAHT5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 14:57:19 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Connor Behan <connor.behan@gmail.com>
+Subject: Re: Can't allocate resources for PCI video card behind bridge
+Date: Thu, 8 Jan 2009 20:56:59 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Linux PCI <linux-pci@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <49665493.4070808@gmail.com>
+In-Reply-To: <49665493.4070808@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901082057.00170.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cc-ing linux-pci and Jesse.
 
-
-On Thu, 8 Jan 2009, Chris Mason wrote:
+On Thursday 08 January 2009, Connor Behan wrote:
+> Hello, I am trying to use two video cards. One is the built in ATI Rage 
+> Mobility M3 AGP card which drives the screen of my laptop (Thinkpad a22m 
+> 2628-S1U if that matters), the other is the ATI Radeon X1550 PCI card in 
+> the Thinkpad Dock II which is supposed to drive an external monitor. 
+> X1550 is a PCI-E chipset but my card is a PCI card with an onboard PCI 
+> to PCI-E bridge. I first tried this with kernel 2.6.27 as packaged by 
+> Archlinux and got the following startup errors:
 > 
-> The patch below isn't quite what Linus suggested, but it is working here
-> at least.  In every test I've tried so far, this is faster than the ugly
-> btrfs spin.
-
-Sadly, I don't think it's really working.
-
-I was pretty sure that adding the unlocked loop should provably not change 
-the mutex lock semantics. Why? Because it's just basically equivalent to 
-just doing the mutex_trylock() without really changing anything really 
-fundamental in the mutex logic.
-
-And that argument is sadly totally bogus. 
-
-The thing is, we used to have this guarantee that any contention would 
-always go into the slowpath, and then in the slow-path we serialize using 
-the spinlock. 
-
-So I think the bug is still there, we just hid it better by breaking out 
-of the loop with that "if (need_resched())" always eventually triggering. 
-And it would be ok if it really is guaranteed to _eventually_ trigger, and 
-I guess with timeslices it eventually always will, but I suspect we could 
-have some serious latency spikes.
-
-The problem? Setting "lock->count" to 0. That will mean that the next 
-"mutex_unlock()" will not necessarily enter the slowpath at all, and won't 
-necessarily wake things up like it should.
-
-Normally we set lock->count to 0 after getting the lock, and only _inside_ 
-the spinlock, and then we check the waiters after that. The comment says 
-it all:
-
-        /* set it to 0 if there are no waiters left: */
-        if (likely(list_empty(&lock->wait_list)))
-                atomic_set(&lock->count, 0);
-
-and the spinning case violates that rule. 
-
-Now, the spinning case only sets it to 0 if we saw it set to 1, so I think 
-the argument can go something like:
-
- - if it was 1, and we _have_ seen contention, then we know that at 
-   least _one_ person that set it to 1 must have gone through the unlock 
-   slowpath (ie it wasn't just a normal "locked increment".
-
- - So even if _we_ (in the spinning part of stealing that lock) didn't 
-   wake the waiter up, the slowpath wakeup case (that did _not_ wake 
-   us up, since we were spinning and hadn't added ourselves to the wait 
-   list) must have done so.
-
-So maybe it's all really really safe, and we're still guaranteed to have 
-as many wakeups as we had go-to-sleeps. But I have to admit that my brain 
-hurts a bit from worrying about this.
-
-Sleeping mutexes are not ever simple. 
-
-			Linus
+> pci 0000:00:04.0: BAR 7: can't allocate resource
+> pci 0000:00:04.0: BAR 8: can't allocate resource
+> pci 0000:00:04.0: BAR 9: can't allocate resource
+> 
+> I've seen this problem discussed in the archives and couldn't find what 
+> looked like a fix. I WAS able to fix this by loading dock, pci_slot, 
+> pci_hotplug and acpiphp and appending pci=assign-busses. However since 
+> then I have run a package update to kernel 2.6.27.10 and I am once again 
+> getting the same problem even with the same modules and parameters. I 
+> have since tried appending irqpoll, pci=bios, pci=routeirq and acpi=off 
+> with no success. I have even rolled back my kernel to 2.6.27 (and the 
+> headers and a few other packages) setup my system the way it was setup 
+> before to the best of my knowledge but I still can't get the PCI card 
+> working again. Another subtle change must be responsible.
+> 
+> Certain PCI devices in the dock are working such as the Cardbus slots... 
+> but I could care less about them... is there a way I could tell the 
+> kernel to prioritize the video card and sacrifice Cardbus slots first if 
+> it can't allocate enough resources? Also my lspci output shows a large 
+> gap 01:00.0 to 06:00.0 so some part of my system must have expected 
+> other devices in that range. When I had the video card working it was 
+> 02:00.0. I have tried changing the four IRQ numbers in the BIOS but this 
+> is pointless at best and sometimes causes my soundcard to be disabled. 
+> My dmesg, lspci and (trimmed) kernel config are pasted:
+> 
+> dmesg: http://pastebin.com/f3ae15a58
+> lspci: http://pastebin.com/f5d7dee6e
+> .config: http://pastebin.com/fb925760
+> 
+> I'm hoping for a solution that doesn't require recompiling the kernel 
+> but I definitely would if that's necessary. In any event I'll be much 
+> more vigilant about system updates if I get this working again. 
+> Thank-you very much for your time.
