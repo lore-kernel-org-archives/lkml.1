@@ -1,101 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbZAHORe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZAHORr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbZAHORe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 09:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZAHORY
+	id S1755657AbZAHORr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 09:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZAHORc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 09:17:24 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:55981 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752220AbZAHORY (ORCPT
+	Thu, 8 Jan 2009 09:17:32 -0500
+Received: from ns0.wincor-nixdorf.com ([80.154.98.130]:48227 "EHLO
+	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759546AbZAHORb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 09:17:24 -0500
-Date: Thu, 8 Jan 2009 09:17:22 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: akpm@linux-foundation.org
-cc: mm-commits@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: + kernel-trace-ring_bufferc-use-div_round_up.patch added to -mm
- tree
-In-Reply-To: <200901080529.n085TM7t015825@imap1.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0901080916080.22642@gandalf.stny.rr.com>
-References: <200901080529.n085TM7t015825@imap1.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 8 Jan 2009 09:17:31 -0500
+X-Greylist: delayed 510 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Jan 2009 09:17:30 EST
+Message-ID: <49660846.2090200@wincor-nixdorf.com>
+Date: Thu, 08 Jan 2009 15:05:58 +0100
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eugene Teo <eugeneteo@kernel.org>
+CC: linux-kernel@vger.kernel.org, rolandd@cisco.com, sean.hefty@intel.com,
+       hal.rosenstock@gmail.com
+Subject: Re: [PATCH] IB: check for memory allocation failure
+References: <20090108135549.GA9756@kernel.sg>
+In-Reply-To: <20090108135549.GA9756@kernel.sg>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF47ED13F4A502352BD4E1C0D"
+X-OriginalArrivalTime: 08 Jan 2009 14:08:48.0369 (UTC) FILETIME=[A037E610:01C9719A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ------------------------------------------------------
-> Subject: kernel/trace/ring_buffer.c: use DIV_ROUND_UP
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Instead of open-coding it.
-> 
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF47ED13F4A502352BD4E1C0D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi Eugene,
+
+please see below.
+
+Cheers,
+Niels
+
+
+Eugene Teo wrote:
+> Fix error-path NULL deref in c2_register_device().
+>=20
+> Signed-off-by: Eugene Teo <eugeneteo@kernel.org>
 > ---
-> 
->  kernel/trace/ring_buffer.c |   17 +++++------------
->  1 file changed, 5 insertions(+), 12 deletions(-)
-> 
-> diff -puN kernel/trace/ring_buffer.c~kernel-trace-ring_bufferc-use-div_round_up kernel/trace/ring_buffer.c
-> --- a/kernel/trace/ring_buffer.c~kernel-trace-ring_bufferc-use-div_round_up
-> +++ a/kernel/trace/ring_buffer.c
-> @@ -123,8 +123,7 @@ void ring_buffer_normalize_time_stamp(in
->  EXPORT_SYMBOL_GPL(ring_buffer_normalize_time_stamp);
->  
->  #define RB_EVNT_HDR_SIZE (sizeof(struct ring_buffer_event))
-> -#define RB_ALIGNMENT_SHIFT	2
-> -#define RB_ALIGNMENT		(1 << RB_ALIGNMENT_SHIFT)
-> +#define RB_ALIGNMENT		4U
->  #define RB_MAX_SMALL_DATA	28
->  
->  enum {
-> @@ -151,7 +150,7 @@ rb_event_length(struct ring_buffer_event
->  
->  	case RINGBUF_TYPE_DATA:
->  		if (event->len)
-> -			length = event->len << RB_ALIGNMENT_SHIFT;
-> +			length = event->len / RB_ALIGNMENT;
+>  drivers/infiniband/hw/amso1100/c2_provider.c |   14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/infiniband/hw/amso1100/c2_provider.c b/drivers/inf=
+iniband/hw/amso1100/c2_provider.c
+> index 5119d65..8cede6c 100644
+> --- a/drivers/infiniband/hw/amso1100/c2_provider.c
+> +++ b/drivers/infiniband/hw/amso1100/c2_provider.c
+> @@ -780,11 +780,11 @@ int c2_register_device(struct c2_dev *dev)
+>  	/* Register pseudo network device */
+>  	dev->pseudo_netdev =3D c2_pseudo_netdev_init(dev);
+>  	if (!dev->pseudo_netdev)
+> -		goto out3;
+> +		goto out4;
+>
+>  	ret =3D register_netdev(dev->pseudo_netdev);
+>  	if (ret)
+> -		goto out2;
+> +		goto out3;
+> =20
+>  	pr_debug("%s:%u\n", __func__, __LINE__);
+>  	strlcpy(dev->ibdev.name, "amso%d", IB_DEVICE_NAME_MAX);
+> @@ -851,6 +851,8 @@ int c2_register_device(struct c2_dev *dev)
+>  	dev->ibdev.post_recv =3D c2_post_receive;
+> =20
+>  	dev->ibdev.iwcm =3D kmalloc(sizeof(*dev->ibdev.iwcm), GFP_KERNEL);
+> +	if (!dev->ibdev.iwcm)
+> +		goto out2;
 
-uh, shouldn't that be a * and not a / ?
+Is it not needed to set 'ret =3D -ENOMEM'?
 
--- Steve
 
->  		else
->  			length = event->array[0];
->  		return length + RB_EVNT_HDR_SIZE;
-> @@ -931,15 +930,11 @@ rb_update_event(struct ring_buffer_event
->  		break;
->  
->  	case RINGBUF_TYPE_TIME_EXTEND:
-> -		event->len =
-> -			(RB_LEN_TIME_EXTEND + (RB_ALIGNMENT-1))
-> -			>> RB_ALIGNMENT_SHIFT;
-> +		event->len = DIV_ROUND_UP(RB_LEN_TIME_EXTEND, RB_ALIGNMENT);
->  		break;
->  
->  	case RINGBUF_TYPE_TIME_STAMP:
-> -		event->len =
-> -			(RB_LEN_TIME_STAMP + (RB_ALIGNMENT-1))
-> -			>> RB_ALIGNMENT_SHIFT;
-> +		event->len = DIV_ROUND_UP(RB_LEN_TIME_STAMP, RB_ALIGNMENT);
->  		break;
->  
->  	case RINGBUF_TYPE_DATA:
-> @@ -948,9 +943,7 @@ rb_update_event(struct ring_buffer_event
->  			event->len = 0;
->  			event->array[0] = length;
->  		} else
-> -			event->len =
-> -				(length + (RB_ALIGNMENT-1))
-> -				>> RB_ALIGNMENT_SHIFT;
-> +			event->len = DIV_ROUND_UP(length, RB_ALIGNMENT);
->  		break;
->  	default:
->  		BUG();
-> _
+>  	dev->ibdev.iwcm->add_ref =3D c2_add_ref;
+>  	dev->ibdev.iwcm->rem_ref =3D c2_rem_ref;
+>  	dev->ibdev.iwcm->get_qp =3D c2_get_qp;
+> @@ -870,15 +872,17 @@ int c2_register_device(struct c2_dev *dev)
+>  		if (ret)
+>  			goto out0;
+>  	}
+> -	goto out3;
+> +	goto out4;
+> =20
+>  out0:
+>  	ib_unregister_device(&dev->ibdev);
+>  out1:
+> -	unregister_netdev(dev->pseudo_netdev);
+> +	kfree(dev->ibdev.iwcm);
+>  out2:
+> -	free_netdev(dev->pseudo_netdev);
+> +	unregister_netdev(dev->pseudo_netdev);
+>  out3:
+> +	free_netdev(dev->pseudo_netdev);
+> +out4:
+>  	pr_debug("%s:%u ret=3D%d\n", __func__, __LINE__, ret);
+>  	return ret;
+>  }
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+
+--------------enigF47ED13F4A502352BD4E1C0D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFJZghG5KAkGQPO/QoRApNnAKCZev7VMHJ6qmNc3nk8xVzpwPVzxQCfWXTm
+1NsC8HXmXGi0/F6ESm+/ZQM=
+=cUOU
+-----END PGP SIGNATURE-----
+
+--------------enigF47ED13F4A502352BD4E1C0D--
