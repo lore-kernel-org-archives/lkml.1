@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbZAHOjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZAHOlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760772AbZAHOjA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 09:39:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbZAHOiq
+	id S1760067AbZAHOlR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 09:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZAHOlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 09:38:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47825 "EHLO mx2.redhat.com"
+	Thu, 8 Jan 2009 09:41:03 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56199 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760662AbZAHOip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 09:38:45 -0500
-Date: Thu, 8 Jan 2009 15:38:29 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-audit@redhat.com, viro@zeniv.linux.org.uk, eparis@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: audit: EXECVE record - removed bogus newline
-Message-ID: <20090108153829.7d063a4b@psychotron.englab.brq.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751170AbZAHOlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 09:41:01 -0500
+Date: Thu, 8 Jan 2009 15:40:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Robert Richter <robert.richter@amd.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] ring_buffer: fix ring_buffer_event_length()
+Message-ID: <20090108144046.GB18120@elte.hu>
+References: <alpine.DEB.1.10.0901072356480.14345@gandalf.stny.rr.com> <20090108115958.GB1539@elte.hu> <alpine.DEB.1.10.0901080927340.22642@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901080927340.22642@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EXECVE records contain a newline after every argument. auditd converts
-"\n" to " " so you cannot see newlines even in raw logs, but they're
-there nevertheless. If you're not using auditd, you need to work round
-them. These '\n' chars are can be easily replaced by spaces when
-creating record in kernel. Note there is no need for trailing '\n' in
-an audit record. 
 
-record before this patch:
-"type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\"\na1=\"a\"\na2=\"b\"\na3=\"c\"\n"
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-record after this patch:
-"type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\" a1=\"a\" a2=\"b\" a3=\"c\""
+> 
+> On Thu, 8 Jan 2009, Ingo Molnar wrote:
+> > 
+> > That is a pretty useless duplication of the subject line, so i dropped it. 
+> > When the subject line explains the practical impact already, there's no 
+> > need to add the impact line.
+> 
+> Actually, Frederic and I had a discussion about a duplicate Impact line. 
+> Perhaps someone is searching the git log on "Impact:" looking for all 
+> fixes. Perhaps just a simple:
+> 
+> Impact: fix
+> 
+> would be sufficient?
 
+hm, okay - but it should be somewhat different. The impact line should 
+really be a 'description of impact/risk'. That overlaps subject lines some 
+of the time - but often not. So we could do something more specific like:
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
----
- kernel/auditsc.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+  Impact: change/fix (unused) ring-buffer API to be more useful
 
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 8cbddff..c7012e0 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -1109,7 +1109,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
- 		 * so we can be sure nothing was lost.
- 		 */
- 		if ((i == 0) && (too_long))
--			audit_log_format(*ab, "a%d_len=%zu ", arg_num,
-+			audit_log_format(*ab, " a%d_len=%zu", arg_num,
- 					 has_cntl ? 2*len : len);
- 
- 		/*
-@@ -1129,7 +1129,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
- 		buf[to_send] = '\0';
- 
- 		/* actually log it */
--		audit_log_format(*ab, "a%d", arg_num);
-+		audit_log_format(*ab, " a%d", arg_num);
- 		if (too_long)
- 			audit_log_format(*ab, "[%d]", i);
- 		audit_log_format(*ab, "=");
-@@ -1137,7 +1137,6 @@ static int audit_log_single_execve_arg(struct audit_context *context,
- 			audit_log_n_hex(*ab, buf, to_send);
- 		else
- 			audit_log_format(*ab, "\"%s\"", buf);
--		audit_log_format(*ab, "\n");
- 
- 		p += to_send;
- 		len_left -= to_send;
-@@ -1165,7 +1164,7 @@ static void audit_log_execve_info(struct audit_context *context,
- 
- 	p = (const char __user *)axi->mm->arg_start;
- 
--	audit_log_format(*ab, "argc=%d ", axi->argc);
-+	audit_log_format(*ab, "argc=%d", axi->argc);
- 
- 	/*
- 	 * we need some kernel buffer to hold the userspace args.  Just
--- 
-1.5.6.5
+(For future commits.)
 
+	Ingo
