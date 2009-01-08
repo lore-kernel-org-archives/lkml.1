@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZAHHF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZAHHLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbZAHHF6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 02:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZAHHFr
+	id S1755547AbZAHHLW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 02:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZAHHLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 02:05:47 -0500
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:12312 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbZAHHFq (ORCPT
+	Thu, 8 Jan 2009 02:11:10 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60013 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbZAHHLI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 02:05:46 -0500
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: :P2MHfkW8eP4Mre39l357AZT/I7AY/7nT2yrT1q0ngWNsKR9Dbc7nsXJ75kzIpbGSp3DP
-Message-ID: <4965A5C9.9070201@hartkopp.net>
-Date: Thu, 08 Jan 2009 08:05:45 +0100
-From: Oliver Hartkopp <socketcan@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: RFC: Network privilege separation.
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <87mye2yg8a.fsf@basil.nowhere.org> <20090108023111.GJ3164@didacte.laptop.org> <20090108031042.GQ496@one.firstfloor.org>
-In-Reply-To: <20090108031042.GQ496@one.firstfloor.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 8 Jan 2009 02:11:08 -0500
+Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       paulmck@linux.vnet.ibm.com, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0901071529530.3057@localhost.localdomain>
+References: <1231283778.11687.136.camel@twins>
+	 <1231329783.11687.287.camel@twins>
+	 <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+	 <1231347442.11687.344.camel@twins>
+	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
+	 <20090107210923.GV2002@parisc-linux.org>
+	 <20090107213924.GP496@one.firstfloor.org> <49652C7C.3000909@novell.com>
+	 <20090107223317.GB27629@elte.hu> <4965331E.8090202@novell.com>
+	 <alpine.DEB.1.10.0901071806240.23456@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901071529530.3057@localhost.localdomain>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Thu, 08 Jan 2009 08:10:30 +0100
+Message-Id: <1231398630.11687.382.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wed, Jan 07, 2009 at 09:31:11PM -0500, Michael Stone wrote:
->   
->>   * so far as I know, netfilter is only commonly used to filter IP traffic. 
->>   Can
->>     I really use it to limit connections to abstract unix sockets?
->>     
->
-> No you can't. But is that really your requirement? Why limiting Unix
-> sockets and not e.g. named pipes? Unix sockets do not talk to the network.
->
-> I suppose I don't understand your requirements very well.
->   
+On Wed, 2009-01-07 at 15:32 -0800, Linus Torvalds wrote:
+> 
+> On Wed, 7 Jan 2009, Steven Rostedt wrote:
+> > 
+> > What would be interesting is various benchmarks against all three.
+> > 
+> > 1) no mutex spinning.
+> > 2) get_task_struct() implementation.
+> > 3) spin_or_sched implementation.
+> 
+> One of the issues is that I cannot convince myself that (2) is even 
+> necessarily correct. At least not without having all cases happen inder 
+> the mutex spinlock - which they don't. Even with the original patch, the 
+> uncontended cases set and cleared the owner field outside the lock.
 
-I think it would be very interesting for PF_CAN sockets also.
-CAN has no IP at all and the suggested idea of 'self-limiting' a user 
-process to use only the already open sockets could be a way to address 
-the use-cases Michael stated in his RFC.
+Yes, 2 isn't feasible for regular mutexes as we have non-atomic owner
+tracking.
 
-Regards,
-Oliver
+I've since realized the whole rtmutex thing is fundamentally difference
+on a few levels:
+
+  a) we have atomic owner tracking (that's the lock itself, it holds the
+task_pointer as a cookie), and 
+
+  b) we need to do that whole enqueue on the waitlist thing because we
+need to do the PI propagation and such to figure out if the current task
+is even allowed to acquire -- that is, only the highest waiting and or
+lateral steal candidates are allowed to spin acquire.
+
+
