@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbZAHKUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbZAHK0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbZAHKUg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 05:20:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZAHKU2
+	id S1757844AbZAHK0m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 05:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZAHK0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 05:20:28 -0500
-Received: from h155.mvista.com ([63.81.120.155]:12342 "EHLO imap.sh.mvista.com"
+	Thu, 8 Jan 2009 05:26:34 -0500
+Received: from h155.mvista.com ([63.81.120.155]:12639 "EHLO imap.sh.mvista.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750713AbZAHKU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 05:20:28 -0500
-Message-ID: <4965D363.6040608@ru.mvista.com>
-Date: Thu, 08 Jan 2009 13:20:19 +0300
+	id S1751597AbZAHK0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 05:26:33 -0500
+Message-ID: <4965D4D1.2010901@ru.mvista.com>
+Date: Thu, 08 Jan 2009 13:26:25 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
@@ -39,7 +39,7 @@ Benjamin Herrenschmidt wrote:
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 >   
 
-   I'm seeing that these 3 patch series (dating back to April) still 
+   I'm seeing that this 3 patch series (dating back to April) still 
 unapplied. Have everybody forgotten about them? I'd like to see them 
 finally applied.
 
