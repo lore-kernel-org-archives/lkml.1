@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZAHKKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZAHKMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbZAHKKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 05:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZAHKKa
+	id S1758030AbZAHKMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 05:12:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZAHKMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 05:10:30 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60734 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbZAHKK3 (ORCPT
+	Thu, 8 Jan 2009 05:12:14 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:38385 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751586AbZAHKMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 05:10:29 -0500
-Date: Thu, 8 Jan 2009 11:12:30 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] w35und: kill WBDEBUG and remove common.h header
-	file
-Message-ID: <20090108101230.GC7577@elf.ucw.cz>
-References: <Pine.LNX.4.64.0901081131290.15334@melkki.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901081131290.15334@melkki.cs.Helsinki.FI>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 8 Jan 2009 05:12:13 -0500
+Date: Thu, 8 Jan 2009 19:08:18 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com,
+       balbir@linux.vnet.ibm.com, lizf@cn.fujitsu.com, menage@google.com,
+       nishimura@mxp.nes.nec.co.jp
+Subject: [RFC][PATCH 0/4] some memcg fixes
+Message-Id: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-01-08 11:31:59, Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> The only remaining thing in common.h header file is the WBDEBUG() macro which
-> is unconditionally defined as printk(). Kill the macro and remove the header
-> file.
-> 
-> Cc: Pavel Machek <pavel@suse.cz>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Hi.
 
-ACK.
+These are patches that I've been testing.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+They survived my test(rmdir aftre task move under memory pressure
+and page migration) w/o big problem(except oom) for hours
+in both use_hierarchy==0/1 case.
+
+I want them go in 2.6.29.
+
+They are based on mmotm-2009-01-05-12-50.
+
+[1/4] fix for mem_cgroup_get_reclaim_stat_from_page
+
+[2/4] fix error path of mem_cgroup_move_parent
+
+[3/4] fix for mem_cgroup_hierarchical_reclaim
+
+[4/4] make oom less frequently
+
+
+I think 1 and 2 are ok.
+I'll update them based on comments.
+
+
+Thanks,
+Daisuke Nishimura.
