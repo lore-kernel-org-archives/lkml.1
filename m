@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbZAHTX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZAHT0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761999AbZAHTX5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760728AbZAHTXs
+	id S1758127AbZAHT0y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:26:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbZAHT0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:23:48 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57685 "EHLO
+	Thu, 8 Jan 2009 14:26:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53262 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755675AbZAHTXq (ORCPT
+	with ESMTP id S1759933AbZAHT0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:23:46 -0500
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Mason <chris.mason@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <alpine.LFD.2.00.0901081109300.3283@localhost.localdomain>
-References: <1231441350.14304.48.camel@think.oraclecorp.com>
-	 <alpine.LFD.2.00.0901081109300.3283@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Jan 2009 20:23:29 +0100
-Message-Id: <1231442609.27687.1.camel@twins>
+	Thu, 8 Jan 2009 14:26:43 -0500
+Date: Thu, 8 Jan 2009 11:28:40 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Cc: torvalds@osdl.org, "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: Too async libata breakage
+Message-ID: <20090108112840.46e3f063@infradead.org>
+In-Reply-To: <b6fcc0a0901081115n1174aebj5f6a3fbb8adea789@mail.gmail.com>
+References: <b6fcc0a0901081115n1174aebj5f6a3fbb8adea789@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 11:13 -0800, Linus Torvalds wrote:
+On Thu, 8 Jan 2009 22:15:56 +0300
+"Alexey Dobriyan" <adobriyan@gmail.com> wrote:
+
+> commit f29d3b23238e1955a8094e038c72546e99308e61 aka
+> "fastboot: Make libata initialization even more async"
+> results in no findable /dev/sda2 to mount / here.
 > 
-> Well, at least we do unless you enable that broken paravirt support. I'm 
-> not at all clear on why CONFIG_PARAVIRT wants to use inferior locks, but I 
-> don't much care.
+> Kernel correctly sees sda as 750GB drive and the rest too.
+> 
+> CONFIG_ATA_PIIX is in use, everything built-in, plain partitions,
+> no initrd, DM, MD etc.
 
-Because the virtual cpu that has the ticket might not get scheduled for
-a while, even though another vcpu with a spinner is scheduled.
+hmm. 
+no initrd; 
 
-The whole (para)virt is a nightmare in that respect.
+can you try an experiment?
+if you edit init/do_mounts.c and find the "async_synchronize_full" call.
+that is just after a while() loop. 
+Can you put another call to synchronize_full to also just before that
+while loop and see if that fixes it ?
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
