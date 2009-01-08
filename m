@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbZAHV53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbZAHWES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762949AbZAHV53 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 16:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbZAHV5U
+	id S1761258AbZAHWES (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 17:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZAHWD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 16:57:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39601 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754615AbZAHV5T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 16:57:19 -0500
-Date: Thu, 8 Jan 2009 13:56:25 -0800
-From: Dirk Hohndel <hohndel@infradead.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Ingo Molnar <mingo@elte.hu>, iommu@lists.linux-foundation.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: git-latest: kernel oops in IOMMU setup
-Message-ID: <20090108135625.7e8dc1b4@infradead.org>
-In-Reply-To: <20090108214116.GB20506@colo.lackof.org>
-References: <20090108120538.0176d348@infradead.org>
-	<20090108214116.GB20506@colo.lackof.org>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; x86_64-redhat-linux-gnu)
+	Thu, 8 Jan 2009 17:03:59 -0500
+Received: from 1wt.eu ([62.212.114.60]:1277 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754746AbZAHWD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 17:03:58 -0500
+Date: Thu, 8 Jan 2009 23:03:45 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
+       Ben Mansell <ben@zeus.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090108220345.GB24243@1wt.eu>
+References: <20090108173028.GA22531@1wt.eu> <20090108194424.GE32491@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090108194424.GE32491@kernel.dk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009 14:41:16 -0700
-Grant Grundler <grundler@parisc-linux.org> wrote:
-
-> On Thu, Jan 08, 2009 at 12:05:38PM -0800, Dirk Hohndel wrote:
+On Thu, Jan 08, 2009 at 08:44:24PM +0100, Jens Axboe wrote:
+> On Thu, Jan 08 2009, Willy Tarreau wrote:
+> > Jens,
 > > 
-> > latest git from Linus. On a Thinkpad x200s with VT-d enabled (if I
-> > disable VT-d, this of course goes away). 
-> > 
-> > The oops happens very early during boot in device_to_iommu (called
-> > from domain_context_mapping_one).
+> > here's the other patch I was talking about, for better behaviour of
+> > non-blocking splice(). Ben Mansell also confirms similar improvements
+> > in his tests, where non-blocking splice() initially showed half of
+> > read()/write() performance. Ben, would you mind adding a Tested-By
+> > line ?
+> 
+> Looks very good to me, I don't see any valid reason to have that !timeo
+> break. So feel free to add my acked-by to that patch and send it to
+> Dave.
 
-Look here, that's where it's called from.
-Do you want me to note down the complete backtrace?
+Done, thanks.
 
+Also, I tried to follow the code path from the userspace splice() call and
+the kernel code. While splicing from socket to a pipe seems obvious till
+tcp_splice_read(), I have a hard time finding the correct way from the pipe
+to the socket.
 
-> If you can, a back trace. Basically just need to know which caller
-> is tripping over this. But there can't be that many callers and they
-> are all in this file:
-> ...
-> so it should be possible to figure out which one is called
-> before the dev is setup. It's unlikely to be anything with
-> "remove" in the name. :)
+It *seems* to me that we proceed like this, I'd like someone to confirm :
 
-correct - it's context_mapping_one
+sys_splice()
+  do_splice()
+    do_splice_from()
+      generic_splice_sendpage()      [ I assumed this from socket_file_ops ]
+        splice_from_pipe(,,pipe_to_sendpage)
+          __splice_from_pipe(,,pipe_to_sendpage)
+            pipe_to_sendpage()
+              tcp_sendpage()         [ I assumed this from inet_stream_ops ]
+                do_tcp_sendpages()   (if NETIF_F_SG) or sock_no_sendpage()
 
--- 
-Dirk Hohndel
-Intel Open Source Technology Center
+I hope that I guessed it right because it does not appear obvious to me. It
+will help me try to understand better the corruption problem.
+
+Now for the read part, am I wrong tcp_splice_read() will return -EAGAIN
+if the pipe is full ? It seems to me that this will be brought up by
+splice_to_pipe(), via __tcp_splice_read, tcp_read_sock, tcp_splice_data_recv
+and skb_splice_bits.
+
+If so, this can cause serious trouble because if there is data available in
+a socket, poll() will return POLLIN. Then we call splice(sock, pipe) but the
+pipe is full, so we get -EAGAIN, which in turn makes the application think
+that we need to poll again, and since no data has moved, we'll immediately
+call splice() again. In my early experiments, I'm pretty sure I already came
+across such a situation. Shouldn't we return -EBUSY or -ENOSPC in this case ?
+I can work on patches if there is a consensus around those issues, and this
+will also help me understand better the splice internals. I just don't want
+to work in the wrong direction for nothing.
+
+Thanks,
+Willy
+
