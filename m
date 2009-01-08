@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbZAHQkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZAHQnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757815AbZAHQkq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 11:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZAHQki
+	id S1754737AbZAHQnm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 11:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZAHQne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 11:40:38 -0500
-Received: from mail-in-09.arcor-online.net ([151.189.21.49]:39397 "EHLO
-	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752653AbZAHQkh (ORCPT
+	Thu, 8 Jan 2009 11:43:34 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:40860 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbZAHQne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 11:40:37 -0500
-Message-ID: <49662C7C.2040500@arcor.de>
-Date: Thu, 08 Jan 2009 17:40:28 +0100
-From: Thomas Dahlmann <dahlmann.thomas@arcor.de>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: amd5536udc interrupts bug
-References: <49661E83.2070703@arcor.de>
-In-Reply-To: <49661E83.2070703@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Jan 2009 11:43:34 -0500
+Date: Thu, 8 Jan 2009 17:45:14 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <npiggin@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Is 386 processor still supported?
+Message-ID: <20090108164514.GA18409@uranus.ravnborg.org>
+References: <20090108120338.6b8b4567@zonk.pl> <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz> <1231424025.11687.447.camel@twins> <alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz> <1231424833.11687.452.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231424833.11687.452.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 08, 2009 at 03:27:13PM +0100, Peter Zijlstra wrote:
+> On Thu, 2009-01-08 at 15:21 +0100, Jiri Kosina wrote:
+> > On Thu, 8 Jan 2009, Peter Zijlstra wrote:
+> > 
+> > > > Subject: x86: make spinlocks available on machines without xadd insn
+> > > > Current kernel wouldn't compile on ancient x86 machines that don't support 
+> > > > xadd instruction, as ticket spinlocks implementation unconditionally uses 
+> > > > it.
+> > > > On machines without CONFIG_X86_XADD, use old-style byte spinlock 
+> > > > implementation instead.
+> > > afaik we don't support i386-smp and up spinlocks are trivial
+> > > preempt_disable() calls.
+> > 
+> > Hmm. Where in Kconfig is SMP for M386 not allowed?
+> 
+> Dunno, kconfig is too much of a jungle for a simple person like me ;-)
 
-> Vadim Lobanov wrote:
->>  It is my understanding that a handler for a shared interrupt can be
->>  invoked at any time after the corresponding request_irq() call is
->>  made, simply because some other device on the same interrupt may
->>  already be active. This leaves us with a very noticeable race
->>  condition, where udc_irq() can be invoked with uninitialized 'dev'
->>  data.
->
-> Yes, your analysis appears correct.
+Kconfig for x86 does nothing to prevent us from selecting SMP
+when we have selected the 386 processor variant.
 
-Ah, right. Thanks for your analysis! Never ran into this condition as on the
-Geode systems I had the IRQ is shared between UDC and UOC/OTG
-(both on the CS5536 chip) and UOC never fires interrupts while UDC
-driver is loaded as both drivers (UOC/OTG driver is not in the kernel yet)
-register each other which makes sure that interrupts are enabled
-after  udc_pci_probe().
- 
->>  more complicated fix may be to try to shuffle all the code around to
->>  make sure that 'dev' is fully initialized before we request the irq,
->>  but I don't understand the code well enough (yet) to comfortably do
->>  this.
->
-> Yeah, that's the proper fix.
+But then you need to enable the CONFIG_EXPERT(*) option to
+select CPU type - which imply you know what you are doing.
 
-I could provide a fix within the next weeks. Currently I move to another 
-company and
-have no hardware to test it.
+(*) Named CONFIG_EMBEDDED for some reason.
 
-Maybe you want to try this. It should work to place the register init 
-from udc_probe()
-
-/* udc csr registers base */
-dev->csr = dev->virt_addr + UDC_CSR_ADDR;
-/* dev registers base */
-dev->regs = dev->virt_addr + UDC_DEVCFG_ADDR;
-/* ep registers base */
-dev->ep_regs = dev->virt_addr + UDC_EPREGS_ADDR;
-/* fifo's base */
-dev->rxfifo = (u32 __iomem *)(dev->virt_addr + UDC_RXFIFO_ADDR);
-dev->txfifo = (u32 __iomem *)(dev->virt_addr + UDC_TXFIFO_ADDR);
-
-just before request_irq(...) to allow the interrupt handler to read the 
-interrupt status
-registers.
-
-Thomas
-
-
-
+	Sam
