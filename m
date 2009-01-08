@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZAHMyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbZAHMzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbZAHMyq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 07:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbZAHMyh
+	id S1758917AbZAHMzA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 07:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbZAHMym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 07:54:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40684 "EHLO mx2.redhat.com"
+	Thu, 8 Jan 2009 07:54:42 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40697 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752653AbZAHMyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 07:54:36 -0500
+	id S1756007AbZAHMyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 07:54:41 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 00/10] Alter NOMMU mmap handling [ver #3]
+Subject: [PATCH 01/10] NOMMU: Fix cleanup handling in
+	ramfs_nommu_get_umapped_area() [ver #3]
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: bernds_cb1@t-online.de, dhowells@redhat.com, rgetz@blackfin.uclinux.org,
        vapier.adi@gmail.com, lethal@linux-sh.org, linux-kernel@vger.kernel.org
-Date: Thu, 08 Jan 2009 12:53:46 +0000
-Message-ID: <20090108125346.28454.90871.stgit@warthog.procyon.org.uk>
+Date: Thu, 08 Jan 2009 12:53:51 +0000
+Message-ID: <20090108125351.28454.81007.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090108125346.28454.90871.stgit@warthog.procyon.org.uk>
+References: <20090108125346.28454.90871.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,72 +31,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix cleanup handling in ramfs_nommu_get_umapped_area() by only freeing the
+number of pages that find_get_pages() said it had returned (nr) rather than
+attempting to free the number of pages we asked for (lpages) - thus avoiding
+the situation whereby put_page() may be handed NULL pointers if
+find_get_pages() returned fewer pages that were requested.
 
-The primary change made by the attached patches alters the NOMMU mmap code so
-that VMAs are per-MM rather than being a shared resource with separate per-MM
-linkage blocks.
+Also avoid a warning about nr being uninitialised and the need for an
+if-statement in the cleanup path by using appropriate gotos.
 
-This solves two problems:
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
- (1) In SYSV SHM where nattch for a segment does not reflect the number of
-     shmat's (and forks) done.
-
- (2) In mmap() where the VMA's vm_mm is set to point to the parent mm by an
-     exec'ing process when VM_EXECUTABLE is specified, regardless of the fact
-     that a VMA might be shared and already have its vm_mm assigned to another
-     process or even a dead process.
-
-And adds a number of features:
-
- (3) Allocations are now made with alloc_pages() rather than kmalloc().  This
-     simplifies page accounting within a block of pages.
-
- (4) Excess pages can be trimmed from allocations.
-
- (5) VMAs are added for the parent MM's RB-tree and mmap lists, as for MMU-mode
-     mmap.
-
- (6) Non-anonymous VMAs can now be linked to the inode as for MMU-mode.
-
- (7) mmaps can now be partially unmapped under some circumstances.
-
- (8) Simplified coredumping in ELF-FDPIC.
-
- (9) /proc/meminfo has a line "MmapCopy" that indicates the amount of private
-     copying mmap() has done.
+ fs/ramfs/file-nommu.c |   21 ++++++++++-----------
+ 1 files changed, 10 insertions(+), 11 deletions(-)
 
 
-There are some patches with secondary changes that do not relate to the primary
-change:
+diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
+index 76acdbc..b9b567a 100644
+--- a/fs/ramfs/file-nommu.c
++++ b/fs/ramfs/file-nommu.c
+@@ -262,11 +262,11 @@ unsigned long ramfs_nommu_get_unmapped_area(struct file *file,
+ 	ret = -ENOMEM;
+ 	pages = kzalloc(lpages * sizeof(struct page *), GFP_KERNEL);
+ 	if (!pages)
+-		goto out;
++		goto out_free;
+ 
+ 	nr = find_get_pages(inode->i_mapping, pgoff, lpages, pages);
+ 	if (nr != lpages)
+-		goto out; /* leave if some pages were missing */
++		goto out_free_pages; /* leave if some pages were missing */
+ 
+ 	/* check the pages for physical adjacency */
+ 	ptr = pages;
+@@ -274,19 +274,18 @@ unsigned long ramfs_nommu_get_unmapped_area(struct file *file,
+ 	page++;
+ 	for (loop = lpages; loop > 1; loop--)
+ 		if (*ptr++ != page++)
+-			goto out;
++			goto out_free_pages;
+ 
+ 	/* okay - all conditions fulfilled */
+ 	ret = (unsigned long) page_address(pages[0]);
+ 
+- out:
+-	if (pages) {
+-		ptr = pages;
+-		for (loop = lpages; loop > 0; loop--)
+-			put_page(*ptr++);
+-		kfree(pages);
+-	}
+-
++out_free_pages:
++	ptr = pages;
++	for (loop = nr; loop > 0; loop--)
++		put_page(*ptr++);
++out_free:
++	kfree(pages);
++out:
+ 	return ret;
+ }
+ 
 
- (*) Ramfs needs to clean up correctly in the case where its get_unmapped_area
-     call gets fewer pages from find_get_pages() than were asked for.
-
- (*) The askedalloc and realalloc variables are removed as nothing uses the
-     values computed.
-
- (*) The ELF-FDPIC and FLAT binfmts no longer expand the stack segment to
-     consume the space that is allocated to them beyond what is asked for.
-     This removes some users of the contentious kobjsize().
-
-     An alternative method would be to to replace the call to kobjsize() with
-     something that uses the VMA list only.
-
- (*) Fix kobjsize() to check the VMA list.
-
- (*) Support XIP on initramfs under NOMMU conditions by pre-truncating the
-     ramfs files to get contiguous memory allocated in advance in the page
-     cache.
-
-
-The patches can be obtained as a tarball from:
-
-	http://people.redhat.com/~dhowells/nommu-permmvmas.tar.bz2
-
-And are available by GIT from:
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-2.6-nommu.git
-
-These patches have been tested on FRV, Blackfin and SH.
-
-David
