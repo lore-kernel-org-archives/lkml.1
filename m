@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZAHXoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbZAHXv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760161AbZAHXoM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 18:44:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZAHXny
+	id S1761497AbZAHXv6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 18:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZAHXvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 18:43:54 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38046
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753101AbZAHXnw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 18:43:52 -0500
-Date: Thu, 08 Jan 2009 15:43:54 -0800 (PST)
-Message-Id: <20090108.154354.251018369.davem@davemloft.net>
-To: acme@redhat.com
-Cc: lpotenza@inwind.it, gerrit@erg.abdn.ac.uk, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dccp@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net: fix section mismatch warnings in
- dccp/ccids/lib/tfrc.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090108232847.GV23891@ghostprotocols.net>
-References: <200901081957.03413.lpotenza@inwind.it>
-	<20090108232847.GV23891@ghostprotocols.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 8 Jan 2009 18:51:49 -0500
+Received: from vena.lwn.net ([206.168.112.25]:40851 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751776AbZAHXvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 18:51:49 -0500
+Date: Thu, 8 Jan 2009 16:51:31 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Linux Foundation TAB <tech-board@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, David John <davidjon@xenontk.org>
+Subject: [PULL] BKL removal tree
+Message-ID: <20090108165131.5d432abc@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.0; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-Date: Thu, 8 Jan 2009 21:28:47 -0200
+Hi, Linus,
 
-> Adding netdev to the CC list.
- ...
-> Dave/Gerrit,
-> 
-> 	Please apply.
-> 
-> Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Once again, the BKL removal tree has all of one patch, cleaning up the
+RTC driver.  Please pull:
 
-I'll take care of this, thanks!
+  git://git.lwn.net/linux-2.6.git bkl-removal
+
+David John (1):
+      RTC: Remove the BKL.
+
+ drivers/char/rtc.c |   17 ++++-------------
+ 1 files changed, 4 insertions(+), 13 deletions(-)
+
+Thanks,
+
+jon
