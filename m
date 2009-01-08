@@ -1,159 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbZAHLUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZAHLYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbZAHLUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 06:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZAHLTx
+	id S1755953AbZAHLYk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 06:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZAHLYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 06:19:53 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35017 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbZAHLTw (ORCPT
+	Thu, 8 Jan 2009 06:24:32 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:63380 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbZAHLYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 06:19:52 -0500
-Message-ID: <44480.10.75.179.62.1231413588.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20090108191520.df9c1d92.nishimura@mxp.nes.nec.co.jp>
-References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
-    <20090108191520.df9c1d92.nishimura@mxp.nes.nec.co.jp>
-Date: Thu, 8 Jan 2009 20:19:48 +0900 (JST)
-Subject: Re: [RFC][PATCH 4/4] memcg: make oom less frequently
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       lizf@cn.fujitsu.com, menage@google.com, nishimura@mxp.nes.nec.co.jp
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Thu, 8 Jan 2009 06:24:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=RqNcx1Xw+rBRfp9TmdN6iIZ5seIGK95AHnVxkW+HXIoyehf/p8FOoXkQi6pirRv64h
+         nRrTGYTfbCBlS1CLOIiNM0Ds5WkvTIBATGb1eEUeGnayGc1plYUyPEyd/0MEL2NL256f
+         h4dMgAyRHEZChoq6xQPDMQ7XFrrLfsafWZFVc=
+Message-ID: <d204e3110901080324g161c51cdo8dd4105e2c365cb4@mail.gmail.com>
+Date: Thu, 8 Jan 2009 19:24:29 +0800
+From: "Baodong Chen" <chenbdchenbd@gmail.com>
+To: trivial@kernel.org
+Subject: [PATCH] Documentation/x86/boot.txt:modify fieldname
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Li Yang" <leo@zh-kernel.org>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daisuke Nishimura said:
-> In previous implementation, mem_cgroup_try_charge checked the return
-> value of mem_cgroup_try_to_free_pages, and just retried if some pages
-> had been reclaimed.
-> But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-> only checks whether the usage is less than the limit.
->
-> This patch tries to change the behavior as before to cause oom less
-> frequently.
->
-> To prevent try_charge from getting stuck in infinite loop,
-> MEM_CGROUP_RECLAIM_RETRIES_MAX is defined.
->
->
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+>From a7f7081367c5682c8a0b7fd0699a7bff9e779fc7 Mon Sep 17 00:00:00 2001
+From: Baodong Chen <[email]chenbdchenbd@gmail.com[email]>
+Date: Wed, 7 Jan 2009 21:54:00 +0800
+Subject: [PATCH] Documentation/x86/boot.txt:modify fieldname
+ start_sys was changed to start_sys_seg
+ iinitrd_addr_max was changed to ramdisk_max
+ pad2 was changed to pad2 and pad3
+ readmode_swtch was changed to realmode_swtch
+ Signed-off-by: Baodong Chen <[email]chenbdchenbd@gmail.com[email]>
 
-I think this is necessary change.
-My version of hierarchy reclaim will do this.
+---
+ Documentation/x86/boot.txt |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-But RETRIES_MAX is not clear ;) please use one counter.
+diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
+index 7b4596a..1229969 100644
+--- a/Documentation/x86/boot.txt
++++ b/Documentation/x86/boot.txt
+@@ -158,7 +158,7 @@ Offset	Proto	Name		Meaning
+ 0202/4	2.00+	header		Magic signature "HdrS"
+ 0206/2	2.00+	version		Boot protocol version supported
+ 0208/4	2.00+	realmode_swtch	Boot loader hook (see below)
+-020C/2	2.00+	start_sys	The load-low segment (0x1000) (obsolete)
++020C/2	2.00+	start_sys_seg	The load-low segment (0x1000) (obsolete)
+ 020E/2	2.00+	kernel_version	Pointer to kernel version string
+ 0210/1	2.00+	type_of_loader	Boot loader identifier
+ 0211/1	2.00+	loadflags	Boot protocol option flags
+@@ -170,10 +170,11 @@ Offset	Proto	Name		Meaning
+ 0224/2	2.01+	heap_end_ptr	Free memory after setup end
+ 0226/2	N/A	pad1		Unused
+ 0228/4	2.02+	cmd_line_ptr	32-bit pointer to the kernel command line
+-022C/4	2.03+	initrd_addr_max	Highest legal initrd address
++022C/4	2.03+	ramdisk_max	Highest legal initrd address
+ 0230/4	2.05+	kernel_alignment Physical addr alignment required for kernel
+ 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
+-0235/3	N/A	pad2		Unused
++0235/1	N/A	pad2		Unused
++0236/2	N/A	pad3		Unused
+ 0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
+ 023C/4	2.07+	hardware_subarch Hardware subarchitecture
+ 0240/8	2.07+	hardware_subarch_data Subarchitecture-specific data
+@@ -299,14 +300,14 @@ Protocol:	2.00+
+   e.g. 0x0204 for version 2.04, and 0x0a11 for a hypothetical version
+   10.17.
 
-And why MAX=32 ?
-> +		if (ret)
-> +			continue;
-seems to do enough work.
+-Field name:	readmode_swtch
++Field name:	realmode_swtch
+ Type:		modify (optional)
+ Offset/size:	0x208/4
+ Protocol:	2.00+
 
-While memory can be reclaimed, it's not dead lock.
-To handle live-lock situation as "reclaimed memory is stolen very soon",
-should we check signal_pending(current) or some flags ?
+   Boot loader hook (see ADVANCED BOOT LOADER HOOKS below.)
 
-IMHO, using jiffies to detect how long we should retry is easy to understand
-....like
- "if memory charging cannot make progress for XXXX minutes,
-  trigger some notifier or show some flag to user via cgroupfs interface.
-  to show we're tooooooo busy."
+-Field name:	start_sys
++Field name:	start_sys_seg
+ Type:		read
+ Offset/size:	0x20c/2
+ Protocol:	2.00+
+@@ -468,7 +469,7 @@ Protocol:	2.02+
+   zero, the kernel will assume that your boot loader does not support
+   the 2.02+ protocol.
 
--Kame
-
-
-> ---
->  mm/memcontrol.c |   16 ++++++++++++----
->  1 files changed, 12 insertions(+), 4 deletions(-)
->
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 804c054..fedd76b 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -42,6 +42,7 @@
->
->  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
->  #define MEM_CGROUP_RECLAIM_RETRIES	5
-> +#define MEM_CGROUP_RECLAIM_RETRIES_MAX	32
->
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  /* Turned on only when memory cgroup is enabled && really_do_swap_account
-> = 0 */
-> @@ -770,10 +771,10 @@ static int mem_cgroup_hierarchical_reclaim(struct
-> mem_cgroup *root_mem,
->  	 * but there might be left over accounting, even after children
->  	 * have left.
->  	 */
-> -	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
-> +	ret += try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
->  					   get_swappiness(root_mem));
->  	if (mem_cgroup_check_under_limit(root_mem))
-> -		return 0;
-> +		return 1;	/* indicate reclaim has succeeded */
->  	if (!root_mem->use_hierarchy)
->  		return ret;
->
-> @@ -785,10 +786,10 @@ static int mem_cgroup_hierarchical_reclaim(struct
-> mem_cgroup *root_mem,
->  			next_mem = mem_cgroup_get_next_node(root_mem);
->  			continue;
->  		}
-> -		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
-> +		ret += try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
->  						   get_swappiness(next_mem));
->  		if (mem_cgroup_check_under_limit(root_mem))
-> -			return 0;
-> +			return 1;	/* indicate reclaim has succeeded */
->  		next_mem = mem_cgroup_get_next_node(root_mem);
->  	}
->  	return ret;
-> @@ -820,6 +821,7 @@ static int __mem_cgroup_try_charge(struct mm_struct
-> *mm,
->  {
->  	struct mem_cgroup *mem, *mem_over_limit;
->  	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-> +	int nr_retries_max = MEM_CGROUP_RECLAIM_RETRIES_MAX;
->  	struct res_counter *fail_res;
->
->  	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
-> @@ -871,8 +873,13 @@ static int __mem_cgroup_try_charge(struct mm_struct
-> *mm,
->  		if (!(gfp_mask & __GFP_WAIT))
->  			goto nomem;
->
-> +		if (!nr_retries_max--)
-> +			goto oom;
-> +
->  		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
->  							noswap);
-> +		if (ret)
-> +			continue;
->
->  		/*
->  		 * try_to_free_mem_cgroup_pages() might not give us a full
-> @@ -886,6 +893,7 @@ static int __mem_cgroup_try_charge(struct mm_struct
-> *mm,
->  			continue;
->
->  		if (!nr_retries--) {
-> +oom:
->  			if (oom) {
->  				mutex_lock(&memcg_tasklist);
->  				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
+-Field name:	initrd_addr_max
++Field name:	ramdisk_max
+ Type:		read
+ Offset/size:	0x22c/4
+ Protocol:	2.03+
+-- 
+1.5.3.3
