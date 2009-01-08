@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZAHIFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZAHIHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbZAHIFl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 03:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZAHIF2
+	id S1756668AbZAHIHD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 03:07:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZAHIGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 03:05:28 -0500
-Received: from 1wt.eu ([62.212.114.60]:1245 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752977AbZAHIF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 03:05:27 -0500
-Date: Thu, 8 Jan 2009 09:05:20 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Ben Mansell <ben@zeus.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090108080520.GG30749@1wt.eu>
-References: <20090106181559.GA29426@1wt.eu> <20090108071651.GA4496@ff.dom.local>
+	Thu, 8 Jan 2009 03:06:54 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46059 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752542AbZAHIGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 03:06:53 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19fBQBR9lJfrfyBnfxHzcd3Oi3TZIqmwi5qzsk05D
+	HXbzbLBo8YlDHP
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+From: Mike Galbraith <efault@gmx.de>
+To: svaidy@linux.vnet.ibm.com
+Cc: balbir@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090107153510.GN4574@dirshya.in.ibm.com>
+References: <1231130416.5479.8.camel@marge.simson.net>
+	 <1231137413.10471.23.camel@marge.simson.net>
+	 <1231168786.9120.26.camel@marge.simson.net>
+	 <1231234297.3806.50.camel@marge.simson.net>
+	 <20090106150709.GG4574@dirshya.in.ibm.com>
+	 <1231264117.5254.23.camel@marge.simson.net>
+	 <20090106184552.GI17198@balbir.in.ibm.com>
+	 <1231318755.3899.57.camel@marge.simson.net>
+	 <20090107112639.GI4574@dirshya.in.ibm.com>
+	 <1231338985.5709.22.camel@marge.simson.net>
+	 <20090107153510.GN4574@dirshya.in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 09:06:48 +0100
+Message-Id: <1231402008.5721.37.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090108071651.GA4496@ff.dom.local>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 07:16:51AM +0000, Jarek Poplawski wrote:
-> On 06-01-2009 19:15, Willy Tarreau wrote:
-> ...
-> > Ah, so you might also have discovered a few annoyances with the API, eg
-> > the fact that splice() returns after the first read in non-blocking mode,
-> > as well as the fact that it never returns zero on close, but -EAGAIN,
-> > which requires an additional recv(MSG_PEEK) to distinguish between a
-> > close and a lack of data. But I leave that for a later discussion, let's
-> > address the corruption issue first.
-> 
-> FYI, this should be just fixed:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=4f7d54f59bc470f0aaa932f747a95232d7ebf8b1
-> 
+On Wed, 2009-01-07 at 21:05 +0530, Vaidyanathan Srinivasan wrote:
 
-Ah cool, thanks Jarek for notifying us. Indeed, it's the exact same patch
-I had pending here ;-)
+> sched_mc=2 depends on NEWIDLE but the wakeup biasing part will be
+> enabled even without this flag.  The power savings will be marginally
+> better than sched_mc=1 without NEWIDLE.  But the end user can have
+> that setup if they want to.
 
-I'll ping Greg for a backport into -stable, as applications relying on this
-will clearly not work without that fix.
+That implies to me that there should exist a flag SD_WAKEUP_BIAS or
+whatnot.  All settings should be visible.  Currently, sched_mc > 0 turns
+on NEWIDLE, which is visible, but 2 turns on this 'invisible to the
+ultimate low-level control interface' thing.
 
-The other one I had consists in removing "|| !timeo" at the end of the loop,
-because otherwise splice() returns very small chunks (typically 1448 or
-1460 bytes), leading to disastrous performance on high bandwidth links.
-At 10 Gbps, this means about 800000 calls to splice() per second!
-
-Regards,
-Willy
+	-Mike
 
