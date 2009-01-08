@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbZAHPb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbZAHPeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760936AbZAHPb3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 10:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759626AbZAHPa4
+	id S1760731AbZAHPeD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 10:34:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbZAHPdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 10:30:56 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57114 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759305AbZAHPay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 10:30:54 -0500
-Date: Thu, 8 Jan 2009 10:30:52 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <alpine.DEB.1.10.0901081026120.22642@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0901081030050.22642@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-  <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>  <1231366716.11687.377.camel@twins>  <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>  <1231408718.11687.400.camel@twins>  <20090108141808.GC11629@elte.hu>
-  <1231426014.11687.456.camel@twins>  <alpine.DEB.1.10.0901081003050.22642@gandalf.stny.rr.com> <1231428220.11687.464.camel@twins> <alpine.DEB.1.10.0901081026120.22642@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Jan 2009 10:33:53 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48099 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbZAHPdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 10:33:52 -0500
+Subject: Re: audit: EXECVE record - removed bogus newline
+From: Eric Paris <eparis@redhat.com>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com,
+       viro@zeniv.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090108153829.7d063a4b@psychotron.englab.brq.redhat.com>
+References: <20090108153829.7d063a4b@psychotron.englab.brq.redhat.com>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 10:33:18 -0500
+Message-Id: <1231428798.31089.80.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-01-08 at 15:38 +0100, Jiri Pirko wrote:
+> EXECVE records contain a newline after every argument. auditd converts
+> "\n" to " " so you cannot see newlines even in raw logs, but they're
+> there nevertheless. If you're not using auditd, you need to work round
+> them. These '\n' chars are can be easily replaced by spaces when
+> creating record in kernel. Note there is no need for trailing '\n' in
+> an audit record. 
 
-On Thu, 8 Jan 2009, Steven Rostedt wrote:
-> > > > +	/*
-> > > > +	 * We need to validate that we can do a
-> > > > +	 * get_cpu() and that we have the percpu area.
-> > > > +	 */
-> > > > +	if (!cpu_online(cpu))
-> > > > +		goto out;
-> > > 
-> > > Should we need to do a "get_cpu" or something? Couldn't the CPU disappear 
-> > > between these two calls. Or does it do a stop-machine and the preempt 
-> > > disable will protect us?
-> > 
-> > Did you miss the preempt_disable() a bit up?
+While I completely agree the \n was my mistake and should be
+dropped/fixed can you fix one more thing and look at another?  First
+arg_num_len is being miscalculated since I included the \n in that
+calculation (might be the only place....) and I remember not wanting to
+follow convention and put the space at the beginning of the aX= for some
+reason.  If you add thousands of arguments so this is larger than
+MAX_EXECVE_AUDIT_LEN do you end up with an extra space somewhere in the
+second EXECVE record?  Or maybe it was a single argument that was larger
+than the max, can't remember which, but I do remember having a random
+extra space (maybe we'd rather have that for consistency?)
+
+-Eric
+
 > 
-> No, let me rephrase it better. Does the preempt_disable protect against
-> another CPU from going off line? Does taking a CPU off line do a 
-> stop_machine?
+> record before this patch:
+> "type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\"\na1=\"a\"\na2=\"b\"\na3=\"c\"\n"
+> 
+> record after this patch:
+> "type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\" a1=\"a\" a2=\"b\" a3=\"c\""
+> 
+> 
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> ---
+>  kernel/auditsc.c |    7 +++----
+>  1 files changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+> index 8cbddff..c7012e0 100644
+> --- a/kernel/auditsc.c
+> +++ b/kernel/auditsc.c
+> @@ -1109,7 +1109,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
+>  		 * so we can be sure nothing was lost.
+>  		 */
+>  		if ((i == 0) && (too_long))
+> -			audit_log_format(*ab, "a%d_len=%zu ", arg_num,
+> +			audit_log_format(*ab, " a%d_len=%zu", arg_num,
+>  					 has_cntl ? 2*len : len);
+>  
+>  		/*
+> @@ -1129,7 +1129,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
+>  		buf[to_send] = '\0';
+>  
+>  		/* actually log it */
+> -		audit_log_format(*ab, "a%d", arg_num);
+> +		audit_log_format(*ab, " a%d", arg_num);
+>  		if (too_long)
+>  			audit_log_format(*ab, "[%d]", i);
+>  		audit_log_format(*ab, "=");
+> @@ -1137,7 +1137,6 @@ static int audit_log_single_execve_arg(struct audit_context *context,
+>  			audit_log_n_hex(*ab, buf, to_send);
+>  		else
+>  			audit_log_format(*ab, "\"%s\"", buf);
+> -		audit_log_format(*ab, "\n");
+>  
+>  		p += to_send;
+>  		len_left -= to_send;
+> @@ -1165,7 +1164,7 @@ static void audit_log_execve_info(struct audit_context *context,
+>  
+>  	p = (const char __user *)axi->mm->arg_start;
+>  
+> -	audit_log_format(*ab, "argc=%d ", axi->argc);
+> +	audit_log_format(*ab, "argc=%d", axi->argc);
+>  
+>  	/*
+>  	 * we need some kernel buffer to hold the userspace args.  Just
 
-I just looked at the cpu hotplug code, and it does call stop machine. All 
-is in order ;-)
-
--- Steve
 
