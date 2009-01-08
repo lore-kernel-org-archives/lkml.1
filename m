@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761704AbZAHSz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761975AbZAHSzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761704AbZAHSz2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 13:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZAHSzR
+	id S1761975AbZAHSzq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 13:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761825AbZAHSzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 13:55:17 -0500
-Received: from hpsmtp-eml15.KPNXCHANGE.COM ([213.75.38.115]:19262 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751557AbZAHSzQ (ORCPT
+	Thu, 8 Jan 2009 13:55:31 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59716
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761812AbZAHSz3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 13:55:16 -0500
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression] USB wakeup problem on Toshiba Portege R500
-Date: Thu, 8 Jan 2009 19:55:09 +0100
-User-Agent: KMail/1.9.9
-Cc: oliver@neukum.org, stern@rowland.harvard.edu, gregkh@suse.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, pavel@suse.cz,
-       torvalds@linux-foundation.org
-References: <200901080835.39639.rjw@sisk.pl> <200901081736.12926.rjw@sisk.pl> <200901081748.58962.oliver@neukum.org> <200901081748.58962.oliver@neukum.org> <200901081803.49632.rjw@sisk.pl>
-In-reply-To: <200901081803.49632.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 8 Jan 2009 13:55:29 -0500
+Date: Thu, 08 Jan 2009 10:55:31 -0800 (PST)
+Message-Id: <20090108.105531.176161465.davem@davemloft.net>
+To: cooloney@kernel.org
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       graf.yang@analog.com
+Subject: Re: [PATCH 2/2] netdev: bfin_mac: enable VLAN support in Blackfin
+ MAC driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1231344879-26069-3-git-send-email-cooloney@kernel.org>
+References: <1231344879-26069-1-git-send-email-cooloney@kernel.org>
+	<1231344879-26069-3-git-send-email-cooloney@kernel.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901081955.12021.elendil@planet.nl>
-X-OriginalArrivalTime: 08 Jan 2009 18:55:12.0781 (UTC) FILETIME=[A2ED13D0:01C971C2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 08 January 2009, Oliver Neukum wrote:
->> Am Thursday 08 January 2009 17:36:12 schrieb Rafael J. Wysocki:
->> You are making a very persuasive argument for reverting it.
->> But what about laptops that only have a USB keyboard?
-> 
-> Well, up to and including 2.6.28 they needed to echo 'enable' to the USB
-> controllers' /sys/devices/.../power/wakeup files, so if the patch is
-> reverted, they won't be worse off than they were day before
-> yesterday. :-) 
-> 
-> Perhaps we can choose the default depending on whether or not any HID
-> devices are attached to given controller?
+From: Bryan Wu <cooloney@kernel.org>
+Date: Thu,  8 Jan 2009 00:14:39 +0800
 
-Is "resume on keyboard activity" really all that needed? Both my laptops 
-and my desktop resume fine after pressing the power button.
+> +#define VLAN_ETHER_TYPE 0x8100
 
-Also consider the following cases:
-- laptop has been suspended with external USB mouse connected
-  - mouse is moved (accidentally or because it is in the way of a coffee
-    cup)
-  - mouse cable is removed before putting the laptop in a bag for
-    transport
-- laptop is in docking station with USB mouse/kbd connected to that
-  - again, mouse gets moved for some reason
-  - laptop is undocked while suspended
-  - or the reverse: laptop gets docked
+Please use ETH_P_8021Q from linux/if_ether.h instead of inventing
+your own definition.
 
-IMO it is not desirable that the system gets resumed as a result of any of 
-those actions. I'm not complete sure that it would in all those cases, 
-but have they been considered?
+> +	/* The legal length of the frame is increased to 1538 bytes */
+> +	/*bfin_write_EMAC_VLAN2(VLAN_ETHER_TYPE);*/
 
-And in general I've always been in favor of things only happening 
-automagically if I've explicitly asked for that, and not by default.
+Please do not add code that is just going to be commented
+out and not used.
 
-My 2 cents,
-FJP
+Also, I disagree with the:
+
++#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+
+conditional.  Probably this part of the chip should be programmed
+unconditionally.
+
+We can get VLAN packets received and sent, using AF_PACKET
+sockets, for example.  The chip should still respect those
+even if VLAN proper is not being utilized.
