@@ -1,136 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763988AbZAHXEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763970AbZAHXH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763988AbZAHXEg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 18:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZAHXE1
+	id S1763970AbZAHXH3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 18:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760021AbZAHXHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 18:04:27 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:53377 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbZAHXE0 (ORCPT
+	Thu, 8 Jan 2009 18:07:12 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:12672 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757591AbZAHXHL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 18:04:26 -0500
+	Thu, 8 Jan 2009 18:07:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=tEVtRW4zkDaIv8PkKmMsvj+NGjE8zqh854B5quEaCSqF5ooBPreuDHn4oTSDLzKJ66
-         BOIUc3a1fIAQblFrGQT63X3Pwl3rTLv82I2FGB+eRtdiqhdHFyuNnsgyjCoNJFAOpoFg
-         OBsd69TEmLMBkhw3cGeVSLhQrPfgwOOQ9UIFE=
-Message-ID: <fce2a370901081504n41f58383x5e1b77f4bac7a410@mail.gmail.com>
-Date: Fri, 9 Jan 2009 01:04:24 +0200
-From: "Ihar Hrachyshka" <ihar.hrachyshka@gmail.com>
-To: "David Daney" <ddaney@caviumnetworks.com>
-Subject: Re: [PATCH 2/2] cpumask fallout: Initialize irq_default_affinity earlier (v2).
-Cc: rusty@rustcorp.com.au, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, travis@sgi.com
-In-Reply-To: <1231455345-29453-2-git-send-email-ddaney@caviumnetworks.com>
+        b=v5qBo1KVusVmd4K91lqSeyGfekqp7Wj9RhPbidLWVOVYHqSEb6DqWZ262KbQKFe9bb
+         li5ozoqfixCEooF/J+i8NPhYoSLvtjTt3i6NpdfgyhQrSBsWZmaTCSxkQ390EsXqaYIM
+         ZseC+3274qg6yyah5f2HsstEIPXj+i3HkAVEo=
+Message-ID: <c384c5ea0901081507v5d186eai5ec71d56b4c7a972@mail.gmail.com>
+Date: Fri, 9 Jan 2009 00:07:09 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Florian Fainelli" <florian@openwrt.org>
+Subject: Re: FPGA programming driver architecture
+Cc: "Thiago Galesi" <thiagogalesi@gmail.com>,
+       "Hugo Villeneuve" <hugo@hugovil.com>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+In-Reply-To: <200901082357.24432.florian@openwrt.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <496683D0.6000509@caviumnetworks.com>
-	 <1231455345-29453-2-git-send-email-ddaney@caviumnetworks.com>
+References: <20081212150314.6ea24996.hugo@hugovil.com>
+	 <82ecf08e0901081414u15af3c2dy9c88a242db024dc7@mail.gmail.com>
+	 <c384c5ea0901081447i5ad807b3yb0ec3adebeaa46a0@mail.gmail.com>
+	 <200901082357.24432.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-#ifdef X
-void func(args)
-{
-  operation();
-}
-#else
-void func(args)
-{
-}
-#endif
+Hello,
 
-is better than:
+On Thu, Jan 8, 2009 at 11:57 PM, Florian Fainelli <florian@openwrt.org> wrote:
+> Le Thursday 08 January 2009 23:47:58 Leon Woestenberg, vous avez écrit :
 
-void func(args)
-{
-#ifdef X
-  operation();
-#endif
-}
+>> The programming back end should be generic enough so that it can use
+>> other subsystems.
+>>
+> That's the idea behind using request_firmware, which provides you with both a
+> pointer to the data and the size of the blob.
 
-IMHO.
+I know, that's what I would call the front-end (near userspace).
 
-On Fri, Jan 9, 2009 at 12:55 AM, David Daney <ddaney@caviumnetworks.com> wrote:
-> Move the initialization of irq_default_affinity to early_irq_init as
-> core_initcall is too late.
+I meant the low-level back-end (towards hardware):
+
+> - fpgaload-core which contains all the code that can be shared
+> between the drivers like requesting firmware, providing sysfs
+> attributes,
+> - fpgaload-spi would handle the low-level SPI connection
+> - fpgaload-par would handle the low-level parallel connection
 >
-> irq_default_affinity can be used in init_IRQ and potentially timer and
-> SMP init as well.  All of these happen before core_initcall.  Moving
-> the initialization to early_irq_init ensures that it is initialized
-> before it is used.
->
-> Signed-off-by: David Daney <ddaney@caviumnetworks.com>
-> ---
->  kernel/irq/handle.c |   12 ++++++++++++
->  kernel/irq/manage.c |    8 --------
->  2 files changed, 12 insertions(+), 8 deletions(-)
->
-> diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-> index c20db0b..a9fbb01 100644
-> --- a/kernel/irq/handle.c
-> +++ b/kernel/irq/handle.c
-> @@ -39,6 +39,14 @@ void handle_bad_irq(unsigned int irq, struct irq_desc *desc)
->        ack_bad_irq(irq);
->  }
->
-> +static inline void __init init_irq_default_affinity(void)
-> +{
-> +#if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
-> +       alloc_bootmem_cpumask_var(&irq_default_affinity);
-> +       cpumask_setall(irq_default_affinity);
-> +#endif
-> +}
-> +
->  /*
->  * Linux has a controller-independent interrupt architecture.
->  * Every controller has a 'controller-template', that is used
-> @@ -134,6 +142,8 @@ int __init early_irq_init(void)
->        int legacy_count;
->        int i;
->
-> +       init_irq_default_affinity();
-> +
->        desc = irq_desc_legacy;
->        legacy_count = ARRAY_SIZE(irq_desc_legacy);
->
-> @@ -219,6 +229,8 @@ int __init early_irq_init(void)
->        int count;
->        int i;
->
-> +       init_irq_default_affinity();
-> +
->        desc = irq_desc;
->        count = ARRAY_SIZE(irq_desc);
->
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 618a64f..291f036 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -18,14 +18,6 @@
->  #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
->  cpumask_var_t irq_default_affinity;
->
-> -static int init_irq_default_affinity(void)
-> -{
-> -       alloc_cpumask_var(&irq_default_affinity, GFP_KERNEL);
-> -       cpumask_setall(irq_default_affinity);
-> -       return 0;
-> -}
-> -core_initcall(init_irq_default_affinity);
-> -
->  /**
->  *     synchronize_irq - wait for pending IRQ handlers (on other CPUs)
->  *     @irq: interrupt number to wait for
-> --
-> 1.5.6.6
->
->
->
+> fpgaload-ser and par would register with fpgaload-core and they could
+> register a fpga loading callback which is low-level specific for
+> instance.
+
+My $0.02 was:
+
+Those callbacks should also be able to accept chunks of data
+(preferably in the same way using ptr/len).
+
+
+Regards,
+-- 
+Leon
