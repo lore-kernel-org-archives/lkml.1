@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763056AbZAHWbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbZAHWlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763056AbZAHWbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 17:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZAHWbJ
+	id S1762715AbZAHWlb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 17:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZAHWlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 17:31:09 -0500
-Received: from 1wt.eu ([62.212.114.60]:1286 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754699AbZAHWbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 17:31:07 -0500
-Date: Thu, 8 Jan 2009 23:30:57 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: duane@duaneellis.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel 2.4.37 usb acm hard lockup
-Message-ID: <20090108223056.GF5038@1wt.eu>
-References: <20090108141921.5c1bb9f86d671edec44bb378f25c04cc.a190016ce1.wbe@email.secureserver.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090108141921.5c1bb9f86d671edec44bb378f25c04cc.a190016ce1.wbe@email.secureserver.net>
-User-Agent: Mutt/1.5.11
+	Thu, 8 Jan 2009 17:41:22 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58427 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755157AbZAHWlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 17:41:22 -0500
+Message-ID: <20090108224120.JAKWM.227684.root@hrndva-web20-z02>
+Date: Thu, 8 Jan 2009 17:41:19 -0500
+From: <lmage11@twcny.rr.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Curious problems with /proc/kmsg?
+In-Reply-To: <20090101223925.PJUBH.263802.root@hrndva-web18-z01>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Thu, Jan 08, 2009 at 02:19:21PM -0700, duane@duaneellis.com wrote:
-> Hello, I have a linux-2.4.37 - kernel *HANG* hard lockup that I am
-> trying to debug, ctl-alt-del does not fix the problem. The problem does
-> not occur on current 2.6 kernels.
+---- lmage11@twcny.rr.com wrote: 
+> I'm currently trying to debug a problem with my wireless driver,
+> and while looking at the copious output that the driver produces,
+> I've been noticing some very odd stuff come out of /proc/kmsg (which
+> is also where my syslog daemon gets kernel messages). I'm getting stuff
+> like:
 > 
-> Specifically the device I am talking to is an USB-ACM type 'scanner'
-> type device, it shows up as a USB com port /dev/input/ttyACM0 - and I
-> read/write commands to & from the device.
-
-You make me realize that I have never encountered an usb-acm device yet.
-I did not even know what they were supposed to be :-/
-
-> Some fixes have already been back ported from 2.6 (trying to get it to
-> run on 2.4.20-8 [rh9]) and I'm not getting far and asking for some help
-> or some pointers where to go next.
+> Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx enter
+> Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx leave
+> Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx enter
+> Jan  1 01:59:02 tank ieee80211 phy0: I iwl4965_mac_tx leave
+> Jan  1 01:59:03 tank ieee80211 phy0: I iwl4965_mac_tx ente
+> Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
+> Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
+> Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
+> Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
+> Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
+> Jan  1 01:59:03 tank 3ie821py:Iil95mct ne
+> Jan  1 01:59:03 tank 3ie821py:Iil95mct ev
 > 
-> The bug is quite reproducible - I have a small C program, and a small
-> shell script loop. It sends a few commands (ie: initialize, scan and
-> transmit image) then saves the image to a file.  Somewhere between 70 to
-> 150 scans BANG a hard hang occurs, takes between 5 to 15 minutes.
+> As you can see, the first few lines are fine, but the next few
+> lines are complete nonsense. It looks to me as if characters
+> are getting semi-randomly "skipped" sometimes, or something???
+> Very strange. This oddity does not show up when I look at the
+> kernel output through dmesg.
 > 
-> I get *NO* output on the console, like an oops or something like that.
-> Only debug messages I have added in my program.
+> Some more examples of strange output follow:
 > 
-> I have already turned the USB KERNEL debug messages on in the .config
-> file, and I have "dmesg -n 9".
+> Jan  1 01:59:04 tank w46_a_xlae<>ee01 h0  w46_a_xetr<>ee01 h0  w46_a_xlae<3>ieee80211 phy0: I iwl4965_mac_tx enter
+> Jan  1 01:59:04 tank ieee80211 phy0:  iwleqeehm edn omn ESTVT_M #8,sq x46 8btsa 6[]4<>ee01 h0  w_eei_m_alakbc rmSNIIIYCD(x0000
+> Jan  1 01:59:05 tank 3ie821py:Iilgnrccdclbc akfo EL_XLN_ULT_M 00000)<>ee01 h0  w46_a_xetr<>ee01 h0  w46_a_xlaev
 > 
-> And - if I do add too many of my own debug messages, depending on the
-> volume of messages the problem takes longer to appear or goes away (I
-> give up after several hours) - which makes me think it is a timing/race
-> condition :-(
+> Any comments? I'm using 2.6.28.
 > 
-> If this is the wrong list, or there is a better list for this specific
-> 2.4/usb/acm problem please let me know, I don't really know where else
-> to ask.
+> Thanks!
+> 
+> Ari
 
-Since it's probably the first time I read a report about usb-acm, I think
-that this driver is very rarely used. So it may simply be broken or full
-of race conditions or improper locking.
-
-What you could do :
-  - try without SMP if you're on an SMP machine.
-  - try with an old gcc (2.95.3 is perfect for 2.4, 3.3 is good too).
-
-Adding support for gcc 3.4 a few years ago was not easy, and it is
-possible that some drivers are still not properly fixed.
-
-Also, do you remember the latest 2.4 kernel where this driver worked
-correctly (if any at all) ?
-
-Regards,
-Willy
-
+Umm... Bump?
