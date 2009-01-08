@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZAHElV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758632AbZAHElk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbZAHElV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 23:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZAHElM
+	id S1758632AbZAHElk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 23:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbZAHElV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 23:41:12 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:42361 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443AbZAHElL (ORCPT
+	Wed, 7 Jan 2009 23:41:21 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39646 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754331AbZAHElU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 23:41:11 -0500
-Date: Thu, 8 Jan 2009 10:11:08 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [RFC][PATCH 3/4] Memory controller soft limit organize cgroups
-Message-ID: <20090108044108.GG7294@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain> <20090107184128.18062.96016.sendpatchset@localhost.localdomain> <20090108101148.96e688f4.kamezawa.hiroyu@jp.fujitsu.com> <20090108042558.GC7294@balbir.in.ibm.com> <20090108132855.77d3d3d4.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 7 Jan 2009 23:41:20 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ying Han <yinghan@google.com>
+Subject: Re: 2.6.29 -mm merge plans
+Cc: kosaki.motohiro@jp.fujitsu.com, Valdis.Kletnieks@vt.edu,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mike Waychison <mikew@google.com>
+In-Reply-To: <604427e00901072018o42ff0627yb5282f2a81a13c65@mail.gmail.com>
+References: <6991.1231194895@turing-police.cc.vt.edu> <604427e00901072018o42ff0627yb5282f2a81a13c65@mail.gmail.com>
+Message-Id: <20090108134014.BFB2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090108132855.77d3d3d4.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu,  8 Jan 2009 13:41:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-08 13:28:55]:
-
-> On Thu, 8 Jan 2009 09:55:58 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> Hi Valdis:
+>      Please try this fix and i tested on ubunbu8.10 with xmms and it helps.
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-08 10:11:48]:
-> > > Hmm,  Could you clarify following ?
-> > >   
-> > >   - Usage of memory at insertsion and usage of memory at reclaim is different.
-> > >     So, this *sorted* order by RB-tree isn't the best order in general.
-> > 
-> > True, but we frequently update the tree at an interval of HZ/4.
-> > Updating at every page fault sounded like an overkill and building the
-> > entire tree at reclaim is an overkill too.
-> > 
-> "sort" is not necessary.
-> If this feature is implemented as background daemon,
-> just select the worst one at each iteration is enough.
 
-OK, definitely an alternative worth considering, but the trade-off is
-lazy building (your suggestion), which involves actively seeing the
-usage of all cgroups (and if they are large, O(c), c is number of
-cgroups can be quite a bit) versus building the tree as and when the
-fault occurs and controlled by some interval.
+Hi, Ying-san
+Could you please explain which was wrong and how to fix.
 
--- 
-	Balbir
+
+
+
