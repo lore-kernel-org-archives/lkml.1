@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbZAHO1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbZAHO24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760151AbZAHO1Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 09:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZAHO1Q
+	id S1760359AbZAHO24 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 09:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZAHO2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 09:27:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44756 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbZAHO1P (ORCPT
+	Thu, 8 Jan 2009 09:28:48 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39555 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbZAHO2s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 09:27:15 -0500
-Subject: Re: Is 386 processor still supported?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz>
-References: <20090108120338.6b8b4567@zonk.pl>
-	 <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz>
-	 <1231424025.11687.447.camel@twins>
-	 <alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Jan 2009 15:27:13 +0100
-Message-Id: <1231424833.11687.452.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Thu, 8 Jan 2009 09:28:48 -0500
+Date: Thu, 8 Jan 2009 09:28:46 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Robert Richter <robert.richter@amd.com>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+Subject: Re: [PATCH] ring_buffer: fix ring_buffer_event_length()
+In-Reply-To: <20090108115958.GB1539@elte.hu>
+Message-ID: <alpine.DEB.1.10.0901080927340.22642@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0901072356480.14345@gandalf.stny.rr.com> <20090108115958.GB1539@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 15:21 +0100, Jiri Kosina wrote:
-> On Thu, 8 Jan 2009, Peter Zijlstra wrote:
+
+On Thu, 8 Jan 2009, Ingo Molnar wrote:
 > 
-> > > Subject: x86: make spinlocks available on machines without xadd insn
-> > > Current kernel wouldn't compile on ancient x86 machines that don't support 
-> > > xadd instruction, as ticket spinlocks implementation unconditionally uses 
-> > > it.
-> > > On machines without CONFIG_X86_XADD, use old-style byte spinlock 
-> > > implementation instead.
-> > afaik we don't support i386-smp and up spinlocks are trivial
-> > preempt_disable() calls.
-> 
-> Hmm. Where in Kconfig is SMP for M386 not allowed?
+> That is a pretty useless duplication of the subject line, so i dropped it. 
+> When the subject line explains the practical impact already, there's no 
+> need to add the impact line.
 
-Dunno, kconfig is too much of a jungle for a simple person like me ;-)
+Actually, Frederic and I had a discussion about a duplicate Impact line. 
+Perhaps someone is searching the git log on "Impact:" looking for all 
+fixes. Perhaps just a simple:
 
-But afaik i386 (and possibly i486) don't support nearly enough for a
-modern SMP system.
+Impact: fix
 
-Alan used to have i486-smp I think, one of the very few ever made.
+would be sufficient?
+
+-- Steve
 
