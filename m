@@ -1,49 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZAHHRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZAHH1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbZAHHRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 02:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZAHHQ7
+	id S1755519AbZAHH1r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 02:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbZAHH1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 02:16:59 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:57861 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbZAHHQ6 (ORCPT
+	Thu, 8 Jan 2009 02:27:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49548 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752860AbZAHH1h convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 02:16:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=ZzhdzCYkg6nbckFXtu3B5QJS+S2TcaBe75o51p51eoKLXFm92uvKFr6Ol4wXPSmMxu
-         krM0o+iiLtRJY3YW9ZtsSFo4G8iG9A5UvZ3v9ctK7z/zlUaWeXqxFPibCejKYwefTfm7
-         AY+IhvIIWlUWCBhrxAWG2Z8X0cNeVWXRhRhhw=
-Date: Thu, 8 Jan 2009 07:16:51 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Ben Mansell <ben@zeus.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090108071651.GA4496@ff.dom.local>
+	Thu, 8 Jan 2009 02:27:37 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Subject: [Regression] hald segfaults at startup on Toshiba Portege R500 x86_64 (bisected)
+Date: Thu, 8 Jan 2009 08:27:02 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?iso-8859-2?q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090106181559.GA29426@1wt.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901080827.02882.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06-01-2009 19:15, Willy Tarreau wrote:
-...
-> Ah, so you might also have discovered a few annoyances with the API, eg
-> the fact that splice() returns after the first read in non-blocking mode,
-> as well as the fact that it never returns zero on close, but -EAGAIN,
-> which requires an additional recv(MSG_PEEK) to distinguish between a
-> close and a lack of data. But I leave that for a later discussion, let's
-> address the corruption issue first.
+Hi,
 
-FYI, this should be just fixed:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=4f7d54f59bc470f0aaa932f747a95232d7ebf8b1
+Unfortunately the following commit:
 
-Regards,
-Jarek P.
+commit 35ff8554d12ecc80a46ea0d9bce34fe28733ff38
+Author: Éric Piel <eric.piel@tremplin-utc.net>
+Date:   Sat Nov 22 19:29:29 2008 +0100
+
+    sdhci: activate led support also when module
+
+    CONFIG_LEDS_CLASS is defined only if led-class is built-in, otherwise
+    when it is a module the option is called CONFIG_LEDS_CLASS_MODULE. Led
+    support should also be activated in this case.
+
+    Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
+    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+
+causes hald to segfault at startup (not always, but sufficiently often for
+bisection) on my Toshiba Portege R500 w/ x86_64 kernel/userland.
+
+While it doesn't revert cleanly, I have applied the appended patch (which is
+a revert of the commit above) and hald doesn't segfault any more here.
+
+Thanks,
+Rafael
+
+---
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 6b2d1f9..8ce6250 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -154,7 +154,7 @@ static void sdhci_deactivate_led(struct sdhci_host *host)
+ 	writeb(ctrl, host->ioaddr + SDHCI_HOST_CONTROL);
+ }
+ 
+-#ifdef SDHCI_USE_LEDS_CLASS
++#ifdef CONFIG_LEDS_CLASS
+ static void sdhci_led_control(struct led_classdev *led,
+ 	enum led_brightness brightness)
+ {
+@@ -999,7 +999,7 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 
+ 	WARN_ON(host->mrq != NULL);
+ 
+-#ifndef SDHCI_USE_LEDS_CLASS
++#ifndef CONFIG_LEDS_CLASS
+ 	sdhci_activate_led(host);
+ #endif
+ 
+@@ -1206,7 +1206,7 @@ static void sdhci_tasklet_finish(unsigned long param)
+ 	host->cmd = NULL;
+ 	host->data = NULL;
+ 
+-#ifndef SDHCI_USE_LEDS_CLASS
++#ifndef CONFIG_LEDS_CLASS
+ 	sdhci_deactivate_led(host);
+ #endif
+ 
+@@ -1722,7 +1722,7 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	sdhci_dumpregs(host);
+ #endif
+ 
+-#ifdef SDHCI_USE_LEDS_CLASS
++#ifdef CONFIG_LEDS_CLASS
+ 	host->led.name = mmc_hostname(mmc);
+ 	host->led.brightness = LED_OFF;
+ 	host->led.default_trigger = mmc_hostname(mmc);
+@@ -1744,7 +1744,7 @@ int sdhci_add_host(struct sdhci_host *host)
+ 
+ 	return 0;
+ 
+-#ifdef SDHCI_USE_LEDS_CLASS
++#ifdef CONFIG_LEDS_CLASS
+ reset:
+ 	sdhci_reset(host, SDHCI_RESET_ALL);
+ 	free_irq(host->irq, host);
+@@ -1780,7 +1780,7 @@ void sdhci_remove_host(struct sdhci_host *host, int dead)
+ 
+ 	mmc_remove_host(host->mmc);
+ 
+-#ifdef SDHCI_USE_LEDS_CLASS
++#ifdef CONFIG_LEDS_CLASS
+ 	led_classdev_unregister(&host->led);
+ #endif
+ 
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 3efba23..31f4b15 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -220,7 +220,7 @@ struct sdhci_host {
+ 	struct mmc_host		*mmc;		/* MMC structure */
+ 	u64			dma_mask;	/* custom DMA mask */
+ 
+-#if defined(CONFIG_LEDS_CLASS) || defined(CONFIG_LEDS_CLASS_MODULE)
++#ifdef CONFIG_LEDS_CLASS
+ 	struct led_classdev	led;		/* LED control */
+ #endif
+ 
+
