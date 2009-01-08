@@ -1,107 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZAHSDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZAHSEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492AbZAHSDY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 13:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZAHSDN
+	id S1761155AbZAHSEM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 13:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZAHSDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 13:03:13 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62379 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbZAHSDM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 13:03:12 -0500
-Date: Thu, 8 Jan 2009 13:03:09 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0901081300370.24688@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-  <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>  <1231366716.11687.377.camel@twins>  <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>  <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
-  <1231426014.11687.456.camel@twins>  <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>
- <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 8 Jan 2009 13:03:55 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43872 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752961AbZAHSDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 13:03:54 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19GWS9ys1pG5QdHSglX/uE8LvjB/ryCOtDvCu/wDa
+	2ldfP+Z/ilHyrC
+Date: Thu, 8 Jan 2009 19:04:04 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+cc: Sascha Hauer <s.hauer@pengutronix.de>,
+       Dan Williams <dan.j.williams@intel.com>,
+       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4 v8] i.MX31: dmaengine and framebuffer drivers
+Message-ID: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Thu, 8 Jan 2009, Linus Torvalds wrote:
-> 
-> And I don't even believe that is the bug. I suspect the bug is simpler. 
-> 
-> I think the "need_resched()" needs to go in the outer loop, or at least 
-> happen in the "!owner" case. Because at least with preemption, what can 
-> happen otherwise is
-> 
->  - process A gets the lock, but gets preempted before it sets lock->owner.
-> 
->    End result: count = 0, owner = NULL.
-> 
->  - processes B/C goes into the spin loop, filling up all CPU's (assuming 
->    dual-core here), and will now both loop forever if they hold the kernel 
->    lock (or have some other preemption disabling thing over their down()).
-> 
-> And all the while, process A would _happily_ set ->owner, and eventually 
-> release the mutex, but it never gets to run to do either of them so.
-> 
-> In fact, you might not even need a process C: all you need is for B to be 
-> on the same runqueue as A, and having enough load on the other CPU's that 
-> A never gets migrated away. So "C" might be in user space.
-> 
-> I dunno. There are probably variations on the above.
+This is version 8 of dmaengine and framebuffer drivers for i.MX31.
 
-Ouch! I think you are on to something:
+Changes since version 7: updated to today's Linus git with pulled patches 
+from async_tx tree (dmaengine)
 
-        for (;;) {
-                struct thread_info *owner;
+Changes since version 6: fixed compiler warnings, compilation breakage for 
+CONFIG_MX3_IPU not defined
 
-                old_val = atomic_cmpxchg(&lock->count, 1, 0);
-                if (old_val == 1) {
-                        lock_acquired(&lock->dep_map, ip);
-                        mutex_set_owner(lock);
-                        return 0;
-                }
+Changes since version 5: as requested by Sascha Hauer switched to dynamic 
+IPU IRQ mapping. Instead of statically allocating 137 irq_desc[] elements, 
+I provide a configuration variable to specify how many interrupt slots 
+should be allocated. The default value is 4, minimum 2, maximum 137. Then 
+these slots are used to dynamically map interrupts upon user requests to 
+available IRQ numbers. Also removed all traces of overlay framebuffer, and 
+removed bogus use of nonstd field from the framebuffer driver, as 
+requested by Geert Uytterhoeven. Thanks to all who commented.
 
-                if (old_val < 0 && !list_empty(&lock->wait_list))
-                        break;
+Changes since version 4: addressed comments from Sascha Hauer, apart from: 
+the idmac driver still uses two locks - a mutex and a spinlock, the "ugly" 
+construction like "to_ipu(to_idmac(ichan->dma_chan.device));" is still 
+there, still all 144 IRQs are registered. So now the driver is under 
+drivers/dma, also fixed all docbook comments.
 
-                /* See who owns it, and spin on him if anybody */
-                owner = ACCESS_ONCE(lock->owner);
+Changes since version 3: fixed idmac_issue_pending() to not reset the 
+current buffer, fixed return value from idmac_tx_submit(), fixed 
+framebuffer panning.
 
-The owner was preempted before assigning lock->owner (as you stated).
+Changes since version 2: now uses a tasklet to clean up completed 
+transaction descriptors, as suggested by Dan Williams.
 
-                if (owner && !spin_on_owner(lock, owner))
-                        break;
+Changes since version 1: rebased on the updated dmaengine framework.
 
-We just spin :-(
+Aimed at 2.6.29.
 
-I think adding the:
+Based on Linus' git commit 9e42d0cf5020aaf217433cad1a224745241d212a
+plus git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
 
-+		if (need_resched())
-+			break;
-
-would solve the problem.
-
-Thanks,
-
--- Steve
-
-
-                cpu_relax();
-        }
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
