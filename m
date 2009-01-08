@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbZAHGiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZAHGq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854AbZAHGiq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 01:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbZAHGie
+	id S1754906AbZAHGq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 01:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZAHGqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 01:38:34 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45716 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbZAHGid (ORCPT
+	Thu, 8 Jan 2009 01:46:48 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:28788 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbZAHGqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 01:38:33 -0500
-Date: Thu, 8 Jan 2009 07:52:35 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090108065235.GX496@one.firstfloor.org>
-References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain> <1231347442.11687.344.camel@twins> <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain> <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com> <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain> <1231365115.11687.361.camel@twins> <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain> <1231368870.6686.16.camel@norville.austin.ibm.com> <alpine.LFD.2.00.0901071518570.3057@localhost.localdomain> <alpine.DEB.1.10.0901071848431.23456@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Thu, 8 Jan 2009 01:46:47 -0500
+X-IronPort-AV: E=Sophos;i="4.37,231,1231113600"; 
+   d="scan'208";a="58682690"
+From: Roland Dreier <rdreier@cisco.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Om <om.turyx@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 64 bit PCI access using MMX register -- how?
+References: <496534BC.4060603@gmail.com>
+	<20090107233929.60ef8d98@lxorguk.ukuu.org.uk>
+	<8763kqxs2p.fsf@basil.nowhere.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 07 Jan 2009 22:46:45 -0800
+In-Reply-To: <8763kqxs2p.fsf@basil.nowhere.org> (Andi Kleen's message of "Thu,
+	08 Jan 2009 06:52:30 +0100")
+Message-ID: <adahc4as3ai.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901071848431.23456@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+X-OriginalArrivalTime: 08 Jan 2009 06:46:46.0209 (UTC) FILETIME=[DFC77310:01C9715C]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What about memory hotplug as Ingo mentioned?
-> 
-> Should that be:
-> 
-> #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_MEMORY_HOTPLUG)
+ > I think he was ok because he saved the MMX state by itself, except:
+ > 
+ > - There was no guarantee that the FPU is in MMX state, not x87 state
+ > - He'll often get a lazy fpu save exception. This used to BUG() 
+ > in some cases when invoked from kernel space (but that might have been
+ > changed now). Better is to disable this explicitely around 
+ > the access (like in kernel_fpu_begin()/end())
+ > - Doing this all properly is fairly expensive and I suspect
+ > just using a lock will be cheaper.
 
-We expect memory hotunplug to only really work in movable zones
-(all others should at least have one kernel object somewhere that prevents
-unplug) and you can't have task structs in movable zones obviously
+I had some code a long time ago that used SSE (I think movlps was the
+opcode I chose) to get an atomic 64-bit PIO operation.  To do that, I
+just needed to disable preemption and save/restore cr0 around the SSE
+operation, and just save/restore the single xmm register I used.  Of
+course it only works on CPUs that have SSE.  That avoids the nastiness
+of x87/mmx state, but in the end a spinlock around two readl()s was
+faster and a ton simpler, so I threw all that code away.
 
-So it's probably a non issue in practice.
-
--Andi
--- 
-ak@linux.intel.com
+ - R.
