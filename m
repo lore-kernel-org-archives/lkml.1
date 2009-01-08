@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbZAHOns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbZAHOqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760259AbZAHOns (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 09:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZAHOnk
+	id S1759755AbZAHOqa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 09:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbZAHOqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 09:43:40 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:26133 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbZAHOnj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 09:43:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=AoFKpKZsNi8gnlGcAD72taR1ofkRJSSvXfgszVti6z1OZiVY7E/OInSQtQEUNGCnWX
-         1trZsGEd4Y0c80Xwj66/k0bmoN5Lu73sfX1c9Gk5WL2Hfz9nmusmU7P7yTJJ3ARjqzFA
-         I/A/kT3YoYAI0BYpQZF945bpAcYDN+ouSHYPs=
-Message-ID: <3f9a31f40901080643i4a355168gcdf12ea706c34e3b@mail.gmail.com>
-Date: Thu, 8 Jan 2009 20:13:38 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: mpparse.c fix style problems
-Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "x86 maintainers" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090104172319.GA1238@elte.hu>
+	Thu, 8 Jan 2009 09:46:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48313 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752353AbZAHOqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 09:46:22 -0500
+Date: Thu, 8 Jan 2009 15:46:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Robert Richter <robert.richter@amd.com>
+Subject: Re: [PATCH] ring_buffer: fix ring_buffer_event_length()
+Message-ID: <20090108144610.GC18120@elte.hu>
+References: <alpine.DEB.1.10.0901072356480.14345@gandalf.stny.rr.com> <20090107212912.e2903579.akpm@linux-foundation.org> <alpine.DEB.1.10.0901080917510.22642@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1230723533.3738.8.camel@jaswinder.satnam>
-	 <20090102172150.GC6759@elte.hu>
-	 <3f9a31f40901040917i52df1ef5i7d86ddee05d4d0b1@mail.gmail.com>
-	 <20090104172319.GA1238@elte.hu>
+In-Reply-To: <alpine.DEB.1.10.0901080917510.22642@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
 
-On Sun, Jan 4, 2009 at 10:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
->
->>
->> Currently I rename fields of few mpc_X structures from
->> arch/x86/include/asm/mpspec_def.h. In this file struct
->> intel_mp_floating is still remaining with mpf_X fields, Is this also
->> need to be fixed ? if yes then mpf_intel name is OK ?
->>
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-I send :
-[PATCH -tip 1/2] x86: rename intel_mp_floating to mpf_intel
-[PATCH -tip 2/2] x86: rename all fields of mpf_intel mpf_X to X
+> On Wed, 7 Jan 2009, Andrew Morton wrote:
+> 
+> > On Wed, 7 Jan 2009 23:58:39 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > >  kernel/trace/ring_buffer.c |    8 +++++++-
+> > 
+> > <looks>
+> > 
+> > heavens, what a lot of inlining.  Looks like something from 1997 :)
+> > 
+> > Prove me wrong!
+> 
+> I'm working on it ;-)
 
-Is this OK ?
+i really think that inlines in .c code are uninteresting. They are 
+basically inserted randomly when a function starts out 'looking simple' - 
+then are forgotten about when the function grows a bit.
 
->> Similarly in arch/x86/include/asm/io_apic.h :
->> 1. struct mp_config_ioapic with mp_X fields (what name will be best ?)
->> 2. struct mp_config_intsrc with mp_X fields
->>
->> These are also used in arch/x86/kernel/mpparse.c
->>
->> Please let me know should I fix mp_X things first or should I proceed
->> further in mpparse.c as per your suggestions.
->
-> i think those should be standardized to mpc_X too, and the fields should
-> lose their mp_ prefix.
->
+They have some very mild documentation value ('look, this function is 
+supposed to be simple'), but otherwise it just increases review noise. And 
+latest GCC seems pretty ambivalent to their presence - so they dont help 
+nor hurt in any direction.
 
-struct mpc_ioapic and struct mpc_intsrc is based on MultiProcessor
-Specification Version 1.4
+So i think we can afford to enter the year 2009 and can stop bothering 
+about [.c file] inlines ;-)
 
-But I am not able to find the specification Manual of:
+[ The only interesting inlines are the __always_inline instances - that's 
+  where we _must_ have inlining for some subtle reason. But those should 
+  almost never be used in .c code. ]
 
-struct mp_config_ioapic and struct mp_config_intsrc.
-(arch/x86/include/asm/io_apic.h)
-
-Can you please point me out why the fields of struct mp_config_ioapic
-and struct mp_config_intsrc are different from MultiProcessor
-Specification Version 1.4
-
-Thanks
---
-JSR
+	Ingo
