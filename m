@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbZAJKIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbZAJKMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631AbZAJKIl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 05:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZAJKIc
+	id S1755794AbZAJKMS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 05:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZAJKMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 05:08:32 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:49857 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752837AbZAJKIb (ORCPT
+	Sat, 10 Jan 2009 05:12:09 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36218 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbZAJKMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 05:08:31 -0500
-Date: Sat, 10 Jan 2009 21:08:23 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
-	instructions for x86_64 platform
-Message-ID: <20090110100823.GA22352@gondor.apana.org.au>
-References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com> <20090109070144.GA7358@gondor.apana.org.au> <1231491273.5937.94.camel@yhuang-dev.sh.intel.com> <20090109091814.GA10881@gondor.apana.org.au>
+	Sat, 10 Jan 2009 05:12:07 -0500
+Date: Thu, 8 Jan 2009 14:22:49 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, jack@suse.cz
+Subject: Re: 2.6.29 -mm merge plans
+Message-ID: <20090108132248.GD2247@ucw.cz>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151131.b6c4ff0b.akpm@linux-foundation.org> <20090106232418.GB25103@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090109091814.GA10881@gondor.apana.org.au>
+In-Reply-To: <20090106232418.GB25103@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 08:18:14PM +1100, Herbert Xu wrote:
->
-> Not at all, tfms are just "shell" objects and they were designed
-> to be used in thie way.  Calling setkey twice is an issue but it's
-> not a show-stopper.  We have the same problem in other places to
-> so this something that we can potentially optimise.
+Hi!
 
-Here's how we can solve the double setkey problem.  We can make
-a new cryptd_alloc_ablkcipher interface that returns a cryptd
-ablkcipher object.  Since it's cryptd specific we can then access
-its underlying blkcipher object, which can be shared between the
-cryptd object and the user of the cryptd object.  This way you
-only need to do setkey on the cryptd object and it'll get set
-on the underlying blkcipher automatically.
+> > > I'm not sure this is a good idea.  Concurrent syncs are a bad idea
+> > > to start with and we should just synchronyze do_sync completely.
+> > > sync_filesystems as one of the main components of do_sync already
+> > > is synchronized in that way, and taking that to a higher level would
+> > > get rid of all the worries about concurrent syncs.
+> > 
+> > Yes, single-threading sys_sync() would fix the problem which that patch
+> > addresses.
+> > 
+> > However there are a lot of performance and correctness issues around
+> > sys_sync()-versus-fsync(), etc for which such a simple fix won't be
+> > acceptable.
+> 
+> fsync should really not much interac with sync at that level.  While
+> they both end up at same primitives at the lowest level those aren't
+> the ones we're trying to protect against.  I'm currently in the process
+> of a major rework of sys_sync/do_sync to make it work properly for
+> modern filesystems and the global synchronization was one of the first
+> things I did..
+> 
+> So if you have any workloads where that causes a problem please send
+> them my way.  Not that I can really thing of them, given the global
+> nature of sys_sync I can't see any benefit of doing multiple of these
+> in parallel.
 
-Cheers,
+I did play with fsync() a bit, and realized it mostly does not
+work. (Yes, I did physically unplug the media). I have some scripts,
+and am currently converting them to nbd so that I will not have to
+physically pull anything.
+
+Jack has some ext2 fix provoked by those tests...
+								Pavel
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
