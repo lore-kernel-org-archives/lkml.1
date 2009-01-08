@@ -1,115 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbZAHJvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZAHJ5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759249AbZAHJvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 04:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZAHJvA
+	id S1758242AbZAHJ5M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 04:57:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZAHJ45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 04:51:00 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:33198 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbZAHJu7 (ORCPT
+	Thu, 8 Jan 2009 04:56:57 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47032 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbZAHJ44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 04:50:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=VGS/I0OYiO31md3IjKPn1hBdwN1TZrAtSaaMxXvf8vI3R8FlzO+yFr8Qq87EBd/Y4Q
-         4rxwb/Q6ufr9U3ezPdZ6fZqpIuKoMCbOXhA0adHGtBZbZUj3Yn1xdDfGiOL1qGO1qnu2
-         tq5Kwf12RHpAcnU3kMBM3PSun2Z3VzUwSudDE=
-Message-ID: <8447d6730901080150r3f51c758l4d4b74cdaaf9d09c@mail.gmail.com>
-Date: Thu, 8 Jan 2009 10:50:56 +0100
-From: "Davide Rizzo" <elpa.rizzo@gmail.com>
-To: linux-kernel@vger.kernel.org, hjk@linutronix.de, gregkh@suse.de,
-       ben-linux@fluff.org
-Subject: [PATCH 3/3] Driver for user access to internal clocks
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 8 Jan 2009 04:56:56 -0500
+Subject: Re: [PATCH 1/3] w35und: Move ETH_LENGTH_OF_ADDRESS to wbhal_s.h
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Pavel Machek <pavel@suse.cz>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1231408018.5539.6.camel@brick>
+References: <Pine.LNX.4.64.0901081130160.15334@melkki.cs.Helsinki.FI>
+	 <1231408018.5539.6.camel@brick>
+Date: Thu, 08 Jan 2009 11:56:53 +0200
+Message-Id: <1231408613.9373.5.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a proposal for adding 2 functions to clk interface to allow higher
- level drivers to enumerate and list all clocks.
-There is also the implementation for Samsung S3C24xx platform.
+On Thu, 2009-01-08 at 01:46 -0800, Harvey Harrison wrote:
+> On Thu, 2009-01-08 at 11:30 +0200, Pekka J Enberg wrote:
+> > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> >  
+> > +#define ETH_LENGTH_OF_ADDRESS 6
+> 
+> Or just use ETH_ALEN like the rest of the kernel and drop this guy.
 
-Signed-off-by: Davide Rizzo <elpa-rizzo@gmail.com>
+Even better, thanks Harvey! Greg, please use this one instead. The rest
+of the series is unaffected by the changes in this patch.
+
+>From c849ed5b5e68953a72f8dc43066513f118822f94 Mon Sep 17 00:00:00 2001
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Date: Thu, 8 Jan 2009 11:10:06 +0200
+Subject: [PATCH] w35und: convert code to use ETH_ALEN
+
+As suggested by Harvey Harrison, convert driver to use ETH_ALEN and kill a
+private macro from common.h that is used for the same thing.
+
+Cc: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
-diff -urNp linux-2.6.28/arch/arm/plat-s3c24xx/clock.c
-linux-2.6.28.elpa/arch/arm/plat-s3c24xx/clock.c
---- linux-2.6.28/arch/arm/plat-s3c24xx/clock.c	2008-12-25
-00:26:37.000000000 +0100
-+++ linux-2.6.28.elpa/arch/arm/plat-s3c24xx/clock.c	2009-01-07
-19:25:07.000000000 +0100
-@@ -422,6 +433,42 @@ static int s3c24xx_clkout_setparent(stru
- 	return 0;
- }
+ drivers/staging/winbond/common.h  |    1 -
+ drivers/staging/winbond/reg.c     |    5 ++---
+ drivers/staging/winbond/wb35reg.c |    2 +-
+ drivers/staging/winbond/wbhal.c   |    2 +-
+ drivers/staging/winbond/wbhal_s.h |    6 +++---
+ 5 files changed, 7 insertions(+), 9 deletions(-)
 
-+int clk_for_each(int(*fn)(struct clk *, void *), void *data)
-+{
-+	struct clk *clk;
-+	int ret = 0;
-+
-+	list_for_each_entry(clk, &clocks, list)
-+	{
-+		ret = fn(clk, data);
-+		if (ret)
-+			break;
-+	}
-+	return ret;
-+}
-+EXPORT_SYMBOL(clk_for_each);
-+
-+/* Must be deallocated with kfree() */
-+const char *clk_get_name(struct clk *clk)
-+{
-+	char *s;
-+	int len;
-+
-+	if (IS_ERR(clk))
-+		return ERR_PTR(-EINVAL);
-+
-+	len = strlen(clk->name) + 8;
-+	s = kmalloc(len, GFP_KERNEL);
-+	if (!s)
-+		return ERR_PTR(-ENOMEM);
-+	if (clk->id == -1)
-+		strlcpy(s, clk->name, len);
-+	else if (snprintf(s, len, "%s.%d", clk->name, clk->id) > len)
-+		s[len - 1] = '\0';
-+	return s;
-+}
-+EXPORT_SYMBOL(clk_get_name);
-+
- /* external clock definitions */
+diff --git a/drivers/staging/winbond/common.h b/drivers/staging/winbond/common.h
+index c4d9604..61ccc86 100644
+--- a/drivers/staging/winbond/common.h
++++ b/drivers/staging/winbond/common.h
+@@ -16,7 +16,6 @@
+ // Common function definition
+ //==================================================================================================
+ #define DEBUG_ENABLED
+-#define ETH_LENGTH_OF_ADDRESS	6
+ #ifdef DEBUG_ENABLED
+ #define WBDEBUG( _M )	printk _M
+ #else
+diff --git a/drivers/staging/winbond/reg.c b/drivers/staging/winbond/reg.c
+index c365c5d..ed08e00 100644
+--- a/drivers/staging/winbond/reg.c
++++ b/drivers/staging/winbond/reg.c
+@@ -948,14 +948,13 @@ Uxx_ReadEthernetAddress(  phw_data_t pHwData )
+ //  Return Value:
+ //    None.
+ //==============================================================================================================
+-void CardGetMulticastBit(   u8 Address[ETH_LENGTH_OF_ADDRESS],
+-						   u8 *Byte,  u8 *Value )
++void CardGetMulticastBit( u8 Address[ETH_ALEN], u8 *Byte, u8 *Value )
+ {
+     u32 Crc;
+     u32 BitNumber;
+ 
+     // First compute the CRC.
+-    Crc = CardComputeCrc(Address, ETH_LENGTH_OF_ADDRESS);
++    Crc = CardComputeCrc(Address, ETH_ALEN);
+ 
+ 	// The computed CRC is bit0~31 from left to right
+ 	//At first we should do right shift 25bits, and read 7bits by using '&', 2^7=128
+diff --git a/drivers/staging/winbond/wb35reg.c b/drivers/staging/winbond/wb35reg.c
+index c74b3fd..87c2c43 100644
+--- a/drivers/staging/winbond/wb35reg.c
++++ b/drivers/staging/winbond/wb35reg.c
+@@ -599,7 +599,7 @@ unsigned char Wb35Reg_initial(phw_data_t pHwData)
+ 	Wb35Reg_ReadSync( pHwData, 0x03b4, &Region_ScanInterval );
+ 
+ 	// Update Ethernet address
+-	memcpy( pHwData->CurrentMacAddress, pHwData->PermanentMacAddress, ETH_LENGTH_OF_ADDRESS );
++	memcpy( pHwData->CurrentMacAddress, pHwData->PermanentMacAddress, ETH_ALEN );
+ 
+ 	// Update software variable
+ 	pHwData->SoftwareSet = (u16)(SoftwareSet & 0xffff);
+diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+index d7bbb9a..a2cc077 100644
+--- a/drivers/staging/winbond/wbhal.c
++++ b/drivers/staging/winbond/wbhal.c
+@@ -8,7 +8,7 @@ void hal_set_ethernet_address( phw_data_t pHwData, u8 *current_address )
+ 
+ 	if( pHwData->SurpriseRemove ) return;
+ 
+-	memcpy( pHwData->CurrentMacAddress, current_address, ETH_LENGTH_OF_ADDRESS );
++	memcpy( pHwData->CurrentMacAddress, current_address, ETH_ALEN );
+ 
+ 	ltmp[0]= cpu_to_le32( *(u32 *)pHwData->CurrentMacAddress );
+ 	ltmp[1]= cpu_to_le32( *(u32 *)(pHwData->CurrentMacAddress + 4) ) & 0xffff;
+diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
+index 276d2b1..9353ac2 100644
+--- a/drivers/staging/winbond/wbhal_s.h
++++ b/drivers/staging/winbond/wbhal_s.h
+@@ -2,6 +2,7 @@
+ #define __WINBOND_WBHAL_S_H
+ 
+ #include <linux/types.h>
++#include <linux/if_ether.h> /* for ETH_ALEN */
+ 
+ #include "common.h"
+ 
+@@ -427,7 +428,6 @@ typedef struct _TXVGA_FOR_50 {
+ #include "wb35tx_s.h"
+ #include "wb35rx_s.h"
+ 
+-
+ // For Hal using ==================================================================
+ typedef struct _HW_DATA_T
+ {
+@@ -452,8 +452,8 @@ typedef struct _HW_DATA_T
+ 	//===============================================
+ 	// Definition for MAC address
+ 	//===============================================
+-	u8		PermanentMacAddress[ETH_LENGTH_OF_ADDRESS + 2]; // The Enthernet addr that are stored in EEPROM.  + 2 to 8-byte alignment
+-	u8		CurrentMacAddress[ETH_LENGTH_OF_ADDRESS + 2]; // The Enthernet addr that are in used.  + 2 to 8-byte alignment
++	u8		PermanentMacAddress[ETH_ALEN + 2]; // The Enthernet addr that are stored in EEPROM.  + 2 to 8-byte alignment
++	u8		CurrentMacAddress[ETH_ALEN + 2]; // The Enthernet addr that are in used.  + 2 to 8-byte alignment
+ 
+ 	//=====================================================================
+ 	// Definition for 802.11
+-- 
+1.5.4.3
 
- struct clk s3c24xx_dclk0 = {
-diff -urNp linux-2.6.28/include/linux/clk.h
-linux-2.6.28.elpa/include/linux/clk.h
---- linux-2.6.28/include/linux/clk.h	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.28.elpa/include/linux/clk.h	2009-01-07 19:06:46.000000000 +0100
-@@ -125,4 +125,22 @@ int clk_set_parent(struct clk *clk, stru
-  */
- struct clk *clk_get_parent(struct clk *clk);
 
-+/**
-+ * clk_for_each - calls fn, iterating between registered clocks
-+ * @fn: function to be called, passing each clk structure in 1st argument
-+ * @data: 2nd argument to pass to fn function
-+ *
-+ * Returns 0 or the called fn return code if != 0
-+ */
-+int clk_for_each(int(*fn)(struct clk *, void *), void *data);
-+
-+/**
-+ * clk_name - get clock name
-+ * @clk: clock source
-+ *
-+ * Returns clock's name that must be deallocated with kfree(), or valid
-+ * IS_ERR() condition containing errno.
-+ */
-+const char *clk_get_name(struct clk *clk);
-+
- #endif
+
