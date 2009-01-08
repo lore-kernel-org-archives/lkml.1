@@ -1,122 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbZAHAb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbZAHAcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbZAHAb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 19:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbZAHAbr
+	id S1758168AbZAHAcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 19:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbZAHAbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 19:31:47 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38354 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752464AbZAHAbq (ORCPT
+	Wed, 7 Jan 2009 19:31:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37282 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755862AbZAHAbw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 19:31:46 -0500
-Date: Thu, 8 Jan 2009 09:30:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>, riel@redhat.com,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 0/4] Memory controller soft limit patches
-Message-Id: <20090108093040.22d5f281.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Jan 2009 19:31:52 -0500
+Date: Wed, 7 Jan 2009 22:31:41 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/7] async: Asynchronous function calls to speed up
+	kernel boot
+Message-ID: <20090108003141.GN23891@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@infradead.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+	akpm@linux-foundation.org
+References: <20090107151151.458333c1@infradead.org> <20090107151226.58264d07@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107151226.58264d07@infradead.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Jan 2009 00:11:10 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Em Wed, Jan 07, 2009 at 03:12:26PM -0800, Arjan van de Ven escreveu:
 
-> 
-> Here is v1 of the new soft limit implementation. Soft limits is a new feature
-> for the memory resource controller, something similar has existed in the
-> group scheduler in the form of shares. We'll compare shares and soft limits
-> below. I've had soft limit implementations earlier, but I've discarded those
-> approaches in favour of this one.
-> 
-> Soft limits are the most useful feature to have for environments where
-> the administrator wants to overcommit the system, such that only on memory
-> contention do the limits become active. The current soft limits implementation
-> provides a soft_limit_in_bytes interface for the memory controller and not
-> for memory+swap controller. The implementation maintains an RB-Tree of groups
-> that exceed their soft limit and starts reclaiming from the group that
-> exceeds this limit by the maximum amount.
-> 
-> This is an RFC implementation and is not meant for inclusion
-> 
-Core implemantation seems simple and the feature sounds good.
-But, before reviewing into details, 3 points.
+<SNIP>
 
-  1. please fix current bugs on hierarchy management, before new feature.
-     AFAIK, OOM-Kill under hierarchy is broken. (I have patches but waits for
-     merge window close.)
-     I wonder there will be some others. Lockdep error which Nishimura reported
-     are all fixed now ?
+> +/*
+> + * MUST be called with the lock held!
+> + */
+> +static async_cookie_t  __lowest_in_progress(struct list_head *running)
+> +{
+> +	struct async_entry *entry;
+> +	if (!list_empty(&async_pending)) {
+> +		entry = list_first_entry(&async_pending,
+> +			struct async_entry, list);
 
-  2. You inserts reclaim-by-soft-limit into alloc_pages(). But, to do this,
-     you have to pass zonelist to try_to_free_mem_cgroup_pages() and have to modify
-     try_to_free_mem_cgroup_pages().
-     2-a) If not, when the memory request is for gfp_mask==GFP_DMA or allocation
-          is under a cpuset, memory reclaim will not work correctlly.
-     2-b) try_to_free_mem_cgroup_pages() cannot do good work for order > 1 allocation.
-  
-     Please try fake-numa (or real NUMA machine) and cpuset.
+Small nitpick:
 
-  3. If you want to insert hooks to "generic" page allocator, it's better to add CC to
-     Rik van Riel, Kosaki Motohiro, at leaset.
+- > +		return entry->cookie;
+> +	} else if (!list_empty(running)) {
+> +		entry = list_first_entry(running,
+> +			struct async_entry, list);
+- > +		return entry->cookie;
+> +	} else {
+> +		/* nothing in progress... next_cookie is "infinity" */
+> +		return next_cookie;
+> +	}
 
-     To be honest, I myself don't like to add a hook to alloc_pages() directly.
-     Can we implment call soft-limit like kswapd (or on kswapd()) ?
-     i.e. in moderate way ?
-   
-A happy new year,
++ 	return entry->cookie;
 
--Kame
+> +/*
+> + * pick the first pending entry and run it
+> + */
+> +static void run_one_entry(void)
+> +{
+> +	unsigned long flags;
+> +	struct async_entry *entry;
+> +	ktime_t calltime, delta, rettime;
+> +
+> +	/* 1) pick one task from the pending queue */
+> +
+> +	spin_lock_irqsave(&async_lock, flags);
+> +	if (list_empty(&async_pending))
+> +		goto out;
+> +	entry = list_first_entry(&async_pending, struct async_entry, list);
+> +
+> +	/* 2) move it to the running queue */
+> +	list_del(&entry->list);
+> +	list_add_tail(&entry->list, &async_running);
 
+We have list_move_tail()
 
+> +	spin_unlock_irqrestore(&async_lock, flags);
+> +
+> +	/* 3) run it (and print duration)*/
+> +	if (initcall_debug) {
+> +		printk("calling  %lli_%pF @ %i\n", entry->cookie, entry->func, task_pid_nr(current));
+> +		calltime = ktime_get();
 
-> TODOs
-> 
-> 1. The shares interface is not yet implemented, the current soft limit
->    implementation is not yet hierarchy aware. The end goal is to add
->    a shares interface on top of soft limits and to maintain shares in
->    a manner similar to the group scheduler
-> 2. The current implementation maintains the delta from the soft limit
->    and pushes back groups to their soft limits, a ratio of delta/soft_limit
->    is more useful
-> 3. It would be nice to have more targetted reclaim (in terms of pages to
->    recalim) interface. So that groups are pushed back, close to their soft
->    limits.
-> 
-> Tests
-> -----
-> 
-> I've run two memory intensive workloads with differing soft limits and
-> seen that they are pushed back to their soft limit on contention. Their usage
-> was their soft limit plus additional memory that they were able to grab
-> on the system.
-> 
-> Please review, comment.
-> 
-> Series
-> ------
-> 
-> memcg-soft-limit-documentation.patch
-> memcg-add-soft-limit-interface.patch
-> memcg-organize-over-soft-limit-groups.patch
-> memcg-soft-limit-reclaim-on-contention.patch
-> 
-> -- 
-> 	Balbir
-> 
-
+- Arnaldo
