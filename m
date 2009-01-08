@@ -1,456 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbZAHQc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbZAHQd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758480AbZAHQc0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 11:32:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZAHQcS
+	id S1760736AbZAHQd7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 11:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZAHQds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 11:32:18 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55689 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbZAHQcQ (ORCPT
+	Thu, 8 Jan 2009 11:33:48 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:36014 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087AbZAHQds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 11:32:16 -0500
-Date: Thu, 8 Jan 2009 18:32:14 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Greg Kroah-Hartman <greg@kroah.com>
-cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH] w35und: typedef removal
-Message-ID: <Pine.LNX.4.64.0901081830380.7049@melkki.cs.Helsinki.FI>
+	Thu, 8 Jan 2009 11:33:48 -0500
+Subject: Re: [RFC] B+Tree library V2
+From: Johannes Berg <johannes@sipsolutions.net>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090108162429.GA24884@logfs.org>
+References: <20081026124643.GA1328@logfs.org>
+	 <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org>
+	 <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org>
+	 <20081101155958.GA28776@logfs.org> <1231376241.3545.96.camel@johannes>
+	 <20090108162429.GA24884@logfs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ReUmPbJkBCZEHWj0/VBD"
+Date: Thu, 08 Jan 2009 17:34:10 +0100
+Message-Id: <1231432450.8038.4.camel@johannes>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch removes some typedefs from the driver code. I also removed some 
-unused structs I spotted while removing the typedefs.
+--=-ReUmPbJkBCZEHWj0/VBD
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/mto.c      |    6 ---
- drivers/staging/winbond/wb35rx.c   |   16 ++++----
- drivers/staging/winbond/wb35rx_s.h |    8 +---
- drivers/staging/winbond/wb35tx.c   |   22 +++++-----
- drivers/staging/winbond/wb35tx_s.h |    6 +--
- drivers/staging/winbond/wbhal.c    |    2 +-
- drivers/staging/winbond/wbhal_s.h  |   74 ++---------------------------------
- drivers/staging/winbond/wbusb.c    |    2 +-
- drivers/staging/winbond/wbusb_s.h  |   16 +-------
- 9 files changed, 32 insertions(+), 120 deletions(-)
+On Thu, 2009-01-08 at 17:24 +0100, J=C3=B6rn Engel wrote:
 
-diff --git a/drivers/staging/winbond/mto.c b/drivers/staging/winbond/mto.c
-index 8c4107b..a962fdd 100644
---- a/drivers/staging/winbond/mto.c
-+++ b/drivers/staging/winbond/mto.c
-@@ -51,12 +51,6 @@ static int retryrate_rec[MTO_MAX_DATA_RATE_LEVELS];//this record the retry rate
- static int PeriodTotalTxPkt = 0;
- static int PeriodTotalTxPktRetry = 0;
- 
--typedef struct
--{
--	s32 RSSI;
--	u8  TxRate;
--}RSSI2RATE;
--
- static u8 boSparseTxTraffic = false;
- 
- void MTO_Init(MTO_FUNC_INPUT);
-diff --git a/drivers/staging/winbond/wb35rx.c b/drivers/staging/winbond/wb35rx.c
-index 029d918..bffebf9 100644
---- a/drivers/staging/winbond/wb35rx.c
-+++ b/drivers/staging/winbond/wb35rx.c
-@@ -84,7 +84,7 @@ static u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
- 	struct wbsoft_priv *priv = hw->priv;
- 	phw_data_t pHwData = &priv->sHwData;
- 	DESCRIPTOR	RxDes;
--	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 	u8 *		pRxBufferAddress;
- 	u16		PacketSize;
- 	u16		stmp, BufferSize, stmp2 = 0;
-@@ -162,7 +162,7 @@ static void Wb35Rx_Complete(struct urb *urb)
- 	struct ieee80211_hw *hw = urb->context;
- 	struct wbsoft_priv *priv = hw->priv;
- 	phw_data_t pHwData = &priv->sHwData;
--	PWB35RX		pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 	u8 *		pRxBufferAddress;
- 	u32		SizeCheck;
- 	u16		BulkLength;
-@@ -239,7 +239,7 @@ static void Wb35Rx(struct ieee80211_hw *hw)
- {
- 	struct wbsoft_priv *priv = hw->priv;
- 	phw_data_t pHwData = &priv->sHwData;
--	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 	u8 *	pRxBufferAddress;
- 	struct urb *urb = pWb35Rx->RxUrb;
- 	int	retv;
-@@ -302,7 +302,7 @@ void Wb35Rx_start(struct ieee80211_hw *hw)
- {
- 	struct wbsoft_priv *priv = hw->priv;
- 	phw_data_t pHwData = &priv->sHwData;
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 
- 	// Allow only one thread to run into the Wb35Rx() function
- 	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
-@@ -315,7 +315,7 @@ void Wb35Rx_start(struct ieee80211_hw *hw)
- //=====================================================================================
- static void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
- {
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 	u32	i;
- 
- 	pWb35Rx->ByteReceived = 0;
-@@ -331,7 +331,7 @@ static void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
- 
- unsigned char Wb35Rx_initial(phw_data_t pHwData)
- {
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 
- 	// Initial the Buffer Queue
- 	Wb35Rx_reset_descriptor( pHwData );
-@@ -342,7 +342,7 @@ unsigned char Wb35Rx_initial(phw_data_t pHwData)
- 
- void Wb35Rx_stop(phw_data_t pHwData)
- {
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 
- 	// Canceling the Irp if already sends it out.
- 	if (pWb35Rx->EP3vm_state == VM_RUNNING) {
-@@ -356,7 +356,7 @@ void Wb35Rx_stop(phw_data_t pHwData)
- // Needs process context
- void Wb35Rx_destroy(phw_data_t pHwData)
- {
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
-+	struct wb35_rx *pWb35Rx = &pHwData->Wb35Rx;
- 
- 	do {
- 		msleep(10); // Delay for waiting function enter 940623.1.a
-diff --git a/drivers/staging/winbond/wb35rx_s.h b/drivers/staging/winbond/wb35rx_s.h
-index f18350b..4b03274 100644
---- a/drivers/staging/winbond/wb35rx_s.h
-+++ b/drivers/staging/winbond/wb35rx_s.h
-@@ -15,8 +15,7 @@
- //====================================
- // Internal variable for module
- //====================================
--typedef struct _WB35RX
--{
-+struct wb35_rx {
- 	u32			ByteReceived;// For calculating throughput of BulkIn
- 	atomic_t		RxFireCounter;// Does Wb35Rx module fire?
- 
-@@ -42,7 +41,4 @@ typedef struct _WB35RX
- 
- 	int		EP3VM_status;
- 	u8 *	pDRx;
--
--} WB35RX, *PWB35RX;
--
--
-+};
-diff --git a/drivers/staging/winbond/wb35tx.c b/drivers/staging/winbond/wb35tx.c
-index f7fe8d6..d35875f 100644
---- a/drivers/staging/winbond/wb35tx.c
-+++ b/drivers/staging/winbond/wb35tx.c
-@@ -17,7 +17,7 @@
- unsigned char
- Wb35Tx_get_tx_buffer(phw_data_t pHwData, u8 **pBuffer)
- {
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 
- 	*pBuffer = pWb35Tx->TxBuffer[0];
- 	return true;
-@@ -29,7 +29,7 @@ static void Wb35Tx_complete(struct urb * pUrb)
- {
- 	struct wbsoft_priv *adapter = pUrb->context;
- 	phw_data_t	pHwData = &adapter->sHwData;
--	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 	PMDS		pMds = &adapter->Mds;
- 
- 	printk("wb35: tx complete\n");
-@@ -65,7 +65,7 @@ error:
- static void Wb35Tx(struct wbsoft_priv *adapter)
- {
- 	phw_data_t	pHwData = &adapter->sHwData;
--	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 	u8		*pTxBufferAddress;
- 	PMDS		pMds = &adapter->Mds;
- 	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx4Urb;
-@@ -116,7 +116,7 @@ static void Wb35Tx(struct wbsoft_priv *adapter)
- void Wb35Tx_start(struct wbsoft_priv *adapter)
- {
- 	phw_data_t pHwData = &adapter->sHwData;
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 
- 	// Allow only one thread to run into function
- 	if (atomic_inc_return(&pWb35Tx->TxFireCounter) == 1) {
-@@ -128,7 +128,7 @@ void Wb35Tx_start(struct wbsoft_priv *adapter)
- 
- unsigned char Wb35Tx_initial(phw_data_t pHwData)
- {
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 
- 	pWb35Tx->Tx4Urb = usb_alloc_urb(0, GFP_ATOMIC);
- 	if (!pWb35Tx->Tx4Urb)
-@@ -147,7 +147,7 @@ unsigned char Wb35Tx_initial(phw_data_t pHwData)
- //======================================================
- void Wb35Tx_stop(phw_data_t pHwData)
- {
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 
- 	// Trying to canceling the Trp of EP2
- 	if (pWb35Tx->EP2vm_state == VM_RUNNING)
-@@ -167,7 +167,7 @@ void Wb35Tx_stop(phw_data_t pHwData)
- //======================================================
- void Wb35Tx_destroy(phw_data_t pHwData)
- {
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 
- 	// Wait for VM stop
- 	do {
-@@ -189,7 +189,7 @@ void Wb35Tx_destroy(phw_data_t pHwData)
- void Wb35Tx_CurrentTime(struct wbsoft_priv *adapter, u32 TimeCount)
- {
- 	phw_data_t pHwData = &adapter->sHwData;
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 	unsigned char Trigger = false;
- 
- 	if (pWb35Tx->TxTimer > TimeCount)
-@@ -210,7 +210,7 @@ static void Wb35Tx_EP2VM_complete(struct urb * pUrb)
- 	struct wbsoft_priv *adapter = pUrb->context;
- 	phw_data_t	pHwData = &adapter->sHwData;
- 	T02_DESCRIPTOR	T02, TSTATUS;
--	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 	u32 *		pltmp = (u32 *)pWb35Tx->EP2_buf;
- 	u32		i;
- 	u16		InterruptInLength;
-@@ -257,7 +257,7 @@ error:
- static void Wb35Tx_EP2VM(struct wbsoft_priv *adapter)
- {
- 	phw_data_t	pHwData = &adapter->sHwData;
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx2Urb;
- 	u32 *	pltmp = (u32 *)pWb35Tx->EP2_buf;
- 	int		retv;
-@@ -293,7 +293,7 @@ error:
- void Wb35Tx_EP2VM_start(struct wbsoft_priv *adapter)
- {
- 	phw_data_t pHwData = &adapter->sHwData;
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wb35_tx *pWb35Tx = &pHwData->Wb35Tx;
- 
- 	// Allow only one thread to run into function
- 	if (atomic_inc_return(&pWb35Tx->TxResultCount) == 1) {
-diff --git a/drivers/staging/winbond/wb35tx_s.h b/drivers/staging/winbond/wb35tx_s.h
-index 3960276..f70f433 100644
---- a/drivers/staging/winbond/wb35tx_s.h
-+++ b/drivers/staging/winbond/wb35tx_s.h
-@@ -18,8 +18,7 @@
- //====================================
- 
- 
--typedef struct _WB35TX
--{
-+struct wb35_tx {
- 	// For Tx buffer
- 	u8	TxBuffer[ MAX_USB_TX_BUFFER_NUMBER ][ MAX_USB_TX_BUFFER ];
- 
-@@ -43,7 +42,6 @@ typedef struct _WB35TX
- 
- 	u32	TxFillCount; // 20060928
- 	u32	TxTimer; // 20060928 Add if sending packet not great than 13
--
--} WB35TX, *PWB35TX;
-+};
- 
- #endif
-diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index c8313db..a1cd411 100644
---- a/drivers/staging/winbond/wbhal.c
-+++ b/drivers/staging/winbond/wbhal.c
-@@ -484,7 +484,7 @@ void hal_stop(  phw_data_t pHwData )
- unsigned char hal_idle(phw_data_t pHwData)
- {
- 	struct wb35_reg *reg = &pHwData->reg;
--	PWBUSB	pWbUsb = &pHwData->WbUsb;
-+	struct wb_usb *pWbUsb = &pHwData->WbUsb;
- 
- 	if( !pHwData->SurpriseRemove && ( pWbUsb->DetectCount || reg->EP0vm_state!=VM_STOP ) )
- 		return false;
-diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
-index 64d8e61..799f790 100644
---- a/drivers/staging/winbond/wbhal_s.h
-+++ b/drivers/staging/winbond/wbhal_s.h
-@@ -85,19 +85,6 @@ enum {
- 	VM_COMPLETED
- };
- 
--// Be used for 802.11 mac header
--typedef struct _MAC_FRAME_CONTROL {
--	u8	mac_frame_info; // this is a combination of the protovl version, type and subtype
--	u8	to_ds:1;
--	u8	from_ds:1;
--	u8	more_frag:1;
--	u8	retry:1;
--	u8	pwr_mgt:1;
--	u8	more_data:1;
--	u8	WEP:1;
--	u8	order:1;
--} MAC_FRAME_CONTROL, *PMAC_FRAME_CONTROL;
--
- //-----------------------------------------------------
- // Normal Key table format
- //-----------------------------------------------------
-@@ -105,28 +92,6 @@ typedef struct _MAC_FRAME_CONTROL {
- #define MAX_KEY_TABLE				24	// 24 entry for storing key data
- #define GROUP_KEY_START_INDEX		4
- #define MAPPING_KEY_START_INDEX		8
--typedef struct _KEY_TABLE
--{
--	u32	DW0_Valid:1;
--	u32	DW0_NullKey:1;
--	u32	DW0_Security_Mode:2;//0:WEP 40 bit 1:WEP 104 bit 2:TKIP 128 bit 3:CCMP 128 bit
--	u32	DW0_WEPON:1;
--	u32	DW0_RESERVED:11;
--	u32	DW0_Address1:16;
--
--	u32	DW1_Address2;
--
--	u32	DW2_RxSequenceCount1;
--
--	u32	DW3_RxSequenceCount2:16;
--	u32	DW3_RESERVED:16;
--
--	u32	DW4_TxSequenceCount1;
--
--	u32	DW5_TxSequenceCount2:16;
--	u32	DW5_RESERVED:16;
--
--} KEY_TABLE, *PKEY_TABLE;
- 
- //--------------------------------------------------------
- // 			 Descriptor
-@@ -412,8 +377,8 @@ typedef struct _DESCRIPTOR {		// Skip length = 8 DWORD
- #define MAX_RF_PARAMETER	32
- 
- typedef struct _TXVGA_FOR_50 {
--	u8	ChanNo;
--	u8	TxVgaValue;
-+	u8      ChanNo;
-+	u8      TxVgaValue;
- } TXVGA_FOR_50;
- 
- 
-@@ -500,10 +465,10 @@ typedef struct _HW_DATA_T
- 	//========================================================================
- 	// Variable for each module
- 	//========================================================================
--	WBUSB		WbUsb; // Need WbUsb.h
-+	struct wb_usb	WbUsb; // Need WbUsb.h
- 	struct wb35_reg	reg; // Need Wb35Reg.h
--	WB35TX		Wb35Tx; // Need Wb35Tx.h
--	WB35RX		Wb35Rx; // Need Wb35Rx.h
-+	struct wb35_tx	Wb35Tx; // Need Wb35Tx.h
-+	struct wb35_rx	Wb35Rx; // Need Wb35Rx.h
- 
- 	struct timer_list	LEDTimer;// For LED
- 
-@@ -578,33 +543,4 @@ typedef struct _HW_DATA_T
- 
- } hw_data_t, *phw_data_t;
- 
--// The mapping of Rx and Tx descriptor field
--typedef struct _HAL_RATE
--{
--	// DSSS
--	u32	RESERVED_0;
--	u32   NumRate2MS;
--	u32   NumRate55MS;
--	u32   NumRate11MS;
--
--	u32	RESERVED_1[4];
--
--	u32   NumRate1M;
--	u32   NumRate2ML;
--	u32   NumRate55ML;
--	u32   NumRate11ML;
--
--	u32	RESERVED_2[4];
--
--	// OFDM
--	u32   NumRate6M;
--	u32   NumRate9M;
--	u32   NumRate12M;
--	u32   NumRate18M;
--	u32   NumRate24M;
--	u32   NumRate36M;
--	u32   NumRate48M;
--	u32   NumRate54M;
--} HAL_RATE, *PHAL_RATE;
--
- #endif
-diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
-index 7bb9d48..59d3e77 100644
---- a/drivers/staging/winbond/wbusb.c
-+++ b/drivers/staging/winbond/wbusb.c
-@@ -312,7 +312,7 @@ error:
- 
- static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- {
--	PWBUSB		pWbUsb;
-+	struct wb_usb *pWbUsb;
-         struct usb_host_interface *interface;
- 	struct usb_endpoint_descriptor *endpoint;
- 	u32	ltmp;
-diff --git a/drivers/staging/winbond/wbusb_s.h b/drivers/staging/winbond/wbusb_s.h
-index 1de9360..0c7e6a3 100644
---- a/drivers/staging/winbond/wbusb_s.h
-+++ b/drivers/staging/winbond/wbusb_s.h
-@@ -16,22 +16,10 @@
- 
- #include <linux/types.h>
- 
--//---------------------------------------------------------------------------
--//  RW_CONTEXT --
--//
--//  Used to track driver-generated io irps
--//---------------------------------------------------------------------------
--typedef struct _RW_CONTEXT
--{
--	void*			pHwData;
--	struct urb		*urb;
--	void*			pCallBackFunctionParameter;
--} RW_CONTEXT, *PRW_CONTEXT;
--
--typedef struct _WBUSB {
-+struct wb_usb {
- 	u32	IsUsb20;
- 	struct usb_device *udev;
- 	u32	DetectCount;
--} WBUSB, *PWBUSB;
-+};
- 
- #endif
--- 
-1.5.4.3
+> > Alright, back to this. I'm going to need something like the patch below
+> > (except the update facility, which I thought I needed but then changed
+> > my mind) which is on top of your patch. Does that look sane?
+>=20
+> At first glance it does.  The update looks like someone might need it,
+> but doesn't have a user yet.  The btree_merge is similar, as I used to
+> need it, but no longer do.  Maybe #if 0 those two.
+
+Sure, works for me. I just had written it and didn't want to keep it
+from the world after changing my mind about needing it.
+
+> Well, I used to have heaps of btrees around and wanted to share the
+> mempool between all of them.  Not sure if I still do, I believe not.
+> Will check.
+>=20
+> If mempools aren't shared, I agree that encapsulating those bits is much
+> nicer.
+
+Just made the API a bit quirky, maybe just support both ways of using
+things? Would only need a flag somewhere in the btree structure, I'd
+think; ultimately it doesn't matter much to me though.
+
+> > Another thing that I need is a visitor that deletes _some_ entries. How
+> > can I do that? Additionally, it would be nice to be able to abort a tre=
+e
+> > walk, when you have determined that you can't continue for whatever
+> > reason.
+>=20
+> If you want to open-code it, you can use btree_lookup_less().  I added
+> that function sometime last month.  Basically something like this:
+> 	key =3D btree_last(head, geo);
+> 	while (key) {
+> 		/* do something with key */
+> 		key =3D btree_lookup_less(head, geo, key);
+> 	}
+>=20
+> Maybe it should be renamed to btree_get_prev_key().  I never noticed how
+> confusing it was because my head was busy with other problems.  The code
+> is currently burried within my logfs tree:
+> http://logfs.org/git?p=3Dlogfs;a=3Dsummary
+
+I don't think I've understood this yet. That code above there is a
+backwards walk over the key space, and it's safe to call
+btree_remove(key) at /* do something with key */?
+
+> Will merge it with your patch and respin later tonight or tomorrow...
+
+Cool, thanks. Mainly making it a module for testing anyway.
+
+johannes
+
+--=-ReUmPbJkBCZEHWj0/VBD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJZir+AAoJEKVg1VMiehFY9A0P/1Ycn2a6WFXi3TaarFZ/2Oxk
+698z7S7Fn/ToCXOlYtUc8ivuhGFIRYjD74r4gnHGfaVEovkGBaApIyNPYxBgJbz5
+SHz6z3Uksmnly8U3khaYIxpjD9csxvhTpF2Ap/asdZ2xMUHAkWY0BEaFCX7kzs8/
+CZijRlcc2acUSQQ4Jqzq8NiHjJCSofIh6AlRBILkZvRdySjcf1jjL1N5eIbAe/HP
+4cjF0tHFNu+UB6sgtqy48EFKZ81H5Tf9BddxDJoEEqDpyO+3tY7j9zs0rxoD/yVK
+cQx+ktWbZWQQz8TQ7Is7wsiNlt1BUvrONp8CcUBsWpmZBmIuz41ZMW4mO38PLL6P
+zjL+KhT6PDW/2oFaski2GB61DappML3PzynvGqSWEFmydzIUqSp5liazYIPiahwd
+UpptMFzMA4hHzhhJhVKDLevgN+pcQzBJvtwYVGESdeIKQEC8ixWqcLoR/5zsqT7f
+MfXCtyJmWO69+GYvKPA8iTnJc5v2YHVkcSQ3UWqfoRQWolf0ykGsWA/NoNcWaZTY
+h4qwAxQ90l4OqShS5+AeTYHPWOpHn2xjhd4i+D19dulxffeLA5QKpgFwY/x1MJkb
+IgxYUIQwq6ZOCe0n9g313h06PL5vvx1McH43Xsjxom8KnI0atMl7NHbtsR2a5Mo2
+I9m6qxW+AhEiLdjGafXN
+=zgKA
+-----END PGP SIGNATURE-----
+
+--=-ReUmPbJkBCZEHWj0/VBD--
 
