@@ -1,119 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761835AbZAHTD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbZAHTFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761835AbZAHTD4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbZAHTDp
+	id S1761514AbZAHTFt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:05:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZAHTFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:03:45 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:47835 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756131AbZAHTDn (ORCPT
+	Thu, 8 Jan 2009 14:05:35 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:17420 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755614AbZAHTFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:03:43 -0500
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <1231439234.14304.33.camel@think.oraclecorp.com>
-References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
-	 <1231347442.11687.344.camel@twins>
-	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
-	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-	 <1231365115.11687.361.camel@twins>
-	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
-	 <1231366716.11687.377.camel@twins>
-	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>
-	 <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
-	 <1231426014.11687.456.camel@twins>
-	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
-	 <1231434515.14304.27.camel@think.oraclecorp.com>
-	 <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
-	 <alpine.DEB.1.10.0901081300370.24688@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901081005560.3283@localhost.localdomain>
-	 <1231439234.14304.33.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Thu, 08 Jan 2009 14:02:30 -0500
-Message-Id: <1231441350.14304.48.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Thu, 8 Jan 2009 14:05:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=w7h5BU4E4PhVukIaeNZ74mYYG3KMYi9S5EQYQViixWtuMlL1riWui0LdItVYbcBsPK
+         28MBKA1Qrmk+ntdwgNyzoNTWukbHat0uf7i4ipPoPHY97/Lax071mrRxzSfVFSJcbPWR
+         CuCybYnHHJ6UYByi9a/2Igf71kohfU5f2IjG0=
+Message-ID: <8bd0f97a0901081105q1e897254kad9a8533b5845403@mail.gmail.com>
+Date: Thu, 8 Jan 2009 14:05:33 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 2/2] netdev: bfin_mac: enable VLAN support in Blackfin MAC driver
+Cc: cooloney@kernel.org, jeff@garzik.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, graf.yang@analog.com
+In-Reply-To: <8bd0f97a0901081101t6fdfa485rbd7ccc4e47691ddb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.49664DCE.003B:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+References: <1231344879-26069-1-git-send-email-cooloney@kernel.org>
+	 <1231344879-26069-3-git-send-email-cooloney@kernel.org>
+	 <20090108.105531.176161465.davem@davemloft.net>
+	 <8bd0f97a0901081101t6fdfa485rbd7ccc4e47691ddb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 13:27 -0500, Chris Mason wrote:
-> On Thu, 2009-01-08 at 10:16 -0800, Linus Torvalds wrote:
-> > 
-> > On Thu, 8 Jan 2009, Steven Rostedt wrote:
-> > > 
-> > > Ouch! I think you are on to something:
-> > 
-> > Yeah, there's somethign there, but looking at Chris' backtrace, there's 
-> > nothing there to disable preemption. So if it was this simple case, it 
-> > should still have preempted him to let the other process run and finish 
-> > up.
-> > 
-> 
-> My .config has no lockdep or schedule debugging and voluntary preempt.
-> I do have CONFIG_INLINE_OPTIMIZE on, its a good name for trusting gcc I
-> guess.
+On Thu, Jan 8, 2009 at 14:01, Mike Frysinger wrote:
+> On Thu, Jan 8, 2009 at 13:55, David Miller wrote:
+>> We can get VLAN packets received and sent, using AF_PACKET
+>> sockets, for example.  The chip should still respect those
+>> even if VLAN proper is not being utilized.
+>
+> any tips on doing that ?
 
-The patch below isn't quite what Linus suggested, but it is working here
-at least.  In every test I've tried so far, this is faster than the ugly
-btrfs spin.
-
-dbench v7.1:        789mb/s
-dbench simple spin: 566MB/s
-
-50 proc parallel creates v7.1:        162 files/s avg sys: 1.6
-50 proc parallel creates simple spin: 152 files/s avg sys: 2
-
-50 proc parallel stat v7.1:        2.3s total
-50 proc parallel stat simple spin: 3.8s total
-
-It is less fair though, the 50 proc parallel creates had a much bigger
-span between the first and last proc's exit time.  This isn't a huge
-shock, I think it shows the hot path is closer to a real spin lock.
-
-Here's the incremental I was using.  It looks to me like most of the
-things that could change inside spin_on_owner mean we still want to
-spin.  The only exception is the need_resched() flag.
-
--chris
-
-diff --git a/kernel/mutex.c b/kernel/mutex.c
-index bd6342a..8936410 100644
---- a/kernel/mutex.c
-+++ b/kernel/mutex.c
-@@ -161,11 +161,13 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
- 			return 0;
- 		}
- 
--		if (old_val < 0 && !list_empty(&lock->wait_list))
-+		if (!list_empty(&lock->wait_list))
- 			break;
- 
- 		/* See who owns it, and spin on him if anybody */
- 		owner = ACCESS_ONCE(lock->owner);
-+		if (need_resched())
-+			break;
- 		if (owner && !spin_on_owner(lock, owner))
- 			break;
- 
-
-
+or rather, is there a driver or you two you can point out that is
+doing this correctly ?  the ones i looked at seemed to be doing it
+like the patch we posted ...
+-mike
