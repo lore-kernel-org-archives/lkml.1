@@ -1,100 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763872AbZAHW45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbZAHW5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763872AbZAHW45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 17:56:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761001AbZAHW42
+	id S1763914AbZAHW5n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 17:57:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbZAHW5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 17:56:28 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:39316 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757078AbZAHW40 (ORCPT
+	Thu, 8 Jan 2009 17:57:31 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:17087 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbZAHW5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 17:56:26 -0500
-From: David Daney <ddaney@caviumnetworks.com>
-To: rusty@rustcorp.com.au, torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, travis@sgi.com,
-       David Daney <ddaney@caviumnetworks.com>
-Subject: [PATCH 2/2] cpumask fallout: Initialize irq_default_affinity earlier (v2).
-Date: Thu,  8 Jan 2009 14:55:45 -0800
-Message-Id: <1231455345-29453-2-git-send-email-ddaney@caviumnetworks.com>
-X-Mailer: git-send-email 1.5.6.6
-In-Reply-To: <496683D0.6000509@caviumnetworks.com>
-References: <496683D0.6000509@caviumnetworks.com>
-X-OriginalArrivalTime: 08 Jan 2009 22:55:49.0635 (UTC) FILETIME=[3FF62D30:01C971E4]
+	Thu, 8 Jan 2009 17:57:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=k18OoHVaPpk5AN8fLxkMRpeu8lVRk60MNWfzI3AlB7V0xV4IGphpukqSyFzOAsSXwk
+         2oo73oJu5/M13KcltKeb39bhP2u6GZE8C8kvrZOapvA/kuZinEyDP2FkS046++cYIiDw
+         iaQkiZjT97ii5XlBXgnaa6N2JQeT+RrIveX/k=
+From: Florian Fainelli <florian@openwrt.org>
+To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+Subject: Re: FPGA programming driver architecture
+Date: Thu, 8 Jan 2009 23:57:21 +0100
+User-Agent: KMail/1.9.9
+Cc: "Thiago Galesi" <thiagogalesi@gmail.com>,
+       "Hugo Villeneuve" <hugo@hugovil.com>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+References: <20081212150314.6ea24996.hugo@hugovil.com> <82ecf08e0901081414u15af3c2dy9c88a242db024dc7@mail.gmail.com> <c384c5ea0901081447i5ad807b3yb0ec3adebeaa46a0@mail.gmail.com>
+In-Reply-To: <c384c5ea0901081447i5ad807b3yb0ec3adebeaa46a0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1407056.eZfqosaT1b";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901082357.24432.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the initialization of irq_default_affinity to early_irq_init as
-core_initcall is too late.
+--nextPart1407056.eZfqosaT1b
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-irq_default_affinity can be used in init_IRQ and potentially timer and
-SMP init as well.  All of these happen before core_initcall.  Moving
-the initialization to early_irq_init ensures that it is initialized
-before it is used.
+Hello,
 
-Signed-off-by: David Daney <ddaney@caviumnetworks.com>
----
- kernel/irq/handle.c |   12 ++++++++++++
- kernel/irq/manage.c |    8 --------
- 2 files changed, 12 insertions(+), 8 deletions(-)
+Le Thursday 08 January 2009 23:47:58 Leon Woestenberg, vous avez =E9crit=A0:
+> Indeed.
+>
+> The programming back end should be generic enough so that it can use
+> other subsystems.
+>
+> The FPGA configuration interface could be on the memory bus (and in
+> many cases the DMA helpers can be used) or behind a PCI bus, or can
+> even have SPI etc front-ends.
+>
+> In general the programming API should accept a blob of data,
+> preferably in one chunk (pointer plus length) or at least 4kB chunks
+> or so, so that configuration is not severy overheaded by a callback
+> per byte (or even bit).
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index c20db0b..a9fbb01 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -39,6 +39,14 @@ void handle_bad_irq(unsigned int irq, struct irq_desc *desc)
- 	ack_bad_irq(irq);
- }
- 
-+static inline void __init init_irq_default_affinity(void)
-+{
-+#if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
-+	alloc_bootmem_cpumask_var(&irq_default_affinity);
-+	cpumask_setall(irq_default_affinity);
-+#endif
-+}
-+
- /*
-  * Linux has a controller-independent interrupt architecture.
-  * Every controller has a 'controller-template', that is used
-@@ -134,6 +142,8 @@ int __init early_irq_init(void)
- 	int legacy_count;
- 	int i;
- 
-+	init_irq_default_affinity();
-+
- 	desc = irq_desc_legacy;
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 
-@@ -219,6 +229,8 @@ int __init early_irq_init(void)
- 	int count;
- 	int i;
- 
-+	init_irq_default_affinity();
-+
- 	desc = irq_desc;
- 	count = ARRAY_SIZE(irq_desc);
- 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 618a64f..291f036 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -18,14 +18,6 @@
- #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
- cpumask_var_t irq_default_affinity;
- 
--static int init_irq_default_affinity(void)
--{
--	alloc_cpumask_var(&irq_default_affinity, GFP_KERNEL);
--	cpumask_setall(irq_default_affinity);
--	return 0;
--}
--core_initcall(init_irq_default_affinity);
--
- /**
-  *	synchronize_irq - wait for pending IRQ handlers (on other CPUs)
-  *	@irq: interrupt number to wait for
--- 
-1.5.6.6
+That's the idea behind using request_firmware, which provides you with both=
+ a=20
+pointer to the data and the size of the blob.
+=2D-=20
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+=2D------------------------------
 
+--nextPart1407056.eZfqosaT1b
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklmhNIACgkQlyvkmBGtjyZVwgCfRdq0d7DUxbQLSm1+jqHTBbNg
+x4wAoLRizBd5SyVIt+Ch3utQBXAOYSCr
+=JyIa
+-----END PGP SIGNATURE-----
+
+--nextPart1407056.eZfqosaT1b--
