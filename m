@@ -1,35 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbZAGX5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbZAHAHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756870AbZAGX5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 18:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZAGX5l
+	id S1757424AbZAHAHF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 19:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZAHAGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 18:57:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37862 "EHLO
+	Wed, 7 Jan 2009 19:06:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41073 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751665AbZAGX5k (ORCPT
+	by vger.kernel.org with ESMTP id S1755874AbZAHAGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 18:57:40 -0500
-Date: Wed, 7 Jan 2009 15:57:06 -0800 (PST)
+	Wed, 7 Jan 2009 19:06:50 -0500
+Date: Wed, 7 Jan 2009 16:05:20 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v5][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <alpine.DEB.1.10.0901071848431.23456@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.2.00.0901071552550.3057@localhost.localdomain>
-References: <87r63ljzox.fsf@basil.nowhere.org>  <20090103191706.GA2002@parisc-linux.org> <1231368870.6686.16.camel@norville.austin.ibm.com> <alpine.LFD.2.00.0901071518570.3057@localhost.localdomain> <alpine.DEB.1.10.0901071848431.23456@gandalf.stny.rr.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.29] V4L/DVB fixes
+In-Reply-To: <20090107215252.6e843e29@pedra.chehab.org>
+Message-ID: <alpine.LFD.2.00.0901071603130.3057@localhost.localdomain>
+References: <20090107215252.6e843e29@pedra.chehab.org>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -39,14 +30,16 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 7 Jan 2009, Steven Rostedt wrote:
+On Wed, 7 Jan 2009, Mauro Carvalho Chehab wrote:
 > 
-> Should that be:
+> Please pull from:
+>         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 > 
-> #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_MEMORY_HOTPLUG)
+>  MAINTAINERS                                     |   65 ++++++++++------
+> 
+> Mauro Carvalho Chehab (8):
+>       V4L/DVB (10191a): Update MAINTAINERS entries on media drivers
 
-Well, probably CONFIG_MEMORY_HOTREMOVE, no? And I'd actually suggest that 
-unplugging should have a stop-machine if it doesn't already, just because 
-it's such a special case - like module removal.
+I'm not seeing this one. Forgot to push out?
 
-			Linus
+		Linus
