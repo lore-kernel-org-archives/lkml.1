@@ -1,140 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbZAHRdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbZAHReX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759762AbZAHRdx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 12:33:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZAHRdk
+	id S1761300AbZAHReX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 12:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760278AbZAHRd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 12:33:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63310 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754281AbZAHRdi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 12:33:38 -0500
-Date: Thu, 8 Jan 2009 12:33:35 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Chris Mason <chris.mason@oracle.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <1231434515.14304.27.camel@think.oraclecorp.com>
-Message-ID: <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-  <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>  <1231366716.11687.377.camel@twins>  <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>  <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
-  <1231426014.11687.456.camel@twins>  <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Jan 2009 12:33:56 -0500
+Received: from 1wt.eu ([62.212.114.60]:1264 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759951AbZAHRdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 12:33:55 -0500
+Date: Thu, 8 Jan 2009 18:30:28 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
+       Ben Mansell <ben@zeus.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090108173028.GA22531@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens,
 
-On Thu, 8 Jan 2009, Chris Mason wrote:
+here's the other patch I was talking about, for better behaviour of
+non-blocking splice(). Ben Mansell also confirms similar improvements
+in his tests, where non-blocking splice() initially showed half of
+read()/write() performance. Ben, would you mind adding a Tested-By
+line ?
 
-> On Thu, 2009-01-08 at 08:58 -0800, Linus Torvalds wrote:
-> > 
-> > Ok, I've gone through -v7, and I'm sure you're all shocked to hear it, but 
-> > I have no complaints. Except that you dropped all the good commit 
-> > commentary you had earlier ;)
-> > 
-> 
-> Seems to get stuck under load.  I've hit it with make -j 50 on ext3 and
-> with my btrfs benchmarking.  This was against the latest git from about
-> 5 minutes ago.
-> 
-> -chris
-> 
-> BUG: soft lockup - CPU#3 stuck for 61s! [python:3970] CPU 3: Modules 
-> linked in: netconsole configfs btrfs zlib_deflate loop e1000e 3w_9xxx 
+Also, please note that this is unrelated to the corruption bug I reported
+and does not fix it.
 
-> Pid: 3970, comm: python Not tainted 2.6.28 #1 Call Trace:
+Regards,
+Willy
 
->  [<ffffffff8024f4b1>] ? __cmpxchg+0x9/0x3f
->  [<ffffffff805e0068>] ? __mutex_lock_common+0x3d/0x178
+>From fafe76713523c8e9767805cfdc7b73323d7bf180 Mon Sep 17 00:00:00 2001
+From: Willy Tarreau <w@1wt.eu>
+Date: Thu, 8 Jan 2009 17:10:13 +0100
+Subject: [PATCH] tcp: splice as many packets as possible at once
 
-Hmm, looking at the code...
+Currently, in non-blocking mode, tcp_splice_read() returns after
+splicing one segment regardless of the len argument. This results
+in low performance and very high overhead due to syscall rate when
+splicing from interfaces which do not support LRO.
 
-mutex.c:
+The fix simply consists in not breaking out of the loop after the
+first read. That way, we can read up to the size requested by the
+caller and still return when there is no data left.
 
-       for (;;) {
-                struct thread_info *owner;
+Performance has significantly improved with this fix, with the
+number of calls to splice() divided by about 20, and CPU usage
+dropped from 100% to 75%.
 
-                old_val = atomic_cmpxchg(&lock->count, 1, 0);
-                if (old_val == 1) {
-                        lock_acquired(&lock->dep_map, ip);
-                        mutex_set_owner(lock);
-                        return 0;
-                }
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+---
+ net/ipv4/tcp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-                if (old_val < 0 && !list_empty(&lock->wait_list))
-                        break;
-
-                /* See who owns it, and spin on him if anybody */
-                owner = ACCESS_ONCE(lock->owner);
-                if (owner && !spin_on_owner(lock, owner))
-                        break;
-
-                cpu_relax();
-        }
-
-
-and in sched.c:
-
-int spin_on_owner(struct mutex *lock, struct thread_info *owner)
-{
-        unsigned int cpu;
-        struct rq *rq;
-        int ret = 1;
-[...]
-                if (lock->owner != owner)
-                        break;
-
-
-We keep spinning if the owner changes.  I wonder if you have many CPUS 
-(Chris, how many cpus did this box have?), you could get one task 
-constantly spinning while the mutex keeps changing owners on the other 
-CPUS.
-
-Perhaps, we should do something like:
-
-mutex.c:
-
-       for (;;) {
-                struct thread_info *owner = NULL;
-
-                old_val = atomic_cmpxchg(&lock->count, 1, 0);
-                if (old_val == 1) {
-                        lock_acquired(&lock->dep_map, ip);
-                        mutex_set_owner(lock);
-                        return 0;
-                }
-
-                if (old_val < 0 && !list_empty(&lock->wait_list)) 
-                        break;
-
-                /* See who owns it, and spin on him if anybody */
-		if (!owner)
-	                owner = ACCESS_ONCE(lock->owner);
-                if (owner && !spin_on_owner(lock, owner)) 
-                        break;
-
-                cpu_relax();
-        }
-
-Or just pull assigning of the owner out of the loop. This way, we go to 
-sleep if the owner changes and is not NULL.
-
-Just a thought,
-
--- Steve
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index 35bcddf..80261b4 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -615,7 +615,7 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
+ 		lock_sock(sk);
+ 
+ 		if (sk->sk_err || sk->sk_state == TCP_CLOSE ||
+-		    (sk->sk_shutdown & RCV_SHUTDOWN) || !timeo ||
++		    (sk->sk_shutdown & RCV_SHUTDOWN) ||
+ 		    signal_pending(current))
+ 			break;
+ 	}
+-- 
+1.6.0.3
 
