@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbZAHPpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbZAHPqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbZAHPpp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 10:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbZAHPpg
+	id S1758106AbZAHPqt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 10:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZAHPqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 10:45:36 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:53358 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750780AbZAHPpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 10:45:35 -0500
-Message-ID: <49661F8B.5070103@sgi.com>
-Date: Thu, 08 Jan 2009 07:45:15 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com
-Subject: Re: [PATCH 1/5] cpumask: update irq_desc to use cpumask_var_t
-References: <20090107195832.265117000@polaris-admin.engr.sgi.com>	 <20090107195832.465094000@polaris-admin.engr.sgi.com> <86802c440901071227n2d110757ye1bd12e689502ebc@mail.gmail.com> <49652D92.8020105@sgi.com> <49656FCF.9090602@kernel.org>
-In-Reply-To: <49656FCF.9090602@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Jan 2009 10:46:37 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:44941 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752176AbZAHPqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 10:46:36 -0500
+Subject: [PATCH] async: Don't call async_synchronize_full_special() while
+ holding sb_lock
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <20090108072111.1ebadebd@infradead.org>
+References: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com>
+	 <1231425472.21528.13.camel@norville.austin.ibm.com>
+	 <20090108072111.1ebadebd@infradead.org>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 09:46:31 -0600
+Message-Id: <1231429591.27353.14.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-...
->> Or am I missing your point?
-> 
-> static void init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
->                  struct irq_desc *desc, int cpu)
-> {
->         memcpy(desc, old_desc, sizeof(struct irq_desc));
-> 
-> 
-> will overwrite new_desc->affinity and pending_mask
-> 
-> YH
+sync_filesystems() shouldn't be calling async_synchronize_full_special
+while holding a spinlock.  The second while loop in that function is the
+right place for this anyway.
 
-Yup, apparently I was missing your point (banging on head once more).
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Reported-by: Grissiom <chaos.proton@gmail.com>
 
-Thanks for spotting this!
+diff --git a/fs/super.c b/fs/super.c
+index cb20744..7d67387 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -458,7 +458,6 @@ void sync_filesystems(int wait)
+ 		if (sb->s_flags & MS_RDONLY)
+ 			continue;
+ 		sb->s_need_sync_fs = 1;
+-		async_synchronize_full_special(&sb->s_async_list);
+ 	}
+ 
+ restart:
+@@ -471,6 +470,7 @@ restart:
+ 		sb->s_count++;
+ 		spin_unlock(&sb_lock);
+ 		down_read(&sb->s_umount);
++		async_synchronize_full_special(&sb->s_async_list);
+ 		if (sb->s_root && (wait || sb->s_dirt))
+ 			sb->s_op->sync_fs(sb, wait);
+ 		up_read(&sb->s_umount);
 
-Ingo - what's the state of tip/cpus4096?  Shall I push this as an
-append patch, or redo the original so bisectability works.
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
-Also, Yinghai - would you know of a straight forward way to test
-the irq migration?   I have taken cpus offline and back online
-but wasn't sure if any irq's were being moved off of cpu 0 which
-cannot be taken offline.
-
-Thanks,
-Mike
