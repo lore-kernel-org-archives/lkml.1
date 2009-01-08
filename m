@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZAHIHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbZAHIHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756668AbZAHIHD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 03:07:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZAHIGy
+	id S1757612AbZAHIHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 03:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbZAHIHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 03:06:54 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46059 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752542AbZAHIGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 03:06:53 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19fBQBR9lJfrfyBnfxHzcd3Oi3TZIqmwi5qzsk05D
-	HXbzbLBo8YlDHP
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-From: Mike Galbraith <efault@gmx.de>
-To: svaidy@linux.vnet.ibm.com
-Cc: balbir@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090107153510.GN4574@dirshya.in.ibm.com>
-References: <1231130416.5479.8.camel@marge.simson.net>
-	 <1231137413.10471.23.camel@marge.simson.net>
-	 <1231168786.9120.26.camel@marge.simson.net>
-	 <1231234297.3806.50.camel@marge.simson.net>
-	 <20090106150709.GG4574@dirshya.in.ibm.com>
-	 <1231264117.5254.23.camel@marge.simson.net>
-	 <20090106184552.GI17198@balbir.in.ibm.com>
-	 <1231318755.3899.57.camel@marge.simson.net>
-	 <20090107112639.GI4574@dirshya.in.ibm.com>
-	 <1231338985.5709.22.camel@marge.simson.net>
-	 <20090107153510.GN4574@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Thu, 08 Jan 2009 09:06:48 +0100
-Message-Id: <1231402008.5721.37.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 8 Jan 2009 03:07:13 -0500
+Received: from rv-out-0506.google.com ([209.85.198.226]:57479 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757276AbZAHIHK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 03:07:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=lf8tX5t+AG1Oze3/D+OAoMT97/wSpwuOggvQocP3kLC8kH45H5HZW08sUulFJzK8rm
+         fat4EzeQwqYVDcNyPtQkMuyFg/Wb62hXT/pspW6qpOpFYBL1L5ixchFq3mCzl5UQLTbE
+         iv/kQ5SgbpSfm/u1fHSHM8lPviAfQK1WsjxXk=
+Message-ID: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com>
+Date: Thu, 8 Jan 2009 16:07:08 +0800
+From: Grissiom <chaos.proton@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: "BUG: scheduling while atomic: pdflush/30/0x00000002" in latest git
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-07 at 21:05 +0530, Vaidyanathan Srinivasan wrote:
+When I using the latest git version, I occasionally got this in dmesg:
 
-> sched_mc=2 depends on NEWIDLE but the wakeup biasing part will be
-> enabled even without this flag.  The power savings will be marginally
-> better than sched_mc=1 without NEWIDLE.  But the end user can have
-> that setup if they want to.
+[ 2008.237234] BUG: scheduling while atomic: pdflush/30/0x00000002
+[ 2008.237240] 2 locks held by pdflush/30:
+[ 2008.237244]  #0:  (mutex){--..}, at: [<c01a57a1>] sync_filesystems+0x11/0x120
+[ 2008.237258]  #1:  (sb_lock){--..}, at: [<c01a57ab>]
+sync_filesystems+0x1b/0x120
+[ 2008.237277] Modules linked in: fuse ricoh_mmc b43
+[ 2008.237288] Pid: 30, comm: pdflush Not tainted
+2.6.28-g14-rfkill-nophy-ledon-07485-g9e42d0c #62
+[ 2008.237294] Call Trace:
+[ 2008.237303]  [<c04d7576>] schedule+0x326/0x8e0
+[ 2008.237311]  [<c01500d3>] __lock_acquire+0x293/0xa20
+[ 2008.237321]  [<c014e307>] mark_held_locks+0x67/0x80
+[ 2008.237330]  [<c04da58c>] _spin_unlock_irqrestore+0x4c/0x60
+[ 2008.237339]  [<c014e519>] trace_hardirqs_on_caller+0x149/0x1a0
+[ 2008.237351]  [<c0143d55>] async_synchronize_cookie_special+0xb5/0x140
+[ 2008.237362]  [<c013e1a0>] autoremove_wake_function+0x0/0x40
+[ 2008.237372]  [<c01a57fc>] sync_filesystems+0x6c/0x120
+[ 2008.237381]  [<c017ee90>] pdflush+0x0/0x1e0
+[ 2008.237392]  [<c01c0b90>] do_sync+0x20/0x60
+[ 2008.237402]  [<c01c0bda>] sys_sync+0xa/0x10
+[ 2008.237412]  [<c017ef9e>] pdflush+0x10e/0x1e0
+[ 2008.237420]  [<c014e519>] trace_hardirqs_on_caller+0x149/0x1a0
+[ 2008.237429]  [<c017de80>] laptop_flush+0x0/0x10
+[ 2008.237437]  [<c013dea2>] kthread+0x42/0x70
+[ 2008.237444]  [<c013de60>] kthread+0x0/0x70
+[ 2008.237452]  [<c0103c03>] kernel_thread_helper+0x7/0x14
+(repeat some times)
 
-That implies to me that there should exist a flag SD_WAKEUP_BIAS or
-whatnot.  All settings should be visible.  Currently, sched_mc > 0 turns
-on NEWIDLE, which is visible, but 2 turns on this 'invisible to the
-ultimate low-level control interface' thing.
+Is there any resolution?
+Please add me to the CC list. Thanks.
 
-	-Mike
-
+--
+Cheers,
+Grissiom
