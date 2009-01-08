@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759672AbZAHUVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbZAHUWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759672AbZAHUVs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 15:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZAHUVl
+	id S1760940AbZAHUWz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 15:22:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZAHUWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 15:21:41 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:39193 "EHLO slimlogic.co.uk"
+	Thu, 8 Jan 2009 15:22:46 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:44199 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752269AbZAHUVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 15:21:40 -0500
-Subject: [GIT PULL] Voltage regulator updates
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 08 Jan 2009 20:21:38 +0000
-Message-Id: <1231446098.6488.15.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	id S1751081AbZAHUWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 15:22:45 -0500
+Date: Thu, 8 Jan 2009 15:22:41 -0500
+To: James Lentini <jlentini@netapp.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NFS/RDMA documentation update
+Message-ID: <20090108202241.GC19312@fieldses.org>
+References: <alpine.LFD.2.00.0901081309060.3209@jlentini-linux.nane.netapp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901081309060.3209@jlentini-linux.nane.netapp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thu, Jan 08, 2009 at 01:13:26PM -0500, James Lentini wrote:
+> 
+> Bruce,
+> 
+> Please consider this patch for 2.6.29:
+> 
+> Update the NFS/RDMA documentation to use the new port number assigned 
+> by IANA.
 
-Please pull the following voltage regulator updates.
+Applied, thanks!--b.
 
-Assorted core updates for improved error checks, ref counting, code
-size, documentation and registration. Minor fixes for the DA903x PMIC.  
-
-The following changes since commit 9e42d0cf5020aaf217433cad1a224745241d212a:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/sparc-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
-
-David Brownell (6):
-      regulator: enable/disable refcounting
-      regulator: improved mode error checks
-      regulator: code shrink (v2)
-      regulator: sysfs attribute reduction (v2)
-      regulator: init/link earlier
-      regulator: catch some registration errors
-
-Kay Sievers (1):
-      regulator: struct device - replace bus_id with dev_name(), dev_set_name()
-
-Mark Brown (5):
-      regulator: Remove extraneous kerneldoc annotations
-      regulator: Clean up kerneldoc warnings
-      regulator: Add missing kerneldoc
-      regulator: Fix some kerneldoc rendering issues
-      regulator: Add basic DocBook manual
-
-Mike Rapoport (3):
-      regulator: da903x: add '\n' to error messages
-      regulator: da903x: make da903x_is_enabled return 0 or 1
-      regulator: move set_machine_constraints after regulator device initialization
-
-Randy Dunlap (1):
-      regulator: fix kernel-doc warnings
-
- Documentation/ABI/testing/sysfs-class-regulator |  136 +++----
- Documentation/DocBook/Makefile                  |    2 +-
- Documentation/DocBook/regulator.tmpl            |  304 +++++++++++++++
- drivers/Makefile                                |    4 +-
- drivers/regulator/core.c                        |  474 ++++++++++++++---------
- drivers/regulator/da903x.c                      |   12 +-
- include/linux/regulator/consumer.h              |    8 +-
- include/linux/regulator/driver.h                |   37 ++-
- include/linux/regulator/machine.h               |   41 ++
- 9 files changed, 746 insertions(+), 272 deletions(-)
- create mode 100644 Documentation/DocBook/regulator.tmpl
-
-
+> 
+> Signed-off-by: James Lentini <jlentini@netapp.com>
+> ---
+> 
+>  nfs-rdma.txt |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- a/Documentation/filesystems/nfs-rdma.txt	2008-12-24 18:26:37.000000000 -0500
+> +++ b/Documentation/filesystems/nfs-rdma.txt	2009-01-08 09:52:32.193769000 -0500
+> @@ -251,7 +251,7 @@
+>  
+>      Instruct the server to listen on the RDMA transport:
+>  
+> -    $ echo rdma 2050 > /proc/fs/nfsd/portlist
+> +    $ echo rdma 20049 > /proc/fs/nfsd/portlist
+>  
+>    - On the client system
+>  
+> @@ -263,7 +263,7 @@
+>      Regardless of how the client was built (module or built-in), use this
+>      command to mount the NFS/RDMA server:
+>  
+> -    $ mount -o rdma,port=2050 <IPoIB-server-name-or-address>:/<export> /mnt
+> +    $ mount -o rdma,port=20049 <IPoIB-server-name-or-address>:/<export> /mnt
+>  
+>      To verify that the mount is using RDMA, run "cat /proc/mounts" and check
+>      the "proto" field for the given mount.
