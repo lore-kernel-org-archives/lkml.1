@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZAHGq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZAHGuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbZAHGq4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 01:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZAHGqs
+	id S1755478AbZAHGuL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 01:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZAHGtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 01:46:48 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:28788 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbZAHGqr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 01:46:47 -0500
-X-IronPort-AV: E=Sophos;i="4.37,231,1231113600"; 
-   d="scan'208";a="58682690"
-From: Roland Dreier <rdreier@cisco.com>
+	Thu, 8 Jan 2009 01:49:55 -0500
+Received: from mail.lang.hm ([64.81.33.126]:39068 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751081AbZAHGtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 01:49:55 -0500
+Date: Wed, 7 Jan 2009 23:52:29 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Om <om.turyx@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 64 bit PCI access using MMX register -- how?
-References: <496534BC.4060603@gmail.com>
-	<20090107233929.60ef8d98@lxorguk.ukuu.org.uk>
-	<8763kqxs2p.fsf@basil.nowhere.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 07 Jan 2009 22:46:45 -0800
-In-Reply-To: <8763kqxs2p.fsf@basil.nowhere.org> (Andi Kleen's message of "Thu,
-	08 Jan 2009 06:52:30 +0100")
-Message-ID: <adahc4as3ai.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: RFC: Network privilege separation.
+In-Reply-To: <20090108031042.GQ496@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0901072350480.31038@asgard.lang.hm>
+References: <1231307334-9542-1-git-send-email-michael@laptop.org> <87mye2yg8a.fsf@basil.nowhere.org> <20090108023111.GJ3164@didacte.laptop.org> <20090108031042.GQ496@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Jan 2009 06:46:46.0209 (UTC) FILETIME=[DFC77310:01C9715C]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I think he was ok because he saved the MMX state by itself, except:
- > 
- > - There was no guarantee that the FPU is in MMX state, not x87 state
- > - He'll often get a lazy fpu save exception. This used to BUG() 
- > in some cases when invoked from kernel space (but that might have been
- > changed now). Better is to disable this explicitely around 
- > the access (like in kernel_fpu_begin()/end())
- > - Doing this all properly is fairly expensive and I suspect
- > just using a lock will be cheaper.
+On Thu, 8 Jan 2009, Andi Kleen wrote:
 
-I had some code a long time ago that used SSE (I think movlps was the
-opcode I chose) to get an atomic 64-bit PIO operation.  To do that, I
-just needed to disable preemption and save/restore cr0 around the SSE
-operation, and just save/restore the single xmm register I used.  Of
-course it only works on CPUs that have SSE.  That avoids the nastiness
-of x87/mmx state, but in the end a spinlock around two readl()s was
-faster and a ton simpler, so I threw all that code away.
+> On Wed, Jan 07, 2009 at 09:31:11PM -0500, Michael Stone wrote:
+>>     -- if it's different from Joe User's regular uid, then where did it come
+>>        from and how is Joe going to clean it up when he no longer needs it?
+>
+> You always create  joe-nonet one when you create joe
+>
+> Now writing to joe's files: you can either use ACLs or do everything
+> through group accesses (it's very common to have a "joe" group for this
+> purpose for each user)
+>
+> But perhaps it's a good idea to not allow writing to all of Joe's
+> files by those "no network" processes too. It at least sounds like
+> that might be useful to combine.
 
- - R.
+there are times when that would be nice, but it's also a bit of a pain to 
+have to change the permissions so that joe-nonet can access all the files 
+that joe can access (they will have to be set with the correct group 
+ownership and hope that there wasn't a reason to use any other group)
+
+David Lang
