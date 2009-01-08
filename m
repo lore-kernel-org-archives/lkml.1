@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbZAHXnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZAHXoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761637AbZAHXnA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 18:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZAHXmv
+	id S1760161AbZAHXoM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 18:44:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZAHXny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 18:42:51 -0500
-Received: from vena.lwn.net ([206.168.112.25]:37346 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753101AbZAHXmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 18:42:50 -0500
-Date: Thu, 8 Jan 2009 16:42:48 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PULL] Documentation tree for 2.6.29
-Message-ID: <20090108164248.5184b65d@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.0; x86_64-redhat-linux-gnu)
+	Thu, 8 Jan 2009 18:43:54 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38046
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753101AbZAHXnw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 18:43:52 -0500
+Date: Thu, 08 Jan 2009 15:43:54 -0800 (PST)
+Message-Id: <20090108.154354.251018369.davem@davemloft.net>
+To: acme@redhat.com
+Cc: lpotenza@inwind.it, gerrit@erg.abdn.ac.uk, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dccp@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net: fix section mismatch warnings in
+ dccp/ccids/lib/tfrc.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090108232847.GV23891@ghostprotocols.net>
+References: <200901081957.03413.lpotenza@inwind.it>
+	<20090108232847.GV23891@ghostprotocols.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Linus,
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date: Thu, 8 Jan 2009 21:28:47 -0200
 
-My documentation tree this time around has a couple of new documents
-(RCU, bad memory) and a typo fix.  Please pull:
+> Adding netdev to the CC list.
+ ...
+> Dave/Gerrit,
+> 
+> 	Please apply.
+> 
+> Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-  git://git.lwn.net/linux-2.6.git docs-next
-
-Jonathan Corbet (1):
-      Fix a typo in the development process document.
-
-Paul E. McKenney (1):
-      Document RCU and unloadable modules
-
-Pavel Machek (1):
-      Document handling of bad memory
-
- Documentation/RCU/00-INDEX                 |    2 +
- Documentation/RCU/rcubarrier.txt           |  304 ++++++++++++++++++++++++++++
- Documentation/bad_memory.txt               |   45 ++++
- Documentation/development-process/4.Coding |    6 +-
- 4 files changed, 354 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/RCU/rcubarrier.txt
- create mode 100644 Documentation/bad_memory.txt
+I'll take care of this, thanks!
