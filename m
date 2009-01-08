@@ -1,85 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbZAHRJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbZAHRKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759817AbZAHRJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 12:09:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZAHRJd
+	id S1761394AbZAHRKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 12:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZAHRKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 12:09:33 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:43074 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752179AbZAHRJd (ORCPT
+	Thu, 8 Jan 2009 12:10:23 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:56325 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754470AbZAHRKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 12:09:33 -0500
-Subject: Re: [RFC] B+Tree library V2
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090108162429.GA24884@logfs.org>
-References: <20081026124643.GA1328@logfs.org>
-	 <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org>
-	 <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org>
-	 <20081101155958.GA28776@logfs.org> <1231376241.3545.96.camel@johannes>
-	 <20090108162429.GA24884@logfs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rJg1rg2riHZIgjZlWNjZ"
-Date: Thu, 08 Jan 2009 18:10:01 +0100
-Message-Id: <1231434601.8398.9.camel@johannes>
+	Thu, 8 Jan 2009 12:10:19 -0500
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+	 <1231347442.11687.344.camel@twins>
+	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
+	 <1231365115.11687.361.camel@twins>
+	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
+	 <1231366716.11687.377.camel@twins>
+	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>
+	 <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
+	 <1231426014.11687.456.camel@twins>
+	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 12:08:35 -0500
+Message-Id: <1231434515.14304.27.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49663319.02D6:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-01-08 at 08:58 -0800, Linus Torvalds wrote:
+> 
+> Ok, I've gone through -v7, and I'm sure you're all shocked to hear it, but 
+> I have no complaints. Except that you dropped all the good commit 
+> commentary you had earlier ;)
+> 
 
---=-rJg1rg2riHZIgjZlWNjZ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Seems to get stuck under load.  I've hit it with make -j 50 on ext3 and
+with my btrfs benchmarking.  This was against the latest git from about
+5 minutes ago.
 
-On Thu, 2009-01-08 at 17:24 +0100, J=C3=B6rn Engel wrote:
+-chris
 
-> If you want to open-code it, you can use btree_lookup_less().  I added
-> that function sometime last month.  Basically something like this:
-> 	key =3D btree_last(head, geo);
-> 	while (key) {
-> 		/* do something with key */
-> 		key =3D btree_lookup_less(head, geo, key);
-> 	}
+BUG: soft lockup - CPU#3 stuck for 61s! [python:3970]
+CPU 3:
+Modules linked in: netconsole configfs btrfs zlib_deflate loop e1000e 3w_9xxx
+Pid: 3970, comm: python Not tainted 2.6.28 #1
+RIP: 0010:[<ffffffff8024f4de>]  [<ffffffff8024f4de>] __cmpxchg+0x36/0x3f
+RSP: 0018:ffff880148073be8  EFLAGS: 00000217
+RAX: 00000000fffffff8 RBX: ffff880148073be8 RCX: 0000000000000004
+RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffff8801498efdf0
+RBP: ffffffff8020ce0e R08: 00000000007563b7 R09: 0000000000000000
+R10: ffff880148073c88 R11: 0000000000000001 R12: ffff880148073c88
+R13: 0000000000000001 R14: ffff880148073be8 R15: ffffffff8020ce0e
+FS:  00007f5fb455a6e0(0000) GS:ffff88014dd368c0(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f5fb38181a0 CR3: 00000001483a0000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Call Trace:
+ [<ffffffff8024f4b1>] ? __cmpxchg+0x9/0x3f
+ [<ffffffff805e0068>] ? __mutex_lock_common+0x3d/0x178
+ [<ffffffff805e106c>] ? _spin_lock+0x9/0x1f
+ [<ffffffff802af31b>] ? __d_lookup+0x98/0xdb
+ [<ffffffff805e01f2>] ? __mutex_lock_slowpath+0x19/0x1b
+ [<ffffffff805e025b>] ? mutex_lock+0x23/0x3a
+ [<ffffffff802a7f99>] ? do_lookup+0x85/0x162
+ [<ffffffff802a993d>] ? __link_path_walk+0x4db/0x620
+ [<ffffffff802a9ad5>] ? path_walk+0x53/0x9a
+ [<ffffffff802a9c68>] ? do_path_lookup+0x107/0x126
+ [<ffffffff802a8f74>] ? getname+0x16b/0x1ad
+ [<ffffffff802aa693>] ? user_path_at+0x57/0x98
+ [<ffffffff802aa6a5>] ? user_path_at+0x69/0x98
+ [<ffffffff802a3773>] ? vfs_stat_fd+0x26/0x53
+ [<ffffffff802b46b2>] ? mntput_no_expire+0x2f/0x125
+ [<ffffffff802a3963>] ? sys_newstat+0x27/0x41
+ [<ffffffff802a7cae>] ? mntput+0x1d/0x1f
+ [<ffffffff802a7d3e>] ? path_put+0x22/0x26
+ [<ffffffff802a36b7>] ? sys_readlinkat+0x7b/0x89
+ [<ffffffff8020c4eb>] ? system_call_fastpath+0x16/0x1b
 
-Ok, so looking deeper into this, how about adding
-
-#define btree_for_each_key(head, geo, key, tmp)	\
-	for (key =3D btree_last(head, geo), tmp =3D btree_lookup_less(head, geo, k=
-ey);
-	     key; key =3D tmp, tmp =3D btree_lookup_less(head, geo, key))
-
-(and possibly some type-checking variants that hardcode the geo)
-
-Does that seem correct? And would it be possible to provide btree_last()
-that takes an void ** and fills it with the last entry, and the same for
-lookup_less(), so we can write btree_for_each_entry() too?
-
-johannes
-
---=-rJg1rg2riHZIgjZlWNjZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJZjNnAAoJEKVg1VMiehFYVs0P+wYzdwGw+c3SRquRWQc9EWfi
-2YzCwz8lmiru9njcpFtg7ihSWnCcrPSTMue7TqfY1I8yTbxyZ0T9uR8VxPlVllfj
-EuQrB0jLDfaI5m5K6zFqbg2HEUVSzEgWMaq/UfaZ6RtKpBYJyY2S33xu7zrZdiyw
-75BDD+aMENxdWMqG8+Y+4SlAyt4TE2TR9P8XRD/Z8p01Sr2AsnxEEkwFOuzIKd71
-QxPP0BrGjm0zbwg13hxCsCmIXktgZdKJl9lmbLkz0zFLp5Zh79SgWPDekuYZLJg5
-syrU50CjZi8FCcS7rPLUempzAMv2Bz9NW/zxo5E9d5XwL2yGlonk+4XTeQ9T418n
-lTjINi/boXm6RF729odwOhAzlZQD2UxuOTF6wLbA6LfhPXpk4cGRLvDRbQZ/3lPP
-OjIM132tfsQZzOwthOT4o988W+AfsjvHn5gB1aLCpzajRqGQaq6m8X/J3oJLPYFm
-GOE7yDUckOcxseMx78Oj/EC8IE792CB6vSGnl4NpsYvv9kn15hrWs3c/yWNBG3Xb
-hDlxXrpjqrb+WJpPbmQQU/lb/NG/aJZl4khDMQLh6XmhLqWh2RoHfcu8lPa7kQaw
-sCJkTHhEuuB9EOVxjEWYus7pUkCTEbiL7jgd7pWpbMaQwQ+QgRrfa2HhZGcH1Cnd
-2MXm6VIEvc2ZVAZ0zo4o
-=EfYa
------END PGP SIGNATURE-----
-
---=-rJg1rg2riHZIgjZlWNjZ--
 
