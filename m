@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbZAHQtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbZAHQuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759392AbZAHQtr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 11:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZAHQtK
+	id S1760815AbZAHQuM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 11:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbZAHQth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 11:49:10 -0500
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:64525 "EHLO
-	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753206AbZAHQtH (ORCPT
+	Thu, 8 Jan 2009 11:49:37 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:33256 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757687AbZAHQtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 11:49:07 -0500
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [GIT PULL] Squashfs pull request for 2.6.29
-Message-Id: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Thu, 08 Jan 2009 16:48:51 +0000
+	Thu, 8 Jan 2009 11:49:36 -0500
+Subject: Re: [RFC] B+Tree library V2
+From: Johannes Berg <johannes@sipsolutions.net>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090108162429.GA24884@logfs.org>
+References: <20081026124643.GA1328@logfs.org>
+	 <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org>
+	 <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org>
+	 <20081101155958.GA28776@logfs.org> <1231376241.3545.96.camel@johannes>
+	 <20090108162429.GA24884@logfs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-jpPGhEJuW5hT5kJ/u0nj"
+Date: Thu, 08 Jan 2009 17:50:04 +0100
+Message-Id: <1231433404.8398.1.camel@johannes>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please consider pulling my linux-next branch
 
-git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git
+--=-jpPGhEJuW5hT5kJ/u0nj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The patches have been posted to LKML and linux-fsdevel over the last
-couple of months and have been reviewed and changed as requested.
-Diffstat below.
 
-Squashfs is a compressed read-only filesystem. It compresses metadata
-and data, and uses up to 1 MiB block sizes for greater compression.
+> Maybe it should be renamed to btree_get_prev_key().  I never noticed how
+> confusing it was because my head was busy with other problems.  The code
+> is currently burried within my logfs tree:
+> http://logfs.org/git?p=3Dlogfs;a=3Dsummary
 
-This is a comparison of Squashfs against Cramfs:
+I see this:
 
-				Squashfs		Cramfs
 
-Max filesystem size:		2^64			256 MiB
-Max file size:			~ 2 TiB			16 MiB
-Max files:			unlimited		unlimited
-Max directories:		unlimited		unlimited
-Max entries per directory:	unlimited		unlimited
-Max block size:			1 MiB			4 KiB
-Metadata compression:		yes			no
-Directory indexes:		yes			no
-Sparse file support:		yes			no
-Tail-end packing (fragments):	yes			no
-Exportable (NFS etc.):		yes			no
-Hard link support:		yes			no
-"." and ".." in readdir:	yes			no
-Real inode numbers:		yes			no
-32-bit uids/gids:		yes			no
-File creation time:		yes			no
-Xattr and ACL support:		no			no
+- * Second trick is to special-case the key "0" or NUL.  As seen above, thi=
+s
+- * value indicates an unused slot, so such a value should not be stored in=
+ the
+- * tree itself.  Instead it is stored in the null_ptr field in the btree_h=
+ead.
 
-Thanks
+Does that mean that wasn't true, and I can store a 0 key?
 
-Phillip
+johannes
 
- Documentation/filesystems/squashfs.txt |  225 ++++++++++++++
- MAINTAINERS                            |    7 +
- fs/Kconfig                             |   52 ++++
- fs/Makefile                            |    1 +
- fs/squashfs/Makefile                   |    8 +
- fs/squashfs/block.c                    |  274 +++++++++++++++++
- fs/squashfs/cache.c                    |  412 ++++++++++++++++++++++++++
- fs/squashfs/dir.c                      |  235 +++++++++++++++
- fs/squashfs/export.c                   |  155 ++++++++++
- fs/squashfs/file.c                     |  502 ++++++++++++++++++++++++++++++++
- fs/squashfs/fragment.c                 |   98 +++++++
- fs/squashfs/id.c                       |   94 ++++++
- fs/squashfs/inode.c                    |  346 ++++++++++++++++++++++
- fs/squashfs/namei.c                    |  242 +++++++++++++++
- fs/squashfs/squashfs.h                 |   90 ++++++
- fs/squashfs/squashfs_fs.h              |  381 ++++++++++++++++++++++++
- fs/squashfs/squashfs_fs_i.h            |   45 +++
- fs/squashfs/squashfs_fs_sb.h           |   76 +++++
- fs/squashfs/super.c                    |  440 ++++++++++++++++++++++++++++
- fs/squashfs/symlink.c                  |  118 ++++++++
- init/do_mounts_rd.c                    |   14 +
- 21 files changed, 3815 insertions(+), 0 deletions(-)
+--=-jpPGhEJuW5hT5kJ/u0nj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIbBAABAgAGBQJJZi65AAoJEKVg1VMiehFYKJsP90HsRrlFYE/a6beUsLNq4vxU
+7r7FYfxgbxmrPH+5qZdyQg2mWVDACq/nBGDyH3r4Gz1G9Z4O5NUDAUiZyqWtnRLq
+RGnFfYLKpXKaCg9dPvv5AhXBFexPuzRW41xXTpLO7sKanl7sHvNmLfRfOQCkgnJN
+3MKpWJbs7cVHOeM4NF0buUrVwT2vaQHIKbMvxTuypk/vtauDox1AiL3jh8RHAn0W
+UYSn2sHwf1xIIzC8zwLo2kfzmBKL5z5UUAW9F569V2X0ssXtJF12AFh+ylNTgPzC
+vj8H2opegHhSpNKzaaYMrXvZZ0/k5gagwxWMb5fDxYvJbapRGWtg29Amvu1wklMO
+UbQT/Oe/omvWf+IN42dK5H/OQEKBnD3jB57fCvWrRoppiVyhBMJuEy2AkNsXdj6+
+3HQj01Lp2hmDUx18r56/w4F8xhBnoeT5AcU9Vcju3xuDg50BrQ05wUBMHTQkOg3L
+xFs9DSBrKV/dSmzOqpiAwocqa6IFz4HmD2Zb0stJwrIPmboNXOfhfnaEwoZmNJjN
+M8NVkbHCf+uPCdqJYSZcVCk7Q7CN5V/+MlLrAtua1eZpkcAFWtiyCixm8Utdfbtp
+6hwh4NwlZS7w0iazMn9u9ca9XPcHSoBE2I/NiVuTQGQhMJA6hJvTIxDVl4gT+BxC
+4pz1lZPE18Nb39u0KK8=
+=PDXk
+-----END PGP SIGNATURE-----
+
+--=-jpPGhEJuW5hT5kJ/u0nj--
 
