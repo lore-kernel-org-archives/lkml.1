@@ -1,75 +1,581 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZAHSEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbZAHSEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761155AbZAHSEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 13:04:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZAHSDz
+	id S1761470AbZAHSEd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 13:04:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbZAHSEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 13:03:55 -0500
-Received: from mail.gmx.net ([213.165.64.20]:43872 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752961AbZAHSDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 13:03:54 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19GWS9ys1pG5QdHSglX/uE8LvjB/ryCOtDvCu/wDa
-	2ldfP+Z/ilHyrC
-Date: Thu, 8 Jan 2009 19:04:04 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-cc: Sascha Hauer <s.hauer@pengutronix.de>,
-       Dan Williams <dan.j.williams@intel.com>,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 0/4 v8] i.MX31: dmaengine and framebuffer drivers
-Message-ID: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
+	Thu, 8 Jan 2009 13:04:01 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:64096 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755158AbZAHSD7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 13:03:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:cc:subject;
+        b=ZhwRzlXsgWruw5kpORdxFO0Oa/QuCfDuZXeOrj6FQdFUWineJMVlP7/Hl1J+9jAfU9
+         ks6fBys9HZnq59ncev9xhNCAZdyIouvaXd6sN0euVB56ZW4chQTs2QSUnYSHE5sDnPIx
+         3yuSR9mEc/UPcN8u6x1Kj7NQAUM9hyaEMmrWQ=
+Message-ID: <4966400c.05ae660a.3d56.0726@mx.google.com>
+Date: Thu, 08 Jan 2009 10:03:56 -0800 (PST)
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fweisbec@gmail.com
+Subject: [PATCH v3] tracing/ftrace: handle more than one stat file per tracer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Impact: new API for tracers
 
-This is version 8 of dmaengine and framebuffer drivers for i.MX31.
+Make the stat tracing API reentrant. And also provide the new directory
+/debugfs/tracing/trace_stat which will contain all the stat files for the
+current active tracer.
 
-Changes since version 7: updated to today's Linus git with pulled patches 
-from async_tx tree (dmaengine)
+Now a tracer will, if desired, want to provide a zero terminated array of
+tracer_stat structures.
+Each one contains the callbacks necessary for one stat file.
+It have to provide at least a name for its stat file, an iterator with
+stat_start/start_next callback and an output callback for one stat entry.
 
-Changes since version 6: fixed compiler warnings, compilation breakage for 
-CONFIG_MX3_IPU not defined
+Also adapt the branch tracer to this new API.
+We create two files "all" and "annotated" inside the /debugfs/tracing/trace_stat
+directory, making the both stats simultaneously available instead of needing
+to change an option to switch from one stat file to another.
 
-Changes since version 5: as requested by Sascha Hauer switched to dynamic 
-IPU IRQ mapping. Instead of statically allocating 137 irq_desc[] elements, 
-I provide a configuration variable to specify how many interrupt slots 
-should be allocated. The default value is 4, minimum 2, maximum 137. Then 
-these slots are used to dynamically map interrupts upon user requests to 
-available IRQ numbers. Also removed all traces of overlay framebuffer, and 
-removed bogus use of nonstd field from the framebuffer driver, as 
-requested by Geert Uytterhoeven. Thanks to all who commented.
+The output of these stats haven't changed.
 
-Changes since version 4: addressed comments from Sascha Hauer, apart from: 
-the idmac driver still uses two locks - a mutex and a spinlock, the "ugly" 
-construction like "to_ipu(to_idmac(ichan->dma_chan.device));" is still 
-there, still all 144 IRQs are registered. So now the driver is under 
-drivers/dma, also fixed all docbook comments.
+Changes in v2:
 
-Changes since version 3: fixed idmac_issue_pending() to not reset the 
-current buffer, fixed return value from idmac_tx_submit(), fixed 
-framebuffer panning.
+_ Apply the previous memory leak fix (rebase against tip/master)
 
-Changes since version 2: now uses a tasklet to clean up completed 
-transaction descriptors, as suggested by Dan Williams.
+Changes in v3:
 
-Changes since version 1: rebased on the updated dmaengine framework.
+_ Merge the patch that adapted the branch tracer to this Api in this patch to
+  not break the kernel build.
 
-Aimed at 2.6.29.
-
-Based on Linus' git commit 9e42d0cf5020aaf217433cad1a224745241d212a
-plus git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
-
-Thanks
-Guennadi
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+ kernel/trace/trace.h        |   35 ++++---
+ kernel/trace/trace_branch.c |   69 +++++--------
+ kernel/trace/trace_stat.c   |  230 +++++++++++++++++++++++++++++++------------
+ 3 files changed, 217 insertions(+), 117 deletions(-)
+
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 94ed45e..b3f9ad1 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -335,6 +335,25 @@ struct tracer_flags {
+ #define TRACER_OPT(s, b)	.name = #s, .bit = b
+ 
+ /*
++ * If you want to provide a stat file (one-shot statistics), fill
++ * an iterator with stat_start/stat_next and a stat_show callbacks.
++ * The others callbacks are optional.
++ */
++struct tracer_stat {
++	/* The name of your stat file */
++	const char		*name;
++	/* Iteration over statistic entries */
++	void			*(*stat_start)(void);
++	void			*(*stat_next)(void *prev, int idx);
++	/* Compare two entries for sorting (optional) for stats */
++	int			(*stat_cmp)(void *p1, void *p2);
++	/* Print a stat entry */
++	int			(*stat_show)(struct seq_file *s, void *p);
++	/* Print the headers of your stat entries */
++	int			(*stat_headers)(struct seq_file *s);
++};
++
++/*
+  * A specific tracer, represented by methods that operate on a trace array:
+  */
+ struct tracer {
+@@ -361,21 +380,7 @@ struct tracer {
+ 	struct tracer		*next;
+ 	int			print_max;
+ 	struct tracer_flags 	*flags;
+-
+-	/*
+-	 * If you change one of the following on tracing runtime, recall
+-	 * init_tracer_stat()
+-	 */
+-
+-	/* Iteration over statistic entries */
+-	void			*(*stat_start)(void);
+-	void			*(*stat_next)(void *prev, int idx);
+-	/* Compare two entries for sorting (optional) for stats */
+-	int			(*stat_cmp)(void *p1, void *p2);
+-	/* Print a stat entry */
+-	int			(*stat_show)(struct seq_file *s, void *p);
+-	/* Print the headers of your stat entries */
+-	int			(*stat_headers)(struct seq_file *s);
++	struct tracer_stat	*stats;
+ };
+ 
+ struct trace_seq {
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index 4785a3b..da5cf3e 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -306,19 +306,6 @@ static int annotated_branch_stat_cmp(void *p1, void *p2)
+ }
+ 
+ #ifdef CONFIG_PROFILE_ALL_BRANCHES
+-enum {
+-	TRACE_BRANCH_OPT_ALL = 0x1
+-};
+-
+-static struct tracer_opt branch_opts[] = {
+-	{ TRACER_OPT(stat_all_branch, TRACE_BRANCH_OPT_ALL) },
+-	{ }
+-};
+-
+-static struct tracer_flags branch_flags = {
+-	.val = 0,
+-	.opts = branch_opts
+-};
+ 
+ extern unsigned long __start_branch_profile[];
+ extern unsigned long __stop_branch_profile[];
+@@ -352,28 +339,36 @@ all_branch_stat_next(void *v, int idx)
+ 	return p;
+ }
+ 
+-static int branch_set_flag(u32 old_flags, u32 bit, int set)
+-{
+-	if (bit == TRACE_BRANCH_OPT_ALL) {
+-		if (set) {
+-			branch_trace.stat_headers = all_branch_stat_headers;
+-			branch_trace.stat_start = all_branch_stat_start;
+-			branch_trace.stat_next = all_branch_stat_next;
+-			branch_trace.stat_cmp = NULL;
+-		} else {
+-			branch_trace.stat_headers =
+-				annotated_branch_stat_headers;
+-			branch_trace.stat_start = annotated_branch_stat_start;
+-			branch_trace.stat_next = annotated_branch_stat_next;
+-			branch_trace.stat_cmp = annotated_branch_stat_cmp;
+-		}
+-		init_tracer_stat(&branch_trace);
+-	}
+-	return 0;
+-}
++static struct tracer_stat branch_stats[] = {
++	{.name = "annotated",
++	.stat_start = annotated_branch_stat_start,
++	.stat_next = annotated_branch_stat_next,
++	.stat_cmp = annotated_branch_stat_cmp,
++	.stat_headers = annotated_branch_stat_headers,
++	.stat_show = branch_stat_show},
+ 
++	{.name = "all",
++	.stat_start = all_branch_stat_start,
++	.stat_next = all_branch_stat_next,
++	.stat_headers = all_branch_stat_headers,
++	.stat_show = branch_stat_show},
++
++	{ }
++};
++#else
++static struct tracer_stat branch_stats[] = {
++	{.name = "annotated",
++	.stat_start = annotated_branch_stat_start,
++	.stat_next = annotated_branch_stat_next,
++	.stat_cmp = annotated_branch_stat_cmp,
++	.stat_headers = annotated_branch_stat_headers,
++	.stat_show = branch_stat_show},
++
++	{ }
++};
+ #endif /* CONFIG_PROFILE_ALL_BRANCHES */
+ 
++
+ static struct tracer branch_trace __read_mostly =
+ {
+ 	.name		= "branch",
+@@ -383,16 +378,8 @@ static struct tracer branch_trace __read_mostly =
+ #ifdef CONFIG_FTRACE_SELFTEST
+ 	.selftest	= trace_selftest_startup_branch,
+ #endif /* CONFIG_FTRACE_SELFTEST */
+-#endif /* CONFIG_BRANCH_TRACER */
+-	.stat_start	=	annotated_branch_stat_start,
+-	.stat_next	= annotated_branch_stat_next,
+-	.stat_show	= branch_stat_show,
+-	.stat_headers	= annotated_branch_stat_headers,
+-	.stat_cmp	= annotated_branch_stat_cmp,
+-#ifdef CONFIG_PROFILE_ALL_BRANCHES
+-	.flags	= &branch_flags,
+-	.set_flag	= branch_set_flag,
+ #endif
++	.stats		= branch_stats
+ };
+ 
+ __init static int init_branch_trace(void)
+diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+index f110ce9..1515f9e 100644
+--- a/kernel/trace/trace_stat.c
++++ b/kernel/trace/trace_stat.c
+@@ -21,37 +21,87 @@ struct trace_stat_list {
+ 	void *stat;
+ };
+ 
+-static LIST_HEAD(stat_list);
+-
+-/*
+- * This is a copy of the current tracer to avoid racy
+- * and dangerous output while the current tracer is
+- * switched.
+- */
+-static struct tracer current_tracer;
++/* A stat session is the stats output in one file */
++struct tracer_stat_session {
++	struct tracer_stat *ts;
++	struct list_head stat_list;
++	struct mutex stat_mutex;
++};
+ 
+-/*
+- * Protect both the current tracer and the global
+- * stat list.
+- */
+-static DEFINE_MUTEX(stat_list_mutex);
++/* All of the sessions currently in use. Each stat file embeed one session */
++static struct tracer_stat_session **all_stat_sessions;
++static int nb_sessions;
++static struct dentry *stat_dir, **stat_files;
+ 
+ 
+-static void reset_stat_list(void)
++static void reset_stat_session(struct tracer_stat_session *session)
+ {
+ 	struct trace_stat_list *node, *next;
+ 
+-	list_for_each_entry_safe(node, next, &stat_list, list)
++	list_for_each_entry_safe(node, next, &session->stat_list, list)
+ 		kfree(node);
+ 
+-	INIT_LIST_HEAD(&stat_list);
++	INIT_LIST_HEAD(&session->stat_list);
+ }
+ 
+-void init_tracer_stat(struct tracer *trace)
++/* Called when a tracer is initialized */
++static int init_all_sessions(int nb, struct tracer_stat *ts)
+ {
+-	mutex_lock(&stat_list_mutex);
+-	current_tracer = *trace;
+-	mutex_unlock(&stat_list_mutex);
++	int i, j;
++	struct tracer_stat_session *session;
++
++	nb_sessions = 0;
++
++	if (all_stat_sessions) {
++		for (i = 0; i < nb_sessions; i++) {
++			session = all_stat_sessions[i];
++			reset_stat_session(session);
++			mutex_destroy(&session->stat_mutex);
++			kfree(session);
++		}
++	}
++	all_stat_sessions = kmalloc(sizeof(struct tracer_stat_session *) * nb,
++				    GFP_KERNEL);
++	if (!all_stat_sessions)
++		return -ENOMEM;
++
++	for (i = 0; i < nb; i++) {
++		session = kmalloc(sizeof(struct tracer_stat_session) * nb,
++				  GFP_KERNEL);
++		if (!session)
++			goto free_sessions;
++
++		INIT_LIST_HEAD(&session->stat_list);
++		mutex_init(&session->stat_mutex);
++		session->ts = &ts[i];
++		all_stat_sessions[i] = session;
++	}
++	nb_sessions = nb;
++	return 0;
++
++free_sessions:
++
++	for (j = 0; j < i; j++)
++		kfree(all_stat_sessions[i]);
++
++	kfree(all_stat_sessions);
++	all_stat_sessions = NULL;
++
++	return -ENOMEM;
++}
++
++static int basic_tracer_stat_checks(struct tracer_stat *ts)
++{
++	int i;
++
++	if (!ts)
++		return 0;
++
++	for (i = 0; ts[i].name; i++) {
++		if (!ts[i].stat_start || !ts[i].stat_next || !ts[i].stat_show)
++			return -EBUSY;
++	}
++	return i;
+ }
+ 
+ /*
+@@ -69,22 +119,19 @@ static int dummy_cmp(void *p1, void *p2)
+  * All of these copies and sorting are required on all opening
+  * since the stats could have changed between two file sessions.
+  */
+-static int stat_seq_init(void)
++static int stat_seq_init(struct tracer_stat_session *session)
+ {
+ 	struct trace_stat_list *iter_entry, *new_entry;
++	struct tracer_stat *ts = session->ts;
+ 	void *prev_stat;
+ 	int ret = 0;
+ 	int i;
+ 
+-	mutex_lock(&stat_list_mutex);
+-	reset_stat_list();
+-
+-	if (!current_tracer.stat_start || !current_tracer.stat_next ||
+-					!current_tracer.stat_show)
+-		goto exit;
++	mutex_lock(&session->stat_mutex);
++	reset_stat_session(session);
+ 
+-	if (!current_tracer.stat_cmp)
+-		current_tracer.stat_cmp = dummy_cmp;
++	if (!ts->stat_cmp)
++		ts->stat_cmp = dummy_cmp;
+ 
+ 	/*
+ 	 * The first entry. Actually this is the second, but the first
+@@ -97,9 +144,10 @@ static int stat_seq_init(void)
+ 	}
+ 
+ 	INIT_LIST_HEAD(&new_entry->list);
+-	list_add(&new_entry->list, &stat_list);
+-	new_entry->stat = current_tracer.stat_start();
+ 
++	list_add(&new_entry->list, &session->stat_list);
++
++	new_entry->stat = ts->stat_start();
+ 	prev_stat = new_entry->stat;
+ 
+ 	/*
+@@ -114,15 +162,16 @@ static int stat_seq_init(void)
+ 		}
+ 
+ 		INIT_LIST_HEAD(&new_entry->list);
+-		new_entry->stat = current_tracer.stat_next(prev_stat, i);
++		new_entry->stat = ts->stat_next(prev_stat, i);
+ 
+ 		/* End of insertion */
+ 		if (!new_entry->stat)
+ 			break;
+ 
+-		list_for_each_entry(iter_entry, &stat_list, list) {
++		list_for_each_entry(iter_entry, &session->stat_list, list) {
++
+ 			/* Insertion with a descendent sorting */
+-			if (current_tracer.stat_cmp(new_entry->stat,
++			if (ts->stat_cmp(new_entry->stat,
+ 						iter_entry->stat) > 0) {
+ 
+ 				list_add_tail(&new_entry->list,
+@@ -131,7 +180,7 @@ static int stat_seq_init(void)
+ 
+ 			/* The current smaller value */
+ 			} else if (list_is_last(&iter_entry->list,
+-						&stat_list)) {
++						&session->stat_list)) {
+ 				list_add(&new_entry->list, &iter_entry->list);
+ 				break;
+ 			}
+@@ -140,49 +189,49 @@ static int stat_seq_init(void)
+ 		prev_stat = new_entry->stat;
+ 	}
+ exit:
+-	mutex_unlock(&stat_list_mutex);
++	mutex_unlock(&session->stat_mutex);
+ 	return ret;
+ 
+ exit_free_list:
+-	reset_stat_list();
+-	mutex_unlock(&stat_list_mutex);
++	reset_stat_session(session);
++	mutex_unlock(&session->stat_mutex);
+ 	return ret;
+ }
+ 
+ 
+ static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+ {
+-	struct list_head *l = (struct list_head *)s->private;
++	struct tracer_stat_session *session = s->private;
+ 
+ 	/* Prevent from tracer switch or stat_list modification */
+-	mutex_lock(&stat_list_mutex);
++	mutex_lock(&session->stat_mutex);
+ 
+ 	/* If we are in the beginning of the file, print the headers */
+-	if (!*pos && current_tracer.stat_headers)
+-		current_tracer.stat_headers(s);
++	if (!*pos && session->ts->stat_headers)
++		session->ts->stat_headers(s);
+ 
+-	return seq_list_start(l, *pos);
++	return seq_list_start(&session->stat_list, *pos);
+ }
+ 
+ static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
+ {
+-	struct list_head *l = (struct list_head *)s->private;
++	struct tracer_stat_session *session = s->private;
+ 
+-	return seq_list_next(p, l, pos);
++	return seq_list_next(p, &session->stat_list, pos);
+ }
+ 
+-static void stat_seq_stop(struct seq_file *m, void *p)
++static void stat_seq_stop(struct seq_file *s, void *p)
+ {
+-	mutex_unlock(&stat_list_mutex);
++	struct tracer_stat_session *session = s->private;
++	mutex_unlock(&session->stat_mutex);
+ }
+ 
+ static int stat_seq_show(struct seq_file *s, void *v)
+ {
+-	struct trace_stat_list *entry;
+-
+-	entry =	list_entry(v, struct trace_stat_list, list);
++	struct tracer_stat_session *session = s->private;
++	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
+ 
+-	return current_tracer.stat_show(s, entry->stat);
++	return session->ts->stat_show(s, l->stat);
+ }
+ 
+ static const struct seq_operations trace_stat_seq_ops = {
+@@ -192,15 +241,18 @@ static const struct seq_operations trace_stat_seq_ops = {
+ 	.show = stat_seq_show
+ };
+ 
++/* The session stat is refilled and resorted at each stat file opening */
+ static int tracing_stat_open(struct inode *inode, struct file *file)
+ {
+ 	int ret;
+ 
++	struct tracer_stat_session *session = inode->i_private;
++
+ 	ret = seq_open(file, &trace_stat_seq_ops);
+ 	if (!ret) {
+ 		struct seq_file *m = file->private_data;
+-		m->private = &stat_list;
+-		ret = stat_seq_init();
++		m->private = session;
++		ret = stat_seq_init(session);
+ 	}
+ 
+ 	return ret;
+@@ -212,9 +264,12 @@ static int tracing_stat_open(struct inode *inode, struct file *file)
+  */
+ static int tracing_stat_release(struct inode *i, struct file *f)
+ {
+-	mutex_lock(&stat_list_mutex);
+-	reset_stat_list();
+-	mutex_unlock(&stat_list_mutex);
++	struct tracer_stat_session *session = i->i_private;
++
++	mutex_lock(&session->stat_mutex);
++	reset_stat_session(session);
++	mutex_unlock(&session->stat_mutex);
++
+ 	return 0;
+ }
+ 
+@@ -225,17 +280,70 @@ static const struct file_operations tracing_stat_fops = {
+ 	.release	= tracing_stat_release
+ };
+ 
++
++static void destroy_trace_stat_files(void)
++{
++	int i;
++
++	if (stat_files) {
++		for (i = 0; i < nb_sessions; i++)
++			debugfs_remove(stat_files[i]);
++		kfree(stat_files);
++		stat_files = NULL;
++	}
++}
++
++static void init_trace_stat_files(void)
++{
++	int i;
++
++	if (!stat_dir || !nb_sessions)
++		return;
++
++	stat_files = kmalloc(sizeof(struct dentry *) * nb_sessions, GFP_KERNEL);
++
++	if (!stat_files) {
++		pr_warning("trace stat: not enough memory\n");
++		return;
++	}
++
++	for (i = 0; i < nb_sessions; i++) {
++		struct tracer_stat_session *session = all_stat_sessions[i];
++		stat_files[i] = debugfs_create_file(session->ts->name, 0644,
++						stat_dir,
++						session, &tracing_stat_fops);
++		if (!stat_files[i])
++			pr_warning("cannot create %s entry\n",
++				   session->ts->name);
++	}
++}
++
++void init_tracer_stat(struct tracer *trace)
++{
++	int nb = basic_tracer_stat_checks(trace->stats);
++
++	destroy_trace_stat_files();
++
++	if (nb < 0) {
++		pr_warning("stat tracing: missing stat callback on %s\n",
++			   trace->name);
++		return;
++	}
++	if (!nb)
++		return;
++
++	init_all_sessions(nb, trace->stats);
++	init_trace_stat_files();
++}
++
+ static int __init tracing_stat_init(void)
+ {
+ 	struct dentry *d_tracing;
+-	struct dentry *entry;
+ 
+ 	d_tracing = tracing_init_dentry();
+ 
+-	entry = debugfs_create_file("trace_stat", 0444, d_tracing,
+-					NULL,
+-				    &tracing_stat_fops);
+-	if (!entry)
++	stat_dir = debugfs_create_dir("trace_stat", d_tracing);
++	if (!stat_dir)
+ 		pr_warning("Could not create debugfs "
+ 			   "'trace_stat' entry\n");
+ 	return 0;
+-- 
+1.6.0.4
+
+
