@@ -1,51 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbZAHMS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZAHMUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758616AbZAHMS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 07:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZAHMSv
+	id S1757194AbZAHMUI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 07:20:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZAHMT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 07:18:51 -0500
-Received: from mout-xforward.kundenserver.de ([212.227.17.5]:57750 "EHLO
-	mout-xforward.kundenserver.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752594AbZAHMSv (ORCPT
+	Thu, 8 Jan 2009 07:19:56 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:52267 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750780AbZAHMT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 07:18:51 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dick Hollenbeck <dick@softplc.com>
-Subject: Re: New true IDE compact flash driver starting point?
-Date: Thu, 8 Jan 2009 13:18:43 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <49659E41.5070001@softplc.com>
-In-Reply-To: <49659E41.5070001@softplc.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 8 Jan 2009 07:19:56 -0500
+Date: Thu, 8 Jan 2009 12:19:44 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Davide Rizzo <elpa.rizzo@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hjk@linutronix.de, gregkh@suse.de,
+       ben-linux@fluff.org
+Subject: Re: [PATCH 2/3] Driver for user access to internal clocks
+Message-ID: <20090108121944.GN12431@fluff.org.uk>
+References: <8447d6730901080150p217f5d71kd2512b124ed0ed4c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901081318.44188.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Izx3oiT6HgIOD2BQpTGEe0Z9odM6zfJ/S3q7
- nH3eQhlS7WbyS1lyTX7fF6uUhdDtP6ibrRTN6WKUvSJ+VKhvrW
- /Hj7Ko4zXLNvvzJG20VqA==
+In-Reply-To: <8447d6730901080150p217f5d71kd2512b124ed0ed4c@mail.gmail.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 January 2009, Dick Hollenbeck wrote:
-> On a new ARM9 board with memory mapped interface to a compact flash 
-> socket, I need to implement an IDE or ATA driver that will support TRUE 
-> IDE mode.
+On Thu, Jan 08, 2009 at 10:50:03AM +0100, Davide Rizzo wrote:
+> Specific for Samsung S3C24xx platforms
+> Allows any driver to get a device specific clock.
+> It recognizes also the form clkname.X
 > 
-> Am using kernel version 2.6.26
+> Signed-off-by: Davide Rizzo <elpa-rizzo@gmail.com>
+> ---
+> diff -urNp linux-2.6.28/arch/arm/plat-s3c24xx/clock.c
+> linux-2.6.28.elpa/arch/arm/plat-s3c24xx/clock.c
+> --- linux-2.6.28/arch/arm/plat-s3c24xx/clock.c	2008-12-25
+> 00:26:37.000000000 +0100
+> +++ linux-2.6.28.elpa/arch/arm/plat-s3c24xx/clock.c	2009-01-07
+> 19:25:07.000000000 +0100
+> @@ -67,11 +67,19 @@ static int clk_null_enable(struct clk *c
 > 
-> What is the best starting point, i.e. example driver in the tree?
+>  struct clk *clk_get(struct device *dev, const char *id)
+>  {
+> +	long idno;
+> +	char *name = (char *)id;
+> +	char *dotpos = strrchr(id, '.');
 
-You should not need to write a new driver, but rather use the existing
-drivers/ata/pata_platform.c driver by registering the MMIO registers
-and IRQ number as a platform device.
+you've borken the const of the clk_get() call. I think that
+this is either something that the caller needs to deal with
+as all the drivers will be passing a 'dev' structure in to
+help identify common clocks. 
 
-	Arnd <><
+>  	struct clk *p;
+>  	struct clk *clk = ERR_PTR(-ENOENT);
+> -	int idno;
+> 
+> -	if (dev == NULL || dev->bus != &platform_bus_type)
+> +	if (dotpos) {
+> +		int err = strict_strtol(dotpos + 1, 10, &idno);
+> +		if (err)
+> +			return ERR_PTR(err);
+> +		name = kstrdup(id, GFP_KERNEL);
+> +		name[dotpos - id] = '\0';
+> +	} else if (dev == NULL || dev->bus != &platform_bus_type)
+>  		idno = -1;
+>  	else
+>  		idno = to_platform_device(dev)->id;
+> @@ -80,7 +88,7 @@ struct clk *clk_get(struct device *dev,
+> 
+>  	list_for_each_entry(p, &clocks, list) {
+>  		if (p->id == idno &&
+> -		    strcmp(id, p->name) == 0 &&
+> +		    strcmp(name, p->name) == 0 &&
+>  		    try_module_get(p->owner)) {
+>  			clk = p;
+>  			break;
+> @@ -92,7 +100,7 @@ struct clk *clk_get(struct device *dev,
+> 
+>  	if (IS_ERR(clk)) {
+>  		list_for_each_entry(p, &clocks, list) {
+> -			if (p->id == -1 && strcmp(id, p->name) == 0 &&
+> +			if (p->id == -1 && strcmp(name, p->name) == 0 &&
+>  			    try_module_get(p->owner)) {
+>  				clk = p;
+>  				break;
+> @@ -101,6 +109,9 @@ struct clk *clk_get(struct device *dev,
+>  	}
+> 
+>  	mutex_unlock(&clocks_mutex);
+> +
+> +	if (dotpos)
+> +		kfree(name);
+>  	return clk;
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
