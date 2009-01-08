@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbZAHK0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758214AbZAHK3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757844AbZAHK0m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 05:26:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZAHK0e
+	id S1758214AbZAHK3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 05:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbZAHK30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 05:26:34 -0500
-Received: from h155.mvista.com ([63.81.120.155]:12639 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751597AbZAHK0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 05:26:33 -0500
-Message-ID: <4965D4D1.2010901@ru.mvista.com>
-Date: Thu, 08 Jan 2009 13:26:25 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	Thu, 8 Jan 2009 05:29:26 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:59295 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbZAHK3Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 05:29:25 -0500
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+Date: Thu, 8 Jan 2009 15:59:21 +0530
+User-Agent: KMail/1.9.10
+Cc: Paul Mackerras <paulus@samba.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources on 32 bits archs
-References: <20080422012723.BA9F2DE13F@ozlabs.org>
-In-Reply-To: <20080422012723.BA9F2DE13F@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200812241325.49404.chandru@in.ibm.com> <200901071828.13719.chandru@in.ibm.com> <1231349125.23462.81.camel@nimitz>
+In-Reply-To: <1231349125.23462.81.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901081559.22204.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wednesday 07 January 2009 22:55:25 Dave Hansen wrote:
+> 
+> I'm just suggesting making your fix in the ppc code instead of in
+> mm/bootmem.c.
+> 
 
-Benjamin Herrenschmidt wrote:
+Here are the changes that helped to boot the kernel. Please review it.
+Thanks,
 
-> This fixes radeonfb to not truncate 64 bits resources on 32 bits
-> platforms. Unfortunately, there are still issues with addresses
-> returned to userspace via struct fb_fix_screeninfo. This will
-> have to be dealt with separately.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->   
+Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+---
 
-   I'm seeing that this 3 patch series (dating back to April) still 
-unapplied. Have everybody forgotten about them? I'd like to see them 
-finally applied.
+ arch/powerpc/mm/numa.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-> --- linux-work.orig/drivers/video/aty/radeon_base.c	2008-04-22 11:04:19.000000000 +1000
-> +++ linux-work/drivers/video/aty/radeon_base.c	2008-04-22 11:05:00.000000000 +1000
-> @@ -1886,7 +1886,7 @@ static int __devinit radeon_set_fbinfo (
->  	info->screen_size = rinfo->mapped_vram;
->  	/* Fill fix common fields */
->  	strlcpy(info->fix.id, rinfo->name, sizeof(info->fix.id));
-> -        info->fix.smem_start = rinfo->fb_base_phys;
-> +        info->fix.smem_start = (unsigned long)rinfo->fb_base_phys;
->          info->fix.smem_len = rinfo->video_ram;
->          info->fix.type = FB_TYPE_PACKED_PIXELS;
->          info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-> @@ -1894,7 +1894,7 @@ static int __devinit radeon_set_fbinfo (
->          info->fix.ypanstep = 1;
->          info->fix.ywrapstep = 0;
->          info->fix.type_aux = 0;
-> -        info->fix.mmio_start = rinfo->mmio_base_phys;
-> +        info->fix.mmio_start = (unsigned long)rinfo->mmio_base_phys;
->          info->fix.mmio_len = RADEON_REGSIZE;
->  	info->fix.accel = FB_ACCEL_ATI_RADEON;
->  
-> Index: linux-work/drivers/video/aty/radeonfb.h
-> ===================================================================
-> --- linux-work.orig/drivers/video/aty/radeonfb.h	2008-04-22 11:03:17.000000000 +1000
-> +++ linux-work/drivers/video/aty/radeonfb.h	2008-04-22 11:03:27.000000000 +1000
-> @@ -287,8 +287,8 @@ struct radeonfb_info {
->  
->  	char			name[DEVICE_NAME_SIZE];
->  
-> -	unsigned long		mmio_base_phys;
-> -	unsigned long		fb_base_phys;
-> +	resource_size_t		mmio_base_phys;
-> +	resource_size_t		fb_base_phys;
->  
->  	void __iomem		*mmio_base;
->  	void __iomem		*fb_base;
-
-WBR, Sergei
-
-
+--- linux-2.6.28/arch/powerpc/mm/numa.c.orig	2009-01-08 03:20:41.000000000 -0600
++++ linux-2.6.28/arch/powerpc/mm/numa.c	2009-01-08 03:50:41.000000000 -0600
+@@ -16,6 +16,7 @@
+ #include <linux/module.h>
+ #include <linux/nodemask.h>
+ #include <linux/cpu.h>
++#include <linux/pfn.h>
+ #include <linux/notifier.h>
+ #include <linux/lmb.h>
+ #include <linux/of.h>
+@@ -898,9 +899,17 @@ static void mark_reserved_regions_for_ni
+ 			 * if reserved region extends past active region
+ 			 * then trim size to active region
+ 			 */
+-			if (end_pfn > node_ar.end_pfn)
++			if (end_pfn > node_ar.end_pfn) {
+ 				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
+ 					- (start_pfn << PAGE_SHIFT);
++				/*
++				 * resize it further if the reservation could
++				 * cross the last page in this node
++				 */
++				if (PFN_UP(physbase+reserve_size) >
++						 node_end_pfn)
++					reserve_size -= PAGE_SIZE;
++			}
+ 			/*
+ 			 * Only worry about *this* node, others may not
+ 			 * yet have valid NODE_DATA().
