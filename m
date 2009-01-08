@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbZAHUdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZAHUdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbZAHUdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 15:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZAHUdE
+	id S1756222AbZAHUdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 15:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZAHUdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 15:33:04 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:42723 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751474AbZAHUdC convert rfc822-to-8bit (ORCPT
+	Thu, 8 Jan 2009 15:33:40 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:50946 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754529AbZAHUdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 15:33:02 -0500
+	Thu, 8 Jan 2009 15:33:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=ru+SxoMlXgENN8vGvPNqoJ3nVrOzdsLzIwxn0DjXMfsuS9rp880xzkFUwVMz1F4CFw
-         gA9yh0HeAIe0XMDKOhL1aHQD/aMgS+TbMaRYR5jn0pBxhhpwvS3X2A/NOlGdYcueV9js
-         ZiO6vF3JPXzKPJGxIi0Dk5OqDJcHd+uCQn1jM=
-Date: Thu, 8 Jan 2009 22:32:55 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, pq@iki.fi
-Subject: [PATCH 1/3] doc: update mmiotrace.txt
-Message-ID: <20090108223255.6f29f1cf@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=mtGphpHvbRhsPXEqIIWbJ85uoUzoexmjkaXeWEJ38iIuBddgAB5c4FKLnTAnamISXJ
+         29XVMZzWRAIexe0upkk3ybxAMUReyRmTDXC5RQw51DZ6a0hrXfCU1I+tziLw/HqXaRuU
+         0lDlcr6OaXYDHiH7Tup/Y1pGbT30gj0V2qgl0=
+Message-ID: <5a4c581d0901081233y6b546167sbe3ed9f2ea37f1f9@mail.gmail.com>
+Date: Thu, 8 Jan 2009 21:33:35 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       "David Woodhouse" <dwmw2@infradead.org>
+In-Reply-To: <3f9a31f40901072212x41e405fh7e36f6adb927814b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5a4c581d0901070624t6e769966t6b034b14d4732bd@mail.gmail.com>
+	 <3f9a31f40901072212x41e405fh7e36f6adb927814b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 32fe58c5a4a162e9d6ab4aca91692e0e28167f97 Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Sat, 3 Jan 2009 21:09:27 +0200
-Subject: [PATCH] doc: update mmiotrace.txt
+On Thu, Jan 8, 2009 at 7:12 AM, Jaswinder Singh Rajput
+<jaswinderlinux@gmail.com> wrote:
+> Hello alessandro,
+>
+> On Wed, Jan 7, 2009 at 7:54 PM, Alessandro Suardi
+> <alessandro.suardi@gmail.com> wrote:
+>>
+>> Note that I don't have CONFIG_FIRMWARE_IN_KERNEL, but on
+>>  the other hand I didn't earlier, either... and yes, CONFIG_MODULES=y.
+>>
+>
+> Please try with CONFIG_FIRMWARE_IN_KERNEL , is this makes some difference.
 
-The tracing framework buffer size file in debugfs has changed.
+Yes it does, thank you - 2.6.28-git11 with CONFIG_FIRMWARE_IN_KERNEL
+ gets my tg3 back to work on boot. Must be a requirement since -git8 then ?
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
----
+Thanks again, ciao,
 
-Ingo, I'm hoping these three patches would make it into .29.
-Thanks.
+--alessandro
 
- Documentation/tracers/mmiotrace.txt |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ "Sun keeps rising in the west / I keep on waking fully confused"
 
-diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/tracers/mmiotrace.txt
-index cde23b4..5731c67 100644
---- a/Documentation/tracers/mmiotrace.txt
-+++ b/Documentation/tracers/mmiotrace.txt
-@@ -78,12 +78,10 @@ to view your kernel log and look for "mmiotrace has lost events" warning. If
- events were lost, the trace is incomplete. You should enlarge the buffers and
- try again. Buffers are enlarged by first seeing how large the current buffers
- are:
--$ cat /debug/tracing/trace_entries
-+$ cat /debug/tracing/buffer_size_kb
- gives you a number. Approximately double this number and write it back, for
- instance:
--$ echo 0 > /debug/tracing/tracing_enabled
--$ echo 128000 > /debug/tracing/trace_entries
--$ echo 1 > /debug/tracing/tracing_enabled
-+$ echo 128000 > /debug/tracing/buffer_size_kb
- Then start again from the top.
- 
- If you are doing a trace for a driver project, e.g. Nouveau, you should also
--- 
-1.6.0.6
-
+   (The Replacements, "Within Your Reach")
