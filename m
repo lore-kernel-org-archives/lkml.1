@@ -1,59 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbZAHRYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbZAHRdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761029AbZAHRYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 12:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZAHRYK
+	id S1759762AbZAHRdx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 12:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZAHRdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 12:24:10 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:43190 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbZAHRYI (ORCPT
+	Thu, 8 Jan 2009 12:33:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63310 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754281AbZAHRdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 12:24:08 -0500
-Message-ID: <496636AB.9000903@oracle.com>
-Date: Thu, 08 Jan 2009 09:23:55 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 8 Jan 2009 12:33:38 -0500
+Date: Thu, 8 Jan 2009 12:33:35 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Chris Mason <chris.mason@oracle.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <1231434515.14304.27.camel@think.oraclecorp.com>
+Message-ID: <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>
+References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
+  <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>  <1231366716.11687.377.camel@twins>  <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>  <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
+  <1231426014.11687.456.camel@twins>  <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for January 8 (percpu)
-References: <20090108171730.19a41e14.sfr@canb.auug.org.au>
-In-Reply-To: <20090108171730.19a41e14.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.496636AF.0185:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+
+On Thu, 8 Jan 2009, Chris Mason wrote:
+
+> On Thu, 2009-01-08 at 08:58 -0800, Linus Torvalds wrote:
+> > 
+> > Ok, I've gone through -v7, and I'm sure you're all shocked to hear it, but 
+> > I have no complaints. Except that you dropped all the good commit 
+> > commentary you had earlier ;)
+> > 
 > 
-> Changes since 20090107:
+> Seems to get stuck under load.  I've hit it with make -j 50 on ext3 and
+> with my btrfs benchmarking.  This was against the latest git from about
+> 5 minutes ago.
 > 
-> Undropped tree:
-> 	rr
+> -chris
 > 
-> Dropped trees (temporarily):
-> 	ocfs2 (build problem)
-> 	cpu_alloc (build problem)
+> BUG: soft lockup - CPU#3 stuck for 61s! [python:3970] CPU 3: Modules 
+> linked in: netconsole configfs btrfs zlib_deflate loop e1000e 3w_9xxx 
+
+> Pid: 3970, comm: python Not tainted 2.6.28 #1 Call Trace:
+
+>  [<ffffffff8024f4b1>] ? __cmpxchg+0x9/0x3f
+>  [<ffffffff805e0068>] ? __mutex_lock_common+0x3d/0x178
+
+Hmm, looking at the code...
+
+mutex.c:
+
+       for (;;) {
+                struct thread_info *owner;
+
+                old_val = atomic_cmpxchg(&lock->count, 1, 0);
+                if (old_val == 1) {
+                        lock_acquired(&lock->dep_map, ip);
+                        mutex_set_owner(lock);
+                        return 0;
+                }
+
+                if (old_val < 0 && !list_empty(&lock->wait_list))
+                        break;
+
+                /* See who owns it, and spin on him if anybody */
+                owner = ACCESS_ONCE(lock->owner);
+                if (owner && !spin_on_owner(lock, owner))
+                        break;
+
+                cpu_relax();
+        }
 
 
-When CONFIG_SMP=n, both arch/x86/include/asm/percpu.h and
-include/asm-generic/percpu.h define both of
-read_percpu_ptr() and read_percpu_var().
+and in sched.c:
+
+int spin_on_owner(struct mutex *lock, struct thread_info *owner)
+{
+        unsigned int cpu;
+        struct rq *rq;
+        int ret = 1;
+[...]
+                if (lock->owner != owner)
+                        break;
 
 
-build-r8079.out:linux-next-20090108/include/asm-generic/percpu.h:124:1: warning: "read_percpu_ptr" redefined
-build-r8079.out:linux-next-20090108/arch/x86/include/asm/percpu.h:107:1: warning: this is the location of the previous definition
-build-r8079.out:linux-next-20090108/include/asm-generic/percpu.h:120:1: warning: "read_percpu_var" redefined
-build-r8079.out:linux-next-20090108/arch/x86/include/asm/percpu.h:106:1: warning: this is the location of the previous definition
+We keep spinning if the owner changes.  I wonder if you have many CPUS 
+(Chris, how many cpus did this box have?), you could get one task 
+constantly spinning while the mutex keeps changing owners on the other 
+CPUS.
 
+Perhaps, we should do something like:
 
+mutex.c:
 
--- 
-~Randy
+       for (;;) {
+                struct thread_info *owner = NULL;
+
+                old_val = atomic_cmpxchg(&lock->count, 1, 0);
+                if (old_val == 1) {
+                        lock_acquired(&lock->dep_map, ip);
+                        mutex_set_owner(lock);
+                        return 0;
+                }
+
+                if (old_val < 0 && !list_empty(&lock->wait_list)) 
+                        break;
+
+                /* See who owns it, and spin on him if anybody */
+		if (!owner)
+	                owner = ACCESS_ONCE(lock->owner);
+                if (owner && !spin_on_owner(lock, owner)) 
+                        break;
+
+                cpu_relax();
+        }
+
+Or just pull assigning of the owner out of the loop. This way, we go to 
+sleep if the owner changes and is not NULL.
+
+Just a thought,
+
+-- Steve
+
