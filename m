@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbZAHRVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbZAHRXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759066AbZAHRVQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 12:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZAHRU6
+	id S1757754AbZAHRXs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 12:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZAHRXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 12:20:58 -0500
-Received: from rv-out-0506.google.com ([209.85.198.235]:41306 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753944AbZAHRU5 (ORCPT
+	Thu, 8 Jan 2009 12:23:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37115 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZAHRXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 12:20:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=vu0DS3FvNVXJ5aoQ6onfb8ktNqybftV/Tu5BKjv1sYs44eJo7quFm5n8XsgFyu6reO
-         q+YX7pyqqkVH9ra9hiI9SBb+qDpOGK78UqgbNKNTip3ZwEQnl6xgocteVNhqRzyzJM+I
-         u7iLlUp6GjgQz7OkQM24gE6FblQvwcBdm9uNc=
-Message-ID: <e9c3a7c20901080920r1051775ey7dbb4fad37b2810@mail.gmail.com>
-Date: Thu, 8 Jan 2009 10:20:56 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer before DMA
-Cc: "Atsushi Nemoto" <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
-       maciej.sosnowski@intel.com, ralf@linux-mips.org
-In-Reply-To: <20090108093603.691c1200@hskinnemoen-d830>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Jan 2009 12:23:35 -0500
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+	 <1231347442.11687.344.camel@twins>
+	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
+	 <1231365115.11687.361.camel@twins>
+	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
+	 <1231366716.11687.377.camel@twins>
+	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>
+	 <1231408718.11687.400.camel@twins>  <20090108141808.GC11629@elte.hu>
+	 <1231426014.11687.456.camel@twins>
+	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081227111037.3bd13adc@hskinnemoen-d830>
-	 <20081229.025352.01917409.anemo@mba.ocn.ne.jp>
-	 <e9c3a7c20901051031y528d0d31r18d44c5096c59e0@mail.gmail.com>
-	 <20090108.134336.127659765.nemoto@toshiba-tops.co.jp>
-	 <20090108093603.691c1200@hskinnemoen-d830>
-X-Google-Sender-Auth: 0de54733ec600c94
+Date: Thu, 08 Jan 2009 18:23:12 +0100
+Message-Id: <1231435392.11687.520.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 8, 2009 at 1:36 AM, Haavard Skinnemoen
-<haavard.skinnemoen@atmel.com> wrote:
-> I think it does. The dmatest driver should definitely use
-> DMA_BIDIRECTIONAL on the destination buffer to ensure that the poison
-> values are written to RAM and not just written to cache and discarded.
->
+On Thu, 2009-01-08 at 08:58 -0800, Linus Torvalds wrote:
+> 
+> Ok, I've gone through -v7, and I'm sure you're all shocked to hear it, but 
+> I have no complaints. 
 
-True.
+*cheer*, except I guess we need to figure out what goes bad for Chris.
 
-> Now, this probably means that the destination buffer must be _unmapped_
-> with DMA_BIDIRECTIONAL too, which is difficult to do with the current
-> asymmetrical API...
->
+> Except that you dropped all the good commit 
+> commentary you had earlier ;)
 
-A map and unmap should work for the current platforms with dma
-drivers, but you are right I think this is a violation of the api.
-For correctness we would need the entire operation covered by
-DMA_BIDIRECTIONAL to support platforms that may implement a dma bounce
-buffer.  Or, we could change dmatest to not go through the dma-memcpy
-api, allowing dma_alloc to be used for the destination.
+Yeah, I've yet to add that back, will do.
 
-> In the general case, however, I think MIPS has a bug: I've seen drivers
-> DMA to/from tiny buffers stored inside another struct. This is legal
-> because the driver can guarantee that the other fields in the struct
-> aren't accessed in the mean time, but any fields sharing a cacheline
-> with the buffer must be written back before the lines are invalidated.
->
+> The patch looks pretty good (except for the big "#if 0" block in 
+> mutex-debug.c that I hope gets fixed, but I can't even really claim that I 
+> can be bothered), the locking looks fine (ie no locking at all), and the 
+> numbers seem pretty convinving.
+> 
+> Oh, and I think the open-coded
+> 
+> 	atomic_cmpxchg(count, 1, 0) == 1
+> 
+> could possibly just be replaced with a simple __mutex_fastpath_trylock(). 
+> I dunno.
 
-*nod*
+__mutex_fastpath_trylock() isn't always that neat -- see
+include/asm-generic/mutex-xchg.h -- and its a NOP on DEBUG_MUTEXES.
 
---
-Dan
+Note how I used old_val for the list_empty() thing as well, we could
+possibly drop that extra condition though.
+
