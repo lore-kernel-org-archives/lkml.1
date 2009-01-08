@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbZAHPFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbZAHPFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760711AbZAHPFS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 10:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZAHPE6
+	id S1760904AbZAHPFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 10:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZAHPFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 10:04:58 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53045 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751132AbZAHPE5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 10:04:57 -0500
-Date: Thu, 8 Jan 2009 15:04:48 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: Is 386 processor still supported?
-Message-ID: <20090108150448.2393aeb0@lxorguk.ukuu.org.uk>
-In-Reply-To: <1231424833.11687.452.camel@twins>
-References: <20090108120338.6b8b4567@zonk.pl>
-	<alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz>
-	<1231424025.11687.447.camel@twins>
-	<alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz>
-	<1231424833.11687.452.camel@twins>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 8 Jan 2009 10:05:31 -0500
+Received: from bsdimp.com ([199.45.160.85]:54460 "EHLO harmony.bsdimp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758897AbZAHPF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 10:05:29 -0500
+Date: Thu, 08 Jan 2009 08:02:29 -0700 (MST)
+Message-Id: <20090108.080229.1159156694.imp@bsdimp.com>
+To: alan@lxorguk.ukuu.org.uk
+Cc: mayer@ntp.isc.org, linasvepstas@gmail.com, david@lang.hm, hancockr@shaw.ca,
+       kyle@moffetthome.net, slashdot@jameshallam.info, goodgerster@gmail.com,
+       davidn@davidnewall.com, linux-kernel@vger.kernel.org,
+       ntpwg@lists.ntp.isc.org, pretzalz@techhouse.org,
+       burdell@iruntheinter.net, nick@nick-andrew.net, jeff@kosowsky.org
+Subject: Re: [ntpwg] Bug: Status/Summary of slashdot leap-second crash on
+ new years 2008-2009
+From: "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <20090108104854.2dbc41b1@lxorguk.ukuu.org.uk>
+References: <496579C2.5050800@ntp.isc.org>
+	<20090107.214220.-233694826.imp@bsdimp.com>
+	<20090108104854.2dbc41b1@lxorguk.ukuu.org.uk>
+X-Mailer: Mew version 5.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Hmm. Where in Kconfig is SMP for M386 not allowed?
-> 
-> Dunno, kconfig is too much of a jungle for a simple person like me ;-)
-> 
-> But afaik i386 (and possibly i486) don't support nearly enough for a
-> modern SMP system.
-> 
-> Alan used to have i486-smp I think, one of the very few ever made.
+In message: <20090108104854.2dbc41b1@lxorguk.ukuu.org.uk>
+            Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+: > On FreeBSD, Solaris and Digital Unix, I'll point out, that jumping
+: > backwards is used, and has been used since at least 1994.  So saying
+: > it isn't used in the world today is flat out wrong.
+: 
+: I stand by my comment - when was the last time the IERS used a leap
+: second removal ? The code may exist but it doesn't happen.
 
-The first systems that supported the Intel MP standard are 486 based with
-external APIC. The prior systems used various proprietary MP interfaces
-from the simple stuff in the Compaq (which Linux doesn't support as
-Compaq refused to allow Thomas Radke to contribute it) to the fairly
-extreme end of things with the Sequent boxes.
+Jumping backwards is used for every leap second that IERS has ever
+done, which was your original comment.  There's has never been a case
+where there was a leap second for jump forward though.  The proper
+technical term here is 'negative leap second'.  All leap seconds up
+until now have been positive leap seconds, and it is unlikely there
+ever will be a negative one.
 
-In addition our FPU emulation and some of our handling for x86 processors
-where we have to do the WP bit in software is also not SMP safe.
-
-So our minimal spec for SMP is probably 486DX + external Intel APIC.
-
-In practice I doubt there is a single Intel APIC type 486 SMP box on the
-planet running Linux (or quite possibly running at all)
-
-Alan
+Warner
