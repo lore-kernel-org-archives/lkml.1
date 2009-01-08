@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbZAHXv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762027AbZAHX7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbZAHXv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 18:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZAHXvt
+	id S1762027AbZAHX7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 18:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZAHX7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 18:51:49 -0500
-Received: from vena.lwn.net ([206.168.112.25]:40851 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbZAHXvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 18:51:49 -0500
-Date: Thu, 8 Jan 2009 16:51:31 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Linux Foundation TAB <tech-board@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, David John <davidjon@xenontk.org>
-Subject: [PULL] BKL removal tree
-Message-ID: <20090108165131.5d432abc@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Thu, 8 Jan 2009 18:59:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39476 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbZAHX7O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 18:59:14 -0500
+Message-ID: <4966925C.2040702@zytor.com>
+Date: Thu, 08 Jan 2009 15:55:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Phillip Lougher <phillip@lougher.demon.co.uk>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org>
+In-Reply-To: <20090108165029.GA10951@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Linus,
+Christoph Hellwig wrote:
+>>
+>> Squashfs is a compressed read-only filesystem. It compresses metadata
+>> and data, and uses up to 1 MiB block sizes for greater compression.
+> 
+> That seems pretty fast for something only posted this week and not
+> even in -next.
+> 
 
-Once again, the BKL removal tree has all of one patch, cleaning up the
-RTC driver.  Please pull:
+It is in -next, but, to be fair, it has trivial impact on the rest of
+the system, which should also be considered.
 
-  git://git.lwn.net/linux-2.6.git bkl-removal
+	-hpa
 
-David John (1):
-      RTC: Remove the BKL.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
- drivers/char/rtc.c |   17 ++++-------------
- 1 files changed, 4 insertions(+), 13 deletions(-)
-
-Thanks,
-
-jon
