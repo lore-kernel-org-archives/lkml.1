@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbZAHBoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbZAHBz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757621AbZAHBoY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Jan 2009 20:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZAHBoA
+	id S1756625AbZAHBz3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Jan 2009 20:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZAHBzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Jan 2009 20:44:00 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36052 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753860AbZAHBn7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Jan 2009 20:43:59 -0500
-Message-ID: <49655A3C.9020908@ct.jp.nec.com>
-Date: Wed, 07 Jan 2009 17:43:24 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC -tip 0/4] x86: reduce fixup of uaccess
-References: <4962CAAE.6090300@ct.jp.nec.com> <496476D0.5040607@zytor.com>
-In-Reply-To: <496476D0.5040607@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 7 Jan 2009 20:55:20 -0500
+Received: from sh.osrg.net ([192.16.179.4]:51715 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751798AbZAHBzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Jan 2009 20:55:19 -0500
+Date: Thu, 8 Jan 2009 10:55:04 +0900
+To: sam@ravnborg.org
+Cc: fujita.tomonori@lab.ntt.co.jp, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH 0/13] IA64: unifying ways to handle multiple sets of
+ dma mapping ops
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090107195646.GE4647@uranus.ravnborg.org>
+References: <1231166178-20050-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20090107195646.GE4647@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090108105518B.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Hiroshi Shimamoto wrote:
->> This is my second try to reduce fixup code size for exceptions of uaccess.
->>
->> This patch series reduces fixup code for exceptions of uaccess in signal.
->>
->> I gave up to make direct jump to end of function when an exception occurs.
->> However, I thought fixup code could be reduced. The concept is that to add
->> uaccess_err in thread_info and set it to -EFAULT on exception, finally check
->> this value on the last of function.
->>
->> Is this good to reduce code size?
->>
+On Wed, 7 Jan 2009 20:56:46 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> On Mon, Jan 05, 2009 at 11:36:05PM +0900, FUJITA Tomonori wrote:
+> > This patchset is the first part of the unification of ways to handle
+> > multiple sets of dma mapping API. The whole work consists of three
+> > patchset. This is for IA64 and can be applied independently.
+> > 
+> > dma_mapping_ops (or dma_ops) struct is used to handle multiple sets of
+> > dma mapping API by X86, SPARC, and POWER. IA64 also handle multiple
+> > sets of dma mapping API but in a very different way (some define
+> > magic).
+> > 
+> > X86 and IA64 share VT-d and SWIOTLB code. We need several workarounds
+> > for it because of the deference of ways to handle multiple sets of dma
+> > mapping API (e.g., X86 people can't freely change struct
+> > dma_mapping_ops in x86's dma-mapping.h now because it could break
+> > IA64).  Seems POWER will use SWIOTLB code soon. I think that it's time
+> > to unify ways to handle multiple sets of dma mapping API. After
+> > applying the whole work, we have struct dma_map_ops
+> > include/linux/dma-mapping.h (I also dream of changing all the archs to
+> > use SWIOTLB in order to remove the bounce code in the block and
+> > network stacks...).
+> > 
+> > This patchset changes IA64 to handle multiple sets of dma mapping API
+> > in the common way (as X86, SPARC, and POWER do):
 > 
-> Hello Hiroshi,
+> Do you have any plans to update sparc too?
+> Maybe it is not relevant.
 
-Hello Peter,
+I'll do after finishing IA64 and X86. It's not a huge gain since SPARC
+doesn't share IOMMU code with other architectures. But I think that it
+would be nice to remove arch/sparc/include/asm/dma-mapping_64.h
 
-> 
-> The patches look technically really nice.  I have a couple of stylistic
-> comments, though, which I'd like yours and others' comments on.
-
-Thanks for comments.
-
-> 
-> This introduces a new blocking construct, and it's not immediately
-> obvious in the source code.  I think introducing a technically redundant
-
-Yeah, I think it's not friendly about readability now.
-
-> set of braces and dropping the parens from the try construct and the
-> redundant pointer might look better:
-> 
-> 	get_user_try {
-> 		/* do stuff */
-> 	} get_user_catch(err);
-
-OK, I'll update like that.
-
-> 
-> This makes it, in my opinion, much clearer that it is a new bracing
-> construct, and it also eliminates the need to form a pointer to "err"
-
-I'm not sure which is better plain "err" or pointer to "err".
-
-> (even though the compiler doesn't actually do so, it looks like it does
-> to the programmer.)
-> 
-> Also, I don't think we need double underscores for the wrapping
-> construct, since the get_user/__get_user (check/nocheck) etc.
-> distinction doesn't directly apply there.
-
-OK. Will drop underscores.
-
-I'll repost update patches.
+The long-term goal is removing the bounce code in the network and
+block stacks, and some drivers (using sorta SWIOTLB on non IOMMU
+systems instead). So I try to convert all the architectures to use
+this generic mechanism (though I'm not sure all the arch maintainers
+agree with it).
 
 Thanks,
-Hiroshi
-
