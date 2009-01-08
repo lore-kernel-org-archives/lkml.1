@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbZAHS12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbZAHS2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761455AbZAHS12 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 13:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbZAHS1U
+	id S1761719AbZAHS2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 13:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757158AbZAHS2C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 13:27:20 -0500
-Received: from mail.impinj.com ([206.169.229.170]:46822 "EHLO earth.impinj.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753581AbZAHS1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 13:27:19 -0500
-From: Vadim Lobanov <vlobanov@speakeasy.net>
-To: Thomas Dahlmann <dahlmann.thomas@arcor.de>
-Subject: Re: amd5536udc interrupts bug
-Date: Thu, 8 Jan 2009 10:27:18 -0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27.9-159.fc10.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <49661E83.2070703@arcor.de> <49662C7C.2040500@arcor.de>
-In-Reply-To: <49662C7C.2040500@arcor.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 8 Jan 2009 13:28:02 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:56230 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755222AbZAHS17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 13:27:59 -0500
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0901081005560.3283@localhost.localdomain>
+References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>
+	 <1231347442.11687.344.camel@twins>
+	 <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>
+	 <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
+	 <1231365115.11687.361.camel@twins>
+	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>
+	 <1231366716.11687.377.camel@twins>
+	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>
+	 <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
+	 <1231426014.11687.456.camel@twins>
+	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+	 <1231434515.14304.27.camel@think.oraclecorp.com>
+	 <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
+	 <alpine.DEB.1.10.0901081300370.24688@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901081005560.3283@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 13:27:14 -0500
+Message-Id: <1231439234.14304.33.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901081027.18662.vlobanov@speakeasy.net>
-X-OriginalArrivalTime: 08 Jan 2009 18:27:19.0025 (UTC) FILETIME=[BD4A2E10:01C971BE]
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4966458A.0195:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 January 2009 08:40:28 Thomas Dahlmann wrote:
-> Ah, right. Thanks for your analysis! Never ran into this condition as on
-> the Geode systems I had the IRQ is shared between UDC and 
-UOC/OTG
-> (both on the CS5536 chip) and UOC never fires interrupts while UDC
-> driver is loaded as both drivers (UOC/OTG driver is not in the kernel 
-yet)
-> register each other which makes sure that interrupts are enabled
-> after  udc_pci_probe().
+On Thu, 2009-01-08 at 10:16 -0800, Linus Torvalds wrote:
+> 
+> On Thu, 8 Jan 2009, Steven Rostedt wrote:
+> > 
+> > Ouch! I think you are on to something:
+> 
+> Yeah, there's somethign there, but looking at Chris' backtrace, there's 
+> nothing there to disable preemption. So if it was this simple case, it 
+> should still have preempted him to let the other process run and finish 
+> up.
+> 
 
-Ok, I understand.
+My .config has no lockdep or schedule debugging and voluntary preempt.
+I do have CONFIG_INLINE_OPTIMIZE on, its a good name for trusting gcc I
+guess.
 
-> I could provide a fix within the next weeks. Currently I move to another
-> company and
-> have no hardware to test it.
+> So I don't think Chris' softlockup is at least _exactly_ that case. 
+> There's something else going on too.
+> 
+> That said, I do think it's a mistake for us to care about the value of 
+> "spin_on_owner()". I suspect v8 should
+> 
+>  - always have
+> 
+> 	if (need_resched())
+> 		break
+> 
+>    in the outer loop.
+> 
+>  - drop the return value from "spin_on_owner()", and just break out if 
+>    anything changes (including the need_resched() flag).
+> 
+>  - I'd also drop the "old_value < 0 &&" test, and just test the 
+>    list_empty() unconditionally. 
+> 
 
-No worries. :) I can also test your patches on my board here, if it helps 
-any.
+I'll give the above a shot, and we can address the preempt + !owner in
+another rev
 
-> Maybe you want to try this. It should work to place the register init
-> from udc_probe()
->
-> /* udc csr registers base */
-> dev->csr = dev->virt_addr + UDC_CSR_ADDR;
-> /* dev registers base */
-> dev->regs = dev->virt_addr + UDC_DEVCFG_ADDR;
-> /* ep registers base */
-> dev->ep_regs = dev->virt_addr + UDC_EPREGS_ADDR;
-> /* fifo's base */
-> dev->rxfifo = (u32 __iomem *)(dev->virt_addr + UDC_RXFIFO_ADDR);
-> dev->txfifo = (u32 __iomem *)(dev->virt_addr + UDC_TXFIFO_ADDR);
->
-> just before request_irq(...) to allow the interrupt handler to read the
-> interrupt status
-> registers.
-
-I'll slip this into the next kernel build and see what happens. Thanks!
-
--- Vadim Lobanov
+-chris
 
