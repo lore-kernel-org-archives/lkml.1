@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbZAHWN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763007AbZAHWOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761394AbZAHWN5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 17:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZAHWNt
+	id S1763007AbZAHWOs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 17:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZAHWOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 17:13:49 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:22044 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbZAHWNs convert rfc822-to-8bit (ORCPT
+	Thu, 8 Jan 2009 17:14:38 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:1986 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbZAHWOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 17:13:48 -0500
+	Thu, 8 Jan 2009 17:14:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=Go8V3DHgHnlqfLHU97VwrFO7rMbGhwWQm7w1unUJvcpZz+9ZcUN3esjAct/3PG55DD
-         bggfFHu+aT1Z9hpWe51yWu2EbTVjXDS4j5AT/9iRY8t+AbPCwAQQE1w+zuk1aDZz6kVl
-         Hu9ZpRsxiBNuusrOEGNzHvi84Oav1YxnBE+QU=
-Date: Fri, 9 Jan 2009 00:13:41 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, pq@iki.fi
-Subject: [PATCH v2 1/3] doc: mmiotrace.txt, buffer size control change
-Message-ID: <20090109001341.6ea77e98@daedalus.pq.iki.fi>
-In-Reply-To: <alpine.DEB.1.10.0901081538080.28112@gandalf.stny.rr.com>
-References: <20090108223255.6f29f1cf@daedalus.pq.iki.fi>
-	<alpine.DEB.1.10.0901081538080.28112@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eTyXqJWY2nANNapsBHg12R4IgqCKk8OjLW54Gn0y1Z4Xv5QqKXt4xYjxCB2CFtKFHb
+         +NACLp7hxI0iUWT62Wl5KeJSanaM85cDeHx0OK+91Q75lO5CP+njwQzx7hg+YfMKSkFG
+         3Fmbx4Z7a0zjtYAUyZaWGdVGZe8V0cRCAByKY=
+Message-ID: <82ecf08e0901081414u15af3c2dy9c88a242db024dc7@mail.gmail.com>
+Date: Thu, 8 Jan 2009 20:14:36 -0200
+From: "Thiago Galesi" <thiagogalesi@gmail.com>
+To: "Hugo Villeneuve" <hugo@hugovil.com>
+Subject: Re: FPGA programming driver architecture
+Cc: "Florian Fainelli" <florian@openwrt.org>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+In-Reply-To: <20090108151827.72f50cee.hugo@hugovil.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081212150314.6ea24996.hugo@hugovil.com>
+	 <200812131358.03010.florian@openwrt.org>
+	 <20090108151827.72f50cee.hugo@hugovil.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 297ddd1d79f7826bdd058b1bfd580dcaf97d3946 Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Sat, 3 Jan 2009 21:09:27 +0200
-Subject: [PATCH] doc: mmiotrace.txt, buffer size control change
+> > > Hi,
+> > > I have written some code to program a FPGA in Linux, for two
+> > > different types of boards: one uses a serial interface (SPI) and
+> > > the second a parallel interface. I have been able to sucessfully
+> > > program both boards. I'm now trying to clean my code and make it
+> > > more generic, as well as better in line with the Linux driver
+> > > model.
 
-Impact: prevents confusing the user when buffer size is inadequate
+Considering the several FPGA models available and ways to program it,
+I guess the important thing to consider is what can be made generic.
+(that is what will become fpgaload)
 
-The tracing framework offers a resizeable buffer, which mmiotrace uses
-to record events. If the buffer is full, the following events will be
-lost. Events should not be lost, so the documentation instructs the user
-to increase the buffer size. The buffer size is set via a debugfs file.
+Also, there may be cases where after FPGA is programmed it "becomes a
+device" (PCI or whatever)
 
-Mmiotrace documentation was not updated the same time the debugfs file
-was changed. The old file was tracing/trace_entries and first contained
-the number of entries the buffer had space for, per cpu. Nowadays this
-file is replaced with the file tracing/buffer_size_kb, which tells the
-amount of memory reserved for the buffer, per cpu, in kilobytes.
+> >
+> > - fpgaload-core which contains all the code that can be shared
+> > between the drivers like requesting firmware, providing sysfs
+> > attributes,
+> > - fpgaload-spi would handle the low-level SPI connection
+> > - fpgaload-par would handle the low-level parallel connection
 
-Previously, a flag had to be toggled via the debugfs file
-tracing/tracing_enabled when the buffer size was changed. This is no
-longer necessary.
+I think this maybe split into three layers (maybe)
 
-The mmiotrace documentation is updated to reflect the current state of
-the tracing framework.
+1 - low level connection: paralell / spi / i2c / whatever
+2 - vendor: xylinx, altera, etc
+3 - generic stuff
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
----
- Documentation/tracers/mmiotrace.txt |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+Take a look at the MTD and SPI drivers and how they split things
 
-diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/tracers/mmiotrace.txt
-index cde23b4..5731c67 100644
---- a/Documentation/tracers/mmiotrace.txt
-+++ b/Documentation/tracers/mmiotrace.txt
-@@ -78,12 +78,10 @@ to view your kernel log and look for "mmiotrace has lost events" warning. If
- events were lost, the trace is incomplete. You should enlarge the buffers and
- try again. Buffers are enlarged by first seeing how large the current buffers
- are:
--$ cat /debug/tracing/trace_entries
-+$ cat /debug/tracing/buffer_size_kb
- gives you a number. Approximately double this number and write it back, for
- instance:
--$ echo 0 > /debug/tracing/tracing_enabled
--$ echo 128000 > /debug/tracing/trace_entries
--$ echo 1 > /debug/tracing/tracing_enabled
-+$ echo 128000 > /debug/tracing/buffer_size_kb
- Then start again from the top.
- 
- If you are doing a trace for a driver project, e.g. Nouveau, you should also
--- 
-1.6.0.6
-
+--
+-
+Thiago Galesi
