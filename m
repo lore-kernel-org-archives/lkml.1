@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759053AbZAHTpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZAHTqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759053AbZAHTpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZAHTpd
+	id S1753908AbZAHTqA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbZAHTph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 8 Jan 2009 14:45:37 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:20231 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753146AbZAHTpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 8 Jan 2009 14:45:33 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44863 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751763AbZAHTpc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:45:32 -0500
-Date: Thu, 8 Jan 2009 14:45:29 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Chris Mason <chris.mason@oracle.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <1231442273.14304.49.camel@think.oraclecorp.com>
-Message-ID: <alpine.DEB.1.10.0901081440410.24688@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
-  <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>  <1231366716.11687.377.camel@twins>  <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>  <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
-  <1231426014.11687.456.camel@twins>  <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>  <1231434515.14304.27.camel@think.oraclecorp.com>  <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
-  <alpine.DEB.1.10.0901081300370.24688@gandalf.stny.rr.com>  <alpine.DEB.1.10.0901081305430.24688@gandalf.stny.rr.com> <1231442273.14304.49.camel@think.oraclecorp.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Date: Thu, 8 Jan 2009 20:44:24 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, Jarek Poplawski <jarkao2@gmail.com>,
+       Ben Mansell <ben@zeus.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090108194424.GE32491@kernel.dk>
+References: <20090108173028.GA22531@1wt.eu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090108173028.GA22531@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 8 Jan 2009, Chris Mason wrote:
-> On Thu, 2009-01-08 at 13:14 -0500, Steven Rostedt wrote:
-> > 
-> > If it was the current process that preempted the owner and these are RT 
-> > tasks pinned to the same CPU and the owner is of lower priority than the 
-> > spinner, we have a deadlock!
-> > 
-> > Hmm, I do not think the need_sched here will even fix that :-/
+On Thu, Jan 08 2009, Willy Tarreau wrote:
+> Jens,
 > 
-> RT tasks could go directly to sleeping.  The spinner would see them on
-> the list and break out.
+> here's the other patch I was talking about, for better behaviour of
+> non-blocking splice(). Ben Mansell also confirms similar improvements
+> in his tests, where non-blocking splice() initially showed half of
+> read()/write() performance. Ben, would you mind adding a Tested-By
+> line ?
 
-True, we could do:
+Looks very good to me, I don't see any valid reason to have that !timeo
+break. So feel free to add my acked-by to that patch and send it to
+Dave.
 
-	if (owner) {
-		if (!spin_on_owner(lock, owner))	
-			break;
-	} else if (rt_task(current))
-		break;
+> 
+> Also, please note that this is unrelated to the corruption bug I reported
+> and does not fix it.
+> 
+> Regards,
+> Willy
+> 
+> From fafe76713523c8e9767805cfdc7b73323d7bf180 Mon Sep 17 00:00:00 2001
+> From: Willy Tarreau <w@1wt.eu>
+> Date: Thu, 8 Jan 2009 17:10:13 +0100
+> Subject: [PATCH] tcp: splice as many packets as possible at once
+> 
+> Currently, in non-blocking mode, tcp_splice_read() returns after
+> splicing one segment regardless of the len argument. This results
+> in low performance and very high overhead due to syscall rate when
+> splicing from interfaces which do not support LRO.
+> 
+> The fix simply consists in not breaking out of the loop after the
+> first read. That way, we can read up to the size requested by the
+> caller and still return when there is no data left.
+> 
+> Performance has significantly improved with this fix, with the
+> number of calls to splice() divided by about 20, and CPU usage
+> dropped from 100% to 75%.
+> 
+> Signed-off-by: Willy Tarreau <w@1wt.eu>
+> ---
+>  net/ipv4/tcp.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+> index 35bcddf..80261b4 100644
+> --- a/net/ipv4/tcp.c
+> +++ b/net/ipv4/tcp.c
+> @@ -615,7 +615,7 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
+>  		lock_sock(sk);
+>  
+>  		if (sk->sk_err || sk->sk_state == TCP_CLOSE ||
+> -		    (sk->sk_shutdown & RCV_SHUTDOWN) || !timeo ||
+> +		    (sk->sk_shutdown & RCV_SHUTDOWN) ||
+>  		    signal_pending(current))
+>  			break;
+>  	}
+> -- 
+> 1.6.0.3
+> 
 
-That would at least solve the issue in the short term.
+-- 
+Jens Axboe
 
--- Steve
