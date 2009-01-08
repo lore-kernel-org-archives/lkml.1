@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZAHSB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZAHSDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZAHSB6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 13:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZAHSBo
+	id S1757492AbZAHSDY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 13:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZAHSDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 13:01:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60596 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750873AbZAHSBn (ORCPT
+	Thu, 8 Jan 2009 13:03:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62379 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbZAHSDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 13:01:43 -0500
-Date: Thu, 8 Jan 2009 10:00:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Mason <chris.mason@oracle.com>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
+	Thu, 8 Jan 2009 13:03:12 -0500
+Date: Thu, 8 Jan 2009 13:03:09 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
@@ -26,12 +26,13 @@ cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Morreale <pmorreale@novell.com>,
        Sven Dietrich <SDietrich@novell.com>
 Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <1231434515.14304.27.camel@think.oraclecorp.com>
-Message-ID: <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901081300370.24688@gandalf.stny.rr.com>
 References: <alpine.LFD.2.00.0901070816450.3057@localhost.localdomain>  <1231347442.11687.344.camel@twins>  <alpine.LFD.2.00.0901071016340.3057@localhost.localdomain>  <alpine.DEB.1.10.0901071530490.23456@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901071241360.3057@localhost.localdomain>
   <1231365115.11687.361.camel@twins>  <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>  <1231366716.11687.377.camel@twins>  <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>  <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
-  <1231426014.11687.456.camel@twins>  <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+  <1231426014.11687.456.camel@twins>  <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.DEB.1.10.0901081227260.24688@gandalf.stny.rr.com>
+ <alpine.LFD.2.00.0901080943270.3283@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,23 +40,68 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Thu, 8 Jan 2009, Linus Torvalds wrote:
+> 
+> And I don't even believe that is the bug. I suspect the bug is simpler. 
+> 
+> I think the "need_resched()" needs to go in the outer loop, or at least 
+> happen in the "!owner" case. Because at least with preemption, what can 
+> happen otherwise is
+> 
+>  - process A gets the lock, but gets preempted before it sets lock->owner.
+> 
+>    End result: count = 0, owner = NULL.
+> 
+>  - processes B/C goes into the spin loop, filling up all CPU's (assuming 
+>    dual-core here), and will now both loop forever if they hold the kernel 
+>    lock (or have some other preemption disabling thing over their down()).
+> 
+> And all the while, process A would _happily_ set ->owner, and eventually 
+> release the mutex, but it never gets to run to do either of them so.
+> 
+> In fact, you might not even need a process C: all you need is for B to be 
+> on the same runqueue as A, and having enough load on the other CPU's that 
+> A never gets migrated away. So "C" might be in user space.
+> 
+> I dunno. There are probably variations on the above.
 
-Unrelated:
+Ouch! I think you are on to something:
 
-On Thu, 8 Jan 2009, Chris Mason wrote:
->
-> RIP: 0010:[<ffffffff8024f4de>]  [<ffffffff8024f4de>] __cmpxchg+0x36/0x3f
+        for (;;) {
+                struct thread_info *owner;
 
-Ouch. HOW THE HELL DID THAT NOT GET INLINED?
+                old_val = atomic_cmpxchg(&lock->count, 1, 0);
+                if (old_val == 1) {
+                        lock_acquired(&lock->dep_map, ip);
+                        mutex_set_owner(lock);
+                        return 0;
+                }
 
-cmpxchg() is a _single_ instruction if it's inlined, but it's a horrible 
-mess of dynamic conditionals on the (constant - per call-site) size 
-argument if it isn't.
+                if (old_val < 0 && !list_empty(&lock->wait_list))
+                        break;
 
-It looks like you probably enabled the "let gcc mess up inlining" config 
-option.
+                /* See who owns it, and spin on him if anybody */
+                owner = ACCESS_ONCE(lock->owner);
 
-Ingo - I think we need to remove that crap again. Because gcc gets the 
-inlining horribly horribly wrong. As usual.
+The owner was preempted before assigning lock->owner (as you stated).
 
-				Linus
+                if (owner && !spin_on_owner(lock, owner))
+                        break;
+
+We just spin :-(
+
+I think adding the:
+
++		if (need_resched())
++			break;
+
+would solve the problem.
+
+Thanks,
+
+-- Steve
+
+
+                cpu_relax();
+        }
+
