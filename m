@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbZAHTdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbZAHTez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314AbZAHTdj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:33:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZAHTdb
+	id S1759363AbZAHTez (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:34:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZAHTep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:33:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54753 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbZAHTda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:33:30 -0500
-Message-ID: <496654AE.50600@kernel.org>
-Date: Thu, 08 Jan 2009 11:31:58 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Thu, 8 Jan 2009 14:34:45 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:16857 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893AbZAHTeo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 14:34:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uCis0WFTQR/sfrkulHjOjjWfh3i8wIumnv9iw1iqHVczJe49Gf/EDUa/jpJW1KA/3g
+         qFg0CYx7fNVe+j7TYbq1zeU4a1cinB3Cp5Em4MzMMo9e/nVQlfBs4gUWOIMzXMJ0QqWp
+         Gea1Hv91U+Hm6z9Rr40fqqE4jrafugvt4Vezw=
+Message-ID: <8bd0f97a0901081134gc5b6eb9h7f20dea146fc6cd0@mail.gmail.com>
+Date: Thu, 8 Jan 2009 14:34:43 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 2/2] netdev: bfin_mac: enable VLAN support in Blackfin MAC driver
+Cc: cooloney@kernel.org, jeff@garzik.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, graf.yang@analog.com
+In-Reply-To: <20090108.113009.263402475.davem@davemloft.net>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com
-Subject: Re: [PATCH 1/5] cpumask: update irq_desc to use cpumask_var_t
-References: <20090107195832.265117000@polaris-admin.engr.sgi.com>	 <20090107195832.465094000@polaris-admin.engr.sgi.com> <86802c440901071227n2d110757ye1bd12e689502ebc@mail.gmail.com> <49652D92.8020105@sgi.com> <49656FCF.9090602@kernel.org> <49661F8B.5070103@sgi.com>
-In-Reply-To: <49661F8B.5070103@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20090108.105531.176161465.davem@davemloft.net>
+	 <8bd0f97a0901081101t6fdfa485rbd7ccc4e47691ddb@mail.gmail.com>
+	 <8bd0f97a0901081105q1e897254kad9a8533b5845403@mail.gmail.com>
+	 <20090108.113009.263402475.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Yinghai Lu wrote:
-> ...
->>> Or am I missing your point?
->> static void init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
->>                  struct irq_desc *desc, int cpu)
->> {
->>         memcpy(desc, old_desc, sizeof(struct irq_desc));
+On Thu, Jan 8, 2009 at 14:30, David Miller wrote:
+> From: "Mike Frysinger" <vapier
+>> On Thu, Jan 8, 2009 at 14:01, Mike Frysinger wrote:
+>> > On Thu, Jan 8, 2009 at 13:55, David Miller wrote:
+>> >> We can get VLAN packets received and sent, using AF_PACKET
+>> >> sockets, for example.  The chip should still respect those
+>> >> even if VLAN proper is not being utilized.
+>> >
+>> > any tips on doing that ?
 >>
->>
->> will overwrite new_desc->affinity and pending_mask
->>
->> YH
-> 
-> Yup, apparently I was missing your point (banging on head once more).
-> 
-> Thanks for spotting this!
-> 
-> Ingo - what's the state of tip/cpus4096?  Shall I push this as an
-> append patch, or redo the original so bisectability works.
-> 
-> Also, Yinghai - would you know of a straight forward way to test
-> the irq migration?   I have taken cpus offline and back online
-> but wasn't sure if any irq's were being moved off of cpu 0 which
-> cannot be taken offline.
+>> or rather, is there a driver or you two you can point out that is
+>> doing this correctly ?  the ones i looked at seemed to be doing it
+>> like the patch we posted ...
+>
+> And I disagree with how those drivers are doing it :-)
+>
+> At least the programming of the chip to accept all packet
+> types properly, VLAN or not, regardless of kernel config,
+> is definitely IMHO the way to go.
 
-use echo "mask" > /proc/irq/xxx/smp_affinity to change affinity
-
-and check /proc/interrupts and in /sys/log/messages i will said allocate new irq desc on some other node/cpu.
-
-YH
+i know on our side we all agree with you, we just didnt (dont) know
+any better ;)
+-mike
