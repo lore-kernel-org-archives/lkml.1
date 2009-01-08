@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZAHPEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbZAHPFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbZAHPEn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 10:04:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZAHPEf
+	id S1760711AbZAHPFS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 10:05:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZAHPE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 10:04:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46167 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZAHPEf (ORCPT
+	Thu, 8 Jan 2009 10:04:58 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53045 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751132AbZAHPE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 10:04:35 -0500
-Date: Thu, 8 Jan 2009 10:04:30 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Kyle McMartin <kyle@infradead.org>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com
-Subject: Re: [PATCH] mtrr: fix types used in userspace exported header
-Message-ID: <20090108150430.GA15684@bombadil.infradead.org>
-References: <20090108150126.GA9483@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090108150126.GA9483@bombadil.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 8 Jan 2009 10:04:57 -0500
+Date: Thu, 8 Jan 2009 15:04:48 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: Is 386 processor still supported?
+Message-ID: <20090108150448.2393aeb0@lxorguk.ukuu.org.uk>
+In-Reply-To: <1231424833.11687.452.camel@twins>
+References: <20090108120338.6b8b4567@zonk.pl>
+	<alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz>
+	<1231424025.11687.447.camel@twins>
+	<alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz>
+	<1231424833.11687.452.camel@twins>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kyle McMartin <kyle@redhat.com>
+> > Hmm. Where in Kconfig is SMP for M386 not allowed?
+> 
+> Dunno, kconfig is too much of a jungle for a simple person like me ;-)
+> 
+> But afaik i386 (and possibly i486) don't support nearly enough for a
+> modern SMP system.
+> 
+> Alan used to have i486-smp I think, one of the very few ever made.
 
-Commit 932d27a7913fc6b3c64c6e6082628b0a1561dec9 exported some mtrr
-structures without using the exportable __uX types, causing userspace
-build failures.
+The first systems that supported the Intel MP standard are 486 based with
+external APIC. The prior systems used various proprietary MP interfaces
+from the simple stuff in the Compaq (which Linux doesn't support as
+Compaq refused to allow Thomas Radke to contribute it) to the fairly
+extreme end of things with the Sequent boxes.
 
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
+In addition our FPU emulation and some of our handling for x86 processors
+where we have to do the WP bit in software is also not SMP safe.
 
----
+So our minimal spec for SMP is probably 486DX + external Intel APIC.
 
-Missed the u8 typedef below the struct.
+In practice I doubt there is a single Intel APIC type 486 SMP box on the
+planet running Linux (or quite possibly running at all)
 
-diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
-index cb988aa..14080d2 100644
---- a/arch/x86/include/asm/mtrr.h
-+++ b/arch/x86/include/asm/mtrr.h
-@@ -58,15 +58,15 @@ struct mtrr_gentry {
- #endif /* !__i386__ */
- 
- struct mtrr_var_range {
--	u32 base_lo;
--	u32 base_hi;
--	u32 mask_lo;
--	u32 mask_hi;
-+	__u32 base_lo;
-+	__u32 base_hi;
-+	__u32 mask_lo;
-+	__u32 mask_hi;
- };
- 
- /* In the Intel processor's MTRR interface, the MTRR type is always held in
-    an 8 bit field: */
--typedef u8 mtrr_type;
-+typedef __u8 mtrr_type;
- 
- #define MTRR_NUM_FIXED_RANGES 88
- #define MTRR_MAX_VAR_RANGES 256
+Alan
