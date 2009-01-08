@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbZAHMEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZAHMEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbZAHMEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 07:04:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZAHMEV
+	id S1754737AbZAHMEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 07:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZAHMEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 07:04:21 -0500
-Received: from exchfrt2.cup.edu ([158.83.1.47]:34299 "EHLO exchfrt2.CUP.EDU"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751627AbZAHMEU convert rfc822-to-8bit (ORCPT
+	Thu, 8 Jan 2009 07:04:31 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33602 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756709AbZAHME3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 07:04:20 -0500
-X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Jan 2009 07:04:20 EST
-From: "Pucci, Tom" <Pucci@cup.edu>
-Date: Thu, 8 Jan 2009 06:58:49 -0500
-Subject: Send Info To : account.care@live.nl
-Thread-Topic: Send Info To : account.care@live.nl
-Thread-Index: AQHJcYh3PvLKqS58IU2k5M1uTdkDTQ==
-Message-ID: <827CCF4F21ED244FBA49CD0E25741A8B229E5A43DF@VEX1.CUP.EDU>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-x-tm-as-product-ver: SMEX-8.0.0.1285-5.500.1027-16388.006
-x-tm-as-result: No--34.056700-4.000000-31
-x-tm-as-user-approved-sender: No
-x-tm-as-user-blocked-sender: No
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-To: unlisted-recipients:; (no To-header on input)
+	Thu, 8 Jan 2009 07:04:29 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2.6.29] [WATCHDOG] wm8350: Fix section annotations
+Date: Thu,  8 Jan 2009 12:04:27 +0000
+Message-Id: <1231416267-3026-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Account Owner,
+The probe and remove functions were incorrectly annotated, with the
+misannotation of the remove function causing build failures when built
+in.
 
-This message is from Mail messaging center to all email account owners. We are currently upgrading our data base and e-mail account center.We are deleting all email account to  create more space for new accounts.To prevent your account from  closing you will have to update it below so that we will know that  it's a present used account.Your response should be sent to admin manager.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/watchdog/wm8350_wdt.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Email: account.care@live.nl
+diff --git a/drivers/watchdog/wm8350_wdt.c b/drivers/watchdog/wm8350_wdt.c
+index 2bc0d4d..a2d2e8e 100644
+--- a/drivers/watchdog/wm8350_wdt.c
++++ b/drivers/watchdog/wm8350_wdt.c
+@@ -279,7 +279,7 @@ static struct miscdevice wm8350_wdt_miscdev = {
+ 	.fops = &wm8350_wdt_fops,
+ };
+ 
+-static int wm8350_wdt_probe(struct platform_device *pdev)
++static int __devinit wm8350_wdt_probe(struct platform_device *pdev)
+ {
+ 	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
+ 
+@@ -296,7 +296,7 @@ static int wm8350_wdt_probe(struct platform_device *pdev)
+ 	return misc_register(&wm8350_wdt_miscdev);
+ }
+ 
+-static int __exit wm8350_wdt_remove(struct platform_device *pdev)
++static int __devexit wm8350_wdt_remove(struct platform_device *pdev)
+ {
+ 	misc_deregister(&wm8350_wdt_miscdev);
+ 
+@@ -305,7 +305,7 @@ static int __exit wm8350_wdt_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver wm8350_wdt_driver = {
+ 	.probe = wm8350_wdt_probe,
+-	.remove = wm8350_wdt_remove,
++	.remove = __devexit_p(wm8350_wdt_remove),
+ 	.driver = {
+ 		.name = "wm8350-wdt",
+ 	},
+-- 
+1.5.6.5
 
-CONFIRM YOUR EMAIL IDENTITY BELOW
-
-Email Username :
-EMAIL Password :
-Date of Birth :
-Country or Territory :
-
-I do wait for your urgent reply.
-
-Mail Account Team
