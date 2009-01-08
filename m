@@ -1,78 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbZAHTLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbZAHTOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761977AbZAHTLR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZAHTLE
+	id S1761980AbZAHTOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757739AbZAHTOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:11:04 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:18214 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751743AbZAHTLC (ORCPT
+	Thu, 8 Jan 2009 14:14:06 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:42306 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756585AbZAHTOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:11:02 -0500
-Message-ID: <49664F9B.8070703@caviumnetworks.com>
-Date: Thu, 08 Jan 2009 11:10:19 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 8 Jan 2009 14:14:03 -0500
+Date: Thu, 8 Jan 2009 20:11:53 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Message-ID: <20090108191152.GU15123@enneenne.com>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151915.df138883.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PULL] cpumask tree
-References: <200901011149.18401.rusty@rustcorp.com.au>
-In-Reply-To: <200901011149.18401.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jan 2009 19:10:19.0538 (UTC) FILETIME=[BF653720:01C971C4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106151915.df138883.akpm@linux-foundation.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: 2.6.29 -mm merge plans
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> commit d036e67b40f52bdd95392390108defbac7e53837
-> Author: Rusty Russell <rusty@rustcorp.com.au>
-> Date:   Thu Jan 1 10:12:26 2009 +1030
+On Tue, Jan 06, 2009 at 03:19:15PM -0800, Andrew Morton wrote:
+> (cc's added)
 > 
->     cpumask: convert kernel/irq
->     
->     Impact: Reduce stack usage, use new cpumask API.  ALPHA mod!
->     
->     Main change is that irq_default_affinity becomes a cpumask_var_t, so
->     treat it as a pointer (this effects alpha).
->     
->     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> On Tue, 6 Jan 2009 17:57:44 -0500
+> Christoph Hellwig <hch@infradead.org> wrote:
 > 
+> > On Mon, Jan 05, 2009 at 12:43:00AM -0800, Andrew Morton wrote:
+> > 
+> > > linuxpps-core-support.patch
+> > 
+> > looks generally good, but the comments should get a little loving.
+> > Please remove the stupid filenames that always get out of sync in
+> > the top of file comments, and make the documentation of exported
+> > symbols kernel-doc instead of it's weird own format.
 
-Which contains:
+With "kernel-doc" do you mean what explained into
+Documentation/kernel-doc-nano-HOWTO.txt file?
 
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 61c4a9b..cd0cd8d 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -16,8 +16,15 @@
->  #include "internals.h"
->  
->  #ifdef CONFIG_SMP
-> +cpumask_var_t irq_default_affinity;
->  
-> -cpumask_t irq_default_affinity = CPU_MASK_ALL;
-> +static int init_irq_default_affinity(void)
-> +{
-> +       alloc_cpumask_var(&irq_default_affinity, GFP_KERNEL);
-> +       cpumask_setall(irq_default_affinity);
-> +       return 0;
-> +}
-> +core_initcall(init_irq_default_affinity);
+> > Does checkpatch.pl still not catch these things?
 
-I think core_initcall is too late to be initializing 
-irq_default_affinity.  This happens way after init_IRQ() is called and 
-for my target (mips/cavium_octeon) after the timer and SMP related irqs 
-are setup.
+No... checkpatch.pl reports everything OK.
 
-I had been setting irq_default_affinity in init_IRQ(), and I could 
-probably do it later with no real problem, but this seems wrong to me. 
-Data that is potentially used in interrupt configuration and processing 
-should be initialized before it is used.
+> > Also the ioctl certainly should be an unlocked_ioctl and not the
+> > old BKL-locked variant. The !uarg checks in the ioctls can go,
+> > copy_to/from_users does this automatically.
+> > 
+> > pps.h shoulkd be split into one header only defining the
+> > kernel<->userspace ABI, and a kernel-internal one.  That way
+> > also the conditional includes can go away.
 
-David Daney
+I don't understand well what I should do here... I supposed __KERNEL__
+define was defined to allow mixing kernel and userland code.
+
+> > > pps-documentation-programs-and-examples.patch
+> > 
+> > Once again this stuff is in and utterly wrong place where it can't
+> > easily be package for distros.  ppsfind belongs into util-linux and
+> > needs a proper mangage, ppsldisc is not nessecary but ldattach in
+> > util-linux needs to grow support for N_PPS instead, and ppstest
+> > should probably go into util-linux in a more polished version, too.
+
+Regarding ldisc support we should ask to Alan which solution he
+preferes: ldisc & N_PPS or setserial & HARDPPS.
+
+However I suppose is better having the LinuxPPS's core inclusion and
+then solve the serial support issue.
+
+> > > pps-userland-header-file-for-pps-api.patch
+> > 
+> > This one is utterly wrong.  It provides what should be a userspace
+> > library as inlines in a kernel header. 
+> > 
+> > Please do a proper libpps library package.
+> 
+> Well that's a drop-it-all-and-start again scale of thing.
+
+I think so... :'(
+
+> Rodolfo, do you have sufficient information here?
+
+I'll start changing the code ASAP and I'll ask to you if something
+will be still obscure to me. :)
+
+Thanks for your help and time,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
