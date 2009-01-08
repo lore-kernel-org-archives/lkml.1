@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761383AbZAHRF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbZAHRJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761383AbZAHRF5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 12:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZAHRFp
+	id S1759817AbZAHRJo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 12:09:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZAHRJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 12:05:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39156 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752003AbZAHRFo (ORCPT
+	Thu, 8 Jan 2009 12:09:33 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:43074 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179AbZAHRJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 12:05:44 -0500
-Date: Thu, 8 Jan 2009 09:05:01 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Mason <chris.mason@oracle.com>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       peterz@infradead.org, jack@suse.cz, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, npiggin@suse.de
-Subject: Re: Increase dirty_ratio and dirty_background_ratio?
-In-Reply-To: <1231433701.14304.24.camel@think.oraclecorp.com>
-Message-ID: <alpine.LFD.2.00.0901080858500.3283@localhost.localdomain>
-References: <alpine.LFD.2.00.0901070833430.3057@localhost.localdomain>  <20090107.125133.214628094.davem@davemloft.net>  <20090108030245.e7c8ceaf.akpm@linux-foundation.org>  <20090108.082413.156881254.davem@davemloft.net>  <alpine.LFD.2.00.0901080842180.3283@localhost.localdomain>
- <1231433701.14304.24.camel@think.oraclecorp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Jan 2009 12:09:33 -0500
+Subject: Re: [RFC] B+Tree library V2
+From: Johannes Berg <johannes@sipsolutions.net>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090108162429.GA24884@logfs.org>
+References: <20081026124643.GA1328@logfs.org>
+	 <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org>
+	 <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org>
+	 <20081101155958.GA28776@logfs.org> <1231376241.3545.96.camel@johannes>
+	 <20090108162429.GA24884@logfs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rJg1rg2riHZIgjZlWNjZ"
+Date: Thu, 08 Jan 2009 18:10:01 +0100
+Message-Id: <1231434601.8398.9.camel@johannes>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-rJg1rg2riHZIgjZlWNjZ
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 8 Jan 2009, Chris Mason wrote:
-> 
-> Does it make sense to hook into kupdate?  If kupdate finds it can't meet
-> the no-data-older-than 30 seconds target, it lowers the sync/async combo
-> down to some reasonable bottom.  
-> 
-> If it finds it is going to sleep without missing the target, raise the
-> combo up to some reasonable top.
+On Thu, 2009-01-08 at 17:24 +0100, J=C3=B6rn Engel wrote:
 
-I like autotuning, so that sounds like an intriguing approach. It's worked 
-for us before (ie VM).
+> If you want to open-code it, you can use btree_lookup_less().  I added
+> that function sometime last month.  Basically something like this:
+> 	key =3D btree_last(head, geo);
+> 	while (key) {
+> 		/* do something with key */
+> 		key =3D btree_lookup_less(head, geo, key);
+> 	}
 
-That said, 30 seconds sounds like a _loong_ time for something like this. 
-I'd use the normal 5-second dirty_writeback_interval for this: if we can't 
-clean the whole queue in that normal background writeback interval, then 
-we try to lower the tagets. We already have that "congestion_wait()" thing 
-there, that would be a logical place, methinks.
+Ok, so looking deeper into this, how about adding
 
-I'm not sure how to raise them, though. We don't want to raise any limits 
-just because the user suddenly went idle. I think the raising should 
-happen if we hit the sync/async ratio, and we haven't lowered in the last 
-30 seconds or something like that.
+#define btree_for_each_key(head, geo, key, tmp)	\
+	for (key =3D btree_last(head, geo), tmp =3D btree_lookup_less(head, geo, k=
+ey);
+	     key; key =3D tmp, tmp =3D btree_lookup_less(head, geo, key))
 
-		Linus
+(and possibly some type-checking variants that hardcode the geo)
+
+Does that seem correct? And would it be possible to provide btree_last()
+that takes an void ** and fills it with the last entry, and the same for
+lookup_less(), so we can write btree_for_each_entry() too?
+
+johannes
+
+--=-rJg1rg2riHZIgjZlWNjZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJZjNnAAoJEKVg1VMiehFYVs0P+wYzdwGw+c3SRquRWQc9EWfi
+2YzCwz8lmiru9njcpFtg7ihSWnCcrPSTMue7TqfY1I8yTbxyZ0T9uR8VxPlVllfj
+EuQrB0jLDfaI5m5K6zFqbg2HEUVSzEgWMaq/UfaZ6RtKpBYJyY2S33xu7zrZdiyw
+75BDD+aMENxdWMqG8+Y+4SlAyt4TE2TR9P8XRD/Z8p01Sr2AsnxEEkwFOuzIKd71
+QxPP0BrGjm0zbwg13hxCsCmIXktgZdKJl9lmbLkz0zFLp5Zh79SgWPDekuYZLJg5
+syrU50CjZi8FCcS7rPLUempzAMv2Bz9NW/zxo5E9d5XwL2yGlonk+4XTeQ9T418n
+lTjINi/boXm6RF729odwOhAzlZQD2UxuOTF6wLbA6LfhPXpk4cGRLvDRbQZ/3lPP
+OjIM132tfsQZzOwthOT4o988W+AfsjvHn5gB1aLCpzajRqGQaq6m8X/J3oJLPYFm
+GOE7yDUckOcxseMx78Oj/EC8IE792CB6vSGnl4NpsYvv9kn15hrWs3c/yWNBG3Xb
+hDlxXrpjqrb+WJpPbmQQU/lb/NG/aJZl4khDMQLh6XmhLqWh2RoHfcu8lPa7kQaw
+sCJkTHhEuuB9EOVxjEWYus7pUkCTEbiL7jgd7pWpbMaQwQ+QgRrfa2HhZGcH1Cnd
+2MXm6VIEvc2ZVAZ0zo4o
+=EfYa
+-----END PGP SIGNATURE-----
+
+--=-rJg1rg2riHZIgjZlWNjZ--
+
