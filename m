@@ -1,115 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZAHVvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbZAHVz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbZAHVvq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 16:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbZAHVva
+	id S1759855AbZAHVz2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 16:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZAHVzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 16:51:30 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:58441 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758379AbZAHVv3 (ORCPT
+	Thu, 8 Jan 2009 16:55:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54409
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752100AbZAHVzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 16:51:29 -0500
-Date: Thu, 8 Jan 2009 13:51:27 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, shemminger@vyatta.com, arnd@arndb.de,
-       netdev@vger.kernel.org
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090108215127.GA28935@ovro.caltech.edu>
-Mail-Followup-To: David Miller <davem@davemloft.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	shemminger@vyatta.com, arnd@arndb.de, netdev@vger.kernel.org,
-	Rusty Russell <rusty@rustcorp.com.au>
-References: <20090107195052.GA24981@ovro.caltech.edu> <20090108.111610.132149837.davem@davemloft.net> <20090108192716.GA19863@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090108192716.GA19863@ovro.caltech.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 08 Jan 2009 13:51:29 -0800 (PST)
+	Thu, 8 Jan 2009 16:55:13 -0500
+Date: Thu, 08 Jan 2009 13:55:15 -0800 (PST)
+Message-Id: <20090108.135515.85489589.davem@davemloft.net>
+To: ben@zeus.com
+Cc: w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49667534.5060501@zeus.com>
+References: <20090108173028.GA22531@1wt.eu>
+	<49667534.5060501@zeus.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 11:27:16AM -0800, Ira Snyder wrote:
-> On Thu, Jan 08, 2009 at 11:16:10AM -0800, David Miller wrote:
-> > From: Ira Snyder <iws@ovro.caltech.edu>
-> > Date: Wed, 7 Jan 2009 11:50:52 -0800
-> > 
-> > > This adds support to Linux for a virtual ethernet interface which uses the
-> > > PCI bus as its transport mechanism. It creates a simple, familiar, and fast
-> > > method of communication for two devices connected by a PCI interface.
-> > 
-> > Well, it looks like much more than that to me.
-> > 
-> > What is this UART thing in here for?
-> > 
-> > I can only assume it's meant to be used as a console port between the
-> > x86 host and the powerpc nodes.
-> > 
-> 
-> Exactly right. I needed it to tell the U-Boot bootloader to tftp the
-> kernel and boot the board. These boards don't keep their PCI settings
-> (assigned by the BIOS at boot) over a soft or hard reset.
-> 
-> I couldn't think of a better way to get them started.
-> 
-> > You haven't even mentioned this UART aspect even indirectly in the
-> > commit message.
+From: Ben Mansell <ben@zeus.com>
+Date: Thu, 08 Jan 2009 21:50:44 +0000
+
+> > From fafe76713523c8e9767805cfdc7b73323d7bf180 Mon Sep 17 00:00:00 2001
+> > From: Willy Tarreau <w@1wt.eu>
+> > Date: Thu, 8 Jan 2009 17:10:13 +0100
+> > Subject: [PATCH] tcp: splice as many packets as possible at once
+> > Currently, in non-blocking mode, tcp_splice_read() returns after
+> > splicing one segment regardless of the len argument. This results
+> > in low performance and very high overhead due to syscall rate when
+> > splicing from interfaces which do not support LRO.
+> > The fix simply consists in not breaking out of the loop after the
+> > first read. That way, we can read up to the size requested by the
+> > caller and still return when there is no data left.
+> > Performance has significantly improved with this fix, with the
+> > number of calls to splice() divided by about 20, and CPU usage
+> > dropped from 100% to 75%.
 > > 
 > 
-> Sorry, I'll add something about it.
+> I get similar results with my testing here. Benchmarking an application with this patch shows that more than one packet is being splice()d in at once, as a result I see a doubling in throughput.
 > 
-> > This just looks like yet another set of virtualization drivers
-> > to me.  You could have just have easily built this using your
-> > own PCI backplane framework, and using the virtio stuff on top.
-> > 
-> > And the virtio stuff has all kinds of snazzy optimizations that
-> > will likely improve your throughput, it has console drivers that
-> > distributions already probe for and attach appropriately, etc.
-> > 
-> > In short I really don't like this conceptually, it can be done
-> > so much better using facilities we already have that are
-> > heavily optimized and userland understands already.
-> 
-> I've had a really hard time understanding the virtio code. I haven't
-> been able to find much in the way of documentation for it. Can you point
-> me to some code that does anything vaguely similar to what you are
-> suggesting?
-> 
-> Arnd Bergmann said that there is a similar driver (for different
-> hardware) that uses virtio, but it is very slow, because it doesn't use
-> the DMA controller to transfer data. I need at very minimum 40MB/sec of
-> client -> host data transfer.
-> 
+> Tested-by: Ben Mansell <ben@zeus.com>
 
-Rusty, since you wrote the virtio code, can you point me at the things I
-would need to implement to use virtio over the PCI bus.
-
-The guests (PowerPC computers running Linux) are PCI cards in the host
-system (an Intel Pentium3-M system). The guest computers can access all
-of the host's memory. The guests provide a 1MB (movable) window into
-their memory.
-
-The PowerPC computers also have a DMA controller, which I've used to get
-better throughput from my driver. I have a way to create interrupts to
-both the host and guest systems.
-
-I've read your paper titled: "virtio: Towards a De-Facto Standard For
-Virtual I/O Devices"
-
-If I read that correctly, then I should implement all of the functions
-in struct virtqueue_ops appropriately, and the existing virtio drivers
-should just work. The only concern I have there is how to make guest ->
-host transfer use the DMA controller. I've done all programming of it
-from the guest kernel, using the Linux DMAEngine API.
-
-Are there any other implementations other than virtio_ring?
-
-I appreciate any input you can give. If I should be CCing someone else,
-just let me know and I'll drop you from the CC list.
-
-Thanks,
-Ira
+I'm not applying this until someone explains to me why
+we should remove this test from the splice receive but
+keep it in the tcp_recvmsg() code where it has been
+essentially forever.
