@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZAHKjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbZAHKnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbZAHKjb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 05:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZAHKjX
+	id S1758105AbZAHKnF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 05:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZAHKmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 05:39:23 -0500
-Received: from fw2.winet.de ([84.17.96.48]:56993 "EHLO fw2.winet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbZAHKjW convert rfc822-to-8bit (ORCPT
+	Thu, 8 Jan 2009 05:42:51 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41358 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751010AbZAHKmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 05:39:22 -0500
-X-Greylist: delayed 1211 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Jan 2009 05:39:22 EST
-From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: "Matt Fleming" <matt@console-pimps.org>
-Subject: Re: [PATCH] Fixes and enhancements for the MMC SPI driver
-Date: Thu, 8 Jan 2009 11:19:00 +0100
-User-Agent: KMail/1.9.10
-Cc: "David Brownell" <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, "Pierre Ossman" <drzeus@drzeus.cx>
-References: <20090108092407.GA6108@console-pimps.org>
-In-Reply-To: <20090108092407.GA6108@console-pimps.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200901081119.00812.wolfgang.mues@auerswald.de>
+	Thu, 8 Jan 2009 05:42:50 -0500
+Date: Thu, 8 Jan 2009 10:43:05 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Michael Stone <michael@laptop.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: RFC: Network privilege separation.
+Message-ID: <20090108104305.7b271053@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090108023111.GJ3164@didacte.laptop.org>
+References: <1231307334-9542-1-git-send-email-michael@laptop.org>
+	<87mye2yg8a.fsf@basil.nowhere.org>
+	<20090108023111.GJ3164@didacte.laptop.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt,
+> Conclusion: so far as I can see, RLIMIT_NETWORK is, in every way, a smaller
+> expansion of the end user's trusted code base and should therefore be preferred
+> in comparison netfilter-based solutions for process-level network privilege
+> separation tasks. Do you see things differently?
 
-Am Donnerstag, 8. Januar 2009 schrieb Matt Fleming:
-> My concern is that completely broken cards may be able to get away with
-> more if the timeout is extended.
+If you have the same uid then you can just use ptrace to drive another
+task with that uid to do the creations for you. Chances are you can also
+attack shared executable files (eg that uids .bashrc)
 
-Ah, and you think that the failure of these cards in some embedded devices 
-will push the vendors of these cards to fix their bugs?
+That to me says controlling network access is only useful as part of a
+more fine grained and general purpose interface. We already have that
+interface in the form of things like SELinux. We already have systems
+actively using it to control stuff like which ports are accessed by some
+services.
 
-Sorry, I don't think so. If this driver will run in more than 50% of all SD 
-card devices: yes. But in reality, it will be below 1%...
-
-> There is clearly a tradeoff here between supporting non-conforming cards 
-> and easily detecting broken cards. 
-
-IMHO, not supporting a non-conforming card (if you CAN) is ignorance. 
-Ignorance to the user, which you leave alone with her problems.
-
-> Someone suggested to me off list that having a configuration option to
-> enable/disable the longer timeout is a good compromise, and I agree.
-
-I don't see value in this compromise. The person which is able to turn the 
-configuration option will be != the user of the device and != the owner of 
-the card. 
-
-best regards
- 
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+Alan
