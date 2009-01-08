@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbZAHTFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761774AbZAHTHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761514AbZAHTFt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 14:05:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZAHTFf
+	id S1761774AbZAHTHW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 14:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756653AbZAHTHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 14:05:35 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:17420 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755614AbZAHTFe (ORCPT
+	Thu, 8 Jan 2009 14:07:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49372
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755614AbZAHTHC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 14:05:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=w7h5BU4E4PhVukIaeNZ74mYYG3KMYi9S5EQYQViixWtuMlL1riWui0LdItVYbcBsPK
-         28MBKA1Qrmk+ntdwgNyzoNTWukbHat0uf7i4ipPoPHY97/Lax071mrRxzSfVFSJcbPWR
-         CuCybYnHHJ6UYByi9a/2Igf71kohfU5f2IjG0=
-Message-ID: <8bd0f97a0901081105q1e897254kad9a8533b5845403@mail.gmail.com>
-Date: Thu, 8 Jan 2009 14:05:33 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 2/2] netdev: bfin_mac: enable VLAN support in Blackfin MAC driver
-Cc: cooloney@kernel.org, jeff@garzik.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, graf.yang@analog.com
-In-Reply-To: <8bd0f97a0901081101t6fdfa485rbd7ccc4e47691ddb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Jan 2009 14:07:02 -0500
+Date: Thu, 08 Jan 2009 11:07:03 -0800 (PST)
+Message-Id: <20090108.110703.224751826.davem@davemloft.net>
+To: inaky@linux.intel.com
+Cc: netdev@vger.kernel.org, wimax@linuxwimax.org, greg@kroah.com,
+       randy.dunlap@oracle.com, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wimax@intel.com
+Subject: Re: [PATCH 1/4] wimax: fix '#ifndef CONFIG_BUG' layout to avoid
+ warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <7e92a3e498e02567876f901eba29c59c294a417b.1231355768.git.inaky@linux.intel.com>
+References: <cover.1231355768.git.inaky@linux.intel.com>
+	<7e92a3e498e02567876f901eba29c59c294a417b.1231355768.git.inaky@linux.intel.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1231344879-26069-1-git-send-email-cooloney@kernel.org>
-	 <1231344879-26069-3-git-send-email-cooloney@kernel.org>
-	 <20090108.105531.176161465.davem@davemloft.net>
-	 <8bd0f97a0901081101t6fdfa485rbd7ccc4e47691ddb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 8, 2009 at 14:01, Mike Frysinger wrote:
-> On Thu, Jan 8, 2009 at 13:55, David Miller wrote:
->> We can get VLAN packets received and sent, using AF_PACKET
->> sockets, for example.  The chip should still respect those
->> even if VLAN proper is not being utilized.
->
-> any tips on doing that ?
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Date: Wed,  7 Jan 2009 11:22:19 -0800
 
-or rather, is there a driver or you two you can point out that is
-doing this correctly ?  the ones i looked at seemed to be doing it
-like the patch we posted ...
--mike
+> Reported by Randy Dunlap:
+> 
+> > Also, this warning needs to be fixed:
+> >
+> > linux-next-20090106/net/wimax/id-table.c:133: warning: ISO C90
+> > forbids mixed declarations and code
+> 
+> Move the return on #defined(CONFIG_BUG) below the variable
+> declarations so it doesn't violate ISO C90.
+> 
+> On wimax_id_table_release() we want to do a debug check if CONFIG_BUG
+> is enabled. However, we also want the debug code to be always compiled
+> to ensure there is no bitrot. It will be optimized out by the compiler
+> when CONFIG_BUG is disabled.
+> 
+> Added a note to the function header stating this.
+> 
+> Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+
+Applied.
