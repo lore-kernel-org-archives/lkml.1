@@ -1,92 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZAIKu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757723AbZAIKvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbZAIKu6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 05:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZAIKuo
+	id S1757723AbZAIKvY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 05:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbZAIKup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 05:50:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:60686 "EHLO ozlabs.org"
+	Fri, 9 Jan 2009 05:50:45 -0500
+Received: from ozlabs.org ([203.10.76.45]:60694 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752844AbZAIKul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 05:50:41 -0500
+	id S1757073AbZAIKun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 05:50:43 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18791.11247.2389.849047@cargo.ozlabs.ibm.com>
-Date: Fri, 9 Jan 2009 21:50:23 +1100
+Message-ID: <18791.11262.138569.626394@cargo.ozlabs.ibm.com>
+Date: Fri, 9 Jan 2009 21:50:38 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: linux-kernel@vger.kernel.org
 CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 8/9] powerpc/perf_counter: Add support for PPC970 family
+Subject: [PATCH 9/9] powerpc/perf_counter: Add support for POWER6
 X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds the back-end for the PMU on the PPC970 family.
-
-The PPC970 allows events from the ISU to be selected in two different
-ways.  Rather than use alternative event codes to express this, we
-instead use a single encoding for ISU events and express the
-resulting constraint (that you can't select events from all three
-of FPU/IFU/VPU, ISU and IDU/STS at the same time, since they all come
-in through only 2 multiplexers) using a NAND constraint field, and
-work out which multiplexer is used for ISU events at compute_mmcr
-time.
+This adds the back-end for the PMU on the POWER6 processor.
+Fortunately, the event selection hardware is somewhat simpler on
+POWER6 than on other POWER family processors, so the constraints
+fit into only 32 bits.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
 
 diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index fde190b..45798f6 100644
+index 45798f6..0ebf4d0 100644
 --- a/arch/powerpc/kernel/Makefile
 +++ b/arch/powerpc/kernel/Makefile
 @@ -94,7 +94,7 @@ obj-$(CONFIG_AUDIT)		+= audit.o
  obj64-$(CONFIG_AUDIT)		+= compat_audit.o
  
  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
--obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o
-+obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o ppc970-pmu.o
+-obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o ppc970-pmu.o
++obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o ppc970-pmu.o power6-pmu.o
  
  obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
  
 diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 4f2d6ea..55f5d30 100644
+index 55f5d30..3f520b9 100644
 --- a/arch/powerpc/kernel/perf_counter.c
 +++ b/arch/powerpc/kernel/perf_counter.c
-@@ -720,6 +720,8 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 	}
+@@ -721,6 +721,7 @@ static void perf_counter_interrupt(struct pt_regs *regs)
  }
  
-+extern struct power_pmu ppc970_pmu;
-+
+ extern struct power_pmu ppc970_pmu;
++extern struct power_pmu power6_pmu;
+ 
  static int init_perf_counters(void)
  {
- 	unsigned long pvr;
-@@ -729,6 +731,15 @@ static int init_perf_counters(void)
- 		return -EBUSY;
- 	}
- 
-+	/* XXX should get this from cputable */
-+	pvr = mfspr(SPRN_PVR);
-+	switch (PVR_VER(pvr)) {
-+	case PV_970:
-+	case PV_970FX:
-+	case PV_970MP:
-+		ppmu = &ppc970_pmu;
+@@ -739,6 +740,9 @@ static int init_perf_counters(void)
+ 	case PV_970MP:
+ 		ppmu = &ppc970_pmu;
+ 		break;
++	case 0x3e:
++		ppmu = &power6_pmu;
 +		break;
-+	}
+ 	}
  	return 0;
  }
- 
-diff --git a/arch/powerpc/kernel/ppc970-pmu.c b/arch/powerpc/kernel/ppc970-pmu.c
+diff --git a/arch/powerpc/kernel/power6-pmu.c b/arch/powerpc/kernel/power6-pmu.c
 new file mode 100644
-index 0000000..a60bd57
+index 0000000..b1f61f3
 --- /dev/null
-+++ b/arch/powerpc/kernel/ppc970-pmu.c
-@@ -0,0 +1,375 @@
++++ b/arch/powerpc/kernel/power6-pmu.c
+@@ -0,0 +1,283 @@
 +/*
-+ * Performance counter support for PPC970-family processors.
++ * Performance counter support for POWER6 processors.
 + *
 + * Copyright 2008-2009 Paul Mackerras, IBM Corporation.
 + *
@@ -95,368 +82,276 @@ index 0000000..a60bd57
 + * as published by the Free Software Foundation; either version
 + * 2 of the License, or (at your option) any later version.
 + */
-+#include <linux/string.h>
++#include <linux/kernel.h>
 +#include <linux/perf_counter.h>
 +#include <asm/reg.h>
 +
 +/*
-+ * Bits in event code for PPC970
++ * Bits in event code for POWER6
 + */
-+#define PM_PMC_SH	12	/* PMC number (1-based) for direct events */
-+#define PM_PMC_MSK	0xf
-+#define PM_UNIT_SH	8	/* TTMMUX number and setting - unit select */
++#define PM_PMC_SH	20	/* PMC number (1-based) for direct events */
++#define PM_PMC_MSK	0x7
++#define PM_PMC_MSKS	(PM_PMC_MSK << PM_PMC_SH)
++#define PM_UNIT_SH	16	/* Unit event comes (TTMxSEL encoding) */
 +#define PM_UNIT_MSK	0xf
-+#define PM_BYTE_SH	4	/* Byte number of event bus to use */
++#define PM_UNIT_MSKS	(PM_UNIT_MSK << PM_UNIT_SH)
++#define PM_LLAV		0x8000	/* Load lookahead match value */
++#define PM_LLA		0x4000	/* Load lookahead match enable */
++#define PM_BYTE_SH	12	/* Byte of event bus to use */
 +#define PM_BYTE_MSK	3
-+#define PM_PMCSEL_MSK	0xf
-+
-+/* Values in PM_UNIT field */
-+#define PM_NONE		0
-+#define PM_FPU		1
-+#define PM_VPU		2
-+#define PM_ISU		3
-+#define PM_IFU		4
-+#define PM_IDU		5
-+#define PM_STS		6
-+#define PM_LSU0		7
-+#define PM_LSU1U	8
-+#define PM_LSU1L	9
-+#define PM_LASTUNIT	9
++#define PM_SUBUNIT_SH	8	/* Subunit event comes from (NEST_SEL enc.) */
++#define PM_SUBUNIT_MSK	7
++#define PM_SUBUNIT_MSKS	(PM_SUBUNIT_MSK << PM_SUBUNIT_SH)
++#define PM_PMCSEL_MSK	0xff	/* PMCxSEL value */
++#define PM_BUSEVENT_MSK	0xf3700
 +
 +/*
-+ * Bits in MMCR0 for PPC970
++ * Bits in MMCR1 for POWER6
 + */
-+#define MMCR0_PMC1SEL_SH	8
-+#define MMCR0_PMC2SEL_SH	1
-+#define MMCR_PMCSEL_MSK		0x1f
++#define MMCR1_TTM0SEL_SH	60
++#define MMCR1_TTMSEL_SH(n)	(MMCR1_TTM0SEL_SH - (n) * 4)
++#define MMCR1_TTMSEL_MSK	0xf
++#define MMCR1_TTMSEL(m, n)	(((m) >> MMCR1_TTMSEL_SH(n)) & MMCR1_TTMSEL_MSK)
++#define MMCR1_NESTSEL_SH	45
++#define MMCR1_NESTSEL_MSK	0x7
++#define MMCR1_NESTSEL(m)	(((m) >> MMCR1_NESTSEL_SH) & MMCR1_NESTSEL_MSK)
++#define MMCR1_PMC1_LLA		((u64)1 << 44)
++#define MMCR1_PMC1_LLA_VALUE	((u64)1 << 39)
++#define MMCR1_PMC1_ADDR_SEL	((u64)1 << 35)
++#define MMCR1_PMC1SEL_SH	24
++#define MMCR1_PMCSEL_SH(n)	(MMCR1_PMC1SEL_SH - (n) * 8)
++#define MMCR1_PMCSEL_MSK	0xff
 +
 +/*
-+ * Bits in MMCR1 for PPC970
++ * Assign PMC numbers and compute MMCR1 value for a set of events
 + */
-+#define MMCR1_TTM0SEL_SH	62
-+#define MMCR1_TTM1SEL_SH	59
-+#define MMCR1_TTM3SEL_SH	53
-+#define MMCR1_TTMSEL_MSK	3
-+#define MMCR1_TD_CP_DBG0SEL_SH	50
-+#define MMCR1_TD_CP_DBG1SEL_SH	48
-+#define MMCR1_TD_CP_DBG2SEL_SH	46
-+#define MMCR1_TD_CP_DBG3SEL_SH	44
-+#define MMCR1_PMC1_ADDER_SEL_SH	39
-+#define MMCR1_PMC2_ADDER_SEL_SH	38
-+#define MMCR1_PMC6_ADDER_SEL_SH	37
-+#define MMCR1_PMC5_ADDER_SEL_SH	36
-+#define MMCR1_PMC8_ADDER_SEL_SH	35
-+#define MMCR1_PMC7_ADDER_SEL_SH	34
-+#define MMCR1_PMC3_ADDER_SEL_SH	33
-+#define MMCR1_PMC4_ADDER_SEL_SH	32
-+#define MMCR1_PMC3SEL_SH	27
-+#define MMCR1_PMC4SEL_SH	22
-+#define MMCR1_PMC5SEL_SH	17
-+#define MMCR1_PMC6SEL_SH	12
-+#define MMCR1_PMC7SEL_SH	7
-+#define MMCR1_PMC8SEL_SH	2
++static int p6_compute_mmcr(unsigned int event[], int n_ev,
++			   unsigned int hwc[], u64 mmcr[])
++{
++	u64 mmcr1 = 0;
++	int i;
++	unsigned int pmc, ev, b, u, s, psel;
++	unsigned int ttmset = 0;
++	unsigned int pmc_inuse = 0;
 +
-+static short mmcr1_adder_bits[8] = {
-+	MMCR1_PMC1_ADDER_SEL_SH,
-+	MMCR1_PMC2_ADDER_SEL_SH,
-+	MMCR1_PMC3_ADDER_SEL_SH,
-+	MMCR1_PMC4_ADDER_SEL_SH,
-+	MMCR1_PMC5_ADDER_SEL_SH,
-+	MMCR1_PMC6_ADDER_SEL_SH,
-+	MMCR1_PMC7_ADDER_SEL_SH,
-+	MMCR1_PMC8_ADDER_SEL_SH
-+};
-+
-+/*
-+ * Bits in MMCRA
-+ */
++	if (n_ev > 4)
++		return -1;
++	for (i = 0; i < n_ev; ++i) {
++		pmc = (event[i] >> PM_PMC_SH) & PM_PMC_MSK;
++		if (pmc) {
++			if (pmc_inuse & (1 << (pmc - 1)))
++				return -1;	/* collision! */
++			pmc_inuse |= 1 << (pmc - 1);
++		}
++	}
++	for (i = 0; i < n_ev; ++i) {
++		ev = event[i];
++		pmc = (ev >> PM_PMC_SH) & PM_PMC_MSK;
++		if (pmc) {
++			--pmc;
++		} else {
++			/* can go on any PMC; find a free one */
++			for (pmc = 0; pmc < 4; ++pmc)
++				if (!(pmc_inuse & (1 << pmc)))
++					break;
++			pmc_inuse |= 1 << pmc;
++		}
++		hwc[i] = pmc;
++		psel = ev & PM_PMCSEL_MSK;
++		if (ev & PM_BUSEVENT_MSK) {
++			/* this event uses the event bus */
++			b = (ev >> PM_BYTE_SH) & PM_BYTE_MSK;
++			u = (ev >> PM_UNIT_SH) & PM_UNIT_MSK;
++			/* check for conflict on this byte of event bus */
++			if ((ttmset & (1 << b)) && MMCR1_TTMSEL(mmcr1, b) != u)
++				return -1;
++			mmcr1 |= (u64)u << MMCR1_TTMSEL_SH(b);
++			ttmset |= 1 << b;
++			if (u == 5) {
++				/* Nest events have a further mux */
++				s = (ev >> PM_SUBUNIT_SH) & PM_SUBUNIT_MSK;
++				if ((ttmset & 0x10) &&
++				    MMCR1_NESTSEL(mmcr1) != s)
++					return -1;
++				ttmset |= 0x10;
++				mmcr1 |= (u64)s << MMCR1_NESTSEL_SH;
++			}
++			if (0x30 <= psel && psel <= 0x3d) {
++				/* these need the PMCx_ADDR_SEL bits */
++				if (b >= 2)
++					mmcr1 |= MMCR1_PMC1_ADDR_SEL >> pmc;
++			}
++			/* bus select values are different for PMC3/4 */
++			if (pmc >= 2 && (psel & 0x90) == 0x80)
++				psel ^= 0x20;
++		}
++		if (ev & PM_LLA) {
++			mmcr1 |= MMCR1_PMC1_LLA >> pmc;
++			if (ev & PM_LLAV)
++				mmcr1 |= MMCR1_PMC1_LLA_VALUE >> pmc;
++		}
++		mmcr1 |= (u64)psel << MMCR1_PMCSEL_SH(pmc);
++	}
++	mmcr[0] = 0;
++	if (pmc_inuse & 1)
++		mmcr[0] = MMCR0_PMC1CE;
++	if (pmc_inuse & 0xe)
++		mmcr[0] |= MMCR0_PMCjCE;
++	mmcr[1] = mmcr1;
++	mmcr[2] = 0;
++	return 0;
++}
 +
 +/*
 + * Layout of constraint bits:
-+ * 6666555555555544444444443333333333222222222211111111110000000000
-+ * 3210987654321098765432109876543210987654321098765432109876543210
-+ *                 <><>[  >[  >[  ><  ><  ><  ><  ><><><><><><><><>
-+ *                 T0T1 UC  PS1 PS2 B0  B1  B2  B3 P1P2P3P4P5P6P7P8
 + *
-+ * T0 - TTM0 constraint
-+ *     46-47: TTM0SEL value (0=FPU, 2=IFU, 3=VPU) 0xC000_0000_0000
-+ *
-+ * T1 - TTM1 constraint
-+ *     44-45: TTM1SEL value (0=IDU, 3=STS) 0x3000_0000_0000
-+ *
-+ * UC - unit constraint: can't have all three of FPU|IFU|VPU, ISU, IDU|STS
-+ *     43: UC3 error 0x0800_0000_0000
-+ *     42: FPU|IFU|VPU events needed 0x0400_0000_0000
-+ *     41: ISU events needed 0x0200_0000_0000
-+ *     40: IDU|STS events needed 0x0100_0000_0000
-+ *
-+ * PS1
-+ *     39: PS1 error 0x0080_0000_0000
-+ *     36-38: count of events needing PMC1/2/5/6 0x0070_0000_0000
-+ *
-+ * PS2
-+ *     35: PS2 error 0x0008_0000_0000
-+ *     32-34: count of events needing PMC3/4/7/8 0x0007_0000_0000
-+ *
-+ * B0
-+ *     28-31: Byte 0 event source 0xf000_0000
-+ *	      Encoding as for the event code
-+ *
-+ * B1, B2, B3
-+ *     24-27, 20-23, 16-19: Byte 1, 2, 3 event sources
-+ *
-+ * P1
-+ *     15: P1 error 0x8000
-+ *     14-15: Count of events needing PMC1
-+ *
-+ * P2..P8
-+ *     0-13: Count of events needing PMC2..PMC8
++ *	0-1	add field: number of uses of PMC1 (max 1)
++ *	2-3, 4-5, 6-7: ditto for PMC2, 3, 4
++ *	8-10	select field: nest (subunit) event selector
++ *	16-19	select field: unit on byte 0 of event bus
++ *	20-23, 24-27, 28-31 ditto for bytes 1, 2, 3
 + */
-+
-+/* Masks and values for using events from the various units */
-+static u64 unit_cons[PM_LASTUNIT+1][2] = {
-+	[PM_FPU] =   { 0xc80000000000ull, 0x040000000000ull },
-+	[PM_VPU] =   { 0xc80000000000ull, 0xc40000000000ull },
-+	[PM_ISU] =   { 0x080000000000ull, 0x020000000000ull },
-+	[PM_IFU] =   { 0xc80000000000ull, 0x840000000000ull },
-+	[PM_IDU] =   { 0x380000000000ull, 0x010000000000ull },
-+	[PM_STS] =   { 0x380000000000ull, 0x310000000000ull },
-+};
-+
-+static int p970_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
++static int p6_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
 +{
-+	int pmc, byte, unit, sh;
-+	u64 mask = 0, value = 0;
-+	int grp = -1;
++	int pmc, byte, sh;
++	unsigned int mask = 0, value = 0;
 +
 +	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
 +	if (pmc) {
-+		if (pmc > 8)
++		if (pmc > 4)
 +			return -1;
 +		sh = (pmc - 1) * 2;
 +		mask |= 2 << sh;
 +		value |= 1 << sh;
-+		grp = ((pmc - 1) >> 1) & 1;
 +	}
-+	unit = (event >> PM_UNIT_SH) & PM_UNIT_MSK;
-+	if (unit) {
-+		if (unit > PM_LASTUNIT)
-+			return -1;
-+		mask |= unit_cons[unit][0];
-+		value |= unit_cons[unit][1];
++	if (event & PM_BUSEVENT_MSK) {
 +		byte = (event >> PM_BYTE_SH) & PM_BYTE_MSK;
-+		/*
-+		 * Bus events on bytes 0 and 2 can be counted
-+		 * on PMC1/2/5/6; bytes 1 and 3 on PMC3/4/7/8.
-+		 */
-+		if (!pmc)
-+			grp = byte & 1;
-+		/* Set byte lane select field */
-+		mask  |= 0xfULL << (28 - 4 * byte);
-+		value |= (u64)unit << (28 - 4 * byte);
-+	}
-+	if (grp == 0) {
-+		/* increment PMC1/2/5/6 field */
-+		mask  |= 0x8000000000ull;
-+		value |= 0x1000000000ull;
-+	} else if (grp == 1) {
-+		/* increment PMC3/4/7/8 field */
-+		mask  |= 0x800000000ull;
-+		value |= 0x100000000ull;
++		sh = byte * 4;
++		mask |= PM_UNIT_MSKS << sh;
++		value |= (event & PM_UNIT_MSKS) << sh;
++		if ((event & PM_UNIT_MSKS) == (5 << PM_UNIT_SH)) {
++			mask |= PM_SUBUNIT_MSKS;
++			value |= event & PM_SUBUNIT_MSKS;
++		}
 +	}
 +	*maskp = mask;
 +	*valp = value;
 +	return 0;
 +}
 +
-+static int p970_get_alternatives(unsigned int event, unsigned int alt[])
-+{
-+	alt[0] = event;
++#define MAX_ALT	4	/* at most 4 alternatives for any event */
 +
-+	/* 2 alternatives for LSU empty */
-+	if (event == 0x2002 || event == 0x3002) {
-+		alt[1] = event ^ 0x1000;
-+		return 2;
-+	}
-+		
-+	return 1;
-+}
-+
-+static int p970_compute_mmcr(unsigned int event[], int n_ev,
-+			     unsigned int hwc[], u64 mmcr[])
-+{
-+	u64 mmcr0 = 0, mmcr1 = 0, mmcra = 0;
-+	unsigned int pmc, unit, byte, psel;
-+	unsigned int ttm, grp;
-+	unsigned int pmc_inuse = 0;
-+	unsigned int pmc_grp_use[2];
-+	unsigned char busbyte[4];
-+	unsigned char unituse[16];
-+	unsigned char unitmap[] = { 0, 0<<3, 3<<3, 1<<3, 2<<3, 0|4, 3|4 };
-+	unsigned char ttmuse[2];
-+	unsigned char pmcsel[8];
-+	int i;
-+
-+	if (n_ev > 8)
-+		return -1;
-+
-+	/* First pass to count resource use */
-+	pmc_grp_use[0] = pmc_grp_use[1] = 0;
-+	memset(busbyte, 0, sizeof(busbyte));
-+	memset(unituse, 0, sizeof(unituse));
-+	for (i = 0; i < n_ev; ++i) {
-+		pmc = (event[i] >> PM_PMC_SH) & PM_PMC_MSK;
-+		if (pmc) {
-+			if (pmc_inuse & (1 << (pmc - 1)))
-+				return -1;
-+			pmc_inuse |= 1 << (pmc - 1);
-+			/* count 1/2/5/6 vs 3/4/7/8 use */
-+			++pmc_grp_use[((pmc - 1) >> 1) & 1];
-+		}
-+		unit = (event[i] >> PM_UNIT_SH) & PM_UNIT_MSK;
-+		byte = (event[i] >> PM_BYTE_SH) & PM_BYTE_MSK;
-+		if (unit) {
-+			if (unit > PM_LASTUNIT)
-+				return -1;
-+			if (!pmc)
-+				++pmc_grp_use[byte & 1];
-+			if (busbyte[byte] && busbyte[byte] != unit)
-+				return -1;
-+			busbyte[byte] = unit;
-+			unituse[unit] = 1;
-+		}
-+	}
-+	if (pmc_grp_use[0] > 4 || pmc_grp_use[1] > 4)
-+		return -1;
-+
-+	/*
-+	 * Assign resources and set multiplexer selects.
-+	 *
-+	 * PM_ISU can go either on TTM0 or TTM1, but that's the only
-+	 * choice we have to deal with.
-+	 */
-+	if (unituse[PM_ISU] &
-+	    (unituse[PM_FPU] | unituse[PM_IFU] | unituse[PM_VPU]))
-+		unitmap[PM_ISU] = 2 | 4;	/* move ISU to TTM1 */
-+	/* Set TTM[01]SEL fields. */
-+	ttmuse[0] = ttmuse[1] = 0;
-+	for (i = PM_FPU; i <= PM_STS; ++i) {
-+		if (!unituse[i])
-+			continue;
-+		ttm = unitmap[i];
-+		++ttmuse[(ttm >> 2) & 1];
-+		mmcr1 |= (u64)(ttm & ~4) << MMCR1_TTM1SEL_SH;
-+	}
-+	/* Check only one unit per TTMx */
-+	if (ttmuse[0] > 1 || ttmuse[1] > 1)
-+		return -1;
-+
-+	/* Set byte lane select fields and TTM3SEL. */
-+	for (byte = 0; byte < 4; ++byte) {
-+		unit = busbyte[byte];
-+		if (!unit)
-+			continue;
-+		if (unit <= PM_STS)
-+			ttm = (unitmap[unit] >> 2) & 1;
-+		else if (unit == PM_LSU0)
-+			ttm = 2;
-+		else {
-+			ttm = 3;
-+			if (unit == PM_LSU1L && byte >= 2)
-+				mmcr1 |= 1ull << (MMCR1_TTM3SEL_SH + 3 - byte);
-+		}
-+		mmcr1 |= (u64)ttm << (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
-+	}
-+
-+	/* Second pass: assign PMCs, set PMCxSEL and PMCx_ADDER_SEL fields */
-+	memset(pmcsel, 0x8, sizeof(pmcsel));	/* 8 means don't count */
-+	for (i = 0; i < n_ev; ++i) {
-+		pmc = (event[i] >> PM_PMC_SH) & PM_PMC_MSK;
-+		unit = (event[i] >> PM_UNIT_SH) & PM_UNIT_MSK;
-+		byte = (event[i] >> PM_BYTE_SH) & PM_BYTE_MSK;
-+		psel = event[i] & PM_PMCSEL_MSK;
-+		if (!pmc) {
-+			/* Bus event or any-PMC direct event */
-+			if (unit)
-+				psel |= 0x10 | ((byte & 2) << 2);
-+			else
-+				psel |= 8;
-+			for (pmc = 0; pmc < 8; ++pmc) {
-+				if (pmc_inuse & (1 << pmc))
-+					continue;
-+				grp = (pmc >> 1) & 1;
-+				if (unit) {
-+					if (grp == (byte & 1))
-+						break;
-+				} else if (pmc_grp_use[grp] < 4) {
-+					++pmc_grp_use[grp];
-+					break;
-+				}
-+			}
-+			pmc_inuse |= 1 << pmc;
-+		} else {
-+			/* Direct event */
-+			--pmc;
-+			if (psel == 0 && (byte & 2))
-+				/* add events on higher-numbered bus */
-+				mmcr1 |= 1ull << mmcr1_adder_bits[pmc];
-+		}
-+		pmcsel[pmc] = psel;
-+		hwc[i] = pmc;
-+	}
-+	for (pmc = 0; pmc < 2; ++pmc)
-+		mmcr0 |= pmcsel[pmc] << (MMCR0_PMC1SEL_SH - 7 * pmc);
-+	for (; pmc < 8; ++pmc)
-+		mmcr1 |= pmcsel[pmc] << (MMCR1_PMC3SEL_SH - 5 * (pmc - 2));
-+	if (pmc_inuse & 1)
-+		mmcr0 |= MMCR0_PMC1CE;
-+	if (pmc_inuse & 0xfe)
-+		mmcr0 |= MMCR0_PMCjCE;
-+
-+	mmcra |= 0x2000;	/* mark only one IOP per PPC instruction */
-+
-+	/* Return MMCRx values */
-+	mmcr[0] = mmcr0;
-+	mmcr[1] = mmcr1;
-+	mmcr[2] = mmcra;
-+	return 0;
-+}
-+
-+static void p970_disable_pmc(unsigned int pmc, u64 mmcr[])
-+{
-+	int shift, i;
-+
-+	if (pmc <= 1) {
-+		shift = MMCR0_PMC1SEL_SH - 7 * pmc;
-+		i = 0;
-+	} else {
-+		shift = MMCR1_PMC3SEL_SH - 5 * (pmc - 2);
-+		i = 1;
-+	}
-+	/*
-+	 * Setting the PMCxSEL field to 0x08 disables PMC x.
-+	 */
-+	mmcr[i] = (mmcr[i] & ~(0x1fUL << shift)) | (0x08UL << shift);
-+}
-+
-+static int ppc970_generic_events[] = {
-+	[PERF_COUNT_CPU_CYCLES] = 7,
-+	[PERF_COUNT_INSTRUCTIONS] = 1,
-+	[PERF_COUNT_CACHE_REFERENCES] = 0x8810,		/* PM_LD_REF_L1 */
-+	[PERF_COUNT_CACHE_MISSES] = 0x3810,		/* PM_LD_MISS_L1 */
-+	[PERF_COUNT_BRANCH_INSTRUCTIONS] = 0x431,	/* PM_BR_ISSUED */
-+	[PERF_COUNT_BRANCH_MISSES] = 0x327,		/* PM_GRP_BR_MPRED */
++static const unsigned int event_alternatives[][MAX_ALT] = {
++	{ 0x0130e8, 0x2000f6, 0x3000fc },	/* PM_PTEG_RELOAD_VALID */
++	{ 0x080080, 0x10000d, 0x30000c, 0x4000f0 }, /* PM_LD_MISS_L1 */
++	{ 0x080088, 0x200054, 0x3000f0 },	/* PM_ST_MISS_L1 */
++	{ 0x10000a, 0x2000f4 },			/* PM_RUN_CYC */
++	{ 0x10000b, 0x2000f5 },			/* PM_RUN_COUNT */
++	{ 0x10000e, 0x400010 },			/* PM_PURR */
++	{ 0x100010, 0x4000f8 },			/* PM_FLUSH */
++	{ 0x10001a, 0x200010 },			/* PM_MRK_INST_DISP */
++	{ 0x100026, 0x3000f8 },			/* PM_TB_BIT_TRANS */
++	{ 0x100054, 0x2000f0 },			/* PM_ST_FIN */
++	{ 0x100056, 0x2000fc },			/* PM_L1_ICACHE_MISS */
++	{ 0x1000f0, 0x40000a },			/* PM_INST_IMC_MATCH_CMPL */
++	{ 0x1000f8, 0x200008 },			/* PM_GCT_EMPTY_CYC */
++	{ 0x1000fc, 0x400006 },			/* PM_LSU_DERAT_MISS_CYC */
++	{ 0x20000e, 0x400007 },			/* PM_LSU_DERAT_MISS */
++	{ 0x200012, 0x300012 },			/* PM_INST_DISP */
++	{ 0x2000f2, 0x3000f2 },			/* PM_INST_DISP */
++	{ 0x2000f8, 0x300010 },			/* PM_EXT_INT */
++	{ 0x2000fe, 0x300056 },			/* PM_DATA_FROM_L2MISS */
++	{ 0x2d0030, 0x30001a },			/* PM_MRK_FPU_FIN */
++	{ 0x30000a, 0x400018 },			/* PM_MRK_INST_FIN */
++	{ 0x3000f6, 0x40000e },			/* PM_L1_DCACHE_RELOAD_VALID */
++	{ 0x3000fe, 0x400056 },			/* PM_DATA_FROM_L3MISS */
 +};
 +
-+struct power_pmu ppc970_pmu = {
-+	.n_counter = 8,
-+	.max_alternatives = 2,
-+	.add_fields = 0x001100005555ull,
-+	.test_adder = 0x013300000000ull,
-+	.compute_mmcr = p970_compute_mmcr,
-+	.get_constraint = p970_get_constraint,
-+	.get_alternatives = p970_get_alternatives,
-+	.disable_pmc = p970_disable_pmc,
-+	.n_generic = ARRAY_SIZE(ppc970_generic_events),
-+	.generic_events = ppc970_generic_events,
++/*
++ * This could be made more efficient with a binary search on
++ * a presorted list, if necessary
++ */
++static int find_alternatives_list(unsigned int event)
++{
++	int i, j;
++	unsigned int alt;
++
++	for (i = 0; i < ARRAY_SIZE(event_alternatives); ++i) {
++		if (event < event_alternatives[i][0])
++			return -1;
++		for (j = 0; j < MAX_ALT; ++j) {
++			alt = event_alternatives[i][j];
++			if (!alt || event < alt)
++				break;
++			if (event == alt)
++				return i;
++		}
++	}
++	return -1;
++}
++
++static int p6_get_alternatives(unsigned int event, unsigned int alt[])
++{
++	int i, j;
++	unsigned int aevent, psel, pmc;
++	unsigned int nalt = 1;
++
++	alt[0] = event;
++
++	/* check the alternatives table */
++	i = find_alternatives_list(event);
++	if (i >= 0) {
++		/* copy out alternatives from list */
++		for (j = 0; j < MAX_ALT; ++j) {
++			aevent = event_alternatives[i][j];
++			if (!aevent)
++				break;
++			if (aevent != event)
++				alt[nalt++] = aevent;
++		}
++
++	} else {
++		/* Check for alternative ways of computing sum events */
++		/* PMCSEL 0x32 counter N == PMCSEL 0x34 counter 5-N */
++		psel = event & (PM_PMCSEL_MSK & ~1);	/* ignore edge bit */
++		pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
++		if (pmc && (psel == 0x32 || psel == 0x34))
++			alt[nalt++] = ((event ^ 0x6) & ~PM_PMC_MSKS) |
++				((5 - pmc) << PM_PMC_SH);
++
++		/* PMCSEL 0x38 counter N == PMCSEL 0x3a counter N+/-2 */
++		if (pmc && (psel == 0x38 || psel == 0x3a))
++			alt[nalt++] = ((event ^ 0x2) & ~PM_PMC_MSKS) |
++				((pmc > 2? pmc - 2: pmc + 2) << PM_PMC_SH);
++	}
++
++	return nalt;
++}
++
++static void p6_disable_pmc(unsigned int pmc, u64 mmcr[])
++{
++	/* Set PMCxSEL to 0 to disable PMCx */
++	mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SH(pmc));
++}
++
++static int power6_generic_events[] = {
++	[PERF_COUNT_CPU_CYCLES] = 0x1e,
++	[PERF_COUNT_INSTRUCTIONS] = 2,
++	[PERF_COUNT_CACHE_REFERENCES] = 0x280030,	/* LD_REF_L1 */
++	[PERF_COUNT_CACHE_MISSES] = 0x30000c,		/* LD_MISS_L1 */
++	[PERF_COUNT_BRANCH_INSTRUCTIONS] = 0x410a0,	/* BR_PRED */ 
++	[PERF_COUNT_BRANCH_MISSES] = 0x400052,		/* BR_MPRED */
++};
++
++struct power_pmu power6_pmu = {
++	.n_counter = 4,
++	.max_alternatives = MAX_ALT,
++	.add_fields = 0x55,
++	.test_adder = 0,
++	.compute_mmcr = p6_compute_mmcr,
++	.get_constraint = p6_get_constraint,
++	.get_alternatives = p6_get_alternatives,
++	.disable_pmc = p6_disable_pmc,
++	.n_generic = ARRAY_SIZE(power6_generic_events),
++	.generic_events = power6_generic_events,
 +};
