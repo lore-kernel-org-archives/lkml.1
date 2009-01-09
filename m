@@ -1,81 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZAIR40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbZAIR6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbZAIR40 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 12:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZAIRzv
+	id S1754563AbZAIR6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 12:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbZAIR6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 12:55:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57325 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752893AbZAIRzt (ORCPT
+	Fri, 9 Jan 2009 12:58:33 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:38464 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbZAIR6c convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 12:55:49 -0500
-Date: Fri, 9 Jan 2009 09:54:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Andi Kleen <andi@firstfloor.org>, Dirk Hohndel <hohndel@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz,
-       richard.guenther@gmail.com
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-In-Reply-To: <20090109173914.GD6936@parisc-linux.org>
-Message-ID: <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain>
-References: <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org>
- <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109173914.GD6936@parisc-linux.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Jan 2009 12:58:32 -0500
+Message-ID: <49679012.3000702@cosmosbay.com>
+Date: Fri, 09 Jan 2009 18:57:38 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Miller <davem@davemloft.net>
+CC: ben@zeus.com, w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+References: <20090108173028.GA22531@1wt.eu>	<49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com>
+In-Reply-To: <49677074.5090802@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Jan 2009 18:57:39 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Jan 2009, Matthew Wilcox wrote:
+Eric Dumazet a écrit :
+> Eric Dumazet a écrit :
+>> David Miller a écrit :
+>>> I'm not applying this until someone explains to me why
+>>> we should remove this test from the splice receive but
+>>> keep it in the tcp_recvmsg() code where it has been
+>>> essentially forever.
 > 
-> That seems like valuable feedback to give to the GCC developers.
+> Reading again tcp_recvmsg(), I found it already is able to eat several skb
+> even in nonblocking mode.
+> 
+> setsockopt(5, SOL_SOCKET, SO_RCVLOWAT, [61440], 4) = 0
+> ioctl(5, FIONBIO, [1])                  = 0
+> poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+> recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+> write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+> poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+> recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+> write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+> poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+> recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+> write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+> poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+> recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+> write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+> 
+> 
+> David, if you referred to code at line 1374 of net/ipv4/tcp.c, I believe there is
+> no issue with it. We really want to break from this loop if !timeo .
+> 
+> Willy patch makes splice() behaving like tcp_recvmsg(), but we might call
+> tcp_cleanup_rbuf() several times, with copied=1460 (for each frame processed)
+> 
+> I wonder if the right fix should be done in tcp_read_sock() : this is the
+> one who should eat several skbs IMHO, if we want optimal ACK generation.
+> 
+> We break out of its loop at line 1246
+> 
+> if (!desc->count) /* this test is always true */
+> 	break;
+> 
+> (__tcp_splice_read() set count to 0, right before calling tcp_read_sock())
+> 
+> So code at line 1246 (tcp_read_sock()) seems wrong, or pessimistic at least.
 
-Well, one thing we should remember is that the kernel really _is_ special.
+I tested following patch and got expected result :
 
-The kernel not only does things no other program tends to do (inline asms 
-are unusual in the first place - many of them are literally due to system 
-issues like atomic accesses and interrupts that simply aren't an issue in 
-user space, or that need so much abstraction that they aren't inlinable 
-anyway).
+- less ACK, and correct rcvbuf adjustments.
+- I can fill the Gb link with one flow only, using less than
+  10% of the cpu, instead of 40% without patch.
 
-But the kernel also has totally different requirements in other ways. When 
-was the last time you did user space programming and needed to get a 
-backtrace from a user with register info because you simply don't have the 
-hardware that he has? 
+Setting desc->count to 1 seems to be the current practice.
+(Example in drivers/scsi/iscsi_tcp.c : iscsi_sw_tcp_data_ready())
 
-IOW, debugging in user space tends to be much more about trying to 
-reproduce the bug - in a way that we often cannot in the kernel. User 
-space in general is much more reproducible, since it's seldom as hardware- 
-or timing-dependent (threading does change the latter, but usually user 
-space threading is not _nearly_ as aggressive as the kernel has to be).
+******************************************************************
+* Note : this patch is wrong, because splice() can now           *
+* return  more bytes than asked for (if SPLICE_F_NONBLOCK asked) *
+******************************************************************
 
-So the thing is, even if gcc was "perfect", it would likely be perfect for 
-a different audience than the kernel. 
+[PATCH] tcp: splice as many packets as possible at once
 
-Do you think _any_ user space programmer worries about the stack space 
-being a few hundred bytes larger because the compiler inlined two 
-functions, and caused stack usage to be sum of them instead of just the 
-maximum of the two?
+As spotted by Willy Tarreau, current splice() from tcp socket to pipe is not
+optimal. It processes at most one segment per call.
+This results in low performance and very high overhead due to syscall rate
+when splicing from interfaces which do not support LRO.
 
-So we do have special issues. And exactly _because_ we have special issues 
-we should also expect that some compiler defaults simply won't ever really 
-be appropriate for us.
+Willy provided a patch inside tcp_splice_read(), but a better fix
+is to let tcp_read_sock() process as many segments as possible, so
+that tcp_rcv_space_adjust() and tcp_cleanup_rbuf() are called once
+per syscall.
 
-			Linus
+With this change, splice() behaves like tcp_recvmsg(), being able
+to consume many skbs in one system call.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index bd6ff90..15bd67b 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -533,6 +533,9 @@ static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
+ 		.arg.data = tss,
+ 	};
+ 
++	if (tss->flags & SPLICE_F_NONBLOCK)
++		rd_desc.count = 1; /* we want as many segments as possible */
++
+ 	return tcp_read_sock(sk, &rd_desc, tcp_splice_data_recv);
+ }
+ 
+
