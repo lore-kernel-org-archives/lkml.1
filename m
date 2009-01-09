@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZAIR7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbZAIR7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZAIR7M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 12:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbZAIR6h
+	id S1754968AbZAIR7d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 12:59:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbZAIR6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 12:58:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42396 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752292AbZAIR6d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 12:58:33 -0500
-Date: Fri, 9 Jan 2009 09:57:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: Dirk Hohndel <hohndel@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-In-Reply-To: <20090109180213.GH26290@one.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
-References: <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org>
- <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org> <20090109180213.GH26290@one.firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Jan 2009 12:58:44 -0500
+Received: from tservice.net.ru ([195.178.208.66]:49702 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753322AbZAIR6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 12:58:43 -0500
+Date: Fri, 9 Jan 2009 20:58:42 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
+       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 05/16] dma-debug: add initialization code
+Message-ID: <20090109175842.GC30168@ioremap.net>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-6-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231517970-20288-6-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 09, 2009 at 05:19:19PM +0100, Joerg Roedel (joerg.roedel@amd.com) wrote:
+ +static int prealloc_memory(u32 num_entries)
+> +{
+> +	struct dma_debug_entry *entry, *next_entry;
+> +	int i;
+> +
+> +	for (i = 0; i < num_entries; ++i) {
+> +		entry = kmalloc(sizeof(*entry), GFP_KERNEL | __GFP_ZERO);
+
+kzalloc?
 
 
-On Fri, 9 Jan 2009, Andi Kleen wrote:
-> 
-> Universal noinline would also be a bad idea because of its
-> costs (4.1% text size increase). Perhaps should make it
-> a CONFIG option for debugging though.
-
-That's _totally_ the wrong way.
-
-If you can reproduce an issue on your machine, you generally don't care 
-about inline, because you can see the stack, do the whole "gdb vmlinux" 
-thing, and you generally have tools to help you decode things. Including 
-just recompiling the kernel with an added noinline.
-
-But _users_ just get their oopses sent automatically. So it's not about 
-"debugging kernels", it's about _normal_ kernels. They are the ones that 
-need to be debuggable, and the ones that care most about things like the 
-symbolic EIP being as helpful as possible.
-
-			Linus
+-- 
+	Evgeniy Polyakov
