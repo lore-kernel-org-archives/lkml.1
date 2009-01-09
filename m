@@ -1,106 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbZAIWDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbZAIWEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbZAIWDk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbZAIWDB
+	id S1759045AbZAIWEm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:04:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbZAIWEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:03:01 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:41156 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758934AbZAIWC7 convert rfc822-to-8bit (ORCPT
+	Fri, 9 Jan 2009 17:04:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35914
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757796AbZAIWEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:02:59 -0500
-Message-ID: <4967C95E.3070602@cosmosbay.com>
-Date: Fri, 09 Jan 2009 23:02:06 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu>
-In-Reply-To: <20090109212400.GA3727@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Jan 2009 23:02:09 +0100 (CET)
+	Fri, 9 Jan 2009 17:04:22 -0500
+Date: Fri, 09 Jan 2009 14:04:22 -0800 (PST)
+Message-Id: <20090109.140422.60087297.davem@davemloft.net>
+To: alessandro.suardi@gmail.com
+Cc: jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading
+ (-git7 is ok)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
+References: <5a4c581d0901081233y6b546167sbe3ed9f2ea37f1f9@mail.gmail.com>
+	<20090108.125331.03608787.davem@davemloft.net>
+	<5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau a écrit :
-> On Fri, Jan 09, 2009 at 09:51:17PM +0100, Eric Dumazet wrote:
-> (...)
->>> Also, in your second mail, you're saying that your change
->>> might return more data than requested by the user. I can't
->>> find why, could you please explain to me, as I'm still quite
->>> ignorant in this area ?
->> Well, I just tested various user programs and indeed got this
->> strange result :
->>
->> Here I call splice() with len=1000 (0x3e8), and you can see
->> it gives a result of 1460 at the second call.
-> 
-> huh, not nice indeed!
-> 
-> While looking at the code to see how this could be possible, I
-> came across this minor thing (unrelated IMHO) :
-> 
-> 	if (__skb_splice_bits(skb, &offset, &tlen, &spd))
-> 		goto done;
->>>>>>> 	else if (!tlen)    <<<<<<
-> 		goto done;
-> 
-> 	/*
-> 	 * now see if we have a frag_list to map
-> 	 */
-> 	if (skb_shinfo(skb)->frag_list) {
-> 		struct sk_buff *list = skb_shinfo(skb)->frag_list;
-> 
-> 		for (; list && tlen; list = list->next) {
-> 			if (__skb_splice_bits(list, &offset, &tlen, &spd))
-> 				break;
-> 		}
-> 	}
-> 
->     done:
-> 
-> Above on the enlighted line, we'd better remove the else and leave a plain
-> "if (!tlen)". Otherwise, when the first call to __skb_splice_bits() zeroes
-> tlen, we still enter the if and evaluate the for condition for nothing. But
-> let's leave that for later.
-> 
->> I suspect a bug in splice code, that my patch just exposed.
-> 
-> I've checked in skb_splice_bits() and below and can't see how we can move
-> more than the requested len.
-> 
-> However, with your change, I don't clearly see how we break out of
-> the loop in tcp_read_sock(). Maybe we first read 1000 then loop again
-> and read remaining data ? I suspect that we should at least exit when
-> ((struct tcp_splice_state *)desc->arg.data)->len = 0.
-> 
-> At least that's something easy to add just before or after !desc->count
-> for a test.
-> 
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+Date: Fri, 9 Jan 2009 18:30:40 +0100
 
-I believe the bug is in tcp_splice_data_recv()
+> Clearly the requirement changed in -git8, AFAICS.
 
-I am going to test a new patch, but here is the thing I found:
+Because -git8 is where the firmware requirement got added.
 
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index bd6ff90..fbbddf4 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -523,7 +523,7 @@ static int tcp_splice_data_recv(read_descriptor_t *rd_desc, struct sk_buff *skb,
- {
-        struct tcp_splice_state *tss = rd_desc->arg.data;
+If you build the TG3 driver statically into your kernel,
+the only way to get the firmware properly loaded is to
+enable that CONFIG_FIRMWARE_IN_KERNEL option.
 
--       return skb_splice_bits(skb, offset, tss->pipe, tss->len, tss->flags);
-+       return skb_splice_bits(skb, offset, tss->pipe, len, tss->flags);
- }
-
- static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
-
-
+Your filesystem isn't mounted when the driver initializes
+in that case, therefore there is no way to get at the
+firwware that might be present there.
