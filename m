@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbZAIWgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbZAIWiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760166AbZAIWgl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZAIWga
+	id S1760068AbZAIWiB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:38:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZAIWht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:36:30 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:36550 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758367AbZAIWg3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:36:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QyD3h96Grm7uAtQmamBu3sjiHu8jpg/tWlglID6v0SujarZ447PwrbIms7+3HyClEB
-         WlO7dd8xJkA6T3U6eF4wD310pAhrSgt2Gro/3kuTSu/OCXQ1NNcWkvod1XPcPiljDbTc
-         c2gwQgg908fQQ9BY2MBM1fPrtftm4edorEntM=
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@infradead.org,
-       phillip@lougher.demon.co.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20090109222624.2f9d0776@lxorguk.ukuu.org.uk>
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
-	 <20090108165029.GA10951@infradead.org>
-	 <20090108175338.2abbee16.akpm@linux-foundation.org>
-	 <20090109120254.496f75d2@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.0901091356160.6528@localhost.localdomain>
-	 <20090109140842.16ae7c8a.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0901091412220.6528@localhost.localdomain>
-	 <20090109222624.2f9d0776@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Fri, 09 Jan 2009 14:36:26 -0800
-Message-Id: <1231540587.5825.8.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Jan 2009 17:37:49 -0500
+Received: from 8bytes.org ([88.198.83.132]:57677 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZAIWhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:37:48 -0500
+Date: Fri, 9 Jan 2009 23:37:47 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Michael Chan <mchan@broadcom.com>
+Cc: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "mingo@redhat.com" <mingo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
+Message-ID: <20090109223747.GE9466@8bytes.org>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231536264.10384.11.camel@HP1> <20090109223327.GD9466@8bytes.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090109223327.GD9466@8bytes.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-09 at 22:26 +0000, Alan Cox wrote:
-> On Fri, 9 Jan 2009 14:12:34 -0800 (PST)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, Jan 09, 2009 at 11:33:27PM +0100, Joerg Roedel wrote:
+> > This was triggered during pci_unmap_page() -> dma_unmap_single() where
+> > check_unmap() did not find the entry.
+> > 
+> > The original mapping was done in bnx2 using pci_map_page().  I did not
+> > see how the debug entry was added to the hash during the call to
+> > pci_map_page() -> dma_map_page().  Did I miss something?
 > 
-> > 
-> > 
-> > On Fri, 9 Jan 2009, Andrew Morton wrote:
-> > > 
-> > > We've long needed a filesystem named after a vegetable.
-> > 
-> > You make a very compelling case.
-> 
-> And vegetables are much healtheir than FAT ...
+> dma_map_page() results in dma_map_single() -> debug_map_single() call on
+> x86. This way the entry would be added. Maybe the error from a double
+> free?
 
-I always preferred my squash with butter, it appears 2.6.30 will be a very
-tasty kernel.
+Ah, it only calls ops->map_single. Thanks for pointing that out. I will
+add a call to debug_map_single to dma_map_page too. So the error above
+may be a false positive.
 
-Harvey
-
+Joerg
