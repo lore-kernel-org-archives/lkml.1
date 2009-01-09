@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZAIMCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZAIMDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbZAIMCz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 07:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZAIMCr
+	id S1755926AbZAIMDX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 07:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZAIMDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 07:02:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57003 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072AbZAIMCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 07:02:47 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: list freezer as supported
-Date: Fri, 9 Jan 2009 13:02:11 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: kernel list <linux-kernel@vger.kernel.org>
-References: <20090109093934.GA2857@elf.ucw.cz>
-In-Reply-To: <20090109093934.GA2857@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 9 Jan 2009 07:03:12 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56626 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752141AbZAIMDK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 07:03:10 -0500
+Date: Fri, 9 Jan 2009 12:02:54 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-ID: <20090109120254.496f75d2@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090108175338.2abbee16.akpm@linux-foundation.org>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
+	<20090108165029.GA10951@infradead.org>
+	<20090108175338.2abbee16.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901091302.11498.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 January 2009, Pavel Machek wrote:
-> Hi!
-> 
-> Now that people are using freezer for non-suspend/hibernation stuff,
-> perhaps it should have separate maintainers entry so that it is easier
-> to find?
-> 
-> What about something like this?
+> Of course, this assumes that someone will actually perform that testing
+> and review.  Chances are that it'll just sit there, getting nothing more
+> than compilation testing.
 
-Agreed.
+Almost every distribution ships the updated version and has done for ages
+- exactly what kind of testing is going to beat that ?
 
-Thanks,
-Rafael
-
-
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ce6e9a4..65b494f 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1809,6 +1809,14 @@ M:	hch@infradead.org
->  W:	ftp://ftp.openlinux.org/pub/people/hch/vxfs
->  S:	Maintained
->  
-> +FREEZER
-> +P:	Pavel Machek
-> +M:	pavel@suse.cz
-> +P:	Rafael J. Wysocki
-> +M:	rjw@sisk.pl
-> +L:	linux-pm@lists.linux-foundation.org
-> +S:	Supported
-> +
->  FTRACE
->  P:	Steven Rostedt
->  M:	rostedt@goodmis.org
-> 
-
-
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
