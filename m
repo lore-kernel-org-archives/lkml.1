@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbZAIRmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZAIRsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450AbZAIRmb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 12:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZAIRmU
+	id S1753539AbZAIRsU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 12:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZAIRsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 12:42:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59497 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbZAIRmT (ORCPT
+	Fri, 9 Jan 2009 12:48:05 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45799 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbZAIRsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 12:42:19 -0500
-Date: Fri, 9 Jan 2009 09:41:42 -0800
-From: Dirk Hohndel <hohndel@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+	Fri, 9 Jan 2009 12:48:03 -0500
+Date: Fri, 9 Jan 2009 19:02:13 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Dirk Hohndel <hohndel@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
        jim owens <jowens@hp.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -28,60 +28,45 @@ Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
        Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
        Peter Morreale <pmorreale@novell.com>,
        Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-Message-ID: <20090109094142.367012b6@infradead.org>
-In-Reply-To: <20090109174719.GG26290@one.firstfloor.org>
-References: <20090108183306.GA22916@elte.hu>
-	<496648C7.5050700@zytor.com>
-	<alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
-	<20090109130057.GA31845@elte.hu>
-	<49675920.4050205@hp.com>
-	<20090109153508.GA4671@elte.hu>
-	<49677CB1.3030701@zytor.com>
-	<20090109084620.3c711aad@infradead.org>
-	<20090109172011.GD26290@one.firstfloor.org>
-	<20090109172801.GC6936@parisc-linux.org>
-	<20090109174719.GG26290@one.firstfloor.org>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; x86_64-redhat-linux-gnu)
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
+Message-ID: <20090109180213.GH26290@one.firstfloor.org>
+References: <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090109094142.367012b6@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 18:47:19 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+> I think that's the point. gcc will not get it right. 
 
-> On Fri, Jan 09, 2009 at 10:28:01AM -0700, Matthew Wilcox wrote:
-> > On Fri, Jan 09, 2009 at 06:20:11PM +0100, Andi Kleen wrote:
-> > > Also cc Honza in case he has comments (you might want
-> > > to review more of the thread in the archives) 
-> > 
-> > I think this particular bug is already known and discussed:
-> 
-> I thought so initially too, but:
-> 
-> > 
-> > http://gcc.gnu.org/ml/gcc/2008-12/msg00365.html
-> > 
-> > and it hints at being fixed with gcc 4.4.  Does anyone want to test
-> > that?
-> 
-> Hugh already tested with 4.4 and it didn't work well. At least
-> a lot of the low level asm inlines were not inlined.
-> So it looks like it's still mistuned for the kernel.
+I don't think that's necessary an universal truth. It 
+can be probably fixed.
 
-I think that's the point. gcc will not get it right. 
-So we need to do it ourselves in the kernel sources.
-We may not like it, but it's the only way to guarantee reproducable
-reliable inline / noinline decisions.
+> So we need to do it ourselves in the kernel sources.
+> We may not like it, but it's the only way to guarantee reproducable
+> reliable inline / noinline decisions.
 
-/D
+For most things we don't really need it to be reproducable,
+the main exception are the inlines in headers.
+
+Universal noinline would also be a bad idea because of its
+costs (4.1% text size increase). Perhaps should make it
+a CONFIG option for debugging though.
+
+-Andi
+
+
+
+> 
+> /D
+> 
+> -- 
+> Dirk Hohndel
+> Intel Open Source Technology Center
+> 
 
 -- 
-Dirk Hohndel
-Intel Open Source Technology Center
+ak@linux.intel.com
