@@ -1,82 +1,377 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZAIIbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZAIIpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbZAIIbS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 03:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZAIIbG
+	id S1755337AbZAIIpj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 03:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbZAIIpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 03:31:06 -0500
-Received: from fwtops.0.225.230.202.in-addr.arpa ([202.230.225.126]:61641 "EHLO
-	topsms.toshiba-tops.co.jp" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752355AbZAIIbF (ORCPT
+	Fri, 9 Jan 2009 03:45:30 -0500
+Received: from mga07.intel.com ([143.182.124.22]:58745 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753063AbZAIIp3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 03:31:05 -0500
-Date: Fri, 09 Jan 2009 17:30:57 +0900 (JST)
-Message-Id: <20090109.173057.25877173.nemoto@toshiba-tops.co.jp>
-To: dan.j.williams@intel.com
-Cc: haavard.skinnemoen@atmel.com, linux-kernel@vger.kernel.org,
-       maciej.sosnowski@intel.com, ralf@linux-mips.org
-Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer
- before DMA
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <e9c3a7c20901080920r1051775ey7dbb4fad37b2810@mail.gmail.com>
-References: <20090108.134336.127659765.nemoto@toshiba-tops.co.jp>
-	<20090108093603.691c1200@hskinnemoen-d830>
-	<e9c3a7c20901080920r1051775ey7dbb4fad37b2810@mail.gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Jan 2009 03:45:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,238,1231142400"; 
+   d="scan'208";a="98142799"
+Date: Fri, 9 Jan 2009 16:45:24 +0800
+From: Wu Fengguang <wfg@linux.intel.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: alsa-devel@alsa-project.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] ALSA: hda - create hda_codec.control_mutex for
+	kcontrol->private_value
+Message-ID: <20090109084524.GA25738@localhost>
+References: <20090108152037.GA25652@elte.hu> <20090109050621.GA16446@localhost> <s5h7i553q20.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5h7i553q20.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009 10:20:56 -0700, "Dan Williams" <dan.j.williams@intel.com> wrote:
-> On Thu, Jan 8, 2009 at 1:36 AM, Haavard Skinnemoen
-> > I think it does. The dmatest driver should definitely use
-> > DMA_BIDIRECTIONAL on the destination buffer to ensure that the poison
-> > values are written to RAM and not just written to cache and discarded.
+On Fri, Jan 09, 2009 at 08:18:47AM +0100, Takashi Iwai wrote:
+> At Fri, 9 Jan 2009 13:06:21 +0800,
+> Wu Fengguang wrote:
+> > 
+> > On Thu, Jan 08, 2009 at 04:20:37PM +0100, Ingo Molnar wrote:
+> > > 
+> > > FYI, -tip testing found this new lockdep workqueue locking assert 
+> > > triggered by the Intel HDA sound driver:
+> > > 
+> > > [   30.637612]   alloc kstat_irqs on cpu 0 node 0
+> > > [   30.647029] IOAPIC[0]: Set routing entry (2-22 -> 0x71 -> IRQ 22 Mode:1 Active:1)
+> > > [   30.654533] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
+> > > [   30.661782] HDA Intel 0000:00:1b.0: setting latency timer to 64
+> > > [   30.667801] chipset global capabilities = 0x4401
+> > > [   30.701090] codec_mask = 0x4
+> > > [   30.701090] hda_intel: codec #2 probed OK
+> > > [   30.709090] hda-codec: No codec parser is available
+> > > [   30.714396] hda-intel: no codecs initialized
+> > > [   30.718689] 
+> > > [   30.718689] =============================================
+> > > [   30.718689] [ INFO: possible recursive locking detected ]
+> > > [   30.718689] 2.6.28-tip #2
+> > > [   30.718689] ---------------------------------------------
+> > > [   30.718689] events/0/7 is trying to acquire lock:
+> > > [   30.718689]  (events){--..}, at: [<ffffffff80281050>] flush_workqueue+0x0/0x90
+> > > [   30.718689] 
+> > > [   30.718689] but task is already holding lock:
+> > > [   30.718689]  (events){--..}, at: [<ffffffff8028076a>] run_workqueue+0x14a/0x240
+> > > [   30.718689] 
+> > > [   30.718689] other info that might help us debug this:
+> > > [   30.718689] 2 locks held by events/0/7:
+> > > [   30.718689]  #0:  (events){--..}, at: [<ffffffff8028076a>] run_workqueue+0x14a/0x240
+> > > [   30.718689]  #1:  (&wfc.work){--..}, at: [<ffffffff8028076a>] run_workqueue+0x14a/0x240
+> > 
+> > I didn't see this bug, but ran into another one with linux-next 20090102:
+> > 
+> > [  844.111765] ALSA sound/pci/hda/hda_codec.c:882: hda_codec_cleanup_stream: NID=0x2
+> > [  844.111915]
+> > [  844.111916] =======================================================
+> > [  844.112018] [ INFO: possible circular locking dependency detected ]
+> > [  844.112076] 2.6.28-next-20090102 #33
+> > [  844.112124] -------------------------------------------------------
+> > [  844.112181] mplayer/3151 is trying to acquire lock:
+> > [  844.112235]  (&pcm->open_mutex){--..}, at: [<ffffffffa004ced3>] snd_pcm_release+0x43/0xd0 [snd_pcm]
+> > [  844.112361]
+> > [  844.112362] but task is already holding lock:
+> > [  844.112458]  (&mm->mmap_sem){----}, at: [<ffffffff810c0252>] sys_munmap+0x42/0x80
+> > [  844.112576]
+> > [  844.112577] which lock already depends on the new lock.
+> > [  844.112578]
+> > [  844.112712]
+> > [  844.112713] the existing dependency chain (in reverse order) is:
+> > [  844.112781]
+> > [  844.112781] -> #3 (&mm->mmap_sem){----}:
+> > [  844.112781]        [<ffffffff8107097b>] __lock_acquire+0x122b/0x1ae0
+> > [  844.112781]        [<ffffffff810712c9>] lock_acquire+0x99/0xd0
+> > [  844.112781]        [<ffffffff810b7a43>] might_fault+0x73/0xa0
+> > [  844.112781]        [<ffffffffa006f44d>] snd_hda_mixer_amp_tlv+0x6d/0xf0 [snd_hda_codec]
+> > [  844.112781]        [<ffffffffa0093f80>] alc_cap_vol_tlv+0x70/0xa0 [snd_hda_codec_realtek]
+> > [  844.112781]        [<ffffffffa0012300>] snd_ctl_tlv_ioctl+0x180/0x1b0 [snd]
+> > [  844.112781]        [<ffffffffa0013a27>] snd_ctl_ioctl+0x927/0xf80 [snd]
+> > [  844.112781]        [<ffffffff810ea801>] vfs_ioctl+0x31/0xa0
+> > [  844.112781]        [<ffffffff810ea8e6>] do_vfs_ioctl+0x76/0x4a0
+> > [  844.112781]        [<ffffffff810ead5a>] sys_ioctl+0x4a/0x80
+> > [  844.112781]        [<ffffffff8100c67a>] system_call_fastpath+0x16/0x1b
+> > [  844.112781]        [<ffffffffffffffff>] 0xffffffffffffffff
+> > [  844.112781]
+> > [  844.112781] -> #2 (&codec->spdif_mutex){--..}:
+> > [  844.112781]        [<ffffffff8107097b>] __lock_acquire+0x122b/0x1ae0
+> > [  844.112781]        [<ffffffff810712c9>] lock_acquire+0x99/0xd0
+> > [  844.112781]        [<ffffffff814344e8>] mutex_lock_nested+0xe8/0x370
+> > [  844.112781]        [<ffffffffa006e54b>] snd_hda_multi_out_dig_open+0x2b/0x60 [snd_hda_codec]
+> > [  844.112781]        [<ffffffffa00d2649>] intel_hdmi_playback_pcm_open+0x49/0x60 [snd_hda_codec_intelhdmi]
+> > [  844.112781]        [<ffffffffa007fff9>] azx_pcm_open+0x209/0x280 [snd_hda_intel]
+> > [  844.112781]        [<ffffffffa004d838>] snd_pcm_open_substream+0x58/0xd0 [snd_pcm]
+> > [  844.112781]        [<ffffffffa004d9e7>] snd_pcm_open+0x137/0x260 [snd_pcm]
+> > [  844.112781]        [<ffffffffa004db7c>] snd_pcm_playback_open+0x2c/0x40 [snd_pcm]
+> > [  844.112781]        [<ffffffffa000e86e>] snd_open+0x9e/0x180 [snd]
+> > [  844.112781]        [<ffffffff810df407>] chrdev_open+0xe7/0x1d0
+> > [  844.112781]        [<ffffffff810da06e>] __dentry_open+0xce/0x360
+> > [  844.112781]        [<ffffffff810da407>] nameidata_to_filp+0x57/0x70
+> > [  844.112781]        [<ffffffff810e909e>] do_filp_open+0x20e/0x970
+> > [  844.112781]        [<ffffffff810d9ec8>] do_sys_open+0x78/0x100
+> > [  844.112781]        [<ffffffff810d9f7b>] sys_open+0x1b/0x20
+> > [  844.112781]        [<ffffffff8100c67a>] system_call_fastpath+0x16/0x1b
+> > [  844.112781]        [<ffffffffffffffff>] 0xffffffffffffffff
+> > [  844.112781]
+> > [  844.112781] -> #1 (&chip->open_mutex){--..}:
+> > [  844.112781]        [<ffffffff8107097b>] __lock_acquire+0x122b/0x1ae0
+> > [  844.112781]        [<ffffffff810712c9>] lock_acquire+0x99/0xd0
+> > [  844.112781]        [<ffffffff814344e8>] mutex_lock_nested+0xe8/0x370
+> > [  844.112781]        [<ffffffffa007fe38>] azx_pcm_open+0x48/0x280 [snd_hda_intel]
+> > [  844.112781]        [<ffffffffa004d838>] snd_pcm_open_substream+0x58/0xd0 [snd_pcm]
+> > [  844.112781]        [<ffffffffa004d9e7>] snd_pcm_open+0x137/0x260 [snd_pcm]
+> > [  844.112781]        [<ffffffffa004db7c>] snd_pcm_playback_open+0x2c/0x40 [snd_pcm]
+> > [  844.112781]        [<ffffffffa000e86e>] snd_open+0x9e/0x180 [snd]
+> > [  844.112781]        [<ffffffff810df407>] chrdev_open+0xe7/0x1d0
+> > [  844.112781]        [<ffffffff810da06e>] __dentry_open+0xce/0x360
+> > [  844.112781]        [<ffffffff810da407>] nameidata_to_filp+0x57/0x70
+> > [  844.112781]        [<ffffffff810e909e>] do_filp_open+0x20e/0x970
+> > [  844.112781]        [<ffffffff810d9ec8>] do_sys_open+0x78/0x100
+> > [  844.112781]        [<ffffffff810d9f7b>] sys_open+0x1b/0x20
+> > [  844.112781]        [<ffffffff8100c67a>] system_call_fastpath+0x16/0x1b
+> > [  844.112781]        [<ffffffffffffffff>] 0xffffffffffffffff
+> > [  844.112781]
+> > [  844.112781] -> #0 (&pcm->open_mutex){--..}:
+> > [  844.112781]        [<ffffffff81070b1e>] __lock_acquire+0x13ce/0x1ae0
+> > [  844.112781]        [<ffffffff810712c9>] lock_acquire+0x99/0xd0
+> > [  844.112781]        [<ffffffff814344e8>] mutex_lock_nested+0xe8/0x370
+> > [  844.112781]        [<ffffffffa004ced3>] snd_pcm_release+0x43/0xd0 [snd_pcm]
+> > [  844.112781]        [<ffffffff810dd505>] __fput+0xd5/0x230
+> > [  844.112781]        [<ffffffff810dd67d>] fput+0x1d/0x30
+> > [  844.112781]        [<ffffffff810bed4f>] remove_vma+0x4f/0x90
+> > [  844.112781]        [<ffffffff810c01c2>] do_munmap+0x342/0x390
+> > [  844.112781]        [<ffffffff810c0260>] sys_munmap+0x50/0x80
+> > [  844.112781]        [<ffffffff8100c67a>] system_call_fastpath+0x16/0x1b
+> > [  844.112781]        [<ffffffffffffffff>] 0xffffffffffffffff
+> > [  844.112781]
+> > [  844.112781] other info that might help us debug this:
+> > [  844.112781]
+> > [  844.112781] 1 lock held by mplayer/3151:
+> > [  844.112781]  #0:  (&mm->mmap_sem){----}, at: [<ffffffff810c0252>] sys_munmap+0x42/0x80
+> > [  844.112781]
+> > [  844.112781] stack backtrace:
+> > [  844.112781] Pid: 3151, comm: mplayer Not tainted 2.6.28-next-20090102 #33
+> > [  844.112781] Call Trace:
+> > [  844.112781]  [<ffffffff8106f2a0>] print_circular_bug_tail+0xe0/0xf0
+> > [  844.112781]  [<ffffffff81070b1e>] __lock_acquire+0x13ce/0x1ae0
+> > [  844.112781]  [<ffffffff8106e916>] ? mark_held_locks+0x56/0xa0
+> > [  844.112781]  [<ffffffff810abcf9>] ? free_hot_cold_page+0x1b9/0x2e0
+> > [  844.112781]  [<ffffffff8106ec1d>] ? trace_hardirqs_on+0xd/0x10
+> > [  844.112781]  [<ffffffff810712c9>] lock_acquire+0x99/0xd0
+> > [  844.112781]  [<ffffffffa004ced3>] ? snd_pcm_release+0x43/0xd0 [snd_pcm]
+> > [  844.112781]  [<ffffffff814344e8>] mutex_lock_nested+0xe8/0x370
+> > [  844.112781]  [<ffffffffa004ced3>] ? snd_pcm_release+0x43/0xd0 [snd_pcm]
+> > [  844.112781]  [<ffffffffa004ced3>] ? snd_pcm_release+0x43/0xd0 [snd_pcm]
+> > [  844.112781]  [<ffffffffa004ced3>] snd_pcm_release+0x43/0xd0 [snd_pcm]
+> > [  844.112781]  [<ffffffff810dd505>] __fput+0xd5/0x230
+> > [  844.112781]  [<ffffffff810dd67d>] fput+0x1d/0x30
+> > [  844.112781]  [<ffffffff810bed4f>] remove_vma+0x4f/0x90
+> > [  844.112781]  [<ffffffff810c01c2>] do_munmap+0x342/0x390
+> > [  844.112781]  [<ffffffff810c0260>] sys_munmap+0x50/0x80
+> > [  844.112781]  [<ffffffff8100c67a>] system_call_fastpath+0x16/0x1b
+> > [  844.119376] ALSA sound/pci/hda/hda_codec.c:882: hda_codec_cleanup_stream: NID=0x2
+> > 
+> > Which can be fixed by the following patch.
 > 
-> True.
+> This alone isn't enough.  You need to replace all codec->spdif_mutex
+> in the control get/put/info/tlv callbacks in hda_codec.c.  Otherwise
+> there is no meaning of the mutex.  The mutex is to protect the rewrite
+> of kcontrol->private_value dynamically.
 > 
-> > Now, this probably means that the destination buffer must be _unmapped_
-> > with DMA_BIDIRECTIONAL too, which is difficult to do with the current
-> > asymmetrical API...
-> 
-> A map and unmap should work for the current platforms with dma
-> drivers, but you are right I think this is a violation of the api.
-> For correctness we would need the entire operation covered by
-> DMA_BIDIRECTIONAL to support platforms that may implement a dma bounce
-> buffer.  Or, we could change dmatest to not go through the dma-memcpy
-> api, allowing dma_alloc to be used for the destination.
+> Could you fix and repost?
 
-Do you mean something like this?
+Ah sure. Here is the updated patch.
 
-		dmatest_init_srcbuf(thread->srcbuf, src_off, len);
-		dmatest_init_dstbuf(thread->dstbuf, dst_off, len);
-
-		dma_src = dma_map_single(dev->dev, src + src_off, len,
-			 DMA_TO_DEVICE);
-		dma_dest = dma_map_single(dev->dev, dest_buf, test_buf_size,
-			DMA_BIDIRECTIONAL);
-		tx = dev->device_prep_dma_memcpy(chan, dma_dest + dst_off,
-				dma_src, len,
-				DMA_CTRL_ACK | DMA_COMPL_SKIP_DEST_UNMAP);
-		if (!tx) {
-			/* error */
-		}
-		tx->callback = NULL;
-		cookie = tx->tx_submit(tx);
-		...
-		/* wait for completion */
-		...
-		dma_unmap_single(dev->dev, dma_dest, test_buf_size,
-			DMA_BIDIRECTIONAL);
-
-It will make dmatest more aggressive, for example, a option for
-testing DMA_PREP_INTERRUPT handling of a lowlevel driver can be added
-easily.
-
+Thanks,
+Fengguang
 ---
-Atsushi Nemoto
+ALSA: hda - create hda_codec.control_mutex for kcontrol->private_value
+
+Fix the following lockdep warning by not reusing the hda_codec.spdif_mutex.
+
+    ALSA sound/pci/hda/hda_codec.c:882: hda_codec_cleanup_stream: NID=0x2
+   
+    =======================================================
+    [ INFO: possible circular locking dependency detected ]
+    2.6.28-next-20090102 #33
+    -------------------------------------------------------
+    mplayer/3151 is trying to acquire lock:
+     (&pcm->open_mutex){--..}, at: [<ffffffffa004ced3>] snd_pcm_release+0x43/0xd0 [snd_pcm]
+   
+    but task is already holding lock:
+     (&mm->mmap_sem){----}, at: [<ffffffff810c0252>] sys_munmap+0x42/0x80
+   
+    which lock already depends on the new lock.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ sound/pci/hda/hda_codec.c     |   25 +++++++++++++------------
+ sound/pci/hda/hda_codec.h     |    1 +
+ sound/pci/hda/patch_realtek.c |   12 ++++++------
+ 3 files changed, 20 insertions(+), 18 deletions(-)
+
+--- mm.orig/sound/pci/hda/hda_codec.h
++++ mm/sound/pci/hda/hda_codec.h
+@@ -771,6 +771,7 @@ struct hda_codec {
+ 	struct hda_cache_rec cmd_cache;	/* cache for other commands */
+ 
+ 	struct mutex spdif_mutex;
++	struct mutex control_mutex;
+ 	unsigned int spdif_status;	/* IEC958 status bits */
+ 	unsigned short spdif_ctls;	/* SPDIF control bits */
+ 	unsigned int spdif_in_enable;	/* SPDIF input enable? */
+--- mm.orig/sound/pci/hda/hda_codec.c
++++ mm/sound/pci/hda/hda_codec.c
+@@ -735,6 +735,7 @@ int /*__devinit*/ snd_hda_codec_new(stru
+ 	codec->bus = bus;
+ 	codec->addr = codec_addr;
+ 	mutex_init(&codec->spdif_mutex);
++	mutex_init(&codec->control_mutex);
+ 	init_hda_cache(&codec->amp_cache, sizeof(struct hda_amp_info));
+ 	init_hda_cache(&codec->cmd_cache, sizeof(struct hda_cache_head));
+ 	snd_array_init(&codec->mixers, sizeof(struct snd_kcontrol *), 32);
+@@ -1418,12 +1419,12 @@ int snd_hda_mixer_bind_switch_get(struct
+ 	unsigned long pval;
+ 	int err;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	pval = kcontrol->private_value;
+ 	kcontrol->private_value = pval & ~AMP_VAL_IDX_MASK; /* index 0 */
+ 	err = snd_hda_mixer_amp_switch_get(kcontrol, ucontrol);
+ 	kcontrol->private_value = pval;
+-	mutex_unlock(&codec->spdif_mutex);
++	mutex_unlock(&codec->control_mutex);
+ 	return err;
+ }
+ EXPORT_SYMBOL_HDA(snd_hda_mixer_bind_switch_get);
+@@ -1435,7 +1436,7 @@ int snd_hda_mixer_bind_switch_put(struct
+ 	unsigned long pval;
+ 	int i, indices, err = 0, change = 0;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	pval = kcontrol->private_value;
+ 	indices = (pval & AMP_VAL_IDX_MASK) >> AMP_VAL_IDX_SHIFT;
+ 	for (i = 0; i < indices; i++) {
+@@ -1447,7 +1448,7 @@ int snd_hda_mixer_bind_switch_put(struct
+ 		change |= err;
+ 	}
+ 	kcontrol->private_value = pval;
+-	mutex_unlock(&codec->spdif_mutex);
++	mutex_unlock(&codec->control_mutex);
+ 	return err < 0 ? err : change;
+ }
+ EXPORT_SYMBOL_HDA(snd_hda_mixer_bind_switch_put);
+@@ -1462,12 +1463,12 @@ int snd_hda_mixer_bind_ctls_info(struct 
+ 	struct hda_bind_ctls *c;
+ 	int err;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	kcontrol->private_value = *c->values;
+ 	err = c->ops->info(kcontrol, uinfo);
+ 	kcontrol->private_value = (long)c;
+-	mutex_unlock(&codec->spdif_mutex);
++	mutex_unlock(&codec->control_mutex);
+ 	return err;
+ }
+ EXPORT_SYMBOL_HDA(snd_hda_mixer_bind_ctls_info);
+@@ -1479,12 +1480,12 @@ int snd_hda_mixer_bind_ctls_get(struct s
+ 	struct hda_bind_ctls *c;
+ 	int err;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	kcontrol->private_value = *c->values;
+ 	err = c->ops->get(kcontrol, ucontrol);
+ 	kcontrol->private_value = (long)c;
+-	mutex_unlock(&codec->spdif_mutex);
++	mutex_unlock(&codec->control_mutex);
+ 	return err;
+ }
+ EXPORT_SYMBOL_HDA(snd_hda_mixer_bind_ctls_get);
+@@ -1497,7 +1498,7 @@ int snd_hda_mixer_bind_ctls_put(struct s
+ 	unsigned long *vals;
+ 	int err = 0, change = 0;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	for (vals = c->values; *vals; vals++) {
+ 		kcontrol->private_value = *vals;
+@@ -1507,7 +1508,7 @@ int snd_hda_mixer_bind_ctls_put(struct s
+ 		change |= err;
+ 	}
+ 	kcontrol->private_value = (long)c;
+-	mutex_unlock(&codec->spdif_mutex);
++	mutex_unlock(&codec->control_mutex);
+ 	return err < 0 ? err : change;
+ }
+ EXPORT_SYMBOL_HDA(snd_hda_mixer_bind_ctls_put);
+@@ -1519,12 +1520,12 @@ int snd_hda_mixer_bind_tlv(struct snd_kc
+ 	struct hda_bind_ctls *c;
+ 	int err;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	kcontrol->private_value = *c->values;
+ 	err = c->ops->tlv(kcontrol, op_flag, size, tlv);
+ 	kcontrol->private_value = (long)c;
+-	mutex_unlock(&codec->spdif_mutex);
++	mutex_unlock(&codec->control_mutex);
+ 	return err;
+ }
+ EXPORT_SYMBOL_HDA(snd_hda_mixer_bind_tlv);
+--- mm.orig/sound/pci/hda/patch_realtek.c
++++ mm/sound/pci/hda/patch_realtek.c
+@@ -1502,11 +1502,11 @@ static int alc_cap_vol_info(struct snd_k
+ 	struct alc_spec *spec = codec->spec;
+ 	int err;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	kcontrol->private_value = HDA_COMPOSE_AMP_VAL(spec->adc_nids[0], 3, 0,
+ 						      HDA_INPUT);
+ 	err = snd_hda_mixer_amp_volume_info(kcontrol, uinfo);
+-	mutex_unlock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_unlock(&codec->control_mutex);
+ 	return err;
+ }
+ 
+@@ -1517,11 +1517,11 @@ static int alc_cap_vol_tlv(struct snd_kc
+ 	struct alc_spec *spec = codec->spec;
+ 	int err;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	kcontrol->private_value = HDA_COMPOSE_AMP_VAL(spec->adc_nids[0], 3, 0,
+ 						      HDA_INPUT);
+ 	err = snd_hda_mixer_amp_tlv(kcontrol, op_flag, size, tlv);
+-	mutex_unlock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_unlock(&codec->control_mutex);
+ 	return err;
+ }
+ 
+@@ -1537,11 +1537,11 @@ static int alc_cap_getput_caller(struct 
+ 	unsigned int adc_idx = snd_ctl_get_ioffidx(kcontrol, &ucontrol->id);
+ 	int err;
+ 
+-	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_lock(&codec->control_mutex);
+ 	kcontrol->private_value = HDA_COMPOSE_AMP_VAL(spec->adc_nids[adc_idx],
+ 						      3, 0, HDA_INPUT);
+ 	err = func(kcontrol, ucontrol);
+-	mutex_unlock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	mutex_unlock(&codec->control_mutex);
+ 	return err;
+ }
+ 
