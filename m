@@ -1,114 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZAIPsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbZAIPzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbZAIPsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 10:48:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZAIPrw
+	id S1752572AbZAIPzd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 10:55:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZAIPzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 10:47:52 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:36669 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbZAIPrv (ORCPT
+	Fri, 9 Jan 2009 10:55:24 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2030 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751045AbZAIPzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 10:47:51 -0500
-X-BigFish: VPS-23(z21eW5edJz62a3L4015Mzzzzz32i6bh43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KD7NV4-02-6Z9-01
-Date: Fri, 9 Jan 2009 16:47:33 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [GIT PULL] please pull oprofile updates for 2.6.29
-Message-ID: <20090109154733.GX15411@erda.amd.com>
+	Fri, 9 Jan 2009 10:55:23 -0500
+Date: Fri, 9 Jan 2009 10:55:21 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Frans Pop <elendil@planet.nl>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <oliver@neukum.org>, <gregkh@suse.de>,
+       <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>, <pavel@suse.cz>,
+       <torvalds@linux-foundation.org>
+Subject: Re: [Regression] USB wakeup problem on Toshiba Portege R500
+In-Reply-To: <200901081955.12021.elendil@planet.nl>
+Message-ID: <Pine.LNX.4.44L0.0901091055050.10951-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 09 Jan 2009 15:47:33.0719 (UTC) FILETIME=[966A4E70:01C97271]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thu, 8 Jan 2009, Frans Pop wrote:
 
-please pull the oprofile updates from:
+> Rafael J. Wysocki wrote:
+> > On Thursday 08 January 2009, Oliver Neukum wrote:
+> >> Am Thursday 08 January 2009 17:36:12 schrieb Rafael J. Wysocki:
+> >> You are making a very persuasive argument for reverting it.
+> >> But what about laptops that only have a USB keyboard?
+> > 
+> > Well, up to and including 2.6.28 they needed to echo 'enable' to the USB
+> > controllers' /sys/devices/.../power/wakeup files, so if the patch is
+> > reverted, they won't be worse off than they were day before
+> > yesterday. :-) 
+> > 
+> > Perhaps we can choose the default depending on whether or not any HID
+> > devices are attached to given controller?
+> 
+> Is "resume on keyboard activity" really all that needed? Both my laptops 
+> and my desktop resume fine after pressing the power button.
+> 
+> Also consider the following cases:
+> - laptop has been suspended with external USB mouse connected
+>   - mouse is moved (accidentally or because it is in the way of a coffee
+>     cup)
+>   - mouse cable is removed before putting the laptop in a bag for
+>     transport
+> - laptop is in docking station with USB mouse/kbd connected to that
+>   - again, mouse gets moved for some reason
+>   - laptop is undocked while suspended
+>   - or the reverse: laptop gets docked
+> 
+> IMO it is not desirable that the system gets resumed as a result of any of 
+> those actions. I'm not complete sure that it would in all those cases, 
+> but have they been considered?
+> 
+> And in general I've always been in favor of things only happening 
+> automagically if I've explicitly asked for that, and not by default.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git for-linus
+I don't mind reverting the "automatically enable PCI wakeup" commit.  But 
+we should first come to a definite policy for kernel default wakeup 
+settings, rather than deciding things piecemeal for different subsystems.
 
-It contains a powerpc/cell update and cleanup and rework patches that
-completes my ring_buffer implementation.
+My proposal:
 
-Thanks,
+	Devices and events that are clearly associated with system
+	wakeup should be enabled by default.  For example: Power
+	button and laptop lid.
 
--Robert
+	All other devices capable of waking up the system should be
+	disabled by default.  This presumably includes every PCI
+	device.  If users want keyboard or mouse events to cause
+	a system resume then they will have to configure their
+	desktop management program to enable it.
 
-The following changes since commit 2150edc6c5cf00f7adb54538b9ea2a3e9cedca3f:
-  Linus Torvalds (1):
-        Merge branch 'for_linus' of git://git.kernel.org/.../tytso/ext4
+	Devices not capable of directly waking the system can be
+	enabled.  This includes things like USB devices, which
+	have to pass a wakeup request through their parent and
+	therefore can't wake up the system unless the parent is
+	also enabled for wakeup.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git for-linus
-
-Carl Love (2):
-      powerpc/oprofile: IBM CELL: cleanup and restructuring
-      powerpc/oprofile: IBM CELL: add SPU event profiling support
-
-Robert Richter (31):
-      oprofile: rename kernel-wide identifiers
-      oprofile: rename cpu buffer functions
-      oprofile: remove ring buffer inline functions in cpu_buffer.h
-      x86/oprofile: fix pci_dev use count for AMD northbridge devices
-      oprofile: reordering some code in cpu_buffer.c
-      oprofile: add inline function __oprofile_add_ext_sample()
-      oprofile: simplify add_sample()
-      oprofile: simplify sync_buffer()
-      oprofile: simplify oprofile_begin_trace()
-      oprofile: simplify add_sample() in cpu_buffer.c
-      oprofile: simplify add_ibs_begin()
-      oprofile: remove unused components in struct oprofile_cpu_buffer
-      oprofile: remove unused ibs macro
-      oprofile: remove backtrace code for ibs
-      oprofile: making add_sample_entry() inline
-      oprofile: rename variable ibs_allowed to has_ibs in op_model_amd.c
-      oprofile: rename add_sample() in cpu_buffer.c
-      oprofile: rename variables in add_ibs_begin()
-      oprofile: add op_cpu_buffer_write_reserve()
-      oprofile: modify op_cpu_buffer_read_entry()
-      oprofile: rework implementation of cpu buffer events
-      oprofile: add op_cpu_buffer_add_data()
-      oprofile: add op_cpu_buffer_get_data()
-      oprofile: use new data sample format for ibs
-      ring_buffer: fix ring_buffer_event_length()
-      oprofile: remove #ifdef CONFIG_OPROFILE_IBS in non-ibs code
-      oprofile: make new cpu buffer functions part of the api
-      Merge branch 'oprofile/ring_buffer' into oprofile/oprofile-for-tip
-      powerpc/oprofile: fix cell/pr_util.h
-      powerpc/oprofile: fix whitespaces in op_model_cell.c
-      Merge branch 'oprofile/cell' into oprofile/oprofile-for-tip
-
- arch/Kconfig                              |    2 +
- arch/powerpc/include/asm/cell-pmu.h       |    2 +
- arch/powerpc/include/asm/oprofile_impl.h  |    6 +
- arch/powerpc/oprofile/cell/pr_util.h      |   11 +-
- arch/powerpc/oprofile/cell/spu_profiler.c |   56 ++-
- arch/powerpc/oprofile/common.c            |   22 +
- arch/powerpc/oprofile/op_model_cell.c     |  748 ++++++++++++++++++++++++-----
- arch/x86/oprofile/op_model_amd.c          |  224 ++++-----
- drivers/oprofile/buffer_sync.c            |  229 +++------
- drivers/oprofile/cpu_buffer.c             |  393 +++++++++------
- drivers/oprofile/cpu_buffer.h             |   72 +++-
- drivers/oprofile/event_buffer.c           |    4 +-
- drivers/oprofile/oprof.c                  |    4 +-
- drivers/oprofile/oprof.h                  |    8 +-
- drivers/oprofile/oprofile_files.c         |   24 +-
- include/linux/oprofile.h                  |   21 +-
- include/linux/ring_buffer.h               |    2 +
- kernel/trace/ring_buffer.c                |   44 ++-
- kernel/trace/trace.c                      |    4 +-
- 19 files changed, 1271 insertions(+), 605 deletions(-)
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Alan Stern
 
