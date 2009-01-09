@@ -1,74 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbZAIKM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZAIKQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbZAIKM6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 05:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbZAIKMt
+	id S1756318AbZAIKQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 05:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZAIKQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 05:12:49 -0500
-Received: from mx.hosting-seguridad.com ([88.198.93.158]:52931 "EHLO
-	mx.hosting-seguridad.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754423AbZAIKMs (ORCPT
+	Fri, 9 Jan 2009 05:16:08 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:46612 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753463AbZAIKQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 05:12:48 -0500
-X-Greylist: delayed 1954 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 05:12:47 EST
-X-Spam-Score: -2.282
-Message-ID: <49671B77.7080705@rs-labs.com>
-Date: Fri, 09 Jan 2009 10:40:07 +0100
-From: Roman Medina-Heigl Hernandez <roman@rs-labs.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 9 Jan 2009 05:16:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DXdN5HySW2zvxbq992xLLZII7IRPFevDoDJtXs7P6LEf3evWJgjhYB4x2uel70gWeU
+         mltNmBdRl+lNiaq8+CC/Q2zv7KMxoLMXX5YGALKsqlYIH29R3JdINXoEOvkEdtMYQjlo
+         eSsqpIFcophQSmo2OibZP8YRcQ5XRpdRP6obQ=
+Message-ID: <f19298770901090209m7076f3afyd1e01e0fc9bbca59@mail.gmail.com>
+Date: Fri, 9 Jan 2009 13:09:22 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Laurent Riffard" <laurent.riffard@free.fr>
+Subject: Re: next-20090107: WARNING: at kernel/sched.c:4435 sub_preempt_count
+Cc: "Kernel development list" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <4966897E.5020302@free.fr>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Oops with Gigabyte motherboard "GA-X48-DQ6" and r8168 Realtek driver
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4966897E.5020302@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello kernel-hackers,
+One more instance of http://marc.info/?l=linux-kernel&m=123134586202636&w=2
+Added Ingo Molnar to CC.
 
-I bought a PC intended to be used as a server with the recent Gigabyte
-motherboard "GA-X48-DQ6":
-http://www.giga-byte.es/products/mb/specs/ga_x48_dq6.html
+On Fri, Jan 9, 2009 at 02:17, Laurent Riffard <laurent.riffard@free.fr> wrote:
+> hello,
+>
+> I'm getting this warning in dmesg since 2.6.28-next-20081229:
+>
+> WARNING: at kernel/sched.c:4435 sub_preempt_count+0x7e/0x8f()
+> Hardware name: M68SM-S2L
+> Modules linked in:
+> Pid: 0, comm: swapper Not tainted 2.6.28-next-20090107-09542-gdbcea38 #71
+> Call Trace:
+>  [<c0224f35>] warn_slowpath+0x80/0xb6
+>  [<c024140d>] lock_acquire+0x76/0x7e
+>  [<c03be817>] _spin_unlock_irq+0x20/0x51
+>  [<c0240278>] trace_hardirqs_on_caller+0xf8/0x12e
+>  [<c03be81f>] _spin_unlock_irq+0x28/0x51
+>  [<c03be83c>] _spin_unlock_irq+0x45/0x51
+>  [<c022c865>] run_timer_softirq+0x178/0x180
+>  [<c022211c>] run_rebalance_domains+0x27/0x8f
+>  [<c023ef58>] trace_hardirqs_off_caller+0x2c/0x87
+>  [<c0220788>] sub_preempt_count+0x7e/0x8f
+>  <IRQ>  [<c024ef74>] handle_level_irq+0x0/0x9d
+>  [<c022950e>] irq_exit+0x43/0x87
+>  [<c0204d9e>] do_IRQ+0xec/0x102
+>  [<c02035ec>] common_interrupt+0x2c/0x34
+>  [<c02168dc>] native_safe_halt+0x2/0x3
+>  [<c04aadd3>] check_bugs+0x9f/0xd8
+>  [<c04a47e8>] start_kernel+0x2f9/0x306
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+>
+> In previous releases (2.6.27-next-20081020 to 2.6.28-rc7-next-20081203), I was getting "WARNING: at kernel/sched.c:4354 do_softirq" with more or less the same stack trace:
 
-It includes two RTL8111/8168B NICs, which seem the cause of the kernel
-crashes (*but I'm not sure*)..., a Quad core, 4GB RAM and two 500GB HDs.
+Rinning -next and not reporting bugs sounds a bit counter-productive. ;(
 
-I installed Debian Linux (4.0) on it and I'm getting *kernel panic*
-errors (r8168 module) when set to production state. I couldn't get any
-kernel debug messages since I'm using Debian stock kernel
-(2.6.18-6-686-bigmem) and I'm not a kernel hacker either. It happens from
-time to time so it is not easily reproduceable, or at least I couldn't find
-the way to reproduce it on purpose (I stressed the server forcing huge sftp
-transfers and/or using iperf tool, without success). But the problem is
-there and it seems a NIC driver problem.
-
-Moreover, the machine is located at a remote location so I have to trust
-other people reading screen messages for me, etc. It's not easy to debug in
-this situation. I've been told that the oops were produced in r8168 module,
-from time to time, and that they saw also one only crash while booting the
-server "due to SATA" (???). The server uses software-raid and was
-re-syncing to a second disk since the second disk was new (so expect high
-disk load). I'm a bit confused, it seems that the problem could be the
-r8168 driver but I cannot be sure at all.
-
-Could you help me? Do you have reports of similar problems with similar NIC
-/ motherboard? How to solve it? I'm sorry for not providing more info
-(lspci, etc) but as I previously said the server is in a remote location
-and it's currently powered-off. Any hints?
-
-I'm using latest Realtek driver for RTL8111/8168B at:
-ftp://202.65.194.212/cn/nic/r8168-8.010.00.tar.bz2
-(I have r8169 driver *not* loaded and blacklisted in
-/etc/modprobe.d/blacklist -since it didn't work for my 8111B-, and initrd
-was rebuilt with new r8168 driver; so the only NIC driver loaded is r8168,
-compiled from the former .tar.bz2 (8.010 version).
-
-As a quick workaround (since I need to put that server on production state
-*ASAP*), would you recommend to boot with safer options (noacpi, etc)?
-Which ones exactly? (no problem if they degrade performance a bit or if
-they cause less power-saving; in this case, stability and uptime is preferred).
-
-Thank you from your comprehension and cooperation.
--Roman
+> Checking 'hlt' instruction... <4>------------[ cut here ]------------
+> WARNING: at kernel/sched.c:4332 do_softirq+0x61/0xb3()
+> Modules linked in:
+> Pid: 0, comm: swapper Not tainted 2.6.28-rc2-next-20081027-02513-g5362c2b #46
+> Call Trace:
+>  [<c02234b8>] warn_on_slowpath+0x40/0x59
+>  [<c023e07b>] trace_hardirqs_on_caller+0xe3/0x12d
+>  [<c03b295a>] _spin_unlock_irq+0x3c/0x48
+>  [<c0220deb>] run_rebalance_domains+0x29/0x96
+>  [<c022793f>] __do_softirq+0xc5/0xf9
+>  [<c022787a>] __do_softirq+0x0/0xf9
+>  <IRQ>  [<c024bf72>] handle_level_irq+0x0/0x9f
+>  [<c02279b6>] irq_exit+0x43/0x8b
+>  [<c0205eec>] do_IRQ+0xef/0x107
+>  [<c0204628>] common_interrupt+0x28/0x30
+>  [<c04cfadf>] check_bugs+0x91/0xbb
+>  [<c04c782c>] start_kernel+0x308/0x318
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+> OK.
+>
+>
+> Full dmesg and .config for 2.6.28-next-20090107 are attached (actually this is linux-next tree + reiser4 patches, but I verified that this WARNING does appear without reiser4 patches in 2.6.28-next-20081230).
+>
