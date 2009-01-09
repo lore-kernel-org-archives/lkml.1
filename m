@@ -1,103 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbZAIWHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZAIWIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbZAIWHd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758847AbZAIWHM
+	id S1759304AbZAIWIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758920AbZAIWH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:07:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54715 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757536AbZAIWHK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:07:10 -0500
-Date: Fri, 9 Jan 2009 14:07:58 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-Message-ID: <20090109140758.5eecc765@infradead.org>
-In-Reply-To: <20090109195232.GE23869@mit.edu>
-References: <20090109153508.GA4671@elte.hu>
-	<49677CB1.3030701@zytor.com>
-	<20090109084620.3c711aad@infradead.org>
-	<20090109172011.GD26290@one.firstfloor.org>
-	<20090109172801.GC6936@parisc-linux.org>
-	<20090109174719.GG26290@one.firstfloor.org>
-	<20090109094142.367012b6@infradead.org>
-	<20090109180213.GH26290@one.firstfloor.org>
-	<alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
-	<20090109185509.GJ26290@one.firstfloor.org>
-	<20090109195232.GE23869@mit.edu>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+	Fri, 9 Jan 2009 17:07:57 -0500
+Received: from 1wt.eu ([62.212.114.60]:1336 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758862AbZAIWHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:07:55 -0500
+Date: Fri, 9 Jan 2009 23:07:38 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090109220737.GA4111@1wt.eu>
+References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090109212400.GA3727@1wt.eu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 14:52:33 -0500
-Theodore Tso <tytso@mit.edu> wrote:
-
-> On Fri, Jan 09, 2009 at 07:55:09PM +0100, Andi Kleen wrote:
-> > > But _users_ just get their oopses sent automatically. So it's not
-> > > about 
+On Fri, Jan 09, 2009 at 10:24:00PM +0100, Willy Tarreau wrote:
+> On Fri, Jan 09, 2009 at 09:51:17PM +0100, Eric Dumazet wrote:
+> (...)
+> > > Also, in your second mail, you're saying that your change
+> > > might return more data than requested by the user. I can't
+> > > find why, could you please explain to me, as I'm still quite
+> > > ignorant in this area ?
 > > 
-> > If they send it from distro kernels the automated oops sender could
-> > just fetch the debuginfo rpm and decode it down to a line.
-> > My old automatic user segfault uploader I did originally
-> > for the core pipe code did that too.
-> 
-> Fetch a gigabyte's worth of data for the debuginfo RPM?  Um, I think
-> most users would not be happy with that, especially if they are behind
-> a slow network.  Including the necessary information so someone who
-> wants to investigate the oops, or having kerneloops.org pull apart the
-> oops makes more sense, I think, and is already done.
-> 
+> > Well, I just tested various user programs and indeed got this
+> > strange result :
+> > 
+> > Here I call splice() with len=1000 (0x3e8), and you can see
+> > it gives a result of 1460 at the second call.
 
-it is.
+OK finally I could reproduce it and found why we have this. It's
+expected in fact.
 
-> Something that would be **really** useful would be a web page where if
-> someone sends me an oops message from Fedora or Open SUSE kernel to
-> linux-kernel or linux-ext4, I could take the oops message, cut and
-> paste it into a web page, along with the kernel version information,
-> and the kernel developer could get back a decoded oops information
-> with line number information.
-> 
-> Kerneloops.org does this, so the code is mostly written; but it does
-> this in a blinded fashion, so it only makes sense for oops which are
-> very common and for which we don't need to ask the user, "so what were
-> you doing at the time".  In cases where the user has already stepped
-> up and reported the oops on a mailing list, it would be nice if
-> kerneloops.org had a way of decoding the oops via some web page.
-> 
-> Arjan, would something like this be doable, hopefully without too much
-> effort?
+The problem when we loop in tcp_read_sock() is that tss->len is
+not decremented by the amount of bytes read, this one is done
+only in tcp_splice_read() which is outer.
 
-I suppose it could be done if the exact idea is there, and it would be
-nice if I'd get help from the distro kernel mainainers so that they'll
-send me the vmlinux'n ;)
+The solution I found was to do just like other callers, which means
+use desc->count to keep the remaining number of bytes we want to
+read. In fact, tcp_read_sock() is designed to use that one as a stop
+condition, which explains why you first had to hide it.
 
+Now with the attached patch as a replacement for my previous one,
+both issues are solved :
+  - I splice 1000 bytes if I ask to do so
+  - I splice as much as possible if available (typically 23 kB).
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+My observed performances are still at the top of earlier results
+and IMHO that way of counting bytes makes sense for an actor called
+from tcp_read_sock().
+
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index 35bcddf..51ff3aa 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -522,8 +522,12 @@ static int tcp_splice_data_recv(read_descriptor_t *rd_desc, struct sk_buff *skb,
+ 				unsigned int offset, size_t len)
+ {
+ 	struct tcp_splice_state *tss = rd_desc->arg.data;
++	int ret;
+ 
+-	return skb_splice_bits(skb, offset, tss->pipe, tss->len, tss->flags);
++	ret = skb_splice_bits(skb, offset, tss->pipe, rd_desc->count, tss->flags);
++	if (ret > 0)
++		rd_desc->count -= ret;
++	return ret;
+ }
+ 
+ static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
+@@ -531,6 +535,7 @@ static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
+ 	/* Store TCP splice context information in read_descriptor_t. */
+ 	read_descriptor_t rd_desc = {
+ 		.arg.data = tss,
++		.count = tss->len,
+ 	};
+ 
+ 	return tcp_read_sock(sk, &rd_desc, tcp_splice_data_recv);
+
+Regards,
+Willy
+
