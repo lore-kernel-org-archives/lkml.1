@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZAIT3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbZAITdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810AbZAIT3d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 14:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbZAIT3X
+	id S1754732AbZAITdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 14:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZAITdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 14:29:23 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:55158 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752674AbZAIT3W (ORCPT
+	Fri, 9 Jan 2009 14:33:00 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:5283 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbZAITc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 14:29:22 -0500
-Date: Fri, 9 Jan 2009 12:29:18 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dirk Hohndel <hohndel@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Fri, 9 Jan 2009 14:32:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XCwk1OL9AIMDfqu3quX1ZAvvzCPGYQow+aAJ9S8HhMNpFuLrkk9tgrUgoBfFj80Kix
+         qbdOkOfU88g5BTvZdYucElsDMF+m9obS7LtkIRd7Woc0GXdmQcWuwRGz2BG4hKCSNqQZ
+         EAKB9KwhBFx5biYKDQl40yaPADSqXeTPlmjJg=
+Message-ID: <84fc9c000901091132k4f5d71a3m8efe77f9b8889270@mail.gmail.com>
+Date: Fri, 9 Jan 2009 20:32:56 +0100
+From: "Richard Guenther" <richard.guenther@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matthew Wilcox" <matthew@wil.cx>,
+       "Dirk Hohndel" <hohndel@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "jim owens" <jowens@hp.com>, "Chris Mason" <chris.mason@oracle.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109192918.GE6936@parisc-linux.org>
-References: <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org> <20090109180213.GH26290@one.firstfloor.org> <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain> <20090109185509.GJ26290@one.firstfloor.org> <alpine.LFD.2.00.0901091045090.6528@localhost.localdomain> <20090109193506.GL26290@one.firstfloor.org>
+       "Thomas Gleixner" <tglx@linutronix.de>, "Nick Piggin" <npiggin@suse.de>,
+       "Peter Morreale" <pmorreale@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, jh@suse.cz
+In-Reply-To: <20090109194026.GM26290@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090109193506.GL26290@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20090109084620.3c711aad@infradead.org>
+	 <20090109172801.GC6936@parisc-linux.org>
+	 <20090109174719.GG26290@one.firstfloor.org>
+	 <20090109173914.GD6936@parisc-linux.org>
+	 <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain>
+	 <20090109181952.GI26290@one.firstfloor.org>
+	 <84fc9c000901091059v65265413wda053d3ce5b0d17a@mail.gmail.com>
+	 <20090109192158.GK26290@one.firstfloor.org>
+	 <84fc9c000901091110n2f5565b7mecf9acec35cf5a0@mail.gmail.com>
+	 <20090109194026.GM26290@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 08:35:06PM +0100, Andi Kleen wrote:
-> - Also inline everything static that is only called once
-> [on the theory that this shrinks code size which is true
-> according to my measurements]
-> 
-> -fno-inline-functions-called once disables this new rule.
-> It's very well and clearly defined.
+On Fri, Jan 9, 2009 at 8:40 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> On Fri, Jan 09, 2009 at 08:10:20PM +0100, Richard Guenther wrote:
+>> On Fri, Jan 9, 2009 at 8:21 PM, Andi Kleen <andi@firstfloor.org> wrote:
+>> >> GCC 4.3 should be good in compiling the
+>> >> kernel with default -Os settings.
+>> >
+>> > It's unfortunately not. It doesn't inline a lot of simple asm() inlines
+>> > for example.
+>>
+>> Reading Ingos posting with the actual numbers states the opposite.
+>
+> Hugh had some numbers upto 4.4.0 20090102 in
+>
+> http://thread.gmane.org/gmane.linux.kernel/775254/focus=777231
+>
+> which demonstrated the problem.
 
-It's also not necessarily what we want.  For example, in fs/direct-io.c,
-we have:
+How about GCC bugzillas with testcases that we can fix and enter into the
+testsuite to make sure future GCC versions won't regress?
 
-static ssize_t
-direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode, 
-        const struct iovec *iov, loff_t offset, unsigned long nr_segs, 
-        unsigned blkbits, get_block_t get_block, dio_iodone_t end_io,
-        struct dio *dio)
-{
-[150 lines]
-}
-
-ssize_t
-__blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
-        struct block_device *bdev, const struct iovec *iov, loff_t offset, 
-        unsigned long nr_segs, get_block_t get_block, dio_iodone_t end_io,
-        int dio_lock_type)
-{
-[100 lines]
-        retval = direct_io_worker(rw, iocb, inode, iov, offset,
-                                nr_segs, blkbits, get_block, end_io, dio);
-[10 lines]
-}
-
-Now, I'm not going to argue the directIO code is a shining example of
-how we want things to look, but we don't really want ten arguments
-being marshalled into a function call; we want gcc to inline the
-direct_io_worker() and do its best to optimise the whole thing.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Richard.
