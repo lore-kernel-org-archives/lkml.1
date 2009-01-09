@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZAIDrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZAIDyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbZAIDrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 22:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZAIDr3
+	id S1755342AbZAIDyF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 22:54:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZAIDxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 22:47:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48306 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752101AbZAIDr2 (ORCPT
+	Thu, 8 Jan 2009 22:53:54 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:5998 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979AbZAIDxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 22:47:28 -0500
-Date: Thu, 8 Jan 2009 19:46:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Ingo Molnar <mingo@elte.hu>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <496648C7.5050700@zytor.com>
-Message-ID: <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
-References: <1231365115.11687.361.camel@twins> <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain> <1231366716.11687.377.camel@twins> <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain> <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>
- <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu>
- <496648C7.5050700@zytor.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 8 Jan 2009 22:53:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=JXkQYUQnQ/vnAbC3VQin0wX8a24+hKDg4Afh6C/++ncmNlF786Rwir0z5x3RLQlHTl
+         o7POwEiu53P8ZZloZZQ0wkdEWVBs5gqwHAjdJrFFACtLuRvzMeiv5WiHpO9V60oRL7Ri
+         QGIePsAbeiveW+gOKapEBghh6biZ7pf6xkguw=
+Message-ID: <a0e7fce50901081953h7ae152a7y557794c07fbb843b@mail.gmail.com>
+Date: Fri, 9 Jan 2009 11:53:52 +0800
+From: "yi li" <liyi.dev@gmail.com>
+To: drzeus-mmc@drzeus.cx
+Subject: [BUG] MMC/SD: SDHC card capacity not correct
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Pierre,
 
+I am using a Transcend SDHC 8GB SD card, with mmc-spi driver in
+Linux-2.6.28. When inserting the card, the messages shows the card
+capacity is "3.51 GiB":
+"mmc0: new SDHC card on SPI
+mmcblk0: mmc0:0000 SDC   3.51 GiB
+ mmcblk0: p1  "
 
-On Thu, 8 Jan 2009, H. Peter Anvin wrote:
-> 
-> Right.   gcc simply doesn't have any way to know how heavyweight an
-> asm() statement is
+While fdisk shows correct capacity:
+" fdisk -l /dev/mmcblk0
+Disk /dev/mmcblk0: 8068 MB, 8068268032 bytes
+249 heads, 62 sectors/track, 1020 cylinders
+Units = cylinders of 15438 * 512 = 7904256 bytes
 
-I don't think that's relevant.
+        Device Boot      Start         End      Blocks  Id System
+/dev/mmcblk0p1               1        1020     7873349  83 Linux
+"
+So I think there are something wrong with mmc-block code.
 
-First off, gcc _does_ have a perfectly fine notion of how heavy-weight an 
-"asm" statement is: just count it as a single instruction (and count the 
-argument setup cost that gcc _can_ estimate).
+Could you please have a look? (I am not on the LKML btw).
 
-That would be perfectly fine. If people use inline asms, they tend to use 
-it for a reason.
-
-However, I doubt that it's the inline asm that was the biggest reason why 
-gcc decided not to inline - it was probably the constant "switch()" 
-statement. The inline function actually looks pretty large, if it wasn't 
-for the fact that we have a constant argument, and that one makes the 
-switch statement go away.
-
-I suspect gcc has some pre-inlining heuristics that don't take constant 
-folding and simplifiation into account - if you look at just the raw tree 
-of the function without taking the optimization into account, it will look 
-big.
-
-			Linus
+Best Regards,
+- Li Yi
