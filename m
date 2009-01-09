@@ -1,44 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZAINPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZAINS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbZAINPT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 08:15:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZAINPF
+	id S1756271AbZAINS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 08:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZAINSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 08:15:05 -0500
-Received: from main.gmane.org ([80.91.229.2]:58130 "EHLO ciao.gmane.org"
+	Fri, 9 Jan 2009 08:18:49 -0500
+Received: from vena.lwn.net ([206.168.112.25]:34138 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbZAINPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 08:15:04 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Alexander Clouter <alex@digriz.org.uk>
-Subject: Re: FPGA programming driver architecture
-Date: Fri, 9 Jan 2009 12:24:08 +0000
-Message-ID: <88sj36-s3t.ln1@woodchuck.wormnet.eu>
-References: <20081212150314.6ea24996.hugo@hugovil.com> <82ecf08e0901081414u15af3c2dy9c88a242db024dc7@mail.gmail.com> <c384c5ea0901081447i5ad807b3yb0ec3adebeaa46a0@mail.gmail.com> <200901082357.24432.florian@openwrt.org> <c384c5ea0901081507v5d186eai5ec71d56b4c7a972@mail.gmail.com> <4966C125.10604@duaneellis.com>
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: woodchuck.wormnet.eu
-User-Agent: tin/1.9.2-20070201 ("Dalaruan") (UNIX) (Linux/2.6.24-etchnhalf.1-sparc64 (sparc64))
-Cc: linux-embedded@vger.kernel.org
+	id S1751941AbZAINSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 08:18:48 -0500
+Date: Fri, 9 Jan 2009 06:18:46 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@ZenIV.linux.org.uk>,
+       bfields@fieldses.org
+Subject: Re: RFC: Fix f_flags races without the BKL
+Message-ID: <20090109061846.5beee8df@bike.lwn.net>
+In-Reply-To: <20090109100821.GA27829@redhat.com>
+References: <20081229041352.6bbdf57c@tpl>
+	<20081229124151.GA29634@redhat.com>
+	<20090108162806.48caaa29@bike.lwn.net>
+	<20090109100821.GA27829@redhat.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.0; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Ellis <duane@duaneellis.com> wrote:
-> >> [various FPGA config methods]
+On Fri, 9 Jan 2009 11:08:21 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
+
+> So, fasync_change() sets/clears FASYNC,
 > 
-> Don't forget JTAG, and playing back an SVF files, or BIT files.
+> > +	lock_file_flags();
+> >  	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
+> > +	unlock_file_flags();
 > 
-On the board we have, the FPGA is programmable over JTAG which is 
-conveniently strapped to the GPIO pins of the CPU.
+> and then we change f_flags again, including F_ASYNC bit.
+> 
+> This is racy?
 
-http://www.embeddedarm.com/products/board-detail.php?product=TS-7800
+No, I took FASYNC out of SETFL_MASK, so it isn't changed here.
 
-Cheers
+> > +int fasync_change(int fd, struct file *filp, int on)
+> > +{
+> > +	int ret;
+> > +	static DEFINE_MUTEX(fasync_mutex);
+> > +
+> > +	if (filp->f_op->fasync == NULL)
+> > +		return -ENOTTY;
+> > +
+> > +	mutex_lock(&fasync_mutex);
+> > +	lock_file_flags();
+> > +	if (((filp->f_flags & FASYNC) == 0) == (on == 0)) {
+> > +		unlock_file_flags();
+> > +		return 0;
+> > +	}
+> > +	if (on)
+> > +		filp->f_flags |= FASYNC;
+> > +	else
+> > +		filp->f_flags &= ~FASYNC;
+> > +	unlock_file_flags();
+> > +	ret = filp->f_op->fasync(fd, filp, on);
+> > +	mutex_unlock(&fasync_mutex);
+> > +	return ret;
+> 
+> But we must not change ->f_flags if ->fasync() fails?
 
-Alex
+Good point, that's not quite right.  That will make things a bit uglier -
+we can't hold file_flags_lock when we call ->fasync() - but I'll fix it.
+Unless people think that this approach is completely wrong too, of course. 
+ 
+> Now we have the global mutex for ->fasync... Well, not very
+> good but fasync_helper() takes fasync_lock anyway.
 
--- 
-Alexander Clouter
-.sigmonster says: This screen intentionally left blank.
+Not very good, but does anybody know of a workload which would result in
+that mutex being contended ever?
 
+Thanks,
+
+jon
