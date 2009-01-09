@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZAISl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbZAISpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZAISl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbZAISk7
+	id S1754505AbZAISpw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:45:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZAISpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:40:59 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54400 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754392AbZAISk6 (ORCPT
+	Fri, 9 Jan 2009 13:45:43 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:36956 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbZAISpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:40:58 -0500
-Date: Fri, 9 Jan 2009 19:55:09 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Dirk Hohndel <hohndel@infradead.org>,
-       Matthew Wilcox <matthew@wil.cx>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109185509.GJ26290@one.firstfloor.org>
-References: <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org> <20090109180213.GH26290@one.firstfloor.org> <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Jan 2009 13:45:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=UzircQ3O7txaZuD4j1xaszfwNqyQKTdUoUxB3IFPj5z+YivGZNTDsdcHi8Vu5Hck9L
+         aEu5EXjGZr7i8WOvf4/RocCbwmbfP+LvUVi7mzb7taea4ms9XLnlK2469tPe5K1Z8+9t
+         OfpUFin7mvXD5lBspjnta2QwFhhIsAwlo0fjg=
+Message-ID: <9f4f8abe0901091045k4a06e2c9v29a7e8a7387e7a48@mail.gmail.com>
+Date: Fri, 9 Jan 2009 10:45:41 -0800
+From: "Vineet Gupta" <vineetg76@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Query about DMA map API implementation in non-coherent archs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But _users_ just get their oopses sent automatically. So it's not about 
+Hi,
 
-If they send it from distro kernels the automated oops sender could
-just fetch the debuginfo rpm and decode it down to a line.
-My old automatic user segfault uploader I did originally
-for the core pipe code did that too.
+I work for Linux port of "ARC" CPU a 32 bit RISC processor, with
+explicit Cache Maintenance Instructions but non Coherent DMA. We do
+have ways to make coherent memory by disabing per PAGE cache bit in
+MMU.
 
-> "debugging kernels", it's about _normal_ kernels. They are the ones that 
-> need to be debuggable, and the ones that care most about things like the 
-> symbolic EIP being as helpful as possible.
+I ran into a few road blocks when implementing the Streaming DMA mapping APIs.
 
-Ok you're saying we should pay the 4.1% by default for this?
-If you want that you can apply the appended patch.
-Not sure if it's really a good idea though. 4.1% is a lot.
+As per dma-mapping and dma-api docs, for streaming DMA mappings arch
+needs to provide 2 seperate APIs
 
--Andi
+1. map API to convert cpu address into DMA address
+2. sync API to flush/invalidate the dcaches for non-coherent archs
+(essentially when changing the ownership of buffer between cpu and
+device).
 
----
+However from what I understood, the map API need not take care of
+proper cache sync.However both ARM and MIPS do the cache sync
+operations in map API as well (this is done standalone in sync APIs
+too). Is there a specific reason for this.
 
-Disable inlining of functions called once by default
+Drivers such as libata don't even call any sync API. For e.g. libata
+only calls dma_map_sg ( ) while setting up the DMA.
 
-This makes oopses easier to read because it's clearer in which
-function the problem is.
+Does that mean that the semantics of map API ought to have cache
+coherency built in or the arch code has this to workaround drivers not
+calling proper sync APIs.
 
-Disadvantage: costs ~4.1% of text size (measured with allyesconfig
-on gcc 4.1 on x86-64)
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- Makefile |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-Index: linux-2.6.28-git12/Makefile
-===================================================================
---- linux-2.6.28-git12.orig/Makefile	2009-01-09 07:06:44.000000000 +0100
-+++ linux-2.6.28-git12/Makefile	2009-01-09 07:16:21.000000000 +0100
-@@ -546,10 +546,8 @@
- KBUILD_CFLAGS	+= -pg
- endif
- 
--# We trigger additional mismatches with less inlining
--ifdef CONFIG_DEBUG_SECTION_MISMATCH
-+# Disable too aggressive inlining because it makes oopses harder to read
- KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
--endif
- 
- # arch Makefile may override CC so keep this after arch Makefile is included
- NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+Also DMA-MAP.txt "recommends" that the memory passed to map API be
+from kmalloc or get_free_pages to make sure it is physically
+contiguous. However "recommends" is a bit ambigous. What if someone
+passes a vmalloc address which is only one page worth (ignoring the
+gaurd page added by kernel). Should the map API return error or should
+it walk the page tables to find the physical address.
 
 
--- 
-ak@linux.intel.com
+Thanks,
+Vineet
