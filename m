@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZAITpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbZAITte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbZAITpd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 14:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbZAITpV
+	id S1754361AbZAITte (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 14:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbZAITtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 14:45:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42069 "EHLO
+	Fri, 9 Jan 2009 14:49:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55214 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752222AbZAITpU (ORCPT
+	by vger.kernel.org with ESMTP id S1751583AbZAITtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 14:45:20 -0500
-Date: Fri, 9 Jan 2009 11:44:19 -0800 (PST)
+	Fri, 9 Jan 2009 14:49:22 -0500
+Date: Fri, 9 Jan 2009 11:48:41 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Richard Guenther <richard.guenther@gmail.com>
-cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Dirk Hohndel <hohndel@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       Chris Mason <chris.mason@oracle.com>,
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Andi Kleen <andi@firstfloor.org>, Dirk Hohndel <hohndel@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
        Gregory Haskins <ghaskins@novell.com>,
@@ -30,10 +29,10 @@ cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
        Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
 Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
  impact
-In-Reply-To: <84fc9c000901091109t2c2aef2fu596f8807b0962688@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0901091128170.6528@localhost.localdomain>
-References: <496648C7.5050700@zytor.com> <49675920.4050205@hp.com>  <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com>  <20090109084620.3c711aad@infradead.org>  <20090109172011.GD26290@one.firstfloor.org>  <20090109172801.GC6936@parisc-linux.org>
-  <20090109174719.GG26290@one.firstfloor.org>  <20090109173914.GD6936@parisc-linux.org>  <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain> <84fc9c000901091109t2c2aef2fu596f8807b0962688@mail.gmail.com>
+In-Reply-To: <20090109192918.GE6936@parisc-linux.org>
+Message-ID: <alpine.LFD.2.00.0901091145110.6528@localhost.localdomain>
+References: <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org> <20090109180213.GH26290@one.firstfloor.org>
+ <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain> <20090109185509.GJ26290@one.firstfloor.org> <alpine.LFD.2.00.0901091045090.6528@localhost.localdomain> <20090109193506.GL26290@one.firstfloor.org> <20090109192918.GE6936@parisc-linux.org>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -43,78 +42,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 9 Jan 2009, Richard Guenther wrote:
+On Fri, 9 Jan 2009, Matthew Wilcox wrote:
 > 
-> -fno-inline-functions-called-once disables the heuristic that always 
-> inlines (static!) functions that are called once.  Other heuristics 
-> still apply, like inlining the static function if it is small.  
-> Everything else would be totally stupid - which seems to be the "default 
-> mode" you think GCC developers are in.
+> Now, I'm not going to argue the directIO code is a shining example of
+> how we want things to look, but we don't really want ten arguments
+> being marshalled into a function call; we want gcc to inline the
+> direct_io_worker() and do its best to optimise the whole thing.
 
-Well, I don't know about you, but the "don't inline a single instruction" 
-sounds a bit stupid to me. And yes, that's exactly what triggered this 
-whole thing.
+Well, except we quite probably would be happier with gcc not doing that, 
+than with gcc doing that too often.
 
-We have two examples of gcc doing that, one of which was even a modern 
-version of gcc, where we had sone absolutely _everything_ on a source 
-level to make sure that gcc could not possibly screw up. Yet it did:
+There are exceptions. If the caller is really small (ie a pure wrapper 
+that perhaps just does some locking around the call), then sure, inlining 
+a large function that only gets called from one place does make sense.
 
-	static inline int constant_test_bit(int nr, const volatile unsigned long *addr)
-	{
-	        return ((1UL << (nr % BITS_PER_LONG)) &
-	                (((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
-	}
+But if both the caller and the callee is large, like in your example, then 
+no. DON'T INLINE IT. Unless we _tell_ you, of course, which we probably 
+shouldn't do.
 
-	#define test_bit(nr, addr)                      \
-	        (__builtin_constant_p((nr))             \
-	         ? constant_test_bit((nr), (addr))      \   
-	         : variable_test_bit((nr), (addr)))
+Why? Becuase debugging is more important. And deciding to inline that, you 
+probably decided to inline something _else_ too. And now you've quite 
+possibly blown your stackspace.
 
-in this case, Ingo said that changing that _single_ inline to forcing 
-inlining made a difference.
-
-That's CRAZY. The thing isn't even called unless "nr" is constant, so 
-absolutely _everything_ optimizes away, and that whole function was 
-designed to give us a single instruction:
-
-	testl $constant,constant_offset(addr)
-
-and nothing else.
-
-Maybe there was something else going on, and maybe Ingo's tests were off, 
-but this is an example of gcc not inlining WHEN WE TOLD IT TO, and when 
-the function was a single instruction.
-
-How can anybody possibly not consider that to be "stupid"?
-
-The other case (with a single "cmpxchg" inline asm instruction) was at 
-least _slightly_ more understandable, in that (a) Ingo claims modern gcc's 
-did inline it and (b) the original function actually has a "switch()" 
-statement that depends on the argument that is constant, so a stupid 
-inliner might believe that it's a big function. But again, we _told_ the 
-compiler to inline the damn thing, because we knew better. But gcc didn't.
-
-The other part that is crazy is when gcc inlines large functions that 
-aren't even called most of the time (the "ioctl()" switch statements tend 
-to be a great example of this - gcc inlines ten or twenty functions, and 
-we can guarantee that only one of them is ever called). Yes, maybe it 
-makes the code smaller, but it makes the code also undebuggable and often 
-BUGGY, because we now have the stack frame of all ten-to-twenty functions 
-to contend with.
-
-And notice how "static" has absolutely _zero_ meaning for the above 
-example. Yes, the thing is called just from one place - that's how 
-something like that very much works. It's a special case. It's not _worth_ 
-inlining, especially if it causes bugs. So "called once" or "static" is 
-actually totally irrelevant.
-
-And no, they are not marked "inline" (although they are clearly also not 
-marked "uninline", until we figure out that gcc is causing system crashes, 
-and we add the thing).
-
-If these two small problems were fixed, gcc inlining would work much 
-better. But the first one, in particular, means that the "do I inline or 
-not" decision would have to happen after expanding and simplifying 
-constants. And then, if the end result is big, the inlining gets aborted.
-
-				Linus
+		Linus
