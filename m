@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZAIGsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZAIGzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbZAIGsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 01:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZAIGsL
+	id S1755400AbZAIGzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 01:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbZAIGyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 01:48:11 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:41922 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbZAIGsJ convert rfc822-to-8bit (ORCPT
+	Fri, 9 Jan 2009 01:54:51 -0500
+Received: from mga09.intel.com ([134.134.136.24]:19070 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753285AbZAIGyt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 01:48:09 -0500
-Message-ID: <4966F2F4.9080901@cosmosbay.com>
-Date: Fri, 09 Jan 2009 07:47:16 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: ben@zeus.com, w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-References: <20090108173028.GA22531@1wt.eu>	<49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net>
-In-Reply-To: <20090108.135515.85489589.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 9 Jan 2009 01:54:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,235,1231142400"; 
+   d="scan'208";a="655771278"
+From: "Han, Weidong" <weidong.han@intel.com>
+To: "'Dirk Hohndel'" <hohndel@infradead.org>
+CC: "'Grant Grundler'" <grundler@parisc-linux.org>,
+       "'linux-pci@vger.kernel.org'" <linux-pci@vger.kernel.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Arjan van de Ven'" <arjan@infradead.org>
+Date: Fri, 9 Jan 2009 14:53:14 +0800
+Subject: RE: git-latest: kernel oops in IOMMU setup
+Thread-Topic: git-latest: kernel oops in IOMMU setup
+Thread-Index: AclyFhdVdcQQKqBWSDKBYIsVsLHQVAADqndw
+Message-ID: <715D42877B251141A38726ABF5CABF2C018E8FECAA@pdsmsx503.ccr.corp.intel.com>
+References: <20090108120538.0176d348@infradead.org>
+	<20090108214116.GB20506@colo.lackof.org>
+	<715D42877B251141A38726ABF5CABF2C018E8FEA77@pdsmsx503.ccr.corp.intel.com>
+	<20090108180515.2f279671@infradead.org>
+ <20090108205222.2c89dcde@infradead.org>
+In-Reply-To: <20090108205222.2c89dcde@infradead.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Jan 2009 07:47:17 +0100 (CET)
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: Ben Mansell <ben@zeus.com>
-> Date: Thu, 08 Jan 2009 21:50:44 +0000
+Dirk Hohndel wrote:
+> On Thu, 8 Jan 2009 18:05:15 -0800
+> Dirk Hohndel <hohndel@infradead.org> wrote:
 > 
->>> From fafe76713523c8e9767805cfdc7b73323d7bf180 Mon Sep 17 00:00:00 2001
->>> From: Willy Tarreau <w@1wt.eu>
->>> Date: Thu, 8 Jan 2009 17:10:13 +0100
->>> Subject: [PATCH] tcp: splice as many packets as possible at once
->>> Currently, in non-blocking mode, tcp_splice_read() returns after
->>> splicing one segment regardless of the len argument. This results
->>> in low performance and very high overhead due to syscall rate when
->>> splicing from interfaces which do not support LRO.
->>> The fix simply consists in not breaking out of the loop after the
->>> first read. That way, we can read up to the size requested by the
->>> caller and still return when there is no data left.
->>> Performance has significantly improved with this fix, with the
->>> number of calls to splice() divided by about 20, and CPU usage
->>> dropped from 100% to 75%.
->>>
->> I get similar results with my testing here. Benchmarking an application with this patch shows that more than one packet is being splice()d in at once, as a result I see a doubling in throughput.
->>
->> Tested-by: Ben Mansell <ben@zeus.com>
+>> On Fri, 9 Jan 2009 08:58:46 +0800 "Han, Weidong"
+>> 
+>> I updated to Linus' latest git (as your description made me wonder if
+>> the async stuff might play a role here). I still get an oops - but at
+>> a different spot and the system no longer hangs - it partly recovers
+>> (but things aren't too well - for example my USB keyboard / mouse
+>> don't work anymore).
 > 
-> I'm not applying this until someone explains to me why
-> we should remove this test from the splice receive but
-> keep it in the tcp_recvmsg() code where it has been
-> essentially forever.
+> Spoke too soon. Rebooted and had the same hard lockup again. This time
+> I had my camera within reach, so here's the trace:
+> 
+> device_to_iommu+0x33/0x73
+> domain_context_mapping_one+0x37/0x335
+> domain_context_mapping+0x25/0xa7
+> iommu_prepare_identity+0xd7/0xf3
+> intel_iommu_init+0x4e4/0x8f3
+> ? mutex_lock
+> ? sysctl_net_init
+> ? pci_iommu_init
+> pci_iommu_init
+> 
+> I also have stack, code and register values. Let me know if you need
+> them. Or I can just post the picture :-)
+> 
+> Again, very latest git tree, VT-d enabled.
+> 
+> /D
 
-I found this patch usefull in my testings, but had a feeling something
-was not complete. If the goal is to reduce number of splice() calls,
-we also should reduce number of wakeups. If splice() is used in non
-blocking mode, nothing we can do here of course, since the application
-will use a poll()/select()/epoll() event before calling splice(). A
-good setting of SO_RCVLOWAT to (16*PAGE_SIZE)/2 might improve things.
+I tried latest git tree, it works for me. Above call trace looks right. 
 
-I tested this on current tree and it is not working : we still have
-one wakeup for each frame (ethernet link is a 100 Mb/s one)
-
-bind(6, {sa_family=AF_INET, sin_port=htons(4711), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
-listen(6, 5)                            = 0
-accept(6, 0, NULL)                      = 7
-setsockopt(7, SOL_SOCKET, SO_RCVLOWAT, [32768], 4) = 0
-poll([{fd=7, events=POLLIN, revents=POLLIN|POLLERR|POLLHUP}], 1, -1) = 1
-splice(0x7, 0, 0x4, 0, 0x10000, 0x3)    = 1024
-splice(0x3, 0, 0x5, 0, 0x400, 0x5)      = 1024
-poll([{fd=7, events=POLLIN, revents=POLLIN|POLLERR|POLLHUP}], 1, -1) = 1
-splice(0x7, 0, 0x4, 0, 0x10000, 0x3)    = 1460
-splice(0x3, 0, 0x5, 0, 0x5b4, 0x5)      = 1460
-poll([{fd=7, events=POLLIN, revents=POLLIN|POLLERR|POLLHUP}], 1, -1) = 1
-splice(0x7, 0, 0x4, 0, 0x10000, 0x3)    = 1460
-splice(0x3, 0, 0x5, 0, 0x5b4, 0x5)      = 1460
-poll([{fd=7, events=POLLIN, revents=POLLIN|POLLERR|POLLHUP}], 1, -1) = 1
-splice(0x7, 0, 0x4, 0, 0x10000, 0x3)    = 1460
-splice(0x3, 0, 0x5, 0, 0x5b4, 0x5)      = 1460
-poll([{fd=7, events=POLLIN, revents=POLLIN|POLLERR|POLLHUP}], 1, -1) = 1
-splice(0x7, 0, 0x4, 0, 0x10000, 0x3)    = 1460
-splice(0x3, 0, 0x5, 0, 0x5b4, 0x5)      = 1460
-poll([{fd=7, events=POLLIN, revents=POLLIN|POLLERR|POLLHUP}], 1, -1) = 1
-splice(0x7, 0, 0x4, 0, 0x10000, 0x3)    = 1460
-splice(0x3, 0, 0x5, 0, 0x5b4, 0x5)      = 1460
-
-
-About tcp_recvmsg(), we might also remove the "!timeo" test as well,
-more testings are needed. But remind that if an application provides
-a large buffer to tcp_recvmsg() call, removing the test will reduce
-the number of syscalls but might use more DCACHE. It could reduce
-performance on old cpus. With splice() call, we expect to not
-copy memory and trash DCACHE, and pipe buffers being limited to 16,
-we cope with a limited working set. 
-
-
-
+Regards,
+Weidong
