@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZAIVOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZAIVP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbZAIVOZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbZAIVOR
+	id S1757235AbZAIVP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbZAIVPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:14:17 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43624 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754199AbZAIVOQ (ORCPT
+	Fri, 9 Jan 2009 16:15:14 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:25938 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbZAIVPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:14:16 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4967BE13.6070003@s5r6.in-berlin.de>
-Date: Fri, 09 Jan 2009 22:13:55 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Fri, 9 Jan 2009 16:15:13 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=KmfBr/CYF/ORhHZPiBtgf0rN9qlx8vyK8g8+26LQSLEFv5NXhm4low6cTKQXLdevT
+	9uscc3DMzRKJqthWtzOBQ==
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Jay Fenlason <fenlason@redhat.com>
-Subject: Re: post 2.6.28 regression: device_initialize() now sleeps, and	may
- fail without recovery strategy
-References: <496798FE.8030900@s5r6.in-berlin.de> <20090109205633.GB19904@suse.de>
-In-Reply-To: <20090109205633.GB19904@suse.de>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <4966F230.4020905@cn.fujitsu.com>
+References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
+	 <4966EEDD.5070204@cn.fujitsu.com>
+	 <6599ad830901082237l664fb403y386482a577ed185e@mail.gmail.com>
+	 <4966F230.4020905@cn.fujitsu.com>
+Date: Fri, 9 Jan 2009 13:15:09 -0800
+Message-ID: <6599ad830901091315y3ddba30cr46a89b2ca965b283@mail.gmail.com>
+Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.19
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Fri, Jan 09, 2009 at 07:35:42PM +0100, Stefan Richter wrote:
->> We can fix the bug by changing firewire-core, but
->>   a) it'd be more than a one-liner,
->>   b) who knows which other subsystems are affected.
-> 
-> I agree.
-> 
-> I originally looked at changing this to be at device_add time, but I
-> think there are some code paths that do device_initialize and then do
-> some operations on the device before calling device_add.
+On Thu, Jan 8, 2009 at 10:44 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>
+> And some other problems, like what's the semantic of /proc/<pid>/cgroup when
+> using none subsys.
 
-get_device() and put_device() seem to be about the only things that are
-interesting before device_add().
+Since we'd need a way to distinguish between different "no subsys"
+hierarchies, we could introduce the idea of a hierarchy name - i.e.
+you would mount with options like -onone,name=foo, and this would show
+up in /proc/self/cgroup as
 
-Don't know if a final put_device() in this situation
+name=foo:/path/to/cgroup
 
-> But I could be
-> wrong, let me do some testing first before forcing you to make that big
-> change to the firewire core.
+You could also name other hierarchies that did have subsystems
+mounted, of course. This would allow you to mount existing hierarchies
+by name rather than by subsystem set.
 
-It isn't actually that big.  And the added complication could hopefully
-be covered by comments about the caveats.
-
-Actually, maybe it would be better for the firewire stack to move the
-concerned stuff into a non-atomic context.  There are other things we do
-in there and atomic context isn't very comfortable for all this.  But
-that would be a much bigger change.
-
->> Next, the above code is bogus.  In 2.6.28, device_initialize() could
->> never fail and was thus safe to use as a void-valued function.
->>
->> How does driver core handle dev->p == NULL in subsequent usages of dev now?
-> 
-> It dies a flaming horrible death, pretty much like the whole rest of the
-> system if allocating such a small ammount of memory is causing failures
-> :)
-
-Well, at least code which allocates struct device can check for failure
-and handle it, while the allocator of dev->p can't even check.  Unless
-you change device_initialize() to return error status and add error
-handling all over the place...
--- 
-Stefan Richter
--=====-==--= ---= -=--=
-http://arcgraph.de/sr/
+Paul
