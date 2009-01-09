@@ -1,85 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbZAIWgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbZAIWgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932693AbZAIWgP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758870AbZAIWfX
+	id S1760166AbZAIWgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZAIWga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:35:23 -0500
-Received: from mga14.intel.com ([143.182.124.37]:63050 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932480AbZAIWfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:35:21 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,241,1231142400"; 
-   d="scan'208";a="98407199"
-Date: Fri, 9 Jan 2009 14:35:20 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
-       tvignaud@mandriva.com
-Subject: [patch] x86, pat: fix reserve_memtype() for legacy 1MB range
-Message-ID: <20090109223520.GC6472@linux-os.sc.intel.com>
+	Fri, 9 Jan 2009 17:36:30 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:36550 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758367AbZAIWg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:36:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=QyD3h96Grm7uAtQmamBu3sjiHu8jpg/tWlglID6v0SujarZ447PwrbIms7+3HyClEB
+         WlO7dd8xJkA6T3U6eF4wD310pAhrSgt2Gro/3kuTSu/OCXQ1NNcWkvod1XPcPiljDbTc
+         c2gwQgg908fQQ9BY2MBM1fPrtftm4edorEntM=
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@infradead.org,
+       phillip@lougher.demon.co.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090109222624.2f9d0776@lxorguk.ukuu.org.uk>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
+	 <20090108165029.GA10951@infradead.org>
+	 <20090108175338.2abbee16.akpm@linux-foundation.org>
+	 <20090109120254.496f75d2@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.0901091356160.6528@localhost.localdomain>
+	 <20090109140842.16ae7c8a.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0901091412220.6528@localhost.localdomain>
+	 <20090109222624.2f9d0776@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Fri, 09 Jan 2009 14:36:26 -0800
+Message-Id: <1231540587.5825.8.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x86, pat: fix reserve_memtype() for legacy 1MB range
+On Fri, 2009-01-09 at 22:26 +0000, Alan Cox wrote:
+> On Fri, 9 Jan 2009 14:12:34 -0800 (PST)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > 
+> > On Fri, 9 Jan 2009, Andrew Morton wrote:
+> > > 
+> > > We've long needed a filesystem named after a vegetable.
+> > 
+> > You make a very compelling case.
+> 
+> And vegetables are much healtheir than FAT ...
 
-Thierry Vignaud reported:
-> http://bugzilla.kernel.org/show_bug.cgi?id=12372
->
-> On P4 with an SiS motherboard (video card is a SiS 651)
-> X server fails to start with error:
-> xf86MapVidMem: Could not mmap framebuffer (0x00000000,0x2000) (Invalid
-> argument)
+I always preferred my squash with butter, it appears 2.6.30 will be a very
+tasty kernel.
 
-Here X is trying to map first 8KB of memory using /dev/mem. Existing
-code treats first 0-4KB of memory as non-RAM and 4KB-8KB as RAM. Recent
-code changes don't allow to map memory with different attributes
-at the same time.
+Harvey
 
-Fix this by treating the first 1MB legacy region as special and always
-track the attribute requests with in this region using linear linked
-list (and don't bother if the range is RAM or non-RAM or mixed)
-
-Reported-and-tested-by: Thierry Vignaud <tvignaud@mandriva.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: stable@kernel.org
----
-
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 85cbd3c..c959a4d 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -333,11 +333,20 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 					      req_type & _PAGE_CACHE_MASK);
- 	}
- 
--	is_range_ram = pagerange_is_ram(start, end);
--	if (is_range_ram == 1)
--		return reserve_ram_pages_type(start, end, req_type, new_type);
--	else if (is_range_ram < 0)
--		return -EINVAL;
-+	/*
-+	 * For legacy reasons, some parts of the physical address range in the
-+	 * legacy 1MB region is treated as non-RAM (even when listed as RAM in
-+	 * the e820 tables).  So we will track the memory attributes of this
-+	 * legacy 1MB region using the linear memtype_list always.
-+	 */
-+	if (end >= ISA_END_ADDRESS) {
-+		is_range_ram = pagerange_is_ram(start, end);
-+		if (is_range_ram == 1)
-+			return reserve_ram_pages_type(start, end, req_type,
-+						      new_type);
-+		else if (is_range_ram < 0)
-+			return -EINVAL;
-+	}
- 
- 	new  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
- 	if (!new)
