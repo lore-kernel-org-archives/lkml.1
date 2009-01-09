@@ -1,78 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZAICLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbZAICRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbZAICLf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 21:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbZAICLX
+	id S1754000AbZAICRW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 21:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZAICRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 21:11:23 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:48228 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751308AbZAICLW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 21:11:22 -0500
-Message-ID: <4966B24E.1050700@lougher.demon.co.uk>
-Date: Fri, 09 Jan 2009 02:11:26 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Thu, 8 Jan 2009 21:17:14 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62720 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599AbZAICRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 21:17:13 -0500
+Message-ID: <4966B370.5070707@cn.fujitsu.com>
+Date: Fri, 09 Jan 2009 10:16:16 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>	<20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org>
-In-Reply-To: <20090108175338.2abbee16.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] cgroups: clean up Kconfig
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 8 Jan 2009 11:50:29 -0500 Christoph Hellwig <hch@infradead.org> wrote:
-> 
->> On Thu, Jan 08, 2009 at 04:48:51PM +0000, Phillip Lougher wrote:
->>> Please consider pulling my linux-next branch
->>>
->>> git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git
->>>
->>> The patches have been posted to LKML and linux-fsdevel over the last
->>> couple of months and have been reviewed and changed as requested.
->>> Diffstat below.
->>>
->>> Squashfs is a compressed read-only filesystem. It compresses metadata
->>> and data, and uses up to 1 MiB block sizes for greater compression.
->> That seems pretty fast for something only posted this week and not
->> even in -next.
-> 
-> I discussed this with Phillip a bit, and it looks like we'll go for a
-> 2.6.21 merge.  This gives a couple of months for testing and review in
-> linux-next.
-> 
-> Of course, this assumes that someone will actually perform that testing
-> and review.  Chances are that it'll just sit there, getting nothing more
-> than compilation testing.
+- move CONFIG_PROC_PID_CPUSET into cgroup menu
+- move MM_OWNER to the bottom for better menu indent
+- fix typos
+- use tabs not spaces
 
-Yes please review!  If people feels it needs a couple more months in
-linux-next with more in-depth review then I'll live with that.  I'll
-fix anything more that comes up, because I'm desperate to get it
-mainlined.  I've lived the last couple of years with constant
-moaning from people that I've not mainlined it, and I took
-the last six months off work to work on it full time to get
-it into shape to mainline.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ init/Kconfig |   56 ++++++++++++++++++++++++++++----------------------------
+ 1 files changed, 28 insertions(+), 28 deletions(-)
 
-Hopefully now it's at least in sufficient shape to go into
-Linux-next I can get another job, and get some income which
-will be nice.
-
-> 
-> Apparently I reviewed the code a while back - that grey cell must have
-> died.  Does anyone else intend to review the code in that timeframe? 
-> If not, we might as well merge it now, if ever..
-> 
-
-I'll be very happy for a merge now, but of course it's not up to me :-(
-
-Phillip
-
-> 
-
+diff --git a/init/Kconfig b/init/Kconfig
+index a724a14..56fd93c 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -328,11 +328,10 @@ config CGROUP_SCHED
+ 
+ endchoice
+ 
+-menu "Control Group support"
+-config CGROUPS
+-	bool "Control Group support"
++menuconfig CGROUPS
++	boolean "Control Group support"
+ 	help
+-	  This option add support for grouping sets of processes together, for
++	  This option adds support for grouping sets of processes together, for
+ 	  use with process control subsystems such as Cpusets, CFS, memory
+ 	  controls or device isolation.
+ 	  See
+@@ -343,6 +342,8 @@ config CGROUPS
+ 
+ 	  Say N if unsure.
+ 
++if CGROUPS
++
+ config CGROUP_DEBUG
+ 	bool "Example debug cgroup subsystem"
+ 	depends on CGROUPS
+@@ -350,24 +351,24 @@ config CGROUP_DEBUG
+ 	help
+ 	  This option enables a simple cgroup subsystem that
+ 	  exports useful debugging information about the cgroups
+-	  framework
++	  framework.
+ 
+-	  Say N if unsure
++	  Say N if unsure.
+ 
+ config CGROUP_NS
+-        bool "Namespace cgroup subsystem"
+-        depends on CGROUPS
+-        help
+-          Provides a simple namespace cgroup subsystem to
+-          provide hierarchical naming of sets of namespaces,
+-          for instance virtual servers and checkpoint/restart
+-          jobs.
++	bool "Namespace cgroup subsystem"
++	depends on CGROUPS
++	help
++	  Provides a simple namespace cgroup subsystem to
++	  provide hierarchical naming of sets of namespaces,
++	  for instance virtual servers and checkpoint/restart
++	  jobs.
+ 
+ config CGROUP_FREEZER
+-        bool "control group freezer subsystem"
+-        depends on CGROUPS
+-        help
+-          Provides a way to freeze and unfreeze all tasks in a
++	bool "Freezer cgroup subsystem"
++	depends on CGROUPS
++	help
++	  Provides a way to freeze and unfreeze all tasks in a
+ 	  cgroup.
+ 
+ config CGROUP_DEVICE
+@@ -388,18 +389,23 @@ config CPUSETS
+ 
+ 	  Say N if unsure.
+ 
++config PROC_PID_CPUSET
++	bool "Include legacy /proc/<pid>/cpuset file"
++	depends on CPUSETS
++	default y
++
+ config CGROUP_CPUACCT
+ 	bool "Simple CPU accounting cgroup subsystem"
+ 	depends on CGROUPS
+ 	help
+ 	  Provides a simple Resource Controller for monitoring the
+-	  total CPU consumed by the tasks in a cgroup
++	  total CPU consumed by the tasks in a cgroup.
+ 
+ config RESOURCE_COUNTERS
+ 	bool "Resource counters"
+ 	help
+ 	  This option enables controller independent resource accounting
+-          infrastructure that works with cgroups
++	  infrastructure that works with cgroups.
+ 	depends on CGROUPS
+ 
+ config CGROUP_MEM_RES_CTLR
+@@ -425,9 +431,6 @@ config CGROUP_MEM_RES_CTLR
+ 	  This config option also selects MM_OWNER config option, which
+ 	  could in turn add some fork/exit overhead.
+ 
+-config MM_OWNER
+-	bool
+-
+ config CGROUP_MEM_RES_CTLR_SWAP
+ 	bool "Memory Resource Controller Swap Extension(EXPERIMENTAL)"
+ 	depends on CGROUP_MEM_RES_CTLR && SWAP && EXPERIMENTAL
+@@ -444,8 +447,10 @@ config CGROUP_MEM_RES_CTLR_SWAP
+ 	  there will be no overhead from this. Even when you set this config=y,
+ 	  if boot option "noswapaccount" is set, swap will not be accounted.
+ 
++endif # CGROUPS
+ 
+-endmenu
++config MM_OWNER
++	bool
+ 
+ config SYSFS_DEPRECATED
+ 	bool
+@@ -483,11 +488,6 @@ config SYSFS_DEPRECATED_V2
+ 	  if the original kernel, that came with your distribution, has
+ 	  this option set to N.
+ 
+-config PROC_PID_CPUSET
+-	bool "Include legacy /proc/<pid>/cpuset file"
+-	depends on CPUSETS
+-	default y
+-
+ config RELAY
+ 	bool "Kernel->user space relay support (formerly relayfs)"
+ 	help
+-- 
+1.5.4.rc3
