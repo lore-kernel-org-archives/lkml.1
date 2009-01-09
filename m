@@ -1,160 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZAIQVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbZAIQVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZAIQVM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZAIQTo
+	id S1753813AbZAIQVa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZAIQTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:19:44 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:31931 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbZAIQTm (ORCPT
+	Fri, 9 Jan 2009 11:19:48 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32087 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbZAIQTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:19:42 -0500
-X-BigFish: VPS3(zzzzzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
+	Fri, 9 Jan 2009 11:19:43 -0500
+X-BigFish: VPS-1(z5edJz936eQzzzzz32i43j68o)
+X-Spam-TCS-SCL: 7:0
 X-FB-SS: 5,
-X-WSS-ID: 0KD7PCG-04-WJ9-01
+X-WSS-ID: 0KD7PCL-03-IX9-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: linux-kernel@vger.kernel.org
 CC: mingo@redhat.com, dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
        netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 07/16] dma-debug: add debugfs interface
-Date: Fri, 9 Jan 2009 17:19:21 +0100
-Message-ID: <1231517970-20288-8-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 16/16] dma-debug: Documentation update
+Date: Fri, 9 Jan 2009 17:19:30 +0100
+Message-ID: <1231517970-20288-17-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
 References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0763 (UTC) FILETIME=[0D1001B0:01C97276]
+X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0904 (UTC) FILETIME=[0D258580:01C97276]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add debugfs interface for configuring DMA-API debugging
+Impact: add documentation about DMA-API debugging to DMA-API.txt
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- lib/dma-debug.c |   78 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 78 insertions(+), 0 deletions(-)
+ Documentation/DMA-API.txt |  117 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 117 insertions(+), 0 deletions(-)
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 4e58d09..ca0ccb1 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -19,6 +19,7 @@
- 
- #include <linux/dma-debug.h>
- #include <linux/spinlock.h>
-+#include <linux/debugfs.h>
- #include <linux/types.h>
- #include <linux/list.h>
- #include <linux/slab.h>
-@@ -58,12 +59,29 @@ static DEFINE_SPINLOCK(free_entries_lock);
- /* Global disable flag - will be set in case of an error */
- static bool global_disable __read_mostly;
- 
-+/* Global error count */
-+static u32 error_count;
+diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+index b462bb1..e36e85a 100644
+--- a/Documentation/DMA-API.txt
++++ b/Documentation/DMA-API.txt
+@@ -610,3 +610,120 @@ size is the size (and should be a page-sized multiple).
+ The return value will be either a pointer to the processor virtual
+ address of the memory, or an error (via PTR_ERR()) if any part of the
+ region is occupied.
 +
-+/* Global error show enable*/
-+static u32 show_all_errors __read_mostly;
-+/* Number of errors to show */
-+static u32 show_num_errors = 1;
++Part III - Debug drivers use of the DMA-API
++-------------------------------------------
 +
- static u32 num_free_entries;
- static u32 min_free_entries;
- 
- /* number of preallocated entries requested by kernel cmdline */
- static u32 req_entries;
- 
-+/* debugfs dentry's for the stuff above */
-+static struct dentry *dma_debug_dent;
-+static struct dentry *global_disable_dent;
-+static struct dentry *error_count_dent;
-+static struct dentry *show_all_errors_dent;
-+static struct dentry *show_num_errors_dent;
-+static struct dentry *num_free_entries_dent;
-+static struct dentry *min_free_entries_dent;
++The DMA-API as described above as some constraints. DMA addresses must be
++released with the corresponding function with the same size for example. With
++the advent of hardware IOMMUs it becomes more and more important that drivers
++do not violate those constraints. In the worst case such a violation can
++result in data corruption up to destroyed filesystems.
 +
- /*
-  * Hash related functions
-  *
-@@ -238,6 +256,58 @@ out_err:
- 	return -ENOMEM;
- }
- 
-+static int dma_debug_fs_init(void)
-+{
-+	dma_debug_dent = debugfs_create_dir("dma-api", NULL);
-+	if (!dma_debug_dent) {
-+		printk(KERN_ERR "DMA-API: can not create debugfs directory\n");
-+		return -ENOMEM;
-+	}
++To debug drivers and find bugs in the usage of the DMA-API checking code can
++be compiled into the kernel which will tell the developer about those
++violations. If your architecture supports it you can select the "Enable
++debugging of DMA-API usage" option in your kernel configuration. Enabling this
++option has a performance impact. Do not enable it in production kernels.
 +
-+	global_disable_dent = debugfs_create_bool("disabled", 0444,
-+			dma_debug_dent,
-+			(u32 *)&global_disable);
-+	if (!global_disable_dent)
-+		goto out_err;
++If you boot the resulting kernel will contain code which does some bookkeeping
++about what DMA memory was allocated for which device. If this code detects an
++error it prints a warning message with some details into your kernel log. An
++example warning message may look like this:
 +
-+	error_count_dent = debugfs_create_u32("error_count", 0444,
-+			dma_debug_dent, &error_count);
-+	if (!error_count_dent)
-+		goto out_err;
++------------[ cut here ]------------
++WARNING: at /data2/repos/linux.trees.git/lib/dma-debug.c:231
++	check_unmap+0xab/0x3d9()
++Hardware name: Toonie
++bnx2 0000:01:00.0: DMA-API: device driver tries to free DMA
++	memory it has not allocated [device address=0x00000000011]
++Modules linked in:
++Pid: 0, comm: swapper Not tainted 2.6.28 #174
++Call Trace:
++ <IRQ>  [<ffffffff8105af3a>] warn_slowpath+0xd3/0xf2
++ [<ffffffff8107c36f>] ? find_usage_backwards+0xe2/0x116
++ [<ffffffff8107c36f>] ? find_usage_backwards+0xe2/0x116
++ [<ffffffff812efd16>] ? usb_hcd_link_urb_to_ep+0x94/0xa0
++ [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
++ [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
++ [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
++ [<ffffffff811e2b4b>] ? get_hash_bucket+0x28/0x33
++ [<ffffffff814b25a5>] ? _spin_lock_irqsave+0x69/0x75
++ [<ffffffff811e2b4b>] ? get_hash_bucket+0x28/0x33
++ [<ffffffff811e2ff2>] check_unmap+0xab/0x3d9
++ [<ffffffff8107c9ed>] ? trace_hardirqs_on_caller+0x108/0x14a
++ [<ffffffff8107ca3c>] ? trace_hardirqs_on+0xd/0xf
++ [<ffffffff811e3433>] debug_unmap_single+0x3e/0x40
++ [<ffffffff8128d2d8>] dma_unmap_single+0x3d/0x60
++ [<ffffffff8128d335>] pci_unmap_page+0x1c/0x1e
++ [<ffffffff81290759>] bnx2_poll_work+0x626/0x8cb
++ [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
++ [<ffffffff81070100>] ? run_posix_cpu_timers+0x49c/0x603
++ [<ffffffff81070000>] ? run_posix_cpu_timers+0x39c/0x603
++ [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
++ [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
++ [<ffffffff81292804>] bnx2_poll_msix+0x33/0x81
++ [<ffffffff813b6478>] net_rx_action+0x8a/0x139
++ [<ffffffff8105ff39>] __do_softirq+0x8b/0x147
++ [<ffffffff8102933c>] call_softirq+0x1c/0x34
++ [<ffffffff8102a611>] do_softirq+0x39/0x90
++ [<ffffffff8105fde8>] irq_exit+0x4e/0x98
++ [<ffffffff8102a5c2>] do_IRQ+0x11f/0x135
++ [<ffffffff81028b93>] ret_from_intr+0x0/0xf
++ <EOI> <4>---[ end trace 4339d58302097423 ]---
 +
-+	show_all_errors_dent = debugfs_create_u32("all_errors", 0644,
-+			dma_debug_dent,
-+			&show_all_errors);
-+	if (!show_all_errors_dent)
-+		goto out_err;
++The driver developer can find the driver and the device including a stacktrace
++of the DMA-API call which caused this warning.
 +
-+	show_num_errors_dent = debugfs_create_u32("num_errors", 0644,
-+			dma_debug_dent,
-+			&show_num_errors);
-+	if (!show_num_errors_dent)
-+		goto out_err;
++Per default only the first error will result in a warning message. All other
++errors will only silently counted. This limitation exist to prevent the code
++from flooding your kernel log. To support debugging a device driver this can
++be disabled via debugfs. See the debugfs interface documentation below for
++details.
 +
-+	num_free_entries_dent = debugfs_create_u32("num_free_entries", 0444,
-+			dma_debug_dent,
-+			&num_free_entries);
-+	if (!num_free_entries_dent)
-+		goto out_err;
++The debugfs directory for the DMA-API debugging code is called dma-api/. In
++this directory the following files can currently be found:
 +
-+	min_free_entries_dent = debugfs_create_u32("min_free_entries", 0444,
-+			dma_debug_dent,
-+			&min_free_entries);
-+	if (!min_free_entries_dent)
-+		goto out_err;
++	dma-api/all_errors	This file contains a numeric value. If this
++				value is not equal to zero the debugging code
++				will print a warning for every error it finds
++				into the kernel log. Be carefull with this
++				option. It can easily flood your logs.
++	
++	dma-api/disabled	This read-only file contains the character 'Y'
++				if the debugging code is disabled. This can
++				happen when it runs out of memory or if it was
++				disabled at boot time
 +
-+	return 0;
++	dma-api/error_count	This file is read-only and shows the total
++				numbers of errors found.
 +
-+out_err:
-+	debugfs_remove_recursive(dma_debug_dent);
++	dma-api/num_errors	The number in this file shows how many
++				warnings will be printed to the kernel log
++				before it stops. This number is initialized to
++				one at system boot and be set by writing into
++				this file
 +
-+	return -ENOMEM;
-+}
++	dma-api/min_free_entries
++				This read-only file can be read to get the
++				minimum number of free dma_debug_entries the
++				allocator has ever seen. If this value goes
++				down to zero the code will disable itself
++				because it is not longer reliable.
 +
++	dma-api/num_free_entries
++				The current number of free dma_debug_entries
++				in the allocator.
 +
- /*
-  * Let the architectures decide how many entries should be preallocated.
-  */
-@@ -253,6 +323,14 @@ void dma_debug_init(u32 num_entries)
- 		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
- 	}
- 
-+	if (dma_debug_fs_init() != 0) {
-+		printk(KERN_ERR "DMA-API: error creating debugfs entries "
-+				"- disabling\n");
-+		global_disable = true;
++If you have this code compiled into your kernel it will be enabled by default.
++If you want to boot without the bookkeeping anyway you can provide
++'dma_debug=off' as a boot parameter. This will disable DMA-API debugging.
++Notice that you can not enable it again at runtime. You have to reboot to do
++so.
 +
-+		return;
-+	}
++When the code disables itself at runtime this is most likely because it ran
++out of dma_debug_entries. These entries are preallocated at boot. The number
++of preallocated entries is defined per architecture. If it is too low for you
++boot with 'dma_debug_entries=<your_desired_number>' to overwrite the
++architectural default.
 +
- 	if (req_entries)
- 		num_entries = req_entries;
- 
 -- 
 1.5.6.4
 
