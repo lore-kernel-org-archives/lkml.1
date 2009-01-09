@@ -1,152 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbZAIBrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbZAIBsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752760AbZAIBrV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 20:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZAIBrD
+	id S1753641AbZAIBsu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 20:48:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbZAIBsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 20:47:03 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:35382 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbZAIBrB (ORCPT
+	Thu, 8 Jan 2009 20:48:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48079 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101AbZAIBsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 20:47:01 -0500
-Date: Fri, 9 Jan 2009 10:44:16 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
-       lizf@cn.fujitsu.com, menage@google.com
-Subject: Re: [RFC][PATCH 4/4] memcg: make oom less frequently
-Message-Id: <20090109104416.9bf4aab7.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <44480.10.75.179.62.1231413588.squirrel@webmail-b.css.fujitsu.com>
-References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
-	<20090108191520.df9c1d92.nishimura@mxp.nes.nec.co.jp>
-	<44480.10.75.179.62.1231413588.squirrel@webmail-b.css.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Jan 2009 20:48:38 -0500
+Message-ID: <4966ABF9.9080409@zytor.com>
+Date: Thu, 08 Jan 2009 17:44:25 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+References: <1231365115.11687.361.camel@twins>	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>	 <1231366716.11687.377.camel@twins>	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>	 <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>	 <1231426014.11687.456.camel@twins>	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>	 <1231434515.14304.27.camel@think.oraclecorp.com>	 <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>	 <20090108183306.GA22916@elte.hu> <1231444786.5715.8.camel@brick>
+In-Reply-To: <1231444786.5715.8.camel@brick>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009 20:19:48 +0900 (JST), "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Daisuke Nishimura said:
-> > In previous implementation, mem_cgroup_try_charge checked the return
-> > value of mem_cgroup_try_to_free_pages, and just retried if some pages
-> > had been reclaimed.
-> > But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-> > only checks whether the usage is less than the limit.
-> >
-> > This patch tries to change the behavior as before to cause oom less
-> > frequently.
-> >
-> > To prevent try_charge from getting stuck in infinite loop,
-> > MEM_CGROUP_RECLAIM_RETRIES_MAX is defined.
-> >
-> >
-> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Harvey Harrison wrote:
+>>
+>> We might still try the second or third options, as i think we shouldnt go 
+>> back into the business of managing the inline attributes of ~100,000 
+>> kernel functions.
 > 
-> I think this is necessary change.
-> My version of hierarchy reclaim will do this.
+> Or just make it clear that inline shouldn't (unless for a very good reason)
+> _ever_ be used in a .c file.
 > 
-> But RETRIES_MAX is not clear ;) please use one counter.
-> 
-> And why MAX=32 ?
-I inserted printk and counted the loop count on oom(tested with 4 children).
-It seemed 32 would be enough.
 
-> > +		if (ret)
-> > +			continue;
-> seems to do enough work.
-> 
-> While memory can be reclaimed, it's not dead lock.
-I see.
-I introduced this max count because mmap_sem might be hold for a long time
-at page fault, but this is not "dead" lock as you say.
+The question is if that would produce acceptable quality code.  In
+theory it should, but I'm more than wondering if it really will.
 
-> To handle live-lock situation as "reclaimed memory is stolen very soon",
-> should we check signal_pending(current) or some flags ?
-> 
-> IMHO, using jiffies to detect how long we should retry is easy to understand
-> ....like
->  "if memory charging cannot make progress for XXXX minutes,
->   trigger some notifier or show some flag to user via cgroupfs interface.
->   to show we're tooooooo busy."
-> 
-Good Idea.
+It would be ideal, of course, as it would mean less typing.  I guess we
+could try it out by disabling any "inline" in the current code that
+isn't "__always_inline"...
 
-But I think it would be enough for now to check signal_pending(curren) and
-return -ENOMEM.
+	-hpa
 
-How about this one?
-===
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-In previous implementation, mem_cgroup_try_charge checked the return
-value of mem_cgroup_try_to_free_pages, and just retried if some pages
-had been reclaimed.
-But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-only checks whether the usage is less than the limit.
-
-This patch tries to change the behavior as before to cause oom less frequently.
-
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- mm/memcontrol.c |   14 ++++++++++----
- 1 files changed, 10 insertions(+), 4 deletions(-)
-
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index dc38a0e..2ab0a5c 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -770,10 +770,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 	 * but there might be left over accounting, even after children
- 	 * have left.
- 	 */
--	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
-+	ret += try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
- 					   get_swappiness(root_mem));
- 	if (mem_cgroup_check_under_limit(root_mem))
--		return 0;
-+		return 1;	/* indicate reclaim has succeeded */
- 	if (!root_mem->use_hierarchy)
- 		return ret;
- 
-@@ -784,10 +784,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 			next_mem = mem_cgroup_get_next_node(root_mem);
- 			continue;
- 		}
--		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
-+		ret += try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
- 						   get_swappiness(next_mem));
- 		if (mem_cgroup_check_under_limit(root_mem))
--			return 0;
-+			return 1;	/* indicate reclaim has succeeded */
- 		next_mem = mem_cgroup_get_next_node(root_mem);
- 	}
- 	return ret;
-@@ -870,8 +870,13 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 		if (!(gfp_mask & __GFP_WAIT))
- 			goto nomem;
- 
-+		if (signal_pending(current))
-+			goto oom;
-+
- 		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
- 							noswap);
-+		if (ret)
-+			continue;
- 
- 		/*
- 		 * try_to_free_mem_cgroup_pages() might not give us a full
-@@ -885,6 +890,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 			continue;
- 
- 		if (!nr_retries--) {
-+oom:
- 			if (oom) {
- 				mutex_lock(&memcg_tasklist);
- 				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
