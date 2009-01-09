@@ -1,79 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbZAIFxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbZAIF6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbZAIFxH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 00:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZAIFwz
+	id S1756650AbZAIF6W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 00:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZAIF6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 00:52:55 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:39890 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZAIFwy (ORCPT
+	Fri, 9 Jan 2009 00:58:09 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35795 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbZAIF6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 00:52:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :x-google-sender-auth;
-        b=SyxpbDUOu8XAM020BpKuC57UO4vtkO+WELTuGca9z7Zbu4hPUTmu3/LcsTI530ygV5
-         I7PpwNavNX8KpA9qUvZOxNnT8LtVcrKs+Qw2NtXK7z+3OsoR8MPmlVCBz9POsIdiaVmD
-         oLIPRk06GS4HOmj3QsqToOAEfZbdsSrpvzhbA=
-Message-ID: <177c2b150901082152g13515bf2q9575523e28a17f92@mail.gmail.com>
-Date: Fri, 9 Jan 2009 01:52:53 -0400
-From: "Mhayk Whandson" <eu@mhayk.com.br>
-To: linux-kernel@vger.kernel.org, greg@kroah.com, kuba@mareimbrium.org,
-       bryder@sgi.com
-Subject: [PATCH] ftdi_sio driver support of bar code scanner from Diebold
+	Fri, 9 Jan 2009 00:58:08 -0500
+Date: Fri, 9 Jan 2009 11:28:04 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, menage@google.com
+Subject: Re: [RFC][PATCH 4/4] memcg: make oom less frequently
+Message-ID: <20090109055804.GF9737@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp> <20090108191520.df9c1d92.nishimura@mxp.nes.nec.co.jp>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_245574_22856963.1231480373550"
-X-Google-Sender-Auth: 39b34bab3cbb5152
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090108191520.df9c1d92.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_245574_22856963.1231480373550
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-08 19:15:20]:
 
-Added the product id of bcs(bar code scanner) from Diebold Procomp Brazil.
+> In previous implementation, mem_cgroup_try_charge checked the return
+> value of mem_cgroup_try_to_free_pages, and just retried if some pages
+> had been reclaimed.
+> But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
+> only checks whether the usage is less than the limit.
+> 
+> This patch tries to change the behavior as before to cause oom less frequently.
+> 
+> To prevent try_charge from getting stuck in infinite loop,
+> MEM_CGROUP_RECLAIM_RETRIES_MAX is defined.
+> 
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  mm/memcontrol.c |   16 ++++++++++++----
+>  1 files changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 804c054..fedd76b 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -42,6 +42,7 @@
+> 
+>  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
+>  #define MEM_CGROUP_RECLAIM_RETRIES	5
+> +#define MEM_CGROUP_RECLAIM_RETRIES_MAX	32
 
-best regards,
+Why 32 are you seeing frequent OOMs? I had 5 iterations to allow
+
+1. pages to move to swap cache, which added back pressure to memcg in
+the original implementation, since the pages came back
+2. It look longer to move, recalim those pages.
+
+Ideally 3 would suffice, but I added an additional 2 retries for
+safety.
+
+> 
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  /* Turned on only when memory cgroup is enabled && really_do_swap_account = 0 */
+> @@ -770,10 +771,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+>  	 * but there might be left over accounting, even after children
+>  	 * have left.
+>  	 */
+> -	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
+> +	ret += try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
+>  					   get_swappiness(root_mem));
+>  	if (mem_cgroup_check_under_limit(root_mem))
+> -		return 0;
+> +		return 1;	/* indicate reclaim has succeeded */
+>  	if (!root_mem->use_hierarchy)
+>  		return ret;
+> 
+> @@ -785,10 +786,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+>  			next_mem = mem_cgroup_get_next_node(root_mem);
+>  			continue;
+>  		}
+> -		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
+> +		ret += try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
+>  						   get_swappiness(next_mem));
+>  		if (mem_cgroup_check_under_limit(root_mem))
+> -			return 0;
+> +			return 1;	/* indicate reclaim has succeeded */
+>  		next_mem = mem_cgroup_get_next_node(root_mem);
+>  	}
+>  	return ret;
+> @@ -820,6 +821,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+>  {
+>  	struct mem_cgroup *mem, *mem_over_limit;
+>  	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+> +	int nr_retries_max = MEM_CGROUP_RECLAIM_RETRIES_MAX;
+>  	struct res_counter *fail_res;
+> 
+>  	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
+> @@ -871,8 +873,13 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+>  		if (!(gfp_mask & __GFP_WAIT))
+>  			goto nomem;
+> 
+> +		if (!nr_retries_max--)
+> +			goto oom;
+> +
+>  		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
+>  							noswap);
+> +		if (ret)
+> +			continue;
+> 
+>  		/*
+>  		 * try_to_free_mem_cgroup_pages() might not give us a full
+> @@ -886,6 +893,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+>  			continue;
+> 
+>  		if (!nr_retries--) {
+> +oom:
+>  			if (oom) {
+>  				mutex_lock(&memcg_tasklist);
+>  				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
 
 -- 
-Mhayk Whandson
-Linux User #413723
-E-mail: eu@mhayk.com.br
-
-------=_Part_245574_22856963.1231480373550
-Content-Type: text/x-patch; name=ftdi.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fpqfjjks0
-Content-Disposition: attachment; filename=ftdi.patch
-
-ZGlmZiAtdSAuLi8uLi8uLi8uLi9saW51eC0yLjYuMjhiL2xpbnV4LTIuNi4yOC9kcml2ZXJzL3Vz
-Yi9zZXJpYWwvZnRkaV9zaW8uYyAuL2Z0ZGlfc2lvLmMKLS0tIC4uLy4uLy4uLy4uL2xpbnV4LTIu
-Ni4yOGIvbGludXgtMi42LjI4L2RyaXZlcnMvdXNiL3NlcmlhbC9mdGRpX3Npby5jCTIwMDgtMTIt
-MjQgMTk6MjY6MzcuMDAwMDAwMDAwIC0wNDAwCisrKyAuL2Z0ZGlfc2lvLmMJMjAwOS0wMS0wOSAw
-MDoxNzo1MC4wMDAwMDAwMDAgLTA0MDAKQEAgLTY2MCw2ICs2NjAsNyBAQAogCXsgVVNCX0RFVklD
-RShQQVBPVUNIX1ZJRCwgUEFQT1VDSF9RVUlETzR4NF9QSUQpIH0sCiAJeyBVU0JfREVWSUNFKEZU
-RElfVklELCBGVERJX0RPTUlOVEVMTF9ER1FHX1BJRCkgfSwKIAl7IFVTQl9ERVZJQ0UoRlRESV9W
-SUQsIEZURElfRE9NSU5URUxMX0RVU0JfUElEKSB9LAorCXsgVVNCX0RFVklDRShGVERJX1ZJRCwg
-RElFQk9MRF9CQ1NfU0U5MjNfUElEKSB9LAogCXsgfSwJCQkJCS8qIE9wdGlvbmFsIHBhcmFtZXRl
-ciBlbnRyeSAqLwogCXsgfQkJCQkJLyogVGVybWluYXRpbmcgZW50cnkgKi8KIH07CmRpZmYgLXUg
-Li4vLi4vLi4vLi4vbGludXgtMi42LjI4Yi9saW51eC0yLjYuMjgvZHJpdmVycy91c2Ivc2VyaWFs
-L2Z0ZGlfc2lvLmggLi9mdGRpX3Npby5oCi0tLSAuLi8uLi8uLi8uLi9saW51eC0yLjYuMjhiL2xp
-bnV4LTIuNi4yOC9kcml2ZXJzL3VzYi9zZXJpYWwvZnRkaV9zaW8uaAkyMDA4LTEyLTI0IDE5OjI2
-OjM3LjAwMDAwMDAwMCAtMDQwMAorKysgLi9mdGRpX3Npby5oCTIwMDktMDEtMDkgMDA6MjM6MjQu
-MDAwMDAwMDAwIC0wNDAwCkBAIC0yMCw2ICsyMCw5IEBACiAgKiBQaGlsaXBwIEfDvGhyaW5nIC0g
-cGdAZnV0dXJld2FyZS5hdCAtIGFkZGVkIHRoZSBEZXZpY2UgSUQgb2YgdGhlIFVTQiByZWxhaXMK
-ICAqIGZyb20gUnVkb2xmIEd1Z2xlcgogICoKKyAqIE1oYXlrIFdoYW5kc29uIC0gZXVAbWhheWsu
-Y29tLmJyIC0gYWRkZWQgdGhlIFByb2R1Y3QgSUQgb2YgdGhlIFVTQiBCYXIgQ29kZQorICogU2Nh
-bm5lciBmcm9tIERpZWJvbGQgUHJvY29tcCBCcmF6aWwuCisgKgogICovCiAKICNkZWZpbmUgRlRE
-SV9WSUQJMHgwNDAzCS8qIFZlbmRvciBJZCAqLwpAQCAtODgxLDYgKzg4NCwxMSBAQAogI2RlZmlu
-ZSBSQVRPQ19QUk9EVUNUX0lEX1VTQjYwRgkweGIwMjAKIAogLyoKKyAqIERJRUJPTEQgQkNTIFNF
-OTIzCisgKi8KKyNkZWZpbmUgRElFQk9MRF9CQ1NfU0U5MjNfUElEIDB4ZmI5OQorCisvKgogICog
-ICBCbVJlcXVlc3RUeXBlOiAgMTEwMCAwMDAwYgogICogICBiUmVxdWVzdDogICAgICAgRlRESV9F
-Ml9SRUFECiAgKiAgIHdWYWx1ZTogICAgICAgICAwCgpTaWduZWQtb2ZmLWJ5OiBNaGF5ayBXaGFu
-ZHNvbiA8ZXVAbWhheWsuY29tLmJyPgo=
-------=_Part_245574_22856963.1231480373550--
+	Balbir
