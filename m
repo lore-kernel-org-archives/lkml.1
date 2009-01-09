@@ -1,127 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbZAIQpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZAIQrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbZAIQpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:45:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZAIQpf
+	id S1753924AbZAIQrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:47:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZAIQq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:45:35 -0500
-Received: from mga02.intel.com ([134.134.136.20]:5887 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbZAIQpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:45:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,235,1231142400"; 
-   d="scan'208";a="421023340"
-Message-ID: <49677F2B.9000508@intel.com>
-Date: Sat, 10 Jan 2009 00:45:31 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Dirk Hohndel <hohndel@infradead.org>
-CC: "Han, Weidong" <weidong.han@intel.com>,
-       "'Grant Grundler'" <grundler@parisc-linux.org>,
-       "'linux-pci@vger.kernel.org'" <linux-pci@vger.kernel.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Arjan van de Ven'" <arjan@infradead.org>
-Subject: Re: git-latest: kernel oops in IOMMU setup
-References: <20090108120538.0176d348@infradead.org>	<20090108214116.GB20506@colo.lackof.org>	<715D42877B251141A38726ABF5CABF2C018E8FEA77@pdsmsx503.ccr.corp.intel.com>	<20090108180515.2f279671@infradead.org>	<20090108205222.2c89dcde@infradead.org>	<715D42877B251141A38726ABF5CABF2C018E8FECAA@pdsmsx503.ccr.corp.intel.com>	<20090109070805.525c0de9@infradead.org>	<49677856.90807@intel.com> <20090109083435.2ac20fd5@infradead.org>
-In-Reply-To: <20090109083435.2ac20fd5@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 9 Jan 2009 11:46:58 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44828 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbZAIQq4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 11:46:56 -0500
+Date: Fri, 9 Jan 2009 08:46:20 -0800
+From: Dirk Hohndel <hohndel@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+Message-ID: <20090109084620.3c711aad@infradead.org>
+In-Reply-To: <49677CB1.3030701@zytor.com>
+References: <20090108141808.GC11629@elte.hu>
+	<1231426014.11687.456.camel@twins>
+	<alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+	<1231434515.14304.27.camel@think.oraclecorp.com>
+	<alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
+	<20090108183306.GA22916@elte.hu>
+	<496648C7.5050700@zytor.com>
+	<alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
+	<20090109130057.GA31845@elte.hu>
+	<49675920.4050205@hp.com>
+	<20090109153508.GA4671@elte.hu>
+	<49677CB1.3030701@zytor.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dirk Hohndel wrote:
-> On Sat, 10 Jan 2009 00:16:22 +0800
-> "Zhao, Yu" <yu.zhao@intel.com> wrote:
+On Fri, 09 Jan 2009 08:34:57 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 > 
->> Dirk Hohndel wrote:
->>> On Fri, 9 Jan 2009 14:53:14 +0800
->>> "Han, Weidong" <weidong.han@intel.com> wrote:
->>>
->>>> Dirk Hohndel wrote:
->>>>> On Thu, 8 Jan 2009 18:05:15 -0800
->>>>> Dirk Hohndel <hohndel@infradead.org> wrote:
->>>>>
->>>>>> On Fri, 9 Jan 2009 08:58:46 +0800 "Han, Weidong"
->>>>>>
->>>>>> I updated to Linus' latest git (as your description made me
->>>>>> wonder if the async stuff might play a role here). I still get
->>>>>> an oops - but at a different spot and the system no longer hangs
->>>>>> - it partly recovers (but things aren't too well - for example
->>>>>> my USB keyboard / mouse don't work anymore).
->>>>> Spoke too soon. Rebooted and had the same hard lockup again. This
->>>>> time I had my camera within reach, so here's the trace:
->>>>>
->>>>> device_to_iommu+0x33/0x73
->>>>> domain_context_mapping_one+0x37/0x335
->>>>> domain_context_mapping+0x25/0xa7
->>>>> iommu_prepare_identity+0xd7/0xf3
->>>>> intel_iommu_init+0x4e4/0x8f3
->>>>> ? mutex_lock
->>>>> ? sysctl_net_init
->>>>> ? pci_iommu_init
->>>>> pci_iommu_init
->>>>>
->>>>> I also have stack, code and register values. Let me know if you
->>>>> need them. Or I can just post the picture :-)
->>>>>
->>>>> Again, very latest git tree, VT-d enabled.
->>>>>
->>>>> /D
->>>> I tried latest git tree, it works for me. Above call trace looks
->>>> right. 
->>> Spent some more time reading the code. Can't quite claim to
->>> understand all of it, yet, but I notice that most everywhere else
->>> drhd->devices[i] is checked to be != NULL before it is accessed.
->>> Why is it safe not to do that in device_to_iommu()?
->>>
->>> Would the patch below be a valid fix? It stops my system from
->>> hanging at boot. But I wonder if there is an assertion that if
->>> drhd->ignored is 0 then drhd->devices[0..drhd->device_cnt] is known
->>> to be != NULL and therefore this test is just hiding a bug
->>> somewhere else...
->>>
->>> /D
->>>
->>> Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
->>> ---
->>>  drivers/pci/intel-iommu.c |    3 ++-
->>>  1 files changed, 2 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
->>> index 235fb7a..3dfecb2 100644
->>> --- a/drivers/pci/intel-iommu.c
->>> +++ b/drivers/pci/intel-iommu.c
->>> @@ -438,7 +438,8 @@ static struct intel_iommu *device_to_iommu(u8
->>> bus, u8 devfn) continue;
->>>  
->>>  		for (i = 0; i < drhd->devices_cnt; i++)
->>> -			if (drhd->devices[i]->bus->number == bus &&
->>> +			if (drhd->devices[i] &&
->>> +			    drhd->devices[i]->bus->number == bus &&
->>>  			    drhd->devices[i]->devfn == devfn)
->>>  				return drhd->iommu;
->>>  
->> Did you see following in the kernel message?
->>                  printk(KERN_WARNING PREFIX
->>                  "Device scope device [%04x:%02x:%02x.%02x] not
->> found\n", segment, scope->bus, path->dev, path->fn);
->>
->> If yes, then
->> 		Acked-by: Yu Zhao <yu.zhao@intel.com>
+> As far as naming is concerned, gcc effectively supports four levels,
+> which *currently* map onto macros as follows:
 > 
-> Yes,
+> __always_inline		Inline unconditionally
+> inline			Inlining hint
+> <nothing>		Standard heuristics
+> noinline		Uninline unconditionally
 > 
-> DMAR: Device scope device [0000:00:03:02] not found
-> DMAR: Device scope device [0000:00:03:02] not found
-> DMAR: Device scope device [0000:00:03:03] not found
-> DMAR: Device scope device [0000:00:03:03] not found
+> A lot of noise is being made about the naming of the levels (and I
+> personally believe we should have a different annotation for "inline
+> unconditionally for correctness" and "inline unconditionally for
+> performance", as a documentation issue), but those are the four we
+> get.
 
-The laptop has a nasty bios, try to update it if you want to get rid of 
-these noises... assuming you are luck enough :-)
+Does gcc actually follow the "promise"? If that's the case (and if it's
+considered a bug when it doesn't), then we can get what Linus wants by
+annotating EVERY function with either __always_inline or noinline.
+
+/D 
+
+-- 
+Dirk Hohndel
+Intel Open Source Technology Center
