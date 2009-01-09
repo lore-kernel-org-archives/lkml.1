@@ -1,84 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZAIPM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZAIPRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZAIPM6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 10:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbZAIPMq
+	id S1752118AbZAIPRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 10:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZAIPRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 10:12:46 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:49808 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbZAIPMp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 10:12:45 -0500
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-From: Chris Mason <chris.mason@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <1231513614.442.11.camel@twins>
-References: <1231441350.14304.48.camel@think.oraclecorp.com>
-	 <alpine.LFD.2.00.0901081140550.3283@localhost.localdomain>
-	 <1231498062.11687.608.camel@twins>  <1231513614.442.11.camel@twins>
+	Fri, 9 Jan 2009 10:17:04 -0500
+Received: from mga09.intel.com ([134.134.136.24]:30129 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751753AbZAIPRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 10:17:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,235,1231142400"; 
+   d="scan'208";a="421006357"
+Subject: [GIT PULL, resend] async_tx/dmaengine update for 2.6.29
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>, g.liakhovetski@gmx.de,
+       sfr@canb.auug.org.au, netdev@vger.kernel.org,
+       Sascha Hauer <s.hauer@pengutronix.de>
 Content-Type: text/plain
-Date: Fri, 09 Jan 2009 10:11:50 -0500
-Message-Id: <1231513910.21333.19.camel@think.oraclecorp.com>
+Date: Fri, 09 Jan 2009 08:16:47 -0700
+Message-Id: <1231514207.26794.1.camel@dwillia2-linux.ch.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.49676942.011C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-09 at 16:06 +0100, Peter Zijlstra wrote:
-> On Fri, 2009-01-09 at 11:47 +0100, Peter Zijlstra wrote:
-> 
-> > > So I think the bug is still there, we just hid it better by breaking out 
-> > > of the loop with that "if (need_resched())" always eventually triggering. 
-> > > And it would be ok if it really is guaranteed to _eventually_ trigger, and 
-> > > I guess with timeslices it eventually always will, but I suspect we could 
-> > > have some serious latency spikes.
-> > 
-> > Yes, the owner getting preempted after acquiring the lock, but before
-> > setting the owner can give some nasties :-(
-> > 
-> > I initially did that preempt_disable/enable around the fast path, but I
-> > agree that slowing down the fast path is unwelcome.
-> > 
-> > Alternatively we could go back to block on !owner, with the added
-> > complexity of not breaking out of the spin on lock->owner != owner
-> > when !lock->owner, so that the premature owner clearing of the unlock
-> > fast path will not force a schedule right before we get a chance to
-> > acquire the lock.
-> > 
-> > Let me do that..
-> 
-> Ok a few observations..
-> 
-> Adding that need_resched() in the outer loop utterly destroys the
-> performance gain for PREEMPT=y. Voluntary preemption is mostly good, but
-> somewhat unstable results.
+Hi Linus, please pull from:
 
-How about if (!owner && need_resched()) break; instead of the
-unconditional need_resched().  That should solve the race that Linus saw
-without and hurt PREEMPT less.
+  git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
 
-> 
-> Adding that blocking on !owner utterly destroys everything.
-> 
-> Going to look into where that extra preemption comes from.
+...to receive:
 
--chris
+0) More code removed than added
+
+1) Channel allocation rework
+The dmaengine subsystem collects and advertises dma channels for two
+classes of users in the kernel, memory-to-memory offload and traditional
+device-to-memory DMA.  The original design was driven by the
+memory-to-memory case and is starting to show its limitations now that
+more device-to-memory DMA users are appearing.  The primary difference
+between the two classes is that memory-to-memory offload is very
+amenable to channel sharing and is tolerant of dynamic channel changes.
+Compare this to the device-to-memory case where a channel must be
+dedicated to a device and may have platform-specific reasons why it
+cannot talk to a different device.
+
+This rework allows channels to be targeted to a public mem-to-mem pool
+or be reserved for an exclusive (private) dev-to-mem allocation.
+
+2) Fixes for dmaengine
+Stephen Hemminger pointed out that the dmaengine sysfs implementation
+was broken.  It now has a proper ->release() routine.
+
+3) Fixes for ioat
+The previous channel allocation scheme covered a shutdown bug.
+
+4) Fixes for iop-adma
+Some devm fixups, and module removal enablement.
+
+These commits have been in linux-next since mid December, although I bit
+the bullet and rebased recently to cover a git-bisect breakage case.
+This was caused by net-next-2.6.git moving a routine that was deleted by
+this branch. Thanks to Stephen Rothwell for pointing this out.
+
+Thanks!
+Dan
+
+---
+
+Dan Williams (22):
+      async_tx, dmaengine: document channel allocation and api rework
+      dmaengine: remove dependency on async_tx
+      dmaengine: up-level reference counting to the module level
+      dmaengine: centralize channel allocation, introduce dma_find_channel
+      dmaengine: provide a common 'issue_pending_all' implementation
+      net_dma: convert to dma_find_channel
+      dmaengine: introduce dma_request_channel and private channels
+      dmatest: convert to dma_request_channel
+      atmel-mci: convert to dma_request_channel and down-level dma_slave
+      dmaengine: replace dma_async_client_register with dmaengine_get
+      dmaengine: kill struct dma_client and supporting infrastructure
+      dmaengine: remove 'bigref' infrastructure
+      dmaengine: kill enum dma_state_client
+      iop-adma: let devm do its job, don't duplicate free
+      iop-adma: kill debug BUG_ON
+      iop-adma: enable module removal
+      ioat: do not perform removal actions at shutdown
+      dmaengine: add a release for dma class devices and dependent infrastructure
+      dmaengine: use idr for registering dma device numbers
+      dmaengine: advertise all channels on a device to dma_filter_fn
+      dmaengine: bump initcall level to arch_initcall
+      ioat: fix self test for multi-channel case
+
+ Documentation/crypto/async-tx-api.txt |   96 ++---
+ Documentation/dmaengine.txt           |    1 +
+ arch/avr32/include/asm/atmel-mci.h    |    6 +-
+ arch/avr32/mach-at32ap/at32ap700x.c   |   15 +-
+ crypto/async_tx/async_tx.c            |  350 +---------------
+ drivers/dca/dca-core.c                |    2 +-
+ drivers/dma/Kconfig                   |    2 -
+ drivers/dma/dmaengine.c               |  778 ++++++++++++++++++++++++---------
+ drivers/dma/dmatest.c                 |  129 ++----
+ drivers/dma/dw_dmac.c                 |  119 +++---
+ drivers/dma/fsldma.c                  |    5 +-
+ drivers/dma/ioat.c                    |   92 ++---
+ drivers/dma/ioat_dma.c                |   18 +-
+ drivers/dma/iop-adma.c                |   30 +--
+ drivers/dma/mv_xor.c                  |   11 +-
+ drivers/mmc/host/atmel-mci.c          |  103 ++----
+ include/linux/async_tx.h              |   17 +-
+ include/linux/dmaengine.h             |  181 +++------
+ include/linux/dw_dmac.h               |   31 +-
+ include/linux/netdevice.h             |    3 -
+ include/net/netdma.h                  |   11 -
+ net/core/dev.c                        |  149 +------
+ net/ipv4/tcp.c                        |    5 +-
+ net/ipv4/tcp_input.c                  |    2 +-
+ net/ipv4/tcp_ipv4.c                   |    2 +-
+ net/ipv6/tcp_ipv6.c                   |    2 +-
+ 26 files changed, 900 insertions(+), 1260 deletions(-)
+ create mode 100644 Documentation/dmaengine.txt
+
 
 
