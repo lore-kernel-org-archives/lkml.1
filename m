@@ -1,3105 +1,881 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZAISqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZAISrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbZAISqb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZAISqV
+	id S1755460AbZAISrX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:47:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZAISrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:46:21 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36127 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbZAISqP (ORCPT
+	Fri, 9 Jan 2009 13:47:06 -0500
+Received: from an-out-0708.google.com ([209.85.132.248]:12959 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753655AbZAISrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:46:15 -0500
-Date: Fri, 9 Jan 2009 10:45:11 -0800
-Message-Id: <200901091845.n09IjBsT003630@terminus.zytor.com>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] bzip2/lzma kernel compression
-Cc: linux-kernel@vger.kernel.org, Alain Knaff <alain@knaff.lu>,
-       Sam Ravnborg <sam@ravnborg.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (terminus.zytor.com [127.0.0.1]); Fri, 09 Jan 2009 10:45:28 -0800 (PST)
+	Fri, 9 Jan 2009 13:47:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=fDeA3QuvRcEJYWobua6WThzpR3sj3XPLjDB+PFeSZNMePabskMN+gmyIqS4Pxmtsrs
+         apjJQf9LiREoyXKNKLNu/5DutWOgc6GbB8DuEQ8ki/Wx7JuA/xpzhZwI/7zHrHSqpByt
+         mLz8DR/qPaoM+XhE8n82/HoTczv+OxoM8l2Dg=
+Message-ID: <496799C8.1060804@gmail.com>
+Date: Fri, 09 Jan 2009 10:39:04 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081126)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Jeff Garzik <jeff@garzik.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Tejun Heo <tj@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] libata: use WARN_ON_ONCE on hot paths
+References: <b6fcc0a0901081202m30be591fse66e7f38477e0c0c@mail.gmail.com>	<20090108221753.78648cd6@daedalus.pq.iki.fi>	<20090108125317.648397d2@infradead.org>	<49667C36.4080300@gmail.com>	<20090108143127.437c15de@infradead.org>	<4966974B.3090700@gmail.com>	<49672166.4050606@gmail.com>	<496724A2.5030400@kernel.org>	<c4e36d110901090331r7c1cf06cy25c4a3a3579e47de@mail.gmail.com>	<49673D02.6000002@garzik.org> <20090109120730.5c80fc68@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090109120730.5c80fc68@lxorguk.ukuu.org.uk>
+Content-Type: multipart/mixed;
+ boundary="------------040200010509060200090409"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+This is a multi-part message in MIME format.
+--------------040200010509060200090409
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This tree contains the bzip2 and LZMA kernel compression work that
-Alain Knaff has done.  Sending this as a separate pull request in case
-you think that it is too late or immature for this cycle.
+Alan Cox wrote:
+>> If I had to guess, I would say that Arjan's patches assume it is OK to 
+>> treat two ports on a single IDE controller as completely independent, 
+>> when that is not really the reality of the hardware.
+>>     
+>
+> The PCI probe paths and the setup paths of several of the PATA
+> controller drivers know they are single threaded in a few spots so it
+> wouldn't suprise me in the slightest. Really this async stuff needs to
+> spend 2 or 3 months in -next getting the kinks worked out so that driver
+> assumptions can be pinned down and fixed, and someone can give it an API
+> with names that anyone but Arjan understands ;)
+>
+> Alan
+>
+>   
+I have applied the patch,
+and am not being spammed with
+loads of warnings. However there is
+one in there:
 
-The good part is that it is a highly "brittle" feature -- if it fails,
-it will fail noisily and obviously.
+[    1.902934] ------------[ cut here ]------------
+[    1.910604] WARNING: at drivers/ata/libata-sff.c:1017 
+ata_sff_hsm_move+0x4de/0x72f()
+[    1.912902] Hardware name: MacBookPro2,2
+[    1.912902] Modules linked in:
+[    1.912902] Pid: 0, comm: swapper Not tainted 2.6.28-07814-gdefbbee #10
+[    1.912902] Call Trace:
+[    1.912902]  [<c01292ca>] warn_slowpath+0x76/0xad
+[    1.912902]  [<c018a64d>] ? check_object+0x139/0x190
+[    1.912902]  [<c018aed4>] ? __slab_free+0x280/0x2b8
+[    1.912902]  [<c0243883>] ? _raw_spin_lock+0x53/0xf8
+[    1.912902]  [<c03e22a8>] ? _spin_unlock_irqrestore+0x2d/0x3c
+[    1.912902]  [<c02327f0>] ? blk_run_queue+0x2d/0x31
+[    1.912902]  [<c02ceca9>] ? scsi_run_queue+0x29d/0x324
+[    1.912902]  [<c023ba49>] ? kobject_put+0x37/0x3c
+[    1.912902]  [<c02afb67>] ? put_device+0x14/0x16
+[    1.912902]  [<c02ee75a>] ? ata_sff_data_xfer32+0x5d/0xa7
+[    1.912902]  [<c02ee0ce>] ata_sff_hsm_move+0x4de/0x72f
+[    1.912902]  [<c02ee448>] ? ata_sff_interrupt+0x18/0x1f7
+[    1.912902]  [<c02ee58b>] ata_sff_interrupt+0x15b/0x1f7
+[    1.912902]  [<c015a307>] handle_IRQ_event+0x34/0x69
+[    1.912902]  [<c015b47e>] handle_edge_irq+0xc8/0x109
+[    1.912902]  [<c0104bc9>] do_IRQ+0x92/0xad
+[    1.912902]  [<c010396c>] common_interrupt+0x2c/0x34
+[    1.912902]  [<c010835b>] ? mwait_idle+0x55/0x85
+[    1.912902]  [<c01023b1>] ? cpu_idle+0x7e/0xa5
+[    1.912902]  [<c01023b7>] cpu_idle+0x84/0xa5
+[    1.912902]  [<c03d39ef>] rest_init+0x53/0x55
+[    1.912902]  [<c055a818>] start_kernel+0x2dc/0x2e1
+[    1.912902]  [<c055a085>] __init_begin+0x85/0x8d
+[    1.912902] ---[ end trace c6be6dae142eee34 ]---
 
-I have not included the ARM parts that Alain developed; I will leave
-those to be fed through rmk.
+I guess the best answer for this, is to just
+be patient, until things get worked out.
+attached is dmesg.
 
-One of the main attractions of this patchset is that it uses the newer
-lib/zlib_inflate code even for the kernel decompressor.  Once all
-architectures that use the older lib/inflate.c have been converted
-over, we can remove that code entirely.
+regards;
 
-	-hpa
+Justin P. Mattock
 
+--------------040200010509060200090409
+Content-Type: text/plain;
+ name="dmesg"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline;
+ filename="dmesg"
 
-The following changes since commit c861ea2cb2c25c1698734d9b0540a09e253690a1:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jmorris/security-testing-2.6
+[    0.000000] Linux version 2.6.28-07814-gdefbbee (root@unix) (gcc version 4.3.3 20081217 (prerelease) (Ubuntu 4.3.2-2ubuntu9) ) #10 SMP Fri Jan 9 10:17:23 PST 2009
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   NSC Geode by NSC
+[    0.000000]   Cyrix CyrixInstead
+[    0.000000]   Centaur CentaurHauls
+[    0.000000]   Transmeta GenuineTMx86
+[    0.000000]   Transmeta TransmetaCPU
+[    0.000000]   UMC UMC UMC UMC
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000003f0ea000 (usable)
+[    0.000000]  BIOS-e820: 000000003f0ea000 - 000000003f2eb000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003f2eb000 - 000000003febe000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000003febe000 - 000000003feef000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003feef000 - 000000003ff00000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000003ff00000 - 0000000040000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed20000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
+[    0.000000] DMI 2.4 present.
+[    0.000000] last_pfn = 0x3f0ea max_arch_pfn = 0x100000
+[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+[    0.000000] kernel direct mapping tables up to 377fe000 @ 7000-d000
+[    0.000000] init_ohci1394_dma: initializing OHCI-1394 at 0c:03.0
+[    0.000000] init_ohci1394_dma: finished initializing OHCI DMA
+[    0.000000] ACPI: RSDP 000FE020, 0024 (r2 APPLE )
+[    0.000000] ACPI: XSDT 3FEFD1C0, 0074 (r1 APPLE   Apple00       A5       1000013)
+[    0.000000] ACPI: FACP 3FEFB000, 00F4 (r3 APPLE   Apple00       A5 Loki       5F)
+[    0.000000] ACPI: DSDT 3FEF0000, 48D1 (r1 APPLE  MacBookP    20002 INTL 20050309)
+[    0.000000] ACPI: FACS 3FEC0000, 0040
+[    0.000000] ACPI: HPET 3FEFA000, 0038 (r1 APPLE   Apple00        1 Loki       5F)
+[    0.000000] ACPI: APIC 3FEF9000, 0068 (r1 APPLE   Apple00        1 Loki       5F)
+[    0.000000] ACPI: MCFG 3FEF8000, 003C (r1 APPLE   Apple00        1 Loki       5F)
+[    0.000000] ACPI: ASF! 3FEF7000, 00A0 (r32 APPLE   Apple00        1 Loki       5F)
+[    0.000000] ACPI: SBST 3FEF6000, 0030 (r1 APPLE   Apple00        1 Loki       5F)
+[    0.000000] ACPI: ECDT 3FEF5000, 0053 (r1 APPLE   Apple00        1 Loki       5F)
+[    0.000000] ACPI: SSDT 3FEEF000, 04DC (r1 APPLE     CpuPm     3000 INTL 20050309)
+[    0.000000] ACPI: SSDT 3FEBD000, 064F (r1 SataRe  SataPri     1000 INTL 20050309)
+[    0.000000] ACPI: SSDT 3FEBC000, 069C (r1 SataRe  SataSec     1000 INTL 20050309)
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] 120MB HIGHMEM available.
+[    0.000000] 887MB LOWMEM available.
+[    0.000000]   mapped low ram: 0 - 377fe000
+[    0.000000]   low ram: 00000000 - 377fe000
+[    0.000000]   bootmap 00009000 - 0000ff00
+[    0.000000] (8 early reservations) ==> bootmem [0000000000 - 00377fe000]
+[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+[    0.000000]   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+[    0.000000]   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+[    0.000000]   #3 [0000100000 - 0000669250]    TEXT DATA BSS ==> [0000100000 - 0000669250]
+[    0.000000]   #4 [000066a000 - 000066d000]    INIT_PG_TABLE ==> [000066a000 - 000066d000]
+[    0.000000]   #5 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
+[    0.000000]   #6 [0000007000 - 0000009000]          PGTABLE ==> [0000007000 - 0000009000]
+[    0.000000]   #7 [0000009000 - 0000010000]          BOOTMAP ==> [0000009000 - 0000010000]
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000000 -> 0x00001000
+[    0.000000]   Normal   0x00001000 -> 0x000377fe
+[    0.000000]   HighMem  0x000377fe -> 0x0003f0ea
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[2] active PFN ranges
+[    0.000000]     0: 0x00000000 -> 0x0000009f
+[    0.000000]     0: 0x00000100 -> 0x0003f0ea
+[    0.000000] On node 0 totalpages: 258185
+[    0.000000] free_area_init_node: node 0, pgdat c053bb40, node_mem_map c1000000
+[    0.000000]   DMA zone: 32 pages used for memmap
+[    0.000000]   DMA zone: 0 pages reserved
+[    0.000000]   DMA zone: 3967 pages, LIFO batch:0
+[    0.000000]   Normal zone: 1744 pages used for memmap
+[    0.000000]   Normal zone: 221486 pages, LIFO batch:31
+[    0.000000]   HighMem zone: 242 pages used for memmap
+[    0.000000]   HighMem zone: 30714 pages, LIFO batch:7
+[    0.000000] Using APIC driver default
+[    0.000000] ACPI: PM-Timer IO Port: 0x408
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+[    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+[    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+[    0.000000] ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
+[    0.000000] IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.000000] ACPI: IRQ0 used by override.
+[    0.000000] ACPI: IRQ2 used by override.
+[    0.000000] ACPI: IRQ9 used by override.
+[    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
+[    0.000000] Using ACPI (MADT) for SMP configuration information
+[    0.000000] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
+[    0.000000] PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
+[    0.000000] PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
+[    0.000000] PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
+[    0.000000] Allocating PCI resources starting at 50000000 (gap: 40000000:b0000000)
+[    0.000000] NR_CPUS:2 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+[    0.000000] PERCPU: Allocating 40960 bytes of per cpu data
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 256167
+[    0.000000] Kernel command line: BOOT_IMAGE=/boot/vmlinuz-2.6.28-07814-gdefbbee root=/dev/sda1 vga=790 debug pnpacpi=off pci=routeirq acpi_osi=Darwin audit=1 selinux=1 ohci1394_dma=early enforcing=0
+[    0.000000] ACPI: Added _OSI(Darwin)
+[    0.000000] audit: enabled (after initialization)
+[    0.000000] Enabling fast FPU save and restore... done.
+[    0.000000] Enabling unmasked SIMD FPU exception support... done.
+[    0.000000] Initializing CPU#0
+[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
+[    0.000000] Extended CMOS year: 2000
+[    0.000000] TSC: Unable to calibrate against PIT
+[    0.000000] TSC: using PMTIMER reference calibration
+[    0.000000] Detected 2161.204 MHz processor.
+[    0.010000] Console: colour dummy device 80x25
+[    0.010000] console [tty0] enabled
+[    0.010000] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+[    0.010000] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.010000] Memory: 1017788k/1033128k available (2969k kernel code, 14592k reserved, 1457k data, 404k init, 123824k highmem)
+[    0.010000] virtual kernel memory layout:
+[    0.010000]     fixmap  : 0xfff9e000 - 0xfffff000   ( 388 kB)
+[    0.010000]     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
+[    0.010000]     vmalloc : 0xf7ffe000 - 0xff7fe000   ( 120 MB)
+[    0.010000]     lowmem  : 0xc0000000 - 0xf77fe000   ( 887 MB)
+[    0.010000]       .init : 0xc055a000 - 0xc05bf000   ( 404 kB)
+[    0.010000]       .data : 0xc03e64be - 0xc05529c4   (1457 kB)
+[    0.010000]       .text : 0xc0100000 - 0xc03e64be   (2969 kB)
+[    0.010000] Checking if this processor honours the WP bit even in supervisor mode...Ok.
+[    0.010000] SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.010000] hpet clockevent registered
+[    0.010000] HPET: 3 timers in total, 0 timers will be used for per-cpu timer
+[    0.010000] Calibrating delay loop (skipped), value calculated using timer frequency.. 4322.40 BogoMIPS (lpj=21612040)
+[    0.010000] Security Framework initialized
+[    0.010000] SELinux:  Initializing.
+[    0.010000] SELinux:  Starting in permissive mode
+[    0.010000] Failure registering Root Plug module with the kernel
+[    0.010000] Mount-cache hash table entries: 512
+[    0.010000] CPU: L1 I cache: 32K, L1 D cache: 32K
+[    0.010000] CPU: L2 cache: 4096K
+[    0.010000] [ds] using core 2 configuration
+[    0.010000] CPU: Physical Processor ID: 0
+[    0.010000] CPU: Processor Core ID: 0
+[    0.010000] Intel machine check architecture supported.
+[    0.010000] Intel machine check reporting enabled on CPU#0.
+[    0.010000] using mwait in idle threads.
+[    0.010000] Checking 'hlt' instruction... OK.
+[    0.041364] ACPI: Core revision 20080926
+[    0.061825] ftrace: converting mcount calls to 0f 1f 44 00 00
+[    0.061832] ftrace: allocating 15027 entries in 59 pages
+[    0.067892]   alloc irq_2_pin on cpu 0 node 0
+[    0.067901]   alloc irq_2_pin on cpu 0 node 0
+[    0.067907]   alloc irq_2_pin on cpu 0 node 0
+[    0.067913]   alloc irq_2_pin on cpu 0 node 0
+[    0.067919]   alloc irq_2_pin on cpu 0 node 0
+[    0.067925]   alloc irq_2_pin on cpu 0 node 0
+[    0.067930]   alloc irq_2_pin on cpu 0 node 0
+[    0.067936]   alloc irq_2_pin on cpu 0 node 0
+[    0.067942]   alloc irq_2_pin on cpu 0 node 0
+[    0.067948]   alloc irq_2_pin on cpu 0 node 0
+[    0.067954]   alloc irq_2_pin on cpu 0 node 0
+[    0.067960]   alloc irq_2_pin on cpu 0 node 0
+[    0.067966]   alloc irq_2_pin on cpu 0 node 0
+[    0.067972]   alloc irq_2_pin on cpu 0 node 0
+[    0.067978]   alloc irq_2_pin on cpu 0 node 0
+[    0.068134] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.168154] CPU0: Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz stepping 06
+[    0.170000] Testing tracer nop: PASSED
+[    0.170000] Booting processor 1 APIC 0x1 ip 0x6000
+[    0.010000] Initializing CPU#1
+[    0.010000] Calibrating delay using timer specific routine.. 4322.51 BogoMIPS (lpj=21612583)
+[    0.010000] CPU: L1 I cache: 32K, L1 D cache: 32K
+[    0.010000] CPU: L2 cache: 4096K
+[    0.010000] [ds] using core 2 configuration
+[    0.010000] CPU: Physical Processor ID: 0
+[    0.010000] CPU: Processor Core ID: 1
+[    0.010000] Intel machine check architecture supported.
+[    0.010000] Intel machine check reporting enabled on CPU#1.
+[    0.010000] x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+[    0.321749] CPU1: Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz stepping 06
+[    0.321785] checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+[    0.330031] Brought up 2 CPUs
+[    0.330036] Total of 2 processors activated (8644.92 BogoMIPS).
+[    0.330103] CPU0 attaching sched-domain:
+[    0.330108]  domain 0: span 0-1 level MC
+[    0.330112]   groups: 0 1
+[    0.330119] CPU1 attaching sched-domain:
+[    0.330122]  domain 0: span 0-1 level MC
+[    0.330126]   groups: 1 0
+[    0.330214] net_namespace: 800 bytes
+[    0.330214] Booting paravirtualized kernel on bare hardware
+[    0.330327] NET: Registered protocol family 16
+[    0.330327] EISA bus registered
+[    0.330327] ACPI: bus type pci registered
+[    0.330327] PCI: Using configuration type 1 for base access
+[    0.340112] bio: create slab <bio-0> at 0
+[    0.341250] ACPI: EC: EC description table is found, configuring boot EC
+[    0.341517] ACPI: EC: non-query interrupt received, switching to interrupt mode
+[    0.355071] ACPI: Interpreter enabled
+[    0.355078] ACPI: (supports S0 S3 S4 S5)
+[    0.355153] ACPI: Using IOAPIC for interrupt routing
+[    0.371523] ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+[    0.371523] ACPI: EC: driver started in interrupt mode
+[    0.371523] ACPI: No dock devices found.
+[    0.371523] ACPI: PCI Root Bridge [PCI0] (0000:00)
+[    0.371523] pci 0000:00:01.0: PME# supported from D0 D3hot D3cold
+[    0.371523] pci 0000:00:01.0: PME# disabled
+[    0.371523] pci 0000:00:07.0: reg 10 32bit mmio: [0x50404000-0x50404fff]
+[    0.371523] pci 0000:00:1b.0: reg 10 64bit mmio: [0x50400000-0x50403fff]
+[    0.371523] pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+[    0.371523] pci 0000:00:1b.0: PME# disabled
+[    0.371523] pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
+[    0.371523] pci 0000:00:1c.0: PME# disabled
+[    0.371523] pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
+[    0.371523] pci 0000:00:1c.1: PME# disabled
+[    0.371523] pci 0000:00:1c.2: PME# supported from D0 D3hot D3cold
+[    0.371523] pci 0000:00:1c.2: PME# disabled
+[    0.371523] pci 0000:00:1d.0: reg 20 io port: [0x4080-0x409f]
+[    0.371523] pci 0000:00:1d.1: reg 20 io port: [0x4060-0x407f]
+[    0.371523] pci 0000:00:1d.2: reg 20 io port: [0x4040-0x405f]
+[    0.371523] pci 0000:00:1d.3: reg 20 io port: [0x4020-0x403f]
+[    0.371523] pci 0000:00:1d.7: reg 10 32bit mmio: [0x50405400-0x504057ff]
+[    0.371523] pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
+[    0.371523] pci 0000:00:1d.7: PME# disabled
+[    0.371523] pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+[    0.371523] pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+[    0.371523] pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0680 (mask 000f)
+[    0.371523] pci 0000:00:1f.0: ICH7 LPC Generic IO decode 2 PIO at 1640 (mask 000f)
+[    0.371523] pci 0000:00:1f.0: ICH7 LPC Generic IO decode 4 PIO at 0300 (mask 001f)
+[    0.371523] pci 0000:00:1f.1: reg 10 io port: [0x40d8-0x40df]
+[    0.371523] pci 0000:00:1f.1: reg 14 io port: [0x40ec-0x40ef]
+[    0.371523] pci 0000:00:1f.1: reg 18 io port: [0x40d0-0x40d7]
+[    0.371523] pci 0000:00:1f.1: reg 1c io port: [0x40e8-0x40eb]
+[    0.371523] pci 0000:00:1f.1: reg 20 io port: [0x40b0-0x40bf]
+[    0.371523] pci 0000:00:1f.2: reg 10 io port: [0x40c8-0x40cf]
+[    0.371523] pci 0000:00:1f.2: reg 14 io port: [0x40e4-0x40e7]
+[    0.371523] pci 0000:00:1f.2: reg 18 io port: [0x40c0-0x40c7]
+[    0.371523] pci 0000:00:1f.2: reg 1c io port: [0x40e0-0x40e3]
+[    0.371523] pci 0000:00:1f.2: reg 20 io port: [0x40a0-0x40af]
+[    0.371523] pci 0000:00:1f.2: reg 24 32bit mmio: [0x50405000-0x504053ff]
+[    0.371523] pci 0000:00:1f.2: PME# supported from D3hot
+[    0.371526] pci 0000:00:1f.2: PME# disabled
+[    0.371594] pci 0000:00:1f.3: reg 20 io port: [0xefa0-0xefbf]
+[    0.371673] pci 0000:01:00.0: reg 10 32bit mmio: [0x40000000-0x47ffffff]
+[    0.371683] pci 0000:01:00.0: reg 14 io port: [0x3000-0x30ff]
+[    0.371694] pci 0000:01:00.0: reg 18 32bit mmio: [0x50300000-0x5030ffff]
+[    0.371716] pci 0000:01:00.0: reg 30 32bit mmio: [0xfffe0000-0xffffffff]
+[    0.371748] pci 0000:01:00.0: supports D1 D2
+[    0.371811] pci 0000:00:01.0: bridge io port: [0x3000-0x3fff]
+[    0.371816] pci 0000:00:01.0: bridge 32bit mmio: [0x50300000-0x503fffff]
+[    0.371823] pci 0000:00:01.0: bridge 64bit mmio pref: [0x40000000-0x47ffffff]
+[    0.371906] pci 0000:02:00.0: reg 10 64bit mmio: [0x50200000-0x50203fff]
+[    0.371919] pci 0000:02:00.0: reg 18 io port: [0x2000-0x20ff]
+[    0.371957] pci 0000:02:00.0: reg 30 32bit mmio: [0xfffe0000-0xffffffff]
+[    0.372016] pci 0000:02:00.0: supports D1 D2
+[    0.372020] pci 0000:02:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.372028] pci 0000:02:00.0: PME# disabled
+[    0.372095] pci 0000:00:1c.0: bridge io port: [0x2000-0x2fff]
+[    0.372102] pci 0000:00:1c.0: bridge 32bit mmio: [0x50200000-0x502fffff]
+[    0.372183] pci 0000:03:00.0: reg 10 64bit mmio: [0x50100000-0x5010ffff]
+[    0.372281] pci 0000:03:00.0: supports D1
+[    0.372284] pci 0000:03:00.0: PME# supported from D0 D1 D3hot
+[    0.372292] pci 0000:03:00.0: PME# disabled
+[    0.372372] pci 0000:00:1c.1: bridge 32bit mmio: [0x50100000-0x501fffff]
+[    0.372442] pci 0000:00:1c.2: bridge io port: [0x1000-0x1fff]
+[    0.372449] pci 0000:00:1c.2: bridge 32bit mmio: [0x4c100000-0x500fffff]
+[    0.372459] pci 0000:00:1c.2: bridge 64bit mmio pref: [0x48000000-0x4bffffff]
+[    0.372519] pci 0000:0c:03.0: reg 10 32bit mmio: [0x4c004000-0x4c0047ff]
+[    0.372531] pci 0000:0c:03.0: reg 14 32bit mmio: [0x4c000000-0x4c003fff]
+[    0.372600] pci 0000:0c:03.0: supports D1 D2
+[    0.372603] pci 0000:0c:03.0: PME# supported from D0 D1 D2 D3hot
+[    0.372611] pci 0000:0c:03.0: PME# disabled
+[    0.372676] pci 0000:00:1e.0: transparent bridge
+[    0.372685] pci 0000:00:1e.0: bridge 32bit mmio: [0x4c000000-0x4c0fffff]
+[    0.372723] pci_bus 0000:00: on NUMA node 0
+[    0.372738] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[    0.381199] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEGP._PRT]
+[    0.381795] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP01._PRT]
+[    0.382378] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP02._PRT]
+[    0.382958] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP03._PRT]
+[    0.383566] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCIB._PRT]
+[    0.401130] ACPI: PCI Interrupt Link [LNKA] (IRQs 1 3 4 5 6 7 10 12 14 15) *11
+[    0.401130] ACPI: PCI Interrupt Link [LNKB] (IRQs 1 3 4 5 6 7 *11 12 14 15)
+[    0.401130] ACPI: PCI Interrupt Link [LNKC] (IRQs 1 3 4 5 6 7 10 12 14 15) *11
+[    0.401130] ACPI: PCI Interrupt Link [LNKD] (IRQs 1 3 4 5 6 7 *11 12 14 15)
+[    0.401399] ACPI: PCI Interrupt Link [LNKE] (IRQs 1 3 4 5 6 7 10 12 14 15) *0, disabled.
+[    0.401687] ACPI: PCI Interrupt Link [LNKF] (IRQs 1 3 4 5 6 7 11 12 14 15) *0, disabled.
+[    0.401974] ACPI: PCI Interrupt Link [LNKG] (IRQs 1 3 4 5 6 7 *10 12 14 15)
+[    0.402258] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 *11 12 14 15)
+[    0.410348] SCSI subsystem initialized
+[    0.410348] libata version 3.00 loaded.
+[    0.410348] usbcore: registered new interface driver usbfs
+[    0.410348] usbcore: registered new interface driver hub
+[    0.410348] usbcore: registered new device driver usb
+[    0.410348] PCI: Using ACPI for IRQ routing
+[    0.410348] PCI: Routing PCI interrupts for all devices because "pci=routeirq" specified
+[    0.410348]   alloc irq_2_pin on cpu 0 node 0
+[    0.410348] pci 0000:00:01.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    0.410348] pci 0000:00:07.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    0.410348]   alloc irq_2_pin on cpu 0 node 0
+[    0.410348] pci 0000:00:1b.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
+[    0.410348]   alloc irq_2_pin on cpu 0 node 0
+[    0.410348] pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[    0.410348] pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) -> IRQ 16
+[    0.410348]   alloc irq_2_pin on cpu 0 node 0
+[    0.410348] pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[    0.410348]   alloc irq_2_pin on cpu 0 node 0
+[    0.410348] pci 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+[    0.410348]   alloc irq_2_pin on cpu 0 node 0
+[    0.410348] pci 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[    0.410348] pci 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[    0.410348] pci 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
+[    0.410348] pci 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+[    0.410348] pci 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+[    0.410348] pci 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[    0.410348] pci 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[    0.410348] vendor=8086 device=27a1
+[    0.410348] pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    0.410348] vendor=8086 device=27d0
+[    0.410348] pci 0000:02:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    0.410348] vendor=8086 device=27d2
+[    0.410348] pci 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[    0.410348] vendor=8086 device=2448
+[    0.410348] pci 0000:0c:03.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+[    0.440090] cfg80211: Using static regulatory domain info
+[    0.440090] cfg80211: Regulatory domain: US
+[    0.440090] 	(start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+[    0.440090] 	(2402000 KHz - 2472000 KHz @ 40000 KHz), (600 mBi, 2700 mBm)
+[    0.440090] 	(5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.440090] 	(5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.440090] 	(5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.440090] 	(5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.440090] 	(5735000 KHz - 5835000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
+[    0.440094] cfg80211: Calling CRDA for country: US
+[    0.440123] NetLabel: Initializing
+[    0.440123] NetLabel:  domain hash size = 128
+[    0.440123] NetLabel:  protocols = UNLABELED CIPSOv4
+[    0.440142] NetLabel:  unlabeled traffic allowed by default
+[    0.440156] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+[    0.440163] hpet0: 3 comparators, 64-bit 14.318180 MHz counter
+[    0.470029] pnp: PnP ACPI: disabled
+[    0.501823] Switched to high resolution mode on CPU 1
+[    0.505912] pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
+[    0.505919] pci 0000:00:01.0:   IO window: 0x3000-0x3fff
+[    0.505926] pci 0000:00:01.0:   MEM window: 0x50300000-0x503fffff
+[    0.505931] pci 0000:00:01.0:   PREFETCH window: 0x00000040000000-0x00000047ffffff
+[    0.505941] pci 0000:00:1c.0: PCI bridge, secondary bus 0000:02
+[    0.505946] pci 0000:00:1c.0:   IO window: 0x2000-0x2fff
+[    0.505954] pci 0000:00:1c.0:   MEM window: 0x50200000-0x502fffff
+[    0.505962] pci 0000:00:1c.0:   PREFETCH window: 0x00000050500000-0x000000505fffff
+[    0.505973] pci 0000:00:1c.1: PCI bridge, secondary bus 0000:03
+[    0.505976] pci 0000:00:1c.1:   IO window: disabled
+[    0.505984] pci 0000:00:1c.1:   MEM window: 0x50100000-0x501fffff
+[    0.505991] pci 0000:00:1c.1:   PREFETCH window: disabled
+[    0.506001] pci 0000:00:1c.2: PCI bridge, secondary bus 0000:04
+[    0.506006] pci 0000:00:1c.2:   IO window: 0x1000-0x1fff
+[    0.506015] pci 0000:00:1c.2:   MEM window: 0x4c100000-0x500fffff
+[    0.506022] pci 0000:00:1c.2:   PREFETCH window: 0x00000048000000-0x0000004bffffff
+[    0.506033] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:0c
+[    0.506037] pci 0000:00:1e.0:   IO window: disabled
+[    0.506045] pci 0000:00:1e.0:   MEM window: 0x4c000000-0x4c0fffff
+[    0.506052] pci 0000:00:1e.0:   PREFETCH window: disabled
+[    0.506065] pci 0000:00:01.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    0.506071] pci 0000:00:01.0: setting latency timer to 64
+[    0.506078] pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[    0.506085] pci 0000:00:1c.0: setting latency timer to 64
+[    0.506093] pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) -> IRQ 16
+[    0.506100] pci 0000:00:1c.1: setting latency timer to 64
+[    0.506108] pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[    0.506115] pci 0000:00:1c.2: setting latency timer to 64
+[    0.510004] Switched to high resolution mode on CPU 0
+[    0.510546] pci 0000:00:1e.0: power state changed by ACPI to D0
+[    0.510556] pci 0000:00:1e.0: setting latency timer to 64
+[    0.510562] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
+[    0.510566] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffff]
+[    0.510570] pci_bus 0000:01: resource 0 io:  [0x3000-0x3fff]
+[    0.510574] pci_bus 0000:01: resource 1 mem: [0x50300000-0x503fffff]
+[    0.510579] pci_bus 0000:01: resource 2 mem: [0x40000000-0x47ffffff]
+[    0.510583] pci_bus 0000:01: resource 3 mem: [0x0-0x0]
+[    0.510586] pci_bus 0000:02: resource 0 io:  [0x2000-0x2fff]
+[    0.510591] pci_bus 0000:02: resource 1 mem: [0x50200000-0x502fffff]
+[    0.510595] pci_bus 0000:02: resource 2 mem: [0x50500000-0x505fffff]
+[    0.510599] pci_bus 0000:02: resource 3 mem: [0x0-0x0]
+[    0.510602] pci_bus 0000:03: resource 0 mem: [0x0-0x0]
+[    0.510606] pci_bus 0000:03: resource 1 mem: [0x50100000-0x501fffff]
+[    0.510610] pci_bus 0000:03: resource 2 mem: [0x0-0x0]
+[    0.510614] pci_bus 0000:03: resource 3 mem: [0x0-0x0]
+[    0.510617] pci_bus 0000:04: resource 0 io:  [0x1000-0x1fff]
+[    0.510621] pci_bus 0000:04: resource 1 mem: [0x4c100000-0x500fffff]
+[    0.510626] pci_bus 0000:04: resource 2 mem: [0x48000000-0x4bffffff]
+[    0.510629] pci_bus 0000:04: resource 3 mem: [0x0-0x0]
+[    0.510633] pci_bus 0000:0c: resource 0 mem: [0x0-0x0]
+[    0.510637] pci_bus 0000:0c: resource 1 mem: [0x4c000000-0x4c0fffff]
+[    0.510641] pci_bus 0000:0c: resource 2 mem: [0x0-0x0]
+[    0.510645] pci_bus 0000:0c: resource 3 io:  [0x00-0xffff]
+[    0.510649] pci_bus 0000:0c: resource 4 mem: [0x000000-0xffffffff]
+[    0.510682] NET: Registered protocol family 2
+[    0.540086] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.540445] TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+[    0.540896] TCP bind hash table entries: 65536 (order: 8, 1310720 bytes)
+[    0.541448] TCP: Hash tables configured (established 131072 bind 65536)
+[    0.541453] TCP reno registered
+[    0.550160] NET: Registered protocol family 1
+[    0.551231] platform rtc_cmos: registered platform RTC device (no PNP device found)
+[    0.553514] Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+[    0.555132] Initializing RT-Tester: OK
+[    0.555262] audit: initializing netlink socket (enabled)
+[    0.555328] type=2000 audit(1231525384.550:1): initialized
+[    0.558404] Testing tracer sched_switch: PASSED
+[    0.660047] Testing tracer function: PASSED
+[    0.790682] Testing dynamic ftrace: PASSED
+[    1.030058] Testing tracer irqsoff: PASSED
+[    1.040356] Testing tracer wakeup: PASSED
+[    1.370269] highmem bounce pool size: 64 pages
+[    1.370277] HugeTLB registered 4 MB page size, pre-allocated 0 pages
+[    1.388618] fuse init (API version 7.11)
+[    1.389288] msgmni has been set to 1746
+[    1.389550] SELinux:  Registering netfilter hooks
+[    1.390420] alg: No test for stdrng (krng)
+[    1.390439] io scheduler noop registered
+[    1.390832] io scheduler cfq registered (default)
+[    1.390985] pci 0000:01:00.0: Boot video device
+[    1.391671] vesafb: framebuffer at 0x40000000, mapped to 0xf8100000, using 3072k, total 16384k
+[    1.391678] vesafb: mode is 1024x768x16, linelength=2048, pages=9
+[    1.391682] vesafb: protected mode interface info at c000:ad0c
+[    1.391686] vesafb: pmi: set display start = c00cad94, set palette = c00cae50
+[    1.391690] vesafb: scrolling: redraw
+[    1.391694] vesafb: Truecolor: size=0:5:5:5, shift=0:10:5:0
+[    1.416065] Console: switching to colour frame buffer device 128x48
+[    1.438277] fb0: VESA VGA frame buffer device
+[    1.453688] loop: module loaded
+[    1.453841] Linux video capture interface: v2.00
+[    1.454311] input: Macintosh mouse button emulation as /class/input/input0
+[    1.454947] Driver 'sd' needs updating - please use bus_type methods
+[    1.455342] Driver 'sr' needs updating - please use bus_type methods
+[    1.456001] ata_piix 0000:00:1f.1: version 2.12
+[    1.456332] ata_piix 0000:00:1f.1: power state changed by ACPI to D0
+[    1.456631] ata_piix 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+[    1.457004] ata_piix 0000:00:1f.1: setting latency timer to 64
+[    1.457366] scsi0 : ata_piix
+[    1.458056] scsi1 : ata_piix
+[    1.460215] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x40b0 irq 14
+[    1.460536] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x40b8 irq 15
+[    1.460872] ata_piix 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[    1.461202] ata_piix 0000:00:1f.2: MAP [ P0 P2 -- -- ]
+[    1.620022] ata_piix 0000:00:1f.2: setting latency timer to 64
+[    1.631721] scsi2 : ata_piix
+[    1.639476] scsi3 : ata_piix
+[    1.650596] ata3: SATA max UDMA/133 cmd 0x40c8 ctl 0x40e4 bmdma 0x40a0 irq 19
+[    1.658261] ata4: SATA max UDMA/133 cmd 0x40c0 ctl 0x40e0 bmdma 0x40a8 irq 19
+[    1.666287] ata1.00: ATAPI: MATSHITADVD-R   UJ-857D, KCV9, max UDMA/66
+[    1.670319] usbcore: registered new interface driver usblcd
+[    1.670425] usbcore: registered new interface driver usbled
+[    1.670833] PNP: No PS/2 controller found. Probing ports directly.
+[    1.671713] i8042.c: No controller found.
+[    1.710334] mice: PS/2 mouse device common for all mice
+[    1.719243] device-mapper: ioctl: 4.14.0-ioctl (2008-04-23) initialised: dm-devel@redhat.com
+[    1.727335] EDAC MC: Ver: 2.1.0 Jan  8 2009
+[    1.735960] cpuidle: using governor ladder
+[    1.744036] cpuidle: using governor menu
+[    1.752475] ata1.00: configured for UDMA/66
+[    1.754358] usbcore: registered new interface driver hiddev
+[    1.754468] usbcore: registered new interface driver usbhid
+[    1.754472] usbhid: v2.6:USB HID core driver
+[    1.754605] Advanced Linux Sound Architecture Driver Version 1.0.18a.
+[    1.754736] ALSA device list:
+[    1.754737]   No soundcards found.
+[    1.754936] oprofile: using NMI interrupt.
+[    1.755209] IPVS: Registered protocols (TCP, AH, ESP)
+[    1.755412] IPVS: Connection hash table configured (size=4096, memory=32Kbytes)
+[    1.755436] IPVS: ipvs loaded.
+[    1.755773] Initializing XFRM netlink socket
+[    1.755787] NET: Registered protocol family 17
+[    1.755794] NET: Registered protocol family 15
+[    1.755818] Using IPI No-Shortcut mode
+[    1.842978] ata3.01: ATA-8: FUJITSU MHW2120BH, 00810013, max UDMA/100
+[    1.842980] ata3.01: 234441648 sectors, multi 16: LBA48 NCQ (depth 0/32)
+[    1.880540] ata3.01: configured for UDMA/100
+[    1.894173] scsi 0:0:0:0: CD-ROM            MATSHITA DVD-R   UJ-857D  KCV9 PQ: 0 ANSI: 5
+[    1.902934] ------------[ cut here ]------------
+[    1.910604] WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x4de/0x72f()
+[    1.912902] Hardware name: MacBookPro2,2
+[    1.912902] Modules linked in:
+[    1.912902] Pid: 0, comm: swapper Not tainted 2.6.28-07814-gdefbbee #10
+[    1.912902] Call Trace:
+[    1.912902]  [<c01292ca>] warn_slowpath+0x76/0xad
+[    1.912902]  [<c018a64d>] ? check_object+0x139/0x190
+[    1.912902]  [<c018aed4>] ? __slab_free+0x280/0x2b8
+[    1.912902]  [<c0243883>] ? _raw_spin_lock+0x53/0xf8
+[    1.912902]  [<c03e22a8>] ? _spin_unlock_irqrestore+0x2d/0x3c
+[    1.912902]  [<c02327f0>] ? blk_run_queue+0x2d/0x31
+[    1.912902]  [<c02ceca9>] ? scsi_run_queue+0x29d/0x324
+[    1.912902]  [<c023ba49>] ? kobject_put+0x37/0x3c
+[    1.912902]  [<c02afb67>] ? put_device+0x14/0x16
+[    1.912902]  [<c02ee75a>] ? ata_sff_data_xfer32+0x5d/0xa7
+[    1.912902]  [<c02ee0ce>] ata_sff_hsm_move+0x4de/0x72f
+[    1.912902]  [<c02ee448>] ? ata_sff_interrupt+0x18/0x1f7
+[    1.912902]  [<c02ee58b>] ata_sff_interrupt+0x15b/0x1f7
+[    1.912902]  [<c015a307>] handle_IRQ_event+0x34/0x69
+[    1.912902]  [<c015b47e>] handle_edge_irq+0xc8/0x109
+[    1.912902]  [<c0104bc9>] do_IRQ+0x92/0xad
+[    1.912902]  [<c010396c>] common_interrupt+0x2c/0x34
+[    1.912902]  [<c010835b>] ? mwait_idle+0x55/0x85
+[    1.912902]  [<c01023b1>] ? cpu_idle+0x7e/0xa5
+[    1.912902]  [<c01023b7>] cpu_idle+0x84/0xa5
+[    1.912902]  [<c03d39ef>] rest_init+0x53/0x55
+[    1.912902]  [<c055a818>] start_kernel+0x2dc/0x2e1
+[    1.912902]  [<c055a085>] __init_begin+0x85/0x8d
+[    1.912902] ---[ end trace c6be6dae142eee34 ]---
+[    2.137001] sr0: scsi3-mmc drive: 24x/24x writer cd/rw xa/form2 cdda tray
+[    2.144310] Uniform CD-ROM driver Revision: 3.20
+[    2.151890] sr 0:0:0:0: Attached scsi CD-ROM sr0
+[    2.159336] sr 0:0:0:0: Attached scsi generic sg0 type 5
+[    2.166507] scsi 2:0:1:0: Direct-Access     ATA      FUJITSU MHW2120B 0081 PQ: 0 ANSI: 5
+[    2.174297] sd 2:0:1:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
+[    2.181748] sd 2:0:1:0: [sda] Write Protect is off
+[    2.189281] sd 2:0:1:0: [sda] Mode Sense: 00 3a 00 00
+[    2.196840] sd 2:0:1:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    2.196875] sd 2:0:1:0: Attached scsi generic sg1 type 0
+[    2.212210] sd 2:0:1:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
+[    2.219968] sd 2:0:1:0: [sda] Write Protect is off
+[    2.227508] sd 2:0:1:0: [sda] Mode Sense: 00 3a 00 00
+[    2.234964] sd 2:0:1:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    2.242483]  sda: sda1 sda2
+[    2.250557] sd 2:0:1:0: [sda] Attached SCSI disk
+[    2.262220] kjournald starting.  Commit interval 5 seconds
+[    2.262230] EXT3-fs: mounted filesystem with ordered data mode.
+[    2.262262] VFS: Mounted root (ext3 filesystem) readonly on device 8:1.
+[    2.284801] Freeing unused kernel memory: 404k freed
+[    2.901753] SELinux: 8192 avtab hash slots, 145595 rules.
+[    3.000823] SELinux: 8192 avtab hash slots, 145595 rules.
+[    3.177947] SELinux:  7 users, 9 roles, 2684 types, 95 bools, 1 sens, 256 cats
+[    3.185761] SELinux:  73 classes, 145595 rules
+[    3.200048] SELinux:  class kernel_service not defined in policy
+[    3.208046] SELinux: the above unknown classes and permissions will be denied
+[    3.215993] SELinux:  Completing initialization.
+[    3.223928] SELinux:  Setting up existing superblocks.
+[    3.267051] SELinux: initialized (dev sda1, type ext3), uses xattr
+[    3.422421] SELinux: initialized (dev selinuxfs, type selinuxfs), uses genfs_contexts
+[    3.430663] SELinux: initialized (dev mqueue, type mqueue), uses transition SIDs
+[    3.438901] SELinux: initialized (dev hugetlbfs, type hugetlbfs), uses genfs_contexts
+[    3.447241] SELinux: initialized (dev devpts, type devpts), uses transition SIDs
+[    3.455646] SELinux: initialized (dev inotifyfs, type inotifyfs), uses genfs_contexts
+[    3.464125] SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+[    3.472665] SELinux: initialized (dev anon_inodefs, type anon_inodefs), uses genfs_contexts
+[    3.481362] SELinux: initialized (dev pipefs, type pipefs), uses task SIDs
+[    3.490125] SELinux: initialized (dev debugfs, type debugfs), uses genfs_contexts
+[    3.499032] SELinux: initialized (dev sockfs, type sockfs), uses task SIDs
+[    3.508001] SELinux: initialized (dev proc, type proc), uses genfs_contexts
+[    3.517000] SELinux: initialized (dev bdev, type bdev), uses genfs_contexts
+[    3.525941] SELinux: initialized (dev rootfs, type rootfs), uses genfs_contexts
+[    3.534953] SELinux: initialized (dev sysfs, type sysfs), uses genfs_contexts
+[    3.586324] type=1403 audit(1231525387.580:2): policy loaded auid=4294967295 ses=4294967295
+[    4.276658] SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+[    4.732131] SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+[    4.815277] SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+[    9.263202] SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+[   10.020530] applesmc: Apple MacBook Pro detected:
+[   10.038609] applesmc:  - Model with accelerometer
+[   10.047574] applesmc:  - Model with light sensors and backlight
+[   10.056523] applesmc:  - Model with 12 temperature sensors
+[   10.066189] applesmc: device has already been initialized (0xe0, 0x00).
+[   10.074911] applesmc: device successfully initialized.
+[   10.084261] applesmc: 2 fans found.
+[   10.094500] input: applesmc as /class/input/input1
+[   10.128689] Registered led device: smc::kbd_backlight
+[   10.137775] applesmc: driver successfully loaded.
+[   10.305716] uhci_hcd: USB Universal Host Controller Interface driver
+[   10.314633] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+[   10.323552] uhci_hcd 0000:00:1d.0: setting latency timer to 64
+[   10.332311] uhci_hcd 0000:00:1d.0: UHCI Host Controller
+[   10.341058] SELinux: initialized (dev usbfs, type usbfs), uses genfs_contexts
+[   10.349977] uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+[   10.358926] uhci_hcd 0000:00:1d.0: irq 23, io base 0x00004080
+[   10.367912] usb usb1: configuration #1 chosen from 1 choice
+[   10.376759] hub 1-0:1.0: USB hub found
+[   10.385436] hub 1-0:1.0: 2 ports detected
+[   10.394329] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[   10.403216] uhci_hcd 0000:00:1d.1: setting latency timer to 64
+[   10.411929] uhci_hcd 0000:00:1d.1: UHCI Host Controller
+[   10.420605] uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
+[   10.429307] uhci_hcd 0000:00:1d.1: irq 19, io base 0x00004060
+[   10.440129] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[   10.448985] Warning! ehci_hcd should always be loaded before uhci_hcd and ohci_hcd, not after
+[   10.458686] usb usb2: configuration #1 chosen from 1 choice
+[   10.467649] hub 2-0:1.0: USB hub found
+[   10.476427] hub 2-0:1.0: 2 ports detected
+[   10.485270] ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+[   10.494175] ehci_hcd 0000:00:1d.7: setting latency timer to 64
+[   10.503177] ehci_hcd 0000:00:1d.7: EHCI Host Controller
+[   10.512086] ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 3
+[   10.525053] ehci_hcd 0000:00:1d.7: debug port 1
+[   10.533770] ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
+[   10.542553] ehci_hcd 0000:00:1d.7: irq 23, io mem 0x50405400
+[   10.556625] ACPI: SSDT 3FEB8C10, 02AE (r1 APPLE   Cpu0Ist     3000 INTL 20050309)
+[   10.566492] ACPI: SSDT 3FEB8910, 02A0 (r1 APPLE   Cpu0Cst     3001 INTL 20050309)
+[   10.572510] ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
+[   10.572699] usb usb3: configuration #1 chosen from 1 choice
+[   10.572781] hub 3-0:1.0: USB hub found
+[   10.572793] hub 3-0:1.0: 8 ports detected
+[   10.573627] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[   10.573638] uhci_hcd 0000:00:1d.2: setting latency timer to 64
+[   10.573641] uhci_hcd 0000:00:1d.2: UHCI Host Controller
+[   10.573709] uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 4
+[   10.573760] uhci_hcd 0000:00:1d.2: irq 18, io base 0x00004040
+[   10.573974] usb usb4: configuration #1 chosen from 1 choice
+[   10.574043] hub 4-0:1.0: USB hub found
+[   10.574055] hub 4-0:1.0: 2 ports detected
+[   10.622526] uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
+[   10.622536] uhci_hcd 0000:00:1d.3: setting latency timer to 64
+[   10.622539] uhci_hcd 0000:00:1d.3: UHCI Host Controller
+[   10.622621] uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 5
+[   10.622670] uhci_hcd 0000:00:1d.3: irq 16, io base 0x00004020
+[   10.622856] usb usb5: configuration #1 chosen from 1 choice
+[   10.622932] hub 5-0:1.0: USB hub found
+[   10.622954] hub 5-0:1.0: 2 ports detected
+[   10.740099] Monitor-Mwait will be used to enter C-1 state
+[   10.747973] Monitor-Mwait will be used to enter C-2 state
+[   10.755740] Monitor-Mwait will be used to enter C-3 state
+[   10.763575] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
+[   10.771376] processor ACPI_CPU:00: registered as cooling_device0
+[   10.779053] ACPI: Processor [CPU0] (supports 8 throttling states)
+[   10.788391] ACPI: SSDT 3FEB8F10, 0087 (r1 APPLE   Cpu1Ist     3000 INTL 20050309)
+[   10.797299] ACPI: SSDT 3FEB7F10, 0085 (r1 APPLE   Cpu1Cst     3000 INTL 20050309)
+[   10.806325] ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
+[   10.814253] processor ACPI_CPU:01: registered as cooling_device1
+[   10.820000] Marking TSC unstable due to TSC halts in idle
+[   10.829590] ACPI: Processor [CPU1] (supports 8 throttling states)
+[   10.837522] power_supply ADP1: uevent
+[   10.837588] input: Power Button (FF) as /class/input/input2
+[   10.853005] power_supply ADP1: No power supply yet
+[   10.860686] power_supply ADP1: power_supply_changed
+[   10.868324] ACPI: AC Adapter [ADP1] (on-line)
+[   10.876178] power_supply ADP1: power_supply_changed_work
+[   10.883922] power_supply ADP1: power_supply_update_gen_leds 1
+[   10.891648] power_supply ADP1: uevent
+[   10.899232] power_supply ADP1: POWER_SUPPLY_NAME=ADP1
+[   10.906753] power_supply ADP1: Static prop TYPE=Mains
+[   10.914334] power_supply ADP1: 1 dynamic props
+[   10.921734] power_supply ADP1: prop ONLINE=1
+[   10.933588] ACPI: Power Button (FF) [PWRF]
+[   10.941150] input: Lid Switch as /class/input/input3
+[   10.956091] ACPI: Lid Switch [LID0]
+[   10.963482] input: Power Button (CM) as /class/input/input4
+[   10.974860] ACPI: Power Button (CM) [PWRB]
+[   10.982686] input: Sleep Button (CM) as /class/input/input5
+[   10.995085] ACPI: Sleep Button (CM) [SLPB]
+[   11.027771] ath9k: 0.1
+[   11.035208] vendor=8086 device=27d2
+[   11.042476] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[   11.050023] ath9k 0000:03:00.0: setting latency timer to 64
+[   11.152543] usb 3-4: new high speed USB device using ehci_hcd and address 3
+[   11.187512] wmaster0 (ath9k): not using net_device_ops yet
+[   11.195676] phy0: Selected rate control algorithm 'ath9k_rate_control'
+[   11.211649] wlan0 (ath9k): not using net_device_ops yet
+[   11.219924] Registered led device: ath9k-phy0:radio
+[   11.227793] Registered led device: ath9k-phy0:assoc
+[   11.235647] Registered led device: ath9k-phy0:tx
+[   11.243307] Registered led device: ath9k-phy0:rx
+[   11.250772] phy0: Atheros AR5418 MAC/BB Rev:2 AR5133 RF Rev:81: mem=0xf80a0000, irq=17
+[   11.313472] usb 3-4: configuration #1 chosen from 1 choice
+[   11.326298] vendor=8086 device=2448
+[   11.334713] ohci1394 0000:0c:03.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+[   11.411183] ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[19]  MMIO=[4c004000-4c0047ff]  Max Packet=[4096]  IR/IT contexts=[4/8]
+[   11.462998] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
+[   11.472078] HDA Intel 0000:00:1b.0: setting latency timer to 64
+[   11.539547] uvcvideo: Found UVC 1.00 device Built-in iSight (05ac:8501)
+[   11.550724] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+[   11.560167] usbcore: registered new interface driver uvcvideo
+[   11.569001] USB Video Class driver (v0.1.0)
+[   11.603294] hda_codec: STAC922x, Apple subsys_id=106b1e00
+[   11.671305] input: HDA Intel at 0x50400000 irq 22 Line In at Ext Rear Jack as /class/input/input6
+[   11.681726] input: HDA Intel at 0x50400000 irq 22 HP Out at Ext Rear Jack as /class/input/input7
+[   11.852566] usb 4-2: new full speed USB device using uhci_hcd and address 2
+[   11.871648] SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+[   12.030317] ieee1394: raw1394: /dev/raw1394 device initialized
+[   12.051951] usb 4-2: configuration #1 chosen from 1 choice
+[   12.070961] generic-usb 0003:05AC:8240.0001: hiddev0: USB HID v1.11 Device [Apple Computer, Inc. IR Receiver] on usb-0000:00:1d.2-2/input0
+[   12.206503] usbcore: registered new interface driver appletouch
+[   12.370068] usb 5-1: new full speed USB device using uhci_hcd and address 2
+[   12.451588] ip_tables: (C) 2000-2006 Netfilter Core Team
+[   12.582841] nf_conntrack version 0.5.0 (16142 buckets, 64568 max)
+[   12.593959] CONFIG_NF_CT_ACCT is deprecated and will be removed soon. Please use
+[   12.604836] nf_conntrack.acct=1 kernel paramater, acct=1 nf_conntrack module option or
+[   12.605016] usb 5-1: configuration #1 chosen from 1 choice
+[   12.626838] sysctl net.netfilter.nf_conntrack_acct=1 to enable it.
+[   12.644064] input: HID 05ac:1000 as /class/input/input8
+[   12.682860] generic-usb 0003:05AC:1000.0002: input: USB HID v1.11 Keyboard [HID 05ac:1000] on usb-0000:00:1d.3-1/input0
+[   12.694579] arp_tables: (C) 2002 David S. Miller
+[   12.709006] input: HID 05ac:1000 as /class/input/input9
+[   12.750343] generic-usb 0003:05AC:1000.0003: input: USB HID v1.11 Mouse [HID 05ac:1000] on usb-0000:00:1d.3-1/input1
+[   12.866038] usbcore: registered new interface driver isight_firmware
+[   12.924559] ipmi message handler version 39.2
+[   12.950653] IPMI Watchdog: driver initialized
+[   13.040240] usb 1-2: new full speed USB device using uhci_hcd and address 2
+[   13.235085] usb 1-2: configuration #1 chosen from 1 choice
+[   13.244148] input: Apple Computer Apple Internal Keyboard / Trackpad as /class/input/input10
+[   13.244811] Adding 2988360k swap on /dev/sda2.  Priority:-1 extents:1 across:2988360k 
+[   13.283009] apple 0003:05AC:021A.0004: input: USB HID v1.11 Keyboard [Apple Computer Apple Internal Keyboard / Trackpad] on usb-0000:00:1d.0-2/input0
+[   13.287764] appletouch: Geyser mode initialized.
+[   13.287863] input: appletouch as /class/input/input11
+[   13.327862] input: Apple Computer Apple Internal Keyboard / Trackpad as /class/input/input12
+[   13.352760] ieee1394: Host added: ID:BUS[0-00:1023]  GUID[0019e3fffe2ad87e]
+[   13.370479] apple 0003:05AC:021A.0005: input: USB HID v1.11 Device [Apple Computer Apple Internal Keyboard / Trackpad] on usb-0000:00:1d.0-2/input2
+[   13.666766] EXT3 FS on sda1, internal journal
+[   16.916641] applesmc: light sensor data length set to 6
+[   17.873780] usb 5-1: usbfs: USBDEVFS_CONTROL failed cmd hid2hci rqt 64 rq 0 len 0 ret -84
+[   17.892461] Bluetooth: Core ver 2.14
+[   17.892616] NET: Registered protocol family 31
+[   17.892618] Bluetooth: HCI device and connection manager initialized
+[   17.892622] Bluetooth: HCI socket layer initialized
+[   17.926884] Bluetooth: L2CAP ver 2.11
+[   17.926888] Bluetooth: L2CAP socket layer initialized
+[   17.947969] Bluetooth: SCO (Voice Link) ver 0.6
+[   17.947972] Bluetooth: SCO socket layer initialized
+[   17.980913] Bluetooth: RFCOMM socket layer initialized
+[   17.980931] Bluetooth: RFCOMM TTY layer initialized
+[   17.980933] Bluetooth: RFCOMM ver 1.10
+[   18.079004] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+[   18.079007] Bluetooth: BNEP filters: protocol multicast
+[   18.190178] usb 5-1: USB disconnect, address 2
+[   18.490084] usb 5-1: new full speed USB device using uhci_hcd and address 3
+[   18.701079] usb 5-1: configuration #1 chosen from 1 choice
+[   18.916093] Bluetooth: Generic Bluetooth USB driver ver 0.4
+[   18.916459] usbcore: registered new interface driver btusb
+[   20.000179] Clocksource tsc unstable (delta = -448243008 ns)
+[   22.487811] type=1400 audit(1231525406.482:3): avc:  denied  { sys_module } for  pid=2710 comm="wpa_supplicant" capability=16 scontext=system_u:system_r:system_dbusd_t:s0 tcontext=system_u:system_r:system_dbusd_t:s0 tclass=capability
+[   22.501646] type=1300 audit(1231525406.482:3): arch=40000003 syscall=54 success=no exit=-19 a0=9 a1=8933 a2=bfbbcb1c a3=bfbbcb1c items=0 ppid=1 pid=2710 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="wpa_supplicant" exe="/sbin/wpa_supplicant" subj=system_u:system_r:system_dbusd_t:s0 key=(null)
+[   29.509657] vendor=8086 device=27a1
+[   29.509663] pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   29.584845] Linux agpgart interface v0.103
+[   29.721020] [drm] Initialized drm 1.1.0 20060810
+[   29.771041] pci 0000:01:00.0: setting latency timer to 64
+[   29.771318] [drm] Initialized radeon 1.29.0 20080528 on minor 0
+[   30.064590] Xorg:2858 map pfn expected mapping type write-combining for 40000000-48000000, got uncached-minus
+[   30.187933] [drm] Setting GART location based on new memory map
+[   30.189408] [drm] Loading R500 Microcode
+[   30.189466] [drm] Num pipes: 1
+[   30.189481] [drm] writeback test succeeded in 1 usecs
+[   31.967659] wlan0: authenticate with AP 00:1e:2a:00:67:f0
+[   31.969627] wlan0: authenticated
+[   31.969632] wlan0: associate with AP 00:1e:2a:00:67:f0
+[   31.972241] wlan0: RX AssocResp from 00:1e:2a:00:67:f0 (capab=0x431 status=0 aid=2)
+[   31.972247] wlan0: associated
+[   36.486446] Bluetooth: HIDP (Human Interface Emulation) ver 1.2
+[   36.487812] input: justinmattock’s mouse #1 as /class/input/input13
+[   36.524143] generic-bluetooth 0005:0000:0000.0006: input: BLUETOOTH HID v0.00 Mouse [justinmattock’s mouse #1] on 00:17:F2:B4:BC:F5
+[   74.337168] type=1400 audit(1231525480.391:4): avc:  denied  { write } for  pid=3024 comm="sudo" name="/" dev=tmpfs ino=1430 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:var_run_t:s0 tclass=dir
+[   74.337192] type=1400 audit(1231525480.391:4): avc:  denied  { add_name } for  pid=3024 comm="sudo" name="sudo" scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:var_run_t:s0 tclass=dir
+[   74.337271] type=1400 audit(1231525480.391:4): avc:  denied  { create } for  pid=3024 comm="sudo" name="sudo" scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=a-12:object_r:var_run_t:s0 tclass=dir
+[   74.337361] type=1300 audit(1231525480.391:4): arch=40000003 syscall=39 success=yes exit=0 a0=8069558 a1=1c0 a2=8069558 a3=8070ab8 items=0 ppid=3022 pid=3024 auid=4294967295 uid=0 gid=1000 euid=0 suid=0 fsuid=0 egid=1000 sgid=0 fsgid=1000 tty=pts1 ses=4294967295 comm="sudo" exe="/usr/bin/sudo" subj=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 key=(null)
+[   74.337427] type=1400 audit(1231525480.391:5): avc:  denied  { write } for  pid=3024 comm="sudo" name="sudo" dev=tmpfs ino=10506 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=a-12:object_r:var_run_t:s0 tclass=dir
+[   74.337449] type=1400 audit(1231525480.391:5): avc:  denied  { add_name } for  pid=3024 comm="sudo" name="a-12" scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=a-12:object_r:var_run_t:s0 tclass=dir
+[   74.337500] type=1300 audit(1231525480.391:5): arch=40000003 syscall=39 success=yes exit=0 a0=8070aa0 a1=1c0 a2=2 a3=8070ab8 items=0 ppid=3022 pid=3024 auid=4294967295 uid=0 gid=1000 euid=0 suid=0 fsuid=0 egid=1000 sgid=0 fsgid=1000 tty=pts1 ses=4294967295 comm="sudo" exe="/usr/bin/sudo" subj=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 key=(null)
+[   74.354264] type=1400 audit(1231525480.411:6): avc:  denied  { search } for  pid=3024 comm="sudo" name="/" dev=tmpfs ino=1725 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:tmpfs_t:s0 tclass=dir
+[   74.354327] type=1300 audit(1231525480.411:6): arch=40000003 syscall=5 success=yes exit=4 a0=805a4aa a1=102 a2=168 a3=0 items=0 ppid=3022 pid=3024 auid=4294967295 uid=0 gid=1000 euid=0 suid=0 fsuid=0 egid=1000 sgid=0 fsgid=1000 tty=pts1 ses=4294967295 comm="sudo" exe="/usr/bin/sudo" subj=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 key=(null)
+[   81.087371] type=1400 audit(1231525487.146:7): avc:  denied  { create } for  pid=3024 comm="sudo" name="1" scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=a-12:object_r:var_run_t:s0 tclass=file
+[   81.087456] type=1400 audit(1231525487.146:7): avc:  denied  { write } for  pid=3024 comm="sudo" name="1" dev=tmpfs ino=10514 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=a-12:object_r:var_run_t:s0 tclass=file
+[   81.087530] type=1300 audit(1231525487.146:7): arch=40000003 syscall=5 success=yes exit=4 a0=8070ab8 a1=241 a2=180 a3=8070aa0 items=0 ppid=3022 pid=3024 auid=4294967295 uid=0 gid=1000 euid=0 suid=0 fsuid=0 egid=1000 sgid=0 fsgid=1000 tty=pts1 ses=4294967295 comm="sudo" exe="/usr/bin/sudo" subj=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 key=(null)
+[   81.088308] type=1400 audit(1231525487.146:8): avc:  denied  { write } for  pid=3024 comm="sudo" name="log" dev=tmpfs ino=8466 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:tmpfs_t:s0 tclass=sock_file
+[   81.088412] type=1300 audit(1231525487.146:8): arch=40000003 syscall=102 success=yes exit=0 a0=3 a1=bfef1270 a2=b7fb3ff4 a3=0 items=0 ppid=3022 pid=3024 auid=4294967295 uid=0 gid=1000 euid=0 suid=0 fsuid=0 egid=1000 sgid=0 fsgid=1000 tty=pts1 ses=4294967295 comm="sudo" exe="/usr/bin/sudo" subj=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 key=(null)
+[   81.089319] type=1400 audit(1231525487.146:9): avc:  denied  { execute } for  pid=3024 comm="sudo" name="su" dev=sda1 ino=3489809 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:su_exec_t:s0 tclass=file
+[   81.089369] type=1400 audit(1231525487.146:9): avc:  denied  { read } for  pid=3024 comm="sudo" name="su" dev=sda1 ino=3489809 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:su_exec_t:s0 tclass=file
+[   81.089563] type=1400 audit(1231525487.146:9): avc:  denied  { execute_no_trans } for  pid=3024 comm="sudo" path="/bin/su" dev=sda1 ino=3489809 scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:su_exec_t:s0 tclass=file
+[   81.169023] type=1300 audit(1231525487.146:9): arch=40000003 syscall=11 success=yes exit=0 a0=8069ff8 a1=bfef19c8 a2=8070830 a3=1 items=0 ppid=3022 pid=3024 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts1 ses=4294967295 comm="su" exe="/bin/su" subj=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 key=(null)
+[   81.240379] type=1400 audit(1231525487.301:10): avc:  denied  { compute_av } for  pid=3024 comm="su" scontext=a-12:sysadm_r:sysadm_sudo_t:s0-s0:c0.c255 tcontext=system_u:object_r:security_t:s0 tclass=security
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86/setup-lzma
-
-Alain Knaff (5):
-      bzip2/lzma: library support for gzip, bzip2 and lzma decompression
-      bzip2/lzma: config and initramfs support for bzip2/lzma decompression
-      bzip2/lzma: x86 kernel compression support
-      bzip2/lzma: fix built-in initramfs vs CONFIG_RD_GZIP
-      bzip2/lzma: fix decompress_inflate.c vs multi-block-with-embedded-filename
-
-H. Peter Anvin (8):
-      bzip2/lzma: use a table to search for initramfs compression formats
-      bzip2/lzma: handle failures from bzip2 and lzma correctly
-      bzip2/lzma: make config machinery an arch configurable
-      bzip2/lzma: proper Kconfig dependencies for the ramdisk options
-      bzip2/lzma: DECOMPRESS_GZIP should select ZLIB_INFLATE
-      bzip2/lzma: move initrd/ramfs options out of BLK_DEV
-      bzip2/lzma: fix constant in decompress_inflate
-      bzip2/lzma: centralize format detection
-
- arch/x86/Kconfig                   |    3 +
- arch/x86/boot/compressed/Makefile  |   21 +-
- arch/x86/boot/compressed/misc.c    |  118 +-----
- arch/x86/include/asm/boot.h        |   12 +-
- include/linux/decompress/bunzip2.h |   10 +
- include/linux/decompress/generic.h |   33 ++
- include/linux/decompress/inflate.h |   13 +
- include/linux/decompress/mm.h      |   87 +++++
- include/linux/decompress/unlzma.h  |   12 +
- init/Kconfig                       |   60 +++
- init/do_mounts_rd.c                |  174 +++-------
- init/initramfs.c                   |  101 +----
- lib/Kconfig                        |   14 +
- lib/Makefile                       |    7 +-
- lib/decompress.c                   |   50 +++
- lib/decompress_bunzip2.c           |  735 ++++++++++++++++++++++++++++++++++++
- lib/decompress_inflate.c           |  167 ++++++++
- lib/decompress_unlzma.c            |  647 +++++++++++++++++++++++++++++++
- lib/zlib_inflate/inflate.h         |    4 +
- lib/zlib_inflate/inftrees.h        |    4 +
- scripts/Makefile.lib               |   14 +
- scripts/bin_size                   |   10 +
- scripts/gen_initramfs_list.sh      |   17 +-
- usr/Kconfig                        |   27 ++
- usr/Makefile                       |   42 ++-
- usr/initramfs_data.S               |    2 +-
- usr/initramfs_data.bz2.S           |   29 ++
- usr/initramfs_data.gz.S            |   29 ++
- usr/initramfs_data.lzma.S          |   29 ++
- 29 files changed, 2133 insertions(+), 338 deletions(-)
- create mode 100644 include/linux/decompress/bunzip2.h
- create mode 100644 include/linux/decompress/generic.h
- create mode 100644 include/linux/decompress/inflate.h
- create mode 100644 include/linux/decompress/mm.h
- create mode 100644 include/linux/decompress/unlzma.h
- create mode 100644 lib/decompress.c
- create mode 100644 lib/decompress_bunzip2.c
- create mode 100644 lib/decompress_inflate.c
- create mode 100644 lib/decompress_unlzma.c
- create mode 100644 scripts/bin_size
- create mode 100644 usr/initramfs_data.bz2.S
- create mode 100644 usr/initramfs_data.gz.S
- create mode 100644 usr/initramfs_data.lzma.S
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 862adb9..7b66c34 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -39,6 +39,9 @@ config X86
- 	select HAVE_GENERIC_DMA_COHERENT if X86_32
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 	select USER_STACKTRACE_SUPPORT
-+	select HAVE_KERNEL_GZIP
-+	select HAVE_KERNEL_BZIP2
-+	select HAVE_KERNEL_LZMA
- 
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index 1771c80..3ca4c19 100644
---- a/arch/x86/boot/compressed/Makefile
-+++ b/arch/x86/boot/compressed/Makefile
-@@ -4,7 +4,7 @@
- # create a compressed vmlinux image from the original vmlinux
- #
- 
--targets := vmlinux vmlinux.bin vmlinux.bin.gz head_$(BITS).o misc.o piggy.o
-+targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
- 
- KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
- KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
-@@ -47,18 +47,35 @@ ifeq ($(CONFIG_X86_32),y)
- ifdef CONFIG_RELOCATABLE
- $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin.all FORCE
- 	$(call if_changed,gzip)
-+$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin.all FORCE
-+	$(call if_changed,bzip2)
-+$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin.all FORCE
-+	$(call if_changed,lzma)
- else
- $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
- 	$(call if_changed,gzip)
-+$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,bzip2)
-+$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,lzma)
- endif
- LDFLAGS_piggy.o := -r --format binary --oformat elf32-i386 -T
- 
- else
-+
- $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
- 	$(call if_changed,gzip)
-+$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,bzip2)
-+$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,lzma)
- 
- LDFLAGS_piggy.o := -r --format binary --oformat elf64-x86-64 -T
- endif
- 
--$(obj)/piggy.o: $(obj)/vmlinux.scr $(obj)/vmlinux.bin.gz FORCE
-+suffix_$(CONFIG_KERNEL_GZIP)  = gz
-+suffix_$(CONFIG_KERNEL_BZIP2) = bz2
-+suffix_$(CONFIG_KERNEL_LZMA)  = lzma
-+
-+$(obj)/piggy.o: $(obj)/vmlinux.scr $(obj)/vmlinux.bin.$(suffix_y) FORCE
- 	$(call if_changed,ld)
-diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index da06221..e45be73 100644
---- a/arch/x86/boot/compressed/misc.c
-+++ b/arch/x86/boot/compressed/misc.c
-@@ -116,71 +116,13 @@
- /*
-  * gzip declarations
-  */
--
--#define OF(args)	args
- #define STATIC		static
- 
- #undef memset
- #undef memcpy
- #define memzero(s, n)	memset((s), 0, (n))
- 
--typedef unsigned char	uch;
--typedef unsigned short	ush;
--typedef unsigned long	ulg;
--
--/*
-- * Window size must be at least 32k, and a power of two.
-- * We don't actually have a window just a huge output buffer,
-- * so we report a 2G window size, as that should always be
-- * larger than our output buffer:
-- */
--#define WSIZE		0x80000000
--
--/* Input buffer: */
--static unsigned char	*inbuf;
--
--/* Sliding window buffer (and final output buffer): */
--static unsigned char	*window;
--
--/* Valid bytes in inbuf: */
--static unsigned		insize;
--
--/* Index of next byte to be processed in inbuf: */
--static unsigned		inptr;
--
--/* Bytes in output buffer: */
--static unsigned		outcnt;
--
--/* gzip flag byte */
--#define ASCII_FLAG	0x01 /* bit 0 set: file probably ASCII text */
--#define CONTINUATION	0x02 /* bit 1 set: continuation of multi-part gz file */
--#define EXTRA_FIELD	0x04 /* bit 2 set: extra field present */
--#define ORIG_NAM	0x08 /* bit 3 set: original file name present */
--#define COMMENT		0x10 /* bit 4 set: file comment present */
--#define ENCRYPTED	0x20 /* bit 5 set: file is encrypted */
--#define RESERVED	0xC0 /* bit 6, 7:  reserved */
--
--#define get_byte()	(inptr < insize ? inbuf[inptr++] : fill_inbuf())
--
--/* Diagnostic functions */
--#ifdef DEBUG
--#  define Assert(cond, msg) do { if (!(cond)) error(msg); } while (0)
--#  define Trace(x)	do { fprintf x; } while (0)
--#  define Tracev(x)	do { if (verbose) fprintf x ; } while (0)
--#  define Tracevv(x)	do { if (verbose > 1) fprintf x ; } while (0)
--#  define Tracec(c, x)	do { if (verbose && (c)) fprintf x ; } while (0)
--#  define Tracecv(c, x)	do { if (verbose > 1 && (c)) fprintf x ; } while (0)
--#else
--#  define Assert(cond, msg)
--#  define Trace(x)
--#  define Tracev(x)
--#  define Tracevv(x)
--#  define Tracec(c, x)
--#  define Tracecv(c, x)
--#endif
- 
--static int  fill_inbuf(void);
--static void flush_window(void);
- static void error(char *m);
- 
- /*
-@@ -189,13 +131,8 @@ static void error(char *m);
- static struct boot_params *real_mode;		/* Pointer to real-mode data */
- static int quiet;
- 
--extern unsigned char input_data[];
--extern int input_len;
--
--static long bytes_out;
--
- static void *memset(void *s, int c, unsigned n);
--static void *memcpy(void *dest, const void *src, unsigned n);
-+void *memcpy(void *dest, const void *src, unsigned n);
- 
- static void __putstr(int, const char *);
- #define putstr(__x)  __putstr(0, __x)
-@@ -213,7 +150,17 @@ static char *vidmem;
- static int vidport;
- static int lines, cols;
- 
--#include "../../../../lib/inflate.c"
-+#ifdef CONFIG_KERNEL_GZIP
-+#include "../../../../lib/decompress_inflate.c"
-+#endif
-+
-+#ifdef CONFIG_KERNEL_BZIP2
-+#include "../../../../lib/decompress_bunzip2.c"
-+#endif
-+
-+#ifdef CONFIG_KERNEL_LZMA
-+#include "../../../../lib/decompress_unlzma.c"
-+#endif
- 
- static void scroll(void)
- {
-@@ -282,7 +229,7 @@ static void *memset(void *s, int c, unsigned n)
- 	return s;
- }
- 
--static void *memcpy(void *dest, const void *src, unsigned n)
-+void *memcpy(void *dest, const void *src, unsigned n)
- {
- 	int i;
- 	const char *s = src;
-@@ -293,38 +240,6 @@ static void *memcpy(void *dest, const void *src, unsigned n)
- 	return dest;
- }
- 
--/* ===========================================================================
-- * Fill the input buffer. This is called only when the buffer is empty
-- * and at least one byte is really needed.
-- */
--static int fill_inbuf(void)
--{
--	error("ran out of input data");
--	return 0;
--}
--
--/* ===========================================================================
-- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
-- * (Used for the decompressed data only.)
-- */
--static void flush_window(void)
--{
--	/* With my window equal to my output buffer
--	 * I only need to compute the crc here.
--	 */
--	unsigned long c = crc;         /* temporary variable */
--	unsigned n;
--	unsigned char *in, ch;
--
--	in = window;
--	for (n = 0; n < outcnt; n++) {
--		ch = *in++;
--		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
--	}
--	crc = c;
--	bytes_out += (unsigned long)outcnt;
--	outcnt = 0;
--}
- 
- static void error(char *x)
- {
-@@ -407,12 +322,8 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
- 	lines = real_mode->screen_info.orig_video_lines;
- 	cols = real_mode->screen_info.orig_video_cols;
- 
--	window = output;		/* Output buffer (Normally at 1M) */
- 	free_mem_ptr     = heap;	/* Heap */
- 	free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
--	inbuf  = input_data;		/* Input buffer */
--	insize = input_len;
--	inptr  = 0;
- 
- #ifdef CONFIG_X86_64
- 	if ((unsigned long)output & (__KERNEL_ALIGN - 1))
-@@ -430,10 +341,9 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
- #endif
- #endif
- 
--	makecrc();
- 	if (!quiet)
- 		putstr("\nDecompressing Linux... ");
--	gunzip();
-+	decompress(input_data, input_len, NULL, NULL, output, NULL, error);
- 	parse_elf(output);
- 	if (!quiet)
- 		putstr("done.\nBooting the kernel.\n");
-diff --git a/arch/x86/include/asm/boot.h b/arch/x86/include/asm/boot.h
-index dd61616..c0e8e68 100644
---- a/arch/x86/include/asm/boot.h
-+++ b/arch/x86/include/asm/boot.h
-@@ -15,11 +15,21 @@
- 				+ (CONFIG_PHYSICAL_ALIGN - 1)) \
- 				& ~(CONFIG_PHYSICAL_ALIGN - 1))
- 
-+#if (defined CONFIG_KERNEL_BZIP2)
-+#define BOOT_HEAP_SIZE             0x400000
-+#else
-+
- #ifdef CONFIG_X86_64
- #define BOOT_HEAP_SIZE	0x7000
--#define BOOT_STACK_SIZE	0x4000
- #else
- #define BOOT_HEAP_SIZE	0x4000
-+#endif
-+
-+#endif
-+
-+#ifdef CONFIG_X86_64
-+#define BOOT_STACK_SIZE	0x4000
-+#else
- #define BOOT_STACK_SIZE	0x1000
- #endif
- 
-diff --git a/include/linux/decompress/bunzip2.h b/include/linux/decompress/bunzip2.h
-new file mode 100644
-index 0000000..1152721
---- /dev/null
-+++ b/include/linux/decompress/bunzip2.h
-@@ -0,0 +1,10 @@
-+#ifndef DECOMPRESS_BUNZIP2_H
-+#define DECOMPRESS_BUNZIP2_H
-+
-+int bunzip2(unsigned char *inbuf, int len,
-+	    int(*fill)(void*, unsigned int),
-+	    int(*flush)(void*, unsigned int),
-+	    unsigned char *output,
-+	    int *pos,
-+	    void(*error)(char *x));
-+#endif
-diff --git a/include/linux/decompress/generic.h b/include/linux/decompress/generic.h
-new file mode 100644
-index 0000000..6dfb856
---- /dev/null
-+++ b/include/linux/decompress/generic.h
-@@ -0,0 +1,33 @@
-+#ifndef DECOMPRESS_GENERIC_H
-+#define DECOMPRESS_GENERIC_H
-+
-+/* Minimal chunksize to be read.
-+ *Bzip2 prefers at least 4096
-+ *Lzma prefers 0x10000 */
-+#define COMPR_IOBUF_SIZE	4096
-+
-+typedef int (*decompress_fn) (unsigned char *inbuf, int len,
-+			      int(*fill)(void*, unsigned int),
-+			      int(*writebb)(void*, unsigned int),
-+			      unsigned char *output,
-+			      int *posp,
-+			      void(*error)(char *x));
-+
-+/* inbuf   - input buffer
-+ *len     - len of pre-read data in inbuf
-+ *fill    - function to fill inbuf if empty
-+ *writebb - function to write out outbug
-+ *posp    - if non-null, input position (number of bytes read) will be
-+ *	  returned here
-+ *
-+ *If len != 0, the inbuf is initialized (with as much data), and fill
-+ *should not be called
-+ *If len = 0, the inbuf is allocated, but empty. Its size is IOBUF_SIZE
-+ *fill should be called (repeatedly...) to read data, at most IOBUF_SIZE
-+ */
-+
-+/* Utility routine to detect the decompression method */
-+decompress_fn decompress_method(const unsigned char *inbuf, int len,
-+				const char **name);
-+
-+#endif
-diff --git a/include/linux/decompress/inflate.h b/include/linux/decompress/inflate.h
-new file mode 100644
-index 0000000..f9b06cc
---- /dev/null
-+++ b/include/linux/decompress/inflate.h
-@@ -0,0 +1,13 @@
-+#ifndef INFLATE_H
-+#define INFLATE_H
-+
-+/* Other housekeeping constants */
-+#define INBUFSIZ 4096
-+
-+int gunzip(unsigned char *inbuf, int len,
-+	   int(*fill)(void*, unsigned int),
-+	   int(*flush)(void*, unsigned int),
-+	   unsigned char *output,
-+	   int *pos,
-+	   void(*error_fn)(char *x));
-+#endif
-diff --git a/include/linux/decompress/mm.h b/include/linux/decompress/mm.h
-new file mode 100644
-index 0000000..12ff8c3
---- /dev/null
-+++ b/include/linux/decompress/mm.h
-@@ -0,0 +1,87 @@
-+/*
-+ * linux/compr_mm.h
-+ *
-+ * Memory management for pre-boot and ramdisk uncompressors
-+ *
-+ * Authors: Alain Knaff <alain@knaff.lu>
-+ *
-+ */
-+
-+#ifndef DECOMPR_MM_H
-+#define DECOMPR_MM_H
-+
-+#ifdef STATIC
-+
-+/* Code active when included from pre-boot environment: */
-+
-+/* A trivial malloc implementation, adapted from
-+ *  malloc by Hannu Savolainen 1993 and Matthias Urlichs 1994
-+ */
-+static unsigned long malloc_ptr;
-+static int malloc_count;
-+
-+static void *malloc(int size)
-+{
-+	void *p;
-+
-+	if (size < 0)
-+		error("Malloc error");
-+	if (!malloc_ptr)
-+		malloc_ptr = free_mem_ptr;
-+
-+	malloc_ptr = (malloc_ptr + 3) & ~3;     /* Align */
-+
-+	p = (void *)malloc_ptr;
-+	malloc_ptr += size;
-+
-+	if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
-+		error("Out of memory");
-+
-+	malloc_count++;
-+	return p;
-+}
-+
-+static void free(void *where)
-+{
-+	malloc_count--;
-+	if (!malloc_count)
-+		malloc_ptr = free_mem_ptr;
-+}
-+
-+#define large_malloc(a) malloc(a)
-+#define large_free(a) free(a)
-+
-+#define set_error_fn(x)
-+
-+#define INIT
-+
-+#else /* STATIC */
-+
-+/* Code active when compiled standalone for use when loading ramdisk: */
-+
-+#include <linux/kernel.h>
-+#include <linux/fs.h>
-+#include <linux/string.h>
-+#include <linux/vmalloc.h>
-+
-+/* Use defines rather than static inline in order to avoid spurious
-+ * warnings when not needed (indeed large_malloc / large_free are not
-+ * needed by inflate */
-+
-+#define malloc(a) kmalloc(a, GFP_KERNEL)
-+#define free(a) kfree(a)
-+
-+#define large_malloc(a) vmalloc(a)
-+#define large_free(a) vfree(a)
-+
-+static void(*error)(char *m);
-+#define set_error_fn(x) error = x;
-+
-+#define INIT __init
-+#define STATIC
-+
-+#include <linux/init.h>
-+
-+#endif /* STATIC */
-+
-+#endif /* DECOMPR_MM_H */
-diff --git a/include/linux/decompress/unlzma.h b/include/linux/decompress/unlzma.h
-new file mode 100644
-index 0000000..7796538
---- /dev/null
-+++ b/include/linux/decompress/unlzma.h
-@@ -0,0 +1,12 @@
-+#ifndef DECOMPRESS_UNLZMA_H
-+#define DECOMPRESS_UNLZMA_H
-+
-+int unlzma(unsigned char *, int,
-+	   int(*fill)(void*, unsigned int),
-+	   int(*flush)(void*, unsigned int),
-+	   unsigned char *output,
-+	   int *posp,
-+	   void(*error)(char *x)
-+	);
-+
-+#endif
-diff --git a/init/Kconfig b/init/Kconfig
-index f628171..f9633c0 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -101,6 +101,66 @@ config LOCALVERSION_AUTO
- 
- 	  which is done within the script "scripts/setlocalversion".)
- 
-+config HAVE_KERNEL_GZIP
-+	bool
-+
-+config HAVE_KERNEL_BZIP2
-+	bool
-+
-+config HAVE_KERNEL_LZMA
-+	bool
-+
-+choice
-+	prompt "Kernel compression mode"
-+	default KERNEL_GZIP
-+	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
-+	help
-+	  The linux kernel is a kind of self-extracting executable.
-+	  Several compression algorithms are available, which differ
-+	  in efficiency, compression and decompression speed.
-+	  Compression speed is only relevant when building a kernel.
-+	  Decompression speed is relevant at each boot.
-+
-+	  If you have any problems with bzip2 or lzma compressed
-+	  kernels, mail me (Alain Knaff) <alain@knaff.lu>. (An older
-+	  version of this functionality (bzip2 only), for 2.4, was
-+	  supplied by Christian Ludwig)
-+
-+	  High compression options are mostly useful for users, who
-+	  are low on disk space (embedded systems), but for whom ram
-+	  size matters less.
-+
-+	  If in doubt, select 'gzip'
-+
-+config KERNEL_GZIP
-+	bool "Gzip"
-+	depends on HAVE_KERNEL_GZIP
-+	help
-+	  The old and tried gzip compression. Its compression ratio is
-+	  the poorest among the 3 choices; however its speed (both
-+	  compression and decompression) is the fastest.
-+
-+config KERNEL_BZIP2
-+	bool "Bzip2"
-+	depends on HAVE_KERNEL_BZIP2
-+	help
-+	  Its compression ratio and speed is intermediate.
-+	  Decompression speed is slowest among the three.  The kernel
-+	  size is about 10% smaller with bzip2, in comparison to gzip.
-+	  Bzip2 uses a large amount of memory. For modern kernels you
-+	  will need at least 8MB RAM or more for booting.
-+
-+config KERNEL_LZMA
-+	bool "LZMA"
-+	depends on HAVE_KERNEL_LZMA
-+	help
-+	  The most recent compression algorithm.
-+	  Its ratio is best, decompression speed is between the other
-+	  two. Compression is slowest.	The kernel size is about 33%
-+	  smaller with LZMA in comparison to gzip.
-+
-+endchoice
-+
- config SWAP
- 	bool "Support for paging of anonymous memory (swap)"
- 	depends on MMU && BLOCK
-diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
-index a7c748f..a06ed4f 100644
---- a/init/do_mounts_rd.c
-+++ b/init/do_mounts_rd.c
-@@ -10,6 +10,9 @@
- 
- #include "do_mounts.h"
- 
-+#include <linux/decompress/generic.h>
-+
-+
- int __initdata rd_prompt = 1;/* 1 = prompt for RAM disk, 0 = don't prompt */
- 
- static int __init prompt_ramdisk(char *str)
-@@ -28,7 +31,7 @@ static int __init ramdisk_start_setup(char *str)
- }
- __setup("ramdisk_start=", ramdisk_start_setup);
- 
--static int __init crd_load(int in_fd, int out_fd);
-+static int __init crd_load(int in_fd, int out_fd, decompress_fn deco);
- 
- /*
-  * This routine tries to find a RAM disk image to load, and returns the
-@@ -37,14 +40,14 @@ static int __init crd_load(int in_fd, int out_fd);
-  * numbers could not be found.
-  *
-  * We currently check for the following magic numbers:
-- * 	minix
-- * 	ext2
-+ *	minix
-+ *	ext2
-  *	romfs
-  *	cramfs
-- * 	gzip
-+ *	gzip
-  */
--static int __init 
--identify_ramdisk_image(int fd, int start_block)
-+static int __init
-+identify_ramdisk_image(int fd, int start_block, decompress_fn *decompressor)
- {
- 	const int size = 512;
- 	struct minix_super_block *minixsb;
-@@ -53,6 +56,7 @@ identify_ramdisk_image(int fd, int start_block)
- 	struct cramfs_super *cramfsb;
- 	int nblocks = -1;
- 	unsigned char *buf;
-+	const char *compress_name;
- 
- 	buf = kmalloc(size, GFP_KERNEL);
- 	if (!buf)
-@@ -65,18 +69,15 @@ identify_ramdisk_image(int fd, int start_block)
- 	memset(buf, 0xe5, size);
- 
- 	/*
--	 * Read block 0 to test for gzipped kernel
-+	 * Read block 0 to test for compressed kernel
- 	 */
- 	sys_lseek(fd, start_block * BLOCK_SIZE, 0);
- 	sys_read(fd, buf, size);
- 
--	/*
--	 * If it matches the gzip magic numbers, return 0
--	 */
--	if (buf[0] == 037 && ((buf[1] == 0213) || (buf[1] == 0236))) {
--		printk(KERN_NOTICE
--		       "RAMDISK: Compressed image found at block %d\n",
--		       start_block);
-+	*decompressor = decompress_method(buf, size, &compress_name);
-+	if (*decompressor) {
-+		printk(KERN_NOTICE "RAMDISK: %s image found at block %d\n",
-+		       compress_name, start_block);
- 		nblocks = 0;
- 		goto done;
- 	}
-@@ -128,7 +129,7 @@ identify_ramdisk_image(int fd, int start_block)
- 	printk(KERN_NOTICE
- 	       "RAMDISK: Couldn't find valid RAM disk image starting at %d.\n",
- 	       start_block);
--	
-+
- done:
- 	sys_lseek(fd, start_block * BLOCK_SIZE, 0);
- 	kfree(buf);
-@@ -143,6 +144,7 @@ int __init rd_load_image(char *from)
- 	int nblocks, i, disk;
- 	char *buf = NULL;
- 	unsigned short rotate = 0;
-+	decompress_fn decompressor = NULL;
- #if !defined(CONFIG_S390) && !defined(CONFIG_PPC_ISERIES)
- 	char rotator[4] = { '|' , '/' , '-' , '\\' };
- #endif
-@@ -155,12 +157,12 @@ int __init rd_load_image(char *from)
- 	if (in_fd < 0)
- 		goto noclose_input;
- 
--	nblocks = identify_ramdisk_image(in_fd, rd_image_start);
-+	nblocks = identify_ramdisk_image(in_fd, rd_image_start, &decompressor);
- 	if (nblocks < 0)
- 		goto done;
- 
- 	if (nblocks == 0) {
--		if (crd_load(in_fd, out_fd) == 0)
-+		if (crd_load(in_fd, out_fd, decompressor) == 0)
- 			goto successful_load;
- 		goto done;
- 	}
-@@ -186,7 +188,7 @@ int __init rd_load_image(char *from)
- 		       nblocks, rd_blocks);
- 		goto done;
- 	}
--		
-+
- 	/*
- 	 * OK, time to copy in the data
- 	 */
-@@ -259,138 +261,48 @@ int __init rd_load_disk(int n)
- 	return rd_load_image("/dev/root");
- }
- 
--/*
-- * gzip declarations
-- */
--
--#define OF(args)  args
--
--#ifndef memzero
--#define memzero(s, n)     memset ((s), 0, (n))
--#endif
--
--typedef unsigned char  uch;
--typedef unsigned short ush;
--typedef unsigned long  ulg;
--
--#define INBUFSIZ 4096
--#define WSIZE 0x8000    /* window size--must be a power of two, and */
--			/*  at least 32K for zip's deflate method */
--
--static uch *inbuf;
--static uch *window;
--
--static unsigned insize;  /* valid bytes in inbuf */
--static unsigned inptr;   /* index of next byte to be processed in inbuf */
--static unsigned outcnt;  /* bytes in output buffer */
- static int exit_code;
--static int unzip_error;
--static long bytes_out;
-+static int decompress_error;
- static int crd_infd, crd_outfd;
- 
--#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf())
--		
--/* Diagnostic functions (stubbed out) */
--#define Assert(cond,msg)
--#define Trace(x)
--#define Tracev(x)
--#define Tracevv(x)
--#define Tracec(c,x)
--#define Tracecv(c,x)
--
--#define STATIC static
--#define INIT __init
--
--static int  __init fill_inbuf(void);
--static void __init flush_window(void);
--static void __init error(char *m);
--
--#define NO_INFLATE_MALLOC
--
--#include "../lib/inflate.c"
--
--/* ===========================================================================
-- * Fill the input buffer. This is called only when the buffer is empty
-- * and at least one byte is really needed.
-- * Returning -1 does not guarantee that gunzip() will ever return.
-- */
--static int __init fill_inbuf(void)
-+static int __init compr_fill(void *buf, unsigned int len)
- {
--	if (exit_code) return -1;
--	
--	insize = sys_read(crd_infd, inbuf, INBUFSIZ);
--	if (insize == 0) {
--		error("RAMDISK: ran out of compressed data");
--		return -1;
--	}
--
--	inptr = 1;
--
--	return inbuf[0];
-+	int r = sys_read(crd_infd, buf, len);
-+	if (r < 0)
-+		printk(KERN_ERR "RAMDISK: error while reading compressed data");
-+	else if (r == 0)
-+		printk(KERN_ERR "RAMDISK: EOF while reading compressed data");
-+	return r;
- }
- 
--/* ===========================================================================
-- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
-- * (Used for the decompressed data only.)
-- */
--static void __init flush_window(void)
-+static int __init compr_flush(void *window, unsigned int outcnt)
- {
--    ulg c = crc;         /* temporary variable */
--    unsigned n, written;
--    uch *in, ch;
--    
--    written = sys_write(crd_outfd, window, outcnt);
--    if (written != outcnt && unzip_error == 0) {
--	printk(KERN_ERR "RAMDISK: incomplete write (%d != %d) %ld\n",
--	       written, outcnt, bytes_out);
--	unzip_error = 1;
--    }
--    in = window;
--    for (n = 0; n < outcnt; n++) {
--	    ch = *in++;
--	    c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
--    }
--    crc = c;
--    bytes_out += (ulg)outcnt;
--    outcnt = 0;
-+	int written = sys_write(crd_outfd, window, outcnt);
-+	if (written != outcnt) {
-+		if (decompress_error == 0)
-+			printk(KERN_ERR
-+			       "RAMDISK: incomplete write (%d != %d)\n",
-+			       written, outcnt);
-+		decompress_error = 1;
-+		return -1;
-+	}
-+	return outcnt;
- }
- 
- static void __init error(char *x)
- {
- 	printk(KERN_ERR "%s\n", x);
- 	exit_code = 1;
--	unzip_error = 1;
-+	decompress_error = 1;
- }
- 
--static int __init crd_load(int in_fd, int out_fd)
-+static int __init crd_load(int in_fd, int out_fd, decompress_fn deco)
- {
- 	int result;
--
--	insize = 0;		/* valid bytes in inbuf */
--	inptr = 0;		/* index of next byte to be processed in inbuf */
--	outcnt = 0;		/* bytes in output buffer */
--	exit_code = 0;
--	bytes_out = 0;
--	crc = (ulg)0xffffffffL; /* shift register contents */
--
- 	crd_infd = in_fd;
- 	crd_outfd = out_fd;
--	inbuf = kmalloc(INBUFSIZ, GFP_KERNEL);
--	if (!inbuf) {
--		printk(KERN_ERR "RAMDISK: Couldn't allocate gzip buffer\n");
--		return -1;
--	}
--	window = kmalloc(WSIZE, GFP_KERNEL);
--	if (!window) {
--		printk(KERN_ERR "RAMDISK: Couldn't allocate gzip window\n");
--		kfree(inbuf);
--		return -1;
--	}
--	makecrc();
--	result = gunzip();
--	if (unzip_error)
-+	result = deco(NULL, 0, compr_fill, compr_flush, NULL, NULL, error);
-+	if (decompress_error)
- 		result = 1;
--	kfree(inbuf);
--	kfree(window);
- 	return result;
- }
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 4f5ba75..2f42984 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -389,11 +389,14 @@ static int __init write_buffer(char *buf, unsigned len)
- 	return len - count;
- }
- 
--static void __init flush_buffer(char *buf, unsigned len)
-+#if defined CONFIG_RD_GZIP || defined CONFIG_RD_BZIP2 || defined CONFIG_RD_LZMA
-+static int __init flush_buffer(void *bufv, unsigned len)
- {
-+	char *buf = (char *) bufv;
- 	int written;
-+	int origLen = len;
- 	if (message)
--		return;
-+		return -1;
- 	while ((written = write_buffer(buf, len)) < len && !message) {
- 		char c = buf[written];
- 		if (c == '0') {
-@@ -407,84 +410,27 @@ static void __init flush_buffer(char *buf, unsigned len)
- 		} else
- 			error("junk in compressed archive");
- 	}
-+	return origLen;
- }
--
--/*
-- * gzip declarations
-- */
--
--#define OF(args)  args
--
--#ifndef memzero
--#define memzero(s, n)     memset ((s), 0, (n))
- #endif
- 
--typedef unsigned char  uch;
--typedef unsigned short ush;
--typedef unsigned long  ulg;
--
--#define WSIZE 0x8000    /* window size--must be a power of two, and */
--			/*  at least 32K for zip's deflate method */
--
--static uch *inbuf;
--static uch *window;
--
--static unsigned insize;  /* valid bytes in inbuf */
--static unsigned inptr;   /* index of next byte to be processed in inbuf */
--static unsigned outcnt;  /* bytes in output buffer */
--static long bytes_out;
--
--#define get_byte()  (inptr < insize ? inbuf[inptr++] : -1)
--		
--/* Diagnostic functions (stubbed out) */
--#define Assert(cond,msg)
--#define Trace(x)
--#define Tracev(x)
--#define Tracevv(x)
--#define Tracec(c,x)
--#define Tracecv(c,x)
--
--#define STATIC static
--#define INIT __init
--
--static void __init flush_window(void);
--static void __init error(char *m);
-+static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
- 
--#define NO_INFLATE_MALLOC
--
--#include "../lib/inflate.c"
--
--/* ===========================================================================
-- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
-- * (Used for the decompressed data only.)
-- */
--static void __init flush_window(void)
--{
--	ulg c = crc;         /* temporary variable */
--	unsigned n;
--	uch *in, ch;
--
--	flush_buffer(window, outcnt);
--	in = window;
--	for (n = 0; n < outcnt; n++) {
--		ch = *in++;
--		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
--	}
--	crc = c;
--	bytes_out += (ulg)outcnt;
--	outcnt = 0;
--}
-+#include <linux/decompress/generic.h>
- 
- static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
- {
- 	int written;
-+	decompress_fn decompress;
-+
- 	dry_run = check_only;
- 	header_buf = kmalloc(110, GFP_KERNEL);
- 	symlink_buf = kmalloc(PATH_MAX + N_ALIGN(PATH_MAX) + 1, GFP_KERNEL);
- 	name_buf = kmalloc(N_ALIGN(PATH_MAX), GFP_KERNEL);
--	window = kmalloc(WSIZE, GFP_KERNEL);
--	if (!window || !header_buf || !symlink_buf || !name_buf)
-+
-+	if (!header_buf || !symlink_buf || !name_buf)
- 		panic("can't allocate buffers");
-+
- 	state = Start;
- 	this_header = 0;
- 	message = NULL;
-@@ -504,22 +450,17 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
- 			continue;
- 		}
- 		this_header = 0;
--		insize = len;
--		inbuf = buf;
--		inptr = 0;
--		outcnt = 0;		/* bytes in output buffer */
--		bytes_out = 0;
--		crc = (ulg)0xffffffffL; /* shift register contents */
--		makecrc();
--		gunzip();
-+		decompress = decompress_method(buf, len, NULL);
-+		if (decompress)
-+			decompress(buf, len, NULL, flush_buffer, NULL,
-+				   &my_inptr, error);
- 		if (state != Reset)
--			error("junk in gzipped archive");
--		this_header = saved_offset + inptr;
--		buf += inptr;
--		len -= inptr;
-+			error("junk in compressed archive");
-+		this_header = saved_offset + my_inptr;
-+		buf += my_inptr;
-+		len -= my_inptr;
- 	}
- 	dir_utime();
--	kfree(window);
- 	kfree(name_buf);
- 	kfree(symlink_buf);
- 	kfree(header_buf);
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 03c2c24..daa4818 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -98,6 +98,20 @@ config LZO_DECOMPRESS
- 	tristate
- 
- #
-+# These all provide a common interface (hence the apparent duplication with
-+# ZLIB_INFLATE; DECOMPRESS_GZIP is just a wrapper.)
-+#
-+config DECOMPRESS_GZIP
-+	select ZLIB_INFLATE
-+	tristate
-+
-+config DECOMPRESS_BZIP2
-+	tristate
-+
-+config DECOMPRESS_LZMA
-+	tristate
-+
-+#
- # Generic allocator support is selected if needed
- #
- config GENERIC_ALLOCATOR
-diff --git a/lib/Makefile b/lib/Makefile
-index 32b0e64..790de7c 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -11,7 +11,8 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
- 	 idr.o int_sqrt.o extable.o prio_tree.o \
- 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
--	 proportions.o prio_heap.o ratelimit.o show_mem.o is_single_threaded.o
-+	 proportions.o prio_heap.o ratelimit.o show_mem.o \
-+	 is_single_threaded.o decompress.o
- 
- lib-$(CONFIG_MMU) += ioremap.o
- lib-$(CONFIG_SMP) += cpumask.o
-@@ -65,6 +66,10 @@ obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
- obj-$(CONFIG_LZO_COMPRESS) += lzo/
- obj-$(CONFIG_LZO_DECOMPRESS) += lzo/
- 
-+lib-$(CONFIG_DECOMPRESS_GZIP) += decompress_inflate.o
-+lib-$(CONFIG_DECOMPRESS_BZIP2) += decompress_bunzip2.o
-+lib-$(CONFIG_DECOMPRESS_LZMA) += decompress_unlzma.o
-+
- obj-$(CONFIG_TEXTSEARCH) += textsearch.o
- obj-$(CONFIG_TEXTSEARCH_KMP) += ts_kmp.o
- obj-$(CONFIG_TEXTSEARCH_BM) += ts_bm.o
-diff --git a/lib/decompress.c b/lib/decompress.c
-new file mode 100644
-index 0000000..edac55c
---- /dev/null
-+++ b/lib/decompress.c
-@@ -0,0 +1,50 @@
-+/*
-+ * decompress.c
-+ *
-+ * Detect the decompression method based on magic number
-+ */
-+
-+#include <linux/decompress/generic.h>
-+
-+#include <linux/decompress/bunzip2.h>
-+#include <linux/decompress/unlzma.h>
-+#include <linux/decompress/inflate.h>
-+
-+#include <linux/types.h>
-+#include <linux/string.h>
-+
-+static const struct compress_format {
-+	unsigned char magic[2];
-+	const char *name;
-+	decompress_fn decompressor;
-+} compressed_formats[] = {
-+#ifdef CONFIG_DECOMPRESS_GZIP
-+	{ {037, 0213}, "gzip", gunzip },
-+	{ {037, 0236}, "gzip", gunzip },
-+#endif
-+#ifdef CONFIG_DECOMPRESS_BZIP2
-+	{ {0x42, 0x5a}, "bzip2", bunzip2 },
-+#endif
-+#ifdef CONFIG_DECOMPRESS_LZMA
-+	{ {0x5d, 0x00}, "lzma", unlzma },
-+#endif
-+	{ {0, 0}, NULL, NULL }
-+};
-+
-+decompress_fn decompress_method(const unsigned char *inbuf, int len,
-+				const char **name)
-+{
-+	const struct compress_format *cf;
-+
-+	if (len < 2)
-+		return NULL;	/* Need at least this much... */
-+
-+	for (cf = compressed_formats; cf->decompressor; cf++) {
-+		if (!memcmp(inbuf, cf->magic, 2))
-+			break;
-+
-+	}
-+	if (name)
-+		*name = cf->name;
-+	return cf->decompressor;
-+}
-diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
-new file mode 100644
-index 0000000..5d3ddb5
---- /dev/null
-+++ b/lib/decompress_bunzip2.c
-@@ -0,0 +1,735 @@
-+/* vi: set sw = 4 ts = 4: */
-+/*	Small bzip2 deflate implementation, by Rob Landley (rob@landley.net).
-+
-+	Based on bzip2 decompression code by Julian R Seward (jseward@acm.org),
-+	which also acknowledges contributions by Mike Burrows, David Wheeler,
-+	Peter Fenwick, Alistair Moffat, Radford Neal, Ian H. Witten,
-+	Robert Sedgewick, and Jon L. Bentley.
-+
-+	This code is licensed under the LGPLv2:
-+		LGPL (http://www.gnu.org/copyleft/lgpl.html
-+*/
-+
-+/*
-+	Size and speed optimizations by Manuel Novoa III  (mjn3@codepoet.org).
-+
-+	More efficient reading of Huffman codes, a streamlined read_bunzip()
-+	function, and various other tweaks.  In (limited) tests, approximately
-+	20% faster than bzcat on x86 and about 10% faster on arm.
-+
-+	Note that about 2/3 of the time is spent in read_unzip() reversing
-+	the Burrows-Wheeler transformation.  Much of that time is delay
-+	resulting from cache misses.
-+
-+	I would ask that anyone benefiting from this work, especially those
-+	using it in commercial products, consider making a donation to my local
-+	non-profit hospice organization in the name of the woman I loved, who
-+	passed away Feb. 12, 2003.
-+
-+		In memory of Toni W. Hagan
-+
-+		Hospice of Acadiana, Inc.
-+		2600 Johnston St., Suite 200
-+		Lafayette, LA 70503-3240
-+
-+		Phone (337) 232-1234 or 1-800-738-2226
-+		Fax   (337) 232-1297
-+
-+		http://www.hospiceacadiana.com/
-+
-+	Manuel
-+ */
-+
-+/*
-+	Made it fit for running in Linux Kernel by Alain Knaff (alain@knaff.lu)
-+*/
-+
-+
-+#ifndef STATIC
-+#include <linux/decompress/bunzip2.h>
-+#endif /* !STATIC */
-+
-+#include <linux/decompress/mm.h>
-+
-+#ifndef INT_MAX
-+#define INT_MAX 0x7fffffff
-+#endif
-+
-+/* Constants for Huffman coding */
-+#define MAX_GROUPS		6
-+#define GROUP_SIZE   		50	/* 64 would have been more efficient */
-+#define MAX_HUFCODE_BITS 	20	/* Longest Huffman code allowed */
-+#define MAX_SYMBOLS 		258	/* 256 literals + RUNA + RUNB */
-+#define SYMBOL_RUNA		0
-+#define SYMBOL_RUNB		1
-+
-+/* Status return values */
-+#define RETVAL_OK			0
-+#define RETVAL_LAST_BLOCK		(-1)
-+#define RETVAL_NOT_BZIP_DATA		(-2)
-+#define RETVAL_UNEXPECTED_INPUT_EOF	(-3)
-+#define RETVAL_UNEXPECTED_OUTPUT_EOF	(-4)
-+#define RETVAL_DATA_ERROR		(-5)
-+#define RETVAL_OUT_OF_MEMORY		(-6)
-+#define RETVAL_OBSOLETE_INPUT		(-7)
-+
-+/* Other housekeeping constants */
-+#define BZIP2_IOBUF_SIZE		4096
-+
-+/* This is what we know about each Huffman coding group */
-+struct group_data {
-+	/* We have an extra slot at the end of limit[] for a sentinal value. */
-+	int limit[MAX_HUFCODE_BITS+1];
-+	int base[MAX_HUFCODE_BITS];
-+	int permute[MAX_SYMBOLS];
-+	int minLen, maxLen;
-+};
-+
-+/* Structure holding all the housekeeping data, including IO buffers and
-+   memory that persists between calls to bunzip */
-+struct bunzip_data {
-+	/* State for interrupting output loop */
-+	int writeCopies, writePos, writeRunCountdown, writeCount, writeCurrent;
-+	/* I/O tracking data (file handles, buffers, positions, etc.) */
-+	int (*fill)(void*, unsigned int);
-+	int inbufCount, inbufPos /*, outbufPos*/;
-+	unsigned char *inbuf /*,*outbuf*/;
-+	unsigned int inbufBitCount, inbufBits;
-+	/* The CRC values stored in the block header and calculated from the
-+	data */
-+	unsigned int crc32Table[256], headerCRC, totalCRC, writeCRC;
-+	/* Intermediate buffer and its size (in bytes) */
-+	unsigned int *dbuf, dbufSize;
-+	/* These things are a bit too big to go on the stack */
-+	unsigned char selectors[32768];		/* nSelectors = 15 bits */
-+	struct group_data groups[MAX_GROUPS];	/* Huffman coding tables */
-+	int io_error;			/* non-zero if we have IO error */
-+};
-+
-+
-+/* Return the next nnn bits of input.  All reads from the compressed input
-+   are done through this function.  All reads are big endian */
-+static unsigned int INIT get_bits(struct bunzip_data *bd, char bits_wanted)
-+{
-+	unsigned int bits = 0;
-+
-+	/* If we need to get more data from the byte buffer, do so.
-+	   (Loop getting one byte at a time to enforce endianness and avoid
-+	   unaligned access.) */
-+	while (bd->inbufBitCount < bits_wanted) {
-+		/* If we need to read more data from file into byte buffer, do
-+		   so */
-+		if (bd->inbufPos == bd->inbufCount) {
-+			if (bd->io_error)
-+				return 0;
-+			bd->inbufCount = bd->fill(bd->inbuf, BZIP2_IOBUF_SIZE);
-+			if (bd->inbufCount <= 0) {
-+				bd->io_error = RETVAL_UNEXPECTED_INPUT_EOF;
-+				return 0;
-+			}
-+			bd->inbufPos = 0;
-+		}
-+		/* Avoid 32-bit overflow (dump bit buffer to top of output) */
-+		if (bd->inbufBitCount >= 24) {
-+			bits = bd->inbufBits&((1 << bd->inbufBitCount)-1);
-+			bits_wanted -= bd->inbufBitCount;
-+			bits <<= bits_wanted;
-+			bd->inbufBitCount = 0;
-+		}
-+		/* Grab next 8 bits of input from buffer. */
-+		bd->inbufBits = (bd->inbufBits << 8)|bd->inbuf[bd->inbufPos++];
-+		bd->inbufBitCount += 8;
-+	}
-+	/* Calculate result */
-+	bd->inbufBitCount -= bits_wanted;
-+	bits |= (bd->inbufBits >> bd->inbufBitCount)&((1 << bits_wanted)-1);
-+
-+	return bits;
-+}
-+
-+/* Unpacks the next block and sets up for the inverse burrows-wheeler step. */
-+
-+static int INIT get_next_block(struct bunzip_data *bd)
-+{
-+	struct group_data *hufGroup = NULL;
-+	int *base = NULL;
-+	int *limit = NULL;
-+	int dbufCount, nextSym, dbufSize, groupCount, selector,
-+		i, j, k, t, runPos, symCount, symTotal, nSelectors,
-+		byteCount[256];
-+	unsigned char uc, symToByte[256], mtfSymbol[256], *selectors;
-+	unsigned int *dbuf, origPtr;
-+
-+	dbuf = bd->dbuf;
-+	dbufSize = bd->dbufSize;
-+	selectors = bd->selectors;
-+
-+	/* Read in header signature and CRC, then validate signature.
-+	   (last block signature means CRC is for whole file, return now) */
-+	i = get_bits(bd, 24);
-+	j = get_bits(bd, 24);
-+	bd->headerCRC = get_bits(bd, 32);
-+	if ((i == 0x177245) && (j == 0x385090))
-+		return RETVAL_LAST_BLOCK;
-+	if ((i != 0x314159) || (j != 0x265359))
-+		return RETVAL_NOT_BZIP_DATA;
-+	/* We can add support for blockRandomised if anybody complains.
-+	   There was some code for this in busybox 1.0.0-pre3, but nobody ever
-+	   noticed that it didn't actually work. */
-+	if (get_bits(bd, 1))
-+		return RETVAL_OBSOLETE_INPUT;
-+	origPtr = get_bits(bd, 24);
-+	if (origPtr > dbufSize)
-+		return RETVAL_DATA_ERROR;
-+	/* mapping table: if some byte values are never used (encoding things
-+	   like ascii text), the compression code removes the gaps to have fewer
-+	   symbols to deal with, and writes a sparse bitfield indicating which
-+	   values were present.  We make a translation table to convert the
-+	   symbols back to the corresponding bytes. */
-+	t = get_bits(bd, 16);
-+	symTotal = 0;
-+	for (i = 0; i < 16; i++) {
-+		if (t&(1 << (15-i))) {
-+			k = get_bits(bd, 16);
-+			for (j = 0; j < 16; j++)
-+				if (k&(1 << (15-j)))
-+					symToByte[symTotal++] = (16*i)+j;
-+		}
-+	}
-+	/* How many different Huffman coding groups does this block use? */
-+	groupCount = get_bits(bd, 3);
-+	if (groupCount < 2 || groupCount > MAX_GROUPS)
-+		return RETVAL_DATA_ERROR;
-+	/* nSelectors: Every GROUP_SIZE many symbols we select a new
-+	   Huffman coding group.  Read in the group selector list,
-+	   which is stored as MTF encoded bit runs.  (MTF = Move To
-+	   Front, as each value is used it's moved to the start of the
-+	   list.) */
-+	nSelectors = get_bits(bd, 15);
-+	if (!nSelectors)
-+		return RETVAL_DATA_ERROR;
-+	for (i = 0; i < groupCount; i++)
-+		mtfSymbol[i] = i;
-+	for (i = 0; i < nSelectors; i++) {
-+		/* Get next value */
-+		for (j = 0; get_bits(bd, 1); j++)
-+			if (j >= groupCount)
-+				return RETVAL_DATA_ERROR;
-+		/* Decode MTF to get the next selector */
-+		uc = mtfSymbol[j];
-+		for (; j; j--)
-+			mtfSymbol[j] = mtfSymbol[j-1];
-+		mtfSymbol[0] = selectors[i] = uc;
-+	}
-+	/* Read the Huffman coding tables for each group, which code
-+	   for symTotal literal symbols, plus two run symbols (RUNA,
-+	   RUNB) */
-+	symCount = symTotal+2;
-+	for (j = 0; j < groupCount; j++) {
-+		unsigned char length[MAX_SYMBOLS], temp[MAX_HUFCODE_BITS+1];
-+		int	minLen,	maxLen, pp;
-+		/* Read Huffman code lengths for each symbol.  They're
-+		   stored in a way similar to mtf; record a starting
-+		   value for the first symbol, and an offset from the
-+		   previous value for everys symbol after that.
-+		   (Subtracting 1 before the loop and then adding it
-+		   back at the end is an optimization that makes the
-+		   test inside the loop simpler: symbol length 0
-+		   becomes negative, so an unsigned inequality catches
-+		   it.) */
-+		t = get_bits(bd, 5)-1;
-+		for (i = 0; i < symCount; i++) {
-+			for (;;) {
-+				if (((unsigned)t) > (MAX_HUFCODE_BITS-1))
-+					return RETVAL_DATA_ERROR;
-+
-+				/* If first bit is 0, stop.  Else
-+				   second bit indicates whether to
-+				   increment or decrement the value.
-+				   Optimization: grab 2 bits and unget
-+				   the second if the first was 0. */
-+
-+				k = get_bits(bd, 2);
-+				if (k < 2) {
-+					bd->inbufBitCount++;
-+					break;
-+				}
-+				/* Add one if second bit 1, else
-+				 * subtract 1.  Avoids if/else */
-+				t += (((k+1)&2)-1);
-+			}
-+			/* Correct for the initial -1, to get the
-+			 * final symbol length */
-+			length[i] = t+1;
-+		}
-+		/* Find largest and smallest lengths in this group */
-+		minLen = maxLen = length[0];
-+
-+		for (i = 1; i < symCount; i++) {
-+			if (length[i] > maxLen)
-+				maxLen = length[i];
-+			else if (length[i] < minLen)
-+				minLen = length[i];
-+		}
-+
-+		/* Calculate permute[], base[], and limit[] tables from
-+		 * length[].
-+		 *
-+		 * permute[] is the lookup table for converting
-+		 * Huffman coded symbols into decoded symbols.  base[]
-+		 * is the amount to subtract from the value of a
-+		 * Huffman symbol of a given length when using
-+		 * permute[].
-+		 *
-+		 * limit[] indicates the largest numerical value a
-+		 * symbol with a given number of bits can have.  This
-+		 * is how the Huffman codes can vary in length: each
-+		 * code with a value > limit[length] needs another
-+		 * bit.
-+		 */
-+		hufGroup = bd->groups+j;
-+		hufGroup->minLen = minLen;
-+		hufGroup->maxLen = maxLen;
-+		/* Note that minLen can't be smaller than 1, so we
-+		   adjust the base and limit array pointers so we're
-+		   not always wasting the first entry.  We do this
-+		   again when using them (during symbol decoding).*/
-+		base = hufGroup->base-1;
-+		limit = hufGroup->limit-1;
-+		/* Calculate permute[].  Concurently, initialize
-+		 * temp[] and limit[]. */
-+		pp = 0;
-+		for (i = minLen; i <= maxLen; i++) {
-+			temp[i] = limit[i] = 0;
-+			for (t = 0; t < symCount; t++)
-+				if (length[t] == i)
-+					hufGroup->permute[pp++] = t;
-+		}
-+		/* Count symbols coded for at each bit length */
-+		for (i = 0; i < symCount; i++)
-+			temp[length[i]]++;
-+		/* Calculate limit[] (the largest symbol-coding value
-+		 *at each bit length, which is (previous limit <<
-+		 *1)+symbols at this level), and base[] (number of
-+		 *symbols to ignore at each bit length, which is limit
-+		 *minus the cumulative count of symbols coded for
-+		 *already). */
-+		pp = t = 0;
-+		for (i = minLen; i < maxLen; i++) {
-+			pp += temp[i];
-+			/* We read the largest possible symbol size
-+			   and then unget bits after determining how
-+			   many we need, and those extra bits could be
-+			   set to anything.  (They're noise from
-+			   future symbols.)  At each level we're
-+			   really only interested in the first few
-+			   bits, so here we set all the trailing
-+			   to-be-ignored bits to 1 so they don't
-+			   affect the value > limit[length]
-+			   comparison. */
-+			limit[i] = (pp << (maxLen - i)) - 1;
-+			pp <<= 1;
-+			base[i+1] = pp-(t += temp[i]);
-+		}
-+		limit[maxLen+1] = INT_MAX; /* Sentinal value for
-+					    * reading next sym. */
-+		limit[maxLen] = pp+temp[maxLen]-1;
-+		base[minLen] = 0;
-+	}
-+	/* We've finished reading and digesting the block header.  Now
-+	   read this block's Huffman coded symbols from the file and
-+	   undo the Huffman coding and run length encoding, saving the
-+	   result into dbuf[dbufCount++] = uc */
-+
-+	/* Initialize symbol occurrence counters and symbol Move To
-+	 * Front table */
-+	for (i = 0; i < 256; i++) {
-+		byteCount[i] = 0;
-+		mtfSymbol[i] = (unsigned char)i;
-+	}
-+	/* Loop through compressed symbols. */
-+	runPos = dbufCount = symCount = selector = 0;
-+	for (;;) {
-+		/* Determine which Huffman coding group to use. */
-+		if (!(symCount--)) {
-+			symCount = GROUP_SIZE-1;
-+			if (selector >= nSelectors)
-+				return RETVAL_DATA_ERROR;
-+			hufGroup = bd->groups+selectors[selector++];
-+			base = hufGroup->base-1;
-+			limit = hufGroup->limit-1;
-+		}
-+		/* Read next Huffman-coded symbol. */
-+		/* Note: It is far cheaper to read maxLen bits and
-+		   back up than it is to read minLen bits and then an
-+		   additional bit at a time, testing as we go.
-+		   Because there is a trailing last block (with file
-+		   CRC), there is no danger of the overread causing an
-+		   unexpected EOF for a valid compressed file.  As a
-+		   further optimization, we do the read inline
-+		   (falling back to a call to get_bits if the buffer
-+		   runs dry).  The following (up to got_huff_bits:) is
-+		   equivalent to j = get_bits(bd, hufGroup->maxLen);
-+		 */
-+		while (bd->inbufBitCount < hufGroup->maxLen) {
-+			if (bd->inbufPos == bd->inbufCount) {
-+				j = get_bits(bd, hufGroup->maxLen);
-+				goto got_huff_bits;
-+			}
-+			bd->inbufBits =
-+				(bd->inbufBits << 8)|bd->inbuf[bd->inbufPos++];
-+			bd->inbufBitCount += 8;
-+		};
-+		bd->inbufBitCount -= hufGroup->maxLen;
-+		j = (bd->inbufBits >> bd->inbufBitCount)&
-+			((1 << hufGroup->maxLen)-1);
-+got_huff_bits:
-+		/* Figure how how many bits are in next symbol and
-+		 * unget extras */
-+		i = hufGroup->minLen;
-+		while (j > limit[i])
-+			++i;
-+		bd->inbufBitCount += (hufGroup->maxLen - i);
-+		/* Huffman decode value to get nextSym (with bounds checking) */
-+		if ((i > hufGroup->maxLen)
-+			|| (((unsigned)(j = (j>>(hufGroup->maxLen-i))-base[i]))
-+				>= MAX_SYMBOLS))
-+			return RETVAL_DATA_ERROR;
-+		nextSym = hufGroup->permute[j];
-+		/* We have now decoded the symbol, which indicates
-+		   either a new literal byte, or a repeated run of the
-+		   most recent literal byte.  First, check if nextSym
-+		   indicates a repeated run, and if so loop collecting
-+		   how many times to repeat the last literal. */
-+		if (((unsigned)nextSym) <= SYMBOL_RUNB) { /* RUNA or RUNB */
-+			/* If this is the start of a new run, zero out
-+			 * counter */
-+			if (!runPos) {
-+				runPos = 1;
-+				t = 0;
-+			}
-+			/* Neat trick that saves 1 symbol: instead of
-+			   or-ing 0 or 1 at each bit position, add 1
-+			   or 2 instead.  For example, 1011 is 1 << 0
-+			   + 1 << 1 + 2 << 2.  1010 is 2 << 0 + 2 << 1
-+			   + 1 << 2.  You can make any bit pattern
-+			   that way using 1 less symbol than the basic
-+			   or 0/1 method (except all bits 0, which
-+			   would use no symbols, but a run of length 0
-+			   doesn't mean anything in this context).
-+			   Thus space is saved. */
-+			t += (runPos << nextSym);
-+			/* +runPos if RUNA; +2*runPos if RUNB */
-+
-+			runPos <<= 1;
-+			continue;
-+		}
-+		/* When we hit the first non-run symbol after a run,
-+		   we now know how many times to repeat the last
-+		   literal, so append that many copies to our buffer
-+		   of decoded symbols (dbuf) now.  (The last literal
-+		   used is the one at the head of the mtfSymbol
-+		   array.) */
-+		if (runPos) {
-+			runPos = 0;
-+			if (dbufCount+t >= dbufSize)
-+				return RETVAL_DATA_ERROR;
-+
-+			uc = symToByte[mtfSymbol[0]];
-+			byteCount[uc] += t;
-+			while (t--)
-+				dbuf[dbufCount++] = uc;
-+		}
-+		/* Is this the terminating symbol? */
-+		if (nextSym > symTotal)
-+			break;
-+		/* At this point, nextSym indicates a new literal
-+		   character.  Subtract one to get the position in the
-+		   MTF array at which this literal is currently to be
-+		   found.  (Note that the result can't be -1 or 0,
-+		   because 0 and 1 are RUNA and RUNB.  But another
-+		   instance of the first symbol in the mtf array,
-+		   position 0, would have been handled as part of a
-+		   run above.  Therefore 1 unused mtf position minus 2
-+		   non-literal nextSym values equals -1.) */
-+		if (dbufCount >= dbufSize)
-+			return RETVAL_DATA_ERROR;
-+		i = nextSym - 1;
-+		uc = mtfSymbol[i];
-+		/* Adjust the MTF array.  Since we typically expect to
-+		 *move only a small number of symbols, and are bound
-+		 *by 256 in any case, using memmove here would
-+		 *typically be bigger and slower due to function call
-+		 *overhead and other assorted setup costs. */
-+		do {
-+			mtfSymbol[i] = mtfSymbol[i-1];
-+		} while (--i);
-+		mtfSymbol[0] = uc;
-+		uc = symToByte[uc];
-+		/* We have our literal byte.  Save it into dbuf. */
-+		byteCount[uc]++;
-+		dbuf[dbufCount++] = (unsigned int)uc;
-+	}
-+	/* At this point, we've read all the Huffman-coded symbols
-+	   (and repeated runs) for this block from the input stream,
-+	   and decoded them into the intermediate buffer.  There are
-+	   dbufCount many decoded bytes in dbuf[].  Now undo the
-+	   Burrows-Wheeler transform on dbuf.  See
-+	   http://dogma.net/markn/articles/bwt/bwt.htm
-+	 */
-+	/* Turn byteCount into cumulative occurrence counts of 0 to n-1. */
-+	j = 0;
-+	for (i = 0; i < 256; i++) {
-+		k = j+byteCount[i];
-+		byteCount[i] = j;
-+		j = k;
-+	}
-+	/* Figure out what order dbuf would be in if we sorted it. */
-+	for (i = 0; i < dbufCount; i++) {
-+		uc = (unsigned char)(dbuf[i] & 0xff);
-+		dbuf[byteCount[uc]] |= (i << 8);
-+		byteCount[uc]++;
-+	}
-+	/* Decode first byte by hand to initialize "previous" byte.
-+	   Note that it doesn't get output, and if the first three
-+	   characters are identical it doesn't qualify as a run (hence
-+	   writeRunCountdown = 5). */
-+	if (dbufCount) {
-+		if (origPtr >= dbufCount)
-+			return RETVAL_DATA_ERROR;
-+		bd->writePos = dbuf[origPtr];
-+		bd->writeCurrent = (unsigned char)(bd->writePos&0xff);
-+		bd->writePos >>= 8;
-+		bd->writeRunCountdown = 5;
-+	}
-+	bd->writeCount = dbufCount;
-+
-+	return RETVAL_OK;
-+}
-+
-+/* Undo burrows-wheeler transform on intermediate buffer to produce output.
-+   If start_bunzip was initialized with out_fd =-1, then up to len bytes of
-+   data are written to outbuf.  Return value is number of bytes written or
-+   error (all errors are negative numbers).  If out_fd!=-1, outbuf and len
-+   are ignored, data is written to out_fd and return is RETVAL_OK or error.
-+*/
-+
-+static int INIT read_bunzip(struct bunzip_data *bd, char *outbuf, int len)
-+{
-+	const unsigned int *dbuf;
-+	int pos, xcurrent, previous, gotcount;
-+
-+	/* If last read was short due to end of file, return last block now */
-+	if (bd->writeCount < 0)
-+		return bd->writeCount;
-+
-+	gotcount = 0;
-+	dbuf = bd->dbuf;
-+	pos = bd->writePos;
-+	xcurrent = bd->writeCurrent;
-+
-+	/* We will always have pending decoded data to write into the output
-+	   buffer unless this is the very first call (in which case we haven't
-+	   Huffman-decoded a block into the intermediate buffer yet). */
-+
-+	if (bd->writeCopies) {
-+		/* Inside the loop, writeCopies means extra copies (beyond 1) */
-+		--bd->writeCopies;
-+		/* Loop outputting bytes */
-+		for (;;) {
-+			/* If the output buffer is full, snapshot
-+			 * state and return */
-+			if (gotcount >= len) {
-+				bd->writePos = pos;
-+				bd->writeCurrent = xcurrent;
-+				bd->writeCopies++;
-+				return len;
-+			}
-+			/* Write next byte into output buffer, updating CRC */
-+			outbuf[gotcount++] = xcurrent;
-+			bd->writeCRC = (((bd->writeCRC) << 8)
-+				^bd->crc32Table[((bd->writeCRC) >> 24)
-+				^xcurrent]);
-+			/* Loop now if we're outputting multiple
-+			 * copies of this byte */
-+			if (bd->writeCopies) {
-+				--bd->writeCopies;
-+				continue;
-+			}
-+decode_next_byte:
-+			if (!bd->writeCount--)
-+				break;
-+			/* Follow sequence vector to undo
-+			 * Burrows-Wheeler transform */
-+			previous = xcurrent;
-+			pos = dbuf[pos];
-+			xcurrent = pos&0xff;
-+			pos >>= 8;
-+			/* After 3 consecutive copies of the same
-+			   byte, the 4th is a repeat count.  We count
-+			   down from 4 instead *of counting up because
-+			   testing for non-zero is faster */
-+			if (--bd->writeRunCountdown) {
-+				if (xcurrent != previous)
-+					bd->writeRunCountdown = 4;
-+			} else {
-+				/* We have a repeated run, this byte
-+				 * indicates the count */
-+				bd->writeCopies = xcurrent;
-+				xcurrent = previous;
-+				bd->writeRunCountdown = 5;
-+				/* Sometimes there are just 3 bytes
-+				 * (run length 0) */
-+				if (!bd->writeCopies)
-+					goto decode_next_byte;
-+				/* Subtract the 1 copy we'd output
-+				 * anyway to get extras */
-+				--bd->writeCopies;
-+			}
-+		}
-+		/* Decompression of this block completed successfully */
-+		bd->writeCRC = ~bd->writeCRC;
-+		bd->totalCRC = ((bd->totalCRC << 1) |
-+				(bd->totalCRC >> 31)) ^ bd->writeCRC;
-+		/* If this block had a CRC error, force file level CRC error. */
-+		if (bd->writeCRC != bd->headerCRC) {
-+			bd->totalCRC = bd->headerCRC+1;
-+			return RETVAL_LAST_BLOCK;
-+		}
-+	}
-+
-+	/* Refill the intermediate buffer by Huffman-decoding next
-+	 * block of input */
-+	/* (previous is just a convenient unused temp variable here) */
-+	previous = get_next_block(bd);
-+	if (previous) {
-+		bd->writeCount = previous;
-+		return (previous != RETVAL_LAST_BLOCK) ? previous : gotcount;
-+	}
-+	bd->writeCRC = 0xffffffffUL;
-+	pos = bd->writePos;
-+	xcurrent = bd->writeCurrent;
-+	goto decode_next_byte;
-+}
-+
-+static int INIT nofill(void *buf, unsigned int len)
-+{
-+	return -1;
-+}
-+
-+/* Allocate the structure, read file header.  If in_fd ==-1, inbuf must contain
-+   a complete bunzip file (len bytes long).  If in_fd!=-1, inbuf and len are
-+   ignored, and data is read from file handle into temporary buffer. */
-+static int INIT start_bunzip(struct bunzip_data **bdp, void *inbuf, int len,
-+			     int (*fill)(void*, unsigned int))
-+{
-+	struct bunzip_data *bd;
-+	unsigned int i, j, c;
-+	const unsigned int BZh0 =
-+		(((unsigned int)'B') << 24)+(((unsigned int)'Z') << 16)
-+		+(((unsigned int)'h') << 8)+(unsigned int)'0';
-+
-+	/* Figure out how much data to allocate */
-+	i = sizeof(struct bunzip_data);
-+
-+	/* Allocate bunzip_data.  Most fields initialize to zero. */
-+	bd = *bdp = malloc(i);
-+	memset(bd, 0, sizeof(struct bunzip_data));
-+	/* Setup input buffer */
-+	bd->inbuf = inbuf;
-+	bd->inbufCount = len;
-+	if (fill != NULL)
-+		bd->fill = fill;
-+	else
-+		bd->fill = nofill;
-+
-+	/* Init the CRC32 table (big endian) */
-+	for (i = 0; i < 256; i++) {
-+		c = i << 24;
-+		for (j = 8; j; j--)
-+			c = c&0x80000000 ? (c << 1)^0x04c11db7 : (c << 1);
-+		bd->crc32Table[i] = c;
-+	}
-+
-+	/* Ensure that file starts with "BZh['1'-'9']." */
-+	i = get_bits(bd, 32);
-+	if (((unsigned int)(i-BZh0-1)) >= 9)
-+		return RETVAL_NOT_BZIP_DATA;
-+
-+	/* Fourth byte (ascii '1'-'9'), indicates block size in units of 100k of
-+	   uncompressed data.  Allocate intermediate buffer for block. */
-+	bd->dbufSize = 100000*(i-BZh0);
-+
-+	bd->dbuf = large_malloc(bd->dbufSize * sizeof(int));
-+	return RETVAL_OK;
-+}
-+
-+/* Example usage: decompress src_fd to dst_fd.  (Stops at end of bzip2 data,
-+   not end of file.) */
-+STATIC int INIT bunzip2(unsigned char *buf, int len,
-+			int(*fill)(void*, unsigned int),
-+			int(*flush)(void*, unsigned int),
-+			unsigned char *outbuf,
-+			int *pos,
-+			void(*error_fn)(char *x))
-+{
-+	struct bunzip_data *bd;
-+	int i = -1;
-+	unsigned char *inbuf;
-+
-+	set_error_fn(error_fn);
-+	if (flush)
-+		outbuf = malloc(BZIP2_IOBUF_SIZE);
-+	else
-+		len -= 4; /* Uncompressed size hack active in pre-boot
-+			     environment */
-+	if (!outbuf) {
-+		error("Could not allocate output bufer");
-+		return -1;
-+	}
-+	if (buf)
-+		inbuf = buf;
-+	else
-+		inbuf = malloc(BZIP2_IOBUF_SIZE);
-+	if (!inbuf) {
-+		error("Could not allocate input bufer");
-+		goto exit_0;
-+	}
-+	i = start_bunzip(&bd, inbuf, len, fill);
-+	if (!i) {
-+		for (;;) {
-+			i = read_bunzip(bd, outbuf, BZIP2_IOBUF_SIZE);
-+			if (i <= 0)
-+				break;
-+			if (!flush)
-+				outbuf += i;
-+			else
-+				if (i != flush(outbuf, i)) {
-+					i = RETVAL_UNEXPECTED_OUTPUT_EOF;
-+					break;
-+				}
-+		}
-+	}
-+	/* Check CRC and release memory */
-+	if (i == RETVAL_LAST_BLOCK) {
-+		if (bd->headerCRC != bd->totalCRC)
-+			error("Data integrity error when decompressing.");
-+		else
-+			i = RETVAL_OK;
-+	} else if (i == RETVAL_UNEXPECTED_OUTPUT_EOF) {
-+		error("Compressed file ends unexpectedly");
-+	}
-+	if (bd->dbuf)
-+		large_free(bd->dbuf);
-+	if (pos)
-+		*pos = bd->inbufPos;
-+	free(bd);
-+	if (!buf)
-+		free(inbuf);
-+exit_0:
-+	if (flush)
-+		free(outbuf);
-+	return i;
-+}
-+
-+#define decompress bunzip2
-diff --git a/lib/decompress_inflate.c b/lib/decompress_inflate.c
-new file mode 100644
-index 0000000..839a329
---- /dev/null
-+++ b/lib/decompress_inflate.c
-@@ -0,0 +1,167 @@
-+#ifdef STATIC
-+/* Pre-boot environment: included */
-+
-+/* prevent inclusion of _LINUX_KERNEL_H in pre-boot environment: lots
-+ * errors about console_printk etc... on ARM */
-+#define _LINUX_KERNEL_H
-+
-+#include "zlib_inflate/inftrees.c"
-+#include "zlib_inflate/inffast.c"
-+#include "zlib_inflate/inflate.c"
-+
-+#else /* STATIC */
-+/* initramfs et al: linked */
-+
-+#include <linux/zutil.h>
-+
-+#include "zlib_inflate/inftrees.h"
-+#include "zlib_inflate/inffast.h"
-+#include "zlib_inflate/inflate.h"
-+
-+#include "zlib_inflate/infutil.h"
-+
-+#endif /* STATIC */
-+
-+#include <linux/decompress/mm.h>
-+
-+#define INBUF_LEN (16*1024)
-+
-+/* Included from initramfs et al code */
-+STATIC int INIT gunzip(unsigned char *buf, int len,
-+		       int(*fill)(void*, unsigned int),
-+		       int(*flush)(void*, unsigned int),
-+		       unsigned char *out_buf,
-+		       int *pos,
-+		       void(*error_fn)(char *x)) {
-+	u8 *zbuf;
-+	struct z_stream_s *strm;
-+	int rc;
-+	size_t out_len;
-+
-+	set_error_fn(error_fn);
-+	rc = -1;
-+	if (flush) {
-+		out_len = 0x8000; /* 32 K */
-+		out_buf = malloc(out_len);
-+	} else {
-+		out_len = 0x7fffffff; /* no limit */
-+	}
-+	if (!out_buf) {
-+		error("Out of memory while allocating output buffer");
-+		goto gunzip_nomem1;
-+	}
-+
-+	if (buf)
-+		zbuf = buf;
-+	else {
-+		zbuf = malloc(INBUF_LEN);
-+		len = 0;
-+	}
-+	if (!zbuf) {
-+		error("Out of memory while allocating input buffer");
-+		goto gunzip_nomem2;
-+	}
-+
-+	strm = malloc(sizeof(*strm));
-+	if (strm == NULL) {
-+		error("Out of memory while allocating z_stream");
-+		goto gunzip_nomem3;
-+	}
-+
-+	strm->workspace = malloc(flush ? zlib_inflate_workspacesize() :
-+				 sizeof(struct inflate_state));
-+	if (strm->workspace == NULL) {
-+		error("Out of memory while allocating workspace");
-+		goto gunzip_nomem4;
-+	}
-+
-+	if (len == 0)
-+		len = fill(zbuf, INBUF_LEN);
-+
-+	/* verify the gzip header */
-+	if (len < 10 ||
-+	   zbuf[0] != 0x1f || zbuf[1] != 0x8b || zbuf[2] != 0x08) {
-+		if (pos)
-+			*pos = 0;
-+		error("Not a gzip file");
-+		goto gunzip_5;
-+	}
-+
-+	/* skip over gzip header (1f,8b,08... 10 bytes total +
-+	 * possible asciz filename)
-+	 */
-+	strm->next_in = zbuf + 10;
-+	/* skip over asciz filename */
-+	if (zbuf[3] & 0x8) {
-+		while (strm->next_in[0])
-+			strm->next_in++;
-+		strm->next_in++;
-+	}
-+	strm->avail_in = len - (strm->next_in - zbuf);
-+
-+	strm->next_out = out_buf;
-+	strm->avail_out = out_len;
-+
-+	rc = zlib_inflateInit2(strm, -MAX_WBITS);
-+
-+	if (!flush) {
-+		WS(strm)->inflate_state.wsize = 0;
-+		WS(strm)->inflate_state.window = NULL;
-+	}
-+
-+	while (rc == Z_OK) {
-+		if (strm->avail_in == 0) {
-+			/* TODO: handle case where both pos and fill are set */
-+			len = fill(zbuf, INBUF_LEN);
-+			if (len < 0) {
-+				rc = -1;
-+				error("read error");
-+				break;
-+			}
-+			strm->next_in = zbuf;
-+			strm->avail_in = len;
-+		}
-+		rc = zlib_inflate(strm, 0);
-+
-+		/* Write any data generated */
-+		if (flush && strm->next_out > out_buf) {
-+			int l = strm->next_out - out_buf;
-+			if (l != flush(out_buf, l)) {
-+				rc = -1;
-+				error("write error");
-+				break;
-+			}
-+			strm->next_out = out_buf;
-+			strm->avail_out = out_len;
-+		}
-+
-+		/* after Z_FINISH, only Z_STREAM_END is "we unpacked it all" */
-+		if (rc == Z_STREAM_END) {
-+			rc = 0;
-+			break;
-+		} else if (rc != Z_OK) {
-+			error("uncompression error");
-+			rc = -1;
-+		}
-+	}
-+
-+	zlib_inflateEnd(strm);
-+	if (pos)
-+		/* add + 8 to skip over trailer */
-+		*pos = strm->next_in - zbuf+8;
-+
-+gunzip_5:
-+	free(strm->workspace);
-+gunzip_nomem4:
-+	free(strm);
-+gunzip_nomem3:
-+	if (!buf)
-+		free(zbuf);
-+gunzip_nomem2:
-+	if (flush)
-+		free(out_buf);
-+gunzip_nomem1:
-+	return rc; /* returns Z_OK (0) if successful */
-+}
-+
-+#define decompress gunzip
-diff --git a/lib/decompress_unlzma.c b/lib/decompress_unlzma.c
-new file mode 100644
-index 0000000..546f2f4
---- /dev/null
-+++ b/lib/decompress_unlzma.c
-@@ -0,0 +1,647 @@
-+/* Lzma decompressor for Linux kernel. Shamelessly snarfed
-+ *from busybox 1.1.1
-+ *
-+ *Linux kernel adaptation
-+ *Copyright (C) 2006  Alain < alain@knaff.lu >
-+ *
-+ *Based on small lzma deflate implementation/Small range coder
-+ *implementation for lzma.
-+ *Copyright (C) 2006  Aurelien Jacobs < aurel@gnuage.org >
-+ *
-+ *Based on LzmaDecode.c from the LZMA SDK 4.22 (http://www.7-zip.org/)
-+ *Copyright (C) 1999-2005  Igor Pavlov
-+ *
-+ *Copyrights of the parts, see headers below.
-+ *
-+ *
-+ *This program is free software; you can redistribute it and/or
-+ *modify it under the terms of the GNU Lesser General Public
-+ *License as published by the Free Software Foundation; either
-+ *version 2.1 of the License, or (at your option) any later version.
-+ *
-+ *This program is distributed in the hope that it will be useful,
-+ *but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *Lesser General Public License for more details.
-+ *
-+ *You should have received a copy of the GNU Lesser General Public
-+ *License along with this library; if not, write to the Free Software
-+ *Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#ifndef STATIC
-+#include <linux/decompress/unlzma.h>
-+#endif /* STATIC */
-+
-+#include <linux/decompress/mm.h>
-+
-+#define	MIN(a, b) (((a) < (b)) ? (a) : (b))
-+
-+static long long INIT read_int(unsigned char *ptr, int size)
-+{
-+	int i;
-+	long long ret = 0;
-+
-+	for (i = 0; i < size; i++)
-+		ret = (ret << 8) | ptr[size-i-1];
-+	return ret;
-+}
-+
-+#define ENDIAN_CONVERT(x) \
-+  x = (typeof(x))read_int((unsigned char *)&x, sizeof(x))
-+
-+
-+/* Small range coder implementation for lzma.
-+ *Copyright (C) 2006  Aurelien Jacobs < aurel@gnuage.org >
-+ *
-+ *Based on LzmaDecode.c from the LZMA SDK 4.22 (http://www.7-zip.org/)
-+ *Copyright (c) 1999-2005  Igor Pavlov
-+ */
-+
-+#include <linux/compiler.h>
-+
-+#define LZMA_IOBUF_SIZE	0x10000
-+
-+struct rc {
-+	int (*fill)(void*, unsigned int);
-+	uint8_t *ptr;
-+	uint8_t *buffer;
-+	uint8_t *buffer_end;
-+	int buffer_size;
-+	uint32_t code;
-+	uint32_t range;
-+	uint32_t bound;
-+};
-+
-+
-+#define RC_TOP_BITS 24
-+#define RC_MOVE_BITS 5
-+#define RC_MODEL_TOTAL_BITS 11
-+
-+
-+/* Called twice: once at startup and once in rc_normalize() */
-+static void INIT rc_read(struct rc *rc)
-+{
-+	rc->buffer_size = rc->fill((char *)rc->buffer, LZMA_IOBUF_SIZE);
-+	if (rc->buffer_size <= 0)
-+		error("unexpected EOF");
-+	rc->ptr = rc->buffer;
-+	rc->buffer_end = rc->buffer + rc->buffer_size;
-+}
-+
-+/* Called once */
-+static inline void INIT rc_init(struct rc *rc,
-+				       int (*fill)(void*, unsigned int),
-+				       char *buffer, int buffer_size)
-+{
-+	rc->fill = fill;
-+	rc->buffer = (uint8_t *)buffer;
-+	rc->buffer_size = buffer_size;
-+	rc->buffer_end = rc->buffer + rc->buffer_size;
-+	rc->ptr = rc->buffer;
-+
-+	rc->code = 0;
-+	rc->range = 0xFFFFFFFF;
-+}
-+
-+static inline void INIT rc_init_code(struct rc *rc)
-+{
-+	int i;
-+
-+	for (i = 0; i < 5; i++) {
-+		if (rc->ptr >= rc->buffer_end)
-+			rc_read(rc);
-+		rc->code = (rc->code << 8) | *rc->ptr++;
-+	}
-+}
-+
-+
-+/* Called once. TODO: bb_maybe_free() */
-+static inline void INIT rc_free(struct rc *rc)
-+{
-+	free(rc->buffer);
-+}
-+
-+/* Called twice, but one callsite is in inline'd rc_is_bit_0_helper() */
-+static void INIT rc_do_normalize(struct rc *rc)
-+{
-+	if (rc->ptr >= rc->buffer_end)
-+		rc_read(rc);
-+	rc->range <<= 8;
-+	rc->code = (rc->code << 8) | *rc->ptr++;
-+}
-+static inline void INIT rc_normalize(struct rc *rc)
-+{
-+	if (rc->range < (1 << RC_TOP_BITS))
-+		rc_do_normalize(rc);
-+}
-+
-+/* Called 9 times */
-+/* Why rc_is_bit_0_helper exists?
-+ *Because we want to always expose (rc->code < rc->bound) to optimizer
-+ */
-+static inline uint32_t INIT rc_is_bit_0_helper(struct rc *rc, uint16_t *p)
-+{
-+	rc_normalize(rc);
-+	rc->bound = *p * (rc->range >> RC_MODEL_TOTAL_BITS);
-+	return rc->bound;
-+}
-+static inline int INIT rc_is_bit_0(struct rc *rc, uint16_t *p)
-+{
-+	uint32_t t = rc_is_bit_0_helper(rc, p);
-+	return rc->code < t;
-+}
-+
-+/* Called ~10 times, but very small, thus inlined */
-+static inline void INIT rc_update_bit_0(struct rc *rc, uint16_t *p)
-+{
-+	rc->range = rc->bound;
-+	*p += ((1 << RC_MODEL_TOTAL_BITS) - *p) >> RC_MOVE_BITS;
-+}
-+static inline void rc_update_bit_1(struct rc *rc, uint16_t *p)
-+{
-+	rc->range -= rc->bound;
-+	rc->code -= rc->bound;
-+	*p -= *p >> RC_MOVE_BITS;
-+}
-+
-+/* Called 4 times in unlzma loop */
-+static int INIT rc_get_bit(struct rc *rc, uint16_t *p, int *symbol)
-+{
-+	if (rc_is_bit_0(rc, p)) {
-+		rc_update_bit_0(rc, p);
-+		*symbol *= 2;
-+		return 0;
-+	} else {
-+		rc_update_bit_1(rc, p);
-+		*symbol = *symbol * 2 + 1;
-+		return 1;
-+	}
-+}
-+
-+/* Called once */
-+static inline int INIT rc_direct_bit(struct rc *rc)
-+{
-+	rc_normalize(rc);
-+	rc->range >>= 1;
-+	if (rc->code >= rc->range) {
-+		rc->code -= rc->range;
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+/* Called twice */
-+static inline void INIT
-+rc_bit_tree_decode(struct rc *rc, uint16_t *p, int num_levels, int *symbol)
-+{
-+	int i = num_levels;
-+
-+	*symbol = 1;
-+	while (i--)
-+		rc_get_bit(rc, p + *symbol, symbol);
-+	*symbol -= 1 << num_levels;
-+}
-+
-+
-+/*
-+ * Small lzma deflate implementation.
-+ * Copyright (C) 2006  Aurelien Jacobs < aurel@gnuage.org >
-+ *
-+ * Based on LzmaDecode.c from the LZMA SDK 4.22 (http://www.7-zip.org/)
-+ * Copyright (C) 1999-2005  Igor Pavlov
-+ */
-+
-+
-+struct lzma_header {
-+	uint8_t pos;
-+	uint32_t dict_size;
-+	uint64_t dst_size;
-+} __attribute__ ((packed)) ;
-+
-+
-+#define LZMA_BASE_SIZE 1846
-+#define LZMA_LIT_SIZE 768
-+
-+#define LZMA_NUM_POS_BITS_MAX 4
-+
-+#define LZMA_LEN_NUM_LOW_BITS 3
-+#define LZMA_LEN_NUM_MID_BITS 3
-+#define LZMA_LEN_NUM_HIGH_BITS 8
-+
-+#define LZMA_LEN_CHOICE 0
-+#define LZMA_LEN_CHOICE_2 (LZMA_LEN_CHOICE + 1)
-+#define LZMA_LEN_LOW (LZMA_LEN_CHOICE_2 + 1)
-+#define LZMA_LEN_MID (LZMA_LEN_LOW \
-+		      + (1 << (LZMA_NUM_POS_BITS_MAX + LZMA_LEN_NUM_LOW_BITS)))
-+#define LZMA_LEN_HIGH (LZMA_LEN_MID \
-+		       +(1 << (LZMA_NUM_POS_BITS_MAX + LZMA_LEN_NUM_MID_BITS)))
-+#define LZMA_NUM_LEN_PROBS (LZMA_LEN_HIGH + (1 << LZMA_LEN_NUM_HIGH_BITS))
-+
-+#define LZMA_NUM_STATES 12
-+#define LZMA_NUM_LIT_STATES 7
-+
-+#define LZMA_START_POS_MODEL_INDEX 4
-+#define LZMA_END_POS_MODEL_INDEX 14
-+#define LZMA_NUM_FULL_DISTANCES (1 << (LZMA_END_POS_MODEL_INDEX >> 1))
-+
-+#define LZMA_NUM_POS_SLOT_BITS 6
-+#define LZMA_NUM_LEN_TO_POS_STATES 4
-+
-+#define LZMA_NUM_ALIGN_BITS 4
-+
-+#define LZMA_MATCH_MIN_LEN 2
-+
-+#define LZMA_IS_MATCH 0
-+#define LZMA_IS_REP (LZMA_IS_MATCH + (LZMA_NUM_STATES << LZMA_NUM_POS_BITS_MAX))
-+#define LZMA_IS_REP_G0 (LZMA_IS_REP + LZMA_NUM_STATES)
-+#define LZMA_IS_REP_G1 (LZMA_IS_REP_G0 + LZMA_NUM_STATES)
-+#define LZMA_IS_REP_G2 (LZMA_IS_REP_G1 + LZMA_NUM_STATES)
-+#define LZMA_IS_REP_0_LONG (LZMA_IS_REP_G2 + LZMA_NUM_STATES)
-+#define LZMA_POS_SLOT (LZMA_IS_REP_0_LONG \
-+		       + (LZMA_NUM_STATES << LZMA_NUM_POS_BITS_MAX))
-+#define LZMA_SPEC_POS (LZMA_POS_SLOT \
-+		       +(LZMA_NUM_LEN_TO_POS_STATES << LZMA_NUM_POS_SLOT_BITS))
-+#define LZMA_ALIGN (LZMA_SPEC_POS \
-+		    + LZMA_NUM_FULL_DISTANCES - LZMA_END_POS_MODEL_INDEX)
-+#define LZMA_LEN_CODER (LZMA_ALIGN + (1 << LZMA_NUM_ALIGN_BITS))
-+#define LZMA_REP_LEN_CODER (LZMA_LEN_CODER + LZMA_NUM_LEN_PROBS)
-+#define LZMA_LITERAL (LZMA_REP_LEN_CODER + LZMA_NUM_LEN_PROBS)
-+
-+
-+struct writer {
-+	uint8_t *buffer;
-+	uint8_t previous_byte;
-+	size_t buffer_pos;
-+	int bufsize;
-+	size_t global_pos;
-+	int(*flush)(void*, unsigned int);
-+	struct lzma_header *header;
-+};
-+
-+struct cstate {
-+	int state;
-+	uint32_t rep0, rep1, rep2, rep3;
-+};
-+
-+static inline size_t INIT get_pos(struct writer *wr)
-+{
-+	return
-+		wr->global_pos + wr->buffer_pos;
-+}
-+
-+static inline uint8_t INIT peek_old_byte(struct writer *wr,
-+						uint32_t offs)
-+{
-+	if (!wr->flush) {
-+		int32_t pos;
-+		while (offs > wr->header->dict_size)
-+			offs -= wr->header->dict_size;
-+		pos = wr->buffer_pos - offs;
-+		return wr->buffer[pos];
-+	} else {
-+		uint32_t pos = wr->buffer_pos - offs;
-+		while (pos >= wr->header->dict_size)
-+			pos += wr->header->dict_size;
-+		return wr->buffer[pos];
-+	}
-+
-+}
-+
-+static inline void INIT write_byte(struct writer *wr, uint8_t byte)
-+{
-+	wr->buffer[wr->buffer_pos++] = wr->previous_byte = byte;
-+	if (wr->flush && wr->buffer_pos == wr->header->dict_size) {
-+		wr->buffer_pos = 0;
-+		wr->global_pos += wr->header->dict_size;
-+		wr->flush((char *)wr->buffer, wr->header->dict_size);
-+	}
-+}
-+
-+
-+static inline void INIT copy_byte(struct writer *wr, uint32_t offs)
-+{
-+	write_byte(wr, peek_old_byte(wr, offs));
-+}
-+
-+static inline void INIT copy_bytes(struct writer *wr,
-+					 uint32_t rep0, int len)
-+{
-+	do {
-+		copy_byte(wr, rep0);
-+		len--;
-+	} while (len != 0 && wr->buffer_pos < wr->header->dst_size);
-+}
-+
-+static inline void INIT process_bit0(struct writer *wr, struct rc *rc,
-+				     struct cstate *cst, uint16_t *p,
-+				     int pos_state, uint16_t *prob,
-+				     int lc, uint32_t literal_pos_mask) {
-+	int mi = 1;
-+	rc_update_bit_0(rc, prob);
-+	prob = (p + LZMA_LITERAL +
-+		(LZMA_LIT_SIZE
-+		 * (((get_pos(wr) & literal_pos_mask) << lc)
-+		    + (wr->previous_byte >> (8 - lc))))
-+		);
-+
-+	if (cst->state >= LZMA_NUM_LIT_STATES) {
-+		int match_byte = peek_old_byte(wr, cst->rep0);
-+		do {
-+			int bit;
-+			uint16_t *prob_lit;
-+
-+			match_byte <<= 1;
-+			bit = match_byte & 0x100;
-+			prob_lit = prob + 0x100 + bit + mi;
-+			if (rc_get_bit(rc, prob_lit, &mi)) {
-+				if (!bit)
-+					break;
-+			} else {
-+				if (bit)
-+					break;
-+			}
-+		} while (mi < 0x100);
-+	}
-+	while (mi < 0x100) {
-+		uint16_t *prob_lit = prob + mi;
-+		rc_get_bit(rc, prob_lit, &mi);
-+	}
-+	write_byte(wr, mi);
-+	if (cst->state < 4)
-+		cst->state = 0;
-+	else if (cst->state < 10)
-+		cst->state -= 3;
-+	else
-+		cst->state -= 6;
-+}
-+
-+static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
-+					    struct cstate *cst, uint16_t *p,
-+					    int pos_state, uint16_t *prob) {
-+  int offset;
-+	uint16_t *prob_len;
-+	int num_bits;
-+	int len;
-+
-+	rc_update_bit_1(rc, prob);
-+	prob = p + LZMA_IS_REP + cst->state;
-+	if (rc_is_bit_0(rc, prob)) {
-+		rc_update_bit_0(rc, prob);
-+		cst->rep3 = cst->rep2;
-+		cst->rep2 = cst->rep1;
-+		cst->rep1 = cst->rep0;
-+		cst->state = cst->state < LZMA_NUM_LIT_STATES ? 0 : 3;
-+		prob = p + LZMA_LEN_CODER;
-+	} else {
-+		rc_update_bit_1(rc, prob);
-+		prob = p + LZMA_IS_REP_G0 + cst->state;
-+		if (rc_is_bit_0(rc, prob)) {
-+			rc_update_bit_0(rc, prob);
-+			prob = (p + LZMA_IS_REP_0_LONG
-+				+ (cst->state <<
-+				   LZMA_NUM_POS_BITS_MAX) +
-+				pos_state);
-+			if (rc_is_bit_0(rc, prob)) {
-+				rc_update_bit_0(rc, prob);
-+
-+				cst->state = cst->state < LZMA_NUM_LIT_STATES ?
-+					9 : 11;
-+				copy_byte(wr, cst->rep0);
-+				return;
-+			} else {
-+				rc_update_bit_1(rc, prob);
-+			}
-+		} else {
-+			uint32_t distance;
-+
-+			rc_update_bit_1(rc, prob);
-+			prob = p + LZMA_IS_REP_G1 + cst->state;
-+			if (rc_is_bit_0(rc, prob)) {
-+				rc_update_bit_0(rc, prob);
-+				distance = cst->rep1;
-+			} else {
-+				rc_update_bit_1(rc, prob);
-+				prob = p + LZMA_IS_REP_G2 + cst->state;
-+				if (rc_is_bit_0(rc, prob)) {
-+					rc_update_bit_0(rc, prob);
-+					distance = cst->rep2;
-+				} else {
-+					rc_update_bit_1(rc, prob);
-+					distance = cst->rep3;
-+					cst->rep3 = cst->rep2;
-+				}
-+				cst->rep2 = cst->rep1;
-+			}
-+			cst->rep1 = cst->rep0;
-+			cst->rep0 = distance;
-+		}
-+		cst->state = cst->state < LZMA_NUM_LIT_STATES ? 8 : 11;
-+		prob = p + LZMA_REP_LEN_CODER;
-+	}
-+
-+	prob_len = prob + LZMA_LEN_CHOICE;
-+	if (rc_is_bit_0(rc, prob_len)) {
-+		rc_update_bit_0(rc, prob_len);
-+		prob_len = (prob + LZMA_LEN_LOW
-+			    + (pos_state <<
-+			       LZMA_LEN_NUM_LOW_BITS));
-+		offset = 0;
-+		num_bits = LZMA_LEN_NUM_LOW_BITS;
-+	} else {
-+		rc_update_bit_1(rc, prob_len);
-+		prob_len = prob + LZMA_LEN_CHOICE_2;
-+		if (rc_is_bit_0(rc, prob_len)) {
-+			rc_update_bit_0(rc, prob_len);
-+			prob_len = (prob + LZMA_LEN_MID
-+				    + (pos_state <<
-+				       LZMA_LEN_NUM_MID_BITS));
-+			offset = 1 << LZMA_LEN_NUM_LOW_BITS;
-+			num_bits = LZMA_LEN_NUM_MID_BITS;
-+		} else {
-+			rc_update_bit_1(rc, prob_len);
-+			prob_len = prob + LZMA_LEN_HIGH;
-+			offset = ((1 << LZMA_LEN_NUM_LOW_BITS)
-+				  + (1 << LZMA_LEN_NUM_MID_BITS));
-+			num_bits = LZMA_LEN_NUM_HIGH_BITS;
-+		}
-+	}
-+
-+	rc_bit_tree_decode(rc, prob_len, num_bits, &len);
-+	len += offset;
-+
-+	if (cst->state < 4) {
-+		int pos_slot;
-+
-+		cst->state += LZMA_NUM_LIT_STATES;
-+		prob =
-+			p + LZMA_POS_SLOT +
-+			((len <
-+			  LZMA_NUM_LEN_TO_POS_STATES ? len :
-+			  LZMA_NUM_LEN_TO_POS_STATES - 1)
-+			 << LZMA_NUM_POS_SLOT_BITS);
-+		rc_bit_tree_decode(rc, prob,
-+				   LZMA_NUM_POS_SLOT_BITS,
-+				   &pos_slot);
-+		if (pos_slot >= LZMA_START_POS_MODEL_INDEX) {
-+			int i, mi;
-+			num_bits = (pos_slot >> 1) - 1;
-+			cst->rep0 = 2 | (pos_slot & 1);
-+			if (pos_slot < LZMA_END_POS_MODEL_INDEX) {
-+				cst->rep0 <<= num_bits;
-+				prob = p + LZMA_SPEC_POS +
-+					cst->rep0 - pos_slot - 1;
-+			} else {
-+				num_bits -= LZMA_NUM_ALIGN_BITS;
-+				while (num_bits--)
-+					cst->rep0 = (cst->rep0 << 1) |
-+						rc_direct_bit(rc);
-+				prob = p + LZMA_ALIGN;
-+				cst->rep0 <<= LZMA_NUM_ALIGN_BITS;
-+				num_bits = LZMA_NUM_ALIGN_BITS;
-+			}
-+			i = 1;
-+			mi = 1;
-+			while (num_bits--) {
-+				if (rc_get_bit(rc, prob + mi, &mi))
-+					cst->rep0 |= i;
-+				i <<= 1;
-+			}
-+		} else
-+			cst->rep0 = pos_slot;
-+		if (++(cst->rep0) == 0)
-+			return;
-+	}
-+
-+	len += LZMA_MATCH_MIN_LEN;
-+
-+	copy_bytes(wr, cst->rep0, len);
-+}
-+
-+
-+
-+STATIC inline int INIT unlzma(unsigned char *buf, int in_len,
-+			      int(*fill)(void*, unsigned int),
-+			      int(*flush)(void*, unsigned int),
-+			      unsigned char *output,
-+			      int *posp,
-+			      void(*error_fn)(char *x)
-+	)
-+{
-+	struct lzma_header header;
-+	int lc, pb, lp;
-+	uint32_t pos_state_mask;
-+	uint32_t literal_pos_mask;
-+	uint16_t *p;
-+	int num_probs;
-+	struct rc rc;
-+	int i, mi;
-+	struct writer wr;
-+	struct cstate cst;
-+	unsigned char *inbuf;
-+	int ret = -1;
-+
-+	set_error_fn(error_fn);
-+	if (!flush)
-+		in_len -= 4; /* Uncompressed size hack active in pre-boot
-+				environment */
-+	if (buf)
-+		inbuf = buf;
-+	else
-+		inbuf = malloc(LZMA_IOBUF_SIZE);
-+	if (!inbuf) {
-+		error("Could not allocate input bufer");
-+		goto exit_0;
-+	}
-+
-+	cst.state = 0;
-+	cst.rep0 = cst.rep1 = cst.rep2 = cst.rep3 = 1;
-+
-+	wr.header = &header;
-+	wr.flush = flush;
-+	wr.global_pos = 0;
-+	wr.previous_byte = 0;
-+	wr.buffer_pos = 0;
-+
-+	rc_init(&rc, fill, inbuf, in_len);
-+
-+	for (i = 0; i < sizeof(header); i++) {
-+		if (rc.ptr >= rc.buffer_end)
-+			rc_read(&rc);
-+		((unsigned char *)&header)[i] = *rc.ptr++;
-+	}
-+
-+	if (header.pos >= (9 * 5 * 5))
-+		error("bad header");
-+
-+	mi = 0;
-+	lc = header.pos;
-+	while (lc >= 9) {
-+		mi++;
-+		lc -= 9;
-+	}
-+	pb = 0;
-+	lp = mi;
-+	while (lp >= 5) {
-+		pb++;
-+		lp -= 5;
-+	}
-+	pos_state_mask = (1 << pb) - 1;
-+	literal_pos_mask = (1 << lp) - 1;
-+
-+	ENDIAN_CONVERT(header.dict_size);
-+	ENDIAN_CONVERT(header.dst_size);
-+
-+	if (header.dict_size == 0)
-+		header.dict_size = 1;
-+
-+	if (output)
-+		wr.buffer = output;
-+	else {
-+		wr.bufsize = MIN(header.dst_size, header.dict_size);
-+		wr.buffer = large_malloc(wr.bufsize);
-+	}
-+	if (wr.buffer == NULL)
-+		goto exit_1;
-+
-+	num_probs = LZMA_BASE_SIZE + (LZMA_LIT_SIZE << (lc + lp));
-+	p = (uint16_t *) large_malloc(num_probs * sizeof(*p));
-+	if (p == 0)
-+		goto exit_2;
-+	num_probs = LZMA_LITERAL + (LZMA_LIT_SIZE << (lc + lp));
-+	for (i = 0; i < num_probs; i++)
-+		p[i] = (1 << RC_MODEL_TOTAL_BITS) >> 1;
-+
-+	rc_init_code(&rc);
-+
-+	while (get_pos(&wr) < header.dst_size) {
-+		int pos_state =	get_pos(&wr) & pos_state_mask;
-+		uint16_t *prob = p + LZMA_IS_MATCH +
-+			(cst.state << LZMA_NUM_POS_BITS_MAX) + pos_state;
-+		if (rc_is_bit_0(&rc, prob))
-+			process_bit0(&wr, &rc, &cst, p, pos_state, prob,
-+				     lc, literal_pos_mask);
-+		else {
-+			process_bit1(&wr, &rc, &cst, p, pos_state, prob);
-+			if (cst.rep0 == 0)
-+				break;
-+		}
-+	}
-+
-+	if (posp)
-+		*posp = rc.ptr-rc.buffer;
-+	if (wr.flush)
-+		wr.flush(wr.buffer, wr.buffer_pos);
-+	ret = 0;
-+	large_free(p);
-+exit_2:
-+	if (!output)
-+		large_free(wr.buffer);
-+exit_1:
-+	if (!buf)
-+		free(inbuf);
-+exit_0:
-+	return ret;
-+}
-+
-+#define decompress unlzma
-diff --git a/lib/zlib_inflate/inflate.h b/lib/zlib_inflate/inflate.h
-index df8a6c9..3d17b3d 100644
---- a/lib/zlib_inflate/inflate.h
-+++ b/lib/zlib_inflate/inflate.h
-@@ -1,3 +1,6 @@
-+#ifndef INFLATE_H
-+#define INFLATE_H
-+
- /* inflate.h -- internal inflate state definition
-  * Copyright (C) 1995-2004 Mark Adler
-  * For conditions of distribution and use, see copyright notice in zlib.h
-@@ -105,3 +108,4 @@ struct inflate_state {
-     unsigned short work[288];   /* work area for code table building */
-     code codes[ENOUGH];         /* space for code tables */
- };
-+#endif
-diff --git a/lib/zlib_inflate/inftrees.h b/lib/zlib_inflate/inftrees.h
-index 5f5219b..b70b473 100644
---- a/lib/zlib_inflate/inftrees.h
-+++ b/lib/zlib_inflate/inftrees.h
-@@ -1,3 +1,6 @@
-+#ifndef INFTREES_H
-+#define INFTREES_H
-+
- /* inftrees.h -- header to use inftrees.c
-  * Copyright (C) 1995-2005 Mark Adler
-  * For conditions of distribution and use, see copyright notice in zlib.h
-@@ -53,3 +56,4 @@ typedef enum {
- extern int zlib_inflate_table (codetype type, unsigned short *lens,
-                              unsigned codes, code **table,
-                              unsigned *bits, unsigned short *work);
-+#endif
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index e063657..3b949a3 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -186,3 +186,17 @@ quiet_cmd_gzip = GZIP    $@
- cmd_gzip = gzip -f -9 < $< > $@
- 
- 
-+# Bzip2
-+# ---------------------------------------------------------------------------
-+
-+# Bzip2 does not include size in file... so we have to fake that
-+size_append=$(CONFIG_SHELL) $(srctree)/scripts/bin_size
-+
-+quiet_cmd_bzip2 = BZIP2    $@
-+cmd_bzip2 = (bzip2 -9 < $< && $(size_append) $<) > $@ || (rm -f $@ ; false)
-+
-+# Lzma
-+# ---------------------------------------------------------------------------
-+
-+quiet_cmd_lzma = LZMA    $@
-+cmd_lzma = (lzma -9 -c $< && $(size_append) $<) >$@ || (rm -f $@ ; false)
-diff --git a/scripts/bin_size b/scripts/bin_size
-new file mode 100644
-index 0000000..43e1b36
---- /dev/null
-+++ b/scripts/bin_size
-@@ -0,0 +1,10 @@
-+#!/bin/sh
-+
-+if [ $# = 0 ] ; then
-+   echo Usage: $0 file
-+fi
-+
-+size_dec=`stat -c "%s" $1`
-+size_hex_echo_string=`printf "%08x" $size_dec |
-+     sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'`
-+/bin/echo -ne $size_hex_echo_string
-diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
-index 5f3415f..41041e4 100644
---- a/scripts/gen_initramfs_list.sh
-+++ b/scripts/gen_initramfs_list.sh
-@@ -5,7 +5,7 @@
- # Released under the terms of the GNU GPL
- #
- # Generate a cpio packed initramfs. It uses gen_init_cpio to generate
--# the cpio archive, and gzip to pack it.
-+# the cpio archive, and then compresses it.
- # The script may also be used to generate the inputfile used for gen_init_cpio
- # This script assumes that gen_init_cpio is located in usr/ directory
- 
-@@ -16,8 +16,8 @@ usage() {
- cat << EOF
- Usage:
- $0 [-o <file>] [-u <uid>] [-g <gid>] {-d | <cpio_source>} ...
--	-o <file>      Create gzipped initramfs file named <file> using
--		       gen_init_cpio and gzip
-+	-o <file>      Create compressed initramfs file named <file> using
-+		       gen_init_cpio and compressor depending on the extension
- 	-u <uid>       User ID to map to user ID 0 (root).
- 		       <uid> is only meaningful if <cpio_source> is a
- 		       directory.  "squash" forces all files to uid 0.
-@@ -225,6 +225,7 @@ cpio_list=
- output="/dev/stdout"
- output_file=""
- is_cpio_compressed=
-+compr="gzip -9 -f"
- 
- arg="$1"
- case "$arg" in
-@@ -233,11 +234,15 @@ case "$arg" in
- 		echo "deps_initramfs := \\"
- 		shift
- 		;;
--	"-o")	# generate gzipped cpio image named $1
-+	"-o")	# generate compressed cpio image named $1
- 		shift
- 		output_file="$1"
- 		cpio_list="$(mktemp ${TMPDIR:-/tmp}/cpiolist.XXXXXX)"
- 		output=${cpio_list}
-+		echo "$output_file" | grep -q "\.gz$" && compr="gzip -9 -f"
-+		echo "$output_file" | grep -q "\.bz2$" && compr="bzip2 -9 -f"
-+		echo "$output_file" | grep -q "\.lzma$" && compr="lzma -9 -f"
-+		echo "$output_file" | grep -q "\.cpio$" && compr="cat"
- 		shift
- 		;;
- esac
-@@ -274,7 +279,7 @@ while [ $# -gt 0 ]; do
- 	esac
- done
- 
--# If output_file is set we will generate cpio archive and gzip it
-+# If output_file is set we will generate cpio archive and compress it
- # we are carefull to delete tmp files
- if [ ! -z ${output_file} ]; then
- 	if [ -z ${cpio_file} ]; then
-@@ -287,7 +292,7 @@ if [ ! -z ${output_file} ]; then
- 	if [ "${is_cpio_compressed}" = "compressed" ]; then
- 		cat ${cpio_tfile} > ${output_file}
- 	else
--		cat ${cpio_tfile} | gzip -f -9 - > ${output_file}
-+		cat ${cpio_tfile} | ${compr}  - > ${output_file}
- 	fi
- 	[ -z ${cpio_file} ] && rm ${cpio_tfile}
- fi
-diff --git a/usr/Kconfig b/usr/Kconfig
-index 86cecb5..a691a8f 100644
---- a/usr/Kconfig
-+++ b/usr/Kconfig
-@@ -44,3 +44,30 @@ config INITRAMFS_ROOT_GID
- 	  owned by group root in the initial ramdisk image.
- 
- 	  If you are not sure, leave it set to "0".
-+
-+config RD_GZIP
-+	bool "Initial ramdisk compressed using gzip"
-+	default y
-+	depends on BLK_DEV_INITRD=y
-+	select DECOMPRESS_GZIP
-+	help
-+	  Support loading of a gzip encoded initial ramdisk or cpio buffer.
-+	  If unsure, say Y.
-+
-+config RD_BZIP2
-+	bool "Initial ramdisk compressed using bzip2"
-+	default n
-+	depends on BLK_DEV_INITRD=y
-+	select DECOMPRESS_BZIP2
-+	help
-+	  Support loading of a bzip2 encoded initial ramdisk or cpio buffer
-+	  If unsure, say N.
-+
-+config RD_LZMA
-+	bool "Initial ramdisk compressed using lzma"
-+	default n
-+	depends on BLK_DEV_INITRD=y
-+	select DECOMPRESS_LZMA
-+	help
-+	  Support loading of a lzma encoded initial ramdisk or cpio buffer
-+	  If unsure, say N.
-diff --git a/usr/Makefile b/usr/Makefile
-index 201f27f..451cdff 100644
---- a/usr/Makefile
-+++ b/usr/Makefile
-@@ -5,14 +5,32 @@
- klibcdirs:;
- PHONY += klibcdirs
- 
-+# Find out "preferred" ramdisk compressor. Order of preference is
-+#  1. bzip2 efficient, and likely to be present
-+#  2. gzip former default
-+#  3. lzma
-+#  4. none
-+
-+# None of the above
-+suffix_y                   =
-+
-+# Lzma, but no gzip nor bzip2
-+suffix_$(CONFIG_RD_LZMA)   = .lzma
-+
-+# Gzip, but no bzip2
-+suffix_$(CONFIG_RD_GZIP)   = .gz
-+
-+# Bzip2
-+suffix_$(CONFIG_RD_BZIP2)  = .bz2
-+
- 
- # Generate builtin.o based on initramfs_data.o
--obj-$(CONFIG_BLK_DEV_INITRD) := initramfs_data.o
-+obj-$(CONFIG_BLK_DEV_INITRD) := initramfs_data$(suffix_y).o
- 
--# initramfs_data.o contains the initramfs_data.cpio.gz image.
-+# initramfs_data.o contains the compressed initramfs_data.cpio image.
- # The image is included using .incbin, a dependency which is not
- # tracked automatically.
--$(obj)/initramfs_data.o: $(obj)/initramfs_data.cpio.gz FORCE
-+$(obj)/initramfs_data$(suffix_y).o: $(obj)/initramfs_data.cpio$(suffix_y) FORCE
- 
- #####
- # Generate the initramfs cpio archive
-@@ -25,28 +43,28 @@ ramfs-args  := \
-         $(if $(CONFIG_INITRAMFS_ROOT_UID), -u $(CONFIG_INITRAMFS_ROOT_UID)) \
-         $(if $(CONFIG_INITRAMFS_ROOT_GID), -g $(CONFIG_INITRAMFS_ROOT_GID))
- 
--# .initramfs_data.cpio.gz.d is used to identify all files included
-+# .initramfs_data.cpio.d is used to identify all files included
- # in initramfs and to detect if any files are added/removed.
- # Removed files are identified by directory timestamp being updated
- # The dependency list is generated by gen_initramfs.sh -l
--ifneq ($(wildcard $(obj)/.initramfs_data.cpio.gz.d),)
--	include $(obj)/.initramfs_data.cpio.gz.d
-+ifneq ($(wildcard $(obj)/.initramfs_data.cpio.d),)
-+	include $(obj)/.initramfs_data.cpio.d
- endif
- 
- quiet_cmd_initfs = GEN     $@
-       cmd_initfs = $(initramfs) -o $@ $(ramfs-args) $(ramfs-input)
- 
--targets := initramfs_data.cpio.gz
-+targets := initramfs_data.cpio.gz initramfs_data.cpio.bz2 initramfs_data.cpio.lzma initramfs_data.cpio
- # do not try to update files included in initramfs
- $(deps_initramfs): ;
- 
- $(deps_initramfs): klibcdirs
--# We rebuild initramfs_data.cpio.gz if:
--# 1) Any included file is newer then initramfs_data.cpio.gz
-+# We rebuild initramfs_data.cpio if:
-+# 1) Any included file is newer then initramfs_data.cpio
- # 2) There are changes in which files are included (added or deleted)
--# 3) If gen_init_cpio are newer than initramfs_data.cpio.gz
-+# 3) If gen_init_cpio are newer than initramfs_data.cpio
- # 4) arguments to gen_initramfs.sh changes
--$(obj)/initramfs_data.cpio.gz: $(obj)/gen_init_cpio $(deps_initramfs) klibcdirs
--	$(Q)$(initramfs) -l $(ramfs-input) > $(obj)/.initramfs_data.cpio.gz.d
-+$(obj)/initramfs_data.cpio$(suffix_y): $(obj)/gen_init_cpio $(deps_initramfs) klibcdirs
-+	$(Q)$(initramfs) -l $(ramfs-input) > $(obj)/.initramfs_data.cpio.d
- 	$(call if_changed,initfs)
- 
-diff --git a/usr/initramfs_data.S b/usr/initramfs_data.S
-index c2e1ad4..7c6973d 100644
---- a/usr/initramfs_data.S
-+++ b/usr/initramfs_data.S
-@@ -26,5 +26,5 @@ SECTIONS
- */
- 
- .section .init.ramfs,"a"
--.incbin "usr/initramfs_data.cpio.gz"
-+.incbin "usr/initramfs_data.cpio"
- 
-diff --git a/usr/initramfs_data.bz2.S b/usr/initramfs_data.bz2.S
-new file mode 100644
-index 0000000..bc54d09
---- /dev/null
-+++ b/usr/initramfs_data.bz2.S
-@@ -0,0 +1,29 @@
-+/*
-+  initramfs_data includes the compressed binary that is the
-+  filesystem used for early user space.
-+  Note: Older versions of "as" (prior to binutils 2.11.90.0.23
-+  released on 2001-07-14) dit not support .incbin.
-+  If you are forced to use older binutils than that then the
-+  following trick can be applied to create the resulting binary:
-+
-+
-+  ld -m elf_i386  --format binary --oformat elf32-i386 -r \
-+  -T initramfs_data.scr initramfs_data.cpio.gz -o initramfs_data.o
-+   ld -m elf_i386  -r -o built-in.o initramfs_data.o
-+
-+  initramfs_data.scr looks like this:
-+SECTIONS
-+{
-+       .init.ramfs : { *(.data) }
-+}
-+
-+  The above example is for i386 - the parameters vary from architectures.
-+  Eventually look up LDFLAGS_BLOB in an older version of the
-+  arch/$(ARCH)/Makefile to see the flags used before .incbin was introduced.
-+
-+  Using .incbin has the advantage over ld that the correct flags are set
-+  in the ELF header, as required by certain architectures.
-+*/
-+
-+.section .init.ramfs,"a"
-+.incbin "usr/initramfs_data.cpio.bz2"
-diff --git a/usr/initramfs_data.gz.S b/usr/initramfs_data.gz.S
-new file mode 100644
-index 0000000..890c8dd
---- /dev/null
-+++ b/usr/initramfs_data.gz.S
-@@ -0,0 +1,29 @@
-+/*
-+  initramfs_data includes the compressed binary that is the
-+  filesystem used for early user space.
-+  Note: Older versions of "as" (prior to binutils 2.11.90.0.23
-+  released on 2001-07-14) dit not support .incbin.
-+  If you are forced to use older binutils than that then the
-+  following trick can be applied to create the resulting binary:
-+
-+
-+  ld -m elf_i386  --format binary --oformat elf32-i386 -r \
-+  -T initramfs_data.scr initramfs_data.cpio.gz -o initramfs_data.o
-+   ld -m elf_i386  -r -o built-in.o initramfs_data.o
-+
-+  initramfs_data.scr looks like this:
-+SECTIONS
-+{
-+       .init.ramfs : { *(.data) }
-+}
-+
-+  The above example is for i386 - the parameters vary from architectures.
-+  Eventually look up LDFLAGS_BLOB in an older version of the
-+  arch/$(ARCH)/Makefile to see the flags used before .incbin was introduced.
-+
-+  Using .incbin has the advantage over ld that the correct flags are set
-+  in the ELF header, as required by certain architectures.
-+*/
-+
-+.section .init.ramfs,"a"
-+.incbin "usr/initramfs_data.cpio.gz"
-diff --git a/usr/initramfs_data.lzma.S b/usr/initramfs_data.lzma.S
-new file mode 100644
-index 0000000..e11469e
---- /dev/null
-+++ b/usr/initramfs_data.lzma.S
-@@ -0,0 +1,29 @@
-+/*
-+  initramfs_data includes the compressed binary that is the
-+  filesystem used for early user space.
-+  Note: Older versions of "as" (prior to binutils 2.11.90.0.23
-+  released on 2001-07-14) dit not support .incbin.
-+  If you are forced to use older binutils than that then the
-+  following trick can be applied to create the resulting binary:
-+
-+
-+  ld -m elf_i386  --format binary --oformat elf32-i386 -r \
-+  -T initramfs_data.scr initramfs_data.cpio.gz -o initramfs_data.o
-+   ld -m elf_i386  -r -o built-in.o initramfs_data.o
-+
-+  initramfs_data.scr looks like this:
-+SECTIONS
-+{
-+       .init.ramfs : { *(.data) }
-+}
-+
-+  The above example is for i386 - the parameters vary from architectures.
-+  Eventually look up LDFLAGS_BLOB in an older version of the
-+  arch/$(ARCH)/Makefile to see the flags used before .incbin was introduced.
-+
-+  Using .incbin has the advantage over ld that the correct flags are set
-+  in the ELF header, as required by certain architectures.
-+*/
-+
-+.section .init.ramfs,"a"
-+.incbin "usr/initramfs_data.cpio.lzma"
+--------------040200010509060200090409--
