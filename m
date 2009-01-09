@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbZAIVlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZAIVmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbZAIVlU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZAIVlE
+	id S1757730AbZAIVmW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZAIVmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:41:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34567 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751111AbZAIVlC (ORCPT
+	Fri, 9 Jan 2009 16:42:09 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:34466 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755107AbZAIVmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:41:02 -0500
-Date: Fri, 9 Jan 2009 13:40:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 9 Jan 2009 16:42:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=mG8XYzjmTgS8nmANsHfZHgVSKQDtzvFitXdDxco/P/fHM8lnMdvRg3yD5N+afj0tSm
+         4qHhO6hAOxDgcrCD4bW5CpGmbc3CFkfPW5xdKlSliXy0DlnQWIU/a3QUkY4FGXwfOQsz
+         QobJMUbQSgrC0mw+IviKSlGD+AY/MASjQsP2E=
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Linux Power Management List <linux-pm@lists.osdl.org>
-Subject: Re: git mv (was Re: [git pull] ACPI & Suspend patches for
- 2.6.29-rc0)
-In-Reply-To: <20090109212757.GA25434@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.2.00.0901091339270.6528@localhost.localdomain>
-References: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain> <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain> <alpine.LFD.2.00.0901091537530.16697@localhost.localdomain> <alpine.LFD.2.00.0901091305160.6528@localhost.localdomain>
- <20090109212757.GA25434@uranus.ravnborg.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <20090109213442.GA20051@elte.hu>
+References: <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+	 <1231434515.14304.27.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
+	 <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org>
+	 <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>
+	 <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>
+	 <20090109204103.GA17212@elte.hu>
+	 <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>
+	 <20090109213442.GA20051@elte.hu>
+Content-Type: text/plain
+Date: Fri, 09 Jan 2009 13:41:59 -0800
+Message-Id: <1231537320.5726.2.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Jan 2009, Sam Ravnborg wrote:
+On Fri, 2009-01-09 at 22:34 +0100, Ingo Molnar wrote:
+> The naming problem remains though:
 > 
-> What other ways exist so I can see what the heck davem did to
-> arch/sparc64/kernel/irq.c then?
+> - Perhaps we could introduce a name for the first category: __must_inline? 
+>   __should_inline? Not because it wouldnt mean 'always', but because it is 
+>   'always inline' for another reason than the correctless __always_inline.
+> 
+> - Another possible approach wuld be to rename the second category to 
+>   __force_inline. That would signal it rather forcefully that the inlining 
+>   there is an absolute correctness issue.
 
-Sure, use "git log --follow".
+__needs_inline?  That would imply that it's for correctness reasons.
 
-I'm just saying that you can't expect the rest of the git powertools to 
-print pretty histories.. In particular, none of the graphical tools will 
-give you that nice merge history stuff - because the way "--follow" works, 
-we simply don't do that.
+Then __always_inline is left to mean that it doesn't _need_ to be inline
+but we _want_ it inline regardless of what gcc thinks?
 
-		Linus
+$0.02
+
+Harvey
+
