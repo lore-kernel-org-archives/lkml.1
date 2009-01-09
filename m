@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZAISRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZAISRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbZAISRh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZAISRV
+	id S1755387AbZAISRw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZAISRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:17:21 -0500
-Received: from rtr.ca ([76.10.145.34]:41372 "EHLO mail.rtr.ca"
+	Fri, 9 Jan 2009 13:17:33 -0500
+Received: from 8bytes.org ([88.198.83.132]:52464 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbZAISRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:17:19 -0500
-Message-ID: <496794AD.6040403@rtr.ca>
-Date: Fri, 09 Jan 2009 13:17:17 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	id S1754860AbZAISRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 13:17:32 -0500
+X-Greylist: delayed 375 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 13:17:32 EST
+Date: Fri, 9 Jan 2009 19:17:31 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com
+Subject: Re: [PATCH 05/16] dma-debug: add initialization code
+Message-ID: <20090109181731.GC9466@8bytes.org>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-6-git-send-email-joerg.roedel@amd.com> <20090109175842.GC30168@ioremap.net>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 2/6] fastboot: make scsi probes asynchronous
-References: <20090105200959.04a626ac@infradead.org> <20090105201118.5bfa1e36@infradead.org>
-In-Reply-To: <20090105201118.5bfa1e36@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090109175842.GC30168@ioremap.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->>From 19617cfb1840abc69cc2fe74433007fc1daa1cb7 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Sun, 4 Jan 2009 05:32:28 -0800
-> Subject: [PATCH] fastboot: make scsi probes asynchronous
+On Fri, Jan 09, 2009 at 08:58:42PM +0300, Evgeniy Polyakov wrote:
+> On Fri, Jan 09, 2009 at 05:19:19PM +0100, Joerg Roedel (joerg.roedel@amd.com) wrote:
+>  +static int prealloc_memory(u32 num_entries)
+> > +{
+> > +	struct dma_debug_entry *entry, *next_entry;
+> > +	int i;
+> > +
+> > +	for (i = 0; i < num_entries; ++i) {
+> > +		entry = kmalloc(sizeof(*entry), GFP_KERNEL | __GFP_ZERO);
 > 
-> This patch makes part of the scsi probe (which is mostly device spin up and the
-> partition scan) asynchronous. Only the part that runs after getting the device
-> number allocated is asynchronous, ensuring that device numbering remains stable.
-..
+> kzalloc?
 
-Will this burn up the PSUs in loaded server boxes,
-due to all drives spinning-up simultaneously now?
+True. kzalloc is better. I will change that.
 
-Just curious.
+Joerg
