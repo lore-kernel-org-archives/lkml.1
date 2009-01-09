@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbZAICnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZAICrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753774AbZAICnf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 21:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbZAICnM
+	id S1755451AbZAICrR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 21:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZAICrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 21:43:12 -0500
-Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:47926
-	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754574AbZAICnK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 21:43:10 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Jan 2009 21:43:10 EST
-Date: Thu, 8 Jan 2009 18:36:29 -0800
-From: Phil Oester <kernel@linuxace.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Message-ID: <20090109023629.GA29520@linuxace.com>
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <4966B24E.1050700@lougher.demon.co.uk> <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com>
+	Thu, 8 Jan 2009 21:47:05 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58050 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752048AbZAICrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 21:47:04 -0500
+Message-ID: <4966BA32.5000400@cn.fujitsu.com>
+Date: Fri, 09 Jan 2009 10:45:06 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] sched: fair group's bug
+References: <4965573B.60801@cn.fujitsu.com>
+In-Reply-To: <4965573B.60801@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 03:24:40AM +0100, Kay Sievers wrote:
-> On Fri, Jan 9, 2009 at 03:11, Phillip Lougher
-> <phillip@lougher.demon.co.uk> wrote:
-> > Andrew Morton wrote:
-> >> Apparently I reviewed the code a while back - that grey cell must have
-> >> died.  Does anyone else intend to review the code in that timeframe? If
-> >> not, we might as well merge it now, if ever..
-> >>
-> >
-> > I'll be very happy for a merge now, but of course it's not up to me :-(
+on 2009-1-8 9:30 Miao Xie wrote:
+> I tested fair group scheduler on my hyper-threading x86_64 box(2 CPU * 2 HT)
+> and found the deviation of the groups' CPU usage was larger than 2.6.26
+> when *offline* a CPU or do hotplug frequently. It is less than 1% On 2.6.26，but
+> On current kernel, it is often greater than 4%, even than 10% by accident.
 > 
-> I guess, it is hard to find a larger distro that does not merge the
-> out-of-tree version to support their live-, and installer-cds. So,
-> what argument is preventing a mainline merge now?
 
-Agreed...I'm tired of having to pull along a patch to vanilla kernels
-for squashfs.  Drivers are merged that don't even _work_ these days,
-so why is there so much concern about merging something which almost
-all distros use which impacts almost nothing if you don't enable it???
+This patch fixed the following problems. But the regression above still exists.
 
-Phil
+commit 0a582440ff546e2c6610d1acec325e91b4efd313
+Author: Mike Galbraith <efault@gmx.de>
+Date:   Fri Jan 2 12:16:42 2009 +0100
+
+    sched: fix sched_slice()
+
+    Impact: fix bad-interactivity buglet
+
+    Fix sched_slice() to emit a sane result whether a task is currently
+    enqueued or not.
+
+    Signed-off-by: Mike Galbraith <efault@gmx.de>
+    Tested-by: Jayson King <dev@jaysonking.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+> 
+> Besides that, We found other problems by the attached program.
+> 1. some tasks are hungry in the fair group.
+> 	Steps to reproduce:
+> 	# mkdir /dev/cpuctl
+> 	# mount -t cgroup -o cpu,noprefix xxx /dev/cpuctl
+> 	# ./cpuctl -g 1 -v
+> 	--------------------
+> 	1th Check Result:
+> 	Group	Shares	Actual(%)	Expect(%)
+> 	0	1024	100.00		100.00
+> 	Each task's usage:
+> 		Task in Group 0:
+> 			Task	Usage(%)
+> 			5395	0.000000
+> 			5396	0.000000
+> 		 	5397	0.000000
+> 			5398	16.677785
+> 			5399	16.677785
+> 			5400	16.744496
+> 			5401	16.611074
+> 			5402	33.288859
+> 
+> 2. some groups broke the limit of the fair group and get more CPU time When
+>    the groups is hiberarchy. Such as:
+> 		top group
+> 		    |
+> 		 group 1
+> 		/	\
+> 	      task1	group 2
+> 			   |
+> 			task 2
+> 	Steps to reproduce:
+> 	# mkdir /dev/cpuctl
+> 	# mount -t cgroup -o cpu,noprefix xxx /dev/cpuctl
+> 	# ./cpuctl -H
+> 	-------------------------
+> 	Group	Shares	Actual(%)	Expect(%)
+> 	0	1024	60.17		88.89
+> 	1	1024    39.83		11.11
+> 
+
+
