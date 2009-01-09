@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZAIObI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbZAIOn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbZAIObI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 09:31:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbZAIOaz
+	id S1755910AbZAIOn4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 09:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZAIOno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 09:30:55 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:27793 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515AbZAIOay (ORCPT
+	Fri, 9 Jan 2009 09:43:44 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37985 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbZAIOnn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 09:30:54 -0500
-X-BigFish: VPS-40(zz1432R62a3L98dR936eQ4015M1805Mzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KD7KB4-01-HGA-01
-Date: Fri, 9 Jan 2009 15:30:43 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Carl Love <cel@us.ibm.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
-       cbe-oss-dev <cbe-oss-dev@ozlabs.org>
-Subject: Re: [Patch 0/3] Overview, OProfile SPU event profiling support for
-	IBM Cell processor
-Message-ID: <20090109143042.GU15411@erda.amd.com>
-References: <1228177106.6509.285.camel@carll-linux-desktop> <20090108154835.GQ15411@erda.amd.com> <1231460791.6621.54.camel@carll-linux-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Fri, 9 Jan 2009 09:43:43 -0500
+Date: Fri, 9 Jan 2009 16:43:41 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Orgad Shaneh <orgads@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: Re: PROBLEM: networking - port 80 not accessible on eth0
+In-Reply-To: <af2dae3d0901090401l19ea59b6j1812c9d16c843116@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0901091637350.1889@wrl-59.cs.helsinki.fi>
+References: <af2dae3d0901082220i6d819f31tfb26ac9ad57f750@mail.gmail.com>
+ <af2dae3d0901090401l19ea59b6j1812c9d16c843116@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-ID: <Pine.LNX.4.64.0901091637352.1889@wrl-59.cs.helsinki.fi>
 Content-Disposition: inline
-In-Reply-To: <1231460791.6621.54.camel@carll-linux-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 09 Jan 2009 14:30:43.0257 (UTC) FILETIME=[DA5DA290:01C97266]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08.01.09 16:26:31, Carl Love wrote:
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git cell
-> > 
-> > The patches did not apply cleanly. I had to change the path to
-> > arch/powerpc/include/asm/, fix cell/pr_util.h and did some whitespace
-> > cleanups. Please run your tests on the cell branch.
+Added netdev though this is unlikely to end up being dev related.
 
-Thanks Carl, could you also test the 'next' branch on your
-architecture, please? This is the latest version of patches to go
-upstream (containing your patches also).
+On Fri, 9 Jan 2009, Orgad Shaneh wrote:
 
-Thanks,
+> ---------- Forwarded message ----------
+> From: Orgad Shaneh <orgads@gmail.com>
+> Date: Fri, Jan 9, 2009 at 8:20 AM
+> Subject: PROBLEM: networking - port 80 not accessible on eth0
+> To: linux-kernel@vger.kernel.org
+> 
+> 
+> I have a "VIA Technologies, VIA Technologies, Inc. VT6102 [Rhine-II]"
+> NIC connected to an ECI B-FOCuS 270PR ADSL model. I used fedora since
+> version 5. On FC5 (using kernel 2.6.15) the modem functioned as a
+> router, and it worked fine.
+> 
+> When I upgraded to FC6 (which was published with kernel 2.6.18) I
+> couldn't access any websites. I found out that I can access https, ftp
+> etc. but not http. I figured out that for some reason, port 80 was
+> blocked. When using VMWare with Windows, I could access websites.
+> 
+> I configured the modem to be a bridge, and I'm connecting through
+> pppoe. This way it works. Anyway, although I can access websites on
+> ppp0, I cannot access the modem itself (for configuration), which is
+> on eth0 port 80.
+> 
+> I attached a tcpdump when trying to connect to the modem (the same
+> applies for websites, when the modem is configured as a gateway):
+> 
+> After trying some different distributions (fedora up to 9, ubuntu 8.04
+> and 8.10), the problem remains. That's what leads me to the conclusion
+> that the problem is in the kernel.
 
--Robert
+Unlikely so, more likely the router is broken and some kernel TCP settings 
+got changed in the newer kernels. I took a short look into the provided 
+tcpdump and the modem negotiates tcp connection ok but then goes dead 
+silent.
+
+Your could try playing around with tcp_window_scaling sysctl,
+most likely the modem has some problem related to it.
+
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+ i.
