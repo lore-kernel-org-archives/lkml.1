@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932938AbZAIXYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760552AbZAIXY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932938AbZAIXYi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:24:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932889AbZAIXXx
+	id S1760552AbZAIXY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbZAIXX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:23:53 -0500
-Received: from outbound-mail-306.bluehost.com ([67.222.53.252]:47997 "HELO
-	outbound-mail-306.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932880AbZAIXXw (ORCPT
+	Fri, 9 Jan 2009 18:23:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47439 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932895AbZAIXX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:23:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=jEI2CA6+Q0Ns1ZQ/eEVmexGyomLCQi114qhwXBJbPqxHwKfE8P4ANENqcDSkWYQYzRlPqwX3I3qCIBtDTjIgSOiWQ1SZRkprnOZ4Jy0ZPlLH/g4vZX4Qez8QSRn8CG4i;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/8] PCI PCIe portdrv: Remove unused device extension
-Date: Fri, 9 Jan 2009 15:23:49 -0800
-User-Agent: KMail/1.9.10
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-References: <200901042346.42723.rjw@sisk.pl> <200901042351.07144.rjw@sisk.pl>
-In-Reply-To: <200901042351.07144.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Fri, 9 Jan 2009 18:23:58 -0500
+Date: Fri, 9 Jan 2009 15:23:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, eric.piel@tremplin-utc.net,
+       mm-commits@vger.kernel.org
+Subject: Re: - lis3lv02d-separate-the-core-from-hp-acpi-api.patch removed
+ from -mm tree
+Message-Id: <20090109152317.ca2a2da8.akpm@linux-foundation.org>
+In-Reply-To: <20090109230003.GB2223@elf.ucw.cz>
+References: <200901091958.n09JwbJs031498@imap1.linux-foundation.org>
+	<20090109230003.GB2223@elf.ucw.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901091523.49589.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, January 4, 2009 2:51 pm Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> There is struct pcie_port_device_ext defined in portdrv.h, but its
-> member is only initialized and never used.  Remove it.
+On Sat, 10 Jan 2009 00:00:03 +0100
+Pavel Machek <pavel@suse.cz> wrote:
 
-Yay for dead code elimination.
+> > The patch titled
+> >      LIS3LV02D: separate the core from HP ACPI API
+> > has been removed from the -mm tree.  Its filename was
+> >      lis3lv02d-separate-the-core-from-hp-acpi-api.patch
+> > 
+> > This patch was dropped because other changes were merged, which wrecked this patch
+> 
+> I'm confused. The other patch collided with leds/Makefile changes, but
+> this one applies cleanly over Linus' git (updated today)... or am I
+> doing something wrong? Could it still be pushed to Linus?
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+umm, sure, we can try that.
+
+Please don't use vague terms like "the other patch".  I assume you're
+referring to lis3lv02d-merge-with-leds-hp-disk.patch?
+
+It has more problems than a simple makefile conflict.  People keep on
+changing stuff in linux-next.  
+
