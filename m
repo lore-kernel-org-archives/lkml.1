@@ -1,149 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZAIIx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZAIIyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbZAIIx4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 03:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZAIIxr
+	id S1755962AbZAIIyq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 03:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZAIIyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 03:53:47 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58021 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbZAIIxq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 03:53:46 -0500
-Date: Fri, 9 Jan 2009 17:52:15 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: nishimura@mxp.nes.nec.co.jp, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com,
-       lizf@cn.fujitsu.com, menage@google.com
-Subject: Re: [RFC][PATCH 4/4] memcg: make oom less frequently
-Message-Id: <20090109175215.705c94ea.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090109055804.GF9737@balbir.in.ibm.com>
-References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
-	<20090108191520.df9c1d92.nishimura@mxp.nes.nec.co.jp>
-	<20090109055804.GF9737@balbir.in.ibm.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 9 Jan 2009 03:54:36 -0500
+Received: from mga14.intel.com ([143.182.124.37]:12785 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750815AbZAIIyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 03:54:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,235,1231142400"; 
+   d="asc'?scan'208";a="655783087"
+Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090109070144.GA7358@gondor.apana.org.au>
+References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
+	 <20090109070144.GA7358@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-uxBaHU/ZfddHsHge4Oxp"
+Date: Fri, 09 Jan 2009 16:54:33 +0800
+Message-Id: <1231491273.5937.94.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 11:28:04 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> * Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-08 19:15:20]:
-> 
-> > In previous implementation, mem_cgroup_try_charge checked the return
-> > value of mem_cgroup_try_to_free_pages, and just retried if some pages
-> > had been reclaimed.
-> > But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-> > only checks whether the usage is less than the limit.
-> > 
-> > This patch tries to change the behavior as before to cause oom less frequently.
-> > 
-> > To prevent try_charge from getting stuck in infinite loop,
-> > MEM_CGROUP_RECLAIM_RETRIES_MAX is defined.
-> > 
-> > 
-> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > ---
-> >  mm/memcontrol.c |   16 ++++++++++++----
-> >  1 files changed, 12 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > index 804c054..fedd76b 100644
-> > --- a/mm/memcontrol.c
-> > +++ b/mm/memcontrol.c
-> > @@ -42,6 +42,7 @@
-> > 
-> >  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
-> >  #define MEM_CGROUP_RECLAIM_RETRIES	5
-> > +#define MEM_CGROUP_RECLAIM_RETRIES_MAX	32
-> 
-> Why 32 are you seeing frequent OOMs? I had 5 iterations to allow
-> 
-> 1. pages to move to swap cache, which added back pressure to memcg in
-> the original implementation, since the pages came back
-> 2. It look longer to move, recalim those pages.
-> 
-> Ideally 3 would suffice, but I added an additional 2 retries for
-> safety.
-> 
-Before this patch, try_charge doesn't check the return value of
-try_to_free_page, i.e. how many pages has been reclaimed, and
-only checks whether the usage has become less than the limit.
-So, oom can be caused if the group is too busy.
 
-IIRC memory-cgroup-hierarchical-reclaim patch introduced this behavior,
-and, I don't remember in detail, some tests which had not caused oom
-started to cause oom after it.
-That was the motivation of my first version of this patch(*1).
+--=-uxBaHU/ZfddHsHge4Oxp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-*1 http://lkml.org/lkml/2008/11/28/35
+On Fri, 2009-01-09 at 15:01 +0800, Herbert Xu wrote:
+> > - ablkcipher asynchronous machanism is used to delay a crypto request
+> >   to work queue context upon FPU state is using by other kernel
+> >   context.
+>=20
+> Actually I was thinking of something as simple as just using
+> cryptd as is.  That is, register a blkcipher algorithm for your
+> version of cbc-aes, but don't register under the name cbc(aes),
+> e.g., register it under the name of __cbc-aes-aesni for both alg
+> name and driver name.  You can register it under cbc(aes) too
+> if you add the fallback in there.
+>=20
+> Then for the real thing, just allocate the blkcipher __cbc_*,
+> plus the ablkcipher cryptd(__cbc_*), and invoke the right one
+> depending on caller context.
 
-Anyway, this is the updated version.
-I removed RETRIES_MAX.
+I have ever considered this method too. This one is simpler, but the
+drawbacks are as follow:
+
+- cryptd thread is not per-CPU, so I think there will be some
+unnecessary cache inter-CPU migration. Why not use a dedicate workqueue
+or just system events workqueue?
+
+- with cryptd(__*-aes-aesni), we need 4 internal tfms for each external
+tfm allocation request. For example, for one external cbc(aes) tfm
+allocation request, we need one cbc(aes) ablkcipher tfm, one
+cryptd(cbc-aes-aesni) tfm, and two cbc-aes-aesni tfm. Do we use too much
+memory? And we need to call aesni_set_key() twice.
+
+> This is even simpler for the modes which you don't implement.
+> In that case you would just allocate FOO(aes-aesni) in conjunction
+> with cryptd(FOO(aes-aesni)).
+
+Yes. This is really a simple method.
+
+Best Regards,
+Huang Ying
 
 
-Thanks,
-Daisuke Nishimura.
-===
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+--=-uxBaHU/ZfddHsHge4Oxp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-In previous implementation, mem_cgroup_try_charge checked the return
-value of mem_cgroup_try_to_free_pages, and just retried if some pages
-had been reclaimed.
-But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-only checks whether the usage is less than the limit.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-This patch tries to change the behavior as before to cause oom less frequently.
+iEYEABECAAYFAklnEMYACgkQKhFGF+eHlpiVxACfUxMAPWcVA4Hg7Rhv+mK4abrN
+DcMAn1croaIo93RUI//yKGBOIkWpnBg6
+=l1VE
+-----END PGP SIGNATURE-----
 
-ChangeLog: RFC->v1
-- removed RETRIES_MAX.
+--=-uxBaHU/ZfddHsHge4Oxp--
 
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- mm/memcontrol.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 7ba5c61..fb0e9eb 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -781,10 +781,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 	 * but there might be left over accounting, even after children
- 	 * have left.
- 	 */
--	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
-+	ret += try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
- 					   get_swappiness(root_mem));
- 	if (mem_cgroup_check_under_limit(root_mem))
--		return 0;
-+		return 1;	/* indicate reclaim has succeeded */
- 	if (!root_mem->use_hierarchy)
- 		return ret;
- 
-@@ -795,10 +795,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 			next_mem = mem_cgroup_get_next_node(root_mem);
- 			continue;
- 		}
--		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
-+		ret += try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
- 						   get_swappiness(next_mem));
- 		if (mem_cgroup_check_under_limit(root_mem))
--			return 0;
-+			return 1;	/* indicate reclaim has succeeded */
- 		next_mem = mem_cgroup_get_next_node(root_mem);
- 	}
- 	return ret;
-@@ -883,6 +883,8 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 
- 		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
- 							noswap);
-+		if (ret)
-+			continue;
- 
- 		/*
- 		 * try_to_free_mem_cgroup_pages() might not give us a full
