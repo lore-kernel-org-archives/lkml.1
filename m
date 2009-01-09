@@ -1,115 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZAIVYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZAIVZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbZAIVYj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZAIVYI
+	id S1757884AbZAIVZY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:25:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbZAIVYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:24:08 -0500
-Received: from solo.fdn.fr ([80.67.169.19]:57305 "EHLO solo.fdn.fr"
+	Fri, 9 Jan 2009 16:24:34 -0500
+Received: from 1wt.eu ([62.212.114.60]:1329 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755695AbZAIVYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:24:06 -0500
-Date: Fri, 9 Jan 2009 22:23:58 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
-Subject: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
-Message-ID: <20090109212358.GG5073@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
-References: <20090107005813.GA4987@const.famille.thibault.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1757502AbZAIVYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 16:24:32 -0500
+Date: Fri, 9 Jan 2009 22:24:00 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090109212400.GA3727@1wt.eu>
+References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090107005813.GA4987@const.famille.thibault.fr>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <4967B8C5.10803@cosmosbay.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Jan 09, 2009 at 09:51:17PM +0100, Eric Dumazet wrote:
+(...)
+> > Also, in your second mail, you're saying that your change
+> > might return more data than requested by the user. I can't
+> > find why, could you please explain to me, as I'm still quite
+> > ignorant in this area ?
+> 
+> Well, I just tested various user programs and indeed got this
+> strange result :
+> 
+> Here I call splice() with len=1000 (0x3e8), and you can see
+> it gives a result of 1460 at the second call.
 
-Came somebody have a look at this?  The need is real, the only question
-that comes to my mind is whether notifiers are allowed to modify the
-param they are given.  Since they are not marked const, I'd guess it'd
-be ok?
+huh, not nice indeed!
 
-Samuel
+While looking at the code to see how this could be possible, I
+came across this minor thing (unrelated IMHO) :
 
-Samuel Thibault, le Wed 07 Jan 2009 01:58:13 +0100, a écrit :
+	if (__skb_splice_bits(skb, &offset, &tlen, &spd))
+		goto done;
+>>>>>>	else if (!tlen)    <<<<<<
+		goto done;
 
+	/*
+	 * now see if we have a frag_list to map
+	 */
+	if (skb_shinfo(skb)->frag_list) {
+		struct sk_buff *list = skb_shinfo(skb)->frag_list;
 
-Make kbd_keycode() read param.value after calling the keyboard notification
-chain, to let the callee change the translation on the fly. This for instance
-permits to remap the physical positions of the keys independently of the
-configured keymap, for e.g. single-handed people.
+		for (; list && tlen; list = list->next) {
+			if (__skb_splice_bits(list, &offset, &tlen, &spd))
+				break;
+		}
+	}
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+    done:
 
---- linux/drivers/char/keyboard.c.orig	2009-01-07 00:48:46.000000000 +0100
-+++ linux/drivers/char/keyboard.c	2009-01-07 01:02:05.000000000 +0100
-@@ -1248,6 +1248,7 @@ kbd_keycode
- 		kbd->slockstate = 0;
- 		return;
- 	}
-+	keycode = param.value;
- 
- 	if (keycode >= NR_KEYS)
- 		if (keycode >= KEY_BRL_DOT1 && keycode <= KEY_BRL_DOT8)
-@@ -1263,6 +1264,7 @@ kbd_keycode
- 		param.value = keysym;
- 		if (atomic_notifier_call_chain(&keyboard_notifier_list, KBD_UNICODE, &param) == NOTIFY_STOP)
- 			return;
-+		keysym = param.value;
- 		if (down && !raw_mode)
- 			to_utf8(vc, keysym);
- 		return;
-@@ -1282,6 +1284,7 @@ kbd_keycode
- 
- 	if (atomic_notifier_call_chain(&keyboard_notifier_list, KBD_KEYSYM, &param) == NOTIFY_STOP)
- 		return;
-+	keysym = param.value;
- 
- 	if (raw_mode && type != KT_SPEC && type != KT_SHIFT)
- 		return;
---- linux/Documentation/input/notifier.txt.orig	2008-04-17 12:14:30.000000000 +0200
-+++ linux/Documentation/input/notifier.txt	2009-01-07 01:04:16.000000000 +0100
-@@ -21,7 +21,8 @@
- 
- For each kind of event but the last, the callback may return NOTIFY_STOP in
- order to "eat" the event: the notify loop is stopped and the keyboard event is
--dropped.
-+dropped.  The callee can also modify param.value so as to change the key
-+translation.
- 
- In a rough C snippet, we have:
- 
-@@ -33,18 +34,26 @@
- 		notifier_call_chain(KBD_UNBOUND_KEYCODE,&params);
- 		return;
- 	}
-+	keycode = param.value;
-+
-+	...
- 
- 	if (unicode) {
- 		param.value = unicode;
- 		if (notifier_call_chain(KBD_UNICODE,&params) == NOTIFY_STOP)
- 			return;
-+		keysym = param.value;
- 		emit unicode;
- 		return;
- 	}
- 
-+	...
-+
- 	params.value = keysym;
- 	if (notifier_call_chain(KBD_KEYSYM,&params) == NOTIFY_STOP)
- 		return;
-+	keysym = params.value;
-+
- 	apply keysym;
- 	notifier_call_chain(KBD_POST_KEYSYM,&params);
- }
+Above on the enlighted line, we'd better remove the else and leave a plain
+"if (!tlen)". Otherwise, when the first call to __skb_splice_bits() zeroes
+tlen, we still enter the if and evaluate the for condition for nothing. But
+let's leave that for later.
+
+> I suspect a bug in splice code, that my patch just exposed.
+
+I've checked in skb_splice_bits() and below and can't see how we can move
+more than the requested len.
+
+However, with your change, I don't clearly see how we break out of
+the loop in tcp_read_sock(). Maybe we first read 1000 then loop again
+and read remaining data ? I suspect that we should at least exit when
+((struct tcp_splice_state *)desc->arg.data)->len = 0.
+
+At least that's something easy to add just before or after !desc->count
+for a test.
+
+Regards,
+Willy
+
