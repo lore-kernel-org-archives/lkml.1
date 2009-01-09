@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZAIGA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZAIGB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756826AbZAIGA5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 01:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZAIGAt
+	id S1757184AbZAIGB2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 01:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZAIGBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 01:00:49 -0500
-Received: from mail.gmx.net ([213.165.64.20]:53651 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751125AbZAIGAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 01:00:48 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+IjSMpEMWI7by201NDzhqJVdz4gt5Ic1E5FBw5AZ
-	tLx3WDz9D1WCZJ
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-From: Mike Galbraith <efault@gmx.de>
-To: svaidy@linux.vnet.ibm.com
-Cc: balbir@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090108174655.GQ4574@dirshya.in.ibm.com>
-References: <1231168786.9120.26.camel@marge.simson.net>
-	 <1231234297.3806.50.camel@marge.simson.net>
-	 <20090106150709.GG4574@dirshya.in.ibm.com>
-	 <1231264117.5254.23.camel@marge.simson.net>
-	 <20090106184552.GI17198@balbir.in.ibm.com>
-	 <1231318755.3899.57.camel@marge.simson.net>
-	 <20090107112639.GI4574@dirshya.in.ibm.com>
-	 <1231338985.5709.22.camel@marge.simson.net>
-	 <20090107153510.GN4574@dirshya.in.ibm.com>
-	 <1231402008.5721.37.camel@marge.simson.net>
-	 <20090108174655.GQ4574@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Fri, 09 Jan 2009 07:00:43 +0100
-Message-Id: <1231480843.5570.36.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.7
+	Fri, 9 Jan 2009 01:01:12 -0500
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:52844 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752758AbZAIGBK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 01:01:10 -0500
+Date: Fri, 9 Jan 2009 11:31:09 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, menage@google.com
+Subject: Re: [RFC][PATCH 2/4] memcg: fix error path of
+	mem_cgroup_move_parent
+Message-ID: <20090109060109.GG9737@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp> <20090108191445.cd860c37.nishimura@mxp.nes.nec.co.jp> <20090109051522.GC9737@balbir.in.ibm.com> <20090109143346.5ad2b971.nishimura@mxp.nes.nec.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090109143346.5ad2b971.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 23:16 +0530, Vaidyanathan Srinivasan wrote:
+* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-09 14:33:46]:
 
-> I agree with the 'visibility' to low level interface that you have
-> pointed out.  It will be good to have flags showup at the low level
-> interface, but do end users like system administrators would want to
-> know and tune these flags?
+> > Looks good to me, just out of curiousity how did you catch this error?
+> > Through review or testing? 
+> > 
+> Through testing.
+> 
+> I got "an unremovable directory" sometimes, which had res.usage remained
+> even after all lru lists had become empty, or which had ref counts remained
+> even after res.usage had become 0.
+> And tracked down the cause of this problem .
+>
 
-IMHO there is no difference between these tunings and any other tuning,
-the unwary admin can shoot himself in the foot in any number of ways.
-The monotonic interface setting sensible flags is fine, but invisible
-flags is not.
+Thanks,
 
-We may have to agree to disagree.
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
 
-	-Mike
-
+-- 
+	Balbir
