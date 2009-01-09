@@ -1,134 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZAIOrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZAIOs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbZAIOrQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 09:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZAIOrA
+	id S1756945AbZAIOs4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 09:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZAIOsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 09:47:00 -0500
-Received: from rv-out-0708.google.com ([209.85.198.250]:58578 "EHLO
-	rv-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753679AbZAIOq7 (ORCPT
+	Fri, 9 Jan 2009 09:48:47 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:17329 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753132AbZAIOsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 09:46:59 -0500
+	Fri, 9 Jan 2009 09:48:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:references;
-        b=U9w36LnfQVdcfdyzqqfLRfOy/nxbIMFd29AXlcSSTLqMSb+pO5qHj9PH08D5YR6nGC
-         4h8BXO/OKwBoDBGX0Snl62/Sx1DozmHGQfWjT9rMB5LqN4078I0rYx9rprJ0qIv18DoG
-         e0V8g9gKvUjRXaURBW9NvB4QNcfLYPULbU3cI=
-Message-ID: <f17812d70901090646x9180dbaj55e057b7e0a6a5b2@mail.gmail.com>
-Date: Fri, 9 Jan 2009 22:46:57 +0800
+        b=TuaweyMJ00PNXQjzeUhntVN9h0GG5yHibWbRdVu6Gsz96VoqEi8DpGPeJ0tpT0Hk2A
+         IqOkHJPUNIow80ITvofwl96b21Zd5EGfCDxPlmVTz1uRrZDuZd2VnmlEbc+7hREnd5X3
+         BnwdjSbhZPjAeUIFBdoqbXO5DqClMTF/3/+/Y=
+Message-ID: <f17812d70901090648p48670ba7gff2785f1ddd0bfb0@mail.gmail.com>
+Date: Fri, 9 Jan 2009 22:48:45 +0800
 From: "Eric Miao" <eric.y.miao@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: Fwd: [PATCH 1/2] platform: make better use of to_platform_{device,driver}() macros
+Subject: [PATCH 2/2] platform: introduce module id table for platform devices
 Cc: "Kay Sievers" <kay.sievers@vrfy.org>, "Greg KH" <greg@kroah.com>
-In-Reply-To: <f17812d70812292303s1ef2a59cw23467353ab652df6@mail.gmail.com>
+In-Reply-To: <f17812d70812292303r16039849l469a75baa722cc40@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_14141_4779847.1231512417220"
-References: <f17812d70812292303s1ef2a59cw23467353ab652df6@mail.gmail.com>
+	boundary="----=_Part_14147_18948882.1231512525377"
+References: <f17812d70812292303r16039849l469a75baa722cc40@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_14141_4779847.1231512417220
+------=_Part_14147_18948882.1231512525377
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-This helps the code look more consistent and cleaner.
+Now platform_device is being widely used on SoC processors where the
+peripherals are attached to the system bus, which is simple enough.
+
+However, silicon IPs for these SoCs are usually shared heavily across
+a family of processors, even products from different companies.  This
+makes the original simple driver name based matching insufficient, or
+simply not straight-forward.
+
+Introduce a module id table for platform devices, and makes it clear
+that a platform driver is able to support some shared IP and handle
+slight differences across different platforms (by 'driver_data').
+Module alias is handled automatically when a MODULE_DEVICE_TABLE()
+is defined.
+
+To not disturb the current platform drivers too much, the matched id
+entry is recorded and can be retrieved by platform_get_device_id().
 
 Signed-off-by: Eric Miao <eric.miao@marvell.com>
 ---
- drivers/base/platform.c            |   21 +++++++++------------
- drivers/block/floppy.c             |    3 +--
- drivers/isdn/gigaset/ser-gigaset.c |    3 +--
- 3 files changed, 11 insertions(+), 16 deletions(-)
+ drivers/base/platform.c         |   21 ++++++++++++++++++++-
+ include/linux/mod_devicetable.h |    9 +++++++++
+ include/linux/platform_device.h |    6 ++++++
+ scripts/mod/file2alias.c        |   12 ++++++++++++
+ 4 files changed, 47 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index dfcbfe5..d0591f0 100644
+index d0591f0..45bdc37 100644
 --- a/drivers/base/platform.c
 +++ b/drivers/base/platform.c
-@@ -606,9 +606,8 @@ static int platform_uevent(struct device *dev,
+@@ -587,7 +587,8 @@ static int platform_uevent(struct device *dev,
 struct kobj_uevent_env *env)
+ {
+       struct platform_device  *pdev = to_platform_device(dev);
+
+-       add_uevent_var(env, "MODALIAS=platform:%s", pdev->name);
++       add_uevent_var(env, "MODALIAS=%s%s", PLATFORM_MODULE_PREFIX,
++               (pdev->id_entry) ? pdev->id_entry->name : pdev->name);
+       return 0;
+ }
+
+@@ -604,10 +605,28 @@ static int platform_uevent(struct device *dev,
+struct kobj_uevent_env *env)
+ * and compare it against the name of the driver. Return whether they match
+ * or not.
  */
++static const struct platform_device_id *platform_match_id(
++                       const struct platform_device_id *id,
++                       struct platform_device *pdev)
++{
++       while (id->name[0]) {
++               if (strcmp(pdev->name, id->name) == 0)
++                       return (pdev->id_entry = id);
++               id++;
++       }
++       return NULL;
++}
++
  static int platform_match(struct device *dev, struct device_driver *drv)
  {
--       struct platform_device *pdev;
-+       struct platform_device *pdev = to_platform_device(dev);
+       struct platform_device *pdev = to_platform_device(dev);
++       struct platform_driver *pdrv = to_platform_driver(drv);
++
++       /* match against the id table first */
++       if (pdrv->id_table)
++               return platform_match_id(pdrv->id_table, pdev) != NULL;
 
--       pdev = container_of(dev, struct platform_device, dev);
++       /* fall-back to driver name match */
        return (strncmp(pdev->name, drv->name, BUS_ID_SIZE) == 0);
  }
 
-@@ -626,26 +625,24 @@ static int platform_legacy_suspend(struct device
-*dev, pm_message_t mesg)
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index 97b91d1..5201491 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -447,4 +447,13 @@ struct dmi_system_id {
 
- static int platform_legacy_suspend_late(struct device *dev, pm_message_t mesg)
+ #define DMI_MATCH(a, b)        { a, b }
+
++#define PLATFORM_NAME_SIZE     20
++#define PLATFORM_MODULE_PREFIX "platform:"
++
++struct platform_device_id {
++       char name[I2C_NAME_SIZE];
++       kernel_ulong_t driver_data
++                       __attribute__((aligned(sizeof(kernel_ulong_t))));
++};
++
+ #endif /* LINUX_MOD_DEVICETABLE_H */
+diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
+index 4b8cc6a..7edc570 100644
+--- a/include/linux/platform_device.h
++++ b/include/linux/platform_device.h
+@@ -12,6 +12,7 @@
+ #define _PLATFORM_DEVICE_H_
+
+ #include <linux/device.h>
++#include <linux/mod_devicetable.h>
+
+ struct platform_device {
+       const char      * name;
+@@ -19,8 +20,12 @@ struct platform_device {
+       struct device   dev;
+       u32             num_resources;
+       struct resource * resource;
++
++       struct platform_device_id       *id_entry;
+ };
+
++#define platform_get_device_id(pdev)   ((pdev)->id_entry)
++
+ #define to_platform_device(x) container_of((x), struct platform_device, dev)
+
+ extern int platform_device_register(struct platform_device *);
+@@ -57,6 +62,7 @@ struct platform_driver {
+       int (*resume)(struct platform_device *);
+       struct pm_ext_ops *pm;
+       struct device_driver driver;
++       struct platform_device_id *id_table;
+ };
+
+ extern int platform_driver_register(struct platform_driver *);
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index d4dc222..f71f5e6 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -696,6 +696,14 @@ static int do_dmi_entry(const char *filename,
+struct dmi_system_id *id,
+       strcat(alias, ":");
+       return 1;
+ }
++
++static int do_platform_entry(const char *filename,
++                            struct platform_device_id *id, char *alias)
++{
++       sprintf(alias, PLATFORM_MODULE_PREFIX "%s", id->name);
++       return 1;
++}
++
+ /* Ignore any prefix, eg. some architectures prepend _ */
+ static inline int sym_is(const char *symbol, const char *name)
  {
--       struct platform_driver *drv = to_platform_driver(dev->driver);
--       struct platform_device *pdev;
-+       struct platform_driver *pdrv = to_platform_driver(dev->driver);
-+       struct platform_device *pdev = to_platform_device(dev);
-       int ret = 0;
-
--       pdev = container_of(dev, struct platform_device, dev);
--       if (dev->driver && drv->suspend_late)
--               ret = drv->suspend_late(pdev, mesg);
-+       if (dev->driver && pdrv->suspend_late)
-+               ret = pdrv->suspend_late(pdev, mesg);
-
-       return ret;
+@@ -835,6 +843,10 @@ void handle_moddevtable(struct module *mod,
+struct elf_info *info,
+               do_table(symval, sym->st_size,
+                        sizeof(struct dmi_system_id), "dmi",
+                        do_dmi_entry, mod);
++       else if (sym_is(symname, "__mod_platform_device_table"))
++               do_table(symval, sym->st_size,
++                        sizeof(struct platform_device_id), "platform",
++                        do_platform_entry, mod);
+       free(zeros);
  }
 
- static int platform_legacy_resume_early(struct device *dev)
- {
--       struct platform_driver *drv = to_platform_driver(dev->driver);
--       struct platform_device *pdev;
-+       struct platform_driver *pdrv = to_platform_driver(dev->driver);
-+       struct platform_device *pdev = to_platform_device(dev);
-       int ret = 0;
-
--       pdev = container_of(dev, struct platform_device, dev);
--       if (dev->driver && drv->resume_early)
--               ret = drv->resume_early(pdev);
-+       if (dev->driver && pdrv->resume_early)
-+               ret = pdrv->resume_early(pdev);
-
-       return ret;
- }
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index cf29cc4..9c3c5c7 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -4133,10 +4133,9 @@ static int have_no_fdc = -ENODEV;
- static ssize_t floppy_cmos_show(struct device *dev,
-                               struct device_attribute *attr, char *buf)
- {
--       struct platform_device *p;
-+       struct platform_device *p = to_platform_device(dev);
-       int drive;
-
--       p = container_of(dev, struct platform_device,dev);
-       drive = p->id;
-       return sprintf(buf, "%X\n", UDP->cmos);
- }
-diff --git a/drivers/isdn/gigaset/ser-gigaset.c
-b/drivers/isdn/gigaset/ser-gigaset.c
-index ac245e7..3071a52 100644
---- a/drivers/isdn/gigaset/ser-gigaset.c
-+++ b/drivers/isdn/gigaset/ser-gigaset.c
-@@ -389,8 +389,7 @@ static void gigaset_freecshw(struct cardstate *cs)
-
- static void gigaset_device_release(struct device *dev)
- {
--       struct platform_device *pdev =
--               container_of(dev, struct platform_device, dev);
-+       struct platform_device *pdev = to_platform_device(dev);
-
-       /* adapted from platform_device_release() in drivers/base/platform.c */
-       //FIXME is this actually necessary?
 --
 1.6.0.4
 
@@ -138,72 +199,104 @@ index ac245e7..3071a52 100644
 Cheers
 - eric
 
-------=_Part_14141_4779847.1231512417220
+------=_Part_14147_18948882.1231512525377
 Content-Type: text/x-diff;
- name=0001-platform-make-better-use-of-to_platform_-device-dri.patch
+ name=0002-platform-introduce-module-id-table-for-platform-dev.patch
 Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fpc7pc2s0
+X-Attachment-Id: f_fpc7qbak0
 Content-Disposition: attachment;
- filename=0001-platform-make-better-use-of-to_platform_-device-dri.patch
+ filename=0002-platform-introduce-module-id-table-for-platform-dev.patch
 
-RnJvbSAwM2IzMWNlN2NjMjA0MzUzZTczYjM5YTJjMGYzYWJhNjhhYjA3ODgzIE1vbiBTZXAgMTcg
+RnJvbSAzMzQ3NDFiZjI3NjhhOThlN2JhYmRlNmMyNzk1MTUxYmZhMGQ1N2Y2IE1vbiBTZXAgMTcg
 MDA6MDA6MDAgMjAwMQpGcm9tOiBFcmljIE1pYW8gPGVyaWMubWlhb0BtYXJ2ZWxsLmNvbT4KRGF0
-ZTogVHVlLCAzMCBEZWMgMjAwOCAxMzo0OToxNyArMDgwMApTdWJqZWN0OiBwbGF0Zm9ybTogbWFr
-ZSBiZXR0ZXIgdXNlIG9mIHRvX3BsYXRmb3JtX3tkZXZpY2UsZHJpdmVyfSgpIG1hY3JvcwoKVGhp
-cyBoZWxwcyB0aGUgY29kZSBsb29rIG1vcmUgY29uc2lzdGVudCBhbmQgY2xlYW5lci4KClNpZ25l
-ZC1vZmYtYnk6IEVyaWMgTWlhbyA8ZXJpYy5taWFvQG1hcnZlbGwuY29tPgotLS0KIGRyaXZlcnMv
-YmFzZS9wbGF0Zm9ybS5jICAgICAgICAgICAgfCAgIDIxICsrKysrKysrKy0tLS0tLS0tLS0tLQog
-ZHJpdmVycy9ibG9jay9mbG9wcHkuYyAgICAgICAgICAgICB8ICAgIDMgKy0tCiBkcml2ZXJzL2lz
-ZG4vZ2lnYXNldC9zZXItZ2lnYXNldC5jIHwgICAgMyArLS0KIDMgZmlsZXMgY2hhbmdlZCwgMTEg
-aW5zZXJ0aW9ucygrKSwgMTYgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNl
-L3BsYXRmb3JtLmMgYi9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYwppbmRleCBkZmNiZmU1Li5kMDU5
-MWYwIDEwMDY0NAotLS0gYS9kcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYworKysgYi9kcml2ZXJzL2Jh
-c2UvcGxhdGZvcm0uYwpAQCAtNjA2LDkgKzYwNiw4IEBAIHN0YXRpYyBpbnQgcGxhdGZvcm1fdWV2
-ZW50KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGtvYmpfdWV2ZW50X2VudiAqZW52KQogICov
-CiBzdGF0aWMgaW50IHBsYXRmb3JtX21hdGNoKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRl
-dmljZV9kcml2ZXIgKmRydikKIHsKLQlzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2OworCXN0
-cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYgPSB0b19wbGF0Zm9ybV9kZXZpY2UoZGV2KTsKIAot
-CXBkZXYgPSBjb250YWluZXJfb2YoZGV2LCBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlLCBkZXYpOwog
-CXJldHVybiAoc3RybmNtcChwZGV2LT5uYW1lLCBkcnYtPm5hbWUsIEJVU19JRF9TSVpFKSA9PSAw
-KTsKIH0KIApAQCAtNjI2LDI2ICs2MjUsMjQgQEAgc3RhdGljIGludCBwbGF0Zm9ybV9sZWdhY3lf
-c3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYsIHBtX21lc3NhZ2VfdCBtZXNnKQogCiBzdGF0aWMg
-aW50IHBsYXRmb3JtX2xlZ2FjeV9zdXNwZW5kX2xhdGUoc3RydWN0IGRldmljZSAqZGV2LCBwbV9t
-ZXNzYWdlX3QgbWVzZykKIHsKLQlzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyICpkcnYgPSB0b19wbGF0
-Zm9ybV9kcml2ZXIoZGV2LT5kcml2ZXIpOwotCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXY7
-CisJc3RydWN0IHBsYXRmb3JtX2RyaXZlciAqcGRydiA9IHRvX3BsYXRmb3JtX2RyaXZlcihkZXYt
-PmRyaXZlcik7CisJc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiA9IHRvX3BsYXRmb3JtX2Rl
-dmljZShkZXYpOwogCWludCByZXQgPSAwOwogCi0JcGRldiA9IGNvbnRhaW5lcl9vZihkZXYsIHN0
-cnVjdCBwbGF0Zm9ybV9kZXZpY2UsIGRldik7Ci0JaWYgKGRldi0+ZHJpdmVyICYmIGRydi0+c3Vz
-cGVuZF9sYXRlKQotCQlyZXQgPSBkcnYtPnN1c3BlbmRfbGF0ZShwZGV2LCBtZXNnKTsKKwlpZiAo
-ZGV2LT5kcml2ZXIgJiYgcGRydi0+c3VzcGVuZF9sYXRlKQorCQlyZXQgPSBwZHJ2LT5zdXNwZW5k
-X2xhdGUocGRldiwgbWVzZyk7CiAKIAlyZXR1cm4gcmV0OwogfQogCiBzdGF0aWMgaW50IHBsYXRm
-b3JtX2xlZ2FjeV9yZXN1bWVfZWFybHkoc3RydWN0IGRldmljZSAqZGV2KQogewotCXN0cnVjdCBw
-bGF0Zm9ybV9kcml2ZXIgKmRydiA9IHRvX3BsYXRmb3JtX2RyaXZlcihkZXYtPmRyaXZlcik7Ci0J
-c3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldjsKKwlzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyICpw
-ZHJ2ID0gdG9fcGxhdGZvcm1fZHJpdmVyKGRldi0+ZHJpdmVyKTsKKwlzdHJ1Y3QgcGxhdGZvcm1f
-ZGV2aWNlICpwZGV2ID0gdG9fcGxhdGZvcm1fZGV2aWNlKGRldik7CiAJaW50IHJldCA9IDA7CiAK
-LQlwZGV2ID0gY29udGFpbmVyX29mKGRldiwgc3RydWN0IHBsYXRmb3JtX2RldmljZSwgZGV2KTsK
-LQlpZiAoZGV2LT5kcml2ZXIgJiYgZHJ2LT5yZXN1bWVfZWFybHkpCi0JCXJldCA9IGRydi0+cmVz
-dW1lX2Vhcmx5KHBkZXYpOworCWlmIChkZXYtPmRyaXZlciAmJiBwZHJ2LT5yZXN1bWVfZWFybHkp
-CisJCXJldCA9IHBkcnYtPnJlc3VtZV9lYXJseShwZGV2KTsKIAogCXJldHVybiByZXQ7CiB9CmRp
-ZmYgLS1naXQgYS9kcml2ZXJzL2Jsb2NrL2Zsb3BweS5jIGIvZHJpdmVycy9ibG9jay9mbG9wcHku
-YwppbmRleCBjZjI5Y2M0Li45YzNjNWM3IDEwMDY0NAotLS0gYS9kcml2ZXJzL2Jsb2NrL2Zsb3Bw
-eS5jCisrKyBiL2RyaXZlcnMvYmxvY2svZmxvcHB5LmMKQEAgLTQxMzMsMTAgKzQxMzMsOSBAQCBz
-dGF0aWMgaW50IGhhdmVfbm9fZmRjID0gLUVOT0RFVjsKIHN0YXRpYyBzc2l6ZV90IGZsb3BweV9j
-bW9zX3Nob3coc3RydWN0IGRldmljZSAqZGV2LAogCQkJCXN0cnVjdCBkZXZpY2VfYXR0cmlidXRl
-ICphdHRyLCBjaGFyICpidWYpCiB7Ci0Jc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcDsKKwlzdHJ1
-Y3QgcGxhdGZvcm1fZGV2aWNlICpwID0gdG9fcGxhdGZvcm1fZGV2aWNlKGRldik7CiAJaW50IGRy
-aXZlOwogCi0JcCA9IGNvbnRhaW5lcl9vZihkZXYsIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UsZGV2
-KTsKIAlkcml2ZSA9IHAtPmlkOwogCXJldHVybiBzcHJpbnRmKGJ1ZiwgIiVYXG4iLCBVRFAtPmNt
-b3MpOwogfQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9pc2RuL2dpZ2FzZXQvc2VyLWdpZ2FzZXQuYyBi
-L2RyaXZlcnMvaXNkbi9naWdhc2V0L3Nlci1naWdhc2V0LmMKaW5kZXggYWMyNDVlNy4uMzA3MWE1
-MiAxMDA2NDQKLS0tIGEvZHJpdmVycy9pc2RuL2dpZ2FzZXQvc2VyLWdpZ2FzZXQuYworKysgYi9k
-cml2ZXJzL2lzZG4vZ2lnYXNldC9zZXItZ2lnYXNldC5jCkBAIC0zODksOCArMzg5LDcgQEAgc3Rh
-dGljIHZvaWQgZ2lnYXNldF9mcmVlY3NodyhzdHJ1Y3QgY2FyZHN0YXRlICpjcykKIAogc3RhdGlj
-IHZvaWQgZ2lnYXNldF9kZXZpY2VfcmVsZWFzZShzdHJ1Y3QgZGV2aWNlICpkZXYpCiB7Ci0Jc3Ry
-dWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiA9Ci0JCWNvbnRhaW5lcl9vZihkZXYsIHN0cnVjdCBw
-bGF0Zm9ybV9kZXZpY2UsIGRldik7CisJc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiA9IHRv
-X3BsYXRmb3JtX2RldmljZShkZXYpOwogCiAJLyogYWRhcHRlZCBmcm9tIHBsYXRmb3JtX2Rldmlj
-ZV9yZWxlYXNlKCkgaW4gZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMgKi8KIAkvL0ZJWE1FIGlzIHRo
-aXMgYWN0dWFsbHkgbmVjZXNzYXJ5PwotLSAKMS42LjAuNAoK
-------=_Part_14141_4779847.1231512417220--
+ZTogVHVlLCAzMCBEZWMgMjAwOCAxNDoyMDo1OSArMDgwMApTdWJqZWN0OiBwbGF0Zm9ybTogaW50
+cm9kdWNlIG1vZHVsZSBpZCB0YWJsZSBmb3IgcGxhdGZvcm0gZGV2aWNlcwoKTm93IHBsYXRmb3Jt
+X2RldmljZSBpcyBiZWluZyB3aWRlbHkgdXNlZCBvbiBTb0MgcHJvY2Vzc29ycyB3aGVyZSB0aGUK
+cGVyaXBoZXJhbHMgYXJlIGF0dGFjaGVkIHRvIHRoZSBzeXN0ZW0gYnVzLCB3aGljaCBpcyBzaW1w
+bGUgZW5vdWdoLgoKSG93ZXZlciwgc2lsaWNvbiBJUHMgZm9yIHRoZXNlIFNvQ3MgYXJlIHVzdWFs
+bHkgc2hhcmVkIGhlYXZpbHkgYWNyb3NzCmEgZmFtaWx5IG9mIHByb2Nlc3NvcnMsIGV2ZW4gcHJv
+ZHVjdHMgZnJvbSBkaWZmZXJlbnQgY29tcGFuaWVzLiAgVGhpcwptYWtlcyB0aGUgb3JpZ2luYWwg
+c2ltcGxlIGRyaXZlciBuYW1lIGJhc2VkIG1hdGNoaW5nIGluc3VmZmljaWVudCwgb3IKc2ltcGx5
+IG5vdCBzdHJhaWdodC1mb3J3YXJkLgoKSW50cm9kdWNlIGEgbW9kdWxlIGlkIHRhYmxlIGZvciBw
+bGF0Zm9ybSBkZXZpY2VzLCBhbmQgbWFrZXMgaXQgY2xlYXIKdGhhdCBhIHBsYXRmb3JtIGRyaXZl
+ciBpcyBhYmxlIHRvIHN1cHBvcnQgc29tZSBzaGFyZWQgSVAgYW5kIGhhbmRsZQpzbGlnaHQgZGlm
+ZmVyZW5jZXMgYWNyb3NzIGRpZmZlcmVudCBwbGF0Zm9ybXMgKGJ5ICdkcml2ZXJfZGF0YScpLgpN
+b2R1bGUgYWxpYXMgaXMgaGFuZGxlZCBhdXRvbWF0aWNhbGx5IHdoZW4gYSBNT0RVTEVfREVWSUNF
+X1RBQkxFKCkKaXMgZGVmaW5lZC4KClRvIG5vdCBkaXN0dXJiIHRoZSBjdXJyZW50IHBsYXRmb3Jt
+IGRyaXZlcnMgdG9vIG11Y2gsIHRoZSBtYXRjaGVkIGlkCmVudHJ5IGlzIHJlY29yZGVkIGFuZCBj
+YW4gYmUgcmV0cmlldmVkIGJ5IHBsYXRmb3JtX2dldF9kZXZpY2VfaWQoKS4KClNpZ25lZC1vZmYt
+Ynk6IEVyaWMgTWlhbyA8ZXJpYy5taWFvQG1hcnZlbGwuY29tPgotLS0KIGRyaXZlcnMvYmFzZS9w
+bGF0Zm9ybS5jICAgICAgICAgfCAgIDIxICsrKysrKysrKysrKysrKysrKysrLQogaW5jbHVkZS9s
+aW51eC9tb2RfZGV2aWNldGFibGUuaCB8ICAgIDkgKysrKysrKysrCiBpbmNsdWRlL2xpbnV4L3Bs
+YXRmb3JtX2RldmljZS5oIHwgICAgNiArKysrKysKIHNjcmlwdHMvbW9kL2ZpbGUyYWxpYXMuYyAg
+ICAgICAgfCAgIDEyICsrKysrKysrKysrKwogNCBmaWxlcyBjaGFuZ2VkLCA0NyBpbnNlcnRpb25z
+KCspLCAxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5j
+IGIvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMKaW5kZXggZDA1OTFmMC4uNDViZGMzNyAxMDA2NDQK
+LS0tIGEvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMKKysrIGIvZHJpdmVycy9iYXNlL3BsYXRmb3Jt
+LmMKQEAgLTU4Nyw3ICs1ODcsOCBAQCBzdGF0aWMgaW50IHBsYXRmb3JtX3VldmVudChzdHJ1Y3Qg
+ZGV2aWNlICpkZXYsIHN0cnVjdCBrb2JqX3VldmVudF9lbnYgKmVudikKIHsKIAlzdHJ1Y3QgcGxh
+dGZvcm1fZGV2aWNlCSpwZGV2ID0gdG9fcGxhdGZvcm1fZGV2aWNlKGRldik7CiAKLQlhZGRfdWV2
+ZW50X3ZhcihlbnYsICJNT0RBTElBUz1wbGF0Zm9ybTolcyIsIHBkZXYtPm5hbWUpOworCWFkZF91
+ZXZlbnRfdmFyKGVudiwgIk1PREFMSUFTPSVzJXMiLCBQTEFURk9STV9NT0RVTEVfUFJFRklYLAor
+CQkocGRldi0+aWRfZW50cnkpID8gcGRldi0+aWRfZW50cnktPm5hbWUgOiBwZGV2LT5uYW1lKTsK
+IAlyZXR1cm4gMDsKIH0KIApAQCAtNjA0LDEwICs2MDUsMjggQEAgc3RhdGljIGludCBwbGF0Zm9y
+bV91ZXZlbnQoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qga29ial91ZXZlbnRfZW52ICplbnYp
+CiAgKiBhbmQgY29tcGFyZSBpdCBhZ2FpbnN0IHRoZSBuYW1lIG9mIHRoZSBkcml2ZXIuIFJldHVy
+biB3aGV0aGVyIHRoZXkgbWF0Y2gKICAqIG9yIG5vdC4KICAqLworc3RhdGljIGNvbnN0IHN0cnVj
+dCBwbGF0Zm9ybV9kZXZpY2VfaWQgKnBsYXRmb3JtX21hdGNoX2lkKAorCQkJY29uc3Qgc3RydWN0
+IHBsYXRmb3JtX2RldmljZV9pZCAqaWQsCisJCQlzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2
+KQoreworCXdoaWxlIChpZC0+bmFtZVswXSkgeworCQlpZiAoc3RyY21wKHBkZXYtPm5hbWUsIGlk
+LT5uYW1lKSA9PSAwKQorCQkJcmV0dXJuIChwZGV2LT5pZF9lbnRyeSA9IGlkKTsKKwkJaWQrKzsK
+Kwl9CisJcmV0dXJuIE5VTEw7Cit9CisKIHN0YXRpYyBpbnQgcGxhdGZvcm1fbWF0Y2goc3RydWN0
+IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2aWNlX2RyaXZlciAqZHJ2KQogewogCXN0cnVjdCBwbGF0
+Zm9ybV9kZXZpY2UgKnBkZXYgPSB0b19wbGF0Zm9ybV9kZXZpY2UoZGV2KTsKKwlzdHJ1Y3QgcGxh
+dGZvcm1fZHJpdmVyICpwZHJ2ID0gdG9fcGxhdGZvcm1fZHJpdmVyKGRydik7CisKKwkvKiBtYXRj
+aCBhZ2FpbnN0IHRoZSBpZCB0YWJsZSBmaXJzdCAqLworCWlmIChwZHJ2LT5pZF90YWJsZSkKKwkJ
+cmV0dXJuIHBsYXRmb3JtX21hdGNoX2lkKHBkcnYtPmlkX3RhYmxlLCBwZGV2KSAhPSBOVUxMOwog
+CisJLyogZmFsbC1iYWNrIHRvIGRyaXZlciBuYW1lIG1hdGNoICovCiAJcmV0dXJuIChzdHJuY21w
+KHBkZXYtPm5hbWUsIGRydi0+bmFtZSwgQlVTX0lEX1NJWkUpID09IDApOwogfQogCmRpZmYgLS1n
+aXQgYS9pbmNsdWRlL2xpbnV4L21vZF9kZXZpY2V0YWJsZS5oIGIvaW5jbHVkZS9saW51eC9tb2Rf
+ZGV2aWNldGFibGUuaAppbmRleCA5N2I5MWQxLi41MjAxNDkxIDEwMDY0NAotLS0gYS9pbmNsdWRl
+L2xpbnV4L21vZF9kZXZpY2V0YWJsZS5oCisrKyBiL2luY2x1ZGUvbGludXgvbW9kX2RldmljZXRh
+YmxlLmgKQEAgLTQ0Nyw0ICs0NDcsMTMgQEAgc3RydWN0IGRtaV9zeXN0ZW1faWQgewogCiAjZGVm
+aW5lIERNSV9NQVRDSChhLCBiKQl7IGEsIGIgfQogCisjZGVmaW5lIFBMQVRGT1JNX05BTUVfU0la
+RQkyMAorI2RlZmluZSBQTEFURk9STV9NT0RVTEVfUFJFRklYCSJwbGF0Zm9ybToiCisKK3N0cnVj
+dCBwbGF0Zm9ybV9kZXZpY2VfaWQgeworCWNoYXIgbmFtZVtJMkNfTkFNRV9TSVpFXTsKKwlrZXJu
+ZWxfdWxvbmdfdCBkcml2ZXJfZGF0YQorCQkJX19hdHRyaWJ1dGVfXygoYWxpZ25lZChzaXplb2Yo
+a2VybmVsX3Vsb25nX3QpKSkpOworfTsKKwogI2VuZGlmIC8qIExJTlVYX01PRF9ERVZJQ0VUQUJM
+RV9IICovCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3BsYXRmb3JtX2RldmljZS5oIGIvaW5j
+bHVkZS9saW51eC9wbGF0Zm9ybV9kZXZpY2UuaAppbmRleCA0YjhjYzZhLi43ZWRjNTcwIDEwMDY0
+NAotLS0gYS9pbmNsdWRlL2xpbnV4L3BsYXRmb3JtX2RldmljZS5oCisrKyBiL2luY2x1ZGUvbGlu
+dXgvcGxhdGZvcm1fZGV2aWNlLmgKQEAgLTEyLDYgKzEyLDcgQEAKICNkZWZpbmUgX1BMQVRGT1JN
+X0RFVklDRV9IXwogCiAjaW5jbHVkZSA8bGludXgvZGV2aWNlLmg+CisjaW5jbHVkZSA8bGludXgv
+bW9kX2RldmljZXRhYmxlLmg+CiAKIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgewogCWNvbnN0IGNo
+YXIJKiBuYW1lOwpAQCAtMTksOCArMjAsMTIgQEAgc3RydWN0IHBsYXRmb3JtX2RldmljZSB7CiAJ
+c3RydWN0IGRldmljZQlkZXY7CiAJdTMyCQludW1fcmVzb3VyY2VzOwogCXN0cnVjdCByZXNvdXJj
+ZQkqIHJlc291cmNlOworCisJc3RydWN0IHBsYXRmb3JtX2RldmljZV9pZAkqaWRfZW50cnk7CiB9
+OwogCisjZGVmaW5lIHBsYXRmb3JtX2dldF9kZXZpY2VfaWQocGRldikJKChwZGV2KS0+aWRfZW50
+cnkpCisKICNkZWZpbmUgdG9fcGxhdGZvcm1fZGV2aWNlKHgpIGNvbnRhaW5lcl9vZigoeCksIHN0
+cnVjdCBwbGF0Zm9ybV9kZXZpY2UsIGRldikKIAogZXh0ZXJuIGludCBwbGF0Zm9ybV9kZXZpY2Vf
+cmVnaXN0ZXIoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqKTsKQEAgLTU3LDYgKzYyLDcgQEAgc3Ry
+dWN0IHBsYXRmb3JtX2RyaXZlciB7CiAJaW50ICgqcmVzdW1lKShzdHJ1Y3QgcGxhdGZvcm1fZGV2
+aWNlICopOwogCXN0cnVjdCBwbV9leHRfb3BzICpwbTsKIAlzdHJ1Y3QgZGV2aWNlX2RyaXZlciBk
+cml2ZXI7CisJc3RydWN0IHBsYXRmb3JtX2RldmljZV9pZCAqaWRfdGFibGU7CiB9OwogCiBleHRl
+cm4gaW50IHBsYXRmb3JtX2RyaXZlcl9yZWdpc3RlcihzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyICop
+OwpkaWZmIC0tZ2l0IGEvc2NyaXB0cy9tb2QvZmlsZTJhbGlhcy5jIGIvc2NyaXB0cy9tb2QvZmls
+ZTJhbGlhcy5jCmluZGV4IGQ0ZGMyMjIuLmY3MWY1ZTYgMTAwNjQ0Ci0tLSBhL3NjcmlwdHMvbW9k
+L2ZpbGUyYWxpYXMuYworKysgYi9zY3JpcHRzL21vZC9maWxlMmFsaWFzLmMKQEAgLTY5Niw2ICs2
+OTYsMTQgQEAgc3RhdGljIGludCBkb19kbWlfZW50cnkoY29uc3QgY2hhciAqZmlsZW5hbWUsIHN0
+cnVjdCBkbWlfc3lzdGVtX2lkICppZCwKIAlzdHJjYXQoYWxpYXMsICI6Iik7CiAJcmV0dXJuIDE7
+CiB9CisKK3N0YXRpYyBpbnQgZG9fcGxhdGZvcm1fZW50cnkoY29uc3QgY2hhciAqZmlsZW5hbWUs
+CisJCQkgICAgIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2VfaWQgKmlkLCBjaGFyICphbGlhcykKK3sK
+KwlzcHJpbnRmKGFsaWFzLCBQTEFURk9STV9NT0RVTEVfUFJFRklYICIlcyIsIGlkLT5uYW1lKTsK
+KwlyZXR1cm4gMTsKK30KKwogLyogSWdub3JlIGFueSBwcmVmaXgsIGVnLiBzb21lIGFyY2hpdGVj
+dHVyZXMgcHJlcGVuZCBfICovCiBzdGF0aWMgaW5saW5lIGludCBzeW1faXMoY29uc3QgY2hhciAq
+c3ltYm9sLCBjb25zdCBjaGFyICpuYW1lKQogewpAQCAtODM1LDYgKzg0MywxMCBAQCB2b2lkIGhh
+bmRsZV9tb2RkZXZ0YWJsZShzdHJ1Y3QgbW9kdWxlICptb2QsIHN0cnVjdCBlbGZfaW5mbyAqaW5m
+bywKIAkJZG9fdGFibGUoc3ltdmFsLCBzeW0tPnN0X3NpemUsCiAJCQkgc2l6ZW9mKHN0cnVjdCBk
+bWlfc3lzdGVtX2lkKSwgImRtaSIsCiAJCQkgZG9fZG1pX2VudHJ5LCBtb2QpOworCWVsc2UgaWYg
+KHN5bV9pcyhzeW1uYW1lLCAiX19tb2RfcGxhdGZvcm1fZGV2aWNlX3RhYmxlIikpCisJCWRvX3Rh
+YmxlKHN5bXZhbCwgc3ltLT5zdF9zaXplLAorCQkJIHNpemVvZihzdHJ1Y3QgcGxhdGZvcm1fZGV2
+aWNlX2lkKSwgInBsYXRmb3JtIiwKKwkJCSBkb19wbGF0Zm9ybV9lbnRyeSwgbW9kKTsKIAlmcmVl
+KHplcm9zKTsKIH0KIAotLSAKMS42LjAuNAoK
+------=_Part_14147_18948882.1231512525377--
