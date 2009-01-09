@@ -1,121 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932834AbZAIXXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbZAIXYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932834AbZAIXXh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760393AbZAIXWF
+	id S932398AbZAIXYF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:24:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932751AbZAIXXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:22:05 -0500
-Received: from kroah.org ([198.145.64.141]:54595 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760372AbZAIXWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:22:01 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 4/4] Revert "driver core: create a private portion of struct device"
-Date: Fri,  9 Jan 2009 15:20:57 -0800
-Message-Id: <1231543257-10047-4-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <20090109232021.GA10007@kroah.com>
-References: <20090109232021.GA10007@kroah.com>
+	Fri, 9 Jan 2009 18:23:21 -0500
+Received: from outbound-mail-106.bluehost.com ([69.89.22.6]:36660 "HELO
+	outbound-mail-106.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932276AbZAIXXT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 18:23:19 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=FYtQJa07sVn7YlV0qWm59aVaeGKLlcOTpj+Ckj64R4G0yg4d1+L7rmEhyRvr5wKZFAQ6qiDAjHmbTlNnekEDeLgoCsImhfqJ9rxDqp25aLfluuMo591jEuYz7z72AjKn;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/8] PCI PCIe portdrv: Aviod using service devices with wrong interrupts
+Date: Fri, 9 Jan 2009 15:23:17 -0800
+User-Agent: KMail/1.9.10
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200901042346.42723.rjw@sisk.pl> <200901042350.00158.rjw@sisk.pl>
+In-Reply-To: <200901042350.00158.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901091523.18308.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reverts commit 2831fe6f9cc4e16c103504ee09a47a084297c0f3.
+On Sunday, January 4, 2009 2:49 pm Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> The PCI Express port driver should not attempt to register service
+> devices that require the ability to generate interrupts if generating
+> interrupts is not possible.  Namely, if the port has no interrupt pin
+> configured and we cannot set up MSI or MSI-X for it, there is no way
+> it can generate interrupts and in such a case the port services that
+> rely on interrupts (PME, PCIe HP, AER) should not be enabled for it.
+>
 
-Turns out that device_initialize shouldn't fail silently.
-This series needs to be reworked in order to get into proper
-shape.
+>  /* Root/Upstream/Downstream Port's Interrupt Mode */
+> +#define PCIE_PORT_NO_IRQ		(-1)
+>  #define PCIE_PORT_INTx_MODE		0
+>  #define PCIE_PORT_MSI_MODE		1
+>  #define PCIE_PORT_MSIX_MODE		2
+> Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
+> +++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+> @@ -41,13 +41,15 @@ static void release_pcie_device(struct d
+>  static int assign_interrupt_mode(struct pci_dev *dev, int *vectors, int
+> mask) {
+>  	int i, pos, nvec, status = -EINVAL;
+> -	int interrupt_mode = PCIE_PORT_INTx_MODE;
+> +	int interrupt_mode = PCIE_PORT_NO_IRQ;
+>
+>  	/* Set INTx as default */
+>  	for (i = 0, nvec = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++) {
+>  		if (mask & (1 << i))
+>  			nvec++;
+>  		vectors[i] = dev->irq;
+> +		if (dev->pin)
+> +			interrupt_mode = PCIE_PORT_INTx_MODE;
+>  	}
 
-Reported-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/base/base.h    |   12 ------------
- drivers/base/core.c    |    8 --------
- include/linux/device.h |    3 ---
- 3 files changed, 0 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 6b20809..0a5f055 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -63,18 +63,6 @@ struct class_private {
- #define to_class(obj)	\
- 	container_of(obj, struct class_private, class_subsys.kobj)
- 
--/**
-- * struct device_private - structure to hold the private to the driver core portions of the device structure.
-- *
-- * @device - pointer back to the struct class that this structure is
-- * associated with.
-- *
-- * Nothing outside of the driver core should ever touch these fields.
-- */
--struct device_private {
--	struct device *device;
--};
--
- /* initialisation functions */
- extern int devices_init(void);
- extern int buses_init(void);
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 5c2acf7..8079afc 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -109,7 +109,6 @@ static struct sysfs_ops dev_sysfs_ops = {
- static void device_release(struct kobject *kobj)
- {
- 	struct device *dev = to_dev(kobj);
--	struct device_private *p = dev->p;
- 
- 	if (dev->release)
- 		dev->release(dev);
-@@ -121,7 +120,6 @@ static void device_release(struct kobject *kobj)
- 		WARN(1, KERN_ERR "Device '%s' does not have a release() "
- 			"function, it is broken and must be fixed.\n",
- 			dev_name(dev));
--	kfree(p);
- }
- 
- static struct kobj_type device_ktype = {
-@@ -538,12 +536,6 @@ static void klist_children_put(struct klist_node *n)
-  */
- void device_initialize(struct device *dev)
- {
--	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
--	if (!dev->p) {
--		WARN_ON(1);
--		return;
--	}
--	dev->p->device = dev;
- 	dev->kobj.kset = devices_kset;
- 	kobject_init(&dev->kobj, &device_ktype);
- 	klist_init(&dev->klist_children, klist_children_get,
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 2975351..45e5b19 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -28,7 +28,6 @@
- #define BUS_ID_SIZE		20
- 
- struct device;
--struct device_private;
- struct device_driver;
- struct driver_private;
- struct class;
-@@ -372,8 +371,6 @@ struct device {
- 	struct klist_node	knode_bus;
- 	struct device		*parent;
- 
--	struct device_private	*p;
--
- 	struct kobject kobj;
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
- 	unsigned		uevent_suppress:1;
+Looks like a good cleanup.  I didn't audit all the places PCIE_PORT_* stuff 
+was used to see if != would be a problem though (probably isn't).
+
 -- 
-1.6.0.4
-
+Jesse Barnes, Intel Open Source Technology Center
