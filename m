@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZAISzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZAIS7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbZAISzd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZAISzS
+	id S1754731AbZAIS7W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZAIS7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:55:18 -0500
-Received: from 1wt.eu ([62.212.114.60]:1321 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752610AbZAISzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:55:17 -0500
-Date: Fri, 9 Jan 2009 19:54:48 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090109185448.GA1999@1wt.eu>
-References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49677074.5090802@cosmosbay.com>
-User-Agent: Mutt/1.5.11
+	Fri, 9 Jan 2009 13:59:13 -0500
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:36021 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbZAIS7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 13:59:12 -0500
+Message-ID: <37451.166.70.238.44.1231524844.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <49672D75.4060201@davidnewall.com>
+References: <40416.166.70.238.44.1231467823.squirrel@webmail.wolfmountaingroup.com>
+       <20090109064658.GG5038@1wt.eu>   
+    <37611.166.70.238.44.1231486566.squirrel@webmail.wolfmountaingroup.com>
+       <20090109084540.GH5038@1wt.eu>   
+    <40547.166.70.238.44.1231488906.squirrel@webmail.wolfmountaingroup.com>
+       <20090109090956.GA28484@1wt.eu>
+    <55312.166.70.238.44.1231490626.squirrel@webmail.wolfmountaingroup.com>
+    <49672D75.4060201@davidnewall.com>
+Date: Fri, 9 Jan 2009 11:14:04 -0700 (MST)
+Subject: Re: [ANNOUNCE] Kernel Blocking Firewall
+From: jmerkey@wolfmountaingroup.com
+To: "David Newall" <davidn@davidnewall.com>
+Cc: jmerkey@wolfmountaingroup.com, "Willy Tarreau" <w@1wt.eu>,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
+> jmerkey@wolfmountaingroup.com wrote:
+>> Allowing a server on a dynamic IP range to act as a mail server is what
+>> is
+>> stupid.
+>
+> Sorry to be argue semantics, but I think it's SMTP clients that are the
+> major cause of spam.  Many, probably most, ISPs provide an SMTP relay
+> for their subscribers, and blocking these dynamic addresses doesn't
+> present a hard impediment for delivery of their mail to you.  None the
+> less, to say that people on a dynamic IP address should be *obliged* to
+> go through a relay is offensive.  (Not that you did say that, but I
+> think it's what you had in mind.)
+>
 
-On Fri, Jan 09, 2009 at 04:42:44PM +0100, Eric Dumazet wrote:
-(...)
-> Willy patch makes splice() behaving like tcp_recvmsg(), but we might call
-> tcp_cleanup_rbuf() several times, with copied=1460 (for each frame processed)
-> 
-> I wonder if the right fix should be done in tcp_read_sock() : this is the
-> one who should eat several skbs IMHO, if we want optimal ACK generation.
-> 
-> We break out of its loop at line 1246
-> 
-> if (!desc->count) /* this test is always true */
-> 	break;
-> 
-> (__tcp_splice_read() set count to 0, right before calling tcp_read_sock())
-> 
-> So code at line 1246 (tcp_read_sock()) seems wrong, or pessimistic at least.
+That's good point, but not what I see in actual practice.  These zombie
+systems don't seem to use the smtp gateway for their ranges, they send the
+emails direct.  From my observations, most of these systems tend to stay
+zombies, since almost all of them are windows systems.
 
-That's a very interesting discovery that you made here. I have made
-mesurements with this line commented out just to get an idea. The
-hardest part was to find a CPU-bound machine. Finally I slowed my
-laptop down to 300 MHz (in fact, 600 with throttle 50%, but let's
-call that 300). That way, I cannot saturate the PCI-based tg3 and
-I can observe the effects of various changes on the data rate.
+I have discovered that by using this method to block them, once they open
+a connection and I start dropping traffic while the connection is left
+open it "tarpits" the bots and causes a cascade failure in the botnet
+network for about 20 minutes until the systems start skipping the mail
+server doing the bocking.
 
-- original tcp_splice_read(), with "!timeo"    : 24.1 MB/s
-- modified tcp_splice_read(), without "!timeo" : 32.5 MB/s (+34%)
-- original with line #1246 commented out       : 34.5 MB/s (+43%)
-
-So you're right, avoiding calling tcp_read_sock() all the time
-gives a nice performance boost.
-
-Also, I found that tcp_splice_read() behaves like this when breaking
-out of the loop :
-
-    lock_sock();
-    while () {
-         ...
-         __tcp_splice_read();
-         ...
-         release_sock();
-         lock_sock();
-         if (break condition)
-              break;
-    }
-    release_sock();
-
-Which means that when breaking out of the loop on (!timeo)
-with ret > 0, we do release_sock/lock_sock/release_sock.
-
-So I tried a minor modification, consisting in moving the
-test before release_sock(), and leaving !timeo there with
-line #1246 commented out. That's a noticeable winner, as
-the data rate went up to 35.7 MB/s (+48%).
-
-Also, in your second mail, you're saying that your change
-might return more data than requested by the user. I can't
-find why, could you please explain to me, as I'm still quite
-ignorant in this area ?
-
-Thanks,
-Willy
+Jeff
 
