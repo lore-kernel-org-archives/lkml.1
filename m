@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZAITIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZAITJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZAITIE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 14:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZAITHu
+	id S1755414AbZAITJU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 14:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZAITJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 14:07:50 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59520 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbZAITHt (ORCPT
+	Fri, 9 Jan 2009 14:09:11 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:50036 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbZAITJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 14:07:49 -0500
-Date: Fri, 9 Jan 2009 20:21:58 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Richard Guenther <richard.guenther@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Dirk Hohndel <hohndel@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109192158.GK26290@one.firstfloor.org>
-References: <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109173914.GD6936@parisc-linux.org> <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain> <20090109181952.GI26290@one.firstfloor.org> <84fc9c000901091059v65265413wda053d3ce5b0d17a@mail.gmail.com>
+	Fri, 9 Jan 2009 14:09:10 -0500
+Subject: Re: Increase dirty_ratio and dirty_background_ratio?
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       peterz@infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       npiggin@suse.de
+In-Reply-To: <20090109180241.GA15023@duck.suse.cz>
+References: <alpine.LFD.2.00.0901070833430.3057@localhost.localdomain>
+	 <20090107.125133.214628094.davem@davemloft.net>
+	 <20090108030245.e7c8ceaf.akpm@linux-foundation.org>
+	 <20090108.082413.156881254.davem@davemloft.net>
+	 <alpine.LFD.2.00.0901080842180.3283@localhost.localdomain>
+	 <1231433701.14304.24.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0901080858500.3283@localhost.localdomain>
+	 <20090108195728.GC14560@duck.suse.cz> <20090109180241.GA15023@duck.suse.cz>
+Content-Type: text/plain
+Date: Fri, 09 Jan 2009 14:07:22 -0500
+Message-Id: <1231528042.5998.13.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84fc9c000901091059v65265413wda053d3ce5b0d17a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4967A09D.01BF:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> GCC 4.3 should be good in compiling the
-> kernel with default -Os settings.  
+On Fri, 2009-01-09 at 19:02 +0100, Jan Kara wrote:
 
-It's unfortunately not. It doesn't inline a lot of simple asm() inlines
-for example.
+>   What we observe in the seekwatcher graphs is, that there are three
+> processes writing back the single database file in parallel (2 pdflush
+> threads because the machine has 2 CPUs, and the database process itself
+> because of dirty throttling). Each of the processes is writing back the
+> file at a different offset and so they together create even more random IO
+> (I'm attaching the graph and can provide blocktrace data if someone is
+> interested). If there was just one process doing the writeback, we'd be
+> writing back those data considerably faster...
 
--Andi
--- 
-ak@linux.intel.com
+I spent some time trying similar things for btrfs, and went as far as
+making my own writeback thread and changing pdflush and throttled writes
+to wait on it.  It was a great hack, but in the end I found the real
+problem was the way write_cache_pages is advancing the page_index.
+
+You probably remember the related ext4 discussion, and you could try my
+simple patch in this workload to see if it helps ext3.
+
+http://lkml.org/lkml/2008/10/1/278
+
+Ext3 may need similar tricks.
+
+-chris
+
+
