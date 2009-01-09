@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbZAIBsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZAIBy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbZAIBsu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 20:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbZAIBsk
+	id S1753263AbZAIBy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 20:54:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZAIByS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 20:48:40 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48079 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbZAIBsi (ORCPT
+	Thu, 8 Jan 2009 20:54:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44106 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751766AbZAIByR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 20:48:38 -0500
-Message-ID: <4966ABF9.9080409@zytor.com>
-Date: Thu, 08 Jan 2009 17:44:25 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-References: <1231365115.11687.361.camel@twins>	 <alpine.LFD.2.00.0901071355350.3057@localhost.localdomain>	 <1231366716.11687.377.camel@twins>	 <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain>	 <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu>	 <1231426014.11687.456.camel@twins>	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>	 <1231434515.14304.27.camel@think.oraclecorp.com>	 <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>	 <20090108183306.GA22916@elte.hu> <1231444786.5715.8.camel@brick>
-In-Reply-To: <1231444786.5715.8.camel@brick>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 8 Jan 2009 20:54:17 -0500
+Date: Thu, 8 Jan 2009 17:53:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-Id: <20090108175338.2abbee16.akpm@linux-foundation.org>
+In-Reply-To: <20090108165029.GA10951@infradead.org>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
+	<20090108165029.GA10951@infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
->>
->> We might still try the second or third options, as i think we shouldnt go 
->> back into the business of managing the inline attributes of ~100,000 
->> kernel functions.
+On Thu, 8 Jan 2009 11:50:29 -0500 Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Thu, Jan 08, 2009 at 04:48:51PM +0000, Phillip Lougher wrote:
+> > Please consider pulling my linux-next branch
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git
+> > 
+> > The patches have been posted to LKML and linux-fsdevel over the last
+> > couple of months and have been reviewed and changed as requested.
+> > Diffstat below.
+> > 
+> > Squashfs is a compressed read-only filesystem. It compresses metadata
+> > and data, and uses up to 1 MiB block sizes for greater compression.
 > 
-> Or just make it clear that inline shouldn't (unless for a very good reason)
-> _ever_ be used in a .c file.
-> 
+> That seems pretty fast for something only posted this week and not
+> even in -next.
 
-The question is if that would produce acceptable quality code.  In
-theory it should, but I'm more than wondering if it really will.
+I discussed this with Phillip a bit, and it looks like we'll go for a
+2.6.21 merge.  This gives a couple of months for testing and review in
+linux-next.
 
-It would be ideal, of course, as it would mean less typing.  I guess we
-could try it out by disabling any "inline" in the current code that
-isn't "__always_inline"...
+Of course, this assumes that someone will actually perform that testing
+and review.  Chances are that it'll just sit there, getting nothing more
+than compilation testing.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Apparently I reviewed the code a while back - that grey cell must have
+died.  Does anyone else intend to review the code in that timeframe? 
+If not, we might as well merge it now, if ever..
 
