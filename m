@@ -1,38 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbZAIU4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZAIU4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbZAIU4d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZAIU4L
+	id S1757337AbZAIU4y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbZAIU4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:56:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52117 "EHLO mx2.redhat.com"
+	Fri, 9 Jan 2009 15:56:13 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52118 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757088AbZAIU4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757092AbZAIU4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Jan 2009 15:56:09 -0500
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] dlm patches for 2.6.29 (part 2)
-Date: Fri,  9 Jan 2009 15:41:39 -0600
-Message-Id: <1231537301-31459-1-git-send-email-teigland@redhat.com>
+Subject: [PATCH] dlm: change rsbtbl rwlock to spinlock
+Date: Fri,  9 Jan 2009 15:41:41 -0600
+Message-Id: <1231537301-31459-3-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The rwlock is almost always used in write mode, so there's no reason
+to not use a spinlock instead.
 
-Here are two more dlm patches for merging in this cycle.
-
-commit c7be761a8163d2f1ac0b606c21e4316b7abc5af7
-Author: David Teigland <teigland@redhat.com>
-Date:   Wed Jan 7 16:50:41 2009 -0600
-
-    dlm: change rsbtbl rwlock to spinlock
-    
-    The rwlock is almost always used in write mode, so there's no reason
-    to not use a spinlock instead.
-    
-    Signed-off-by: David Teigland <teigland@redhat.com>
-
+Signed-off-by: David Teigland <teigland@redhat.com>
+---
  fs/dlm/debug_fs.c     |   24 ++++++++++++------------
  fs/dlm/dlm_internal.h |    2 +-
  fs/dlm/lock.c         |   26 +++++++++++++-------------
@@ -40,21 +30,276 @@ Date:   Wed Jan 7 16:50:41 2009 -0600
  fs/dlm/recover.c      |   10 +++++-----
  5 files changed, 32 insertions(+), 32 deletions(-)
 
-commit 892c4467e335e9050c95e0d8409c136c4dadaca2
-Author: David Teigland <teigland@redhat.com>
-Date:   Wed Jan 7 16:48:52 2009 -0600
-
-    dlm: fix seq_file usage in debugfs lock dump
-    
-    The old code would leak iterators and leave reference counts on
-    rsbs because it was ignoring the "stop" seq callback.  The code
-    followed an example that used the seq operations differently.
-    This new code is based on actually understanding how the seq
-    operations work.  It also improves things by saving the hash bucket
-    in the position to avoid cycling through completed buckets in start.
-    
-    Siged-off-by: Davd Teigland <teigland@redhat.com>
-
- fs/dlm/debug_fs.c |  696 ++++++++++++++++++++++++++---------------------------
- 1 files changed, 337 insertions(+), 359 deletions(-)
+diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
+index bc4af3e..1d1d274 100644
+--- a/fs/dlm/debug_fs.c
++++ b/fs/dlm/debug_fs.c
+@@ -416,7 +416,7 @@ static void *table_seq_start(struct seq_file *seq, loff_t *pos)
+ 	if (seq->op == &format3_seq_ops)
+ 		ri->format = 3;
+ 
+-	read_lock(&ls->ls_rsbtbl[bucket].lock);
++	spin_lock(&ls->ls_rsbtbl[bucket].lock);
+ 	if (!list_empty(&ls->ls_rsbtbl[bucket].list)) {
+ 		list_for_each_entry(r, &ls->ls_rsbtbl[bucket].list,
+ 				    res_hashchain) {
+@@ -424,12 +424,12 @@ static void *table_seq_start(struct seq_file *seq, loff_t *pos)
+ 				dlm_hold_rsb(r);
+ 				ri->rsb = r;
+ 				ri->bucket = bucket;
+-				read_unlock(&ls->ls_rsbtbl[bucket].lock);
++				spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 				return ri;
+ 			}
+ 		}
+ 	}
+-	read_unlock(&ls->ls_rsbtbl[bucket].lock);
++	spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 
+ 	/*
+ 	 * move to the first rsb in the next non-empty bucket
+@@ -447,18 +447,18 @@ static void *table_seq_start(struct seq_file *seq, loff_t *pos)
+ 			return NULL;
+ 		}
+ 
+-		read_lock(&ls->ls_rsbtbl[bucket].lock);
++		spin_lock(&ls->ls_rsbtbl[bucket].lock);
+ 		if (!list_empty(&ls->ls_rsbtbl[bucket].list)) {
+ 			r = list_first_entry(&ls->ls_rsbtbl[bucket].list,
+ 					     struct dlm_rsb, res_hashchain);
+ 			dlm_hold_rsb(r);
+ 			ri->rsb = r;
+ 			ri->bucket = bucket;
+-			read_unlock(&ls->ls_rsbtbl[bucket].lock);
++			spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 			*pos = n;
+ 			return ri;
+ 		}
+-		read_unlock(&ls->ls_rsbtbl[bucket].lock);
++		spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 	}
+ }
+ 
+@@ -477,7 +477,7 @@ static void *table_seq_next(struct seq_file *seq, void *iter_ptr, loff_t *pos)
+ 	 * move to the next rsb in the same bucket
+ 	 */
+ 
+-	read_lock(&ls->ls_rsbtbl[bucket].lock);
++	spin_lock(&ls->ls_rsbtbl[bucket].lock);
+ 	rp = ri->rsb;
+ 	next = rp->res_hashchain.next;
+ 
+@@ -485,12 +485,12 @@ static void *table_seq_next(struct seq_file *seq, void *iter_ptr, loff_t *pos)
+ 		r = list_entry(next, struct dlm_rsb, res_hashchain);
+ 		dlm_hold_rsb(r);
+ 		ri->rsb = r;
+-		read_unlock(&ls->ls_rsbtbl[bucket].lock);
++		spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 		dlm_put_rsb(rp);
+ 		++*pos;
+ 		return ri;
+ 	}
+-	read_unlock(&ls->ls_rsbtbl[bucket].lock);
++	spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 	dlm_put_rsb(rp);
+ 
+ 	/*
+@@ -509,18 +509,18 @@ static void *table_seq_next(struct seq_file *seq, void *iter_ptr, loff_t *pos)
+ 			return NULL;
+ 		}
+ 
+-		read_lock(&ls->ls_rsbtbl[bucket].lock);
++		spin_lock(&ls->ls_rsbtbl[bucket].lock);
+ 		if (!list_empty(&ls->ls_rsbtbl[bucket].list)) {
+ 			r = list_first_entry(&ls->ls_rsbtbl[bucket].list,
+ 					     struct dlm_rsb, res_hashchain);
+ 			dlm_hold_rsb(r);
+ 			ri->rsb = r;
+ 			ri->bucket = bucket;
+-			read_unlock(&ls->ls_rsbtbl[bucket].lock);
++			spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 			*pos = n;
+ 			return ri;
+ 		}
+-		read_unlock(&ls->ls_rsbtbl[bucket].lock);
++		spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 	}
+ }
+ 
+diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
+index ef2f1e3..076e86f 100644
+--- a/fs/dlm/dlm_internal.h
++++ b/fs/dlm/dlm_internal.h
+@@ -105,7 +105,7 @@ struct dlm_dirtable {
+ struct dlm_rsbtable {
+ 	struct list_head	list;
+ 	struct list_head	toss;
+-	rwlock_t		lock;
++	spinlock_t		lock;
+ };
+ 
+ struct dlm_lkbtable {
+diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
+index 6cfe65b..01e7d39 100644
+--- a/fs/dlm/lock.c
++++ b/fs/dlm/lock.c
+@@ -412,9 +412,9 @@ static int search_rsb(struct dlm_ls *ls, char *name, int len, int b,
+ 		      unsigned int flags, struct dlm_rsb **r_ret)
+ {
+ 	int error;
+-	write_lock(&ls->ls_rsbtbl[b].lock);
++	spin_lock(&ls->ls_rsbtbl[b].lock);
+ 	error = _search_rsb(ls, name, len, b, flags, r_ret);
+-	write_unlock(&ls->ls_rsbtbl[b].lock);
++	spin_unlock(&ls->ls_rsbtbl[b].lock);
+ 	return error;
+ }
+ 
+@@ -478,16 +478,16 @@ static int find_rsb(struct dlm_ls *ls, char *name, int namelen,
+ 		r->res_nodeid = nodeid;
+ 	}
+ 
+-	write_lock(&ls->ls_rsbtbl[bucket].lock);
++	spin_lock(&ls->ls_rsbtbl[bucket].lock);
+ 	error = _search_rsb(ls, name, namelen, bucket, 0, &tmp);
+ 	if (!error) {
+-		write_unlock(&ls->ls_rsbtbl[bucket].lock);
++		spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 		dlm_free_rsb(r);
+ 		r = tmp;
+ 		goto out;
+ 	}
+ 	list_add(&r->res_hashchain, &ls->ls_rsbtbl[bucket].list);
+-	write_unlock(&ls->ls_rsbtbl[bucket].lock);
++	spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 	error = 0;
+  out:
+ 	*r_ret = r;
+@@ -530,9 +530,9 @@ static void put_rsb(struct dlm_rsb *r)
+ 	struct dlm_ls *ls = r->res_ls;
+ 	uint32_t bucket = r->res_bucket;
+ 
+-	write_lock(&ls->ls_rsbtbl[bucket].lock);
++	spin_lock(&ls->ls_rsbtbl[bucket].lock);
+ 	kref_put(&r->res_ref, toss_rsb);
+-	write_unlock(&ls->ls_rsbtbl[bucket].lock);
++	spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ }
+ 
+ void dlm_put_rsb(struct dlm_rsb *r)
+@@ -967,7 +967,7 @@ static int shrink_bucket(struct dlm_ls *ls, int b)
+ 
+ 	for (;;) {
+ 		found = 0;
+-		write_lock(&ls->ls_rsbtbl[b].lock);
++		spin_lock(&ls->ls_rsbtbl[b].lock);
+ 		list_for_each_entry_reverse(r, &ls->ls_rsbtbl[b].toss,
+ 					    res_hashchain) {
+ 			if (!time_after_eq(jiffies, r->res_toss_time +
+@@ -978,20 +978,20 @@ static int shrink_bucket(struct dlm_ls *ls, int b)
+ 		}
+ 
+ 		if (!found) {
+-			write_unlock(&ls->ls_rsbtbl[b].lock);
++			spin_unlock(&ls->ls_rsbtbl[b].lock);
+ 			break;
+ 		}
+ 
+ 		if (kref_put(&r->res_ref, kill_rsb)) {
+ 			list_del(&r->res_hashchain);
+-			write_unlock(&ls->ls_rsbtbl[b].lock);
++			spin_unlock(&ls->ls_rsbtbl[b].lock);
+ 
+ 			if (is_master(r))
+ 				dir_remove(r);
+ 			dlm_free_rsb(r);
+ 			count++;
+ 		} else {
+-			write_unlock(&ls->ls_rsbtbl[b].lock);
++			spin_unlock(&ls->ls_rsbtbl[b].lock);
+ 			log_error(ls, "tossed rsb in use %s", r->res_name);
+ 		}
+ 	}
+@@ -4224,7 +4224,7 @@ static struct dlm_rsb *find_purged_rsb(struct dlm_ls *ls, int bucket)
+ {
+ 	struct dlm_rsb *r, *r_ret = NULL;
+ 
+-	read_lock(&ls->ls_rsbtbl[bucket].lock);
++	spin_lock(&ls->ls_rsbtbl[bucket].lock);
+ 	list_for_each_entry(r, &ls->ls_rsbtbl[bucket].list, res_hashchain) {
+ 		if (!rsb_flag(r, RSB_LOCKS_PURGED))
+ 			continue;
+@@ -4233,7 +4233,7 @@ static struct dlm_rsb *find_purged_rsb(struct dlm_ls *ls, int bucket)
+ 		r_ret = r;
+ 		break;
+ 	}
+-	read_unlock(&ls->ls_rsbtbl[bucket].lock);
++	spin_unlock(&ls->ls_rsbtbl[bucket].lock);
+ 	return r_ret;
+ }
+ 
+diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
+index 8d86b79..aa32e5f 100644
+--- a/fs/dlm/lockspace.c
++++ b/fs/dlm/lockspace.c
+@@ -464,7 +464,7 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
+ 	for (i = 0; i < size; i++) {
+ 		INIT_LIST_HEAD(&ls->ls_rsbtbl[i].list);
+ 		INIT_LIST_HEAD(&ls->ls_rsbtbl[i].toss);
+-		rwlock_init(&ls->ls_rsbtbl[i].lock);
++		spin_lock_init(&ls->ls_rsbtbl[i].lock);
+ 	}
+ 
+ 	size = dlm_config.ci_lkbtbl_size;
+diff --git a/fs/dlm/recover.c b/fs/dlm/recover.c
+index 80aba5b..eda43f3 100644
+--- a/fs/dlm/recover.c
++++ b/fs/dlm/recover.c
+@@ -726,7 +726,7 @@ int dlm_create_root_list(struct dlm_ls *ls)
+ 	}
+ 
+ 	for (i = 0; i < ls->ls_rsbtbl_size; i++) {
+-		read_lock(&ls->ls_rsbtbl[i].lock);
++		spin_lock(&ls->ls_rsbtbl[i].lock);
+ 		list_for_each_entry(r, &ls->ls_rsbtbl[i].list, res_hashchain) {
+ 			list_add(&r->res_root_list, &ls->ls_root_list);
+ 			dlm_hold_rsb(r);
+@@ -737,7 +737,7 @@ int dlm_create_root_list(struct dlm_ls *ls)
+ 		   but no other recovery steps should do anything with them. */
+ 
+ 		if (dlm_no_directory(ls)) {
+-			read_unlock(&ls->ls_rsbtbl[i].lock);
++			spin_unlock(&ls->ls_rsbtbl[i].lock);
+ 			continue;
+ 		}
+ 
+@@ -745,7 +745,7 @@ int dlm_create_root_list(struct dlm_ls *ls)
+ 			list_add(&r->res_root_list, &ls->ls_root_list);
+ 			dlm_hold_rsb(r);
+ 		}
+-		read_unlock(&ls->ls_rsbtbl[i].lock);
++		spin_unlock(&ls->ls_rsbtbl[i].lock);
+ 	}
+  out:
+ 	up_write(&ls->ls_root_sem);
+@@ -775,7 +775,7 @@ void dlm_clear_toss_list(struct dlm_ls *ls)
+ 	int i;
+ 
+ 	for (i = 0; i < ls->ls_rsbtbl_size; i++) {
+-		write_lock(&ls->ls_rsbtbl[i].lock);
++		spin_lock(&ls->ls_rsbtbl[i].lock);
+ 		list_for_each_entry_safe(r, safe, &ls->ls_rsbtbl[i].toss,
+ 					 res_hashchain) {
+ 			if (dlm_no_directory(ls) || !is_master(r)) {
+@@ -783,7 +783,7 @@ void dlm_clear_toss_list(struct dlm_ls *ls)
+ 				dlm_free_rsb(r);
+ 			}
+ 		}
+-		write_unlock(&ls->ls_rsbtbl[i].lock);
++		spin_unlock(&ls->ls_rsbtbl[i].lock);
+ 	}
+ }
+ 
+-- 
+1.5.5.1
 
