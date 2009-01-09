@@ -1,175 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZAIFdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZAIFdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbZAIFdg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 00:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZAIFd1
+	id S1756873AbZAIFdw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 00:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbZAIFde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 00:33:27 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:53308 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751670AbZAIFd0 (ORCPT
+	Fri, 9 Jan 2009 00:33:34 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56021 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753881AbZAIFdd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 00:33:26 -0500
-Date: Fri, 9 Jan 2009 11:03:23 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, menage@google.com
-Subject: Re: [RFC][PATCH 3/4] memcg: fix for mem_cgroup_hierarchical_reclaim
-Message-ID: <20090109053323.GD9737@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp> <20090108191501.dc469a51.nishimura@mxp.nes.nec.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090108191501.dc469a51.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 9 Jan 2009 00:33:33 -0500
+Date: Fri, 9 Jan 2009 14:32:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [RFC][PATCH] NOOP cgroup subsystem
+Message-Id: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-08 19:15:01]:
+How about this idea ? Any comments are welcome.
 
-> If root_mem has no children, last_scaned_child is set to root_mem itself.
-> But after some children added to root_mem, mem_cgroup_get_next_node can
-> mem_cgroup_put the root_mem although root_mem has not been mem_cgroup_get.
->
+-Kame
 
-Good catch!
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Add an NO OPERATION cgroup subsystem.
+
+Cgroup itself is providing a feature to attach a task(PID) to some class.
+This feature itself is very useful but "no operation" cgroup is not supported
+now other than debug cgroup. (But debug cgroup should be for DEBUG. distro
+may not configure it.)
+
+Motivation: Simply classify Applications by cgroup
+  When using cgroup for classifying applications, some kind of "control" or
+  "account" subsys must be used. For flexible use of cgroup's nature of
+  classifying applications, NOOP is useful. It can be used regardless of
+  resource accounting unit or name spaces or some controls.
+  IOW, NOOP cgroup allows users to tie PIDs with some nickname.
+
+After this, application can be checked whether it's still alive or not by
+
+	mount -t cgroup none /var/apps noop
+	mkdir /var/apps/mydaemon
+	echo 0 > /var/apps/mydaemon
+	/etc/init.d/mydaemon start
+	exit
+
+This can be used as the same technique of "recording pid into /var/run/xxx.pid"
+and not necessary to remove stale files. If mydaemon dies, tasks file will
+be empty and notify_on_release handler can be used.
+
+I myself want to use this for replacement of "ps -elf | grep" if libcgroup supports
+ps under cgroup.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/cgroup_subsys.h |    4 ++++
+ init/Kconfig                  |    9 +++++++++
+ kernel/Makefile               |    1 +
+ kernel/cgroup_noop.c          |   34 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 48 insertions(+)
+
+Index: mmotm-2.6.28-Jan8/include/linux/cgroup_subsys.h
+===================================================================
+--- mmotm-2.6.28-Jan8.orig/include/linux/cgroup_subsys.h
++++ mmotm-2.6.28-Jan8/include/linux/cgroup_subsys.h
+@@ -59,4 +59,8 @@ SUBSYS(freezer)
+ SUBSYS(net_cls)
+ #endif
  
-> This patch fixes this behavior by:
-> - Set last_scanned_child to NULL if root_mem has no children or DFS search
->   has returned to root_mem itself(root_mem is not a "child" of root_mem).
->   Make mem_cgroup_get_first_node return root_mem in this case.
->   There are no mem_cgroup_get/put for root_mem.
-> - Rename mem_cgroup_get_next_node to __mem_cgroup_get_next_node, and
->   mem_cgroup_get_first_node to mem_cgroup_get_next_node.
->   Make mem_cgroup_hierarchical_reclaim call only new mem_cgroup_get_next_node.
->
-
-How have you tested these changes? When I wrote up the patches, I did
-several tests to make sure that all nodes in the hierarchy are covered
-while reclaiming in order.
++#ifdef CONFIG_CGROUP_NOOP
++SUBSYS(noop)
++#endif
++
+ /* */
+Index: mmotm-2.6.28-Jan8/kernel/Makefile
+===================================================================
+--- mmotm-2.6.28-Jan8.orig/kernel/Makefile
++++ mmotm-2.6.28-Jan8/kernel/Makefile
+@@ -61,6 +61,7 @@ obj-$(CONFIG_CGROUP_DEBUG) += cgroup_deb
+ obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
+ obj-$(CONFIG_CPUSETS) += cpuset.o
+ obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
++obj-$(CONFIG_CGROUP_NOOP) += cgroup_noop.o
+ obj-$(CONFIG_UTS_NS) += utsname.o
+ obj-$(CONFIG_USER_NS) += user_namespace.o
+ obj-$(CONFIG_PID_NS) += pid_namespace.o
+Index: mmotm-2.6.28-Jan8/kernel/cgroup_noop.c
+===================================================================
+--- /dev/null
++++ mmotm-2.6.28-Jan8/kernel/cgroup_noop.c
+@@ -0,0 +1,34 @@
++/*
++ * kernel/cgroup_noop.c - No Operation Cgroup. Just for organizing process tree
++ */
++
++#include <linux/cgroup.h>
++#include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/rcupdate.h>
++
++#include <asm/atomic.h>
++
++static struct cgroup_subsys_state *noop_create(struct cgroup_subsys *ss,
++						   struct cgroup *cont)
++{
++	struct cgroup_subsys_state *css = kzalloc(sizeof(*css), GFP_KERNEL);
++
++	if (!css)
++		return ERR_PTR(-ENOMEM);
++
++	return css;
++}
++
++static void noop_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	kfree(cont->subsys[noop_subsys_id]);
++}
++
++
++struct cgroup_subsys noop_subsys = {
++	.name = "noop",
++	.subsys_id = noop_subsys_id,
++	.create = noop_create,
++	.destroy = noop_destroy,
++};
+Index: mmotm-2.6.28-Jan8/init/Kconfig
+===================================================================
+--- mmotm-2.6.28-Jan8.orig/init/Kconfig
++++ mmotm-2.6.28-Jan8/init/Kconfig
+@@ -354,6 +354,15 @@ config CGROUP_DEBUG
  
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  mm/memcontrol.c |   37 +++++++++++++++++++++----------------
->  1 files changed, 21 insertions(+), 16 deletions(-)
-> 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 288e22c..dc38a0e 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -622,7 +622,7 @@ unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
->   * called with hierarchy_mutex held
->   */
->  static struct mem_cgroup *
-> -mem_cgroup_get_next_node(struct mem_cgroup *curr, struct mem_cgroup *root_mem)
-> +__mem_cgroup_get_next_node(struct mem_cgroup *curr, struct mem_cgroup *root_mem)
->  {
->  	struct cgroup *cgroup, *curr_cgroup, *root_cgroup;
-> 
-> @@ -644,8 +644,8 @@ mem_cgroup_get_next_node(struct mem_cgroup *curr, struct mem_cgroup *root_mem)
->  visit_parent:
->  	if (curr_cgroup == root_cgroup) {
->  		mem_cgroup_put(curr);
-> -		curr = root_mem;
-> -		mem_cgroup_get(curr);
-> +		/* caller handles NULL case */
-> +		curr = NULL;
->  		goto done;
->  	}
-> 
-> @@ -668,7 +668,6 @@ visit_parent:
->  	goto visit_parent;
-> 
->  done:
-> -	root_mem->last_scanned_child = curr;
->  	return curr;
->  }
-> 
-> @@ -678,20 +677,29 @@ done:
->   * that to reclaim free pages from.
->   */
->  static struct mem_cgroup *
-> -mem_cgroup_get_first_node(struct mem_cgroup *root_mem)
-> +mem_cgroup_get_next_node(struct mem_cgroup *root_mem)
->  {
->  	struct cgroup *cgroup;
->  	struct mem_cgroup *ret;
->  	bool obsolete;
-> 
-> -	obsolete = mem_cgroup_is_obsolete(root_mem->last_scanned_child);
-> -
->  	/*
->  	 * Scan all children under the mem_cgroup mem
->  	 */
->  	mutex_lock(&mem_cgroup_subsys.hierarchy_mutex);
-> +
-> +	obsolete = mem_cgroup_is_obsolete(root_mem->last_scanned_child);
-> +
->  	if (list_empty(&root_mem->css.cgroup->children)) {
-> -		ret = root_mem;
-> +		/*
-> +		 * root_mem might have children before and last_scanned_child
-> +		 * may point to one of them.
-> +		 */
-> +		if (root_mem->last_scanned_child) {
-> +			VM_BUG_ON(!obsolete);
-> +			mem_cgroup_put(root_mem->last_scanned_child);
-> +		}
-> +		ret = NULL;
->  		goto done;
->  	}
-> 
-> @@ -705,13 +713,13 @@ mem_cgroup_get_first_node(struct mem_cgroup *root_mem)
->  		ret = mem_cgroup_from_cont(cgroup);
->  		mem_cgroup_get(ret);
->  	} else
-> -		ret = mem_cgroup_get_next_node(root_mem->last_scanned_child,
-> +		ret = __mem_cgroup_get_next_node(root_mem->last_scanned_child,
->  						root_mem);
-> 
->  done:
->  	root_mem->last_scanned_child = ret;
->  	mutex_unlock(&mem_cgroup_subsys.hierarchy_mutex);
-> -	return ret;
-> +	return (ret) ? ret : root_mem;
->  }
-> 
->  static bool mem_cgroup_check_under_limit(struct mem_cgroup *mem)
-> @@ -769,21 +777,18 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
->  	if (!root_mem->use_hierarchy)
->  		return ret;
-> 
-> -	next_mem = mem_cgroup_get_first_node(root_mem);
-> +	next_mem = mem_cgroup_get_next_node(root_mem);
-> 
->  	while (next_mem != root_mem) {
->  		if (mem_cgroup_is_obsolete(next_mem)) {
-> -			mem_cgroup_put(next_mem);
-> -			next_mem = mem_cgroup_get_first_node(root_mem);
-> +			next_mem = mem_cgroup_get_next_node(root_mem);
->  			continue;
->  		}
->  		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
->  						   get_swappiness(next_mem));
->  		if (mem_cgroup_check_under_limit(root_mem))
->  			return 0;
-> -		mutex_lock(&mem_cgroup_subsys.hierarchy_mutex);
-> -		next_mem = mem_cgroup_get_next_node(next_mem, root_mem);
-> -		mutex_unlock(&mem_cgroup_subsys.hierarchy_mutex);
-> +		next_mem = mem_cgroup_get_next_node(root_mem);
->  	}
->  	return ret;
->  }
-> 
+ 	  Say N if unsure
+ 
++config CGROUP_NOOP
++	bool "No Operation cgroup subsystem"
++	depends on CGROUPS
++	help
++	  This provides cgroup subsystem which has no special features. By
++	  this, you can classify applications freely. That is, you can
++	  classify applications regardless of accounting or control contexts
++	  of the system.
++
+ config CGROUP_NS
+         bool "Namespace cgroup subsystem"
+         depends on CGROUPS
 
-
-Looks good to me, I need to test it though
-
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
--- 
-	Balbir
