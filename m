@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbZAIIGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZAIIOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754972AbZAIIGh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 03:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZAIIG2
+	id S1754245AbZAIIOy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 03:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbZAIIOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 03:06:28 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:1900 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753473AbZAIIG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 03:06:27 -0500
-Date: Fri, 9 Jan 2009 09:05:17 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: ???? ?? <mauriceliu27@hotmail.com>
-Cc: linux-kernel@vger.kernel.org, nick piggin <nickpiggin@yahoo.com.au>,
-       drzeus@drzeus.cx
-Subject: Re: [BUG] AS-ioscheduler: kernel panic at as_exit_queue
-Message-ID: <20090109080517.GI32491@kernel.dk>
-References: <COL120-W718F2E0FBF40D8870415BFDEDC0@phx.gbl>
+	Fri, 9 Jan 2009 03:14:46 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:40744 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753213AbZAIIOq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 03:14:46 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Mhayk Whandson" <eu@mhayk.com.br>
+Subject: Re: [PATCH] ftdi_sio driver support of bar code scanner from Diebold
+Date: Fri, 9 Jan 2009 09:15:07 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, kuba@mareimbrium.org,
+       bryder@sgi.com
+References: <177c2b150901082152g13515bf2q9575523e28a17f92@mail.gmail.com>
+In-Reply-To: <177c2b150901082152g13515bf2q9575523e28a17f92@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <COL120-W718F2E0FBF40D8870415BFDEDC0@phx.gbl>
+Message-Id: <200901090915.08458.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08 2009, ???? ?? wrote:
-> 
-> Hi Nick & Jens,
-> 
->  I met a Kernel Panic with AS, the panic pc is at as_exit_queue, and panic
->  when the function check whether the fifo_list[REQ_SYNC] and
->  fifo_list[REQ_ASYNC] are empty or not, it would Panic if the lists are not
-> empty.
-> 
->       The k-panic happened when I plugged out my Micro-SD memory card
->  from my phone, the log has been attached onto this mail.
-> 
->       I guess there may be some conflicts between AS and Hot-plug
->  mechanism, so I read the code of AS code by code to find anything
->  suspicious. I find that AS might does not consider that do any operations
->  to the fifo_lists when the device driver try to exit its elevator, so there
->  is possibility that when device try to exit, the fifo_lists are not empty,
->  and happen kernel panic, though the possibility is really really very
->  small:).
-> 
->       Unfortunately, I have met such k-panic more than two times, so I
->  think I should get your suggestions first, and then try to do some works
->  for this problem:) Look forward for your reply:)
-> 
-> My Linux version :  2.6.25
+Am Friday 09 January 2009 06:52:53 schrieb Mhayk Whandson:
+> Added the product id of bcs(bar code scanner) from Diebold Procomp Brazil.
 
-Please try a newer version, I _think_ this was fixed in sd. CC'ing
-Pierre, just in case.
+Could you please resend that patch
 
--- 
-Jens Axboe
+a) inlined
+b) with a "Signed-off-by:" line as documented in Documentation/SubmittingPatches
 
+	Thank you
+		Oliver
