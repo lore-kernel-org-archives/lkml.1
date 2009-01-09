@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZAIEsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZAIEwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbZAIEsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 23:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbZAIEso
+	id S1756249AbZAIEwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 23:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZAIEwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 23:48:44 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56545 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbZAIEsn (ORCPT
+	Thu, 8 Jan 2009 23:52:32 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55310 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbZAIEwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 23:48:43 -0500
-Date: Fri, 9 Jan 2009 13:47:36 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, menage@google.com,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 1/4] memcg: fix for
- mem_cgroup_get_reclaim_stat_from_page
-Message-Id: <20090109134736.a995fc49.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090109043257.GB9737@balbir.in.ibm.com>
-References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
-	<20090108191430.af89e037.nishimura@mxp.nes.nec.co.jp>
-	<20090109043257.GB9737@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 8 Jan 2009 23:52:31 -0500
+Date: Thu, 8 Jan 2009 20:52:22 -0800
+From: Dirk Hohndel <hohndel@infradead.org>
+To: Dirk Hohndel <hohndel@infradead.org>
+Cc: "Han, Weidong" <weidong.han@intel.com>,
+       "'Grant Grundler'" <grundler@parisc-linux.org>,
+       "'linux-pci@vger.kernel.org'" <linux-pci@vger.kernel.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Arjan van de Ven'" <arjan@infradead.org>
+Subject: Re: git-latest: kernel oops in IOMMU setup
+Message-ID: <20090108205222.2c89dcde@infradead.org>
+In-Reply-To: <20090108180515.2f279671@infradead.org>
+References: <20090108120538.0176d348@infradead.org>
+	<20090108214116.GB20506@colo.lackof.org>
+	<715D42877B251141A38726ABF5CABF2C018E8FEA77@pdsmsx503.ccr.corp.intel.com>
+	<20090108180515.2f279671@infradead.org>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 10:02:57 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu, 8 Jan 2009 18:05:15 -0800
+Dirk Hohndel <hohndel@infradead.org> wrote:
 
-> >  	pc = lookup_page_cgroup(page);
-> > +	smp_rmb();
+> On Fri, 9 Jan 2009 08:58:46 +0800 "Han, Weidong"
 > 
-> Do you really need the read memory barrier?
-> 
-Necessary.
+> I updated to Linus' latest git (as your description made me wonder if
+> the async stuff might play a role here). I still get an oops - but at
+> a different spot and the system no longer hangs - it partly recovers
+> (but things aren't too well - for example my USB keyboard / mouse
+> don't work anymore). 
 
-> > +	if (!PageCgroupUsed(pc))
-> > +		return NULL;
-> > +
-> 
-> In this case we've hit a case where the page is valid and the pc is
-> not. This does fix the problem, but won't this impact us getting
-> correct reclaim stats and thus indirectly impact the working of
-> pressure?
-> 
- - If retruns NULL, only global LRU's status is updated. 
+Spoke too soon. Rebooted and had the same hard lockup again. This time
+I had my camera within reach, so here's the trace:
 
-Because this page is not belongs to any memcg, we cannot update
-any counters. But yes, your point is a concern.
+device_to_iommu+0x33/0x73
+domain_context_mapping_one+0x37/0x335
+domain_context_mapping+0x25/0xa7
+iommu_prepare_identity+0xd7/0xf3
+intel_iommu_init+0x4e4/0x8f3
+? mutex_lock
+? sysctl_net_init
+? pci_iommu_init
+pci_iommu_init
 
-Maybe moving acitvate_page() to
-==
-do_swap_page()
-{
-    
-- activate_page()
-   mem_cgroup_try_charge()..
-   ....
-   mem_cgroup_commit_charge()....
-   ....
-+  activate_page()   
-}
-==
-is necessary. How do you think, kosaki ?
+I also have stack, code and register values. Let me know if you need
+them. Or I can just post the picture :-)
 
-Thanks,
--Kame
+Again, very latest git tree, VT-d enabled.
 
+/D
+
+-- 
+Dirk Hohndel
+Intel Open Source Technology Center
