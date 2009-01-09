@@ -1,68 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZAIWTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZAIWUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932160AbZAIWTb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbZAIWTR
+	id S932243AbZAIWUF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:20:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932175AbZAIWTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:19:17 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:60725 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757969AbZAIWTQ (ORCPT
+	Fri, 9 Jan 2009 17:19:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38290 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758223AbZAIWTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:19:16 -0500
-Subject: Re: [PATCH 1/1 #2] IWL: fix WARN typo
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>
-In-Reply-To: <20090109214216.GG3371@tuxdriver.com> (sfid-20090109_224547_996637_901AF36B)
-References: <1231171404-22822-1-git-send-email-jirislaby@gmail.com>
-	 <1231171566-22984-1-git-send-email-jirislaby@gmail.com>
-	 <20090109201759.GE3371@tuxdriver.com> <20090109214216.GG3371@tuxdriver.com>
-	 (sfid-20090109_224547_996637_901AF36B)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-TYhSYxg5QXEMZ/7Du5uS"
-Date: Fri, 09 Jan 2009 23:20:18 +0100
-Message-Id: <1231539618.3603.22.camel@johannes>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 9 Jan 2009 17:19:40 -0500
+Date: Fri, 9 Jan 2009 14:12:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: alan@lxorguk.ukuu.org.uk, hch@infradead.org, phillip@lougher.demon.co.uk,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+In-Reply-To: <20090109140842.16ae7c8a.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0901091412220.6528@localhost.localdomain>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <20090109120254.496f75d2@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0901091356160.6528@localhost.localdomain>
+ <20090109140842.16ae7c8a.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-TYhSYxg5QXEMZ/7Du5uS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2009-01-09 at 16:42 -0500, John W. Linville wrote:
-> People have pointed-out the "kew -> key" part of the patch.
-> Any thoughts on "new key" vs. "a new key"?
+On Fri, 9 Jan 2009, Andrew Morton wrote:
+> 
+> We've long needed a filesystem named after a vegetable.
 
-As I said, if anything it should be "the", not "a" imho.
+You make a very compelling case.
 
-johannes
-
---=-TYhSYxg5QXEMZ/7Du5uS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJZ82fAAoJEKVg1VMiehFY3BIQALFKcl2NoeqKF4RJXPihON1w
-HjgRpjTHyhOOMmnSGs2Sseuz/chEBEDv5y5GPkeCd2LxsZDTRIzLAjb75AbTePgt
-5mGwzr/ApoPLvvFILkET7hMVnlbG6ovPpWnnN8cM91HFT0rXfRx4DUkaHrG7RZ7Z
-J4bscfUs49GlPATjugCQMN9xcyHdtiNEFdgzAzJduo+BcfgwjNQ3zAE6kXn3sMKr
-MJRrJ47xmC8MHMViNlLivuQGnlOh+gd72BphIi7bhXRy36NAvF7YA7v6JbtVuYpb
-5YuAEy0NzU7vM0Y6QVZCwQM/59XyRFZc6X58mWjDkf6Q6XJy9s5cND31S/xWo/+S
-tjRrzSSDWTnghXPk6OQP11cg5jmRwDPULlDZjKClOFYoxC1LH+UcOinp1zPqwoyk
-j7X+a4jytlPHJXSma3+qNF/TfiUWNUxkHOSDWPuNchJIeMi0iVj/j7GzfYtkGEEg
-iogbkIrUqk7ZjI3kmeUZhzE4o6U2m5w86tubJaqBWS47aZbYh6TsFIqAqgnPxEzh
-kvYNGtST4TxPAgoTk3Dtm/wP2bGtJxFxuVyBbnb+ipBvmn0Vu6v2xdVJjJZZqy5e
-dQWk1zMwcecIOr6NuQ8iQZ0vVFnjd4FHzIC/jSJLE2UA/BBP7ct0uxjaPGiAaNMe
-PkX0CR5FdqJ9KffIF5oD
-=d6px
------END PGP SIGNATURE-----
-
---=-TYhSYxg5QXEMZ/7Du5uS--
-
+		Linus
