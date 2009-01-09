@@ -1,77 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZAIPnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZAIPpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbZAIPnw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 10:43:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZAIPnk
+	id S1754249AbZAIPpK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 10:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZAIPo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 10:43:40 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:37896 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbZAIPnj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 10:43:39 -0500
-Message-ID: <49677074.5090802@cosmosbay.com>
-Date: Fri, 09 Jan 2009 16:42:44 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: ben@zeus.com, w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-References: <20090108173028.GA22531@1wt.eu>	<49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com>
-In-Reply-To: <4966F2F4.9080901@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Jan 2009 16:42:48 +0100 (CET)
+	Fri, 9 Jan 2009 10:44:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40438 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751185AbZAIPo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 10:44:57 -0500
+Date: Fri, 9 Jan 2009 16:44:16 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com,
+       viro@zeniv.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: audit: EXECVE record - removed bogus newline
+Message-ID: <20090109164416.3a939aca@psychotron.englab.brq.redhat.com>
+In-Reply-To: <1231514485.25714.11.camel@localhost.localdomain>
+References: <20090108153829.7d063a4b@psychotron.englab.brq.redhat.com>
+	<1231428798.31089.80.camel@localhost.localdomain>
+	<20090109132130.0bc87c02@psychotron.englab.brq.redhat.com>
+	<1231514485.25714.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> David Miller a écrit :
->> I'm not applying this until someone explains to me why
->> we should remove this test from the splice receive but
->> keep it in the tcp_recvmsg() code where it has been
->> essentially forever.
-
-Reading again tcp_recvmsg(), I found it already is able to eat several skb
-even in nonblocking mode.
-
-setsockopt(5, SOL_SOCKET, SO_RCVLOWAT, [61440], 4) = 0
-ioctl(5, FIONBIO, [1])                  = 0
-poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
-recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
-write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
-poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
-recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
-write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
-poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
-recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
-write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
-poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
-recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
-write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+(updated)
+Added hunk that changes the comment, the rest is the same.
 
 
-David, if you referred to code at line 1374 of net/ipv4/tcp.c, I believe there is
-no issue with it. We really want to break from this loop if !timeo .
+EXECVE records contain a newline after every argument. auditd converts
+"\n" to " " so you cannot see newlines even in raw logs, but they're
+there nevertheless. If you're not using auditd, you need to work round
+them. These '\n' chars are can be easily replaced by spaces when
+creating record in kernel. Note there is no need for trailing '\n' in
+an audit record. 
 
-Willy patch makes splice() behaving like tcp_recvmsg(), but we might call
-tcp_cleanup_rbuf() several times, with copied=1460 (for each frame processed)
+record before this patch:
+"type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\"\na1=\"a\"\na2=\"b\"\na3=\"c\"\n"
 
-I wonder if the right fix should be done in tcp_read_sock() : this is the
-one who should eat several skbs IMHO, if we want optimal ACK generation.
-
-We break out of its loop at line 1246
-
-if (!desc->count) /* this test is always true */
-	break;
-
-(__tcp_splice_read() set count to 0, right before calling tcp_read_sock())
-
-So code at line 1246 (tcp_read_sock()) seems wrong, or pessimistic at least.
+record after this patch:
+"type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\" a1=\"a\" a2=\"b\" a3=\"c\""
 
 
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+Acked-by: Eric Paris <eparis@redhat.com>
+---
+ kernel/auditsc.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+index 8cbddff..7a46d62 100644
+--- a/kernel/auditsc.c
++++ b/kernel/auditsc.c
+@@ -1023,7 +1023,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
+ {
+ 	char arg_num_len_buf[12];
+ 	const char __user *tmp_p = p;
+-	/* how many digits are in arg_num? 3 is the length of a=\n */
++	/* how many digits are in arg_num? 3 is the length of " a=" */
+ 	size_t arg_num_len = snprintf(arg_num_len_buf, 12, "%d", arg_num) + 3;
+ 	size_t len, len_left, to_send;
+ 	size_t max_execve_audit_len = MAX_EXECVE_AUDIT_LEN;
+@@ -1109,7 +1109,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
+ 		 * so we can be sure nothing was lost.
+ 		 */
+ 		if ((i == 0) && (too_long))
+-			audit_log_format(*ab, "a%d_len=%zu ", arg_num,
++			audit_log_format(*ab, " a%d_len=%zu", arg_num,
+ 					 has_cntl ? 2*len : len);
+ 
+ 		/*
+@@ -1129,7 +1129,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
+ 		buf[to_send] = '\0';
+ 
+ 		/* actually log it */
+-		audit_log_format(*ab, "a%d", arg_num);
++		audit_log_format(*ab, " a%d", arg_num);
+ 		if (too_long)
+ 			audit_log_format(*ab, "[%d]", i);
+ 		audit_log_format(*ab, "=");
+@@ -1137,7 +1137,6 @@ static int audit_log_single_execve_arg(struct audit_context *context,
+ 			audit_log_n_hex(*ab, buf, to_send);
+ 		else
+ 			audit_log_format(*ab, "\"%s\"", buf);
+-		audit_log_format(*ab, "\n");
+ 
+ 		p += to_send;
+ 		len_left -= to_send;
+@@ -1165,7 +1164,7 @@ static void audit_log_execve_info(struct audit_context *context,
+ 
+ 	p = (const char __user *)axi->mm->arg_start;
+ 
+-	audit_log_format(*ab, "argc=%d ", axi->argc);
++	audit_log_format(*ab, "argc=%d", axi->argc);
+ 
+ 	/*
+ 	 * we need some kernel buffer to hold the userspace args.  Just
+-- 
+1.5.6.5
 
