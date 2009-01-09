@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZAIGzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZAIHCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbZAIGzA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 01:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbZAIGyv
+	id S1754811AbZAIHCB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 02:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZAIHBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 01:54:51 -0500
-Received: from mga09.intel.com ([134.134.136.24]:19070 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753285AbZAIGyt convert rfc822-to-8bit (ORCPT
+	Fri, 9 Jan 2009 02:01:51 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:41170 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751880AbZAIHBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 01:54:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,235,1231142400"; 
-   d="scan'208";a="655771278"
-From: "Han, Weidong" <weidong.han@intel.com>
-To: "'Dirk Hohndel'" <hohndel@infradead.org>
-CC: "'Grant Grundler'" <grundler@parisc-linux.org>,
-       "'linux-pci@vger.kernel.org'" <linux-pci@vger.kernel.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Arjan van de Ven'" <arjan@infradead.org>
-Date: Fri, 9 Jan 2009 14:53:14 +0800
-Subject: RE: git-latest: kernel oops in IOMMU setup
-Thread-Topic: git-latest: kernel oops in IOMMU setup
-Thread-Index: AclyFhdVdcQQKqBWSDKBYIsVsLHQVAADqndw
-Message-ID: <715D42877B251141A38726ABF5CABF2C018E8FECAA@pdsmsx503.ccr.corp.intel.com>
-References: <20090108120538.0176d348@infradead.org>
-	<20090108214116.GB20506@colo.lackof.org>
-	<715D42877B251141A38726ABF5CABF2C018E8FEA77@pdsmsx503.ccr.corp.intel.com>
-	<20090108180515.2f279671@infradead.org>
- <20090108205222.2c89dcde@infradead.org>
-In-Reply-To: <20090108205222.2c89dcde@infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 9 Jan 2009 02:01:50 -0500
+Date: Fri, 9 Jan 2009 18:01:44 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+Message-ID: <20090109070144.GA7358@gondor.apana.org.au>
+References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dirk Hohndel wrote:
-> On Thu, 8 Jan 2009 18:05:15 -0800
-> Dirk Hohndel <hohndel@infradead.org> wrote:
+On Mon, Jan 05, 2009 at 10:02:27AM +0800, Huang Ying wrote:
 > 
->> On Fri, 9 Jan 2009 08:58:46 +0800 "Han, Weidong"
->> 
->> I updated to Linus' latest git (as your description made me wonder if
->> the async stuff might play a role here). I still get an oops - but at
->> a different spot and the system no longer hangs - it partly recovers
->> (but things aren't too well - for example my USB keyboard / mouse
->> don't work anymore).
+> - Rename file name and function name to aesni_<xx>
 > 
-> Spoke too soon. Rebooted and had the same hard lockup again. This time
-> I had my camera within reach, so here's the trace:
+> - Move to arch/x86/crypto.
 > 
-> device_to_iommu+0x33/0x73
-> domain_context_mapping_one+0x37/0x335
-> domain_context_mapping+0x25/0xa7
-> iommu_prepare_identity+0xd7/0xf3
-> intel_iommu_init+0x4e4/0x8f3
-> ? mutex_lock
-> ? sysctl_net_init
-> ? pci_iommu_init
-> pci_iommu_init
+> - ECB and CBC modes are implemented in parallel style to take
+>   advantage of pipelined hardware implementation.
 > 
-> I also have stack, code and register values. Let me know if you need
-> them. Or I can just post the picture :-)
-> 
-> Again, very latest git tree, VT-d enabled.
-> 
-> /D
+> - AES key scheduling algorithm is re-implemented with higher
+>   performance.
 
-I tried latest git tree, it works for me. Above call trace looks right. 
+Thanks this is all good.
 
-Regards,
-Weidong
+> - ablkcipher asynchronous machanism is used to delay a crypto request
+>   to work queue context upon FPU state is using by other kernel
+>   context.
+
+Actually I was thinking of something as simple as just using
+cryptd as is.  That is, register a blkcipher algorithm for your
+version of cbc-aes, but don't register under the name cbc(aes),
+e.g., register it under the name of __cbc-aes-aesni for both alg
+name and driver name.  You can register it under cbc(aes) too
+if you add the fallback in there.
+
+Then for the real thing, just allocate the blkcipher __cbc_*,
+plus the ablkcipher cryptd(__cbc_*), and invoke the right one
+depending on caller context.
+
+This is even simpler for the modes which you don't implement.
+In that case you would just allocate FOO(aes-aesni) in conjunction
+with cryptd(FOO(aes-aesni)).
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
