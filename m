@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZAIU6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbZAIU7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbZAIU6w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbZAIU5M
+	id S1757398AbZAIU7U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbZAIU5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:57:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49207 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755448AbZAIU5H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 15:57:07 -0500
-Date: Fri, 9 Jan 2009 12:56:36 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <20090109204103.GA17212@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>
-References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
- <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org> <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu> <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090109204103.GA17212@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Jan 2009 15:57:42 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45782 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757508AbZAIU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 15:57:41 -0500
+Date: Fri, 9 Jan 2009 12:56:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Jay Fenlason <fenlason@redhat.com>
+Subject: Re: post 2.6.28 regression: device_initialize() now sleeps, and
+	may fail without recovery strategy
+Message-ID: <20090109205633.GB19904@suse.de>
+References: <496798FE.8030900@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496798FE.8030900@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Jan 2009, Ingo Molnar wrote:
+On Fri, Jan 09, 2009 at 07:35:42PM +0100, Stefan Richter wrote:
+> >From commit 2831fe6f9cc4e16c103504ee09a47a084297c0f3, "driver core:
+> create a private portion of struct device":
 > 
-> So, should we not remove CONFIG_OPTIMIZE_INLINING, then the correct one 
-> would be to mark it __always_inline [__asm_inline is senseless there], or 
-> the second patch below that changes the bit parameter to unsigned int.
+>  void device_initialize(struct device *dev)
+>  {
+> +	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
+> +	if (!dev->p) {
+> +		WARN_ON(1);
+> +		return;
+> +	}
+> +	dev->p->device = dev;
+>  	dev->kobj.kset = devices_kset;
+>  	kobject_init(&dev->kobj, &device_ktype);
+> 
+> 
+> First of all, this prevents initialization of struct device in atomic
+> contexts, such as drivers/firewire/fw-device.c::fw_node_event.
 
-Well, I certainly don't want to _remove_ the "inline" like your patch did. 
-Other gcc versions will care. But I committed the pure "change to 
-unsigned" part.
+Ick, sorry, I didn't think that any callers ever did this.
 
-But we should fix the cmpxchg (and perhaps plain xchg too), shouldn't we?
+> This is a bug in current mainline.
+> 
+> We can fix the bug by changing firewire-core, but
+>   a) it'd be more than a one-liner,
+>   b) who knows which other subsystems are affected.
 
-That your gcc version gets it right doesn't change the fact that Chris' 
-gcc version didn't, and out-of-lined it all. So we'll need some 
-__always_inlines there too..
+I agree.
 
-And no, I don't think it makes any sense to call them "__asm_inline". Even 
-when there are asms hidden in between the C statements, what's the 
-difference between "always" and "asm"? None, really.
+I originally looked at changing this to be at device_add time, but I
+think there are some code paths that do device_initialize and then do
+some operations on the device before calling device_add.  But I could be
+wrong, let me do some testing first before forcing you to make that big
+change to the firewire core.
 
-		Linus
+> Next, the above code is bogus.  In 2.6.28, device_initialize() could
+> never fail and was thus safe to use as a void-valued function.
+> 
+> How does driver core handle dev->p == NULL in subsequent usages of dev now?
+
+It dies a flaming horrible death, pretty much like the whole rest of the
+system if allocating such a small ammount of memory is causing failures
+:)
+
+Give me a few hours to test here, your change might not be necessary...
+
+thanks,
+
+greg k-h
