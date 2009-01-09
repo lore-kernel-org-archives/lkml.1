@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbZAIWjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932505AbZAIWjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760022AbZAIWjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZAIWjP
+	id S932505AbZAIWjw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbZAIWjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:39:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:34653 "EHLO
+	Fri, 9 Jan 2009 17:39:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39560 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399AbZAIWjO (ORCPT
+	with ESMTP id S1754152AbZAIWji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:39:14 -0500
-Message-ID: <4967D223.1090703@zytor.com>
-Date: Fri, 09 Jan 2009 14:39:31 -0800
+	Fri, 9 Jan 2009 17:39:38 -0500
+Message-ID: <4967D131.3010801@zytor.com>
+Date: Fri, 09 Jan 2009 14:35:29 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: mingo@elte.hu, tglx@linutronix.de, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, tvignaud@mandriva.com
-Subject: Re: [patch] x86, pat: fix reserve_memtype() for legacy 1MB range
-References: <20090109223520.GC6472@linux-os.sc.intel.com>
-In-Reply-To: <20090109223520.GC6472@linux-os.sc.intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+References: <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org> <20090109180213.GH26290@one.firstfloor.org> <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain> <20090109185509.GJ26290@one.firstfloor.org> <20090109195232.GE23869@mit.edu> <20090109224410.GQ26290@one.firstfloor.org>
+In-Reply-To: <20090109224410.GQ26290@one.firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
+Andi Kleen wrote:
+>> Fetch a gigabyte's worth of data for the debuginfo RPM? 
 > 
-> Here X is trying to map first 8KB of memory using /dev/mem. Existing
-> code treats first 0-4KB of memory as non-RAM and 4KB-8KB as RAM. Recent
-> code changes don't allow to map memory with different attributes
-> at the same time.
-> 
+> The suse 11.0 kernel debuginfo is ~120M.
 
-Why was 0-4 KB marked as non-RAM?  It is most definitely RAM, and should 
-be WB.
+Still, though, hardly worth doing client-side when it can be done 
+server-side for all the common distro kernels.  For custom kernels, not 
+so, but there you should already have the debuginfo locally.
+
+And yes, there are probably residual holes, but it's questionable if it 
+matters.
 
 	-hpa
+
