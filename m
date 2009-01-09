@@ -1,128 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZAINOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZAINPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbZAINOT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 08:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZAINOL
+	id S1756907AbZAINPT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 08:15:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZAINPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 08:14:11 -0500
-Received: from batfish.pepperfish.net ([87.237.62.180]:40122 "EHLO
-	flounder.pepperfish.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752534AbZAINOK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 08:14:10 -0500
-X-Greylist: delayed 2158 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 08:14:10 EST
-Subject: [PATCH] GPIOLIB: Allow GPIOs to be named
-From: Daniel Silverstone <dsilvers@simtec.co.uk>
-Reply-To: dsilvers@simtec.co.uk
+	Fri, 9 Jan 2009 08:15:05 -0500
+Received: from main.gmane.org ([80.91.229.2]:58130 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752220AbZAINPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 08:15:04 -0500
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Simtec Electronics
-Date: Fri, 09 Jan 2009 12:38:10 +0000
-Message-Id: <1231504690.8511.8.camel@petitemort>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: FPGA programming driver architecture
+Date: Fri, 9 Jan 2009 12:24:08 +0000
+Message-ID: <88sj36-s3t.ln1@woodchuck.wormnet.eu>
+References: <20081212150314.6ea24996.hugo@hugovil.com> <82ecf08e0901081414u15af3c2dy9c88a242db024dc7@mail.gmail.com> <c384c5ea0901081447i5ad807b3yb0ec3adebeaa46a0@mail.gmail.com> <200901082357.24432.florian@openwrt.org> <c384c5ea0901081507v5d186eai5ec71d56b4c7a972@mail.gmail.com> <4966C125.10604@duaneellis.com>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: woodchuck.wormnet.eu
+User-Agent: tin/1.9.2-20070201 ("Dalaruan") (UNIX) (Linux/2.6.24-etchnhalf.1-sparc64 (sparc64))
+Cc: linux-embedded@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Duane Ellis <duane@duaneellis.com> wrote:
+> >> [various FPGA config methods]
+> 
+> Don't forget JTAG, and playing back an SVF files, or BIT files.
+> 
+On the board we have, the FPGA is programmable over JTAG which is 
+conveniently strapped to the GPIO pins of the CPU.
 
-During recent work for a customer, we needed to export named GPIOs to
-userland for them. I investigated various possible ways of doing so, and
-eventually reached the conclusion that there were two reasonable ways.
-The first required adding the ability to register symbolic links for
-classes in sysfs. So that I could have /sys/class/gpio/my-named-gpio be
-a symlink to /sys/class/gpio/gpio0 or similar.
+http://www.embeddedarm.com/products/board-detail.php?product=TS-7800
 
-However, I felt that would be a touch invasive and so I looked for a
-simpler way and decided that simply allowing the gpio_chip struct to
-carry an optional names array would be best (and much less invasive).
+Cheers
 
-I was unable to find anything in MAINTAINERS or at the top of gpiolib.c
-to indicate who to CC, hence sending this only to the list. Below is a
-patch against 2150edc6c5cf00f7adb54538b9ea2a3e9cedca3f.
-
-I'd appreciate comments and ideas for how to do this better, or if it is
-acceptable, I'd love to see it merged.
-
-Regards,
-
-Daniel.
-
---- Cut ---
-
-GPIOLIB: Allow GPIOs to be named
-
-This patch allows GPIOs in GPIOLIB chips to be named. This name is
-then used when the GPIO is exported to sysfs, although it could be
-used elsewhere if deemed useful.
-
-Signed-off-by: Daniel Silverstone <dsilvers@simtec.co.uk>
-
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 35e7aea..de2f114 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -438,6 +438,7 @@ int gpio_export(unsigned gpio, bool direction_may_change)
- 	unsigned long		flags;
- 	struct gpio_desc	*desc;
- 	int			status = -EINVAL;
-+	char			*ioname = NULL;
- 
- 	/* can't export until sysfs is available ... */
- 	if (!gpio_class.p) {
-@@ -461,11 +462,14 @@ int gpio_export(unsigned gpio, bool direction_may_change)
- 	}
- 	spin_unlock_irqrestore(&gpio_lock, flags);
- 
-+	if (desc->chip->names && desc->chip->names[gpio - desc->chip->base])
-+		ioname = desc->chip->names[gpio - desc->chip->base];
-+
- 	if (status == 0) {
- 		struct device	*dev;
- 
- 		dev = device_create(&gpio_class, desc->chip->dev, MKDEV(0, 0),
--					desc, "gpio%d", gpio);
-+				    desc, ioname ? ioname : "gpio%d", gpio);
- 		if (dev) {
- 			if (direction_may_change)
- 				status = sysfs_create_group(&dev->kobj,
-@@ -513,6 +517,7 @@ void gpio_unexport(unsigned gpio)
- 	mutex_lock(&sysfs_lock);
- 
- 	desc = &gpio_desc[gpio];
-+
- 	if (test_bit(FLAG_EXPORT, &desc->flags)) {
- 		struct device	*dev = NULL;
- 
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index 81797ec..d6c379d 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -55,6 +55,10 @@ struct module;
-  *	handled is (base + ngpio - 1).
-  * @can_sleep: flag must be set iff get()/set() methods sleep, as they
-  *	must while accessing GPIO expander chips over I2C or SPI
-+ * @names: if set, must be an array of strings to use as alternative
-+ *      names for the GPIOs in this chip. Any entry in the array
-+ *      may be NULL if there is no alias for the GPIO, however the
-+ *      array must be @ngpio entries long.
-  *
-  * A gpio_chip can help platforms abstract various sources of GPIOs so
-  * they can all be accessed through a common programing interface.
-@@ -92,6 +96,7 @@ struct gpio_chip {
- 						struct gpio_chip *chip);
- 	int			base;
- 	u16			ngpio;
-+	char			**names;
- 	unsigned		can_sleep:1;
- 	unsigned		exported:1;
- };
-
+Alex
 
 -- 
-Daniel Silverstone                              http://www.simtec.co.uk/
-PGP mail accepted and encouraged.            Key Id: 2BC8 4016 2068 7895
-
+Alexander Clouter
+.sigmonster says: This screen intentionally left blank.
 
