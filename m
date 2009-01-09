@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbZAIIXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZAII1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbZAIIXP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 03:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZAIIW4
+	id S1755467AbZAII1P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 03:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbZAII07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 03:22:56 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:25158 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751964AbZAIIWz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 03:22:55 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAMuWZkl5LDnl/2dsb2JhbADPWIV0
-X-IronPort-AV: E=Sophos;i="4.37,238,1231075800"; 
-   d="scan'208";a="289736074"
-Date: Fri, 9 Jan 2009 19:22:50 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] async: Don't call async_synchronize_full_special()
-	while holding sb_lock
-Message-ID: <20090109082250.GQ9448@disturbed>
-Mail-Followup-To: Arjan van de Ven <arjan@linux.intel.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>
-References: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com> <1231425472.21528.13.camel@norville.austin.ibm.com> <20090108072111.1ebadebd@infradead.org> <1231429591.27353.14.camel@norville.austin.ibm.com> <20090108225050.GL9448@disturbed> <49668388.708@linux.intel.com> <20090109014054.GN9448@disturbed> <4966D652.4070105@linux.intel.com>
+	Fri, 9 Jan 2009 03:26:59 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57317 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753463AbZAII06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 03:26:58 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+BzTd+bzKBQSaSt+OnZVr1gflyIk/5NLmMhaAn+A
+	mIC1OyCFxd8JU7
+Date: Fri, 9 Jan 2009 09:27:01 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Dan Williams <dan.j.williams@intel.com>,
+       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4 v8] i.MX31: dmaengine and framebuffer drivers
+In-Reply-To: <20090109081719.GB2020@pengutronix.de>
+Message-ID: <Pine.LNX.4.64.0901090922530.4848@axis700.grange>
+References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
+ <20090109081719.GB2020@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4966D652.4070105@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 08:45:06PM -0800, Arjan van de Ven wrote:
-> Dave Chinner wrote:
->
->>
->> So, given the potential impact of this change, what testing have
->> you done in terms of:
->>
->> 	- performance impact
->
-> I tested this on my machines and it gave a real performance
-> improvement (11 to 8 seconds for a full kernel tree unlink, and
-> cutting out latency for normal applications)
+On Fri, 9 Jan 2009, Sascha Hauer wrote:
 
-Not really waht I'd call a significant performance test. What
-happens under serious sustained I/O load? On multiple different
-filesystems?
+> On Thu, Jan 08, 2009 at 07:04:04PM +0100, Guennadi Liakhovetski wrote:
+> > Hi,
+> > 
+> > This is version 8 of dmaengine and framebuffer drivers for i.MX31.
+> 
+> Does this depend on some other patch? It does not compile:
+> 
+> drivers/dma/ipu/ipu_idmac.c: In function 'idmac_tx_submit':
+> drivers/dma/ipu/ipu_idmac.c:851: error: invalid type argument of '->'
+> drivers/dma/ipu/ipu_idmac.c:851: error: invalid type argument of '->'
+> drivers/dma/ipu/ipu_idmac.c: In function 'idmac_alloc_chan_resources':
+> drivers/dma/ipu/ipu_idmac.c:1490: error: invalid type argument of '->'
+> drivers/dma/ipu/ipu_idmac.c:1490: error: invalid type argument of '->'
+> drivers/dma/ipu/ipu_idmac.c: In function 'ipu_idmac_init':
+> drivers/dma/ipu/ipu_idmac.c:1547: error: 'DMA_PRIVATE' undeclared (first use in this function)
+> drivers/dma/ipu/ipu_idmac.c:1547: error: (Each undeclared identifier is reported only once
+> drivers/dma/ipu/ipu_idmac.c:1547: error: for each function it appears in.)
+> drivers/dma/ipu/ipu_idmac.c:1551: warning: assignment from incompatible pointer type
 
-FWIW, my current kernel tree is:
+A quote from the message you're replying to:
 
-$ find . -print | wc -l
-30082
+> > Changes since version 7: updated to today's Linus git with pulled patches 
+> > from async_tx tree (dmaengine)
 
-Which is just under the async operation limit you set so this
-probably didn't even stress the mixing of sync and async deletes at
-the same time...
+and later
 
->> 	- sync() safety
-> that was exactly the synchronization point that's discussed here.
+> > Based on Linus' git commit 9e42d0cf5020aaf217433cad1a224745241d212a
+> > plus git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
 
-Right - how many fs developers did you discuss the impact of this
-with? Did you crash test any filesystems? Did you run any fs QA
-suites to check for regressions? How many different filesystems
-did you even test?
+So, yes, you have to pull that tree, there are a few patches there...
 
-We already know that sync is busted and doesn't provide the
-guarantees it is supposed so on some filesystems. I'm extremely
-concerned that changing unlink behaviour in this manner subtly
-breaks sync even more than it already is....
-
->> 	- removing a million files and queuing all of the
->> 	  deletes in the async queues....
->
-> the async code throttles at 32k outstanding.
-> Yes 32K is arbitrary, but if you delete  a million files fast, all
-> but the first few thousand are synchronous.
-
-No, after the first 32k you get a mix of synchronous and async as
-the async queue gets processed in parallel. This means you are
-screwing up the temporal locality of the unlink of inodes. i.e. some
-unlinks are being done immediately, others are being delayed until
-another 32k inodes have been processed of the unlink list.
-
-If we've been careful about allocation locality during untar so
-that inodes that are allocated sequentially by untar will be
-deleted sequential by rm -rf, then this new pattern will break those
-optimisations because the unlink locality is being broken by
-the some sync/some async behaviour that this queuing mechanism
-creates.
-
-Hmmmm - I suspect that rm -rf will also trigger lots of kernel
-threads to be created. We do not want 256 kernel threads to
-be spawned to bang on the serialised regions of filesystem
-journals (generating lock contention) when one thread would
-be sufficient....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
