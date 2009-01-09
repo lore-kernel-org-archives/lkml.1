@@ -1,157 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZAIJHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbZAIJI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbZAIJHx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 04:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZAIJHc
+	id S1756763AbZAIJI2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 04:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZAIJHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 04:07:32 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:43183 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbZAIJH3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 04:07:29 -0500
-Date: Fri, 9 Jan 2009 14:33:43 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, menage@google.com
-Subject: Re: [RFC][PATCH 4/4] memcg: make oom less frequently
-Message-ID: <20090109090343.GI9737@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp> <20090108191520.df9c1d92.nishimura@mxp.nes.nec.co.jp> <20090109055804.GF9737@balbir.in.ibm.com> <20090109175215.705c94ea.nishimura@mxp.nes.nec.co.jp>
+	Fri, 9 Jan 2009 04:07:38 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53614 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753779AbZAIJHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 04:07:35 -0500
+Message-ID: <496713DB.1080701@cn.fujitsu.com>
+Date: Fri, 09 Jan 2009 17:07:39 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090109175215.705c94ea.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+CC: linux-kernel@vger.kernel.org, gregkh@suse.de, corbet@lwn.net
+Subject: Re: Who wrote 2.6.28
+References: <496224D7.2030109@cn.fujitsu.com> <20090108185343.27602b9f.kristoffer.ericson@gmail.com>
+In-Reply-To: <20090108185343.27602b9f.kristoffer.ericson@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-09 17:52:15]:
-
-> On Fri, 9 Jan 2009 11:28:04 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > * Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-08 19:15:20]:
-> > 
-> > > In previous implementation, mem_cgroup_try_charge checked the return
-> > > value of mem_cgroup_try_to_free_pages, and just retried if some pages
-> > > had been reclaimed.
-> > > But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-> > > only checks whether the usage is less than the limit.
-> > > 
-> > > This patch tries to change the behavior as before to cause oom less frequently.
-> > > 
-> > > To prevent try_charge from getting stuck in infinite loop,
-> > > MEM_CGROUP_RECLAIM_RETRIES_MAX is defined.
-> > > 
-> > > 
-> > > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > > ---
-> > >  mm/memcontrol.c |   16 ++++++++++++----
-> > >  1 files changed, 12 insertions(+), 4 deletions(-)
-> > > 
-> > > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > > index 804c054..fedd76b 100644
-> > > --- a/mm/memcontrol.c
-> > > +++ b/mm/memcontrol.c
-> > > @@ -42,6 +42,7 @@
-> > > 
-> > >  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
-> > >  #define MEM_CGROUP_RECLAIM_RETRIES	5
-> > > +#define MEM_CGROUP_RECLAIM_RETRIES_MAX	32
-> > 
-> > Why 32 are you seeing frequent OOMs? I had 5 iterations to allow
-> > 
-> > 1. pages to move to swap cache, which added back pressure to memcg in
-> > the original implementation, since the pages came back
-> > 2. It look longer to move, recalim those pages.
-> > 
-> > Ideally 3 would suffice, but I added an additional 2 retries for
-> > safety.
-> > 
-> Before this patch, try_charge doesn't check the return value of
-> try_to_free_page, i.e. how many pages has been reclaimed, and
-> only checks whether the usage has become less than the limit.
-> So, oom can be caused if the group is too busy.
+Kristoffer Ericson said the following on 2009-1-9 1:53:
+> On Mon, 05 Jan 2009 23:18:47 +0800
+> Wang Chen <wangchen@cn.fujitsu.com> wrote:
 > 
-> IIRC memory-cgroup-hierarchical-reclaim patch introduced this behavior,
-> and, I don't remember in detail, some tests which had not caused oom
-> started to cause oom after it.
-> That was the motivation of my first version of this patch(*1).
+>> As Jonathon and Greg did, I also made a statistic about who wrote the Linux kernel.
+>> The following data is for 2.6.28 development. (http://www.remword.com/kps_result/)
+>>
+>> 1. The attachment graph "commit.png" shows the change of commit amount of patches and changed lines.
+>>    It seems that 2.6.28 has less commits than 2.6.27 of both patch set and changed lines.
+>>
+>> 2. The attachment graph "who.png" shows the involved developers and employers in each version of kernel.
+>>    It seems that 2.6.28 has more developers and companies involved than previous two versions, but
+>>    less than that of 2.6.25. From a long vision, more and more developers and companies join to the
+>>    development of Linux kernel, but the increase speed is not so fast.
 > 
-> *1 http://lkml.org/lkml/2008/11/28/35
-> 
-> Anyway, this is the updated version.
-> I removed RETRIES_MAX.
-> 
-> 
-> Thanks,
-> Daisuke Nishimura.
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> In previous implementation, mem_cgroup_try_charge checked the return
-> value of mem_cgroup_try_to_free_pages, and just retried if some pages
-> had been reclaimed.
-> But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-> only checks whether the usage is less than the limit.
-> 
-> This patch tries to change the behavior as before to cause oom less frequently.
-> 
-> ChangeLog: RFC->v1
-> - removed RETRIES_MAX.
-> 
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  mm/memcontrol.c |   10 ++++++----
->  1 files changed, 6 insertions(+), 4 deletions(-)
-> 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 7ba5c61..fb0e9eb 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -781,10 +781,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
->  	 * but there might be left over accounting, even after children
->  	 * have left.
->  	 */
-> -	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
-> +	ret += try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
->  					   get_swappiness(root_mem));
->  	if (mem_cgroup_check_under_limit(root_mem))
-> -		return 0;
-> +		return 1;	/* indicate reclaim has succeeded */
->  	if (!root_mem->use_hierarchy)
->  		return ret;
-> 
-> @@ -795,10 +795,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
->  			next_mem = mem_cgroup_get_next_node(root_mem);
->  			continue;
->  		}
-> -		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
-> +		ret += try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
->  						   get_swappiness(next_mem));
->  		if (mem_cgroup_check_under_limit(root_mem))
-> -			return 0;
-> +			return 1;	/* indicate reclaim has succeeded */
->  		next_mem = mem_cgroup_get_next_node(root_mem);
->  	}
->  	return ret;
-> @@ -883,6 +883,8 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
-> 
->  		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
->  							noswap);
-> +		if (ret)
-> +			continue;
-> 
->  		/*
->  		 * try_to_free_mem_cgroup_pages() might not give us a full
+> How about adjusting for large/small letters? eg. Kristoffer Ericson == kristoffer ericson. Or Ill just learn to use the same always :)
 > 
 
-This makes sense
-
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
-
--- 
-	Balbir
+Good advice.
+I've changed all the Email address to lower case.
+Thank you.
