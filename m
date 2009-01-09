@@ -1,127 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZAIUlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZAIUnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZAIUlo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZAIUld
+	id S1756128AbZAIUnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZAIUnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:41:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41841 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752092AbZAIUlb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 15:41:31 -0500
-Date: Fri, 9 Jan 2009 21:41:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090109204103.GA17212@elte.hu>
-References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org> <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu> <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 9 Jan 2009 15:43:00 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:13510 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbZAIUm5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 15:42:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=MpTPhHrWLwx024n+/XjumoMxnP9Uf5QNO3fuHJO7adT3P/VFa/e6fK48qmbayQV4Yw
+         3wv0CxEkYnW67TuBaIQgqNU5phQ9hAEdw0oOq1BcOnaFXatjl/8XZup3bTswPdYH95kx
+         zkTtyYwCD8LjvUpzh3ZKt2A/fe/fcaUGHMQvQ=
+Subject: [PATCH] parisc: introduce asm/swab.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Kyle McMartin <kyle@hera.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090109160340.GA12065@hera.kernel.org>
+References: <20090109160340.GA12065@hera.kernel.org>
+Content-Type: text/plain
+Date: Fri, 09 Jan 2009 12:42:54 -0800
+Message-Id: <1231533774.5663.2.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix for the linux/byteorder.h removal.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Fri, 9 Jan 2009, Ingo Molnar wrote:
-> >  
-> > -static inline int constant_test_bit(int nr, const volatile unsigned long *addr)
-> > +static __asm_inline int
-> > +constant_test_bit(int nr, const volatile unsigned long *addr)
-> >  {
-> >  	return ((1UL << (nr % BITS_PER_LONG)) &
-> >  		(((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
-> 
-> Thios makes absolutely no sense.
-> 
-> It's called "__always_inline", not __asm_inline.
-
-yeah.
-
-Note that meanwhile i also figured out why gcc got the inlining wrong 
-there: the 'int nr' combined with the '% BITS_PER_LONG' signed arithmetics 
-was too much for it to figure out at the inlining stage - it generated 
-IDIV instructions, etc. With forced inlining later optimization stages 
-managed to prove that the expression can be simplified.
-
-The second patch below that changes 'int nr' to 'unsigned nr' solves that 
-problem, without the need to mark the function __always_inline.
-
-
-How did i end up with __asm_inline? The thing is, i started the day under 
-the assumption that there's some big practical problem here. I expected to 
-find a lot of places in need of annotation, so i introduced hpa's 
-suggestion and added the __asm_inline (via the patch attached below).
-
-I wrote 40 patches that annotated 200+ asm inline functions, and i was 
-fully expected to find that GCC made a mess, and i also wrote a patch to 
-disable CONFIG_OPTIMIZE_INLINING on those grounds.
-
-The irony is that indeed pretty much the _only_ annotation that made a 
-difference was the one that isnt even an asm() inline (as you noted).
-
-So, should we not remove CONFIG_OPTIMIZE_INLINING, then the correct one 
-would be to mark it __always_inline [__asm_inline is senseless there], or 
-the second patch below that changes the bit parameter to unsigned int.
-
-	Ingo
-
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/linux/compiler.h |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Linus, please apply after doing the parisc pull.  cris is the only
+arch still outstanding.
 
-Index: linux/include/linux/compiler.h
-===================================================================
---- linux.orig/include/linux/compiler.h
-+++ linux/include/linux/compiler.h
-@@ -223,7 +223,11 @@ void ftrace_likely_update(struct ftrace_
- #define noinline_for_stack noinline
+Done with git diff -M -B
+
+Harvey
+
+ arch/parisc/include/asm/Kbuild                  |    1 +
+ arch/parisc/include/asm/byteorder.h             |   76 ++--------------------
+ arch/parisc/include/asm/{byteorder.h => swab.h} |    9 +--
+ 3 files changed, 11 insertions(+), 75 deletions(-)
+
+diff --git a/arch/parisc/include/asm/Kbuild b/arch/parisc/include/asm/Kbuild
+index f88b252..2121d99 100644
+--- a/arch/parisc/include/asm/Kbuild
++++ b/arch/parisc/include/asm/Kbuild
+@@ -1,3 +1,4 @@
+ include include/asm-generic/Kbuild.asm
  
- #ifndef __always_inline
--#define __always_inline inline
-+# define __always_inline inline
-+#endif
+ unifdef-y += pdc.h
++unifdef-y += swab.h
+diff --git a/arch/parisc/include/asm/byteorder.h b/arch/parisc/include/asm/byteorder.h
+dissimilarity index 94%
+index 83095c5..da66029 100644
+--- a/arch/parisc/include/asm/byteorder.h
++++ b/arch/parisc/include/asm/byteorder.h
+@@ -1,69 +1,7 @@
+-#ifndef _PARISC_BYTEORDER_H
+-#define _PARISC_BYTEORDER_H
+-
+-#include <asm/types.h>
+-#include <linux/compiler.h>
+-
+-#define __BIG_ENDIAN
+-#define __SWAB_64_THRU_32__
+-
+-static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
+-{
+-	__asm__("dep %0, 15, 8, %0\n\t"		/* deposit 00ab -> 0bab */
+-		"shd %%r0, %0, 8, %0"		/* shift 000000ab -> 00ba */
+-		: "=r" (x)
+-		: "0" (x));
+-	return x;
+-}
+-#define __arch_swab16 __arch_swab16
+-
+-static inline __attribute_const__ __u32 __arch_swab24(__u32 x)
+-{
+-	__asm__("shd %0, %0, 8, %0\n\t"		/* shift xabcxabc -> cxab */
+-		"dep %0, 15, 8, %0\n\t"		/* deposit cxab -> cbab */
+-		"shd %%r0, %0, 8, %0"		/* shift 0000cbab -> 0cba */
+-		: "=r" (x)
+-		: "0" (x));
+-	return x;
+-}
+-
+-static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
+-{
+-	unsigned int temp;
+-	__asm__("shd %0, %0, 16, %1\n\t"	/* shift abcdabcd -> cdab */
+-		"dep %1, 15, 8, %1\n\t"		/* deposit cdab -> cbab */
+-		"shd %0, %1, 8, %0"		/* shift abcdcbab -> dcba */
+-		: "=r" (x), "=&r" (temp)
+-		: "0" (x));
+-	return x;
+-}
+-#define __arch_swab32 __arch_swab32
+-
+-#if BITS_PER_LONG > 32
+-/*
+-** From "PA-RISC 2.0 Architecture", HP Professional Books.
+-** See Appendix I page 8 , "Endian Byte Swapping".
+-**
+-** Pretty cool algorithm: (* == zero'd bits)
+-**      PERMH   01234567 -> 67452301 into %0
+-**      HSHL    67452301 -> 7*5*3*1* into %1
+-**      HSHR    67452301 -> *6*4*2*0 into %0
+-**      OR      %0 | %1  -> 76543210 into %0 (all done!)
+-*/
+-static inline __attribute_const__ __u64 __arch_swab64(__u64 x)
+-{
+-	__u64 temp;
+-	__asm__("permh,3210 %0, %0\n\t"
+-		"hshl %0, 8, %1\n\t"
+-		"hshr,u %0, 8, %0\n\t"
+-		"or %1, %0, %0"
+-		: "=r" (x), "=&r" (temp)
+-		: "0" (x));
+-	return x;
+-}
+-#define __arch_swab64 __arch_swab64
+-#endif /* BITS_PER_LONG > 32 */
+-
+-#include <linux/byteorder.h>
+-
+-#endif /* _PARISC_BYTEORDER_H */
++#ifndef _PARISC_BYTEORDER_H
++#define _PARISC_BYTEORDER_H
 +
-+#ifndef __asm_inline
-+# define __asm_inline __always_inline
- #endif
++#include <asm/swab.h>
++#include <linux/byteorder/big_endian.h>
++
++#endif /* _PARISC_BYTEORDER_H */
+diff --git a/arch/parisc/include/asm/byteorder.h b/arch/parisc/include/asm/swab.h
+similarity index 92%
+rename from arch/parisc/include/asm/byteorder.h
+rename to arch/parisc/include/asm/swab.h
+index 83095c5..3ff16c5 100644
+--- a/arch/parisc/include/asm/byteorder.h
++++ b/arch/parisc/include/asm/swab.h
+@@ -1,10 +1,9 @@
+-#ifndef _PARISC_BYTEORDER_H
+-#define _PARISC_BYTEORDER_H
++#ifndef _PARISC_SWAB_H
++#define _PARISC_SWAB_H
  
- #endif /* __KERNEL__ */
+ #include <asm/types.h>
+ #include <linux/compiler.h>
+ 
+-#define __BIG_ENDIAN
+ #define __SWAB_64_THRU_32__
+ 
+ static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
+@@ -64,6 +63,4 @@ static inline __attribute_const__ __u64 __arch_swab64(__u64 x)
+ #define __arch_swab64 __arch_swab64
+ #endif /* BITS_PER_LONG > 32 */
+ 
+-#include <linux/byteorder.h>
+-
+-#endif /* _PARISC_BYTEORDER_H */
++#endif /* _PARISC_SWAB_H */
+-- 
+1.6.1.94.g9388
 
-Index: linux/arch/x86/include/asm/bitops.h
-===================================================================
---- linux.orig/arch/x86/include/asm/bitops.h
-+++ linux/arch/x86/include/asm/bitops.h
-@@ -300,7 +300,7 @@ static inline int test_and_change_bit(in
- 	return oldbit;
- }
- 
--static inline int constant_test_bit(int nr, const volatile unsigned long *addr)
-+static int constant_test_bit(unsigned int nr, const volatile unsigned long *addr)
- {
- 	return ((1UL << (nr % BITS_PER_LONG)) &
- 		(((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
+
+
