@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZAIRj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZAIRlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbZAIRj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 12:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZAIRjR
+	id S1754017AbZAIRlh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 12:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZAIRl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 12:39:17 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:46703 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751995AbZAIRjQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 12:39:16 -0500
-Date: Fri, 9 Jan 2009 10:39:14 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Dirk Hohndel <hohndel@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Fri, 9 Jan 2009 12:41:26 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:34805 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751900AbZAIRlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 12:41:25 -0500
+Date: Fri, 9 Jan 2009 18:40:31 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        linux-btrfs <linux-btrfs@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
        Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz,
-       richard.guenther@gmail.com
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109173914.GD6936@parisc-linux.org>
-References: <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org>
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <1231442609.27687.1.camel@twins>
+Message-ID: <alpine.LRH.1.10.0901091815140.24105@twin.jikos.cz>
+References: <1231441350.14304.48.camel@think.oraclecorp.com>  <alpine.LFD.2.00.0901081109300.3283@localhost.localdomain> <1231442609.27687.1.camel@twins>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090109174719.GG26290@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 06:47:19PM +0100, Andi Kleen wrote:
-> On Fri, Jan 09, 2009 at 10:28:01AM -0700, Matthew Wilcox wrote:
-> > On Fri, Jan 09, 2009 at 06:20:11PM +0100, Andi Kleen wrote:
-> > > Also cc Honza in case he has comments (you might want
-> > > to review more of the thread in the archives) 
-> > 
-> > I think this particular bug is already known and discussed:
-> 
-> I thought so initially too, but:
-> 
-> > 
-> > http://gcc.gnu.org/ml/gcc/2008-12/msg00365.html
-> > 
-> > and it hints at being fixed with gcc 4.4.  Does anyone want to test
-> > that?
-> 
-> Hugh already tested with 4.4 and it didn't work well. At least
-> a lot of the low level asm inlines were not inlined.
-> So it looks like it's still mistuned for the kernel.
+On Thu, 8 Jan 2009, Peter Zijlstra wrote:
 
-That seems like valuable feedback to give to the GCC developers.
+> > Well, at least we do unless you enable that broken paravirt support. 
+> > I'm not at all clear on why CONFIG_PARAVIRT wants to use inferior 
+> > locks, but I don't much care.
+> Because the virtual cpu that has the ticket might not get scheduled for
+> a while, even though another vcpu with a spinner is scheduled.
+> The whole (para)virt is a nightmare in that respect.
 
-Richi, you can find the whole thread at
+Hmm, are we in fact really using byte locks in CONFIG_PARAVIRT situation? 
+Where are we actually setting pv_lock_ops.spin_lock pointer to point to 
+__byte_spin_lock?
 
-http://marc.info/?l=linux-fsdevel&m=123150610901773&w=2
-
-and http://marc.info/?l=linux-fsdevel&m=123150834405285&w=2 is also
-relevant.
+Such initialization seems to happen only in paravirt_use_bytelocks() 
+function, but my blind eyes prevent me from finding a callsite from which 
+this function would eventually get called.
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jiri Kosina
+SUSE Labs
+
