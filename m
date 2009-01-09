@@ -1,80 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbZAIVYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZAIVYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757807AbZAIVYz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbZAIVYL
+	id S1755931AbZAIVYj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:24:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZAIVYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:24:11 -0500
-Received: from thunk.org ([69.25.196.29]:56236 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756154AbZAIVYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Jan 2009 16:24:08 -0500
-Date: Fri, 9 Jan 2009 16:23:35 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Richard Guenther <richard.guenther@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Dirk Hohndel <hohndel@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
-	impact
-Message-ID: <20090109212335.GH23869@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Richard Guenther <richard.guenther@gmail.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-	Dirk Hohndel <hohndel@infradead.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-	Gregory Haskins <ghaskins@novell.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-	linux-btrfs <linux-btrfs@vger.kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-	Peter Morreale <pmorreale@novell.com>,
-	Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-References: <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109173914.GD6936@parisc-linux.org> <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain> <84fc9c000901091109t2c2aef2fu596f8807b0962688@mail.gmail.com> <alpine.LFD.2.00.0901091128170.6528@localhost.localdomain> <84fc9c000901091214i16fc74b7q349433a5586d5619@mail.gmail.com> <alpine.LFD.2.00.0901091217530.6528@localhost.localdomain> <84fc9c000901091237i68b2e495tab55e61fb3dbd565@mail.gmail.com>
+Received: from solo.fdn.fr ([80.67.169.19]:57305 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755695AbZAIVYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 16:24:06 -0500
+Date: Fri, 9 Jan 2009 22:23:58 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+Subject: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
+Message-ID: <20090109212358.GG5073@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+References: <20090107005813.GA4987@const.famille.thibault.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <84fc9c000901091237i68b2e495tab55e61fb3dbd565@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090107005813.GA4987@const.famille.thibault.fr>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm beginning to think that for the kernel, we should just simply
-remove CONFIG_OPTIMIZE_INLINING (so that inline means
-"always_inline"), and -fno-inline-functions
--fno-inline-functions-called-one (so that gcc never inlines functions
-behind our back) --- and then we create tools that count how many times functions get used, and how big functions are, so that we can flag if some 
-function really should be marked inline when it isn't or vice versa.   
+Hello,
 
-But given that this is a very hard thing for an automated program
-todo, let's write some tools so we can easily put a human in the loop,
-who can add or remove inline keywords where it makes sense, and let's
-give up on gcc being able to "guess" correctly.
+Came somebody have a look at this?  The need is real, the only question
+that comes to my mind is whether notifiers are allowed to modify the
+param they are given.  Since they are not marked const, I'd guess it'd
+be ok?
 
-For some things, like register allocation, I can accept that the
-compiler will usually get these things right.  But whether or not to
-inline a function seems to be one of those things that humans (perhaps
-with some tools assist) can still do a better job than compilers.
+Samuel
 
-     	  		    	     - Ted
+Samuel Thibault, le Wed 07 Jan 2009 01:58:13 +0100, a écrit :
+
+
+Make kbd_keycode() read param.value after calling the keyboard notification
+chain, to let the callee change the translation on the fly. This for instance
+permits to remap the physical positions of the keys independently of the
+configured keymap, for e.g. single-handed people.
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+--- linux/drivers/char/keyboard.c.orig	2009-01-07 00:48:46.000000000 +0100
++++ linux/drivers/char/keyboard.c	2009-01-07 01:02:05.000000000 +0100
+@@ -1248,6 +1248,7 @@ kbd_keycode
+ 		kbd->slockstate = 0;
+ 		return;
+ 	}
++	keycode = param.value;
+ 
+ 	if (keycode >= NR_KEYS)
+ 		if (keycode >= KEY_BRL_DOT1 && keycode <= KEY_BRL_DOT8)
+@@ -1263,6 +1264,7 @@ kbd_keycode
+ 		param.value = keysym;
+ 		if (atomic_notifier_call_chain(&keyboard_notifier_list, KBD_UNICODE, &param) == NOTIFY_STOP)
+ 			return;
++		keysym = param.value;
+ 		if (down && !raw_mode)
+ 			to_utf8(vc, keysym);
+ 		return;
+@@ -1282,6 +1284,7 @@ kbd_keycode
+ 
+ 	if (atomic_notifier_call_chain(&keyboard_notifier_list, KBD_KEYSYM, &param) == NOTIFY_STOP)
+ 		return;
++	keysym = param.value;
+ 
+ 	if (raw_mode && type != KT_SPEC && type != KT_SHIFT)
+ 		return;
+--- linux/Documentation/input/notifier.txt.orig	2008-04-17 12:14:30.000000000 +0200
++++ linux/Documentation/input/notifier.txt	2009-01-07 01:04:16.000000000 +0100
+@@ -21,7 +21,8 @@
+ 
+ For each kind of event but the last, the callback may return NOTIFY_STOP in
+ order to "eat" the event: the notify loop is stopped and the keyboard event is
+-dropped.
++dropped.  The callee can also modify param.value so as to change the key
++translation.
+ 
+ In a rough C snippet, we have:
+ 
+@@ -33,18 +34,26 @@
+ 		notifier_call_chain(KBD_UNBOUND_KEYCODE,&params);
+ 		return;
+ 	}
++	keycode = param.value;
++
++	...
+ 
+ 	if (unicode) {
+ 		param.value = unicode;
+ 		if (notifier_call_chain(KBD_UNICODE,&params) == NOTIFY_STOP)
+ 			return;
++		keysym = param.value;
+ 		emit unicode;
+ 		return;
+ 	}
+ 
++	...
++
+ 	params.value = keysym;
+ 	if (notifier_call_chain(KBD_KEYSYM,&params) == NOTIFY_STOP)
+ 		return;
++	keysym = params.value;
++
+ 	apply keysym;
+ 	notifier_call_chain(KBD_POST_KEYSYM,&params);
+ }
