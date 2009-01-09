@@ -1,48 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbZAIQPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZAIQQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752336AbZAIQPW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:15:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZAIQOw
+	id S1753094AbZAIQQe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZAIQQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:14:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58558 "EHLO mx2.redhat.com"
+	Fri, 9 Jan 2009 11:16:25 -0500
+Received: from mga09.intel.com ([134.134.136.24]:49466 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbZAIQOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:14:50 -0500
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] CRED: Missing put_cred() in prepare_kernel_cred()
-To: torvalds@osdl.org, jmorris@namei.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, steved@redhat.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Date: Fri, 09 Jan 2009 16:13:41 +0000
-Message-ID: <20090109161341.13371.24540.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1751365AbZAIQQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 11:16:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,235,1231142400"; 
+   d="scan'208";a="421018193"
+Message-ID: <49677856.90807@intel.com>
+Date: Sat, 10 Jan 2009 00:16:22 +0800
+From: "Zhao, Yu" <yu.zhao@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Dirk Hohndel <hohndel@infradead.org>
+CC: "Han, Weidong" <weidong.han@intel.com>,
+       "'Grant Grundler'" <grundler@parisc-linux.org>,
+       "'linux-pci@vger.kernel.org'" <linux-pci@vger.kernel.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Arjan van de Ven'" <arjan@infradead.org>
+Subject: Re: git-latest: kernel oops in IOMMU setup
+References: <20090108120538.0176d348@infradead.org>	<20090108214116.GB20506@colo.lackof.org>	<715D42877B251141A38726ABF5CABF2C018E8FEA77@pdsmsx503.ccr.corp.intel.com>	<20090108180515.2f279671@infradead.org>	<20090108205222.2c89dcde@infradead.org>	<715D42877B251141A38726ABF5CABF2C018E8FECAA@pdsmsx503.ccr.corp.intel.com> <20090109070805.525c0de9@infradead.org>
+In-Reply-To: <20090109070805.525c0de9@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Missing put_cred() in the error handling path of prepare_kernel_cred().
+Dirk Hohndel wrote:
+> On Fri, 9 Jan 2009 14:53:14 +0800
+> "Han, Weidong" <weidong.han@intel.com> wrote:
+> 
+>> Dirk Hohndel wrote:
+>>> On Thu, 8 Jan 2009 18:05:15 -0800
+>>> Dirk Hohndel <hohndel@infradead.org> wrote:
+>>>
+>>>> On Fri, 9 Jan 2009 08:58:46 +0800 "Han, Weidong"
+>>>>
+>>>> I updated to Linus' latest git (as your description made me wonder
+>>>> if the async stuff might play a role here). I still get an oops -
+>>>> but at a different spot and the system no longer hangs - it partly
+>>>> recovers (but things aren't too well - for example my USB
+>>>> keyboard / mouse don't work anymore).
+>>> Spoke too soon. Rebooted and had the same hard lockup again. This
+>>> time I had my camera within reach, so here's the trace:
+>>>
+>>> device_to_iommu+0x33/0x73
+>>> domain_context_mapping_one+0x37/0x335
+>>> domain_context_mapping+0x25/0xa7
+>>> iommu_prepare_identity+0xd7/0xf3
+>>> intel_iommu_init+0x4e4/0x8f3
+>>> ? mutex_lock
+>>> ? sysctl_net_init
+>>> ? pci_iommu_init
+>>> pci_iommu_init
+>>>
+>>> I also have stack, code and register values. Let me know if you need
+>>> them. Or I can just post the picture :-)
+>>>
+>>> Again, very latest git tree, VT-d enabled.
+>>>
+>>> /D
+>> I tried latest git tree, it works for me. Above call trace looks
+>> right. 
+> 
+> Spent some more time reading the code. Can't quite claim to understand
+> all of it, yet, but I notice that most everywhere else drhd->devices[i]
+> is checked to be != NULL before it is accessed. Why is it safe not to
+> do that in device_to_iommu()?
+> 
+> Would the patch below be a valid fix? It stops my system from hanging at
+> boot. But I wonder if there is an assertion that if drhd->ignored is 0
+> then drhd->devices[0..drhd->device_cnt] is known to be != NULL and
+> therefore this test is just hiding a bug somewhere else...
+> 
+> /D
+> 
+> Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
+> ---
+>  drivers/pci/intel-iommu.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+> index 235fb7a..3dfecb2 100644
+> --- a/drivers/pci/intel-iommu.c
+> +++ b/drivers/pci/intel-iommu.c
+> @@ -438,7 +438,8 @@ static struct intel_iommu *device_to_iommu(u8 bus,
+> u8 devfn) continue;
+>  
+>  		for (i = 0; i < drhd->devices_cnt; i++)
+> -			if (drhd->devices[i]->bus->number == bus &&
+> +			if (drhd->devices[i] &&
+> +			    drhd->devices[i]->bus->number == bus &&
+>  			    drhd->devices[i]->devfn == devfn)
+>  				return drhd->iommu;
+>  
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Steve Dickson <steved@redhat.com>
----
+Did you see following in the kernel message?
+                 printk(KERN_WARNING PREFIX
+                 "Device scope device [%04x:%02x:%02x.%02x] not found\n",
+                 segment, scope->bus, path->dev, path->fn);
 
- kernel/cred.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/cred.c b/kernel/cred.c
-index 480a61a..400e608 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -530,6 +530,7 @@ struct cred *prepare_kernel_cred(struct task_struct *daemon)
- 
- error:
- 	put_cred(new);
-+	put_cred(old);
- 	return NULL;
- }
- EXPORT_SYMBOL(prepare_kernel_cred);
-
+If yes, then
+		Acked-by: Yu Zhao <yu.zhao@intel.com>
