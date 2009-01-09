@@ -1,149 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZAIQVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZAIQWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbZAIQVr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZAIQTv
+	id S1754214AbZAIQWB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZAIQTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:19:51 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32100 "EHLO
-	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbZAIQTn (ORCPT
+	Fri, 9 Jan 2009 11:19:54 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32121 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbZAIQTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Jan 2009 11:19:43 -0500
-X-BigFish: VPS13(zz9321rzzzzz32i43j64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0KD7PCH-03-IWW-01
+X-BigFish: VPS3(zzzzzzz32i43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KD7PCH-03-IWY-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: linux-kernel@vger.kernel.org
 CC: mingo@redhat.com, dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
        netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 05/16] dma-debug: add initialization code
-Date: Fri, 9 Jan 2009 17:19:19 +0100
-Message-ID: <1231517970-20288-6-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 03/16] dma-debug: add hash functions for dma_debug_entries
+Date: Fri, 9 Jan 2009 17:19:17 +0100
+Message-ID: <1231517970-20288-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
 References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0732 (UTC) FILETIME=[0D0B46C0:01C97276]
+X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0605 (UTC) FILETIME=[0CF7E5D0:01C97276]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add code to initialize dma-debug core data structures
+Impact: implement necessary functions for the core hash
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/dma-debug.h |   14 +++++++++
- lib/dma-debug.c           |   66 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 80 insertions(+), 0 deletions(-)
+ lib/dma-debug.c |  101 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 101 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-index ce4ace7..345d538 100644
---- a/include/linux/dma-debug.h
-+++ b/include/linux/dma-debug.h
-@@ -20,6 +20,20 @@
- #ifndef __DMA_DEBUG_H
- #define __DMA_DEBUG_H
- 
-+#include <linux/types.h>
-+
- struct device;
- 
-+#ifdef CONFIG_DMA_API_DEBUG
-+
-+extern void dma_debug_init(u32 num_entries);
-+
-+#else /* CONFIG_DMA_API_DEBUG */
-+
-+static inline void dma_debug_init(u32 num_entries)
-+{
-+}
-+
-+#endif /* CONFIG_DMA_API_DEBUG */
-+
- #endif /* __DMA_DEBUG_H */
 diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index c5444d4..b932f15 100644
+index d04f8b6..74a0f36 100644
 --- a/lib/dma-debug.c
 +++ b/lib/dma-debug.c
-@@ -21,6 +21,7 @@
- #include <linux/spinlock.h>
+@@ -18,9 +18,14 @@
+  */
+ 
+ #include <linux/dma-debug.h>
++#include <linux/spinlock.h>
  #include <linux/types.h>
  #include <linux/list.h>
-+#include <linux/slab.h>
  
- #define HASH_SIZE       256
- #define HASH_FN_SHIFT   20
-@@ -195,3 +196,68 @@ static void dma_entry_free(struct dma_debug_entry *entry)
- 	spin_unlock_irqrestore(&free_entries_lock, flags);
- }
++#define HASH_SIZE       256
++#define HASH_FN_SHIFT   20
++#define HASH_FN_MASK    0xffULL
++
+ enum {
+ 	dma_debug_single,
+ 	dma_debug_sg,
+@@ -37,3 +42,99 @@ struct dma_debug_entry {
+ 	int              direction;
+ };
  
++struct hash_bucket {
++	struct list_head list;
++	spinlock_t lock;
++} ____cacheline_aligned;
++
++/* Hash list to save the allocated dma addresses */
++static struct hash_bucket dma_entry_hash[HASH_SIZE];
++
 +/*
-+ * DMA-API debugging init code
++ * Hash related functions
 + *
-+ * The init code does two things:
-+ *   1. Initialize core data structures
-+ *   2. Preallocate a given number of dma_debug_entry structs
++ * Every DMA-API request is saved into a struct dma_debug_entry. To
++ * have quick access to these structs they are stored into a hash.
 + */
-+
-+static int prealloc_memory(u32 num_entries)
++static int hash_fn(struct dma_debug_entry *entry)
 +{
-+	struct dma_debug_entry *entry, *next_entry;
-+	int i;
-+
-+	for (i = 0; i < num_entries; ++i) {
-+		entry = kmalloc(sizeof(*entry), GFP_KERNEL | __GFP_ZERO);
-+		if (!entry)
-+			goto out_err;
-+
-+		list_add_tail(&entry->list, &free_entries);
-+	}
-+
-+	num_free_entries = num_entries;
-+	min_free_entries = num_entries;
-+
-+	printk(KERN_INFO "DMA-API: preallocated %d debug entries\n",
-+			num_entries);
-+
-+	return 0;
-+
-+out_err:
-+
-+	list_for_each_entry_safe(entry, next_entry, &free_entries, list) {
-+		list_del(&entry->list);
-+		kfree(entry);
-+	}
-+
-+	return -ENOMEM;
++	/*
++	 * Hash function is based on the dma address.
++	 * We use bits 20-27 here as the index into the hash
++	 */
++	return (entry->dev_addr >> HASH_FN_SHIFT) & HASH_FN_MASK;
 +}
 +
 +/*
-+ * Let the architectures decide how many entries should be preallocated.
++ * Request exclusive access to a hash bucket for a given dma_debug_entry.
 + */
-+void dma_debug_init(u32 num_entries)
++static struct hash_bucket *get_hash_bucket(struct dma_debug_entry *entry,
++					   unsigned long *flags)
 +{
-+	int i;
++	int idx = hash_fn(entry);
++	unsigned long __flags;
 +
-+	if (global_disable)
-+		return;
++	spin_lock_irqsave(&dma_entry_hash[idx].lock, __flags);
++	*flags = __flags;
++	return &dma_entry_hash[idx];
++}
 +
-+	for (i = 0; i < HASH_SIZE; ++i) {
-+		INIT_LIST_HEAD(&dma_entry_hash[i].list);
-+		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
++/*
++ * Give up exclusive access to the hash bucket
++ */
++static void put_hash_bucket(struct hash_bucket *bucket,
++			    unsigned long *flags)
++{
++	unsigned long __flags = *flags;
++
++	spin_unlock_irqrestore(&bucket->lock, __flags);
++}
++
++/*
++ * Search a given entry in the hash bucket list
++ */
++static struct dma_debug_entry *hash_bucket_find(struct hash_bucket *bucket,
++						struct dma_debug_entry *ref)
++{
++	struct dma_debug_entry *entry;
++
++	list_for_each_entry(entry, &bucket->list, list) {
++		if ((entry->dev_addr == ref->dev_addr) &&
++		    (entry->dev == ref->dev))
++			return entry;
 +	}
 +
-+	if (prealloc_memory(num_entries) != 0) {
-+		printk(KERN_ERR "DMA-API: debugging out of memory error "
-+				"- disabled\n");
-+		global_disable = true;
++	return NULL;
++}
 +
-+		return;
-+	}
++/*
++ * Add an entry to a hash bucket
++ */
++static void hash_bucket_add(struct hash_bucket *bucket,
++			    struct dma_debug_entry *entry)
++{
++	list_add_tail(&entry->list, &bucket->list);
++}
 +
-+	printk(KERN_INFO "DMA-API: debugging enabled by kernel config\n");
++/*
++ * Remove entry from a hash bucket list
++ */
++static void hash_bucket_del(struct dma_debug_entry *entry)
++{
++	list_del(&entry->list);
++}
++
++/*
++ * Wrapper function for adding an entry to the hash.
++ * This function takes care of locking itself.
++ */
++static void add_dma_entry(struct dma_debug_entry *entry)
++{
++	struct hash_bucket *bucket;
++	unsigned long flags;
++
++	bucket = get_hash_bucket(entry, &flags);
++	hash_bucket_add(bucket, entry);
++	put_hash_bucket(bucket, &flags);
 +}
 +
 -- 
