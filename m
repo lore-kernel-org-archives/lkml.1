@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZAIScz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZAISgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755683AbZAIScz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbZAIScZ
+	id S1754782AbZAISgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZAISgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:32:25 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:48833 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754441AbZAIScY (ORCPT
+	Fri, 9 Jan 2009 13:36:09 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40561 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752408AbZAISgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:32:24 -0500
-X-IronPort-AV: E=Sophos;i="4.37,240,1231131600"; 
-   d="scan'208";a="35161176"
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jj@chaosbits.net,
-       weiyi.huang@gmail.com, Becky Bruce <beckyb@kernel.crashing.org>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Ian Campbell <ian.campbell@citrix.com>
-Subject: [PATCH 2/2] swiotlb: do not use sg_virt()
-Date: Fri,  9 Jan 2009 18:32:10 +0000
-Message-Id: <1231525930-14087-3-git-send-email-Ian.Campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1231525930-14087-2-git-send-email-Ian.Campbell@citrix.com>
-References: <1231524630.27350.79.camel@zakaz.uk.xensource.com>
- <1231525930-14087-1-git-send-email-Ian.Campbell@citrix.com>
- <1231525930-14087-2-git-send-email-Ian.Campbell@citrix.com>
-X-OriginalArrivalTime: 09 Jan 2009 18:32:23.0353 (UTC) FILETIME=[9D18B290:01C97288]
+	Fri, 9 Jan 2009 13:36:08 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <496798FE.8030900@s5r6.in-berlin.de>
+Date: Fri, 09 Jan 2009 19:35:42 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Jay Fenlason <fenlason@redhat.com>
+Subject: post 2.6.28 regression: device_initialize() now sleeps, and may fail
+ without recovery strategy
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scatterlists containing HighMem pages do not have a useful virtual
-address. Use the physical address instead.
+>From commit 2831fe6f9cc4e16c103504ee09a47a084297c0f3, "driver core:
+create a private portion of struct device":
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
----
- lib/swiotlb.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ void device_initialize(struct device *dev)
+ {
++	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
++	if (!dev->p) {
++		WARN_ON(1);
++		return;
++	}
++	dev->p->device = dev;
+ 	dev->kobj.kset = devices_kset;
+ 	kobject_init(&dev->kobj, &device_ktype);
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 31bae40..32e2bd3 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -801,10 +801,10 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
- 	BUG_ON(dir == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nelems, i) {
--		void *addr = sg_virt(sg);
--		dma_addr_t dev_addr = swiotlb_virt_to_bus(hwdev, addr);
-+		phys_addr_t paddr = sg_phys(sg);
-+		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
- 
--		if (range_needs_mapping(sg_phys(sg), sg->length) ||
-+		if (range_needs_mapping(paddr, sg->length) ||
- 		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
- 			void *map = map_single(hwdev, sg_phys(sg),
- 					       sg->length, dir);
-@@ -848,11 +848,11 @@ swiotlb_unmap_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
- 	BUG_ON(dir == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nelems, i) {
--		if (sg->dma_address != swiotlb_virt_to_bus(hwdev, sg_virt(sg)))
-+		if (sg->dma_address != swiotlb_phys_to_bus(hwdev, sg_phys(sg)))
- 			unmap_single(hwdev, swiotlb_bus_to_virt(sg->dma_address),
- 				     sg->dma_length, dir);
- 		else if (dir == DMA_FROM_DEVICE)
--			dma_mark_clean(sg_virt(sg), sg->dma_length);
-+			dma_mark_clean(swiotlb_bus_to_virt(sg->dma_address), sg->dma_length);
- 	}
- }
- EXPORT_SYMBOL(swiotlb_unmap_sg_attrs);
-@@ -882,11 +882,11 @@ swiotlb_sync_sg(struct device *hwdev, struct scatterlist *sgl,
- 	BUG_ON(dir == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nelems, i) {
--		if (sg->dma_address != swiotlb_virt_to_bus(hwdev, sg_virt(sg)))
-+		if (sg->dma_address != swiotlb_phys_to_bus(hwdev, sg_phys(sg)))
- 			sync_single(hwdev, swiotlb_bus_to_virt(sg->dma_address),
- 				    sg->dma_length, dir, target);
- 		else if (dir == DMA_FROM_DEVICE)
--			dma_mark_clean(sg_virt(sg), sg->dma_length);
-+			dma_mark_clean(swiotlb_bus_to_virt(sg->dma_address), sg->dma_length);
- 	}
- }
- 
+
+First of all, this prevents initialization of struct device in atomic
+contexts, such as drivers/firewire/fw-device.c::fw_node_event.
+
+This is a bug in current mainline.
+
+We can fix the bug by changing firewire-core, but
+  a) it'd be more than a one-liner,
+  b) who knows which other subsystems are affected.
+
+Next, the above code is bogus.  In 2.6.28, device_initialize() could
+never fail and was thus safe to use as a void-valued function.
+
+How does driver core handle dev->p == NULL in subsequent usages of dev now?
 -- 
-1.5.6.5
-
+Stefan Richter
+-=====-==--= ---= -=--=
+http://arcgraph.de/sr/
