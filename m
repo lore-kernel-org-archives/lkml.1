@@ -1,195 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZAIVTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbZAIVUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbZAIVTo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZAIVTg
+	id S1757440AbZAIVUT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbZAIVUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:19:36 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:26649 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbZAIVTe (ORCPT
+	Fri, 9 Jan 2009 16:20:00 -0500
+Received: from lazybastard.de ([212.112.238.170]:49131 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753759AbZAIVT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:19:34 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=antIv9ZnNGxNWoPUPXaUT44M25AtjDr85C9GwYlYRxEgmyNhS/eaNs8DJL5/g/2Z/
-	FsiGETWcqcgk+wLNLYq8Q==
+	Fri, 9 Jan 2009 16:19:59 -0500
+Date: Fri, 9 Jan 2009 22:19:38 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: David Brown <lkml@davidb.org>
+Cc: Phil Oester <kernel@linuxace.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-ID: <20090109211937.GA14342@logfs.org>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <4966B24E.1050700@lougher.demon.co.uk> <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com> <20090109023629.GA29520@linuxace.com> <20090109165422.GF24884@logfs.org> <20090109193738.GA9827@linode.davidb.org>
 MIME-Version: 1.0
-In-Reply-To: <4966B383.3030106@cn.fujitsu.com>
-References: <4966B383.3030106@cn.fujitsu.com>
-Date: Fri, 9 Jan 2009 13:19:30 -0800
-Message-ID: <6599ad830901091319v405fd0do1424c737e8cb097@mail.gmail.com>
-Subject: Re: [PATCH] cgroups: consolidate cgroup documents
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.78
-X-GMailtapped: menage
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090109193738.GA9827@linode.davidb.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 8, 2009 at 6:16 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> Move Documentation/cpusets.txt and Documentation/controllers/* to
-> Documentation/cgroups/
->
-> This inlined patch is generated with git-show -M (rename detected)
-> and is for review, and the attached one is for apply.
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+On Fri, 9 January 2009 11:37:39 -0800, David Brown wrote:
+> On Fri, Jan 09, 2009 at 05:54:22PM +0100, Jörn Engel wrote:
+> >
+> >In general, filesystems and ABI changes are special because stupid
+> >mistakes are eternal.  If some device driver has a bug, you can fix it,
+> >reboot and be done with it.  Not so with filesystems.
+> 
+> Squashfs is readonly from the kernel.  The images are created with
+> userspace tools.
 
-Acked-by: Paul Menage <menage@google.com>
+While true, it doesn't make a difference.  If, for example, your
+structures members are not naturally aligned, you take a performance hit
+for no good reason.  Simply moving fields around would make the code
+go faster.  But the format is fixed and prevents you from making this
+change.
 
-Thanks.
+You have to get those things right from the beginning or pay for your
+mistakes everafter.  In general (and I stress "In general") filesystems
+want more review than ordinary device drivers.  And just to stress that
+again, this is not an argument against merging squashfs now.
 
-> ---
->  Documentation/cgroups/cgroups.txt            |    5 +++--
->  Documentation/cgroups/memcg_test.txt         |    2 +-
->  Documentation/scheduler/sched-design-CFS.txt |    2 +-
->  include/linux/res_counter.h                  |    2 +-
->  init/Kconfig                                 |    9 ++++-----
->  kernel/cpuset.c                              |    2 +-
->  11 files changed, 11 insertions(+), 11 deletions(-)
->
->  rename Documentation/{controllers => cgroups}/cpuacct.txt (100%)
->  rename Documentation/{ => cgroups}/cpusets.txt (100%)
->  rename Documentation/{controllers => cgroups}/devices.txt (100%)
->  rename Documentation/{controllers => cgroups}/memcg_test.txt (99%)
->  rename Documentation/{controllers => cgroups}/memory.txt (100%)
->  rename Documentation/{controllers => cgroups}/resource_counter.txt (100%)
->
-> diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
-> index e33ee74..d9e5d6f 100644
-> --- a/Documentation/cgroups/cgroups.txt
-> +++ b/Documentation/cgroups/cgroups.txt
-> @@ -1,7 +1,8 @@
->                                CGROUPS
->                                -------
->
-> -Written by Paul Menage <menage@google.com> based on Documentation/cpusets.txt
-> +Written by Paul Menage <menage@google.com> based on
-> +Documentation/cgroups/cpusets.txt
->
->  Original copyright statements from cpusets.txt:
->  Portions Copyright (C) 2004 BULL SA.
-> @@ -68,7 +69,7 @@ On their own, the only use for cgroups is for simple job
->  tracking. The intention is that other subsystems hook into the generic
->  cgroup support to provide new attributes for cgroups, such as
->  accounting/limiting the resources which processes in a cgroup can
-> -access. For example, cpusets (see Documentation/cpusets.txt) allows
-> +access. For example, cpusets (see Documentation/cgroups/cpusets.txt) allows
->  you to associate a set of CPUs and a set of memory nodes with the
->  tasks in each cgroup.
->
-> diff --git a/Documentation/controllers/cpuacct.txt b/Documentation/cgroups/cpuacct.txt
-> similarity index 100%
-> rename from Documentation/controllers/cpuacct.txt
-> rename to Documentation/cgroups/cpuacct.txt
-> diff --git a/Documentation/cpusets.txt b/Documentation/cgroups/cpusets.txt
-> similarity index 100%
-> rename from Documentation/cpusets.txt
-> rename to Documentation/cgroups/cpusets.txt
-> diff --git a/Documentation/controllers/devices.txt b/Documentation/cgroups/devices.txt
-> similarity index 100%
-> rename from Documentation/controllers/devices.txt
-> rename to Documentation/cgroups/devices.txt
-> diff --git a/Documentation/controllers/memcg_test.txt b/Documentation/cgroups/memcg_test.txt
-> similarity index 99%
-> rename from Documentation/controllers/memcg_test.txt
-> rename to Documentation/cgroups/memcg_test.txt
-> index 08d4d3e..19533f9 100644
-> --- a/Documentation/controllers/memcg_test.txt
-> +++ b/Documentation/cgroups/memcg_test.txt
-> @@ -6,7 +6,7 @@ Because VM is getting complex (one of reasons is memcg...), memcg's behavior
->  is complex. This is a document for memcg's internal behavior.
->  Please note that implementation details can be changed.
->
-> -(*) Topics on API should be in Documentation/controllers/memory.txt)
-> +(*) Topics on API should be in Documentation/cgroups/memory.txt)
->
->  0. How to record usage ?
->    2 objects are used.
-> diff --git a/Documentation/controllers/memory.txt b/Documentation/cgroups/memory.txt
-> similarity index 100%
-> rename from Documentation/controllers/memory.txt
-> rename to Documentation/cgroups/memory.txt
-> diff --git a/Documentation/controllers/resource_counter.txt b/Documentation/cgroups/resource_counter.txt
-> similarity index 100%
-> rename from Documentation/controllers/resource_counter.txt
-> rename to Documentation/cgroups/resource_counter.txt
-> diff --git a/Documentation/scheduler/sched-design-CFS.txt b/Documentation/scheduler/sched-design-CFS.txt
-> index 8398ca4..6f33593 100644
-> --- a/Documentation/scheduler/sched-design-CFS.txt
-> +++ b/Documentation/scheduler/sched-design-CFS.txt
-> @@ -231,7 +231,7 @@ CPU bandwidth control purposes:
->
->    This options needs CONFIG_CGROUPS to be defined, and lets the administrator
->    create arbitrary groups of tasks, using the "cgroup" pseudo filesystem.  See
-> -   Documentation/cgroups.txt for more information about this filesystem.
-> +   Documentation/cgroups/cgroups.txt for more information about this filesystem.
->
->  Only one of these options to group tasks can be chosen and not both.
->
-> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-> index dede0a2..4c5bcf6 100644
-> --- a/include/linux/res_counter.h
-> +++ b/include/linux/res_counter.h
-> @@ -9,7 +9,7 @@
->  *
->  * Author: Pavel Emelianov <xemul@openvz.org>
->  *
-> - * See Documentation/controllers/resource_counter.txt for more
-> + * See Documentation/cgroups/resource_counter.txt for more
->  * info about what this counter is.
->  */
->
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 56fd93c..2af8382 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -323,8 +323,8 @@ config CGROUP_SCHED
->          This option allows you to create arbitrary task groups
->          using the "cgroup" pseudo filesystem and control
->          the cpu bandwidth allocated to each such task group.
-> -         Refer to Documentation/cgroups.txt for more information
-> -         on "cgroup" pseudo filesystem.
-> +         Refer to Documentation/cgroups/cgroups.txt for more
-> +         information on "cgroup" pseudo filesystem.
->
->  endchoice
->
-> @@ -335,10 +335,9 @@ menuconfig CGROUPS
->          use with process control subsystems such as Cpusets, CFS, memory
->          controls or device isolation.
->          See
-> -               - Documentation/cpusets.txt     (Cpusets)
->                - Documentation/scheduler/sched-design-CFS.txt  (CFS)
-> -               - Documentation/cgroups/ (features for grouping, isolation)
-> -               - Documentation/controllers/ (features for resource control)
-> +               - Documentation/cgroups/ (features for grouping, isolation
-> +                                         and resource control)
->
->          Say N if unsure.
->
-> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> index 647c77a..a856788 100644
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -568,7 +568,7 @@ update_domain_attr_tree(struct sched_domain_attr *dattr, struct cpuset *c)
->  * load balancing domains (sched domains) as specified by that partial
->  * partition.
->  *
-> - * See "What is sched_load_balance" in Documentation/cpusets.txt
-> + * See "What is sched_load_balance" in Documentation/cgroups/cpusets.txt
->  * for a background explanation of this.
->  *
->  * Does not return errors, on the theory that the callers of this
->
+Jörn
+
+-- 
+Simplicity is prerequisite for reliability.
+-- Edsger W. Dijkstra
