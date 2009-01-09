@@ -1,101 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZAIUSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZAIUWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbZAIUSY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZAIUSH
+	id S1755937AbZAIUWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZAIUWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:18:07 -0500
-Received: from qmta01.emeryville.ca.mail.comcast.net ([76.96.30.16]:54773 "EHLO
-	QMTA01.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752637AbZAIUSF (ORCPT
+	Fri, 9 Jan 2009 15:22:04 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:42326 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbZAIUWB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 15:18:05 -0500
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-From: Nicholas Miell <nmiell@comcast.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
-References: <20090108141808.GC11629@elte.hu>
-	 <1231426014.11687.456.camel@twins>
-	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
-	 <1231434515.14304.27.camel@think.oraclecorp.com>
-	 <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
-	 <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com>
-	 <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
-	 <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com>
-	 <20090109153508.GA4671@elte.hu>
-	 <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 09 Jan 2009 12:17:56 -0800
-Message-Id: <1231532276.2081.12.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+	Fri, 9 Jan 2009 15:22:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RScvK7anqTLYn2Sp8uSzYPTC1PDzmG6NvSrID0tykZyxO+MgzbfkxpQ8fHGvfZoy7g
+         XHekF3rxTSJ3Qyrz+zDkDHSByVYVSQZSED0oxRY5U7ctZId+q28MDNDk6vIica72nwVM
+         qbXkJ4EdcFxdkbAVtyBierUNnjmiBa54OweCI=
+Message-ID: <48f7fe350901091221m921b63ejdd8627f04c23308c@mail.gmail.com>
+Date: Fri, 9 Jan 2009 15:21:59 -0500
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH 0/7] V3 of the async function call patches
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20090107151151.458333c1@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20090107151151.458333c1@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-09 at 08:28 -0800, Linus Torvalds wrote:
-> 
-> We get oopses that have a nice symbolic back-trace, and it reports an 
-> error IN TOTALLY THE WRONG FUNCTION, because gcc "helpfully" inlined 
-> things to the point that only an expert can realize "oh, the bug was 
-> actually five hundred lines up, in that other function that was just 
-> called once, so gcc inlined it even though it is huge".
-> 
-> See? THIS is the problem with gcc heuristics. It's not about quality of 
-> code, it's about RELIABILITY of code. 
+I just wanted to say that because of these patches the kernel boots
+faster than some hard drives can spin up/init... I have these patches
+included in a patchset I maintain some users now need rootwait in the
+kernel command line :D
 
-[bt]$ cat backtrace.c 
-#include <stdlib.h>
+-Ryan
 
-static void called_once()
-{
-	abort();
-}
-
-int main(int argc, char* argv[])
-{
-	called_once();
-	return 0;
-}
-[bt]$ gcc -Wall -O2 -g backtrace.c -o backtrace
-[bt]$ gdb --quiet backtrace
-(gdb) disassemble main 
-Dump of assembler code for function main:
-0x00000000004004d0 <main+0>:	sub    $0x8,%rsp
-0x00000000004004d4 <called_once+0>:	callq  0x4003b8 <abort@plt>
-End of assembler dump.
-(gdb) run
-Starting program: /home/nicholas/src/bitbucket/bt/backtrace 
-
-Program received signal SIGABRT, Aborted.
-0x0000003d9dc32f05 in raise (sig=<value optimized out>) at ../nptl/sysdeps/unix/sysv/linux/raise.c:64
-64	  return INLINE_SYSCALL (tgkill, 3, pid, selftid, sig);
-(gdb) bt
-#0  0x0000003d9dc32f05 in raise (sig=<value optimized out>) at ../nptl/sysdeps/unix/sysv/linux/raise.c:64
-#1  0x0000003d9dc34a73 in abort () at abort.c:88
-#2  0x00000000004004d9 in called_once () at backtrace.c:5
-#3  main (argc=3989, argv=0xf95) at backtrace.c:10
-(gdb)
-
-
-Maybe the kernel's backtrace code should be fixed instead of blaming
-gcc.
-
--- 
-Nicholas Miell <nmiell@comcast.net>
-
+On 1/7/09, Arjan van de Ven <arjan@infradead.org> wrote:
+> version 3 of the async function call patches
+>
+> * Dropped the ACPI part; it broke i surprising ways; needs a rethink
+>   (working with Len and co on that)
+> * Included asynchronous delete()
+>
+>
+> There is still no integration with the out of tree slow-work patch;
+> the slow-work patch does really weird things with refcounts that make it
+> really specific to cachefs and, frankly, I think it's a rather
+> weird design.
+>
+> The overlap is maybe 200 lines of code at most, of which 100+ would
+> need to be added just to deal with the various weirdnesses. I really
+> don't think this is a good idea or a fair requirement on the async
+> function call patch series.
+>
+> The following changes since commit 8903709b054a8dafe4e8c6d9a6444034d7aba36f:
+>   Harvey Harrison (1):
+>         xtensa: introduce swab.h
+>
+> are available in the git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-async.git
+> master
+>
+> Arjan van de Ven (7):
+>       async: Asynchronous function calls to speed up kernel boot
+>       fastboot: make scsi probes asynchronous
+>       fastboot: make the libata port scan asynchronous
+>       fastboot: Make libata initialization even more async
+>       async: make the final inode deletion an asynchronous event
+>       bootchart: improve output based on Dave Jones' feedback
+>       async: don't do the initcall stuff post boot
+>
+>  drivers/ata/libata-core.c |   96 +++++++-------
+>  drivers/scsi/scsi_scan.c  |    3 +
+>  drivers/scsi/sd.c         |  109 ++++++++++------
+>  fs/inode.c                |   20 ++-
+>  fs/super.c                |   10 ++
+>  include/linux/async.h     |   25 ++++
+>  include/linux/fs.h        |    5 +
+>  init/do_mounts.c          |    2 +
+>  init/main.c               |    5 +-
+>  kernel/Makefile           |    3 +-
+>  kernel/async.c            |  321
+> +++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/irq/autoprobe.c    |    5 +
+>  kernel/module.c           |    2 +
+>  scripts/bootgraph.pl      |   16 ++-
+>  14 files changed, 521 insertions(+), 101 deletions(-)
+>  create mode 100644 include/linux/async.h
+>  create mode 100644 kernel/async.c
+>
+>
+> --
+> Arjan van de Ven 	Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
