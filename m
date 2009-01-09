@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZAIPHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZAIPIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZAIPHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 10:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZAIPHS
+	id S1754143AbZAIPIN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 10:08:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZAIPHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 10:07:18 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49922 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752543AbZAIPHQ (ORCPT
+	Fri, 9 Jan 2009 10:07:37 -0500
+Received: from 201-217-static-ppp.3menatwork.com ([64.235.217.201]:45158 "EHLO
+	server.hugovil.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754026AbZAIPHg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 10:07:16 -0500
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Mason <chris.mason@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <1231498062.11687.608.camel@twins>
-References: <1231441350.14304.48.camel@think.oraclecorp.com>
-	 <alpine.LFD.2.00.0901081140550.3283@localhost.localdomain>
-	 <1231498062.11687.608.camel@twins>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 09 Jan 2009 16:06:54 +0100
-Message-Id: <1231513614.442.11.camel@twins>
+	Fri, 9 Jan 2009 10:07:36 -0500
+Date: Fri, 9 Jan 2009 10:07:25 -0500
+From: Hugo Villeneuve <hugo@hugovil.com>
+To: "Thiago Galesi" <thiagogalesi@gmail.com>
+Cc: "Florian Fainelli" <florian@openwrt.org>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+Subject: Re: FPGA programming driver architecture
+Message-Id: <20090109100725.77a07e74.hugo@hugovil.com>
+In-Reply-To: <82ecf08e0901081414u15af3c2dy9c88a242db024dc7@mail.gmail.com>
+References: <20081212150314.6ea24996.hugo@hugovil.com>
+	<200812131358.03010.florian@openwrt.org>
+	<20090108151827.72f50cee.hugo@hugovil.com>
+	<82ecf08e0901081414u15af3c2dy9c88a242db024dc7@mail.gmail.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Default is to whitelist mail, not delayed by milter-greylist-3.0 (server.hugovil.com [64.235.217.201]); Fri, 09 Jan 2009 10:07:28 -0500 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-09 at 11:47 +0100, Peter Zijlstra wrote:
+On Thu, 8 Jan 2009 20:14:36 -0200
+"Thiago Galesi" <thiagogalesi@gmail.com> wrote:
 
-> > So I think the bug is still there, we just hid it better by breaking out 
-> > of the loop with that "if (need_resched())" always eventually triggering. 
-> > And it would be ok if it really is guaranteed to _eventually_ trigger, and 
-> > I guess with timeslices it eventually always will, but I suspect we could 
-> > have some serious latency spikes.
+> > > > Hi,
+> > > > I have written some code to program a FPGA in Linux, for two
+> > > > different types of boards: one uses a serial interface (SPI) and
+> > > > the second a parallel interface. I have been able to sucessfully
+> > > > program both boards. I'm now trying to clean my code and make it
+> > > > more generic, as well as better in line with the Linux driver
+> > > > model.
 > 
-> Yes, the owner getting preempted after acquiring the lock, but before
-> setting the owner can give some nasties :-(
+> Considering the several FPGA models available and ways to program it,
+> I guess the important thing to consider is what can be made generic.
+> (that is what will become fpgaload)
+
+I have a pretty good idea of what goes into the core and
+what goes into the specific interface modules (spi, parallel, etc).
+
+> Also, there may be cases where after FPGA is programmed it "becomes a
+> device" (PCI or whatever)
+
+This is exactly the case for my board, but it doesn´t change anything
+to the programming side of things, apart for the fact that the FPGA
+must be configured before using any in-FPGA PCI bus for example.
+
+> > > - fpgaload-core which contains all the code that can be shared
+> > > between the drivers like requesting firmware, providing sysfs
+> > > attributes,
+> > > - fpgaload-spi would handle the low-level SPI connection
+> > > - fpgaload-par would handle the low-level parallel connection
 > 
-> I initially did that preempt_disable/enable around the fast path, but I
-> agree that slowing down the fast path is unwelcome.
+> I think this maybe split into three layers (maybe)
 > 
-> Alternatively we could go back to block on !owner, with the added
-> complexity of not breaking out of the spin on lock->owner != owner
-> when !lock->owner, so that the premature owner clearing of the unlock
-> fast path will not force a schedule right before we get a chance to
-> acquire the lock.
+> 1 - low level connection: paralell / spi / i2c / whatever
+> 2 - vendor: xylinx, altera, etc
+> 3 - generic stuff
 > 
-> Let me do that..
+> Take a look at the MTD and SPI drivers and how they split things
 
-Ok a few observations..
+I think that for the moment, I will focus on implementing the core
+module and the parallel/SPI interfaces only. Later we may want to add
+more fonctionality (vendors, JTAG, etc).
 
-Adding that need_resched() in the outer loop utterly destroys the
-performance gain for PREEMPT=y. Voluntary preemption is mostly good, but
-somewhat unstable results.
+But for now, my main problem is that I need to have some insight on how
+I actually implement the different modules:
 
-Adding that blocking on !owner utterly destroys everything.
+Bus driver?
+class driver?
+platform driver?
 
-Going to look into where that extra preemption comes from.
+Can anybody give some advice on that?
+
+Thank-you, Hugo.
+
+---------------
+Hugo Villeneuve
+www.hugovil.com
+---------------
