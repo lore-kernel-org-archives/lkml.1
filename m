@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbZAIVUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZAIVWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525AbZAIVUz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:20:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZAIVUq
+	id S1757304AbZAIVWJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZAIVV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:20:46 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43674 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbZAIVUp (ORCPT
+	Fri, 9 Jan 2009 16:21:56 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47246 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753028AbZAIVVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:20:45 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4967BF99.7010507@s5r6.in-berlin.de>
-Date: Fri, 09 Jan 2009 22:20:25 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Jay Fenlason <fenlason@redhat.com>
-Subject: Re: post 2.6.28 regression: device_initialize() now sleeps, and	may
- fail without recovery strategy
-References: <496798FE.8030900@s5r6.in-berlin.de> <20090109205633.GB19904@suse.de> <4967BE13.6070003@s5r6.in-berlin.de>
-In-Reply-To: <4967BE13.6070003@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 9 Jan 2009 16:21:55 -0500
+Date: Fri, 9 Jan 2009 21:22:01 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: Partially defer some of the async stuff to the next release
+Message-ID: <20090109212201.780c52d0@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.0901091241470.6528@localhost.localdomain>
+References: <20090109070910.233e5f3c@infradead.org>
+	<alpine.LFD.2.00.0901091241470.6528@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Greg KH wrote:
->> I originally looked at changing this to be at device_add time, but I
->> think there are some code paths that do device_initialize and then do
->> some operations on the device before calling device_add.
-> 
-> get_device() and put_device() seem to be about the only things that are
-> interesting before device_add().
-> 
-> Don't know if a final put_device() in this situation
+> Can we rather make this something that people can enable with a "fastboot" 
+> option and is disabled by default? At least that way the ATA people can 
+> see the problem, and don't just forget about it, since we want it fixed.
 
-...would require dev->p to be present.
--- 
-Stefan Richter
--=====-==--= ---= -=--=
-http://arcgraph.de/sr/
+Makes some sense - although the inode one should just take a hike at this
+point. Can the fastboot option live under staging perhaps - its analogous
+to staging drivers although clearly the code doesn't go there in this
+case ?
+
+The trouble otherwise is "fast boot" sounds like something good for
+people to turn on, but right now it's the reverse.
+
+Alan
