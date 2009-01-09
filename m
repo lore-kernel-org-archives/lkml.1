@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZAIIyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZAIJA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbZAIIyq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 03:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZAIIyg
+	id S1755675AbZAIJA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 04:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZAIJAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 03:54:36 -0500
-Received: from mga14.intel.com ([143.182.124.37]:12785 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbZAIIyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 03:54:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,235,1231142400"; 
-   d="asc'?scan'208";a="655783087"
-Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
-	instructions for x86_64 platform
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090109070144.GA7358@gondor.apana.org.au>
-References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
-	 <20090109070144.GA7358@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-uxBaHU/ZfddHsHge4Oxp"
-Date: Fri, 09 Jan 2009 16:54:33 +0800
-Message-Id: <1231491273.5937.94.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 9 Jan 2009 04:00:19 -0500
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33399 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753656AbZAIJAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 04:00:18 -0500
+Message-ID: <40547.166.70.238.44.1231488906.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20090109084540.GH5038@1wt.eu>
+References: <40416.166.70.238.44.1231467823.squirrel@webmail.wolfmountaingroup.com>
+    <20090109064658.GG5038@1wt.eu>
+    <37611.166.70.238.44.1231486566.squirrel@webmail.wolfmountaingroup.com>
+    <20090109084540.GH5038@1wt.eu>
+Date: Fri, 9 Jan 2009 01:15:06 -0700 (MST)
+Subject: Re: [ANNOUNCE] Kernel Blocking Firewall
+From: jmerkey@wolfmountaingroup.com
+To: "Willy Tarreau" <w@1wt.eu>
+Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-uxBaHU/ZfddHsHge4Oxp
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+... snip
 
-On Fri, 2009-01-09 at 15:01 +0800, Herbert Xu wrote:
-> > - ablkcipher asynchronous machanism is used to delay a crypto request
-> >   to work queue context upon FPU state is using by other kernel
-> >   context.
->=20
-> Actually I was thinking of something as simple as just using
-> cryptd as is.  That is, register a blkcipher algorithm for your
-> version of cbc-aes, but don't register under the name cbc(aes),
-> e.g., register it under the name of __cbc-aes-aesni for both alg
-> name and driver name.  You can register it under cbc(aes) too
-> if you add the fallback in there.
->=20
-> Then for the real thing, just allocate the blkcipher __cbc_*,
-> plus the ablkcipher cryptd(__cbc_*), and invoke the right one
-> depending on caller context.
+> ipset runs in kernel too, you just add/remove entries from userspace
+> without having to touch all other ones. It has no problem storing one
+> million addresses and doing fast lookups on them.
+>
+> I'm not dismissing your work, I just think it's a duplicate effort.
+>
+> Also, since you're speaking about botnets, you should support automatic
+> expiration of those addresses, because almost all those addresses are
+> dynamic and will match a bot for a small amount of time, then match a
+> normal non-infected user. One of the reasons you found 500k addresses
+> might very well be because each bot appears one hundred times at different
+> addresses.
+>
+> Willy
+>
+>
 
-I have ever considered this method too. This one is simpler, but the
-drawbacks are as follow:
+You should go and look at the code, 1) the window of addresses cached in
+memory is designed to act as an LRU windows for the addresses stored in
+the database to use less memory, so no, the in-memory only ip tables is
+primitive in comparison 2) the database can just keep growing ad growing
+3) the code I posted also loads the database if the system reboots, so
+your applications remember all those botnet addresses 4) their is the
+ability to set a timer to expire and recycle the oldest addresses (while
+still remembering all of them).
 
-- cryptd thread is not per-CPU, so I think there will be some
-unnecessary cache inter-CPU migration. Why not use a dedicate workqueue
-or just system events workqueue?
+>From my experience with dealing with these systems, and observation of how
+RBL databases work, when an infected system gets blacklisted, it stays
+that way until the user goes to the websites and requests removal.  I have
+found these zombie systems tend to stay that way, and no, by default you
+NEVER want to unblock them for at least 6 months.
 
-- with cryptd(__*-aes-aesni), we need 4 internal tfms for each external
-tfm allocation request. For example, for one external cbc(aes) tfm
-allocation request, we need one cbc(aes) ablkcipher tfm, one
-cryptd(cbc-aes-aesni) tfm, and two cbc-aes-aesni tfm. Do we use too much
-memory? And we need to call aesni_set_key() twice.
-
-> This is even simpler for the modes which you don't implement.
-> In that case you would just allocate FOO(aes-aesni) in conjunction
-> with cryptd(FOO(aes-aesni)).
-
-Yes. This is really a simple method.
-
-Best Regards,
-Huang Ying
+Jeff
 
 
---=-uxBaHU/ZfddHsHge4Oxp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklnEMYACgkQKhFGF+eHlpiVxACfUxMAPWcVA4Hg7Rhv+mK4abrN
-DcMAn1croaIo93RUI//yKGBOIkWpnBg6
-=l1VE
------END PGP SIGNATURE-----
-
---=-uxBaHU/ZfddHsHge4Oxp--
 
