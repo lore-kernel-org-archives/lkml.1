@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZAIBy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbZAIB4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753263AbZAIBy2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 20:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZAIByS
+	id S1753547AbZAIB4k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 20:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZAIB4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 20:54:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44106 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751766AbZAIByR (ORCPT
+	Thu, 8 Jan 2009 20:56:32 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45940 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbZAIB4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 20:54:17 -0500
-Date: Thu, 8 Jan 2009 17:53:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Message-Id: <20090108175338.2abbee16.akpm@linux-foundation.org>
-In-Reply-To: <20090108165029.GA10951@infradead.org>
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
-	<20090108165029.GA10951@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Jan 2009 20:56:32 -0500
+Date: Thu, 8 Jan 2009 20:56:29 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, pq@iki.fi,
+       srostedt@redhat.com
+Subject: Re: [PATCH 3/3] mmiotrace: count events lost due to not recording
+In-Reply-To: <20090108171048.5e138f8d.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0901082054000.18713@gandalf.stny.rr.com>
+References: <20090109002747.240318148@goodmis.org> <20090109002840.800960698@goodmis.org> <20090108171048.5e138f8d.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009 11:50:29 -0500 Christoph Hellwig <hch@infradead.org> wrote:
 
-> On Thu, Jan 08, 2009 at 04:48:51PM +0000, Phillip Lougher wrote:
-> > Please consider pulling my linux-next branch
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git
-> > 
-> > The patches have been posted to LKML and linux-fsdevel over the last
-> > couple of months and have been reviewed and changed as requested.
-> > Diffstat below.
-> > 
-> > Squashfs is a compressed read-only filesystem. It compresses metadata
-> > and data, and uses up to 1 MiB block sizes for greater compression.
+On Thu, 8 Jan 2009, Andrew Morton wrote:
 > 
-> That seems pretty fast for something only posted this week and not
-> even in -next.
+> y:/usr/src/linux-2.6.28> grep -r "atomic_t.*=.*ATOMIC_INIT" . | wc -l
+> 110
+> 
+> become cleanup fodder.
 
-I discussed this with Phillip a bit, and it looks like we'll go for a
-2.6.21 merge.  This gives a couple of months for testing and review in
-linux-next.
 
-Of course, this assumes that someone will actually perform that testing
-and review.  Chances are that it'll just sit there, getting nothing more
-than compilation testing.
+[linus.git]$ git grep "atomic_t.*=.*ATOMIC_INIT([^0]" |wc -l
+13
+[linus.git]$ git grep "atomic_t.*=.*ATOMIC_INIT(0" |wc -l
+104
+[linus.git]$ git grep "atomic_t.*=.*ATOMIC_INIT" |wc -l
+117
 
-Apparently I reviewed the code a while back - that grey cell must have
-died.  Does anyone else intend to review the code in that timeframe? 
-If not, we might as well merge it now, if ever..
+OK, in current linus.git we have 117 atomic_t using ATOMIC_INIT, where 13 
+actually need the init (non zero). But 104 need to be cleaned up ;-)
+
+-- Steve
 
