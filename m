@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZAIQoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbZAIQpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbZAIQoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbZAIQoo
+	id S1754103AbZAIQpj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZAIQpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:44:44 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:35421 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbZAIQon (ORCPT
+	Fri, 9 Jan 2009 11:45:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34149 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752362AbZAIQpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:44:43 -0500
-Date: Fri, 9 Jan 2009 11:44:40 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
-       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+	Fri, 9 Jan 2009 11:45:24 -0500
+Date: Fri, 9 Jan 2009 08:44:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
@@ -25,12 +27,13 @@ cc: Peter Zijlstra <peterz@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
        Peter Morreale <pmorreale@novell.com>,
        Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <alpine.LFD.2.00.0901090828510.6528@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0901091142060.17378@gandalf.stny.rr.com>
-References: <1231441350.14304.48.camel@think.oraclecorp.com>  <alpine.LFD.2.00.0901081140550.3283@localhost.localdomain>  <1231498062.11687.608.camel@twins> <1231513614.442.11.camel@twins> <alpine.DEB.1.10.0901091051591.17378@gandalf.stny.rr.com>
- <alpine.LFD.2.00.0901090828510.6528@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+In-Reply-To: <49677CB1.3030701@zytor.com>
+Message-ID: <alpine.LFD.2.00.0901090843300.6528@localhost.localdomain>
+References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
+ <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,37 +41,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 9 Jan 2009, Linus Torvalds wrote:
 
+On Fri, 9 Jan 2009, H. Peter Anvin wrote:
+> As far as naming is concerned, gcc effectively supports four levels,
+> which *currently* map onto macros as follows:
 > 
+> __always_inline		Inline unconditionally
+> inline			Inlining hint
+> <nothing>		Standard heuristics
+> noinline		Uninline unconditionally
 > 
-> On Fri, 9 Jan 2009, Steven Rostedt wrote:
-> > 
-> > I was going to say a while ago...
-> > In PREEMPT=y the need_resched() is not needed at all. If you have 
-> > preemption enabled, you will get preempted in that loop. No need for the 
-> > need_resched() in the outer loop. Although I'm not sure how it would even 
-> > hit the "need_resched". If it was set, then it is most likely going to be 
-> > cleared when coming back from being preempted.
-> 
-> No, no, you miss the point entirely.
+> A lot of noise is being made about the naming of the levels
 
-No I did not miss your point. I was commenting on the current code ;-)
+The biggest problem is the <nothing>. 
 
-> So quite frankly, if you have CONFIG_PREEMPT, then the spinning really is 
-> the wrong thing to do, or the whole mutex slow-path thing should be done 
-> with preemption disabled so that we only schedule where we _should_ be 
-> scheduling.
+The standard heuristics for that are broken, in particular for the "single 
+call-site static function" case.
 
-I agree here. I was going to recommend to add a preempt_disable in the 
-spinner. And keep the need_resched test. Then we should not allow 
-preemption until we get all the way to the point of the schedule in the 
-contention case, or when we get the lock.
+If gcc only inlined truly trivial functions for that case, I'd already be 
+much happier. Size be damned.
 
-When we get to the schedule() it then needs to be a:
-
-	preempt_enable_no_resched();
-	schedule();
-
--- Steve
-
+			Linus
