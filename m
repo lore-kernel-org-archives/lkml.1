@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbZAIRcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZAIRdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbZAIRcY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 12:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZAIRcM
+	id S1754293AbZAIRdW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 12:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZAIRdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 12:32:12 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49712 "EHLO
+	Fri, 9 Jan 2009 12:33:09 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49723 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752327AbZAIRcL (ORCPT
+	with ESMTP id S1752327AbZAIRdG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 12:32:11 -0500
-Date: Fri, 9 Jan 2009 18:46:22 +0100
+	Fri, 9 Jan 2009 12:33:06 -0500
+Date: Fri, 9 Jan 2009 18:47:19 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
 Cc: Andi Kleen <andi@firstfloor.org>, Dirk Hohndel <hohndel@infradead.org>,
        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
+       jim owens <jowens@hp.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Gregory Haskins <ghaskins@novell.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
@@ -27,40 +29,35 @@ Cc: Andi Kleen <andi@firstfloor.org>, Dirk Hohndel <hohndel@infradead.org>,
        Peter Morreale <pmorreale@novell.com>,
        Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
 Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109174622.GF26290@one.firstfloor.org>
-References: <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <alpine.LFD.2.00.0901090909080.6528@localhost.localdomain>
+Message-ID: <20090109174719.GG26290@one.firstfloor.org>
+References: <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901090909080.6528@localhost.localdomain>
+In-Reply-To: <20090109172801.GC6936@parisc-linux.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 09:11:47AM -0800, Linus Torvalds wrote:
-> IIRC, the numbers mean different things for different versions of gcc, and 
-> I think using the parameters was very strongly discouraged by gcc 
-> developers. IOW, they were meant for gcc developers internal tuning 
-> efforts, not really for external people. Which means that using them would 
+On Fri, Jan 09, 2009 at 10:28:01AM -0700, Matthew Wilcox wrote:
+> On Fri, Jan 09, 2009 at 06:20:11PM +0100, Andi Kleen wrote:
+> > Also cc Honza in case he has comments (you might want
+> > to review more of the thread in the archives) 
+> 
+> I think this particular bug is already known and discussed:
 
-When I asked last time that was not what I heard. Apparently at least
-some --params are considered ready for user consumption these days.
+I thought so initially too, but:
 
-> put us _more_ at the mercy of random compiler versions rather than less.
+> 
+> http://gcc.gnu.org/ml/gcc/2008-12/msg00365.html
+> 
+> and it hints at being fixed with gcc 4.4.  Does anyone want to test
+> that?
 
-Yes it would basically be a list in the Makefile keyed on compiler
-version giving different options and someone would need to do 
-the work to do that for each new compiler version.
-
-That would be some work, but it might be less work than going
-all over 9.7MLOCs and changing inlines around manually.
-Also the advantage is that that you wouldn't need to teach
-the rules to hundreds of new driver programmers.
-
-Anyways I'm not very strongly wedded to this idea, but I think
-it's an alternative that should be at least considered before
-doing anything else drastic.
+Hugh already tested with 4.4 and it didn't work well. At least
+a lot of the low level asm inlines were not inlined.
+So it looks like it's still mistuned for the kernel.
 
 -Andi
 
