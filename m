@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbZAIR2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZAIRaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbZAIR2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 12:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZAIR2F
+	id S1753727AbZAIRaz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 12:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZAIRao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 12:28:05 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:46494 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbZAIR2E (ORCPT
+	Fri, 9 Jan 2009 12:30:44 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:38349 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752708AbZAIRan (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 12:28:04 -0500
-Date: Fri, 9 Jan 2009 10:28:01 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Dirk Hohndel <hohndel@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109172801.GC6936@parisc-linux.org>
-References: <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org>
+	Fri, 9 Jan 2009 12:30:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=soINUG90/F2IP0X4pbGRweEsBki7JmGQIVLKWPR+YCkHcPbUVWp01k/W7oXDlh97NN
+         wgK0aQFomVP+cadY5dJqLDYzYuBMFOnN82h5IjBM2JX0JQ+alr5Qc7/+JCD7DlGsxWjf
+         f1md7++ET9ygVQGkoivTcu9Vfv1dfPELgullU=
+Message-ID: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
+Date: Fri, 9 Jan 2009 18:30:40 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
+Cc: jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, dwmw2@infradead.org
+In-Reply-To: <20090108.125331.03608787.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090109172011.GD26290@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <5a4c581d0901070624t6e769966t6b034b14d4732bd@mail.gmail.com>
+	 <3f9a31f40901072212x41e405fh7e36f6adb927814b@mail.gmail.com>
+	 <5a4c581d0901081233y6b546167sbe3ed9f2ea37f1f9@mail.gmail.com>
+	 <20090108.125331.03608787.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 06:20:11PM +0100, Andi Kleen wrote:
-> Also cc Honza in case he has comments (you might want
-> to review more of the thread in the archives) 
+On Thu, Jan 8, 2009 at 9:53 PM, David Miller <davem@davemloft.net> wrote:
+> From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+> Date: Thu, 8 Jan 2009 21:33:35 +0100
+>
+>> On Thu, Jan 8, 2009 at 7:12 AM, Jaswinder Singh Rajput
+>> <jaswinderlinux@gmail.com> wrote:
+>> > Hello alessandro,
+>> >
+>> > On Wed, Jan 7, 2009 at 7:54 PM, Alessandro Suardi
+>> > <alessandro.suardi@gmail.com> wrote:
+>> >>
+>> >> Note that I don't have CONFIG_FIRMWARE_IN_KERNEL, but on
+>> >>  the other hand I didn't earlier, either... and yes, CONFIG_MODULES=y.
+>> >>
+>> >
+>> > Please try with CONFIG_FIRMWARE_IN_KERNEL , is this makes some difference.
+>>
+>> Yes it does, thank you - 2.6.28-git11 with CONFIG_FIRMWARE_IN_KERNEL
+>>  gets my tg3 back to work on boot. Must be a requirement since -git8 then ?
+>
+> It is if you don't have the tg3 firmware files in your filesystem
+> already.
 
-I think this particular bug is already known and discussed:
+As I mentioned in the original email to LKML about -git8, and in
+ the first CC to netdev about -git10, I appear to have these files
+ in /lib/firmware/tigon. I save every single .config file I used in the
+ last, what, four years ?
 
-http://gcc.gnu.org/ml/gcc/2008-12/msg00365.html
+.config-2.6.28-git10:# CONFIG_FIRMWARE_IN_KERNEL is not set
+.config-2.6.28-git11:CONFIG_FIRMWARE_IN_KERNEL=y
+.config-2.6.28-git2:# CONFIG_FIRMWARE_IN_KERNEL is not set
+.config-2.6.28-git3:# CONFIG_FIRMWARE_IN_KERNEL is not set
+.config-2.6.28-git4:# CONFIG_FIRMWARE_IN_KERNEL is not set
+.config-2.6.28-git5:# CONFIG_FIRMWARE_IN_KERNEL is not set
+.config-2.6.28-git6:# CONFIG_FIRMWARE_IN_KERNEL is not set
+.config-2.6.28-git7:# CONFIG_FIRMWARE_IN_KERNEL is not set
+.config-2.6.28-git8:# CONFIG_FIRMWARE_IN_KERNEL is not set
 
-and it hints at being fixed with gcc 4.4.  Does anyone want to test
-that?
+-git-2 through -git-7 work
+-git8 and -git10 don't work
+-git11 works
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Clearly the requirement changed in -git8, AFAICS.
+
+thanks,
+
+--alessandro
+
+ "Sun keeps rising in the west / I keep on waking fully confused"
+
+   (The Replacements, "Within Your Reach")
