@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZAICii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbZAICkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZAICii (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 21:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZAICia
+	id S1755418AbZAICkc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 21:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZAICkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 21:38:30 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:50341 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbZAICi3 (ORCPT
+	Thu, 8 Jan 2009 21:40:12 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:44770 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbZAICkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 21:38:29 -0500
-Date: Fri, 9 Jan 2009 11:34:58 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       balbir@linux.vnet.ibm.com, menage@google.com
-Subject: Re: [RFC][PATCH 1/4] memcg: fix for
- mem_cgroup_get_reclaim_stat_from_page
-Message-Id: <20090109113458.d9a1320d.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090109100531.03cd998f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp>
-	<20090108191430.af89e037.nishimura@mxp.nes.nec.co.jp>
-	<4966A117.9030201@cn.fujitsu.com>
-	<20090109100531.03cd998f.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Jan 2009 21:40:11 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	content-type:content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=bUi3te1R9/2ktf/WPK5ZUgwVnB+hCzPpqW9C4i8B4q7aQXSNbkHlCMsyaZplIDuKm
+	4uxyZkdGAPtwq54AHJ9Sw==
+MIME-Version: 1.0
+In-Reply-To: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
+References: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
+Date: Thu, 8 Jan 2009 18:40:04 -0800
+Message-ID: <604427e00901081840pa6dcc41u9a7a5c69302c7b60@mail.gmail.com>
+Subject: Re: [PATCH]Fix: 32bit binary has 64bit address of stack vma
+From: Ying Han <yinghan@google.com>
+To: linux-mm <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Mike Waychison <mikew@google.com>, Rohit Seth <rohitseth@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.141
+X-GMailtapped: yinghan
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 10:05:31 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Fri, 09 Jan 2009 08:57:59 +0800
-> Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> > > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > > index e2996b8..62e69d8 100644
-> > > --- a/mm/memcontrol.c
-> > > +++ b/mm/memcontrol.c
-> > > @@ -559,6 +559,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
-> > >  		return NULL;
-> > >  
-> > >  	pc = lookup_page_cgroup(page);
-> > > +	smp_rmb();
-> > 
-> > It is better to add a comment to explain this smp_rmb. I think it's recommended
-> > that every memory barrier has a comment.
-> > 
-> Ah, yes. good point.
-> 
-> Maybe text like this
-> /*
->  * Used bit is set without atomic ops but after smp_wmb().
->  * For making pc->mem_cgroup visible, insert smp_rmb() here.
->  */
-> 
-OK. I'll add this comment.
-
-BTW, mem_cgroup_rotate_lru_list and mem_cgroup_add_lru_list have similar code.
-(mem_cgroup_add_lru_list has some comment already.)
-Should I update them too ?
-
-
-Thanks,
-Daisuke Nishimura.
+On Mon, Jan 5, 2009 at 3:39 PM, Ying Han <yinghan@google.com> wrote:
+> From: Ying Han <yinghan@google.com>
+>
+> Fix 32bit binary get 64bit stack vma offset.
+>
+> 32bit binary running on 64bit system, the /proc/pid/maps shows for the
+> vma represents stack get a 64bit adress:
+> ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
+>
+> Signed-off-by:  Ying Han <yinghan@google.com>
+>
+> fs/exec.c                     |    5 +-
+>
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 4e834f1..8c3eff4 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -517,6 +517,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
+>        unsigned long length = old_end - old_start;
+>        unsigned long new_start = old_start - shift;
+>        unsigned long new_end = old_end - shift;
+> +       unsigned long new_pgoff = new_start >> PAGE_SHIFT;
+>        struct mmu_gather *tlb;
+>
+>        BUG_ON(new_start > new_end);
+> @@ -531,7 +532,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
+>        /*
+>         * cover the whole range: [new_start, old_end)
+>         */
+> -       vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
+> +       vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
+>
+>        /*
+>         * move the page tables downwards, on failure we rely on
+> @@ -564,7 +565,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
+>        /*
+>         * shrink the vma to just the new range.
+>         */
+> -       vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
+> +       vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
+>
+>        return 0;
+>  }
+>
