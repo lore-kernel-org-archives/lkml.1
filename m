@@ -1,100 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbZAIWZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbZAIW0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759295AbZAIWZm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756884AbZAIWZX
+	id S932306AbZAIW0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbZAIWZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:25:23 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:34678 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757888AbZAIWZV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:25:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=BwGqIY88SNAo1fj7PlxkMkudTm+Br+o74kPaV0fGfMlyec8oADnwAvvxKYMCy1J9oE
-         0e1dmWwfbuZ/cYF7RzUHr3RC+1h3DsjAU7KkmPpLvYjWp6UL4B4X21XLBQGHu1rJkE5S
-         f7tFEphX+A6B5XS7ngI+4GV6SBe8kOW8Zya4I=
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <alpine.LFD.2.00.0901091404150.6528@localhost.localdomain>
-References: <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
-	 <1231434515.14304.27.camel@think.oraclecorp.com>
-	 <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
-	 <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org>
-	 <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>
-	 <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>
-	 <20090109204103.GA17212@elte.hu>
-	 <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>
-	 <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick>
-	 <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain>
-	 <1231538387.5825.2.camel@brick>
-	 <alpine.LFD.2.00.0901091404150.6528@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 09 Jan 2009 14:25:18 -0800
-Message-Id: <1231539918.5825.7.camel@brick>
+	Fri, 9 Jan 2009 17:25:57 -0500
+Received: from mga01.intel.com ([192.55.52.88]:26425 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758245AbZAIWZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:25:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,241,1231142400"; 
+   d="scan'208";a="655911097"
+Date: Fri, 9 Jan 2009 14:25:53 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Daniel.Beschorner@facton.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       spender@grsecurity.net, pageexec@freemail.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: hwinfo problem since 2.6.28
+Message-ID: <20090109222552.GB6472@linux-os.sc.intel.com>
+References: <20090108015424.e9443521.akpm@linux-foundation.org> <20090108112543.GA25606@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090108112543.GA25606@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-09 at 14:09 -0800, Linus Torvalds wrote:
-> Actually, the nice part about "inline_hint" would be that then we could 
-> have some nice config option like
-> 
->   #ifdef CONFIG_FULL_CALL_TRACE
->    #define inline_hint noinline
->   #elif defined(CONFIG_TRUST_COMPILER)
->    #define inline_hint /* */
->   #else
->    #define inline_hint __inline
->   #endif
-> 
-> and now the _only_ thing we need to do is to remove the
-> 
-> 	#define __inline	__force_inline
-> 
-> thing, and just agree that "__inline" is the "native compiler meaning". 
-> 
-> We have a few users of "__inline", but not very many. We can leave them 
-> alone, or just convert them to __inline__ or inline.
-> 
+> > Date: Tue, 6 Jan 2009 09:53:14 +0100
+> > From: "Beschorner Daniel" <Daniel.Beschorner@facton.com>
+> > To: <linux-kernel@vger.kernel.org>
+> > Subject: hwinfo problem since 2.6.28
+> > 
+> > 
+> > Since 2.6.28 my hwinfo tool crashes badly on 2 years old OpenSuSE 10.2
+> > x64/SMP.
+> > Older kernels run fine, I did a "make oldconfig" and rather used
+> > defaults (just skipping low-64k checks).
+> > This seems to be the only affected binary as far I can see.
+> > Did I miss a new legacy/compat option or is it a bug?
+> > 
+> > Thank you!
+> > Daniel
+> > 
+> > hwinfo: Corrupted page table at address 7fd04de3ec00
+> > PGD 7dc33067 PUD 3efe067 PMD 27b83067 PTE fffffffffffffbff
+> > Bad pagetable: 000d [#9] SMP
 
-Oh yeah, and figure out what actually breaks on alpha such that they added
-the following (arch/alpha/include/asm/compiler.h)
+Daniel, Can you please check and ack if the appended patch fixes this
+page table corruption issue? We tried to reproduce your issue
+locally here but didn't succeed because of different hwinfo versions.
 
-#ifdef __KERNEL__
-/* Some idiots over in <linux/compiler.h> thought inline should imply
-   always_inline.  This breaks stuff.  We'll include this file whenever
-   we run into such problems.  */
+thanks,
+suresh
+---
 
-#include <linux/compiler.h>
-#undef inline
-#undef __inline__
-#undef __inline
-#undef __always_inline
-#define __always_inline		inline __attribute__((always_inline))
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x86: fix PTE corruption issue while mapping RAM using /dev/mem 
 
-#endif /* __KERNEL__ */
+Beschorner Daniel reported:
+> hwinfo problem since 2.6.28, showing this in the oops:
+> 	Corrupted page table at address 7fd04de3ec00
 
-Cheers,
+PaX Team reported a regression with this commit:
 
-Harvey
+>	commit 9542ada803198e6eba29d3289abb39ea82047b92
+>	Author: Suresh Siddha <suresh.b.siddha@intel.com>
+>	Date:   Wed Sep 24 08:53:33 2008 -0700
+>
+>	    x86: track memtype for RAM in page struct
 
+This commit breaks mapping any RAM page through /dev/mem, as the
+reserve_memtype() was not initializing the return attribute type and as such
+corrupting the PTE entry that was setup with the return attribute type.
+
+Because of this bug, application mapping this RAM page through /dev/mem
+will die with "Corrupted page table at address xxxx" message in the kernel
+log and also the kernel identity mapping which maps the underlying RAM
+page gets converted to UC.
+
+Fix this by initializing the return attribute type before calling
+reserve_ram_pages_type()
+
+Reported-and-bisected-by: PaX Team <pageexec@freemail.hu>
+Reported-by: Beschorner Daniel <Daniel.Beschorner@facton.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: <stable@kernel.org>
+---
+
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 85cbd3c..d52ba1a 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -333,6 +333,9 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 					      req_type & _PAGE_CACHE_MASK);
+ 	}
+ 
++	if (new_type)
++		*new_type = actual_type;
++
+ 	is_range_ram = pagerange_is_ram(start, end);
+ 	if (is_range_ram == 1)
+ 		return reserve_ram_pages_type(start, end, req_type, new_type);
+@@ -347,9 +350,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 	new->end	= end;
+ 	new->type	= actual_type;
+ 
+-	if (new_type)
+-		*new_type = actual_type;
+-
+ 	spin_lock(&memtype_lock);
+ 
+ 	if (cached_entry && start >= cached_start)
