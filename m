@@ -1,125 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbZAIWxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbZAIWyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760295AbZAIWxz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:53:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759436AbZAIWxi
+	id S1760348AbZAIWyb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbZAIWyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:53:38 -0500
-Received: from 1wt.eu ([62.212.114.60]:1366 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760211AbZAIWxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:53:35 -0500
-Date: Fri, 9 Jan 2009 23:53:09 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090109225309.GC4819@1wt.eu>
-References: <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu> <20090109220737.GA4111@1wt.eu> <4967CBB9.1060403@cosmosbay.com> <20090109221744.GA4819@1wt.eu> <4967D36E.6020207@cosmosbay.com>
+	Fri, 9 Jan 2009 17:54:17 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46234 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbZAIWyP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:54:15 -0500
+Date: Fri, 9 Jan 2009 14:55:29 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+Message-ID: <20090109145529.3264ac26@infradead.org>
+In-Reply-To: <4967D131.3010801@zytor.com>
+References: <49677CB1.3030701@zytor.com>
+	<20090109084620.3c711aad@infradead.org>
+	<20090109172011.GD26290@one.firstfloor.org>
+	<20090109172801.GC6936@parisc-linux.org>
+	<20090109174719.GG26290@one.firstfloor.org>
+	<20090109094142.367012b6@infradead.org>
+	<20090109180213.GH26290@one.firstfloor.org>
+	<alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
+	<20090109185509.GJ26290@one.firstfloor.org>
+	<20090109195232.GE23869@mit.edu>
+	<20090109224410.GQ26290@one.firstfloor.org>
+	<4967D131.3010801@zytor.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4967D36E.6020207@cosmosbay.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 11:45:02PM +0100, Eric Dumazet wrote:
-> Willy Tarreau a écrit :
-> > On Fri, Jan 09, 2009 at 11:12:09PM +0100, Eric Dumazet wrote:
-> >> Willy Tarreau a écrit :
-> >>> On Fri, Jan 09, 2009 at 10:24:00PM +0100, Willy Tarreau wrote:
-> >>>> On Fri, Jan 09, 2009 at 09:51:17PM +0100, Eric Dumazet wrote:
-> >>>> (...)
-> >>>>>> Also, in your second mail, you're saying that your change
-> >>>>>> might return more data than requested by the user. I can't
-> >>>>>> find why, could you please explain to me, as I'm still quite
-> >>>>>> ignorant in this area ?
-> >>>>> Well, I just tested various user programs and indeed got this
-> >>>>> strange result :
-> >>>>>
-> >>>>> Here I call splice() with len=1000 (0x3e8), and you can see
-> >>>>> it gives a result of 1460 at the second call.
-> >>> OK finally I could reproduce it and found why we have this. It's
-> >>> expected in fact.
-> >>>
-> >>> The problem when we loop in tcp_read_sock() is that tss->len is
-> >>> not decremented by the amount of bytes read, this one is done
-> >>> only in tcp_splice_read() which is outer.
-> >>>
-> >>> The solution I found was to do just like other callers, which means
-> >>> use desc->count to keep the remaining number of bytes we want to
-> >>> read. In fact, tcp_read_sock() is designed to use that one as a stop
-> >>> condition, which explains why you first had to hide it.
-> >>>
-> >>> Now with the attached patch as a replacement for my previous one,
-> >>> both issues are solved :
-> >>>   - I splice 1000 bytes if I ask to do so
-> >>>   - I splice as much as possible if available (typically 23 kB).
-> >>>
-> >>> My observed performances are still at the top of earlier results
-> >>> and IMHO that way of counting bytes makes sense for an actor called
-> >>> from tcp_read_sock().
-> >>>
-> >>> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-> >>> index 35bcddf..51ff3aa 100644
-> >>> --- a/net/ipv4/tcp.c
-> >>> +++ b/net/ipv4/tcp.c
-> >>> @@ -522,8 +522,12 @@ static int tcp_splice_data_recv(read_descriptor_t *rd_desc, struct sk_buff *skb,
-> >>>  				unsigned int offset, size_t len)
-> >>>  {
-> >>>  	struct tcp_splice_state *tss = rd_desc->arg.data;
-> >>> +	int ret;
-> >>>  
-> >>> -	return skb_splice_bits(skb, offset, tss->pipe, tss->len, tss->flags);
-> >>> +	ret = skb_splice_bits(skb, offset, tss->pipe, rd_desc->count, tss->flags);
-> >>> +	if (ret > 0)
-> >>> +		rd_desc->count -= ret;
-> >>> +	return ret;
-> >>>  }
-> >>>  
-> >>>  static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
-> >>> @@ -531,6 +535,7 @@ static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
-> >>>  	/* Store TCP splice context information in read_descriptor_t. */
-> >>>  	read_descriptor_t rd_desc = {
-> >>>  		.arg.data = tss,
-> >>> +		.count = tss->len,
-> >>>  	};
-> >>>  
-> >>>  	return tcp_read_sock(sk, &rd_desc, tcp_splice_data_recv);
-> >>>
-> >> OK, I came to a different patch. Please check other tcp_read_sock() callers in tree :)
+On Fri, 09 Jan 2009 14:35:29 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
+
+> Andi Kleen wrote:
+> >> Fetch a gigabyte's worth of data for the debuginfo RPM? 
 > > 
-> > I've seen the other callers, but they all use desc->count for their own
-> > purpose. That's how I understood what it was used for :-)
+> > The suse 11.0 kernel debuginfo is ~120M.
 > 
-> Ah yes, I reread your patch and you are right.
-> 
-> > 
-> > I think it's better not to change the API here and use tcp_read_sock()
-> > how it's supposed to be used. Also, the less parameters to the function,
-> > the better.
-> > 
-> > However I'm OK for the !timeo before release_sock/lock_sock. I just
-> > don't know if we can put the rest of the if above or not. I don't
-> > know what changes we're supposed to collect by doing release_sock/
-> > lock_sock before the if().
-> 
-> Only the (!timeo) can be above. Other conditions must be checked after
-> the release/lock.
+> Still, though, hardly worth doing client-side when it can be done 
+> server-side for all the common distro kernels.  For custom kernels,
+> not so, but there you should already have the debuginfo locally.h
 
-Yes that's what Evgeniy explained too. I smelled something like this
-but did not know.
+and if you have the debug info local, all you need is
 
-Care to redo the whole patch, since you already have all code parts
-at hand as well as some fragments of commit messages ? You can even
-add my Tested-by if you want. Finally it was nice that Dave asked
-for this explanation because it drove our nose to the fishy parts ;-)
+dmesg | scripts/markup_oops.pl vmlinux
 
-Thanks,
-Willy
+and it nicely decodes it for you
 
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
