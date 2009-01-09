@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZAIEAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZAIERt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbZAIEAV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 23:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZAIEAH
+	id S1755098AbZAIERt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 23:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZAIERl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 23:00:07 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59201 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbZAIEAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 23:00:06 -0500
-Message-ID: <4966CB89.1020403@cn.fujitsu.com>
-Date: Fri, 09 Jan 2009 11:59:05 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 8 Jan 2009 23:17:41 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:41712 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751461AbZAIERk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 23:17:40 -0500
+Message-ID: <4966CFD9.4040602@sgi.com>
+Date: Thu, 08 Jan 2009 20:17:29 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [RFC][PATCH 1/4] cgroup: support per cgroup subsys state ID (CSS
- ID)
-References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com> <20090108182817.2c393351.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090108182817.2c393351.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list@lists.sf.net, linux-net-drivers@solarflare.com,
+       S390 <linux-s390@vger.kernel.org>, linux390@de.ibm.com,
+       virtualization@lists.osdl.org
+Subject: [PULL]: tip/cpus4096 updates
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  static struct inode *cgroup_new_inode(mode_t mode, struct super_block *sb)
->  {
->  	struct inode *inode = new_inode(sb);
-> @@ -2335,6 +2339,7 @@ static void init_cgroup_css(struct cgrou
->  	css->cgroup = cgrp;
->  	atomic_set(&css->refcnt, 1);
->  	css->flags = 0;
-> +	css->id = NULL;
->  	if (cgrp == dummytop)
->  		set_bit(CSS_ROOT, &css->flags);
->  	BUG_ON(cgrp->subsys[ss->subsys_id]);
-> @@ -2410,6 +2415,10 @@ static long cgroup_create(struct cgroup 
->  			goto err_destroy;
->  		}
->  		init_cgroup_css(css, ss, cgrp);
-> +		if (ss->use_id)
-> +			if (alloc_css_id(ss, parent, cgrp))
-> +				goto err_destroy;
-> +		/* At error, ->destroy() callback has to free assigned ID. */
+Hi Ingo,
 
-A bug here:
+Please pull a few more cpus4096 changes.  Most are fairly lightweight with the
+biggest change being to use cpumask_var_t's for the domain and pending_mask
+cpumask's in irq_desc.
 
-if alloc_css_id(ss, parent, cgrp) failed, then ss->destroy() called free_css_id(),
-then panic.
+It also deals with this cpu_evtchn_mask bss space bump:
 
-maybe check if (css->id == NULL) in free_css_id() ?
+    65536  +2031616   2097152 +3100%  cpu_evtchn_mask(.bss)
 
->  	}
->  
->  	cgroup_lock_hierarchy(root);
-> @@ -2699,6 +2708,8 @@ int __init cgroup_init(void)
->  		struct cgroup_subsys *ss = subsys[i];
->  		if (!ss->early_init)
->  			cgroup_init_subsys(ss);
-> +		if (ss->use_id)
-> +			cgroup_subsys_init_idr(ss);
->  	}
->  
->  	/* Add init_css_set to the hash table */
-> @@ -3231,3 +3242,260 @@ static int __init cgroup_disable(char *s
->  	return 1;
->  }
->  __setup("cgroup_disable=", cgroup_disable);
+Everything merges into tip/master cleanly.
+
+Thanks!
+Mike
+
+The following changes since commit 36c401a44abcc389a00f9cd14892c9cf9bf0780d:
+  Ingo Molnar (1):
+        [IA64] fix typo in cpumask_of_pcibus()
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git master
+
+Mike Travis (9):
+      cpumask: update irq_desc to use cpumask_var_t
+      cpumask: fix bug in use cpumask_var_t in irq_desc
+      SGI UV cpumask: use static temp cpumask in flush_tlb
+      x86: cleanup remaining cpumask_t code in mce_amd_64.c
+      x86: cleanup remaining cpumask_t code in microcode_core.c
+      x86: reduce stack usage in init_intel_cacheinfo
+      cpumask: use cpumask_var_t in dcdbas.c
+      cpumask: reduce stack usage in find_lowest_rq
+      Xen: reduce memory required for cpu_evtchn_mask
+
+Rusty Russell (5):
+      cpumask: Use topology_core_cpumask()/topology_thread_cpumask()
+      cpumask: convert misc driver functions
+      cpumask: convert drivers/net/sfc
+      cpumask: convert other misc kernel functions
+      x86: change flush_tlb_others to take a const struct cpumask *. FIXME: REVIEW
+
+ Documentation/cputopology.txt           |    6 +-
+ arch/x86/include/asm/paravirt.h         |    8 ++-
+ arch/x86/include/asm/tlbflush.h         |    8 ++--
+ arch/x86/include/asm/uv/uv_bau.h        |    3 +-
+ arch/x86/kernel/cpu/intel_cacheinfo.c   |   63 ++++++++++++++++-------
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |   21 +++++---
+ arch/x86/kernel/io_apic.c               |   20 ++++----
+ arch/x86/kernel/irq_32.c                |    2 +-
+ arch/x86/kernel/irq_64.c                |    2 +-
+ arch/x86/kernel/microcode_core.c        |   74 ++++++++++++++++----------
+ arch/x86/kernel/tlb_32.c                |   67 ++++++++++--------------
+ arch/x86/kernel/tlb_64.c                |   62 ++++++++++++----------
+ arch/x86/kernel/tlb_uv.c                |   16 +++---
+ arch/x86/xen/enlighten.c                |   31 ++++-------
+ drivers/base/cpu.c                      |    2 +-
+ drivers/base/topology.c                 |   33 ++++++------
+ drivers/firmware/dcdbas.c               |   12 +++--
+ drivers/misc/sgi-xp/xpc_main.c          |    2 +-
+ drivers/net/sfc/efx.c                   |   17 ++++--
+ drivers/oprofile/buffer_sync.c          |   22 +++++++--
+ drivers/oprofile/buffer_sync.h          |    4 ++
+ drivers/oprofile/oprof.c                |    9 +++-
+ drivers/xen/events.c                    |   25 +++++++---
+ drivers/xen/manage.c                    |    2 +-
+ include/linux/irq.h                     |   86 +++++++++++++++++++++++++++++-
+ include/linux/topology.h                |    6 ++
+ kernel/irq/chip.c                       |    5 ++-
+ kernel/irq/handle.c                     |   20 +++----
+ kernel/irq/manage.c                     |   12 ++--
+ kernel/irq/migration.c                  |   12 ++--
+ kernel/irq/numa_migrate.c               |   19 ++++++-
+ kernel/irq/proc.c                       |    4 +-
+ kernel/sched_rt.c                       |   36 ++++++++-----
+ lib/smp_processor_id.c                  |    2 +-
+ net/iucv/iucv.c                         |   28 +++++++----
+ 35 files changed, 471 insertions(+), 270 deletions(-)
