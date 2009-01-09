@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbZAIVgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbZAIVgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbZAIVgA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:36:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbZAIVfR
+	id S1758304AbZAIVgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbZAIVga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:35:17 -0500
-Received: from ns.suse.de ([195.135.220.2]:56426 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757976AbZAIVfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:35:15 -0500
-Date: Fri, 9 Jan 2009 13:34:03 -0800
-From: Greg KH <gregkh@suse.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Jay Fenlason <fenlason@redhat.com>
-Subject: Re: post 2.6.28 regression: device_initialize() now sleeps, and
-	may fail without recovery strategy
-Message-ID: <20090109213403.GA26754@suse.de>
-References: <496798FE.8030900@s5r6.in-berlin.de> <20090109205633.GB19904@suse.de> <4967BE13.6070003@s5r6.in-berlin.de> <4967BF99.7010507@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4967BF99.7010507@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 9 Jan 2009 16:36:30 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60851 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754760AbZAIVg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 16:36:29 -0500
+Date: Fri, 9 Jan 2009 21:35:55 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+Subject: Re: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
+Message-ID: <20090109213555.7f9275c9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090109212358.GG5073@const.famille.thibault.fr>
+References: <20090107005813.GA4987@const.famille.thibault.fr>
+	<20090109212358.GG5073@const.famille.thibault.fr>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 10:20:25PM +0100, Stefan Richter wrote:
-> Stefan Richter wrote:
-> > Greg KH wrote:
-> >> I originally looked at changing this to be at device_add time, but I
-> >> think there are some code paths that do device_initialize and then do
-> >> some operations on the device before calling device_add.
-> > 
-> > get_device() and put_device() seem to be about the only things that are
-> > interesting before device_add().
-> > 
-> > Don't know if a final put_device() in this situation
+On Fri, 9 Jan 2009 22:23:58 +0100
+Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+
+> Hello,
 > 
-> ...would require dev->p to be present.
+> Came somebody have a look at this?  The need is real, the only question
+> that comes to my mind is whether notifiers are allowed to modify the
+> param they are given.  Since they are not marked const, I'd guess it'd
+> be ok?
 
-But that can be easily handled...
+The notifier code doesn't care.
 
-give me a short while to test...
+> Make kbd_keycode() read param.value after calling the keyboard notification
+> chain, to let the callee change the translation on the fly. This for instance
+> permits to remap the physical positions of the keys independently of the
+> configured keymap, for e.g. single-handed people.
 
-thanks,
+Surely that is just a new keymap ?
 
-greg k-h
