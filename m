@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbZAIXjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbZAIXkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760603AbZAIXjt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:39:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbZAIXjB
+	id S1760705AbZAIXkS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbZAIXjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:39:01 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:16262 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760443AbZAIXjA (ORCPT
+	Fri, 9 Jan 2009 18:39:09 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:52863 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754775AbZAIXjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:39:00 -0500
+	Fri, 9 Jan 2009 18:39:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:to:from:cc:date:message-id:in-reply-to:references
          :user-agent:mime-version:content-type:content-transfer-encoding;
-        b=i9Jk8Bdnmcm5wnlkZbySH/QWvmehzivnxbXripb/2Z6xg3scr2JJddb97AJlrL8NNo
-         MFjfCX6E2C0M0tioy7vSotTbP5NAQCw42Oe97Vdgjq1El+06b5FYeIMfMF0/epPevoeA
-         A/hkNrvAjE+0C1hr9hJqv6gydHGGgg6PTyFwA=
-Subject: [PATCH 2/5] Fix dubious bitwise 'or' usage spotted by sparse.
+        b=RvJkg+ZDwFqUAkvflYlszAfN0KMGB87qFmI+LkvZQyPgZmqo1k0yi2v4nbxmbIZuLk
+         QOdIRoQg9dT3mC+LmaITknk9KNZk3MUcEYNvkQNh9IRJHgUu8pm7W9ZSG7X+4cKGZy97
+         PwPaZsN95RZMFn8Ssi358rk+lNoZITWJ7jZvc=
+Subject: [PATCH 3/5] Fix dubious bitwise 'and' usage spotted by sparse.
 To: LKML <linux-kernel@vger.kernel.org>
 From: Alexey Zaytsev <alexey.zaytsev@gmail.com>
 Cc: Jiri Kosina <jkosina@suse.cz>, Trivial Kernel Patches <trivial@kernel.org>
-Date: Sat, 10 Jan 2009 02:48:05 +0300
-Message-ID: <20090109234805.11800.57259.stgit@zaytsev.su>
+Date: Sat, 10 Jan 2009 02:48:13 +0300
+Message-ID: <20090109234813.11800.84518.stgit@zaytsev.su>
 In-Reply-To: <20090109234113.11800.55672.stgit@zaytsev.su>
 References: <20090109234113.11800.55672.stgit@zaytsev.su>
 User-Agent: StGit/0.14.3.292.gb975
@@ -34,24 +34,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 It doesn't change the semantics, but it looks like
-the logical 'or' was meant to be used here.
-
-Signed-off-by: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+the logical 'and' was meant to be used here.
 ---
- drivers/isdn/mISDN/l1oip_codec.c |    2 +-
+ drivers/media/video/gspca/m5602/m5602_s5k4aa.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/isdn/mISDN/l1oip_codec.c b/drivers/isdn/mISDN/l1oip_codec.c
-index a2dc457..43b3795 100644
---- a/drivers/isdn/mISDN/l1oip_codec.c
-+++ b/drivers/isdn/mISDN/l1oip_codec.c
-@@ -330,7 +330,7 @@ l1oip_4bit_alloc(int ulaw)
- 	/* alloc conversion tables */
- 	table_com = vmalloc(65536);
- 	table_dec = vmalloc(512);
--	if (!table_com | !table_dec) {
-+	if (!table_com || !table_dec) {
- 		l1oip_4bit_free();
- 		return -ENOMEM;
- 	}
+diff --git a/drivers/media/video/gspca/m5602/m5602_s5k4aa.c b/drivers/media/video/gspca/m5602/m5602_s5k4aa.c
+index 14b1eac..c3ebcca 100644
+--- a/drivers/media/video/gspca/m5602/m5602_s5k4aa.c
++++ b/drivers/media/video/gspca/m5602/m5602_s5k4aa.c
+@@ -114,7 +114,7 @@ int s5k4aa_read_sensor(struct sd *sd, const u8 address,
+ 	if (err < 0)
+ 		goto out;
+ 
+-	for (i = 0; (i < len) & !err; i++) {
++	for (i = 0; (i < len) && !err; i++) {
+ 		err = m5602_read_bridge(sd, M5602_XB_I2C_DATA, &(i2c_data[i]));
+ 
+ 		PDEBUG(D_CONF, "Reading sensor register "
 
