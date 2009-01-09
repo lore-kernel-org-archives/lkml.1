@@ -1,105 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZAIPpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZAIPsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249AbZAIPpK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 10:45:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZAIPo6
+	id S1754076AbZAIPsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 10:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZAIPrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 10:44:58 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40438 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbZAIPo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 10:44:57 -0500
-Date: Fri, 9 Jan 2009 16:44:16 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com,
-       viro@zeniv.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: audit: EXECVE record - removed bogus newline
-Message-ID: <20090109164416.3a939aca@psychotron.englab.brq.redhat.com>
-In-Reply-To: <1231514485.25714.11.camel@localhost.localdomain>
-References: <20090108153829.7d063a4b@psychotron.englab.brq.redhat.com>
-	<1231428798.31089.80.camel@localhost.localdomain>
-	<20090109132130.0bc87c02@psychotron.englab.brq.redhat.com>
-	<1231514485.25714.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Jan 2009 10:47:52 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:36669 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbZAIPrv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 10:47:51 -0500
+X-BigFish: VPS-23(z21eW5edJz62a3L4015Mzzzzz32i6bh43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KD7NV4-02-6Z9-01
+Date: Fri, 9 Jan 2009 16:47:33 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [GIT PULL] please pull oprofile updates for 2.6.29
+Message-ID: <20090109154733.GX15411@erda.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 09 Jan 2009 15:47:33.0719 (UTC) FILETIME=[966A4E70:01C97271]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(updated)
-Added hunk that changes the comment, the rest is the same.
+Linus,
 
+please pull the oprofile updates from:
 
-EXECVE records contain a newline after every argument. auditd converts
-"\n" to " " so you cannot see newlines even in raw logs, but they're
-there nevertheless. If you're not using auditd, you need to work round
-them. These '\n' chars are can be easily replaced by spaces when
-creating record in kernel. Note there is no need for trailing '\n' in
-an audit record. 
+  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git for-linus
 
-record before this patch:
-"type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\"\na1=\"a\"\na2=\"b\"\na3=\"c\"\n"
+It contains a powerpc/cell update and cleanup and rework patches that
+completes my ring_buffer implementation.
 
-record after this patch:
-"type=EXECVE msg=audit(1231421801.566:31): argc=4 a0=\"./test\" a1=\"a\" a2=\"b\" a3=\"c\""
+Thanks,
 
+-Robert
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-Acked-by: Eric Paris <eparis@redhat.com>
----
- kernel/auditsc.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+The following changes since commit 2150edc6c5cf00f7adb54538b9ea2a3e9cedca3f:
+  Linus Torvalds (1):
+        Merge branch 'for_linus' of git://git.kernel.org/.../tytso/ext4
 
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 8cbddff..7a46d62 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -1023,7 +1023,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
- {
- 	char arg_num_len_buf[12];
- 	const char __user *tmp_p = p;
--	/* how many digits are in arg_num? 3 is the length of a=\n */
-+	/* how many digits are in arg_num? 3 is the length of " a=" */
- 	size_t arg_num_len = snprintf(arg_num_len_buf, 12, "%d", arg_num) + 3;
- 	size_t len, len_left, to_send;
- 	size_t max_execve_audit_len = MAX_EXECVE_AUDIT_LEN;
-@@ -1109,7 +1109,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
- 		 * so we can be sure nothing was lost.
- 		 */
- 		if ((i == 0) && (too_long))
--			audit_log_format(*ab, "a%d_len=%zu ", arg_num,
-+			audit_log_format(*ab, " a%d_len=%zu", arg_num,
- 					 has_cntl ? 2*len : len);
- 
- 		/*
-@@ -1129,7 +1129,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
- 		buf[to_send] = '\0';
- 
- 		/* actually log it */
--		audit_log_format(*ab, "a%d", arg_num);
-+		audit_log_format(*ab, " a%d", arg_num);
- 		if (too_long)
- 			audit_log_format(*ab, "[%d]", i);
- 		audit_log_format(*ab, "=");
-@@ -1137,7 +1137,6 @@ static int audit_log_single_execve_arg(struct audit_context *context,
- 			audit_log_n_hex(*ab, buf, to_send);
- 		else
- 			audit_log_format(*ab, "\"%s\"", buf);
--		audit_log_format(*ab, "\n");
- 
- 		p += to_send;
- 		len_left -= to_send;
-@@ -1165,7 +1164,7 @@ static void audit_log_execve_info(struct audit_context *context,
- 
- 	p = (const char __user *)axi->mm->arg_start;
- 
--	audit_log_format(*ab, "argc=%d ", axi->argc);
-+	audit_log_format(*ab, "argc=%d", axi->argc);
- 
- 	/*
- 	 * we need some kernel buffer to hold the userspace args.  Just
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git for-linus
+
+Carl Love (2):
+      powerpc/oprofile: IBM CELL: cleanup and restructuring
+      powerpc/oprofile: IBM CELL: add SPU event profiling support
+
+Robert Richter (31):
+      oprofile: rename kernel-wide identifiers
+      oprofile: rename cpu buffer functions
+      oprofile: remove ring buffer inline functions in cpu_buffer.h
+      x86/oprofile: fix pci_dev use count for AMD northbridge devices
+      oprofile: reordering some code in cpu_buffer.c
+      oprofile: add inline function __oprofile_add_ext_sample()
+      oprofile: simplify add_sample()
+      oprofile: simplify sync_buffer()
+      oprofile: simplify oprofile_begin_trace()
+      oprofile: simplify add_sample() in cpu_buffer.c
+      oprofile: simplify add_ibs_begin()
+      oprofile: remove unused components in struct oprofile_cpu_buffer
+      oprofile: remove unused ibs macro
+      oprofile: remove backtrace code for ibs
+      oprofile: making add_sample_entry() inline
+      oprofile: rename variable ibs_allowed to has_ibs in op_model_amd.c
+      oprofile: rename add_sample() in cpu_buffer.c
+      oprofile: rename variables in add_ibs_begin()
+      oprofile: add op_cpu_buffer_write_reserve()
+      oprofile: modify op_cpu_buffer_read_entry()
+      oprofile: rework implementation of cpu buffer events
+      oprofile: add op_cpu_buffer_add_data()
+      oprofile: add op_cpu_buffer_get_data()
+      oprofile: use new data sample format for ibs
+      ring_buffer: fix ring_buffer_event_length()
+      oprofile: remove #ifdef CONFIG_OPROFILE_IBS in non-ibs code
+      oprofile: make new cpu buffer functions part of the api
+      Merge branch 'oprofile/ring_buffer' into oprofile/oprofile-for-tip
+      powerpc/oprofile: fix cell/pr_util.h
+      powerpc/oprofile: fix whitespaces in op_model_cell.c
+      Merge branch 'oprofile/cell' into oprofile/oprofile-for-tip
+
+ arch/Kconfig                              |    2 +
+ arch/powerpc/include/asm/cell-pmu.h       |    2 +
+ arch/powerpc/include/asm/oprofile_impl.h  |    6 +
+ arch/powerpc/oprofile/cell/pr_util.h      |   11 +-
+ arch/powerpc/oprofile/cell/spu_profiler.c |   56 ++-
+ arch/powerpc/oprofile/common.c            |   22 +
+ arch/powerpc/oprofile/op_model_cell.c     |  748 ++++++++++++++++++++++++-----
+ arch/x86/oprofile/op_model_amd.c          |  224 ++++-----
+ drivers/oprofile/buffer_sync.c            |  229 +++------
+ drivers/oprofile/cpu_buffer.c             |  393 +++++++++------
+ drivers/oprofile/cpu_buffer.h             |   72 +++-
+ drivers/oprofile/event_buffer.c           |    4 +-
+ drivers/oprofile/oprof.c                  |    4 +-
+ drivers/oprofile/oprof.h                  |    8 +-
+ drivers/oprofile/oprofile_files.c         |   24 +-
+ include/linux/oprofile.h                  |   21 +-
+ include/linux/ring_buffer.h               |    2 +
+ kernel/trace/ring_buffer.c                |   44 ++-
+ kernel/trace/trace.c                      |    4 +-
+ 19 files changed, 1271 insertions(+), 605 deletions(-)
+
 -- 
-1.5.6.5
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
