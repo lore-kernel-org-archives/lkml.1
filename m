@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZAISXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZAISXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbZAISXM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:23:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZAISW6
+	id S1755027AbZAISXw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZAISXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:22:58 -0500
-Received: from nlpi042.sbcis.sbc.com ([207.115.36.71]:58869 "EHLO
-	nlpi042.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbZAISW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:22:57 -0500
-Message-ID: <4967977E.5010504@softplc.com>
-Date: Fri, 09 Jan 2009 12:29:18 -0600
-From: Dick Hollenbeck <dick@softplc.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 9 Jan 2009 13:23:42 -0500
+Received: from corega.com.ru ([195.178.208.66]:59189 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751939AbZAISXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 13:23:41 -0500
+Date: Fri, 9 Jan 2009 21:23:39 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com
+Subject: Re: [PATCH 03/16] dma-debug: add hash functions for dma_debug_entries
+Message-ID: <20090109182339.GA31661@ioremap.net>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-4-git-send-email-joerg.roedel@amd.com> <20090109175542.GB30168@ioremap.net> <20090109181446.GB9466@8bytes.org>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: New true IDE compact flash driver starting point?
-References: <49659E41.5070001@softplc.com> <200901081318.44188.arnd@arndb.de> <49661B0F.6030206@softplc.com> <200901091733.16931.arnd@arndb.de>
-In-Reply-To: <200901091733.16931.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090109181446.GB9466@8bytes.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Thursday 08 January 2009, Dick Hollenbeck wrote:
->   
->> I've done something similar to this for 8250 serial ports, but I am 
->> having a difficult time finding out how to do this with pata_platform.c
->>
->>     
->
-> Just grep for pata_platform_info to find example code.
->
-> 	Arnd <><
->   
-Thanks again Arnd.  I did that yesterday and got it working last night!  
-The only thing I have questions about are:
+On Fri, Jan 09, 2009 at 07:14:46PM +0100, Joerg Roedel (joro@8bytes.org) wrote:
+> > > +static struct hash_bucket *get_hash_bucket(struct dma_debug_entry *entry,
+> > > +					   unsigned long *flags)
+> > > +{
+> > > +	int idx = hash_fn(entry);
+> > > +	unsigned long __flags;
+> > > +
+> > > +	spin_lock_irqsave(&dma_entry_hash[idx].lock, __flags);
+> > > +	*flags = __flags;
+> > > +	return &dma_entry_hash[idx];
+> > > +}
+> > > +
+> > > +/*
+> > > + * Give up exclusive access to the hash bucket
+> > > + */
+> > > +static void put_hash_bucket(struct hash_bucket *bucket,
+> > > +			    unsigned long *flags)
+> > > +{
+> > > +	unsigned long __flags = *flags;
+> > > +
+> > > +	spin_unlock_irqrestore(&bucket->lock, __flags);
+> > > +}
+> > 
+> > Why do you need such ugly helpers?
+> 
+> Because everything else I thought about here was even more ugly. But
+> maybe you have a better idea? I tried to lock directly in the debug_
+> functions. But this is ugly and unnecessary code duplication.
 
+I believe that having direct locking in the debug_ functions is not a
+duplication, anyone will have a direct vision on the locking and hash
+array dereference, and this will be just one additional line compared to
+the get_* call and the same number of lines for the put :)
 
-1) Since this is for a quasi realtime application, is there any 
-advantage to using the interrupt line regarding how the CPU spends its 
-idle time waiting for the flash?  (I have an interrupt line I can use.)  
-Currently I am not sending in the IRQ resource, resource array length of 
-2, not 3.
-
-
-2) I am getting this message during boot up:  "Driver 'sd' needs 
-updating - please use bus_type methods".   Again this is kernel 2.6.26.  
-It seems like this can be safely ignored, but if its easy to get rid of 
-that I would be happy to back port a patch.
-
-
-
-I really appreciate your help.
-
-Dick Hollenbeck
-
+-- 
+	Evgeniy Polyakov
