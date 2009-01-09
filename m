@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZAIHfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZAIHmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbZAIHfF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 02:35:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZAIHez
+	id S1754282AbZAIHmz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 02:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZAIHmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 02:34:55 -0500
-Received: from gate.crashing.org ([63.228.1.57]:46475 "EHLO gate.crashing.org"
+	Fri, 9 Jan 2009 02:42:44 -0500
+Received: from 1wt.eu ([62.212.114.60]:1304 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbZAIHey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 02:34:54 -0500
-Subject: Re: Bug#506964: [PATCH] suspend/resume for ATI Mobility Radeon
- RV350
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfgang Kroener <lkml@azog.de>, 506964@bugs.debian.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <20090108205731.GE15240@lupus.ipv6.sieglitzhof.net>
-References: <20080930140658.GL10156@casella.faui2k3.org>
-	 <1222812610.9006.74.camel@pasglop>
-	 <20090108205731.GE15240@lupus.ipv6.sieglitzhof.net>
-Content-Type: text/plain
-Date: Fri, 09 Jan 2009 18:34:30 +1100
-Message-Id: <1231486470.2142.67.camel@pasglop>
+	id S1751125AbZAIHmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 02:42:44 -0500
+Date: Fri, 9 Jan 2009 08:42:17 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090109074217.GB27758@1wt.eu>
+References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <20090109070415.GA27758@1wt.eu> <4966FC89.8040006@cosmosbay.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4966FC89.8040006@cosmosbay.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 21:57 +0100, Wolfgang Kroener wrote:
-> Hi,
-> On Wed, Oct 01, 2008 at 08:10:10, Benjamin Herrenschmidt wrote:
-> > Can you resend it with a proper Signed-off-by: line ? Thanks !
+On Fri, Jan 09, 2009 at 08:28:09AM +0100, Eric Dumazet wrote:
+> My point is to use Gigabit links or 10Gb links and hundred or thousand of flows :)
 > 
-> I think the mail (http://lkml.org/lkml/2008/10/1/134) got lost
-> somewhere, so I try again:
+> But if it doesnt work on a single flow, it wont work on many :)
 
-Fell through the cracks along with some of my own radeonfb patches :-)
+Yes it will, precisely because during the time you spend processing flow #1,
+you're still receiving data for flow #2. I really invite you to try. That's
+what I've been observing for years of userland coding of proxies.
 
-Thanks for reminding.
+> I tried my test program with a Gb link, one flow, and got splice() calls returns 23000 bytes
+> in average, using a litle too much of CPU : If poll() could wait a litle bit more, CPU
+> could be available for other tasks.
 
-Cheers,
-Ben.
+I also observe 23000 bytes on average on gigabit, which is very good
+(only about 5000 calls per second). And the CPU usage is lower than
+with recv/send, and I'd like to be able to run some profiling because
+I observed very different performance patterns depending on the network
+cards used. Generally, almost all the time is spent in softirqs.
 
+It's easy to make poll wait a little bit more : call it later and do
+your work before calling it. Also, epoll_wait() lets you ask it to
+return just a few amount of FDs. This really improves data gathering.
+I generally observe best performance between 30-200 FDs per call, even
+with 10000 concurrent connections. During the time I process the first
+200 FDs, data is accumulating in the other's buffers.
+
+> If the application uses setsockopt(sock, SOL_SOCKET, SO_RCVLOWAT, [32768], 4), it
+> would be good if kernel was smart enough and could reduce number of wakeups.
+
+Yes, I agree about that. But my comment was about not making this
+behaviour mandatory for splice(). Letting the application choose is
+the way to go, of course.
+
+> (Next blocking point is the fixed limit of 16 pages per pipe, but
+> thats another story)
+
+Yes but that's not always easy to guess how many data you can feed
+into the pipe. It seems that depending on how the segments are
+gathered, you can store between 16 segments and 64 kB. I have
+observed some cases in blocking mode where I could not push more
+than a few kbytes with a small MSS, indicating to me that all those
+segments were each on a distinct page. I don't know precisely how
+that's handled internally.
+
+> >> About tcp_recvmsg(), we might also remove the "!timeo" test as well,
+> >> more testings are needed.
+> > 
+> > No right now we can't (we must move it somewhere else at least). Because
+> > once at least one byte has been received (copied != 0), no other check
+> > will break out of the loop (or at least I have not found it).
+> > 
 > 
-> radeonfb suspend/resume for Acer Travelmate 29X
-> 
-> This patch adds suspend/resume for the Acer Travelmate 290D/292LMi with
-> the following graphic-chip:
-> 01:00.0 VGA compatible controller [0300]: ATI Technologies Inc RV350
-> [Mobility Radeon 9600 M10] [1002:4e50] (prog-if 00 [VGA controller])
-> 	Subsystem: Acer Incorporated [ALI] TravelMate 290 [1025:005a]
-> 	Flags: bus master, 66MHz, medium devsel, latency 128, IRQ 10
-> 	Memory at a8000000 (32-bit, prefetchable) [size=128M]
-> 	I/O ports at c100 [size=256]
-> 	Memory at e0010000 (32-bit, non-prefetchable) [size=64K]
-> 	[virtual] Expansion ROM at a0000000 [disabled] [size=128K]
-> 	Capabilities: [58] AGP version 2.0
-> 	Capabilities: [50] Power Management version 2
-> 	Kernel driver in use: radeonfb
-> 	Kernel modules: radeonfb
-> 
-> Signed-off-by: Wolfgang Kroener <lkml@azog.de>
-> ---
->  drivers/video/aty/radeon_pm.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-> index 675abda..5e4b2da 100644
-> --- a/drivers/video/aty/radeon_pm.c
-> +++ b/drivers/video/aty/radeon_pm.c
-> @@ -89,6 +89,9 @@ static struct radeon_device_id radeon_workaround_list[] = {
->  	BUGFIX("Acer Aspire 2010",
->  	       PCI_VENDOR_ID_AI, 0x0061,
->  	       radeon_pm_off, radeon_reinitialize_M10),
-> +	BUGFIX("Acer Travelmate 290D/292LMi",
-> +	       PCI_VENDOR_ID_AI, 0x005a,
-> +	       radeon_pm_off, radeon_reinitialize_M10),
->  	{ .ident = NULL }
->  };
->  
-> -- 
-> 1.5.6.5
-> 
-> 
-> 
+> Of course we cant remove the test totally, but change the logic so that several skb
+> might be used/consumed per tcp_recvmsg() call, like your patch did for splice()
+
+OK, I initially understood that you suggested we could simply remove
+it like I did for splice.
+
+> Lets focus on functional changes, not on implementation details :)
+
+Agreed :-)
+
+Willy
 
