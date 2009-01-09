@@ -1,151 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbZAIWxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbZAIWxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbZAIWxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760066AbZAIWxR
+	id S1760295AbZAIWxz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759436AbZAIWxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:53:17 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:42615 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760017AbZAIWxQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:53:16 -0500
-Date: Fri, 9 Jan 2009 16:53:13 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 4/4] keys: make procfiles per-user-namespace
-Message-ID: <20090109225313.GB15599@us.ibm.com>
-References: <20090109225208.GA15252@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Jan 2009 17:53:38 -0500
+Received: from 1wt.eu ([62.212.114.60]:1366 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760211AbZAIWxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:53:35 -0500
+Date: Fri, 9 Jan 2009 23:53:09 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090109225309.GC4819@1wt.eu>
+References: <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu> <20090109220737.GA4111@1wt.eu> <4967CBB9.1060403@cosmosbay.com> <20090109221744.GA4819@1wt.eu> <4967D36E.6020207@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090109225208.GA15252@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4967D36E.6020207@cosmosbay.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restrict the /proc/keys and /proc/key-users output to keys
-belonging to the same user namespace as the reading task.
+On Fri, Jan 09, 2009 at 11:45:02PM +0100, Eric Dumazet wrote:
+> Willy Tarreau a écrit :
+> > On Fri, Jan 09, 2009 at 11:12:09PM +0100, Eric Dumazet wrote:
+> >> Willy Tarreau a écrit :
+> >>> On Fri, Jan 09, 2009 at 10:24:00PM +0100, Willy Tarreau wrote:
+> >>>> On Fri, Jan 09, 2009 at 09:51:17PM +0100, Eric Dumazet wrote:
+> >>>> (...)
+> >>>>>> Also, in your second mail, you're saying that your change
+> >>>>>> might return more data than requested by the user. I can't
+> >>>>>> find why, could you please explain to me, as I'm still quite
+> >>>>>> ignorant in this area ?
+> >>>>> Well, I just tested various user programs and indeed got this
+> >>>>> strange result :
+> >>>>>
+> >>>>> Here I call splice() with len=1000 (0x3e8), and you can see
+> >>>>> it gives a result of 1460 at the second call.
+> >>> OK finally I could reproduce it and found why we have this. It's
+> >>> expected in fact.
+> >>>
+> >>> The problem when we loop in tcp_read_sock() is that tss->len is
+> >>> not decremented by the amount of bytes read, this one is done
+> >>> only in tcp_splice_read() which is outer.
+> >>>
+> >>> The solution I found was to do just like other callers, which means
+> >>> use desc->count to keep the remaining number of bytes we want to
+> >>> read. In fact, tcp_read_sock() is designed to use that one as a stop
+> >>> condition, which explains why you first had to hide it.
+> >>>
+> >>> Now with the attached patch as a replacement for my previous one,
+> >>> both issues are solved :
+> >>>   - I splice 1000 bytes if I ask to do so
+> >>>   - I splice as much as possible if available (typically 23 kB).
+> >>>
+> >>> My observed performances are still at the top of earlier results
+> >>> and IMHO that way of counting bytes makes sense for an actor called
+> >>> from tcp_read_sock().
+> >>>
+> >>> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+> >>> index 35bcddf..51ff3aa 100644
+> >>> --- a/net/ipv4/tcp.c
+> >>> +++ b/net/ipv4/tcp.c
+> >>> @@ -522,8 +522,12 @@ static int tcp_splice_data_recv(read_descriptor_t *rd_desc, struct sk_buff *skb,
+> >>>  				unsigned int offset, size_t len)
+> >>>  {
+> >>>  	struct tcp_splice_state *tss = rd_desc->arg.data;
+> >>> +	int ret;
+> >>>  
+> >>> -	return skb_splice_bits(skb, offset, tss->pipe, tss->len, tss->flags);
+> >>> +	ret = skb_splice_bits(skb, offset, tss->pipe, rd_desc->count, tss->flags);
+> >>> +	if (ret > 0)
+> >>> +		rd_desc->count -= ret;
+> >>> +	return ret;
+> >>>  }
+> >>>  
+> >>>  static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
+> >>> @@ -531,6 +535,7 @@ static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
+> >>>  	/* Store TCP splice context information in read_descriptor_t. */
+> >>>  	read_descriptor_t rd_desc = {
+> >>>  		.arg.data = tss,
+> >>> +		.count = tss->len,
+> >>>  	};
+> >>>  
+> >>>  	return tcp_read_sock(sk, &rd_desc, tcp_splice_data_recv);
+> >>>
+> >> OK, I came to a different patch. Please check other tcp_read_sock() callers in tree :)
+> > 
+> > I've seen the other callers, but they all use desc->count for their own
+> > purpose. That's how I understood what it was used for :-)
+> 
+> Ah yes, I reread your patch and you are right.
+> 
+> > 
+> > I think it's better not to change the API here and use tcp_read_sock()
+> > how it's supposed to be used. Also, the less parameters to the function,
+> > the better.
+> > 
+> > However I'm OK for the !timeo before release_sock/lock_sock. I just
+> > don't know if we can put the rest of the if above or not. I don't
+> > know what changes we're supposed to collect by doing release_sock/
+> > lock_sock before the if().
+> 
+> Only the (!timeo) can be above. Other conditions must be checked after
+> the release/lock.
 
-We may want to make this more complicated - so that any
-keys in a user-namespace which is belongs to the reading
-task are also shown.  But let's see if anyone wants that
-first.
+Yes that's what Evgeniy explained too. I smelled something like this
+but did not know.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/keys/proc.c |   55 ++++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 49 insertions(+), 6 deletions(-)
+Care to redo the whole patch, since you already have all code parts
+at hand as well as some fragments of commit messages ? You can even
+add my Tested-by if you want. Finally it was nice that Dave asked
+for this explanation because it drove our nose to the fishy parts ;-)
 
-diff --git a/security/keys/proc.c b/security/keys/proc.c
-index 7f508de..769f9bd 100644
---- a/security/keys/proc.c
-+++ b/security/keys/proc.c
-@@ -91,6 +91,28 @@ __initcall(key_proc_init);
-  */
- #ifdef CONFIG_KEYS_DEBUG_PROC_KEYS
- 
-+static struct rb_node *__key_serial_next(struct rb_node *n)
-+{
-+	while (n) {
-+		struct key *key = rb_entry(n, struct key, serial_node);
-+		if (key->user->user_ns == current_user_ns())
-+			break;
-+		n = rb_next(n);
-+	}
-+	return n;
-+}
-+
-+static struct rb_node *key_serial_next(struct rb_node *n)
-+{
-+	return __key_serial_next(rb_next(n));
-+}
-+
-+static struct rb_node *key_serial_first(struct rb_root *r)
-+{
-+	struct rb_node *n = rb_first(r);
-+	return __key_serial_next(n);
-+}
-+
- static int proc_keys_open(struct inode *inode, struct file *file)
- {
- 	return seq_open(file, &proc_keys_ops);
-@@ -104,10 +126,10 @@ static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
- 
- 	spin_lock(&key_serial_lock);
- 
--	_p = rb_first(&key_serial_tree);
-+	_p = key_serial_first(&key_serial_tree);
- 	while (pos > 0 && _p) {
- 		pos--;
--		_p = rb_next(_p);
-+		_p = key_serial_next(_p);
- 	}
- 
- 	return _p;
-@@ -117,7 +139,7 @@ static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
- static void *proc_keys_next(struct seq_file *p, void *v, loff_t *_pos)
- {
- 	(*_pos)++;
--	return rb_next((struct rb_node *) v);
-+	return key_serial_next((struct rb_node *) v);
- 
- }
- 
-@@ -203,6 +225,27 @@ static int proc_keys_show(struct seq_file *m, void *v)
- 
- #endif /* CONFIG_KEYS_DEBUG_PROC_KEYS */
- 
-+static struct rb_node *__key_user_next(struct rb_node *n)
-+{
-+	while (n) {
-+		struct key_user *user = rb_entry(n, struct key_user, node);
-+		if (user->user_ns == current_user_ns())
-+			break;
-+		n = rb_next(n);
-+	}
-+	return n;
-+}
-+
-+static struct rb_node *key_user_next(struct rb_node *n)
-+{
-+	return __key_user_next(rb_next(n));
-+}
-+
-+static struct rb_node *key_user_first(struct rb_root *r)
-+{
-+	struct rb_node *n = rb_first(r);
-+	return __key_user_next(n);
-+}
- /*****************************************************************************/
- /*
-  * implement "/proc/key-users" to provides a list of the key users
-@@ -220,10 +263,10 @@ static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
- 
- 	spin_lock(&key_user_lock);
- 
--	_p = rb_first(&key_user_tree);
-+	_p = key_user_first(&key_user_tree);
- 	while (pos > 0 && _p) {
- 		pos--;
--		_p = rb_next(_p);
-+		_p = key_user_next(_p);
- 	}
- 
- 	return _p;
-@@ -233,7 +276,7 @@ static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
- static void *proc_key_users_next(struct seq_file *p, void *v, loff_t *_pos)
- {
- 	(*_pos)++;
--	return rb_next((struct rb_node *) v);
-+	return key_user_next((struct rb_node *) v);
- 
- }
- 
--- 
-1.5.4.3
+Thanks,
+Willy
 
