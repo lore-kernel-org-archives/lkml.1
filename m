@@ -1,91 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759883AbZAIWec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbZAIWe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759883AbZAIWec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759783AbZAIWdb
+	id S1759987AbZAIWe4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580AbZAIWdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:33:31 -0500
-Received: from 8bytes.org ([88.198.83.132]:48592 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754395AbZAIWd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:33:29 -0500
-Date: Fri, 9 Jan 2009 23:33:27 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Michael Chan <mchan@broadcom.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "mingo@redhat.com" <mingo@redhat.com>
-Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
-Message-ID: <20090109223327.GD9466@8bytes.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231536264.10384.11.camel@HP1>
+	Fri, 9 Jan 2009 17:33:44 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:34015 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759602AbZAIWdm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:33:42 -0500
+Date: Sat, 10 Jan 2009 04:03:38 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] cgroups: clean up Kconfig
+Message-ID: <20090109223337.GN9737@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <4966B370.5070707@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1231536264.10384.11.camel@HP1>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4966B370.5070707@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 01:24:24PM -0800, Michael Chan wrote:
-> 
-> On Fri, 2009-01-09 at 08:19 -0800, Joerg Roedel wrote:
-> > 
-> > With the code these patches introduce driver developers can find several
-> > bugs of misusing the DMA-API in their drivers. But be aware, it can not
-> > find all possible bugs. If it finds a problem it prints out messages
-> > like
-> > 
-> > ------------[ cut here ]------------
-> > WARNING: at /data2/repos/linux.trees.git/lib/dma-debug.c:231 check_unmap+0xab/0x3d9()
-> > Hardware name: Toonie
-> > bnx2 0000:01:00.0: DMA-API: device driver tries to free DMA memory it has not allocated [device address=0x00000000011]
-> > Modules linked in:
-> > Pid: 0, comm: swapper Not tainted 2.6.28 #174
-> > Call Trace:
-> >  <IRQ>  [<ffffffff8105af3a>] warn_slowpath+0xd3/0xf2
-> >  [<ffffffff8107c36f>] ? find_usage_backwards+0xe2/0x116
-> >  [<ffffffff8107c36f>] ? find_usage_backwards+0xe2/0x116
-> >  [<ffffffff812efd16>] ? usb_hcd_link_urb_to_ep+0x94/0xa0
-> >  [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
-> >  [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
-> >  [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
-> >  [<ffffffff811e2b4b>] ? get_hash_bucket+0x28/0x33
-> >  [<ffffffff814b25a5>] ? _spin_lock_irqsave+0x69/0x75
-> >  [<ffffffff811e2b4b>] ? get_hash_bucket+0x28/0x33
-> >  [<ffffffff811e2ff2>] check_unmap+0xab/0x3d9
-> >  [<ffffffff8107c9ed>] ? trace_hardirqs_on_caller+0x108/0x14a
-> >  [<ffffffff8107ca3c>] ? trace_hardirqs_on+0xd/0xf
-> >  [<ffffffff811e3433>] debug_unmap_single+0x3e/0x40
-> >  [<ffffffff8128d2d8>] dma_unmap_single+0x3d/0x60
-> >  [<ffffffff8128d335>] pci_unmap_page+0x1c/0x1e
-> >  [<ffffffff81290759>] bnx2_poll_work+0x626/0x8cb
-> >  [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
-> >  [<ffffffff81070100>] ? run_posix_cpu_timers+0x49c/0x603
-> >  [<ffffffff81070000>] ? run_posix_cpu_timers+0x39c/0x603
-> >  [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
-> >  [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
-> >  [<ffffffff81292804>] bnx2_poll_msix+0x33/0x81
-> >  [<ffffffff813b6478>] net_rx_action+0x8a/0x139
-> >  [<ffffffff8105ff39>] __do_softirq+0x8b/0x147
-> >  [<ffffffff8102933c>] call_softirq+0x1c/0x34
-> >  [<ffffffff8102a611>] do_softirq+0x39/0x90
-> >  [<ffffffff8105fde8>] irq_exit+0x4e/0x98
-> >  [<ffffffff8102a5c2>] do_IRQ+0x11f/0x135
-> >  [<ffffffff81028b93>] ret_from_intr+0x0/0xf
-> >  <EOI> <4>---[ end trace 4339d58302097423 ]---
-> > 
-> This was triggered during pci_unmap_page() -> dma_unmap_single() where
-> check_unmap() did not find the entry.
-> 
-> The original mapping was done in bnx2 using pci_map_page().  I did not
-> see how the debug entry was added to the hash during the call to
-> pci_map_page() -> dma_map_page().  Did I miss something?
+* Li Zefan <lizf@cn.fujitsu.com> [2009-01-09 10:16:16]:
 
-dma_map_page() results in dma_map_single() -> debug_map_single() call on
-x86. This way the entry would be added. Maybe the error from a double
-free?
+> - move CONFIG_PROC_PID_CPUSET into cgroup menu
+> - move MM_OWNER to the bottom for better menu indent
+> - fix typos
+> - use tabs not spaces
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  init/Kconfig |   56 ++++++++++++++++++++++++++++----------------------------
+>  1 files changed, 28 insertions(+), 28 deletions(-)
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index a724a14..56fd93c 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -328,11 +328,10 @@ config CGROUP_SCHED
+> 
+>  endchoice
+> 
+> -menu "Control Group support"
+> -config CGROUPS
+> -	bool "Control Group support"
+> +menuconfig CGROUPS
+> +	boolean "Control Group support"
+>  	help
+> -	  This option add support for grouping sets of processes together, for
+> +	  This option adds support for grouping sets of processes together, for
+>  	  use with process control subsystems such as Cpusets, CFS, memory
+>  	  controls or device isolation.
+>  	  See
+> @@ -343,6 +342,8 @@ config CGROUPS
+> 
+>  	  Say N if unsure.
+> 
+> +if CGROUPS
+> +
+>  config CGROUP_DEBUG
+>  	bool "Example debug cgroup subsystem"
+>  	depends on CGROUPS
+> @@ -350,24 +351,24 @@ config CGROUP_DEBUG
+>  	help
+>  	  This option enables a simple cgroup subsystem that
+>  	  exports useful debugging information about the cgroups
+> -	  framework
+> +	  framework.
+> 
+> -	  Say N if unsure
+> +	  Say N if unsure.
+> 
+>  config CGROUP_NS
+> -        bool "Namespace cgroup subsystem"
+> -        depends on CGROUPS
+> -        help
+> -          Provides a simple namespace cgroup subsystem to
+> -          provide hierarchical naming of sets of namespaces,
+> -          for instance virtual servers and checkpoint/restart
+> -          jobs.
+> +	bool "Namespace cgroup subsystem"
+> +	depends on CGROUPS
+> +	help
+> +	  Provides a simple namespace cgroup subsystem to
+> +	  provide hierarchical naming of sets of namespaces,
+> +	  for instance virtual servers and checkpoint/restart
+> +	  jobs.
+> 
+>  config CGROUP_FREEZER
+> -        bool "control group freezer subsystem"
+> -        depends on CGROUPS
+> -        help
+> -          Provides a way to freeze and unfreeze all tasks in a
+> +	bool "Freezer cgroup subsystem"
+> +	depends on CGROUPS
+> +	help
+> +	  Provides a way to freeze and unfreeze all tasks in a
+>  	  cgroup.
+> 
+>  config CGROUP_DEVICE
+> @@ -388,18 +389,23 @@ config CPUSETS
+> 
+>  	  Say N if unsure.
+> 
+> +config PROC_PID_CPUSET
+> +	bool "Include legacy /proc/<pid>/cpuset file"
+> +	depends on CPUSETS
+> +	default y
+> +
+>  config CGROUP_CPUACCT
+>  	bool "Simple CPU accounting cgroup subsystem"
+>  	depends on CGROUPS
+>  	help
+>  	  Provides a simple Resource Controller for monitoring the
+> -	  total CPU consumed by the tasks in a cgroup
+> +	  total CPU consumed by the tasks in a cgroup.
+> 
+>  config RESOURCE_COUNTERS
+>  	bool "Resource counters"
+>  	help
+>  	  This option enables controller independent resource accounting
+> -          infrastructure that works with cgroups
+> +	  infrastructure that works with cgroups.
+>  	depends on CGROUPS
+> 
+>  config CGROUP_MEM_RES_CTLR
+> @@ -425,9 +431,6 @@ config CGROUP_MEM_RES_CTLR
+>  	  This config option also selects MM_OWNER config option, which
+>  	  could in turn add some fork/exit overhead.
+> 
+> -config MM_OWNER
+> -	bool
+> -
+>  config CGROUP_MEM_RES_CTLR_SWAP
+>  	bool "Memory Resource Controller Swap Extension(EXPERIMENTAL)"
+>  	depends on CGROUP_MEM_RES_CTLR && SWAP && EXPERIMENTAL
+> @@ -444,8 +447,10 @@ config CGROUP_MEM_RES_CTLR_SWAP
+>  	  there will be no overhead from this. Even when you set this config=y,
+>  	  if boot option "noswapaccount" is set, swap will not be accounted.
+> 
+> +endif # CGROUPS
+> 
+> -endmenu
+> +config MM_OWNER
+> +	bool
+> 
+>  config SYSFS_DEPRECATED
+>  	bool
+> @@ -483,11 +488,6 @@ config SYSFS_DEPRECATED_V2
+>  	  if the original kernel, that came with your distribution, has
+>  	  this option set to N.
+> 
+> -config PROC_PID_CPUSET
+> -	bool "Include legacy /proc/<pid>/cpuset file"
+> -	depends on CPUSETS
+> -	default y
+> -
+>  config RELAY
+>  	bool "Kernel->user space relay support (formerly relayfs)"
+>  	help
+> -- 
+> 1.5.4.rc3
+> 
 
-Joerg
+Looks good to me
+
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+-- 
+	Balbir
