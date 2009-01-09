@@ -1,69 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZAINKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZAINOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbZAINKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 08:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZAINKE
+	id S1754873AbZAINOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 08:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZAINOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 08:10:04 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:44357 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbZAINKB (ORCPT
+	Fri, 9 Jan 2009 08:14:11 -0500
+Received: from batfish.pepperfish.net ([87.237.62.180]:40122 "EHLO
+	flounder.pepperfish.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752534AbZAINOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 08:10:01 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
-Date: Fri, 9 Jan 2009 14:09:55 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-References: <200901091334.55823.borntraeger@de.ibm.com> <20090109124412.619330ea@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090109124412.619330ea@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 9 Jan 2009 08:14:10 -0500
+X-Greylist: delayed 2158 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 08:14:10 EST
+Subject: [PATCH] GPIOLIB: Allow GPIOs to be named
+From: Daniel Silverstone <dsilvers@simtec.co.uk>
+Reply-To: dsilvers@simtec.co.uk
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Simtec Electronics
+Date: Fri, 09 Jan 2009 12:38:10 +0000
+Message-Id: <1231504690.8511.8.camel@petitemort>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200901091409.55628.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 9. Januar 2009 schrieb Alan Cox:
-> On Fri, 9 Jan 2009 13:34:55 +0100
-> Christian Borntraeger <borntraeger@de.ibm.com> wrote:
-> 
-> > Hello,
-> > 
-> > with todays git I lots of these warnings:
-> > 
-> > [    1.246807] ata1.00: ATA-7: ST910021AS, 4.06, max UDMA/100
-> > [    1.253066] ata1.00: 195371568 sectors, multi 16: LBA48
-> > [    1.262561] ata2.00: ATAPI: HL-DT-ST DVDRAM GSA-U10N, 1.05, max UDMA/33
-> > [    1.273159] ata1.00: configured for UDMA/100
-> > [    1.275279] ata2.00: configured for UDMA/33
-> > [    1.285546] scsi 0:0:0:0: Direct-Access     ATA      ST910021AS       4.06 PQ: 0 ANSI: 5
-> > [    1.292049] sd 0:0:0:0: Attached scsi generic sg0 type 0
-> > [    1.298427] sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors: (100 GB/93.1 GiB)
-> > [    1.299631] scsi 1:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-U10N  1.05 PQ: 0 ANSI: 5
-> > [    1.311059] sd 0:0:0:0: [sda] Write Protect is off
-> > [    1.317409] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> > [    1.317426] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> > [    1.318378] ------------[ cut here ]------------
-> > [    1.318380] WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
-> > [    1.318381] Hardware name: 64575GG
-> 
-> Can you see if this goes away if you back out all Arjan's async stuff.
-> Then if not can you back out my 32bit PIO patch and see if that is the
-> trigger.
-> 
-> Alan
+Hello,
 
-Sure.
-Since I could not revert arjans patches without conflicts, I started 
-checking out older versions. My first try was 
-e427fe042cf90c0652eed9a85e57a8fd8af89890 (without PIO, with async patched)
-was successful. The problem went away. So it was triggered by the 32bit PIO patch.
-Do you still need a test result without the async patches?
+During recent work for a customer, we needed to export named GPIOs to
+userland for them. I investigated various possible ways of doing so, and
+eventually reached the conclusion that there were two reasonable ways.
+The first required adding the ability to register symbolic links for
+classes in sysfs. So that I could have /sys/class/gpio/my-named-gpio be
+a symlink to /sys/class/gpio/gpio0 or similar.
 
-Christian
+However, I felt that would be a touch invasive and so I looked for a
+simpler way and decided that simply allowing the gpio_chip struct to
+carry an optional names array would be best (and much less invasive).
+
+I was unable to find anything in MAINTAINERS or at the top of gpiolib.c
+to indicate who to CC, hence sending this only to the list. Below is a
+patch against 2150edc6c5cf00f7adb54538b9ea2a3e9cedca3f.
+
+I'd appreciate comments and ideas for how to do this better, or if it is
+acceptable, I'd love to see it merged.
+
+Regards,
+
+Daniel.
+
+--- Cut ---
+
+GPIOLIB: Allow GPIOs to be named
+
+This patch allows GPIOs in GPIOLIB chips to be named. This name is
+then used when the GPIO is exported to sysfs, although it could be
+used elsewhere if deemed useful.
+
+Signed-off-by: Daniel Silverstone <dsilvers@simtec.co.uk>
+
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 35e7aea..de2f114 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -438,6 +438,7 @@ int gpio_export(unsigned gpio, bool direction_may_change)
+ 	unsigned long		flags;
+ 	struct gpio_desc	*desc;
+ 	int			status = -EINVAL;
++	char			*ioname = NULL;
+ 
+ 	/* can't export until sysfs is available ... */
+ 	if (!gpio_class.p) {
+@@ -461,11 +462,14 @@ int gpio_export(unsigned gpio, bool direction_may_change)
+ 	}
+ 	spin_unlock_irqrestore(&gpio_lock, flags);
+ 
++	if (desc->chip->names && desc->chip->names[gpio - desc->chip->base])
++		ioname = desc->chip->names[gpio - desc->chip->base];
++
+ 	if (status == 0) {
+ 		struct device	*dev;
+ 
+ 		dev = device_create(&gpio_class, desc->chip->dev, MKDEV(0, 0),
+-					desc, "gpio%d", gpio);
++				    desc, ioname ? ioname : "gpio%d", gpio);
+ 		if (dev) {
+ 			if (direction_may_change)
+ 				status = sysfs_create_group(&dev->kobj,
+@@ -513,6 +517,7 @@ void gpio_unexport(unsigned gpio)
+ 	mutex_lock(&sysfs_lock);
+ 
+ 	desc = &gpio_desc[gpio];
++
+ 	if (test_bit(FLAG_EXPORT, &desc->flags)) {
+ 		struct device	*dev = NULL;
+ 
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 81797ec..d6c379d 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -55,6 +55,10 @@ struct module;
+  *	handled is (base + ngpio - 1).
+  * @can_sleep: flag must be set iff get()/set() methods sleep, as they
+  *	must while accessing GPIO expander chips over I2C or SPI
++ * @names: if set, must be an array of strings to use as alternative
++ *      names for the GPIOs in this chip. Any entry in the array
++ *      may be NULL if there is no alias for the GPIO, however the
++ *      array must be @ngpio entries long.
+  *
+  * A gpio_chip can help platforms abstract various sources of GPIOs so
+  * they can all be accessed through a common programing interface.
+@@ -92,6 +96,7 @@ struct gpio_chip {
+ 						struct gpio_chip *chip);
+ 	int			base;
+ 	u16			ngpio;
++	char			**names;
+ 	unsigned		can_sleep:1;
+ 	unsigned		exported:1;
+ };
+
+
+-- 
+Daniel Silverstone                              http://www.simtec.co.uk/
+PGP mail accepted and encouraged.            Key Id: 2BC8 4016 2068 7895
+
+
