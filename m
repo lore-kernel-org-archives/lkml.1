@@ -1,184 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZAIVQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbZAIVRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZAIVQr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbZAIVQg
+	id S1757136AbZAIVRi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:17:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbZAIVRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:16:36 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:26155 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756877AbZAIVQf (ORCPT
+	Fri, 9 Jan 2009 16:17:30 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34833 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752976AbZAIVR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:16:35 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=QkNyGNyGkfdOvK7MRTI89kOhX0clXzYyz00eWU+AXMz58hXIbIYzwo12hH8q92ZkV
-	sA3Af7kmDrElHz0NN2YJw==
-MIME-Version: 1.0
-In-Reply-To: <4966B370.5070707@cn.fujitsu.com>
-References: <4966B370.5070707@cn.fujitsu.com>
-Date: Fri, 9 Jan 2009 13:16:30 -0800
-Message-ID: <6599ad830901091316l4a8b4c81s9e278aa5f58dce20@mail.gmail.com>
-Subject: Re: [PATCH] cgroups: clean up Kconfig
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 9 Jan 2009 16:17:29 -0500
+Date: Fri, 9 Jan 2009 21:17:18 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-devel@lists.sourceforge.net, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Jay Fenlason <fenlason@redhat.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH post 2.6.28] firewire: core: fix sleep in atomic context
+ due to driver core change
+Message-ID: <20090109211718.48a7a4a6@lxorguk.ukuu.org.uk>
+In-Reply-To: <tkrat.34f28fe71f678057@s5r6.in-berlin.de>
+References: <496798FE.8030900@s5r6.in-berlin.de>
+	<tkrat.34f28fe71f678057@s5r6.in-berlin.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.24.198.65
-X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 8, 2009 at 6:16 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> - move CONFIG_PROC_PID_CPUSET into cgroup menu
-> - move MM_OWNER to the bottom for better menu indent
-> - fix typos
-> - use tabs not spaces
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+On Fri, 9 Jan 2009 20:49:37 +0100 (CET)
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-Acked-by: Paul Menage <menage@google.com>
+> Due to commit 2831fe6f9cc4e16c103504ee09a47a084297c0f3, "driver core:
+> create a private portion of struct device", device_initialize() can no
+> longer be called from atomic contexts.
 
-Thanks.
-
-> ---
->  init/Kconfig |   56 ++++++++++++++++++++++++++++----------------------------
->  1 files changed, 28 insertions(+), 28 deletions(-)
->
-> diff --git a/init/Kconfig b/init/Kconfig
-> index a724a14..56fd93c 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -328,11 +328,10 @@ config CGROUP_SCHED
->
->  endchoice
->
-> -menu "Control Group support"
-> -config CGROUPS
-> -       bool "Control Group support"
-> +menuconfig CGROUPS
-> +       boolean "Control Group support"
->        help
-> -         This option add support for grouping sets of processes together, for
-> +         This option adds support for grouping sets of processes together, for
->          use with process control subsystems such as Cpusets, CFS, memory
->          controls or device isolation.
->          See
-> @@ -343,6 +342,8 @@ config CGROUPS
->
->          Say N if unsure.
->
-> +if CGROUPS
-> +
->  config CGROUP_DEBUG
->        bool "Example debug cgroup subsystem"
->        depends on CGROUPS
-> @@ -350,24 +351,24 @@ config CGROUP_DEBUG
->        help
->          This option enables a simple cgroup subsystem that
->          exports useful debugging information about the cgroups
-> -         framework
-> +         framework.
->
-> -         Say N if unsure
-> +         Say N if unsure.
->
->  config CGROUP_NS
-> -        bool "Namespace cgroup subsystem"
-> -        depends on CGROUPS
-> -        help
-> -          Provides a simple namespace cgroup subsystem to
-> -          provide hierarchical naming of sets of namespaces,
-> -          for instance virtual servers and checkpoint/restart
-> -          jobs.
-> +       bool "Namespace cgroup subsystem"
-> +       depends on CGROUPS
-> +       help
-> +         Provides a simple namespace cgroup subsystem to
-> +         provide hierarchical naming of sets of namespaces,
-> +         for instance virtual servers and checkpoint/restart
-> +         jobs.
->
->  config CGROUP_FREEZER
-> -        bool "control group freezer subsystem"
-> -        depends on CGROUPS
-> -        help
-> -          Provides a way to freeze and unfreeze all tasks in a
-> +       bool "Freezer cgroup subsystem"
-> +       depends on CGROUPS
-> +       help
-> +         Provides a way to freeze and unfreeze all tasks in a
->          cgroup.
->
->  config CGROUP_DEVICE
-> @@ -388,18 +389,23 @@ config CPUSETS
->
->          Say N if unsure.
->
-> +config PROC_PID_CPUSET
-> +       bool "Include legacy /proc/<pid>/cpuset file"
-> +       depends on CPUSETS
-> +       default y
-> +
->  config CGROUP_CPUACCT
->        bool "Simple CPU accounting cgroup subsystem"
->        depends on CGROUPS
->        help
->          Provides a simple Resource Controller for monitoring the
-> -         total CPU consumed by the tasks in a cgroup
-> +         total CPU consumed by the tasks in a cgroup.
->
->  config RESOURCE_COUNTERS
->        bool "Resource counters"
->        help
->          This option enables controller independent resource accounting
-> -          infrastructure that works with cgroups
-> +         infrastructure that works with cgroups.
->        depends on CGROUPS
->
->  config CGROUP_MEM_RES_CTLR
-> @@ -425,9 +431,6 @@ config CGROUP_MEM_RES_CTLR
->          This config option also selects MM_OWNER config option, which
->          could in turn add some fork/exit overhead.
->
-> -config MM_OWNER
-> -       bool
-> -
->  config CGROUP_MEM_RES_CTLR_SWAP
->        bool "Memory Resource Controller Swap Extension(EXPERIMENTAL)"
->        depends on CGROUP_MEM_RES_CTLR && SWAP && EXPERIMENTAL
-> @@ -444,8 +447,10 @@ config CGROUP_MEM_RES_CTLR_SWAP
->          there will be no overhead from this. Even when you set this config=y,
->          if boot option "noswapaccount" is set, swap will not be accounted.
->
-> +endif # CGROUPS
->
-> -endmenu
-> +config MM_OWNER
-> +       bool
->
->  config SYSFS_DEPRECATED
->        bool
-> @@ -483,11 +488,6 @@ config SYSFS_DEPRECATED_V2
->          if the original kernel, that came with your distribution, has
->          this option set to N.
->
-> -config PROC_PID_CPUSET
-> -       bool "Include legacy /proc/<pid>/cpuset file"
-> -       depends on CPUSETS
-> -       default y
-> -
->  config RELAY
->        bool "Kernel->user space relay support (formerly relayfs)"
->        help
-> --
-> 1.5.4.rc3
->
+I don't see why this is neccessary or appropriate - the original commit
+needs to be pulled and the private area allocation rethought.
