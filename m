@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZAISlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZAISl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbZAISlD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:41:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZAISkt
+	id S1754017AbZAISl2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbZAISk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:40:49 -0500
-Received: from 8bytes.org ([88.198.83.132]:41035 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753038AbZAISkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:40:49 -0500
-Date: Fri, 9 Jan 2009 19:40:48 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com
-Subject: Re: [PATCH 03/16] dma-debug: add hash functions for dma_debug_entries
-Message-ID: <20090109184048.GE14298@8bytes.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-4-git-send-email-joerg.roedel@amd.com> <20090109175542.GB30168@ioremap.net> <20090109181446.GB9466@8bytes.org> <20090109182339.GA31661@ioremap.net>
-MIME-Version: 1.0
+	Fri, 9 Jan 2009 13:40:59 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54400 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754392AbZAISk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 13:40:58 -0500
+Date: Fri, 9 Jan 2009 19:55:09 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Dirk Hohndel <hohndel@infradead.org>,
+       Matthew Wilcox <matthew@wil.cx>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
+Message-ID: <20090109185509.GJ26290@one.firstfloor.org>
+References: <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org> <20090109180213.GH26290@one.firstfloor.org> <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090109182339.GA31661@ioremap.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 09:23:39PM +0300, Evgeniy Polyakov wrote:
-> On Fri, Jan 09, 2009 at 07:14:46PM +0100, Joerg Roedel (joro@8bytes.org) wrote:
-> > > > +static struct hash_bucket *get_hash_bucket(struct dma_debug_entry *entry,
-> > > > +					   unsigned long *flags)
-> > > > +{
-> > > > +	int idx = hash_fn(entry);
-> > > > +	unsigned long __flags;
-> > > > +
-> > > > +	spin_lock_irqsave(&dma_entry_hash[idx].lock, __flags);
-> > > > +	*flags = __flags;
-> > > > +	return &dma_entry_hash[idx];
-> > > > +}
-> > > > +
-> > > > +/*
-> > > > + * Give up exclusive access to the hash bucket
-> > > > + */
-> > > > +static void put_hash_bucket(struct hash_bucket *bucket,
-> > > > +			    unsigned long *flags)
-> > > > +{
-> > > > +	unsigned long __flags = *flags;
-> > > > +
-> > > > +	spin_unlock_irqrestore(&bucket->lock, __flags);
-> > > > +}
-> > > 
-> > > Why do you need such ugly helpers?
-> > 
-> > Because everything else I thought about here was even more ugly. But
-> > maybe you have a better idea? I tried to lock directly in the debug_
-> > functions. But this is ugly and unnecessary code duplication.
-> 
-> I believe that having direct locking in the debug_ functions is not a
-> duplication, anyone will have a direct vision on the locking and hash
-> array dereference, and this will be just one additional line compared to
-> the get_* call and the same number of lines for the put :)
+> But _users_ just get their oopses sent automatically. So it's not about 
 
-Even more additional lines because of the additional variables needed in
-every function. Anyway, I try it and if it does not look good I will
-keep that change ;)
+If they send it from distro kernels the automated oops sender could
+just fetch the debuginfo rpm and decode it down to a line.
+My old automatic user segfault uploader I did originally
+for the core pipe code did that too.
 
-Joerg
+> "debugging kernels", it's about _normal_ kernels. They are the ones that 
+> need to be debuggable, and the ones that care most about things like the 
+> symbolic EIP being as helpful as possible.
+
+Ok you're saying we should pay the 4.1% by default for this?
+If you want that you can apply the appended patch.
+Not sure if it's really a good idea though. 4.1% is a lot.
+
+-Andi
+
+---
+
+Disable inlining of functions called once by default
+
+This makes oopses easier to read because it's clearer in which
+function the problem is.
+
+Disadvantage: costs ~4.1% of text size (measured with allyesconfig
+on gcc 4.1 on x86-64)
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+---
+ Makefile |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+Index: linux-2.6.28-git12/Makefile
+===================================================================
+--- linux-2.6.28-git12.orig/Makefile	2009-01-09 07:06:44.000000000 +0100
++++ linux-2.6.28-git12/Makefile	2009-01-09 07:16:21.000000000 +0100
+@@ -546,10 +546,8 @@
+ KBUILD_CFLAGS	+= -pg
+ endif
+ 
+-# We trigger additional mismatches with less inlining
+-ifdef CONFIG_DEBUG_SECTION_MISMATCH
++# Disable too aggressive inlining because it makes oopses harder to read
+ KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
+-endif
+ 
+ # arch Makefile may override CC so keep this after arch Makefile is included
+ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+
+
+-- 
+ak@linux.intel.com
