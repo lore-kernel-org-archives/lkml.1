@@ -1,132 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbZAIQZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZAIQZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbZAIQZK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZAIQUl
+	id S1755546AbZAIQZl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZAIQUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:20:41 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:36347 "EHLO
-	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752385AbZAIQTp (ORCPT
+	Fri, 9 Jan 2009 11:20:44 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32087 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbZAIQTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:19:45 -0500
-X-BigFish: VPS7(z523lzzzzzz32i43j63h)
-X-Spam-TCS-SCL: 2:0
+	Fri, 9 Jan 2009 11:19:44 -0500
+X-BigFish: VPS3(zzzzzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
 X-FB-SS: 5,
-X-WSS-ID: 0KD7PCJ-03-IX2-01
+X-WSS-ID: 0KD7PCH-03-IWV-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: linux-kernel@vger.kernel.org
 CC: mingo@redhat.com, dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
        netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 11/16] dma-debug: add checking for [alloc|free]_coherent
-Date: Fri, 9 Jan 2009 17:19:25 +0100
-Message-ID: <1231517970-20288-12-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 01/16] dma-debug: add Kconfig entry
+Date: Fri, 9 Jan 2009 17:19:15 +0100
+Message-ID: <1231517970-20288-2-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
 References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0826 (UTC) FILETIME=[0D199EA0:01C97276]
+X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0574 (UTC) FILETIME=[0CF32AE0:01C97276]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add debug callbacks for dma_[alloc|free]_coherent
+Impact: add a Kconfig entry for DMA-API debugging
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/dma-debug.h |   16 ++++++++++++++++
- lib/dma-debug.c           |   45 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 61 insertions(+), 0 deletions(-)
+ arch/Kconfig      |    2 ++
+ lib/Kconfig.debug |   11 +++++++++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-index b2131f4..a28a701 100644
---- a/include/linux/dma-debug.h
-+++ b/include/linux/dma-debug.h
-@@ -40,6 +40,12 @@ extern void debug_map_sg(struct device *dev, struct scatterlist *sg,
- extern void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 			   int nelems, int dir);
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 2e13aa2..068554c 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -103,3 +103,5 @@ config HAVE_CLK
+ 	  The <linux/clk.h> calls support software clock gating and
+ 	  thus are a key power management tool on many systems.
  
-+extern void debug_alloc_coherent(struct device *dev, size_t size,
-+				 dma_addr_t dma_addr, void *virt);
-+
-+extern void debug_free_coherent(struct device *dev, size_t size,
-+				void *virt, dma_addr_t addr);
-+
- #else /* CONFIG_DMA_API_DEBUG */
++config HAVE_DMA_API_DEBUG
++	bool
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 2e75478..cba5778 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -899,6 +899,17 @@ config DYNAMIC_PRINTK_DEBUG
+ 	  debugging for all modules. This mode can be turned off via the above
+ 	  disable command.
  
- static inline void dma_debug_init(u32 num_entries)
-@@ -68,6 +74,16 @@ static inline void debug_unmap_sg(struct device *dev,
- {
- }
++config DMA_API_DEBUG
++	bool "Enable debugging of DMA-API usage"
++	depends on HAVE_DMA_API_DEBUG
++	help
++	  Enable this option to debug the use of the DMA API by device drivers.
++	  With this option you will be able to detect common bugs in device
++	  drivers like double-freeing of DMA mappings or freeing mappings that
++	  were never allocated.
++	  This option causes a performance degredation.  Use only if you want
++	  to debug device drivers. If unsure, say N.
++
+ source "samples/Kconfig"
  
-+static inline void debug_alloc_coherent(struct device *dev, size_t size,
-+					dma_addr_t dma_addr, void *virt)
-+{
-+}
-+
-+static inline void debug_free_coherent(struct device *dev, size_t size,
-+				       void *virt, dma_addr_t addr)
-+{
-+}
-+
- #endif /* CONFIG_DMA_API_DEBUG */
- 
- #endif /* __DMA_DEBUG_H */
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index e6d45f9..a4a5b0f 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -604,3 +604,48 @@ void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
- }
- EXPORT_SYMBOL(debug_unmap_sg);
- 
-+void debug_alloc_coherent(struct device *dev, size_t size,
-+			  dma_addr_t dma_addr, void *virt)
-+{
-+	struct dma_debug_entry *entry;
-+
-+	if (global_disable)
-+		return;
-+
-+	if (dma_addr == bad_dma_address)
-+		return;
-+
-+	entry = dma_entry_alloc();
-+	if (!entry)
-+		return;
-+
-+	entry->type      = dma_debug_coherent;
-+	entry->dev       = dev;
-+	entry->cpu_addr  = virt;
-+	entry->size      = size;
-+	entry->dev_addr  = dma_addr;
-+	entry->direction = DMA_BIDIRECTIONAL;
-+
-+	add_dma_entry(entry);
-+}
-+EXPORT_SYMBOL(debug_alloc_coherent);
-+
-+void debug_free_coherent(struct device *dev, size_t size,
-+			 void *virt, dma_addr_t addr)
-+{
-+	struct dma_debug_entry ref = {
-+		.type           = dma_debug_coherent,
-+		.dev            = dev,
-+		.cpu_addr       = virt,
-+		.dev_addr       = addr,
-+		.size           = size,
-+		.direction      = DMA_BIDIRECTIONAL,
-+	};
-+
-+	if (global_disable)
-+		return;
-+
-+	check_unmap(&ref);
-+}
-+EXPORT_SYMBOL(debug_free_coherent);
-+
+ source "lib/Kconfig.kgdb"
 -- 
 1.5.6.4
 
