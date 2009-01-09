@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbZAIHYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbZAIH3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbZAIHYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 02:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZAIHYE
+	id S1754746AbZAIH3K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 02:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZAIH2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 02:24:04 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34991 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbZAIHYC (ORCPT
+	Fri, 9 Jan 2009 02:28:54 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:44118 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101AbZAIH2x convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 02:24:02 -0500
-Date: Fri, 9 Jan 2009 16:22:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
-Message-Id: <20090109162255.4e57f079.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4966F230.4020905@cn.fujitsu.com>
-References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
-	<4966EEDD.5070204@cn.fujitsu.com>
-	<6599ad830901082237l664fb403y386482a577ed185e@mail.gmail.com>
-	<4966F230.4020905@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Jan 2009 02:28:53 -0500
+Message-ID: <4966FC89.8040006@cosmosbay.com>
+Date: Fri, 09 Jan 2009 08:28:09 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <20090109070415.GA27758@1wt.eu>
+In-Reply-To: <20090109070415.GA27758@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Jan 2009 08:28:10 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Jan 2009 14:44:00 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> Paul Menage wrote:
-> > On Thu, Jan 8, 2009 at 10:29 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> >> Agreed, but it can't work by just removing the checking in cgroup mount option,
-> > 
-> > Right - it's more complicated than that. There are some places in the
-> > code that rely on the fact that every hierarchy currently has at least
-> > one subsystem (anything that uses find_first_subsystem() for example)
-> > and we'd need to work around that.
-> > 
+Willy Tarreau a écrit :
+> On Fri, Jan 09, 2009 at 07:47:16AM +0100, Eric Dumazet wrote:
+>>> I'm not applying this until someone explains to me why
+>>> we should remove this test from the splice receive but
+>>> keep it in the tcp_recvmsg() code where it has been
+>>> essentially forever.
+>> I found this patch usefull in my testings, but had a feeling something
+>> was not complete. If the goal is to reduce number of splice() calls,
+>> we also should reduce number of wakeups. If splice() is used in non
+>> blocking mode, nothing we can do here of course, since the application
+>> will use a poll()/select()/epoll() event before calling splice(). A
+>> good setting of SO_RCVLOWAT to (16*PAGE_SIZE)/2 might improve things.
+>>
+>> I tested this on current tree and it is not working : we still have
+>> one wakeup for each frame (ethernet link is a 100 Mb/s one)
 > 
-> And some other problems, like what's the semantic of /proc/<pid>/cgroup when
-> using none subsys.
+> Well, it simply means that data are not coming in fast enough compared to
+> the tiny amount of work you have to perform to forward them, there's nothing
+> wrong with that. It is important in my opinion not to wait for *enough* data
+> to come in, otherwise it might become impossible to forward small chunks.
+> I mean, if there are only 300 bytes left to forward, we must not wait
+> indefinitely for more data to come, we must forward those 300 bytes.
 > 
-> I'm afraid even if it's do-able it might require a lot of changes in cgroup.
+> In your case below, it simply means that the performance improvement brought
+> by splice will be really minor because you'll just avoid 2 memory copies,
+> which are ridiculously cheap at 100 Mbps. If you would change your program
+> to use recv/send, you would observe the exact same pattern, because as soon
+> as poll() wakes you up, you still only have one frame in the system buffers.
+> On a small machine I have here (geode 500 MHz), I easily have multiple
+> frames queued at 100 Mbps because when epoll() wakes me up, I have traffic
+> on something like 10-100 sockets, and by the time I process the first ones,
+> the later have time to queue up more data.
+
+My point is to use Gigabit links or 10Gb links and hundred or thousand of flows :)
+
+But if it doesnt work on a single flow, it wont work on many :)
+
+I tried my test program with a Gb link, one flow, and got splice() calls returns 23000 bytes
+in average, using a litle too much of CPU : If poll() could wait a litle bit more, CPU
+could be available for other tasks.
+
+If the application uses setsockopt(sock, SOL_SOCKET, SO_RCVLOWAT, [32768], 4), it
+would be good if kernel was smart enough and could reduce number of wakeups.
+
+(Next blocking point is the fixed limit of 16 pages per pipe, but thats another story)
+
 > 
-After quick look,
-it seems that css_set->subsys==empty case cannot be handled and need much
-changes. Maintaining hierarchy tree itself seems difficult.
+>> About tcp_recvmsg(), we might also remove the "!timeo" test as well,
+>> more testings are needed.
+> 
+> No right now we can't (we must move it somewhere else at least). Because
+> once at least one byte has been received (copied != 0), no other check
+> will break out of the loop (or at least I have not found it).
+> 
 
-I think cgroup is being stable day by day. So, I don't like to crash it
-by big hummer for this tiny feature.
+Of course we cant remove the test totally, but change the logic so that several skb
+might be used/consumed per tcp_recvmsg() call, like your patch did for splice()
 
-How about adding "none" subsys  ? (I'd like to set default=y ;)
+Lets focus on functional changes, not on implementation details :)
 
-As Paul said, "Show multiple hierarchy view for each mount point"
-seems attractive but it's not very fundametal, IMHO.
-If we can increase subsys_id dynamically or subsys can have
-multiple root node, the situation will change.
-
-Thanks,
--Kame
 
