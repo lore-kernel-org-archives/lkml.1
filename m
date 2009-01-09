@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZAIQhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZAIQiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbZAIQhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZAIQhi
+	id S1754651AbZAIQiW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZAIQiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:37:38 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:47460 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbZAIQhh (ORCPT
+	Fri, 9 Jan 2009 11:38:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60878 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752895AbZAIQiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:37:37 -0500
-X-IronPort-AV: E=Sophos;i="4.37,239,1231131600"; 
-   d="scan'208";a="35145981"
-Subject: Re: swiotlb: remove duplicated #include
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       beckyb@kernel.crashing.org, jj@chaosbits.net, weiyi.huang@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <49613CC4.1000000@goop.org>
-References: <20090104112541.GA25434@elte.hu>
-	 <20090104210420X.fujita.tomonori@lab.ntt.co.jp>
-	 <20090104121914.GA30255@elte.hu>
-	 <20090104214109A.fujita.tomonori@lab.ntt.co.jp>
-	 <20090104130113.GA24506@elte.hu>  <49613CC4.1000000@goop.org>
-Content-Type: text/plain
-Organization: Citrix Systems, Inc.
-Date: Fri, 09 Jan 2009 16:37:23 +0000
-Message-Id: <1231519043.27350.73.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Jan 2009 16:37:29.0978 (UTC) FILETIME=[905325A0:01C97278]
+	Fri, 9 Jan 2009 11:38:04 -0500
+Date: Fri, 9 Jan 2009 08:37:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <49677A0E.3090709@zytor.com>
+Message-ID: <alpine.LFD.2.00.0901090835010.6528@localhost.localdomain>
+References: <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain> <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+ <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org> <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>
+ <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <49677A0E.3090709@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-05 at 09:48 +1100, Jeremy Fitzhardinge wrote:
-> Ingo Molnar wrote:
-> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> >
-> >   
-> >>> In a few days, but wanted to hear back from either Jeremy or Becky 
-> >>> first about how well they actually work in their usecases.
-> >>>       
-> >> Well, you don't need to wait, I think.
-> >>
-> >> All Jeremy and Becky need is adding highmem support to swiotlb. How we 
-> >> support it doesn't matter. We can choose better one.
-> >>
-> >> We all (including Jeremy) agreed that Becky's physical address scheme is 
-> >> better (simpler) than Jeremy's struct page and offset scheme. Surely, 
-> >> Becky's scheme works for Xen and him (Jeremy said that he tested it 
-> >> lightly).
-> >>     
-> >
-> > Jeremy said, when he submitted this series, shortly before Christmas:
-> >
-> >  >> Here's a work in progress series [...]
-> >  >>
-> >  >> Quick testing showed no problems, but I haven't had the chance to do 
-> >  >> anything extensive.
-> >
-> > Jeremy, did you have a chance to do more testing with the current 
-> > tip/master bits on Xen, so that we can push it to Linus?
-> >   
+
+
+On Fri, 9 Jan 2009, H. Peter Anvin wrote:
 > 
-> I'm going to be on vacation until the 12th, so I won't have a chance to 
-> do anything until then (perhaps Ian will have a chance to poke at them 
-> before then).  I'm expecting Becky's patches to work as-is, or if not, 
-> be easily fixed with a couple of small bugfix patches.  So I say go 
-> ahead if they work for everyone else.
+> __asm_inline was my suggestion, to distinguish "inline this
+> unconditionally because gcc screws up in the presence of asm()"
 
-Only just got out from under my pile of vacation backlog...
+THERE IS NO ASM IN THERE!
 
-They don't quite work with Xen (at least the version in Jeremy's patch
-queue doesn't) but I agree that it should be possible to make it work
-and that there's no point in holding back just for Xen.
+Guys, look at the code. No asm. The whole notion that gcc gets confused by 
+inline asms IS BOGUS. It's simply not TRUE. Gcc gets confused because gcc 
+is confused, and it has NOTHING to do with inline asms.
 
-Ian.
+So please don't confuse things further. 
 
-> 
->     J
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+		Linus
