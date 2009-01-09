@@ -1,175 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbZAIGj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZAIGnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756828AbZAIGj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 01:39:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZAIGjs
+	id S1755816AbZAIGnV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 01:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZAIGnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 01:39:48 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:45749 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbZAIGjr (ORCPT
+	Fri, 9 Jan 2009 01:43:04 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60198 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbZAIGnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 01:39:47 -0500
-Date: Fri, 9 Jan 2009 15:34:17 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
-Message-Id: <20090109153417.ee79e86d.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 9 Jan 2009 01:43:03 -0500
+Date: Fri, 9 Jan 2009 07:57:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090109065708.GA26290@one.firstfloor.org>
+References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <1231444786.5715.8.camel@brick> <4966ABF9.9080409@zytor.com> <20090109033531.GR496@one.firstfloor.org> <alpine.LFD.2.00.0901081940260.6528@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901081940260.6528@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 14:32:26 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> How about this idea ? Any comments are welcome.
+On Thu, Jan 08, 2009 at 07:42:48PM -0800, Linus Torvalds wrote:
+> > I actually often use noinline when developing code simply because it 
+> > makes it easier to read oopses when gcc doesn't inline ever static
+> > (which it normally does if it only has a single caller)
 > 
-I like this :)
-It would be very usefull to define a hierarchy just for grouping processes.
+> Yes. Gcc inlining is a total piece of sh*t.
 
+The static inlining by default (unfortunately) saves a lot of text size.
 
-Thanks,
-Daisuke Nishimura.
+For testing I built an x86-64 allyesconfig kernel with 
+-fno-inline-functions-called-once (which disables the default static
+inlining), and it increased text size by ~4.1% (over 2MB for a allyesconfig 
+kernel). So I think we have to keep that, dropping it would cost too
+much :/
 
-> -Kame
-> 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Add an NO OPERATION cgroup subsystem.
-> 
-> Cgroup itself is providing a feature to attach a task(PID) to some class.
-> This feature itself is very useful but "no operation" cgroup is not supported
-> now other than debug cgroup. (But debug cgroup should be for DEBUG. distro
-> may not configure it.)
-> 
-> Motivation: Simply classify Applications by cgroup
->   When using cgroup for classifying applications, some kind of "control" or
->   "account" subsys must be used. For flexible use of cgroup's nature of
->   classifying applications, NOOP is useful. It can be used regardless of
->   resource accounting unit or name spaces or some controls.
->   IOW, NOOP cgroup allows users to tie PIDs with some nickname.
-> 
-> After this, application can be checked whether it's still alive or not by
-> 
-> 	mount -t cgroup none /var/apps noop
-> 	mkdir /var/apps/mydaemon
-> 	echo 0 > /var/apps/mydaemon
-> 	/etc/init.d/mydaemon start
-> 	exit
-> 
-> This can be used as the same technique of "recording pid into /var/run/xxx.pid"
-> and not necessary to remove stale files. If mydaemon dies, tasks file will
-> be empty and notify_on_release handler can be used.
-> 
-> I myself want to use this for replacement of "ps -elf | grep" if libcgroup supports
-> ps under cgroup.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/cgroup_subsys.h |    4 ++++
->  init/Kconfig                  |    9 +++++++++
->  kernel/Makefile               |    1 +
->  kernel/cgroup_noop.c          |   34 ++++++++++++++++++++++++++++++++++
->  4 files changed, 48 insertions(+)
-> 
-> Index: mmotm-2.6.28-Jan8/include/linux/cgroup_subsys.h
-> ===================================================================
-> --- mmotm-2.6.28-Jan8.orig/include/linux/cgroup_subsys.h
-> +++ mmotm-2.6.28-Jan8/include/linux/cgroup_subsys.h
-> @@ -59,4 +59,8 @@ SUBSYS(freezer)
->  SUBSYS(net_cls)
->  #endif
->  
-> +#ifdef CONFIG_CGROUP_NOOP
-> +SUBSYS(noop)
-> +#endif
-> +
->  /* */
-> Index: mmotm-2.6.28-Jan8/kernel/Makefile
-> ===================================================================
-> --- mmotm-2.6.28-Jan8.orig/kernel/Makefile
-> +++ mmotm-2.6.28-Jan8/kernel/Makefile
-> @@ -61,6 +61,7 @@ obj-$(CONFIG_CGROUP_DEBUG) += cgroup_deb
->  obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
->  obj-$(CONFIG_CPUSETS) += cpuset.o
->  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
-> +obj-$(CONFIG_CGROUP_NOOP) += cgroup_noop.o
->  obj-$(CONFIG_UTS_NS) += utsname.o
->  obj-$(CONFIG_USER_NS) += user_namespace.o
->  obj-$(CONFIG_PID_NS) += pid_namespace.o
-> Index: mmotm-2.6.28-Jan8/kernel/cgroup_noop.c
-> ===================================================================
-> --- /dev/null
-> +++ mmotm-2.6.28-Jan8/kernel/cgroup_noop.c
-> @@ -0,0 +1,34 @@
-> +/*
-> + * kernel/cgroup_noop.c - No Operation Cgroup. Just for organizing process tree
-> + */
-> +
-> +#include <linux/cgroup.h>
-> +#include <linux/fs.h>
-> +#include <linux/slab.h>
-> +#include <linux/rcupdate.h>
-> +
-> +#include <asm/atomic.h>
-> +
-> +static struct cgroup_subsys_state *noop_create(struct cgroup_subsys *ss,
-> +						   struct cgroup *cont)
-> +{
-> +	struct cgroup_subsys_state *css = kzalloc(sizeof(*css), GFP_KERNEL);
-> +
-> +	if (!css)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	return css;
-> +}
-> +
-> +static void noop_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
-> +{
-> +	kfree(cont->subsys[noop_subsys_id]);
-> +}
-> +
-> +
-> +struct cgroup_subsys noop_subsys = {
-> +	.name = "noop",
-> +	.subsys_id = noop_subsys_id,
-> +	.create = noop_create,
-> +	.destroy = noop_destroy,
-> +};
-> Index: mmotm-2.6.28-Jan8/init/Kconfig
-> ===================================================================
-> --- mmotm-2.6.28-Jan8.orig/init/Kconfig
-> +++ mmotm-2.6.28-Jan8/init/Kconfig
-> @@ -354,6 +354,15 @@ config CGROUP_DEBUG
->  
->  	  Say N if unsure
->  
-> +config CGROUP_NOOP
-> +	bool "No Operation cgroup subsystem"
-> +	depends on CGROUPS
-> +	help
-> +	  This provides cgroup subsystem which has no special features. By
-> +	  this, you can classify applications freely. That is, you can
-> +	  classify applications regardless of accounting or control contexts
-> +	  of the system.
-> +
->  config CGROUP_NS
->          bool "Namespace cgroup subsystem"
->          depends on CGROUPS
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-Andi
+
+-- 
+ak@linux.intel.com
