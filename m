@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZAIG0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbZAIG1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZAIG0Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 01:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZAIG0I
+	id S1757045AbZAIG1D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 01:27:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZAIG0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 01:26:08 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:47277 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752760AbZAIG0G (ORCPT
+	Fri, 9 Jan 2009 01:26:52 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:7998 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbZAIG0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 01:26:06 -0500
-Date: Fri, 9 Jan 2009 17:26:00 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [RFC PATCH crypto 2/4] AES-NI: Export x86 AES encrypt/decrypt
-	functions
-Message-ID: <20090109062600.GA3133@gondor.apana.org.au>
-References: <1231120935.5937.29.camel@yhuang-dev.sh.intel.com>
+	Fri, 9 Jan 2009 01:26:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=Ae18FrpBIMPbQlglE40etDeBVH8uLC7+CfvOUSWRaqczle7XANQDp1ZBy6EAvIORC
+	zP2MvOpnttKeDuuMzyIsw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231120935.5937.29.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 8 Jan 2009 22:26:46 -0800
+Message-ID: <6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
+Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.144
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 05, 2009 at 10:02:15AM +0800, Huang Ying wrote:
-> Export x86 AES encrypt/decrypt functions
-> 
-> Intel AES-NI AES acceleration instructions touch XMM state, to use
-> that in soft_irq context, general x86 AES implementation is used as
-> fallback. The first parameter is changed from struct crypto_tfm * to
-> struct crypto_aes_ctx * to make it easier to deal with 16 bytes
-> alignment requirement of AES-NI implementation.
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+On Thu, Jan 8, 2009 at 9:32 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+> Motivation: Simply classify Applications by cgroup
+>  When using cgroup for classifying applications, some kind of "control" or
+>  "account" subsys must be used. For flexible use of cgroup's nature of
+>  classifying applications, NOOP is useful. It can be used regardless of
+>  resource accounting unit or name spaces or some controls.
+>  IOW, NOOP cgroup allows users to tie PIDs with some nickname.
 
-Also applied.
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I agree that the idea is useful. But to me it seems to a bit
+artificial that you still have to mount some kind of subsystem purely
+to get the grouping, and that you can only have one such grouping.
+
+I think I'd prefer the ability to mount a cgroups hierarchy without
+*any* subsystems (maybe with "-o none"?) which would give you a
+similar effect, but without you needing to know about a special no-op
+subsystem, and would allow you to have multiple "no-op" groupings.
+
+Paul
