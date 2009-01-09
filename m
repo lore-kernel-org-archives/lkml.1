@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbZAIVUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbZAIVUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbZAIVUT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbZAIVUA
+	id S1757525AbZAIVUz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZAIVUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:20:00 -0500
-Received: from lazybastard.de ([212.112.238.170]:49131 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753759AbZAIVT7 (ORCPT
+	Fri, 9 Jan 2009 16:20:46 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43674 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753185AbZAIVUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:19:59 -0500
-Date: Fri, 9 Jan 2009 22:19:38 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: David Brown <lkml@davidb.org>
-Cc: Phil Oester <kernel@linuxace.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Message-ID: <20090109211937.GA14342@logfs.org>
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <4966B24E.1050700@lougher.demon.co.uk> <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com> <20090109023629.GA29520@linuxace.com> <20090109165422.GF24884@logfs.org> <20090109193738.GA9827@linode.davidb.org>
+	Fri, 9 Jan 2009 16:20:45 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4967BF99.7010507@s5r6.in-berlin.de>
+Date: Fri, 09 Jan 2009 22:20:25 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090109193738.GA9827@linode.davidb.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Greg KH <gregkh@suse.de>
+CC: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Jay Fenlason <fenlason@redhat.com>
+Subject: Re: post 2.6.28 regression: device_initialize() now sleeps, and	may
+ fail without recovery strategy
+References: <496798FE.8030900@s5r6.in-berlin.de> <20090109205633.GB19904@suse.de> <4967BE13.6070003@s5r6.in-berlin.de>
+In-Reply-To: <4967BE13.6070003@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 January 2009 11:37:39 -0800, David Brown wrote:
-> On Fri, Jan 09, 2009 at 05:54:22PM +0100, Jörn Engel wrote:
-> >
-> >In general, filesystems and ABI changes are special because stupid
-> >mistakes are eternal.  If some device driver has a bug, you can fix it,
-> >reboot and be done with it.  Not so with filesystems.
+Stefan Richter wrote:
+> Greg KH wrote:
+>> I originally looked at changing this to be at device_add time, but I
+>> think there are some code paths that do device_initialize and then do
+>> some operations on the device before calling device_add.
 > 
-> Squashfs is readonly from the kernel.  The images are created with
-> userspace tools.
+> get_device() and put_device() seem to be about the only things that are
+> interesting before device_add().
+> 
+> Don't know if a final put_device() in this situation
 
-While true, it doesn't make a difference.  If, for example, your
-structures members are not naturally aligned, you take a performance hit
-for no good reason.  Simply moving fields around would make the code
-go faster.  But the format is fixed and prevents you from making this
-change.
-
-You have to get those things right from the beginning or pay for your
-mistakes everafter.  In general (and I stress "In general") filesystems
-want more review than ordinary device drivers.  And just to stress that
-again, this is not an argument against merging squashfs now.
-
-Jörn
-
+...would require dev->p to be present.
 -- 
-Simplicity is prerequisite for reliability.
--- Edsger W. Dijkstra
+Stefan Richter
+-=====-==--= ---= -=--=
+http://arcgraph.de/sr/
