@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZAIQiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZAIQjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbZAIQiW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZAIQiG
+	id S1754327AbZAIQjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZAIQi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:38:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60878 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752895AbZAIQiE (ORCPT
+	Fri, 9 Jan 2009 11:38:59 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46545 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbZAIQi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:38:04 -0500
-Date: Fri, 9 Jan 2009 08:37:08 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+	Fri, 9 Jan 2009 11:38:57 -0500
+Message-ID: <49677CB1.3030701@zytor.com>
+Date: Fri, 09 Jan 2009 08:34:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: jim owens <jowens@hp.com>, Linus Torvalds <torvalds@linux-foundation.org>,
        Chris Mason <chris.mason@oracle.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
        Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
@@ -26,32 +29,41 @@ cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
        Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
        Peter Morreale <pmorreale@novell.com>,
        Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <49677A0E.3090709@zytor.com>
-Message-ID: <alpine.LFD.2.00.0901090835010.6528@localhost.localdomain>
-References: <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain> <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
- <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org> <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>
- <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <49677A0E.3090709@zytor.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu>
+In-Reply-To: <20090109153508.GA4671@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Jan 2009, H. Peter Anvin wrote:
+Ingo Molnar wrote:
 > 
-> __asm_inline was my suggestion, to distinguish "inline this
-> unconditionally because gcc screws up in the presence of asm()"
+> My goal is to make the kernel smaller and faster, and as far as the 
+> placement of 'inline' keywords goes, i dont have too strong feelings about 
+> how it's achieved: they have a certain level of documentation value 
+> [signalling that a function is _intended_ to be lightweight] but otherwise 
+> they are pretty neutral attributes to me.
+> 
 
-THERE IS NO ASM IN THERE!
+As far as naming is concerned, gcc effectively supports four levels,
+which *currently* map onto macros as follows:
 
-Guys, look at the code. No asm. The whole notion that gcc gets confused by 
-inline asms IS BOGUS. It's simply not TRUE. Gcc gets confused because gcc 
-is confused, and it has NOTHING to do with inline asms.
+__always_inline		Inline unconditionally
+inline			Inlining hint
+<nothing>		Standard heuristics
+noinline		Uninline unconditionally
 
-So please don't confuse things further. 
+A lot of noise is being made about the naming of the levels (and I
+personally believe we should have a different annotation for "inline
+unconditionally for correctness" and "inline unconditionally for
+performance", as a documentation issue), but those are the four we get.
 
-		Linus
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
