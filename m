@@ -1,125 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbZAIXbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760578AbZAIXbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752031AbZAIXbD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:31:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZAIXaw
+	id S1760578AbZAIXbY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZAIXbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:30:52 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:58281 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbZAIXav (ORCPT
+	Fri, 9 Jan 2009 18:31:08 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:57683 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759345AbZAIXbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:30:51 -0500
-Date: Sat, 10 Jan 2009 00:32:26 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109233226.GA25793@uranus.ravnborg.org>
-References: <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109094142.367012b6@infradead.org> <20090109180213.GH26290@one.firstfloor.org> <alpine.LFD.2.00.0901090954410.6528@localhost.localdomain> <20090109185509.GJ26290@one.firstfloor.org> <20090109195232.GE23869@mit.edu> <20090109224410.GQ26290@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090109224410.GQ26290@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 9 Jan 2009 18:31:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:x-x-sender:to:cc:subject:message-id:user-agent:mime-version
+         :content-type:from;
+        b=xTr7z0eWhiiIWsL/Jp76WarQ8yn5BV9HadRxLoqELWNVa2piQiH113yhxZ+IUMFf44
+         sfiIgDGdOdfCslyNNIwsQ50chZzbV+rPyXuX7fiXpb9bafEI1czEm4tLsO+qL5MEAgLK
+         Pp4w4nsvK8r3URKwSxQu/yqrWmClNfklRnXwg=
+Date: Fri, 9 Jan 2009 18:30:58 -0500 (EST)
+X-X-Sender: parag@localhost.localdomain
+To: shemminger@vyatta.com
+cc: davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix net/irda build breakage
+Message-ID: <alpine.LFD.2.00.0901091829270.21215@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+From: Parag Warudkar <parag.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 11:44:10PM +0100, Andi Kleen wrote:
-> > Fetch a gigabyte's worth of data for the debuginfo RPM? 
-> 
-> The suse 11.0 kernel debuginfo is ~120M.
+commit af0490810cfa159b4894ddecfc5eb2e4432fb976 breaks build for net/irda -
 
-How is this debuginfo generated?
+drivers/net/irda/donauboe.c: In function 'toshoboe_interrupt':
+drivers/net/irda/donauboe.c:1197: error: 'struct toshoboe_cb' has no member named 'stats'
+drivers/net/irda/donauboe.c:1201: error: 'struct toshoboe_cb' has no member named 'stats'
+drivers/net/irda/donauboe.c:1283: error: 'struct toshoboe_cb' has no member named 'stats'
+make[3]: *** [drivers/net/irda/donauboe.o] Error 1
+make[2]: *** [drivers/net/irda] Error 2
 
-Someone have posted the following patch which I did not apply in lack
-of any real need. But maybe distroes have something similar already
-so it makes sense to apply it.
+Fix this.
 
-	Sam
+Signed-off-by: Parag Warudkar <parag.lkml@gmail.com>
 
-Subject: [PATCH] Kbuild: generate debug info in building
-
-This patch will generate kernel debuginfo in Kbuild when invoking "make
-debug_info". The separate debug files are in .debug under building tree.
-They can help the cases of requiring debug info for tracing/debug tools,
-especially cross-compilation. Moreover, it can simplify or standardize
-the packaging process for the distributions those will provide
-kernel-debuginfo.
-
-Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
----
- Makefile                 |   14 ++++++++++++++
- scripts/Makefile.modpost |   14 ++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
-
-
-diff --git a/Makefile b/Makefile
-index 7f9ff9b..eed7510 100644
---- a/Makefile
-+++ b/Makefile
-@@ -814,6 +814,20 @@ define rule_vmlinux-modpost
-        $(Q)echo 'cmd_$@ := $(cmd_vmlinux-modpost)' > $(dot-target).cmd
- endef
-
-+ifdef CONFIG_DEBUG_INFO
-+quiet_cmd_vmlinux_debug = GEN     $<.debug
-+      cmd_vmlinux_debug = mkdir -p .debug;                          \
-+                          $(OBJCOPY) --only-keep-debug              \
-+                                     $< .debug/$<.debug
-+targets += vmlinux.debug
-+endif
-+
-+debug_info: vmlinux FORCE
-+ifdef CONFIG_DEBUG_INFO
-+       $(call if_changed,vmlinux_debug)
-+       $(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
-+endif
-+
- # vmlinux image - including updated kernel symbols
- vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o
-$(kallsyms.o) FORCE
- ifdef CONFIG_HEADERS_CHECK
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index f4053dc..0df73b2 100644
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -137,6 +137,20 @@ $(modules): %.ko :%.o %.mod.o FORCE
-
- targets += $(modules)
-
-+modules-debug := $(modules:.ko=.ko.debug)
-+ifdef CONFIG_DEBUG_INFO
-+quiet_cmd_debug_ko = GEN     $@
-+      cmd_debug_ko = mkdir -p .debug/`dirname $@`;                     \
-+                    $(OBJCOPY) --only-keep-debug $< .debug/$@
-+targets += $(modules-debug)
-+endif
-+
-+debug_info: $(modules-debug) FORCE
-+
-+$(modules-debug): $(modules) FORCE
-+ifdef CONFIG_DEBUG_INFO
-+       $(call if_changed,debug_ko)
-+endif
-
- # Add FORCE to the prequisites of a target to force it to be always
-rebuilt.
- #
----------------------------------------------------------------------------
+diff --git a/drivers/net/irda/donauboe.c b/drivers/net/irda/donauboe.c
+index 687c2d5..5acb8b2 100644
+--- a/drivers/net/irda/donauboe.c
++++ b/drivers/net/irda/donauboe.c
+@@ -1194,13 +1194,13 @@ toshoboe_interrupt (int irq, void *dev_id)
+                txp = txpc;
+                txpc++;
+                txpc %= TX_SLOTS;
+-              self->stats.tx_packets++;
++		self->netdev->stats.tx_packets++;
+                if (self->ring->tx[txpc].control & OBOE_CTL_TX_HW_OWNS)
+                    self->ring->tx[txp].control &= ~OBOE_CTL_TX_RTCENTX;
+              }
+-          self->stats.tx_packets--;
++		self->netdev->stats.tx_packets--;
+  #else
+-          self->stats.tx_packets++;
++		self->netdev->stats.tx_packets++;
+  #endif
+            toshoboe_start_DMA(self, OBOE_CONFIG0H_ENTX);
+          }
+@@ -1280,7 +1280,7 @@ dumpbufs(self->rx_bufs[self->rxs],len,'<');
+                        skb_put (skb, len);
+                        skb_copy_to_linear_data(skb, self->rx_bufs[self->rxs],
+  					      len);
+-                      self->stats.rx_packets++;
++			self->netdev->stats.rx_packets++;
+                        skb->dev = self->netdev;
+                        skb_reset_mac_header(skb);
+                        skb->protocol = htons (ETH_P_IRDA);
