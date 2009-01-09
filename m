@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZAISFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZAISIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbZAISFy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZAISFm
+	id S1754789AbZAISIt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZAISIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:05:42 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52172 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbZAISFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:05:41 -0500
-Date: Fri, 9 Jan 2009 19:19:52 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Dirk Hohndel <hohndel@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz,
-       richard.guenther@gmail.com
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
-Message-ID: <20090109181952.GI26290@one.firstfloor.org>
-References: <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <49677CB1.3030701@zytor.com> <20090109084620.3c711aad@infradead.org> <20090109172011.GD26290@one.firstfloor.org> <20090109172801.GC6936@parisc-linux.org> <20090109174719.GG26290@one.firstfloor.org> <20090109173914.GD6936@parisc-linux.org> <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain>
-Mime-Version: 1.0
+	Fri, 9 Jan 2009 13:08:38 -0500
+Received: from kandzendo.ru ([195.178.208.66]:59108 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752958AbZAISIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 13:08:37 -0500
+Date: Fri, 9 Jan 2009 21:08:36 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
+       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 10/16] dma-debug: add add checking for map/unmap_sg
+Message-ID: <20090109180836.GD30168@ioremap.net>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-11-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1231517970-20288-11-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So we do have special issues. And exactly _because_ we have special issues 
-> we should also expect that some compiler defaults simply won't ever really 
-> be appropriate for us.
+On Fri, Jan 09, 2009 at 05:19:24PM +0100, Joerg Roedel (joerg.roedel@amd.com) wrote:
+> +void debug_map_sg(struct device *dev, struct scatterlist *sg,
+> +		  int nents, int direction)
+> +{
+> +	struct dma_debug_entry *entry;
+> +	struct scatterlist *s;
+> +	int i;
+> +
+> +	if (global_disable)
+> +		return;
+> +
+> +	for_each_sg(sg, s, nents, i) {
+> +		entry = dma_entry_alloc();
+> +		if (!entry)
+> +			return;
+> +
+> +		entry->type      = dma_debug_sg;
+> +		entry->dev       = dev;
+> +		entry->cpu_addr  = sg_virt(s);
+> +		entry->size      = s->length;
+> +		entry->dev_addr  = s->dma_address;
+> +		entry->direction = direction;
+> +
+> +		add_dma_entry(entry);
+> +	}
+> +}
+> +EXPORT_SYMBOL(debug_map_sg);
+> +
+> +void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
+> +		    int nelems, int dir)
+> +{
+> +	struct scatterlist *s;
+> +	int i;
+> +
+> +	if (global_disable)
+> +		return;
+> +
+> +	for_each_sg(sglist, s, nelems, i) {
+> +
+> +		struct dma_debug_entry ref = {
+> +			.type           = dma_debug_sg,
+> +			.dev            = dev,
+> +			.cpu_addr       = sg_virt(s),
+> +			.dev_addr       = s->dma_address,
+> +			.size           = s->length,
+> +			.direction      = dir,
+> +		};
+> +
+> +		check_unmap(&ref);
 
-I agree that the kernel needs quite different inlining heuristics
-than let's say a template heavy C++ program. I guess that is 
-also where our trouble comes from -- gcc is more tuned for the
-later. Perhaps because the C++ programmers are better at working
-with the gcc developers?
-
-But it's also not inconceivable that gcc adds a -fkernel-inlining or
-similar that changes the parameters if we ask nicely. I suppose
-actually such a parameter would be useful for far more programs
-than the kernel.
-
--Andi
+Will this print false errors if above map debug failed to add an entry
+into the list?
 
 -- 
-ak@linux.intel.com
+	Evgeniy Polyakov
