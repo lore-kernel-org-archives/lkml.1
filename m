@@ -1,252 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZAIE1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZAIEdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbZAIE1c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 23:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbZAIE1X
+	id S1755648AbZAIEdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 23:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZAIEdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 23:27:23 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49186 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZAIE1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 23:27:22 -0500
-Date: Fri, 9 Jan 2009 15:27:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for January 9
-Message-Id: <20090109152710.5481676c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__9_Jan_2009_15_27_10_+1100_Zkra_LfVD9jvSVVv"
+	Thu, 8 Jan 2009 23:33:04 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:43088 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753111AbZAIEdB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 23:33:01 -0500
+Date: Fri, 9 Jan 2009 10:02:57 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, menage@google.com
+Subject: Re: [RFC][PATCH 1/4] memcg: fix for
+	mem_cgroup_get_reclaim_stat_from_page
+Message-ID: <20090109043257.GB9737@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090108190818.b663ce20.nishimura@mxp.nes.nec.co.jp> <20090108191430.af89e037.nishimura@mxp.nes.nec.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090108191430.af89e037.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__9_Jan_2009_15_27_10_+1100_Zkra_LfVD9jvSVVv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-08 19:14:30]:
 
-Hi all,
+> In case of swapin, a new page is added to lru before it is charged,
+> so page->pc->mem_cgroup points to NULL or last mem_cgroup the page
+> was charged before.
+> 
+> In the latter case, if the mem_cgroup has already freed by rmdir,
+> the area pointed to by page->pc->mem_cgroup may have invalid data.
+> 
+> Actually, I saw general protection fault.
+> 
+>     general protection fault: 0000 [#1] SMP
+>     last sysfs file: /sys/devices/system/cpu/cpu15/cache/index1/shared_cpu_map
+>     CPU 4
+>     Modules linked in: ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables bridge stp ipv6 autofs4 hidp rfcomm l2cap bluetooth sunrpc dm_mirror dm_region_hash dm_log dm_multipath dm_mod rfkill input_polldev sbs sbshc battery ac lp sg ide_cd_mod cdrom button serio_raw acpi_memhotplug parport_pc e1000 rtc_cmos parport rtc_core rtc_lib i2c_i801 i2c_core shpchp pcspkr ata_piix libata megaraid_mbox megaraid_mm sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd [last unloaded: microcode]
+>     Pid: 26038, comm: page01 Tainted: G        W  2.6.28-rc9-mm1-mmotm-2008-12-22-16-14-f2ab3dea #1
+>     RIP: 0010:[<ffffffff8028e710>]  [<ffffffff8028e710>] update_page_reclaim_stat+0x2f/0x42
+>     RSP: 0000:ffff8801ee457da8  EFLAGS: 00010002
+>     RAX: 32353438312021c8 RBX: 0000000000000000 RCX: 32353438312021c8
+>     RDX: 0000000000000000 RSI: ffff8800cb0b1000 RDI: ffff8801164d1d28
+>     RBP: ffff880110002cb8 R08: ffff88010f2eae23 R09: 0000000000000001
+>     R10: ffff8800bc514b00 R11: ffff880110002c00 R12: 0000000000000000
+>     R13: ffff88000f484100 R14: 0000000000000003 R15: 00000000001200d2
+>     FS:  00007f8a261726f0(0000) GS:ffff88010f2eaa80(0000) knlGS:0000000000000000
+>     CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+>     CR2: 00007f8a25d22000 CR3: 00000001ef18c000 CR4: 00000000000006e0
+>     DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>     DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>     Process page01 (pid: 26038, threadinfo ffff8801ee456000, task ffff8800b585b960)
+>     Stack:
+>      ffffe200071ee568 ffff880110001f00 0000000000000000 ffffffff8028ea17
+>      ffff88000f484100 0000000000000000 0000000000000020 00007f8a25d22000
+>      ffff8800bc514b00 ffffffff8028ec34 0000000000000000 0000000000016fd8
+>     Call Trace:
+>      [<ffffffff8028ea17>] ? ____pagevec_lru_add+0xc1/0x13c
+>      [<ffffffff8028ec34>] ? drain_cpu_pagevecs+0x36/0x89
+>      [<ffffffff802a4f8c>] ? swapin_readahead+0x78/0x98
+>      [<ffffffff8029a37a>] ? handle_mm_fault+0x3d9/0x741
+>      [<ffffffff804da654>] ? do_page_fault+0x3ce/0x78c
+>      [<ffffffff804d7a42>] ? trace_hardirqs_off_thunk+0x3a/0x3c
+>      [<ffffffff804d860f>] ? page_fault+0x1f/0x30
+>     Code: cc 55 48 8d af b8 0d 00 00 48 89 f7 53 89 d3 e8 39 85 02 00 48 63 d3 48 ff 44 d5 10 45 85 e4 74 05 48 ff 44 d5 00 48 85 c0 74 0e <48> ff 44 d0 10 45 85 e4 74 04 48 ff 04 d0 5b 5d 41 5c c3 41 54
+>     RIP  [<ffffffff8028e710>] update_page_reclaim_stat+0x2f/0x42
+>      RSP <ffff8801ee457da8>
+> 
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  mm/memcontrol.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index e2996b8..62e69d8 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -559,6 +559,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
+>  		return NULL;
+> 
+>  	pc = lookup_page_cgroup(page);
+> +	smp_rmb();
 
-Changes since 20090108:
+Do you really need the read memory barrier?
 
-Dropped trees (temporarily):
-	ocfs2 (build problem)
-	rr (difficult conflict)
-	cpu_alloc (build problem)
-	audit (difficult conflicts)
+> +	if (!PageCgroupUsed(pc))
+> +		return NULL;
+> +
 
-The rr tree gained a difficult conflict against Linus' tree and was
-dropped.
+In this case we've hit a case where the page is valid and the pc is
+not. This does fix the problem, but won't this impact us getting
+correct reclaim stats and thus indirectly impact the working of
+pressure?
 
-The nommu tree lost a conflict.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 129 trees (counting Linus' and 15 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
-CONFLICT (content): Merge conflict in kernel/auditsc.c
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in kernel/rcuclassic.c
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-CONFLICT (content): Merge conflict in kernel/time/tick-common.c
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-CONFLICT (content): Merge conflict in drivers/scsi/scsi_ioctl.c
-CONFLICT (content): Merge conflict in drivers/scsi/sd.c
-Merging ocfs2/linux-next
-$ git reset --hard HEAD^
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging mtd/master
-CONFLICT (content): Merge conflict in drivers/mtd/devices/m25p80.c
-CONFLICT (content): Merge conflict in drivers/mtd/devices/mtd_dataflash.c
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/powerpc/kernel/sysfs.c
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in kernel/module.c
-$ git reset --hard
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-CONFLICT (content): Merge conflict in fs/ioctl.c
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/net/e100.c
-CONFLICT (content): Merge conflict in drivers/net/starfire.c
-CONFLICT (content): Merge conflict in drivers/net/tg3.c
-CONFLICT (content): Merge conflict in firmware/Makefile
-CONFLICT (content): Merge conflict in firmware/WHENCE
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging trivial/for-next
-Merging squashfs/master
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Fri__9_Jan_2009_15_27_10_+1100_Zkra_LfVD9jvSVVv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklm0h4ACgkQjjKRsyhoI8za5ACgvHJg0Zs+RAAhjjaGjg8XtX/y
-FYMAoKQlOnd2tTYKKM71YnzE5qzgAQuD
-=pQxw
------END PGP SIGNATURE-----
-
---Signature=_Fri__9_Jan_2009_15_27_10_+1100_Zkra_LfVD9jvSVVv--
+>  	mz = page_cgroup_zoneinfo(pc);
+>  	if (!mz)
+>  		return NULL;
+>
+-- 
+	Balbir
