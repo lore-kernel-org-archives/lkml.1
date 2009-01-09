@@ -1,96 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbZAIUcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZAIUhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbZAIUcB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:32:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbZAIUbO
+	id S1756195AbZAIUhc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZAIUhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:31:14 -0500
-Received: from bee.hiwaay.net ([216.180.54.11]:38448 "EHLO bee.hiwaay.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756449AbZAIUbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 15:31:12 -0500
-Date: Fri, 9 Jan 2009 14:31:10 -0600
-From: Chris Adams <cmadams@hiwaay.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix leap second message hang
-Message-ID: <20090109203110.GA1523360@hiwaay.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Jan 2009 15:37:20 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:42042 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857AbZAIUhQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 15:37:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=KIX5gOtovExeHDeWI8YA7VQIT1HbloncRxCiI5SFhGl2nXWZzAskDVE6j8xGL1Zyr5
+         rtUIPm6wX6vE0CGk+soGl5yQeE/ipHKa2PmTwsdQUhnpAgRndfh7Ms9TQZDXm1If9z1B
+         aVXF0zVZTAfdlYECWbz90MUbFzpPjBI8kCVuM=
+Message-ID: <84fc9c000901091237i68b2e495tab55e61fb3dbd565@mail.gmail.com>
+Date: Fri, 9 Jan 2009 21:37:13 +0100
+From: "Richard Guenther" <richard.guenther@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
+Cc: "Matthew Wilcox" <matthew@wil.cx>, "Andi Kleen" <andi@firstfloor.org>,
+       "Dirk Hohndel" <hohndel@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "jim owens" <jowens@hp.com>, "Chris Mason" <chris.mason@oracle.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Nick Piggin" <npiggin@suse.de>,
+       "Peter Morreale" <pmorreale@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, jh@suse.cz
+In-Reply-To: <alpine.LFD.2.00.0901091217530.6528@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4i
+References: <496648C7.5050700@zytor.com>
+	 <20090109172011.GD26290@one.firstfloor.org>
+	 <20090109172801.GC6936@parisc-linux.org>
+	 <20090109174719.GG26290@one.firstfloor.org>
+	 <20090109173914.GD6936@parisc-linux.org>
+	 <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain>
+	 <84fc9c000901091109t2c2aef2fu596f8807b0962688@mail.gmail.com>
+	 <alpine.LFD.2.00.0901091128170.6528@localhost.localdomain>
+	 <84fc9c000901091214i16fc74b7q349433a5586d5619@mail.gmail.com>
+	 <alpine.LFD.2.00.0901091217530.6528@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending this outside the big long thread to make sure it gets added
-(it isn't critical right now but I don't want to forget it).
+On Fri, Jan 9, 2009 at 9:26 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Fri, 9 Jan 2009, Richard Guenther wrote:
+>>
+>> This is a case where the improved IPA-CP (interprocedural constant
+>> propagation) of GCC 4.4 may help.  In general GCC cannot say how a call
+>> argument may affect optimization if the function was inlined, so the
+>> size estimates are done with just looking at the function body, not the
+>> arguments (well, for GCC 4.4 this is not completely true, there is now
+>> some "heuristics").  With IPA-CP GCC will clone the function for the
+>> constant arguments, optimize it and eventually inline it if it is small
+>> enough.  At the moment this happens only if all callers call the
+>> function with the same constant though (at least I think so).
+>
+> Ok, that's useless. The whole point is that everybody gives different -
+> but still constant - arguments.
 
-From: Chris Adams <cmadams@hiwaay.net>
+Btw, both GCC 4.3 and upcoming GCC 4.4 inline the bit-test.  This is what I
+used as a testcase (to avoid the single-call and single-constant cases):
 
-The code to handle leap seconds printks an information message when the
-second is inserted or deleted.  It does this while holding xtime_lock.
-However, printk wakes up klogd, and in some cases, the scheduler tries
-to get the current kernel time, trying to get xtime_lock (which results
-in a deadlock).  This moved the printks outside of the lock.  It also
-adds a comment to not use printk while holding xtime_lock.
+#define BITS_PER_LONG 32
+static inline int constant_test_bit(int nr, const volatile unsigned long *addr)
+{
+  return ((1UL << (nr % BITS_PER_LONG)) &
+          (((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
+}
 
-Signed-off-by: Chris Adams <cmadams@hiwaay.net>
-Acked-by: Linas Vepstas <linasvepstas@gmail.com>
----
-diff -urpN linux-2.6.28-git5-vanilla/include/linux/time.h linux-2.6.28-git5/include/linux/time.h
---- linux-2.6.28-git5-vanilla/include/linux/time.h	2009-01-02 22:09:10.000000000 -0600
-+++ linux-2.6.28-git5/include/linux/time.h	2009-01-03 11:57:27.000000000 -0600
-@@ -99,6 +99,12 @@ static inline struct timespec timespec_s
- 
- extern struct timespec xtime;
- extern struct timespec wall_to_monotonic;
-+
-+/*
-+ * Do not call printk while holding this lock; it wakes klogd and the
-+ * scheduler may try to get the current kernel time, which will try to get
-+ * this lock.
-+ */
- extern seqlock_t xtime_lock;
- 
- extern unsigned long read_persistent_clock(void);
-diff -urpN linux-2.6.28-git5-vanilla/kernel/time/ntp.c linux-2.6.28-git5/kernel/time/ntp.c
---- linux-2.6.28-git5-vanilla/kernel/time/ntp.c	2009-01-02 22:09:34.000000000 -0600
-+++ linux-2.6.28-git5/kernel/time/ntp.c	2009-01-03 11:57:46.000000000 -0600
-@@ -130,6 +130,7 @@ void ntp_clear(void)
- static enum hrtimer_restart ntp_leap_second(struct hrtimer *timer)
- {
- 	enum hrtimer_restart res = HRTIMER_NORESTART;
-+	const char *msg = NULL;
- 
- 	write_seqlock(&xtime_lock);
- 
-@@ -140,8 +141,7 @@ static enum hrtimer_restart ntp_leap_sec
- 		xtime.tv_sec--;
- 		wall_to_monotonic.tv_sec++;
- 		time_state = TIME_OOP;
--		printk(KERN_NOTICE "Clock: "
--		       "inserting leap second 23:59:60 UTC\n");
-+		msg = "Clock: inserting leap second 23:59:60 UTC";
- 		hrtimer_add_expires_ns(&leap_timer, NSEC_PER_SEC);
- 		res = HRTIMER_RESTART;
- 		break;
-@@ -150,8 +150,7 @@ static enum hrtimer_restart ntp_leap_sec
- 		time_tai--;
- 		wall_to_monotonic.tv_sec--;
- 		time_state = TIME_WAIT;
--		printk(KERN_NOTICE "Clock: "
--		       "deleting leap second 23:59:59 UTC\n");
-+		msg = "Clock: deleting leap second 23:59:59 UTC";
- 		break;
- 	case TIME_OOP:
- 		time_tai++;
-@@ -166,6 +165,9 @@ static enum hrtimer_restart ntp_leap_sec
- 
- 	write_sequnlock(&xtime_lock);
- 
-+	if (msg)
-+		printk(KERN_NOTICE "%s\n", msg);
-+
- 	return res;
- }
- 
+#define test_bit(nr, addr)                      \
+    (__builtin_constant_p((nr))             \
+     ? constant_test_bit((nr), (addr))      \
+     : variable_test_bit((nr), (addr)))
+
+int foo(unsigned long *addr)
+{
+  return test_bit (5, addr);
+}
+
+int bar(unsigned long *addr)
+{
+  return test_bit (6, addr);
+}
+
+at -Os even.
+
+>> The above is definitely one case where using a macro or forced inlining is
+>> a better idea than to trust a compiler to figure out that it can optimize the
+>> function to a size suitable for inlining if called with a constant parameter.
+>
+> .. and forced inlining is what we default to. But that's when "let's try
+> letting gcc optimize this" fails. And macros get really unreadable, really
+> quickly.
+
+As it happens to work with your simple case it may still apply for more
+complex (thus appearantly big) cases.
+
+>> > Maybe there was something else going on, and maybe Ingo's tests were off,
+>> > but this is an example of gcc not inlining WHEN WE TOLD IT TO, and when
+>> > the function was a single instruction.
+>> >
+>> > How can anybody possibly not consider that to be "stupid"?
+>>
+>> Because it's a hard problem, it's not stupid to fail here - you didn't tell the
+>> compiler the function optimizes!
+>
+> Well, actually we did. It's that "inline" there. That's how things used to
+> work. It's like "no". It means "no". It doesn't mean "yes, I really want
+> to s*ck your d*ck, but I'm just screaming no at the top of my lungs
+> because I think I should do so".
+>
+> See?
+
+See below.
+
+> And you do have to realize that Linux has been using gcc for a _loong_
+> while. You can talk all you want about how "inline" is just a hint, but
+> the fact is, it didn't use to be. gcc people _made_ it so, and are having
+> a damn hard time admitting that it's causing problems.
+
+We made it so 10 years ago.
+
+>> Experience tells us that people do not know better.  Maybe the kernel is
+>> an exception here
+
+^^^
+
+> Oh, I can well believe it.
+>
+> And I don't even think that kernel people get it right nearly enough, but
+> since for the kernel it can even be a _correctness_ issue, at least if we
+> get it wrong, everybody sees it.
+>
+> When _some_ compiler versions get it wrong, it's a disaster.
+
+Of course.  If you use always_inline then it's even a compiler bug.
+
+>> But would you still want small functions be inlined even if they are not
+>> marked inline?
+>
+> If you can really tell that they are that small, yes.
+>
+>> They do - just constant arguments are obviously not used for optimizing
+>> before inlining.  Otherwise you'd scream bloody murder at us for all the
+>> increase in compile-time ;)
+>
+> A large portion of that has gone away now that everybody uses ccache. And
+> if you only did it for functions that we _mark_ inline, it wouldn't even
+> be true. Because those are the ones that presumably really should be
+> inlined.
+>
+> So no, I don't believe you. You much too easily dismiss the fact that
+> we've explicitly marked these functions for inlining, and then you say
+> "but we were too stupid".
+>
+> If you cannot afford to do the real job, then trust the user. Don't guess.
+
+We're guessing way better than the average programmer.  But if you are
+asking for a compiler option to disable guessing you can have it (you can
+already use #define inline always_inline and -fno-inline to get it).
+
+Richard.
