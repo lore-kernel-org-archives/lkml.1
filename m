@@ -1,115 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZAIQf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbZAIQfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZAIQf1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZAIQev
+	id S1754114AbZAIQfv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZAIQfC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:34:51 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:33581 "EHLO
+	Fri, 9 Jan 2009 11:35:02 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:33624 "EHLO
 	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752504AbZAIQet (ORCPT
+	by vger.kernel.org with ESMTP id S1753358AbZAIQe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:34:49 -0500
-X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 11:34:49 EST
+	Fri, 9 Jan 2009 11:34:59 -0500
 X-BigFish: VPS3(zzzzzzz32i43j)
-X-FB-SS: 5,
-X-WSS-ID: 0KD7PCH-03-IWU-01
+X-WSS-ID: 0KD7PCJ-04-WJH-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: linux-kernel@vger.kernel.org
 CC: mingo@redhat.com, dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
        netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 04/16] dma-debug: add allocator code
-Date: Fri, 9 Jan 2009 17:19:18 +0100
-Message-ID: <1231517970-20288-5-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 14/16] dma-debug: add checks for sync_single_sg_*
+Date: Fri, 9 Jan 2009 17:19:28 +0100
+Message-ID: <1231517970-20288-15-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
 References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0732 (UTC) FILETIME=[0D0B46C0:01C97276]
+X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0873 (UTC) FILETIME=[0D20CA90:01C97276]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add allocator code for struct dma_debug_entry
+Impact: add debug callbacks for dma_sync_sg_* functions
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- lib/dma-debug.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 57 insertions(+), 0 deletions(-)
+ include/linux/dma-debug.h |   19 +++++++++++++++++++
+ lib/dma-debug.c           |   32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 51 insertions(+), 0 deletions(-)
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 74a0f36..c5444d4 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -49,6 +49,16 @@ struct hash_bucket {
+diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
+index b9c221a..bdba8c8 100644
+--- a/include/linux/dma-debug.h
++++ b/include/linux/dma-debug.h
+@@ -64,6 +64,13 @@ extern void debug_sync_single_range_for_device(struct device *dev,
+ 					       unsigned long offset,
+ 					       size_t size, int direction);
  
- /* Hash list to save the allocated dma addresses */
- static struct hash_bucket dma_entry_hash[HASH_SIZE];
-+/* List of pre-allocated dma_debug_entry's */
-+static LIST_HEAD(free_entries);
-+/* Lock for the list above */
-+static DEFINE_SPINLOCK(free_entries_lock);
++extern void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
++				  int nelems, int direction);
 +
-+/* Global disable flag - will be set in case of an error */
-+static bool global_disable __read_mostly;
++extern void debug_sync_sg_for_device(struct device *dev,
++				     struct scatterlist *sg,
++				     int nelems, int direction);
 +
-+static u32 num_free_entries;
-+static u32 min_free_entries;
+ #else /* CONFIG_DMA_API_DEBUG */
  
- /*
-  * Hash related functions
-@@ -138,3 +148,50 @@ static void add_dma_entry(struct dma_debug_entry *entry)
- 	put_hash_bucket(bucket, &flags);
+ static inline void dma_debug_init(u32 num_entries)
+@@ -130,6 +137,18 @@ static inline void debug_sync_single_range_for_device(struct device *dev,
+ {
  }
  
-+/* struct dma_entry allocator
-+ *
-+ * The next two functions implement the allocator for
-+ * struct dma_debug_entries.
-+ */
-+static struct dma_debug_entry *dma_entry_alloc(void)
++static inline void debug_sync_sg_for_cpu(struct device *dev,
++					 struct scatterlist *sg,
++					 int nelems, int direction)
 +{
-+	struct dma_debug_entry *entry = NULL;
-+	unsigned long flags;
++}
 +
-+	spin_lock_irqsave(&free_entries_lock, flags);
++static inline void debug_sync_sg_for_device(struct device *dev,
++					    struct scatterlist *sg,
++					    int nelems, int direction)
++{
++}
 +
-+	if (list_empty(&free_entries)) {
-+		printk(KERN_ERR "DMA-API: debugging out of memory "
-+				"- disabling\n");
-+		global_disable = true;
-+		goto out;
+ #endif /* CONFIG_DMA_API_DEBUG */
+ 
+ #endif /* __DMA_DEBUG_H */
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 6f73bed..e40c88c 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -692,3 +692,35 @@ void debug_sync_single_range_for_device(struct device *dev,
+ }
+ EXPORT_SYMBOL(debug_sync_single_range_for_device);
+ 
++void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
++			   int nelems, int direction)
++{
++	struct scatterlist *s;
++	int i;
++
++	if (global_disable)
++		return;
++
++	for_each_sg(sg, s, nelems, i) {
++		check_sync(dev, s->dma_address, s->dma_length, 0,
++				direction, true);
 +	}
-+
-+	entry = list_entry(free_entries.next, struct dma_debug_entry, list);
-+	list_del(&entry->list);
-+	memset(entry, 0, sizeof(*entry));
-+
-+	num_free_entries -= 1;
-+	if (num_free_entries < min_free_entries)
-+		min_free_entries = num_free_entries;
-+
-+out:
-+	spin_unlock_irqrestore(&free_entries_lock, flags);
-+
-+	return entry;
 +}
++EXPORT_SYMBOL(debug_sync_sg_for_cpu);
 +
-+static void dma_entry_free(struct dma_debug_entry *entry)
++void debug_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
++			      int nelems, int direction)
 +{
-+	unsigned long flags;
++	struct scatterlist *s;
++	int i;
 +
-+	/*
-+	 * add to beginning of the list - this way the entries are
-+	 * more likely cache hot when they are reallocated.
-+	 */
-+	spin_lock_irqsave(&free_entries_lock, flags);
-+	list_add(&entry->list, &free_entries);
-+	num_free_entries += 1;
-+	spin_unlock_irqrestore(&free_entries_lock, flags);
++	if (global_disable)
++		return;
++
++	for_each_sg(sg, s, nelems, i) {
++		check_sync(dev, s->dma_address, s->dma_length, 0,
++				direction, false);
++	}
 +}
++EXPORT_SYMBOL(debug_sync_sg_for_device);
 +
 -- 
 1.5.6.4
