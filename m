@@ -1,124 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZAIQYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbZAIQZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZAIQYr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZAIQUh
+	id S1753542AbZAIQZK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZAIQUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:20:37 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:45975 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbZAIQTq (ORCPT
+	Fri, 9 Jan 2009 11:20:41 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:36347 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752385AbZAIQTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:19:46 -0500
-X-BigFish: VPS3(zzzzzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KD7PCH-04-WJE-01
+	Fri, 9 Jan 2009 11:19:45 -0500
+X-BigFish: VPS7(z523lzzzzzz32i43j63h)
+X-Spam-TCS-SCL: 2:0
+X-FB-SS: 5,
+X-WSS-ID: 0KD7PCJ-03-IX2-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: linux-kernel@vger.kernel.org
 CC: mingo@redhat.com, dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
        netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 06/16] dma-debug: add kernel command line parameters
-Date: Fri, 9 Jan 2009 17:19:20 +0100
-Message-ID: <1231517970-20288-7-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 11/16] dma-debug: add checking for [alloc|free]_coherent
+Date: Fri, 9 Jan 2009 17:19:25 +0100
+Message-ID: <1231517970-20288-12-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
 References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0714 (UTC) FILETIME=[0D0887A0:01C97276]
+X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0826 (UTC) FILETIME=[0D199EA0:01C97276]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add dma_debug= and dma_debug_entries= kernel parameters
+Impact: add debug callbacks for dma_[alloc|free]_coherent
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- Documentation/kernel-parameters.txt |   10 +++++++++
- lib/dma-debug.c                     |   38 +++++++++++++++++++++++++++++++++++
- 2 files changed, 48 insertions(+), 0 deletions(-)
+ include/linux/dma-debug.h |   16 ++++++++++++++++
+ lib/dma-debug.c           |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 61 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index fb84902..4045f76 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -486,6 +486,16 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Range: 0 - 8192
- 			Default: 64
+diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
+index b2131f4..a28a701 100644
+--- a/include/linux/dma-debug.h
++++ b/include/linux/dma-debug.h
+@@ -40,6 +40,12 @@ extern void debug_map_sg(struct device *dev, struct scatterlist *sg,
+ extern void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 			   int nelems, int dir);
  
-+	dma_debug=off	If the kernel is compiled with DMA_API_DEBUG support
-+			this option disables the debugging code at boot.
++extern void debug_alloc_coherent(struct device *dev, size_t size,
++				 dma_addr_t dma_addr, void *virt);
 +
-+	dma_debug_entries=<number>
-+			This option allows to tune the number of preallocated
-+			entries for DMA-API debugging code. One entry is
-+			required per DMA-API allocation. Use this if the
-+			DMA-API debugging code disables itself because the
-+			architectural default is too low.
++extern void debug_free_coherent(struct device *dev, size_t size,
++				void *virt, dma_addr_t addr);
 +
- 	hpet=		[X86-32,HPET] option to control HPET usage
- 			Format: { enable (default) | disable | force }
- 			disable: disable HPET and use PIT instead
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index b932f15..4e58d09 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -61,6 +61,9 @@ static bool global_disable __read_mostly;
- static u32 num_free_entries;
- static u32 min_free_entries;
+ #else /* CONFIG_DMA_API_DEBUG */
  
-+/* number of preallocated entries requested by kernel cmdline */
-+static u32 req_entries;
-+
- /*
-  * Hash related functions
-  *
-@@ -250,6 +253,9 @@ void dma_debug_init(u32 num_entries)
- 		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
- 	}
- 
-+	if (req_entries)
-+		num_entries = req_entries;
-+
- 	if (prealloc_memory(num_entries) != 0) {
- 		printk(KERN_ERR "DMA-API: debugging out of memory error "
- 				"- disabled\n");
-@@ -261,3 +267,35 @@ void dma_debug_init(u32 num_entries)
- 	printk(KERN_INFO "DMA-API: debugging enabled by kernel config\n");
+ static inline void dma_debug_init(u32 num_entries)
+@@ -68,6 +74,16 @@ static inline void debug_unmap_sg(struct device *dev,
+ {
  }
  
-+static __init int dma_debug_cmdline(char *str)
++static inline void debug_alloc_coherent(struct device *dev, size_t size,
++					dma_addr_t dma_addr, void *virt)
 +{
-+	if (!str)
-+		return -EINVAL;
-+
-+	if (strncmp(str, "off", 3) == 0) {
-+		printk(KERN_INFO "DMA-API: debugging disabled on kernel "
-+				 "command line\n");
-+		global_disable = true;
-+	}
-+
-+	return 0;
 +}
 +
-+static __init int dma_debug_entries_cmdline(char *str)
++static inline void debug_free_coherent(struct device *dev, size_t size,
++				       void *virt, dma_addr_t addr)
 +{
-+	int res;
-+
-+	if (!str)
-+		return -EINVAL;
-+
-+	res = get_option(&str, &req_entries);
-+
-+	if (!res)
-+		req_entries = 0;
-+
-+	return 0;
 +}
 +
-+__setup("dma_debug=", dma_debug_cmdline);
-+__setup("dma_debug_entries=", dma_debug_entries_cmdline);
+ #endif /* CONFIG_DMA_API_DEBUG */
+ 
+ #endif /* __DMA_DEBUG_H */
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index e6d45f9..a4a5b0f 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -604,3 +604,48 @@ void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ }
+ EXPORT_SYMBOL(debug_unmap_sg);
+ 
++void debug_alloc_coherent(struct device *dev, size_t size,
++			  dma_addr_t dma_addr, void *virt)
++{
++	struct dma_debug_entry *entry;
++
++	if (global_disable)
++		return;
++
++	if (dma_addr == bad_dma_address)
++		return;
++
++	entry = dma_entry_alloc();
++	if (!entry)
++		return;
++
++	entry->type      = dma_debug_coherent;
++	entry->dev       = dev;
++	entry->cpu_addr  = virt;
++	entry->size      = size;
++	entry->dev_addr  = dma_addr;
++	entry->direction = DMA_BIDIRECTIONAL;
++
++	add_dma_entry(entry);
++}
++EXPORT_SYMBOL(debug_alloc_coherent);
++
++void debug_free_coherent(struct device *dev, size_t size,
++			 void *virt, dma_addr_t addr)
++{
++	struct dma_debug_entry ref = {
++		.type           = dma_debug_coherent,
++		.dev            = dev,
++		.cpu_addr       = virt,
++		.dev_addr       = addr,
++		.size           = size,
++		.direction      = DMA_BIDIRECTIONAL,
++	};
++
++	if (global_disable)
++		return;
++
++	check_unmap(&ref);
++}
++EXPORT_SYMBOL(debug_free_coherent);
 +
 -- 
 1.5.6.4
