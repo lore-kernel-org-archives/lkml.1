@@ -1,106 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZAIRye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZAIRz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbZAIRye (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 12:54:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZAIRyY
+	id S1754301AbZAIRz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 12:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZAIRzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 12:54:24 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58262 "EHLO ogre.sisk.pl"
+	Fri, 9 Jan 2009 12:55:45 -0500
+Received: from kandzendo.ru ([195.178.208.66]:37593 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbZAIRyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 12:54:23 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Regression] USB wakeup problem on Toshiba Portege R500
-Date: Fri, 9 Jan 2009 18:53:41 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Frans Pop <elendil@planet.nl>, oliver@neukum.org, gregkh@suse.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, pavel@suse.cz,
-       torvalds@linux-foundation.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0901091055050.10951-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901091055050.10951-100000@netrider.rowland.org>
+	id S1750698AbZAIRzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 12:55:44 -0500
+Date: Fri, 9 Jan 2009 20:55:42 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
+       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 03/16] dma-debug: add hash functions for dma_debug_entries
+Message-ID: <20090109175542.GB30168@ioremap.net>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-4-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901091853.42700.rjw@sisk.pl>
+In-Reply-To: <1231517970-20288-4-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CCing ACPI and Len)
+Hi Joerg.
 
-On Friday 09 January 2009, Alan Stern wrote:
-> On Thu, 8 Jan 2009, Frans Pop wrote:
-> 
-> > Rafael J. Wysocki wrote:
-> > > On Thursday 08 January 2009, Oliver Neukum wrote:
-> > >> Am Thursday 08 January 2009 17:36:12 schrieb Rafael J. Wysocki:
-> > >> You are making a very persuasive argument for reverting it.
-> > >> But what about laptops that only have a USB keyboard?
-> > > 
-> > > Well, up to and including 2.6.28 they needed to echo 'enable' to the USB
-> > > controllers' /sys/devices/.../power/wakeup files, so if the patch is
-> > > reverted, they won't be worse off than they were day before
-> > > yesterday. :-) 
-> > > 
-> > > Perhaps we can choose the default depending on whether or not any HID
-> > > devices are attached to given controller?
-> > 
-> > Is "resume on keyboard activity" really all that needed? Both my laptops 
-> > and my desktop resume fine after pressing the power button.
-> > 
-> > Also consider the following cases:
-> > - laptop has been suspended with external USB mouse connected
-> >   - mouse is moved (accidentally or because it is in the way of a coffee
-> >     cup)
-> >   - mouse cable is removed before putting the laptop in a bag for
-> >     transport
-> > - laptop is in docking station with USB mouse/kbd connected to that
-> >   - again, mouse gets moved for some reason
-> >   - laptop is undocked while suspended
-> >   - or the reverse: laptop gets docked
-> > 
-> > IMO it is not desirable that the system gets resumed as a result of any of 
-> > those actions. I'm not complete sure that it would in all those cases, 
-> > but have they been considered?
-> > 
-> > And in general I've always been in favor of things only happening 
-> > automagically if I've explicitly asked for that, and not by default.
-> 
-> I don't mind reverting the "automatically enable PCI wakeup" commit.  But 
-> we should first come to a definite policy for kernel default wakeup 
-> settings, rather than deciding things piecemeal for different subsystems.
-> 
-> My proposal:
-> 
-> 	Devices and events that are clearly associated with system
-> 	wakeup should be enabled by default.  For example: Power
-> 	button and laptop lid.
+On Fri, Jan 09, 2009 at 05:19:17PM +0100, Joerg Roedel (joerg.roedel@amd.com) wrote:
+> +/*
+> + * Request exclusive access to a hash bucket for a given dma_debug_entry.
+> + */
+> +static struct hash_bucket *get_hash_bucket(struct dma_debug_entry *entry,
+> +					   unsigned long *flags)
+> +{
+> +	int idx = hash_fn(entry);
+> +	unsigned long __flags;
+> +
+> +	spin_lock_irqsave(&dma_entry_hash[idx].lock, __flags);
+> +	*flags = __flags;
+> +	return &dma_entry_hash[idx];
+> +}
+> +
+> +/*
+> + * Give up exclusive access to the hash bucket
+> + */
+> +static void put_hash_bucket(struct hash_bucket *bucket,
+> +			    unsigned long *flags)
+> +{
+> +	unsigned long __flags = *flags;
+> +
+> +	spin_unlock_irqrestore(&bucket->lock, __flags);
+> +}
 
-Agreed.
+Why do you need such ugly helpers?
 
-> 	All other devices capable of waking up the system should be
-> 	disabled by default.  This presumably includes every PCI
-> 	device.  If users want keyboard or mouse events to cause
-> 	a system resume then they will have to configure their
-> 	desktop management program to enable it.
+> + * Add an entry to a hash bucket
+> + */
+> +static void hash_bucket_add(struct hash_bucket *bucket,
+> +			    struct dma_debug_entry *entry)
+> +{
+> +	list_add_tail(&entry->list, &bucket->list);
+> +}
 
-I generally agree, with one exception.  There are network adapters which
-can be enabled to wake up by the BIOS and their drivers set them up for WoL
-currently on this basis.  These should remain enabled IMO.
+> +/*
+> + * Remove entry from a hash bucket list
+> + */
+> +static void hash_bucket_del(struct dma_debug_entry *entry)
+> +{
+> +	list_del(&entry->list);
+> +}
 
-> 	Devices not capable of directly waking the system can be
-> 	enabled.  This includes things like USB devices, which
-> 	have to pass a wakeup request through their parent and
-> 	therefore can't wake up the system unless the parent is
-> 	also enabled for wakeup.
+Do you really need this getting they are called only from single place?
 
-Agreed.
-
-Thanks,
-Rafael
+-- 
+	Evgeniy Polyakov
