@@ -1,98 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZAIPfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZAIPnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbZAIPfy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 10:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZAIPfn
+	id S1753481AbZAIPnw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 10:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZAIPnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 10:35:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34885 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751892AbZAIPfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 10:35:42 -0500
-Date: Fri, 9 Jan 2009 16:35:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: jim owens <jowens@hp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
-	impact
-Message-ID: <20090109153508.GA4671@elte.hu>
-References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com>
+	Fri, 9 Jan 2009 10:43:40 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:37896 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbZAIPnj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 10:43:39 -0500
+Message-ID: <49677074.5090802@cosmosbay.com>
+Date: Fri, 09 Jan 2009 16:42:44 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49675920.4050205@hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: David Miller <davem@davemloft.net>
+CC: ben@zeus.com, w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+References: <20090108173028.GA22531@1wt.eu>	<49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com>
+In-Reply-To: <4966F2F4.9080901@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Jan 2009 16:42:48 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Dumazet a écrit :
+> David Miller a écrit :
+>> I'm not applying this until someone explains to me why
+>> we should remove this test from the splice receive but
+>> keep it in the tcp_recvmsg() code where it has been
+>> essentially forever.
 
-* jim owens <jowens@hp.com> wrote:
+Reading again tcp_recvmsg(), I found it already is able to eat several skb
+even in nonblocking mode.
 
-> Ingo Molnar wrote:
->>
->> One interpretation of the numbers would be that core kernel hackers are 
->> more inline-happy, maybe because they think that their functions are 
->> more important to inline.
->>
->> Which is generally a fair initial assumption, but according to the 
->> numbers it does not appear to pay off in practice as it does not result 
->> in a smaller kernel image.
->
-> I think people over-use inline for the opposite reason.
+setsockopt(5, SOL_SOCKET, SO_RCVLOWAT, [61440], 4) = 0
+ioctl(5, FIONBIO, [1])                  = 0
+poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
+poll([{fd=5, events=POLLIN, revents=POLLIN}], 1, -1) = 1
+recv(5, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536, MSG_DONTWAIT) = 65536
+write(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 65536) = 65536
 
-Note that i talked about the core kernel (kernel/*.c) specifically.
 
-> They are taught:
->    - use inline functions instead of macros
->    - inlining functions makes your code run faster
->
-> They also know inlining may increase program object size. That inlining 
-> will reduce object size on many architectures if the function is small 
-> is just a happy side effect to them.
+David, if you referred to code at line 1374 of net/ipv4/tcp.c, I believe there is
+no issue with it. We really want to break from this loop if !timeo .
 
-Core kernel developers tend to be quite inline-conscious and generally do 
-not believe that making something inline will make it go faster.
+Willy patch makes splice() behaving like tcp_recvmsg(), but we might call
+tcp_cleanup_rbuf() several times, with copied=1460 (for each frame processed)
 
-That's why i picked kernel/built-in.o as a good "best of breed" entity to 
-measure - if then that is an area where we have at least the chance to do 
-a "kernel coders know best when to inline" manual inlining job.
+I wonder if the right fix should be done in tcp_read_sock() : this is the
+one who should eat several skbs IMHO, if we want optimal ACK generation.
 
-But despite a decade of tuning and systematic effort in that area, the 
-numbers suggest that we dont. (if someone has different numbers or 
-different interpretation, please share it with us.)
+We break out of its loop at line 1246
 
-My goal is to make the kernel smaller and faster, and as far as the 
-placement of 'inline' keywords goes, i dont have too strong feelings about 
-how it's achieved: they have a certain level of documentation value 
-[signalling that a function is _intended_ to be lightweight] but otherwise 
-they are pretty neutral attributes to me.
+if (!desc->count) /* this test is always true */
+	break;
 
-So we want all the mechanisms in place to constantly press towards a 
-smaller and faster kernel, with the most efficient use of development 
-resources. Some techniques work in practice despite looking problematic, 
-some dont, despite looking good on paper.
+(__tcp_splice_read() set count to 0, right before calling tcp_read_sock())
 
-This might be one of those cases. Or not :-)
+So code at line 1246 (tcp_read_sock()) seems wrong, or pessimistic at least.
 
-	Ingo
+
+
