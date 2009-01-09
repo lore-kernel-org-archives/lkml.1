@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZAIPHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZAIPHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZAIPHZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 10:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZAIPHK
+	id S1754856AbZAIPHr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 10:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZAIPHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 10:07:10 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49915 "EHLO
+	Fri, 9 Jan 2009 10:07:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49922 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbZAIPHJ (ORCPT
+	with ESMTP id S1752543AbZAIPHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 10:07:09 -0500
-Date: Fri, 9 Jan 2009 07:09:10 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Partially defer some of the async stuff to the next release
-Message-ID: <20090109070910.233e5f3c@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 Jan 2009 10:07:16 -0500
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Mason <chris.mason@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <1231498062.11687.608.camel@twins>
+References: <1231441350.14304.48.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0901081140550.3283@localhost.localdomain>
+	 <1231498062.11687.608.camel@twins>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Fri, 09 Jan 2009 16:06:54 +0100
+Message-Id: <1231513614.442.11.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, 2009-01-09 at 11:47 +0100, Peter Zijlstra wrote:
 
-I think it's better that we defer some of the asynchronous boot stuff to
-2.6.30 so that it can bake in -next for a bit. I would like to keep the
-core infrastructure in place for 29, so that the various subsystem
-patches etc can just use it in -next without generating dependencies in
-the patch flow.
+> > So I think the bug is still there, we just hid it better by breaking out 
+> > of the loop with that "if (need_resched())" always eventually triggering. 
+> > And it would be ok if it really is guaranteed to _eventually_ trigger, and 
+> > I guess with timeslices it eventually always will, but I suspect we could 
+> > have some serious latency spikes.
+> 
+> Yes, the owner getting preempted after acquiring the lock, but before
+> setting the owner can give some nasties :-(
+> 
+> I initially did that preempt_disable/enable around the fast path, but I
+> agree that slowing down the fast path is unwelcome.
+> 
+> Alternatively we could go back to block on !owner, with the added
+> complexity of not breaking out of the spin on lock->owner != owner
+> when !lock->owner, so that the premature owner clearing of the unlock
+> fast path will not force a schedule right before we get a chance to
+> acquire the lock.
+> 
+> Let me do that..
 
-for both libata and the inode delete very simple things can be done to
-fix them, but I would feel a lot more comfortable giving these a ride
-in -next.
+Ok a few observations..
 
+Adding that need_resched() in the outer loop utterly destroys the
+performance gain for PREEMPT=y. Voluntary preemption is mostly good, but
+somewhat unstable results.
 
-The following changes since commit
-2150edc6c5cf00f7adb54538b9ea2a3e9cedca3f: Linus Torvalds (1):
-        Merge branch 'for_linus' of git://git.kernel.org/.../tytso/ext4
+Adding that blocking on !owner utterly destroys everything.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-async-undo.git
-  master
-
-Arjan van de Ven (3):
-      Revert "fastboot: Make libata initialization even more async"
-      Revert "fastboot: make the libata port scan asynchronous"
-      partial revert of asynchronous inode delete
-
- drivers/ata/libata-core.c |   96
- +++++++++++++++++++++------------------------
- fs/inode.c                |   19 +++------ 2 files changed, 51
- insertions(+), 64 deletions(-)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Going to look into where that extra preemption comes from.
