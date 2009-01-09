@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbZAIVxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZAIVy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbZAIVxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZAIVwu
+	id S1758030AbZAIVy0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZAIVyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:52:50 -0500
-Received: from hpsmtp-eml15.KPNXCHANGE.COM ([213.75.38.115]:43239 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751031AbZAIVwt (ORCPT
+	Fri, 9 Jan 2009 16:54:18 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42172 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751659AbZAIVyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:52:49 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Roman Medina-Heigl Hernandez <roman@rs-labs.com>
-Subject: Re: Oops with Gigabyte motherboard "GA-X48-DQ6" and r8168 Realtek driver
-Date: Fri, 9 Jan 2009 22:52:45 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <49671B77.7080705@rs-labs.com>
-In-reply-To: <49671B77.7080705@rs-labs.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 9 Jan 2009 16:54:17 -0500
+Subject: Re: copy_{to,from}_user
+From: Peter Zijlstra <peterz@infradead.org>
+To: Brad Parker <brad@heeltoe.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4056.1231523557@mini>
+References: <4056.1231523557@mini>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901092252.46448.elendil@planet.nl>
-X-OriginalArrivalTime: 09 Jan 2009 21:52:46.0822 (UTC) FILETIME=[9BA47860:01C972A4]
+Date: Fri, 09 Jan 2009 22:54:21 +0100
+Message-Id: <1231538061.29452.8.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Medina-Heigl Hernandez wrote:
-> It includes two RTL8111/8168B NICs, which seem the cause of the kernel
-> crashes (*but I'm not sure*)..., a Quad core, 4GB RAM and two 500GB HDs.
+On Fri, 2009-01-09 at 12:52 -0500, Brad Parker wrote:
+> I have a question about copy_{to,from}_user.  
 > 
-> I installed Debian Linux (4.0) on it and I'm getting *kernel panic*
-> errors (r8168 module) when set to production state. I couldn't get any
-> kernel debug messages since I'm using Debian stock kernel
-> (2.6.18-6-686-bigmem) and I'm not a kernel hacker either.
+> Most implementations I've seen do in-order copies and notice when an
+> exception occurs and report back the progress.  This is straight
+> forward.
+> 
+> (but to be honest, I have suspicions about how just how accurate those
+> reports are i.e. +/- 1-3 bytes on some architectures)
+> 
+> On some cpu's it is advantageous to do an out-of-order copy to take
+> advantage of various cache fill mechanisms.
+> 
+> The problem is that the out-of-order copy makes it impossible to know
+> where the exception occurred (in terms of progress).
+> 
+> Would it be permissible to have a version of copy_{to,from}_user which
+> does an out-of-order copy and when an exception occurs, restarts the
+> copy from the beginning using a simple in-order copy, to make it
+> possible to identify where the exception occurs?
+> 
+> The idea is that exceptions are rare and so the performance hit of doing
+> the "recopy" would be minimal and would provide the required accuracy.
 
-Have you tried the 2.6.24 kernel that is available for Debian Etch? That 
-seems to me the most logical thing to try first as a possible solution.
+x86_64 already does some unrolling and is inaccurate as to where exactly
+it happens. The only thing that is very important is that you _never_
+say you copied more than you actually did.
 
-It was included as part of the "Etch and a half" stable release update 
-[1].
-
-Cheers,
-FJP
-
-[1] http://www.debian.org/releases/etch/etchnhalf
+That was the source of a data corruption bug a while ago, the code did
+something like sequences: read 8 words, write 8 words. And reported the
+number of bytes read, instead of bytes written, which is an
+over-estimation.
