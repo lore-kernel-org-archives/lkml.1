@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZAIVZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZAIV02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbZAIVZY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbZAIVYe
+	id S1757685AbZAIV02 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbZAIV0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:24:34 -0500
-Received: from 1wt.eu ([62.212.114.60]:1329 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757502AbZAIVYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:24:32 -0500
-Date: Fri, 9 Jan 2009 22:24:00 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090109212400.GA3727@1wt.eu>
-References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com>
+	Fri, 9 Jan 2009 16:26:17 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:42420 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755339AbZAIV0Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 16:26:16 -0500
+Date: Fri, 9 Jan 2009 22:27:57 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org,
+       Linux Power Management List <linux-pm@lists.osdl.org>
+Subject: Re: git mv (was Re: [git pull] ACPI & Suspend patches for 2.6.29-rc0)
+Message-ID: <20090109212757.GA25434@uranus.ravnborg.org>
+References: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain> <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain> <alpine.LFD.2.00.0901091537530.16697@localhost.localdomain> <alpine.LFD.2.00.0901091305160.6528@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4967B8C5.10803@cosmosbay.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <alpine.LFD.2.00.0901091305160.6528@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 09:51:17PM +0100, Eric Dumazet wrote:
-(...)
-> > Also, in your second mail, you're saying that your change
-> > might return more data than requested by the user. I can't
-> > find why, could you please explain to me, as I'm still quite
-> > ignorant in this area ?
 > 
-> Well, I just tested various user programs and indeed got this
-> strange result :
+> So yeah, "--follow" is broken. It's really a quick hack there for people 
+> who come from some other SCM to feel more comfy with git. If you come from 
+> SVN or CVS, you never had proper history, and you never had "gitk" anyway, 
+> and so "gitk --follow" doesn't really work. But it makes the pure 
+> _textual_ logs look a bit like CVS/SVN.
 > 
-> Here I call splice() with len=1000 (0x3e8), and you can see
-> it gives a result of 1460 at the second call.
+> I'd love to make --follow work better and integrate more, but I've been so 
+> successful at never using it myself that I don't much care. And it really 
+> is not a very natural thing for git to do, so the hackiness is somewhat 
+> inherent.
 
-huh, not nice indeed!
+What other ways exist so I can see what the heck davem did to
+arch/sparc64/kernel/irq.c then?
 
-While looking at the code to see how this could be possible, I
-came across this minor thing (unrelated IMHO) :
+I know he added IRQ stacks - but how did the patch look like?
+I know no other way to find the old history than to do:
 
-	if (__skb_splice_bits(skb, &offset, &tlen, &spd))
-		goto done;
->>>>>>	else if (!tlen)    <<<<<<
-		goto done;
+    git log --follow arch/sparc/kernel/irq_64.c
 
-	/*
-	 * now see if we have a frag_list to map
-	 */
-	if (skb_shinfo(skb)->frag_list) {
-		struct sk_buff *list = skb_shinfo(skb)->frag_list;
+But this also give me what I want. I'm just curious if there is
+a better way - in the case where you know the old name.
 
-		for (; list && tlen; list = list->next) {
-			if (__skb_splice_bits(list, &offset, &tlen, &spd))
-				break;
-		}
-	}
 
-    done:
-
-Above on the enlighted line, we'd better remove the else and leave a plain
-"if (!tlen)". Otherwise, when the first call to __skb_splice_bits() zeroes
-tlen, we still enter the if and evaluate the for condition for nothing. But
-let's leave that for later.
-
-> I suspect a bug in splice code, that my patch just exposed.
-
-I've checked in skb_splice_bits() and below and can't see how we can move
-more than the requested len.
-
-However, with your change, I don't clearly see how we break out of
-the loop in tcp_read_sock(). Maybe we first read 1000 then loop again
-and read remaining data ? I suspect that we should at least exit when
-((struct tcp_splice_state *)desc->arg.data)->len = 0.
-
-At least that's something easy to add just before or after !desc->count
-for a test.
-
-Regards,
-Willy
-
+	Sam
