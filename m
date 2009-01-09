@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZAIXPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbZAIXTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbZAIXPx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZAIXPp
+	id S1758421AbZAIXTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbZAIXSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:15:45 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:37864 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbZAIXPo convert rfc822-to-8bit (ORCPT
+	Fri, 9 Jan 2009 18:18:47 -0500
+Received: from outbound-mail-306.bluehost.com ([67.222.53.252]:46215 "HELO
+	outbound-mail-306.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755905AbZAIXS1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:15:44 -0500
-Date: Fri, 9 Jan 2009 15:15:35 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Subject: Reported-by (Re: Fix a typo in the development process document.)
-Message-Id: <20090109151535.336c3afd.randy.dunlap@oracle.com>
-In-Reply-To: <200901090059.n090xfIH030955@hera.kernel.org>
-References: <200901090059.n090xfIH030955@hera.kernel.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4967DA9A.0065:SCFSTAT928724,ss=1,fgs=0
+	Fri, 9 Jan 2009 18:18:27 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=Psw5BL+uNHodU3rB4XYTyKZNaRULtSswpqJyNlsbGAZx+y+ypV04y0MxNwGeArUY3toIyYNvycG/JnLEcNfokezsmb6Fvo15i2vV22sbT4SBbmvVO2okGD/9kSNbj+JO;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/8] PCI PCIe portdrv: Remove root ports MSI quirk
+Date: Fri, 9 Jan 2009 15:18:24 -0800
+User-Agent: KMail/1.9.10
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200901042346.42723.rjw@sisk.pl> <200901042348.22012.rjw@sisk.pl>
+In-Reply-To: <200901042348.22012.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901091518.25220.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 00:59:41 GMT Linux Kernel Mailing List wrote:
+On Sunday, January 4, 2009 2:48 pm Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> The PCI Express port driver contains a quirk that prevents root
+> ports from using MSI, but there is no explanation for it and the
+> PCI Express specification clearly allows root ports to use MSI.
 
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d5b524327b2a482dddae3839ced8f8825074730d
-> Commit:     d5b524327b2a482dddae3839ced8f8825074730d
-> Parent:     2884f00b94be73a6a7875bada739bf9bb2f9a1b6
-> Author:     Jonathan Corbet <corbet@lwn.net>
-> AuthorDate: Thu Jan 8 16:32:13 2009 -0700
-> Committer:  Jonathan Corbet <corbet@lwn.net>
-> CommitDate: Thu Jan 8 16:32:13 2009 -0700
-> 
->     Fix a typo in the development process document.
->     
->     Reported-by: Aníbal Monsalve Salazar <anibal@debian.org>
->     Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+Ah ignore my last message, it really does look like some chipsets are just 
+buggy here, and the quirk only affects a few, so it should be pretty harmless 
+for the most part (iow I don't think this patch is a good idea on those 
+chipsets).
 
-
-BTW, Jon, if Reported-by: is supposed to have a status that is (nearly)
-as well accepted as most of the other tags, then it should be documented
-in SubmittingPatches along with the other tags and not only in
-development-process/5.Posting, no?
-
-Or maybe it's not as well accepted as the others...
-  http://www.remword.com/kps_result/2_6_29_report.html
-
-
----
-~Randy
+-- 
+Jesse Barnes, Intel Open Source Technology Center
