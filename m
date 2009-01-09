@@ -1,42 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759376AbZAIWLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbZAIWNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759376AbZAIWLs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 17:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759204AbZAIWL0
+	id S1759393AbZAIWNd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 17:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbZAIWNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 17:11:26 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54644
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751700AbZAIWLY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 17:11:24 -0500
-Date: Fri, 09 Jan 2009 14:11:24 -0800 (PST)
-Message-Id: <20090109.141124.154196743.davem@davemloft.net>
-To: jaswinderlinux@gmail.com
-Cc: wangchen@cn.fujitsu.com, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       corbet@lwn.net
-Subject: Re: Who wrote 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com>
-References: <496224D7.2030109@cn.fujitsu.com>
-	<3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 9 Jan 2009 17:13:16 -0500
+Received: from 1wt.eu ([62.212.114.60]:1344 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754048AbZAIWNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 17:13:14 -0500
+Date: Fri, 9 Jan 2009 23:09:46 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Miller <davem@davemloft.net>, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090109220946.GA4787@1wt.eu>
+References: <20090108173028.GA22531@1wt.eu> <49667534.5060501@zeus.com> <20090108.135515.85489589.davem@davemloft.net> <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu> <4967C95E.3070602@cosmosbay.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4967C95E.3070602@cosmosbay.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-Date: Fri, 9 Jan 2009 19:39:17 +0530
-
-> In http://remword.com/kps_result/2_6_29_whole_line.html
-> Earlier I was using email address: Jaswinder Singh
-> <jaswinder@infradead.org> (Unknown #25) and now I am using:
-> Jaswinder Singh Rajput <jaswinderrajput@gmail.com> (Unknown #25)
+On Fri, Jan 09, 2009 at 11:02:06PM +0100, Eric Dumazet wrote:
+> Willy Tarreau a écrit :
+> > On Fri, Jan 09, 2009 at 09:51:17PM +0100, Eric Dumazet wrote:
+> > (...)
+> >>> Also, in your second mail, you're saying that your change
+> >>> might return more data than requested by the user. I can't
+> >>> find why, could you please explain to me, as I'm still quite
+> >>> ignorant in this area ?
+> >> Well, I just tested various user programs and indeed got this
+> >> strange result :
+> >>
+> >> Here I call splice() with len=1000 (0x3e8), and you can see
+> >> it gives a result of 1460 at the second call.
+> > 
+> > huh, not nice indeed!
+> > 
+> > While looking at the code to see how this could be possible, I
+> > came across this minor thing (unrelated IMHO) :
+> > 
+> > 	if (__skb_splice_bits(skb, &offset, &tlen, &spd))
+> > 		goto done;
+> >>>>>>> 	else if (!tlen)    <<<<<<
+> > 		goto done;
+> > 
+> > 	/*
+> > 	 * now see if we have a frag_list to map
+> > 	 */
+> > 	if (skb_shinfo(skb)->frag_list) {
+> > 		struct sk_buff *list = skb_shinfo(skb)->frag_list;
+> > 
+> > 		for (; list && tlen; list = list->next) {
+> > 			if (__skb_splice_bits(list, &offset, &tlen, &spd))
+> > 				break;
+> > 		}
+> > 	}
+> > 
+> >     done:
+> > 
+> > Above on the enlighted line, we'd better remove the else and leave a plain
+> > "if (!tlen)". Otherwise, when the first call to __skb_splice_bits() zeroes
+> > tlen, we still enter the if and evaluate the for condition for nothing. But
+> > let's leave that for later.
+> > 
+> >> I suspect a bug in splice code, that my patch just exposed.
+> > 
+> > I've checked in skb_splice_bits() and below and can't see how we can move
+> > more than the requested len.
+> > 
+> > However, with your change, I don't clearly see how we break out of
+> > the loop in tcp_read_sock(). Maybe we first read 1000 then loop again
+> > and read remaining data ? I suspect that we should at least exit when
+> > ((struct tcp_splice_state *)desc->arg.data)->len = 0.
+> > 
+> > At least that's something easy to add just before or after !desc->count
+> > for a test.
+> > 
 > 
-> If possible can you link above two emails.
+> I believe the bug is in tcp_splice_data_recv()
 
-This reminds me that I noticed another one that needs linking,
-shemminger@linux-foundation.org became shemminger@vyatta.com
+yes, see my other mail.
+
+> I am going to test a new patch, but here is the thing I found:
+> 
+> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+> index bd6ff90..fbbddf4 100644
+> --- a/net/ipv4/tcp.c
+> +++ b/net/ipv4/tcp.c
+> @@ -523,7 +523,7 @@ static int tcp_splice_data_recv(read_descriptor_t *rd_desc, struct sk_buff *skb,
+>  {
+>         struct tcp_splice_state *tss = rd_desc->arg.data;
+> 
+> -       return skb_splice_bits(skb, offset, tss->pipe, tss->len, tss->flags);
+> +       return skb_splice_bits(skb, offset, tss->pipe, len, tss->flags);
+>  }
+
+it will not work, len is always 1000 in your case, for every call,
+as I had in my logs :
+
+kernel :
+
+tcp_splice_data_recv: skb=ed3d3480 offset=0 len=1460 tss->pipe=ed1cbc00 tss->len=1000 tss->flags=3
+tcp_sendpage: going through do_tcp_sendpages
+tcp_splice_data_recv: skb=ed3d3480 offset=1000 len=460 tss->pipe=ed1cbc00 tss->len=1000 tss->flags=3
+tcp_splice_data_recv: skb=ed3d3540 offset=0 len=1460 tss->pipe=ed1cbc00 tss->len=1000 tss->flags=3
+tcp_sendpage: going through do_tcp_sendpages
+tcp_sendpage: going through do_tcp_sendpages
+tcp_splice_data_recv: skb=ed3d3540 offset=1000 len=460 tss->pipe=ed1cbc00 tss->len=1000 tss->flags=3
+tcp_splice_data_recv: skb=ed3d3600 offset=0 len=1176 tss->pipe=ed1cbc00 tss->len=1000 tss->flags=3
+tcp_sendpage: going through do_tcp_sendpages
+tcp_sendpage: going through do_tcp_sendpages
+tcp_splice_data_recv: skb=ed3d3600 offset=1000 len=176 tss->pipe=ed1cbc00 tss->len=1000 tss->flags=3
+tcp_sendpage: going through do_tcp_sendpages
+
+program :
+
+accept(3, 0, NULL)                      = 4
+socket(PF_INET, SOCK_STREAM, IPPROTO_TCP) = 5
+connect(5, {sa_family=AF_INET, sin_port=htons(4001), sin_addr=inet_addr("10.0.3.1")}, 16) = 0
+fcntl64(4, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+fcntl64(5, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+pipe([6, 7])                            = 0
+select(6, [5], [], NULL, NULL)          = 1 (in [5])
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 1000
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x3e8, 0x3)      = 1000
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 1460
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x5b4, 0x3)      = 1460
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 1460
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x5b4, 0x3)      = 1460
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 176
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0xb0, 0x3)       = 176
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = -1 EAGAIN (Resource temporarily unavailable)
+close(5)                                = 0
+close(4)                                = 0
+exit_group(0)                           = ?
+
+
+Now with the fix :
+
+accept(3, 0, NULL)                      = 4
+socket(PF_INET, SOCK_STREAM, IPPROTO_TCP) = 5
+connect(5, {sa_family=AF_INET, sin_port=htons(4001), sin_addr=inet_addr("10.0.3.1")}, 16) = 0
+fcntl64(4, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+fcntl64(5, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+pipe([6, 7])                            = 0
+select(6, [5], [], NULL, NULL)          = 1 (in [5])
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 1000
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x3e8, 0x3)      = 1000
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 1000
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x3e8, 0x3)      = 1000
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 1000
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x3e8, 0x3)      = 1000
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 1000
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x3e8, 0x3)      = 1000
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = 96
+select(6, [5], [4], NULL, NULL)         = 2 (in [5], out [4])
+splice(0x6, 0, 0x4, 0, 0x60, 0x3)       = 96
+splice(0x5, 0, 0x7, 0, 0x3e8, 0x3)      = -1 EAGAIN (Resource temporarily unavailable)
+close(5)                                = 0
+close(4)                                = 0
+exit_group(0)                           = ?
+
+
+Regards,
+Willy
+
