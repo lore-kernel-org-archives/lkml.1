@@ -1,110 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZAIUWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZAIU1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbZAIUWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZAIUWE
+	id S1756004AbZAIU1X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:27:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZAIU1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:22:04 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:42326 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753995AbZAIUWB (ORCPT
+	Fri, 9 Jan 2009 15:27:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38029 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754225AbZAIU1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 15:22:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RScvK7anqTLYn2Sp8uSzYPTC1PDzmG6NvSrID0tykZyxO+MgzbfkxpQ8fHGvfZoy7g
-         XHekF3rxTSJ3Qyrz+zDkDHSByVYVSQZSED0oxRY5U7ctZId+q28MDNDk6vIica72nwVM
-         qbXkJ4EdcFxdkbAVtyBierUNnjmiBa54OweCI=
-Message-ID: <48f7fe350901091221m921b63ejdd8627f04c23308c@mail.gmail.com>
-Date: Fri, 9 Jan 2009 15:21:59 -0500
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [PATCH 0/7] V3 of the async function call patches
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20090107151151.458333c1@infradead.org>
+	Fri, 9 Jan 2009 15:27:06 -0500
+Date: Fri, 9 Jan 2009 12:26:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Richard Guenther <richard.guenther@gmail.com>
+cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Dirk Hohndel <hohndel@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+In-Reply-To: <84fc9c000901091214i16fc74b7q349433a5586d5619@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0901091217530.6528@localhost.localdomain>
+References: <496648C7.5050700@zytor.com> <49677CB1.3030701@zytor.com>  <20090109084620.3c711aad@infradead.org>  <20090109172011.GD26290@one.firstfloor.org>  <20090109172801.GC6936@parisc-linux.org>  <20090109174719.GG26290@one.firstfloor.org> 
+ <20090109173914.GD6936@parisc-linux.org>  <alpine.LFD.2.00.0901090947080.6528@localhost.localdomain>  <84fc9c000901091109t2c2aef2fu596f8807b0962688@mail.gmail.com>  <alpine.LFD.2.00.0901091128170.6528@localhost.localdomain>
+ <84fc9c000901091214i16fc74b7q349433a5586d5619@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20090107151151.458333c1@infradead.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just wanted to say that because of these patches the kernel boots
-faster than some hard drives can spin up/init... I have these patches
-included in a patchset I maintain some users now need rootwait in the
-kernel command line :D
 
--Ryan
 
-On 1/7/09, Arjan van de Ven <arjan@infradead.org> wrote:
-> version 3 of the async function call patches
->
-> * Dropped the ACPI part; it broke i surprising ways; needs a rethink
->   (working with Len and co on that)
-> * Included asynchronous delete()
->
->
-> There is still no integration with the out of tree slow-work patch;
-> the slow-work patch does really weird things with refcounts that make it
-> really specific to cachefs and, frankly, I think it's a rather
-> weird design.
->
-> The overlap is maybe 200 lines of code at most, of which 100+ would
-> need to be added just to deal with the various weirdnesses. I really
-> don't think this is a good idea or a fair requirement on the async
-> function call patch series.
->
-> The following changes since commit 8903709b054a8dafe4e8c6d9a6444034d7aba36f:
->   Harvey Harrison (1):
->         xtensa: introduce swab.h
->
-> are available in the git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-async.git
-> master
->
-> Arjan van de Ven (7):
->       async: Asynchronous function calls to speed up kernel boot
->       fastboot: make scsi probes asynchronous
->       fastboot: make the libata port scan asynchronous
->       fastboot: Make libata initialization even more async
->       async: make the final inode deletion an asynchronous event
->       bootchart: improve output based on Dave Jones' feedback
->       async: don't do the initcall stuff post boot
->
->  drivers/ata/libata-core.c |   96 +++++++-------
->  drivers/scsi/scsi_scan.c  |    3 +
->  drivers/scsi/sd.c         |  109 ++++++++++------
->  fs/inode.c                |   20 ++-
->  fs/super.c                |   10 ++
->  include/linux/async.h     |   25 ++++
->  include/linux/fs.h        |    5 +
->  init/do_mounts.c          |    2 +
->  init/main.c               |    5 +-
->  kernel/Makefile           |    3 +-
->  kernel/async.c            |  321
-> +++++++++++++++++++++++++++++++++++++++++++++
->  kernel/irq/autoprobe.c    |    5 +
->  kernel/module.c           |    2 +
->  scripts/bootgraph.pl      |   16 ++-
->  14 files changed, 521 insertions(+), 101 deletions(-)
->  create mode 100644 include/linux/async.h
->  create mode 100644 kernel/async.c
->
->
-> --
-> Arjan van de Ven 	Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Fri, 9 Jan 2009, Richard Guenther wrote:
+> 
+> This is a case where the improved IPA-CP (interprocedural constant 
+> propagation) of GCC 4.4 may help.  In general GCC cannot say how a call 
+> argument may affect optimization if the function was inlined, so the 
+> size estimates are done with just looking at the function body, not the 
+> arguments (well, for GCC 4.4 this is not completely true, there is now 
+> some "heuristics").  With IPA-CP GCC will clone the function for the 
+> constant arguments, optimize it and eventually inline it if it is small 
+> enough.  At the moment this happens only if all callers call the 
+> function with the same constant though (at least I think so).
+
+Ok, that's useless. The whole point is that everybody gives different - 
+but still constant - arguments.
+
+> The above is definitely one case where using a macro or forced inlining is
+> a better idea than to trust a compiler to figure out that it can optimize the
+> function to a size suitable for inlining if called with a constant parameter.
+
+.. and forced inlining is what we default to. But that's when "let's try 
+letting gcc optimize this" fails. And macros get really unreadable, really 
+quickly.
+
+> > Maybe there was something else going on, and maybe Ingo's tests were off,
+> > but this is an example of gcc not inlining WHEN WE TOLD IT TO, and when
+> > the function was a single instruction.
+> >
+> > How can anybody possibly not consider that to be "stupid"?
+> 
+> Because it's a hard problem, it's not stupid to fail here - you didn't tell the
+> compiler the function optimizes!
+
+Well, actually we did. It's that "inline" there. That's how things used to 
+work. It's like "no". It means "no". It doesn't mean "yes, I really want 
+to s*ck your d*ck, but I'm just screaming no at the top of my lungs 
+because I think I should do so".
+
+See?
+
+And you do have to realize that Linux has been using gcc for a _loong_ 
+while. You can talk all you want about how "inline" is just a hint, but 
+the fact is, it didn't use to be. gcc people _made_ it so, and are having 
+a damn hard time admitting that it's causing problems.
+
+> Experience tells us that people do not know better.  Maybe the kernel is
+> an exception here
+
+Oh, I can well believe it. 
+
+And I don't even think that kernel people get it right nearly enough, but 
+since for the kernel it can even be a _correctness_ issue, at least if we 
+get it wrong, everybody sees it.
+
+When _some_ compiler versions get it wrong, it's a disaster.
+
+> But would you still want small functions be inlined even if they are not
+> marked inline?
+
+If you can really tell that they are that small, yes. 
+
+> They do - just constant arguments are obviously not used for optimizing
+> before inlining.  Otherwise you'd scream bloody murder at us for all the
+> increase in compile-time ;)
+
+A large portion of that has gone away now that everybody uses ccache. And 
+if you only did it for functions that we _mark_ inline, it wouldn't even 
+be true. Because those are the ones that presumably really should be 
+inlined.
+
+So no, I don't believe you. You much too easily dismiss the fact that 
+we've explicitly marked these functions for inlining, and then you say 
+"but we were too stupid".
+
+If you cannot afford to do the real job, then trust the user. Don't guess.
+
+		Linus
