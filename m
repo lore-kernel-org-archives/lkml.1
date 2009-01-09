@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbZAIVzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbZAIV6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757715AbZAIVzj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZAIVza
+	id S1758205AbZAIV6A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbZAIV5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:55:30 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48884 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751821AbZAIVz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:55:29 -0500
-Date: Fri, 9 Jan 2009 13:54:23 -0800
-From: Greg KH <gregkh@suse.de>
+	Fri, 9 Jan 2009 16:57:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33589 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754388AbZAIV5r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 16:57:47 -0500
+Date: Fri, 9 Jan 2009 13:56:54 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux1394-devel@lists.sourceforge.net,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Jay Fenlason <fenlason@redhat.com>
-Subject: Re: [PATCH post 2.6.28] firewire: core: fix sleep in atomic
-	context due to driver core change
-Message-ID: <20090109215423.GA7869@suse.de>
-References: <496798FE.8030900@s5r6.in-berlin.de> <tkrat.34f28fe71f678057@s5r6.in-berlin.de> <20090109211718.48a7a4a6@lxorguk.ukuu.org.uk>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+In-Reply-To: <20090109120254.496f75d2@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.00.0901091356160.6528@localhost.localdomain>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <20090109120254.496f75d2@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090109211718.48a7a4a6@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 09:17:18PM +0000, Alan Cox wrote:
-> On Fri, 9 Jan 2009 20:49:37 +0100 (CET)
-> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+
+On Fri, 9 Jan 2009, Alan Cox wrote:
+
+> > Of course, this assumes that someone will actually perform that testing
+> > and review.  Chances are that it'll just sit there, getting nothing more
+> > than compilation testing.
 > 
-> > Due to commit 2831fe6f9cc4e16c103504ee09a47a084297c0f3, "driver core:
-> > create a private portion of struct device", device_initialize() can no
-> > longer be called from atomic contexts.
-> 
-> I don't see why this is neccessary or appropriate - the original commit
-> needs to be pulled and the private area allocation rethought.
+> Almost every distribution ships the updated version and has done for ages
+> - exactly what kind of testing is going to beat that ?
 
-Ugh, I think you're right.  I'll revert this (and all of the patches in
-the series that were needed to get this working properly), and redo the
-patch set, first making device_initialize() able to fail, and auditing
-all callers to make sure it's not being called in atomic context.
+Yes, if this is really in use by everybody, then not merging it is kind of 
+pointless. 
 
-At first glance, I think it's only firewire that is doing this in atomic
-context, so Stefan, I wouldn't mind seeing your patch go in as-is just
-to make things simpler overall.
-
-I'll go make up the patchset and send them to Linus...
-
-thanks,
-
-greg k-h
+		Linus
