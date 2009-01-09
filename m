@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbZAIXHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbZAIXLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759808AbZAIXHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZAIXHK
+	id S1755122AbZAIXLn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZAIXLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:07:10 -0500
-Received: from 1wt.eu ([62.212.114.60]:1374 "EHLO 1wt.eu"
+	Fri, 9 Jan 2009 18:11:34 -0500
+Received: from alpha.facton.com ([83.236.152.122]:40492 "EHLO alpha.facton.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754427AbZAIXHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:07:06 -0500
-Date: Sat, 10 Jan 2009 00:06:41 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       ben@zeus.com, jarkao2@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090109230641.GD4819@1wt.eu>
-References: <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu> <20090109220737.GA4111@1wt.eu> <4967CBB9.1060403@cosmosbay.com> <20090109221744.GA4819@1wt.eu> <20090109224258.GA10257@ioremap.net> <20090109225010.GB4819@1wt.eu> <20090109230124.GA11592@ioremap.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090109230124.GA11592@ioremap.net>
-User-Agent: Mutt/1.5.11
+	id S1752215AbZAIXLe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 18:11:34 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Re: Fw: hwinfo problem since 2.6.28
+Date: Sat, 10 Jan 2009 00:09:54 +0100
+Message-ID: <3C59DB883F7B0B4D8096010D45ACCD13C73ECC@exch.facton.local>
+In-Reply-To: <20090109222552.GB6472@linux-os.sc.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: Fw: hwinfo problem since 2.6.28
+Thread-Index: AclyqUbUaPQ+OdaOQDiNsb4IamVQRQABeO+A
+References: <20090108015424.e9443521.akpm@linux-foundation.org> <20090108112543.GA25606@elte.hu> <20090109222552.GB6472@linux-os.sc.intel.com>
+From: "Beschorner Daniel" <Daniel.Beschorner@facton.com>
+To: "Suresh Siddha" <suresh.b.siddha@intel.com>, "Ingo Molnar" <mingo@elte.hu>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Yinghai Lu" <yinghai@kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       <spender@grsecurity.net>, <pageexec@freemail.hu>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 10, 2009 at 02:01:24AM +0300, Evgeniy Polyakov wrote:
-> On Fri, Jan 09, 2009 at 11:50:10PM +0100, Willy Tarreau (w@1wt.eu) wrote:
-> > Well, I'm now trying to educate myself on the send part. It's still
-> > not very clear to me and I'd like to understand a little bit better
-> > why we have this corruption problem and why there is a difference
-> > between sending segments from memory and sending them from another
-> > socket where they were already waiting.
+> > > Since 2.6.28 my hwinfo tool crashes badly on 2 years old 
+> OpenSuSE 10.2
+> > > x64/SMP.
+> > > Older kernels run fine, I did a "make oldconfig" and rather used
+> > > defaults (just skipping low-64k checks).
+> > > This seems to be the only affected binary as far I can see.
+> > > Did I miss a new legacy/compat option or is it a bug?
+> > > 
+> > > Thank you!
+> > > Daniel
+> > > 
+> > > hwinfo: Corrupted page table at address 7fd04de3ec00
+> > > PGD 7dc33067 PUD 3efe067 PMD 27b83067 PTE fffffffffffffbff
+> > > Bad pagetable: 000d [#9] SMP
 > 
-> printks are the best choice, since you will get exactly what you are
-> looking for instead of deciphering what developer or code told you.
-
-I know, but as I told in an earlier mail, it was not even clear to
-me what function were called. I have made guesses but that's quite
-hard when you don't know the entry point. I think I'm not too far
-from having discovered the call chain. Understanding it will be
-another story, of course ;-)
-
-> > I think I'll put printks everywhere and see what I can observe.
-> > Knowing about the GSO/SG workaround already helps me enable/disable
-> > the bug.
+> Daniel, Can you please check and ack if the appended patch fixes this
+> page table corruption issue? We tried to reproduce your issue
+> locally here but didn't succeed because of different hwinfo versions.
 > 
-> I wish I could also be capable to disable the bugs... :)
+> thanks,
+> suresh
+> ---
 
-Me too :-)
-Here we have an opportunity to turn it on/off, let's take it !
+Works great! hwinfo runs fine again.
 
-Willy
-
+Thank you!
+Daniel
