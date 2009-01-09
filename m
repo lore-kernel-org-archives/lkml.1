@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZAIEwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZAIE7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbZAIEwk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 23:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZAIEwc
+	id S1756058AbZAIE7q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 23:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZAIE7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 23:52:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55310 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbZAIEwb (ORCPT
+	Thu, 8 Jan 2009 23:59:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35955
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751734AbZAIE7c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 23:52:31 -0500
-Date: Thu, 8 Jan 2009 20:52:22 -0800
-From: Dirk Hohndel <hohndel@infradead.org>
-To: Dirk Hohndel <hohndel@infradead.org>
-Cc: "Han, Weidong" <weidong.han@intel.com>,
-       "'Grant Grundler'" <grundler@parisc-linux.org>,
-       "'linux-pci@vger.kernel.org'" <linux-pci@vger.kernel.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Arjan van de Ven'" <arjan@infradead.org>
-Subject: Re: git-latest: kernel oops in IOMMU setup
-Message-ID: <20090108205222.2c89dcde@infradead.org>
-In-Reply-To: <20090108180515.2f279671@infradead.org>
-References: <20090108120538.0176d348@infradead.org>
-	<20090108214116.GB20506@colo.lackof.org>
-	<715D42877B251141A38726ABF5CABF2C018E8FEA77@pdsmsx503.ccr.corp.intel.com>
-	<20090108180515.2f279671@infradead.org>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; x86_64-redhat-linux-gnu)
+	Thu, 8 Jan 2009 23:59:32 -0500
+Date: Thu, 08 Jan 2009 20:59:33 -0800 (PST)
+Message-Id: <20090108.205933.96892305.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: hpa@zytor.com, mingo@elte.hu, chris.mason@oracle.com, peterz@infradead.org,
+       rostedt@goodmis.org, paulmck@linux.vnet.ibm.com, ghaskins@novell.com,
+       matthew@wil.cx, andi@firstfloor.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
+References: <20090108183306.GA22916@elte.hu>
+	<496648C7.5050700@zytor.com>
+	<alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009 18:05:15 -0800
-Dirk Hohndel <hohndel@infradead.org> wrote:
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 8 Jan 2009 19:46:30 -0800 (PST)
 
-> On Fri, 9 Jan 2009 08:58:46 +0800 "Han, Weidong"
-> 
-> I updated to Linus' latest git (as your description made me wonder if
-> the async stuff might play a role here). I still get an oops - but at
-> a different spot and the system no longer hangs - it partly recovers
-> (but things aren't too well - for example my USB keyboard / mouse
-> don't work anymore). 
+> First off, gcc _does_ have a perfectly fine notion of how heavy-weight an 
+> "asm" statement is: just count it as a single instruction (and count the 
+> argument setup cost that gcc _can_ estimate).
 
-Spoke too soon. Rebooted and had the same hard lockup again. This time
-I had my camera within reach, so here's the trace:
+Actually, at least at one point, it counted the number of newline
+characters in the assembly string to estimate how many instructions
+are contained inside.
 
-device_to_iommu+0x33/0x73
-domain_context_mapping_one+0x37/0x335
-domain_context_mapping+0x25/0xa7
-iommu_prepare_identity+0xd7/0xf3
-intel_iommu_init+0x4e4/0x8f3
-? mutex_lock
-? sysctl_net_init
-? pci_iommu_init
-pci_iommu_init
+It actually needs to know exaclty how many instructions are in there,
+to emit proper far branches and stuff like that, for some cpus.
 
-I also have stack, code and register values. Let me know if you need
-them. Or I can just post the picture :-)
-
-Again, very latest git tree, VT-d enabled.
-
-/D
-
--- 
-Dirk Hohndel
-Intel Open Source Technology Center
+Since they never added an (optional) way to actually tell the compiler
+this critical piece of information, so I guess the newline hack is the
+best they could come up with.
