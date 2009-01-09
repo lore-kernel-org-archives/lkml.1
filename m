@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZAIIRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZAIIVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbZAIIRk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 03:17:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZAIIRc
+	id S1754884AbZAIIVX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 03:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZAIIVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 03:17:32 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:46553 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbZAIIRb (ORCPT
+	Fri, 9 Jan 2009 03:21:15 -0500
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:32914 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751964AbZAIIVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 03:17:31 -0500
-Date: Fri, 9 Jan 2009 09:17:19 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Dan Williams <dan.j.williams@intel.com>,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4 v8] i.MX31: dmaengine and framebuffer drivers
-Message-ID: <20090109081719.GB2020@pengutronix.de>
-Mail-Followup-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	Dan Williams <dan.j.williams@intel.com>,
-	linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
+	Fri, 9 Jan 2009 03:21:14 -0500
+Message-ID: <37611.166.70.238.44.1231486566.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20090109064658.GG5038@1wt.eu>
+References: <40416.166.70.238.44.1231467823.squirrel@webmail.wolfmountaingroup.com>
+    <20090109064658.GG5038@1wt.eu>
+Date: Fri, 9 Jan 2009 00:36:06 -0700 (MST)
+Subject: Re: [ANNOUNCE] Kernel Blocking Firewall
+From: jmerkey@wolfmountaingroup.com
+To: "Willy Tarreau" <w@1wt.eu>
+Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 09:10:05 up 26 days, 12:37, 17 users,  load average: 5.73, 2.63,
-	1.35
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 07:04:04PM +0100, Guennadi Liakhovetski wrote:
-> Hi,
-> 
-> This is version 8 of dmaengine and framebuffer drivers for i.MX31.
+> On Thu, Jan 08, 2009 at 07:23:43PM -0700, jmerkey@wolfmountaingroup.com
+> wrote:
+>> iptables is just too cumbersome and memory comsumptive to work well and
+>> has a shitty app inteface so I wrote one with a kernel level database
+>> and
+>> combined it with postfix.    This firewall actually drops packets on the
+>> floor by port, or in their entirety by IP address to deal with these
+>> jerks.
+>>
+>> The code is a kernel module that will build an RBL database to disk and
+>> it
+>> will cache up to 500,000 IP addresses efficiently on a 1GB home personal
+>> computer.  The more memory you have, the more IP addresses you can
+>> cache.
+>> It is configurable and possible to hold millions of them if you have 4GB
+>> of memory in the server.
+>
+> why didn't you use ipset for that ? It's designed exactly for this usage
+> and is a lot easier to use than plain iptables for dynamic filtering.
+>
+> Willy
 
-Does this depend on some other patch? It does not compile:
 
-drivers/dma/ipu/ipu_idmac.c: In function 'idmac_tx_submit':
-drivers/dma/ipu/ipu_idmac.c:851: error: invalid type argument of '->'
-drivers/dma/ipu/ipu_idmac.c:851: error: invalid type argument of '->'
-drivers/dma/ipu/ipu_idmac.c: In function 'idmac_alloc_chan_resources':
-drivers/dma/ipu/ipu_idmac.c:1490: error: invalid type argument of '->'
-drivers/dma/ipu/ipu_idmac.c:1490: error: invalid type argument of '->'
-drivers/dma/ipu/ipu_idmac.c: In function 'ipu_idmac_init':
-drivers/dma/ipu/ipu_idmac.c:1547: error: 'DMA_PRIVATE' undeclared (first use in this function)
-drivers/dma/ipu/ipu_idmac.c:1547: error: (Each undeclared identifier is reported only once
-drivers/dma/ipu/ipu_idmac.c:1547: error: for each function it appears in.)
-drivers/dma/ipu/ipu_idmac.c:1551: warning: assignment from incompatible pointer type
+No database to store the 500,000+ addresses you will harvest in about 2
+months, that's why.  The one I did uses an lru cached database that runs
+in the kernel, and not userspace, so you can filer real time, and manage
+the database real time.
+
+Jeff
+>
+>
 
 
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
