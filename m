@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZAIUzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbZAIUzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473AbZAIUzL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZAIUyx
+	id S1757008AbZAIUzk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZAIUzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:54:53 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:29158 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753959AbZAIUyw (ORCPT
+	Fri, 9 Jan 2009 15:55:19 -0500
+Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:38227 "HELO
+	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754048AbZAIUzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 15:54:52 -0500
-X-YMail-OSG: Cr_HYKYVM1kDrCssOd56mnzRx4MxPbjzuHAtXhsL9LaFrs0nE7cbL2rGI2b8Y8vX5U0AyM8Oxfz5Dj60_Zz6lBehN4TeHSYP5SR8D812XDC0C.Y6TGrm130.mLudVfiEpd53E3b_bjHEP0E.khGLAKFhHqG7JaJdldgQv0IlXCEUQYReCG1KfE5TT5TyTaJS2cPFEmsRoeUunhO7AQib8iBbJ.xI_Zhx.UfN3ILtc4tgQsE_Fto-
+	Fri, 9 Jan 2009 15:55:18 -0500
+X-YMail-OSG: zocmATMVM1niO744memGQ5zd_8zt08lliS91QrojHAU8mEOYr70AW7gG3PHpWHQEEt1aW_9Qno9TYyxIQmNWBVoq8JsOZF8vfkG3yZ9p3MmXoYbslXI7j1Ry5sjzrRar9fzn.xHXJFNmbT34FIvjVAVhC9F689aEnWjI95N3yJW7f6CQ1HQSKliDwi.7UNUyvPrDsWZbSH.rPuPDT68Fk5rdp8PLpiMOKjKcK.uaxBeri3pqxPw-
 X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 3/5] [LIO-Target]: Convert iscsi_ooo_cmdsn_t to use struct
+Subject: [PATCH 4/5] [LIO-Target]: Convert iscsi_r2t_t to use struct
 	kmem_cache
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: "Linux-iSCSI.org Target Dev" 
@@ -20,8 +20,8 @@ To: "Linux-iSCSI.org Target Dev"
 Cc: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 09 Jan 2009 12:54:27 -0800
-Message-Id: <1231534467.4560.1001.camel@haakon2.linux-iscsi.org>
+Date: Fri, 09 Jan 2009 12:54:53 -0800
+Message-Id: <1231534493.4560.1003.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,117 +29,107 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a85fbc2cce4ecaa68eb7bcf3b4fb158c7ae01650 Mon Sep 17 00:00:00 2001
+>From 45a2b80a11603c648e7f01423fa23c35cf8b543f Mon Sep 17 00:00:00 2001
 From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Fri, 9 Jan 2009 10:42:44 -0800
-Subject: [PATCH 3/5] [LIO-Target]: Convert iscsi_ooo_cmdsn_t to use struct kmem_cache
+Date: Fri, 9 Jan 2009 10:48:49 -0800
+Subject: [PATCH 4/5] [LIO-Target]: Convert iscsi_r2t_t to use struct kmem_cache
 
-This patch converts usage of the structure iscsi_ooo_cmdsn_t (which is
-used for MC/S out of order CmdSN execution) to use struct kmem_cache *lio_ooo_cache.
+This patch converts usage of the structure iscsi_r2t_t to use
+struct kmem_cache *lio_r2t_cache.  This patch also adds a missing
+kmem_cache_free() in iscsi_target_util.c:iscsi_free_r2t(), which is currently
+used exclusively by iscsi_target_tmr.c for ErrorRecoveryLevel=2 code.
 
 Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
  drivers/lio-core/iscsi_target.c      |   11 +++++++++++
- drivers/lio-core/iscsi_target_erl1.c |   11 ++++++-----
- 2 files changed, 17 insertions(+), 5 deletions(-)
+ drivers/lio-core/iscsi_target_util.c |    7 ++++---
+ 2 files changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/lio-core/iscsi_target.c b/drivers/lio-core/iscsi_target.c
-index 77c0e52..ccfaa48 100644
+index ccfaa48..bf7b478 100644
 --- a/drivers/lio-core/iscsi_target.c
 +++ b/drivers/lio-core/iscsi_target.c
-@@ -98,6 +98,7 @@ struct kmem_cache *lio_cmd_cache = NULL;
- struct kmem_cache *lio_sess_cache = NULL;
+@@ -99,6 +99,7 @@ struct kmem_cache *lio_sess_cache = NULL;
  struct kmem_cache *lio_qr_cache = NULL;
  struct kmem_cache *lio_dr_cache = NULL;
-+struct kmem_cache *lio_ooo_cache = NULL;
+ struct kmem_cache *lio_ooo_cache = NULL;
++struct kmem_cache *lio_r2t_cache = NULL;
  
  extern int se_allocate_rl_cmd (se_cmd_t *, unsigned char *, u64);
  extern int iscsi_build_report_luns_response (iscsi_cmd_t *);
-@@ -1133,6 +1134,13 @@ static int iscsi_target_detect(void)
+@@ -1141,6 +1142,13 @@ static int iscsi_target_detect(void)
  		goto out;
  	}
  
-+	if (!(lio_ooo_cache = kmem_cache_create("lio_ooo_cache",
-+			sizeof(iscsi_ooo_cmdsn_t), __alignof__(iscsi_ooo_cmdsn_t),
++	if (!(lio_r2t_cache = kmem_cache_create("lio_r2t_cache",
++			sizeof(iscsi_r2t_t), __alignof__(iscsi_r2t_t),
 +			0, NULL))) {
-+		printk(KERN_ERR "Unable to kmem_cache_create() for lio_ooo_cache\n");
++		printk(KERN_ERR "Unable to kmem_cache_create() for lio_r2t_cache\n");
 +		goto out;
 +	}
 +
  	if (core_load_discovery_tpg() < 0)
  		goto out;
  
-@@ -1150,6 +1158,8 @@ out:
- 		kmem_cache_destroy(lio_qr_cache);
- 	if (lio_dr_cache)
+@@ -1160,6 +1168,8 @@ out:
  		kmem_cache_destroy(lio_dr_cache);
-+	if (lio_ooo_cache)
-+		kmem_cache_destroy(lio_ooo_cache);
+ 	if (lio_ooo_cache)
+ 		kmem_cache_destroy(lio_ooo_cache);
++	if (lio_r2t_cache)
++		kmem_cache_destroy(lio_r2t_cache);
  	iscsi_deallocate_thread_sets(TARGET);
  	iscsi_target_deregister_configfs();
  #ifdef CONFIG_PROC_FS
-@@ -1204,6 +1214,7 @@ extern void iscsi_target_release_phase2 (void)
- 	kmem_cache_destroy(lio_sess_cache);
+@@ -1215,6 +1225,7 @@ extern void iscsi_target_release_phase2 (void)
  	kmem_cache_destroy(lio_qr_cache);
  	kmem_cache_destroy(lio_dr_cache);
-+	kmem_cache_destroy(lio_ooo_cache);
+ 	kmem_cache_destroy(lio_ooo_cache);
++	kmem_cache_destroy(lio_r2t_cache);
  	core_release_discovery_tpg();
  	core_release_tiqns();
  	plugin_deregister_class(PLUGIN_TYPE_FRONTEND);
-diff --git a/drivers/lio-core/iscsi_target_erl1.c b/drivers/lio-core/iscsi_target_erl1.c
-index c95ece0..6a30e64 100644
---- a/drivers/lio-core/iscsi_target_erl1.c
-+++ b/drivers/lio-core/iscsi_target_erl1.c
-@@ -60,6 +60,8 @@
+diff --git a/drivers/lio-core/iscsi_target_util.c b/drivers/lio-core/iscsi_target_util.c
+index d170cdb..9c83f33 100644
+--- a/drivers/lio-core/iscsi_target_util.c
++++ b/drivers/lio-core/iscsi_target_util.c
+@@ -74,6 +74,7 @@ extern struct target_fabric_configfs *lio_target_fabric_configfs;
+ extern iscsi_global_t *iscsi_global;
+ extern struct kmem_cache *lio_cmd_cache;
+ extern struct kmem_cache *lio_qr_cache;
++extern struct kmem_cache *lio_r2t_cache;
  
- #undef ISCSI_TARGET_ERL1_C
+ extern int iscsi_add_nopin (iscsi_conn_t *, int);
  
-+extern struct kmem_cache *lio_ooo_cache;
-+
- extern int iscsi_add_reject_from_cmd (u8, int, int, unsigned char *, iscsi_cmd_t *);
- extern int iscsi_build_r2ts_for_cmd (iscsi_cmd_t *, iscsi_conn_t *, int);
- extern int iscsi_build_report_luns_response (iscsi_cmd_t *);
-@@ -832,12 +834,11 @@ static inline iscsi_ooo_cmdsn_t *iscsi_allocate_ooo_cmdsn (void)
- 	iscsi_ooo_cmdsn_t *ooo_cmdsn = NULL;
- 
- 	if (!(ooo_cmdsn = (iscsi_ooo_cmdsn_t *)
--	      kmalloc(sizeof(iscsi_ooo_cmdsn_t), GFP_ATOMIC))) {
-+	      kmem_cache_zalloc(lio_ooo_cache, GFP_ATOMIC))) {
- 		TRACE_ERROR("Unable to allocate memory for"
- 			" iscsi_ooo_cmdsn_t.\n");
- 		return(NULL);
- 	}
--	memset(ooo_cmdsn, 0, sizeof(iscsi_ooo_cmdsn_t));
- 
- 	return(ooo_cmdsn);
- }
-@@ -909,7 +910,7 @@ extern void iscsi_remove_ooo_cmdsn (
- 	iscsi_ooo_cmdsn_t *ooo_cmdsn)
+@@ -197,11 +198,10 @@ extern int iscsi_add_r2t_to_list (
  {
- 	REMOVE_ENTRY_FROM_LIST(ooo_cmdsn, sess->ooo_cmdsn_head, sess->ooo_cmdsn_tail);
--	kfree(ooo_cmdsn);
-+	kmem_cache_free(lio_ooo_cache, ooo_cmdsn);
+ 	iscsi_r2t_t *r2t;
+ 	
+-	if (!(r2t = (iscsi_r2t_t *) kmalloc(sizeof(iscsi_r2t_t), GFP_ATOMIC))) {
++	if (!(r2t = (iscsi_r2t_t *) kmem_cache_zalloc(lio_r2t_cache, GFP_ATOMIC))) {
+ 		TRACE_ERROR("Unable to allocate memory for iscsi_r2t_t.\n");
+ 		return(-1);
+ 	}
+-	memset(r2t, 0, sizeof(iscsi_r2t_t));
+ 
+ 	r2t->recovery_r2t = recovery;
+ 	r2t->r2t_sn = (!r2t_sn) ? cmd->r2t_sn++ : r2t_sn;
+@@ -280,6 +280,7 @@ extern void iscsi_free_r2t (
+ 	iscsi_cmd_t *cmd)
+ {
+ 	REMOVE_ENTRY_FROM_LIST(r2t, cmd->r2t_head, cmd->r2t_tail);
++	kmem_cache_free(lio_r2t_cache, r2t);
  
  	return;
  }
-@@ -1165,7 +1166,7 @@ extern void iscsi_free_all_ooo_cmdsns (iscsi_session_t *sess)
- 	while (ooo_cmdsn) {
- 		ooo_cmdsn_next = ooo_cmdsn->next;
- 
--		kfree(ooo_cmdsn);
-+		kmem_cache_free(lio_ooo_cache, ooo_cmdsn);
- 		
- 		ooo_cmdsn = ooo_cmdsn_next;
+@@ -297,7 +298,7 @@ extern void iscsi_free_r2ts_from_list (
+ 	r2t = cmd->r2t_head;
+ 	while (r2t) {
+ 		r2t_next = r2t->next;
+-		kfree(r2t);
++		kmem_cache_free(lio_r2t_cache, r2t);
+ 		r2t = r2t_next;
  	}
-@@ -1214,7 +1215,7 @@ extern int iscsi_handle_ooo_cmdsn (
- 	ooo_cmdsn->cmdsn		= cmdsn;
- 
- 	if (iscsi_attach_ooo_cmdsn(sess, ooo_cmdsn) < 0) {
--		kfree(ooo_cmdsn);
-+		kmem_cache_free(lio_ooo_cache, ooo_cmdsn);
- 		return(CMDSN_ERROR_CANNOT_RECOVER);
- 	}
- 	
+ 	spin_unlock_bh(&cmd->r2t_lock);
 -- 
 1.5.4.1
 
