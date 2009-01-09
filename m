@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZAII1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZAIIbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZAII1P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 03:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbZAII07
+	id S1755356AbZAIIbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 03:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZAIIbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 03:26:59 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57317 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753463AbZAII06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 03:26:58 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+BzTd+bzKBQSaSt+OnZVr1gflyIk/5NLmMhaAn+A
-	mIC1OyCFxd8JU7
-Date: Fri, 9 Jan 2009 09:27:01 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Dan Williams <dan.j.williams@intel.com>,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4 v8] i.MX31: dmaengine and framebuffer drivers
-In-Reply-To: <20090109081719.GB2020@pengutronix.de>
-Message-ID: <Pine.LNX.4.64.0901090922530.4848@axis700.grange>
-References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
- <20090109081719.GB2020@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+	Fri, 9 Jan 2009 03:31:06 -0500
+Received: from fwtops.0.225.230.202.in-addr.arpa ([202.230.225.126]:61641 "EHLO
+	topsms.toshiba-tops.co.jp" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752355AbZAIIbF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 03:31:05 -0500
+Date: Fri, 09 Jan 2009 17:30:57 +0900 (JST)
+Message-Id: <20090109.173057.25877173.nemoto@toshiba-tops.co.jp>
+To: dan.j.williams@intel.com
+Cc: haavard.skinnemoen@atmel.com, linux-kernel@vger.kernel.org,
+       maciej.sosnowski@intel.com, ralf@linux-mips.org
+Subject: Re: [PATCH] dmatest: flush and invalidate destination buffer
+ before DMA
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <e9c3a7c20901080920r1051775ey7dbb4fad37b2810@mail.gmail.com>
+References: <20090108.134336.127659765.nemoto@toshiba-tops.co.jp>
+	<20090108093603.691c1200@hskinnemoen-d830>
+	<e9c3a7c20901080920r1051775ey7dbb4fad37b2810@mail.gmail.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009, Sascha Hauer wrote:
-
-> On Thu, Jan 08, 2009 at 07:04:04PM +0100, Guennadi Liakhovetski wrote:
-> > Hi,
-> > 
-> > This is version 8 of dmaengine and framebuffer drivers for i.MX31.
+On Thu, 8 Jan 2009 10:20:56 -0700, "Dan Williams" <dan.j.williams@intel.com> wrote:
+> On Thu, Jan 8, 2009 at 1:36 AM, Haavard Skinnemoen
+> > I think it does. The dmatest driver should definitely use
+> > DMA_BIDIRECTIONAL on the destination buffer to ensure that the poison
+> > values are written to RAM and not just written to cache and discarded.
 > 
-> Does this depend on some other patch? It does not compile:
+> True.
 > 
-> drivers/dma/ipu/ipu_idmac.c: In function 'idmac_tx_submit':
-> drivers/dma/ipu/ipu_idmac.c:851: error: invalid type argument of '->'
-> drivers/dma/ipu/ipu_idmac.c:851: error: invalid type argument of '->'
-> drivers/dma/ipu/ipu_idmac.c: In function 'idmac_alloc_chan_resources':
-> drivers/dma/ipu/ipu_idmac.c:1490: error: invalid type argument of '->'
-> drivers/dma/ipu/ipu_idmac.c:1490: error: invalid type argument of '->'
-> drivers/dma/ipu/ipu_idmac.c: In function 'ipu_idmac_init':
-> drivers/dma/ipu/ipu_idmac.c:1547: error: 'DMA_PRIVATE' undeclared (first use in this function)
-> drivers/dma/ipu/ipu_idmac.c:1547: error: (Each undeclared identifier is reported only once
-> drivers/dma/ipu/ipu_idmac.c:1547: error: for each function it appears in.)
-> drivers/dma/ipu/ipu_idmac.c:1551: warning: assignment from incompatible pointer type
+> > Now, this probably means that the destination buffer must be _unmapped_
+> > with DMA_BIDIRECTIONAL too, which is difficult to do with the current
+> > asymmetrical API...
+> 
+> A map and unmap should work for the current platforms with dma
+> drivers, but you are right I think this is a violation of the api.
+> For correctness we would need the entire operation covered by
+> DMA_BIDIRECTIONAL to support platforms that may implement a dma bounce
+> buffer.  Or, we could change dmatest to not go through the dma-memcpy
+> api, allowing dma_alloc to be used for the destination.
 
-A quote from the message you're replying to:
+Do you mean something like this?
 
-> > Changes since version 7: updated to today's Linus git with pulled patches 
-> > from async_tx tree (dmaengine)
+		dmatest_init_srcbuf(thread->srcbuf, src_off, len);
+		dmatest_init_dstbuf(thread->dstbuf, dst_off, len);
 
-and later
+		dma_src = dma_map_single(dev->dev, src + src_off, len,
+			 DMA_TO_DEVICE);
+		dma_dest = dma_map_single(dev->dev, dest_buf, test_buf_size,
+			DMA_BIDIRECTIONAL);
+		tx = dev->device_prep_dma_memcpy(chan, dma_dest + dst_off,
+				dma_src, len,
+				DMA_CTRL_ACK | DMA_COMPL_SKIP_DEST_UNMAP);
+		if (!tx) {
+			/* error */
+		}
+		tx->callback = NULL;
+		cookie = tx->tx_submit(tx);
+		...
+		/* wait for completion */
+		...
+		dma_unmap_single(dev->dev, dma_dest, test_buf_size,
+			DMA_BIDIRECTIONAL);
 
-> > Based on Linus' git commit 9e42d0cf5020aaf217433cad1a224745241d212a
-> > plus git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
+It will make dmatest more aggressive, for example, a option for
+testing DMA_PREP_INTERRUPT handling of a lowlevel driver can be added
+easily.
 
-So, yes, you have to pull that tree, there are a few patches there...
-
-Thanks
-Guennadi
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Atsushi Nemoto
