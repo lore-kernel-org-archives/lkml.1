@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbZAIVoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbZAIVpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758106AbZAIVoQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 16:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZAIVoA
+	id S1757420AbZAIVpx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 16:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZAIVpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 16:44:00 -0500
-Received: from solo.fdn.fr ([80.67.169.19]:52016 "EHLO solo.fdn.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138AbZAIVn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 16:43:59 -0500
-Date: Fri, 9 Jan 2009 22:43:57 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
-Subject: Re: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
-Message-ID: <20090109214357.GH5073@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, dmitry.torokhov@gmail.com,
-	linux-input@vger.kernel.org
-References: <20090107005813.GA4987@const.famille.thibault.fr> <20090109212358.GG5073@const.famille.thibault.fr> <20090109213555.7f9275c9@lxorguk.ukuu.org.uk>
+	Fri, 9 Jan 2009 16:45:43 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:34087 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbZAIVpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 16:45:42 -0500
+Date: Fri, 9 Jan 2009 16:42:16 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tomas Winkler <tomas.winkler@intel.com>
+Subject: Re: [PATCH 1/1 #2] IWL: fix WARN typo
+Message-ID: <20090109214216.GG3371@tuxdriver.com>
+References: <1231171404-22822-1-git-send-email-jirislaby@gmail.com> <1231171566-22984-1-git-send-email-jirislaby@gmail.com> <20090109201759.GE3371@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090109213555.7f9275c9@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20090109201759.GE3371@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox, le Fri 09 Jan 2009 21:35:55 +0000, a écrit :
-> Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+People have pointed-out the "kew -> key" part of the patch.
+Any thoughts on "new key" vs. "a new key"?
+
+John
+
+On Fri, Jan 09, 2009 at 03:18:00PM -0500, John W. Linville wrote:
+> Is the way it is now problematic for non-native English speakers?
+> Or native ones for that matter?
 > 
-> > Came somebody have a look at this?  The need is real, the only question
-> > that comes to my mind is whether notifiers are allowed to modify the
-> > param they are given.  Since they are not marked const, I'd guess it'd
-> > be ok?
+> Dropping an article in a "computer-ese" statement has never bothered
+> me, so this seems like just a handful of unnecessary string bytes?
 > 
-> The notifier code doesn't care.
-
-I know, but I'm asking about current practice.
-
-> > Make kbd_keycode() read param.value after calling the keyboard notification
-> > chain, to let the callee change the translation on the fly. This for instance
-> > permits to remap the physical positions of the keys independently of the
-> > configured keymap, for e.g. single-handed people.
+> John
 > 
-> Surely that is just a new keymap ?
+> On Mon, Jan 05, 2009 at 05:06:06PM +0100, Jiri Slaby wrote:
+> > new kew -> a new key
+> > 
+> > Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> > Cc: Tomas Winkler <tomas.winkler@intel.com>
+> > Cc: John W. Linville <linville@tuxdriver.com>
+> > ---
+> >  drivers/net/wireless/iwlwifi/iwl-sta.c |    6 +++---
+> >  1 files changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/net/wireless/iwlwifi/iwl-sta.c b/drivers/net/wireless/iwlwifi/iwl-sta.c
+> > index 412f66b..ce2ba40 100644
+> > --- a/drivers/net/wireless/iwlwifi/iwl-sta.c
+> > +++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
+> > @@ -638,7 +638,7 @@ static int iwl_set_wep_dynamic_key_info(struct iwl_priv *priv,
+> >  	 * in uCode. */
+> >  
+> >  	WARN(priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET,
+> > -		"no space for new kew");
+> > +		"no space for a new key");
+> >  
+> >  	priv->stations[sta_id].sta.key.key_flags = key_flags;
+> >  	priv->stations[sta_id].sta.sta.modify_mask = STA_MODIFY_KEY_MASK;
+> > @@ -686,7 +686,7 @@ static int iwl_set_ccmp_dynamic_key_info(struct iwl_priv *priv,
+> >  	 * in uCode. */
+> >  
+> >  	WARN(priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET,
+> > -		"no space for new kew");
+> > +		"no space for a new key");
+> >  
+> >  	priv->stations[sta_id].sta.key.key_flags = key_flags;
+> >  	priv->stations[sta_id].sta.sta.modify_mask = STA_MODIFY_KEY_MASK;
+> > @@ -722,7 +722,7 @@ static int iwl_set_tkip_dynamic_key_info(struct iwl_priv *priv,
+> >  	 * in uCode. */
+> >  
+> >  	WARN(priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET,
+> > -		"no space for new kew");
+> > +		"no space for a new key");
+> >  
+> >  	/* This copy is acutally not needed: we get the key with each TX */
+> >  	memcpy(priv->stations[sta_id].keyinfo.key, keyconf->key, 16);
+> > -- 
+> > 1.6.0.6
+> > 
+> > 
+> 
+> -- 
+> John W. Linville		Linux should be at the core
+> linville@tuxdriver.com			of your literate lifestyle.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-No. That would mean a lot of keymapSSS. Doing it the keymap way
-would require to have us, us-revert-left, us-revert-right, en-uk,
-uk-revert-left, uk-revert-right, etc. I really don't like that approach,
-thus the "independently of the configured keymap".
-
-This really is a problem that is orthogonal to keymaps: I'm here talking
-about _physical_ keys remapping, not remapping what is printed on them
-(which is done after that).
-
-Samuel
+-- 
+John W. Linville		Linux should be at the core
+linville@tuxdriver.com			of your literate lifestyle.
