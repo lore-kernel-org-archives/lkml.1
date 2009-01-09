@@ -1,62 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZAIGh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbZAIGj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbZAIGh1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 01:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZAIGhR
+	id S1756828AbZAIGj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 01:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZAIGjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 01:37:17 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:9147 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751651AbZAIGhP (ORCPT
+	Fri, 9 Jan 2009 01:39:48 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:45749 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbZAIGjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 01:37:15 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=Yr1Bg0F0Yg94b8ohaFq8P74iPBDhXB0xJNdjcu5vmNRl0J9V0P88v8GeNbAPbXCOb
-	R/OB+RnKh2dBBvd95caBQ==
-MIME-Version: 1.0
-In-Reply-To: <4966EEDD.5070204@cn.fujitsu.com>
-References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
-	 <4966EEDD.5070204@cn.fujitsu.com>
-Date: Thu, 8 Jan 2009 22:37:10 -0800
-Message-ID: <6599ad830901082237l664fb403y386482a577ed185e@mail.gmail.com>
-Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Fri, 9 Jan 2009 01:39:47 -0500
+Date: Fri, 9 Jan 2009 15:34:17 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
+Message-Id: <20090109153417.ee79e86d.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.24.198.73
-X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 8, 2009 at 10:29 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->
-> Agreed, but it can't work by just removing the checking in cgroup mount option,
+On Fri, 9 Jan 2009 14:32:26 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> How about this idea ? Any comments are welcome.
+> 
+I like this :)
+It would be very usefull to define a hierarchy just for grouping processes.
 
-Right - it's more complicated than that. There are some places in the
-code that rely on the fact that every hierarchy currently has at least
-one subsystem (anything that uses find_first_subsystem() for example)
-and we'd need to work around that.
 
-Paul
+Thanks,
+Daisuke Nishimura.
 
-> I just tried it:
->
-> static int parse_cgroupfs_options(char *data,
->                                     struct cgroup_sb_opts *opts)
-> {
->        ...
-> -       if (!opts->subsys_bits)
-> -               return -EINVAL;
->        ...
-> }
->
->
+> -Kame
+> 
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Add an NO OPERATION cgroup subsystem.
+> 
+> Cgroup itself is providing a feature to attach a task(PID) to some class.
+> This feature itself is very useful but "no operation" cgroup is not supported
+> now other than debug cgroup. (But debug cgroup should be for DEBUG. distro
+> may not configure it.)
+> 
+> Motivation: Simply classify Applications by cgroup
+>   When using cgroup for classifying applications, some kind of "control" or
+>   "account" subsys must be used. For flexible use of cgroup's nature of
+>   classifying applications, NOOP is useful. It can be used regardless of
+>   resource accounting unit or name spaces or some controls.
+>   IOW, NOOP cgroup allows users to tie PIDs with some nickname.
+> 
+> After this, application can be checked whether it's still alive or not by
+> 
+> 	mount -t cgroup none /var/apps noop
+> 	mkdir /var/apps/mydaemon
+> 	echo 0 > /var/apps/mydaemon
+> 	/etc/init.d/mydaemon start
+> 	exit
+> 
+> This can be used as the same technique of "recording pid into /var/run/xxx.pid"
+> and not necessary to remove stale files. If mydaemon dies, tasks file will
+> be empty and notify_on_release handler can be used.
+> 
+> I myself want to use this for replacement of "ps -elf | grep" if libcgroup supports
+> ps under cgroup.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  include/linux/cgroup_subsys.h |    4 ++++
+>  init/Kconfig                  |    9 +++++++++
+>  kernel/Makefile               |    1 +
+>  kernel/cgroup_noop.c          |   34 ++++++++++++++++++++++++++++++++++
+>  4 files changed, 48 insertions(+)
+> 
+> Index: mmotm-2.6.28-Jan8/include/linux/cgroup_subsys.h
+> ===================================================================
+> --- mmotm-2.6.28-Jan8.orig/include/linux/cgroup_subsys.h
+> +++ mmotm-2.6.28-Jan8/include/linux/cgroup_subsys.h
+> @@ -59,4 +59,8 @@ SUBSYS(freezer)
+>  SUBSYS(net_cls)
+>  #endif
+>  
+> +#ifdef CONFIG_CGROUP_NOOP
+> +SUBSYS(noop)
+> +#endif
+> +
+>  /* */
+> Index: mmotm-2.6.28-Jan8/kernel/Makefile
+> ===================================================================
+> --- mmotm-2.6.28-Jan8.orig/kernel/Makefile
+> +++ mmotm-2.6.28-Jan8/kernel/Makefile
+> @@ -61,6 +61,7 @@ obj-$(CONFIG_CGROUP_DEBUG) += cgroup_deb
+>  obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
+>  obj-$(CONFIG_CPUSETS) += cpuset.o
+>  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
+> +obj-$(CONFIG_CGROUP_NOOP) += cgroup_noop.o
+>  obj-$(CONFIG_UTS_NS) += utsname.o
+>  obj-$(CONFIG_USER_NS) += user_namespace.o
+>  obj-$(CONFIG_PID_NS) += pid_namespace.o
+> Index: mmotm-2.6.28-Jan8/kernel/cgroup_noop.c
+> ===================================================================
+> --- /dev/null
+> +++ mmotm-2.6.28-Jan8/kernel/cgroup_noop.c
+> @@ -0,0 +1,34 @@
+> +/*
+> + * kernel/cgroup_noop.c - No Operation Cgroup. Just for organizing process tree
+> + */
+> +
+> +#include <linux/cgroup.h>
+> +#include <linux/fs.h>
+> +#include <linux/slab.h>
+> +#include <linux/rcupdate.h>
+> +
+> +#include <asm/atomic.h>
+> +
+> +static struct cgroup_subsys_state *noop_create(struct cgroup_subsys *ss,
+> +						   struct cgroup *cont)
+> +{
+> +	struct cgroup_subsys_state *css = kzalloc(sizeof(*css), GFP_KERNEL);
+> +
+> +	if (!css)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	return css;
+> +}
+> +
+> +static void noop_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
+> +{
+> +	kfree(cont->subsys[noop_subsys_id]);
+> +}
+> +
+> +
+> +struct cgroup_subsys noop_subsys = {
+> +	.name = "noop",
+> +	.subsys_id = noop_subsys_id,
+> +	.create = noop_create,
+> +	.destroy = noop_destroy,
+> +};
+> Index: mmotm-2.6.28-Jan8/init/Kconfig
+> ===================================================================
+> --- mmotm-2.6.28-Jan8.orig/init/Kconfig
+> +++ mmotm-2.6.28-Jan8/init/Kconfig
+> @@ -354,6 +354,15 @@ config CGROUP_DEBUG
+>  
+>  	  Say N if unsure
+>  
+> +config CGROUP_NOOP
+> +	bool "No Operation cgroup subsystem"
+> +	depends on CGROUPS
+> +	help
+> +	  This provides cgroup subsystem which has no special features. By
+> +	  this, you can classify applications freely. That is, you can
+> +	  classify applications regardless of accounting or control contexts
+> +	  of the system.
+> +
+>  config CGROUP_NS
+>          bool "Namespace cgroup subsystem"
+>          depends on CGROUPS
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
