@@ -1,122 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762001AbZAIAIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763240AbZAIALW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762001AbZAIAIY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Jan 2009 19:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbZAIAIP
+	id S1763240AbZAIALW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Jan 2009 19:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbZAIALH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Jan 2009 19:08:15 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48692 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753956AbZAIAIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Jan 2009 19:08:14 -0500
-Date: Thu, 8 Jan 2009 16:08:08 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Connor Behan <connor.behan@gmail.com>,
-       linux-kernel@vger.kernel.org, Linux PCI <linux-pci@vger.kernel.org>,
+	Thu, 8 Jan 2009 19:11:07 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:34340 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754187AbZAIALE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Jan 2009 19:11:04 -0500
+Subject: [GIT PATCH] more SCSI updates for 2.6.28
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Can't allocate resources for PCI video card behind bridge
-Message-ID: <20090109000808.GA7703@us.ibm.com>
-References: <49665493.4070808@gmail.com> <200901082057.00170.rjw@sisk.pl> <200901081226.38909.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901081226.38909.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 18:10:59 -0600
+Message-Id: <1231459859.3237.116.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 12:26:38PM -0800, Jesse Barnes wrote:
-> On Thursday, January 8, 2009 11:56 am Rafael J. Wysocki wrote:
-> > Cc-ing linux-pci and Jesse.
-> >
-> > On Thursday 08 January 2009, Connor Behan wrote:
-> > > Hello, I am trying to use two video cards. One is the built in ATI Rage
-> > > Mobility M3 AGP card which drives the screen of my laptop (Thinkpad a22m
-> > > 2628-S1U if that matters), the other is the ATI Radeon X1550 PCI card in
-> > > the Thinkpad Dock II which is supposed to drive an external monitor.
-> > > X1550 is a PCI-E chipset but my card is a PCI card with an onboard PCI
-> > > to PCI-E bridge. I first tried this with kernel 2.6.27 as packaged by
-> > > Archlinux and got the following startup errors:
-> > >
-> > > pci 0000:00:04.0: BAR 7: can't allocate resource
-> > > pci 0000:00:04.0: BAR 8: can't allocate resource
-> > > pci 0000:00:04.0: BAR 9: can't allocate resource
-> > >
-> > > I've seen this problem discussed in the archives and couldn't find what
-> > > looked like a fix. I WAS able to fix this by loading dock, pci_slot,
-> > > pci_hotplug and acpiphp and appending pci=assign-busses. However since
-> > > then I have run a package update to kernel 2.6.27.10 and I am once again
-> > > getting the same problem even with the same modules and parameters. I
-> > > have since tried appending irqpoll, pci=bios, pci=routeirq and acpi=off
-> > > with no success. I have even rolled back my kernel to 2.6.27 (and the
-> > > headers and a few other packages) setup my system the way it was setup
-> > > before to the best of my knowledge but I still can't get the PCI card
-> > > working again. Another subtle change must be responsible.
-> > >
-> > > Certain PCI devices in the dock are working such as the Cardbus slots...
-> > > but I could care less about them... is there a way I could tell the
-> > > kernel to prioritize the video card and sacrifice Cardbus slots first if
-> > > it can't allocate enough resources? Also my lspci output shows a large
-> > > gap 01:00.0 to 06:00.0 so some part of my system must have expected
-> > > other devices in that range. When I had the video card working it was
-> > > 02:00.0. I have tried changing the four IRQ numbers in the BIOS but this
-> > > is pointless at best and sometimes causes my soundcard to be disabled.
-> > > My dmesg, lspci and (trimmed) kernel config are pasted:
-> > >
-> > > dmesg: http://pastebin.com/f3ae15a58
-> > > lspci: http://pastebin.com/f5d7dee6e
-> > > .config: http://pastebin.com/fb925760
-> > >
-> > > I'm hoping for a solution that doesn't require recompiling the kernel
-> > > but I definitely would if that's necessary. In any event I'll be much
-> > > more vigilant about system updates if I get this working again.
-> > > Thank-you very much for your time.
-> 
-> Can you post the output of lspci -vvv somewhere as well after trying 2.6.28?  
-> It may be that we want the "don't allocate resources for transparent bridges" 
-> patch after all:
-> 
-> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-> index ea979f2..586451c 100644
-> --- a/drivers/pci/setup-bus.c
-> +++ b/drivers/pci/setup-bus.c
-> @@ -467,8 +467,12 @@ void __ref pci_bus_size_bridges(struct pci_bus *bus)
->                 }
->         }
-> 
-> -       /* The root bus? */
-> -       if (!bus->self)
-> +       /*
-> +        * We don't need to allocate PCI bridging windows
-> +        * for a root bus (everything bridged) or for a
-> +        * transparent one.
-> +        */
-> +       if (!bus->self || bus->self->transparent)
->                 return;
-> 
->         switch (bus->self->class >> 8) {
+This is the second round of SCSI updates for the current merge window.
+It also includes a round of bug fixes for the previous updates ...
 
-Jesse, I think this change is doing the same thing as
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8fa5913d54f3b1e09948e6a0db34da887e05ff1f
-which was reverted by
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=12c22d6ef299ccf0955e5756eb57d90d7577ac68
-because of
-  http://bugzilla.kernel.org/show_bug.cgi?id=10080
-  http://marc.info/?l=linux-kernel&m=120620382316329&w=2
-  http://marc.info/?l=linux-kernel&m=120653981716729&w=2
+The patch is available here:
 
-It definitely seems like the right thing to do but it apparently
-breaks stuff on systems with oddball transparent bridges. 
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-Gary
+The short changelog is:
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Al Viro (1):
+      cxgb3i: add missing include
+
+Alan Stern (1):
+      Fix uninitialized variable error in scsi_io_completion
+
+Andrew Vasquez (8):
+      qla2xxx: Update version number to 8.03.00-k1.
+      qla2xxx: Add ISP81XX support.
+      qla2xxx: Use proper request/response queues with MQ instantiations.
+      qla2xxx: Correct MQ-chain information retrieval during a firmware dump.
+      qla2xxx: Collapse EFT/FCE copy procedures during a firmware dump.
+      qla2xxx: Don't pollute kernel logs with ZIO/RIO status messages.
+      qla2xxx: Don't fallback to interrupt-polling during re-initialization with
+      qla2xxx: Remove support for reading/writing HW-event-log.
+
+Brian King (2):
+      ibmvscsi: Make max_requests module parameter more accurate
+      ibmvfc: Fixup command response translation
+
+Christoph Hellwig (2):
+      clean up scsi_times_out
+      remove severly outdated comment in scsi_dispatch_cmd
+
+Dmitri Vorobiev (1):
+      sgiwd93: Fix compilation warning
+
+FUJITA Tomonori (14):
+      st: remove unused frp_sg_current
+      st: remove unused orig_frp_segs
+      st: simplify new_tape_buffer
+      st: remove struct scatterlist
+      st: kill struct st_buff_fragment
+      st: remove buf_to_sg
+      st: convert dio path to use st_scsi_execute
+      st: convert non-dio path to use st_scsi_execute
+      st: add st_scsi_execute helper function
+      st: add struct rq_map_data support
+      st: make all the fragment buffers the same size
+      block: make blk_rq_map_user take a NULL user-space buffer for WRITE
+      block: fix the partial mappings with struct rq_map_data
+      block: fix bio_add_page misuse with rq_map_data
+
+Geert Uytterhoeven (1):
+      a2091, gvp11: kill warn_unused_result warnings
+
+James Bottomley (2):
+      scsi_lib: fix DID_RESET status problems
+      scsi_lib: don't decrement busy counters when inserting commands
+
+James Smart (1):
+      fc transport: restore missing dev_loss_tmo callback to LLDD
+
+Julia Lawall (2):
+      fusion: Move a dereference below a NULL test
+      lpfc: Move a dereference below a NULL test
+
+Kai Makisara (2):
+      st: retry enlarge_buffer allocation
+      st: integrate st_scsi_kern_execute and st_do_scsi
+
+Kay Sievers (1):
+      struct device - replace bus_id with dev_name(), dev_set_name()
+
+Larry Finger (1):
+      aha152x_cs: Fix regression that keeps driver from using shared interrupts
+
+Martin K. Petersen (4):
+      sd: Correctly handle 6-byte commands with DIX
+      sd: DIF: Fix tagging on platforms with signed char
+      sd: DIF: Show app tag on error
+      Fix error handling for DIF/DIX
+
+Reinhard Nissl (1):
+      mvsas: increase port type detection delay to suit Seagate's 10k6 drive ST3
+
+Roel Kluin (1):
+      libsas: fix test for negative unsigned and typos
+
+
+And the diffstat:
+
+ block/blk-map.c                     |   19 -
+ drivers/message/fusion/mptctl.c     |    5 
+ drivers/misc/enclosure.c            |    8 
+ drivers/scsi/NCR_D700.c             |    2 
+ drivers/scsi/a2091.c                |   18 -
+ drivers/scsi/advansys.c             |    2 
+ drivers/scsi/aic94xx/aic94xx_tmf.c  |    2 
+ drivers/scsi/cxgb3i/cxgb3i_ddp.c    |    1 
+ drivers/scsi/gvp11.c                |    8 
+ drivers/scsi/hosts.c                |    6 
+ drivers/scsi/ibmvscsi/ibmvfc.c      |   14 -
+ drivers/scsi/ibmvscsi/ibmvscsi.c    |   16 -
+ drivers/scsi/ipr.c                  |    2 
+ drivers/scsi/ipr.h                  |    2 
+ drivers/scsi/lasi700.c              |    3 
+ drivers/scsi/libsas/sas_discover.c  |    2 
+ drivers/scsi/libsas/sas_dump.c      |    2 
+ drivers/scsi/libsas/sas_host_smp.c  |   12 
+ drivers/scsi/libsas/sas_port.c      |    2 
+ drivers/scsi/lpfc/lpfc_init.c       |    3 
+ drivers/scsi/mvsas.c                |    2 
+ drivers/scsi/pcmcia/aha152x_stub.c  |    2 
+ drivers/scsi/qla2xxx/qla_attr.c     |   26 +
+ drivers/scsi/qla2xxx/qla_dbg.c      |  462 +++++++++++++++++++++++++++++----
+ drivers/scsi/qla2xxx/qla_dbg.h      |   40 ++
+ drivers/scsi/qla2xxx/qla_def.h      |   33 +-
+ drivers/scsi/qla2xxx/qla_dfs.c      |    3 
+ drivers/scsi/qla2xxx/qla_fw.h       |  294 +++++++++++++++++++++
+ drivers/scsi/qla2xxx/qla_gbl.h      |   10 
+ drivers/scsi/qla2xxx/qla_gs.c       |    9 
+ drivers/scsi/qla2xxx/qla_init.c     |  295 ++++++++++++++++++++-
+ drivers/scsi/qla2xxx/qla_iocb.c     |   12 
+ drivers/scsi/qla2xxx/qla_isr.c      |   82 ++++--
+ drivers/scsi/qla2xxx/qla_mbx.c      |   41 +--
+ drivers/scsi/qla2xxx/qla_mid.c      |    4 
+ drivers/scsi/qla2xxx/qla_os.c       |  139 ++++++----
+ drivers/scsi/qla2xxx/qla_sup.c      |  263 ++++++-------------
+ drivers/scsi/qla2xxx/qla_version.h  |    6 
+ drivers/scsi/raid_class.c           |    3 
+ drivers/scsi/scsi.c                 |    4 
+ drivers/scsi/scsi_debug.c           |    4 
+ drivers/scsi/scsi_error.c           |   24 -
+ drivers/scsi/scsi_ioctl.c           |    9 
+ drivers/scsi/scsi_lib.c             |  119 +++++---
+ drivers/scsi/scsi_scan.c            |    7 
+ drivers/scsi/scsi_sysfs.c           |   12 
+ drivers/scsi/scsi_transport_fc.c    |   39 ++
+ drivers/scsi/scsi_transport_iscsi.c |   11 
+ drivers/scsi/scsi_transport_sas.c   |   42 +--
+ drivers/scsi/scsi_transport_srp.c   |    2 
+ drivers/scsi/sd.c                   |    2 
+ drivers/scsi/sd_dif.c               |   17 -
+ drivers/scsi/ses.c                  |    2 
+ drivers/scsi/sg.c                   |    2 
+ drivers/scsi/sgiwd93.c              |    3 
+ drivers/scsi/sim710.c               |    4 
+ drivers/scsi/sni_53c710.c           |    3 
+ drivers/scsi/st.c                   |  492 ++++++++++++++++--------------------
+ drivers/scsi/st.h                   |   14 -
+ drivers/scsi/zalon.c                |    4 
+ fs/bio.c                            |   36 +-
+ include/linux/blkdev.h              |    2 
+ include/scsi/scsi_transport_fc.h    |    1 
+ 63 files changed, 1851 insertions(+), 859 deletions(-)
+
+James
+
 
