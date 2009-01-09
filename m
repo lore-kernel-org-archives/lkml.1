@@ -1,121 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbZAIQfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZAIQgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbZAIQfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZAIQfC
+	id S1754650AbZAIQgQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZAIQfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:35:02 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:33624 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753358AbZAIQe7 (ORCPT
+	Fri, 9 Jan 2009 11:35:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44755 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753381AbZAIQfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:34:59 -0500
-X-BigFish: VPS3(zzzzzzz32i43j)
-X-WSS-ID: 0KD7PCJ-04-WJH-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: linux-kernel@vger.kernel.org
-CC: mingo@redhat.com, dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
-       netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 14/16] dma-debug: add checks for sync_single_sg_*
-Date: Fri, 9 Jan 2009 17:19:28 +0100
-Message-ID: <1231517970-20288-15-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Jan 2009 16:19:30.0873 (UTC) FILETIME=[0D20CA90:01C97276]
+	Fri, 9 Jan 2009 11:35:33 -0500
+Date: Fri, 9 Jan 2009 08:34:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <alpine.DEB.1.10.0901091051591.17378@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.0901090828510.6528@localhost.localdomain>
+References: <1231441350.14304.48.camel@think.oraclecorp.com>  <alpine.LFD.2.00.0901081140550.3283@localhost.localdomain>  <1231498062.11687.608.camel@twins> <1231513614.442.11.camel@twins> <alpine.DEB.1.10.0901091051591.17378@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add debug callbacks for dma_sync_sg_* functions
-
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- include/linux/dma-debug.h |   19 +++++++++++++++++++
- lib/dma-debug.c           |   32 ++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-index b9c221a..bdba8c8 100644
---- a/include/linux/dma-debug.h
-+++ b/include/linux/dma-debug.h
-@@ -64,6 +64,13 @@ extern void debug_sync_single_range_for_device(struct device *dev,
- 					       unsigned long offset,
- 					       size_t size, int direction);
- 
-+extern void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
-+				  int nelems, int direction);
-+
-+extern void debug_sync_sg_for_device(struct device *dev,
-+				     struct scatterlist *sg,
-+				     int nelems, int direction);
-+
- #else /* CONFIG_DMA_API_DEBUG */
- 
- static inline void dma_debug_init(u32 num_entries)
-@@ -130,6 +137,18 @@ static inline void debug_sync_single_range_for_device(struct device *dev,
- {
- }
- 
-+static inline void debug_sync_sg_for_cpu(struct device *dev,
-+					 struct scatterlist *sg,
-+					 int nelems, int direction)
-+{
-+}
-+
-+static inline void debug_sync_sg_for_device(struct device *dev,
-+					    struct scatterlist *sg,
-+					    int nelems, int direction)
-+{
-+}
-+
- #endif /* CONFIG_DMA_API_DEBUG */
- 
- #endif /* __DMA_DEBUG_H */
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 6f73bed..e40c88c 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -692,3 +692,35 @@ void debug_sync_single_range_for_device(struct device *dev,
- }
- EXPORT_SYMBOL(debug_sync_single_range_for_device);
- 
-+void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
-+			   int nelems, int direction)
-+{
-+	struct scatterlist *s;
-+	int i;
-+
-+	if (global_disable)
-+		return;
-+
-+	for_each_sg(sg, s, nelems, i) {
-+		check_sync(dev, s->dma_address, s->dma_length, 0,
-+				direction, true);
-+	}
-+}
-+EXPORT_SYMBOL(debug_sync_sg_for_cpu);
-+
-+void debug_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
-+			      int nelems, int direction)
-+{
-+	struct scatterlist *s;
-+	int i;
-+
-+	if (global_disable)
-+		return;
-+
-+	for_each_sg(sg, s, nelems, i) {
-+		check_sync(dev, s->dma_address, s->dma_length, 0,
-+				direction, false);
-+	}
-+}
-+EXPORT_SYMBOL(debug_sync_sg_for_device);
-+
--- 
-1.5.6.4
 
 
+On Fri, 9 Jan 2009, Steven Rostedt wrote:
+> 
+> I was going to say a while ago...
+> In PREEMPT=y the need_resched() is not needed at all. If you have 
+> preemption enabled, you will get preempted in that loop. No need for the 
+> need_resched() in the outer loop. Although I'm not sure how it would even 
+> hit the "need_resched". If it was set, then it is most likely going to be 
+> cleared when coming back from being preempted.
+
+No, no, you miss the point entirely.
+
+It's not about correctness.
+
+Remember: the whole (and only) point of spinning is about performance.
+
+And the thing is, we should only spin if it makes sense. So the
+
+	if (need_resched())
+		break;
+
+is not there because of any "ok, I need to sleep now", it's there because 
+of something TOTALLY DIFFERENT, namely "ok, it makes no sense to spin now, 
+since I should be sleeping".
+
+See? WE DO NOT WANT TO BE PREEMPTED in this region, because that totally 
+destroys the whole point of the spinning. If we go through the scheduler, 
+then we should go through the scheduler AND GO TO SLEEP, so that we don't 
+go through the scheduler any more than absolutely necessary.
+
+So this code - by design - is always only going to get worse if you have 
+involuntary preemption. The preemption is going to do _two_ bad things:
+
+ - it's going to call the scheduler at the wrong point, meaning that we 
+   now scheduler _more_ (or at least not less) than if we didn't have that 
+   spin-loop in the first place.
+
+ - .. and to make things worse, since it scheduled "for us", it is going 
+   to clear that "need_resched()" flag, so we'll _stay_ in the bad 
+   spinning loop too long!
+
+So quite frankly, if you have CONFIG_PREEMPT, then the spinning really is 
+the wrong thing to do, or the whole mutex slow-path thing should be done 
+with preemption disabled so that we only schedule where we _should_ be 
+scheduling.
+
+			Linus
