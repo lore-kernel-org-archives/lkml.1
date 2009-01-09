@@ -1,89 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZAIQ3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbZAIQcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbZAIQ3l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:29:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZAIQ3a
+	id S1753086AbZAIQcs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZAIQcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 11:29:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33712 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752139AbZAIQ33 (ORCPT
+	Fri, 9 Jan 2009 11:32:39 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:39108 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751531AbZAIQci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:29:29 -0500
-Date: Fri, 9 Jan 2009 08:28:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-In-Reply-To: <20090109153508.GA4671@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
-References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
- <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Jan 2009 11:32:38 -0500
+Date: Fri, 9 Jan 2009 17:32:33 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+In-Reply-To: <20090108175338.2abbee16.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0901091726370.13230@vixen.sonytel.be>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
+ <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Jan 2009, Ingo Molnar wrote:
+On Thu, 8 Jan 2009, Andrew Morton wrote:
+> On Thu, 8 Jan 2009 11:50:29 -0500 Christoph Hellwig <hch@infradead.org> wrote:
+> > On Thu, Jan 08, 2009 at 04:48:51PM +0000, Phillip Lougher wrote:
+> > > Please consider pulling my linux-next branch
+> > > 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git
+> > > 
+> > > The patches have been posted to LKML and linux-fsdevel over the last
+> > > couple of months and have been reviewed and changed as requested.
+> > > Diffstat below.
+> > > 
+> > > Squashfs is a compressed read-only filesystem. It compresses metadata
+> > > and data, and uses up to 1 MiB block sizes for greater compression.
+> > 
+> > That seems pretty fast for something only posted this week and not
+> > even in -next.
 > 
-> Core kernel developers tend to be quite inline-conscious and generally do 
-> not believe that making something inline will make it go faster.
+> I discussed this with Phillip a bit, and it looks like we'll go for a
+> 2.6.21 merge.  This gives a couple of months for testing and review in
+      ^^
+(assuming single digit flips :-) 29 or 31? I hope 29...
 
-Some of us core kernel developers tend to believe that:
+> linux-next.
+> 
+> Of course, this assumes that someone will actually perform that testing
+> and review.  Chances are that it'll just sit there, getting nothing more
+> than compilation testing.
 
- - inlining is supposed to work like macros, and should make the compiler 
-   do decisions BASED ON CALL-SITE.
+FWIW, I've been running tests on squashfs during the last few months, on
+various platforms (32/64 bit, little/big endian, forgiving/notforgiving
+unaligned accesses). I admit not having tested the latest squashfs version on
+all of them, as some are partially broken due to the current merge window
+churn.
 
-   This is one of the most _common_ reasons for inlining. Making the 
-   compiler select static code rather than dynamic code, and using 
-   inlining as a nice macro. We can pass in a flag with a constant value, 
-   and only the case that matters will be compiled.
+> Apparently I reviewed the code a while back - that grey cell must have
+> died.  Does anyone else intend to review the code in that timeframe? 
+> If not, we might as well merge it now, if ever..
 
-It's not about size - or necessarily even performance - at all. It's about 
-abstraction, and a way of writing code. 
+And I've kept a close eye on all changes in the squashfs git repository since
+the last formal review on lkml.
 
-And the thing is, as long as gcc does what we ask, we can notice when _we_ 
-did something wrong. We can say "ok, we should just remove the inline" 
-etc. But when gcc then essentially flips a coin, and inlines things we 
-don't want to, it dilutes the whole value of inlining - because now gcc 
-does things that actually does hurt us.
+With kind regards,
 
-We get oopses that have a nice symbolic back-trace, and it reports an 
-error IN TOTALLY THE WRONG FUNCTION, because gcc "helpfully" inlined 
-things to the point that only an expert can realize "oh, the bug was 
-actually five hundred lines up, in that other function that was just 
-called once, so gcc inlined it even though it is huge".
+Geert Uytterhoeven
+Software Architect
 
-See? THIS is the problem with gcc heuristics. It's not about quality of 
-code, it's about RELIABILITY of code. 
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-The reason people use C for system programming is because the language is 
-a reasonably portable way to get the expected end results WITHOUT the 
-compiler making a lot of semantic changes behind your back. 
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-Inlining is also the wrong thing to do _even_ if it makes code smaller and 
-faster if you inline the unlikely case, or inlining causes more live 
-variables that cause stack pressure. And we KNOW this happens. Again, I'd 
-be much happier if we had a compiler option to just does "do what I _say_, 
-dammit", and then we can fix up the mistakes. Because then they are _our_ 
-mistakes, not some random compiler version that throws a dice!
-
-			Linus
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
