@@ -1,71 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbZAIN2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbZAINi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbZAIN2u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 08:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZAIN2l
+	id S1756715AbZAINi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 08:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZAINiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 08:28:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50892 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbZAIN2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 08:28:41 -0500
-Subject: Re: [PATCH 0/9] Performance counters for POWER
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <18791.10652.298501.863657@cargo.ozlabs.ibm.com>
-References: <18791.10652.298501.863657@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 09 Jan 2009 14:28:35 +0100
-Message-Id: <1231507715.11687.618.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Fri, 9 Jan 2009 08:38:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43983 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752228AbZAINip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 08:38:45 -0500
+Date: Fri, 9 Jan 2009 14:37:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090109133710.GB31845@elte.hu>
+References: <alpine.LFD.2.00.0901071509160.3057@localhost.localdomain> <1231408718.11687.400.camel@twins> <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org> <4966AB74.2090104@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4966AB74.2090104@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-09 at 21:40 +1100, Paul Mackerras wrote:
-> The following series of patches extends Ingo and Thomas's performance
-> counter framework to add support for 64-bit POWER processors.
-> Currently I have the PPC970 family and POWER6 done.
+
+* H. Peter Anvin <hpa@zytor.com> wrote:
+
+> Andi Kleen wrote:
+> >> I'll try to annotate the inline asms (there's not _that_ many of them), 
+> >> and measure what the size impact is.
+> > 
+> > You can just use the patch I submitted and that you rejected for
+> > most of them :)
 > 
-> The approach I have taken is to do the constraint checking and the
-> search through the space of alternative event codes as each group of
-> counters is added at the time a task is scheduled in. 
+> I just ran a sample build for x86-64 with gcc 4.3.0, these all
+> allyesconfig builds (modulo the inlining option):
+> 
+> : voreg 64 ; size o.*/vmlinux
+>    text    data     bss     dec     hex     filename
+> 59421552 24912223 15560504 99894279 5f44407 o.noopt/vmlinux
+> 57700527 24950719 15560504 98211750 5da97a6 o.opty/vmlinux
+> 57590217 24940519 15560504 98091240 5d8c0e8 o.andi/vmlinux
+> 
+> A 3% code size difference even on allyesconfig (1.8 MB!) is nothing to 
+> sneeze at.  As shown by the delta from Andi's patch, these small 
+> assembly stubs really do need to be annotated, since gcc simply has no 
+> way to do anything sane with them -- it just doesn't know.
 
-Hmm, the model I thought would make most sense for power and other
-machines with such heavy constraints was that you'd compose a register
-set when you create groups, and then when you RR the groups, you just
-program the pre-computed sets.
+I've done a finegrained size analysis today (see my other mail in this 
+thread), and it turns out that on gcc 4.3.x the main (and pretty much 
+only) inlining annotation that matters in arch/x86/include/asm/*.h is the 
+onliner patch attached below, annotating constant_test_bit().
 
-The create code already has hooks to validate constraints -- so that you
-cannot create a group that would never fit on the machine. If you use
-this to generate and store a register set, you'd only need to program
-them in the counter scheduler.
+That change is included in Andi's patch too AFAICS - i.e. just that single 
+hunk from Andi's patch would have given you 90% of the size win - an 
+additional 0.17% size win to the 3.00% that CONFIG_OPTIMIZE_INLINING=y 
+already brings.
 
-My current understanding of the counter scheduler is that it RR groups,
-each schedule event throws out the last state, queuing whatever groups
-it had at the tail, and then adds as many possible new groups from the
-head of the list. Which by the above constraint checking is guaranteed
-to be at least 1.
+The second patch below had some (much smaller, 0.01% ) impact too. All the 
+other annotations i did to hundreds of inlined asm()s had no measurable 
+effect on GCC 4.3.2. (i.e. gcc appears to inline single-statement asms 
+correctly)
 
-With pre-computed regs sets it would be hard to go beyond the 1 group at
-a time, therefore I imagine your current approach is more flexible, but
-I worry about the cost.
+[ On older GCC it might matter more, but there we can/should turn off
+  CONFIG_OPTIMIZE_INLINING. ]
 
->  That means we
-> are potentially doing the search several times in a row, with
-> interrupts disabled.  I think it will be OK since there are only a few
-> events that have alternatives (and not many of them), and the
-> constraint checking is fast since it is just simple integer
-> operations. 
+> Personally, I'd like to see __asm_inline as opposed to __always_inline 
+> for these, though, as a documentation issue: __always_inline implies to 
+> me that this function needs to be inlined for correctness, and this 
+> could be highly relevant if someone, for example, recodes the routine in 
+> C or decides to bloat it out (e.g. paravirt_ops).
 
->  However, one of the things I plan to do is to instrument
-> that code to find out how long it takes in the worst case.  (If it
-> takes too long then I will need some major changes to the generic
-> code.)
+Yeah. I've implemented __asm_inline today. It indeed documents the reason 
+for the annotation in a cleaner way than slapping __always_inline around 
+and diluting the quality of __always_inline annotations.
 
-Right, esp on high context switch rates it might dominate the machine.
+> It's not a perfect solution even then, because gcc may choose to not 
+> inline a higher level of inline functions for the same bogus reason. 
+> There isn't much we can do about that, though, unless gcc either 
+> integrates the assembler, or gives us some way of injecting the actual 
+> weight of the asm statement...
+
+Yeah.
+
+	Ingo
+
+---
+ arch/x86/include/asm/bitops.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux/arch/x86/include/asm/bitops.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/bitops.h
++++ linux/arch/x86/include/asm/bitops.h
+@@ -300,7 +300,8 @@ static inline int test_and_change_bit(in
+ 	return oldbit;
+ }
+ 
+-static inline int constant_test_bit(int nr, const volatile unsigned long *addr)
++static __asm_inline int
++constant_test_bit(int nr, const volatile unsigned long *addr)
+ {
+ 	return ((1UL << (nr % BITS_PER_LONG)) &
+ 		(((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
+
+
+
+ arch/x86/include/asm/bitops.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+Index: linux/arch/x86/include/asm/bitops.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/bitops.h
++++ linux/arch/x86/include/asm/bitops.h
+@@ -53,7 +53,7 @@
+  * Note that @nr may be almost arbitrarily large; this function is not
+  * restricted to acting on a single-word quantity.
+  */
+-static inline void set_bit(unsigned int nr, volatile unsigned long *addr)
++static __asm_inline void set_bit(unsigned int nr, volatile unsigned long *addr)
+ {
+ 	if (IS_IMMEDIATE(nr)) {
+ 		asm volatile(LOCK_PREFIX "orb %1,%0"
+@@ -75,7 +75,7 @@ static inline void set_bit(unsigned int 
+  * If it's called on the same region of memory simultaneously, the effect
+  * may be that only one operation succeeds.
+  */
+-static inline void __set_bit(int nr, volatile unsigned long *addr)
++static __asm_inline void __set_bit(int nr, volatile unsigned long *addr)
+ {
+ 	asm volatile("bts %1,%0" : ADDR : "Ir" (nr) : "memory");
+ }
+@@ -90,7 +90,7 @@ static inline void __set_bit(int nr, vol
+  * you should call smp_mb__before_clear_bit() and/or smp_mb__after_clear_bit()
+  * in order to ensure changes are visible on other processors.
+  */
+-static inline void clear_bit(int nr, volatile unsigned long *addr)
++static __asm_inline void clear_bit(int nr, volatile unsigned long *addr)
+ {
+ 	if (IS_IMMEDIATE(nr)) {
+ 		asm volatile(LOCK_PREFIX "andb %1,%0"
+@@ -117,7 +117,7 @@ static inline void clear_bit_unlock(unsi
+ 	clear_bit(nr, addr);
+ }
+ 
+-static inline void __clear_bit(int nr, volatile unsigned long *addr)
++static __asm_inline void __clear_bit(int nr, volatile unsigned long *addr)
+ {
+ 	asm volatile("btr %1,%0" : ADDR : "Ir" (nr));
+ }
+@@ -152,7 +152,7 @@ static inline void __clear_bit_unlock(un
+  * If it's called on the same region of memory simultaneously, the effect
+  * may be that only one operation succeeds.
+  */
+-static inline void __change_bit(int nr, volatile unsigned long *addr)
++static __asm_inline void __change_bit(int nr, volatile unsigned long *addr)
+ {
+ 	asm volatile("btc %1,%0" : ADDR : "Ir" (nr));
+ }
+@@ -166,7 +166,7 @@ static inline void __change_bit(int nr, 
+  * Note that @nr may be almost arbitrarily large; this function is not
+  * restricted to acting on a single-word quantity.
+  */
+-static inline void change_bit(int nr, volatile unsigned long *addr)
++static __asm_inline void change_bit(int nr, volatile unsigned long *addr)
+ {
+ 	if (IS_IMMEDIATE(nr)) {
+ 		asm volatile(LOCK_PREFIX "xorb %1,%0"
