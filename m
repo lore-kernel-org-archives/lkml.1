@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbZAIU6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZAIU6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757718AbZAIU6g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 15:58:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbZAIU5J
+	id S1755649AbZAIU6w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 15:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbZAIU5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 15:57:09 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:37375 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757373AbZAIU5E (ORCPT
+	Fri, 9 Jan 2009 15:57:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49207 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755448AbZAIU5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 15:57:04 -0500
-Date: Fri, 09 Jan 2009 15:56:57 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: git mv (was Re: [git pull] ACPI & Suspend patches for 2.6.29-rc0)
-In-reply-to: <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain>
-X-X-Sender: lenb@localhost.localdomain
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 9 Jan 2009 15:57:07 -0500
+Date: Fri, 9 Jan 2009 12:56:36 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Linux Power Management List <linux-pm@lists.osdl.org>
-Message-id: <alpine.LFD.2.00.0901091537530.16697@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain>
- <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain>
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <20090109204103.GA17212@elte.hu>
+Message-ID: <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>
+References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
+ <20090108183306.GA22916@elte.hu> <20090108190038.GH496@one.firstfloor.org> <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu> <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090109204103.GA17212@elte.hu>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> As usual, git is actually smarter and get things more correct than people 
-> realize. What you found "surprising" is actually a "profound truth". 
+
+On Fri, 9 Jan 2009, Ingo Molnar wrote:
 > 
-> Git is like a great indian mystic. It sees past the veil of the trivial, 
-> to find the true connections in life.
-> 
-> Or at least in source code.
+> So, should we not remove CONFIG_OPTIMIZE_INLINING, then the correct one 
+> would be to mark it __always_inline [__asm_inline is senseless there], or 
+> the second patch below that changes the bit parameter to unsigned int.
 
-Thanks for confirming that the unexpected diff
-is a fature of git rather than a bug.
+Well, I certainly don't want to _remove_ the "inline" like your patch did. 
+Other gcc versions will care. But I committed the pure "change to 
+unsigned" part.
 
-Since I had used "git mv", I had expected everything
-to show up as a move.  However, I understand that
-comparing file contents over that move and other code moves
-told a different 'big picture' story.
+But we should fix the cmpxchg (and perhaps plain xchg too), shouldn't we?
 
-I guess using 'git mv' gave me the false expectation
-that git actually tracks moves like other SCMs
-and it would show up that way in the diff -- though
-now that I think about it, I like the comparison
-of the two endpoints that git did even better.
+That your gcc version gets it right doesn't change the fact that Chris' 
+gcc version didn't, and out-of-lined it all. So we'll need some 
+__always_inlines there too..
 
-I guess you can make an argument either way about
-how to handle moves.  One problem that both have to
-deal with is that a history on the old (now missing)
-file location doesn't work, and that by default
-the history on the new location stops unless 
-log --follow is used.  gitk doesn't use --follow
-by default, and when it is added, the history
-looks pretty strange.
+And no, I don't think it makes any sense to call them "__asm_inline". Even 
+when there are asms hidden in between the C statements, what's the 
+difference between "always" and "asm"? None, really.
 
-thanks,
--Len Brown
-Intel Open Source Technology Center
-
-
+		Linus
