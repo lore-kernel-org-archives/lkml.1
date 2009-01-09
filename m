@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbZAIXTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbZAIXTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758421AbZAIXTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbZAIXSr
+	id S932129AbZAIXTz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZAIXTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:18:47 -0500
-Received: from outbound-mail-306.bluehost.com ([67.222.53.252]:46215 "HELO
-	outbound-mail-306.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755905AbZAIXS1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:18:27 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=Psw5BL+uNHodU3rB4XYTyKZNaRULtSswpqJyNlsbGAZx+y+ypV04y0MxNwGeArUY3toIyYNvycG/JnLEcNfokezsmb6Fvo15i2vV22sbT4SBbmvVO2okGD/9kSNbj+JO;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+	Fri, 9 Jan 2009 18:19:11 -0500
+Received: from styx.suse.cz ([82.119.242.94]:44528 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752404AbZAIXTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 18:19:08 -0500
+Date: Sat, 10 Jan 2009 00:19:06 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PCI PCIe portdrv: Remove root ports MSI quirk
-Date: Fri, 9 Jan 2009 15:18:24 -0800
-User-Agent: KMail/1.9.10
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-References: <200901042346.42723.rjw@sisk.pl> <200901042348.22012.rjw@sisk.pl>
-In-Reply-To: <200901042348.22012.rjw@sisk.pl>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Anssi Hannula <anssi.hannula@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: 2.6.28-rc9: USB Mouse unhappy
+In-Reply-To: <200901100011.35332.rjw@sisk.pl>
+Message-ID: <alpine.LNX.1.10.0901100014450.5377@jikos.suse.cz>
+References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com> <alpine.LRH.1.10.0812211824350.11630@twin.jikos.cz> <alpine.LRH.1.10.0812211939170.11630@twin.jikos.cz> <200901100011.35332.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901091518.25220.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, January 4, 2009 2:48 pm Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> The PCI Express port driver contains a quirk that prevents root
-> ports from using MSI, but there is no explanation for it and the
-> PCI Express specification clearly allows root ports to use MSI.
+On Sat, 10 Jan 2009, Rafael J. Wysocki wrote:
 
-Ah ignore my last message, it really does look like some chipsets are just 
-buggy here, and the quirk only affects a few, so it should be pretty harmless 
-for the most part (iow I don't think this patch is a good idea on those 
-chipsets).
+> > >   usbmouse on 2.6.28-rc with the exact same mouse? (either check 
+> > >   /sys/bus/usb/devices or even lsusb shouldn't ideally show usbmouse 
+> > >   loaded at all)
+> > Sorry for the above typo, 'lsusb' should of course be 'lsmod' here.
+> Can you tell me what the status of this issue is, please?
+
+Parag was using incorrect driver -- usbmouse -- (which is intended to be 
+used only under very special circumstances) instead of standard HID 
+driver.
+
+Kconfig help text clearly states how special the usbmouse driver is, but 
+many people still try to use it, probably because of its name. Therefore 
+we now have
+
+Author: Parag Warudkar <parag.lkml@gmail.com>
+Date:   Mon Dec 22 22:50:52 2008 +0100
+
+    HID: make boot protocol drivers depend on EMBEDDED
+
+which is already in Linus tree and which makes the possibility of chosing 
+this special driver dependent on CONFIG_EMBEDDED.
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Jiri Kosina
+SUSE Labs
