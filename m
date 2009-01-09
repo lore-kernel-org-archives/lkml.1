@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZAISRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbZAISVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbZAISRw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 13:17:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZAISRd
+	id S1754325AbZAISVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 13:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZAISVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 13:17:33 -0500
-Received: from 8bytes.org ([88.198.83.132]:52464 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754860AbZAISRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 13:17:32 -0500
-X-Greylist: delayed 375 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 13:17:32 EST
-Date: Fri, 9 Jan 2009 19:17:31 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com
-Subject: Re: [PATCH 05/16] dma-debug: add initialization code
-Message-ID: <20090109181731.GC9466@8bytes.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-6-git-send-email-joerg.roedel@amd.com> <20090109175842.GC30168@ioremap.net>
+	Fri, 9 Jan 2009 13:21:00 -0500
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:57346 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751988AbZAISVA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 13:21:00 -0500
+Message-ID: <49679570.3070403@csr.com>
+Date: Fri, 09 Jan 2009 18:20:32 +0000
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090109175842.GC30168@ioremap.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Enrik Berkhan <Enrik.Berkhan@ge.com>
+CC: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: Re: Reference counting of MMC host driver modules
+References: <49678443.8040909@ge.com>
+In-Reply-To: <49678443.8040909@ge.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Jan 2009 18:20:32.0805 (UTC) FILETIME=[F593AD50:01C97286]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 08:58:42PM +0300, Evgeniy Polyakov wrote:
-> On Fri, Jan 09, 2009 at 05:19:19PM +0100, Joerg Roedel (joerg.roedel@amd.com) wrote:
->  +static int prealloc_memory(u32 num_entries)
-> > +{
-> > +	struct dma_debug_entry *entry, *next_entry;
-> > +	int i;
-> > +
-> > +	for (i = 0; i < num_entries; ++i) {
-> > +		entry = kmalloc(sizeof(*entry), GFP_KERNEL | __GFP_ZERO);
+Enrik Berkhan wrote:
+> Hi,
 > 
-> kzalloc?
+> I've noticed recently that the MMC/SD block driver does not reference 
+> count the MMC/SD host driver module that it uses via the MMC/SD core 
+> layer. Thus, I can rmmod my host driver module while, for example, a 
+> partition on a SD card is mounted.
 
-True. kzalloc is better. I will change that.
+This is same as removing the card while it's in use.
 
-Joerg
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
