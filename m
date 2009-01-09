@@ -1,97 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbZAIQEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZAIQEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbZAIQEV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 11:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbZAIQEE
+	id S1752199AbZAIQEg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 11:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbZAIQEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 9 Jan 2009 11:04:07 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46317 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbZAIQEE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Jan 2009 11:04:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51498 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbZAIQED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 11:04:03 -0500
-Date: Fri, 9 Jan 2009 16:03:40 +0000
-From: Kyle McMartin <kyle@hera.kernel.org>
-To: torvalds@linux-foundation.org
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [git patches] parisc patches for v2.6.29
-Message-ID: <20090109160340.GA12065@hera.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 09 Jan 2009 16:03:42 +0000 (UTC)
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, Gregory Haskins <ghaskins@novell.com>,
+       Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.DEB.1.10.0901091051591.17378@gandalf.stny.rr.com>
+References: <1231441350.14304.48.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0901081140550.3283@localhost.localdomain>
+	 <1231498062.11687.608.camel@twins> <1231513614.442.11.camel@twins>
+	 <alpine.DEB.1.10.0901091051591.17378@gandalf.stny.rr.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 09 Jan 2009 17:03:51 +0100
+Message-Id: <1231517031.442.15.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit fe0bdec68b77020281dc814805edfe594ae89e0f:
-  Linus Torvalds (1):
-        Merge branch 'audit.b61' of git://git.kernel.org/.../viro/audit-current
+On Fri, 2009-01-09 at 10:59 -0500, Steven Rostedt wrote:
 
-are available in the git repository at:
+> > 
+> > Adding that blocking on !owner utterly destroys everything.
+> 
+> I was going to warn you about that ;-)
+> 
+> Without the check for !owner, you are almost guaranteed to go to sleep 
+> every time. Here's why:
+> 
+> You are spinning and thus have a hot cache on that CPU.
+> 
+> The owner goes to unlock but will be in a cold cache. It sets lock->owner 
+> to NULL, but is still in cold cache so it is a bit slower.
+> 
+> Once the spinner sees the NULL, it shoots out of the spin but sees the 
+> lock is still not available then goes to sleep. All before the owner could 
+> release it. This could probably happen at every contention. Thus, you lose 
+> the benefit of spinning. You probably make things worse because you add a 
+> spin before every sleep.
 
-  /pub/scm/linux/kernel/git/kyle/parisc-2.6.git master
+Which is why I changed the inner loop to:
 
-Adrian Bunk (2):
-      parisc: lib/: make code static
-      parisc: drivers/parisc/: make code static
+  l_owner = ACCESS_ONCE(lock->owner)
+  if (l_owner && l_owner != owner)
+    break
 
-FUJITA Tomonori (1):
-      parisc: remove dead BIO_VMERGE_BOUNDARY and BIO_VMERGE_MAX_SIZE definitions
-
-Harvey Harrison (1):
-      parisc: use the new byteorder headers
-
-Helge Deller (4):
-      parisc: fix GFP_KERNEL use while atomic in unwinder
-      parisc: trivial fixes
-      parisc: Replace NR_CPUS in parisc code
-      parisc: add uevent helper for parisc bus
-
-Julia Lawall (1):
-      parisc: Use DEFINE_SPINLOCK
-
-Kyle McMartin (7):
-      parisc: use leX_to_cpu in place of __fswabX
-      parisc: factor out sid to protid conversion
-      parisc: fix braino in commit adding __space_to_prot
-      parisc: quiet palo not-found message from "which"
-      parisc: fix ipv6 checksum
-      parisc: fix kernel crash (protection id trap) when compiling ruby1.9
-      parisc: export length of os_hpmc vector
-
-Roel Kluin (1):
-      parisc: set_time() catch errors
-
- arch/parisc/Makefile                  |    2 +-
- arch/parisc/include/asm/byteorder.h   |   37 ++++++------------
- arch/parisc/include/asm/checksum.h    |    2 +-
- arch/parisc/include/asm/io.h          |   12 +----
- arch/parisc/include/asm/mmu_context.h |   13 ++++--
- arch/parisc/include/asm/processor.h   |    4 +-
- arch/parisc/include/asm/uaccess.h     |    2 +
- arch/parisc/kernel/drivers.c          |   40 ++++++++++++++++---
- arch/parisc/kernel/hpmc.S             |    8 +++-
- arch/parisc/kernel/irq.c              |   11 +++--
- arch/parisc/kernel/pdc_cons.c         |    2 +-
- arch/parisc/kernel/perf.c             |    4 +-
- arch/parisc/kernel/processor.c        |   68 +++++++++++++++++----------------
- arch/parisc/kernel/setup.c            |   11 +----
- arch/parisc/kernel/smp.c              |   32 +++++++--------
- arch/parisc/kernel/time.c             |    4 +-
- arch/parisc/kernel/topology.c         |    4 +-
- arch/parisc/kernel/traps.c            |    9 +++-
- arch/parisc/kernel/unwind.c           |    2 +-
- arch/parisc/lib/iomap.c               |    2 +-
- arch/parisc/lib/memcpy.c              |    2 +-
- arch/parisc/mm/fault.c                |   58 +++++++++++++++-------------
- drivers/parisc/asp.c                  |    3 +-
- drivers/parisc/ccio-dma.c             |    4 +-
- drivers/parisc/dino.c                 |    4 +-
- drivers/parisc/hppb.c                 |    2 +-
- drivers/parisc/lasi.c                 |    5 +-
- drivers/parisc/lba_pci.c              |    2 +-
- drivers/parisc/sba_iommu.c            |    9 +---
- drivers/parisc/wax.c                  |    3 +-
- drivers/rtc/rtc-parisc.c              |    3 +-
- 31 files changed, 191 insertions(+), 173 deletions(-)
+So that that would continue spinning.
