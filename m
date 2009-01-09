@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbZAIXNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZAIXPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbZAIXNs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 18:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZAIXNV
+	id S1756133AbZAIXPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 18:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZAIXPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 18:13:21 -0500
-Received: from mga03.intel.com ([143.182.124.21]:10717 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753859AbZAIXNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 18:13:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,241,1231142400"; 
-   d="scan'208";a="98420017"
-Date: Fri, 9 Jan 2009 15:13:16 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tvignaud@mandriva.com" <tvignaud@mandriva.com>
-Subject: Re: [patch] x86, pat: fix reserve_memtype() for legacy 1MB range
-Message-ID: <20090109231316.GE6472@linux-os.sc.intel.com>
-References: <20090109223520.GC6472@linux-os.sc.intel.com> <4967D223.1090703@zytor.com> <20090109224804.GD6472@linux-os.sc.intel.com> <4967D5FB.5020302@zytor.com>
+	Fri, 9 Jan 2009 18:15:45 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:37864 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbZAIXPo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 18:15:44 -0500
+Date: Fri, 9 Jan 2009 15:15:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Subject: Reported-by (Re: Fix a typo in the development process document.)
+Message-Id: <20090109151535.336c3afd.randy.dunlap@oracle.com>
+In-Reply-To: <200901090059.n090xfIH030955@hera.kernel.org>
+References: <200901090059.n090xfIH030955@hera.kernel.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4967D5FB.5020302@zytor.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4967DA9A.0065:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 02:55:55PM -0800, H. Peter Anvin wrote:
-> Suresh Siddha wrote:
-> > On Fri, Jan 09, 2009 at 02:39:31PM -0800, H. Peter Anvin wrote:
-> >> Suresh Siddha wrote:
-> >>> Here X is trying to map first 8KB of memory using /dev/mem. Existing
-> >>> code treats first 0-4KB of memory as non-RAM and 4KB-8KB as RAM. Recent
-> >>> code changes don't allow to map memory with different attributes
-> >>> at the same time.
-> >>>
-> >> Why was 0-4 KB marked as non-RAM?  It is most definitely RAM, and should
-> >> be WB.
-> > 
-> > While in reality it is RAM, we have CONFIG_STRICT_DEVMEM which doesn't allow
-> > apps to map RAM pages using /dev/mem. And to allow app's to map the
-> > legacy 0-4KB bios data page, we consider it as non-RAM.
-> 
-> Permission to map and memory type should not be connected.  Just to 
-> clarify, when mapped, was it still WB?
+On Fri, 9 Jan 2009 00:59:41 GMT Linux Kernel Mailing List wrote:
 
-yes it is. It's just treated and tracked differently.
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d5b524327b2a482dddae3839ced8f8825074730d
+> Commit:     d5b524327b2a482dddae3839ced8f8825074730d
+> Parent:     2884f00b94be73a6a7875bada739bf9bb2f9a1b6
+> Author:     Jonathan Corbet <corbet@lwn.net>
+> AuthorDate: Thu Jan 8 16:32:13 2009 -0700
+> Committer:  Jonathan Corbet <corbet@lwn.net>
+> CommitDate: Thu Jan 8 16:32:13 2009 -0700
+> 
+>     Fix a typo in the development process document.
+>     
+>     Reported-by: Aníbal Monsalve Salazar <anibal@debian.org>
+>     Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+
+BTW, Jon, if Reported-by: is supposed to have a status that is (nearly)
+as well accepted as most of the other tags, then it should be documented
+in SubmittingPatches along with the other tags and not only in
+development-process/5.Posting, no?
+
+Or maybe it's not as well accepted as the others...
+  http://www.remword.com/kps_result/2_6_29_report.html
+
+
+---
+~Randy
