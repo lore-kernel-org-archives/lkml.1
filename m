@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZAILgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbZAILgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZAILgS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 06:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZAILgI
+	id S1756047AbZAILgc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 06:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbZAILgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 06:36:08 -0500
+	Fri, 9 Jan 2009 06:36:10 -0500
 Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:53441 "EHLO
 	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645AbZAILgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 06:36:07 -0500
+	id S1752698AbZAILgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 06:36:08 -0500
 X-Greylist: delayed 821 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 06:36:06 EST
-Subject: [GIT PULL] Backlight updates for 2.6.29
+Subject: [GIT PULL] LED updates for 2.6.29
 From: Richard Purdie <rpurdie@rpsys.net>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 09 Jan 2009 11:22:46 +0000
-Message-Id: <1231500166.5317.8.camel@dax.rpnet.com>
+Date: Fri, 09 Jan 2009 11:23:06 +0000
+Message-Id: <1231500186.5317.9.camel@dax.rpnet.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,53 +29,66 @@ Linus,
 
 Could you please pull from:
 
-git://git.o-hand.com/linux-rpurdie-backlight for-linus
+git://git.o-hand.com/linux-rpurdie-leds for-linus
 
-for the backlight tree updates for 2.6.29. This includes a new driver,
-various bugfixes/tweaks, restructuring of one of the drivers and
-suspend/resume improvements to the core cleaning up the code.
+for the LED tree updates for 2.6.29. This includes some new drivers,
+bugfixes and a core improvement resulting in nicer code.
 
 Thanks, Richard
 
- drivers/video/backlight/Kconfig         |   15 +-
- drivers/video/backlight/Makefile        |    2 
- drivers/video/backlight/backlight.c     |   73 +++++++++----
- drivers/video/backlight/corgi_bl.c      |  169 --------------------------------
- drivers/video/backlight/cr_bllcd.c      |   18 +--
- drivers/video/backlight/generic_bl.c    |  147 +++++++++++++++++++++++++++
- drivers/video/backlight/hp680_bl.c      |   20 +--
- drivers/video/backlight/mbp_nvidia_bl.c |    1 
- drivers/video/backlight/progear_bl.c    |   20 +--
- drivers/video/backlight/tdo24m.c        |   94 ++++++++++++++++-
- drivers/video/backlight/tosa_lcd.c      |   27 ++++-
- drivers/video/backlight/vgg2432a4.c     |    2 
- include/linux/backlight.h               |   16 +++
- include/linux/spi/tdo24m.h              |   13 ++
- 14 files changed, 370 insertions(+), 247 deletions(-)
+ drivers/leds/Kconfig                 |   15 +
+ drivers/leds/Makefile                |    2 
+ drivers/leds/led-class.c             |   24 ++
+ drivers/leds/leds-alix2.c            |  181 ++++++++++++++++++++
+ drivers/leds/leds-ams-delta.c        |   33 ---
+ drivers/leds/leds-clevo-mail.c       |   21 --
+ drivers/leds/leds-fsg.c              |   37 ----
+ drivers/leds/leds-gpio.c             |   36 ----
+ drivers/leds/leds-hp-disk.c          |   20 --
+ drivers/leds/leds-hp6xx.c            |   22 --
+ drivers/leds/leds-net48xx.c          |   21 --
+ drivers/leds/leds-pca9532.c          |   77 ++++++--
+ drivers/leds/leds-s3c24xx.c          |   25 --
+ drivers/leds/leds-wm8350.c           |  311 +++++++++++++++++++++++++++++++++++
+ drivers/leds/leds-wrap.c             |   27 ---
+ drivers/leds/ledtrig-timer.c         |    5 
+ drivers/mfd/wm8350-core.c            |    3 
+ drivers/regulator/wm8350-regulator.c |   91 ++++++++++
+ include/linux/leds-pca9532.h         |    2 
+ include/linux/leds.h                 |    5 
+ include/linux/mfd/wm8350/pmic.h      |   36 ++++
+ 21 files changed, 749 insertions(+), 245 deletions(-)
 
-Akinobu Mita (3):
-      backlight: hp680_bl - Use platform_device_register_simple()
-      backlight: progear_bl - Use platform_device_register_simple()
-      backlight: crbllcd_bl - Use platform_device_register_simple()
+Constantin Baranov (1):
+      leds: ALIX.2 LEDs driver
 
-Denis V. Lunev (1):
-      backlight: Value of ILI9320_RGB_IF2 register should not be hardcoded
+Mark Brown (1):
+      leds: Add WM8350 LED driver
 
-Dmitry Eremin-Solenikov (1):
-      backlight: Support VGA/QVGA mode switching in tosa_lcd
+Richard Purdie (1):
+      leds: Add suspend/resume to the core class
 
-Mike Rapoport (1):
-      backlight: add support for Toppoly TDO35S series to tdo24m lcd driver
+Riku Voipio (1):
+      leds: leds-pcs9532 - Move i2c work to a workqueque
 
-Pavel Machek (1):
-      backlight: Catch invalid input in sysfs attributes
+Rodolfo Giometti (1):
+      leds: ledtrig-timer - on deactivation hardware blinking should be disabled
 
-Richard Purdie (2):
-      backlight: Add suspend/resume support to the backlight core
-      backlight: Rename the corgi backlight driver to generic
+Sven Wegener (5):
+      leds: eds-pca9532: mark pca9532_event() static
+      leds: Fixup kdoc comment to match parameter names
+      leds: Fix sparse warning in leds-ams-delta
+      leds: Fix wrong loop direction on removal in leds-ams-delta
+      leds: leds-pca9532 - fix memory leak and properly handle errors
 
-Zhang Rui (1):
-      bd->props.brightness doesn't reflect the actual backlight level.
+Wolfram Sang (1):
+      leds: Make header variable naming consistent
+
+Yoichi Yuasa (1):
+      leds: fix Cobalt Raq LED dependency
 
 
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
 
