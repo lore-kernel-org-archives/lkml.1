@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbZAJAUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbZAJAXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760392AbZAJAUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 19:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbZAJAUR
+	id S1757870AbZAJAXT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 19:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbZAJAW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 19:20:17 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59631 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZAJAUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 19:20:15 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: 2.6.28-rc9: USB Mouse unhappy
-Date: Sat, 10 Jan 2009 01:19:27 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Anssi Hannula <anssi.hannula@gmail.com>,
+	Fri, 9 Jan 2009 19:22:59 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:41787 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753457AbZAJAW6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 19:22:58 -0500
+Date: Sat, 10 Jan 2009 01:37:09 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nicholas Miell <nmiell@comcast.net>, Ingo Molnar <mingo@elte.hu>,
+       jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org
-References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com> <200901100011.35332.rjw@sisk.pl> <alpine.LNX.1.10.0901100014450.5377@jikos.suse.cz>
-In-Reply-To: <alpine.LNX.1.10.0901100014450.5377@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
+Message-ID: <20090110003709.GT26290@one.firstfloor.org>
+References: <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain> <1231532276.2081.12.camel@entropy> <alpine.LFD.2.00.0901091227040.6528@localhost.localdomain> <1231543701.2081.185.camel@entropy> <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901100119.28198.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 January 2009, Jiri Kosina wrote:
-> On Sat, 10 Jan 2009, Rafael J. Wysocki wrote:
-> 
-> > > >   usbmouse on 2.6.28-rc with the exact same mouse? (either check 
-> > > >   /sys/bus/usb/devices or even lsusb shouldn't ideally show usbmouse 
-> > > >   loaded at all)
-> > > Sorry for the above typo, 'lsusb' should of course be 'lsmod' here.
-> > Can you tell me what the status of this issue is, please?
-> 
-> Parag was using incorrect driver -- usbmouse -- (which is intended to be 
-> used only under very special circumstances) instead of standard HID 
-> driver.
-> 
-> Kconfig help text clearly states how special the usbmouse driver is, but 
-> many people still try to use it, probably because of its name. Therefore 
-> we now have
-> 
-> Author: Parag Warudkar <parag.lkml@gmail.com>
-> Date:   Mon Dec 22 22:50:52 2008 +0100
-> 
->     HID: make boot protocol drivers depend on EMBEDDED
-> 
-> which is already in Linus tree and which makes the possibility of chosing 
-> this special driver dependent on CONFIG_EMBEDDED.
+> What's the cost/benefit of that 4%? Does it actually improve performance? 
+> Especially if you then want to keep DWARF unwind information in memory in 
+> order to fix up some of the problems it causes? At that point, you lost 
 
-OK, thanks!
+dwarf unwind information has nothing to do with this, it doesn't tell
+you anything about inlining or not inlining.  It just gives you
+finished frames after all of that has been done.
 
-Rafael
+Full line number information would help, but I don't think anyone 
+proposed to keep that in memory.
+
+> Does it help I$ utilization (which can speed things up a lot more, and is 
+> probably the main reason -Os actually tends to perform better)? Likely 
+> not. Sure, shrinking code is good for I$, but on the other hand inlining 
+> can actually be bad for I$ density because if you inline a function that 
+> doesn't get called, you now fragmented your footprint a lot more.
+
+Not sure that is always true; the gcc basic block reordering 
+based on its standard branch prediction heuristics (e.g. < 0 or
+== NULL unlikely or the unlikely macro) might well put it all out of line.
+
+-Andi
