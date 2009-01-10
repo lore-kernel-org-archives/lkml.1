@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZAJVVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZAJVZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbZAJVVa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 16:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZAJVVW
+	id S1754836AbZAJVZe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 16:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZAJVZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 16:21:22 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38704 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbZAJVVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 16:21:21 -0500
-Message-ID: <49691134.1070005@redhat.com>
-Date: Sat, 10 Jan 2009 16:20:52 -0500
-From: Casey Dahlin <cdahlin@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Scott James Remnant <scott@canonical.com>
-CC: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-References: <49639EB8.40204@redhat.com>	<4963ABF0.6070400@redhat.com>	 <20090107123457.GB16268@elte.hu>	 <20090107205322.5F8C7FC3E0@magilla.sf.frob.com>	 <a36005b50901071302q70160bady41abc5ed2b105474@mail.gmail.com>	 <20090108143220.GA8717@redhat.com>	 <20090108193530.99D74FC3DD@magilla.sf.frob.com>	 <496663B6.3090709@redhat.com> <1231599041.11642.57.camel@quest>
-In-Reply-To: <1231599041.11642.57.camel@quest>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Jan 2009 16:25:24 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39741 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbZAJVZX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 16:25:23 -0500
+Date: Sat, 10 Jan 2009 16:26:29 -0500
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-ide@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jgarzik@pobox.com
+Subject: [PATCH 1/2] libata: Add a per-host flag to opt-in into parallel
+ port probes
+Message-ID: <20090110162629.4c1d4769@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0901091655530.6528@localhost.localdomain>
+References: <20090109161455.08d5a54c@infradead.org>
+	<alpine.LFD.2.00.0901091655530.6528@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott James Remnant wrote:
-> On Thu, 2009-01-08 at 15:36 -0500, Casey Dahlin wrote:
->
->   
->> Roland McGrath wrote:
->>     
->>>>> Since waitfd shouldn't consume the child termination notification
->>>>> waitfd should be more widely usable than the wait*() interfaces.
->>>>>           
->>> waitid can be used that way with WNOWAIT.
->>>       
->> Yes, but waitfd does not have this flag. The reason being waitfd just
->> calls waitid internally, and there is no guarantee (afaik) that
->> calling waitid with WNOWAIT multiple times in succession will yield
->> different results each time. This breaks the streaming behavior of the
->> descriptor.
->>
->>     
-> This would definitely be a Nice To Have though!
->
-> Being able to use waitid() on another process of the same uid, with
-> WNOHANG, in a streaming fashion would be a *very* cool thing.
->
-> Scott
->   
-That could be done in a separate patch for waitid itself, and its a 
-simple change to propagate it through waitfd (just one less EINVAL 
-case). In terms of waitfd we'd be supersetting the interface, so its no 
-big deal to add. In terms of waitid I'd have to check and make sure that 
-we wouldn't be breaking compliance by allowing it to return something 
-different on every call (this would likely affect cases where 
-waitid(WNOWAIT) was used even in a normal fashion as well).
+>From 703d035d397fb2a253559f3b819ad44702807724 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Fri, 9 Jan 2009 15:54:07 -0800
+Subject: [PATCH] libata: Add a per-host flag to opt-in into parallel port probes
 
---CJD
+This patch adds a per host flag that allows drivers to opt in into
+having its busses scanned in parallel.
+
+Drivers that do not set this flag get their ports scanned in
+the "original" sequence.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/ata/ahci.c        |    3 +++
+ drivers/ata/libata-core.c |    9 +++++++++
+ include/linux/libata.h    |    1 +
+ 3 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 7f701cb..9603967 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -2660,6 +2660,9 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	host->iomap = pcim_iomap_table(pdev);
+ 	host->private_data = hpriv;
+ 
++	if (!(hpriv->cap & HOST_CAP_SSS))
++		host->flags |= ATA_HOST_PARALLEL_SCAN;
++
+ 	if (pi.flags & ATA_FLAG_EM)
+ 		ahci_reset_em(host);
+ 
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index c507a9a..31c0f22 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -5920,6 +5920,15 @@ static void async_port_probe(void *data, async_cookie_t cookie)
+ {
+ 	int rc;
+ 	struct ata_port *ap = data;
++
++	/*
++	 * If we're not allowed to scan this host in parallel,
++	 * we need to wait until all previous scans have completed
++	 * before going further.
++	 */
++	if (!(ap->host->flags & ATA_HOST_PARALLEL_SCAN))
++		async_synchronize_cookie(cookie);
++	
+ 	/* probe */
+ 	if (ap->ops->error_handler) {
+ 		struct ata_eh_info *ehi = &ap->link.eh_info;
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 4f7c8fb..b6b8a7f 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -239,6 +239,7 @@ enum {
+ 	/* host set flags */
+ 	ATA_HOST_SIMPLEX	= (1 << 0),	/* Host is simplex, one DMA channel per host only */
+ 	ATA_HOST_STARTED	= (1 << 1),	/* Host started */
++	ATA_HOST_PARALLEL_SCAN	= (1 << 2),	/* Ports on this host can be scanned in parallel */
+ 
+ 	/* bits 24:31 of host->flags are reserved for LLD specific flags */
+ 
+-- 
+1.6.0.6
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
