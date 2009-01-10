@@ -1,79 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZAJJ5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZAJKGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbZAJJ5n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 04:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZAJJ5f
+	id S1755281AbZAJKGv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 05:06:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZAJKGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 04:57:35 -0500
-Received: from mga09.intel.com ([134.134.136.24]:60668 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbZAJJ5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 04:57:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,243,1231142400"; 
-   d="scan'208";a="480537494"
-Subject: Re: [git pull] drm
-From: Richard Purdie <rpurdie@linux.intel.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <21d7e9970901091804x61e2ba3cofd37d536df2d48b3@mail.gmail.com>
-References: <alpine.DEB.2.00.0812290819020.20427@skynet.skynet.ie>
-	 <1231513655.5317.30.camel@dax.rpnet.com>
-	 <1231524232.5317.43.camel@dax.rpnet.com>
-	 <1231550011.5317.72.camel@dax.rpnet.com>
-	 <21d7e9970901091804x61e2ba3cofd37d536df2d48b3@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 10 Jan 2009 09:58:11 +0000
-Message-Id: <1231581491.5330.8.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sat, 10 Jan 2009 05:06:42 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54444 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbZAJKGl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 05:06:41 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <496872E0.9030007@s5r6.in-berlin.de>
+Date: Sat, 10 Jan 2009 11:05:20 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-1?Q?Kristian_?= =?ISO-8859-1?Q?H=F8gsberg?= 
+	<krh@redhat.com>
+CC: dcm@acm.org, Nadia Derbey <Nadia.Derbey@bull.net>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
+References: <1231571060.3538.18.camel@localhost.localdomain>	<49686465.70501@s5r6.in-berlin.de> <20090110011557.9d94e111.akpm@linux-foundation.org>
+In-Reply-To: <20090110011557.9d94e111.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2009-01-10 at 12:04 +1000, Dave Airlie wrote:
-> On Sat, Jan 10, 2009 at 11:13 AM, Richard Purdie
-> <rpurdie@linux.intel.com> wrote:
-> > On Fri, 2009-01-09 at 18:03 +0000, Richard Purdie wrote:
-> >> On Fri, 2009-01-09 at 15:07 +0000, Richard Purdie wrote:
-> >> > I just updated to the latest kernel from git to test some other patches
-> >> > and after logging into GDM the X server hangs before launching the
-> >> > desktop (it appears to be trying to run glxinfo) on my Thinkpad T61
-> >> > (i915 graphics). Bisection shows this happens after applying this
-> >> > commit:
-> >> >
-> >> > On Mon, 2008-12-29 at 08:32 +0000, Dave Airlie wrote:
-> >> > > commit 7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a
-> >> > > Author: Dave Airlie <airlied@redhat.com>
-> >> > > Date:   Fri Nov 28 14:22:24 2008 +1000
-> >
-> > The patch below gets my system working again with the latest kernels.
-> > Was dropping the drm_addmap() call for i915 intentional or not?
+Andrew Morton wrote:
+> On Sat, 10 Jan 2009 10:03:33 +0100 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 > 
-> Yes, so now we need to find out what happens in your userspace, when
-> it hangs is the machine dead?
+>> David Moore wrote:
+>>> From: David Moore <dcm@acm.org>
+>>>
+>>> The idr_remove_all() function returns unused slabs to the kmem cache,
+>>> but needs to zero them first or else they will be uninitialized upon
+>>> next use.  This fixes crashes which have been observed in the firewire
+>>> subsystem.
+>>>
 > 
-> or can you ssh in? any oops in the logs? can you get a sysrq-t
-> backtrace for X.org and glxinfo?
+> hm.
+> 
+>>> ---
+>>>  lib/idr.c |   16 +++++++++++++++-
+>>>  1 files changed, 15 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/lib/idr.c b/lib/idr.c
+>>> index 1c4f928..69c3455 100644
+>>> --- a/lib/idr.c
+>>> +++ b/lib/idr.c
+>>> @@ -65,6 +65,20 @@ static inline void free_layer(struct idr_layer *p)
+>>>  	call_rcu(&p->rcu_head, idr_layer_rcu_free);
+>>>  }
+>>>  
+>>> +static void idr_layer_rcu_free_zero(struct rcu_head *head)
+>>> +{
+>>> +	struct idr_layer *layer;
+>>> +
+>>> +	layer = container_of(head, struct idr_layer, rcu_head);
+>>> +	memset(layer, 0, sizeof(struct idr_layer));
+>>> +	kmem_cache_free(idr_layer_cache, layer);
+>>> +}
+>>> +
+>>> +static inline void free_layer_zero(struct idr_layer *p)
+>>> +{
+>>> +	call_rcu(&p->rcu_head, idr_layer_rcu_free_zero);
+>>> +}
+>>> +
+>>>  /* only called when idp->lock is held */
+>>>  static void __move_to_free_list(struct idr *idp, struct idr_layer *p)
+>>>  {
+>>> @@ -462,7 +476,7 @@ void idr_remove_all(struct idr *idp)
+>>>  		id += 1 << n;
+>>>  		while (n < fls(id)) {
+>>>  			if (p)
+>>> -				free_layer(p);
+>>> +				free_layer_zero(p);
+>>>  			n += IDR_BITS;
+>>>  			p = *--paa;
+>>>  		}
+>> Nadia,
+>>
+>> it appears as if post-2.6.26 commit
+>> cf481c20c476ad2c0febdace9ce23f5a4db19582 "idr: make idr_remove rcu-safe"
+>> was buggy as it removed a memset(...0...) from idr_remove_all() without
+>> any obvious replacement.  And this patch fixes it.  Is this correct?
+>>
+>> This was observed by David in Fedora 2.6.27.* kernels and in 2.6.28, and
+>> I have it seen in vanilla 2.6.28 --- but only after I disabled some
+>> debug kconfig options.  The trigger for the bug is not the existing
+>> usage of idr in drivers/firewire/, but a new usage which is not yet in
+>> mainline.  More details:
+>> http://marc.info/?l=linux1394-devel&m=123140439522563
+>>
+>> The symptom is that after a few destructions of idr trees (which involve
+>> idr_remove_all() of course), there appear spurious idr entries in
+>> subsequently newly created idr trees.  These spurious entries then crash
+>> the driver when it iterates over them.
 
-The machine's keyboard and console switching is dead and the login in
-process drops the wifi but I think I can get in through ssh over
-ethernet. The power button does make it shutdown cleanly and there is no
-oops. I'll try and get backtraces later, probably tonight.
+...
+> Are we sure that all the other callers of free_layer() are freeing
+> zeroed objects?
+> 
+> It would be cleaner, safer and quite possibly faster to remove the
+> constructor altogether and use kmem_cache_zalloc() to allocate new
+> objects.
 
-I have a question though, where in the i915 driver is
-master_priv->sarea_priv assigned a value? or master_priv->sarea for that
-matter? As far as I can tell those pointers are never assigned values?
-Is there a drm_getsarea() call missing? 
+Yes, it sounds at least safer if the allocation path should be fixed up.
 
-Perhaps my patch fixes things since sarea and sarea_priv are given a
-value?
+The zeroing was done in idr_remove_all() though since Kristian added it
+in 2.6.23, until 2.6.26 inclusive.
 
-Cheers,
-
-Richard
-
-
+Kristian, was there a deeper reason to do it at deallocation instead of
+allocation, and does the reason still apply today?
+-- 
+Stefan Richter
+-=====-==--= ---= -=-=-
+http://arcgraph.de/sr/
