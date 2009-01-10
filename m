@@ -1,90 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZAJHoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbZAJHtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbZAJHoT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 02:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZAJHoL
+	id S1754625AbZAJHtv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 02:49:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZAJHtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 02:44:11 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62260 "EHLO song.cn.fujitsu.com"
+	Sat, 10 Jan 2009 02:49:43 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60317 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbZAJHoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 02:44:09 -0500
-Message-ID: <49685193.6010302@cn.fujitsu.com>
-Date: Sat, 10 Jan 2009 15:43:15 +0800
+	id S1751031AbZAJHtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 02:49:42 -0500
+Message-ID: <496852DE.7080802@cn.fujitsu.com>
+Date: Sat, 10 Jan 2009 15:48:46 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sched: partly revert "sched debug: remove NULL checking in
- print_cfs_rt_rq()"
+Subject: [PATCH] rcu: convert rcupreempt trace to seq file
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: avoid accessing NULL tg.css->cgroup
+Impact: also fix a bug in show_rcustats()
 
-In commit 0a0db8f5c9d4bbb9bbfcc2b6cb6bce2d0ef4d73d, I removed checking
-NULL tg.css->cgroup, but I realized I was wrong when I found reading
-/proc/sched_debug can race with cgroup_create().
+Use seq file for simplification, and the global buffer and mutex can be
+removed.
+
+While doing this, I found rcustats will never show 'ggp' and 'rcc' fields
+due to a bug in show_rcustats().
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/sched_debug.c |   21 +++++++++++++++++----
- 1 files changed, 17 insertions(+), 4 deletions(-)
+ kernel/rcupreempt_trace.c |  155 ++++++++++++++++++++-------------------------
+ 1 files changed, 69 insertions(+), 86 deletions(-)
 
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 4293cfa..16eeba4 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -145,6 +145,19 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
- 	read_unlock_irqrestore(&tasklist_lock, flags);
+diff --git a/kernel/rcupreempt_trace.c b/kernel/rcupreempt_trace.c
+index 7c2665c..a0c8297 100644
+--- a/kernel/rcupreempt_trace.c
++++ b/kernel/rcupreempt_trace.c
+@@ -39,13 +39,9 @@
+ #include <linux/percpu.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+-#include <linux/mutex.h>
+ #include <linux/rcupreempt_trace.h>
+ #include <linux/debugfs.h>
+-
+-static struct mutex rcupreempt_trace_mutex;
+-static char *rcupreempt_trace_buf;
+-#define RCUPREEMPT_TRACE_BUF_SIZE 4096
++#include <linux/seq_file.h>
+ 
+ void rcupreempt_trace_move2done(struct rcupreempt_trace *trace)
+ {
+@@ -170,110 +166,107 @@ static void rcupreempt_trace_sum(struct rcupreempt_trace *sp)
+ 	}
  }
  
-+#if defined(CONFIG_CGROUP_SCHED) && \
-+	(defined(CONFIG_FAIR_GROUP_SCHED) || defined(CONFIG_RT_GROUP_SCHED))
-+static void task_group_path(struct task_group *tg, char *buf, int buflen)
-+{
-+	/* may be NULL if the underlying cgroup isn't fully-created yet */
-+	if (!tg->css.cgroup) {
-+		buf[0] = '\0';
-+		return;
-+	}
-+	cgroup_path(tg->css.cgroup, buf, buflen);
-+}
-+#endif
+-static ssize_t rcustats_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
++static ssize_t show_rcustats(struct seq_file *m, void *unused)
+ {
+ 	struct rcupreempt_trace trace;
+-	ssize_t bcount;
+-	int cnt = 0;
+ 
+ 	rcupreempt_trace_sum(&trace);
+-	mutex_lock(&rcupreempt_trace_mutex);
+-	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-		 "ggp=%ld rcc=%ld\n",
+-		 rcu_batches_completed(),
+-		 trace.rcu_check_callbacks);
+-	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-		 "na=%ld nl=%ld wa=%ld wl=%ld da=%ld dl=%ld dr=%ld di=%d\n"
+-		 "1=%d e1=%d i1=%ld ie1=%ld g1=%ld a1=%ld ae1=%ld a2=%ld\n"
+-		 "z1=%ld ze1=%ld z2=%ld m1=%ld me1=%ld m2=%ld\n",
+ 
+-		 trace.next_add, trace.next_length,
+-		 trace.wait_add, trace.wait_length,
+-		 trace.done_add, trace.done_length,
+-		 trace.done_remove, atomic_read(&trace.done_invoked),
+-		 atomic_read(&trace.rcu_try_flip_1),
+-		 atomic_read(&trace.rcu_try_flip_e1),
+-		 trace.rcu_try_flip_i1, trace.rcu_try_flip_ie1,
+-		 trace.rcu_try_flip_g1,
+-		 trace.rcu_try_flip_a1, trace.rcu_try_flip_ae1,
++	seq_printf(m, "ggp=%ld rcc=%ld\n",
++		   rcu_batches_completed(),
++		   trace.rcu_check_callbacks);
 +
- void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
++	seq_printf(m, "na=%ld nl=%ld wa=%ld wl=%ld da=%ld dl=%ld dr=%ld di=%d\n"
++		      "1=%d e1=%d i1=%ld ie1=%ld g1=%ld a1=%ld ae1=%ld a2=%ld\n"
++		      "z1=%ld ze1=%ld z2=%ld m1=%ld me1=%ld m2=%ld\n",
++		   trace.next_add, trace.next_length,
++		   trace.wait_add, trace.wait_length,
++		   trace.done_add, trace.done_length,
++		   trace.done_remove, atomic_read(&trace.done_invoked),
++		   atomic_read(&trace.rcu_try_flip_1),
++		   atomic_read(&trace.rcu_try_flip_e1),
++		   trace.rcu_try_flip_i1, trace.rcu_try_flip_ie1,
++		   trace.rcu_try_flip_g1,
++		   trace.rcu_try_flip_a1, trace.rcu_try_flip_ae1,
+ 			 trace.rcu_try_flip_a2,
+-		 trace.rcu_try_flip_z1, trace.rcu_try_flip_ze1,
++		   trace.rcu_try_flip_z1, trace.rcu_try_flip_ze1,
+ 			 trace.rcu_try_flip_z2,
+-		 trace.rcu_try_flip_m1, trace.rcu_try_flip_me1,
+-			trace.rcu_try_flip_m2);
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+-	mutex_unlock(&rcupreempt_trace_mutex);
+-	return bcount;
++		   trace.rcu_try_flip_m1, trace.rcu_try_flip_me1,
++			 trace.rcu_try_flip_m2);
++
++	return 0;
++}
++
++static int rcustats_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, show_rcustats, NULL);
+ }
+ 
+-static ssize_t rcugp_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
++static ssize_t show_rcugp(struct seq_file *m, void *unused)
  {
- 	s64 MIN_vruntime = -1, min_vruntime, max_vruntime = -1,
-@@ -154,10 +167,10 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- 	unsigned long flags;
+ 	long oldgp = rcu_batches_completed();
+-	ssize_t bcount;
  
- #if defined(CONFIG_CGROUP_SCHED) && defined(CONFIG_FAIR_GROUP_SCHED)
--	char path[128] = "";
-+	char path[128];
- 	struct task_group *tg = cfs_rq->tg;
+-	mutex_lock(&rcupreempt_trace_mutex);
+ 	synchronize_rcu();
+-	snprintf(rcupreempt_trace_buf, RCUPREEMPT_TRACE_BUF_SIZE,
+-		"oldggp=%ld  newggp=%ld\n", oldgp, rcu_batches_completed());
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+-	mutex_unlock(&rcupreempt_trace_mutex);
+-	return bcount;
++	seq_printf(m, "oldggp=%ld  newggp=%ld\n",
++		   oldgp, rcu_batches_completed());
++
++	return 0;
+ }
  
--	cgroup_path(tg->css.cgroup, path, sizeof(path));
-+	task_group_path(tg, path, sizeof(path));
- 
- 	SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, path);
- #elif defined(CONFIG_USER_SCHED) && defined(CONFIG_FAIR_GROUP_SCHED)
-@@ -208,10 +221,10 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
+-static ssize_t rcuctrs_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
++static int rcugp_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, show_rcugp, NULL);
++}
++
++static ssize_t show_rcuctrs(struct seq_file *m, void *unused)
  {
- #if defined(CONFIG_CGROUP_SCHED) && defined(CONFIG_RT_GROUP_SCHED)
--	char path[128] = "";
-+	char path[128];
- 	struct task_group *tg = rt_rq->tg;
+-	int cnt = 0;
+ 	int cpu;
+ 	int f = rcu_batches_completed() & 0x1;
+-	ssize_t bcount;
+-
+-	mutex_lock(&rcupreempt_trace_mutex);
  
--	cgroup_path(tg->css.cgroup, path, sizeof(path));
-+	task_group_path(tg, path, sizeof(path));
+-	cnt += snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE,
+-				"CPU last cur F M\n");
++	seq_puts(m, "CPU last cur F M\n");
+ 	for_each_online_cpu(cpu) {
+ 		long *flipctr = rcupreempt_flipctr(cpu);
+-		cnt += snprintf(&rcupreempt_trace_buf[cnt],
+-				RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-					"%3d %4ld %3ld %d %d\n",
+-			       cpu,
+-			       flipctr[!f],
+-			       flipctr[f],
+-			       rcupreempt_flip_flag(cpu),
+-			       rcupreempt_mb_flag(cpu));
++		seq_printf(m, "%3d %4ld %3ld %d %d\n",
++			   cpu,
++			   flipctr[!f],
++			   flipctr[f],
++			   rcupreempt_flip_flag(cpu),
++			   rcupreempt_mb_flag(cpu));
+ 	}
+-	cnt += snprintf(&rcupreempt_trace_buf[cnt],
+-			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-			"ggp = %ld, state = %s\n",
+-			rcu_batches_completed(),
+-			rcupreempt_try_flip_state_name());
+-	cnt += snprintf(&rcupreempt_trace_buf[cnt],
+-			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-			"\n");
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+-	mutex_unlock(&rcupreempt_trace_mutex);
+-	return bcount;
++	seq_printf(m, "ggp = %ld, state = %s\n",
++		   rcu_batches_completed(),
++		   rcupreempt_try_flip_state_name());
++
++	return 0;
++}
++
++static int rcuctrs_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, show_rcuctrs, NULL);
+ }
  
- 	SEQ_printf(m, "\nrt_rq[%d]:%s\n", cpu, path);
- #else
+ static struct file_operations rcustats_fops = {
+ 	.owner = THIS_MODULE,
+-	.read = rcustats_read,
++	.open = rcustats_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
+ };
+ 
+ static struct file_operations rcugp_fops = {
+ 	.owner = THIS_MODULE,
+-	.read = rcugp_read,
++	.open = rcugp_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
+ };
+ 
+ static struct file_operations rcuctrs_fops = {
+ 	.owner = THIS_MODULE,
+-	.read = rcuctrs_read,
++	.open = rcuctrs_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
+ };
+ 
+ static struct dentry *rcudir, *statdir, *ctrsdir, *gpdir;
+@@ -308,16 +301,7 @@ out:
+ 
+ static int __init rcupreempt_trace_init(void)
+ {
+-	int ret;
+-
+-	mutex_init(&rcupreempt_trace_mutex);
+-	rcupreempt_trace_buf = kmalloc(RCUPREEMPT_TRACE_BUF_SIZE, GFP_KERNEL);
+-	if (!rcupreempt_trace_buf)
+-		return 1;
+-	ret = rcupreempt_debugfs_init();
+-	if (ret)
+-		kfree(rcupreempt_trace_buf);
+-	return ret;
++	return rcupreempt_debugfs_init();
+ }
+ 
+ static void __exit rcupreempt_trace_cleanup(void)
+@@ -326,7 +310,6 @@ static void __exit rcupreempt_trace_cleanup(void)
+ 	debugfs_remove(gpdir);
+ 	debugfs_remove(ctrsdir);
+ 	debugfs_remove(rcudir);
+-	kfree(rcupreempt_trace_buf);
+ }
+ 
+ 
 -- 
 1.5.4.rc3
+
