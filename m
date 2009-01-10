@@ -1,42 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZAJNMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZAJNOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbZAJNMk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 08:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbZAJNMb
+	id S1755621AbZAJNOI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 08:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbZAJNNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 08:12:31 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:38060 "EHLO mail.dvmed.net"
+	Sat, 10 Jan 2009 08:13:53 -0500
+Received: from katalix.com ([82.103.140.233]:47960 "EHLO mail.katalix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZAJNMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 08:12:30 -0500
-Message-ID: <49689EA8.20506@garzik.org>
-Date: Sat, 10 Jan 2009 08:12:08 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1751441AbZAJNNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 08:13:52 -0500
+Message-ID: <49689F07.3000401@katalix.com>
+Date: Sat, 10 Jan 2009 13:13:43 +0000
+From: James Chapman <jchapman@katalix.com>
+Organization: Katalix Systems Ltd
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017	ata_sff_hsm_move+0x45e/0x750()
-References: <200901091334.55823.borntraeger@de.ibm.com> <200901101009.13699.borntraeger@de.ibm.com> <20090110104114.633cacd8@lxorguk.ukuu.org.uk> <200901101242.05203.borntraeger@de.ibm.com> <49688B63.5030105@ru.mvista.com> <20090110122130.318cf168@lxorguk.ukuu.org.uk> <20090110130745.GA14049@elte.hu>
-In-Reply-To: <20090110130745.GA14049@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       devel@openvz.org, xemul@openvz.org
+Subject: Re: [RFC 3/4] net: pppol2tp - introduce net-namespace functionality
+References: <20090109195154.320495476@gmail.com>> <4967accc.0c58560a.2ee6.3de4@mx.google.com> <49688120.9000507@katalix.com> <20090110111359.GA29349@localhost> <20090110125444.GB29349@localhost>
+In-Reply-To: <20090110125444.GB29349@localhost>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 871af12: libata: Add 32bit PIO support
+Cyrill Gorcunov wrote:
+> [Cyrill Gorcunov - Sat, Jan 10, 2009 at 02:13:59PM +0300]
+> | [James Chapman - Sat, Jan 10, 2009 at 11:06:08AM +0000]
+> | | Cyrill Gorcunov wrote:
+> | | > - Each tunnel and appropriate lock are inside own namespace now.
+> | | > - pppox code allows to create per-namespace sockets for
+> | | >   both PX_PROTO_OE and PX_PROTO_OL2TP protocols. Actually since
+> | | >   now pppox_create support net-namespaces new PPPo... protocols
+> | | >   (if they ever will be) should support net-namespace too otherwise
+> | | >   explicit check for &init_net would be needed.
+> | | > 
+> | | > CC: James Chapman <jchapman@katalix.com>
+> | | > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> | | > ---
+> | | >  drivers/net/pppol2tp.c |  164 ++++++++++++++++++++++++++++++++++++-------------
+> | | >  drivers/net/pppox.c    |    4 -
+> | | >  2 files changed, 121 insertions(+), 47 deletions(-)
+> | | 
+> | | Looks ok from a pppol2tp point of view, though I'm not an expert on the
+> | | netns stuff.
+> | | 
+> | | The patches don't apply against latest net-next-2.6. If you respin the
+> | | patches, I'll test them for pppol2tp.
+> | | 
+> | | -- 
+> | | James Chapman
+> | | Katalix Systems Ltd
+> | | http://www.katalix.com
+> | | Catalysts for your Embedded Linux software development
+> | | 
+> | 
+> | Thanks James for taken look on. I'll check the latest net-next-2.6
+> | tree and update the patches soon. Thanks!
+> | 
+> | 		- Cyrill -
+> 
+> James I just fetched latest net-next-2.6 with
+> commit
+> 
+> ---
+> commit 3c92ec8ae91ecf59d88c798301833d7cf83f2179
+> Merge: c4c9f01... ca9153a...
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Sun Dec 28 16:54:33 2008 -0800
+> 
+>     Merge branch 'next' of git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+> ---
+> 
+> and patches are being applied on top without problems.
+> Maybe you have some other commits which are not propogated
+> to net-next-2.6 yet?
 
-What happens when you back this out?
+My mistake. I missed one of the patches when applying the series.
 
-	Jeff
-
+-- 
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
 
