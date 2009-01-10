@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932531AbZAJA6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbZAJA7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932531AbZAJA6w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 19:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760482AbZAJA6h
+	id S932656AbZAJA7y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 19:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbZAJA7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 19:58:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55828 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759433AbZAJA6g (ORCPT
+	Fri, 9 Jan 2009 19:59:43 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47150 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754020AbZAJA7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 19:58:36 -0500
-Date: Fri, 9 Jan 2009 17:00:41 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org,
+	Fri, 9 Jan 2009 19:59:42 -0500
+Date: Sat, 10 Jan 2009 02:13:56 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jgarzik@pobox.net
-Subject: Re: libata: make parallel port scan a per-host opt-in feature
-Message-ID: <20090109170041.2d830cd5@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0901091655530.6528@localhost.localdomain>
-References: <20090109161455.08d5a54c@infradead.org>
-	<alpine.LFD.2.00.0901091655530.6528@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090110011356.GV26290@one.firstfloor.org>
+References: <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090109204103.GA17212@elte.hu> <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain> <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <1231538387.5825.2.camel@brick> <alpine.LFD.2.00.0901091404150.6528@localhost.localdomain> <1231539918.5825.7.camel@brick> <20090110005342.GC1972@shareable.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090110005342.GC1972@shareable.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 16:56:59 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Sat, Jan 10, 2009 at 12:53:42AM +0000, Jamie Lokier wrote:
+> Harvey Harrison wrote:
+> > Oh yeah, and figure out what actually breaks on alpha such that they added
+> > the following (arch/alpha/include/asm/compiler.h)
+> > 
+> > #ifdef __KERNEL__
+> > /* Some idiots over in <linux/compiler.h> thought inline should imply
+> >    always_inline.  This breaks stuff.  We'll include this file whenever
+> >    we run into such problems.  */
+> 
+> Does "always_inline" complain if the function isn't inlinable, while
 
-> 
-> 
-> On Fri, 9 Jan 2009, Arjan van de Ven wrote:
-> >  
-> > +	if (!hpriv->cap & HOST_CAP_SSS)
-> > +		host->flags |= ATA_HOST_PARALLEL_SCAN;
-> > +
-> 
-> I don't think that does what you think it does.
-> 
-> 		Linus
-argh two few ()'s
+Yes it does.
 
+> "inline" allows it? 
+
+(unless you set -Winline which the kernel doesn't) 
+
+-Andi
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ak@linux.intel.com
