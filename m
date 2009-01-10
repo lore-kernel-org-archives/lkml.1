@@ -1,74 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbZAJUYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZAJU2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754586AbZAJUYa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 15:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZAJUYU
+	id S1754059AbZAJU2V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 15:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZAJU2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 15:24:20 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:63941 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbZAJUYT (ORCPT
+	Sat, 10 Jan 2009 15:28:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:47638 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbZAJU2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 15:24:19 -0500
+	Sat, 10 Jan 2009 15:28:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=VnHKCj3wr0luOT38F2sZ6yvikmgmCmEfIRhDFYAwFF4ifMUzhAM6pHaQlPGOns3pub
-         gqa6bR31ldIMMyYzTDe5SZ72nboe+kVLhuCKdv2cpl/25R27rMmRtdIthLHwnXcPGBpa
-         cNVYBk/bprKNATW10rtWs9pLG9MlR8NtE4JWg=
-Message-ID: <c384c5ea0901101216i8923be7k8d8d9c310f2fba78@mail.gmail.com>
-Date: Sat, 10 Jan 2009 21:16:32 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "David Brown" <lkml@davidb.org>,
-       "Phil Oester" <kernel@linuxace.com>,
-       "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Phillip Lougher" <phillip@lougher.demon.co.uk>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <4968FDA7.5040008@garzik.org>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=q5epTpIOj8BYkhz7VeYfLQXbhp9QGpKz5Vx0AKnvA9T44Nc+hiCMYLNFUGm2HlTSn4
+         EzWyOg0JATQCWfQy6eAAJjvgisCzNLCo17waWfscOcU3d6zO/IWuenHHYusuMTEMF5PU
+         N8ZWidx/84rV5ZUDWIIra+u0Gch5obSMhkMnA=
+Date: Sat, 10 Jan 2009 23:28:02 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Chapman <jchapman@katalix.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, NKML <netdev@vger.kernel.org>
+Subject: [PATCH] net: ppp_generic - fix broken userspace
+Message-ID: <20090110202802.GF29349@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
-	 <20090109023629.GA29520@linuxace.com>
-	 <20090109165422.GF24884@logfs.org>
-	 <20090109193738.GA9827@linode.davidb.org>
-	 <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu>
-	 <20090110165033.GA23943@logfs.org>
-	 <20090110101235.7ca24c44.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0901101015290.6528@localhost.localdomain>
-	 <4968FDA7.5040008@garzik.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+The commits:
 
-On Sat, Jan 10, 2009 at 8:57 PM, Jeff Garzik <jeff@garzik.org> wrote:
->> I think squashfs usage would be similar - you'd not have squashfs as a
->> standalone media, it would be a "installation medium" thing.
->
-> Plenty of existing, active squashfs use on router firewall standalone media.
->   Here is my home router running unmodified OpenWRT:
->
-> It will be nice to finally get squashfs in the kernel, since it is actively
-> used all over the place in embedded projects like OpenWRT.
->
-Indeed, in embedded projects squashfs is" Used Everywhere Where Size Matters".
-The adds read: "Even my girlfriend recommends it for everyday use."
-(At least, that's what I've heard.)
+	7a95d267fb62cd6b80ef73be0592bbbe1dbd5df7
+	ab5024ab23b78c86a0a1425defcdde48710fe449
 
-Thanks for the people who could review and make the upcoming merger happen,
-and kudos to Phillip.
+introduced usage of IDR functionality but broke
+userspace side.
 
-Regards,
--- 
-Leon
+Before this commits it was possible to allocate new ppp
+interface with specified number. Now it fails with EINVAL.
+Fix it by trying to allocate interface with specified unit
+number and return EEXIST if fail which allow pppd to ask
+us to allocate new unit number.
+
+And fix messages on memory allocation fails - add details
+that it's PPP module who is complaining.
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+
+If this is not a right way to fix this issue maybe better
+would be to just revert the commits mentioned. Please
+review carefully. Thanks!
+
+The patch is on top of current net-next-2.6 tree.
+
+ drivers/net/ppp_generic.c |   43 +++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 37 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.git/drivers/net/ppp_generic.c
+===================================================================
+--- linux-2.6.git.orig/drivers/net/ppp_generic.c
++++ linux-2.6.git/drivers/net/ppp_generic.c
+@@ -250,6 +250,7 @@ static int ppp_connect_channel(struct ch
+ static int ppp_disconnect_channel(struct channel *pch);
+ static void ppp_destroy_channel(struct channel *pch);
+ static int unit_get(struct idr *p, void *ptr);
++static int unit_set(struct idr *p, void *ptr, int n);
+ static void unit_put(struct idr *p, int n);
+ static void *unit_find(struct idr *p, int n);
+ 
+@@ -2432,11 +2433,18 @@ ppp_create_interface(int unit, int *retp
+ 	} else {
+ 		if (unit_find(&ppp_units_idr, unit))
+ 			goto out2; /* unit already exists */
+-		else {
+-			/* darn, someone is cheating us? */
+-			*retp = -EINVAL;
++		/*
++		 * if caller need a specified unit number
++		 * lets try to satisfy him, otherwise --
++		 * he should better ask us for new unit number
++		 *
++		 * NOTE: yes I know that returning EEXIST it's not
++		 * fair but at least pppd will ask us to allocate
++		 * new unit in this case so user is happy :)
++		 */
++		unit = unit_set(&ppp_units_idr, ppp, unit);
++		if (unit < 0)
+ 			goto out2;
+-		}
+ 	}
+ 
+ 	/* Initialize the new ppp unit */
+@@ -2677,14 +2685,37 @@ static void __exit ppp_cleanup(void)
+  * by holding all_ppp_mutex
+  */
+ 
++/* associate pointer with specified number */
++static int unit_set(struct idr *p, void *ptr, int n)
++{
++	int unit, err;
++
++again:
++	if (!idr_pre_get(p, GFP_KERNEL)) {
++		printk(KERN_ERR "PPP: No free memory for idr\n");
++		return -ENOMEM;
++	}
++
++	err = idr_get_new_above(p, ptr, n, &unit);
++	if (err == -EAGAIN)
++		goto again;
++
++	if (unit != n) {
++		idr_remove(p, unit);
++		return -EINVAL;
++	}
++
++	return unit;
++}
++
+ /* get new free unit number and associate pointer with it */
+ static int unit_get(struct idr *p, void *ptr)
+ {
+ 	int unit, err;
+ 
+ again:
+-	if (idr_pre_get(p, GFP_KERNEL) == 0) {
+-		printk(KERN_ERR "Out of memory expanding drawable idr\n");
++	if (!idr_pre_get(p, GFP_KERNEL)) {
++		printk(KERN_ERR "PPP: No free memory for idr\n");
+ 		return -ENOMEM;
+ 	}
+ 
