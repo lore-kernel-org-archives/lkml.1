@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZAJNBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbZAJNDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZAJNBV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 08:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbZAJNBL
+	id S1754126AbZAJNDR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 08:03:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZAJNDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 08:01:11 -0500
-Received: from h155.mvista.com ([63.81.120.155]:63678 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750813AbZAJNBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 08:01:09 -0500
-Message-ID: <49689C38.1040607@ru.mvista.com>
-Date: Sat, 10 Jan 2009 16:01:44 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 10 Jan 2009 08:03:00 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:31715 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbZAJNDA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 08:03:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=UMu15qYepp9SAKoHgPAeJoZgd7+9a6IZYiOJWiHUQxYMbkRtHVGvnHQJ+1xcwf6TDW
+         isiDM8gypQlcPoEUDlcRYyuePB+lmCbjOpD5bssLwzL7+KfTh0LL56XmOZzDh+xOBW7l
+         1JYcSxSqJW6GlBVZk2X6nrs0nNO1NCpacv/XE=
+Message-ID: <49689C80.3070905@gmail.com>
+Date: Sat, 10 Jan 2009 09:02:56 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@redhat.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
-References: <200901091334.55823.borntraeger@de.ibm.com>	<200901101009.13699.borntraeger@de.ibm.com>	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>	<200901101242.05203.borntraeger@de.ibm.com>	<49688B63.5030105@ru.mvista.com> <20090110122130.318cf168@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090110122130.318cf168@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: venkatesh.pallipadi@intel.com
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [patch 0/6] PAT fixes/cleanup following the pfnmap changes
+References: <20090110001308.403550000@intel.com>
+In-Reply-To: <20090110001308.403550000@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+venkatesh.pallipadi@intel.com wrote:
+> Individual patch header has descriptions.
+> 
 
-Alan Cox wrote:
+$ git am Patches
+Applying: x86 PAT: change track_pfn_vma_new to take pgprot_t pointer param
+error: patch failed: mm/memory.c:1604
+error: mm/memory.c: patch does not apply
+Patch failed at 0001.
+When you have resolved this problem run "git am --resolved".
+If you would prefer to skip this patch, instead run "git am --skip".
+To restore the original branch and stop patching run "git am --abort".
 
->>   That's the typical REQUEST SENSE command with 18-byte data length.
 
-> Which means something has become horribly broken in the core libata stack.
-> An 18 byte inquiry would have 18 bytes as the *last* sg element. That
+These do not apply for me to latest Linus git, which is the tree where I experienced the problem.  Is there some way to fuzz them to get them to apply?
 
-    Did you get me right? 18 bytes is the typical REQUEST SENSE payload 
-(libata requested 96 bytes), not INQUIRY. For the INQUIRY 36 bytes was 
-requested and received (divisible by 4).
-    And I doubt there can be more than one S/G segment with such lengths...
+-- 
+Kevin Winchester
 
-WBR, Sergei
