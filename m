@@ -1,59 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbZAJXEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZAJXEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755767AbZAJXEQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 18:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZAJXEC
+	id S1756590AbZAJXEa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 18:04:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZAJXEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 18:04:02 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:36455 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751747AbZAJXEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 18:04:00 -0500
-Message-ID: <49692953.1020405@sgi.com>
-Date: Sat, 10 Jan 2009 15:03:47 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 10 Jan 2009 18:04:09 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39865 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753844AbZAJXEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 18:04:06 -0500
+Date: Sat, 10 Jan 2009 18:04:03 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] Disable branch profiling macros when sparsed.
+In-Reply-To: <1231623238.5714.60.camel@brick>
+Message-ID: <alpine.DEB.1.10.0901101745560.5216@gandalf.stny.rr.com>
+References: <20090110052727.5471.3654.stgit@zaytsev.su>  <20090109.221348.166902734.davem@davemloft.net>  <1231571906.5714.30.camel@brick>  <f19298770901100135m7cd9c6a1k52f92e66e5b41b79@mail.gmail.com> <1231623238.5714.60.camel@brick>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] irq: allocate irq_desc_ptrs array based on nr_irqs
-References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110223818.767801000@polaris-admin.engr.sgi.com> <20090110224755.GC17917@elte.hu>
-In-Reply-To: <20090110224755.GC17917@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
+
+On Sat, 10 Jan 2009, Harvey Harrison wrote:
+
+> On Sat, 2009-01-10 at 12:35 +0300, Alexey Zaytsev wrote:
+> > On Sat, Jan 10, 2009 at 10:18, Harvey Harrison
+> > <harvey.harrison@gmail.com> wrote:
+> > > On Fri, 2009-01-09 at 22:13 -0800, David Miller wrote:
+> > >> If even sparse can't handle these things, it's no surprise
+> > >> how many gcc bogus warning problems we've run into because
+> > >> of this hairy if() macro.
+> > >
+> > > It's not that sparse can't handle it, the warning is valid,
+> > > _____r and ______f are shadowed when these get nested.  It
+> > > gets even worse when interacting with likely/unlikely tracing
+> > > as that chose the same identifiers too.  So there the noise
+> > > could be drastically reduced changing the different identifiers
+> > > for the if () and __branch_check macros, but nesting will always
+> > > warn.
+> > >
+> > > I've just been setting this to no in my allyesconfig sparse
+> > > runs....just wait until kmemtrace gets to mainline, then it
+> > > gets really bad :(
+> > >
+> > 
+> > I don't really understand what is bad here. The 'unlikely' and 'if'
+> > trace implementation looks quite elegant to me. Yes, they generate
+> > 10kbyte spaghetti monsters (in C) for a simple WARN_ON_ONCE(),
+> > but probably we should just remove a few unlekely() from the WARN_*
+> > code, and I'm not sure it's even worth it. There would be no direct
+> > speedup.
+> > 
+> > And it took only one line to disable.
 > 
->> +++ linux-2.6-for-ingo/kernel/irq/internals.h
->> @@ -16,7 +16,11 @@ extern int __irq_set_trigger(struct irq_
->>  extern struct lock_class_key irq_desc_lock_class;
->>  extern void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr);
->>  extern spinlock_t sparse_irq_lock;
->> +#ifdef CONFIG_SPARSE_IRQ
->> +extern struct irq_desc **irq_desc_ptrs;
->> +#else
->>  extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
->> +#endif
+> I'm not saying anything about ftrace being bad here, it's a pretty
+> elegant way of doing is.
+
+Thanks!
+
 > 
-> why the #ifdef? irq_desc_ptrs is only defined and used by sparseirq.
+> But instead of disabling it, a patch like the following eliminates
+> most of the warnings even when enabled, it relies on making the
+> frace_*_update functions return the condition that is being updated
+> which removes the need for an _____r temporary.
 > 
-> 	Ingo
+> Also I changed the ______f's to be ______bc/bd (branch check, branch
+> data)...but those are arbitrary.
+> 
+> Untested other than kills the sparse warnings that are caused by nesting
+> if(likely())..nested ifs stil warning but only on _____bc which is far
+> less common.
+> 
+> It's very possible this breaks ftrace or produces shitty code...consider
+> it just an idea to add an update function that takes/returns the
+> condition.
 
-Hmm, good point.  I just modified as it was.
+I'll give this a try on Monday (no work over the weekend, wife's orders).
 
-Should it only be:
+Since the problem seems to stem from the branch tracer's being selected
+via a allyesconfig, and most people are complaining about that,
+one solution, albeit not a very good one, is to convert it into a choice
+instead of a binary.
 
-	#ifdef CONFIG_SPARSE_IRQ
-	extern struct irq_desc **irq_desc_ptrs;
-	#endif
+We can have:
 
-Or do we normally declare something even though it won't be defined anywhere?
+choice
+	prompt "Branch Profiling Support"
+	default NO_BRANCH_PROFILING
 
-Thanks,
-Mike
+config NO_BRANCH_PROFILING
+	bool "No branch profiling"
+
+config ANNOTATED_BRANCH_PROFILING
+	bool "Profile only likely and unlikely branches"
+
+config ALL_BRANCH_PROFILING
+	bool "Profile all if conditionals"
+
+endchoice
+
+This will keep allyesconfig from selecting any type of branch profiling,
+but it will not protect against warnings from randconfig.
+
+Would this be an option people would prefer?
+
+-- Steve
+
+> 
+> diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+> index d95da10..e8e85be 100644
+> --- a/include/linux/compiler.h
+> +++ b/include/linux/compiler.h
+> @@ -76,24 +76,21 @@ struct ftrace_branch_data {
+>   * to disable branch tracing on a per file basis.
+>   */
+>  #if defined(CONFIG_TRACE_BRANCH_PROFILING) && !defined(DISABLE_BRANCH_PROFILING)
+> -void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+> +int ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+>  
+>  #define likely_notrace(x)	__builtin_expect(!!(x), 1)
+>  #define unlikely_notrace(x)	__builtin_expect(!!(x), 0)
+>  
+>  #define __branch_check__(x, expect) ({					\
+> -			int ______r;					\
+>  			static struct ftrace_branch_data		\
+>  				__attribute__((__aligned__(4)))		\
+>  				__attribute__((section("_ftrace_annotated_branch"))) \
+> -				______f = {				\
+> +				______bc = {				\
+>  				.func = __func__,			\
+>  				.file = __FILE__,			\
+>  				.line = __LINE__,			\
+>  			};						\
+> -			______r = likely_notrace(x);			\
+> -			ftrace_likely_update(&______f, ______r, expect); \
+> -			______r;					\
+> +			ftrace_likely_update(&______bc, likely_notrace(x), expect); \
+>  		})
+>  
+>  /*
+> @@ -109,27 +106,32 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+>  # endif
+>  
+>  #ifdef CONFIG_PROFILE_ALL_BRANCHES
+> +
+> +static inline int ftrace_if_update(struct ftrace_branch_data *bd, int cond)
+> +{
+> +	if (cond)
+> +		bd->hit++;
+> +	else
+> +		bd->miss++;
+> +
+> +	return cond;
+> +}
+> +
+>  /*
+>   * "Define 'is'", Bill Clinton
+>   * "Define 'if'", Steven Rostedt
+>   */
+>  #define if(cond) if (__builtin_constant_p((cond)) ? !!(cond) :		\
+>  	({								\
+> -		int ______r;						\
+>  		static struct ftrace_branch_data			\
+>  			__attribute__((__aligned__(4)))			\
+>  			__attribute__((section("_ftrace_branch")))	\
+> -			______f = {					\
+> +			______bd = {					\
+>  				.func = __func__,			\
+>  				.file = __FILE__,			\
+>  				.line = __LINE__,			\
+>  			};						\
+> -		______r = !!(cond);					\
+> -		if (______r)						\
+> -			______f.hit++;					\
+> -		else							\
+> -			______f.miss++;					\
+> -		______r;						\
+> +		ftrace_if_update(&______bd, !!(cond));			\
+>  	}))
+>  #endif /* CONFIG_PROFILE_ALL_BRANCHES */
+>  
+> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+> index 6c00feb..385d608 100644
+> --- a/kernel/trace/trace_branch.c
+> +++ b/kernel/trace/trace_branch.c
+> @@ -165,7 +165,7 @@ void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+>  }
+>  #endif /* CONFIG_BRANCH_TRACER */
+>  
+> -void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect)
+> +int ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect)
+>  {
+>  	/*
+>  	 * I would love to have a trace point here instead, but the
+> @@ -180,6 +180,8 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect)
+>  		f->correct++;
+>  	else
+>  		f->incorrect++;
+> +
+> +	return val;
+>  }
+>  EXPORT_SYMBOL(ftrace_likely_update);
+>  
+> 
+> 
+> 
+> 
+> 
+> 
+> 
