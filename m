@@ -1,130 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbZAJCEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbZAJCNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759841AbZAJCEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 21:04:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZAJCEY
+	id S1756654AbZAJCNB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 21:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbZAJCMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 21:04:24 -0500
-Received: from rn-out-0910.google.com ([64.233.170.190]:30593 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbZAJCEY (ORCPT
+	Fri, 9 Jan 2009 21:12:50 -0500
+Received: from qmta06.emeryville.ca.mail.comcast.net ([76.96.30.56]:39138 "EHLO
+	QMTA06.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752472AbZAJCMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 21:04:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=S4xJK7PV3HubPYfioKyksWpzUFfZvreHbPXvuSl3L39fUACzP598wQ9U3KtxwXdiqi
-         McSJLExY7gYaDMLpf57Cj0Ky+OfIv1VbhZehA+5j7i5sVa8QpklrTgMliLoBIfVNdlK8
-         dVFfQghoWFGJ0lr4hG5e8UrfeLoMEH0tUA36M=
-Message-ID: <21d7e9970901091804x61e2ba3cofd37d536df2d48b3@mail.gmail.com>
-Date: Sat, 10 Jan 2009 12:04:22 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Richard Purdie" <rpurdie@linux.intel.com>
-Subject: Re: [git pull] drm
-Cc: "Dave Airlie" <airlied@linux.ie>, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1231550011.5317.72.camel@dax.rpnet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 9 Jan 2009 21:12:49 -0500
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+From: Nicholas Miell <nmiell@comcast.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain>
+References: <20090108141808.GC11629@elte.hu>
+	 <1231426014.11687.456.camel@twins>
+	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+	 <1231434515.14304.27.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
+	 <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com>
+	 <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
+	 <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com>
+	 <20090109153508.GA4671@elte.hu>
+	 <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
+	 <1231532276.2081.12.camel@entropy>
+	 <alpine.LFD.2.00.0901091227040.6528@localhost.localdomain>
+	 <1231543701.2081.185.camel@entropy>
+	 <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 09 Jan 2009 18:12:44 -0800
+Message-Id: <1231553564.2081.287.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.2.00.0812290819020.20427@skynet.skynet.ie>
-	 <1231513655.5317.30.camel@dax.rpnet.com>
-	 <1231524232.5317.43.camel@dax.rpnet.com>
-	 <1231550011.5317.72.camel@dax.rpnet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 10, 2009 at 11:13 AM, Richard Purdie
-<rpurdie@linux.intel.com> wrote:
-> On Fri, 2009-01-09 at 18:03 +0000, Richard Purdie wrote:
->> On Fri, 2009-01-09 at 15:07 +0000, Richard Purdie wrote:
->> > I just updated to the latest kernel from git to test some other patches
->> > and after logging into GDM the X server hangs before launching the
->> > desktop (it appears to be trying to run glxinfo) on my Thinkpad T61
->> > (i915 graphics). Bisection shows this happens after applying this
->> > commit:
->> >
->> > On Mon, 2008-12-29 at 08:32 +0000, Dave Airlie wrote:
->> > > commit 7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a
->> > > Author: Dave Airlie <airlied@redhat.com>
->> > > Date:   Fri Nov 28 14:22:24 2008 +1000
->
-> The patch below gets my system working again with the latest kernels.
-> Was dropping the drm_addmap() call for i915 intentional or not?
+On Fri, 2009-01-09 at 16:05 -0800, Linus Torvalds wrote:
+> 
+> On Fri, 9 Jan 2009, Nicholas Miell wrote:
+> 
+> > In the general case is it does nothing at all to debugging (beyond the
+> > usual weird control flow you get from any optimized code) -- the
+> > compiler generates line number information for the inlined functions,
+> > the debugger interprets that information, and your backtrace is
+> > accurate.
+> 
+> The thng is, we do not use line number information, and never will - 
+> because it's too big. MUCH too big.
+> 
 
-Yes, so now we need to find out what happens in your userspace, when
-it hangs is the machine dead?
+It's only too big if you always keep it in memory, and I wasn't
+suggesting that.
 
-or can you ssh in? any oops in the logs? can you get a sysrq-t
-backtrace for X.org and glxinfo?
+My point was that you can get completely accurate stack traces in the
+face of gcc's inlining, and that blaming gcc because you can't get good
+stack traces because the kernel's debugging infrastructure isn't up to
+snuff isn't exactly fair.
 
-Dave.
+> We do end up saving function start information (although even that is 
+> actually disabled if you're doing embedded development), so that we can at 
+> least tell which function something happened in.
+> 
+> > It is only in the specific case of the kernel's broken backtrace code
+> > that this becomes an issue. It's failure to function correctly is the
+> > direct result of a failure to keep up with modern compiler changes that
+> > everybody else in the toolchain has dealt with.
+> 
+> Umm. You can say that. But the fact is, most others care a whole lot 
+> _less_ about those "modern compiler changes". In user space, when you 
+> debug something, you generally just stop optimizing. In the kernel, we've 
+> tried to balance the "optimize vs debug info" thing.
+
+The bulk of the libraries that your userspace app links to are
+distro-built with full optimization and figuring out why an optimized
+build crashed does come up from time to time, so those changes still
+matter.
+
+> > I think that the answer to that is that the kernel should do its best to
+> > be as much like userspace apps as it can, because insisting on special
+> > treatment doesn't seem to be working.
+> 
+> The problem with that is that the kernel _isn't_ a normal app. An it 
+> _definitely_ isn't a normal app when it comes to debugging.
+> 
+> You can hand-wave and talk about it all you want, but it's just not going 
+> to happen. A kernel is special. We don't get dumps, and only crazy people 
+> even ask for them.
 >
+> The fact that you seem to think that we should get them just shows that 
+> you either don't udnerstand the problems, or you live in some sheltered 
+> environment wher crash-dumps _could_ work, but also by definition those 
+> environments aren't where they buy kernel developers anything.
+> 
+> The thing is, a crash dump in a "enterprise environment" (and that is the 
+> only kind where you can reasonably dump more than the minimal stuff we do 
+> now) is totally useless - because such kernels are usually at least a year 
+> old, often more. As such, debug information from enterprise users is 
+> almost totally worthless - if we relied on it, we'd never get anything 
+> done.
+> 
+> And outside of those kinds of very rare niches, big kernel dumps simply 
+> are not an option. Writing to disk when things go hay-wire in the kernel 
+> is the _last_ thing you must ever do. People can't have dedicated dump 
+> partitions or network dumps.
+> 
+> That's the reality. I'm not making it up. We can give a simple trace, and 
+> yes, we can try to do some off-line improvement on it (and kerneloops.org 
+> to some degree does), but that's just about it.
 >
-> drm: Fix userspace X lockups introduced in 7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a
->
-> Add back the drm_addmap() call that was dropped as part of commit
-> 7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a for the i915 driver, fixing X
-> userspace lockups.
->
-> Signed-off-by: Richard Purdie <rpurdie@linux.intel.com>
->
-> diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-> index 62a4bf7..db61d89 100644
-> --- a/drivers/gpu/drm/i915/i915_dma.c
-> +++ b/drivers/gpu/drm/i915/i915_dma.c
-> @@ -29,6 +29,7 @@
->  #include "drmP.h"
->  #include "drm.h"
->  #include "drm_crtc_helper.h"
-> +#include "drm_sarea.h"
->  #include "intel_drv.h"
->  #include "i915_drm.h"
->  #include "i915_drv.h"
-> @@ -1007,11 +1008,24 @@ out:
->  int i915_master_create(struct drm_device *dev, struct drm_master *master)
->  {
->        struct drm_i915_master_private *master_priv;
-> +       unsigned long sareapage;
-> +       int ret;
->
->        master_priv = drm_calloc(1, sizeof(*master_priv), DRM_MEM_DRIVER);
->        if (!master_priv)
->                return -ENOMEM;
->
-> +       /* prebuild the SAREA */
-> +       sareapage = max(SAREA_MAX, PAGE_SIZE);
-> +       ret = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK|_DRM_DRIVER,
-> +                        &master_priv->sarea);
-> +       if (ret) {
-> +               DRM_ERROR("SAREA setup failed\n");
-> +               return ret;
-> +       }
-> +
-> +       master_priv->sarea_priv = master_priv->sarea->handle + sizeof(struct drm_sarea);
-> +
->        master->driver_priv = master_priv;
->        return 0;
->  }
-> @@ -1023,6 +1037,9 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
->        if (!master_priv)
->                return;
->
-> +       if (master_priv->sarea)
-> +               drm_rmmap(dev, master_priv->sarea);
-> +
->        drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
->
->        master->driver_priv = NULL;
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
+And this is where we disagree. I believe that crash dumps should be the
+norm and all the reasons you have against crash dumps in general are in
+fact reasons against Linux's sub-par implementation of crash dumps in
+specific.
+
+I can semi-reliably panic my kernel, and it's fairly recent, too
+(2.6.27.9-159.fc10.x86_64). Naturally, I run X, so the result of a panic
+is a frozen screen, blinking keyboard lights, the occasional endless
+audio loop, and no useful information whatsoever. I looked into kdump,
+only to discover that it doesn't work (but it could, it's a simple
+matter of fixing the initrd's script to support LVM), but I've already
+found a workaround, and after fiddling with kdump, I just don't care
+anymore
+
+So, here I am, a non-enterprise end user with a non-stale kernel who'd
+love to be able to give you a crash dump (or, more likely, a stack trace
+created from that crash dump), but I can't because Linux crash dumps are
+stuck in the enterprise ghetto.
+
+You're right, the bulk of the people who do use kdump these days are
+enterprise people running ancient enterprise kernels, but that has more
+to do with kdump being an unusable bastard red-headed left-handed
+stepchild that you only use if you can't avoid it than it has to do with
+the crash dump concept being useless.
+
+Hell, I'd be happy if I could get the the normal panic text written to
+disk, but since the hard part is the actual writing to disk, there's no
+reason not to do the full crash dump if you can.
+
+
+-- 
+Nicholas Miell <nmiell@comcast.net>
+
