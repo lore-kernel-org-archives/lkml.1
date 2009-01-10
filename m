@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZAJXAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbZAJXEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbZAJXAX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 18:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZAJXAD
+	id S1755767AbZAJXEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 18:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZAJXEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 18:00:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42815 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753247AbZAJW77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 17:59:59 -0500
-Date: Sat, 10 Jan 2009 14:58:16 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: Theodore Tso <tytso@mit.edu>, Mike Snitzer <snitzer@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Nicholas Miell <nmiell@comcast.net>,
-       jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, sam@ravnborg.org,
-       Dave Anderson <anderson@redhat.com>
-Subject: Re: source line numbers with x86_64 modules? [Was: Re: [patch]
- measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact]
-In-Reply-To: <20090110222142.GI26290@one.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0901101454090.6528@localhost.localdomain>
-References: <170fa0d20901100621m74680e0ewd1916c70f1636c9b@mail.gmail.com> <20090110153446.GA13976@elte.hu> <170fa0d20901101021s3b9a18e9qe6150c374efa4d6f@mail.gmail.com> <20090110211531.GD31579@mit.edu> <20090110222142.GI26290@one.firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 10 Jan 2009 18:04:02 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:36455 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751747AbZAJXEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 18:04:00 -0500
+Message-ID: <49692953.1020405@sgi.com>
+Date: Sat, 10 Jan 2009 15:03:47 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] irq: allocate irq_desc_ptrs array based on nr_irqs
+References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110223818.767801000@polaris-admin.engr.sgi.com> <20090110224755.GC17917@elte.hu>
+In-Reply-To: <20090110224755.GC17917@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 10 Jan 2009, Andi Kleen wrote:
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
-> I think that's mostly because kexec from arbitary context is a 
-> somewhat unstable concept.
+>> +++ linux-2.6-for-ingo/kernel/irq/internals.h
+>> @@ -16,7 +16,11 @@ extern int __irq_set_trigger(struct irq_
+>>  extern struct lock_class_key irq_desc_lock_class;
+>>  extern void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr);
+>>  extern spinlock_t sparse_irq_lock;
+>> +#ifdef CONFIG_SPARSE_IRQ
+>> +extern struct irq_desc **irq_desc_ptrs;
+>> +#else
+>>  extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
+>> +#endif
+> 
+> why the #ifdef? irq_desc_ptrs is only defined and used by sparseirq.
+> 
+> 	Ingo
 
-I think that's the understatement of the year.
+Hmm, good point.  I just modified as it was.
 
-We have tons of problems with standard suspend-to-ram, and that's when the 
-suspend sequence has done its best to make everything quiescent. Expecting 
-that we can reinitialize all the hardware at some random point when things 
-are going haywire is "optimistic" at best.
+Should it only be:
 
-So of course it will work on some hardware and not others.
+	#ifdef CONFIG_SPARSE_IRQ
+	extern struct irq_desc **irq_desc_ptrs;
+	#endif
 
-I think we've been fairly successful at keeping a running system for 
-_most_ of our bugs. Even when things go bad with X running, it's quite 
-often possible to ssh in over the network (although it's often better if 
-you were already connected) and see the dump.
+Or do we normally declare something even though it won't be defined anywhere?
 
-Not always, obviously. Many dumps really are painful. I'm hoping that 
-kernel-mode-setting will at least give us the oops message _more_ of the 
-time.
-
-As far as I'm concerned, digital cameras have been more useful than kernel 
-dumps to kernel debugging. 
-
-			Linus
+Thanks,
+Mike
