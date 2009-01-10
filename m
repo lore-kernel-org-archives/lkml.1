@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbZAJWhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZAJWil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756093AbZAJWhd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 17:37:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZAJWhY
+	id S1756119AbZAJWil (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 17:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbZAJWic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 17:37:24 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53120 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753011AbZAJWhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 17:37:24 -0500
-Message-ID: <4969230F.4080609@redhat.com>
-Date: Sat, 10 Jan 2009 17:37:03 -0500
-From: Casey Dahlin <cdahlin@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Scott James Remnant <scott@canonical.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland McGrath <roland@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107171922.GA18000@redhat.com> <1231598863.11642.55.camel@quest> <49690FC9.4010403@redhat.com> <20090110223130.GA28581@redhat.com>
-In-Reply-To: <20090110223130.GA28581@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Jan 2009 17:38:32 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:60577 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753985AbZAJWic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 17:38:32 -0500
+Message-Id: <20090110223819.033438000@polaris-admin.engr.sgi.com>
+References: <20090110223818.459493000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Sat, 10 Jan 2009 14:38:22 -0800
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/4] kstat: modify kstat_irqs_legacy to be variable sized
+Content-Disposition: inline; filename=var-kstat-irqs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 01/10, Casey Dahlin wrote:
->   
->> Scott James Remnant wrote:
->>     
->>> On Wed, 2009-01-07 at 18:19 +0100, Oleg Nesterov wrote:
->>>
->>>       
->>>> Please note that unlike other sys_...fd() syscalls, sys_waitfd()
->>>> doesn't allow to pass O_CLOEXEC. Looks like we need a separate
->>>> "flags" argument...
->>>>
->>>> Also, ioctl(FIONBIO) or fcntl(O_NONBLOCK) have no effect on
->>>> waitfd, not very good.
->>>>
->>>> I'd suggest to remove WNOHANG from waitfd_ctx->ops and treat
->>>> (->f_flags & O_NONBLOCK) as WNOHANG.
->>>>
->>>> (can't resist, ->ops is not the best name ;)
->>>>
->>>>
->>>>         
->>> Definitely agree here, waitfd() doesn't need WNOHANG - we already have
->>> ONONBLOCK.
->>>
->>> That also solves one of the strangest behaves of waitid when you use
->>> WNOHANG (it returns zero and you have to check whether it changed the
->>> struct), now you just read() - if no child you get EAGAIN, if a child
->>> you read a struct.
->>>
->>>       
->> From the perspective of waitfd, the only difference between WNOHANG and
->> O_NONBLOCK is which argument you put the flags in.
->>     
->
-> No. Please see the note about ioctl/fcntl above.
->
-> Oleg.
->   
-Yes but the actual waitfd call could simply set O_NONBLOCK on the 
-descriptor when it receive WNOHANG in the flags, and read the descriptor 
-flags going forward.
+Impact: reduce memory usage.
 
---CJD
+Allocate kstat_irqs_legacy based on nr_cpu_ids to deal with this
+memory usage bump when NR_CPUS bumped from 128 to 4096:
+
+     8192   +253952    262144 +3100%  kstat_irqs_legacy(.bss)
+
+This is only when CONFIG_SPARSE_IRQS=y.
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ kernel/irq/handle.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+--- linux-2.6-for-ingo.orig/kernel/irq/handle.c
++++ linux-2.6-for-ingo/kernel/irq/handle.c
+@@ -124,8 +124,7 @@ static struct irq_desc irq_desc_legacy[N
+ 	}
+ };
+ 
+-/* FIXME: use bootmem alloc ...*/
+-static unsigned int kstat_irqs_legacy[NR_IRQS_LEGACY][NR_CPUS];
++static unsigned int *kstat_irqs_legacy;
+ 
+ int __init early_irq_init(void)
+ {
+@@ -146,9 +145,13 @@ int __init early_irq_init(void)
+ 	/* allocate irq_desc_ptrs array based on nr_irqs */
+ 	irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
+ 
++	/* allocate based on nr_cpu_ids */
++	kstat_irqs_legacy = alloc_bootmem(NR_IRQS_LEGACY * nr_cpu_ids *
++					  sizeof(int));
++
+ 	for (i = 0; i < legacy_count; i++) {
+ 		desc[i].irq = i;
+-		desc[i].kstat_irqs = kstat_irqs_legacy[i];
++		desc[i].kstat_irqs = kstat_irqs_legacy + i * NR_IRQS_LEGACY;
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+ 		init_alloc_desc_masks(&desc[i], 0, true);
+ 		irq_desc_ptrs[i] = desc + i;
+
+-- 
