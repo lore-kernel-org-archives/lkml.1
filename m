@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZAJPBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbZAJPDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbZAJPBy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 10:01:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZAJPBq
+	id S1756734AbZAJPDc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 10:03:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbZAJPDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 10:01:46 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45057 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbZAJPBp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 10:01:45 -0500
-Subject: Re: [Regression] Build failure in current mainline - firmware
- related
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       "Igor M. Liplianin" <liplianin@me.by>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-In-Reply-To: <1231598216.5806.124.camel@macbook.infradead.org>
-References: <200901031247.14977.rjw@sisk.pl>
-	 <20090103204948.GA5388@uranus.ravnborg.org>
-	 <20090103205437.GA5499@uranus.ravnborg.org>
-	 <200901032243.28684.rjw@sisk.pl>
-	 <20090104214406.GA31668@uranus.ravnborg.org>
-	 <1231598216.5806.124.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Sat, 10 Jan 2009 14:58:18 +0000
-Message-Id: <1231599498.5806.125.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+	Sat, 10 Jan 2009 10:03:23 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:34468 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751583AbZAJPDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 10:03:23 -0500
+Message-ID: <4968B8A9.3060408@garzik.org>
+Date: Sat, 10 Jan 2009 10:03:05 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017	ata_sff_hsm_move+0x45e/0x750()
+References: <200901091334.55823.borntraeger@de.ibm.com>	 <200901101009.13699.borntraeger@de.ibm.com>	 <20090110104114.633cacd8@lxorguk.ukuu.org.uk>	 <200901101242.05203.borntraeger@de.ibm.com>	 <49688B63.5030105@ru.mvista.com>	 <20090110122130.318cf168@lxorguk.ukuu.org.uk> <1231598170.3642.12.camel@localhost.localdomain>
+In-Reply-To: <1231598170.3642.12.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-10 at 14:37 +0000, David Woodhouse wrote:
-> Rafael, if you revert Sam's fix and also revert 4b29631d, does it work
-> again?
+James Bottomley wrote:
+> Your problem is that the *device* is wanting to transfer a set of bytes
+> not divisible by four.
 
-The firmware-2.6.git tree now contains what I suggest; please confirm
-that it's fixed (again).
+That's my initial guess, too...
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+	Jeff
+
 
