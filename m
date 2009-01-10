@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZAJOgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbZAJOhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZAJOgZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 09:36:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZAJOgP
+	id S1756314AbZAJOhe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 09:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZAJOhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 09:36:15 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:44164 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753443AbZAJOgO (ORCPT
+	Sat, 10 Jan 2009 09:37:25 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35927 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753476AbZAJOhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 09:36:14 -0500
-Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017
-	ata_sff_hsm_move+0x45e/0x750()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090110122130.318cf168@lxorguk.ukuu.org.uk>
-References: <200901091334.55823.borntraeger@de.ibm.com>
-	 <200901101009.13699.borntraeger@de.ibm.com>
-	 <20090110104114.633cacd8@lxorguk.ukuu.org.uk>
-	 <200901101242.05203.borntraeger@de.ibm.com>
-	 <49688B63.5030105@ru.mvista.com>
-	 <20090110122130.318cf168@lxorguk.ukuu.org.uk>
+	Sat, 10 Jan 2009 09:37:25 -0500
+Subject: Re: [Regression] Build failure in current mainline - firmware
+ related
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       "Igor M. Liplianin" <liplianin@me.by>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+In-Reply-To: <20090104214406.GA31668@uranus.ravnborg.org>
+References: <200901031247.14977.rjw@sisk.pl>
+	 <20090103204948.GA5388@uranus.ravnborg.org>
+	 <20090103205437.GA5499@uranus.ravnborg.org>
+	 <200901032243.28684.rjw@sisk.pl>
+	 <20090104214406.GA31668@uranus.ravnborg.org>
 Content-Type: text/plain
-Date: Sat, 10 Jan 2009 08:36:10 -0600
-Message-Id: <1231598170.3642.12.camel@localhost.localdomain>
+Date: Sat, 10 Jan 2009 14:36:56 +0000
+Message-Id: <1231598216.5806.124.camel@macbook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-10 at 12:21 +0000, Alan Cox wrote:
-> >    That's the typical REQUEST SENSE command with 18-byte data length.
+On Sun, 2009-01-04 at 22:44 +0100, Sam Ravnborg wrote:
 > 
-> Which means something has become horribly broken in the core libata stack.
-> An 18 byte inquiry would have 18 bytes as the *last* sg element. That
-> would therefore not trigger the WARN_ON. Someone has passed an sg list
-> that isn't properly terminated perhaps ?
-> 
-> I wonder if the pad code broke this.
+> We could try to rearrange things so we do not trigger
+> the rebuild of ihex2fw in the modules_install case.
+> This would likely involve creating a new file listing
+> all the firmawre files and share it between firmware/Makefile
+> and scripts/Makefile.fwinst
 
-I don't think it's anything to do with padding or the block layer.
+Didn't we already have that, but it got broken for some reason, by
+unwanted changes in commit 4b29631db33292d416dc395c56122ea865e7635c
 
-I think we sent out a request sense with 96 bytes of space for a reply,
-which is bog standard for SCSI. The device sent back a payload of 18
-bytes, which is perfectly legal ... request sense is a variable payload
-command, the device doesn't have to fill the buffer we give it.
+Your patch seems to have broken the Fedora kernel build for 'noarch',
+which runs 'make firmware_install' without building a kernel.
 
-18, by the way, is the typical reply length for non descriptor sense
-format with no additional information, so this is really expected
-behaviour.
+Rafael, if you revert Sam's fix and also revert 4b29631d, does it work
+again?
 
-Your problem is that the *device* is wanting to transfer a set of bytes
-not divisible by four.  If you want to use word based PIO, you'll have
-to fall back to collecting bytes for the last two.  Alternatively, you
-could just do byte PIO for all reply lengths like this ... they occur
-all over the SCSI standard, but not usually in critical paths.
-
-James
-
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
