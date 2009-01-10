@@ -1,108 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932673AbZAJBb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932845AbZAJBdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932673AbZAJBb4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 20:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733AbZAJBbo
+	id S932845AbZAJBdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 20:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZAJBc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 20:31:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46143 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753435AbZAJBbn (ORCPT
+	Fri, 9 Jan 2009 20:32:59 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:55947 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755308AbZAJBc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 20:31:43 -0500
-Date: Fri, 9 Jan 2009 17:30:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <1231549697.5700.7.camel@brick>
-Message-ID: <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain>
-References: <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>  <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>  <20090109204103.GA17212@elte.hu>  <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>  <20090109213442.GA20051@elte.hu>
- <1231537320.5726.2.camel@brick>  <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain>  <20090109231227.GA25070@elte.hu>  <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain>  <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Jan 2009 20:32:58 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=Tx7RF6xJ0wuoBHognmXuImXKMZ48Fa6md+/uJPd1pmziJIkoGgUSKerEhwyc4WgYG
+	hXACS+YRJ7sILEgXKbeDA==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090109163725.11294fb1.akpm@linux-foundation.org>
+References: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
+	 <604427e00901081840pa6dcc41u9a7a5c69302c7b60@mail.gmail.com>
+	 <604427e00901091627n7c909abt6aa1f01c181ad65d@mail.gmail.com>
+	 <20090109163725.11294fb1.akpm@linux-foundation.org>
+Date: Fri, 9 Jan 2009 17:32:54 -0800
+Message-ID: <604427e00901091732reaef7b5u6ccd89ffb840dbb8@mail.gmail.com>
+Subject: Re: [PATCH]Fix: 32bit binary has 64bit address of stack vma
+From: Ying Han <yinghan@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mikew@google.com,
+       rohitseth@google.com, linux-api@vger.kernel.org, oleg@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.24.198.97
+X-GMailtapped: yinghan
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 9, 2009 at 4:37 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 9 Jan 2009 16:27:07 -0800
+> Ying Han <yinghan@google.com> wrote:
+>
+>> friendly ping...
+>
+> We'll get there.  We're in the merge window now, so I tend to defer
+> non-serious bugfixes until things are a bit quieter.
+Thank you Andrew .
 
-
-On Fri, 9 Jan 2009, Harvey Harrison wrote:
-
-> On Sat, 2009-01-10 at 02:01 +0100, Ingo Molnar wrote:
-> 
-> >  - Headers could probably go back to 'extern inline' again. At not small 
-> >    expense - we just finished moving to 'static inline'. We'd need to 
-> >    guarantee a library instantiation for every header include file - this 
-> >    is an additional mechanism with additional introduction complexities 
-> >    and an ongoing maintenance cost.
-> 
-> Puzzled?  What benefit is there to going back to extern inline in headers?
-
-There's none. In fact, it's wrong, unless you _also_ have an extern 
-definition (according to the "new" gcc rules as of back in the days).
-
-Of course, as long as "inline" really means _always_ inline, it won't 
-matter. So in that sense Ingo is right - we _could_. Which has no bearing 
-on whether we _should_, of course.
-
-In fact, the whole mess with "extern inline" is a perfect example of why a 
-inlining hit should be called "may_inline" or "inline_hint" or something 
-like that.
-
-Because then it actually makes sense to have "extern may_inline" with one 
-definition, and another definition for the non-inline version.  And it's 
-very clear what the deal is about, and why we literally have two versions 
-of the same function.
-
-But again, that's very much not a "let's use 'extern' instead of 
-'static'". It's a totally different issue.
-
-		Linus
-
-[ A third reason to use "extern inline" is actually a really evil one: we 
-  could do it for our unrelated issue with system call definitions on 
-  architectures that require the caller to sign-extend the arguments. 
-
-  Since we don't control the callers of system calls, we can't do that, 
-  and architectures like s390 actually have potential security holes due 
-  to callers that don't "follow the rules". So there are different needs 
-  for trusted - in-kernel - system call users that we know do the sign 
-  extension correctly, and untrusted - user-mode callers that just call 
-  through the system call function table.
-
-  What we _could_ do is for the wrappers to use
-
-	extern inline int sys_open(const char *pathname, int flags, mode_t mode)
-	{
-		return SYS_open(pathname, mode);
-	}
-
-  which gives the C callers the right interface without any unnecessary 
-  wrapping, and then
-
-	long WRAP_open(const char *pathname, long flags, long mode)
-	{
-		return SYS_open(pathname, flags, mode);
-	}
-	asm ("\t.globl sys_alias\n\t.set WRAP_open");
-
-  which is the one that gets linked from any asm code. So now asm code 
-  and C code gets two different functions, even though they use the same 
-  system call name - one with inline expansion, one with linker games. 
-
-  Whee. The games we can play (and the odd reasons we must play them). ]
+>
+>> On Thu, Jan 8, 2009 at 6:40 PM, Ying Han <yinghan@google.com> wrote:
+>> > On Mon, Jan 5, 2009 at 3:39 PM, Ying Han <yinghan@google.com> wrote:
+>> >> From: Ying Han <yinghan@google.com>
+>> >>
+>> >> Fix 32bit binary get 64bit stack vma offset.
+>> >>
+>> >> 32bit binary running on 64bit system, the /proc/pid/maps shows for the
+>> >> vma represents stack get a 64bit adress:
+>> >> ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
+>
+> That changelog hurts my brain.
+hm, i will change it for better reading.
+>
+>> >> Signed-off-by:  Ying Han <yinghan@google.com>
+>
