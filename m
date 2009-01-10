@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZAJUXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbZAJUYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbZAJUXk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 15:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZAJUXb
+	id S1754586AbZAJUYa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 15:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZAJUYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 15:23:31 -0500
-Received: from lazybastard.de ([212.112.238.170]:43895 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbZAJUXb (ORCPT
+	Sat, 10 Jan 2009 15:24:20 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:63941 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbZAJUYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 15:23:31 -0500
-Date: Sat, 10 Jan 2009 21:23:16 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add b+tree library
-Message-ID: <20090110202315.GE20611@logfs.org>
-References: <1231584446.3685.21.camel@johannes> <2f11576a0901100302s5132a1b9p11c62e27aa9a06f8@mail.gmail.com> <1231587428.3803.0.camel@johannes> <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org>
+	Sat, 10 Jan 2009 15:24:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VnHKCj3wr0luOT38F2sZ6yvikmgmCmEfIRhDFYAwFF4ifMUzhAM6pHaQlPGOns3pub
+         gqa6bR31ldIMMyYzTDe5SZ72nboe+kVLhuCKdv2cpl/25R27rMmRtdIthLHwnXcPGBpa
+         cNVYBk/bprKNATW10rtWs9pLG9MlR8NtE4JWg=
+Message-ID: <c384c5ea0901101216i8923be7k8d8d9c310f2fba78@mail.gmail.com>
+Date: Sat, 10 Jan 2009 21:16:32 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "David Brown" <lkml@davidb.org>,
+       "Phil Oester" <kernel@linuxace.com>,
+       "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Phillip Lougher" <phillip@lougher.demon.co.uk>,
+       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <4968FDA7.5040008@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87fxjrgd9s.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk>
+	 <20090109023629.GA29520@linuxace.com>
+	 <20090109165422.GF24884@logfs.org>
+	 <20090109193738.GA9827@linode.davidb.org>
+	 <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu>
+	 <20090110165033.GA23943@logfs.org>
+	 <20090110101235.7ca24c44.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0901101015290.6528@localhost.localdomain>
+	 <4968FDA7.5040008@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 January 2009 20:41:03 +0100, Andi Kleen wrote:
-> Johannes Berg <johannes@sipsolutions.net> writes:
-> 
-> > Also, to elaborate on that answer, I'm going to use this as a sort of
-> > hash table for wireless, where it ensures better scalability than a pure
-> > hashtable from quiet environments (say wireless off on an airplane) to
-> > your wireless test lab (100+ access points)
-> 
-> Is there any particular reason you can't use the standard rbtrees
-> for that?
+Hello,
 
-Can't think of any.  You can use linked lists as well.  Whether you want
-to is a different matter.
+On Sat, Jan 10, 2009 at 8:57 PM, Jeff Garzik <jeff@garzik.org> wrote:
+>> I think squashfs usage would be similar - you'd not have squashfs as a
+>> standalone media, it would be a "installation medium" thing.
+>
+> Plenty of existing, active squashfs use on router firewall standalone media.
+>   Here is my home router running unmodified OpenWRT:
+>
+> It will be nice to finally get squashfs in the kernel, since it is actively
+> used all over the place in embedded projects like OpenWRT.
+>
+Indeed, in embedded projects squashfs is" Used Everywhere Where Size Matters".
+The adds read: "Even my girlfriend recommends it for everyday use."
+(At least, that's what I've heard.)
 
-Key difference is the number of cachelines you need to find a particular
-entry.  rbtrees have a fanout of sqrt(3), so for a million elements (to
-pick a random example) you need about 25 cachelines with rbtrees and
-about 5-16 with btrees.  Closer to 5 if keys and pointers are small and
-cachelines are large, closer to 16 if keys and pointers are large and
-cachelines are small.
+Thanks for the people who could review and make the upcoming merger happen,
+and kudos to Phillip.
 
-Jörn
-
+Regards,
 -- 
-The key to performance is elegance, not battalions of special cases.
--- Jon Bentley and Doug McIlroy
+Leon
