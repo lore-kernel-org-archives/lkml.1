@@ -1,94 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZAJQTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZAJQVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbZAJQTX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 11:19:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZAJQTK
+	id S1754036AbZAJQVi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 11:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZAJQVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 11:19:10 -0500
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:54173 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751976AbZAJQTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 11:19:08 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap8EAERWaElMQWt2/2dsb2JhbACBbM58hW+EMg
-Date: Sat, 10 Jan 2009 11:19:06 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [ltt-dev] Fw: [PATCH] ext4: Add markers for better
-	debuggability
-Message-ID: <20090110161906.GB20526@Krystal>
-References: <20090109170408.75C1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090109144901.GA7262@Krystal> <20090109185840.GD23869@mit.edu>
-Mime-Version: 1.0
+	Sat, 10 Jan 2009 11:21:30 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47151 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751534AbZAJQVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 11:21:30 -0500
+Date: Sat, 10 Jan 2009 17:19:11 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Scott James Remnant <scott@canonical.com>
+Cc: Casey Dahlin <cdahlin@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+Message-ID: <20090110161911.GB10954@redhat.com>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com> <a36005b50901071302q70160bady41abc5ed2b105474@mail.gmail.com> <20090108143220.GA8717@redhat.com> <20090108193530.99D74FC3DD@magilla.sf.frob.com> <496663B6.3090709@redhat.com> <20090108213901.GA26729@redhat.com> <1231599141.11642.58.camel@quest>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090109185840.GD23869@mit.edu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:11:42 up 9 days, 16:09,  2 users,  load average: 0.51, 0.27,
-	0.19
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1231599141.11642.58.camel@quest>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Theodore Tso (tytso@mit.edu) wrote:
-> On Fri, Jan 09, 2009 at 09:49:01AM -0500, Mathieu Desnoyers wrote:
-> > 
-> > Given this is meant to be in the mainline kernel, using tracepoints
-> > rather than markers would be more appropriate. Please see
-> > Documentation/tracepoints.txt and samples/tracepoints/ for details.
-> 
-> I saw that, but I'm still not sure how I would actually *use*
-> tracepoints.  I can use markers today with Systemtap, and I need an
-> easy way to be able to selectively do things like "trap and print all
-> of the logged data when the ext4_request_inode tracepoint/marker is
-> tripped where dev=='dm-8'".
-> 
-> Unfortunately, Systemtap seems doomed given its current course and
-> direction, so I'm not opposed to moving to another solution --- I just
-> need a HOWTO that demonstrates how I can do this painlessly and
-> easily; preferably without having me have to manually hack up a kernel
-> module each time I want to implement the tracing
-> 
-> Is there an easy way to do that using ltt today?  Can you point me at
-> a sample of how this could be done?
-> 
+On 01/10, Scott James Remnant wrote:
+>
+> On Thu, 2009-01-08 at 22:39 +0100, Oleg Nesterov wrote:
+>
+> > Btw. It is not that I am trying to argue against sys_waitfd(), but do
+> > you have the "real life" example when it can be useful? Yes, poll().
+> > But we have signalfd. SIGCHLD is not rt signal, but afaics this is not
+> > the problem actually. Just curious.
+> >
+> signalfd() can't currently be made to work in the way you describe.
 
-Hi Ted,
+Hmm. Could you clarify?
 
-I just ported LTTng to 2.6.28 yesterday and started doing the port of
-ext4/jbd2 to tracepoints. As you can see in my 0.74 announcement, the
-tracepoint work for both jbd2 and ext4 is done. I also did the lttng
-probe module for jbd2. Now I just have to create the probe module for
-ext4. I also want to create debugfs files to control per-probe module
-filtering, e.g. :
+I am not sure we are talking about the same thing, but afaics poll() +
+signalfd can work to (say) reap the childs. Actually, ppoll() alone is
+enough.
 
-/mnt/debugfs/ltt/filter/jbd2/dev
-/mnt/debugfs/ltt/filter/ext4/dev
+No?
 
-Where writing to it would add device names to the filter list. I would
-like a scheme where we can easily add/remove devices, list all
-devices... I think ftrace already has something similar for
-instrumentation activation.
+Oleg.
 
-The main question I am facing is : What interface semantic do we want
-for such filter control file ?
-
-Comments/ideas are welcome.
-
-Mathieu
-
-> 						- Ted
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
