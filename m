@@ -1,143 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZAJSUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZAJSVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbZAJSUX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZAJSUF
+	id S1754049AbZAJSVX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZAJSVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:20:05 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:52201 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753157AbZAJSUD (ORCPT
+	Sat, 10 Jan 2009 13:21:11 -0500
+Received: from rv-out-0506.google.com ([209.85.198.237]:11172 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbZAJSVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:20:03 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsoEAAFwaElMQWt2/2dsb2JhbACBbM5ohW+EMg
-Date: Sat, 10 Jan 2009 13:19:59 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: LTTng for ext4 tracing HOWTO
-Message-ID: <20090110181959.GA23307@Krystal>
-References: <20090109170408.75C1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090109144901.GA7262@Krystal> <20090109185840.GD23869@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 10 Jan 2009 13:21:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=N0JHClp6WQqWYWyQ62WvM9hk0L1c63AcFxUFIokd3sBpa2+ZTWORiq+VVgMhp4emjp
+         ZlgXERgzS5/BFr/ZIYZn5jhpTquOPBxCiR6RsWn5nBkayskZvdRxdo4iyLp2driPz9Dm
+         LUV4fsrtKq5dv5v3woWeOQQ64D4X8+jHPj5UI=
+Message-ID: <170fa0d20901101021s3b9a18e9qe6150c374efa4d6f@mail.gmail.com>
+Date: Sat, 10 Jan 2009 13:21:06 -0500
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: source line numbers with x86_64 modules? [Was: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact]
+Cc: "Nicholas Miell" <nmiell@comcast.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "jim owens" <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Chris Mason" <chris.mason@oracle.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "Matthew Wilcox" <matthew@wil.cx>, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Nick Piggin" <npiggin@suse.de>,
+       "Peter Morreale" <pmorreale@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, sam@ravnborg.org,
+       "Dave Anderson" <anderson@redhat.com>
+In-Reply-To: <20090110153446.GA13976@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090109185840.GD23869@mit.edu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:59:25 up 9 days, 17:57,  2 users,  load average: 0.39, 0.20,
-	0.17
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <170fa0d20901100621m74680e0ewd1916c70f1636c9b@mail.gmail.com>
+	 <20090110153446.GA13976@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Theodore Tso (tytso@mit.edu) wrote:
-> On Fri, Jan 09, 2009 at 09:49:01AM -0500, Mathieu Desnoyers wrote:
-> > 
-> > Given this is meant to be in the mainline kernel, using tracepoints
-> > rather than markers would be more appropriate. Please see
-> > Documentation/tracepoints.txt and samples/tracepoints/ for details.
-> 
-> I saw that, but I'm still not sure how I would actually *use*
-> tracepoints.  I can use markers today with Systemtap, and I need an
-> easy way to be able to selectively do things like "trap and print all
-> of the logged data when the ext4_request_inode tracepoint/marker is
-> tripped where dev=='dm-8'".
-> 
-> Unfortunately, Systemtap seems doomed given its current course and
-> direction, so I'm not opposed to moving to another solution --- I just
-> need a HOWTO that demonstrates how I can do this painlessly and
-> easily; preferably without having me have to manually hack up a kernel
-> module each time I want to implement the tracing
-> 
-> Is there an easy way to do that using ltt today?  Can you point me at
-> a sample of how this could be done?
-> 
-> 						- Ted
-> 
+On Sat, Jan 10, 2009 at 10:34 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Mike Snitzer <snitzer@gmail.com> wrote:
+>
+>> Yes, especially from someone who lacks the ability to properly configure
+>> kdump.  I'm fairly surprised others are giving you a free pass when you
+>> keep asserting how broken kdump is with such hollow criticism.  I rely
+>> heavily on kdump and it works quite well (kvm integration was lacking
+>> but has improved).
+>
+> hm, you say you rely heavily on kdump ... for what exactly, and how does
+> it help the upstream Linux kernel?
+>
+> I see a single fix from you in the whole repository:
+>
+>  ffc41cf: nbd: prevent sock_xmit from attempting to use a NULL socket
+>
+> ... and that single fix is a NULL pointer dereference that ought to have
+> been quite debuggable from a plain oops alone.
 
-Hi Ted,
+I've reported various bugs and helped with prototypes for fixes (e.g.
+a0da84f3).  But by all means belittle me... must be fun.
 
-I just finished adding the ext4 tracing feature to LTTng. It's in LTTng
-0.75 as I write this. The only requirement currently not fulfilled is
-the "filtering by dev == 'dm-8'", which I plan to implement later. We
-currently have the whole stream of ext4 operations recorded to trace
-buffers (all on) when tracing is enabled.
+Baiting me into this fairly irrelevant tangent like you have really shows class.
 
-The starting point for the LTTng project is http://ltt.polymtl.ca
+I've read hundreds of posts from you over the years and don't recall
+you be so overtly antagonistic for absolutely no reason.  I was simply
+saying "kdump doesn't suck"; certainly not as bad as Nicholas would
+have us all believe.
 
-You will need LTTng 0.75 and the matching ltt-control and lttv packages
-to get this running. Matching versions are listed here :
-http://ltt.polymtl.ca/svn/trunk/lttv/doc/developer/lttng-lttv-compatibility.html
+Yes, I'm not Ingo Molnar.  I don't rewrite the core of Linux with ease
+but for the past 10 years I've developed solely on Linux to pay the
+bills.  I started hacking Linux distributions and have progressed to
+kernel development where I primarily focus on storage and filesystems.
+ As things relate to upstream Linux, I'm particularly good at
+backporting and cherry picking upstream advances to help stabilize
+enterprise solutions.
 
-To save you time, here are the direct links to the sources :
-LTTng :
-http://ltt.polymtl.ca/lttng/patch-2.6.28-lttng-0.75.tar.bz2
-or
-git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
+I have to believe that you understand not all Linux kernel development
+happens upstream.
 
-ltt-control :
-http://ltt.polymtl.ca/lttng/ltt-control-0.63-03012009.tar.gz
+> In practice i rarely see bugfixes that were debugged via kdump. Normal
+> oops based fixes outnumber kdump based fixes by a ratio of 1:100 or worse
+> - and kdump is readily available these days - just nobody configures it.
 
-lttv :
-http://ltt.polymtl.ca/packages/lttv-0.12.5-09012009.tar.gz
+So you're telling me RedHat doesn't rely on kdump at enterprise
+customer installations?  I find that hard to believe.  Few enterprise
+customers allow defects to be debugged on-site, sometimes collecting a
+crash dump is all you can hope for to make progress.  I have to
+believe you know this fairly well; if not with direct experience then
+through your co-workers?  Or am I living in Ingo's version of Linux
+hell where kdump is actually useful?
 
-Follow the QUICKSTART GUIDE to perform the installation :
-http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
+> For example, in the whole kernel repo there's just 45 commits that mention
+> 'kdump' [excluding those commits that develop kdump itself]:
+>
+>  $ git log --pretty=format:"%h: %s" --no-merges -i --grep="kdump" |
+>        grep -viE 'kdump|kexec|dump|mem' | wc -l
+>  45
+>
+> Contrast that to the 1954 commits that contain the string 'oops' or
+> 'crash':
+>
+>  $ git log --pretty=format:"%h: %s" --no-merges -i -E --grep="oops|crash" |
+>            wc -l
+>  5900
+>
+> That's a ratio of 1:131. (and probably optimistic in favor of kdump.)
+>
+> Note, i dont have any negative feelings towards kdump - some people use it
+> and enterprise folks with their frozen, immutable kernels love it - it
+> just has not yet given me a reason to have particularly positive feelings
+> towards it in the upstream kernel space.
 
-Once you are setted up, reboot your LTTng-enabled kernel, and try the
-following (as root) :
+Clearly you don't care about kdump; but please don't abuse your
+standing to turn this into a referendum on kdump's existence in the
+upstream kernel.  Is upstream Linux somehow less pure by the existence
+of kdump?
 
-ltt-armall
-  (you should see all the markers within lttng probes being enabled on
-  the screen. This should include lines beginning with
-  "Connecting ext4 ....". If not, make sure you have the lttng ext4
-  probe module loaded.)
-lttctl -C -w /tmp/trace trace
+I'm left with a certain disappointment that the amazing Ingo Molnar
+took the time to respond to my post yet thought it best to immediately
+go negative _and_ off-topic on me with some vendetta against kdump.
+Your kdump vs oops statistics don't help defend Nicholas' "kump sucks"
+assertion either.
 
-  (perform some ext4 operations)
+So just what was your point (other than to flame me cause your
+cornflakes were nasty this morning)?
 
-lttctl -D trace
-
-lttv -m textDump -e channel.name=ext4 -t /tmp/trace
-  This will show events from the ext4 channel only, e.g. :
-
-ext4.da_write_begin: 197.030265213 (/tmp/trace/ext4_3), 4190, 4190, \
-    /bin/cp, , 4021, 0x0, SYSCALL \
-    { dev = "loop0", ino = 15, pos = 5320704, len = 4096, flags = 0 }
-ext4.da_write_end: 197.030268714 (/tmp/trace/ext4_3), 4190, 4190, \
-    /bin/cp, , 4021, 0x0, SYSCALL \
-    { dev = "loop0", ino = 15, pos = 5320704, len = 4096, copied = 4096 }
-ext4.da_write_begin: 197.030279441 (/tmp/trace/ext4_3), 4190, 4190, \
-    /bin/cp, , 4021, 0x0, SYSCALL \
-    { dev = "loop0", ino = 15, pos = 5324800, len = 4096, flags = 0 }
-....
-
-You can also try the GUI interface if you like, with :
-lttv-gui -t /tmp/trace
-
-You will find it useful if you need to dig in the ext4 trace information
-along with the instrumentation collected from the rest of the kernel.
-
-This is a very basic HOWTO. Don't hesitate to ask if you need help to
-tune the amount of events logged (e.g. by disabling some markers, which
-can be done by doing a custom ltt-armall script).
-
-Also, lttv filtering currently does not support filtering by event
-fields. A quick hack to do it is :
-
-lttv -m textDump -e channel.name=ext4 -t /tmp/trace |grep "dev = \"loop0\","
-
-Enjoy :)
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Mike
