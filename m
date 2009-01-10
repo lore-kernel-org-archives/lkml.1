@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbZAJKwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZAJK6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755040AbZAJKwd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 05:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZAJKwZ
+	id S1755261AbZAJK6B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 05:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZAJK5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 05:52:25 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:60793 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbZAJKwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 05:52:24 -0500
-Date: Sat, 10 Jan 2009 11:52:19 +0100
-From: Erik Ekman <erik@kryo.se>
-To: linux-kernel@vger.kernel.org
-Cc: abelay@mit.edu, bjorn.helgaas@hp.com
-Subject: [PATCH -tip][RFC] pnpbios: Fix warning if no hotplug
-Message-Id: <20090110115219.1ebb94cd.erik@kryo.se>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 10 Jan 2009 05:57:51 -0500
+Received: from ozlabs.org ([203.10.76.45]:56014 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751538AbZAJK5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 05:57:50 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH 3/5] cpumask: convert misc driver functions
+Date: Sat, 10 Jan 2009 21:27:36 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>,
+       Robert Richter <robert.richter@amd.com>, oprofile-list@lists.sf.net,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Ursula Braun <ursula.braun@de.ibm.com>,
+       linux390@de.ibm.com, linux-s390@vger.kernel.org
+References: <20090107195832.265117000@polaris-admin.engr.sgi.com> <20090107195832.733912000@polaris-admin.engr.sgi.com>
+In-Reply-To: <20090107195832.733912000@polaris-admin.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901102127.38503.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pnpbios: Fix warning if no hotplug
+On Thursday 08 January 2009 06:28:35 Mike Travis wrote:
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> Impact: use new cpumask API.
+> 
+> Convert misc driver functions to use struct cpumask.
+...
+> @@ -593,15 +592,20 @@ static int __cpuinit iucv_cpu_notify(str
+>  		break;
+>  	case CPU_DOWN_PREPARE:
+>  	case CPU_DOWN_PREPARE_FROZEN:
+> -		cpumask = iucv_buffer_cpumask;
+> -		cpu_clear(cpu, cpumask);
+> -		if (cpus_empty(cpumask))
+> +		if (!alloc_cpumask_var(&cpumask, GFP_KERNEL))
+> +			return NOTIFY_BAD;
+> +		cpumask_copy(cpumask, &iucv_buffer_cpumask);
+> +		cpumask_clear_cpu(cpu, cpumask);
+> +		if (cpumask_empty(cpumask)) {
+>  			/* Can't offline last IUCV enabled cpu. */
+> +			free_cpumask_var(cpumask);
+>  			return NOTIFY_BAD;
+> +		}
+>  		smp_call_function_single(cpu, iucv_retrieve_cpu, NULL, 1);
+>  		if (cpus_empty(iucv_irq_cpumask))
+>  			smp_call_function_single(first_cpu(iucv_buffer_cpumask),
+>  						 iucv_allow_cpu, NULL, 1);
+> +		free_cpumask_var(cpumask);
+>  		break;
 
-When hotplug is turned off, I get:
-drivers/pnp/pnpbios/core.c: In function 'pnpbios_thread_init':
-drivers/pnp/pnpbios/core.c:578: warning: unused variable 'task'
+Minor nit: this can be done better, actually:
 
-Is this a good way to fix this? Or should I just a #ifdef
-CONFIG_HOTPLUG around the task variable?
+@@ -596,9 +594,7 @@ static int __cpuinit iucv_cpu_notify(str
+ 	case CPU_DOWN_PREPARE_FROZEN:
+ 		if (!iucv_path_table)
+ 			break;
+-		cpumask = iucv_buffer_cpumask;
+-		cpu_clear(cpu, cpumask);
+-		if (cpus_empty(cpumask))
++		if (cpumask_any_but(&iucv_buffer_cpumask, cpu) >= nr_cpu_ids)
+ 			/* Can't offline last IUCV enabled cpu. */
+ 			return NOTIFY_BAD;
+ 		smp_call_function_single(cpu, iucv_retrieve_cpu, NULL, 1);
 
-Signed-off-by: Erik Ekman <erik@kryo.se>
----
-diff --git a/drivers/pnp/pnpbios/core.c b/drivers/pnp/pnpbios/core.c
-index 996f648..e706d22 100644
---- a/drivers/pnp/pnpbios/core.c
-+++ b/drivers/pnp/pnpbios/core.c
-@@ -575,8 +575,6 @@ fs_initcall(pnpbios_init);
- 
- static int __init pnpbios_thread_init(void)
- {
--	struct task_struct *task;
--
- #if defined(CONFIG_PPC)
- 	if (check_legacy_ioport(PNPBIOS_BASE))
- 		return 0;
-@@ -584,10 +582,13 @@ static int __init pnpbios_thread_init(void)
- 	if (pnpbios_disabled)
- 		return 0;
- #ifdef CONFIG_HOTPLUG
--	init_completion(&unload_sem);
--	task = kthread_run(pnp_dock_thread, NULL, "kpnpbiosd");
--	if (!IS_ERR(task))
--		unloading = 0;
-+	{
-+		struct task_struct *task;
-+		init_completion(&unload_sem);
-+		task = kthread_run(pnp_dock_thread, NULL, "kpnpbiosd");
-+		if (!IS_ERR(task))
-+			unloading = 0;
-+	}
- #endif
- 	return 0;
- }
+Cheers,
+Rusty.
