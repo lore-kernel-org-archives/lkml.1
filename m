@@ -1,48 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZAJFLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbZAJFNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbZAJFLg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 00:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZAJFL3
+	id S1752748AbZAJFNG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 00:13:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbZAJFMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 00:11:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:38506 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbZAJFL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 00:11:28 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] cpumask fallout: Initialize irq_default_affinity earlier.
-Date: Sat, 10 Jan 2009 15:41:13 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-References: <1231446081-8448-1-git-send-email-ddaney@caviumnetworks.com> <496666CE.3050205@caviumnetworks.com> <alpine.LFD.2.00.0901081256170.3283@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901081256170.3283@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901101541.15192.rusty@rustcorp.com.au>
+	Sat, 10 Jan 2009 00:12:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44957 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758AbZAJFMx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 00:12:53 -0500
+Date: Fri, 9 Jan 2009 21:14:57 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: rjw@sisk.pl
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+Subject: [PATCH 2/2] resume: wait for device probing to finish
+Message-ID: <20090109211457.6b1d37ed@infradead.org>
+In-Reply-To: <20090109211346.3ccc36e3@infradead.org>
+References: <20090109211346.3ccc36e3@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 January 2009 07:26:59 Linus Torvalds wrote:
-> 
-> On Thu, 8 Jan 2009, David Daney wrote:
-> > 
-> > The 'inline' seems gratuitous to me.  Since it is static GCC should do 
-> > the Right Thing.  However since you suggested it, I am testing it that 
-> > way.
-> 
-> Trust me, gcc very seldom does the Right Thing(tm) when it comes to 
-> inlining. 
-> 
-> 			Linus
+(this patch needs testing on a few different machines; compile tested only)
 
-Note that there's a downside: with inline funcs in .c files you don't get
-a warning should they become unused in future cleanups.
 
-Cheers,
-Rusty.
+>From 10b3e25671c817933e232498a56640fd48964345 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Fri, 9 Jan 2009 21:11:23 -0800
+Subject: [PATCH] resume: wait for device probing to finish
+
+the resume code does not currently wait for device probing to finish.
+Even without async function calls this is dicey and not correct,
+but with async function calls during the boot sequence this is going
+to get hit more...
+
+This patch adds the synchronization using the newly introduced helper.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ kernel/power/disk.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index 45e8541..d2d24b7 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -585,6 +585,12 @@ static int software_resume(void)
+ 	unsigned int flags;
+ 
+ 	/*
++	 * If the user said "noresume".. bail out early.
++	 */
++	if (noresume)
++		return 0;
++
++	/*
+ 	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
+ 	 * is configured into the kernel. Since the regular hibernate
+ 	 * trigger path is via sysfs which takes a buffer mutex before
+@@ -600,6 +606,11 @@ static int software_resume(void)
+ 			mutex_unlock(&pm_mutex);
+ 			return -ENOENT;
+ 		}
++		/*
++		 * Some device discovery might still be in progress; we need
++		 * to wait for this to finish.
++		 */
++		wait_for_device_probe();
+ 		swsusp_resume_device = name_to_dev_t(resume_file);
+ 		pr_debug("PM: Resume from partition %s\n", resume_file);
+ 	} else {
+-- 
+1.6.0.6
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
