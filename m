@@ -1,95 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZAJVmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbZAJVou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZAJVmB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 16:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZAJVlw
+	id S1755258AbZAJVou (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 16:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZAJVom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 16:41:52 -0500
-Received: from outbound-mail-317.bluehost.com ([67.222.54.10]:52732 "HELO
-	outbound-mail-317.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751005AbZAJVlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 16:41:51 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=SAWYgc2DLlkQHkaJPPKtjoEvAfXBk4rJy4ne9RrXdoe8V5W1LaKmFXBTILXJSb9yRoJCG8nrSRgZB78x37jy/TkodfhgTLh3IokbZ90fwN8UiMFsAi3MymrWHFyiFxb6;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: [PATCH] i915: document DRM_I915_KMS option
-Date: Sat, 10 Jan 2009 13:41:48 -0800
-User-Agent: KMail/1.9.10
-Cc: "Gabriel C" <nix.or.die@googlemail.com>, "Dave Airlie" <airlied@linux.ie>,
-       torvalds@linux-foundation.org, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org, "Eric Anholt" <eric@anholt.net>
-References: <alpine.DEB.2.00.0812290819020.20427@skynet.skynet.ie> <49610BAA.4060308@googlemail.com> <21d7e9970901091803o36f1f07dk6436d1fbe5b2d084@mail.gmail.com>
-In-Reply-To: <21d7e9970901091803o36f1f07dk6436d1fbe5b2d084@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Jan 2009 16:44:42 -0500
+Received: from kanga.kvack.org ([205.233.56.17]:51929 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbZAJVol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 16:44:41 -0500
+X-Greylist: delayed 1095 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Jan 2009 16:44:41 EST
+Date: Sat, 10 Jan 2009 16:26:25 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [x86-64] remove locked instruction from switch_to()
+Message-ID: <20090110212625.GE13467@kvack.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901101341.49159.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, January 9, 2009 6:03 pm Dave Airlie wrote:
-> > Also while testing this with xorg-server 1.4* I found out the 'pain'
-> > means an broken X and a broken box since it broke the kernel as well and
-> > the only way to get the box to live again was an hard reset. Please
-> > clarify the 'pain' part too.
->
-> There is no new enough userspace yet, so I can't say what version will
-> have it, maybe I should mark enabled by default as experimental or
-> something.
->
-> If pain doesn't equate to doing something that will hurt, then I'm not
-> sure what will, it actually will work for some people, so I can't say
-> it will always be broken.
->
-> I'll see if Jesse can provide some nicer wordings...
+The patch below removes an unnecessary locked instruction from switch_to().  
+TIF_FORK is only ever set in copy_thread() on initial process creation, and 
+gets cleared during the first scheduling of the process.  As such, it is 
+safe to use an unlocked test for the flag within switch_to()./
 
-How about something like this?  It's deliberately vague about the exact
-userspace requirements (basically saying you have to do your homework first)
-but is otherwise pretty clear I think.
+Signed-off-by: Benjamin LaHaise <bcrl@kvack.org
 
-This patch adds more documentation for the DRM_I915_KMS option, warning
-users to be sure any existing software they want to use with the i915 driver
-is capable of using the new interfaces provided.
-
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 5130b72..57edf29 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -83,15 +83,21 @@ config DRM_I915
- endchoice
- 
- config DRM_I915_KMS
--	bool "Enable modesetting on intel by default"
-+	bool "Enable kernel mode setting by default"
- 	depends on DRM_I915
- 	help
--	Choose this option if you want kernel modesetting enabled by default,
--	and you have a new enough userspace to support this. Running old
--	userspaces with this enabled will cause pain.  Note that this causes
--	the driver to bind to PCI devices, which precludes loading things
--	like intelfb.
-+	Choose this option if you want kernel based mode setting enabled by
-+	default (normally you have to pass "modeset=1" as a module parameter
-+	to enable this feature).  When kernel mode setting is enabled, the
-+	driver will support the mode setting ioctls defined in drm_mode.h
-+	(which should be used through libdrm's xf86drmMode.h interface).
- 
-+	Note that when this option is enabled, it will conflict with other
-+	drivers of this hardware such as intelfb or a non-kernel mode setting
-+	enabled xf86-video-intel (which include all versions prior to 2.6),
-+	and so could lead to bad behavior like memory corruption, non-functional
-+	video output, and machine hangs.  So if you plan to use this feature
-+	be sure your installed userspace software is compatible.
- 
- config DRM_MGA
- 	tristate "Matrox g200/g400"
-
+diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
+index 2ed3f0f..ee2e589 100644
+--- a/arch/x86/include/asm/system.h
++++ b/arch/x86/include/asm/system.h
+@@ -96,15 +96,15 @@ do {									\
+ 	     "thread_return:\n\t"					  \
+ 	     "movq %%gs:%P[pda_pcurrent],%%rsi\n\t"			  \
+ 	     "movq %P[thread_info](%%rsi),%%r8\n\t"			  \
+-	     LOCK_PREFIX "btr  %[tif_fork],%P[ti_flags](%%r8)\n\t"	  \
+ 	     "movq %%rax,%%rdi\n\t" 					  \
+-	     "jc   ret_from_fork\n\t"					  \
++	     "testl  %[_tif_fork],%P[ti_flags](%%r8)\n\t"	  \
++	     "jnz   ret_from_fork\n\t"					  \
+ 	     RESTORE_CONTEXT						  \
+ 	     : "=a" (last)					  	  \
+ 	     : [next] "S" (next), [prev] "D" (prev),			  \
+ 	       [threadrsp] "i" (offsetof(struct task_struct, thread.sp)), \
+ 	       [ti_flags] "i" (offsetof(struct thread_info, flags)),	  \
+-	       [tif_fork] "i" (TIF_FORK),			  	  \
++	       [_tif_fork] "i" (_TIF_FORK),			  	  \
+ 	       [thread_info] "i" (offsetof(struct task_struct, stack)),   \
+ 	       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent))  \
+ 	     : "memory", "cc" __EXTRA_CLOBBER)
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index b86f332..16b4587 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -247,6 +247,7 @@ ENTRY(native_usergs_sysret64)
+  */ 	
+ /* rdi:	prev */	
+ ENTRY(ret_from_fork)
++	LOCK ; btr $TIF_FORK,TI_flags(%r8)
+ 	CFI_DEFAULT_STACK
+ 	push kernel_eflags(%rip)
+ 	CFI_ADJUST_CFA_OFFSET 8
