@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbZAJF27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbZAJF31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753066AbZAJF27 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 00:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbZAJF2n
+	id S1753910AbZAJF31 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 00:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZAJF2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 00:28:43 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39915 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbZAJF2m (ORCPT
+	Sat, 10 Jan 2009 00:28:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52019 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751472AbZAJF2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 00:28:42 -0500
-Date: Fri, 9 Jan 2009 21:29:43 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
+	Sat, 10 Jan 2009 00:28:50 -0500
+Date: Fri, 9 Jan 2009 21:28:01 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        linux-btrfs <linux-btrfs@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
        Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-Message-ID: <20090109212943.4625abdb@infradead.org>
-In-Reply-To: <20090109195232.GE23869@mit.edu>
-References: <20090109153508.GA4671@elte.hu>
-	<49677CB1.3030701@zytor.com>
-	<20090109084620.3c711aad@infradead.org>
-	<20090109172011.GD26290@one.firstfloor.org>
-	<20090109172801.GC6936@parisc-linux.org>
-	<20090109174719.GG26290@one.firstfloor.org>
-	<20090109094142.367012b6@infradead.org>
-	<20090109180213.GH26290@one.firstfloor.org>
-	<alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
-	<20090109185509.GJ26290@one.firstfloor.org>
-	<20090109195232.GE23869@mit.edu>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+       Sven Dietrich <SDietrich@novell.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+In-Reply-To: <49682C05.7030407@zytor.com>
+Message-ID: <alpine.LFD.2.00.0901092119100.6528@localhost.localdomain>
+References: <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>  <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>  <20090109204103.GA17212@elte.hu>  <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>  <20090109213442.GA20051@elte.hu>
+ <1231537320.5726.2.camel@brick>  <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain>  <20090109231227.GA25070@elte.hu>  <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain>  <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick>
+ <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain> <49682C05.7030407@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009 14:52:33 -0500
-Theodore Tso <tytso@mit.edu> wrote:
 
-> Kerneloops.org does this, so the code is mostly written; but it does
-> this in a blinded fashion, so it only makes sense for oops which are
-> very common and for which we don't need to ask the user, "so what were
-> you doing at the time".  In cases where the user has already stepped
-> up and reported the oops on a mailing list, it would be nice if
-> kerneloops.org had a way of decoding the oops via some web page.
+
+On Fri, 9 Jan 2009, H. Peter Anvin wrote:
 > 
-> Arjan, would something like this be doable, hopefully without too much
-> effort?
+> I was thinking about experimenting with this, to see what level of
+> upside it might add.  Ingo showed me numbers which indicate that a
+> fairly significant fraction of the cases where removing inline helps is
+> in .h files, which would require code movement to fix.  Hence to see if
+> it can be automated.
 
-thinking about this.. making a "pastebin" like thing for oopses is
-relatively trivial for me; all the building blocks I have already.
+We _definitely_ have too many inline functions in headers. They usually 
+start out small, and then they grow. And even after they've grown big, 
+it's usually not at all clear exactly where else they should go, so even 
+when you realize that "that shouldn't be inlined", moving them and making 
+them uninlined is not obvious.
 
-The hard part is getting the vmlinux files in place. Right now I do
-this manually for popular released kernels.. if the fedora/suse guys
-would help to at least have the vmlinux for their released updates
-easily available that would be a huge help.... without that it's going
-to suck.
+And quite often, some of them go away - or at least shrink a lot - when 
+some config option or other isn't set. So sometimes it's an inline because 
+a certain class of people really want it inlined, simply because for 
+_them_ it makes sense, but when you enable debugging or something, it 
+absolutely explodes.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+		Linus
