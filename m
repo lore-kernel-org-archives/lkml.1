@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbZAJWj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbZAJWnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbZAJWj4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 17:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZAJWif
+	id S1755957AbZAJWnz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 17:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZAJWnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 17:38:35 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:51314 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754122AbZAJWie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 17:38:34 -0500
-Message-Id: <20090110223818.767801000@polaris-admin.engr.sgi.com>
+	Sat, 10 Jan 2009 17:43:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46979 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752556AbZAJWnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 17:43:46 -0500
+Date: Sat, 10 Jan 2009 23:43:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] irq: change irq_desc and kstat_irq_legacy to
+	variable sized arrays
+Message-ID: <20090110224323.GA17917@elte.hu>
 References: <20090110223818.459493000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Sat, 10 Jan 2009 14:38:20 -0800
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] irq: allocate irq_desc_ptrs array based on nr_irqs
-Content-Disposition: inline; filename=irq-alloc-irq_ptrs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090110223818.459493000@polaris-admin.engr.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: preparation for making irq_desc_ptrs variable-sized.
 
-This addresses this memory usage bump when NR_CPUS bumped from 128 to 4096:
+* Mike Travis <travis@sgi.com> wrote:
 
-    34816   +229376    264192  +658%  irq_desc_ptrs(.data.read_mostly)
+> 
+> The following patches change irq_desc and kstat_irq_legacy into
+> variable sized arrays based on nr_cpu_ids when CONFIG_SPARSE_IRQS=y.
+> 
+>     irq: change references from NR_IRQS to nr_irqs
+>     irq: allocate irq_desc_ptrs array based on nr_irqs
+>     irq: initialize nr_irqs based on nr_cpu_ids
+>     kstat: modify kstat_irqs_legacy to be variable sized
+> 
+> Based on: tip/cpus4096 @ v2.6.28-6140-g36c401a
+> 
+> (Ingo - I will push these to your tip/cpus4096 branch via my cpus4096-for-ingo
+> 	git tree.)
 
-The patch is split into two part, the first simply allocates the
-irq_desc_ptrs array.  Then next will deal with making it variable.
-This is only when CONFIG_SPARSE_IRQS=y.
+Thanks - please send a pull request when you feel good about them.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- kernel/irq/handle.c    |   11 +++++++++--
- kernel/irq/internals.h |    4 ++++
- 2 files changed, 13 insertions(+), 2 deletions(-)
+The changes look good to me.
 
---- linux-2.6-for-ingo.orig/kernel/irq/handle.c
-+++ linux-2.6-for-ingo/kernel/irq/handle.c
-@@ -17,6 +17,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/rculist.h>
- #include <linux/hash.h>
-+#include <linux/bootmem.h>
- 
- #include "internals.h"
- 
-@@ -110,7 +111,7 @@ static void init_one_irq_desc(int irq, s
-  */
- DEFINE_SPINLOCK(sparse_irq_lock);
- 
--struct irq_desc *irq_desc_ptrs[NR_IRQS] __read_mostly;
-+struct irq_desc **irq_desc_ptrs __read_mostly;
- 
- static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS_LEGACY-1] = {
-@@ -137,6 +138,9 @@ int __init early_irq_init(void)
- 	desc = irq_desc_legacy;
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 
-+	/* allocate irq_desc_ptrs array based on nr_irqs */
-+	irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
-+
- 	for (i = 0; i < legacy_count; i++) {
- 		desc[i].irq = i;
- 		desc[i].kstat_irqs = kstat_irqs_legacy[i];
-@@ -153,7 +157,10 @@ int __init early_irq_init(void)
- 
- struct irq_desc *irq_to_desc(unsigned int irq)
- {
--	return (irq < nr_irqs) ? irq_desc_ptrs[irq] : NULL;
-+	if (irq_desc_ptrs && irq < nr_irqs)
-+		return irq_desc_ptrs[irq];
-+
-+	return NULL;
- }
- 
- struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu)
---- linux-2.6-for-ingo.orig/kernel/irq/internals.h
-+++ linux-2.6-for-ingo/kernel/irq/internals.h
-@@ -16,7 +16,11 @@ extern int __irq_set_trigger(struct irq_
- extern struct lock_class_key irq_desc_lock_class;
- extern void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr);
- extern spinlock_t sparse_irq_lock;
-+#ifdef CONFIG_SPARSE_IRQ
-+extern struct irq_desc **irq_desc_ptrs;
-+#else
- extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
-+#endif
- 
- #ifdef CONFIG_PROC_FS
- extern void register_irq_proc(unsigned int irq, struct irq_desc *desc);
+> Affects of the SPARSE changes on NR_CPUS values.
+> 
+>     1 - 128-defconfig (non-SPARSE)
+>     2 - 4k-defconfig (non-SPARSE)
+>     3 - 4k-defconfig (SPARSE)
+> 
+> ====== Data
+> 
+>       .1.        .2.        .3.    ..final..
+>   1114112          .   -1114112      .  -100%  irq_desc(.data.cacheline_aligned)
+>    208896     -69632    -138752    512   -99%  irq_cfgx(.data)
+>     34816          .     -34816      .  -100%  irq_timer_state(.bss)
+>     17480          .     -17480      .  -100%  per_cpu__kstat(.data.percpu)
+>         0          .      +4096   4096      .  irq_desc_legacy(.data.cacheline_aligned)
 
--- 
+Impressive!
+
+If i remember your previous figures correctly we've got about +4MB of 
+memory bloat at 4K CPUs, that is now down to 3MB total?
+
+	Ingo
