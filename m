@@ -1,75 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZAJP2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZAJP3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZAJP2z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 10:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZAJP2p
+	id S1752559AbZAJP3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 10:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZAJP3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 10:28:45 -0500
-Received: from h155.mvista.com ([63.81.120.155]:64737 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751733AbZAJP2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 10:28:44 -0500
-Message-ID: <4968BECE.8070304@ru.mvista.com>
-Date: Sat, 10 Jan 2009 18:29:18 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 10 Jan 2009 10:29:11 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:36819 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751913AbZAJP3K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 10:29:10 -0500
+Date: Sat, 10 Jan 2009 16:30:14 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: "Jesse F. Hughes" <jesse@phiwumbda.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Various problems with new AMD 64 HP Pavilion Desktop machine.
+	(1/2)
+Message-ID: <20090110153014.GA19704@electric-eye.fr.zoreil.com>
+References: <87r63ci7nb.fsf@phiwumbda.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
-References: <200901091334.55823.borntraeger@de.ibm.com>	<200901101009.13699.borntraeger@de.ibm.com>	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>	<200901101242.05203.borntraeger@de.ibm.com>	<49688B63.5030105@ru.mvista.com>	<20090110122130.318cf168@lxorguk.ukuu.org.uk>	<1231598170.3642.12.camel@localhost.localdomain> <20090110151248.063199d2@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090110151248.063199d2@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87r63ci7nb.fsf@phiwumbda.org>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+Jesse F. Hughes <jesse@phiwumbda.org> :
+[...]
+> I seem to be having a whole slew of problems with my new (refurbished)
+> computer and I'm bumfuzzled about how to solve them.  A poster on
+> comp.os.linux.hardware suggested I post a message here.
 
-> O> Your problem is that the *device* is wanting to transfer a set of bytes
+Your message appears with an unusual Content-Type which make it a bit
+unpleasant to read/answer. Please check it.
 
->>not divisible by four.  If you want to use word based PIO, you'll have
->>to fall back to collecting bytes for the last two.  Alternatively, you
+[...]
+> * My r8168 driver (latest available from realtek site) acts flaky.
 
-> Nope.. you can't do that with ATA block transfers - it isn't the same as
-> SCSI
+Which version ? 8.0.10 ?
 
-   ATA block transfers are always mutliple of 512 bytes (except read/write 
-long), so this shouldn't be an issue... unless the code is trying to split a 
-sector between 2 pages on an arbitrary boundary -- in this case, even if the 
-both resulting byte counts divide by 2, you may be busted because of prefetch 
-that (as the Intel docs say), should have the initial (start of sector) and 
-all subsequent reads of the same size (either 16- or 32-bit). I don't know if 
-this situation is actually possible with libata -- but beware...
+> The ethernet card works for a while, but then just craps out,
+> receiving and sending no packets at all.  This usually happens during
+> a sizeable download.  Removing and reloading the driver fixes the
+> problem for a short while.
 
->>could just do byte PIO for all reply lengths like this ... they occur
->>all over the SCSI standard, but not usually in critical paths.
+Can you give the in-kernel r8169 driver a try ? The 2.6.28 r8169 driver
+should build with your kernel.
 
-> The problem we have is that the sg list the drivers were given had a
-> segment which was not divisible in length by four and was *NOT* the last
-> segment in the sg list
-
-> The logic in the ATA PIO code is basically
-
-> 	for each sg entry
-
-> 		compute the number of bytes to transfer staying within
-> the page
-> 		transfer that many bytes (but may be more)
+[...]
+> * My Hauppauge 1800 (?) tv card seems to be acting up.  Sometimes when
+> I lspci -vvv, I see
 > 
-> 		if and only if the transfer is NOT the last segment but is
-> 			more than the bytes requested - WARN
+>   !!! Unknown header type 7f
 
-    The ATAPI logic is more complex since it has to take into account the 
-arbitrary byte count that a device want to transfer on each INTRQ (read from 
-the byte count low/high regs).
+Add a -x option and you will probably see that the PCI configuration
+space contains nothing but "ff" (it's not good).
 
-> Alan
+Can you experience with the -H option of lspci and see what it reports
+when this happens ?
 
-MBR, Sergei
+(dumb question: is this a linux-only box ?)
+
+[...]
+> I'm more than a wee bit clueless about all this.  I hope that someone
+> can help me out here.  Is it a hardware issue?  Does it have something
+> to do with ACPI, as the colh poster suggested?
+
+It could be purely software r8169 and PCI problems.
+
+[...]
+> Here's the output of lspci -vvv:
+[...]
+> 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
+> 	Subsystem: Hewlett-Packard Company Device 2a6f
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 32 bytes
+> 	Interrupt: pin A routed to IRQ 2298
+> 	Region 0: I/O ports at e800 [size=256]
+> 	Region 2: Memory at febff000 (64-bit, non-prefetchable) [size=4K]
+> 	Region 4: Memory at f8ff0000 (64-bit, prefetchable) [size=64K]
+> 	Expansion ROM at febc0000 [disabled] [size=128K]
+> 	Capabilities: [40] Power Management version 3
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+> 		Address: 00000000fee0f00c  Data: 41a1
+> 	Capabilities: [70] Express (v1) Endpoint, MSI 01
+> 		DevCap:	MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <8us
+> 			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
+> 		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+> 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
+> 			MaxPayload 128 bytes, MaxReadReq 512 bytes
+> 		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+> 		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <64us
+> 			ClockPM+ Suprise- LLActRep- BwNot-
+> 		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+> 	Capabilities: [b0] MSI-X: Enable- Mask- TabSize=2
+> 		Vector table: BAR=4 offset=00000000
+> 		PBA: BAR=4 offset=00000800
+> 	Capabilities: [d0] Vital Product Data <?>
+> 	Capabilities: [100] Advanced Error Reporting <?>
+> 	Capabilities: [140] Virtual Channel <?>
+> 	Capabilities: [160] Device Serial Number 81-68-10-ec-00-00-00-00
+> 	Kernel driver in use: r8169
+                              ^^^^^
+> 	Kernel modules: r8169, r8168
+
+You told you were using Realtek's r8168 module. Did you explicitely force
+modprobe to blacklist the module that you did not mean to use ?
+
+I am rather confused by the fact that the dmesg and the lspci look more
+like Intel than "AMD 64" ones (see the Subject of your message).
+
+Can you clarify ?
+
+-- 
+Ueimor
