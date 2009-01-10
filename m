@@ -1,124 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZAJP3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332AbZAJP3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752559AbZAJP3Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 10:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZAJP3L
+	id S1752332AbZAJP3j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 10:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZAJP3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 10:29:11 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:36819 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751913AbZAJP3K (ORCPT
+	Sat, 10 Jan 2009 10:29:14 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40124 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752531AbZAJP3M convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 10:29:10 -0500
-Date: Sat, 10 Jan 2009 16:30:14 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: "Jesse F. Hughes" <jesse@phiwumbda.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Various problems with new AMD 64 HP Pavilion Desktop machine.
-	(1/2)
-Message-ID: <20090110153014.GA19704@electric-eye.fr.zoreil.com>
-References: <87r63ci7nb.fsf@phiwumbda.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87r63ci7nb.fsf@phiwumbda.org>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 10 Jan 2009 10:29:12 -0500
+Date: Sat, 10 Jan 2009 15:28:00 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [bisected] Re: todays git: WARNING: at
+ drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
+Message-ID: <20090110152800.44308491@lxorguk.ukuu.org.uk>
+In-Reply-To: <4968BA6F.8050207@ru.mvista.com>
+References: <200901091334.55823.borntraeger@de.ibm.com>
+	<200901101009.13699.borntraeger@de.ibm.com>
+	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>
+	<200901101242.05203.borntraeger@de.ibm.com>
+	<49688B63.5030105@ru.mvista.com>
+	<20090110122130.318cf168@lxorguk.ukuu.org.uk>
+	<20090110130745.GA14049@elte.hu>
+	<49689EA8.20506@garzik.org>
+	<20090110132412.GB14049@elte.hu>
+	<20090110133617.GA22304@elte.hu>
+	<20090110135731.0da08c90@lxorguk.ukuu.org.uk>
+	<4968BA6F.8050207@ru.mvista.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse F. Hughes <jesse@phiwumbda.org> :
-[...]
-> I seem to be having a whole slew of problems with my new (refurbished)
-> computer and I'm bumfuzzled about how to solve them.  A poster on
-> comp.os.linux.hardware suggested I post a message here.
+>     All the S/G counts printed out were divisible by 4 (36 for INQUIRY and 96 
+> for REQUSET SENSE). It's the *actual* byte count for the REQUEST SENSE that's 
+> no divisible. The SCSI/ATAPI devices are free to sent less data than requested 
+> on non block transfer commands.
 
-Your message appears with an unusual Content-Type which make it a bit
-unpleasant to read/answer. Please check it.
+That is just fine - if the sg list is not corrupt or being mishandled and
+the atapi pio code is not buggy.
 
-[...]
-> * My r8168 driver (latest available from realtek site) acts flaky.
+RTFS a bit and it becomes obvious that the core libata code has a bug:
 
-Which version ? 8.0.10 ?
 
-> The ethernet card works for a while, but then just craps out,
-> receiving and sending no packets at all.  This usually happens during
-> a sizeable download.  Removing and reloading the driver fixes the
-> problem for a short while.
+>From libata-sff.c:
 
-Can you give the in-kernel r8169 driver a try ? The 2.6.28 r8169 driver
-should build with your kernel.
+        /* consumed can be larger than count only for the last transfer */
+        WARN_ON_ONCE(qc->cursg && count != consumed);
 
-[...]
-> * My Hauppauge 1800 (?) tv card seems to be acting up.  Sometimes when
-> I lspci -vvv, I see
-> 
->   !!! Unknown header type 7f
+The big clue turns out to be that the code doesn't match the comment.
 
-Add a -x option and you will probably see that the PCI configuration
-space contains nothing but "ff" (it's not good).
+Next note the check on qc->cursg. If my input sg list is a 36 byte single
+sg entry then qc->cursg should be NULL by the WARN_ON() - but it isn't.
 
-Can you experience with the -H option of lspci and see what it reports
-when this happens ?
+If qc->cursg is NULL when the sg_next() is run then we don't warn because
+we are quite happy with the last segment being padded or underrunning.
+What we actually want to explode on is a case where we transfer more
+bytes than are wanted and where there are more sg entries to perform - at
+that point we would corrupt.
 
-(dumb question: is this a linux-only box ?)
 
-[...]
-> I'm more than a wee bit clueless about all this.  I hope that someone
-> can help me out here.  Is it a hardware issue?  Does it have something
-> to do with ACPI, as the colh poster suggested?
+So at least one failure case is
 
-It could be purely software r8169 and PCI problems.
+	Core code issues an SG list for 96 bytes
+	Drive indicates it wishes to return 18 bytes
 
-[...]
-> Here's the output of lspci -vvv:
-[...]
-> 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
-> 	Subsystem: Hewlett-Packard Company Device 2a6f
-> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
-> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> 	Latency: 0, Cache Line Size: 32 bytes
-> 	Interrupt: pin A routed to IRQ 2298
-> 	Region 0: I/O ports at e800 [size=256]
-> 	Region 2: Memory at febff000 (64-bit, non-prefetchable) [size=4K]
-> 	Region 4: Memory at f8ff0000 (64-bit, prefetchable) [size=64K]
-> 	Expansion ROM at febc0000 [disabled] [size=128K]
-> 	Capabilities: [40] Power Management version 3
-> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-> 	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
-> 		Address: 00000000fee0f00c  Data: 41a1
-> 	Capabilities: [70] Express (v1) Endpoint, MSI 01
-> 		DevCap:	MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <8us
-> 			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-> 		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-> 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-> 			MaxPayload 128 bytes, MaxReadReq 512 bytes
-> 		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-> 		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <64us
-> 			ClockPM+ Suprise- LLActRep- BwNot-
-> 		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
-> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-> 		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-> 	Capabilities: [b0] MSI-X: Enable- Mask- TabSize=2
-> 		Vector table: BAR=4 offset=00000000
-> 		PBA: BAR=4 offset=00000800
-> 	Capabilities: [d0] Vital Product Data <?>
-> 	Capabilities: [100] Advanced Error Reporting <?>
-> 	Capabilities: [140] Virtual Channel <?>
-> 	Capabilities: [160] Device Serial Number 81-68-10-ec-00-00-00-00
-> 	Kernel driver in use: r8169
-                              ^^^^^
-> 	Kernel modules: r8169, r8168
+	data_xfer transfers 18 bytes + 2 padding (correctly) -> 20 bytes
 
-You told you were using Realtek's r8168 module. Did you explicitely force
-modprobe to blacklist the module that you did not mean to use ?
+	
+At this point __atapi_pio_bytes breaks
 
-I am rather confused by the fact that the dmesg and the lspci look more
-like Intel than "AMD 64" ones (see the Subject of your message).
+	it updates qc->curbytes by 18
+	it updates the offset by 18
 
-Can you clarify ?
+	The last segment is not exhausted so it does not update qc->cursg
 
--- 
-Ueimor
+	qc->cursg is not updated and the WARN erroneously uses !=
+
+The bogus WARN_ON_ONCE() triggers.
+
+So the bug is the WARN_ON being wrong. In fact __atapi_pio_bytes doesn't
+know enough to do the WARN check correctly as it doesn't know if it is
+the last request being made. It just happens it didn't break before
+because all our transfers are word aligned.
+
+We can remove the WARN for the moment, but someone should probably fix
+the sanity check logic.
+
+Alan
