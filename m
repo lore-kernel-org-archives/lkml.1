@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbZAJJab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZAJJfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137AbZAJJab (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 04:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZAJJaL
+	id S1755212AbZAJJfi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 04:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZAJJfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 04:30:11 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53884 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbZAJJaJ (ORCPT
+	Sat, 10 Jan 2009 04:35:23 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:64475 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbZAJJfU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 04:30:09 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49686A9E.8090808@s5r6.in-berlin.de>
-Date: Sat, 10 Jan 2009 10:30:06 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Sat, 10 Jan 2009 04:35:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TtsP9HQmp3j937iR/Ss/IZxxLDw0lTBQfunLkOkvaOKlGOQ+XIotoajq6S5nB6nHOo
+         np3pO7TVWfY1hGq1WxZSQdlC1PXb6BX8wWxsyTB6EQ9WLW62ToRW5truzexFtSz/4qdm
+         dCiTyTCBGnS7PQCuNDBOZNl0Oq3WilJQ4FHZc=
+Message-ID: <f19298770901100135m7cd9c6a1k52f92e66e5b41b79@mail.gmail.com>
+Date: Sat, 10 Jan 2009 12:35:18 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Harvey Harrison" <harvey.harrison@gmail.com>
+Subject: Re: [PATCH] Disable branch profiling macros when sparsed.
+Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rostedt@goodmis.org
+In-Reply-To: <1231571906.5714.30.camel@brick>
 MIME-Version: 1.0
-To: Vineet Gupta <vineetg76@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Query about DMA map API implementation in non-coherent archs
-References: <9f4f8abe0901091045k4a06e2c9v29a7e8a7387e7a48@mail.gmail.com>
-In-Reply-To: <9f4f8abe0901091045k4a06e2c9v29a7e8a7387e7a48@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20090110052727.5471.3654.stgit@zaytsev.su>
+	 <20090109.221348.166902734.davem@davemloft.net>
+	 <1231571906.5714.30.camel@brick>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vineet Gupta wrote:
-...
-> As per dma-mapping and dma-api docs, for streaming DMA mappings arch
-> needs to provide 2 seperate APIs
-> 
-> 1. map API to convert cpu address into DMA address
-> 2. sync API to flush/invalidate the dcaches for non-coherent archs
-> (essentially when changing the ownership of buffer between cpu and
-> device).
-> 
-> However from what I understood, the map API need not take care of
-> proper cache sync.However both ARM and MIPS do the cache sync
-> operations in map API as well (this is done standalone in sync APIs
-> too). Is there a specific reason for this.
-> 
-> Drivers such as libata don't even call any sync API. For e.g. libata
-> only calls dma_map_sg ( ) while setting up the DMA.
-...
+On Sat, Jan 10, 2009 at 10:18, Harvey Harrison
+<harvey.harrison@gmail.com> wrote:
+> On Fri, 2009-01-09 at 22:13 -0800, David Miller wrote:
+>> From: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+>> Date: Sat, 10 Jan 2009 08:57:28 +0300
+>>
+>> > The macros produce lots of unneeded warnings when
+>> > recursive if(({ .. if() {..} ..})) {..} and such
+>> > are substituted. And there is no point in sparsing
+>> > them anyway. This is useful if someone decides to
+>> > sparse an allyesconfig kernel.
+>> >
+>> > Signed-off-by: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+>>
+>> If even sparse can't handle these things, it's no surprise
+>> how many gcc bogus warning problems we've run into because
+>> of this hairy if() macro.
+>
+> It's not that sparse can't handle it, the warning is valid,
+> _____r and ______f are shadowed when these get nested.  It
+> gets even worse when interacting with likely/unlikely tracing
+> as that chose the same identifiers too.  So there the noise
+> could be drastically reduced changing the different identifiers
+> for the if () and __branch_check macros, but nesting will always
+> warn.
+>
+> I've just been setting this to no in my allyesconfig sparse
+> runs....just wait until kmemtrace gets to mainline, then it
+> gets really bad :(
+>
 
-dma_map_*() transfers ownership of a buffer from CPUs to the device too.
- In case of DMA_TO_DEVICE or DMA_BIDIRECTIONAL, these calls therefore
-have to make sure that the device sees current buffer contents.
--- 
-Stefan Richter
--=====-==--= ---= -=-=-
-http://arcgraph.de/sr/
+I don't really understand what is bad here. The 'unlikely' and 'if'
+trace implementation looks quite elegant to me. Yes, they generate
+10kbyte spaghetti monsters (in C) for a simple WARN_ON_ONCE(),
+but probably we should just remove a few unlekely() from the WARN_*
+code, and I'm not sure it's even worth it. There would be no direct
+speedup.
+
+And it took only one line to disable.
