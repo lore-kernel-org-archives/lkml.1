@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbZAJQ1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZAJQv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbZAJQ1k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 11:27:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbZAJQ1b
+	id S1753575AbZAJQv0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 11:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZAJQvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 11:27:31 -0500
-Received: from mail.zelnet.ru ([80.92.97.13]:35848 "EHLO mail.zelnet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbZAJQ1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 11:27:30 -0500
-Message-ID: <4968CCC1.1070106@gmail.com>
-Date: Sat, 10 Jan 2009 19:28:49 +0300
-From: Edward Shishkin <edward.shishkin@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 10 Jan 2009 11:51:14 -0500
+Received: from lazybastard.de ([212.112.238.170]:57629 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZAJQvO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 11:51:14 -0500
+Date: Sat, 10 Jan 2009 17:50:33 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Brown <lkml@davidb.org>, Phil Oester <kernel@linuxace.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-ID: <20090110165033.GA23943@logfs.org>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <4966B24E.1050700@lougher.demon.co.uk> <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com> <20090109023629.GA29520@linuxace.com> <20090109165422.GF24884@logfs.org> <20090109193738.GA9827@linode.davidb.org> <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu>
 MIME-Version: 1.0
-To: Reiserfs mailing list <reiserfs-devel@vger.kernel.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-CC: Jeff Mahoney <jeffm@suse.com>
-Subject: Reiserfsprogs-3.6.21
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090110124335.GB30744@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone.
+On Sat, 10 January 2009 13:43:35 +0100, Ingo Molnar wrote:
+> 
+> What does a performance hit have to do with an ABI? Absolutely nothing - 
+> if such a bug is noticed it is fixed, that's it. Your argument does not 
+> parse and makes absolutely zero technical sense.
+> 
+> Your "ABI is forever" objection against a _read only_ filesystem is a 
+> newbie mistake worthy of cookie file inclusion - i had a real good laugh 
+> when i read it ;-)
 
-This contains the following changes since reiserfsprogs-3.6.19:
+Thank you, glad to be of service.  Should I have picked an example where
+the code becomes horribly convoluted and there is nothing you can do
+about it?
 
-    Patches from Jeff Mahoney:
-    - reiserfsprogs-mkreiserfs-quiet.diff
-    - reiserfsprogs-large-block-warning.diff
-    - reiserfsprogs-fsck-mapid.diff
-    - reiserfsprogs-external-journal-changes.diff
-    - reiserfsprogs-remove-stupid-fsck_sleep.diff
-    - reiserfsprogs-mkfs-use-o_excl.diff
-    - reiserfsprogs-enforce-block-limit.diff
-    - reiserfsprogs-large-fs.diff
-    - reiserfsprogs-better-fsck-a-behavior.diff
-    - reiserfsprogs-remove-dependency-on-asm_unaligned.h.diff
-    - reiserfsprogs-progress.diff
-    - reiserfsprogs-reorder-libs.diff
+But since I am clearly the newbie, could you try to teach my stupid ass
+instead of just ridiculing it?  What is the thing that makes a read only
+filesystem special?  And why does everyone believe that I am arguing
+against merging squashfs when I'm not?
 
-    Patches from Ludwig Nussel:
-    -
-mkreiserfs-set-the-owner-of-the-root-directory-to-the-calling-user.diff
+Jörn
 
-    Patches from Edward Shishkin:
-    - reiserfsprogs-disable-small-block.diff
-    - reiserfsprogs-new-version.diff
-
-All the patches had been announced at reiserfs-devel mailing
-list , and the stuff got testing as a part of latest SuSE distros.
-
-Please, find at http://www.kernel.org/pub/linux/utils/fs/reiserfs
-
-Thanks,
-Edward.
+-- 
+The only real mistake is the one from which we learn nothing.
+-- John Powell
