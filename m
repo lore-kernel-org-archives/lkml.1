@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZAJWJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbZAJWMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbZAJWJU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 17:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbZAJWJJ
+	id S1755579AbZAJWMr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 17:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZAJWMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 17:09:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53429 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbZAJWJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 17:09:08 -0500
-Message-ID: <49691C75.2000606@redhat.com>
-Date: Sat, 10 Jan 2009 17:08:53 -0500
-From: Casey Dahlin <cdahlin@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Scott James Remnant <scott@canonical.com>
-CC: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland McGrath <roland@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com>	 <20090107123457.GB16268@elte.hu>  <20090107171922.GA18000@redhat.com>	 <1231598863.11642.55.camel@quest>  <49690FC9.4010403@redhat.com> <1231622419.11642.197.camel@quest>
-In-Reply-To: <1231622419.11642.197.camel@quest>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Jan 2009 17:12:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38692 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbZAJWMh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 17:12:37 -0500
+Date: Sat, 10 Jan 2009 23:26:56 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Theodore Tso <tytso@mit.edu>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add b+tree library
+Message-ID: <20090110222656.GJ26290@one.firstfloor.org>
+References: <1231584446.3685.21.camel@johannes> <2f11576a0901100302s5132a1b9p11c62e27aa9a06f8@mail.gmail.com> <1231587428.3803.0.camel@johannes> <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org> <20090110202315.GE20611@logfs.org> <20090110212740.GE31579@mit.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090110212740.GE31579@mit.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott James Remnant wrote:
-> On Sat, 2009-01-10 at 16:14 -0500, Casey Dahlin wrote:
->
->   
->> From the perspective of waitfd, the only difference between WNOHANG and
->> O_NONBLOCK is which argument you put the flags in. The API should only
->> support one or the other, but internally they would imply the same thing.
->>
->>     
-> Well, you get O_NONBLOCK for free by having a file descriptor; and you
-> can't turn off people trying to turn it on/off with fcntl() - so you may
-> as well just use that, no? :-)
->
-> Scott
->   
-Its purely an api question. We could easily take the WNOHANG flag and 
-just unset it when we get it and set O_NONBLOCK instead. We need 
-O_CLOEXEC anyway though, and the only reason to do it would be to get 
-rid of the O_ options and take only one type of flag (that and just a 
-little more waitid consistency).
+> Finally, are b+tree so much better than rbtrees that it would be
+> worthwhile to just *replace* rbtrees with b+trees?  Or is the problem
 
---CJD
+There've been a couple of proposals like this over the years, also
+with other data structures like judy trees (which seem to bring
+the cache line optimization Joern talks about to even more extreme).
+splay trees seem to be also a popular suggestion, although they've
+considered dubious by other people (including me). Another
+alternative would be skip lists. 
+
+Also I don't remember there was ever a big discussion about
+rbtrees vs other trees -- it was just that Andrea liked
+them and added a convenient library and some point and other
+people found it convenient too and started using it.
+
+But it's unclear how much all that would really help.
+
+I always thought it might be advanteous to look at a little
+more abstract interface for the existing rbtree users (shouldn't
+be that hard, the interface is already not too bad) and then just 
+let some students implement a couple of backend data structures
+for that interface and then run some benchmarks.
+
+I don't think it's a good idea to add a b*tree library
+and use it only from a few users though. After all it's
+a lot of code and that should have a clear benefit.
+
+-Andi
+-- 
+ak@linux.intel.com
