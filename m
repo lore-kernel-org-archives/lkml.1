@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbZAJSnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZAJSnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbZAJSnY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbZAJSnG
+	id S1755417AbZAJSnq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbZAJSne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:43:06 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:47325 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751059AbZAJSnF (ORCPT
+	Sat, 10 Jan 2009 13:43:34 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3149 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753331AbZAJSnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:43:05 -0500
-Subject: Re: [PATCH] add b+tree library
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090110183921.GD20611@logfs.org>
-References: <1231584446.3685.21.camel@johannes>
-	 <2f11576a0901100302s5132a1b9p11c62e27aa9a06f8@mail.gmail.com>
-	 <1231587428.3803.0.camel@johannes>
-	 <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com>
-	 <20090110183921.GD20611@logfs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-CsBGz3OdW89ONZHeLoYX"
-Date: Sat, 10 Jan 2009 19:44:02 +0100
-Message-Id: <1231613042.3706.16.camel@johannes>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 10 Jan 2009 13:43:33 -0500
+Date: Sat, 10 Jan 2009 18:43:17 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
+       lrg@slimlogic.co.uk
+Message-ID: <20090110184316.GB31525@sirena.org.uk>
+References: <4968C652.2050300@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4968C652.2050300@gmail.com>
+X-Cookie: Brain off-line, please wait.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: Regulator consumer and i2c device interaction.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jan 10, 2009 at 04:01:22PM +0000, Jonathan Cameron wrote:
 
---=-CsBGz3OdW89ONZHeLoYX
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+[Regulators use a struct device and a supply name for lookup...]
 
-On Sat, 2009-01-10 at 19:39 +0100, J=C3=B6rn Engel wrote:
-> On Sat, 10 January 2009 21:29:04 +0900, KOSAKI Motohiro wrote:
-> > >
-> > > Joern is going to use it for logfs, that's the point. Not sure about
-> > > other filesystems.
-> >=20
-> > Why can't you investigate other filesystem?
-> > if this library is used by only one fs, why does this library routine
-> > need to linux/lib/ directory?
->=20
-> Because it is not used for on-disk data structures.  It is an
-> alternative to radix trees, rbtrees, hash tables or linked lists.
+> Now in the case of i2c devices, the struct device  pointer is created
+> somewhat later and isn't readily available.
 
-Sorry, I misunderstood the question here.
+> I think the struct device pointer is only used as device instance specific
+> token in the regulator framework.  If so is there any reason it can't be
 
-Also, to elaborate on that answer, I'm going to use this as a sort of
-hash table for wireless, where it ensures better scalability than a pure
-hashtable from quiet environments (say wireless off on an airplane) to
-your wireless test lab (100+ access points)
+That's the primary reason - this idiom is also used by at least the
+clock API and possibly other things.  It also allows us to do things
+like show which devices are supplied by which regulators in sysfs.
 
-johannes
+> relaxed to a void * thus allowing something else to be used in i2c drivers?
 
---=-CsBGz3OdW89ONZHeLoYX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+That's doable at the cost of the diagnostic info but...
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+> If so what could actually be used?  Unfortunately all the data elements
+> of i2c_board_info are coppied out (rather than a pointer to the original
+> structure being used) so that's not currently available.  I guess it could
+> be made so at the cost of a single pointer in each i2c_client structure.
 
-iQIcBAABAgAGBQJJaOxpAAoJEKVg1VMiehFY6zYQAInkeF6SegdVrWosT/m3ariD
-WNTTFgrkK/8m8QkPHPUFc9KB66gYbFNaN92cTBvokAF2HSXcgOXKSBs6P5iHRmO9
-Bev/c6A5mnMyYZWfRgqnSo8Nn7PhVVrF7IPRAWE0VJaKFdgOTImZdN+dij9yOmgv
-uiXbuzj+Qx+c+OClWomZ4mATXxtcwJ+re1/I2bg1Q7t8DScvO8htTk7GheP23Qdi
-m6N8iCsAbSjUAU5VumonAHT5UB0rZOookMkyzVABrDfAHgB2/Fafmjx1XK3EHVzU
-78cf6R5Wmf+Ei4GTmCnHqnzhQFxOUY8zuJiuc9mTpCiG45fA1mfYtR+rI9oavKik
-7ewjr7cHW6594IsD71xsKNgaayjsYrXD0mHCh7HKBUWjlUEvnFWF/JSg7/PmLbp3
-sCs4NJNHtNFphKIMTINL6u0FXKLpzcdDSY5qW0/67M5bvDIgwXE9QqJV28iNM5GA
-FepTaJUm+IlXFeFTv93zd3OUu9GxtjcRt+sU8dIzKURVr9qMEkQI8YGrW5tuW8kg
-2JfvcDSe3+Bl11FO6c5ddczSQgphN8rFhkZofx9xrVweWCkKPl3H/lTKAcCP97KQ
-XuHe9mLM8x3y1LsRbv53DHodidVVvxcxYjYlJLrKqPE3F3GGryRKMqjWdzeQrD1r
-FJ4+XoLm14K6uqNDw01q
-=7gDm
------END PGP SIGNATURE-----
+...as you say it's a bit tricky to use right now.  I haven't checked but
+I expect that the platform data that you can supply in the i2c board info
+would work as a token, though it's far from ideal and there may be no
+other need for platform data.
 
---=-CsBGz3OdW89ONZHeLoYX--
+As a temporary workaround note that the regulator API allows the device
+to be NULL at the minute, though there is a desire to remove that
+option.  Providing your regulators have unique names you will be able to
+pass the supply name in as platform data and use that only.  This usage
+is not encouraged and will hopefully become invalid over time, it's
+there at the minute mainly because we don't have a good idea what to use
+for the struct device for cpufreq drivers.
 
+> So the question is how would people prefer to do this?
+
+It'd be nice to be able to access the struct device for i2c devices more
+readily at registration time.  Like I say, it's not a regulator specific
+issue so it'd be good to come up with a general solution.
