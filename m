@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbZAJAmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbZAJAtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759345AbZAJAmf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 19:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZAJAmX
+	id S1758232AbZAJAtk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 19:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZAJAtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 19:42:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35040 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081AbZAJAmW (ORCPT
+	Fri, 9 Jan 2009 19:49:32 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55275 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbZAJAtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 19:42:22 -0500
-Date: Fri, 9 Jan 2009 16:41:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: Nicholas Miell <nmiell@comcast.net>, Ingo Molnar <mingo@elte.hu>,
-       jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
- impact
-In-Reply-To: <20090110003709.GT26290@one.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0901091630440.6528@localhost.localdomain>
-References: <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
- <1231532276.2081.12.camel@entropy> <alpine.LFD.2.00.0901091227040.6528@localhost.localdomain> <1231543701.2081.185.camel@entropy> <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain> <20090110003709.GT26290@one.firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Jan 2009 19:49:31 -0500
+Message-ID: <8c182b969c7f3c9c583b879709767ed7.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <6599ad830901091623i2c3f6ce1ma88c845074b7c013@mail.gmail.com>
+References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090108182817.2c393351.kamezawa.hiroyu@jp.fujitsu.com>
+    <6599ad830901091623i2c3f6ce1ma88c845074b7c013@mail.gmail.com>
+Date: Sat, 10 Jan 2009 09:49:28 +0900 (JST)
+Subject: Re: [RFC][PATCH 1/4] cgroup: support per cgroup subsys state ID
+ (CSS  ID)
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Paul Menage" <menage@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 10 Jan 2009, Andi Kleen wrote:
+Paul Menage さんは書きました：
+> On Thu, Jan 8, 2009 at 1:28 AM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> + *
+>> + * Looking up and scanning function should be called under
+>> rcu_read_lock().
+>> + * Taking cgroup_mutex()/hierarchy_mutex() is not necessary for all
+>> calls.
 >
-> > What's the cost/benefit of that 4%? Does it actually improve performance? 
-> > Especially if you then want to keep DWARF unwind information in memory in 
-> > order to fix up some of the problems it causes? At that point, you lost 
-> 
-> dwarf unwind information has nothing to do with this, it doesn't tell
-> you anything about inlining or not inlining.  It just gives you
-> finished frames after all of that has been done.
-> 
-> Full line number information would help, but I don't think anyone 
-> proposed to keep that in memory.
+> Can you clarify here - do you mean "not necessary for any calls"
+> (calls to what?) or "not necessary for some calls"? I presume the
+> former.
+>
+Ah, sorry bad text.
 
-Yeah, true. Although one of the reasons inlining actually ends up causing 
-problems is because of the bigger stack frames. That leaves a lot of space 
-for old stale function pointers to peek through.
+not necessary for any calls related to css_id.
 
-With denser stack frames, the stack dumps look better, even without an 
-unwinder.
+-Kame
 
-> > Does it help I$ utilization (which can speed things up a lot more, and is 
-> > probably the main reason -Os actually tends to perform better)? Likely 
-> > not. Sure, shrinking code is good for I$, but on the other hand inlining 
-> > can actually be bad for I$ density because if you inline a function that 
-> > doesn't get called, you now fragmented your footprint a lot more.
-> 
-> Not sure that is always true; the gcc basic block reordering 
-> based on its standard branch prediction heuristics (e.g. < 0 or
-> == NULL unlikely or the unlikely macro) might well put it all out of line.
 
-I thought -Os actually disabled the basic-block reordering, doesn't it?
-
-And I thought it did that exactly because it generates bigger code and 
-much worse I$ patterns (ie you have a lot of "conditional branch to other 
-place and then unconditional branch back" instead of "conditional branch 
-over the non-taken code".
-
-Also, I think we've had about as much good luck with guessing 
-"likely/unlikely" as we've had with "inline" ;)
-
-Sadly, apart from some of the "never happens" error cases, the kernel 
-doesn't tend to have lots of nice patterns. We have almost no loops (well, 
-there are loops all over, but most of them we hopefully just loop over 
-once or twice in any good situation), and few really predictable things.
-
-Or rather, they can easily be very predictable under one particular load, 
-and the totally the other way around under another ..
-
-			Linus
