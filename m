@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZAJQBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZAJQNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbZAJQBb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 11:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZAJQBX
+	id S1753801AbZAJQNW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 11:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZAJQNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 11:01:23 -0500
-Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:35252 "EHLO
-	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbZAJQBX (ORCPT
+	Sat, 10 Jan 2009 11:13:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:62167 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751599AbZAJQNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 11:01:23 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4968C652.2050300@gmail.com>
-Date: Sat, 10 Jan 2009 16:01:22 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 10 Jan 2009 11:13:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rZAe6r3uKyRlOwoqVfbhzQEC4Lx6YbfkWwp9heHqP3FzgMZnnXIqcsjZm13ChPomR3
+         0RCjqwvSwsetQZ2LEhCk8UI4f33uG6w36wqOGLfjrPb2a/pw1UKYvXZOPxnSCk2MMW3t
+         sCKjhEPhUPWsc9ZzBk1UMbFsysWrtkVor72S0=
+Date: Sat, 10 Jan 2009 19:12:57 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: James Chapman <jchapman@katalix.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, devel@openvz.org,
+       xemul@openvz.org
+Subject: Re: [RFC 3/4] net: pppol2tp - introduce net-namespace functionality
+Message-ID: <20090110161257.GD29349@localhost>
+References: <20090109195154.320495476@gmail.com>> <4967accc.0c58560a.2ee6.3de4@mx.google.com> <49688120.9000507@katalix.com> <20090110111359.GA29349@localhost> <20090110125444.GB29349@localhost> <4968B929.10801@katalix.com> <20090110151958.GC29349@localhost>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org
-Subject: Regulator consumer and i2c device interaction.
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090110151958.GC29349@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All,
+[Cyrill Gorcunov - Sat, Jan 10, 2009 at 06:19:58PM +0300]
+| [James Chapman - Sat, Jan 10, 2009 at 03:05:13PM +0000]
+| | Cyrill Gorcunov wrote:
+| | > [Cyrill Gorcunov - Sat, Jan 10, 2009 at 02:13:59PM +0300]
+| | > | [James Chapman - Sat, Jan 10, 2009 at 11:06:08AM +0000]
+| | > | | Cyrill Gorcunov wrote:
+| | > | | > - Each tunnel and appropriate lock are inside own namespace now.
+| | > | | > - pppox code allows to create per-namespace sockets for
+| | > | | >   both PX_PROTO_OE and PX_PROTO_OL2TP protocols. Actually since
+| | > | | >   now pppox_create support net-namespaces new PPPo... protocols
+| | > | | >   (if they ever will be) should support net-namespace too otherwise
+| | > | | >   explicit check for &init_net would be needed.
+| | 
+| | Ok, I tested this in my L2TP setup. The first ppp session setup fails
+| | because the PPPIOCNEWUNIT ioctl returns -EEXIST. I think the problem is
+| |  the logic in ppp_create_interface(), which does the following to create
+| | a new ppp interface:
+| | 
+| |         /* Initialize the new ppp unit */
+| |         ppp->file.index = unit;
+| |         sprintf(dev->name, "ppp%d", unit);
+| | 
+| |         ret = register_netdev(dev);
+| | 
+| | Looks like there is more work to do in the ppp changes.
+| | 
+| | -- 
+| | James Chapman
+| | Katalix Systems Ltd
+| | http://www.katalix.com
+| | Catalysts for your Embedded Linux software development
+| |
+...
 
-Currently regulator consumers are registered and identified via a pointer to the relevant
-device:
-
-e.g. via a regulator consumer supply structure:
-static struct regulator_consumer_supply imote2_sensor_3_con[] = {
-	{
-		.dev = &sht15.dev,
-		.supply = "vcc",
-	},
-};
-
-static struct regulator_init_data imote2_ldo_init_data[] = {{
-	{
-	 	.constraints = {
-		.name = "vcc_sensor_3",
-		.min_uV = 2800000,
-		.max_uV = 3000000,
-		.valid_ops_mask = REGULATOR_CHANGE_VOLTAGE,
-	},
-	.num_consumer_supplies = ARRAY_SIZE(imote2_sensor_3_con),
-	.consumer_supplies = imote2_sensor_3_con,
-},
-};
-
-and relevant association with a regulator driver.
-
-Now in the case of i2c devices, the struct device  pointer is created
-somewhat later and isn't readily available.
-
-I think the struct device pointer is only used as device instance specific
-token in the regulator framework.  If so is there any reason it can't be
-relaxed to a void * thus allowing something else to be used in i2c drivers?
-
-If so what could actually be used?  Unfortunately all the data elements
-of i2c_board_info are coppied out (rather than a pointer to the original
-structure being used) so that's not currently available.  I guess it could
-be made so at the cost of a single pointer in each i2c_client structure.
-
-So the question is how would people prefer to do this?
-
-Thanks,
-
---
-Jonathan Cameron
+Btw James did connection work without these patches? On
+pure net-next-2.6 tree? I've some bad feeling that this
+fail is related to different patch. Just to be sure.
+ 
+		- Cyrill -
