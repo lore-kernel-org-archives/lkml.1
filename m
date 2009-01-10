@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbZAJSWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbZAJSYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386AbZAJSWf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZAJSW1
+	id S1755263AbZAJSYT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZAJSYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:22:27 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:9500 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753146AbZAJSW0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:22:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Bk/yyRO2sDK98vyJzr+jVu+04vydkDeG2gnIj4Y37izn1rkl2vtBdPHA639pLzEp9z
-         sJP8qPuTkkFQDrN1rXTwpCyzRDDSe5aZ3Hau5VgZKvJTzc4qPKbHZJF+MlPWb+yHKfI5
-         M7SBAWXzrQM/2T0iHmM0G1oPwkfY1/moHn4iM=
-Message-ID: <51c5bc110901101022g1fc407f6ifc37aa93580a2da1@mail.gmail.com>
-Date: Sat, 10 Jan 2009 10:22:25 -0800
-From: kobayashi.kk@ncos.nec.co.jp
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3 v2] proc: Export statistics for softirq to /proc
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, h-shimamoto@ct.jp.nec.com
-In-Reply-To: <20090109141642.61540741.akpm@linux-foundation.org>
+	Sat, 10 Jan 2009 13:24:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45750 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752543AbZAJSYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 13:24:10 -0500
+Date: Sat, 10 Jan 2009 19:21:55 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Scott James Remnant <scott@canonical.com>
+Cc: Casey Dahlin <cdahlin@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+Message-ID: <20090110182155.GA17516@redhat.com>
+References: <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com> <a36005b50901071302q70160bady41abc5ed2b105474@mail.gmail.com> <20090108143220.GA8717@redhat.com> <20090108193530.99D74FC3DD@magilla.sf.frob.com> <496663B6.3090709@redhat.com> <20090108213901.GA26729@redhat.com> <1231599141.11642.58.camel@quest> <20090110161911.GB10954@redhat.com> <1231607398.11642.104.camel@quest>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081121202232.0489f84b.kobayashi.kk@ncos.nec.co.jp>
-	 <20081121202708.95ec8b3f.kobayashi.kk@ncos.nec.co.jp>
-	 <20081126190603.3CC3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090109141642.61540741.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 04ffea40ec4d2981
+In-Reply-To: <1231607398.11642.104.camel@quest>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/9 Andrew Morton <akpm@linux-foundation.org>:
-> On Wed, 26 Nov 2008 19:10:28 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On 01/10, Scott James Remnant wrote:
 >
->> nit
->>
->> > @@ -49,6 +50,10 @@ static int show_stat(struct seq_file *p, void *v)
->> >                     sum += kstat_irqs_cpu(j, i);
->> >
->> >             sum += arch_irq_stat_cpu(i);
->> > +
->> > +           for (j = 0; j < NR_SOFTIRQS; j++)
->> > +                   sum_softirq += kstat_softirqs_cpu(j, i);
->> > +
->> >     }
->>
->> You can calcurate per_irq_sum here.
->> Typically, # of possible cpu are very big.
->>
->> So, I don't like unnecessary twrice looping.
+> On Sat, 2009-01-10 at 17:19 +0100, Oleg Nesterov wrote:
 >
-> I was about to send these patches to Linus, but it seems that this
-> optmisation hasn't been addressed?
+> > I am not sure we are talking about the same thing, but afaics poll() +
+> > signalfd can work to (say) reap the childs. Actually, ppoll() alone is
+> > enough.
+> >
+> Last time I checked, ppoll() was not actually implemented across all
+> architectures in a manner that solved the race it was intended to solve.
+>
 
-Thanks for your notice, Andrew.
-Of course, thanks for your advice, Kosaki-san.
-I didn't check carefully about this point...
+As I said, this is imho unfair. But I mentioned ppol() "just in case".
 
-Now I am on a business trip.
-So, I'll post the fix next week.
+My questiong was why do you think that "signalfd() can't currently be
+made to work in the way you describe". You have dropped this part to
+change the topic?
 
-// Keika Kobayashi
+Oleg.
+
