@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZAKFou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752290AbZAKFtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbZAKFou (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 00:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZAKFof
+	id S1752290AbZAKFtA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 00:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZAKFsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 00:44:35 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54092 "EHLO mail.dvmed.net"
+	Sun, 11 Jan 2009 00:48:52 -0500
+Received: from ns2.suse.de ([195.135.220.15]:34635 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752537AbZAKFoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 00:44:34 -0500
-Message-ID: <49698739.6010003@garzik.org>
-Date: Sun, 11 Jan 2009 00:44:25 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1750973AbZAKFsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 00:48:51 -0500
+Date: Sat, 10 Jan 2009 14:00:04 -0800
+From: Greg KH <gregkh@suse.de>
+To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
+       jaswinderlinux@gmail.com, wangchen@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, corbet@lwn.net
+Subject: Re: Who wrote 2.6.28
+Message-ID: <20090110220004.GA5875@suse.de>
+References: <496224D7.2030109@cn.fujitsu.com> <3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com> <20090109.141124.154196743.davem@davemloft.net> <20090110213121.GF31579@mit.edu>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata hibernation fixes
-References: <20081104062734.GA4420@havoc.gtf.org> <495D7DC9.8070101@kernel.org>
-In-Reply-To: <495D7DC9.8070101@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090110213121.GF31579@mit.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jeff Garzik wrote:
->> This adds code at a late stage (heading towards -rc4), but does
->> eliminate a particular spin-up overcycling behavior associated with
->> hibernation.
->>
->> Rafael's extended description below...  Separated to make it easier to
->> pull-or-not, separate from the other libata fixes.  There shouldn't be
->> any merge trouble between the two.
->>
->> SATA: Blacklist systems that spin off disks during ACPI power off
+On Sat, Jan 10, 2009 at 04:31:21PM -0500, Theodore Tso wrote:
+> On Fri, Jan 09, 2009 at 02:11:24PM -0800, David Miller wrote:
+> > From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+> > Date: Fri, 9 Jan 2009 19:39:17 +0530
+> > 
+> > > In http://remword.com/kps_result/2_6_29_whole_line.html
+> > > Earlier I was using email address: Jaswinder Singh
+> > > <jaswinder@infradead.org> (Unknown #25) and now I am using:
+> > > Jaswinder Singh Rajput <jaswinderrajput@gmail.com> (Unknown #25)
+> > > 
+> > > If possible can you link above two emails.
+> > 
+> > This reminds me that I noticed another one that needs linking,
+> > shemminger@linux-foundation.org became shemminger@vyatta.com
 > 
-> Jeff, I think this should be merged into 2.6.29 unless Linus still
-> objects.  Linus, as discussed in this thread, this is workaround for a
-> hardware / firmware problem and vanilla windows also suffers the
-> problem, so as ugly as it is, we need this to prevent double spin down
-> on the machine.
+> ... and most of the engineers listed as working for the Linux
+> Foundation in the above-mentioned analysis don't....
 
-Oh, I forgot to reply to this...  libata-2.6.git#hibern_regress no 
-longer applies cleanly.
+If you look at the tool that Jon wrote, and the data files that I keep
+up to date, this is already handled there.
 
-I'll try poking at it on Monday and get it cleaned up, as it is IMO a 
-bug fix and still should go in.
+thanks,
 
-	Jeff
-
-
-
+greg k-h
