@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZAJIZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZAJIzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbZAJIZc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 03:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZAJIZY
+	id S1753548AbZAJIzq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 03:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZAJIze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 03:25:24 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:10423 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbZAJIZX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 03:25:23 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=OwZ1pnPJ2TEwFTJaqVcA:9 a=8SrV7XpFjtWvoaBtkzF1FDF6zdAA:4 a=M-ExZQ-wgAMA:10 a=dXD_W6XKJooA:10
-Message-ID: <49685B70.8080908@shaw.ca>
-Date: Sat, 10 Jan 2009 02:25:20 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sat, 10 Jan 2009 03:55:34 -0500
+Received: from csamuel.org ([207.210.213.14]:39121 "EHLO csamuel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750825AbZAJIzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 03:55:33 -0500
+From: Chris Samuel <chris@csamuel.org>
+To: linux-btrfs@vger.kernel.org
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
+Date: Sat, 10 Jan 2009 19:55:19 +1100
+User-Agent: KMail/1.10.1 (Linux/2.6.28-cs1; KDE/4.1.2; x86_64; ; )
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+References: <20090108141808.GC11629@elte.hu> <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain> <4967ABD2.3010404@zytor.com>
+In-Reply-To: <4967ABD2.3010404@zytor.com>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN
- (4)
-References: <49683957.9070700@gmail.com>
-In-Reply-To: <49683957.9070700@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart94758569.1zEbmqhbLn";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200901101955.23230.chris@csamuel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> I am seeing this in dmesg:
-> FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
-> not sure what this is.
-> (the only changes to .config was add kexec,
-> coredump, and relocatable kernel options.)
-> 
-> I take it that I'm unable to try this relocatable
-> kernel stuff out.(x86_32)?
-> 
-> regards;
-> 
-> Justin P. Mattock
+--nextPart94758569.1zEbmqhbLn
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I believe that indicates your BIOS's FADT table contains inconsistent 
-data. You're sure that only happens with those options set?
+On Sat, 10 Jan 2009 6:56:02 am H. Peter Anvin wrote:
+
+> This does bring up the idea of including a compiler with the kernel
+> sources again, doesn't it?
+
+Oh please don't give him any more ideas;  first it was a terminal emulator =
+that=20
+had delusions of grandeur, then something to help him manage that code, do =
+we=20
+really want lcc too ? ;-)
+
+=2D-=20
+ Chris Samuel  :  http://www.csamuel.org/  :  Melbourne, VIC
+
+This email may come with a PGP signature as a file. Do not panic.
+=46or more info see: http://en.wikipedia.org/wiki/OpenPGP
+
+
+--nextPart94758569.1zEbmqhbLn
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iQEVAwUASWhie41yjaOTJg85AQKhjgf/QoXUfpB+W7TMOMH5xjx8p+b1E1R8Wcvi
+nu/hmR2PL/LbTp+AASPUZaW/Tzg5zV5Ovl601g+/fVS2u1ToE9FjzatgfAHR5tVe
+TtEDRTLviCKMVj1A2BD0a5Db14TYf+DSwqlS31pkglgQarrkHYhZYHvA4vSSZdB2
+3x3zig0u9m+9eswxF17muPVpyoiv4ORrHJpf6ypE0kmKBjwYQKI2EeLzXsDYHBqE
+gikaFlQEcAsL2GEc9tW9KfueQS+bJ3HqqdGfgY6yzMrRDtJxP4am0wnrZfLPPwS9
+seATVnKsYT35pbhmr53yPYUQ9N1aoGAJIMLjSQQBs6k+k15yoyqrPw==
+=ALgo
+-----END PGP SIGNATURE-----
+
+--nextPart94758569.1zEbmqhbLn--
