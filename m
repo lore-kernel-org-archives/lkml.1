@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZAJA5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760403AbZAJA62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZAJA5Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 19:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbZAJA5J
+	id S1760403AbZAJA62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 19:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZAJA6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 19:57:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40893 "EHLO
+	Fri, 9 Jan 2009 19:58:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45178 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754835AbZAJA5I (ORCPT
+	by vger.kernel.org with ESMTP id S1754904AbZAJA6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 19:57:08 -0500
-Date: Fri, 9 Jan 2009 16:56:59 -0800 (PST)
+	Fri, 9 Jan 2009 19:58:17 -0500
+Date: Fri, 9 Jan 2009 16:58:08 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
 To: Arjan van de Ven <arjan@infradead.org>
@@ -18,9 +18,9 @@ cc: linux-ide@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        jgarzik@pobox.net
 Subject: Re: libata: make parallel port scan a per-host opt-in feature
-In-Reply-To: <20090109161455.08d5a54c@infradead.org>
-Message-ID: <alpine.LFD.2.00.0901091655530.6528@localhost.localdomain>
-References: <20090109161455.08d5a54c@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0901091655530.6528@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0901091657090.6528@localhost.localdomain>
+References: <20090109161455.08d5a54c@infradead.org> <alpine.LFD.2.00.0901091655530.6528@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -30,12 +30,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 9 Jan 2009, Arjan van de Ven wrote:
->  
-> +	if (!hpriv->cap & HOST_CAP_SSS)
-> +		host->flags |= ATA_HOST_PARALLEL_SCAN;
-> +
+On Fri, 9 Jan 2009, Linus Torvalds wrote:
 
-I don't think that does what you think it does.
+> 
+> 
+> On Fri, 9 Jan 2009, Arjan van de Ven wrote:
+> >  
+> > +	if (!hpriv->cap & HOST_CAP_SSS)
+> > +		host->flags |= ATA_HOST_PARALLEL_SCAN;
+> > +
+> 
+> I don't think that does what you think it does.
+
+And furthermore I'm surprised gcc doesn't warn about it. It would seem to 
+be an obvious thing to warn about. I'll see what a sparse warning would 
+look like.
 
 		Linus
