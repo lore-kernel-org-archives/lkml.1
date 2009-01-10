@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760607AbZAJAZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932750AbZAJAZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760607AbZAJAZi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 19:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757296AbZAJAYk
+	id S932750AbZAJAZx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 19:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757455AbZAJAYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 19:24:40 -0500
-Received: from mga03.intel.com ([143.182.124.21]:1095 "EHLO mga03.intel.com"
+	Fri, 9 Jan 2009 19:24:41 -0500
+Received: from mga01.intel.com ([192.55.52.88]:30104 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756724AbZAJAYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756882AbZAJAYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Jan 2009 19:24:38 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,242,1231142400"; 
-   d="scan'208";a="98437557"
-Message-Id: <20090110001404.429595000@intel.com>
+   d="scan'208";a="655938477"
+Message-Id: <20090110001405.030083000@intel.com>
 References: <20090110001308.403550000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 Jan 2009 16:13:09 -0800
+Date: Fri, 09 Jan 2009 16:13:13 -0800
 From: venkatesh.pallipadi@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
        kjwinchester@gmail.com,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [patch 1/6] x86 PAT: remove PFNMAP type on track_pfn_vma_new() error
-Content-Disposition: inline; filename=pfn_cleaup_fix_02.patch
+Subject: [patch 5/6] x86 PAT: ioremap_wc should take resource_size_t parameter
+Content-Disposition: inline; filename=ioremap_wc_resource_size_change.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On track_pfn_vma_new() failure, reset the vm_flags so that there will be
-no second cleanup happening when upper level routines call unmap_vmas().
-
-This patch fixes part of the bug reported here
-http://marc.info/?l=linux-kernel&m=123108883716357&w=2
-
-Specifically the error message
-X:5010 freeing invalid memtype d0000000-d0101000
-Is due to multiple frees on error path, will not happen with the patch below.
+ioremap_wc was taking in unsigned long parameter, where as it should take 64
+bit resource_size_t parameter like other ioremap variants.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
 ---
- mm/memory.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/io.h |    2 +-
+ arch/x86/mm/ioremap.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: tip/mm/memory.c
+Index: linux-2.6/arch/x86/include/asm/io.h
 ===================================================================
---- tip.orig/mm/memory.c	2009-01-06 11:14:35.000000000 -0800
-+++ tip/mm/memory.c	2009-01-06 13:44:57.000000000 -0800
-@@ -1605,8 +1605,14 @@ int remap_pfn_range(struct vm_area_struc
- 	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
+--- linux-2.6.orig/arch/x86/include/asm/io.h	2009-01-09 11:23:10.000000000 -0800
++++ linux-2.6/arch/x86/include/asm/io.h	2009-01-09 13:21:58.000000000 -0800
+@@ -91,7 +91,7 @@ extern void unxlate_dev_mem_ptr(unsigned
  
- 	err = track_pfn_vma_new(vma, prot, pfn, PAGE_ALIGN(size));
--	if (err)
-+	if (err) {
-+		/*
-+		 * To indicate that track_pfn related cleanup is not
-+		 * needed from higher level routine calling unmap_vmas
-+		 */
-+		vma->vm_flags &= ~(VM_IO | VM_RESERVED | VM_PFNMAP);
- 		return -EINVAL;
-+	}
+ extern int ioremap_change_attr(unsigned long vaddr, unsigned long size,
+ 				unsigned long prot_val);
+-extern void __iomem *ioremap_wc(unsigned long offset, unsigned long size);
++extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
  
- 	BUG_ON(addr >= end);
- 	pfn -= addr >> PAGE_SHIFT;
+ /*
+  * early_ioremap() and early_iounmap() are for temporary early boot-time
+Index: linux-2.6/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/ioremap.c	2009-01-09 11:23:10.000000000 -0800
++++ linux-2.6/arch/x86/mm/ioremap.c	2009-01-09 13:21:58.000000000 -0800
+@@ -367,7 +367,7 @@ EXPORT_SYMBOL(ioremap_nocache);
+  *
+  * Must be freed with iounmap.
+  */
+-void __iomem *ioremap_wc(unsigned long phys_addr, unsigned long size)
++void __iomem *ioremap_wc(resource_size_t phys_addr, unsigned long size)
+ {
+ 	if (pat_enabled)
+ 		return __ioremap_caller(phys_addr, size, _PAGE_CACHE_WC,
 
 -- 
 
