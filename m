@@ -1,44 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbZAJAkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbZAJAmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755722AbZAJAkp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 19:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZAJAkh
+	id S1759345AbZAJAmf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 19:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZAJAmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 19:40:37 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37794 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752124AbZAJAkg (ORCPT
+	Fri, 9 Jan 2009 19:42:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35040 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751081AbZAJAmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 19:40:36 -0500
-X-Sasl-enc: J4harJ8eN/8FNdCkLu46aE79r3JTB9sQsniu5drvylRO 1231548034
-Date: Fri, 9 Jan 2009 22:40:31 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Willy Tarreau <w@1wt.eu>
-Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Kernel Blocking Firewall
-Message-ID: <20090110004031.GA21537@khazad-dum.debian.net>
-References: <40416.166.70.238.44.1231467823.squirrel@webmail.wolfmountaingroup.com> <20090109064658.GG5038@1wt.eu>
+	Fri, 9 Jan 2009 19:42:22 -0500
+Date: Fri, 9 Jan 2009 16:41:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: Nicholas Miell <nmiell@comcast.net>, Ingo Molnar <mingo@elte.hu>,
+       jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+In-Reply-To: <20090110003709.GT26290@one.firstfloor.org>
+Message-ID: <alpine.LFD.2.00.0901091630440.6528@localhost.localdomain>
+References: <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu> <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
+ <1231532276.2081.12.camel@entropy> <alpine.LFD.2.00.0901091227040.6528@localhost.localdomain> <1231543701.2081.185.camel@entropy> <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain> <20090110003709.GT26290@one.firstfloor.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090109064658.GG5038@1wt.eu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Jan 2009, Willy Tarreau wrote:
-> why didn't you use ipset for that ? It's designed exactly for this usage
-> and is a lot easier to use than plain iptables for dynamic filtering.
 
-Any ideas when it will hit mainline?  ipsets and PF_RING are the only ways
-to get two important jobs done:  non-trivial firewalling on high-speed
-links, and packet capture in said links...  and neither is in mainline AFAIK.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+On Sat, 10 Jan 2009, Andi Kleen wrote:
+>
+> > What's the cost/benefit of that 4%? Does it actually improve performance? 
+> > Especially if you then want to keep DWARF unwind information in memory in 
+> > order to fix up some of the problems it causes? At that point, you lost 
+> 
+> dwarf unwind information has nothing to do with this, it doesn't tell
+> you anything about inlining or not inlining.  It just gives you
+> finished frames after all of that has been done.
+> 
+> Full line number information would help, but I don't think anyone 
+> proposed to keep that in memory.
+
+Yeah, true. Although one of the reasons inlining actually ends up causing 
+problems is because of the bigger stack frames. That leaves a lot of space 
+for old stale function pointers to peek through.
+
+With denser stack frames, the stack dumps look better, even without an 
+unwinder.
+
+> > Does it help I$ utilization (which can speed things up a lot more, and is 
+> > probably the main reason -Os actually tends to perform better)? Likely 
+> > not. Sure, shrinking code is good for I$, but on the other hand inlining 
+> > can actually be bad for I$ density because if you inline a function that 
+> > doesn't get called, you now fragmented your footprint a lot more.
+> 
+> Not sure that is always true; the gcc basic block reordering 
+> based on its standard branch prediction heuristics (e.g. < 0 or
+> == NULL unlikely or the unlikely macro) might well put it all out of line.
+
+I thought -Os actually disabled the basic-block reordering, doesn't it?
+
+And I thought it did that exactly because it generates bigger code and 
+much worse I$ patterns (ie you have a lot of "conditional branch to other 
+place and then unconditional branch back" instead of "conditional branch 
+over the non-taken code".
+
+Also, I think we've had about as much good luck with guessing 
+"likely/unlikely" as we've had with "inline" ;)
+
+Sadly, apart from some of the "never happens" error cases, the kernel 
+doesn't tend to have lots of nice patterns. We have almost no loops (well, 
+there are loops all over, but most of them we hopefully just loop over 
+once or twice in any good situation), and few really predictable things.
+
+Or rather, they can easily be very predictable under one particular load, 
+and the totally the other way around under another ..
+
+			Linus
