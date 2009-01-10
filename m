@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbZAJByg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZAJCA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbZAJByg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 20:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZAJBy1
+	id S1757317AbZAJCA7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 21:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZAJCAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 20:54:27 -0500
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:23734 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750907AbZAJBy0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 20:54:26 -0500
-X-Greylist: delayed 651 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Jan 2009 20:54:26 EST
-Date: Fri, 09 Jan 2009 18:43:34 -0700
-From: dougthompson@xmission.com
-To: h.mitake@gmail.com, dougthompson@xmission.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 1/1] edac: add more verbose debug info
-Message-ID: <4967fd46.3sEWAxygH6AQ2REb%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Fri, 9 Jan 2009 21:00:50 -0500
+Received: from ozlabs.org ([203.10.76.45]:48062 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750907AbZAJCAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 21:00:50 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18791.60479.79841.734481@cargo.ozlabs.ibm.com>
+Date: Sat, 10 Jan 2009 11:30:55 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/9] Performance counters for POWER
+In-Reply-To: <1231507715.11687.618.camel@twins>
+References: <18791.10652.298501.863657@cargo.ozlabs.ibm.com>
+	<1231507715.11687.618.camel@twins>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hitoshi Mitake <h.mitake@gmail.com>
+Peter Zijlstra writes:
 
-I wrote a patch for making a debugging information more verbose
-for use in development debugging.
+> Hmm, the model I thought would make most sense for power and other
+> machines with such heavy constraints was that you'd compose a register
+> set when you create groups, and then when you RR the groups, you just
+> program the pre-computed sets.
 
-If this patch applied and enabled new option "More verbose debugging",
-information about source file and line number will be added to debugging message.
+Groups are user-created entities, and in practice (at least so far)
+most groups consist of just a single counter.  I don't want to build
+in a limitation that you can only count one thing at a time unless you
+construct a multi-counter group.  (There is no easy way to combine the
+register settings for two groups, short of working out the register
+settings for the combined set of events from scratch.)
 
-This is sample output,
+It would be possible to have an entity that describes a set of groups
+(i.e. the result of a scheduling decision) and precompute register
+settings for that.  That's the kind of thing I was alluding to when I
+talked about major changes to the generic code.  But that entity is a
+distinct thing from the current notion of a "group".
 
-EDAC MC0: Giving out device to 'e7xxx_edac' 'E7205': DEV 0000:00:00.0
-EDAC DEBUG: in drivers/edac/edac_pci.c, line at 48: edac_pci_alloc_ctl_info()
-EDAC DEBUG: in drivers/edac/edac_pci.c, line at 334: edac_pci_add_device()
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> Right, esp on high context switch rates it might dominate the machine.
 
-I think this patch is comfortable for EDAC developers.
-This is patch, please use.
+Currently the constraint check/alternative search seems to take a
+fraction of a microsecond, so I'm hopeful it'll be OK.  We'll see.
 
-Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
----
- Kconfig     |    8 ++++++++
- edac_core.h |   15 ++++++++++++++-
- 2 files changed, 22 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.28/drivers/edac/Kconfig
-===================================================================
---- linux-2.6.28.orig/drivers/edac/Kconfig
-+++ linux-2.6.28/drivers/edac/Kconfig
-@@ -40,6 +40,14 @@ config EDAC_DEBUG
- 	  there're four debug levels (x=0,1,2,3 from low to high).
- 	  Usually you should select 'N'.
- 
-+config EDAC_DEBUG_VERBOSE
-+	bool "More verbose debugging"
-+	depends on EDAC_DEBUG
-+	help
-+	  This option makes debugging information more verbose.
-+	  Source file name and line number where debugging message
-+	  printed will be added to debugging message.
-+
- config EDAC_MM_EDAC
- 	tristate "Main Memory EDAC (Error Detection And Correction) reporting"
- 	default y
-Index: linux-2.6.28/drivers/edac/edac_core.h
-===================================================================
---- linux-2.6.28.orig/drivers/edac/edac_core.h
-+++ linux-2.6.28/drivers/edac/edac_core.h
-@@ -49,6 +49,10 @@
- #define edac_printk(level, prefix, fmt, arg...) \
- 	printk(level "EDAC " prefix ": " fmt, ##arg)
- 
-+#define edac_printk_verbose(level, prefix, fmt, arg...) \
-+	printk(level "EDAC " prefix ": " "in %s, line at %d: " fmt,	\
-+	       __FILE__, __LINE__, ##arg)
-+
- #define edac_mc_printk(mci, level, fmt, arg...) \
- 	printk(level "EDAC MC%d: " fmt, mci->mc_idx, ##arg)
- 
-@@ -71,11 +75,20 @@
- #ifdef CONFIG_EDAC_DEBUG
- extern int edac_debug_level;
- 
-+#ifndef CONFIG_EDAC_DEBUG_VERBOSE
- #define edac_debug_printk(level, fmt, arg...)                            \
- 	do {                                                             \
- 		if (level <= edac_debug_level)                           \
- 			edac_printk(KERN_DEBUG, EDAC_DEBUG, fmt, ##arg); \
--	} while(0)
-+	} while (0)
-+#else  /* CONFIG_EDAC_DEBUG_VERBOSE */
-+#define edac_debug_printk(level, fmt, arg...)                            \
-+	do {                                                             \
-+		if (level <= edac_debug_level)                           \
-+			edac_printk_verbose(KERN_DEBUG, EDAC_DEBUG, fmt, \
-+					    ##arg);			\
-+	} while (0)
-+#endif
- 
- #define debugf0( ... ) edac_debug_printk(0, __VA_ARGS__ )
- #define debugf1( ... ) edac_debug_printk(1, __VA_ARGS__ )
+Paul.
