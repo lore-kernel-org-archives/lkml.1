@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZAJW4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbZAJW5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbZAJW4D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 17:56:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZAJWzy
+	id S1755659AbZAJW5t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 17:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbZAJW5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 17:55:54 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:33028 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751778AbZAJWzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 17:55:54 -0500
-Message-ID: <49692772.9010504@sgi.com>
-Date: Sat, 10 Jan 2009 14:55:46 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 10 Jan 2009 17:57:41 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:48005 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751163AbZAJW5k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 17:57:40 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Kernelmessage to usbstick?
+Date: Sat, 10 Jan 2009 23:58:00 +0100
+User-Agent: KMail/1.9.10
+Cc: Hans de Bruin <bruinjm@xs4all.nl>, linux-kernel@vger.kernel.org
+References: <4968F346.8060806@xs4all.nl> <873afqhixw.fsf@basil.nowhere.org>
+In-Reply-To: <873afqhixw.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PULL] updates for tip/cpus4096
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901102358.00984.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Saturday 10 January 2009 23:53:15 schrieb Andi Kleen:
+> Hans de Bruin <bruinjm@xs4all.nl> writes:
+> 
+> > Would it be possible to send kernel messages to an usbstick? On
+> > poweroff my laptop displays a kernel trace and a final message:
+> > poweroff[3114] exited with preempt_count 2
+> > /etc/rc.d/rc.0: line 265: 3114 Segementation fault /sbin/poweroff.
+> > I don't have a serial cable within reach, but plenty of usbsticks.
+> 
+> There's a mtdoops.c indeed, but it currently only works on
+> MTD controlled flash devices, not usb sticks.
+> 
+> However usb sticks would need the USB subsystem to be running and it's
+> unlikely that will be the case really late in poweroff.  So it might
+> not help.
 
-Hi Ingo,
+USB in turn needs PCI, interrupts and DMA.
 
-Please pull the following changes that reduce the static amount of memory used
-for irq_desc_ptrs and kstat_irqs_legacy for SPARSE_IRQS.
-
-(Note that tip/cpus4096 does not have the previous pull yet but these follow them.)
-
-Thanks,
-Mike
----
-
-The following changes since commit 076645f7bbf48dfc9528d21cfefc719f0e15de8b:
-  Mike Travis (1):
-        Xen: reduce memory required for cpu_evtchn_mask
-
-are available in the git repository at:
-
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git master
-
-Mike Travis (4):
-      irq: change references from NR_IRQS to nr_irqs
-      irq: allocate irq_desc_ptrs array based on nr_irqs
-      irq: initialize nr_irqs based on nr_cpu_ids
-      kstat: modify kstat_irqs_legacy to be variable sized
-
- arch/x86/kernel/io_apic.c |    2 +-
- kernel/irq/handle.c       |   35 ++++++++++++++++++++++++++---------
- kernel/irq/internals.h    |    4 ++++
- 3 files changed, 31 insertions(+), 10 deletions(-)
+	Regards
+		Oliver
