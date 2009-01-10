@@ -1,96 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbZAJPfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbZAJP6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbZAJPfn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 10:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZAJPfb
+	id S1753679AbZAJP6n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 10:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZAJP6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 10:35:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40636 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752092AbZAJPfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 10:35:30 -0500
-Date: Sat, 10 Jan 2009 16:34:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, sam@ravnborg.org,
-       Dave Anderson <anderson@redhat.com>
-Subject: Re: source line numbers with x86_64 modules? [Was: Re: [patch]
-	measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact]
-Message-ID: <20090110153446.GA13976@elte.hu>
-References: <170fa0d20901100621m74680e0ewd1916c70f1636c9b@mail.gmail.com>
+	Sat, 10 Jan 2009 10:58:33 -0500
+Received: from [63.81.120.155] ([63.81.120.155]:64943 "EHLO imap.sh.mvista.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752330AbZAJP6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 10:58:32 -0500
+Message-ID: <4968C5CA.6010508@ru.mvista.com>
+Date: Sat, 10 Jan 2009 18:59:06 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <170fa0d20901100621m74680e0ewd1916c70f1636c9b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [bisected] Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017
+ ata_sff_hsm_move+0x45e/0x750()
+References: <200901091334.55823.borntraeger@de.ibm.com>	<200901101009.13699.borntraeger@de.ibm.com>	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>	<200901101242.05203.borntraeger@de.ibm.com>	<49688B63.5030105@ru.mvista.com>	<20090110122130.318cf168@lxorguk.ukuu.org.uk>	<20090110130745.GA14049@elte.hu>	<49689EA8.20506@garzik.org>	<20090110132412.GB14049@elte.hu>	<20090110133617.GA22304@elte.hu>	<20090110135731.0da08c90@lxorguk.ukuu.org.uk>	<4968BA6F.8050207@ru.mvista.com> <20090110152800.44308491@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090110152800.44308491@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
 
-* Mike Snitzer <snitzer@gmail.com> wrote:
+>>    All the S/G counts printed out were divisible by 4 (36 for INQUIRY and 96 
+>>for REQUSET SENSE). It's the *actual* byte count for the REQUEST SENSE that's 
+>>no divisible. The SCSI/ATAPI devices are free to sent less data than requested 
+>>on non block transfer commands.
 
-> Yes, especially from someone who lacks the ability to properly configure 
-> kdump.  I'm fairly surprised others are giving you a free pass when you 
-> keep asserting how broken kdump is with such hollow criticism.  I rely 
-> heavily on kdump and it works quite well (kvm integration was lacking 
-> but has improved).
+> That is just fine - if the sg list is not corrupt or being mishandled and
+> the atapi pio code is not buggy.
 
-hm, you say you rely heavily on kdump ... for what exactly, and how does 
-it help the upstream Linux kernel?
+> RTFS a bit and it becomes obvious that the core libata code has a bug:
 
-I see a single fix from you in the whole repository:
+    Oh, I have already... and saw where the issue could be. It just wasn't 
+obvious why 32-bit PIO triggered it.
 
-  ffc41cf: nbd: prevent sock_xmit from attempting to use a NULL socket
+> From libata-sff.c:
 
-... and that single fix is a NULL pointer dereference that ought to have 
-been quite debuggable from a plain oops alone.
+>         /* consumed can be larger than count only for the last transfer */
+>         WARN_ON_ONCE(qc->cursg && count != consumed);
+> 
+> The big clue turns out to be that the code doesn't match the comment.
+> 
+> Next note the check on qc->cursg. If my input sg list is a 36 byte single
+> sg entry then qc->cursg should be NULL by the WARN_ON() - but it isn't.
 
-In practice i rarely see bugfixes that were debugged via kdump. Normal 
-oops based fixes outnumber kdump based fixes by a ratio of 1:100 or worse 
-- and kdump is readily available these days - just nobody configures it.
+    I think it's still not NULL because qc->cursg_ofs == sg->length check was 
+*not* true right above, hence sg_next() wasn't called...
 
-For example, in the whole kernel repo there's just 45 commits that mention 
-'kdump' [excluding those commits that develop kdump itself]:
+> If qc->cursg is NULL when the sg_next() is run then we don't warn because
+> we are quite happy with the last segment being padded or underrunning.
 
-  $ git log --pretty=format:"%h: %s" --no-merges -i --grep="kdump" |
-        grep -viE 'kdump|kexec|dump|mem' | wc -l
-  45
+    I don't think that sg_next() is called on an underrun segment. And here 
+lies the mistake.
 
-Contrast that to the 1954 commits that contain the string 'oops' or 
-'crash':
+> What we actually want to explode on is a case where we transfer more
+> bytes than are wanted and where there are more sg entries to perform - at
+> that point we would corrupt.
 
-  $ git log --pretty=format:"%h: %s" --no-merges -i -E --grep="oops|crash" |
-            wc -l
-  5900
+> So at least one failure case is
 
-That's a ratio of 1:131. (and probably optimistic in favor of kdump.)
+> 	Core code issues an SG list for 96 bytes
+> 	Drive indicates it wishes to return 18 bytes
 
-Note, i dont have any negative feelings towards kdump - some people use it 
-and enterprise folks with their frozen, immutable kernels love it - it 
-just has not yet given me a reason to have particularly positive feelings 
-towards it in the upstream kernel space.
+> 	data_xfer transfers 18 bytes + 2 padding (correctly) -> 20 bytes
+  	
+> At this point __atapi_pio_bytes breaks
 
-	Ingo
+> 	it updates qc->curbytes by 18
+> 	it updates the offset by 18
+
+> 	The last segment is not exhausted so it does not update qc->cursg
+
+> 	qc->cursg is not updated and the WARN erroneously uses !=
+
+> The bogus WARN_ON_ONCE() triggers.
+
+    Yes.
+
+> So the bug is the WARN_ON being wrong. In fact __atapi_pio_bytes doesn't
+> know enough to do the WARN check correctly as it doesn't know if it is
+> the last request being made. It just happens it didn't break before
+> because all our transfers are word aligned.
+
+    Er... I'm not sure what's changed with 32-bit PIO patch.
+
+> Alan
+
+MBR, Sergei
