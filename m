@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZAJLgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZAJLmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbZAJLgW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 06:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbZAJLgM
+	id S1755975AbZAJLmU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 06:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZAJLmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 06:36:12 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:49069 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752782AbZAJLgL (ORCPT
+	Sat, 10 Jan 2009 06:42:10 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:47109 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752753AbZAJLmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 06:36:11 -0500
-Subject: Re: [PATCH] add b+tree library
-From: Johannes Berg <johannes@sipsolutions.net>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-In-Reply-To: <2f11576a0901100302s5132a1b9p11c62e27aa9a06f8@mail.gmail.com> (sfid-20090110_120257_840405_DA86E81A)
-References: <1231584446.3685.21.camel@johannes>
-	 <2f11576a0901100302s5132a1b9p11c62e27aa9a06f8@mail.gmail.com>
-	 (sfid-20090110_120257_840405_DA86E81A)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dFXmL879Hnus5Tk8h887"
-Date: Sat, 10 Jan 2009 12:37:08 +0100
-Message-Id: <1231587428.3803.0.camel@johannes>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 10 Jan 2009 06:42:09 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
+Date: Sat, 10 Jan 2009 12:42:05 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <200901091334.55823.borntraeger@de.ibm.com> <200901101009.13699.borntraeger@de.ibm.com> <20090110104114.633cacd8@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090110104114.633cacd8@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901101242.05203.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Samstag 10 Januar 2009 schrieb Alan Cox:
+> > I did some printk debugging. 
+> > __atapi_pio_bytes is called with bytes=18. That means with 32bit transfers
+> > there is a 2 byte trailing transfer, which triggers this WARN_ON.
+> 
+> Ouch.. that means all that someone issued a multiple segment data
+> transfer with a 2 byte aligned chunk in the middle.
+> 
+> That is a bit of a suprise because we set blk_queue_dma_alignment to 3 so
+> the block layer should never hand us an sg list in that form. That means
+> we've either got a block layer bug or someone somewhere is generating
+> invalid sg lists internally to libata.
+> 
+> Can you dump qc->cdb[] and see what command is getting issued in the
+> broken form ?
 
---=-dFXmL879Hnus5Tk8h887
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I instrumented __atapi_pio_bytes to print some variables. This is the dump of
+the first two:
 
-On Sat, 2009-01-10 at 20:02 +0900, KOSAKI Motohiro wrote:
+[    1.484730] count: 36 sg->length: 36 qc->cursg_ofs: 0 bytes: 36
+[    1.485709] qc->cdb[]:12000000240000000000000000000000
+That works fine.
 
-> > This adds a b+tree library. The API and memory layout is documented in
-> > the header file lib/btree.h. There are tree versions for 32, 64 and
-> > 128 bit keys as well as unsigned long (32/64 depending on platform).
->=20
-> Can this library remove the btree code in some btree based filesystem?
+[    1.499843] scsi 1:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-U10N  1.05 PQ: 0 ANSI: 5
+[    1.508389] count: 18 sg->length: 96 qc->cursg_ofs: 0 bytes: 18
+[    1.509369] qc->cdb[]:03000000600000000000000000000000
+That one is broken.
 
-Joern is going to use it for logfs, that's the point. Not sure about
-other filesystems.
-
-johannes
-
---=-dFXmL879Hnus5Tk8h887
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJaIhiAAoJEKVg1VMiehFY5yoQAKTL6Wi3SED2lPdbIAzDZVgO
-SnWguadC821da6o5AKo+cWd9dJHGPxuBgleuse9daepKQewKtbhxGbKWtkp4bmir
-3xnpXqxm0h3/2k1mQC1Opg+beSdTq2qnUXOxpePmx6HlMSvBOcmxh6sENZZQQEnG
-9Ykue+to/nxYyWU9gU8QOsJPszWmAIGSw4hCtZiI4Tal/jg8br7kvQ6xpO0vMQmt
-yteCGX/lDg5jIhP81GQqVs6Zq+joav4o2Wwf9eJRx8Kcx+/Xh8E1HI5Sx6VZ7gbq
-Y04fuyw1wUWx0X6km4YchOyweWcYr0m+fJb1hOfYT9fGsWLzauw6IabArOBYkmmT
-WLjKycmNcYdH4CgS4zP0v/Brv8ZrbfQ/ppFS2Pd8QihR/RltO1WmiZS8ILGqAvbH
-5YGjXqx2C+kf1n3tdUKrlGKDBn7tZQbbWl1iCCOTIG5+UzOUPX63fcvWb1xGfdMy
-MSKRhFAVC/CXVEdzZsuj8F7DP5sNtRXckIJy1lh3XuVHTe5+zzTy3FvHcuMBEtCt
-PKoQhGMjm8QDiD5CeeBycxBVoxY7p7jP9mbMgrdLX21E1nUp6REAF9LvYmhmeVMa
-vRwQ7syowz26rlUh8wa191/yz5rrVF4m1YOfB0nM0ebSzM/zqXWOiGq/CqXkdUkJ
-rDYtjeD+RrCAQP8IRZ6b
-=v1Bq
------END PGP SIGNATURE-----
-
---=-dFXmL879Hnus5Tk8h887--
+[    1.509369] ------------[ cut here ]------------
+[    1.509369] WARNING: at drivers/ata/libata-sff.c:1024 ata_sff_hsm_move+0x69b/0x810()
 
