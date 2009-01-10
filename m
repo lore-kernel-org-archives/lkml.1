@@ -1,142 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZAJSRF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZAJSUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZAJSRF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:17:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZAJSQy
+	id S1754874AbZAJSUX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZAJSUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:16:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55230 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752586AbZAJSQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:16:54 -0500
-Date: Sat, 10 Jan 2009 19:13:40 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Scott James Remnant <scott@canonical.com>
-Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Casey Dahlin <cdahlin@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-Message-ID: <20090110181340.GA14978@redhat.com>
-References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com> <1231598714.11642.53.camel@quest> <20090110155720.GA10954@redhat.com> <1231607252.11642.103.camel@quest>
-MIME-Version: 1.0
+	Sat, 10 Jan 2009 13:20:05 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:52201 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753157AbZAJSUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 13:20:03 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsoEAAFwaElMQWt2/2dsb2JhbACBbM5ohW+EMg
+Date: Sat, 10 Jan 2009 13:19:59 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       ltt-dev@lists.casi.polymtl.ca,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: LTTng for ext4 tracing HOWTO
+Message-ID: <20090110181959.GA23307@Krystal>
+References: <20090109170408.75C1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090109144901.GA7262@Krystal> <20090109185840.GD23869@mit.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1231607252.11642.103.camel@quest>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090109185840.GD23869@mit.edu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:59:25 up 9 days, 17:57,  2 users,  load average: 0.39, 0.20,
+	0.17
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/10, Scott James Remnant wrote:
->
-> On Sat, 2009-01-10 at 16:57 +0100, Oleg Nesterov wrote:
->
-> > I can't understand why should we change ->exit_signal if we want to
-> > use signalfd. Yes, SIGCHLD is not rt. So what?
-> >
-> > We do not need multiple signals in queue if we want to reap multiple
-> > zombies. Once we have a single SIGCHLD (reported by signalfd or
-> > whatever) we can do do_wait(WNOHANG) in a loop.
-> >
-> Well, a good reason why is that it makes things much easier to do in
-> userspace.
+* Theodore Tso (tytso@mit.edu) wrote:
+> On Fri, Jan 09, 2009 at 09:49:01AM -0500, Mathieu Desnoyers wrote:
+> > 
+> > Given this is meant to be in the mainline kernel, using tracepoints
+> > rather than markers would be more appropriate. Please see
+> > Documentation/tracepoints.txt and samples/tracepoints/ for details.
+> 
+> I saw that, but I'm still not sure how I would actually *use*
+> tracepoints.  I can use markers today with Systemtap, and I need an
+> easy way to be able to selectively do things like "trap and print all
+> of the logged data when the ext4_request_inode tracepoint/marker is
+> tripped where dev=='dm-8'".
+> 
+> Unfortunately, Systemtap seems doomed given its current course and
+> direction, so I'm not opposed to moving to another solution --- I just
+> need a HOWTO that demonstrates how I can do this painlessly and
+> easily; preferably without having me have to manually hack up a kernel
+> module each time I want to implement the tracing
+> 
+> Is there an easy way to do that using ltt today?  Can you point me at
+> a sample of how this could be done?
+> 
+> 						- Ted
+> 
 
-I never argued with this. And, let me repeat. I am not arguing against
-waitfd! Actually, I always try to avoid the "do we need this feature"
-discussions.
+Hi Ted,
 
-What I disagree with is that waitfd adds the functionality which does
-not exists currently.
+I just finished adding the ext4 tracing feature to LTTng. It's in LTTng
+0.75 as I write this. The only requirement currently not fulfilled is
+the "filtering by dev == 'dm-8'", which I plan to implement later. We
+currently have the whole stream of ext4 operations recorded to trace
+buffers (all on) when tracing is enabled.
 
-> You may as well ask why we have signalfd() at all, and what was wrong
-> with sigaction() and ordinary signal handlers?  Well, lots of things
+The starting point for the LTTng project is http://ltt.polymtl.ca
 
-Cough. You don't have to explain me why signalfd is nice ;) I participated
-in discussion when it was created.
+You will need LTTng 0.75 and the matching ltt-control and lttv packages
+to get this running. Matching versions are listed here :
+http://ltt.polymtl.ca/svn/trunk/lttv/doc/developer/lttng-lttv-compatibility.html
 
-> So let's compare userspace code for trying to reap children using
-> signalfd();
->
-> First, what we have today:
->
-> [...snip the code...]
->
-> Pros:
->  - code exists today
+To save you time, here are the direct links to the sources :
+LTTng :
+http://ltt.polymtl.ca/lttng/patch-2.6.28-lttng-0.75.tar.bz2
+or
+git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
 
-That is what I meant. Not more.
+ltt-control :
+http://ltt.polymtl.ca/lttng/ltt-control-0.63-03012009.tar.gz
 
-> Cons:
->  - having siginfo_t returned by read() is pointless, we can't use it
+lttv :
+http://ltt.polymtl.ca/packages/lttv-0.12.5-09012009.tar.gz
 
-Indeed. We use read() only to wait for the signal death.
+Follow the QUICKSTART GUIDE to perform the installation :
+http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
 
->  - double loop isn't pretty
+Once you are setted up, reboot your LTTng-enabled kernel, and try the
+following (as root) :
 
-Nice argument to add the new syscall ;)
+ltt-armall
+  (you should see all the markers within lttng probes being enabled on
+  the screen. This should include lines beginning with
+  "Connecting ext4 ....". If not, make sure you have the lttng ext4
+  probe module loaded.)
+lttctl -C -w /tmp/trace trace
 
->  - strange waitid() API in case of WNOHANG and no child
+  (perform some ext4 operations)
 
-Heh. I also don't like this ;) A reason for waitfd ?
+lttctl -D trace
 
->  - incompatible structures for signalfd()'s read result and waitid(),
->    despite being logically the same structure! :-/
+lttv -m textDump -e channel.name=ext4 -t /tmp/trace
+  This will show events from the ext4 channel only, e.g. :
 
-I could blaim waitfd because it fills siginfo in the manner which
-is not compatible with signalfd, despite logically the same structure.
+ext4.da_write_begin: 197.030265213 (/tmp/trace/ext4_3), 4190, 4190, \
+    /bin/cp, , 4021, 0x0, SYSCALL \
+    { dev = "loop0", ino = 15, pos = 5320704, len = 4096, flags = 0 }
+ext4.da_write_end: 197.030268714 (/tmp/trace/ext4_3), 4190, 4190, \
+    /bin/cp, , 4021, 0x0, SYSCALL \
+    { dev = "loop0", ino = 15, pos = 5320704, len = 4096, copied = 4096 }
+ext4.da_write_begin: 197.030279441 (/tmp/trace/ext4_3), 4190, 4190, \
+    /bin/cp, , 4021, 0x0, SYSCALL \
+    { dev = "loop0", ino = 15, pos = 5324800, len = 4096, flags = 0 }
+....
 
->  - can't simultaneously clear pending signal and wait, so we always have
->    to go back round the main loop if a child dies after the read()
+You can also try the GUI interface if you like, with :
+lttv-gui -t /tmp/trace
 
-Can't understand... waitfd doesn't clear the signal too?
+You will find it useful if you need to dig in the ext4 trace information
+along with the instrumentation collected from the rest of the kernel.
 
-And you forget to mention another drwaback with the current code:
-a lot of pathetic comments ;)
+This is a very basic HOWTO. Don't hesitate to ask if you need help to
+tune the amount of events logged (e.g. by disabling some markers, which
+can be done by doing a custom ltt-armall script).
 
-> Since there's no point listening to SIGCHLD, it's a complete no-op, we
-> don't respond to it at all.  We only need to use it to wake up the main
-> loop.
+Also, lttv filtering currently does not support filtering by event
+fields. A quick hack to do it is :
 
-Yes, sure, indeed, of course.
+lttv -m textDump -e channel.name=ext4 -t /tmp/trace |grep "dev = \"loop0\","
 
-> The wait() loop tends to be at the bottom of the main loop
-> somewhere, completely outside of the fd processing.
+Enjoy :)
 
-Huh.
+Mathieu
 
-> Now, what if signalfd() would always queue pending signals even if
-> they're non-RT?
-
-Well, I think this is off-topic, and more importantly I don't think
-this change is possible.
-
-> So what about
-> waitfd()
-
-Yes, the user-space code (for this particular artificial example)
-becomes simpler. Following this logic, let's add sys_copyfile()
-to kernel? From time to time I regret we don't have it...
-
-(from another thread)
-> > I am not sure we are talking about the same thing, but afaics poll() +
-> > signalfd can work to (say) reap the childs. Actually, ppoll() alone is
-> > enough.
-> >
-> Last time I checked, ppoll() was not actually implemented across all
-> architectures in a manner that solved the race it was intended to solve.
->
-> I'd be delighted to learn that this had been fixed? :-)
-
-Scott, this is unfair. Yes, some arches do not implement restore_sigmask()
-logic. So what? Let's suppose ppoll() has a bug. So, this means we should
-add waitfd? No, let's fix ppol(), and waitfd is orthogonal. Imho.
-
-
-Again, again, again. Please don't forget about "I am not arguing against".
-But I don't buy your arguments.
-
-Oleg.
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
