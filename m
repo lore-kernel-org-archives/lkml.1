@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbZAJOhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZAJOpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756314AbZAJOhe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 09:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZAJOhZ
+	id S1755889AbZAJOpZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 09:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZAJOpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 09:37:25 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35927 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZAJOhZ (ORCPT
+	Sat, 10 Jan 2009 09:45:09 -0500
+Received: from zelda.netsplit.com ([87.194.19.211]:57298 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbZAJOpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 09:37:25 -0500
-Subject: Re: [Regression] Build failure in current mainline - firmware
- related
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       "Igor M. Liplianin" <liplianin@me.by>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-In-Reply-To: <20090104214406.GA31668@uranus.ravnborg.org>
-References: <200901031247.14977.rjw@sisk.pl>
-	 <20090103204948.GA5388@uranus.ravnborg.org>
-	 <20090103205437.GA5499@uranus.ravnborg.org>
-	 <200901032243.28684.rjw@sisk.pl>
-	 <20090104214406.GA31668@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 10 Jan 2009 14:36:56 +0000
-Message-Id: <1231598216.5806.124.camel@macbook.infradead.org>
+	Sat, 10 Jan 2009 09:45:07 -0500
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+From: Scott James Remnant <scott@canonical.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Casey Dahlin <cdahlin@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Oleg Nesterov <oleg@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090107205322.5F8C7FC3E0@magilla.sf.frob.com>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com>
+	 <20090107123457.GB16268@elte.hu>
+	 <20090107205322.5F8C7FC3E0@magilla.sf.frob.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-OFQSuZb3IEpd7OBqkb/b"
+Date: Sat, 10 Jan 2009 14:45:14 +0000
+Message-Id: <1231598714.11642.53.camel@quest>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-04 at 22:44 +0100, Sam Ravnborg wrote:
-> 
-> We could try to rearrange things so we do not trigger
-> the rebuild of ihex2fw in the modules_install case.
-> This would likely involve creating a new file listing
-> all the firmawre files and share it between firmware/Makefile
-> and scripts/Makefile.fwinst
 
-Didn't we already have that, but it got broken for some reason, by
-unwanted changes in commit 4b29631db33292d416dc395c56122ea865e7635c
+--=-OFQSuZb3IEpd7OBqkb/b
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Your patch seems to have broken the Fedora kernel build for 'noarch',
-which runs 'make firmware_install' without building a kernel.
+On Wed, 2009-01-07 at 12:53 -0800, Roland McGrath wrote:
 
-Rafael, if you revert Sam's fix and also revert 4b29631d, does it work
-again?
+> New syscall should have gone to linux-api, I think.
+>=20
+> Do we really need another one for this?  How about using signalfd plus
+> setting the child's exit_signal to a queuing (SIGRTMIN+n) signal instead =
+of
+> SIGCHLD?  It's slightly more magical for the userland process to know to =
+do
+> that (fork -> clone SIGRTMIN).  But compared to adding a syscall we don't
+> really have to add, maybe better.
+>=20
+This wouldn't help the init daemon case:
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+- the exit_signal is set on the child, not on the parent.
+
+  While the init daemon could clone() every new process and set
+  exit_signal, this would not be set for processes reparented to init.
+
+  Even if we had a new syscall to change the exit_signal of a given
+  process, *and* had the init reparent notification patch, this still
+  wouldn't be sufficient; you'd have a race condition between the time
+  you were notified of the reparent, and the time you set exit_signal,
+  in which the child could die.
+
+  Since exit_signal is always reset to SIGCHLD before reparenting, this
+  could be done by resetting it to a different signal; but at this point
+  we're getting into a rather twisty method full of traps.
+
+
+- exit_signal is reset to SIGCHLD on exec().
+
+  Pretty much a plan-killer ;) =20
+
+Scott
+--=20
+Scott James Remnant
+scott@canonical.com
+
+--=-OFQSuZb3IEpd7OBqkb/b
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklotHoACgkQSnQiFMl4yK7UXACfV4z2MPhaOJF7+OFn6nJBsCaQ
+4iUAn0As1c/Bu5S6lWoX5lA9EgDrtIto
+=L5VN
+-----END PGP SIGNATURE-----
+
+--=-OFQSuZb3IEpd7OBqkb/b--
 
