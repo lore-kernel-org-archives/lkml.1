@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932831AbZAJBIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760423AbZAJBMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932831AbZAJBIc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 20:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357AbZAJBIW
+	id S1760423AbZAJBMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 20:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbZAJBMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 20:08:22 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:61211 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755764AbZAJBIU (ORCPT
+	Fri, 9 Jan 2009 20:12:03 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38607
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753644AbZAJBMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 20:08:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ms2Et+UaDwRfwdFH2CMUrlXQWVgIRelarMrsepemEvKsajbHfERZHH9Wd4WcpALC2x
-         /xv5XJAaLijGLoGK6O2ePwlPw3MkUxS+ePujmp6mDdE0nNSqyJusZUDKOxJZd9sZA4qf
-         9xmKzuqmwrNIpZWEGLxMV01xHgmUzgCaah7uY=
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <20090110010125.GA31031@elte.hu>
-References: <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>
-	 <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>
-	 <20090109204103.GA17212@elte.hu>
-	 <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>
-	 <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick>
-	 <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain>
-	 <20090109231227.GA25070@elte.hu>
-	 <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain>
-	 <20090110010125.GA31031@elte.hu>
-Content-Type: text/plain
-Date: Fri, 09 Jan 2009 17:08:17 -0800
-Message-Id: <1231549697.5700.7.camel@brick>
+	Fri, 9 Jan 2009 20:12:01 -0500
+Date: Fri, 09 Jan 2009 17:12:01 -0800 (PST)
+Message-Id: <20090109.171201.80737529.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, a.beregalov@gmail.com
+Subject: Re: + irda-fix-incomplete-conversation-to-internal-stats.patch
+ added to -mm tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200901100023.n0A0N9st031030@imap1.linux-foundation.org>
+References: <200901100023.n0A0N9st031030@imap1.linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-10 at 02:01 +0100, Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+From: akpm@linux-foundation.org
+Date: Fri, 09 Jan 2009 16:23:09 -0800
 
->  - Headers could probably go back to 'extern inline' again. At not small 
->    expense - we just finished moving to 'static inline'. We'd need to 
->    guarantee a library instantiation for every header include file - this 
->    is an additional mechanism with additional introduction complexities 
->    and an ongoing maintenance cost.
+> Subject: irda: fix incomplete conversation to internal stats
+> From: Alexander Beregalov <a.beregalov@gmail.com>
+> 
+> Fix for commit af0490810c (irda: convert to internal stats)
+> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Puzzled?  What benefit is there to going back to extern inline in headers?
+Andrew, this is already in the net-2.6 GIT tree, so you can safely
+toss this.
 
-Harvey
+commit 35a2f9993e1bef0d09c3d737aef784caaa888b48
+Author: Alexander Beregalov <a.beregalov@gmail.com>
+Date:   Thu Jan 8 16:42:08 2009 -0800
 
+    irda: fix incomplete conversation to internal stats
+    
+    Fix for commit af0490810c (irda: convert to internal stats)
+    
+    Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
