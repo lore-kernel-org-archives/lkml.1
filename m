@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbZAJV0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZAJV1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbZAJV0X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 16:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZAJV0L
+	id S1755487AbZAJV1R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 16:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZAJV1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 16:26:11 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39748 "EHLO
+	Sat, 10 Jan 2009 16:27:00 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39750 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbZAJV0K convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751778AbZAJV07 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 16:26:10 -0500
-Date: Sat, 10 Jan 2009 16:28:13 -0500
+	Sat, 10 Jan 2009 16:26:59 -0500
+Date: Sat, 10 Jan 2009 16:29:05 -0500
 From: Arjan van de Ven <arjan@infradead.org>
-To: torvalds@linux-foundation.org
+To: linux-acpi@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] bootgraph: make the bootgraph script show async waiting
- time
-Message-ID: <20090110162813.2e064420@infradead.org>
+Subject: [PATCH] acpi: Initialize the batter driver asynchronous
+Message-ID: <20090110162905.157ac543@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,119 +27,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b7e24cef63a0bd89dc7aa964420f8fac7705c8d5 Mon Sep 17 00:00:00 2001
+>From 9c2e4ec16b9e555ec8e1a52392a583543e7146a9 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 10 Jan 2009 10:03:05 -0800
-Subject: [PATCH] bootgraph: make the bootgraph script show async waiting time
+Date: Sat, 10 Jan 2009 14:19:05 -0500
+Subject: [PATCH] acpi: Initialize the batter driver asynchronous
 
-it's useful for diagnosing boot performance to see where async function calls
-are waiting on serialization... this patch adds this functionality to the
-bootgraph.pl script.
-The waiting time is shown as a half transparent, gray bar through the
-block that is waiting.
+The battery driver tends to take quite some time to initialize (100ms-300ms
+is quite typical).
+This patch initializes the batter driver asynchronously, so that other
+things in the kernel can initialize in parallel to this 300 msec.
+
+As part of this, the batter driver had to move to the back of the acpi init
+order (hence the Makefile change). Without this move, the next ACPI driver
+would just block on the ACPI/devicee layer semaphores until the battery driver was
+done anyway, not gaining any boot time.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- scripts/bootgraph.pl |   46 ++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 42 insertions(+), 4 deletions(-)
+ drivers/acpi/Makefile  |    2 +-
+ drivers/acpi/battery.c |   15 +++++++++++----
+ 2 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/scripts/bootgraph.pl b/scripts/bootgraph.pl
-index 0a498e3..e3d6ca8 100644
---- a/scripts/bootgraph.pl
-+++ b/scripts/bootgraph.pl
-@@ -41,11 +41,13 @@ use strict;
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index d80f4cc..84f182e 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -37,7 +37,6 @@ obj-y				+= scan.o
+ # Keep EC driver first. Initialization of others depend on it.
+ obj-y				+= ec.o
+ obj-$(CONFIG_ACPI_AC) 		+= ac.o
+-obj-$(CONFIG_ACPI_BATTERY)	+= battery.o
+ obj-$(CONFIG_ACPI_BUTTON)	+= button.o
+ obj-$(CONFIG_ACPI_FAN)		+= fan.o
+ obj-$(CONFIG_ACPI_DOCK)		+= dock.o
+@@ -57,5 +56,6 @@ obj-$(CONFIG_ACPI_DEBUG)	+= debug.o
+ obj-$(CONFIG_ACPI_NUMA)		+= numa.o
+ obj-$(CONFIG_ACPI_HOTPLUG_MEMORY)	+= acpi_memhotplug.o
+ obj-$(CONFIG_ACPI_PROCFS_POWER)	+= cm_sbs.o
++obj-$(CONFIG_ACPI_BATTERY)	+= battery.o
+ obj-$(CONFIG_ACPI_SBS)		+= sbshc.o
+ obj-$(CONFIG_ACPI_SBS)		+= sbs.o
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 65132f9..1211799 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -30,6 +30,7 @@
+ #include <linux/init.h>
+ #include <linux/types.h>
+ #include <linux/jiffies.h>
++#include <linux/async.h>
  
- my %start;
- my %end;
-+my %type;
- my $done = 0;
- my $maxtime = 0;
- my $firsttime = 100;
- my $count = 0;
- my %pids;
-+my %pidctr;
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ #include <linux/proc_fs.h>
+@@ -878,21 +879,27 @@ static struct acpi_driver acpi_battery_driver = {
+ 		},
+ };
  
- while (<>) {
- 	my $line = $_;
-@@ -53,6 +55,7 @@ while (<>) {
- 		my $func = $2;
- 		if ($done == 0) {
- 			$start{$func} = $1;
-+			$type{$func} = 0;
- 			if ($1 < $firsttime) {
- 				$firsttime = $1;
- 			}
-@@ -63,12 +66,40 @@ while (<>) {
- 		$count = $count + 1;
+-static int __init acpi_battery_init(void)
++static void __init acpi_battery_init_async(void *unused, async_cookie_t cookie)
+ {
+ 	if (acpi_disabled)
+-		return -ENODEV;
++		return;
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_battery_dir = acpi_lock_battery_dir();
+ 	if (!acpi_battery_dir)
+-		return -ENODEV;
++		return;
+ #endif
+ 	if (acpi_bus_register_driver(&acpi_battery_driver) < 0) {
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 		acpi_unlock_battery_dir(acpi_battery_dir);
+ #endif
+-		return -ENODEV;
++		return;
  	}
- 
-+	if ($line =~ /([0-9\.]+)\] async_waiting @ ([0-9]+)/) {
-+		my $pid = $2;
-+		my $func;
-+		if (!defined($pidctr{$pid})) {
-+			$func = "wait_" . $pid . "_1";
-+			$pidctr{$pid} = 1;
-+		} else {
-+			$pidctr{$pid} = $pidctr{$pid} + 1;
-+			$func = "wait_" . $pid . "_" . $pidctr{$pid};
-+		}
-+		if ($done == 0) {
-+			$start{$func} = $1;
-+			$type{$func} = 1;
-+			if ($1 < $firsttime) {
-+				$firsttime = $1;
-+			}
-+		}
-+		$pids{$func} = $pid;
-+		$count = $count + 1;
-+	}
++	return;
++}
 +
- 	if ($line =~ /([0-9\.]+)\] initcall ([a-zA-Z0-9\_]+)\+.*returned/) {
- 		if ($done == 0) {
- 			$end{$2} = $1;
- 			$maxtime = $1;
- 		}
- 	}
-+
-+	if ($line =~ /([0-9\.]+)\] async_continuing @ ([0-9]+)/) {
-+		my $pid = $2;
-+		my $func =  "wait_" . $pid . "_" . $pidctr{$pid}; 
-+		$end{$func} = $1;
-+		$maxtime = $1;
-+	}
- 	if ($line =~ /Write protecting the/) {
- 		$done = 1;
- 	}
-@@ -105,6 +136,8 @@ $styles[9] = "fill:rgb(255,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0
- $styles[10] = "fill:rgb(255,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
- $styles[11] = "fill:rgb(128,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
- 
-+my $style_wait = "fill:rgb(128,128,128);fill-opacity:0.5;stroke-width:0;stroke:rgb(0,0,0)";
-+
- my $mult = 1950.0 / ($maxtime - $firsttime);
- my $threshold2 = ($maxtime - $firsttime) / 120.0;
- my $threshold = $threshold2/10;
-@@ -139,11 +172,16 @@ foreach my $key (@initcalls) {
- 			$stylecounter = 0;
- 		};
- 
--		print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"145\" style=\"$style\"/>\n";
--		if ($duration >= $threshold2) {
--			print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
-+		if ($type{$key} == 1) {
-+			$y = $y + 15;
-+			print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"115\" style=\"$style_wait\"/>\n";
- 		} else {
--			print "<text transform=\"translate($s3,$y2) rotate(90)\" font-size=\"3pt\">$key</text>\n";
-+			print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"145\" style=\"$style\"/>\n";
-+			if ($duration >= $threshold2) {
-+				print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
-+			} else {
-+				print "<text transform=\"translate($s3,$y2) rotate(90)\" font-size=\"3pt\">$key</text>\n";
-+			}
- 		}
- 	}
++static int __init acpi_battery_init(void)
++{
++	async_schedule(acpi_battery_init_async, NULL);
+ 	return 0;
  }
+ 
 -- 
 1.6.0.6
 
