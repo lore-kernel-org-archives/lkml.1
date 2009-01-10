@@ -1,119 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZAJSv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZAJS6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbZAJSv6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZAJSvr
+	id S1754159AbZAJS6t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZAJS6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:51:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:39467 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751347AbZAJSvq (ORCPT
+	Sat, 10 Jan 2009 13:58:40 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4185 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752596AbZAJS6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:51:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ODPZpLtxeBYSPlXBlworqM34aGiNYDKcWV46TQ8cm6QweY1iwF/jXlgnhxYJ2yl8HV
-         BaF87fbJZuj2tbb/rBFpsrFb5Lz3OjvFnuC13Sh7L8f44pYUQxt8gzaKwMYqJ6hcD8NY
-         AL27jzGWQfcWFnXEKjPPL1fADfpFsrLG4np9c=
-Date: Sat, 10 Jan 2009 21:51:40 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: James Chapman <jchapman@katalix.com>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       devel@openvz.org, xemul@openvz.org
-Subject: Re: [RFC 3/4] net: pppol2tp - introduce net-namespace functionality
-Message-ID: <20090110185140.GE29349@localhost>
-References: <20090109195154.320495476@gmail.com>> <4967accc.0c58560a.2ee6.3de4@mx.google.com> <49688120.9000507@katalix.com> <20090110111359.GA29349@localhost> <20090110125444.GB29349@localhost> <4968B929.10801@katalix.com> <20090110151958.GC29349@localhost> <20090110161257.GD29349@localhost> <4968E589.2020904@katalix.com>
+	Sat, 10 Jan 2009 13:58:40 -0500
+Date: Sat, 10 Jan 2009 18:58:31 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Liam Girdwood <lrg@kernel.org>
+Message-ID: <20090110185830.GC31525@sirena.org.uk>
+References: <4968BE74.1070903@gmail.com> <20090110174602.GA31525@sirena.org.uk> <4968E365.5040409@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4968E589.2020904@katalix.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4968E365.5040409@gmail.com>
+X-Cookie: Brain off-line, please wait.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: Regulator: Use case query (many devices need to reg their
+	voltage requirements?)
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[James Chapman - Sat, Jan 10, 2009 at 06:14:33PM +0000]
-| Cyrill Gorcunov wrote:
-| > [Cyrill Gorcunov - Sat, Jan 10, 2009 at 06:19:58PM +0300]
-| > | [James Chapman - Sat, Jan 10, 2009 at 03:05:13PM +0000]
-| > | | Cyrill Gorcunov wrote:
-| > | | > [Cyrill Gorcunov - Sat, Jan 10, 2009 at 02:13:59PM +0300]
-| > | | > | [James Chapman - Sat, Jan 10, 2009 at 11:06:08AM +0000]
-| > | | > | | Cyrill Gorcunov wrote:
-| > | | > | | > - Each tunnel and appropriate lock are inside own namespace now.
-| > | | > | | > - pppox code allows to create per-namespace sockets for
-| > | | > | | >   both PX_PROTO_OE and PX_PROTO_OL2TP protocols. Actually since
-| > | | > | | >   now pppox_create support net-namespaces new PPPo... protocols
-| > | | > | | >   (if they ever will be) should support net-namespace too otherwise
-| > | | > | | >   explicit check for &init_net would be needed.
-| > | | 
-| > | | Ok, I tested this in my L2TP setup. The first ppp session setup fails
-| > | | because the PPPIOCNEWUNIT ioctl returns -EEXIST. I think the problem is
-| > | |  the logic in ppp_create_interface(), which does the following to create
-| > | | a new ppp interface:
-| > | | 
-| > | |         /* Initialize the new ppp unit */
-| > | |         ppp->file.index = unit;
-| > | |         sprintf(dev->name, "ppp%d", unit);
-| > | | 
-| > | |         ret = register_netdev(dev);
-| > | | 
-| > | | Looks like there is more work to do in the ppp changes.
-| > | | 
-| > | |
-| > ...
-| > 
-| > Btw James did connection work without these patches? On
-| > pure net-next-2.6 tree? I've some bad feeling that this
-| > fail is related to different patch. Just to be sure.
-| 
-| If you mean, does pppol2tp work with the patches applied when no
-| namespace is configured, yes it does.
-| 
+On Sat, Jan 10, 2009 at 06:05:25PM +0000, Jonathan Cameron wrote:
 
-James I just found that my previous commits in net-next-2.6 could
-be breaking the user side apps. I mean when cardmap was here
-ppp_create_interface does not fail if user-side application
-has asked not for'new' (ie -1) unit but some predefined number not
-being used before so any PPPIOCNEWUNIT ioctl call with new unit number was
-serviced by ppp module successfully. As only I've introduced idr
-technique I missed such a case and now any PPPIOCNEWUNIT call
-will not mark unit as 'reserved'. That is why I asked if l2tp
-does work without these 'namespace' related patches.
+> It maps fine, particularly as quite a few daughter boards have local (be
+> it static)
+> regulators to ensure clean supplies etc.
 
-I'm investigating this issue now. It seems idr can't guarantee
-to allocate predefined id number (it could be 'equal' or 'above').
-Maybe we would have to revert these commits
-(commits 7a95d267fb62cd6b80ef73be0592bbbe1dbd5df7 and 
- ab5024ab23b78c86a0a1425defcdde48710fe449).
-But this issue is not related to what you have now.
+Note that there's a fixed voltage regulator driver in the tree for
+handling those.
 
-|
-| But to test this patch, I ran two l2tp daemons (in different namespaces
-| on the same box) and used the veth device to connect them. The failure
-| happened on the first l2tp session create because each side tried to
-| create a ppp interface called ppp0.
-| 
-| Should all interface names be unique across the system even when netns
-| is used? If so, then ppp_generic needs to assign system-wide unique ppp
-| unit numbers.
-| 
+> >   There will also be issues if the drivers are for chips
+> > which have multiple software compatible variants with differing power
+> > requirements.
 
-I don't think it should be like that since net_device is 'net-namespace'
-bound. At least register_netdevice() retrieve *net from device being
-registered so I suppose devices with same names but in different
-namespace could take place. I'll recheck.
+> Yup, though in many cases they have different part numbers etc and can
+> be handled via multiple
+> driver registrations or alias provisions such as in i2c.  This is how
+> things like adc's with differing
+> numbers of inputs depending on precise model are handled anyway.
 
-Thanks for testing James!
-
-| 
-| -- 
-| James Chapman
-| Katalix Systems Ltd
-| http://www.katalix.com
-| Catalysts for your Embedded Linux software development
-| 
-
-		- Cyrill -
+That is doable but error prone, especially if doing something like
+adding regulator support to an existing driver or when new parts come
+out.  Often the part numbers are only slight different (adding an
+additional letter at the end of the day) which doesn't help.
